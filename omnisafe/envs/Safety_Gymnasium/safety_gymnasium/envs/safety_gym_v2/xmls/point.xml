@@ -1,0 +1,40 @@
+<mujoco>
+    <size njmax="3000" nconmax="1000"/>
+    <option timestep="0.002"/>
+    <default>
+        <geom condim="6" density="1" rgba="1 0 0 1"/>
+        <joint damping=".001"/>
+        <motor ctrlrange="-1 1" ctrllimited="true" forcerange="-.05 .05" forcelimited="true"/>
+        <velocity ctrlrange="-1 1" ctrllimited="true" forcerange="-.05 .05" forcelimited="true"/>
+        <site size="0.032" type="sphere"/>
+    </default>
+    <worldbody>
+        <geom name="floor" size="5 5 0.1" type="plane" condim="6"/>
+        <body name="robot" pos="0 0 .1">
+            <camera name="vision" pos="0 0 .15" xyaxes="0 -1 0 .4 0 1" fovy="90"/>
+            <!-- <geom name="camera" pos="-.2 0 0" type="sphere" size=".05"/> -->
+            <joint type="slide" axis="1 0 0" name="x" damping="0.01"/>
+            <joint type="slide" axis="0 1 0" name="y" damping="0.01"/>
+            <joint type="hinge" axis="0 0 1" name="z" damping="0.005"/>
+            <geom name="robot" type="sphere" size=".1" friction="1 0.01 0.01"/>
+            <geom name="pointarrow" pos="0.1 0 0" size="0.05 0.05 0.05" type="box"/>
+            <site name="robot" rgba="1 0 0 .1"/>
+        </body>
+    </worldbody>
+    <sensor>
+        <!-- Used for observation -->
+        <accelerometer site="robot" name="accelerometer"/>
+        <velocimeter site="robot" name="velocimeter"/>
+        <gyro site="robot" name="gyro"/>
+        <magnetometer site="robot" name="magnetometer"/>
+
+        <!-- Used for intrinsic constraints -->
+        <subtreecom body="robot" name="subtreecom"/>
+        <subtreelinvel body="robot" name="subtreelinvel"/>
+        <subtreeangmom body="robot" name="subtreeangmom"/>
+    </sensor>
+    <actuator>
+        <motor gear="0.3 0 0 0 0 0" site="robot" name="x"/>
+        <velocity gear="0.3" jointinparent="z" name="z"/>
+    </actuator>
+</mujoco>

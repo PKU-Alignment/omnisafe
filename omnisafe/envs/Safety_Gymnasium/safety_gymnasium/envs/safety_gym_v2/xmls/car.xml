@@ -1,0 +1,57 @@
+<mujoco>
+    <size njmax="3000" nconmax="1000"/>
+    <option timestep="0.004"/>
+    <default>
+        <geom condim="6" density="5" rgba="1 0 0 1" size=".05" type="sphere"/>
+        <joint damping=".001"/>
+        <motor ctrlrange="-1 1" ctrllimited="true" forcerange="-.02 .02" forcelimited="true"/>
+        <site size="0.032" type="sphere"/>
+    </default>
+    <worldbody>
+        <geom name="floor" size="5 5 0.1" type="plane" condim="6"/>
+        <body name="robot" pos="0 0 .1">
+            <site name="robot" pos="0 0 0"/>
+            <camera name="vision" pos="0 0.1 .2" xyaxes="-1 0 0 0 -.4 1"/>
+            <joint type="free" name="robot" damping="0"/>
+            <geom name="robot" type="box" size=".1 .1 .05"/>
+            <geom name="back_bumper" type="box" pos="0 .15 0" size=".1 .01 .05"/>
+            <geom name="back_connector" type="box" pos="0 .125 0" size=".01 .025 .03"/>
+            <geom name="front_bumper" type="box" pos="0 -.165 0" size=".05 .01 .05"/>
+            <geom name="front_connector" type="box" pos="0 -.13 .04" size=".05 .03 .01"/>
+            <body name="left" pos="-.1 .1 -.05">
+                <joint type="hinge" name="left" axis="1 0 0"/>
+                <geom type="cylinder" name="left" fromto="-.055 0 0 -0.005 0 0"/>
+            </body>
+            <body name="right" pos=".1 .1 -.05">
+                <joint type="hinge" name="right" axis="1 0 0"/>
+                <geom type="cylinder" name="right" fromto="0.005 0 0 .055 0 0"/>
+            </body>
+            <body name="rear" pos="0 -.1 -.05">
+                <joint name="rear" type="ball"/>
+                <geom name="rear"/>
+            </body>
+        </body>
+    </worldbody>
+    <sensor>
+        <!--<jointvel joint="left" name="jointvel_left"/>
+        <jointvel joint="right" name="jointvel_right"/>-->
+
+        <ballquat joint="rear" name="ballquat_rear"/>
+        <ballangvel joint="rear" name="ballangvel_rear"/>
+
+        <!-- Used for observation -->
+        <accelerometer site="robot" name="accelerometer"/>
+        <velocimeter site="robot" name="velocimeter"/>
+        <gyro site="robot" name="gyro"/>
+        <magnetometer site="robot" name="magnetometer"/>
+
+        <!-- Used for intrinsic constraints -->
+        <subtreecom body="robot" name="subtreecom"/>
+        <subtreelinvel body="robot" name="subtreelinvel"/>
+        <subtreeangmom body="robot" name="subtreeangmom"/>
+    </sensor>
+    <actuator>
+        <motor gear="1" jointinparent="left" name="left"/>
+        <motor gear="1" jointinparent="right" name="right"/>
+    </actuator>
+</mujoco>

@@ -1,0 +1,74 @@
+defaults:
+# Basic Configurations
+    ## Basic configurations for base class PG
+    epochs: 500
+    steps_per_epoch: 30000
+    pi_iters: 80
+    critic_iters: 40
+    check_freq: 25
+    save_freq: 100
+    entropy_coef: 0.01
+    max_ep_len: 1000
+    num_mini_batches: 16
+    pi_lr: 0.0003
+    vf_lr: 0.001
+    cost_criteria: 0.95
+    data_dir: "./runs"
+    seed: 0
+    ## Basic configurations for derived class CPPO_PID
+    cost_limit : 25.0
+    clip : 0.
+    pid_Kp : 0.01
+    pid_Ki : 0.01
+    pid_Kd : 0.01
+    lagrangian_multiplier_init : 0.001
+    pid_d_delay : 10
+    pid_delta_p_ema_alpha : 0.95  # 0 for hard update, 1 for no update
+    pid_delta_d_ema_alpha : 0.95
+    sum_norm : True  # L = (J_r - lam * J_c) / (1 + lam); lam <= 0
+    diff_norm : False  # L = (1 - lam) * J_r - lam * J_c; 0 <= lam <= 1
+    penalty_max : 100  # only used if sum_norm=diff_norm=False
+
+    # Optional Configuration
+    ## Whether to use cost critic
+    use_cost_critic: True
+    linear_lr_decay: False
+    exploration_noise_anneal: True
+    reward_penalty: False
+    kl_early_stopping: True
+    use_max_grad_norm: False
+    max_grad_norm: 0.5
+    scale_rewards: False
+    standardized_obs: False
+    ## Configuration For Mode
+    model_cfgs:
+        shared_weights: False
+        weight_initialization_mode: 'kaiming_uniform'
+        ac_kwargs:
+            pi:
+                hidden_sizes: [64, 64]
+                activation: tanh
+            val:
+                hidden_sizes: [64, 64]
+                activation: tanh
+    ## Configuration For Buffer
+    buffer_cfgs:
+        gamma: 0.99
+        lam: 0.95
+        lam_c: 0.95
+        adv_estimation_method: gae
+        standardized_reward: False
+        standardized_cost: False
+        reward_penalty: False
+    PID_cfgs:
+        pid_Kp: 0.01
+        pid_Ki: 0.01
+        pid_Kd: 0.01
+        lagrangian_multiplier_init: 0.001
+        pid_d_delay: 10
+        pid_delta_p_ema_alpha: 0.95  # 0 for hard update, 1 for no update
+        pid_delta_d_ema_alpha: 0.95
+        sum_norm: True  # L = (J_r - lam * J_c) / (1 + lam); lam <= 0
+        diff_norm: False  # L = (1 - lam) * J_r - lam * J_c; 0 <= lam <= 1
+        penalty_max: 100  # only used if sum_norm=diff_norm=False
+        cost_limit: 25.0
