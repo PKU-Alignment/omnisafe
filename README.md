@@ -138,7 +138,7 @@ Here we provide a table for comparison of **OmniSafe's algorithm core** and exis
   </tbody>
 </table>
 
-**Notes** IPO, PCPO, CRPO, P3O, CUP will be released beforce 2022.12.1. Model-base is under testing, and will be released beforce 2022.11.25. Offline Safe will be released beforce 12.1. Control will be released beforce 2022.12.1.
+**Notes** IPO, PCPO, CRPO, P3O, CUP will be released before 2022.12.1. Model-base is under testing, and will be released before 2022.11.25. Offline Safe will be released before 12.1. Control will be released before 2022.12.1.
 
 --------------------------------------------------------------------------------
 
@@ -152,18 +152,51 @@ After careful testing, we confirmed that it has the same dynamics parameters and
 
 Here is a list of all the environments we support, some of them are being tested in our baseline and we will gradually release them within a month.
 
-| Tasks               | Diffcults |    Agent    |
-| ------------------- | :-------: | :---------: |
-| **Safety Velocity** |  Level-0  |   Ant-v4    |
-| **Safety Run**      |  Level-1  | Humanoid-v4 |
-| **Safety Circle**   |  Level-2  |  Hopper-v4  |
-| **Safety Goal**     |     .     |    Point    |
-| **Safety Button**   |     .     |     Car     |
-| **Safety Push**     |     .     |      .      |
-| **Safety Race**     |     .     |      .      |
-| **Safety Narrow**   |     .     |      .      |
-
-
+<table>
+  <tbody>
+    <tr align="center" valign="bottom">
+      <td>
+        <b>Tasks</b>
+      </td>
+      <td>
+        <b>Diffcults</b>
+      </td>
+      <td>
+        <b>Agents</b>
+      </td>
+    </tr>
+    <tr valign="top">
+      <td>
+        <ul>
+            <li><b>Safety Velocity</b></li>
+            <li><b>Safety Run</b></li>
+            <li><b>Safety Circle</b></li>
+            <li><b>Safety Goal</b></li>
+            <li><b>Safety Button</b></li>
+            <li><b>Safety Push</b></li>
+            <li><b>Safety Race</b></li>
+            <li><b>Safety Narrow</b></li>
+      </ul>
+      </td>
+      <td>
+        <ul>
+          <li>Level-0</li>
+          <li>Level-1</li>
+          <li>Level-2</li>
+        </ul>
+      </td>
+      <td>
+        </ul>
+          <li>Ant-v4</b></li>
+          <li>Humanoid-v4</li>
+          <li>Hopper-v4</li>
+          <li>Point</li>
+          <li>Car</li>
+        <ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 ### Vision-base Safe RL
 Vision-based safety reinforcement learning lacks realistic scenarios. Although the original `safety_gym` was able to minimally support visual input, the scenarios were too homogeneous. To facilitate the validation of visual-based safety reinforcement learning algorithms, we have developed a set of realistic visual safety reinforcement learning task environments, which are currently being validated on baseline, and we will release that part of the environment in `Safety_Gymnasium` within a month.
 
