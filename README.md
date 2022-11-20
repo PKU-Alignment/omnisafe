@@ -138,7 +138,7 @@ Here we provide a table for comparison of **OmniSafe's algorithm core** and exis
   </tbody>
 </table>
 
-**Notes** IPO, PCPO, CRPO, P3O, CUP will be released beforce 2022.12.1. Model-base is under testing, and will be released beforce 2022.11.25. Offline Safe will be released beforce 12.1. Control will be released beforce 2022.12.1.
+**Notes** IPO, PCPO, CRPO, P3O, CUP will be released before 2022.12.1. Model-base is under testing, and will be released before 2022.11.25. Offline Safe will be released before 12.1. Control will be released before 2022.12.1.
 
 --------------------------------------------------------------------------------
 
@@ -152,7 +152,7 @@ After careful testing, we confirmed that it has the same dynamics parameters and
 
 Here is a list of all the environments we support, some of them are being tested in our baseline and we will gradually release them within a month.
 
-| Tasks               | Diffcults |    Agent    |
+| Tasks               | Diffcults |    Agents   |
 | ------------------- | :-------: | :---------: |
 | **Safety Velocity** |  Level-0  |   Ant-v4    |
 | **Safety Run**      |  Level-1  | Humanoid-v4 |
