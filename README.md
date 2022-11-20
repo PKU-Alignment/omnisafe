@@ -136,7 +136,7 @@ Here we provide a table for comparison of **OmniSafe's algorithm core** and exis
 </td>
     </tr>
   </tbody>
-</table>
+</table><br/>
 
 **Notes** IPO, PCPO, CRPO, P3O, CUP will be released before 2022.12.1. Model-base is under testing, and will be released before 2022.11.25. Offline Safe will be released before 12.1. Control will be released before 2022.12.1.
 
