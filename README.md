@@ -152,7 +152,7 @@ After careful testing, we confirmed that it has the same dynamics parameters and
 
 Here is a list of all the environments we support, some of them are being tested in our baseline and we will gradually release them within a month.
 
-<table align="center">
+<table align="left">
   <tbody>
     <tr align="center" valign="bottom">
       <td>
