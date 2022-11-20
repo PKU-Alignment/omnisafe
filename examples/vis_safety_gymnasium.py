@@ -2,7 +2,7 @@ import safety_gymnasium
 
 
 env_name = 'SafetyPointGoal1-v0'
-env = safety_gymnasium.make(env_name, render_mode='human')
+env = safety_gymnasium.make(env_name)
 
 obs, info = env.reset()
 terminated = False
