@@ -152,7 +152,7 @@ After careful testing, we confirmed that it has the same dynamics parameters and
 
 Here is a list of all the environments we support, some of them are being tested in our baseline and we will gradually release them within a month.
 
-<table align="left">
+<table>
   <tbody>
     <tr align="center" valign="bottom">
       <td>
@@ -197,7 +197,6 @@ Here is a list of all the environments we support, some of them are being tested
     </tr>
   </tbody>
 </table>
-<div align="center"></div>
 ### Vision-base Safe RL
 Vision-based safety reinforcement learning lacks realistic scenarios. Although the original `safety_gym` was able to minimally support visual input, the scenarios were too homogeneous. To facilitate the validation of visual-based safety reinforcement learning algorithms, we have developed a set of realistic visual safety reinforcement learning task environments, which are currently being validated on baseline, and we will release that part of the environment in `Safety_Gymnasium` within a month.
 
