@@ -295,21 +295,19 @@ class Engine:
         #     self.viewer.draw_pixels(self.save_obs_vision, 0, 0)
         pass
 
-
     def render(self, width, height, mode, camera_id=None, camera_name=None, cost={}):
         """Render the environment to the screen"""
         self.model.vis.global_.offwidth = width
         self.model.vis.global_.offheight = height
 
         if mode in {
-            "rgb_array",
-            "depth_array",
+            'rgb_array',
+            'depth_array',
         }:
 
             if camera_id is not None and camera_name is not None:
                 raise ValueError(
-                    "Both `camera_id` and `camera_name` cannot be"
-                    " specified at the same time."
+                    'Both `camera_id` and `camera_name` cannot be' ' specified at the same time.'
                 )
 
             no_camera_specified = camera_name is None and camera_id is None
@@ -322,7 +320,7 @@ class Engine:
                     mujoco.mjtObj.mjOBJ_CAMERA,
                     camera_name,
                 )
-                
+
                 self._get_viewer(mode).render(camera_id=camera_id)
 
         if mode == 'human':

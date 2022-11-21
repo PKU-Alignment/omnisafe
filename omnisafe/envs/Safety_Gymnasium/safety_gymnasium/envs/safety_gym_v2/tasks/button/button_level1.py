@@ -161,7 +161,9 @@ class ButtonLevel1(ButtonLevel0):
             width, height = self.vision_size
             rows, cols = height, width
             self.vision_size = (rows, cols)
-            obs_space_dict['vision'] = gymnasium.spaces.Box(0, 255, self.vision_size + (3,), dtype=np.uint8)
+            obs_space_dict['vision'] = gymnasium.spaces.Box(
+                0, 255, self.vision_size + (3,), dtype=np.uint8
+            )
 
         # Flatten it ourselves
         self.obs_space_dict = obs_space_dict

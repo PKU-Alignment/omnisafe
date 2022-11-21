@@ -9,7 +9,7 @@ import helpers
 def test_off_policy(agent_id, env_id, level):
     """test_env"""
     env_name = 'Safety' + agent_id + env_id + level + '-v0'
-    env = safety_gymnasium.make(env_name, render_mode="rgb_array")
+    env = safety_gymnasium.make(env_name, render_mode='rgb_array')
     obs, _ = env.reset()
     terminled = False
     ep_ret = 0

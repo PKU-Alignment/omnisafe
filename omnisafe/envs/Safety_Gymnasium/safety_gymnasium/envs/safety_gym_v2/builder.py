@@ -37,7 +37,6 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         'render_lidar_size': 0.025,
         'render_lidar_offset_init': 0.5,
         'render_lidar_offset_delta': 0.06,
-
         # Frameskip is the number of physics simulation steps per environment step
         # Frameskip is sampled as a binomial distribution
         # For deterministic steps, set frameskip_binom_p = 1.0 (always take max frameskip)
@@ -221,13 +220,15 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         terminaled = self.done
         truncated = False
 
-        if self.render_mode == "human":
+        if self.render_mode == 'human':
             self.render()
         return self.task.obs(), reward, cost, terminaled, truncated, info
 
     def render(self, camera_id=None, width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT):
-        assert self.render_mode, "Please specify the render mode when you make env."
-        assert not self.task.observe_vision, "When you use vision envs, you should not call this function explicitly."
+        assert self.render_mode, 'Please specify the render mode when you make env.'
+        assert (
+            not self.task.observe_vision
+        ), 'When you use vision envs, you should not call this function explicitly.'
         return self.engine.render(
             mode=self.render_mode, camera_id=camera_id, width=width, height=height, cost=self._cost
         )
