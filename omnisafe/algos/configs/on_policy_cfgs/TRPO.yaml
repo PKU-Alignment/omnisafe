@@ -12,7 +12,6 @@ defaults:
     num_mini_batches: 16
     pi_lr: 0.0003
     vf_lr: 0.001
-    cost_criteria: 1.0
     data_dir: "./runs"
     seed: 0
     ## Basic configurations for derived class Natural PG
@@ -24,15 +23,16 @@ defaults:
 
     # Optional Configuration
     ## Whether to use cost critic
-    use_cost_critic: False
-    linear_lr_decay: False
+    use_cost: False
+    cost_gamma: 1.0
     exploration_noise_anneal: True
+    standardized_obs: True
+    linear_lr_decay: False
     reward_penalty: False
     kl_early_stopping: False
     use_max_grad_norm: False
     max_grad_norm: 0.5
     scale_rewards: False
-    standardized_obs: True
     ## Configuration For Mode
     model_cfgs:
         shared_weights: False

@@ -181,8 +181,6 @@ class CPO(TRPO):
         c = ep_costs - self.cost_limit
         # Rescale, and add eps(small float) to avoid nan
         c /= self.logger.get_stats('Metrics/EpLen')[0] + eps  # rescale
-        self.logger.log(f'c = {c}')
-        self.logger.log(f'b^T b = {b_flat.dot(b_flat).item()}')
 
         # Set variable names as used in the paper with conjugate_gradient method,
         # used to solve equation(compute Hassen Matrix) instead of Natural Gradient
@@ -198,11 +196,6 @@ class CPO(TRPO):
             B = torch.zeros(1)
             optim_case = 4
         else:
-
-            self.logger.log(f'q={q.item()}')
-            self.logger.log(f'r={r.item()}')
-            self.logger.log(f's={s.item()}')
-            self.logger.log(f'r/c={(r / c).item()}')
             assert torch.isfinite(r).all()
             assert torch.isfinite(s).all()
 
@@ -306,6 +299,8 @@ class CPO(TRPO):
                 'PolicyRatio': pi_info['ratio'],
                 'Loss/Pi': self.loss_pi_before,
                 'Loss/DeltaPi': loss_pi.item() - self.loss_pi_before,
+                'Loss/Cost': 0.0,
+                'Loss/DeltaCost': 0.0,
                 'Misc/StopIter': 1,
                 'Misc/AcceptanceStep': accept_step,
                 'Misc/Alpha': alpha.item(),

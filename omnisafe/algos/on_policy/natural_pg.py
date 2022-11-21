@@ -71,7 +71,7 @@ class NaturalPG(PolicyGradient):
         self.update_policy_net(data)
         # Update Value Function
         self.update_value_net(data=data)
-        if self.cfgs.get('use_cost_critic', False):
+        if self.cfgs['use_cost']:
             self.update_cost_net(data=data)
         # Update running statistics, e.g. observation standardization
         # Note: observations from are raw outputs from environment

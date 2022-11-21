@@ -159,18 +159,6 @@ class PCPO(TRPO):
         q = xHx
         r = g_flat.dot(p)  # g^T H^{-1} b
         s = b_flat.dot(p)  # b^T H^{-1} b
-        """
-        q = torch.matmul(H_inv_g, approx_g)
-        print("q", q)
-
-        c = self.logger.get_stats('EpCost')[0] - self.cost_lim
-
-        H_inv_a = self.cg_solver(Hx, a)
-        approx_a = torch.tensor(Hx(H_inv_a))
-        s = torch.matmul(approx_a, H_inv_a)
-        x = torch.sqrt(2 * self.max_kl / (q+EPS)) * H_inv_g - torch.clamp_min((torch.sqrt(2 * self.max_kl/q) * s + c) / s, torch.tensor(0.0)) * H_inv_a
-        """
-        # x = torch.sqrt(2 * self.max_kl / (q+EPS)) * H_inv_g - torch.clamp_min((torch.sqrt(2 * self.max_kl/q) * s + c) / s, torch.tensor(0.0)) * H_inv_a
         step_dir = (
             torch.sqrt(2 * self.target_kl / (q + 1e-8)) * H_inv_g
             - torch.clamp_min((torch.sqrt(2 * self.target_kl / q) * r + c) / s, torch.tensor(0.0))

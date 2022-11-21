@@ -12,7 +12,6 @@ defaults:
     num_mini_batches: 16
     pi_lr: 0.0003
     vf_lr: 0.001
-    cost_criteria: 0.95
     data_dir: "./runs"
     ## Basic configurations for derived class FOCOPS
     target_kl: 0.01
@@ -25,7 +24,8 @@ defaults:
 
     # Optional Configuration
     ## Whether to use cost critic
-    use_cost_critic: True
+    use_cost: True
+    cost_gamma: 1.0
     linear_lr_decay: False
     exploration_noise_anneal: True
     reward_penalty: False

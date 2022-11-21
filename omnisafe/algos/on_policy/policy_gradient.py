@@ -24,9 +24,10 @@ class PolicyGradient(PolicyGradientBase):
         self.exp_name = exp_name
         self.data_dir = data_dir
         self.algo = algo
-        self.cost_criteria = cfgs.get('cost_criteria', 1.0)
+        self.use_cost = cfgs['use_cost']
+        self.cost_gamma = cfgs['cost_gamma']
         self.local_steps_per_epoch = cfgs['steps_per_epoch'] // distributed_tools.num_procs()
-        self.entropy_coef = cfgs.get('entropy_coef', 0.0)
+        self.entropy_coef = cfgs['entropy_coef']
         # Call assertions, Check if some variables are valid to experiment
         self._init_checks()
         # Set up logger and save configuration to disk
@@ -69,7 +70,7 @@ class PolicyGradient(PolicyGradientBase):
         self.vf_optimizer = core.get_optimizer(
             'Adam', module=self.ac.v, learning_rate=self.cfgs['vf_lr']
         )
-        if self.cfgs.get('use_cost_critic', False):
+        if self.cfgs['use_cost']:
             self.cf_optimizer = core.get_optimizer(
                 'Adam', module=self.ac.c, learning_rate=self.cfgs['vf_lr']
             )
@@ -92,10 +93,10 @@ class PolicyGradient(PolicyGradientBase):
 
     def _init_learning_rate_scheduler(self):
         scheduler = None
-        if self.cfgs.get('use_linear_lr_decay', False):
+        if self.cfgs['linear_lr_decay']:
             # Linear anneal
             def lm(epoch):
-                return 1 - epoch / self.epochs
+                return 1 - epoch / self.cfgs['epochs']
 
             scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=self.pi_optimizer, lr_lambda=lm)
         return scheduler
@@ -206,28 +207,25 @@ class PolicyGradient(PolicyGradientBase):
         for epoch in range(self.cfgs['epochs']):
             self.epoch_time = time.time()
             # Update internals of AC
-            if self.cfgs.get('use_exploration_noise_anneal', False):
-                self.ac.update(frac=epoch / self.epochs)
+            if self.cfgs['exploration_noise_anneal']:
+                self.ac.anneal_exploration(frac=epoch / self.cfgs['epochs'])
             if self.cfgs['buffer_cfgs']['reward_penalty']:
                 # Consider reward penalty parameter in reward calculation: r' = r - c
                 assert hasattr(self, 'lagrangian_multiplier')
                 assert hasattr(self, 'lambda_range_projection')
                 penalty_param = self.lambda_range_projection(self.lagrangian_multiplier)
             else:
-                penalty_param = 0
+                penalty_param = 0.0
+            # Collect data from environment
             self.env.roll_out(
                 self.ac,
                 self.buf,
                 self.logger,
                 self.local_steps_per_epoch,
                 penalty_param,
-                cost_criteria=self.cost_criteria,
+                use_cost=self.use_cost,
+                cost_gamma=self.cost_gamma,
             )
-
-            if self.algo == 'focops':
-                ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
-                self.update_lagrange_multiplier(ep_costs)
-
             # Update: actor, critic, running statistics
             self.update()
 
@@ -250,7 +248,7 @@ class PolicyGradient(PolicyGradientBase):
         total_env_steps = (epoch + 1) * self.cfgs['steps_per_epoch']
         fps = self.cfgs['steps_per_epoch'] / (time.time() - self.epoch_time)
         # Step the actor learning rate scheduler if provided
-        if self.scheduler and self.use_linear_lr_decay:
+        if self.scheduler and self.cfgs['linear_lr_decay']:
             current_lr = self.scheduler.get_last_lr()[0]
             self.scheduler.step()
         else:
@@ -265,13 +263,13 @@ class PolicyGradient(PolicyGradientBase):
         # self.logger.log_tabular('Metrics/EpLen', min_and_max=True)
         self.logger.log_tabular('Values/V', min_and_max=True)
         self.logger.log_tabular('Values/Adv', min_and_max=True)
-        if self.cfgs['use_cost_critic']:
+        if self.cfgs['use_cost']:
             self.logger.log_tabular('Values/C', min_and_max=True)
         self.logger.log_tabular('Loss/Pi', std=False)
         self.logger.log_tabular('Loss/Value')
         self.logger.log_tabular('Loss/DeltaPi')
         self.logger.log_tabular('Loss/DeltaValue')
-        if self.cfgs['use_cost_critic']:
+        if self.cfgs['use_cost']:
             self.logger.log_tabular('Loss/Cost')
             self.logger.log_tabular('Loss/DeltaCost')
         self.logger.log_tabular('Entropy')
@@ -285,7 +283,7 @@ class PolicyGradient(PolicyGradientBase):
             reward_scale_stddev = self.ac.ret_oms.std.item()
             self.logger.log_tabular('Misc/RewScaleMean', reward_scale_mean)
             self.logger.log_tabular('Misc/RewScaleStddev', reward_scale_stddev)
-        if self.cfgs.get('exploration_noise_anneal', False):
+        if self.cfgs['exploration_noise_anneal']:
             noise_std = np.exp(self.ac.pi.log_std[0].item())
             self.logger.log_tabular('Misc/ExplorationNoiseStd', noise_std)
         # Some child classes may add information to logs
@@ -346,7 +344,7 @@ class PolicyGradient(PolicyGradientBase):
         # Update critic using epoch data
         self.update_value_net(data=data)
         # Update cost critic using epoch data
-        if self.cfgs.get('use_cost_critic', False):
+        if self.cfgs['use_cost']:
             self.update_cost_net(data=data)
         # Update actor using epoch data
         self.update_policy_net(data=data)
@@ -379,9 +377,9 @@ class PolicyGradient(PolicyGradientBase):
             q_dist = self.ac.pi.dist(data['obs'])
             torch_kl = torch.distributions.kl.kl_divergence(self.p_dist, q_dist).mean().item()
 
-            if self.cfgs.get('kl_early_stopping', False):
+            if self.cfgs['kl_early_stopping']:
                 # Average KL for consistent early stopping across processes
-                if distributed_tools.mpi_avg(torch_kl) > 2.0:
+                if distributed_tools.mpi_avg(torch_kl) > self.cfgs['target_kl']:
                     self.logger.log(f'Reached ES criterion after {i+1} steps.')
                     break
 
@@ -436,11 +434,11 @@ class PolicyGradient(PolicyGradientBase):
         """Some child classes require additional updates,
         e.g. Lagrangian-PPO needs Lagrange multiplier parameter."""
         # Ensure we have some key components
-        assert self.cfgs['use_cost_critic']
+        assert self.cfgs['use_cost']
         assert hasattr(self, 'cf_optimizer')
         assert 'target_c' in data, f'provided keys: {data.keys()}'
 
-        if self.cfgs['use_cost_critic']:
+        if self.cfgs['use_cost']:
             self.loss_c_before = self.compute_loss_c(data['obs'], data['target_c']).item()
 
         # Divide whole local epoch data into mini_batches which is mbs size
