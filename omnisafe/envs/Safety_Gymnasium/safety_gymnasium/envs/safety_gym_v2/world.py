@@ -11,7 +11,6 @@ from safety_gymnasium.envs.safety_gym_v2.common import convert, rot2quat
 from safety_gymnasium.envs.safety_gym_v2.robot import Robot
 from safety_gymnasium.envs.safety_gym_v2.utils import get_body_xvelp
 
-
 # Default location to look for /xmls folder:
 BASE_DIR = os.path.dirname(safety_gymnasium.__file__)
 BASE_DIR = os.path.join(BASE_DIR, 'envs', 'safety_gym_v2')

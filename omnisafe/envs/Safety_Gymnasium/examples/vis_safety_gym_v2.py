@@ -1,11 +1,9 @@
 import argparse
-
-# import gymnasium
 import safety_gymnasium
 
 
 def run_random(env_name):
-    env = safety_gymnasium.make(env_name)
+    env = safety_gymnasium.make(env_name, render_mode='rgb_array')
     # env.seed(0)
     obs, _ = env.reset()
     terminled = False
@@ -27,12 +25,11 @@ def run_random(env_name):
 
         ep_ret += reward
         ep_cost += cost
-        env.render()
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', default='SafetyPointGoal2-v0')
+    parser.add_argument('--env', default='SafetyPointGoal0-v0')
     args = parser.parse_args()
     run_random(args.env)

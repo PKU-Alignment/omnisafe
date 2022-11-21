@@ -37,13 +37,7 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         'render_lidar_size': 0.025,
         'render_lidar_offset_init': 0.5,
         'render_lidar_offset_delta': 0.06,
-        # Vision observation parameters
-        'vision_size': (
-            60,
-            40,
-        ),  # Size (width, height) of vision observation; gets flipped internally to (rows, cols) format
-        'vision_render': True,  # Render vision observation in the viewer
-        'vision_render_size': (300, 200),  # Size to render the vision in the viewer
+
         # Frameskip is the number of physics simulation steps per environment step
         # Frameskip is sampled as a binomial distribution
         # For deterministic steps, set frameskip_binom_p = 1.0 (always take max frameskip)
@@ -51,7 +45,7 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         'frameskip_binom_p': 1.0,  # Probability of trial return (controls distribution)
     }
 
-    def __init__(self, config={}):
+    def __init__(self, config={}, **kwargs):
         # First, parse configuration. Important note: LOTS of stuff happens in
         # parse, and many attributes of the class get set through setattr. If you
         # are trying to track down where an attribute gets initially set, and
@@ -62,11 +56,12 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         self.get_config(config)
         self.task_id = config['task']['task_id']
         self.seed()
-        print('xxx')
 
         self._setup_simulation()
 
         self.done = True
+
+        self.render_mode = kwargs.get('render_mode', None)
 
     def get_config(self, config):
         """Parse a config dict - see self.DEFAULT for description"""
@@ -134,7 +129,6 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         self.first_reset = False  # Built our first world successfully
 
         # Return an observation
-
         return (self.task.obs(), info)
 
     def world_xy(self, pos):
@@ -227,11 +221,15 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         terminaled = self.done
         truncated = False
 
+        if self.render_mode == "human":
+            self.render()
         return self.task.obs(), reward, cost, terminaled, truncated, info
 
-    def render(self, mode='human', camera_id=None, width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT):
+    def render(self, camera_id=None, width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT):
+        assert self.render_mode, "Please specify the render mode when you make env."
+        assert not self.task.observe_vision, "When you use vision envs, you should not call this function explicitly."
         return self.engine.render(
-            mode=mode, camera_id=camera_id, width=width, height=height, cost=self._cost
+            mode=self.render_mode, camera_id=camera_id, width=width, height=height, cost=self._cost
         )
 
     @property
