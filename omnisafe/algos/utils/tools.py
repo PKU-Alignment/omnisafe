@@ -41,7 +41,6 @@ def get_default_kwargs_yaml(algo, env_id, on_policy=True):
     path = os.path.abspath(__file__).split('/')[:-2]
     dir_name = 'on_policy_cfgs' if on_policy else 'off_policy_cfgs'
     cfg_path = os.path.join('/', *path, 'configs', dir_name, f'{algo}.yaml')
-    print(cfg_path)
     with open(cfg_path, 'r', encoding='utf-8') as file:
         try:
             kwargs = yaml.load(file, Loader=yaml.FullLoader)

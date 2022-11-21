@@ -56,9 +56,14 @@ class FOCOPS(PolicyGradient, Lagrange):
     def update(self):
         raw_data = self.buf.get()
         data = self.pre_process_data(raw_data)
-        self.fvp_obs = data['obs'][::4]
+        # First update Lagrange multiplier parameter
+        ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
+        self.update_lagrange_multiplier(ep_costs)
+        # Then update policy network
         self.update_policy_net(data=data)
+        # Update value network
         self.update_value_net(data=data)
+        # Update cost network
         self.update_cost_net(data=data)
         self.update_running_statistics(raw_data)
 
@@ -143,11 +148,11 @@ class FOCOPS(PolicyGradient, Lagrange):
         """Some child classes require additional updates,
         e.g. Lagrangian-PPO needs Lagrange multiplier parameter."""
         # Ensure we have some key components
-        assert self.cfgs['use_cost_critic']
+        assert self.cfgs['use_cost']
         assert hasattr(self, 'cf_optimizer')
         assert 'target_c' in data, f'provided keys: {data.keys()}'
 
-        if self.cfgs['use_cost_critic']:
+        if self.cfgs['use_cost']:
             self.loss_c_before = self.compute_loss_c(data['obs'], data['target_c']).item()
 
         # Divide whole local epoch data into mini_batches which is mbs size

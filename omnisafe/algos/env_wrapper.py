@@ -54,7 +54,9 @@ class EnvWrappers:
         return next_obs, reward, cost, terminated, truncated, info
 
     # pylint: disable=R0913,R0914
-    def roll_out(self, agent, buf, logger, local_steps_per_epoch, penalty_param, cost_criteria):
+    def roll_out(
+        self, agent, buf, logger, local_steps_per_epoch, penalty_param, use_cost, cost_gamma
+    ):
         """collect data and store to experience buffer."""
         # pylint: disable=W0612
         obs, info = self.env.reset()
@@ -65,8 +67,7 @@ class EnvWrappers:
             action, value, cost_value, logp = agent.step(torch.as_tensor(obs, dtype=torch.float32))
             next_obs, reward, cost, done, truncated, info = self.step(action)
             ep_ret += reward
-            if cost_criteria is not None:
-                ep_costs += (cost_criteria**ep_len) * cost
+            ep_costs += (cost_gamma**ep_len) * cost
             ep_len += 1
 
             # Save and log
@@ -84,7 +85,7 @@ class EnvWrappers:
             )
 
             # Store values for statistic purpose
-            if cost_criteria is not None:
+            if use_cost == True:
                 logger.store(**{'Values/V': value, 'Values/C': cost_value})
             else:
                 logger.store(**{'Values/V': value})
@@ -123,7 +124,7 @@ class EnvWrappers:
         self.deterministic = determinstic
         self.max_ep_len = max_ep_len
 
-    def roll_out_off(self, ac, buf, logger, use_cost_critic):
+    def roll_out_off(self, ac, buf, logger, use_cost):
         """collect data and store to experience buffer."""
         # c_gamma_step = 0
         for t in range(self.ep_steps):
@@ -133,7 +134,7 @@ class EnvWrappers:
             o = self.curr_o
             a, v, cv, logp = ac.step(torch.as_tensor(o, dtype=torch.float32), self.deterministic)
             # Store values for statistic purpose
-            if use_cost_critic:
+            if use_cost:
                 logger.store(**{'Values/V': v, 'Values/C': cv})
             else:
                 logger.store(**{'Values/V': v})

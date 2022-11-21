@@ -12,21 +12,22 @@ defaults:
     pi_lr: 0.0003
     vf_lr: 0.001
     target_kl: 0.01
-    cost_criteria: 0.95
     data_dir: "./runs"
     seed: 0
 
     # Optional Configuration
     ## Whether to use cost critic
-    use_cost_critic: True
-    linear_lr_decay: False
+    use_cost: True
+    cost_gamma: 1.0
     exploration_noise_anneal: True
-    reward_penalty: False
     kl_early_stopping: True
+    standardized_obs: True
+    linear_lr_decay: False
+    reward_penalty: False
     use_max_grad_norm: False
     max_grad_norm: 0.5
     scale_rewards: False
-    standardized_obs: False
+
     ## Configuration For Mode
     model_cfgs:
         shared_weights: False
@@ -47,6 +48,7 @@ defaults:
         standardized_reward: True
         standardized_cost: True
         reward_penalty: False
+    ## Configuration For Lagrange
     lagrange_cfgs:
         cost_limit: 25.0
         lagrangian_multiplier_init: 0.001
