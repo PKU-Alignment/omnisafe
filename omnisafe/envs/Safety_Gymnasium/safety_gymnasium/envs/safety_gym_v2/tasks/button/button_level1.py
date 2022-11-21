@@ -92,7 +92,7 @@ class ButtonLevel1(ButtonLevel0):
 
         # if not self.observe_vision:
         #    world_config['render_context'] = -1  # Hijack this so we don't create context
-        # world_config['observe_vision'] = self.observe_vision
+        world_config['observe_vision'] = self.observe_vision
 
         # Extra objects to add to the scene
         world_config['objects'] = {}
@@ -139,38 +139,41 @@ class ButtonLevel1(ButtonLevel0):
 
         # if self.observe_goal_lidar:
         obs_space_dict['goal_lidar'] = gymnasium.spaces.Box(
-            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float32
+            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
 
         # if self.observe_hazards:
         obs_space_dict['hazards_lidar'] = gymnasium.spaces.Box(
-            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float32
+            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
 
         # if self.gremlins_num and self.observe_gremlins:
         obs_space_dict['gremlins_lidar'] = gymnasium.spaces.Box(
-            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float32
+            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
 
         # if self.buttons_num and self.observe_buttons:
         obs_space_dict['buttons_lidar'] = gymnasium.spaces.Box(
-            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float32
+            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
 
-        # if self.observe_vision:
-        #     width, height = self.vision_size
-        #     rows, cols = height, width
-        #     self.vision_size = (rows, cols)
-        #     obs_space_dict['vision'] = gym.spaces.Box(0, 1.0, self.vision_size + (3,), dtype=np.float32)
+        if self.observe_vision:
+            width, height = self.vision_size
+            rows, cols = height, width
+            self.vision_size = (rows, cols)
+            obs_space_dict['vision'] = gymnasium.spaces.Box(
+                0, 255, self.vision_size + (3,), dtype=np.uint8
+            )
+
         # Flatten it ourselves
         self.obs_space_dict = obs_space_dict
-        # if self.observation_flatten:
-        self.obs_flat_size = sum([np.prod(i.shape) for i in self.obs_space_dict.values()])
-        self.observation_space = gymnasium.spaces.Box(
-            -np.inf, np.inf, (self.obs_flat_size,), dtype=np.float64
-        )
-        # else:
-        #     self.observation_space = gym.spaces.Dict(obs_space_dict)
+        if self.observation_flatten:
+            self.obs_flat_size = sum([np.prod(i.shape) for i in self.obs_space_dict.values()])
+            self.observation_space = gymnasium.spaces.Box(
+                -np.inf, np.inf, (self.obs_flat_size,), dtype=np.float64
+            )
+        else:
+            self.observation_space = gymnasium.spaces.Dict(obs_space_dict)
 
     def obs(self):
         """Return the observation of our agent"""
@@ -195,15 +198,15 @@ class ButtonLevel1(ButtonLevel0):
         else:
             obs['buttons_lidar'] = np.zeros(self.lidar_num_bins)
 
-        # if self.observe_vision:
-        #     obs['vision'] = self.obs_vision()
-        # if self.observation_flatten:
-        flat_obs = np.zeros(self.obs_flat_size)
-        offset = 0
-        for k in sorted(self.obs_space_dict.keys()):
-            k_size = np.prod(obs[k].shape)
-            flat_obs[offset : offset + k_size] = obs[k].flat
-            offset += k_size
-        obs = flat_obs
-        assert self.observation_space.contains(obs), f'Bad obs {obs} {self.observation_space}'
+        if self.observe_vision:
+            obs['vision'] = self.obs_vision()
+        if self.observation_flatten:
+            flat_obs = np.zeros(self.obs_flat_size)
+            offset = 0
+            for k in sorted(self.obs_space_dict.keys()):
+                k_size = np.prod(obs[k].shape)
+                flat_obs[offset : offset + k_size] = obs[k].flat
+                offset += k_size
+            obs = flat_obs
+            assert self.observation_space.contains(obs), f'Bad obs {obs} {self.observation_space}'
         return obs

@@ -103,16 +103,16 @@ class GoalLevel1(GoalLevel0):
 
         for sensor in self.sensors_obs:  # Explicitly listed sensors
             dim = self.robot.sensor_dim[sensor]
-            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (dim,), dtype=np.float32)
+            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (dim,), dtype=np.float64)
         # Velocities don't have wraparound effects that rotational positions do
         # Wraparounds are not kind to neural networks
         # Whereas the angle 2*pi is very close to 0, this isn't true in the network
         # In theory the network could learn this, but in practice we simplify it
         # when the sensors_angle_components switch is enabled.
         for sensor in self.robot.hinge_vel_names:
-            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (1,), dtype=np.float32)
+            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (1,), dtype=np.float64)
         for sensor in self.robot.ballangvel_names:
-            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (3,), dtype=np.float32)
+            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (3,), dtype=np.float64)
         # Angular positions have wraparound effects, so output something more friendly
         if self.sensors_angle_components:
             # Single joints are turned into sin(x), cos(x) pairs
@@ -120,7 +120,7 @@ class GoalLevel1(GoalLevel0):
             # Since for angles, small perturbations in angle give small differences in sin/cos
             for sensor in self.robot.hinge_pos_names:
                 obs_space_dict[sensor] = gymnasium.spaces.Box(
-                    -np.inf, np.inf, (2,), dtype=np.float32
+                    -np.inf, np.inf, (2,), dtype=np.float64
                 )
             # Quaternions are turned into 3x3 rotation matrices
             # Quaternions have a wraparound issue in how they are normalized,
@@ -134,43 +134,51 @@ class GoalLevel1(GoalLevel0):
             # Instead we use a 3x3 rotation matrix, which if normalized, smoothly varies as well.
             for sensor in self.robot.ballquat_names:
                 obs_space_dict[sensor] = gymnasium.spaces.Box(
-                    -np.inf, np.inf, (3, 3), dtype=np.float32
+                    -np.inf, np.inf, (3, 3), dtype=np.float64
                 )
         else:
             # Otherwise include the sensor without any processing
             # TODO: comparative study of the performance with and without this feature.
             for sensor in self.robot.hinge_pos_names:
                 obs_space_dict[sensor] = gymnasium.spaces.Box(
-                    -np.inf, np.inf, (1,), dtype=np.float32
+                    -np.inf, np.inf, (1,), dtype=np.float64
                 )
             for sensor in self.robot.ballquat_names:
                 obs_space_dict[sensor] = gymnasium.spaces.Box(
-                    -np.inf, np.inf, (4,), dtype=np.float32
+                    -np.inf, np.inf, (4,), dtype=np.float64
                 )
 
         # if self.observe_goal_lidar:
         obs_space_dict['goal_lidar'] = gymnasium.spaces.Box(
-            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float32
+            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
 
         # if self.observe_hazards:
         obs_space_dict['hazards_lidar'] = gymnasium.spaces.Box(
-            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float32
+            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
         # if self.observe_vases:
         obs_space_dict['vases_lidar'] = gymnasium.spaces.Box(
-            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float32
+            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
+
+        if self.observe_vision:
+            width, height = self.vision_size
+            rows, cols = height, width
+            self.vision_size = (rows, cols)
+            obs_space_dict['vision'] = gymnasium.spaces.Box(
+                0, 255, self.vision_size + (3,), dtype=np.uint8
+            )
 
         # Flatten it ourselves
         self.obs_space_dict = obs_space_dict
-        # if self.observation_flatten:
-        self.obs_flat_size = sum([np.prod(i.shape) for i in self.obs_space_dict.values()])
-        self.observation_space = gymnasium.spaces.Box(
-            -np.inf, np.inf, (self.obs_flat_size,), dtype=np.float64
-        )
-        # else:
-        #     self.observation_space = gym.spaces.Dict(obs_space_dict)
+        if self.observation_flatten:
+            self.obs_flat_size = sum([np.prod(i.shape) for i in self.obs_space_dict.values()])
+            self.observation_space = gymnasium.spaces.Box(
+                -np.inf, np.inf, (self.obs_flat_size,), dtype=np.float64
+            )
+        else:
+            self.observation_space = gymnasium.spaces.Dict(obs_space_dict)
 
     def obs(self):
         """Return the observation of our agent"""
@@ -187,13 +195,15 @@ class GoalLevel1(GoalLevel0):
         # if self.observe_vases:
         obs['vases_lidar'] = self.obs_lidar(self.vases_pos, GROUP['vase'])
 
-        # if self.observation_flatten:
-        flat_obs = np.zeros(self.obs_flat_size)
-        offset = 0
-        for k in sorted(self.obs_space_dict.keys()):
-            k_size = np.prod(obs[k].shape)
-            flat_obs[offset : offset + k_size] = obs[k].flat
-            offset += k_size
-        obs = flat_obs
-        assert self.observation_space.contains(obs), f'Bad obs {obs} {self.observation_space}'
+        if self.observe_vision:
+            obs['vision'] = self.obs_vision()
+        if self.observation_flatten:
+            flat_obs = np.zeros(self.obs_flat_size)
+            offset = 0
+            for k in sorted(self.obs_space_dict.keys()):
+                k_size = np.prod(obs[k].shape)
+                flat_obs[offset : offset + k_size] = obs[k].flat
+                offset += k_size
+            obs = flat_obs
+            assert self.observation_space.contains(obs), f'Bad obs {obs} {self.observation_space}'
         return obs

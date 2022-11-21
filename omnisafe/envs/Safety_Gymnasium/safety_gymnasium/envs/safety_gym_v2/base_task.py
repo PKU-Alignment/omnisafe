@@ -44,14 +44,17 @@ class BaseTask(abc.ABC):
         # otherwise, raise a python exception.
         # TODO: randomize starting joint positions
 
+        self.observe_vision = False
+        self.observation_flatten = True
+
         # # Vision observation parameters
         # TODO JJM
         self.vision_size = (
             60,
             40,
         )  # Size (width, height) of vision observation; gets flipped internally to (rows, cols) format
-        # self.vision_render = True  # Render vision observation in the viewer
-        # self.vision_render_size = (300, 200)  # Size to render the vision in the viewer
+        self.vision_render = True  # Render vision observation in the viewer
+        self.vision_render_size = (300, 200)  # Size to render the vision in the viewer
 
         # Lidar observation parameters
         self.lidar_num_bins = 16  # Bins (around a full circle) for lidar sensing
@@ -354,8 +357,8 @@ class BaseTask(abc.ABC):
         # Get a render context so we can
         rows, cols = self.vision_size
         width, height = cols, rows
-        vision = self.sim.render(width, height, camera_name='vision', mode='offscreen')
-        return np.array(vision, dtype='float32') / 255
+        vision = self.engine.render(width, height, mode='rgb_array', camera_name='vision', cost={})
+        return vision
 
     def obs_lidar(self, positions, group):
         """
@@ -477,16 +480,16 @@ class BaseTask(abc.ABC):
         # if self.observe_sensors:
         for sensor in self.sensors_obs:  # Explicitly listed sensors
             dim = self.robot.sensor_dim[sensor]
-            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (dim,), dtype=np.float32)
+            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (dim,), dtype=np.float64)
         # Velocities don't have wraparound effects that rotational positions do
         # Wraparounds are not kind to neural networks
         # Whereas the angle 2*pi is very close to 0, this isn't true in the network
         # In theory the network could learn this, but in practice we simplify it
         # when the sensors_angle_components switch is enabled.
         for sensor in self.robot.hinge_vel_names:
-            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (1,), dtype=np.float32)
+            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (1,), dtype=np.float64)
         for sensor in self.robot.ballangvel_names:
-            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (3,), dtype=np.float32)
+            obs_space_dict[sensor] = gymnasium.spaces.Box(-np.inf, np.inf, (3,), dtype=np.float64)
         # Angular positions have wraparound effects, so output something more friendly
         if self.sensors_angle_components:
             # Single joints are turned into sin(x), cos(x) pairs
@@ -494,7 +497,7 @@ class BaseTask(abc.ABC):
             # Since for angles, small perturbations in angle give small differences in sin/cos
             for sensor in self.robot.hinge_pos_names:
                 obs_space_dict[sensor] = gymnasium.spaces.Box(
-                    -np.inf, np.inf, (2,), dtype=np.float32
+                    -np.inf, np.inf, (2,), dtype=np.float64
                 )
             # Quaternions are turned into 3x3 rotation matrices
             # Quaternions have a wraparound issue in how they are normalized,
@@ -508,18 +511,18 @@ class BaseTask(abc.ABC):
             # Instead we use a 3x3 rotation matrix, which if normalized, smoothly varies as well.
             for sensor in self.robot.ballquat_names:
                 obs_space_dict[sensor] = gymnasium.spaces.Box(
-                    -np.inf, np.inf, (3, 3), dtype=np.float32
+                    -np.inf, np.inf, (3, 3), dtype=np.float64
                 )
         else:
             # Otherwise include the sensor without any processing
             # TODO: comparative study of the performance with and without this feature.
             for sensor in self.robot.hinge_pos_names:
                 obs_space_dict[sensor] = gymnasium.spaces.Box(
-                    -np.inf, np.inf, (1,), dtype=np.float32
+                    -np.inf, np.inf, (1,), dtype=np.float64
                 )
             for sensor in self.robot.ballquat_names:
                 obs_space_dict[sensor] = gymnasium.spaces.Box(
-                    -np.inf, np.inf, (4,), dtype=np.float32
+                    -np.inf, np.inf, (4,), dtype=np.float64
                 )
 
         return obs_space_dict

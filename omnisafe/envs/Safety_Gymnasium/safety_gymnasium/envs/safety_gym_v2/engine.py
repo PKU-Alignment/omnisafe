@@ -27,7 +27,7 @@ class Engine:
         self.task = task
 
         self.robot = Robot(self.robot_base)
-        self.action_space = gymnasium.spaces.Box(-1, 1, (self.robot.nu,), dtype=np.float32)
+        self.action_space = gymnasium.spaces.Box(-1, 1, (self.robot.nu,), dtype=np.float64)
         self.placements = self.task.build_placements_dict()
         # self.world = self.get_world()
         self.clear()
@@ -295,46 +295,42 @@ class Engine:
         #     self.viewer.draw_pixels(self.save_obs_vision, 0, 0)
         pass
 
-    def render(self, width, height, mode='human', camera_id=None, camera_name=None, cost={}):
+    def render(self, width, height, mode, camera_id=None, camera_name=None, cost={}):
         """Render the environment to the screen"""
         self.model.vis.global_.offwidth = width
         self.model.vis.global_.offheight = height
 
-        if camera_id is not None and camera_name is not None:
-            raise ValueError('Both camera_id and camera_name cannot be specified at the same time.')
+        if mode in {
+            'rgb_array',
+            'depth_array',
+        }:
 
-        if mode == 'rgb_array':
+            if camera_id is not None and camera_name is not None:
+                raise ValueError(
+                    'Both `camera_id` and `camera_name` cannot be' ' specified at the same time.'
+                )
+
+            no_camera_specified = camera_name is None and camera_id is None
+            if no_camera_specified:
+                camera_id = 3
+
+            if camera_id is None:
+                camera_id = mujoco.mj_name2id(
+                    self.model,
+                    mujoco.mjtObj.mjOBJ_CAMERA,
+                    camera_name,
+                )
+
+                self._get_viewer(mode).render(camera_id=camera_id)
+
+        if mode == 'human':
             self._get_viewer(mode)
-            self.viewer._hide_overlay = True
-            camera_id = 3
-            self.viewer.cam.fixedcamid = camera_id  # self.model.camera_name2id(mode)
-            self.viewer.cam.type = mujoco.mjtCamera.mjCAMERA_FIXED
-        elif mode == 'depth_array':
-            self._get_viewer(mode)
-            self.viewer._hide_overlay = True
-            camera_id = 3
-            self.viewer.cam.fixedcamid = camera_id  # self.model.camera_name2id(mode)
-            self.viewer.cam.type = mujoco.mjtCamera.mjCAMERA_FIXED
-        elif mode == 'human':
-            self._get_viewer(mode)
-            self.viewer.cam.fixedcamid = -1
             self.viewer.cam.type = mujoco.mjtCamera.mjCAMERA_FREE
 
         self.viewer.render_swap_callback = self.render_swap_callback
         # Turn all the geom groups on
         self.viewer.vopt.geomgroup[:] = 1
         # self.viewer.update_sim(self.sim)
-
-        if camera_id is not None:
-            # Update camera if desired
-            self.viewer.cam.fixedcamid = camera_id
-        elif camera_name is not None:
-            camera_id = mujoco.mj_name2id(
-                self.model,
-                mujoco.mjtObj.mjOBJ_CAMERA,
-                camera_name,
-            )
-            self.viewer.cam.fixedcamid = camera_id
 
         # Lidar markers
         if self.render_lidar_markers:
@@ -428,8 +424,8 @@ class Engine:
     def _get_viewer(
         self, mode
     ) -> Union[
-        'gym.envs.mujoco.mujoco_rendering.Viewer',
-        'gym.envs.mujoco.mujoco_rendering.RenderContextOffscreen',
+        'gymnasium.envs.mujoco.mujoco_rendering.Viewer',
+        'gymnasium.envs.mujoco.mujoco_rendering.RenderContextOffscreen',
     ]:
         self.viewer = self._viewers.get(mode)
         if self.viewer is None:

@@ -29,7 +29,7 @@ ROBOT_OVERRIDES = {
     },
 }
 
-MAKE_VISION_ENVIRONMENTS = False
+MAKE_VISION_ENVIRONMENTS = True
 
 # ========================================#
 # Helper Class for Easy Gym Registration #
@@ -81,7 +81,7 @@ class SafexpEnvBase:
 
             if MAKE_VISION_ENVIRONMENTS:
                 # Vision: note, these environments are experimental! Correct behavior not guaranteed
-                vision_env_name = f'{self.prefix}-{robot_name}{self.name + name}Vision-{VERSION}'
+                vision_env_name = f'{self.prefix}{robot_name}{self.name + name}Vision-{VERSION}'
                 vision_config = {
                     'world': {},
                     'task': {
