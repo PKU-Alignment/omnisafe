@@ -4,7 +4,7 @@ import safety_gymnasium
 
 
 def run_random(env_name):
-    env = safety_gymnasium.make(env_name, render_mode='rgb_array')
+    env = safety_gymnasium.make(env_name, render_mode='human')
     # env.seed(0)
     obs, _ = env.reset()
     terminled = False
