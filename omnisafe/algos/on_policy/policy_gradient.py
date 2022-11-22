@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import numpy as np
 import torch
-
+from collections import deque
 import omnisafe.algos.utils.distributed_tools as distributed_tools
 from omnisafe.algos.common.buffer import Buffer
 from omnisafe.algos.common.logger import Logger
@@ -28,6 +28,7 @@ class PolicyGradient(PolicyGradientBase):
         self.cost_gamma = cfgs['cost_gamma']
         self.local_steps_per_epoch = cfgs['steps_per_epoch'] // distributed_tools.num_procs()
         self.entropy_coef = cfgs['entropy_coef']
+        self.Jc_queue = deque(maxlen=100)
         # Call assertions, Check if some variables are valid to experiment
         self._init_checks()
         # Set up logger and save configuration to disk
@@ -226,12 +227,20 @@ class PolicyGradient(PolicyGradientBase):
                 use_cost=self.use_cost,
                 cost_gamma=self.cost_gamma,
             )
+            self.env.evalution(
+                self.ac,
+                self.buf,
+                self.logger,
+                self.local_steps_per_epoch,
+                penalty_param,
+                use_cost=self.use_cost,
+                cost_gamma=self.cost_gamma,
+            )
             # Update: actor, critic, running statistics
             self.update()
 
             # Log and store information
             self.log(epoch)
-
             # Check if all models own the same parameter values
             if epoch % self.cfgs['check_freq'] == 0:
                 self.check_distributed_parameters()
@@ -242,6 +251,7 @@ class PolicyGradient(PolicyGradientBase):
         # Close opened files to avoid number of open files overflow
         self.logger.close()
         return self.ac
+
 
     def log(self, epoch: int):
         # Log info about epoch
@@ -256,8 +266,11 @@ class PolicyGradient(PolicyGradientBase):
 
         self.logger.log_tabular('Epoch', epoch + 1)
         self.logger.log_tabular('Metrics/EpRet')
-        self.logger.log_tabular('Metrics/EpCosts')
+        self.logger.log_tabular('Metrics/EpCost')
         self.logger.log_tabular('Metrics/EpLen')
+        self.logger.log_tabular('Evaluation/EpRet')
+        self.logger.log_tabular('Evaluation/EpCost')
+        self.logger.log_tabular('Evaluation/EpLen')
         # self.logger.log_tabular('Metrics/EpRet', min_and_max=True, std=True)
         # self.logger.log_tabular('Metrics/EpCosts', min_and_max=True, std=True)
         # self.logger.log_tabular('Metrics/EpLen', min_and_max=True)

@@ -112,7 +112,45 @@ class EnvWrappers:
                         **{
                             'Metrics/EpRet': ep_ret,
                             'Metrics/EpLen': ep_len,
-                            'Metrics/EpCosts': ep_costs,
+                            'Metrics/EpCost': ep_costs,
+                        }
+                    )
+                ep_ret, ep_costs, ep_len = 0.0, 0.0, 0
+                obs, info = self.env.reset()
+
+    def evalution(self, agent, buf, logger, local_steps_per_epoch, penalty_param, use_cost, cost_gamma):
+        obs, info = self.env.reset()
+        ep_ret, ep_costs, ep_len = 0.0, 0.0, 0
+        for step_i in range(local_steps_per_epoch):
+            action, value, cost_value, logp = agent.step(torch.as_tensor(obs, dtype=torch.float32), deterministic=True)
+            next_obs, reward, cost, done, truncated, info = self.step(action)
+            ep_ret += reward
+            ep_costs += (cost_gamma**ep_len) * cost
+            ep_len += 1
+
+            # Update observation
+            obs = next_obs
+
+            timeout = ep_len == self.max_ep_len
+            terminal = done or timeout or truncated
+            epoch_ended = step_i == local_steps_per_epoch - 1
+
+            if terminal or epoch_ended:
+                if timeout or epoch_ended:
+                    _, value, cost_value, _ = agent(torch.as_tensor(obs, dtype=torch.float32))
+                else:
+                    value, cost_value = 0.0, 0.0
+
+                # Automatically compute GAE in buffer
+                buf.finish_path(value, cost_value, penalty_param=float(penalty_param))
+
+                # Only save EpRet / EpLen if trajectory finished
+                if terminal:
+                    logger.store(
+                        **{
+                            'Evaluation/EpRet': ep_ret,
+                            'Evaluation/EpLen': ep_len,
+                            'Evaluation/EpCost': ep_costs,
                         }
                     )
                 ep_ret, ep_costs, ep_len = 0.0, 0.0, 0

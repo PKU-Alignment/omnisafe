@@ -56,5 +56,5 @@ defaults:
     lagrange_cfgs:
         cost_limit: 25.0
         lagrangian_multiplier_init: 0.001
-        lambda_lr: 0.035
+        lambda_lr: 0.05
         lambda_optimizer: 'Adam'

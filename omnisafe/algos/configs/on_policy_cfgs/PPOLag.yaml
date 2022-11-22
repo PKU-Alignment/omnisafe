@@ -54,3 +54,60 @@ defaults:
         lagrangian_multiplier_init: 0.001
         lambda_lr: 0.035
         lambda_optimizer: 'Adam'
+
+SafetyPointGoal1-v0:
+# Basic Configurations
+    epochs: 1000
+    steps_per_epoch: 10000
+    pi_iters: 60
+    critic_iters: 30
+    check_freq: 25
+    save_freq: 100
+    entropy_coef: 0.01
+    max_ep_len: 1000
+    num_mini_batches: 16
+    pi_lr: 0.0003
+    vf_lr: 0.001
+    target_kl: 0.01
+    data_dir: "./runs"
+    seed: 0
+
+    # Optional Configuration
+    ## Whether to use cost critic
+    use_cost: True
+    cost_gamma: 1.0
+    exploration_noise_anneal: True
+    kl_early_stopping: True
+    standardized_obs: True
+    linear_lr_decay: False
+    reward_penalty: False
+    use_max_grad_norm: False
+    max_grad_norm: 0.5
+    scale_rewards: False
+
+    ## Configuration For Mode
+    model_cfgs:
+        shared_weights: False
+        weight_initialization_mode: 'kaiming_uniform'
+        ac_kwargs:
+            pi:
+                hidden_sizes: [64, 64]
+                activation: tanh
+            val:
+                hidden_sizes: [64, 64]
+                activation: tanh
+    ## Configuration For Buffer
+    buffer_cfgs:
+        gamma: 0.99
+        lam: 0.95
+        lam_c: 0.95
+        adv_estimation_method: gae
+        standardized_reward: True
+        standardized_cost: True
+        reward_penalty: False
+    ## Configuration For Lagrange
+    lagrange_cfgs:
+        cost_limit: 25.0
+        lagrangian_multiplier_init: 0.001
+        lambda_lr: 0.1
+        lambda_optimizer: 'Adam'

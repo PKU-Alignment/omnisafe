@@ -4,6 +4,142 @@ from safety_gymnasium.envs.registration import register
 from safety_gymnasium.envs.safety_gym_v2.utils import update_dict_from
 
 
+# Safety Velocity
+# ----------------------------------------
+register(
+    id="SafetyHalfCheetahVelocity-v4",
+    entry_point="safety_gymnasium.envs.safety_velocity.safety_half_cheetah_velocity:SafetyHalfCheetahVelocityEnv",
+    max_episode_steps=1000,
+    reward_threshold=4800.0,
+)
+
+register(
+    id="SafetyHopperVelocity-v4",
+    entry_point="safety_gymnasium.envs.safety_velocity.safety_hopper_velocity:SafetyHopperVelocityEnv",
+    max_episode_steps=1000,
+    reward_threshold=3800.0,
+)
+
+register(
+    id="SafetySwimmerVelocity-v4",
+    entry_point="safety_gymnasium.envs.safety_velocity.safety_swimmer_velocity:SafetySwimmerVelocityEnv",
+    max_episode_steps=1000,
+    reward_threshold=360.0,
+)
+
+register(
+    id="SafetyWalker2dVelocity-v4",
+    max_episode_steps=1000,
+    entry_point="safety_gymnasium.envs.safety_velocity.safety_walker2d_velocity:SafetyWalker2dVelocityEnv",
+)
+
+register(
+    id='SafetyAntVelocity-v4',
+    entry_point='safety_gymnasium.envs.safety_velocity.safety_ant_velocity:SafetyAntVelocityEnv',
+    max_episode_steps=1000,
+    reward_threshold=6000.0,
+)
+register(
+    id="SafetyHumanoidVelocity-v4",
+    entry_point="safety_gymnasium.envs.safety_velocity.safety_humanoid_velocity:SafetyHumanoidVelocityEnv",
+    max_episode_steps=1000,
+)
+
+# Safety Circle
+# ----------------------------------------
+
+register(
+    id='SafetyAntCircle0-v0',
+    entry_point='safety_gymnasium.envs.safety_circle.ant_circle:SafetyAntCircleEnv',
+    max_episode_steps=1000,
+    reward_threshold=6000.0,
+    kwargs={'level': 0}
+)
+
+register(
+    id='SafetyAntCircle1-v0',
+    entry_point='safety_gymnasium.envs.safety_circle.ant_circle:SafetyAntCircleEnv',
+    max_episode_steps=1000,
+    reward_threshold=6000.0,
+    kwargs={'level': 1}
+)
+
+register(
+    id='SafetyAntCircle2-v0',
+    entry_point='safety_gymnasium.envs.safety_circle.ant_circle:SafetyAntCircleEnv',
+    max_episode_steps=1000,
+    reward_threshold=6000.0,
+    kwargs={'level': 2}
+)
+
+register(
+    id='SafetyHumanoidCircle0-v0',
+    entry_point='safety_gymnasium.envs.safety_circle.humanoid_circle:SafetyHumanoidCircleEnv',
+    max_episode_steps=1000,
+    kwargs={'level': 0}
+)
+
+register(
+    id='SafetyHumanoidCircle1-v0',
+    entry_point='safety_gymnasium.envs.safety_circle.humanoid_circle:SafetyHumanoidCircleEnv',
+    max_episode_steps=1000,
+    kwargs={'level': 1}
+)
+
+register(
+    id='SafetyHumanoidCircle2-v0',
+    entry_point='safety_gymnasium.envs.safety_circle.humanoid_circle:SafetyHumanoidCircleEnv',
+    max_episode_steps=1000,
+    kwargs={'level': 2}
+)
+
+register(
+    id='SafetySwimmerCircle0-v0',
+    entry_point='safety_gymnasium.envs.safety_circle.swimmer_circle:SafetySwimmerCircleEnv',
+    max_episode_steps=1000,
+    reward_threshold=360.0,
+    kwargs={'level': 0}
+)
+
+register(
+    id='SafetySwimmerCircle1-v0',
+    entry_point='safety_gymnasium.envs.safety_circle.swimmer_circle:SafetySwimmerCircleEnv',
+    max_episode_steps=1000,
+    reward_threshold=360.0,
+    kwargs={'level': 1}
+)
+
+register(
+    id='SafetySwimmerCircle2-v0',
+    entry_point='safety_gymnasium.envs.safety_circle.swimmer_circle:SafetySwimmerCircleEnv',
+    max_episode_steps=1000,
+    reward_threshold=360.0,
+    kwargs={'level': 2}
+)
+# Safety Run
+# ----------------------------------------
+
+register(
+    id='SafetyAntRun-v0',
+    entry_point='safety_gymnasium.envs.safety_run.ant_run:SafetyAntRunEnv',
+    max_episode_steps=1000,
+    reward_threshold=6000.0,
+)
+
+register(
+    id='SafetyHumanoidRun-v0',
+    entry_point='safety_gymnasium.envs.safety_run.humanoid_run:SafetyHumanoidRunEnv',
+    max_episode_steps=1000,
+)
+
+register(
+    id='SafetySwimmerRun-v0',
+    entry_point='safety_gymnasium.envs.safety_run.swimmer_run:SafetySwimmerRunEnv',
+    max_episode_steps=1000,
+    reward_threshold=360.0,
+)
+
+
 VERSION = 'v0'
 
 ROBOT_NAMES = ('Point', 'Car')

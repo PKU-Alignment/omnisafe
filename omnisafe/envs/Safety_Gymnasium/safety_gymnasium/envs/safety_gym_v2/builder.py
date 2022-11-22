@@ -1,6 +1,5 @@
 """builder"""
 from copy import deepcopy
-
 import gymnasium
 import gymnasium.spaces
 import numpy as np
@@ -8,11 +7,6 @@ from safety_gymnasium.envs.safety_gym_v2 import tasks
 from safety_gymnasium.envs.safety_gym_v2.base_task import BaseTask
 from safety_gymnasium.envs.safety_gym_v2.common import ResamplingError, quat2zalign
 from safety_gymnasium.envs.safety_gym_v2.engine import Engine
-
-
-# from safety_gymnasium.envs.safety_gym_v2 import bases, tasks
-
-
 # Constant defaults for rendering frames for humans (not used for vision)
 DEFAULT_WIDTH = 256
 DEFAULT_HEIGHT = 256
