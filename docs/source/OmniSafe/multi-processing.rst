@@ -1,3 +1,3 @@
 ===========================
-OmniSafe Mult-Processing
+OmniSafe Multi-Processing
 ===========================
