@@ -1,15 +1,14 @@
-==============
 Installation
-==============
+============
 
-Create Virutal Environments
-##############################
+Create Virtual Environments
+---------------------------
 
-Install some packages manually
-#################################
+Install Some Packages Manually
+------------------------------
 
-Install requisite Environments
-################################
+Install Requisite Environments
+------------------------------
 
 Install OmniSafe
-####################
+----------------

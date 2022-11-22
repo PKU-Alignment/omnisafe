@@ -1,2 +1,2 @@
-OmniSafe Logger
+Policy Gradient
 ===============
