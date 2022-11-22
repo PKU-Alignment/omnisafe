@@ -1,4 +1,4 @@
-'''omnisafe: __init__'''
+"""omnisafe: __init__"""
 from omnisafe.algo_wrapper import AlgoWrapper as Agent
 from omnisafe.algos.env_wrapper import EnvWrappers as Env
 

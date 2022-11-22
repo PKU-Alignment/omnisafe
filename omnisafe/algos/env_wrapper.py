@@ -1,11 +1,11 @@
-'''env_wrapper'''
+"""env_wrapper"""
 import numpy as np
 import safety_gymnasium
 import torch
 
 
 class EnvWrappers:
-    '''env_wrapper'''
+    """env_wrapper"""
 
     def __init__(self, env_id, render_mode='None'):
         # check env_id is str
@@ -32,11 +32,11 @@ class EnvWrappers:
         self.deterministic = False
 
     def make(self):
-        '''create environments'''
+        """create environments"""
         return self.env
 
     def reset(self, seed=None):
-        '''reset environment'''
+        """reset environment"""
         self.curr_o, info = self.env.reset(seed=seed)
         return self.curr_o, info
 
@@ -45,11 +45,11 @@ class EnvWrappers:
         return self.env.render()
 
     def set_seed(self, seed):
-        '''set environment seed'''
+        """set environment seed"""
         self.seed = seed
 
     def step(self, action):
-        '''engine step'''
+        """engine step"""
         next_obs, reward, cost, terminated, truncated, info = self.env.step(action)
         return next_obs, reward, cost, terminated, truncated, info
 

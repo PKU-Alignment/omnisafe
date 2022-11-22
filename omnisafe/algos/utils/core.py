@@ -1,4 +1,4 @@
-'''Some Core Functions'''
+"""Some Core Functions"""
 import numpy as np
 import scipy.signal
 import torch
@@ -9,7 +9,7 @@ registered_actors = {}
 
 
 def get_optimizer(opt: str, module: torch.nn.Module, learning_rate: float):
-    '''Returns an initialized optimizer from PyTorch.'''
+    """Returns an initialized optimizer from PyTorch."""
     assert hasattr(torch.optim, opt), f'Optimizer={opt} not found in torch.'
     optimizer = getattr(torch.optim, opt)
 
@@ -17,7 +17,7 @@ def get_optimizer(opt: str, module: torch.nn.Module, learning_rate: float):
 
 
 def initialize_layer(init_function: str, layer: torch.nn.Module):
-    '''initialize_layer'''
+    """initialize_layer"""
     if init_function == 'kaiming_uniform':  # this the default!
         torch.nn.init.kaiming_uniform_(layer.weight, a=np.sqrt(5))
     elif init_function == 'xavier_normal':
@@ -32,7 +32,7 @@ def initialize_layer(init_function: str, layer: torch.nn.Module):
 
 
 def register_actor(actor_name):
-    '''register actor into global dict'''
+    """register actor into global dict"""
 
     def wrapper(func):
         registered_actors[actor_name] = func
@@ -42,7 +42,7 @@ def register_actor(actor_name):
 
 
 def get_registered_actor_fn(actor_type: str, distribution_type: str):
-    '''get_registered_actor_fn'''
+    """get_registered_actor_fn"""
     assert distribution_type in ('categorical', 'gaussian')
     actor_fn = actor_type + '_' + distribution_type
     msg = f'Did not find: {actor_fn} in registered actors.'
@@ -51,21 +51,21 @@ def get_registered_actor_fn(actor_type: str, distribution_type: str):
 
 
 def combined_shape(length: int, shape=None):
-    '''combined_shape'''
+    """combined_shape"""
     if shape is None:
         return (length,)
     return (length, shape) if np.isscalar(shape) else (length, *shape)
 
 
 def count_vars(module):
-    '''combined_shape'''
+    """combined_shape"""
     # https://pylint.pycqa.org/en/latest/user_guide/messages/refactor/consider-using-generator.html
     # Don't use sum([np.prod(p.shape) for p in module.parameters()])
     return sum(np.prod(p.shape) for p in module.parameters())
 
 
 def discount_cumsum(x_vector, discount):
-    '''
+    """
     magic from rllab for computing discounted cumulative sums of vectors.
     input:
         vector x,
@@ -76,7 +76,7 @@ def discount_cumsum(x_vector, discount):
         [x0 + discount * x1 + discount^2 * x2,
          x1 + discount * x2,
          x2]
-    '''
+    """
     return scipy.signal.lfilter([1], [1, float(-discount)], x_vector[::-1], axis=0)[::-1]
 
 

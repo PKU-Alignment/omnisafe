@@ -1,4 +1,4 @@
-'''torch.distributed for multi-processing'''
+"""torch.distributed for multi-processing"""
 import os
 import subprocess
 import sys

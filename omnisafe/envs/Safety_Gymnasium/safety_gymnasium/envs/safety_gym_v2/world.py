@@ -319,7 +319,7 @@ class World:
         # self.update_viewer_sim = True
 
     # def render(self, mode='human'):
-    #     ''' Render the environment to the screen '''
+    #     """ Render the environment to the screen """
     #     if self.viewer is None:
     #         self.viewer = MjViewer(self.sim)
     #         # Turn all the geom groups on

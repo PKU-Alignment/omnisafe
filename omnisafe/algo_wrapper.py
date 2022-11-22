@@ -1,4 +1,4 @@
-'''algo wrapper'''
+"""algo wrapper"""
 import os
 import sys
 
@@ -15,7 +15,7 @@ from omnisafe.evaluator import Evaluator
 
 
 class AlgoWrapper:
-    '''Algo Wrapper for algo'''
+    """Algo Wrapper for algo"""
 
     def __init__(self, algo, env, parallel=1, custom_cfgs=None):
         self.algo = algo
@@ -27,7 +27,7 @@ class AlgoWrapper:
         self.evaluator = None
 
     def recursive_update(self, args: dict, update_args: dict):
-        '''recursively update args'''
+        """recursively update args"""
         for key, value in args.items():
             if key in update_args:
                 if isinstance(update_args[key], dict):
@@ -43,7 +43,7 @@ class AlgoWrapper:
                 self.recursive_update(value, update_args)
 
     def learn(self):
-        '''Agent Learning'''
+        """Agent Learning"""
         # Use number of physical cores as default.
         # If also hardware threading CPUs should be used
         # enable this by the use_number_of_threads=True
@@ -101,7 +101,7 @@ class AlgoWrapper:
         self.evaluator = Evaluator(self.env, ac.pi, ac.obs_oms)
 
     def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
-        '''Agent Evaluation'''
+        """Agent Evaluation"""
         assert self.evaluator is not None, 'Please run learn() first!'
         self.evaluator.evaluate(num_episodes, horizon, cost_criteria)
 

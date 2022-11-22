@@ -16,7 +16,7 @@ def update_dict_from(dict1, dict2):
 
 
 def quat2mat(quat):
-    '''Convert Quaternion to a 3x3 Rotation Matrix using mujoco'''
+    """Convert Quaternion to a 3x3 Rotation Matrix using mujoco"""
     q = np.array(quat, dtype='float64')
     m = np.zeros(9, dtype='float64')
     mujoco.mju_quat2Mat(m, q)
@@ -24,7 +24,7 @@ def quat2mat(quat):
 
 
 def theta2vec(theta):
-    '''Convert an angle (in radians) to a unit vector in that angle around Z'''
+    """Convert an angle (in radians) to a unit vector in that angle around Z"""
     return np.array([np.cos(theta), np.sin(theta), 0.0])
 
 
