@@ -413,5 +413,3 @@ Sessionx.vim
 tags
 # Persistent undo
 [._]*.un~
-#(todo delete)
-table.txt

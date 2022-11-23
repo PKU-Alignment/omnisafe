@@ -1,4 +1,19 @@
-'''algo wrapper'''
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+"""algo wrapper"""
 import os
 import sys
 
@@ -15,7 +30,7 @@ from omnisafe.evaluator import Evaluator
 
 
 class AlgoWrapper:
-    '''Algo Wrapper for algo'''
+    """Algo Wrapper for algo"""
 
     def __init__(self, algo, env, parallel=1, custom_cfgs=None):
         self.algo = algo
@@ -27,7 +42,7 @@ class AlgoWrapper:
         self.evaluator = None
 
     def recursive_update(self, args: dict, update_args: dict):
-        '''recursively update args'''
+        """recursively update args"""
         for key, value in args.items():
             if key in update_args:
                 if isinstance(update_args[key], dict):
@@ -43,7 +58,7 @@ class AlgoWrapper:
                 self.recursive_update(value, update_args)
 
     def learn(self):
-        '''Agent Learning'''
+        """Agent Learning"""
         # Use number of physical cores as default.
         # If also hardware threading CPUs should be used
         # enable this by the use_number_of_threads=True
@@ -101,7 +116,7 @@ class AlgoWrapper:
         self.evaluator = Evaluator(self.env, ac.pi, ac.obs_oms)
 
     def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
-        '''Agent Evaluation'''
+        """Agent Evaluation"""
         assert self.evaluator is not None, 'Please run learn() first!'
         self.evaluator.evaluate(num_episodes, horizon, cost_criteria)
 
