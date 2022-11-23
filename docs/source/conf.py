@@ -18,7 +18,7 @@ release = 'v1'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-'''
+"""
 Run before:
 conda activate safe
 pip install recommonmark
@@ -27,7 +27,7 @@ pip install sphinx_design
 pip install sphinx_copybutton
 pip install sphinx-press-theme
 pip install sphinx
-'''
+"""
 
 extensions = ['recommonmark', 'sphinx_markdown_tables', 'sphinx_design', 'sphinx_copybutton']
 

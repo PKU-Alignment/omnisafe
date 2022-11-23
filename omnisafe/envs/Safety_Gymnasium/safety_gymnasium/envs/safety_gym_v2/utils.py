@@ -1,3 +1,18 @@
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
 import mujoco
 import numpy as np
 
@@ -16,7 +31,7 @@ def update_dict_from(dict1, dict2):
 
 
 def quat2mat(quat):
-    '''Convert Quaternion to a 3x3 Rotation Matrix using mujoco'''
+    """Convert Quaternion to a 3x3 Rotation Matrix using mujoco"""
     q = np.array(quat, dtype='float64')
     m = np.zeros(9, dtype='float64')
     mujoco.mju_quat2Mat(m, q)
@@ -24,7 +39,7 @@ def quat2mat(quat):
 
 
 def theta2vec(theta):
-    '''Convert an angle (in radians) to a unit vector in that angle around Z'''
+    """Convert an angle (in radians) to a unit vector in that angle around Z"""
     return np.array([np.cos(theta), np.sin(theta), 0.0])
 
 
