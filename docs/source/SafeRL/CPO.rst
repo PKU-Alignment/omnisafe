@@ -1,123 +1,146 @@
+===============================
 Constrained Policy Optimization
 ===============================
 
 Quick Facts
------------
+####################
 
 .. card::
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
-    :class-body: sd-font-weight-bold
+   :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+   :class-body: sd-font-weight-bold
 
-    #. CPO is an :bdg-success-line:`on-policy` algorithm.
-    #. CPO can be used for environments with both :bdg-success-line:`discrete` and :bdg-success-line:`continuous` action spaces.
-    #. CPO can be thought of as being :bdg-success-line:`TRPO in SafeRL areas`.
-    #. The OmniSafe implementation of CPO support :bdg-success-line:`parallelization`.
+   #. CPO is an :bdg-success-line:`on-policy` algorithm.
+   #. CPO can be used for environments with both :bdg-success-line:`discrete` and :bdg-success-line:`continuous` action spaces.
+   #. CPO can be thought of as being :bdg-success-line:`TRPO in SafeRL areas` .
+   #. The OmniSafe implementation of CPO support :bdg-success-line:`parallelization`.
 
---------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 .. contents:: Table of Contents
-    :depth: 3
+   :depth: 3
 
 CPO Theorem
------------
+####################
 
 Background
-~~~~~~~~~~
-
-**Constrained policy optimization (CPO)** is a policy search algorithm for constrained reinforcement learning with
-guarantees for near-constraint satisfaction at each iteration motivated by TRPO(:doc:`../BaseRL/trpo_docs`).
-CPO develops surrogate functions to be good local approximations for objectives and constraints and easy to estimate using samples from current policy.
-Moreover, it provides tighter bounds for policy search using trust regions.
-
-.. note::
-
-    CPO is the **first general-purpose policy search algorithm** for safe reinforcement learning with guarantees for near-constraint satisfaction at each iteration.
-
-CPO trains neural network policies for high-dimensional control while making guarantees about policy behavior throughout training.
-CPO aims to provide an approach for policy search in continuous CMDP.
-It uses the result from TRPO and NPG to derive a policy improvement step that guarantees both an increase in reward and satisfaction of constraints.
-Although CPO is slightly inferior in performance, it provides a solid theoretical foundation for solving constrained optimization problems in the field of safe reinforcement learning.
+===========
+**Constrained policy optimization (CPO)** is a
+policy search algorithm for constrained reinforcement learning with
+guarantees for near-constraint satisfaction at each iteration. Motivated
+by TRPO( :doc:`../BaseRL/TRPO`).
+CPO develops surrogate functions to be
+good local approximations for objectives and constraints and easy to
+estimate using samples from current policy. Moreover, it provides
+tighter bounds for policy search using trust regions.
 
 .. note::
 
-    CPO is very complex in terms of implementation, but OmniSafe provides a highly readable code implementation to help you get up to speed quickly.
+   CPO is the **first general-purpose policy search algorithm** for safe
+   reinforcement learning with guarantees for near-constraint satisfaction
+   at each iteration.
 
---------------------------------------------------------------------------------
+CPO trains neural network policies for
+high-dimensional control while making guarantees about policy behavior
+throughout training. CPO aims to provide an approach for policy search
+in continuous CMDP. It uses the result from TRPO and NPG to derive a policy improvement step
+that guarantees both an increase in reward and satisfaction of
+constraints. Although CPO is slightly inferior in performance, it
+provides a solid theoretical foundation for solving constrained
+optimization problems in the field of safe reinforcement learning.
+
+.. note::
+
+   CPO is very complex in terms of implementation, but omnisafe provides a
+   highly readable code implementation to help you get up to speed quickly
+
+------------------------------------------------------------------------
 
 Optimization Objective
-----------------------
+=======================
 
-In the previous chapters, we introduced that TRPO solves the following optimization problems:
+In the previous chapters, we introduced that TRPO solves the following
+optimization problems:
 
-.. math::
-    :nowrap:
-
-    \begin{eqnarray}
-        &&\pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
-        \text{s.t.}\quad&&D(\pi,\pi_k)\le\delta\tag{1}
-    \end{eqnarray}
-
-where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of parametrized policies with parameters :math:`\boldsymbol{\theta}`, and :math:`D` is some distance measure.
-In local policy search, we additionally require policy iterates to be feasible for the CMDP, so instead of optimizing over :math:`\Pi_{\boldsymbol{\theta}}`, CPO optimizes over :math:`\Pi_{\boldsymbol{\theta}} \cap \Pi_{C}`,
 
 .. math::
-    :nowrap:
+   :nowrap:
 
-    \begin{eqnarray}
-        &&\pi_{k+1} = \arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
-        \text{s.t.}\quad&&D(\pi,\pi_k)\le\delta\tag{2}\\
-         &&J^{C_i}(\pi)\le d_i\quad i=1,...m
-    \end{eqnarray}
+   \begin{eqnarray}
+      &&\pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
+      \text{s.t.}\quad&&D(\pi,\pi_k)\le\delta\tag{1}
+   \end{eqnarray}
+
+where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of
+parametrized policies with parameters :math:`\boldsymbol{\theta}`, and :math:`D`
+is some distance measure. In local policy search, we additionally
+require policy iterates to be feasible for the CMDP, so instead of
+optimizing over :math:`\Pi_{\boldsymbol{\theta}}`, CPO optimizes over
+:math:`\Pi_{\boldsymbol{\theta}} \cap \Pi_{C}`,
+
+.. math::
+   :nowrap:
+
+   \begin{eqnarray}
+      &&\pi_{k+1} = \arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
+      \text{s.t.}\quad&&D(\pi,\pi_k)\le\delta\tag{2}\\
+       &&J^{C_i}(\pi)\le d_i\quad i=1,...m
+   \end{eqnarray}
 
 
 .. note::
 
-    This update is difficult to implement because it requires evaluating the constraint functions to determine whether a proposed policy :math:`\pi` is feasible.
+   This update is difficult to implement because it requires evaluating the
+   constraint functions to determine whether a proposed policy :math:`\pi`
+   is feasible.
 
-CPO develops a principled approximation with a particular choice of :math:`D`, where the objective and constraints are replaced with surrogate functions.
-CPO proposes that with those surrogates, the update's worst-case performance and worst-case constraint violation can be bounded with values that depend on a hyperparameter of the algorithm.
+CPO develops a principled approximation with a particular
+choice of :math:`D`, where the objective and constraints are replaced
+with surrogate functions. CPO proposes that with those surrogates, the
+update's worst-case performance and worst-case constraint violation can
+be bounded with values that depend on a hyperparameter of the algorithm.
 
---------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 Policy Performance Bounds
--------------------------
+===========================
 
-CPO presents the theoretical foundation for its approach, a new bound on the difference in returns between two arbitrary policies.
-The following :bdg-info-line:`Theorem 1` connects the difference in returns (or constraint costs) between two arbitrary policies to an average divergence between them.
+CPO presents the theoretical foundation for its approach, a new bound on
+the difference in returns between two arbitrary policies. The following
+:bdg-info-line:`Theorem 1` connects the difference in returns (or constraint costs) between
+two arbitrary policies to an average divergence between them.
 
 .. _Theorem 1:
 
 .. card::
-    :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
-    :class-footer: sd-font-weight-bold
-    :link: cards-clickable
-    :link-type: ref
+   :class-header: sd-bg-info sd-text-white sd-font-weight-bold
+   :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+   :class-footer: sd-font-weight-bold
+   :link: cards-clickable
+   :link-type: ref
 
-    Theorem 1 (Difference between two arbitrary policies)
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   Theorem 1 (Difference between two arbitrary policies)
+   ^^^
+   **For any function** :math:`f : S \rightarrow \mathbb{R}` and any policies :math:`\pi` and :math:`\pi'`, define :math:`\delta_f(s,a,s') \doteq R(s,a,s') + \gamma f(s')-f(s)`,
 
-    **For any function** :math:`f : S \rightarrow \mathbb{R}` and any policies :math:`\pi` and :math:`\pi'`, define :math:`\delta_f(s,a,s') \doteq R(s,a,s') + \gamma f(s')-f(s)`,
+   .. math::
+      :nowrap:
 
-    .. math::
-        :nowrap:
-
-        \begin{eqnarray}
-            \epsilon_f^{\pi'} &\doteq& \max_s \left|\mathbb{E}_{a\sim\pi'~,s'\sim P }\left[\delta_f(s,a,s')\right] \right|\tag{3}\\
-            L_{\pi, f}\left(\pi'\right) &\doteq& \mathbb{E}_{\tau \sim \pi}\left[\left(\frac{\pi'(a | s)}{\pi(a|s)}-1\right)\delta_f\left(s, a, s'\right)\right]\tag{4} \\
-            D_{\pi, f}^{\pm}\left(\pi^{\prime}\right) &\doteq& \frac{L_{\pi, f}\left(\pi' \right)}{1-\gamma} \pm \frac{2 \gamma \epsilon_f^{\pi'}}{(1-\gamma)^2} \mathbb{E}_{s \sim d^\pi}\left[D_{T V}\left(\pi^{\prime} \| \pi\right)[s]\right]\tag{5}
-        \end{eqnarray}
-
+      \begin{eqnarray}
+         \epsilon_f^{\pi'} &\doteq& \max_s \left|\mathbb{E}_{a\sim\pi'~,s'\sim P }\left[\delta_f(s,a,s')\right] \right|\tag{3}\\
+         L_{\pi, f}\left(\pi'\right) &\doteq& \mathbb{E}_{\tau \sim \pi}\left[\left(\frac{\pi'(a | s)}{\pi(a|s)}-1\right)\delta_f\left(s, a, s'\right)\right]\tag{4} \\
+         D_{\pi, f}^{\pm}\left(\pi^{\prime}\right) &\doteq& \frac{L_{\pi, f}\left(\pi' \right)}{1-\gamma} \pm \frac{2 \gamma \epsilon_f^{\pi'}}{(1-\gamma)^2} \mathbb{E}_{s \sim d^\pi}\left[D_{T V}\left(\pi^{\prime} \| \pi\right)[s]\right]\tag{5}
+      \end{eqnarray}
 
 
-    where :math:`D_{T V}\left(\pi'|| \pi\right)[s]=\frac{1}{2} \sum_a\left|\pi'(a|s)-\pi(a|s)\right|` is the total variational divergence between action distributions at :math:`s`. The conclusion is as follows:
 
-    .. math:: D_{\pi, f}^{+}\left(\pi'\right) \geq J\left(\pi'\right)-J(\pi) \geq D_{\pi, f}^{-}\left(\pi'\right)\tag{6}
+   where :math:`D_{T V}\left(\pi'|| \pi\right)[s]=\frac{1}{2} \sum_a\left|\pi'(a|s)-\pi(a|s)\right|` is the total variational divergence between action distributions at :math:`s`. The conclusion is as follows:
 
-    Furthermore, the bounds are tight (when :math:`\pi=\pi^{\prime}`, all three expressions are identically zero).
-    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   .. math:: D_{\pi, f}^{+}\left(\pi'\right) \geq J\left(\pi'\right)-J(\pi) \geq D_{\pi, f}^{-}\left(\pi'\right)\tag{6}
 
-    The proof of the :bdg-ref-info-line:`Theorem 1<Theorem 1>` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
+   Furthermore, the bounds are tight (when :math:`\pi=\pi^{\prime}`, all
+   three expressions are identically zero).
+   +++
+   The proof of the :bdg-info-line:`Theorem 1`` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
 By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-line:`Corollary 2`, :bdg-info-line:`Corollary 3` below:
 
@@ -129,55 +152,60 @@ By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-
 
     .. tab-item:: Corollary 1
 
-    .. card::
-        :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
-        :class-footer: sd-font-weight-bold
+      .. card::
+         :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
+         :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+         :class-footer: sd-font-weight-bold
 
-        Corollary 1
-        ^^^^^^^^^^^
+         Corollary 1
+         ^^^
+         For any policies :math:`\pi'`, :math:`\pi`, with
+         :math:`\epsilon_{\pi'}=\max _s|\mathbb{E}_{a \sim \pi'}[A_\pi(s, a)]|`
 
-        For any policies :math:`\pi'`, :math:`\pi`, with :math:`\epsilon_{\pi'}=\max _s|\mathbb{E}_{a \sim \pi'}[A_\pi(s, a)]|`, the following bound holds:
+         The following bound holds:
 
-        .. math:: J^R\left(\pi^{\prime}\right)-J^R(\pi) \geq \frac{1}{1-\gamma} \mathbb{E}_{s \sim d^\pi\,a \sim \pi'}\left[A^R_\pi(s, a)-\frac{2 \gamma \epsilon_{\pi'}}{1-\gamma} D_{T V}\left(\pi' \| \pi\right)[s]\right]\tag{7}
+         .. math:: J^R\left(\pi^{\prime}\right)-J^R(\pi) \geq \frac{1}{1-\gamma} \mathbb{E}_{s \sim d^\pi\,a \sim \pi'}\left[A^R_\pi(s, a)-\frac{2 \gamma \epsilon_{\pi'}}{1-\gamma} D_{T V}\left(\pi' \| \pi\right)[s]\right]\tag{7}
 
     .. tab-item:: Corollary 2
 
-    .. card::
-        :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-        :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
-        :class-footer: sd-font-weight-bold
+      .. card::
+         :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
+         :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+         :class-footer: sd-font-weight-bold
 
-        Corollary 2
-        ^^^^^^^^^^^
+         Corollary 2
+         ^^^
+         For any policies :math:`\pi'` and :math:`\pi`,
+         with :math:`\epsilon^{C_i}_{\pi'}=\max _s|E_{a \sim \pi^{\prime}}[A^{C_i}_\pi(s, a)]|`
 
-        For any policies :math:`\pi'` and :math:`\pi`, with :math:`\epsilon^{C_i}_{\pi'}=\max _s|E_{a \sim \pi^{\prime}}[A^{C_i}_\pi(s, a)]|`, the following bound holds:
+         the following bound holds:
 
-        .. math:: J^{C_i}\left(\pi^{\prime}\right)-J^{C_i}(\pi) \geq \frac{1}{1-\gamma} \mathbb{E}_{s \sim d^\pi a \sim \pi'}\left[A^{C_i}_\pi(s, a)-\frac{2 \gamma \epsilon^{C_i}_{\pi'}}{1-\gamma} D_{T V}\left(\pi' \| \pi\right)[s]\right]\tag{8}
+         .. math:: J^{C_i}\left(\pi^{\prime}\right)-J^{C_i}(\pi) \geq \frac{1}{1-\gamma} \mathbb{E}_{s \sim d^\pi a \sim \pi'}\left[A^{C_i}_\pi(s, a)-\frac{2 \gamma \epsilon^{C_i}_{\pi'}}{1-\gamma} D_{T V}\left(\pi' \| \pi\right)[s]\right]\tag{8}
 
     .. tab-item:: Corollary 3
 
-    .. card::
-        :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
-        :class-footer: sd-font-weight-bold
+      .. card::
+         :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
+         :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+         :class-footer: sd-font-weight-bold
 
-        Corollary 3
-        ^^^^^^^^^^^
+         Corollary 3
+         ^^^
+         Trust region methods prefer to constrain the KL-divergence between policies, so CPO use Pinsker's inequality to connect the :math:`D_{TV}` with :math:`D_{KL}`
 
-        Trust region methods prefer to constrain the KL-divergence between policies, so CPO use Pinsker's inequality to connect the :math:`D_{TV}` with :math:`D_{KL}`
+         .. math:: D_{TV}(p \| q) \leq \sqrt{D_{KL}(p \| q) / 2}\tag{9}
 
-        .. math:: D_{TV}(p \| q) \leq \sqrt{D_{KL}(p \| q) / 2}\tag{9}
+         Combining this with Jensen's inequality, we obtain our final :bdg-info-line:`Corollary 3` :
+         In bound :bdg-ref-info-line:`Theorem 1<Theorem 1>` , :bdg-ref-info-line:`Corollary 1<Corollary 1>`, :bdg-ref-info-line:`Corollary 2<Corollary 2>`,
+         make the substitution:
 
-        Combining this with Jensen's inequality, we obtain our final :bdg-info-line:`Corollary 3`: In bound :bdg-ref-info-line:`Theorem 1<Theorem 1>`, :bdg-ref-info-line:`Corollary 1<Corollary 1>`, :bdg-ref-info-line:`Corollary 2<Corollary 2>`, make the substitution:
-
-        .. math:: \mathbb{E}_{s \sim d^\pi}\left[D_{T V}\left(\pi'|| \pi\right)[s]\right] \rightarrow \sqrt{\frac{1}{2} \mathbb{E}_{s \sim d^\pi}\left[D_{K L}\left(\pi^{\prime} \| \pi\right)[s]\right]}\tag{10}
+         .. math:: \mathbb{E}_{s \sim d^\pi}\left[D_{T V}\left(\pi'|| \pi\right)[s]\right] \rightarrow \sqrt{\frac{1}{2} \mathbb{E}_{s \sim d^\pi}\left[D_{K L}\left(\pi^{\prime} \| \pi\right)[s]\right]}\tag{10}
 
 
---------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 Trust Region Methods
---------------------
+=======================
 
 For parameterized stationary policy, trust region algorithms for
 reinforcement learning have policy updates of the following form:
@@ -578,15 +606,6 @@ Documentation of basic functions
       :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
       :class-footer: sd-font-weight-bold
 
-      cpo.update_policy_net()
-      ^^^^^^^^^^^^^
-      Update policy network in 5 kinds of optimization case
-
-    .. card::
-      :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-      :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-      :class-footer: sd-font-weight-bold
-
       cpo.update_value_net()
       ^^^^^^^^^^^^^
       Update Critic network for estimating reward.
@@ -612,34 +631,140 @@ Documentation of basic functions
 Documentation of new functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. card-carousel:: 3
+.. tab-set::
 
-    .. card::
-      :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-      :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-      :class-footer: sd-font-weight-bold
+    .. tab-item:: cpo.update_policy_net()
 
-      Fvp()
-      ^^^^^^^^
-      Build the Hessian-vector product based on an approximation of the KL-Divergence.
+      .. card::
+         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
+         :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+         :class-footer: sd-font-weight-bold
 
-    .. card::
-      :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-      :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-      :class-footer: sd-font-weight-bold
+         cpo.update_policy_net()
+         ^^^^^^^^^^^^^
+         Update the policy network, flowing the next steps:
 
-      conjugate_gradients()
-      ^^^^^^^
-      Use conjugate gradient algorithm to make a fast calculating
+         (1) Get the policy reward performance gradient g (flat as vector)
 
-    .. card::
-      :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-      :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-      :class-footer: sd-font-weight-bold
+         .. code-block:: python
+            :linenos:
 
-      search_step_size()
-      ^^^^^^^^
-      Performs line-search to ensure constraint satisfaction for rewards and costs.
+            self.pi_optimizer.zero_grad()
+            loss_pi, pi_info = self.compute_loss_pi(data=data)
+            loss_pi.backward()
+            g_flat = get_flat_gradients_from(self.ac.pi.net)
+            g_flat *= -1
+
+
+         (2) Get the policy cost performance gradient b (flat as vector)
+
+         .. code-block:: python
+            :linenos:
+
+            self.pi_optimizer.zero_grad()
+            loss_cost, _ = self.compute_loss_cost_performance(data=data)
+            loss_cost.backward()
+            b_flat = get_flat_gradients_from(self.ac.pi.net)
+
+
+         (3) Build the Hessian-vector product based on an approximation of the KL-divergence, using ``conjugate_gradients``
+
+         .. code-block:: python
+            :linenos:
+
+            p = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
+            q = xHx
+            r = g_flat.dot(p)  # g^T H^{-1} b
+            s = b_flat.dot(p)  # b^T H^{-1} b
+
+         (4) Divide the optimization case into 5 kinds to compute.
+
+         (5) Determine step direction and apply SGD step after grads where set (By ``search_step_size()``)
+
+         .. code-block:: python
+            :linenos:
+
+            final_step_dir, accept_step = self.search_step_size(
+            step_dir,
+            g_flat,
+            c=c,
+            optim_case=optim_case,
+            p_dist=p_dist,
+            data=data,
+            total_steps=20,
+            )
+
+         (6) Update actor network parameters
+
+         .. code-block:: python
+            :linenos:
+
+            new_theta = theta_old + final_step_dir
+            set_param_values_to_model(self.ac.pi.net, new_theta)
+
+    .. tab-item:: cpo.search_step_size()
+
+      .. card::
+         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
+         :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+         :class-footer: sd-font-weight-bold
+
+         cpo.search_step_size()
+         ^^^^^^^^
+         CPO algorithm performs line-search to ensure constraint satisfaction for rewards and costs, flowing the next steps:
+
+         (1) Calculate the expected reward improvement.
+
+         .. code-block:: python
+            :linenos:
+
+            expected_rew_improve = g_flat.dot(step_dir)
+
+         (2) Performs line-search to find a step improve the surrogate while not violating trust region.
+
+         - Search acceptance step ranging from 0 to total step
+
+         .. code-block:: python
+            :linenos:
+
+            for j in range(total_steps):
+               new_theta = _theta_old + step_frac * step_dir
+               set_param_values_to_model(self.ac.pi.net, new_theta)
+               acceptance_step = j + 1
+
+         - In each step of for loop, calculate the policy performance and KL divergence.
+
+         .. code-block:: python
+            :linenos:
+
+            with torch.no_grad():
+                loss_pi_rew, _ = self.compute_loss_pi(data=data)
+                loss_pi_cost, _ = self.compute_loss_cost_performance(data=data)
+                q_dist = self.ac.pi.dist(data['obs'])
+                torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
+            loss_rew_improve = self.loss_pi_before - loss_pi_rew.item()
+            cost_diff = loss_pi_cost.item() - self.loss_pi_cost_before
+
+         - Step only if surrogate is improved and within the trust region.
+
+         .. code-block:: python
+            :linenos:
+
+            if not torch.isfinite(loss_pi_rew) and not torch.isfinite(loss_pi_cost):
+                self.logger.log('WARNING: loss_pi not finite')
+            elif loss_rew_improve < 0 if optim_case > 1 else False:
+                self.logger.log('INFO: did not improve improve <0')
+
+            elif cost_diff > max(-c, 0):
+                self.logger.log(f'INFO: no improve {cost_diff} > {max(-c, 0)}')
+            elif torch_kl > self.target_kl * 1.5:
+                self.logger.log(f'INFO: violated KL constraint {torch_kl} at step {j + 1}.')
+            else:
+                self.logger.log(f'Accept step at i={j + 1}')
+                break
+
+         (3) Return appropriate step direction and acceptance step.
+
 
 ------------------------------------------------------------------------
 
@@ -772,7 +897,7 @@ Parameters
 ------------------------------------------------------------------------
 
 Reference
-===========
+##########
 
 -  `Constrained Policy
    Optimization <https://arxiv.org/abs/1705.10528>`__
@@ -790,10 +915,10 @@ Reference
 Appendix
 #########
 
-:bdg-ref-success-line:`Click here to jump to CPO Theorem<Theorem 1>`  :bdg-ref-success-line:`Click here to jump to Code with OmniSafe<Code_with_OmniSafe>`
+:bdg-ref-info-line:`Click here to jump to CPO Theorem<Theorem 1>`  :bdg-ref-success-line:`Click here to jump to Code with OmniSafe<Code_with_OmniSafe>`
 
-Detailed Proof for Performance Bound
-=========================================
+Proof of theorem 1 (Difference between two arbitrarily policies)
+==========================================================================
 
 Our analysis will begin with the discounted future future state
 distribution, :math:`d_\pi`, which is defined as:
@@ -967,7 +1092,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
 
 .. tab-set::
 
-    .. tab-item:: Proof for Lemma 1
+    .. tab-item:: Proof of Lemma 1
 
       .. card::
          :class-header: sd-bg-info sd-text-white sd-font-weight-bold
@@ -1016,7 +1141,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
                \end{aligned}
 
 
-    .. tab-item:: Proof for Lemma 2
+    .. tab-item:: Proof of Lemma 2
 
       .. card::
          :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
@@ -1110,7 +1235,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
             J\left(\pi^{\prime}\right)-J(\pi) \geq \mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}\left[\left(\frac{\pi^{\prime}(a|s)}{\pi(a|s)}-1\right) \delta_f\left(s, a, s^{\prime}\right)\right]-2 \epsilon_f^{\pi^{\prime}} D_{T V}\left(d^{\pi^{\prime}} \| d^\pi\right)
             \end{aligned}
 
-    .. tab-item:: Proof for Lemma 3
+    .. tab-item:: Proof of Lemma 3
 
       .. card::
          :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
