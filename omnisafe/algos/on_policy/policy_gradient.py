@@ -98,7 +98,6 @@ class PolicyGradient(PolicyGradientBase):
             # Linear anneal
             def lm(epoch):
                 return 1 - epoch / self.cfgs['epochs']
-
             scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=self.pi_optimizer, lr_lambda=lm)
         return scheduler
 
@@ -227,15 +226,15 @@ class PolicyGradient(PolicyGradientBase):
                 use_cost=self.use_cost,
                 cost_gamma=self.cost_gamma,
             )
-            self.env.evalution(
-                self.ac,
-                self.buf,
-                self.logger,
-                self.local_steps_per_epoch,
-                penalty_param,
-                use_cost=self.use_cost,
-                cost_gamma=self.cost_gamma,
-            )
+            # self.env.evalution(
+            #     self.ac,
+            #     self.buf,
+            #     self.logger,
+            #     self.local_steps_per_epoch,
+            #     penalty_param,
+            #     use_cost=self.use_cost,
+            #     cost_gamma=self.cost_gamma,
+            # )
             # Update: actor, critic, running statistics
             self.update()
 
@@ -268,12 +267,9 @@ class PolicyGradient(PolicyGradientBase):
         self.logger.log_tabular('Metrics/EpRet')
         self.logger.log_tabular('Metrics/EpCost')
         self.logger.log_tabular('Metrics/EpLen')
-        self.logger.log_tabular('Evaluation/EpRet')
-        self.logger.log_tabular('Evaluation/EpCost')
-        self.logger.log_tabular('Evaluation/EpLen')
-        # self.logger.log_tabular('Metrics/EpRet', min_and_max=True, std=True)
-        # self.logger.log_tabular('Metrics/EpCosts', min_and_max=True, std=True)
-        # self.logger.log_tabular('Metrics/EpLen', min_and_max=True)
+        # self.logger.log_tabular('Evaluation/EpRet')
+        # self.logger.log_tabular('Evaluation/EpCost')
+        # self.logger.log_tabular('Evaluation/EpLen')
         self.logger.log_tabular('Values/V', min_and_max=True)
         self.logger.log_tabular('Values/Adv', min_and_max=True)
         if self.cfgs['use_cost']:
@@ -381,7 +377,7 @@ class PolicyGradient(PolicyGradientBase):
             loss_pi.backward()
             # Apply L2 norm
             if self.cfgs['use_max_grad_norm']:
-                torch.nn.utils.clip_grad_norm_(self.ac.pi.parameters(), self.max_grad_norm)
+                torch.nn.utils.clip_grad_norm_(self.ac.pi.parameters(), self.cfgs['max_grad_norm'])
 
             # Average grads across MPI processes
             distributed_tools.mpi_avg_grads(self.ac.pi.net)

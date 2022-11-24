@@ -26,7 +26,8 @@ class PPOLag(PolicyGradient, Lagrange):
 
         # ensure that lagrange multiplier is positive
         penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        loss_pi += penalty * ((ratio * data['cost_adv']).mean())
+        loss_pi = -(torch.max(ratio * data['cost_adv'], ratio_clip * data['cost_adv'])).mean()
+        # loss_pi += penalty * ((ratio * data['cost_adv']).mean())
         loss_pi /= 1 + penalty
 
         # Useful extra info
@@ -41,7 +42,7 @@ class PPOLag(PolicyGradient, Lagrange):
         # pre-process data
         data = self.pre_process_data(raw_data)
         # Note that logger already uses MPI statistics across all processes..
-        ep_costs = self.logger.get_stats('Evaluation/EpCost')[0]
+        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
         self.update_lagrange_multiplier(ep_costs)
         # now update policy and value network

@@ -43,7 +43,7 @@ class TRPOLag(TRPO, Lagrange):
         # sub-sampling accelerates calculations
         self.fvp_obs = data['obs'][::4]
         # Note that logger already uses MPI statistics across all processes..
-        ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
+        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
         self.update_lagrange_multiplier(ep_costs)
         # now update policy and value network

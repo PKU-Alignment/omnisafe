@@ -176,7 +176,7 @@ class CPO(TRPO):
         self.loss_pi_cost_before = loss_cost.item()
         b_flat = get_flat_gradients_from(self.ac.pi.net)
         # :param ep_costs: do samplings to get approximate costs as ep_costs
-        ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
+        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # :params c: how much sampled result of cost goes beyond limit
         c = ep_costs - self.cost_limit
         # Rescale, and add eps(small float) to avoid nan
