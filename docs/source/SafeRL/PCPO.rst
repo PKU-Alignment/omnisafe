@@ -41,9 +41,9 @@ divergence.
 In a word, PCPO is a CPO-based algorithm dedicated to solving problem of
 learning control policies that optimize a reward function while
 satisfying constraints due to considerations of safety, fairness, or
-other costs. 
+other costs.
 
-.. note:: 
+.. note::
 
    If you have not previously learned the CPO type of
    algorithm, in order to facilitate your complete understanding of the
@@ -75,7 +75,7 @@ PCPO solves the above optimization problems. In order for you to have a
 clearer understanding, we hope that you will read the next section with
 the following questions:
 
-.. card:: 
+.. card::
    :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
 
@@ -106,7 +106,7 @@ the two-stage update.
 
     .. tab-item:: Stage 1
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
          :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
          :class-footer: sd-font-weight-bold
@@ -132,7 +132,7 @@ the two-stage update.
 
     .. tab-item:: Stage 2
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
          :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
          :class-footer: sd-font-weight-bold
@@ -175,7 +175,7 @@ respectively.
 
     .. tab-item:: Theorem 1
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
          :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
          :class-footer: sd-font-weight-bold
@@ -207,7 +207,7 @@ respectively.
 
     .. tab-item:: Theorem 2
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
          :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
          :class-footer: sd-font-weight-bold
@@ -231,7 +231,7 @@ respectively.
          .. math::
             :nowrap:
 
-               \begin{eqnarray}       
+               \begin{eqnarray}
                   J^{R}(\pi_{k+1})-J^{R}(\pi_{k})\geq&-\frac{\sqrt{2(\delta+{b^+}^{2}\alpha_\mathrm{KL})}\gamma\epsilon_{\pi_{k+1}}^{R}}{(1-\gamma)^{2}}\tag{6}\\
                   J^{C}(\pi_{k+1})\leq& ~d+\frac{\sqrt{2(\delta+{b^+}^{2}\alpha_\mathrm{KL})}\gamma\epsilon_{\pi_{k+1}}^{C}}{(1-\gamma)^{2}}\tag{7}
                \end{eqnarray}
@@ -258,7 +258,7 @@ projection step can also be approximated with a second order expansion.
 
     .. tab-item:: Implementation of Stage 1
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
          :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
          :class-footer: sd-font-weight-bold
@@ -300,7 +300,7 @@ projection step can also be approximated with a second order expansion.
 
     .. tab-item:: Implementation of Stage 2
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
          :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
          :class-footer: sd-font-weight-bold
@@ -331,7 +331,7 @@ projection step can also be approximated with a second order expansion.
 
 PCPO solves Problem :math:`(6)` and
 Problem :math:`(7)` using :bdg-success-line:`convex programming`,
-sees detailedly in :bdg-ref-success:`Appendix<convex-programming>`. 
+sees detailedly in :bdg-ref-success:`Appendix<convex-programming>`.
 
 For each policy update:
 
@@ -356,7 +356,7 @@ For each policy update:
    .. tab-item:: Question I
       :sync: key1
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
          :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold sd-text-success
 
@@ -364,12 +364,12 @@ For each policy update:
          ^^^
          Is using linear approximation to the constraint set
          enough to ensure constraint satisfaction since the real constraint
-         set is maybe non-convex?  
+         set is maybe non-convex?
 
    .. tab-item:: Question II
       :sync: key2
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
          :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold sd-text-success
 
@@ -383,20 +383,20 @@ For each policy update:
    .. tab-item:: Answer I
       :sync: key1
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
          :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold  sd-text-primary
 
          Answer
          ^^^
          In fact, if the step size :math:`\delta` is small,
-         then the linearization of the constraint set is accurate enough to 
-         locally approximate it.  
+         then the linearization of the constraint set is accurate enough to
+         locally approximate it.
 
    .. tab-item:: Answer II
       :sync: key2
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
          :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold sd-text-primary
 
@@ -425,7 +425,7 @@ and convex constraint set :math:`\mathcal{C}`.
 
 .. _Theorem 3:
 
-.. card:: 
+.. card::
    :class-header: sd-bg-info sd-text-white sd-font-weight-bold
    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
    :class-footer: sd-font-weight-bold
@@ -490,7 +490,7 @@ Quick start
 ~~~~~~~~~~~
 
 
-.. card:: 
+.. card::
    :class-header: sd-bg-success sd-text-white sd-font-weight-bold
    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
    :class-footer: sd-font-weight-bold
@@ -558,7 +558,7 @@ Quick start
 
             .. code-block:: guess
                :linenos:
-                
+
                 cd omnisafe/examples
                 python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo PCPO --parallel 5 --epochs 1
 
@@ -599,7 +599,7 @@ Documentation of basic functions
 
       env.roll_out()
       ^^^^^^^^
-      Collect data and store to experience buffer. 
+      Collect data and store to experience buffer.
 
     .. card::
       :class-header: sd-bg-success sd-text-white sd-font-weight-bold
@@ -610,7 +610,7 @@ Documentation of basic functions
       ^^^^^^^
       Update actor, critic, running statistics
 
-    .. card:: 
+    .. card::
       :class-header: sd-bg-success sd-text-white sd-font-weight-bold
       :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
       :class-footer: sd-font-weight-bold
@@ -619,7 +619,7 @@ Documentation of basic functions
       ^^^^^^^^
       Call this at the end of an epoch to get all of the data from the buffer
 
-    .. card:: 
+    .. card::
       :class-header: sd-bg-success sd-text-white sd-font-weight-bold
       :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
       :class-footer: sd-font-weight-bold
@@ -645,7 +645,7 @@ Documentation of basic functions
       pcpo.update_cost_net()
       ^^^^^^^^^^^^^
       Update Critic network for estimating cost.
-   
+
     .. card::
       :class-header: sd-bg-success sd-text-white sd-font-weight-bold
       :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
@@ -684,7 +684,7 @@ Documentation of new functions
 
 
          (2) Get the policy cost performance gradient b (flat as vector)
-           
+
          .. code-block:: python
             :linenos:
 
@@ -694,8 +694,8 @@ Documentation of new functions
             b_flat = get_flat_gradients_from(self.ac.pi.net)
 
 
-         (3) Build the Hessian-vector product based on an approximation of the KL-divergence, using ``conjugate_gradients`` 
-           
+         (3) Build the Hessian-vector product based on an approximation of the KL-divergence, using ``conjugate_gradients``
+
          .. code-block:: python
             :linenos:
 
@@ -705,7 +705,7 @@ Documentation of new functions
             s = b_flat.dot(p)  # b^T H^{-1} b
 
          (4) Determine step direction and apply SGD step after grads where set (By ``adjust_cpo_step_direction()``)
-           
+
          .. code-block:: python
             :linenos:
 
@@ -729,7 +729,7 @@ Documentation of new functions
 
     .. tab-item:: pcpo.adjust_cpo_step_direction()
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-success sd-text-white sd-font-weight-bold
          :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
          :class-footer: sd-font-weight-bold
@@ -787,7 +787,7 @@ Documentation of new functions
             else:
                 self.logger.log(f'Accept step at i={j + 1}')
                 break
-         
+
          (3) Return appropriate step direction and acceptance step.
 
 ------------------------------------------------------------------------
@@ -799,7 +799,7 @@ Parameters
 
     .. tab-item:: Specific Parameters
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-success sd-text-white sd-font-weight-bold
          :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
          :class-footer: sd-font-weight-bold
@@ -807,13 +807,13 @@ Parameters
          Specific Parameters
          ^^^^^^^^
          -  target_kl(float): Constraint for KL-distance to avoid too far gap
-         -  cg_damping(float): parameter plays a role in building Hessian-vector 
+         -  cg_damping(float): parameter plays a role in building Hessian-vector
          -  cg_iters(int): Number of iterations of conjugate gradient to perform.
          -  cost_limit(float): Constraint for agent to avoid too much cost
 
     .. tab-item:: Basic parameters
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-success sd-text-white sd-font-weight-bold
          :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
          :class-footer: sd-font-weight-bold
@@ -830,7 +830,7 @@ Parameters
             ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
             -  shared_weights (bool) : Use shared weights between actor and critic network or not.
-           
+
             -  weight_initialization_mode (string) : The type of weight initialization method.
 
             -  pi (dictionary) : parameters for actor network ``pi``
@@ -850,7 +850,7 @@ Parameters
                   -  64
 
                .. hint::
-                  
+
                   ======== ================  ====================================================================
                   Name        Type              Description
                   ======== ================  ====================================================================
@@ -871,7 +871,7 @@ Parameters
 
     .. tab-item:: Optional parameters
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-success sd-text-white sd-font-weight-bold
          :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
          :class-footer: sd-font-weight-bold
@@ -888,7 +888,7 @@ Parameters
 
     .. tab-item:: Buffer parameters
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-success sd-text-white sd-font-weight-bold
          :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
          :class-footer: sd-font-weight-bold
@@ -906,7 +906,7 @@ Parameters
 
                                for calculating the advantages of state-action pairs.
                ============= =============================================================================
-        
+
          .. warning::
                  Buffer collects only raw data received from environment.
 
@@ -956,7 +956,7 @@ degradation.
     .. tab-item:: Lemma 1
         :sync: key1
 
-        .. card:: 
+        .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
             :class-footer: sd-font-weight-bold
@@ -976,7 +976,7 @@ degradation.
     .. tab-item:: Lemma 2
         :sync: key2
 
-        .. card:: 
+        .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
             :class-footer: sd-font-weight-bold
@@ -1004,7 +1004,7 @@ degradation.
     .. tab-item:: Proof of Lemma 1
         :sync: key1
 
-        .. card:: 
+        .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
             :class-footer: sd-font-weight-bold
@@ -1019,7 +1019,7 @@ degradation.
             .. math::
 
                \begin{aligned}
-               &\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k} ||\pi_{k+\frac{1}{2}})[s]\big]\geq 
+               &\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k} ||\pi_{k+\frac{1}{2}})[s]\big]\geq
                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k}||\pi_{k+1})[s]\big] \\
                &+
                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k+\frac{1}{2}})[s]\big]\\
@@ -1041,7 +1041,7 @@ degradation.
     .. tab-item:: Proof of Lemma 2
       :sync: key2
 
-      .. card:: 
+      .. card::
          :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
          :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
          :class-footer: sd-font-weight-bold
@@ -1117,7 +1117,7 @@ degradation.
 
 Now we use :bdg-info-line:`Lemma 2` to prove the
 :bdg-info-line:`Theorem 2`. Following the same proof in
-:bdg-ref-info-line:`Theorem 1<cards-clickable>`, we complete the proof. 
+:bdg-ref-info-line:`Theorem 1<cards-clickable>`, we complete the proof.
 
 .. _`appendix_proof_theorem_3`:
 
@@ -1126,9 +1126,9 @@ Now we use :bdg-info-line:`Lemma 2` to prove the
 Proof of Analytical Solution to PCPO
 =====================================
 
-.. card:: 
+.. card::
    :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-   :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 
+   :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
 
    Analytical Solution to PCPO
    ^^^^
@@ -1213,7 +1213,7 @@ Proof of Analytical Solution to PCPO
          :nowrap:
 
          \begin{eqnarray}
-         \theta_{k+\frac{1}{2}}=\theta^{*}=\theta_{k}+\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g \tag{18}    
+         \theta_{k+\frac{1}{2}}=\theta^{*}=\theta_{k}+\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g \tag{18}
          \end{eqnarray}
 
       which also satisfies :math:`(15)`,
@@ -1226,7 +1226,7 @@ Proof of Analytical Solution to PCPO
          :nowrap:
 
          \begin{eqnarray}
-         \mathcal{L}(\theta,\lambda)=\frac{1}{2}(\theta-{\theta}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\theta-{\theta}_{k+\frac{1}{2}})+\lambda(a^T(\theta-\theta_{k})+b)\tag{19}  
+         \mathcal{L}(\theta,\lambda)=\frac{1}{2}(\theta-{\theta}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\theta-{\theta}_{k+\frac{1}{2}})+\lambda(a^T(\theta-\theta_{k})+b)\tag{19}
          \end{eqnarray}
 
       And we have the following KKT conditions:
@@ -1239,7 +1239,7 @@ Proof of Analytical Solution to PCPO
             a^T(\theta^*-\theta_{k})+b=0~~~~&~~~\nabla_\lambda\mathcal{L}(\theta^{*},\lambda^{*})=0 \tag{21}  \\
              a^T(\theta^*-\theta_{k})+b\leq0~~~~&~~~\text{primal constraints}\tag{22}  \\
             \lambda^*\geq0~~~~&~~~\text{dual constraints}\tag{23}  \\
-            \lambda^*(a^T(\theta^*-\theta_{k})+b)=0~~~~&~~~\text{complementary slackness}\tag{24}  
+            \lambda^*(a^T(\theta^*-\theta_{k})+b)=0~~~~&~~~\text{complementary slackness}\tag{24}
          \end{eqnarray}
 
       By :math:`(20)`, we have
@@ -1281,11 +1281,11 @@ twice continuously differentiable over the closed and convex constraint
 set :math:`\mathcal{C}.` We have the following :bdg-info-line:`Lemma 3` to characterize the
 projection and for the proof of :bdg-info-line:`Theorem 3`
 
-.. card:: 
+.. card::
    :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-   :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 
+   :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
 
-   Lemma 3 
+   Lemma 3
    ^^^^
    For any :math:`\theta,`
    :math:`\theta^{*}=\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)`
@@ -1294,7 +1294,7 @@ projection and for the proof of :bdg-info-line:`Theorem 3`
    where
    :math:`\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)\doteq \underset{\theta' \in \mathrm{C}}{\arg\,min}||\theta-\theta'||^2_{\boldsymbol{L}}`
    and :math:`\boldsymbol{L}=\boldsymbol{H}` if using the KL divergence
-   projection, and :math:`\boldsymbol{L}=\boldsymbol{I}` if using the :math:`L2` 
+   projection, and :math:`\boldsymbol{L}=\boldsymbol{I}` if using the :math:`L2`
    norm projection.
 
    +++
@@ -1347,9 +1347,9 @@ projection and for the proof of :bdg-info-line:`Theorem 3`
 Based on :bdg-info-line:`Lemma 3` we have the proof of
 following :bdg-info-line:`Theorem 3`.
 
-.. card:: 
+.. card::
    :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-   :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 
+   :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
 
    Theorem 3 (Stationary Points of PCPO with the KL divergence and :math:`L2`  Norm Projections)
    ^^^^
@@ -1365,7 +1365,7 @@ following :bdg-info-line:`Theorem 3`.
    negative gradient of the cost advantage function). The objective
    value changes by
 
-   .. math:: f(\theta_{k+1})\leq f(\theta_{k})+||\theta_{k+1}-\theta_{k}||^2_{-\frac{1}{\eta}\boldsymbol{H}+\frac{L}{2}\boldsymbol{I}}\tag{27} 
+   .. math:: f(\theta_{k+1})\leq f(\theta_{k})+||\theta_{k+1}-\theta_{k}||^2_{-\frac{1}{\eta}\boldsymbol{H}+\frac{L}{2}\boldsymbol{I}}\tag{27}
 
 
    PCPO with the :math:`L2` norm projection converges to stationary points with
@@ -1478,7 +1478,7 @@ following :bdg-info-line:`Theorem 3`.
       assumption we use to prove the bound.
 
       .. note::
-         
+
          To make the objective value for PCPO with the KL divergence projection
          improves, the right hand side of :math:`(25)`
          needs to be negative. Hence we have
@@ -1504,7 +1504,7 @@ following :bdg-info-line:`Theorem 3`.
                \tag{32}
             \end{eqnarray}
 
-         By the definition of the condition number and 
+         By the definition of the condition number and
          :math:`(29)`, we have
 
          .. math::
@@ -1516,4 +1516,3 @@ following :bdg-info-line:`Theorem 3`.
             \end{aligned}
 
          which justifies what we discuss.
-
