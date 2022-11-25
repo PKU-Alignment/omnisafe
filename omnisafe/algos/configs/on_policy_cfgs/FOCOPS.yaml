@@ -74,3 +74,62 @@ defaults:
     lagrangian_multiplier_init: 0.001
     lambda_lr: 0.035
     lambda_optimizer: "Adam"
+
+SafetyPointGoal1-v0:
+  # Basic Configurations
+  ## Basic configurations for base class PG
+  epochs: 1000
+  steps_per_epoch: 10000
+  pi_iters: 40
+  critic_iters: 20
+  check_freq: 25
+  save_freq: 100
+  entropy_coef: 0.0
+  max_ep_len: 1000
+  num_mini_batches: 32
+  pi_lr: 0.0003
+  vf_lr: 0.001
+  data_dir: "./runs"
+  ## Basic configurations for derived class FOCOPS
+  target_kl: 0.01
+  eta: 0.02
+  lam: 1.5
+  seed: 0
+
+  # Optional Configuration
+  ## Whether to use cost critic
+  use_cost: True
+  cost_gamma: 1.0
+  linear_lr_decay: False
+  exploration_noise_anneal: True
+  reward_penalty: False
+  kl_early_stopping: True
+  use_max_grad_norm: False
+  max_grad_norm: 0.5
+  scale_rewards: False
+  standardized_obs: True
+  ## Configuration For Mode
+  model_cfgs:
+    shared_weights: False
+    weight_initialization_mode: "kaiming_uniform"
+    ac_kwargs:
+      pi:
+        hidden_sizes: [64, 64]
+        activation: tanh
+      val:
+        hidden_sizes: [64, 64]
+        activation: tanh
+  ## Configuration For Buffer
+  buffer_cfgs:
+    gamma: 0.99
+    lam: 0.95
+    lam_c: 0.95
+    adv_estimation_method: gae
+    standardized_reward: True
+    standardized_cost: True
+    reward_penalty: False
+  lagrange_cfgs:
+    cost_limit: 25.0
+    lagrangian_multiplier_init: 0.0
+    lambda_lr: 0.1
+    lambda_optimizer: "SGD"
