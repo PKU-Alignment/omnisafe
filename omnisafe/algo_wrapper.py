@@ -97,9 +97,19 @@ class AlgoWrapper:
             'SACLag',
             'CVPO',
         ]
-        assert self.algo in on_policy_list + off_policy_list, f'{self.algo} is not supported!'
-        on_policy_flag = self.algo in on_policy_list
-        cfgs = get_default_kwargs_yaml(self.algo, self.env_id, on_policy_flag)
+        model_based_list = [
+            'MBPPOLag',
+            'SafeLoop',
+        ]
+        assert self.algo in on_policy_list + off_policy_list + model_based_list, f'{self.algo} is not supported!'
+
+        if self.algo in on_policy_list:
+            algo_flag = 1
+        elif self.algo in off_policy_list:
+            algo_flag = 2
+        elif self.algo in model_based_list:
+            algo_flag = 3
+        cfgs = get_default_kwargs_yaml(self.algo, self.env_id, algo_flag)
         if self.custom_cfgs is not None:
             self.recursive_update(cfgs, self.custom_cfgs)
         exp_name = os.path.join(self.env.env_id, self.algo)
@@ -112,8 +122,8 @@ class AlgoWrapper:
             cfgs=cfgs,
         )
         ac = agent.learn()
-
-        self.evaluator = Evaluator(self.env, ac.pi, ac.obs_oms)
+        if algo_flag != 3:
+            self.evaluator = Evaluator(self.env, ac.pi, ac.obs_oms)
 
     def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
         """Agent Evaluation"""

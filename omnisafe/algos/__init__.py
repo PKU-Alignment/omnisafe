@@ -25,3 +25,6 @@ from omnisafe.algos.on_policy.ppo import PPO
 from omnisafe.algos.on_policy.ppo_lag import PPOLag
 from omnisafe.algos.on_policy.trpo import TRPO
 from omnisafe.algos.on_policy.trpo_lag import TRPOLag
+from omnisafe.algos.model_based.mbppo import MBPPOLag
+from omnisafe.algos.model_based.safeloop import SafeLoop
+

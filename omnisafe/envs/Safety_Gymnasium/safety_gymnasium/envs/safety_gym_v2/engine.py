@@ -58,6 +58,8 @@ class Engine:
         self.layout = None
         self.observation_flatten = None
 
+    
+
     def parse(self, world_config, task_config):
         """Parse a config dict - see self.DEFAULT for description"""
         self.world_config = {}
