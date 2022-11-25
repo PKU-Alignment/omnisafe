@@ -1,0 +1,38 @@
+defaults:
+# Basic Configurations
+    ## Basic configurations for base class PG
+    device: 'cuda'
+    max_real_time_step: 100000
+    seed: 0
+    cost_criteria: nondiscounted  # [nondiscounted: \gamma = 1, discount: ]
+    data_dir: "./runs"
+    ## Basic configurations for derived class PDO_Lag
+
+    action_repeat: 1
+    use_cost_critic: False
+    reward_penalty: False
+    scale_rewards: False
+    standardized_obs: False
+
+    learn_cost: True
+    binary_cost: True
+    plan_hor: 30
+    model_train_freq: 1000
+    learn_kappa: False
+    cost_constrained: True
+    penalize_uncertainty: False
+    gamma: 0.99
+    c_gamma: 0.99
+    replay_size: 1000000 
+
+    ## Configuration For dynamics model
+    dynamics_cfgs:
+        num_networks: 5
+        pred_hidden_size: 200  
+
+
+
+    lagrange_cfgs:
+        cost_limit: 152
+        lagrangian_multiplier_init: 1.0
+        lambda_lr: 0.1
