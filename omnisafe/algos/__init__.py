@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 
+from omnisafe.algos.model_based.mbppo import MBPPOLag
+from omnisafe.algos.model_based.safeloop import SafeLoop
 from omnisafe.algos.on_policy.cpo import CPO
 from omnisafe.algos.on_policy.cppo_pid import CPPOPid
 from omnisafe.algos.on_policy.focops import FOCOPS
