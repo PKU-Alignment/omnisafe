@@ -1,25 +1,24 @@
 defaults:
-# Basic Configurations
-    ## Basic configurations for base class PG
-    epochs: 500
-    steps_per_epoch: 30000
-    pi_iters: 80
-    critic_iters: 40
-    check_freq: 25
-    save_freq: 100
-    entropy_coef: 0.01
-    max_ep_len: 1000
-    num_mini_batches: 16
-    pi_lr: 0.0003
-    vf_lr: 0.001
-    data_dir: "./runs"
-    seed: 0
-    ## Basic configurations for derived class TRPO_Lag
-    target_kl: 0.01
-    cg_damping : 0.1
-    cg_iters : 10
-    fvp_obs : None
-
+  # Basic Configurations
+  ## Basic configurations for base class PG
+  epochs: 500
+  steps_per_epoch: 30000
+  pi_iters: 80
+  critic_iters: 40
+  check_freq: 25
+  save_freq: 100
+  entropy_coef: 0.01
+  max_ep_len: 1000
+  num_mini_batches: 16
+  pi_lr: 0.0003
+  vf_lr: 0.001
+  data_dir: "./runs"
+  seed: 0
+  ## Basic configurations for derived class TRPO_Lag
+  target_kl: 0.01
+  cg_damping: 0.1
+  cg_iters: 10
+  fvp_obs: None
 
     # Optional Configuration
     ## Whether to use cost critic

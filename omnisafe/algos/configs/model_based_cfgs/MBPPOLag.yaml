@@ -1,0 +1,49 @@
+defaults:
+# Basic Configurations
+    ## Basic configurations for base class PG
+    device: 'cpu' ##only support cpu now, gpu not checked yet
+    max_real_time_step: 500000
+    mixed_real_tiem_step: 1500
+    imaging_time_step: 80
+    seed: 0
+    max_ep_len: 1000
+    pi_lr: 0.0003
+    vf_lr: 0.001
+    action_repeat: 1
+    data_dir: "./runs"
+
+    # Optional Configuration
+    ## Whether to use cost critic
+    cost_criteria: False
+    use_cost_critic: False
+    reward_penalty: False
+    scale_rewards: False
+    standardized_obs: False
+
+    ac_hidden_sizes: [64, 64]
+    replay_size: 1000000
+
+    ## Configuration For dynamics model
+    dynamics_cfgs:
+        reward_size: 0
+        cost_size: 0
+        state_dim: 42
+
+        num_networks: 8
+        num_elites: 6
+        pred_hidden_size: 200
+        use_decay: True
+
+
+    ## Configuration For Buffer
+    On_buffer_cfgs:
+        local_step_per_epoch: 30000
+        gamma: 0.99
+        lam: 0.97
+
+    lagrange_cfgs:
+        cost_limit: 18.0
+        lagrangian_multiplier_init: 0.5
+        lambda_lr: 0.05
+        lambda_optimizer: 'Adam'
+        beta: 0.05

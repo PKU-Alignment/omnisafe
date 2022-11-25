@@ -1,3 +1,18 @@
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
 import time
 from copy import deepcopy
 
@@ -28,7 +43,6 @@ class PolicyGradient(PolicyGradientBase):
         self.cost_gamma = cfgs['cost_gamma']
         self.local_steps_per_epoch = cfgs['steps_per_epoch'] // distributed_tools.num_procs()
         self.entropy_coef = cfgs['entropy_coef']
-        self.Jc_queue = deque(maxlen=100)
         # Call assertions, Check if some variables are valid to experiment
         self._init_checks()
         # Set up logger and save configuration to disk
