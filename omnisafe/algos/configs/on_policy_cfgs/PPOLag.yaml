@@ -72,8 +72,8 @@ defaults:
 
 SafetyPointGoal1-v0:
 # Basic Configurations
-    epochs: 1000
-    steps_per_epoch: 10000
+    epochs: 500
+    steps_per_epoch: 20000
     pi_iters: 40
     critic_iters: 20
     check_freq: 25
