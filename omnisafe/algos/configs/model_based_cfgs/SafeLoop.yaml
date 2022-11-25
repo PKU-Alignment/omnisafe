@@ -27,7 +27,7 @@ defaults:
 
 
     ac_hidden_sizes: [64, 64]
-    replay_size: 1000000 
+    replay_size: 1000000
 
     ## Configuration For dynamics model
     dynamics_cfgs:
@@ -35,9 +35,9 @@ defaults:
         cost_size: 0
         state_dim: 26
         num_networks: 7
-        num_elites: 5  
-        pred_hidden_size: 200  
-        use_decay: True   
+        num_elites: 5
+        pred_hidden_size: 200
+        use_decay: True
 
 
 
@@ -47,14 +47,10 @@ defaults:
         reward_horizon: 8
         gamma: 0.99              # reward discount coefficient
         exploration_noise: 0.0
-        ARC:                        
+        ARC:
             popsize: 100            # how many random samples for mpc
             particles: 4            # number of particles to enlarge
             max_iters: 8
             alpha: 0.1              # weights for previous mean and var
             mixture_coefficient: 0.05
             kappa: 1
-
-
-
-

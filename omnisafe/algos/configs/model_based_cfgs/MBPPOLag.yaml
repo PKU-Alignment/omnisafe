@@ -11,7 +11,7 @@ defaults:
     vf_lr: 0.001
     action_repeat: 1
     data_dir: "./runs"
-    
+
     # Optional Configuration
     ## Whether to use cost critic
     cost_criteria: False
@@ -21,7 +21,7 @@ defaults:
     standardized_obs: False
 
     ac_hidden_sizes: [64, 64]
-    replay_size: 1000000 
+    replay_size: 1000000
 
     ## Configuration For dynamics model
     dynamics_cfgs:
@@ -31,8 +31,8 @@ defaults:
 
         num_networks: 8
         num_elites: 6
-        pred_hidden_size: 200  
-        use_decay: True   
+        pred_hidden_size: 200
+        use_decay: True
 
 
     ## Configuration For Buffer
@@ -44,6 +44,6 @@ defaults:
     lagrange_cfgs:
         cost_limit: 18.0
         lagrangian_multiplier_init: 0.5
-        lambda_lr: 0.05 
+        lambda_lr: 0.05
         lambda_optimizer: 'Adam'
         beta: 0.05
