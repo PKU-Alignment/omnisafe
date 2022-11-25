@@ -117,8 +117,8 @@ SafetyPointGoal1-v0:
         lam: 0.95
         lam_c: 0.95
         adv_estimation_method: gae
-        standardized_reward: True
-        standardized_cost: True
+        standardized_reward: False
+        standardized_cost: False
         reward_penalty: False
     ## Configuration For Lagrange
     lagrange_cfgs:
