@@ -77,7 +77,7 @@ defaults:
 SafetyPointGoal1-v0:
 # Basic Configurations
     ## Basic configurations for base class PG
-    epochs: 1000
+    epochs: 500
     steps_per_epoch: 20000
     pi_iters: 40
     critic_iters: 20
@@ -126,8 +126,8 @@ SafetyPointGoal1-v0:
         lam: 0.95
         lam_c: 0.95
         adv_estimation_method: gae
-        standardized_reward: True
-        standardized_cost: True
+        standardized_reward: False
+        standardized_cost: False
         reward_penalty: False
     lagrange_cfgs:
         cost_limit: 25.0
