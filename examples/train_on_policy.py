@@ -30,7 +30,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--env-id',
         type=str,
-        default='SafetyPointGoal1-v0',
+        default='SafetyPointGoal3-v0',
         help='The name of test environment',
     )
     parser.add_argument(
