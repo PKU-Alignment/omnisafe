@@ -161,18 +161,12 @@ class Buffer:
         discounted_ret = discount_cumsum(rews, self.gamma)[:-1]
         self.discounted_ret_buf[path_slice] = discounted_ret
 
-        # if self.use_reward_penalty:
-        #     assert penalty_param >= 0, 'reward_penalty assumes positive value.'
-        #     rews -= penalty_param * costs
+        if self.use_reward_penalty:
+            assert penalty_param >= 0, 'reward_penalty assumes positive value.'
+            rews -= penalty_param * costs
 
-        # if self.use_scaled_rewards:
-        #     # divide rewards by running return stddev.
-        #     # discounted_ret = discount_cumsum(rews, self.gamma)[:-1]
-        #     # for i, ret in enumerate(discounted_ret):
-        #     # update running return statistics
-        #     # self.actor_critic.ret_oms.update(discounted_ret)
-        #     # # now scale...
-        #     rews = self.actor_critic.ret_oms(rews, subtract_mean=False, clip=True)
+        if self.use_scaled_rewards:
+            rews = self.actor_critic.ret_oms(rews, subtract_mean=False, clip=True)
 
         adv, v_targets = self.calculate_adv_and_value_targets(vals, rews)
         self.adv_buf[path_slice] = adv
@@ -194,8 +188,6 @@ class Buffer:
         assert self.ptr == self.max_size  # buffer has to be full before you can get
         self.ptr, self.path_start_idx = 0, 0
 
-        # TODO: pre-processing like standardization and scaling is done in
-        #  Algorithm.  pre_process_data() method
         if self.use_standardized_reward:
             # the next two lines implement the advantage normalization trick
             # adv_mean, adv_std = np.mean(self.adv_buf), np.std(self.adv_buf)
@@ -208,10 +200,7 @@ class Buffer:
         if self.use_standardized_cost:
             # also for cost advantages; only re-center but no rescale!
             cadv_mean, cadv_std = distributed_tools.mpi_statistics_scalar(self.cost_adv_buf)
-            self.cost_adv_buf = (self.cost_adv_buf - cadv_mean) / (cadv_std + 1.0e-8)
-        # TODO
-        # self.obs_buf = self.actor_critic.obs_oms(self.obs_buf, clip=False) \
-        #     if self.standardize_env_obs else self.obs_buf
+            self.cost_adv_buf = (self.cost_adv_buf - cadv_mean)# / (cadv_std + 1.0e-8)
 
         data = dict(
             obs=self.obs_buf,

@@ -26,7 +26,7 @@ class PPOLag(PolicyGradient, Lagrange):
 
         # ensure that lagrange multiplier is positive
         penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        loss_pi = -(torch.max(ratio * data['cost_adv'], ratio_clip * data['cost_adv'])).mean()
+        loss_pi += (torch.max(ratio * data['cost_adv'], ratio_clip * data['cost_adv'])).mean()
         # loss_pi += penalty * ((ratio * data['cost_adv']).mean())
         loss_pi /= 1 + penalty
 
