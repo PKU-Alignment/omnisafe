@@ -3,24 +3,27 @@ device = 'cpu'
 import itertools
 import time
 from copy import deepcopy
+
 import numpy as np
 import torch
 from torch.optim import Adam
+
 from omnisafe.algos.common.logger import Logger
 from omnisafe.algos.model_based import arc
 from omnisafe.algos.model_based.aux import generate_lidar
-from omnisafe.algos.models.policy_gradient_base import PolicyGradientBase
 
 ### safeloop
 from omnisafe.algos.model_based.models import core_ac, core_sac
 from omnisafe.algos.model_based.models.dynamics_predict_env import PredictEnv
 from omnisafe.algos.model_based.models.dynamicsmodel import EnsembleDynamicsModel
+
 ### mbppo and safeloop
 from omnisafe.algos.model_based.replay_memory import PPOBuffer, ReplayMemory, SAC_ReplayBuffer
+from omnisafe.algos.models.policy_gradient_base import PolicyGradientBase
+from omnisafe.algos.registry import REGISTRY
 from omnisafe.algos.utils import distributed_tools
 from omnisafe.algos.utils.distributed_tools import proc_id
 from omnisafe.algos.utils.tools import get_flat_params_from
-from omnisafe.algos.registry import REGISTRY
 
 
 def default_termination_function(state, action, next_state):
@@ -34,7 +37,8 @@ def default_termination_function(state, action, next_state):
 
 @REGISTRY.register
 class PolicyGradientModelBased(PolicyGradientBase):
-    """ policy update base class"""
+    """policy update base class"""
+
     def __init__(self, env, exp_name, data_dir, seed=0, algo='pg', cfgs=None) -> None:
         self.env = env
         self.env_id = env.env_id
@@ -64,7 +68,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
         env_name = 'safepg2'
         self.num_repeat = self.cfgs['action_repeat']
 
-        if self.algo in ["mbppo-lag" , "mbppo_v2"]:
+        if self.algo in ["mbppo-lag", "mbppo_v2"]:
             obs_dim = (26,)
             num_elites = self.cfgs['dynamics_cfgs']['num_elites']
 
@@ -156,10 +160,15 @@ class PolicyGradientModelBased(PolicyGradientBase):
             for p in self.actor_critic_targ.parameters():
                 p.requires_grad = False
             # List of parameters for both Q-networks (save this for convenience)
-            self.q_params = itertools.chain(self.actor_critic.q1.parameters(), self.actor_critic.q2.parameters())
+            self.q_params = itertools.chain(
+                self.actor_critic.q1.parameters(), self.actor_critic.q2.parameters()
+            )
             # Count variables (protip: try to get a feel for how different size networks behave!)
             # pylint: disable-next=line-too-long
-            self.var_counts = tuple(core_sac.count_vars(module) for module in [self.actor_critic.pi, self.actor_critic.q1, self.actor_critic.q2])
+            self.var_counts = tuple(
+                core_sac.count_vars(module)
+                for module in [self.actor_critic.pi, self.actor_critic.q1, self.actor_critic.q2]
+            )
             # Set up optimizers for policy and q-function
             learning_rate = self.cfgs['sac_lr']
             self.pi_optimizer = Adam(self.actor_critic.pi.parameters(), lr=learning_rate)
@@ -228,13 +237,11 @@ class PolicyGradientModelBased(PolicyGradientBase):
             self.logger.setup_torch_saver(what_to_save=what_to_save)
             self.logger.torch_save()
 
-
         # Setup statistics
         self.start_time = time.time()
         self.epoch_time = time.time()
 
         self.logger.log('Start with training.')
-
 
     def _init_mpi(self):
         """
@@ -249,12 +256,12 @@ class PolicyGradientModelBased(PolicyGradientBase):
             distributed_tools.sync_params(self.actor_critic)
             self.logger.log(f'Done! (took {time.time()-datetime:0.3f} sec.)')
 
-    def algorithm_specific_logs(self,timestep):
+    def algorithm_specific_logs(self, timestep):
         """
         Use this method to collect log information.
         e.g. log lagrangian for lagrangian-base , log q, r, s, c for cpo, etc
         """
-        pass #pylint: disable=unnecessary-pass
+        pass  # pylint: disable=unnecessary-pass
 
     def check_distributed_parameters(self):
         """
@@ -269,8 +276,6 @@ class PolicyGradientModelBased(PolicyGradientBase):
                 global_min = distributed_tools.mpi_min(np.sum(flat_params))
                 global_max = distributed_tools.mpi_max(np.sum(flat_params))
                 assert np.allclose(global_min, global_max), f'{key} not synced.'
-
-
 
     def compute_loss_v(self, obs, ret):
         """
@@ -297,31 +302,28 @@ class PolicyGradientModelBased(PolicyGradientBase):
         Returns:
             No return
         """
-        pass  #pylint: disable=unnecessary-pass
+        pass  # pylint: disable=unnecessary-pass
 
-    def update_actor_critic(self,data=None):
+    def update_actor_critic(self, data=None):
         """
         update the actor critic
 
         Returns:
             No return
         """
-        pass  #pylint: disable=unnecessary-pass
+        pass  # pylint: disable=unnecessary-pass
 
     def learn(self):
-        """ learn the policy """
+        """learn the policy"""
         if self.algo == "safeloop":
             self.learn_safeloop()
         elif self.algo == "mbppo-lag":
             self.learn_mbppo()
 
-
-
-
     def learn_safeloop(self):
         """training the policy using safeloop"""
         self.start_time = time.time()
-        ep_len ,ep_ret, ep_cost = 0, 0, 0
+        ep_len, ep_ret, ep_cost = 0, 0, 0
         state, done = self.env.reset(), False
         max_real_time_step = int(self.cfgs['max_real_time_step'])
         start_timesteps = int(self.cfgs['start_timesteps'])
@@ -367,10 +369,11 @@ class PolicyGradientModelBased(PolicyGradientBase):
             # Evaluate episode
             if (t + self.num_repeat) % self.eval_freq == 0:
                 self.log(t)
+
     # pylint: disable=too-many-locals
     # pylint:disable=too-many-statements
     def learn_mbppo(self):
-        """training the policy using mbppo-lag in mbppo setting safetygym env """
+        """training the policy using mbppo-lag in mbppo setting safetygym env"""
 
         self.start_time = time.time()
         # Main loop: collect experience in env to train dynamics models
@@ -392,7 +395,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
             action = np.clip(action, self.env.action_space.low, self.env.action_space.high)
             # print(self.env.observation_space.low)
             next_state, reward, done, info = self.env.step(action, self.num_repeat)
-            #print("true",next_state,action)
+            # print("true",next_state,action)
             cost = info['cost']
             if not done and not info['goal_met']:
                 self.env_pool.push(
@@ -459,6 +462,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
 
                 self.update_actor_critic()
                 self.log(timestep)
+
     def log(self, timestep: int):
         """
         logging data

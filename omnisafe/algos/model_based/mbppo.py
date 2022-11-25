@@ -1,15 +1,18 @@
 # pylint:disable=no-name-in-module,import-error,too-many-locals,too-many-statements,too-many-instance-attributes,too-many-arguments
 """MBPPOLag"""
-import torch
 import numpy as np
+import torch
 from torch.nn.functional import softplus
+
 from omnisafe.algos.model_based.aux import dist_xy, generate_lidar, get_reward_cost
 from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased, device
 from omnisafe.algos.registry import REGISTRY
 
+
 @REGISTRY.register
 class MBPPOLag(PolicyGradientModelBased):
-    """ MBPPO-Lag"""
+    """MBPPO-Lag"""
+
     def __init__(self, algo='mbppo-lag', clip=0.2, **cfgs):
         PolicyGradientModelBased.__init__(self, algo=algo, **cfgs)
         self.clip = clip
@@ -20,7 +23,7 @@ class MBPPOLag(PolicyGradientModelBased):
         self.loss_c_before = 0.0
 
     def algorithm_specific_logs(self, timestep):
-        """ log algo parameter"""
+        """log algo parameter"""
         super().algorithm_specific_logs(timestep)
         self.logger.log_tabular('DynaMetrics/EpRet')
         self.logger.log_tabular('DynaMetrics/EpLen')
@@ -40,7 +43,7 @@ class MBPPOLag(PolicyGradientModelBased):
         self.logger.log_tabular('PolicyRatio')
 
     def update_actor_critic(self):
-        """ update actor critic """
+        """update actor critic"""
         # -------------------train actor and critic ----------------------
         megaiter = 0
         perf_flag = True
@@ -48,8 +51,8 @@ class MBPPOLag(PolicyGradientModelBased):
             if megaiter == 0:
                 last_valid_rets = [0] * 6
 
-            #env_model2 = torch.load(exp_name+"env_model.pkl")
-            #predict_env2 = PredictEnv(self.algo, self.dynamics, self.exp_name, 'pytorch')
+            # env_model2 = torch.load(exp_name+"env_model.pkl")
+            # predict_env2 = PredictEnv(self.algo, self.dynamics, self.exp_name, 'pytorch')
 
             self.roll_out_in_imaginary(
                 megaiter,
@@ -60,7 +63,6 @@ class MBPPOLag(PolicyGradientModelBased):
                 use_cost_critic=self.cfgs['use_cost_critic'],
                 gamma=self.cfgs['On_buffer_cfgs']['gamma'],
             )
-
 
             # ---------------validation--------------------------------------
             if megaiter > 0:
@@ -95,15 +97,17 @@ class MBPPOLag(PolicyGradientModelBased):
         self.logger.store(Megaiter=megaiter)
 
     def compute_loss_v(self, data):
-        """ compute the loss of value function"""
+        """compute the loss of value function"""
         obs, ret, cret = data['obs'], data['ret'], data['cret']
         obs.to(device)
         ret.to(device)
         cret.to(device)
-        return ((self.actor_critic.v(obs) - ret) ** 2).mean(), ((self.actor_critic.vc(obs) - cret) ** 2).mean()
+        return ((self.actor_critic.v(obs) - ret) ** 2).mean(), (
+            (self.actor_critic.vc(obs) - cret) ** 2
+        ).mean()
 
     def compute_loss_pi(self, data):
-        """ compute the loss of policy"""
+        """compute the loss of policy"""
         dist, _log_p = self.actor_critic.pi(data['obs'], data['act'].to(device))
         ratio = torch.exp(_log_p - data['logp'])
         ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
@@ -125,17 +129,15 @@ class MBPPOLag(PolicyGradientModelBased):
         return loss_pi, pi_info
 
     def update_dynamics_model(self):
-        """ compute the loss of dynamics"""
+        """compute the loss of dynamics"""
         state, action, _, _, next_state, _ = self.env_pool.sample(len(self.env_pool))
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
         labels = delta_state
         self.predict_env.model.train(inputs, labels, batch_size=256, holdout_ratio=0.2)
 
-
-
     def update(self):
-        """ update ac"""
+        """update ac"""
         data = self.buf.get()
         cur_cost = self.logger.get_stats('DynaMetrics/EpCost')[0]
         pi_l_old, pi_info_old = self.compute_loss_pi(data)
@@ -178,10 +180,11 @@ class MBPPOLag(PolicyGradientModelBased):
             loss_vc.backward()
             # mpi_avg_grads(ac.vc)  # average grads across MPI processes
             self.cvf_optimizer.step()
-            
+
         # Log changes from update
         kl, ent, cf = pi_info['kl'], pi_info_old['ent'], pi_info['cf']
-        self.logger.store(**{
+        self.logger.store(
+            **{
                 'Loss/Pi': pi_l_old,
                 'Loss/Value': v_l_old,
                 'Loss/Cost': cv_l_old,
@@ -191,18 +194,17 @@ class MBPPOLag(PolicyGradientModelBased):
                 'Entropy': ent,
                 'KL': kl,
                 'PolicyRatio': cf,
-            })
+            }
+        )
 
     def get_param_values(self, model):
-        """ get the dynamics parameters"""
+        """get the dynamics parameters"""
         trainable_params = list(model.parameters())  # + [self.log_std]
-        params = np.concatenate(
-            [p.contiguous().view(-1).data.numpy() for p in trainable_params]
-        )
+        params = np.concatenate([p.contiguous().view(-1).data.numpy() for p in trainable_params])
         return params.copy()
 
     def set_param_values(self, new_params, model, set_new=True):
-        """ set the dynamics parameters"""
+        """set the dynamics parameters"""
         trainable_params = list(model.parameters())
 
         param_shapes = [p.data.numpy().shape for p in trainable_params]
@@ -217,7 +219,16 @@ class MBPPOLag(PolicyGradientModelBased):
                 current_idx += param_sizes[idx]
 
     # collect experience in env to train dynamics models
-    def roll_out_in_imaginary(self,megaiter,predict_env,local_steps_per_epoch,penalty_param,cost_criteria,use_cost_critic,gamma):
+    def roll_out_in_imaginary(
+        self,
+        megaiter,
+        predict_env,
+        local_steps_per_epoch,
+        penalty_param,
+        cost_criteria,
+        use_cost_critic,
+        gamma,
+    ):
         """collect data and store to experience buffer."""
         max_ep_len2 = 80
         o, static = self.env.reset()  ##generate the initial state!!!!
@@ -248,18 +259,18 @@ class MBPPOLag(PolicyGradientModelBased):
 
             if True in np.isnan(a):
                 print("produce nan in actor")
-                print("action,obs",a,obs_vec)
+                print("action,obs", a, obs_vec)
                 a = np.nan_to_num(a)
             a = np.clip(a, self.env.action_space.low, self.env.action_space.high)
-            
+
             # --------USING LEARNED MODEL OF ENVIRONMENT TO GENERATE ROLLOUTS-----------------
             next_o = predict_env.step(o, a)
 
             if True in np.isnan(next_o):
                 print("produce nan in actor")
-                print("next_o,action,obs",next_o,a,o)
+                print("next_o,action,obs", next_o, a, o)
                 next_o = np.nan_to_num(next_o)
-            next_o = np.clip(next_o, -1000, 1000)          
+            next_o = np.clip(next_o, -1000, 1000)
             r, c, ld, goal_flag = get_reward_cost(ld, robot_pos, hazards_pos, goal_pos)
 
             dep_ret += r
@@ -292,9 +303,12 @@ class MBPPOLag(PolicyGradientModelBased):
                 if terminal:
                     # only save EpRet / EpLen if trajectory finished
                     self.logger.store(
-                        **{'DynaMetrics/EpRet': dep_ret,
+                        **{
+                            'DynaMetrics/EpRet': dep_ret,
                             'DynaMetrics/EpLen': dep_len + 1,
-                            'DynaMetrics/EpCost': dep_cost,})
+                            'DynaMetrics/EpCost': dep_cost,
+                        }
+                    )
 
                 o, static = self.env.reset()
                 o = np.clip(o, -1000, 1000)
@@ -303,8 +317,10 @@ class MBPPOLag(PolicyGradientModelBased):
                 ld = dist_xy(o[40:], goal_pos)
                 dep_ret, dep_len, dep_cost = 0, 0, 0
 
-    def mbppo_valid(self, last_valid_rets, predict_env, penalty_param, cost_criteria, use_cost_critic, gamma):
-        """ validation whether improve policy"""
+    def mbppo_valid(
+        self, last_valid_rets, predict_env, penalty_param, cost_criteria, use_cost_critic, gamma
+    ):
+        """validation whether improve policy"""
         # 6 ELITE MODELS OUT OF 8
         valid_rets = [0] * 6
         winner = 0
@@ -328,14 +344,14 @@ class MBPPOLag(PolicyGradientModelBased):
                 av, _, _, _ = self.actor_critic.step(ovt)
                 if True in np.isnan(av):
                     print("produce nan in vali actor")
-                    print("action,obs",av,obs_vecv)
+                    print("action,obs", av, obs_vecv)
                     av = np.nan_to_num(av)
                 av = np.clip(av, self.env.action_space.low, self.env.action_space.high)
                 del ovt
                 next_ov = predict_env.step_elite(ov, av, va)
                 if True in np.isnan(next_ov):
                     print("produce nan in  vali env")
-                    print("next_o,action,obs",next_ov,av,ov)
+                    print("next_o,action,obs", next_ov, av, ov)
                     next_ov = np.nan_to_num(next_ov)
                 next_ov = np.clip(next_ov, -1000, 1000)
                 rv, cv, ldv, goal_flagv = get_reward_cost(ldv, robot_posv, hazards_posv, goal_posv)

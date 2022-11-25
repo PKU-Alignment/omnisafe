@@ -1,18 +1,21 @@
 # pylint:disable=invalid-name,no-name-in-module,import-error,too-many-locals,too-many-statements,too-many-instance-attributes,too-many-arguments
-import torch
 import numpy as np
-from omnisafe.algos.registry import REGISTRY
+import torch
+
 from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased, device
+from omnisafe.algos.registry import REGISTRY
+
 
 @REGISTRY.register
 class SafeLoop(PolicyGradientModelBased):
     """safeloop"""
+
     def __init__(self, algo='safeloop', clip=0.2, **cfgs):
         PolicyGradientModelBased.__init__(self, algo=algo, **cfgs)
         self.clip = clip
 
     def algorithm_specific_logs(self, timestep):
-        """ log algo parameter"""
+        """log algo parameter"""
         super().algorithm_specific_logs(timestep)
         if timestep >= self.start_timesteps:
             self.logger.log_tabular('Loss/Pi')
@@ -35,8 +38,8 @@ class SafeLoop(PolicyGradientModelBased):
             self.logger.log_tabular('Loss/DynamicsValLoss')
 
     def update(self):
-        """ Todo"""
-        pass #pylint:disable=unnecessary-pass
+        """Todo"""
+        pass  # pylint:disable=unnecessary-pass
 
     # Set up model saving
     def update_actor_critic(self, data):
@@ -68,11 +71,13 @@ class SafeLoop(PolicyGradientModelBased):
             self.alpha_optim.zero_grad()
             alpha_loss.backward()
             self.alpha_optim.step()
-            self.alpha = self.log_alpha.exp() #pylint:disable=attribute-defined-outside-init
+            self.alpha = self.log_alpha.exp()  # pylint:disable=attribute-defined-outside-init
 
         # Finally, update target networks by polyak averaging.
         with torch.no_grad():
-            for p, p_targ in zip(self.actor_critic.parameters(), self.actor_critic_targ.parameters()):
+            for p, p_targ in zip(
+                self.actor_critic.parameters(), self.actor_critic_targ.parameters()
+            ):
                 # NB: We use an in-place operations "mul_", "add_" to update target
                 # params, as opposed to "mul" and "add", which would make new tensors.
                 p_targ.data.mul_(self.polyak)
@@ -86,7 +91,7 @@ class SafeLoop(PolicyGradientModelBased):
         )
 
     def compute_loss_q(self, data):
-        """ Set up function for computing SAC Q-losses"""
+        """Set up function for computing SAC Q-losses"""
         o, a, r, o2, d = data['obs'], data['act'], data['rew'], data['obs2'], data['done']
         q1 = self.actor_critic.q1(o, a)
         q2 = self.actor_critic.q2(o, a)
@@ -112,7 +117,7 @@ class SafeLoop(PolicyGradientModelBased):
         return loss_q, q_info
 
     def compute_loss_pi(self, data):
-        """ compute loss of pi"""
+        """compute loss of pi"""
         o = data['obs']
         a = data['act']
         pi, logp_pi = self.actor_critic.pi(o)
@@ -133,7 +138,7 @@ class SafeLoop(PolicyGradientModelBased):
         return loss_pi, pi_info
 
     def update_dynamics_model(self):
-        """ updata dynamics """
+        """updata dynamics"""
         state = self.replay_buffer.state[: self.replay_buffer.size, :]
         action = self.replay_buffer.action[: self.replay_buffer.size, :]
         reward = self.replay_buffer.reward[: self.replay_buffer.size]
@@ -142,6 +147,9 @@ class SafeLoop(PolicyGradientModelBased):
         inputs = np.concatenate((state, action), axis=-1)
         labels = np.concatenate((np.reshape(reward, (reward.shape[0], -1)), delta_state), axis=-1)
         trainloss, valloss = self.dynamics.train(inputs, labels, batch_size=256, holdout_ratio=0.2)
-        self.logger.store(**{'Loss/DynamicsTrainLoss': trainloss,
-                             'Loss/DynamicsValLoss': valloss,})
-        
+        self.logger.store(
+            **{
+                'Loss/DynamicsTrainLoss': trainloss,
+                'Loss/DynamicsValLoss': valloss,
+            }
+        )

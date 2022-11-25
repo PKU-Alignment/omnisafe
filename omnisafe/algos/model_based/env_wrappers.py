@@ -1,7 +1,7 @@
-import numpy as np
-import torch
-import safety_gymnasium
 import gymnasium
+import numpy as np
+import safety_gymnasium
+import torch
 
 from omnisafe.algos.model_based.aux import (
     dist_xy,
@@ -43,7 +43,7 @@ CONSTRAINTS_MBPPO = dict(
 
 
 class Env_Wrappers:
-    def __init__(self, algo, env_id,render_mode='None'):
+    def __init__(self, algo, env_id, render_mode='None'):
         self.algo = algo
         self.env_id = env_id  # safety gym not use this attribute
         if self.algo == "MBPPOLag":
@@ -76,10 +76,8 @@ class Env_Wrappers:
             self.task = self.task.capitalize()  # mujuco  not use this attribute
             assert self.robot in ROBOTS, "can not recognize the robot type {}".format(self.robot)
             assert self.task in TASKS, "can not recognize the task type {}".format(self.task)
-            env_name = self.env_id            
-            self.env = safety_gymnasium.make(
-                env_id, render_mode=render_mode
-            )  
+            env_name = self.env_id
+            self.env = safety_gymnasium.make(env_id, render_mode=render_mode)
             self.init_sensor()
             self.env.num_steps = 1000
             self.num_steps = 1000
@@ -93,10 +91,8 @@ class Env_Wrappers:
 
         else:  # mujoco
             env_name = self.env_id
-            
-            self.env = safety_gymnasium.make(
-                env_id, render_mode=render_mode
-            )  
+
+            self.env = safety_gymnasium.make(env_id, render_mode=render_mode)
             self.observation_space = self.env.observation_space
             self.action_space = self.env.action_space
 
@@ -144,7 +140,7 @@ class Env_Wrappers:
         for k in self.flatten_order:
             k_size = np.prod(obs[k].shape)
             self.key_to_slice[k] = slice(offset, offset + k_size)
-            #print("obs key: ", k, " slice: ", self.key_to_slice[k])
+            # print("obs key: ", k, " slice: ", self.key_to_slice[k])
             offset += k_size
         self.base_state_dim = sum([np.prod(obs[k].shape) for k in self.base_state_name])
         self.action_dim = self.env.action_space.shape[0]
@@ -225,8 +221,8 @@ class Env_Wrappers:
         goal_pos = self.env.goal_pos
         vases_pos_list = self.env.vases_pos  # list of shape (3,) ndarray
         hazards_pos_list = self.env.hazards_pos  # list of shape (3,) ndarray
-        #gremlins_pos_list = self.env.gremlins_obj_pos  # list of shape (3,) ndarray
-        #buttons_pos_list = self.env.buttons_pos  # list of shape (3,) ndarray
+        # gremlins_pos_list = self.env.gremlins_obj_pos  # list of shape (3,) ndarray
+        # buttons_pos_list = self.env.buttons_pos  # list of shape (3,) ndarray
 
         ego_goal_pos = self.recenter(goal_pos[:2])
         ego_vases_pos_list = [

@@ -92,8 +92,8 @@ class safeARC(object):
             actor_trajectories[1:, h * self.action_dim : (h + 1) * self.action_dim] = (
                 actor_actions.detach().cpu().numpy()
             )
-            #actor_trajectories[1:, h * self.action_dim : (h + 1) * 1] = np.nan
-            
+            # actor_trajectories[1:, h * self.action_dim : (h + 1) * 1] = np.nan
+
         X = stats.truncnorm(
             -2, 2, loc=np.zeros_like(mean), scale=np.ones_like(mean)
         )  # for generate the random gaussian variable
@@ -177,7 +177,7 @@ class safeARC(object):
             terminal_Q_rewards = terminal_Q_rewards.reshape(states.shape[1], -1)
 
             states_flatten = states[:, :, :, 1:].reshape(-1, self.obs_dim)
-                     
+
             all_safety_costs = np.zeros((states_flatten.shape[0],))
             all_safety_costs = env.get_observation_cost(states_flatten)
             all_safety_costs = all_safety_costs.reshape(

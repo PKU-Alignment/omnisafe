@@ -16,8 +16,11 @@
 import argparse
 import time
 
-import omnisafe
 import torch
+
+import omnisafe
+
+
 torch.set_num_threads(5)
 
 if __name__ == '__main__':
@@ -43,6 +46,6 @@ if __name__ == '__main__':
     keys = [k[2:] for k in unparsed_args[0::2]]  # remove -- from argument
     values = [eval(v) for v in unparsed_args[1::2]]
     unparsed_dict = {k: v for k, v in zip(keys, values)}
-    env = omnisafe.Env_ModelBased(args.algo,args.env_id)
+    env = omnisafe.Env_ModelBased(args.algo, args.env_id)
     agent = omnisafe.Agent(args.algo, env, parallel=args.parallel, custom_cfgs=unparsed_dict)
     agent.learn()

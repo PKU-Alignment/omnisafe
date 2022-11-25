@@ -76,33 +76,39 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         self.done = True
 
         self.render_mode = kwargs.get('render_mode', None)
+
     @property
     def hazards_size(self):
-        """ return hazards size"""
+        """return hazards size"""
         return self.task.hazards_size
 
     def robot_mat(self):
-        """ return mat"""
+        """return mat"""
         return self.task.world.robot_mat()
 
-    def get_sensor(self,sensor):
-        """ return mat"""
+    def get_sensor(self, sensor):
+        """return mat"""
         return self.task.world.get_sensor(sensor)
-    def ego_xy(self,pos):
-        """ return mat"""
+
+    def ego_xy(self, pos):
+        """return mat"""
         return self.task.ego_xy(pos)
+
     @property
     def hazards_pos(self):
-        """ return hazards postion"""
+        """return hazards postion"""
         return self.task.hazards_pos
+
     @property
     def vases_pos(self):
-        """ return vase postion"""
+        """return vase postion"""
         return self.task.vases_pos
+
     @property
-    def goal_pos(self):  
-        """ return goal position"""
+    def goal_pos(self):
+        """return goal position"""
         return self.task.goal_pos
+
     @property
     def robot_pos(self):
         '''Helper to get current robot position'''

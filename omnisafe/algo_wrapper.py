@@ -101,7 +101,9 @@ class AlgoWrapper:
             'MBPPOLag',
             'SafeLoop',
         ]
-        assert self.algo in on_policy_list + off_policy_list + model_based_list, f'{self.algo} is not supported!'
+        assert (
+            self.algo in on_policy_list + off_policy_list + model_based_list
+        ), f'{self.algo} is not supported!'
 
         if self.algo in on_policy_list:
             algo_flag = 1

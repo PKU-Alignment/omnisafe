@@ -97,7 +97,6 @@ class PredictEnv:
         if self.algo == "safeLoop":
             ensemble_model_means[:, :, 1:] += obs
 
-
         ensemble_model_stds = np.sqrt(ensemble_model_vars)
 
         if deterministic:
@@ -135,9 +134,7 @@ class PredictEnv:
             return_stds = np.concatenate(
                 (model_stds[:, :1], np.zeros((batch_size, 1)), model_stds[:, 1:]), axis=-1
             )
-            
-            
-            
+
         if return_single:
             next_obs = next_obs[0]
             if self.algo == "safeLoop":
