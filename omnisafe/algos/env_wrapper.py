@@ -213,7 +213,7 @@ class EnvWrappers:
                         **{
                             'Metrics/EpRet': ep_ret,
                             'Metrics/EpLen': ep_len,
-                            'Metrics/EpCosts': ep_costs,
+                            'Metrics/EpCost': ep_costs,
                         }
                     )
                     self.curr_o, info = self.env.reset(seed=self.seed)

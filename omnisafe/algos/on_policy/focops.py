@@ -38,7 +38,7 @@ class FOCOPS(PolicyGradient, Lagrange):
 
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()
-        self.logger.log_tabular('LagrangeMultiplier', self.lagrangian_multiplier)
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier)
 
     def update_lagrange_multiplier(self, ep_costs):
         self.lagrangian_multiplier += self.lambda_lr * (ep_costs - self.cost_limit)
@@ -72,7 +72,7 @@ class FOCOPS(PolicyGradient, Lagrange):
         raw_data = self.buf.get()
         data = self.pre_process_data(raw_data)
         # First update Lagrange multiplier parameter
-        ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
+        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         self.update_lagrange_multiplier(ep_costs)
         # Then update policy network
         self.update_policy_net(data=data)

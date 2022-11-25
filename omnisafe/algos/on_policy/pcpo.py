@@ -163,7 +163,7 @@ class PCPO(TRPO):
         self.loss_pi_cost_before = loss_cost.item()
         b_flat = get_flat_gradients_from(self.ac.pi.net)
 
-        ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
+        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         c = ep_costs - self.cost_limit
         c /= self.logger.get_stats('Metrics/EpLen')[0] + eps  # rescale
         self.logger.log(f'c = {c}')

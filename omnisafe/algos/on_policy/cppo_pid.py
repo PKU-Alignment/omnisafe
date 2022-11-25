@@ -35,10 +35,10 @@ class CPPOPid(PolicyGradient, PID_Lagrangian):
 
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()
-        self.logger.log_tabular('LagrangeMultiplier', self.cost_penalty)
-        self.logger.log_tabular('pid_Kp', self.pid_Kp)
-        self.logger.log_tabular('pid_Ki', self.pid_Ki)
-        self.logger.log_tabular('pid_Kd', self.pid_Kd)
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.cost_penalty)
+        self.logger.log_tabular('PID/pid_Kp', self.pid_Kp)
+        self.logger.log_tabular('PID/pid_Ki', self.pid_Ki)
+        self.logger.log_tabular('PID/pid_Kd', self.pid_Kd)
 
     def compute_loss_pi(self, data: dict, **kwargs):
         # Policy loss
@@ -70,7 +70,7 @@ class CPPOPid(PolicyGradient, PID_Lagrangian):
         # pre-process data
         data = self.pre_process_data(raw_data)
         # Note that logger already uses MPI statistics across all processes..
-        ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
+        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
         self.pid_update(ep_costs)
         # now update policy and value network
