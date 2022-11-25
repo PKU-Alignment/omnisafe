@@ -39,10 +39,9 @@ class PPOLag(PolicyGradient, Lagrange):
         loss_pi = -(torch.min(ratio * data['adv'], ratio_clip * data['adv'])).mean()
         loss_pi -= self.entropy_coef * dist.entropy().mean()
 
-        # ensure that lagrange multiplier is positive
+        # Ensure that lagrange multiplier is positive
         penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
         loss_pi += (torch.max(ratio * data['cost_adv'], ratio_clip * data['cost_adv'])).mean()
-        # loss_pi += penalty * ((ratio * data['cost_adv']).mean())
         loss_pi /= 1 + penalty
 
         # Useful extra info

@@ -79,8 +79,8 @@ SafetyPointGoal1-v0:
     ## Basic configurations for base class PG
     epochs: 1000
     steps_per_epoch: 20000
-    pi_iters: 20
-    critic_iters: 10
+    pi_iters: 40
+    critic_iters: 20
     check_freq: 25
     save_freq: 100
     entropy_coef: 0.01
@@ -126,11 +126,11 @@ SafetyPointGoal1-v0:
         lam: 0.95
         lam_c: 0.95
         adv_estimation_method: gae
-        standardized_reward: False
-        standardized_cost: False
+        standardized_reward: True
+        standardized_cost: True
         reward_penalty: False
     lagrange_cfgs:
         cost_limit: 25.0
         lagrangian_multiplier_init: 0.001
         lambda_lr: 0.05
-        lambda_optimizer: 'Adam'
+        lambda_optimizer: 'SGD'
