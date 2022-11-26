@@ -58,6 +58,14 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         'frameskip_binom_n': 10,  # Number of draws trials in binomial distribution (max frameskip)
         'frameskip_binom_p': 1.0,  # Probability of trial return (controls distribution)
     }
+    metadata = {
+        "render_modes": [
+            "human",
+            "rgb_array",
+            "depth_array",
+        ],
+        "render_fps": 125,
+    }
 
     def __init__(self, config={}, **kwargs):
         # First, parse configuration. Important note: LOTS of stuff happens in

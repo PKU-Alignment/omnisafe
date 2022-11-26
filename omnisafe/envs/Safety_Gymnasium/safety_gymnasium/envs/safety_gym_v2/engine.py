@@ -327,7 +327,7 @@ class Engine:
 
             no_camera_specified = camera_name is None and camera_id is None
             if no_camera_specified:
-                camera_id = 3
+                camera_name = "vision"
 
             if camera_id is None:
                 camera_id = mujoco.mj_name2id(
