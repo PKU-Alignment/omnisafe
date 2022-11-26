@@ -242,7 +242,7 @@ git clone https://github.com/PKU-MARL/omnisafe
 cd omnisafe
 conda create -n omnisafe python=3.8
 conda activate omnisafe
-# pelase refer to https://pytorch.org/get-started/previous-versions/ and install pytorch
+# please refer to https://pytorch.org/get-started/previous-versions/ and install pytorch
 # install omnisafe
 pip install -e .
 # install safety_gymnasium
