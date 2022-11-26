@@ -14,9 +14,9 @@
 
 # OmniSafe
 
-OmniSafe is a comprehensive and trustworthy benchmark for safe reinforcement learning, covering a multitude of SafeRL domains, and delivering a new suite of testing environments.
+OmniSafe is a comprehensive and trustworthy benchmark for safe reinforcement learning, covering a multitude of SafeRL domains and delivering a new suite of testing environments.
 
-The simulation environment around OmniSafe and a series of reliable algorithm implementations will help the SafeRL research community easier to replicate and improve the excellent work already done, while also helping to facilitate the validation of new ideas and new algorithms.
+The simulation environment around OmniSafe and a series of reliable algorithm implementations will help the SafeRL research community easier to replicate and improve the excellent work already done while also helping to facilitate the validation of new ideas and new algorithms.
 
 --------------------------------------------------------------------------------
 
@@ -199,11 +199,12 @@ Here is a list of all the environments we support, some of them are being tested
 </table>
 
 ### Vision-base Safe RL
-Vision-based safety reinforcement learning lacks realistic scenarios. Although the original `safety_gym` was able to minimally support visual input, the scenarios were too homogeneous. To facilitate the validation of visual-based safety reinforcement learning algorithms, we have developed a set of realistic visual safety reinforcement learning task environments, which are currently being validated on baseline, and we will release that part of the environment in `Safety_Gymnasium` within a month.
+
+Vision-based safety reinforcement learning lacks realistic scenarios. Although the original `safety_gym` could minimally support visual input, the scenarios were too homogeneous. To facilitate the validation of visual-based safety reinforcement learning algorithms, we have developed a set of realistic vision-based safeRL tasks, which are currently being validated on the baseline, and we will release that part of the environment in `Safety_Gymnasium` within a month.
 
 For the appetizer, the images are as follows
 <div align="center">
-  <img src="./images/vision_input.png" width="50%"/>
+  <img src="./images/vision_input.png" width="100%"/>
 </div>
 
 
