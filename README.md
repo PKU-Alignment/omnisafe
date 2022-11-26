@@ -324,4 +324,4 @@ OmniSafe is currently maintained by Borong Zhang, [Jiayi Zhou](https://github.co
 
 ## License
 
-OmniSafe is released under the Apache License 2.0.
+OmniSafe is released under Apache License 2.0.
