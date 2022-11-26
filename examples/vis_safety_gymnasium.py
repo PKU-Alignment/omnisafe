@@ -22,13 +22,12 @@ def run_random(env_name):
     env = safety_gymnasium.make(env_name, render_mode='rgb_array')
     # env.seed(0)
     obs, _ = env.reset()
-    terminled = False
+    terminated = False
     ep_ret = 0
     ep_cost = 0
     while True:
         print("rgb_array", env.render())
-        exit(0)
-        if terminled:
+        if terminated:
             print('Episode Return: %.3f \t Episode Cost: %.3f' % (ep_ret, ep_cost))
             ep_ret, ep_cost = 0, 0
             obs, _ = env.reset()
@@ -38,7 +37,8 @@ def run_random(env_name):
         # Use the environment's built_in max_episode_steps
         if hasattr(env, '_max_episode_steps'):
             max_ep_len = env._max_episode_steps
-        ep_ret += rewardc
+        obs, reward, cost, terminated, truncated, info = env.step(act)
+        ep_ret += reward
         ep_cost += cost
 
 
