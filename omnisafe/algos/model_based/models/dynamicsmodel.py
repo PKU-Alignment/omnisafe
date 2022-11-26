@@ -137,9 +137,9 @@ class EnsembleModel(nn.Module):
     ):
         super(EnsembleModel, self).__init__()
         self.algo = algo
-        if self.algo == "mbppo-lag" or self.algo == "mbppo_v2":
+        if self.algo == 'mbppo-lag' or self.algo == 'mbppo_v2':
             self.output_dim = state_size
-        elif self.algo == "safeloop":
+        elif self.algo == 'safeloop':
             self.output_dim = state_size + reward_size
         # print("state_size",state_size,reward_size)
         self.hidden_size = hidden_size
@@ -236,9 +236,9 @@ class EnsembleDynamicsModel:
         self.reward_size = reward_size
         self.cost_size = cost_size
         self.network_size = network_size
-        if self.algo == "mbppo-lag" or self.algo == "mbppo_v2":
+        if self.algo == 'mbppo-lag' or self.algo == 'mbppo_v2':
             self.elite_model_idxes = []
-        elif self.algo == "safeloop":
+        elif self.algo == 'safeloop':
             self.elite_model_idxes = [0, 1, 2, 3, 4]
 
         self.ensemble_model = EnsembleModel(
@@ -270,7 +270,7 @@ class EnsembleDynamicsModel:
         self.scaler.fit(train_inputs)
         train_inputs = self.scaler.transform(train_inputs)
         holdout_inputs = self.scaler.transform(holdout_inputs)
-        if self.algo == "safeloop":
+        if self.algo == 'safeloop':
             holdout_inputs = torch.from_numpy(holdout_inputs).float().to(device)
             holdout_labels = torch.from_numpy(holdout_labels).float().to(device)
             holdout_inputs = holdout_inputs[None, :, :].repeat([self.network_size, 1, 1])
@@ -289,11 +289,11 @@ class EnsembleDynamicsModel:
                 mean, logvar = self.ensemble_model(train_input, ret_log_var=True)
                 loss, mtrain = self.ensemble_model.loss(mean, logvar, train_label)
                 self.ensemble_model.train(loss)
-                if self.algo == "mbppo-lag" or self.algo == "mbppo_v2":
+                if self.algo == 'mbppo-lag' or self.algo == 'mbppo_v2':
                     losses.append(mtrain)
-                elif self.algo == "safeloop":
+                elif self.algo == 'safeloop':
                     losses.append(loss)
-            if self.algo == "mbppo-lag" or self.algo == "mbppo_v2":
+            if self.algo == 'mbppo-lag' or self.algo == 'mbppo_v2':
                 # -----validation------------------
                 val_idx = np.vstack(
                     [
@@ -331,7 +331,7 @@ class EnsembleDynamicsModel:
 
                 # print('epoch: {}, train mse losses: {}'.format(epoch, np.mean(train_mse_losses,axis=0)))
                 # print('epoch: {}, holdout mse losses: {}'.format(epoch, holdout_mse_losses))
-            elif self.algo == "safeloop":
+            elif self.algo == 'safeloop':
                 with torch.no_grad():
                     holdout_mean, holdout_logvar = self.ensemble_model(
                         holdout_inputs, ret_log_var=True
@@ -347,7 +347,7 @@ class EnsembleDynamicsModel:
                     if break_train:
                         break
                 # print('epoch: {}, holdout mse losses: {}'.format(epoch, holdout_mse_losses))
-        if self.algo == "safeloop":
+        if self.algo == 'safeloop':
             return 0, holdout_mse_losses.mean()
 
     def _save_best(self, epoch, holdout_losses):
@@ -387,7 +387,7 @@ class EnsembleDynamicsModel:
         if factored:
             return ensemble_mean, ensemble_var
         else:
-            assert False, "Need to transform to numpy"
+            assert False, 'Need to transform to numpy'
             mean = torch.mean(ensemble_mean, dim=0)
             var = torch.mean(ensemble_var, dim=0) + torch.mean(
                 torch.square(ensemble_mean - mean[None, :, :]), dim=0
@@ -410,7 +410,7 @@ class EnsembleDynamicsModel:
         if factored:
             return ensemble_mean, ensemble_var
         else:
-            assert False, "Need to transform to numpy"
+            assert False, 'Need to transform to numpy'
             mean = torch.mean(ensemble_mean, dim=0)
             var = torch.mean(ensemble_var, dim=0) + torch.mean(
                 torch.square(ensemble_mean - mean[None, :, :]), dim=0
@@ -436,7 +436,7 @@ class EnsembleDynamicsModel:
         if factored:
             return ensemble_mean, ensemble_var
         else:
-            assert False, "Need to transform to numpy"
+            assert False, 'Need to transform to numpy'
             mean = torch.mean(ensemble_mean, dim=0)
             var = torch.mean(ensemble_var, dim=0) + torch.mean(
                 torch.square(ensemble_mean - mean[None, :, :]), dim=0

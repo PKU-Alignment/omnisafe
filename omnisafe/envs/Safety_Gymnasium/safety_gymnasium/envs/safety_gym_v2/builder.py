@@ -59,12 +59,12 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         'frameskip_binom_p': 1.0,  # Probability of trial return (controls distribution)
     }
     metadata = {
-        "render_modes": [
-            "human",
-            "rgb_array",
-            "depth_array",
+        'render_modes': [
+            'human',
+            'rgb_array',
+            'depth_array',
         ],
-        "render_fps": 125,
+        'render_fps': 125,
     }
 
     def __init__(self, config={}, **kwargs):

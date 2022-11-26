@@ -46,36 +46,36 @@ class Env_Wrappers:
     def __init__(self, algo, env_id, render_mode='None'):
         self.algo = algo
         self.env_id = env_id  # safety gym not use this attribute
-        if self.algo == "MBPPOLag":
+        if self.algo == 'MBPPOLag':
             assert env_id == 'SafetyPointGoal3-v0' or env_id == 'SafetyCarGoal3-v0'
             self.robot = 'Point' if 'Point' in env_id else 'Car'
             self.task = 'Goal'
-        elif self.algo == "mbppo_v2":
+        elif self.algo == 'mbppo_v2':
             assert env_id == 'SafetyPointGoal1-v0' or env_id == 'SafetyCarGoal1-v0'
             self.robot = 'Point' if 'Point' in env_id else 'Car'
             self.task = 'Goal'
-        elif self.algo == "SafeLoop":
+        elif self.algo == 'SafeLoop':
             assert env_id == 'SafetyPointGoal1-v0' or env_id == 'SafetyCarGoal1-v0'
             self.robot = 'Point' if 'Point' in env_id else 'Car'
             self.task = 'Goal'
 
-        elif self.algo == "CAP" or self.algo == "MpcCcem":
+        elif self.algo == 'CAP' or self.algo == 'MpcCcem':
             assert env_id == 'HalfCheetah-v3'
 
         mujoco_pools = [
             'Ant-v3',
-            "Swimmer-v3",
-            "HalfCheetah-v3",
-            "Hopper-v3",
-            "Humanoid-v3",
-            "Walker2d-v3",
+            'Swimmer-v3',
+            'HalfCheetah-v3',
+            'Hopper-v3',
+            'Humanoid-v3',
+            'Walker2d-v3',
         ]
-        self.env_type = 'mujoco' if self.env_id in mujoco_pools else "gym"
-        if self.env_type == "gym":
+        self.env_type = 'mujoco' if self.env_id in mujoco_pools else 'gym'
+        if self.env_type == 'gym':
             self.robot = self.robot.capitalize()  # mujuco  not use this attribute
             self.task = self.task.capitalize()  # mujuco  not use this attribute
-            assert self.robot in ROBOTS, "can not recognize the robot type {}".format(self.robot)
-            assert self.task in TASKS, "can not recognize the task type {}".format(self.task)
+            assert self.robot in ROBOTS, 'can not recognize the robot type {}'.format(self.robot)
+            assert self.task in TASKS, 'can not recognize the task type {}'.format(self.task)
             env_name = self.env_id
             self.env = safety_gymnasium.make(env_id, render_mode=render_mode)
             self.init_sensor()
@@ -121,13 +121,13 @@ class Env_Wrappers:
         # self.distance_name = ["goal_dist"] + [x+"_dist" for x in self.constraints_name]
 
         self.base_state_name = self.xyz_sensors + self.angle_sensors
-        if self.algo == "MBPPOLag":
+        if self.algo == 'MBPPOLag':
             self.flatten_order = (
-                self.base_state_name + ["goal"] + self.constraints_mbppo + ["robot_m"] + ["robot"]
+                self.base_state_name + ['goal'] + self.constraints_mbppo + ['robot_m'] + ['robot']
             )  # + self.distance_name
-        elif self.algo == "SafeLoop" or self.algo == "mbppo_v2":
+        elif self.algo == 'SafeLoop' or self.algo == 'mbppo_v2':
             self.flatten_order = (
-                self.base_state_name + ["goal"] + self.constraints_name
+                self.base_state_name + ['goal'] + self.constraints_name
             )  # + self.distance_name
 
         # get state space vector size
@@ -144,10 +144,10 @@ class Env_Wrappers:
             offset += k_size
         self.base_state_dim = sum([np.prod(obs[k].shape) for k in self.base_state_name])
         self.action_dim = self.env.action_space.shape[0]
-        self.key_to_slice["base_state"] = slice(0, self.base_state_dim)
+        self.key_to_slice['base_state'] = slice(0, self.base_state_dim)
 
     def reset(self):
-        if self.env_type == "mujoco":
+        if self.env_type == 'mujoco':
             obs = self.env.reset()
             return obs
 
@@ -155,18 +155,18 @@ class Env_Wrappers:
             self.t = 0  # Reset internal timer
             self.env.reset()
             obs = self.get_obs_flatten()
-            if self.algo == "MBPPOLag":
+            if self.algo == 'MBPPOLag':
                 hazards_pos_list = self.env.hazards_pos
                 goal_pos = self.env.goal_pos
-                static_detail = {"hazards": hazards_pos_list, "goal": goal_pos}
+                static_detail = {'hazards': hazards_pos_list, 'goal': goal_pos}
                 return obs, static_detail
-            elif self.algo == "SafeLoop" or self.algo == "mbppo_v2":
+            elif self.algo == 'SafeLoop' or self.algo == 'mbppo_v2':
                 return obs
 
     def step(self, action, num_repeat):
         # 2 dimensional numpy array, [vx, w]
 
-        if self.env_type == "mujoco":
+        if self.env_type == 'mujoco':
             next_o, r, d, info = self.env.step(action)
             if 'y_velocity' not in info:
                 c = np.abs(info['x_velocity'])
@@ -185,15 +185,15 @@ class Env_Wrappers:
                 cost += cost
                 self.t += 1  # Increment internal timer
                 observation = self.get_obs_flatten()
-                goal_met = "goal_met" in info.keys()  # reach the goal
+                goal_met = 'goal_met' in info.keys()  # reach the goal
                 done = terminated or truncated
                 if terminated or goal_met or truncated:
                     break
-            if self.algo == "MBPPOLag":
+            if self.algo == 'MBPPOLag':
                 cost = 1 if cost > 0 else 0
-                info = {"cost": cost, "goal_met": goal_met, "goal_pos": self.env.goal_pos}
-            elif self.algo == "SafeLoop" or self.algo == "mbppo_v2":
-                info = {"cost": cost, "goal_met": goal_met}
+                info = {'cost': cost, 'goal_met': goal_met, 'goal_pos': self.env.goal_pos}
+            elif self.algo == 'SafeLoop' or self.algo == 'mbppo_v2':
+                info = {'cost': cost, 'goal_met': goal_met}
 
             return observation, reward, done, info
 
@@ -253,21 +253,21 @@ class Env_Wrappers:
                 # pass # gyro does not help
             else:
                 obs[sensor] = self.env.get_sensor(sensor)
-        if self.algo == "MBPPOLag":
+        if self.algo == 'MBPPOLag':
             # --------modification-----------------
-            obs["robot"] = np.array(robot_pos[:2])
+            obs['robot'] = np.array(robot_pos[:2])
             # obs["static_goal"] = np.array(goal_pos)
             # obs["vases"] = np.array(ego_vases_pos_list) # (vase_num, 2)
-            obs["hazards"] = np.array(ego_hazards_pos_list)  # (hazard_num, 2)
+            obs['hazards'] = np.array(ego_hazards_pos_list)  # (hazard_num, 2)
             robot_matrix = self.env.robot_mat()
             obs['robot_m'] = np.array(robot_matrix[0][:2])
-            obs["goal"] = ego_goal_pos  # (2,)
+            obs['goal'] = ego_goal_pos  # (2,)
             # obs["gremlins"] = np.array(ego_gremlins_pos_list) # (vase_num, 2)
             # obs["buttons"] = np.array(ego_buttons_pos_list) # (hazard_num, 2)
-        elif self.algo == "SafeLoop" or self.algo == "mbppo_v2":
-            obs["vases"] = np.array(ego_vases_pos_list)  # (vase_num, 2)
-            obs["hazards"] = np.array(ego_hazards_pos_list)  # (hazard_num, 2)
-            obs["goal"] = ego_goal_pos  # (2,)
+        elif self.algo == 'SafeLoop' or self.algo == 'mbppo_v2':
+            obs['vases'] = np.array(ego_vases_pos_list)  # (vase_num, 2)
+            obs['hazards'] = np.array(ego_hazards_pos_list)  # (hazard_num, 2)
+            obs['goal'] = ego_goal_pos  # (2,)
             # obs["gremlins"] = np.array(ego_gremlins_pos_list)  # (vase_num, 2)
             # obs["buttons"] = np.array(ego_buttons_pos_list)  # (hazard_num, 2)
 

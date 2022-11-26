@@ -26,7 +26,7 @@ def run_random(env_name):
     ep_ret = 0
     ep_cost = 0
     while True:
-        print("rgb_array", env.render())
+        print('rgb_array', env.render())
         if terminated:
             print('Episode Return: %.3f \t Episode Cost: %.3f' % (ep_ret, ep_cost))
             ep_ret, ep_cost = 0, 0

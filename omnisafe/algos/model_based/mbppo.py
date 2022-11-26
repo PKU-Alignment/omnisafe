@@ -258,8 +258,8 @@ class MBPPOLag(PolicyGradientModelBased):
             del otensor
 
             if True in np.isnan(a):
-                print("produce nan in actor")
-                print("action,obs", a, obs_vec)
+                print('produce nan in actor')
+                print('action,obs', a, obs_vec)
                 a = np.nan_to_num(a)
             a = np.clip(a, self.env.action_space.low, self.env.action_space.high)
 
@@ -267,8 +267,8 @@ class MBPPOLag(PolicyGradientModelBased):
             next_o = predict_env.step(o, a)
 
             if True in np.isnan(next_o):
-                print("produce nan in actor")
-                print("next_o,action,obs", next_o, a, o)
+                print('produce nan in actor')
+                print('next_o,action,obs', next_o, a, o)
                 next_o = np.nan_to_num(next_o)
             next_o = np.clip(next_o, -1000, 1000)
             r, c, ld, goal_flag = get_reward_cost(ld, robot_pos, hazards_pos, goal_pos)
@@ -343,15 +343,15 @@ class MBPPOLag(PolicyGradientModelBased):
                 ovt = torch.as_tensor(obs_vecv, dtype=torch.float32, device=device)
                 av, _, _, _ = self.actor_critic.step(ovt)
                 if True in np.isnan(av):
-                    print("produce nan in vali actor")
-                    print("action,obs", av, obs_vecv)
+                    print('produce nan in vali actor')
+                    print('action,obs', av, obs_vecv)
                     av = np.nan_to_num(av)
                 av = np.clip(av, self.env.action_space.low, self.env.action_space.high)
                 del ovt
                 next_ov = predict_env.step_elite(ov, av, va)
                 if True in np.isnan(next_ov):
-                    print("produce nan in  vali env")
-                    print("next_o,action,obs", next_ov, av, ov)
+                    print('produce nan in  vali env')
+                    print('next_o,action,obs', next_ov, av, ov)
                     next_ov = np.nan_to_num(next_ov)
                 next_ov = np.clip(next_ov, -1000, 1000)
                 rv, cv, ldv, goal_flagv = get_reward_cost(ldv, robot_posv, hazards_posv, goal_posv)
