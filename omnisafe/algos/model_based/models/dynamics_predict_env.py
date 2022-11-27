@@ -13,7 +13,7 @@ class PredictEnv:
 
     def _termination_fn(self, env_name, obs, act, next_obs):
         # TODO
-        if env_name == "Hopper-v2":
+        if env_name == 'Hopper-v2':
             assert len(obs.shape) == len(next_obs.shape) == len(act.shape) == 2
 
             height = next_obs[:, 0]
@@ -28,7 +28,7 @@ class PredictEnv:
             done = ~not_done
             done = done[:, None]
             return done
-        elif env_name == "Walker2d-v2":
+        elif env_name == 'Walker2d-v2':
             assert len(obs.shape) == len(next_obs.shape) == len(act.shape) == 2
 
             height = next_obs[:, 0]
@@ -94,7 +94,7 @@ class PredictEnv:
             ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
         else:
             ensemble_model_means, ensemble_model_vars = self.model.predict(inputs, factored=True)
-        if self.algo == "safeLoop":
+        if self.algo == 'safeLoop':
             ensemble_model_means[:, :, 1:] += obs
 
         ensemble_model_stds = np.sqrt(ensemble_model_vars)
@@ -120,13 +120,13 @@ class PredictEnv:
 
         log_prob, dev = self._get_logprob(samples, ensemble_model_means, ensemble_model_vars)
 
-        if self.algo == "safeLoop":
+        if self.algo == 'safeLoop':
             rewards, next_obs = samples[:, :1], samples[:, 1:]
-        elif self.algo == "mbppo-lag" or self.algo == "mbppo_v2":
+        elif self.algo == 'mbppo-lag' or self.algo == 'mbppo_v2':
             next_obs_delta = samples
             next_obs = next_obs_delta + obs
         terminals = self._termination_fn(self.env_name, obs, act, next_obs)
-        if self.algo == "safeLoop":
+        if self.algo == 'safeLoop':
             batch_size = model_means.shape[0]
             return_means = np.concatenate(
                 (model_means[:, :1], terminals, model_means[:, 1:]), axis=-1
@@ -137,15 +137,15 @@ class PredictEnv:
 
         if return_single:
             next_obs = next_obs[0]
-            if self.algo == "safeLoop":
+            if self.algo == 'safeLoop':
                 return_means = return_means[0]
                 return_stds = return_stds[0]
                 rewards = rewards[0]
                 terminals = terminals[0]
-        if self.algo == "safeLoop":
+        if self.algo == 'safeLoop':
             info = {'mean': return_means, 'std': return_stds, 'log_prob': log_prob, 'dev': dev}
             return next_obs, rewards, terminals, info
-        elif self.algo == "mbppo-lag" or self.algo == "mbppo_v2":
+        elif self.algo == 'mbppo-lag' or self.algo == 'mbppo_v2':
             return next_obs
 
     def step_elite(self, obs, act, idx, single=False, deterministic=False):

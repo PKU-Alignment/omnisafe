@@ -26,7 +26,7 @@ To develop OmniSafe on your machine, here are some tips:
 
 ```bash
 git clone https://github.com/PKU-MARL/omnisafe
-cd OmniSafe/
+cd omnisafe/
 ```
 
 2. Install OmniSafe in develop mode, with support for building the docs and running tests:

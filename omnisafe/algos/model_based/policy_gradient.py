@@ -27,7 +27,7 @@ from omnisafe.algos.utils.tools import get_flat_params_from
 
 
 def default_termination_function(state, action, next_state):
-    "# Default termination function that outputs done=False"
+    '# Default termination function that outputs done=False'
     if torch.is_tensor(next_state):
         done = torch.zeros((next_state.shape[0], 1))
     else:
@@ -68,7 +68,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
         env_name = 'safepg2'
         self.num_repeat = self.cfgs['action_repeat']
 
-        if self.algo in ["mbppo-lag", "mbppo_v2"]:
+        if self.algo in ['mbppo-lag', 'mbppo_v2']:
             obs_dim = (26,)
             num_elites = self.cfgs['dynamics_cfgs']['num_elites']
 
@@ -126,7 +126,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
             self.logger.setup_torch_saver(what_to_save=what_to_save)
             self.logger.torch_save()
 
-        elif self.algo == "safeloop":
+        elif self.algo == 'safeloop':
             obs_dim = (26,)
             act_dim = self.env.action_space.shape
             use_decay = self.cfgs['dynamics_cfgs']['use_decay']
@@ -315,9 +315,9 @@ class PolicyGradientModelBased(PolicyGradientBase):
 
     def learn(self):
         """learn the policy"""
-        if self.algo == "safeloop":
+        if self.algo == 'safeloop':
             self.learn_safeloop()
-        elif self.algo == "mbppo-lag":
+        elif self.algo == 'mbppo-lag':
             self.learn_mbppo()
 
     def learn_safeloop(self):
@@ -342,7 +342,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
             if 'cost' in info:
                 ep_cost += info['cost']
 
-            self.replay_buffer.store(state, action, reward, next_state, done, cost=info["cost"])
+            self.replay_buffer.store(state, action, reward, next_state, done, cost=info['cost'])
             state = next_state
 
             if t >= start_timesteps and t % self.policy_update_freq == 0:
@@ -458,7 +458,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
 
             if (timestep + 1) % 10000 == 0:
                 self.update_dynamics_model()
-                torch.save(self.dynamics, exp_name + "env_model.pkl")
+                torch.save(self.dynamics, exp_name + 'env_model.pkl')
 
                 self.update_actor_critic()
                 self.log(timestep)

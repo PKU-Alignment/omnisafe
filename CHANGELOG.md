@@ -13,4 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Add render_mode: `human`, `rgb_array`, `depth_array` in Safety_Gymnasium: `safety_gym_v2` by [@zmsn-2077](https://github.com/zmsn-2077) and @Borong Zhang in [#15](https://github.com/PKU-MARL/omnisafe/pull/15).
+- Add **Model-based Safe Algorithms:** `mbppolag`, `safeloop` by [@WeiDong Huang](https://github.com/hdadong) in [#12](https://github.com/PKU-MARL/omnisafe/pull/12).
+- Add `PCPO` in omnisafe's **docs** and modify `CPO` by [@Jiayi Zhou](https://github.com/Gaiejj) in [#9](https://github.com/PKU-MARL/omnisafe/pull/9).
+- Add .editorconfig and update license by [@Xuehai Pan](https://github.com/XuehaiPan) in [#8](https://github.com/PKU-MARL/omnisafe/pull/8).
+- Add `CPO` and `Intro` in omnisafe's **docs** by [@Jiayi Zhou](https://github.com/Gaiejj) in [#7](https://github.com/PKU-MARL/omnisafe/pull/7).
+- Add render mode and vision input in Safety_Gymnasium: `safety_gym_v2` by [@zmsn-2077](https://github.com/zmsn-2077) and @Borong Zhang in [#5](hhttps://github.com/PKU-MARL/omnisafe/pull/5).

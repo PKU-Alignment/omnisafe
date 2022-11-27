@@ -84,12 +84,11 @@ Here we provide a table for comparison of **OmniSafe's algorithm core** and exis
             <li><a href="https://cdn.openai.com/safexp-short.pdf">TRPO-Lag (arxiv)</a></li>
             <li><a href="https://proceedings.mlr.press/v70/achiam17a">CPO (ICML'2017)</a></li>
             <li><a href="https://openreview.net/forum?id=SkfrvsA9FX">RCPO (ICLR'2019)</a></li>
-            <li><a href="Responsive Safety in Reinforcement Learning by PID Lagrangian Methods">CPPOpid (ICML'2020)</a></li>
+            <li><a href="https://arxiv.org/abs/2007.03964">CPPOpid (ICML'2020)</a></li>
             <li><a href="https://arxiv.org/abs/2002.06506">FOCOPS (NeurIPS'2020)</a></li>
             <li><a href="https://arxiv.org/abs/1910.09615">IPO (AAAI'2020)</a></li>
             <li><a href="https://openreview.net/forum?id=rke3TJrtPS">PCPO (ICLR'2020)</a></li>
             <li><a href="https://arxiv.org/abs/2011.05869">CRPO (ICML'2021)</a></li>
-            <li><a href="https://www.ijcai.org/proceedings/2022/520">P3O (IJCAI'2022)</a></li>
             <li><a href="https://arxiv.org/abs/2209.07089">CUP (NeurIPS'2022)</a></li>
       </ul>
       </td>
@@ -138,7 +137,7 @@ Here we provide a table for comparison of **OmniSafe's algorithm core** and exis
   </tbody>
 </table>
 
-**Notes** IPO, PCPO, CRPO, P3O, CUP will be released before 2022.12.1. Model-base is under testing, and will be released before 2022.11.25. Offline Safe will be released before 12.1. Control will be released before 2022.12.1.
+**Notes** IPO, PCPO, CRPO, CUP will be released before 2022.12.1. Offline Safe will be released before 12.1. Control will be released before 2022.12.1.
 
 --------------------------------------------------------------------------------
 
@@ -325,4 +324,4 @@ OmniSafe is currently maintained by Borong Zhang, [Jiayi Zhou](https://github.co
 
 ## License
 
-OmniSafe is released under the Apache License 2.0.
+OmniSafe is released under Apache License 2.0.
