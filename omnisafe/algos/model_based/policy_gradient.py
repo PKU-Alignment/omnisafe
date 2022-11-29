@@ -1,5 +1,18 @@
-# pylint:disable=wrong-import-position,no-name-in-module,import-error,too-many-locals,too-many-statements,too-many-instance-attributes,too-many-arguments
-device = 'cpu'
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
 import itertools
 import time
 from copy import deepcopy
@@ -8,6 +21,7 @@ import numpy as np
 import torch
 from torch.optim import Adam
 
+from omnisafe.algos import registry
 from omnisafe.algos.common.logger import Logger
 from omnisafe.algos.model_based import arc
 from omnisafe.algos.model_based.aux import generate_lidar
@@ -18,11 +32,10 @@ from omnisafe.algos.model_based.models.dynamics_predict_env import PredictEnv
 from omnisafe.algos.model_based.models.dynamicsmodel import EnsembleDynamicsModel
 
 ### mbppo and safeloop
-from omnisafe.algos.model_based.replay_memory import PPOBuffer, ReplayMemory, SAC_ReplayBuffer
+from omnisafe.algos.model_based.replay_memory import PPOBuffer, ReplayBuffer, SAC_ReplayBuffer
 from omnisafe.algos.models.policy_gradient_base import PolicyGradientBase
-from omnisafe.algos.registry import REGISTRY
-from omnisafe.algos.utils import distributed_tools
-from omnisafe.algos.utils.distributed_tools import proc_id
+from omnisafe.algos.utils import distributed_utils
+from omnisafe.algos.utils.distributed_utils import proc_id
 from omnisafe.algos.utils.tools import get_flat_params_from
 
 
@@ -35,7 +48,7 @@ def default_termination_function(state, action, next_state):
     return done
 
 
-@REGISTRY.register
+@registry.register
 class PolicyGradientModelBased(PolicyGradientBase):
     """policy update base class"""
 
@@ -46,7 +59,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
         self.exp_name = exp_name
         self.data_dir = data_dir
         self.algo = algo
-        device = self.cfgs['device']  # pylint: disable=redefined-outer-name
+        self.device = torch.device(self.cfgs['device'])
 
         # Set up logger and save configuration to disk
         # Get local parameters before logger instance to avoid unnecessary print
@@ -73,7 +86,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
             num_elites = self.cfgs['dynamics_cfgs']['num_elites']
 
             act_dim = self.env.action_space.shape
-            self.env_pool = ReplayMemory(replay_size)
+            self.env_pool = ReplayBuffer(replay_size)
             use_decay = self.cfgs['dynamics_cfgs']['use_decay']
             reward_size = self.cfgs['dynamics_cfgs']['reward_size']
             cost_size = self.cfgs['dynamics_cfgs']['cost_size']
@@ -96,15 +109,14 @@ class PolicyGradientModelBased(PolicyGradientBase):
             # Create actor-critic module
             self.actor_critic = core_ac.MLPActorCritic(
                 obs_dim, self.env.action_space, **dict(hidden_sizes=self.cfgs['ac_hidden_sizes'])
-            )
-            self.actor_critic.to(device)
+            ).to(self.device)
             self.pi_optimizer = Adam(self.actor_critic.pi.parameters(), lr=self.cfgs['pi_lr'])
             self.vf_optimizer = Adam(self.actor_critic.v.parameters(), lr=self.cfgs['vf_lr'])
             self.cvf_optimizer = Adam(self.actor_critic.vc.parameters(), lr=self.cfgs['vf_lr'])
 
             self.penalty_param = torch.tensor(
                 self.cfgs['lagrange_cfgs']['lagrangian_multiplier_init'],
-                device=device,
+                device=self.device,
                 requires_grad=True,
             ).float()
             self.penalty_optimizer = Adam(
@@ -152,7 +164,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
             self.replay_buffer = SAC_ReplayBuffer(obs_dim, act_dim, replay_size)
             self.actor_critic = core_sac.MLPActorCritic(
                 obs_dim, self.env.action_space, **dict(hidden_sizes=self.cfgs['ac_hidden_sizes'])
-            )
+            ).to(self.device)
             self.actor_critic_targ = deepcopy(self.actor_critic)
             self.termination_func = default_termination_function
             self.models = self.predict_env
@@ -178,21 +190,22 @@ class PolicyGradientModelBased(PolicyGradientBase):
             self.automatic_alpha_tuning = True
             if self.automatic_alpha_tuning is True:
                 self.target_entropy = -torch.prod(
-                    torch.Tensor(self.env.action_space.shape).to(device)
+                    torch.Tensor(self.env.action_space.shape).to(self.device)
                 ).item()
-                self.log_alpha = torch.zeros(1, requires_grad=True, device=device)
+                self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
                 self.alpha_optim = Adam([self.log_alpha], lr=learning_rate)
                 self.alpha = self.log_alpha.exp()
             else:
                 self.alpha = self.cfgs['alpha_init']
 
-            self.safeloop_policy = arc.safeARC(
+            self.safeloop_policy = arc.SafeARC(
                 state_dim,
                 action_dim,
                 self.env,
                 self.predict_env,
                 self.actor_critic,
                 default_termination_function,
+                device=self.device,
             )
 
             self.noise_amount = self.cfgs['mpc_config']['exploration_noise']
@@ -247,13 +260,13 @@ class PolicyGradientModelBased(PolicyGradientBase):
         """
         Initialize MPI specifics
         """
-        if distributed_tools.num_procs() > 1:
+        if distributed_utils.num_procs() > 1:
             # Avoid slowdowns from PyTorch + MPI combo
-            distributed_tools.setup_torch_for_mpi()
+            distributed_utils.setup_torch_for_mpi()
             datetime = time.time()
             self.logger.log('INFO: Sync actor critic parameters')
             # Sync params across cores: only once necessary, grads are averaged!
-            distributed_tools.sync_params(self.actor_critic)
+            distributed_utils.sync_params(self.actor_critic)
             self.logger.log(f'Done! (took {time.time()-datetime:0.3f} sec.)')
 
     def algorithm_specific_logs(self, timestep):
@@ -268,13 +281,13 @@ class PolicyGradientModelBased(PolicyGradientBase):
         Check if parameters are synchronized across all processes.
         """
 
-        if distributed_tools.num_procs() > 1:
+        if distributed_utils.num_procs() > 1:
             self.logger.log('Check if distributed parameters are synchronous..')
             modules = {'Policy': self.actor_critic.pi.net, 'Value': self.actor_critic.v.net}
             for key, module in modules.items():
                 flat_params = get_flat_params_from(module).numpy()
-                global_min = distributed_tools.mpi_min(np.sum(flat_params))
-                global_max = distributed_tools.mpi_max(np.sum(flat_params))
+                global_min = distributed_utils.mpi_min(np.sum(flat_params))
+                global_max = distributed_utils.mpi_max(np.sum(flat_params))
                 assert np.allclose(global_min, global_max), f'{key} not synced.'
 
     def compute_loss_v(self, obs, ret):
@@ -389,7 +402,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
             state_vec = generate_lidar(state, hazards_pos)
             state_vec = np.array(state_vec)
 
-            state_tensor = torch.as_tensor(state_vec, device=device, dtype=torch.float32)
+            state_tensor = torch.as_tensor(state_vec, device=self.device, dtype=torch.float32)
             action, val, cval, logp = self.actor_critic.step(state_tensor)
             del state_tensor
             action = np.clip(action, self.env.action_space.low, self.env.action_space.high)
@@ -432,7 +445,9 @@ class PolicyGradientModelBased(PolicyGradientBase):
 
             if timestep % 10000 <= mix_real - 1:
                 if timeout_mixer or epoch_ended_mixer:
-                    state_tensor = torch.as_tensor(state_vec, device=device, dtype=torch.float32)
+                    state_tensor = torch.as_tensor(
+                        state_vec, device=self.device, dtype=torch.float32
+                    )
                     _, val, cval, _ = self.actor_critic.step(state_tensor)
                     del state_tensor
                     self.buf.finish_path(val, cval)

@@ -18,9 +18,7 @@ from collections import deque
 
 
 class PID_Lagrangian(abc.ABC):
-    """
-    Abstract base class for Lagrangian-base Algorithm
-    """
+    """Abstract base class for Lagrangian-base Algorithms."""
 
     def __init__(
         self,

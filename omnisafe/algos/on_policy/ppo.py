@@ -15,11 +15,11 @@
 
 import torch
 
+from omnisafe.algos import registry
 from omnisafe.algos.on_policy.policy_gradient import PolicyGradient
-from omnisafe.algos.registry import REGISTRY
 
 
-@REGISTRY.register
+@registry.register
 class PPO(PolicyGradient):
     """
     Paper Name: Proximal Policy Optimization Algorithms

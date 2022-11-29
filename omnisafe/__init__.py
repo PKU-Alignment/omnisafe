@@ -12,14 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""OmniSafe: A comprehensive and reliable benchmark for safe reinforcement learning."""
 
-"""omnisafe: __init__"""
 from omnisafe.algo_wrapper import AlgoWrapper as Agent
 from omnisafe.algos.env_wrapper import EnvWrappers as Env
 from omnisafe.algos.model_based.env_wrappers import Env_Wrappers as Env_ModelBased
-
-
-# from omnisafe.algos.off_policy.env_wrappers_off import Env_Wrappers_Off as Env_off
-
-
-__version__ = '0.0.2'
+from omnisafe.version import __version__

@@ -15,12 +15,12 @@
 
 import torch
 
+from omnisafe.algos import registry
 from omnisafe.algos.common.lagrange import Lagrange
 from omnisafe.algos.on_policy.policy_gradient import PolicyGradient
-from omnisafe.algos.registry import REGISTRY
 
 
-@REGISTRY.register
+@registry.register
 class PDO(PolicyGradient, Lagrange):
     def __init__(self, **cfgs):
 

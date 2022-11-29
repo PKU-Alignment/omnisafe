@@ -19,17 +19,16 @@ from copy import deepcopy
 import numpy as np
 import torch
 
-import omnisafe.algos.utils.distributed_tools as distributed_tools
+from omnisafe.algos import registry
 from omnisafe.algos.common.buffer import Buffer
 from omnisafe.algos.common.logger import Logger
 from omnisafe.algos.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.algos.models.policy_gradient_base import PolicyGradientBase
-from omnisafe.algos.registry import REGISTRY
-from omnisafe.algos.utils import core
+from omnisafe.algos.utils import core, distributed_utils
 from omnisafe.algos.utils.tools import get_flat_params_from
 
 
-@REGISTRY.register
+@registry.register
 class PolicyGradient(PolicyGradientBase):
     def __init__(self, env, exp_name, data_dir, seed=0, algo='pg', cfgs=None) -> None:
         # Create Environment
@@ -41,7 +40,7 @@ class PolicyGradient(PolicyGradientBase):
         self.algo = algo
         self.use_cost = cfgs['use_cost']
         self.cost_gamma = cfgs['cost_gamma']
-        self.local_steps_per_epoch = cfgs['steps_per_epoch'] // distributed_tools.num_procs()
+        self.local_steps_per_epoch = cfgs['steps_per_epoch'] // distributed_utils.num_procs()
         self.entropy_coef = cfgs['entropy_coef']
         # Call assertions, Check if some variables are valid to experiment
         self._init_checks()
@@ -54,7 +53,7 @@ class PolicyGradient(PolicyGradientBase):
         self.logger = Logger(exp_name=self.exp_name, data_dir=self.data_dir, seed=self.cfgs['seed'])
         self.logger.save_config(self.params)
         # Set seed
-        seed += 10000 * distributed_tools.proc_id()
+        seed += 10000 * distributed_utils.proc_id()
         torch.manual_seed(seed)
         np.random.seed(seed)
         self.env.env.reset(seed=seed)
@@ -120,13 +119,13 @@ class PolicyGradient(PolicyGradientBase):
         """
         Initialize MPI specifics
         """
-        if distributed_tools.num_procs() > 1:
+        if distributed_utils.num_procs() > 1:
             # Avoid slowdowns from PyTorch + MPI combo
-            distributed_tools.setup_torch_for_mpi()
+            distributed_utils.setup_torch_for_mpi()
             dt = time.time()
             self.logger.log('INFO: Sync actor critic parameters')
             # Sync params across cores: only once necessary, grads are averaged!
-            distributed_tools.sync_params(self.ac)
+            distributed_utils.sync_params(self.ac)
             self.logger.log(f'Done! (took {time.time()-dt:0.3f} sec.)')
 
     def _init_checks(self):
@@ -134,10 +133,10 @@ class PolicyGradient(PolicyGradientBase):
         Checking feasible
         """
         # The steps in each process should be integer
-        assert self.cfgs['steps_per_epoch'] % distributed_tools.num_procs() == 0
+        assert self.cfgs['steps_per_epoch'] % distributed_utils.num_procs() == 0
         # Ensure local each local process can experience at least one complete eposide
         assert self.env.max_ep_len <= self.local_steps_per_epoch, (
-            f'Reduce number of cores ({distributed_tools.num_procs()}) or increase '
+            f'Reduce number of cores ({distributed_utils.num_procs()}) or increase '
             f'batch size {self.steps_per_epoch}.'
         )
         # Ensure vilid number for iteration
@@ -156,13 +155,13 @@ class PolicyGradient(PolicyGradientBase):
         Check if parameters are synchronized across all processes.
         """
 
-        if distributed_tools.num_procs() > 1:
+        if distributed_utils.num_procs() > 1:
             self.logger.log('Check if distributed parameters are synchronous..')
             modules = {'Policy': self.ac.pi.net, 'Value': self.ac.v.net}
             for key, module in modules.items():
                 flat_params = get_flat_params_from(module).numpy()
-                global_min = distributed_tools.mpi_min(np.sum(flat_params))
-                global_max = distributed_tools.mpi_max(np.sum(flat_params))
+                global_min = distributed_utils.mpi_min(np.sum(flat_params))
+                global_max = distributed_utils.mpi_max(np.sum(flat_params))
                 assert np.allclose(global_min, global_max), f'{key} not synced.'
 
     def compute_loss_pi(self, data: dict):
@@ -386,7 +385,7 @@ class PolicyGradient(PolicyGradientBase):
                 torch.nn.utils.clip_grad_norm_(self.ac.pi.parameters(), self.max_grad_norm)
 
             # Average grads across MPI processes
-            distributed_tools.mpi_avg_grads(self.ac.pi.net)
+            distributed_utils.mpi_avg_grads(self.ac.pi.net)
             self.pi_optimizer.step()
 
             q_dist = self.ac.pi.dist(data['obs'])
@@ -394,7 +393,7 @@ class PolicyGradient(PolicyGradientBase):
 
             if self.cfgs['kl_early_stopping']:
                 # Average KL for consistent early stopping across processes
-                if distributed_tools.mpi_avg(torch_kl) > self.cfgs['target_kl']:
+                if distributed_utils.mpi_avg(torch_kl) > self.cfgs['target_kl']:
                     self.logger.log(f'Reached ES criterion after {i+1} steps.')
                     break
 
@@ -435,7 +434,7 @@ class PolicyGradient(PolicyGradientBase):
                 loss_v.backward()
                 val_losses.append(loss_v.item())
                 # Average grads across MPI processes
-                distributed_tools.mpi_avg_grads(self.ac.v)
+                distributed_utils.mpi_avg_grads(self.ac.v)
                 self.vf_optimizer.step()
 
         self.logger.store(
@@ -480,7 +479,7 @@ class PolicyGradient(PolicyGradientBase):
                 loss_c.backward()
                 losses.append(loss_c.item())
                 # Average grads across MPI processes
-                distributed_tools.mpi_avg_grads(self.ac.c)
+                distributed_utils.mpi_avg_grads(self.ac.c)
                 self.cf_optimizer.step()
 
         self.logger.store(

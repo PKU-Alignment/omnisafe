@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """env_wrapper"""
-import numpy as np
+
 import safety_gymnasium
 import torch
 

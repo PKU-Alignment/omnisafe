@@ -60,5 +60,9 @@ class Registry(object):
         return cls
 
 
-REGISTRY = Registry('NEW')
+REGISTRY = Registry('OmniSafe')
 REGISTRY.__doc__ = 'Description of NEW_REGISTRY'
+
+
+register = REGISTRY.register
+get = REGISTRY.get

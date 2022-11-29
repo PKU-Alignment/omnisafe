@@ -13,18 +13,16 @@
 # limitations under the License.
 # ==============================================================================
 
-from turtle import pen
-
 import numpy as np
 import torch
 
-import omnisafe.algos.utils.distributed_tools as distributed_tools
+from omnisafe.algos import registry
 from omnisafe.algos.common.lagrange import Lagrange
 from omnisafe.algos.on_policy.policy_gradient import PolicyGradient
-from omnisafe.algos.registry import REGISTRY
+from omnisafe.algos.utils import distributed_utils
 
 
-@REGISTRY.register
+@registry.register
 class FOCOPS(PolicyGradient, Lagrange):
     def __init__(self, algo='focops', **cfgs):
 
@@ -100,7 +98,7 @@ class FOCOPS(PolicyGradient, Lagrange):
                 torch.nn.utils.clip_grad_norm_(self.ac.pi.parameters(), self.cfgs['max_grad_norm'])
 
             # Average grads across MPI processes
-            distributed_tools.mpi_avg_grads(self.ac.pi.net)
+            distributed_utils.mpi_avg_grads(self.ac.pi.net)
             self.pi_optimizer.step()
 
             q_dist = self.ac.pi.dist(data['obs'])
@@ -108,7 +106,7 @@ class FOCOPS(PolicyGradient, Lagrange):
 
             if self.cfgs['kl_early_stopping']:
                 # Average KL for consistent early stopping across processes
-                if distributed_tools.mpi_avg(torch_kl) > 0.02:
+                if distributed_utils.mpi_avg(torch_kl) > 0.02:
                     self.logger.log(f'Reached ES criterion after {i+1} steps.')
                     break
 
@@ -149,7 +147,7 @@ class FOCOPS(PolicyGradient, Lagrange):
                 loss_v.backward()
                 val_losses.append(loss_v.item())
                 # Average grads across MPI processes
-                distributed_tools.mpi_avg_grads(self.ac.v)
+                distributed_utils.mpi_avg_grads(self.ac.v)
                 self.vf_optimizer.step()
 
         self.logger.store(
@@ -194,7 +192,7 @@ class FOCOPS(PolicyGradient, Lagrange):
                 loss_c.backward()
                 losses.append(loss_c.item())
                 # Average grads across MPI processes
-                distributed_tools.mpi_avg_grads(self.ac.c)
+                distributed_utils.mpi_avg_grads(self.ac.c)
                 self.cf_optimizer.step()
 
         self.logger.store(

@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """algo wrapper"""
+
 import os
 import sys
 
 import psutil
 
-# from omnisafe.algos import REGISTRY
-from omnisafe.algos.registry import REGISTRY
-from omnisafe.algos.utils.distributed_tools import mpi_fork
+from omnisafe.algos.utils.distributed_utils import mpi_fork
 from omnisafe.algos.utils.tools import get_default_kwargs_yaml
 from omnisafe.evaluator import Evaluator
 

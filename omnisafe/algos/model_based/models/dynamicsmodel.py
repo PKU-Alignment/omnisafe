@@ -1,22 +1,28 @@
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 # Modified version of model.py from  https://github.com/Xingyu-Lin/mbpo_pytorch/blob/main/model.py
 # original version doesn't validate model error batch-wise and is highly memory intensive.
+# ==============================================================================
 
 import gzip
 import itertools
 
-# from pytorch_memlab import profile,MemReporter
-import math
-import sys
-
 import numpy as np
 import torch
-
-# torch.set_default_tensor_type(torch.cuda.FloatTensor)
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd import Variable
-
-from omnisafe.algos.model_based.policy_gradient import device
 
 
 # num_train = 60000  # 60k train examples
@@ -29,13 +35,14 @@ from omnisafe.algos.model_based.policy_gradient import device
 BATCH_SIZE = 100
 
 
-class StandardScaler(object):
-    def __init__(self):
-        self.mu = 0
-        self.std = 1
-        self.mu_t = torch.tensor(self.mu).to(device)
-        self.std_t = torch.tensor(self.std).to(device)
-        # pass
+class StandardScaler:
+    def __init__(self, device=torch.device('cpu')):
+        self.device = torch.device(device)
+
+        self.mu = 0.0
+        self.std = 1.0
+        self.mu_t = torch.tensor(self.mu).to(self.device)
+        self.std_t = torch.tensor(self.std).to(self.device)
 
     def fit(self, data):
         """Runs two ops, one for assigning the mean of the data to the internal mean, and
@@ -50,8 +57,8 @@ class StandardScaler(object):
         self.mu = np.mean(data, axis=0, keepdims=True)
         self.std = np.std(data, axis=0, keepdims=True)
         self.std[self.std < 1e-12] = 1.0
-        self.mu_t = torch.FloatTensor(self.mu).to(device)
-        self.std_t = torch.FloatTensor(self.std).to(device)
+        self.mu_t = torch.FloatTensor(self.mu).to(self.device)
+        self.std_t = torch.FloatTensor(self.std).to(self.device)
 
     def transform(self, data):
         """Transforms the input matrix data using the parameters of this scaler.
@@ -154,12 +161,8 @@ class EnsembleModel(nn.Module):
         # Add variance output
         self.nn5 = EnsembleFC(hidden_size, self.output_dim * 2, ensemble_size, weight_decay=0.0001)
 
-        self.max_logvar = nn.Parameter(
-            (torch.ones((1, self.output_dim)).float() / 2).to(device), requires_grad=False
-        )
-        self.min_logvar = nn.Parameter(
-            (-torch.ones((1, self.output_dim)).float() * 10).to(device), requires_grad=False
-        )
+        self.register_buffer('max_logvar', (torch.ones((1, self.output_dim)).float() / 2))
+        self.register_buffer('min_logvar', (-torch.ones((1, self.output_dim)).float() * 10))
         self.optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
         self.apply(init_weights)
         self.swish = Swish()

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """tool_function_packages"""
+
 import os
 from typing import Any
 
@@ -28,7 +28,7 @@ import yaml
 # def get_defaults_kwargs_yaml_on_policy(algo, env_id):
 #     """get_defaults_kwargs_yaml_on_policy"""
 #     path = os.path.abspath(__file__).split('/')[:-2]
-#     cfg_path = os.path.join('/', *path, 'configs/on_policy_cfgs', f'{algo}.yaml')
+#     cfg_path = os.path.join('/', *path, 'configs/on-policy', f'{algo}.yaml')
 #     with open(cfg_path, 'r', encoding='utf-8') as file:
 #         try:
 #             kwargs = yaml.load(file, Loader=yaml.FullLoader)
@@ -41,7 +41,7 @@ import yaml
 # def get_defaults_kwargs_yaml_off_policy(algo, env_id=None):
 #     """get_defaults_kwargs_yaml_off_policy"""
 #     path = os.path.abspath(__file__).split('/')[:-2]
-#     cfg_path = os.path.join('/', *path, 'configs/off_policy_cfgs', f'{algo}.yaml')
+#     cfg_path = os.path.join('/', *path, 'configs/off-policy', f'{algo}.yaml')
 #     with open(cfg_path, 'r', encoding='utf-8') as file:
 #         try:
 #             kwargs = yaml.load(file, Loader=yaml.FullLoader)
@@ -55,11 +55,11 @@ def get_default_kwargs_yaml(algo, env_id, algo_class):
     """get_default_kwargs_yaml"""
     path = os.path.abspath(__file__).split('/')[:-2]
     if algo_class == 1:
-        dir_name = 'on_policy_cfgs'
+        dir_name = 'on-policy'
     elif algo_class == 2:
-        dir_name = 'off_policy_cfgs'
+        dir_name = 'off-policy'
     elif algo_class == 3:
-        dir_name = 'model_based_cfgs'
+        dir_name = 'model-based'
 
     cfg_path = os.path.join('/', *path, 'configs', dir_name, f'{algo}.yaml')
     with open(cfg_path, 'r', encoding='utf-8') as file:

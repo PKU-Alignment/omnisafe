@@ -1,18 +1,33 @@
-# pylint:disable=invalid-name,no-name-in-module,import-error,too-many-locals,too-many-statements,too-many-instance-attributes,too-many-arguments
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
 import numpy as np
 import torch
 
-from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased, device
-from omnisafe.algos.registry import REGISTRY
+from omnisafe.algos import registry
+from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased
 
 
-@REGISTRY.register
+@registry.register
 class SafeLoop(PolicyGradientModelBased):
     """safeloop"""
 
     def __init__(self, algo='safeloop', clip=0.2, **cfgs):
-        PolicyGradientModelBased.__init__(self, algo=algo, **cfgs)
+        super().__init__(algo=algo, **cfgs)
         self.clip = clip
+        self.device = torch.device(self.cfgs['device'])
 
     def algorithm_specific_logs(self, timestep):
         """log algo parameter"""
@@ -67,7 +82,7 @@ class SafeLoop(PolicyGradientModelBased):
             p.requires_grad = True
 
         if self.automatic_alpha_tuning:
-            alpha_loss = -(self.log_alpha * (log_pi.to(device) + self.target_entropy)).mean()
+            alpha_loss = -(self.log_alpha * (log_pi.to(self.device) + self.target_entropy)).mean()
             self.alpha_optim.zero_grad()
             alpha_loss.backward()
             self.alpha_optim.step()
