@@ -19,6 +19,7 @@ import sys
 
 import psutil
 
+from omnisafe.algos import registry
 from omnisafe.algos.utils.distributed_utils import mpi_fork
 from omnisafe.algos.utils.tools import get_default_kwargs_yaml
 from omnisafe.evaluator import Evaluator
@@ -111,7 +112,7 @@ class AlgoWrapper:
             self.recursive_update(cfgs, self.custom_cfgs)
         exp_name = os.path.join(self.env.env_id, self.algo)
         cfgs.update(exp_name=exp_name)
-        agent = REGISTRY.get(self.algo)(
+        agent = registry.get(self.algo)(
             env=self.env,
             exp_name=exp_name,
             data_dir=cfgs['data_dir'],
