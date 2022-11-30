@@ -17,7 +17,6 @@
 import numpy as np
 
 
-# pylint: disable=R0913,R0914
 def calculate_v_trace(
     policy_action_probs: np.ndarray,
     values: np.ndarray,  # including bootstrap

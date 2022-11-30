@@ -43,7 +43,6 @@ def rot2quat(theta):
     return np.array([np.cos(theta / 2), 0, 0, np.sin(theta / 2)], dtype='float64')
 
 
-# pylint: disable=W0107
 class ResamplingError(AssertionError):
     """Raised when we fail to sample a valid distribution of objects or goals"""
 

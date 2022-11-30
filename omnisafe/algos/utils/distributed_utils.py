@@ -29,7 +29,6 @@ def setup_torch_for_mpi():
     Avoid slowdowns caused by each separate process's PyTorch using
     more than its fair share of CPU resources.
     """
-    # pylint: disable=E1101
     old_num_threads = torch.get_num_threads()
     # decrease number of torch threads for MPI
     if old_num_threads > 1 and num_procs() > 1:
@@ -199,7 +198,6 @@ def mpi_op(value, operation):
     if num_procs() == 1:
         return value
     value, scalar = ([value], True) if np.isscalar(value) else (value, False)
-    # pylint: disable=E1101
     value = torch.as_tensor(value, dtype=torch.float32)
     allreduce(value, op=operation)
     return value[0] if scalar else value

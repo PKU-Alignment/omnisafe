@@ -75,7 +75,7 @@ target-version = ["py38", "py39", "py310", "py311"]
 [tool.isort]
 atomic = true
 profile = "black"
-src_paths = ["omnisafe", "examples", "tests"]
+src_paths = ["omnisafe", "envs", "examples", "tests"]
 extra_standard_library = ["typing_extensions"]
 indent = 4
 line_length = 100

@@ -16,10 +16,10 @@
 
 from typing import Optional
 
-import gymnasium as gym
+import gymnasium
 
 
-class TimeLimit(gym.Wrapper):
+class TimeLimit(gymnasium.Wrapper):
     """This wrapper will issue a `truncated` signal if a maximum number of timesteps is exceeded.
 
     If a truncation is not defined inside the environment itself, this is the only place that the truncation signal is issued.
@@ -34,7 +34,7 @@ class TimeLimit(gym.Wrapper):
 
     def __init__(
         self,
-        env: gym.Env,
+        env: gymnasium.Env,
         max_episode_steps: Optional[int] = None,
     ):
         """Initializes the :class:`TimeLimit` wrapper with an environment and the number of steps after which truncation will occur.

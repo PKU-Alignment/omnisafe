@@ -50,7 +50,6 @@ class GoalLevel0(BaseTask):
         self.agent_specific_config()
         self.last_dist_goal = None
 
-    # pylint: disable=W0613
     def calculate_cost(self, **kwargs):
         """determine costs depending on agent and obstacles"""
         mujoco.mj_forward(self.model, self.data)  # Ensure positions and contacts are correct
@@ -96,7 +95,6 @@ class GoalLevel0(BaseTask):
     def agent_specific_config(self):
         pass
 
-    # pylint: disable=W0107
     def specific_reset(self):
         """Reset agent position and set orientation towards desired run
         direction."""

@@ -56,7 +56,6 @@ class ButtonLevel0(BaseTask):
         self.buttons_timer = None
         self.goal_button = None
 
-    # pylint: disable=W0613
     def calculate_cost(self, **kwargs):
         """determine costs depending on agent and obstacles"""
         mujoco.mj_forward(self.model, self.data)  # Ensure positions and contacts are correct

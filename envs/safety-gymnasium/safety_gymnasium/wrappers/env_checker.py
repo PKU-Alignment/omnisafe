@@ -14,7 +14,7 @@
 # ==============================================================================
 """A passive environment checker wrapper for an environment's observation and action space along with the reset, step and render functions."""
 
-import gymnasium as gym
+import gymnasium
 from gymnasium.core import ActType
 from safety_gymnasium.utils.passive_env_checker import (
     check_action_space,
@@ -25,7 +25,7 @@ from safety_gymnasium.utils.passive_env_checker import (
 )
 
 
-class PassiveEnvChecker(gym.Wrapper):
+class PassiveEnvChecker(gymnasium.Wrapper):
     """A passive environment checker wrapper that surrounds the step, reset and render functions to check they follow the gymnasium API."""
 
     def __init__(self, env):

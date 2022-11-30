@@ -18,10 +18,10 @@ import safety_gymnasium
 import torch
 
 
-class EnvWrappers:
+class EnvWrapper:
     """env_wrapper"""
 
-    def __init__(self, env_id, render_mode='None'):
+    def __init__(self, env_id, render_mode='none'):
         # check env_id is str
         self.env = safety_gymnasium.make(
             env_id, render_mode=render_mode
@@ -67,17 +67,14 @@ class EnvWrappers:
         next_obs, reward, cost, terminated, truncated, info = self.env.step(action)
         return next_obs, reward, cost, terminated, truncated, info
 
-    # pylint: disable=R0913,R0914
     def roll_out(
         self, agent, buf, logger, local_steps_per_epoch, penalty_param, use_cost, cost_gamma
     ):
         """collect data and store to experience buffer."""
-        # pylint: disable=W0612
         obs, info = self.env.reset()
         # print(info)  ## need do
         ep_ret, ep_costs, ep_len = 0.0, 0.0, 0
         for step_i in range(local_steps_per_epoch):
-            # pylint: disable=E1101
             action, value, cost_value, logp = agent.step(torch.as_tensor(obs, dtype=torch.float32))
             next_obs, reward, cost, done, truncated, info = self.step(action)
             ep_ret += reward

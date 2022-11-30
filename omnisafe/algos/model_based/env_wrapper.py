@@ -16,7 +16,6 @@
 import gymnasium
 import numpy as np
 import safety_gymnasium
-import torch
 
 from omnisafe.algos.model_based.aux import (
     dist_xy,
@@ -56,8 +55,8 @@ CONSTRAINTS_MBPPO = dict(
 )
 
 
-class Env_Wrappers:
-    def __init__(self, algo, env_id, render_mode='None'):
+class EnvWrapper:
+    def __init__(self, algo, env_id, render_mode='none'):
         self.algo = algo
         self.env_id = env_id  # safety gym not use this attribute
         if self.algo == 'MBPPOLag':

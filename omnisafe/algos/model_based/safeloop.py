@@ -54,7 +54,6 @@ class SafeLoop(PolicyGradientModelBased):
 
     def update(self):
         """Todo"""
-        pass  # pylint:disable=unnecessary-pass
 
     # Set up model saving
     def update_actor_critic(self, data):
@@ -86,7 +85,7 @@ class SafeLoop(PolicyGradientModelBased):
             self.alpha_optim.zero_grad()
             alpha_loss.backward()
             self.alpha_optim.step()
-            self.alpha = self.log_alpha.exp()  # pylint:disable=attribute-defined-outside-init
+            self.alpha = self.log_alpha.exp()
 
         # Finally, update target networks by polyak averaging.
         with torch.no_grad():

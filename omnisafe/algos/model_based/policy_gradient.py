@@ -176,7 +176,6 @@ class PolicyGradientModelBased(PolicyGradientBase):
                 self.actor_critic.q1.parameters(), self.actor_critic.q2.parameters()
             )
             # Count variables (protip: try to get a feel for how different size networks behave!)
-            # pylint: disable-next=line-too-long
             self.var_counts = tuple(
                 core_sac.count_vars(module)
                 for module in [self.actor_critic.pi, self.actor_critic.q1, self.actor_critic.q2]
@@ -274,7 +273,6 @@ class PolicyGradientModelBased(PolicyGradientBase):
         Use this method to collect log information.
         e.g. log lagrangian for lagrangian-base , log q, r, s, c for cpo, etc
         """
-        pass  # pylint: disable=unnecessary-pass
 
     def check_distributed_parameters(self):
         """
@@ -315,7 +313,6 @@ class PolicyGradientModelBased(PolicyGradientBase):
         Returns:
             No return
         """
-        pass  # pylint: disable=unnecessary-pass
 
     def update_actor_critic(self, data=None):
         """
@@ -324,7 +321,6 @@ class PolicyGradientModelBased(PolicyGradientBase):
         Returns:
             No return
         """
-        pass  # pylint: disable=unnecessary-pass
 
     def learn(self):
         """learn the policy"""
@@ -383,10 +379,8 @@ class PolicyGradientModelBased(PolicyGradientBase):
             if (t + self.num_repeat) % self.eval_freq == 0:
                 self.log(t)
 
-    # pylint: disable=too-many-locals
-    # pylint:disable=too-many-statements
     def learn_mbppo(self):
-        """training the policy using mbppo-lag in mbppo setting safetygym env"""
+        """training the policy using mbppo-lag in mbppo setting safety-gym env"""
 
         self.start_time = time.time()
         # Main loop: collect experience in env to train dynamics models

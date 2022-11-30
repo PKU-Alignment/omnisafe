@@ -16,7 +16,7 @@
 import os
 from typing import Optional, Union
 
-import gymnasium as gym
+import gymnasium
 import numpy as np
 from gymnasium import error, logger, spaces
 from gymnasium.spaces import Space
@@ -40,7 +40,7 @@ else:
 DEFAULT_SIZE = 480
 
 
-class BaseMujocoEnv(gym.Env):
+class BaseMujocoEnv(gymnasium.Env):
     """Superclass for all MuJoCo environments."""
 
     def __init__(
@@ -402,8 +402,8 @@ class MujocoEnv(BaseMujocoEnv):
     def _get_viewer(
         self, mode
     ) -> Union[
-        'gym.envs.mujoco.mujoco_rendering.Viewer',
-        'gym.envs.mujoco.mujoco_rendering.RenderContextOffscreen',
+        'gymnasium.envs.mujoco.mujoco_rendering.Viewer',
+        'gymnasium.envs.mujoco.mujoco_rendering.RenderContextOffscreen',
     ]:
         self.viewer = self._viewers.get(mode)
         if self.viewer is None:

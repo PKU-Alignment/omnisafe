@@ -22,9 +22,6 @@ import torch
 import yaml
 
 
-# pylint: disable=E1101
-
-
 # def get_defaults_kwargs_yaml_on_policy(algo, env_id):
 #     """get_defaults_kwargs_yaml_on_policy"""
 #     path = os.path.abspath(__file__).split('/')[:-2]
@@ -80,7 +77,6 @@ def get_flat_params_from(model):
             data = data.view(-1)  # flatten tensor
             flat_params.append(data)
     assert flat_params, 'No gradients were found in model parameters.'
-    # pylint: disable=E1101
     return torch.cat(flat_params)
 
 
@@ -96,7 +92,6 @@ def get_flat_gradients_from(model):
     return torch.cat(grads)
 
 
-# pylint: disable=R0914,C0103
 def conjugate_gradients(Avp, b_vector, nsteps, residual_tol=1e-10, eps=1e-6):
     """
     Conjugate gradient algorithm

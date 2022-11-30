@@ -21,7 +21,7 @@ import torch
 from gymnasium.spaces import Box, Discrete
 from gymnasium.utils.save_video import save_video
 
-from omnisafe.algos.env_wrapper import EnvWrappers
+from omnisafe.algos.env_wrapper import EnvWrapper
 from omnisafe.algos.models.mlp_categorical_actor import MLPCategoricalActor
 from omnisafe.algos.models.mlp_gaussian_actor import MLPGaussianActor
 from omnisafe.algos.models.online_mean_std import OnlineMeanStd
@@ -81,7 +81,7 @@ class Evaluator:
 
         # make the environment
         env_id = cfg['env_id']
-        self.env = EnvWrappers(env_id, render_mode=self.render_mode)
+        self.env = EnvWrapper(env_id, render_mode=self.render_mode)
 
         # make the actor
         observation_space = self.env.observation_space
@@ -181,17 +181,17 @@ class Evaluator:
 
         if self.env.render_mode == None:
             print("Remake the environment with render_mode='rgb_array' to render the environment.")
-            self.env = EnvWrappers(self.env.env_id, render_mode='rgb_array')
+            self.env = EnvWrapper(self.env.env_id, render_mode='rgb_array')
             self.render_mode = 'rgb_array'
 
         if self.env.render_mode == 'human' and save_replay_path is not None:
             print("Remake the environment with render_mode='rgb_array' to save the replay.")
-            self.env = EnvWrappers(self.env.env_id, render_mode='rgb_array')
+            self.env = EnvWrapper(self.env.env_id, render_mode='rgb_array')
             self.render_mode = 'rgb_array'
 
         if self.env.render_mode == 'rgb_array_list' and play:
             print("Remake the environment with render_mode='rgb_array' to render the environment.")
-            self.env = EnvWrappers(self.env.env_id, render_mode='rgb_array')
+            self.env = EnvWrapper(self.env.env_id, render_mode='rgb_array')
             self.render_mode = 'rgb_array'
 
         frames = []

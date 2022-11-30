@@ -340,7 +340,6 @@ class MBPPOLag(PolicyGradientModelBased):
         valid_rets = [0] * 6
         winner = 0
         # print("validating............")
-        # pylint:disable=consider-using-enumerate
         for va in range(len(valid_rets)):
             ov, staticv = self.env.reset()  ##########  create initial state!!!!!
             ov = np.clip(ov, -1000, 1000)

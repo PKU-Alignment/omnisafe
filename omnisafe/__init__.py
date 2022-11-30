@@ -15,6 +15,6 @@
 """OmniSafe: A comprehensive and reliable benchmark for safe reinforcement learning."""
 
 from omnisafe.algo_wrapper import AlgoWrapper as Agent
-from omnisafe.algos.env_wrapper import EnvWrappers as Env
-from omnisafe.algos.model_based.env_wrappers import Env_Wrappers as Env_ModelBased
+from omnisafe.algos.env_wrapper import EnvWrapper as Env
+from omnisafe.algos.model_based.env_wrapper import EnvWrapper as EnvModelBased
 from omnisafe.version import __version__

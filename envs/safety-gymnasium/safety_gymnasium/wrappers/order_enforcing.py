@@ -14,11 +14,11 @@
 # ==============================================================================
 """Wrapper to enforce the proper ordering of environment operations."""
 
-import gymnasium as gym
+import gymnasium
 from gymnasium.error import ResetNeeded
 
 
-class OrderEnforcing(gym.Wrapper):
+class OrderEnforcing(gymnasium.Wrapper):
     """A wrapper that will produce an error if :meth:`step` is called before an initial :meth:`reset`.
 
     Example:
@@ -34,7 +34,7 @@ class OrderEnforcing(gym.Wrapper):
         >>> env.step(0)
     """
 
-    def __init__(self, env: gym.Env, disable_render_order_enforcing: bool = False):
+    def __init__(self, env: gymnasium.Env, disable_render_order_enforcing: bool = False):
         """A wrapper that will produce an error if :meth:`step` is called before an initial :meth:`reset`.
 
         Args:

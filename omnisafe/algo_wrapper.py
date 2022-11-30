@@ -24,9 +24,6 @@ from omnisafe.algos.utils.tools import get_default_kwargs_yaml
 from omnisafe.evaluator import Evaluator
 
 
-# from omnisafe.algos import off_policy, on_policy
-
-
 class AlgoWrapper:
     """Algo Wrapper for algo"""
 

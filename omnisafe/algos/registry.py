@@ -61,7 +61,7 @@ class Registry(object):
 
 
 REGISTRY = Registry('OmniSafe')
-REGISTRY.__doc__ = 'Description of NEW_REGISTRY'
+REGISTRY.__doc__ = 'The global registry for OmniSafe.'
 
 
 register = REGISTRY.register
