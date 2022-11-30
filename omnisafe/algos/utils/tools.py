@@ -103,7 +103,6 @@ def conjugate_gradients(Avp, b_vector, nsteps, residual_tol=1e-10, eps=1e-6):
             but at the cost of slowing things down.
             Also probably don't play with this hyperparameter.
     """
-    # pylint disable=E1101
     x = torch.zeros_like(b_vector)
     r = b_vector - Avp(x)
     p = r.clone()

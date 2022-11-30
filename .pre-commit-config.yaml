@@ -28,10 +28,14 @@ repos:
     hooks:
       - id: black-jupyter
         stages: [commit, push, manual]
-  # - repo: https://github.com/PyCQA/pylint
-  #   rev: 2.15.5
+  # - repo: local
   #   hooks:
   #     - id: pylint
+  #       name: pylint
+  #       entry: pylint
+  #       language: system
+  #       types: [python]
+  #       require_serial: true
   #       stages: [commit, push, manual]
   #       exclude: |
   #         (?x)(

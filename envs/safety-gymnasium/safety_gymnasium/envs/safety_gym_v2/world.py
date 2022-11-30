@@ -80,7 +80,6 @@ class World:
     # Then all uses of `self.world.get_sensor()` should change to `self.data.get_sensor`.
     def get_sensor(self, name):
         """get_sensor: Get the value of a sensor by name"""
-        # pylint disable=C0103
         id = self.model.sensor(name).id
         adr = self.model.sensor_adr[id]
         dim = self.model.sensor_dim[id]
