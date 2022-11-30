@@ -20,9 +20,7 @@ from omnisafe.algos.utils.core import combined_shape
 
 
 class ReplayBuffer:
-    """
-    A simple FIFO experience replay buffer for DDPG agents.
-    """
+    """A simple FIFO experience replay buffer for DDPG agents."""
 
     def __init__(self, obs_dim, act_dim, size, batch_size):
         """init"""

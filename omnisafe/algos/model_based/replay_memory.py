@@ -1,4 +1,18 @@
-# pylint:disable=wrong-import-position,no-name-in-module,import-error,too-many-locals,too-many-statements,too-many-instance-attributes,too-many-arguments
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
 import random
 from operator import itemgetter
 
@@ -6,7 +20,7 @@ import numpy as np
 import torch
 
 
-class ReplayMemory:
+class ReplayBuffer:
     def __init__(self, capacity):
         self.capacity = capacity
         self.buffer = []
@@ -63,7 +77,6 @@ class ReplayMemory:
 
 # import core as core
 import omnisafe.algos.model_based.models.core_sac as core_sac
-from omnisafe.algos.model_based.policy_gradient import device
 
 
 class SAC_ReplayBuffer:
@@ -71,7 +84,7 @@ class SAC_ReplayBuffer:
     A simple FIFO experience replay buffer for SAC agents.
     """
 
-    def __init__(self, obs_dim, act_dim, size=int(1e6)):
+    def __init__(self, obs_dim, act_dim, size=int(1e6), device=torch.device('cpu')):
         self.state = np.zeros(core_sac.combined_shape(size, obs_dim), dtype=np.float32)
         self.next_state = np.zeros(core_sac.combined_shape(size, obs_dim), dtype=np.float32)
         self.action = np.zeros(core_sac.combined_shape(size, act_dim), dtype=np.float32)
@@ -79,6 +92,7 @@ class SAC_ReplayBuffer:
         self.cost = np.zeros(size, dtype=np.float32)
         self.done = np.zeros(size, dtype=np.float32)
         self.ptr, self.size, self.max_size = 0, 0, size
+        self.device = torch.device(device)
 
     def store(self, obs, act, rew, next_obs, done, cost=None):
         self.state[self.ptr] = obs
@@ -102,14 +116,14 @@ class SAC_ReplayBuffer:
             done=self.done[idxs],
         )
         return_dict = {
-            k: torch.as_tensor(v, dtype=torch.float32).to(device) for k, v in batch.items()
+            k: torch.as_tensor(v, dtype=torch.float32).to(self.device) for k, v in batch.items()
         }
         return_dict['idx'] = idxs
         return return_dict
 
 
 from omnisafe.algos.model_based.models import core_ac
-from omnisafe.algos.utils.distributed_tools import mpi_statistics_scalar
+from omnisafe.algos.utils.distributed_utils import mpi_statistics_scalar
 
 
 class PPOBuffer:
@@ -119,7 +133,7 @@ class PPOBuffer:
     for calculating the advantages of state-action pairs.
     """
 
-    def __init__(self, obs_dim, act_dim, size, gamma=0.99, lam=0.97):
+    def __init__(self, obs_dim, act_dim, size, gamma=0.99, lam=0.97, device=torch.device('cpu')):
         self.obs_buf = np.zeros(core_ac.combined_shape(size, obs_dim), dtype=np.float32)
         self.act_buf = np.zeros(core_ac.combined_shape(size, act_dim), dtype=np.float32)
 
@@ -139,7 +153,7 @@ class PPOBuffer:
         self.gamma, self.lam = gamma, lam
         self.ptr, self.path_start_idx, self.max_size = 0, 0, size
 
-        # buf.store(   o, a, r, c, v,vc, logp)
+        self.device = torch.device(device)
 
     def store(self, obs, act, rew, crew, val, cval, logp):
         """
@@ -217,4 +231,6 @@ class PPOBuffer:
             cadv=self.cadv_buf,
             logp=self.logp_buf,
         )
-        return {k: torch.as_tensor(v, device=device, dtype=torch.float32) for k, v in data.items()}
+        return {
+            k: torch.as_tensor(v, device=self.device, dtype=torch.float32) for k, v in data.items()
+        }

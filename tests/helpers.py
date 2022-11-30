@@ -13,18 +13,12 @@
 # limitations under the License.
 # ==============================================================================
 
-import copy
 import itertools
-import os
-import random
-from typing import Iterable, Optional, Tuple, Union
 
 import numpy as np
 import pytest
 import torch
-import torch.nn as nn
 import torch.types
-from torch.utils import data
 
 
 def dtype_numpy2torch(dtype: np.dtype) -> torch.dtype:

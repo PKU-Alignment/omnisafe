@@ -1,11 +1,23 @@
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
 import numpy as np
-import scipy.signal
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions.normal import Normal
-
-from omnisafe.algos.model_based.policy_gradient import device
 
 
 def combined_shape(length, shape=None):
@@ -122,13 +134,10 @@ class MLPActorCritic(nn.Module):
         act_dim = action_space.shape[0]
         act_limit = action_space.high[0]
         # build policy and value functions
-        self.pi = SquashedGaussianMLPActor(
-            obs_dim, act_dim, hidden_sizes, activation, act_limit
-        ).to(device)
-
-        self.q1 = MLPQFunction(obs_dim, act_dim, hidden_sizes, activation).to(device)
-        self.q2 = MLPQFunction(obs_dim, act_dim, hidden_sizes, activation).to(device)
-        self.v = MLPVFunction(obs_dim, act_dim, hidden_sizes, activation).to(device)
+        self.pi = SquashedGaussianMLPActor(obs_dim, act_dim, hidden_sizes, activation, act_limit)
+        self.q1 = MLPQFunction(obs_dim, act_dim, hidden_sizes, activation)
+        self.q2 = MLPQFunction(obs_dim, act_dim, hidden_sizes, activation)
+        self.v = MLPVFunction(obs_dim, act_dim, hidden_sizes, activation)
 
     def act_batch(self, obs, deterministic=False, with_logprob=False):
         with torch.no_grad():
