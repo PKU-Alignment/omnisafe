@@ -271,7 +271,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
     def algorithm_specific_logs(self, timestep):
         """
         Use this method to collect log information.
-        e.g. log lagrangian for lagrangian-base , log q, r, s, c for cpo, etc
+        e.g. log lagrangian for lagrangian-base , log q, r, s, c for CPO, etc
         """
 
     def check_distributed_parameters(self):
@@ -380,7 +380,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
                 self.log(t)
 
     def learn_mbppo(self):
-        """training the policy using mbppo-lag in mbppo setting safety-gym env"""
+        """training the policy using MBPPO-Lag in MBPPO setting safety-gym env"""
 
         self.start_time = time.time()
         # Main loop: collect experience in env to train dynamics models

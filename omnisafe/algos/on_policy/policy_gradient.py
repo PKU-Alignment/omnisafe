@@ -146,7 +146,7 @@ class PolicyGradient(PolicyGradientBase):
     def algorithm_specific_logs(self):
         """
         Use this method to collect log information.
-        e.g. log lagrangian for lagrangian-base , log q, r, s, c for cpo, etc
+        e.g. log lagrangian for lagrangian-base , log q, r, s, c for CPO, etc
         """
         pass
 
@@ -211,7 +211,7 @@ class PolicyGradient(PolicyGradientBase):
         """
         This is main function for algorithm update, divided into the following steps:
             (1). self.rollout: collect interactive data from environment
-            (2). self.udpate: perform actor/critic updates
+            (2). self.update: perform actor/critic updates
             (3). log epoch/update information for visualization and terminal log print.
 
         Returns:

@@ -42,7 +42,7 @@ def count_vars(module):
 
 def discount_cumsum(x, discount):
     """
-    magic from rllab for computing discounted cumulative sums of vectors.
+    magic from RLlib for computing discounted cumulative sums of vectors.
 
     input:
         vector x,

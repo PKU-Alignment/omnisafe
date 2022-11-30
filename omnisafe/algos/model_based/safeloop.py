@@ -53,7 +53,7 @@ class SafeLoop(PolicyGradientModelBased):
             self.logger.log_tabular('Loss/DynamicsValLoss')
 
     def update(self):
-        """Todo"""
+        """TODO"""
 
     # Set up model saving
     def update_actor_critic(self, data):
@@ -152,7 +152,7 @@ class SafeLoop(PolicyGradientModelBased):
         return loss_pi, pi_info
 
     def update_dynamics_model(self):
-        """updata dynamics"""
+        """update dynamics"""
         state = self.replay_buffer.state[: self.replay_buffer.size, :]
         action = self.replay_buffer.action[: self.replay_buffer.size, :]
         reward = self.replay_buffer.reward[: self.replay_buffer.size]

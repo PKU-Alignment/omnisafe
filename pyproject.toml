@@ -49,7 +49,7 @@ Documentation = "https://omnisafe.readthedocs.io"
 lint = [
     "isort",
     "black >= 22.6.0",
-    "pylint >= 2.13.0",
+    "pylint >= 2.15.0",
     "mypy >= 0.990",
     "flake8",
     "flake8-bugbear",

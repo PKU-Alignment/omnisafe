@@ -68,7 +68,7 @@ ignored-modules=
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use, and will cap the count on Windows to
 # avoid hangs.
-jobs=1
+jobs=0
 
 # Control the amount of potential inferred values when inferring a single
 # object. This can help the performance when dealing with large functions or
@@ -498,7 +498,7 @@ max-spelling-suggestions=4
 
 # Spelling dictionary name. Available dictionaries: en_AU (hunspell), en_CA
 # (hunspell), en_GB (hunspell), en_US (hunspell), en_ZA (hunspell).
-spelling-dict=
+spelling-dict=en_US
 
 # List of comma separated words that should be considered directives if they
 # appear at the beginning of a comment and should not be checked.
@@ -508,7 +508,7 @@ spelling-ignore-comment-directives=fmt: on,fmt: off,noqa:,noqa,nosec,isort:skip,
 spelling-ignore-words=
 
 # A path to a file that contains the private dictionary; one word per line.
-spelling-private-dict-file=
+spelling-private-dict-file=docs/source/spelling_wordlist.txt
 
 # Tells whether to store unknown words to the private dictionary (see the
 # --spelling-private-dict-file option) instead of raising a message.

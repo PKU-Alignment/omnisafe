@@ -226,7 +226,7 @@ class EnvWrapper:
 
     def get_obs(self):
         '''
-        We will ingnore the z-axis coordinates in every poses.
+        We will ignore the z-axis coordinates in every poses.
         The returned obs coordinates are all in the robot coordinates.
         '''
         obs = {}
