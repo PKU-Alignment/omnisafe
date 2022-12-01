@@ -1,0 +1,48 @@
+defaults:
+# Basic Configurations
+    epochs: 100
+    steps_per_epoch: 4000
+    update_after: 1000
+    update_every: 50
+    check_freq: 25
+    save_freq: 10
+    max_ep_len: 1000
+    num_test_episodes: 10
+    pi_lr: 0.001
+    vf_lr: 0.001
+    polyak : 0.999
+    gamma : 0.99
+    start_steps : 10000
+    data_dir: "./runs"
+    seed: 0
+    Env_cfgs:
+        start_step: 1000
+        update_every: 100
+
+    # Optional Configuration
+    ## Whether to use cost critic
+    use_cost: False
+    use_linear_lr_decay: False
+    exploration_noise_anneal: False
+    reward_penalty: False
+    use_max_grad_norm: False
+    max_grad_norm: 0.5
+    scale_rewards: False
+    standardized_obs: True
+
+    model_cfgs:
+        pi_type: 'dire'
+        shared_weights: False
+        weight_initialization_mode: 'kaiming_uniform'
+        ac_kwargs:
+            pi:
+                act_noise: 0.1
+                hidden_sizes: [400, 300]
+                activation: relu
+            val:
+                hidden_sizes: [400, 300]
+                activation: relu
+    ## Configuration For Buffer
+    replay_buffer_cfgs:
+        size : 50000
+        batch_size: 256

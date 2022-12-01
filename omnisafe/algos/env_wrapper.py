@@ -129,11 +129,15 @@ class EnvWrapper:
                 ep_ret, ep_costs, ep_len = 0.0, 0.0, 0
                 obs, info = self.env.reset()
 
-    def evalution(self, agent, buf, logger, local_steps_per_epoch, penalty_param, use_cost, cost_gamma):
+    def evalution(
+        self, agent, buf, logger, local_steps_per_epoch, penalty_param, use_cost, cost_gamma
+    ):
         obs, info = self.env.reset()
         ep_ret, ep_costs, ep_len = 0.0, 0.0, 0
         for step_i in range(local_steps_per_epoch):
-            action, value, cost_value, logp = agent.step(torch.as_tensor(obs, dtype=torch.float32), deterministic=True)
+            action, value, cost_value, logp = agent.step(
+                torch.as_tensor(obs, dtype=torch.float32), deterministic=True
+            )
             next_obs, reward, cost, done, truncated, info = self.step(action)
             ep_ret += reward
             ep_costs += (cost_gamma**ep_len) * cost
@@ -175,7 +179,6 @@ class EnvWrapper:
 
     def roll_out_off(self, ac, buf, logger, use_cost):
         """collect data and store to experience buffer."""
-        # c_gamma_step = 0
         for t in range(self.ep_steps):
             ep_ret = self.ep_ret
             ep_len = self.ep_len
@@ -183,7 +186,7 @@ class EnvWrapper:
             o = self.curr_o
             a, v, cv, logp = ac.step(torch.as_tensor(o, dtype=torch.float32), self.deterministic)
             # Store values for statistic purpose
-            if use_cost:
+            if use_cost == True:
                 logger.store(**{'Values/V': v, 'Values/C': cv})
             else:
                 logger.store(**{'Values/V': v})
@@ -209,7 +212,7 @@ class EnvWrapper:
                         **{
                             'Metrics/EpRet': ep_ret,
                             'Metrics/EpLen': ep_len,
-                            'Metrics/EpCost': ep_costs,
+                            'Metrics/EpCosts': ep_costs,
                         }
                     )
                     self.curr_o, info = self.env.reset(seed=self.seed)

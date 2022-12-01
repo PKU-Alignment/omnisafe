@@ -19,6 +19,7 @@ import sys
 import psutil
 
 from omnisafe.algos import registry
+from omnisafe.algos import algo_type
 from omnisafe.algos.utils.distributed_utils import mpi_fork
 from omnisafe.algos.utils.tools import get_default_kwargs_yaml
 from omnisafe.evaluator import Evaluator
@@ -30,11 +31,28 @@ class AlgoWrapper:
     def __init__(self, algo, env, parallel=1, custom_cfgs=None):
         self.algo = algo
         self.env = env
-        self.env_id = env.env_id
-        self.seed = 0  # TOOD
         self.parallel = parallel
+        self.env_id = env.env_id
+        # algo_type will set in _init_checks()
+        self.algo_type = None
         self.custom_cfgs = custom_cfgs
         self.evaluator = None
+        self._init_checks()
+
+    def _init_checks(self):
+        """Init checks"""
+        assert isinstance(self.algo, str), 'algo must be a string!'
+        assert isinstance(self.parallel, int), 'parallel must be an integer!'
+        assert self.parallel > 0, 'parallel must be greater than 0!'
+        assert (
+            isinstance(self.custom_cfgs, dict) or self.custom_cfgs is None
+        ), 'custom_cfgs must be a dict!'
+        for key in algo_type.keys():
+            if self.algo in algo_type[key]:
+                self.algo_type = key
+                break
+        if algo_type == None or algo_type == '':
+            raise ValueError(f'{self.algo} is not supported!')
 
     def recursive_update(self, args: dict, update_args: dict):
         """recursively update args"""

@@ -12,9 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""init"""
 
+algo_type = {
+    "OFF_POLICY": ["DDPG"],
+    "ON_POLICY": [
+        "CPO",
+        "FOCOPS",
+        "CPPOPid",
+        "FOCOPS",
+        "NaturalPG",
+        "NPGLag",
+        "PCPO",
+        "PDO" "PolicyGradient",
+        "PPO",
+        "PPOLag",
+        "TRPO",
+        "TRPOLag",
+    ],
+    "MODEL_BASED": ["MBPPOLag", "SafeLoop"],
+}
+
+# Off Policy Safe
+from omnisafe.algos.off_policy.ddpg import DDPG
+
+# Model-base Safe
 from omnisafe.algos.model_based.mbppo import MBPPOLag
 from omnisafe.algos.model_based.safeloop import SafeLoop
+
+# On Policy Safe
 from omnisafe.algos.on_policy.cpo import CPO
 from omnisafe.algos.on_policy.cppo_pid import CPPOPid
 from omnisafe.algos.on_policy.focops import FOCOPS
