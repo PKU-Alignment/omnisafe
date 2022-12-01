@@ -40,7 +40,7 @@ class CPO(TRPO):
     :param algo: Name of the algorithm
     :param cost_limit: Upper bound of max-cost, set as restriction
     :param use_cost_value_function: Whether to use two critics value and cost net and update them
-    :param use_kl_early_stopping: Whether stop searching when kl-distance between target-policy and policy becomes too far
+    :param use_kl_early_stopping: Whether stop searching when kl-distance is too large
     :param loss_pi_cost_before: Pi and cost loss last iter
     """
 
@@ -55,9 +55,9 @@ class CPO(TRPO):
     ):
         """
         CPO algorithm performs line-search to ensure constraint satisfaction for rewards and costs.
-        :param step_dir:direction theta changes towards
-        :param g_flat:  gradient tensor of reward ,informs about how rewards improve with change of step direction
-        :param c:how much epcost goes above limit
+        :param step_dir: direction theta changes towards
+        :param g_flat: gradient tensor of reward ,informs about how rewards improve with change of step direction
+        :param c: how much episode cost goes above limit
         :param p_dist: inform about old policy, how the old policy p performs on observation this moment
         :param optim_case: the way to optimize
         :param data: data buffer,mainly with adv, costs, values, actions, and observations
@@ -66,8 +66,8 @@ class CPO(TRPO):
         # Get distance each time theta goes towards certain direction
         step_frac = 1.0
         # Get and flatten parameters from pi-net
-        _theta_old = get_flat_params_from(self.ac.pi.net)
-        _, old_log_p = self.ac.pi(data['obs'], data['act'])
+        _theta_old = get_flat_params_from(self.actor_critic.pi.net)
+        _, old_log_p = self.actor_critic.pi(data['obs'], data['act'])
         # Reward improve expection,g-flat as gradient of reward
         expected_rew_improve = g_flat.dot(step_dir)
 
@@ -76,7 +76,7 @@ class CPO(TRPO):
             # New θ=θ_0+Δ Δ=Δdistance * direction
             new_theta = _theta_old + step_frac * step_dir
             # Set new θ as new pi-net's parameters
-            set_param_values_to_model(self.ac.pi.net, new_theta)
+            set_param_values_to_model(self.actor_critic.pi.net, new_theta)
             # The last acceptance steps to next step
             acceptance_step = j + 1
 
@@ -86,7 +86,7 @@ class CPO(TRPO):
                 # Loss of cost of policy cost from real/expected reward
                 loss_pi_cost, _ = self.compute_loss_cost_performance(data=data)
                 # Compute KL distance between new and old policy
-                q_dist = self.ac.pi.dist(data['obs'])
+                q_dist = self.actor_critic.pi.dist(data['obs'])
                 # Kl_divergence with a form of pi*log(pi/qi)
                 torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
             # Δloss(rew)(p-q)
@@ -99,10 +99,8 @@ class CPO(TRPO):
             # Pi_average of torch_kl above
             loss_rew_improve = distributed_utils.mpi_avg(loss_rew_improve)
             cost_diff = distributed_utils.mpi_avg(cost_diff)
-
-            self.logger.log(
-                'Expected Improvement: %.3f Actual: %.3f' % (expected_rew_improve, loss_rew_improve)
-            )
+            menu = (expected_rew_improve, loss_rew_improve)
+            self.logger.log(f'Expected Improvement: {menu[0]} Actual: {menu[1]}')
             # Check whether there are nans
             if not torch.isfinite(loss_pi_rew) and not torch.isfinite(loss_pi_cost):
                 self.logger.log('WARNING: loss_pi not finite')
@@ -126,7 +124,7 @@ class CPO(TRPO):
             step_dir = torch.zeros_like(step_dir)
             acceptance_step = 0
 
-        set_param_values_to_model(self.ac.pi.net, _theta_old)
+        set_param_values_to_model(self.actor_critic.pi.net, _theta_old)
         return step_frac * step_dir, acceptance_step
 
     def algorithm_specific_logs(self):
@@ -146,16 +144,16 @@ class CPO(TRPO):
         """
         Performance of cost on this moment
         """
-        dist, _log_p = self.ac.pi(data['obs'], data['act'])
+        _, _log_p = self.actor_critic.pi(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
         cost_loss = (ratio * data['cost_adv']).mean()
-        # ent = dist.entropy().mean().item()
         info = {}
         return cost_loss, info
 
     def update_policy_net(self, data):
-        # Get loss and info values before update (one-dimensional parameters of net=pi, as θ-old)
-        theta_old = get_flat_params_from(self.ac.pi.net)
+        """update policy net"""
+        # Get loss and info values before update
+        theta_old = get_flat_params_from(self.actor_critic.pi.net)
         self.pi_optimizer.zero_grad()
         loss_pi, pi_info = self.compute_loss_pi(data=data)
         self.loss_pi_before = loss_pi.item()
@@ -164,12 +162,12 @@ class CPO(TRPO):
         # Get previous loss of cost
         self.loss_c_before = self.compute_loss_c(data['obs'], data['target_c']).item()
         # Get prob. distribution before updates, previous dist of possibilities
-        p_dist = self.ac.pi.dist(data['obs'])
+        p_dist = self.actor_critic.pi.dist(data['obs'])
         # Train policy with multiple steps of gradient descent
         loss_pi.backward()
         # Average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.ac.pi.net)
-        g_flat = get_flat_gradients_from(self.ac.pi.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.pi.net)
+        g_flat = get_flat_gradients_from(self.actor_critic.pi.net)
 
         # Flip sign since policy_loss = -(ration * adv)
         g_flat *= -1
@@ -187,9 +185,9 @@ class CPO(TRPO):
         loss_cost, _ = self.compute_loss_cost_performance(data=data)
         loss_cost.backward()
         # average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.ac.pi.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.pi.net)
         self.loss_pi_cost_before = loss_cost.item()
-        b_flat = get_flat_gradients_from(self.ac.pi.net)
+        b_flat = get_flat_gradients_from(self.actor_critic.pi.net)
         # :param ep_costs: do samplings to get approximate costs as ep_costs
         ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # :params c: how much sampled result of cost goes beyond limit
@@ -249,8 +247,8 @@ class CPO(TRPO):
 
         elif optim_case in [1, 2]:
             # in 1 and 2,
-            def project_on_set(t: torch.Tensor, low: float, high: float) -> torch.Tensor:
-                return torch.Tensor([max(low, min(t, high))])
+            def project_on_set(data: torch.Tensor, low: float, high: float) -> torch.Tensor:
+                return torch.Tensor([max(low, min(data, high))])
 
             #  Analytical Solution to LQCLP, employ lambda,nu to compute final solution of argmax-OLOLQC
             #  λ=argmax(f_a(λ),f_b(λ)) = λa_star or λb_star
@@ -299,11 +297,10 @@ class CPO(TRPO):
             total_steps=20,
         )
         # Update actor network parameters
-        # just like trpo update method
         new_theta = theta_old + final_step_dir
-        set_param_values_to_model(self.ac.pi.net, new_theta)
+        set_param_values_to_model(self.actor_critic.pi.net, new_theta)
         # Output the performance of pi policy on observation
-        q_dist = self.ac.pi.dist(data['obs'])
+        q_dist = self.actor_critic.pi.dist(data['obs'])
         torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
 
         self.logger.store(

@@ -12,19 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
-import numpy as np
+"""Implementation of the FOCOPS algorithm."""
 import torch
 
 from omnisafe.algos import registry
 from omnisafe.algos.common.lagrange import Lagrange
 from omnisafe.algos.on_policy.policy_gradient import PolicyGradient
-from omnisafe.algos.utils import distributed_utils
 
 
 @registry.register
 class FOCOPS(PolicyGradient, Lagrange):
+    """Class for the FOCOPS algorithm."""
+
     def __init__(self, algo='focops', **cfgs):
+        """init."""
 
         PolicyGradient.__init__(self, algo=algo, **cfgs)
 
@@ -38,6 +39,7 @@ class FOCOPS(PolicyGradient, Lagrange):
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier)
 
     def update_lagrange_multiplier(self, Jc):
+        """Update Lagrange multiplier."""
         self.lagrangian_multiplier += self.lambda_lr * (Jc - self.cost_limit)
         if self.lagrangian_multiplier < 0.0:
             self.lagrangian_multiplier = 0.0
@@ -46,7 +48,7 @@ class FOCOPS(PolicyGradient, Lagrange):
 
     def compute_loss_pi(self, data: dict):
         # Policy loss
-        dist, _log_p = self.ac.pi(data['obs'], data['act'])
+        dist, _log_p = self.actor_critic.pi(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
 
         kl_new_old = torch.distributions.kl.kl_divergence(dist, self.p_dist).sum(-1, keepdim=True)
@@ -65,11 +67,12 @@ class FOCOPS(PolicyGradient, Lagrange):
         return loss_pi, pi_info
 
     def update(self):
+        """Update."""
         raw_data = self.buf.get()
         data = self.pre_process_data(raw_data)
         # First update Lagrange multiplier parameter
-        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
-        self.update_lagrange_multiplier(ep_costs)
+        Jc = self.logger.get_stats('Metrics/EpCost')[0]
+        self.update_lagrange_multiplier(Jc)
         # Then update policy network
         self.update_policy_net(data=data)
         # Update value network

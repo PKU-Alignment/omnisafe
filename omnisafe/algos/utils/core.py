@@ -37,10 +37,9 @@ def initialize_layer(init_function: str, layer: torch.nn.Module):
         torch.nn.init.kaiming_uniform_(layer.weight, a=np.sqrt(5))
     elif init_function == 'xavier_normal':
         torch.nn.init.xavier_normal_(layer.weight)
-    # glorot is also known as xavier uniform
     elif init_function in ('glorot', 'xavier_uniform'):
         torch.nn.init.xavier_uniform_(layer.weight)
-    elif init_function == 'orthogonal':  # matches values from baselines repo.
+    elif init_function == 'orthogonal':
         torch.nn.init.orthogonal_(layer.weight, gain=np.sqrt(2))
     else:
         raise NotImplementedError

@@ -33,7 +33,7 @@ class DDPG:
     """DDPG specific functions"""
 
     def __init__(self, env, exp_name, data_dir, seed=0, algo='ddpg', cfgs=None):
-        """init"""
+        """initialize"""
         self.env = env
         self.env_id = env.env_id
         self.cfgs = deepcopy(cfgs)
@@ -85,14 +85,14 @@ class DDPG:
             act_dim=self.env.action_space.shape,
             **self.cfgs['replay_buffer_cfgs'],
         )
-        # Set up optimizers for policy and value function
+        # Set up optimizer for policy and value function
         self.pi_optimizer = core.get_optimizer(
             'Adam', module=self.ac.pi, learning_rate=self.cfgs['pi_lr']
         )
         self.vf_optimizer = core.get_optimizer(
             'Adam', module=self.ac.v, learning_rate=self.cfgs['vf_lr']
         )
-        if self.cfgs.get('use_cost_critic', False):
+        if self.cfgs['use_cost']:
             self.cf_optimizer = core.get_optimizer(
                 'Adam', module=self.ac.c, learning_rate=self.cfgs['vf_lr']
             )
@@ -113,14 +113,16 @@ class DDPG:
         self.logger.log('Start with training.')
 
     def _init_learning_rate_scheduler(self):
-        """init learning rate scheduler"""
+        """initialize learning rate scheduler"""
         scheduler = None
-        if self.cfgs.get('use_linear_lr_decay', False):
+        if self.cfgs['use_linear_lr_decay']:
             # Linear anneal
-            def lm(epoch):
+            def linear_anneal(epoch):
                 return 1 - epoch / self.epochs
 
-            scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=self.pi_optimizer, lr_lambda=lm)
+            scheduler = torch.optim.lr_scheduler.LambdaLR(
+                optimizer=self.pi_optimizer, lr_lambda=linear_anneal
+            )
         return scheduler
 
     def _init_mpi(self):
@@ -130,44 +132,42 @@ class DDPG:
         if distributed_utils.num_procs() > 1:
             # Avoid slowdowns from PyTorch + MPI combo
             distributed_utils.setup_torch_for_mpi()
-            dt = time.time()
+            start = time.time()
             self.logger.log('INFO: Sync actor critic parameters')
-            # Sync params across cores: only once necessary, grads are averaged!
+            # Sync parameters across cores: only once necessary, grads are averaged!
             distributed_utils.sync_params(self.ac)
-            self.logger.log(f'Done! (took {time.time()-dt:0.3f} sec.)')
+            self.logger.log(f'Done! (took {time.time()-start:0.3f} sec.)')
 
     def _init_checks(self):
         """Checking feasible"""
         # The steps in each process should be integer
         assert self.cfgs['steps_per_epoch'] % distributed_utils.num_procs() == 0
-        # Ensure local each local process can experience at least one complete eposide
+        # Ensure local each local process can experience at least one complete episode
         assert self.env.max_ep_len <= self.local_steps_per_epoch, (
             f'Reduce number of cores ({distributed_utils.num_procs()}) or increase '
             f'batch size {self.steps_per_epoch}.'
         )
-        # Ensure vilid number for iteration
+        # Ensure valid number for iteration
         assert self.cfgs['update_every'] > 0
 
     def algorithm_specific_logs(self):
         """
         Use this method to collect log information.
-        e.g. log lagrangian for lagrangian-base , log q, r, s, c for cpo, etc
         """
-        pass
 
     def _ac_training_setup(self):
         self.ac_targ = deepcopy(self.ac)
-        # Freeze target networks with respect to optimizers (only update via polyak averaging)
-        for p in self.ac_targ.pi.parameters():
-            p.requires_grad = False
-        for p in self.ac_targ.v.parameters():
-            p.requires_grad = False
-        for p in self.ac_targ.c.parameters():
-            p.requires_grad = False
+        # Freeze target networks with respect to optimizer (only update via polyak averaging)
+        for parameter in self.ac_targ.pi.parameters():
+            parameter.requires_grad = False
+        for parameter in self.ac_targ.v.parameters():
+            parameter.requires_grad = False
+        for parameter in self.ac_targ.c.parameters():
+            parameter.requires_grad = False
         if self.algo in ['sac', 'td3', 'sac_lag', 'td3_lag']:
-            # Freeze target networks with respect to optimizers (only update via polyak averaging)
-            for p in self.ac_targ.v_.parameters():
-                p.requires_grad = False
+            # Freeze target networks with respect to optimizer (only update via polyak averaging)
+            for parameter in self.ac_targ.v_.parameters():
+                parameter.requires_grad = False
 
     def check_distributed_parameters(self):
         """
@@ -252,8 +252,8 @@ class DDPG:
     def learn(self):
         """
         This is main function for algorithm update, divided into the following steps:
-            (1). self.rollout: collect interactive data from environment
-            (2). self.udpate: perform actor/critic updates
+            (1). rollout: collect interactive data from environment
+            (2). update: perform actor/critic updates
             (3). log epoch/update information for visualization and terminal log print.
 
         Returns:
@@ -283,11 +283,11 @@ class DDPG:
             # End of epoch handling
             if t % self.steps_per_epoch == 0 and t:
                 epoch = t // self.steps_per_epoch
-                if self.cfgs.get('exploration_noise_anneal', False):
+                if self.cfgs['exploration_noise_anneal']:
                     self.ac.anneal_exploration(frac=epoch / self.epochs)
-                if self.cfgs.get('use_cost_critic', False):
-                    if self.use_cost_decay:
-                        self.cost_limit_decay(epoch)
+                # if self.cfgs['use_cost']:
+                #     if self.use_cost_decay:
+                #         self.cost_limit_decay(epoch)
 
                 # Save model to disk
                 if (epoch + 1) % self.cfgs['save_freq'] == 0:
@@ -301,17 +301,18 @@ class DDPG:
         return self.ac
 
     def update(self, data):
+        """update"""
         # First run one gradient descent step for Q.
         self.update_value_net(data)
-        if self.cfgs.get('use_cost_critic', False):
+        if self.cfgs['use_cost']:
             self.update_cost_net(data)
-            for p in self.ac.c.parameters():
-                p.requires_grad = False
+            for parameter in self.ac.c.parameters():
+                parameter.requires_grad = False
 
         # Freeze Q-network so you don't waste computational effort
         # computing gradients for it during the policy learning step.
-        for p in self.ac.v.parameters():
-            p.requires_grad = False
+        for parameter in self.ac.v.parameters():
+            parameter.requires_grad = False
 
         # Next run one gradient descent step for pi.
         self.update_policy_net(data)
@@ -320,7 +321,7 @@ class DDPG:
         for p in self.ac.v.parameters():
             p.requires_grad = True
 
-        if self.cfgs.get('use_cost_critic', False):
+        if self.cfgs['use_cost']:
             for p in self.ac.c.parameters():
                 p.requires_grad = False
 
@@ -340,7 +341,7 @@ class DDPG:
         """update policy network"""
         # Train policy with one steps of gradient descent
         self.pi_optimizer.zero_grad()
-        loss_pi, pi_info = self.compute_loss_pi(data)
+        loss_pi, _ = self.compute_loss_pi(data)
         loss_pi.backward()
         self.pi_optimizer.step()
         self.logger.store(**{'Loss/Pi': loss_pi.item()})
@@ -380,7 +381,7 @@ class DDPG:
         total_env_steps = (epoch + 1) * self.cfgs['steps_per_epoch']
         fps = self.cfgs['steps_per_epoch'] / (time.time() - self.epoch_time)
         # Step the actor learning rate scheduler if provided
-        if self.scheduler and self.use_linear_lr_decay:
+        if self.scheduler and self.cfgs['use_linear_lr_decay']:
             current_lr = self.scheduler.get_last_lr()[0]
             self.scheduler.step()
         else:
@@ -409,7 +410,7 @@ class DDPG:
             reward_scale_stddev = self.ac.ret_oms.std.item()
             self.logger.log_tabular('Misc/RewScaleMean', reward_scale_mean)
             self.logger.log_tabular('Misc/RewScaleStddev', reward_scale_stddev)
-        if self.cfgs.get('exploration_noise_anneal', False):
+        if self.cfgs['exploration_noise_anneal']:
             noise_std = np.exp(self.ac.pi.log_std[0].item())
             self.logger.log_tabular('Misc/ExplorationNoiseStd', noise_std)
         self.algorithm_specific_logs()

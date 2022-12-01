@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+"""Implementation of the NPG-Lag algorithm."""
 import torch
 
 from omnisafe.algos import registry
@@ -22,7 +22,10 @@ from omnisafe.algos.on_policy.natural_pg import NaturalPG
 
 @registry.register
 class NPGLag(NaturalPG, Lagrange):
+    """Class Methods"""
+
     def __init__(self, algo: str = 'pdo_ngp', **cfgs):
+        """initialize"""
 
         NaturalPG.__init__(self, algo=algo, **cfgs)
         Lagrange.__init__(self, **self.cfgs['lagrange_cfgs'])
@@ -35,7 +38,7 @@ class NPGLag(NaturalPG, Lagrange):
             torch.Tensor
         """
         # Policy loss
-        dist, _log_p = self.ac.pi(data['obs'], data['act'])
+        dist, _log_p = self.actor_critic.pi(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
 
         # Compute loss via ratio and advantage
