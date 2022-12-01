@@ -210,7 +210,7 @@ class Buffer:
         if self.use_standardized_cost:
             # also for cost advantages; only re-center but no rescale!
             cadv_mean, cadv_std = distributed_utils.mpi_statistics_scalar(self.cost_adv_buf)
-            self.cost_adv_buf = (self.cost_adv_buf - cadv_mean)
+            self.cost_adv_buf = self.cost_adv_buf - cadv_mean
 
         data = dict(
             obs=self.obs_buf,

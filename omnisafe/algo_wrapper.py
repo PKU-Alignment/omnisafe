@@ -16,10 +16,10 @@
 
 import os
 import sys
+
 import psutil
 
-from omnisafe.algos import registry
-from omnisafe.algos import algo_type
+from omnisafe.algos import algo_type, registry
 from omnisafe.algos.utils import distributed_utils
 from omnisafe.algos.utils.tools import get_default_kwargs_yaml
 from omnisafe.evaluator import Evaluator
@@ -53,7 +53,7 @@ class AlgoWrapper:
                 break
         if algo_type == None or algo_type == '':
             raise ValueError(f'{self.algo} is not supported!')
-        if algo_type == "off-policy":
+        if algo_type == 'off-policy':
             assert self.parallel == 1, 'off-policy only support parallel==1!'
 
     def recursive_update(self, args: dict, update_args: dict):

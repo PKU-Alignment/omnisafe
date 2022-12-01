@@ -19,12 +19,11 @@ from copy import deepcopy
 import numpy as np
 import torch
 
-from omnisafe.algos.utils import distributed_utils
+from omnisafe.algos import registry
 from omnisafe.algos.common.logger import Logger
 from omnisafe.algos.common.replay_buffer import ReplayBuffer
 from omnisafe.algos.models.constraint_actor_q_critic import ConstraintQActorCritic
-from omnisafe.algos import registry
-from omnisafe.algos.utils import core
+from omnisafe.algos.utils import core, distributed_utils
 from omnisafe.algos.utils.tools import get_flat_params_from
 
 

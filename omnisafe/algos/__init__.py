@@ -15,31 +15,31 @@
 """init"""
 
 algo_type = {
-    "off-policy": ["DDPG"],
-    "on-policy": [
-        "CPO",
-        "FOCOPS",
-        "CPPOPid",
-        "FOCOPS",
-        "NaturalPG",
-        "NPGLag",
-        "PCPO",
-        "PDO",
-        "PolicyGradient",
-        "PPO",
-        "PPOLag",
-        "TRPO",
-        "TRPOLag",
+    'off-policy': ['DDPG'],
+    'on-policy': [
+        'CPO',
+        'FOCOPS',
+        'CPPOPid',
+        'FOCOPS',
+        'NaturalPG',
+        'NPGLag',
+        'PCPO',
+        'PDO',
+        'PolicyGradient',
+        'PPO',
+        'PPOLag',
+        'TRPO',
+        'TRPOLag',
     ],
-    "model-based": ["MBPPOLag", "SafeLoop"],
+    'model-based': ['MBPPOLag', 'SafeLoop'],
 }
-
-# Off Policy Safe
-from omnisafe.algos.off_policy.ddpg import DDPG
 
 # Model-base Safe
 from omnisafe.algos.model_based.mbppo import MBPPOLag
 from omnisafe.algos.model_based.safeloop import SafeLoop
+
+# Off Policy Safe
+from omnisafe.algos.off_policy.ddpg import DDPG
 
 # On Policy Safe
 from omnisafe.algos.on_policy.cpo import CPO
