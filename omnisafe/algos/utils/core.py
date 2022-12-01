@@ -92,9 +92,3 @@ def discount_cumsum(x_vector, discount):
          x2]
     """
     return scipy.signal.lfilter([1], [1, float(-discount)], x_vector[::-1], axis=0)[::-1]
-
-
-def combined_shape(length, shape=None):
-    if shape is None:
-        return (length,)
-    return (length, shape) if np.isscalar(shape) else (length, *shape)
