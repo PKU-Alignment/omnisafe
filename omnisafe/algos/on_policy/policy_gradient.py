@@ -240,15 +240,6 @@ class PolicyGradient(PolicyGradientBase):
                 use_cost=self.use_cost,
                 cost_gamma=self.cost_gamma,
             )
-            # self.env.evalution(
-            #     self.ac,
-            #     self.buf,
-            #     self.logger,
-            #     self.local_steps_per_epoch,
-            #     penalty_param,
-            #     use_cost=self.use_cost,
-            #     cost_gamma=self.cost_gamma,
-            # )
             # Update: actor, critic, running statistics
             self.update()
 

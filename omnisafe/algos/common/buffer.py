@@ -204,18 +204,13 @@ class Buffer:
         self.ptr, self.path_start_idx = 0, 0
 
         if self.use_standardized_reward:
-            # the next two lines implement the advantage normalization trick
-            # adv_mean, adv_std = np.mean(self.adv_buf), np.std(self.adv_buf)
             adv_mean, adv_std = distributed_tools.mpi_statistics_scalar(self.adv_buf)
             self.adv_buf = (self.adv_buf - adv_mean) / (adv_std + 1.0e-8)
-            # also for cost advantages; only re-center but no rescale!
-            # cadv_mean, cadv_std = mpi_tools.mpi_statistics_scalar(self.cost_adv_buf)
-            # self.cost_adv_buf = (self.cost_adv_buf - cadv_mean)#/(cadv_std + 1.0e-8)
 
         if self.use_standardized_cost:
             # also for cost advantages; only re-center but no rescale!
             cadv_mean, cadv_std = distributed_tools.mpi_statistics_scalar(self.cost_adv_buf)
-            self.cost_adv_buf = (self.cost_adv_buf - cadv_mean)# / (cadv_std + 1.0e-8)
+            self.cost_adv_buf = (self.cost_adv_buf - cadv_mean)
 
         data = dict(
             obs=self.obs_buf,
