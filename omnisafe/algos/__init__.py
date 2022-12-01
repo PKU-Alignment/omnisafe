@@ -15,8 +15,8 @@
 """init"""
 
 algo_type = {
-    "OFF_POLICY": ["DDPG"],
-    "ON_POLICY": [
+    "off-policy": ["DDPG"],
+    "on-policy": [
         "CPO",
         "FOCOPS",
         "CPPOPid",
@@ -24,13 +24,14 @@ algo_type = {
         "NaturalPG",
         "NPGLag",
         "PCPO",
-        "PDO" "PolicyGradient",
+        "PDO",
+        "PolicyGradient",
         "PPO",
         "PPOLag",
         "TRPO",
         "TRPOLag",
     ],
-    "MODEL_BASED": ["MBPPOLag", "SafeLoop"],
+    "model-based": ["MBPPOLag", "SafeLoop"],
 }
 
 # Off Policy Safe

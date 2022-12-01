@@ -53,7 +53,7 @@ class DDPG:
         self.update_every = self.cfgs['update_every']
         self.num_test_episodes = self.cfgs['num_test_episodes']
         self.env.set_rollout_cfgs(
-            determinstic=False, rand_a=True, ep_steps=self.update_every, max_ep_len=self.max_ep_len
+            deterministic=False, rand_a=True, ep_steps=self.update_every, max_ep_len=self.max_ep_len
         )
         # Call assertions, Check if some variables are valid to experiment
         self._init_checks()
@@ -101,7 +101,10 @@ class DDPG:
         # Set up target network for off_policy training
         self._ac_training_setup()
         torch.set_num_threads(10)
-        self.logger.setup_torch_saver(self.ac.pi)
+        # Set up model saving
+        what_to_save = {'pi': self.ac.pi}
+        self.logger.setup_torch_saver(what_to_save)
+        self.logger.torch_save()
         self.gamma = self.cfgs['gamma']
         self.polyak = self.cfgs['polyak']
 
@@ -264,7 +267,7 @@ class DDPG:
             # use the learned policy (with some noise, via act_noise).
             rand_a = t < self.start_steps
             self.env.set_rollout_cfgs(
-                determinstic=False,
+                deterministic=False,
                 rand_a=rand_a,
                 ep_steps=self.update_every,
                 max_ep_len=self.max_ep_len,
@@ -364,7 +367,7 @@ class DDPG:
         """test agent"""
         for j in range(self.num_test_episodes):
             self.env.set_rollout_cfgs(
-                determinstic=True,
+                deterministic=True,
                 rand_a=False,
                 ep_steps=self.max_ep_len,
                 max_ep_len=self.max_ep_len,

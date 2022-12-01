@@ -111,6 +111,7 @@ class PolicyGradient(PolicyGradientBase):
             # Linear anneal
             def lm(epoch):
                 return 1 - epoch / self.cfgs['epochs']
+
             scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=self.pi_optimizer, lr_lambda=lm)
         return scheduler
 
@@ -226,18 +227,20 @@ class PolicyGradient(PolicyGradientBase):
                 # Consider reward penalty parameter in reward calculation: r' = r - c
                 assert hasattr(self, 'lagrangian_multiplier')
                 assert hasattr(self, 'lambda_range_projection')
-                penalty_param = self.lambda_range_projection(self.lagrangian_multiplier)
+                self.penalty_param = self.lambda_range_projection(self.lagrangian_multiplier)
             else:
-                penalty_param = 0.0
+                self.penalty_param = 0.0
             # Collect data from environment
+            self.env.set_rollout_cfgs(
+                local_steps_per_epoch=self.local_steps_per_epoch,
+                penalty_param=self.penalty_param,
+                use_cost=self.use_cost,
+                cost_gamma=self.cost_gamma,
+            )
             self.env.roll_out(
                 self.ac,
                 self.buf,
                 self.logger,
-                self.local_steps_per_epoch,
-                penalty_param,
-                use_cost=self.use_cost,
-                cost_gamma=self.cost_gamma,
             )
             # Update: actor, critic, running statistics
             self.update()
@@ -255,7 +258,6 @@ class PolicyGradient(PolicyGradientBase):
         self.logger.close()
         return self.ac
 
-
     def log(self, epoch: int):
         # Log info about epoch
         total_env_steps = (epoch + 1) * self.cfgs['steps_per_epoch']
@@ -271,9 +273,6 @@ class PolicyGradient(PolicyGradientBase):
         self.logger.log_tabular('Metrics/EpRet')
         self.logger.log_tabular('Metrics/EpCost')
         self.logger.log_tabular('Metrics/EpLen')
-        # self.logger.log_tabular('Evaluation/EpRet')
-        # self.logger.log_tabular('Evaluation/EpCost')
-        # self.logger.log_tabular('Evaluation/EpLen')
         self.logger.log_tabular('Values/V', min_and_max=True)
         self.logger.log_tabular('Values/Adv', min_and_max=True)
         if self.cfgs['use_cost']:
