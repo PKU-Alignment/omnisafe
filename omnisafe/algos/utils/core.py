@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Some Core Functions"""
+
 import numpy as np
 import scipy.signal
 import torch
@@ -81,7 +81,7 @@ def count_vars(module):
 
 def discount_cumsum(x_vector, discount):
     """
-    magic from rllab for computing discounted cumulative sums of vectors.
+    magic from RLlib for computing discounted cumulative sums of vectors.
     input:
         vector x,
         [x0,

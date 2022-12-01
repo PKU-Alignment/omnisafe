@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""vtrace"""
 
-"""vtrave"""
 import numpy as np
 
 
-# pylint: disable=R0913,R0914
 def calculate_v_trace(
     policy_action_probs: np.ndarray,
     values: np.ndarray,  # including bootstrap

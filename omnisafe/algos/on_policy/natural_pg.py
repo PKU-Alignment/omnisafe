@@ -15,9 +15,9 @@
 
 import torch
 
-import omnisafe.algos.utils.distributed_tools as distributed_tools
+from omnisafe.algos import registry
 from omnisafe.algos.on_policy.policy_gradient import PolicyGradient
-from omnisafe.algos.registry import REGISTRY
+from omnisafe.algos.utils import distributed_utils
 from omnisafe.algos.utils.tools import (
     conjugate_gradients,
     get_flat_gradients_from,
@@ -26,7 +26,7 @@ from omnisafe.algos.utils.tools import (
 )
 
 
-@REGISTRY.register
+@registry.register
 class NaturalPG(PolicyGradient):
     def __init__(self, algo: str = 'npg', **cfgs):
         PolicyGradient.__init__(self, algo=algo, **cfgs)
@@ -70,7 +70,7 @@ class NaturalPG(PolicyGradient):
         # contiguous indicating, if the memory is contiguously stored or not
         flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
         # average --->
-        distributed_tools.mpi_avg_torch_tensor(flat_grad_grad_kl)
+        distributed_utils.mpi_avg_torch_tensor(flat_grad_grad_kl)
         return flat_grad_grad_kl + p * self.cg_damping
 
     def update(self):
@@ -97,14 +97,14 @@ class NaturalPG(PolicyGradient):
         theta_old = get_flat_params_from(self.ac.pi.net)
         self.ac.pi.net.zero_grad()
         loss_pi, pi_info = self.compute_loss_pi(data=data)
-        self.loss_pi_before = distributed_tools.mpi_avg(loss_pi.item())
+        self.loss_pi_before = distributed_utils.mpi_avg(loss_pi.item())
         loss_v = self.compute_loss_v(data['obs'], data['target_v'])
-        self.loss_v_before = distributed_tools.mpi_avg(loss_v.item())
+        self.loss_v_before = distributed_utils.mpi_avg(loss_v.item())
         p_dist = self.ac.pi.dist(data['obs'])
         # Train policy with multiple steps of gradient descent
         loss_pi.backward()
         # average grads across MPI processes
-        distributed_tools.mpi_avg_grads(self.ac.pi.net)
+        distributed_utils.mpi_avg_grads(self.ac.pi.net)
         g_flat = get_flat_gradients_from(self.ac.pi.net)
 
         # flip sign since policy_loss = -(ration * adv)

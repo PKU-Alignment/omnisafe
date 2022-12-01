@@ -43,7 +43,7 @@ def gaussian_kl(μi, μ, Ai, A):
     :param A: (B, n, n)
     :return: C_μ, C_Σ: scalar
         mean and covariance terms of the KL
-    :return: mean of determinanats of Σi, Σ
+    :return: mean of determinants of Σi, Σ
     ref : https://stanford.edu/~jduchi/projects/general_notes.pdf page.13
     """
     n = A.size(-1)

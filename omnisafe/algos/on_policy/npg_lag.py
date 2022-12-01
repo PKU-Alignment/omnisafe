@@ -15,12 +15,12 @@
 
 import torch
 
+from omnisafe.algos import registry
 from omnisafe.algos.common.lagrange import Lagrange
 from omnisafe.algos.on_policy.natural_pg import NaturalPG
-from omnisafe.algos.registry import REGISTRY
 
 
-@REGISTRY.register
+@registry.register
 class NPGLag(NaturalPG, Lagrange):
     def __init__(self, algo: str = 'pdo_ngp', **cfgs):
 

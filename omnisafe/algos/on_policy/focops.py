@@ -13,18 +13,16 @@
 # limitations under the License.
 # ==============================================================================
 
-from turtle import pen
-
 import numpy as np
 import torch
 
-import omnisafe.algos.utils.distributed_tools as distributed_tools
+from omnisafe.algos import registry
 from omnisafe.algos.common.lagrange import Lagrange
 from omnisafe.algos.on_policy.policy_gradient import PolicyGradient
-from omnisafe.algos.registry import REGISTRY
+from omnisafe.algos.utils import distributed_utils
 
 
-@REGISTRY.register
+@registry.register
 class FOCOPS(PolicyGradient, Lagrange):
     def __init__(self, algo='focops', **cfgs):
 

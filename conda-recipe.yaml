@@ -35,17 +35,18 @@ dependencies:
   - pytorch::torchvision
   - pytorch::pytorch-mutex = *=*cuda*
   - pip:
-      - psutil
-      - mpi4py
       - gymnasium[mujoco]
-      - scipy
-      - joblib
-      - tensorboard
-      - tensorboardX
-      - pyyaml
       - cpprb
       - sphinxcontrib-katex  # for documentation
+  - tensorboard
   - wandb
+
+  # Other dependencies
+  - scipy
+  - pyyaml
+  - psutil
+  - mpi4py
+  - joblib
 
   # Device select
   - nvidia/label/cuda-11.6.2::cuda-toolkit = 11.6

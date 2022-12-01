@@ -10,7 +10,7 @@
 .. image:: image/logo.png
     :scale: 45%
 
---------------------------------------------------------------------------------
+------
 
 .. toctree::
     :maxdepth: 2
@@ -44,8 +44,8 @@
     :caption: OmniSafe
 
     OmniSafe/logger
-    OmniSafe/multi_process
-    OmniSafe/run_utils
+    OmniSafe/multi-processing
+    OmniSafe/run-utils
     OmniSafe/visualization
 
 Indices and tables

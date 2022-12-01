@@ -1,22 +1,37 @@
-# pylint:disable=no-name-in-module,import-error,too-many-locals,too-many-statements,too-many-instance-attributes,too-many-arguments
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 """MBPPOLag"""
+
 import numpy as np
 import torch
 from torch.nn.functional import softplus
 
+from omnisafe.algos import registry
 from omnisafe.algos.model_based.aux import dist_xy, generate_lidar, get_reward_cost
-from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased, device
-from omnisafe.algos.registry import REGISTRY
+from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased
 
 
-@REGISTRY.register
+@registry.register
 class MBPPOLag(PolicyGradientModelBased):
     """MBPPO-Lag"""
 
     def __init__(self, algo='mbppo-lag', clip=0.2, **cfgs):
-        PolicyGradientModelBased.__init__(self, algo=algo, **cfgs)
+        super().__init__(algo=algo, **cfgs)
         self.clip = clip
         self.cost_limit = self.cfgs['lagrange_cfgs']['cost_limit']
+        self.device = torch.device(self.cfgs['device'])
 
         self.loss_pi_before = 0.0
         self.loss_v_before = 0.0
@@ -99,16 +114,16 @@ class MBPPOLag(PolicyGradientModelBased):
     def compute_loss_v(self, data):
         """compute the loss of value function"""
         obs, ret, cret = data['obs'], data['ret'], data['cret']
-        obs.to(device)
-        ret.to(device)
-        cret.to(device)
+        obs.to(self.device)
+        ret.to(self.device)
+        cret.to(self.device)
         return ((self.actor_critic.v(obs) - ret) ** 2).mean(), (
             (self.actor_critic.vc(obs) - cret) ** 2
         ).mean()
 
     def compute_loss_pi(self, data):
         """compute the loss of policy"""
-        dist, _log_p = self.actor_critic.pi(data['obs'], data['act'].to(device))
+        dist, _log_p = self.actor_critic.pi(data['obs'], data['act'].to(self.device))
         ratio = torch.exp(_log_p - data['logp'])
         ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
         loss_pi = -(torch.min(ratio * data['adv'], ratio_clip * data['adv'])).mean()
@@ -258,8 +273,8 @@ class MBPPOLag(PolicyGradientModelBased):
             del otensor
 
             if True in np.isnan(a):
-                print("produce nan in actor")
-                print("action,obs", a, obs_vec)
+                print('produce nan in actor')
+                print('action,obs', a, obs_vec)
                 a = np.nan_to_num(a)
             a = np.clip(a, self.env.action_space.low, self.env.action_space.high)
 
@@ -267,8 +282,8 @@ class MBPPOLag(PolicyGradientModelBased):
             next_o = predict_env.step(o, a)
 
             if True in np.isnan(next_o):
-                print("produce nan in actor")
-                print("next_o,action,obs", next_o, a, o)
+                print('produce nan in actor')
+                print('next_o,action,obs', next_o, a, o)
                 next_o = np.nan_to_num(next_o)
             next_o = np.clip(next_o, -1000, 1000)
             r, c, ld, goal_flag = get_reward_cost(ld, robot_pos, hazards_pos, goal_pos)
@@ -325,7 +340,6 @@ class MBPPOLag(PolicyGradientModelBased):
         valid_rets = [0] * 6
         winner = 0
         # print("validating............")
-        # pylint:disable=consider-using-enumerate
         for va in range(len(valid_rets)):
             ov, staticv = self.env.reset()  ##########  create initial state!!!!!
             ov = np.clip(ov, -1000, 1000)
@@ -343,15 +357,15 @@ class MBPPOLag(PolicyGradientModelBased):
                 ovt = torch.as_tensor(obs_vecv, dtype=torch.float32, device=device)
                 av, _, _, _ = self.actor_critic.step(ovt)
                 if True in np.isnan(av):
-                    print("produce nan in vali actor")
-                    print("action,obs", av, obs_vecv)
+                    print('produce nan in vali actor')
+                    print('action,obs', av, obs_vecv)
                     av = np.nan_to_num(av)
                 av = np.clip(av, self.env.action_space.low, self.env.action_space.high)
                 del ovt
                 next_ov = predict_env.step_elite(ov, av, va)
                 if True in np.isnan(next_ov):
-                    print("produce nan in  vali env")
-                    print("next_o,action,obs", next_ov, av, ov)
+                    print('produce nan in  vali env')
+                    print('next_o,action,obs', next_ov, av, ov)
                     next_ov = np.nan_to_num(next_ov)
                 next_ov = np.clip(next_ov, -1000, 1000)
                 rv, cv, ldv, goal_flagv = get_reward_cost(ldv, robot_posv, hazards_posv, goal_posv)

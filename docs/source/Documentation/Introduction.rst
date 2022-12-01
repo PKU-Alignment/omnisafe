@@ -30,7 +30,6 @@ OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learni
 
         For Beginners
         ^^^^^^^^^^^^^
-
         If you are a beginner in machine learning with only some simple knowledge of linear algebra and probability theory, you can start with the mathematical fundamentals section of this tutorial.
 
     .. grid-item-card::
@@ -41,7 +40,6 @@ OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learni
 
         For Average Users
         ^^^^^^^^^^^^^^^^^
-
         If you have a general understanding of RL algorithms but are unfamiliar with the concept of Safe RL.
         This tutorial provides an introduction to it so you can get started quickly.
 
@@ -53,7 +51,6 @@ OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learni
 
         For Master
         ^^^^^^^^^^
-
         If you are already an expert in the field of RL, you can also gain new insights from our systematic introduction to Safe RL algorithms.
         Also, this tutorial will allow you to design your algorithms using OmniSafe quickly.
 
@@ -86,7 +83,6 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
             Puzzling Math
             ^^^^^^^^^^^^^
-
             Safe RL algorithms are a class of algorithms built on a rigorous mathematical system.
             These algorithms have a detailed theoretical derivation, but they lack a unified symbolic system, which makes it difficult for beginners to learn them systematically and comprehensively.
 
@@ -100,7 +96,6 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
             Hard-to-find Codes
             ^^^^^^^^^^^^^^^^^^
-
             Most of the existing Safe RL algorithms **do not have open-source code**, making it difficult for beginners to grasp the ideas of the algorithms at the code level, and researchers suffer from incorrect implementations, unfair comparisons, and misleading conclusions.
 
 .. tab-set::
@@ -115,7 +110,6 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
             Friendly Math
             ^^^^^^^^^^^^^
-
             OmniSafe tutorial provides a **unified and standardized notation system** that allows beginners to learn the theory of Safe RL algorithms in a complete and systematic way.
 
     .. tab-item:: Solution II
@@ -128,7 +122,6 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
             Robust Code
             ^^^^^^^^^^^
-
             OmniSafe tutorial gives a **code-level** introduction in each algorithm introduction, allowing learners who are new to Safe RL theory to understand how to relate algorithmic ideas to code, and give experts in the field of Safe RL new insights into algorithm implementation.
 
 
@@ -151,7 +144,6 @@ Code Design Principles
 
         Consistent and Inherited
         ^^^^^^^^^^^^^^^^^^^^^^^^
-
         Our code has a complete logic system that allows you to understand the connection between each algorithm and the similarities together with differences.
         For example, if you understand the Policy Gradient algorithm, then you can learn the PPO algorithm by simply reading the a new function and immediately grasping the code implementation of the PPO algorithm.
 
@@ -163,7 +155,6 @@ Code Design Principles
 
         Robust and Readable
         ^^^^^^^^^^^^^^^^^^^^
-
         Our code can play the role of both a tutorial and a tool.
         If you still need to become familiar with algorithms' implementations in Safe RL, the highly readable code in OmniSafe can help you get started quickly.
         You can see how each algorithm performs.
@@ -177,7 +168,6 @@ Code Design Principles
 
         Independent and Long-lived
         ^^^^^^^^^^^^^^^^^^^^^^^^^^
-
         Unlike other code that relies on a large number of external libraries, OmniSafe minimizes the dependency on third-party libraries.
         This avoids shortening the life of the project due to iterative changes in third-party library code also optimizes the users experience in installing and using OmniSafe, because they do not have to install lots of dependencies to run OmniSafe.
 
@@ -203,7 +193,6 @@ We give an example below:
 
         Theorem I (Difference between two arbitrary policies)
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
         **For any function** :math:`f : S \rightarrow \mathbb{R}` and any policies :math:`\pi` and :math:`\pi'`, define :math:`\delta_f(s,a,s') \doteq R(s,a,s') + \gamma f(s')-f(s)`,
 
         .. math::
@@ -220,7 +209,6 @@ We give an example below:
         .. math:: D_{\pi, f}^{+}\left(\pi'\right) \geq J\left(\pi'\right)-J(\pi) \geq D_{\pi, f}^{-}\left(\pi'\right)\tag{6}
 
         Furthermore, the bounds are tight (when :math:`\pi=\pi^{\prime}`, all three expressions are identically zero).
-        ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         The proof of the :bdg-ref-info-line:`Theorem 1<Theorem 1>` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
@@ -231,7 +219,6 @@ We give an example below:
 
         Run CPO in Omnisafe
         ^^^^^^^^^^^^^^^^^^^
-
         Here are 3 ways to run CPO in OmniSafe:
 
         * Run Agent from preset yaml file
@@ -296,7 +283,7 @@ We give an example below:
                         cd omnisafe/examples
                         python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo CPO --parallel 5 --epochs 1
 
-You may not yet understand the above theory and the specific meaning of the code, but do not worry, we will make a detailed introduction later in the :doc:`../SafeRL/cpo_docs` tutorial.
+You may not yet understand the above theory and the specific meaning of the code, but do not worry, we will make a detailed introduction later in the :doc:`../SafeRL/CPO` tutorial.
 
 Long-Term Support and Support History
 -------------------------------------

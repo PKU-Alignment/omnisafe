@@ -1,4 +1,18 @@
-# Safe controllers which do a black box optimization incorporating the constraint costs.
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Safe controllers which do a black box optimization incorporating the constraint costs."""
 
 import copy
 
@@ -6,11 +20,18 @@ import numpy as np
 import scipy.stats as stats
 import torch
 
-from omnisafe.algos.model_based.policy_gradient import device
 
-
-class safeARC(object):
-    def __init__(self, obs_dim, action_dim, env, models, ac, termination_function):
+class SafeARC:
+    def __init__(
+        self,
+        obs_dim,
+        action_dim,
+        env,
+        models,
+        ac,
+        termination_function,
+        device=torch.device('cpu'),
+    ):
         # ac and termination_function???
         ###########
         # params
@@ -37,6 +58,8 @@ class safeARC(object):
         self.safety_threshold = 0.2
         self.minimal_elites = 10
         self.kappa = 1
+
+        self.device = torch.device(device)
 
     def reset(self):
         self.mean = np.zeros((self.sol_dim,))
@@ -71,7 +94,7 @@ class safeARC(object):
 
         # Add trajectories using actions suggested by actors
         actor_trajectories = np.zeros((self.actor_traj, self.sol_dim))
-        actor_state = torch.FloatTensor(actor_state).to(device)
+        actor_state = torch.FloatTensor(actor_state).to(self.device)
         actor_state_m = actor_state[0, :].reshape(1, -1)
         actor_state_m2 = actor_state[1, :].reshape(1, -1)
         for h in range(self.horizon):
@@ -118,11 +141,13 @@ class safeARC(object):
             # actions clipped between -1 and 1
             action_traj = np.clip(action_traj, -1, 1)
 
-            states = torch.from_numpy(np.expand_dims(curr_state.copy(), axis=0)).float().to(device)
+            states = (
+                torch.from_numpy(np.expand_dims(curr_state.copy(), axis=0)).float().to(self.device)
+            )
             actions = np.repeat(
                 np.expand_dims(action_traj, axis=0), self.models.model.network_size, axis=0
             )
-            actions = torch.FloatTensor(actions).to(device)
+            actions = torch.FloatTensor(actions).to(self.device)
 
             for h in range(self.horizon):
                 states_h = states[h, :, :, 1:]
@@ -159,7 +184,7 @@ class safeARC(object):
                     ].reshape((self.N + self.actor_traj) * self.particles, -1)
                 )
                 .float()
-                .to(device)
+                .to(self.device)
             )
             actions_H = actions_H.repeat(self.models.model.network_size, 1)
             # actions_H = actions_H.repeat_interleave(repeats=states.shape[1],dim=0)
@@ -170,7 +195,7 @@ class safeARC(object):
                     )
                 )
                 .float()
-                .to(device)
+                .to(self.device)
             )
 
             terminal_Q_rewards = self.ac.q1(states_H, actions_H).cpu().detach().numpy()
@@ -333,7 +358,7 @@ class safeCEM(object):
 
         # Add trajectories using actions suggested by actors
         actor_trajectories = np.zeros((self.actor_traj, self.sol_dim))
-        actor_state = torch.FloatTensor(actor_state).to(device)
+        actor_state = torch.FloatTensor(actor_state).to(self.device)
         actor_state_m = actor_state[0, :].reshape(1, -1)
         actor_state_m2 = actor_state[1, :].reshape(1, -1)
 
@@ -376,11 +401,13 @@ class safeCEM(object):
             # actions clipped between -1 and 1
             action_traj = np.clip(action_traj, -1, 1)
 
-            states = torch.from_numpy(np.expand_dims(curr_state.copy(), axis=0)).float().to(device)
+            states = (
+                torch.from_numpy(np.expand_dims(curr_state.copy(), axis=0)).float().to(self.device)
+            )
             actions = np.repeat(
                 np.expand_dims(action_traj, axis=0), self.models.model.network_size, axis=0
             )
-            actions = torch.FloatTensor(actions).to(device)
+            actions = torch.FloatTensor(actions).to(self.device)
 
             for h in range(self.horizon):
                 states_h = states[h, :, :, 1:]
@@ -417,7 +444,7 @@ class safeCEM(object):
                     ].reshape((self.N + self.actor_traj) * self.particles, -1)
                 )
                 .float()
-                .to(device)
+                .to(self.device)
             )
 
             actions_H = actions_H.repeat_interleave(repeats=states.shape[1], dim=0)
@@ -428,7 +455,7 @@ class safeCEM(object):
                     )
                 )
                 .float()
-                .to(device)
+                .to(self.device)
             )
             terminal_Q_rewards = self.ac.q1(states_H, actions_H).cpu().detach().numpy()
             terminal_Q_rewards = terminal_Q_rewards.reshape(states.shape[1], -1)

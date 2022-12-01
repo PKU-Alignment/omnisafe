@@ -15,13 +15,13 @@
 
 import torch
 
-import omnisafe.algos.utils.distributed_tools as distributed_tools
+from omnisafe.algos import registry
 from omnisafe.algos.on_policy.natural_pg import NaturalPG
-from omnisafe.algos.registry import REGISTRY
+from omnisafe.algos.utils import distributed_utils
 from omnisafe.algos.utils.tools import get_flat_params_from, set_param_values_to_model
 
 
-@REGISTRY.register
+@registry.register
 class TRPO(NaturalPG):
     def __init__(self, algo='trpo', **cfgs):
         NaturalPG.__init__(self, algo=algo, **cfgs)
@@ -63,8 +63,8 @@ class TRPO(NaturalPG):
             # Real loss improve: old policy loss - new policy loss
             loss_improve = self.loss_pi_before - loss_pi.item()
             # Average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)
-            torch_kl = distributed_tools.mpi_avg(torch_kl)
-            loss_improve = distributed_tools.mpi_avg(loss_improve)
+            torch_kl = distributed_utils.mpi_avg(torch_kl)
+            loss_improve = distributed_utils.mpi_avg(loss_improve)
 
             self.logger.log(
                 'Expected Improvement: %.3f Actual: %.3f' % (expected_improve, loss_improve)

@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """CPO"""
+
 import numpy as np
 import torch
 
-import omnisafe.algos.utils.distributed_tools as distributed_tools
+from omnisafe.algos import registry
 from omnisafe.algos.on_policy.trpo import TRPO
-from omnisafe.algos.registry import REGISTRY
+from omnisafe.algos.utils import distributed_utils
 from omnisafe.algos.utils.tools import (
     conjugate_gradients,
     get_flat_gradients_from,
@@ -28,7 +28,7 @@ from omnisafe.algos.utils.tools import (
 )
 
 
-@REGISTRY.register
+@registry.register
 class CPO(TRPO):
     """
     Paper Name: Constrained Policy Optimization Algorithm.
@@ -95,10 +95,10 @@ class CPO(TRPO):
             cost_diff = loss_pi_cost.item() - self.loss_pi_cost_before
 
             # Average across MPI processes...
-            torch_kl = distributed_tools.mpi_avg(torch_kl)
+            torch_kl = distributed_utils.mpi_avg(torch_kl)
             # Pi_average of torch_kl above
-            loss_rew_improve = distributed_tools.mpi_avg(loss_rew_improve)
-            cost_diff = distributed_tools.mpi_avg(cost_diff)
+            loss_rew_improve = distributed_utils.mpi_avg(loss_rew_improve)
+            cost_diff = distributed_utils.mpi_avg(cost_diff)
 
             self.logger.log(
                 'Expected Improvement: %.3f Actual: %.3f' % (expected_rew_improve, loss_rew_improve)
@@ -168,7 +168,7 @@ class CPO(TRPO):
         # Train policy with multiple steps of gradient descent
         loss_pi.backward()
         # Average grads across MPI processes
-        distributed_tools.mpi_avg_grads(self.ac.pi.net)
+        distributed_utils.mpi_avg_grads(self.ac.pi.net)
         g_flat = get_flat_gradients_from(self.ac.pi.net)
 
         # Flip sign since policy_loss = -(ration * adv)
@@ -187,7 +187,7 @@ class CPO(TRPO):
         loss_cost, _ = self.compute_loss_cost_performance(data=data)
         loss_cost.backward()
         # average grads across MPI processes
-        distributed_tools.mpi_avg_grads(self.ac.pi.net)
+        distributed_utils.mpi_avg_grads(self.ac.pi.net)
         self.loss_pi_cost_before = loss_cost.item()
         b_flat = get_flat_gradients_from(self.ac.pi.net)
         # :param ep_costs: do samplings to get approximate costs as ep_costs

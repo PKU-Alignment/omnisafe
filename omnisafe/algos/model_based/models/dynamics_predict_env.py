@@ -1,19 +1,33 @@
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
 import numpy as np
 import torch
 
-from omnisafe.algos.model_based.policy_gradient import device
-
 
 class PredictEnv:
-    def __init__(self, algo, model, env_name, model_type):
+    def __init__(self, algo, model, env_name, model_type, device=torch.device('cpu')):
         self.algo = algo
         self.model = model
         self.env_name = env_name
         self.model_type = model_type
+        self.device = torch.device(device)
 
     def _termination_fn(self, env_name, obs, act, next_obs):
         # TODO
-        if env_name == "Hopper-v2":
+        if env_name == 'Hopper-v2':
             assert len(obs.shape) == len(next_obs.shape) == len(act.shape) == 2
 
             height = next_obs[:, 0]
@@ -28,7 +42,7 @@ class PredictEnv:
             done = ~not_done
             done = done[:, None]
             return done
-        elif env_name == "Walker2d-v2":
+        elif env_name == 'Walker2d-v2':
             assert len(obs.shape) == len(next_obs.shape) == len(act.shape) == 2
 
             height = next_obs[:, 0]
@@ -94,7 +108,7 @@ class PredictEnv:
             ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
         else:
             ensemble_model_means, ensemble_model_vars = self.model.predict(inputs, factored=True)
-        if self.algo == "safeLoop":
+        if self.algo == 'safeLoop':
             ensemble_model_means[:, :, 1:] += obs
 
         ensemble_model_stds = np.sqrt(ensemble_model_vars)
@@ -120,13 +134,13 @@ class PredictEnv:
 
         log_prob, dev = self._get_logprob(samples, ensemble_model_means, ensemble_model_vars)
 
-        if self.algo == "safeLoop":
+        if self.algo == 'safeLoop':
             rewards, next_obs = samples[:, :1], samples[:, 1:]
-        elif self.algo == "mbppo-lag" or self.algo == "mbppo_v2":
+        elif self.algo == 'mbppo-lag' or self.algo == 'mbppo_v2':
             next_obs_delta = samples
             next_obs = next_obs_delta + obs
         terminals = self._termination_fn(self.env_name, obs, act, next_obs)
-        if self.algo == "safeLoop":
+        if self.algo == 'safeLoop':
             batch_size = model_means.shape[0]
             return_means = np.concatenate(
                 (model_means[:, :1], terminals, model_means[:, 1:]), axis=-1
@@ -137,15 +151,15 @@ class PredictEnv:
 
         if return_single:
             next_obs = next_obs[0]
-            if self.algo == "safeLoop":
+            if self.algo == 'safeLoop':
                 return_means = return_means[0]
                 return_stds = return_stds[0]
                 rewards = rewards[0]
                 terminals = terminals[0]
-        if self.algo == "safeLoop":
+        if self.algo == 'safeLoop':
             info = {'mean': return_means, 'std': return_stds, 'log_prob': log_prob, 'dev': dev}
             return next_obs, rewards, terminals, info
-        elif self.algo == "mbppo-lag" or self.algo == "mbppo_v2":
+        elif self.algo == 'mbppo-lag' or self.algo == 'mbppo_v2':
             return next_obs
 
     def step_elite(self, obs, act, idx, single=False, deterministic=False):
@@ -351,6 +365,6 @@ class PredictEnv:
         else:
             ensemble_samples = (
                 ensemble_model_means
-                + torch.randn(size=ensemble_model_means.shape).to(device) * ensemble_model_stds
+                + torch.randn(size=ensemble_model_means.shape).to(self.device) * ensemble_model_stds
             )
         return ensemble_samples

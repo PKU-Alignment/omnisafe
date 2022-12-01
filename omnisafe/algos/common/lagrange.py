@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Lagrange"""
+
 import abc
 
 import torch
 
 
 class Lagrange(abc.ABC):
-    """
-    Abstract base class for Lagrangian-base Algorithm
-    """
+    """Abstract base class for Lagrangian-base Algorithms."""
 
     def __init__(
         self,

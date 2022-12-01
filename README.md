@@ -14,9 +14,9 @@
 
 # OmniSafe
 
-OmniSafe is a comprehensive and trustworthy benchmark for safe reinforcement learning, covering a multitude of SafeRL domains, and delivering a new suite of testing environments.
+OmniSafe is a comprehensive and trustworthy benchmark for safe reinforcement learning, covering a multitude of SafeRL domains and delivering a new suite of testing environments.
 
-The simulation environment around OmniSafe and a series of reliable algorithm implementations will help the SafeRL research community easier to replicate and improve the excellent work already done, while also helping to facilitate the validation of new ideas and new algorithms.
+The simulation environment around OmniSafe and a series of reliable algorithm implementations will help the SafeRL research community easier to replicate and improve the excellent work already done while also helping to facilitate the validation of new ideas and new algorithms.
 
 --------------------------------------------------------------------------------
 
@@ -25,6 +25,8 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
 - [Overview](#overview)
 - [Implemented Algorithms](#implemented-algorithms)
 - [SafeRL Environments](#saferl-environments)
+  - [Safety Gymnasium](#safety-gymnasium)
+  - [Vision-base Safe RL](#vision-base-safe-rl)
   - [Environment Usage](#environment-usage)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
@@ -84,12 +86,11 @@ Here we provide a table for comparison of **OmniSafe's algorithm core** and exis
             <li><a href="https://cdn.openai.com/safexp-short.pdf">TRPO-Lag (arxiv)</a></li>
             <li><a href="https://proceedings.mlr.press/v70/achiam17a">CPO (ICML'2017)</a></li>
             <li><a href="https://openreview.net/forum?id=SkfrvsA9FX">RCPO (ICLR'2019)</a></li>
-            <li><a href="Responsive Safety in Reinforcement Learning by PID Lagrangian Methods">CPPOpid (ICML'2020)</a></li>
+            <li><a href="https://arxiv.org/abs/2007.03964">CPPOpid (ICML'2020)</a></li>
             <li><a href="https://arxiv.org/abs/2002.06506">FOCOPS (NeurIPS'2020)</a></li>
             <li><a href="https://arxiv.org/abs/1910.09615">IPO (AAAI'2020)</a></li>
             <li><a href="https://openreview.net/forum?id=rke3TJrtPS">PCPO (ICLR'2020)</a></li>
             <li><a href="https://arxiv.org/abs/2011.05869">CRPO (ICML'2021)</a></li>
-            <li><a href="https://www.ijcai.org/proceedings/2022/520">P3O (IJCAI'2022)</a></li>
             <li><a href="https://arxiv.org/abs/2209.07089">CUP (NeurIPS'2022)</a></li>
       </ul>
       </td>
@@ -138,17 +139,19 @@ Here we provide a table for comparison of **OmniSafe's algorithm core** and exis
   </tbody>
 </table>
 
-**Notes** IPO, PCPO, CRPO, P3O, CUP will be released before 2022.12.1. Model-base is under testing, and will be released before 2022.11.25. Offline Safe will be released before 12.1. Control will be released before 2022.12.1.
+**Notes** IPO, PCPO, CRPO, CUP will be released before 2022.12.1. Offline Safe will be released before 12.1. Control will be released before 2022.12.1.
 
 --------------------------------------------------------------------------------
 
 ## SafeRL Environments
+
 ### Safety Gymnasium
-We designed a variety of safety-enhanced learning tasks around the latest version of Gymnasium, including safety-run, safety-circle, safety-goal, safety-button, etc., leading to a unified safety-enhanced learning benchmark environment called `Safety_Gymnasium`.
+
+We designed a variety of safety-enhanced learning tasks around the latest version of Gymnasium, including safety-run, safety-circle, safety-goal, safety-button, etc., leading to a unified safety-enhanced learning benchmark environment called `safety-gymnasium`.
 
 Further, to facilitate the progress of community research, we redesigned [Safety_Gym](https://github.com/openai/safety-gym), removed the dependency on mujoco_py, made it created on top of [Mujoco](https://github.com/deepmind/mujoco), and fixed some bugs.
 
-After careful testing, we confirmed that it has the same dynamics parameters and training environment as the original safety gym, named `safety_gym_v2`.
+After careful testing, we confirmed that it has the same dynamics parameters and training environment as the original safety gym, named `safety-gymnasium`.
 
 Here is a list of all the environments we support, some of them are being tested in our baseline and we will gradually release them within a month.
 
@@ -199,11 +202,12 @@ Here is a list of all the environments we support, some of them are being tested
 </table>
 
 ### Vision-base Safe RL
-Vision-based safety reinforcement learning lacks realistic scenarios. Although the original `safety_gym` was able to minimally support visual input, the scenarios were too homogeneous. To facilitate the validation of visual-based safety reinforcement learning algorithms, we have developed a set of realistic visual safety reinforcement learning task environments, which are currently being validated on baseline, and we will release that part of the environment in `Safety_Gymnasium` within a month.
+
+Vision-based safety reinforcement learning lacks realistic scenarios. Although the original `safety-gym` could minimally support visual input, the scenarios were too homogeneous. To facilitate the validation of visual-based safety reinforcement learning algorithms, we have developed a set of realistic vision-based safeRL tasks, which are currently being validated on the baseline, and we will release that part of the environment in `safety-gymnasium` within a month.
 
 For the appetizer, the images are as follows
 <div align="center">
-  <img src="./images/vision_input.png" width="50%"/>
+  <img src="./images/vision_input.png" width="100%"/>
 </div>
 
 
@@ -242,19 +246,18 @@ git clone https://github.com/PKU-MARL/omnisafe
 cd omnisafe
 conda create -n omnisafe python=3.8
 conda activate omnisafe
-# pelase refer to https://pytorch.org/get-started/previous-versions/ and install pytorch
-# install omnisafe
-pip install -e .
-# install safety_gymnasium
-cd omnisafe/envs/Safety_Gymnasium
-pip install -e .
+# Please refer to https://pytorch.org/get-started/previous-versions and install pytorch
 
+# Install safety-gymnasium
+pip install -e envs/safety-gymnasium
+# Install omnisafe
+pip install -e .
 ```
 
 ### Examples
 
 ```bash
-cd examples/
+cd examples
 python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1 --seed 0
 ```
 
@@ -324,4 +327,4 @@ OmniSafe is currently maintained by Borong Zhang, [Jiayi Zhou](https://github.co
 
 ## License
 
-OmniSafe is released under the Apache License 2.0.
+OmniSafe is released under Apache License 2.0.

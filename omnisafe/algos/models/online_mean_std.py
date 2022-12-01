@@ -16,7 +16,7 @@
 import numpy as np
 import torch
 
-import omnisafe.algos.utils.distributed_tools as distributed_tools
+from omnisafe.algos.utils import distributed_utils
 
 
 class OnlineMeanStd(torch.nn.Module):
@@ -86,20 +86,20 @@ class OnlineMeanStd(torch.nn.Module):
             # reshape is necessary since mean operator reduces vector dim by one
             x = x.view((-1, 1))
 
-        n_B = x.shape[0] * distributed_tools.num_procs()  # get batch size
+        n_B = x.shape[0] * distributed_utils.num_procs()  # get batch size
         n_A = self.count.clone()
         n_AB = self.count + n_B
         batch_mean = torch.mean(x, dim=0)
 
         # 1) Calculate mean and average batch mean across processes
-        distributed_tools.mpi_avg_torch_tensor(batch_mean)
+        distributed_utils.mpi_avg_torch_tensor(batch_mean)
         delta = batch_mean - self.mean
         mean_new = self.mean + delta * n_B / n_AB
 
         # 2) Determine variance and sync across processes
         diff = x - mean_new
         batch_var = torch.mean(diff**2, dim=0)
-        distributed_tools.mpi_avg_torch_tensor(batch_var)
+        distributed_utils.mpi_avg_torch_tensor(batch_var)
 
         # Update running terms
         M2_A = n_A * self.var

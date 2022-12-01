@@ -1,3 +1,68 @@
+# Package ######################################################################
+
+[build-system]
+requires = ["setuptools >= 60.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omnisafe"
+description = "A comprehensive and reliable benchmark for safe reinforcement learning."
+readme = "README.md"
+requires-python = ">= 3.8"
+authors = [{ name = "OmniSafe Contributors" }]
+license = { text = "Apache License, Version 2.0" }
+keywords = ["Safe Reinforcement Learning", "Reinforcement Learning", "PyTorch"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    'Intended Audience :: Science/Research',
+    'Topic :: Scientific/Engineering :: Artificial Intelligence',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+]
+dependencies = [
+    "safety-gymnasium",
+    "torch >= 1.10.0",
+    "numpy >= 1.20.0",
+    "tensorboard >= 2.8.0",
+    "psutil >= 5.9.1",
+    "scipy >= 1.7.0",
+    "joblib >= 1.2.0",
+    "pyyaml >= 6.0",
+    "xmltodict >= 0.13.0",
+    "moviepy >= 1.0.0",
+    "typing-extensions >= 4.0.0",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/PKU-MARL/omnisafe"
+Repository = "https://github.com/PKU-MARL/omnisafe"
+Documentation = "https://omnisafe.readthedocs.io"
+"Bug Report" = "https://github.com/PKU-MARL/omnisafe/issues"
+
+[project.optional-dependencies]
+lint = [
+    "isort",
+    "black >= 22.6.0",
+    "pylint >= 2.15.0",
+    "mypy >= 0.990",
+    "flake8",
+    "flake8-bugbear",
+    "doc8 < 1.0.0a0",
+    "pydocstyle",
+    "pyenchant",
+    "pre-commit",
+]
+test = ['pytest', 'pytest-cov', 'pytest-xdist']
+
+[tool.setuptools.packages.find]
+include = ["omnisafe", "omnisafe.*"]
+
 # Linter tools #################################################################
 
 [tool.black]
@@ -5,14 +70,40 @@ safe = true
 line-length = 100
 skip-string-normalization = true
 # Sync with requires-python
-target-version = ["py37", "py38", "py39", "py310", "py311"]
+target-version = ["py38", "py39", "py310", "py311"]
 
 [tool.isort]
 atomic = true
 profile = "black"
-src_paths = ["omnisafe", "examples", "tests"]
+src_paths = ["omnisafe", "envs", "examples", "tests"]
 extra_standard_library = ["typing_extensions"]
 indent = 4
 line_length = 100
 lines_after_imports = 2
 multi_line_output = 3
+
+[tool.mypy]
+python_version = 3.8
+pretty = true
+show_error_codes = true
+show_error_context = true
+show_traceback = true
+allow_redefinition = true
+check_untyped_defs = true
+disallow_incomplete_defs = false
+disallow_untyped_defs = false
+ignore_missing_imports = true
+no_implicit_optional = true
+strict_equality = true
+strict_optional = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[tool.pydocstyle]
+convention = "google"
+
+[tool.doc8]
+max-line-length = 500

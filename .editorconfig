@@ -14,7 +14,7 @@ insert_final_newline = true
 indent_size = 4
 src_paths=omnisafe,tests,examples
 
-[*.{yaml,yml}]
+[*.{yaml,yml,xml}]
 indent_size = 2
 
 [*.md]

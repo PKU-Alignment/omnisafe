@@ -13,16 +13,14 @@
 # limitations under the License.
 # ==============================================================================
 
-from collections import deque, namedtuple
-
 import torch
 
+from omnisafe.algos import registry
 from omnisafe.algos.common.pid_lagrange import PID_Lagrangian
 from omnisafe.algos.on_policy.policy_gradient import PolicyGradient
-from omnisafe.algos.registry import REGISTRY
 
 
-@REGISTRY.register
+@registry.register
 class CPPOPid(PolicyGradient, PID_Lagrangian):
     def __init__(self, algo: str = 'cppo-pid', **cfgs):
 
