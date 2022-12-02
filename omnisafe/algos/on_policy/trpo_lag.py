@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the TRPOLag algorithm."""
+
 import torch
 
 from omnisafe.algos import registry
@@ -22,27 +22,24 @@ from omnisafe.algos.on_policy.trpo import TRPO
 
 @registry.register
 class TRPOLag(TRPO, Lagrange):
-    """Class-specific methods"""
-
     def __init__(self, algo: str = 'trpo-lag', **cfgs):
-        """initialize"""
         TRPO.__init__(self, algo=algo, **cfgs)
 
         Lagrange.__init__(self, **self.cfgs['lagrange_cfgs'])
 
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
+        self.logger.log_tabular('LagrangeMultiplier', self.lagrangian_multiplier.item())
 
     def compute_loss_pi(self, data: dict) -> tuple:
         # Policy loss
-        dist, _log_p = self.actor_critic.pi(data['obs'], data['act'])
+        dist, _log_p = self.ac.pi(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
 
         loss_pi = -(ratio * data['adv']).mean()
         loss_pi -= self.entropy_coef * dist.entropy().mean()
 
-        # ensure that Lagrange Multiplier is positive
+        # ensure that lagrange multiplier is positive
         penalty = torch.clamp_min(self.lagrangian_multiplier, 0.0)
         loss_pi += penalty * (ratio * data['cost_adv']).mean()
         loss_pi /= 1 + penalty
@@ -55,14 +52,13 @@ class TRPOLag(TRPO, Lagrange):
         return loss_pi, pi_info
 
     def update(self):
-        """Update."""
         raw_data = self.buf.get()
         # pre-process data
         data = self.pre_process_data(raw_data)
         # sub-sampling accelerates calculations
         self.fvp_obs = data['obs'][::4]
         # Note that logger already uses MPI statistics across all processes..
-        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
+        ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
         # First update Lagrange multiplier parameter
         self.update_lagrange_multiplier(ep_costs)
         # now update policy and value network

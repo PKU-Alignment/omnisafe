@@ -368,7 +368,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
                     **{
                         'Metrics/EpRet': ep_ret,
                         'Metrics/EpLen': ep_len,
-                        'Metrics/EpCost': ep_cost,
+                        'Metrics/EpCosts': ep_cost,
                     }
                 )
                 ep_ret, ep_cost = 0, 0
@@ -455,7 +455,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
                     **{
                         'Metrics/EpRet': ep_ret,
                         'Metrics/EpLen': ep_len,
-                        'Metrics/EpCost': ep_costs,
+                        'Metrics/EpCosts': ep_costs,
                     }
                 )
 
@@ -478,7 +478,7 @@ class PolicyGradientModelBased(PolicyGradientBase):
         """
         self.logger.log_tabular('TotalEnvSteps', timestep + self.num_repeat)
         self.logger.log_tabular('Metrics/EpRet')
-        self.logger.log_tabular('Metrics/EpCost')
+        self.logger.log_tabular('Metrics/EpCosts')
         self.logger.log_tabular('Metrics/EpLen')
         # Some child classes may add information to logs
         self.algorithm_specific_logs(timestep)

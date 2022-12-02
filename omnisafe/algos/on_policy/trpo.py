@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the TRPO algorithm."""
+
 import torch
 
 from omnisafe.algos import registry
@@ -23,8 +23,6 @@ from omnisafe.algos.utils.tools import get_flat_params_from, set_param_values_to
 
 @registry.register
 class TRPO(NaturalPG):
-    """Class for TRPO."""
-
     def __init__(self, algo='trpo', **cfgs):
         NaturalPG.__init__(self, algo=algo, **cfgs)
 
@@ -34,7 +32,7 @@ class TRPO(NaturalPG):
         main idea: search around for a satisfied step of policy update to improve loss and reward performance
         :param step_dir:direction theta changes towards
         :param g_flat:  gradient tensor of reward ,informs about how rewards improve with change of step direction
-        :param c:how much episode cost goes above limit
+        :param c:how much epcost goes above limit
         :param p_dist: inform about old policy, how the old policy p performs on observation this moment
         :param optim_case: the way to optimize
         :param data: data buffer,mainly with adv, costs, values, actions, and observations
@@ -43,7 +41,7 @@ class TRPO(NaturalPG):
         # How far to go in a single update
         step_frac = 1.0
         # Get old parameterized policy expression
-        _theta_old = get_flat_params_from(self.actor_critic.pi.net)
+        _theta_old = get_flat_params_from(self.ac.pi.net)
         # Change expected objective function gradient = expected_imrpove best this moment
         expected_improve = g_flat.dot(step_dir)
 
@@ -52,14 +50,14 @@ class TRPO(NaturalPG):
             # Update theta params
             new_theta = _theta_old + step_frac * step_dir
             # Set new params as params of net
-            set_param_values_to_model(self.actor_critic.pi.net, new_theta)
+            set_param_values_to_model(self.ac.pi.net, new_theta)
             # The stepNo this update accept
             acceptance_step = j + 1
 
             with torch.no_grad():
-                loss_pi, _ = self.compute_loss_pi(data=data)
+                loss_pi, pi_info = self.compute_loss_pi(data=data)
                 # Compute KL distance between new and old policy
-                q_dist = self.actor_critic.pi.dist(data['obs'])
+                q_dist = self.ac.pi.dist(data['obs'])
                 # KL-distance of old p-dist and new q-dist, applied in KLEarlyStopping
                 torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
             # Real loss improve: old policy loss - new policy loss
@@ -67,8 +65,10 @@ class TRPO(NaturalPG):
             # Average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)
             torch_kl = distributed_utils.mpi_avg(torch_kl)
             loss_improve = distributed_utils.mpi_avg(loss_improve)
-            menu = (expected_improve, loss_improve)
-            self.logger.log(f'Expected Improvement: {menu[0]} Actual: {menu[1]}')
+
+            self.logger.log(
+                'Expected Improvement: %.3f Actual: %.3f' % (expected_improve, loss_improve)
+            )
             if not torch.isfinite(loss_pi):
                 self.logger.log('WARNING: loss_pi not finite')
             elif loss_improve < 0:
@@ -85,6 +85,6 @@ class TRPO(NaturalPG):
             step_dir = torch.zeros_like(step_dir)
             acceptance_step = 0
 
-        set_param_values_to_model(self.actor_critic.pi.net, _theta_old)
+        set_param_values_to_model(self.ac.pi.net, _theta_old)
 
         return step_frac * step_dir, acceptance_step

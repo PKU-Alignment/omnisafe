@@ -22,10 +22,43 @@ import torch
 import yaml
 
 
-def get_default_kwargs_yaml(algo, env_id, algo_type):
+# def get_defaults_kwargs_yaml_on_policy(algo, env_id):
+#     """get_defaults_kwargs_yaml_on_policy"""
+#     path = os.path.abspath(__file__).split('/')[:-2]
+#     cfg_path = os.path.join('/', *path, 'configs/on-policy', f'{algo}.yaml')
+#     with open(cfg_path, 'r', encoding='utf-8') as file:
+#         try:
+#             kwargs = yaml.load(file, Loader=yaml.FullLoader)
+#         except yaml.YAMLError as exc:
+#             assert False, f'{algo}.yaml error: {exc}'
+#     kwargs_name = env_id if env_id in kwargs.keys() else 'defaults'
+#     return kwargs[kwargs_name]
+
+
+# def get_defaults_kwargs_yaml_off_policy(algo, env_id=None):
+#     """get_defaults_kwargs_yaml_off_policy"""
+#     path = os.path.abspath(__file__).split('/')[:-2]
+#     cfg_path = os.path.join('/', *path, 'configs/off-policy', f'{algo}.yaml')
+#     with open(cfg_path, 'r', encoding='utf-8') as file:
+#         try:
+#             kwargs = yaml.load(file, Loader=yaml.FullLoader)
+#         except yaml.YAMLError as exc:
+#             assert False, f'{algo}.yaml error: {exc}'
+#     kwargs_name = env_id if env_id in kwargs.keys() else 'defaults'
+#     return kwargs[kwargs_name]
+
+
+def get_default_kwargs_yaml(algo, env_id, algo_class):
     """get_default_kwargs_yaml"""
     path = os.path.abspath(__file__).split('/')[:-2]
-    cfg_path = os.path.join('/', *path, 'configs', algo_type, f'{algo}.yaml')
+    if algo_class == 1:
+        dir_name = 'on-policy'
+    elif algo_class == 2:
+        dir_name = 'off-policy'
+    elif algo_class == 3:
+        dir_name = 'model-based'
+
+    cfg_path = os.path.join('/', *path, 'configs', dir_name, f'{algo}.yaml')
     with open(cfg_path, 'r', encoding='utf-8') as file:
         try:
             kwargs = yaml.load(file, Loader=yaml.FullLoader)
@@ -164,4 +197,4 @@ def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
     elif item is None:
         return None
     else:
-        raise TypeError(f'not support item type: {item}')
+        raise TypeError('not support item type: {}'.format(type(item)))

@@ -258,10 +258,10 @@ pip install -e .
 
 ```bash
 cd examples
-python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1 --seed 0
+python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1 --seed 0
 ```
 
-**algo:** `PolicyGradient, PPO, PPOLag, NaturalPG, TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid, DDPG`
+**algo:** `PolicyGradient, PPO, PPOLag, NaturalPG, TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid`
 
 **env-id:** `Safety{Robot-id}{Task-id}{0/1/2}-v0, (Robot-id: Point Car), (Task-id: Goal Push Button)`
 
@@ -316,7 +316,7 @@ agent.learn()
 ### 3. Run Agent from custom terminal config
 cd `omnisafe/examples` and run
 ```python
-python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 5 --epochs 1
+python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 5 --epochs 1
 ```
 
 --------------------------------------------------------------------------------

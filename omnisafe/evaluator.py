@@ -230,3 +230,16 @@ class Evaluator:
                 )
             step_starting_index = step + 1
             self.env.reset()
+
+
+if __name__ == '__main__':
+    evaluator = Evaluator()
+    evaluator.load_saved_model(
+        '/home/juntao/workspace/omnisafe_back/runs/Hopper-v4/PPO/seed-000-2022-11-18_23-20-39',
+        'model.pt',
+    )
+    evaluator.evaluate(num_episodes=100, horizon=1000, cost_criteria=1.0)
+    evaluator.render(
+        num_episode=10,
+        save_replay_path='/home/juntao/workspace/omnisafe_back/runs/Hopper-v4/PPO/seed-000-2022-11-18_23-20-39',
+    )
