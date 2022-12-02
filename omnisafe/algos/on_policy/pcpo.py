@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+"""Implementation of the PCPO algorithm."""
 import torch
 
 from omnisafe.algos import registry
@@ -55,21 +55,21 @@ class PCPO(TRPO):
         PCPO algorithm performs line-search to ensure constraint satisfaction for rewards and costs.
         """
         step_frac = 1.0
-        _theta_old = get_flat_params_from(self.ac.pi.net)
-        _, old_log_p = self.ac.pi(data['obs'], data['act'])
+        _theta_old = get_flat_params_from(self.actor_critic.pi.net)
+        _, _ = self.actor_critic.pi(data['obs'], data['act'])
         expected_rew_improve = g_flat.dot(step_dir)
 
         # while not within_trust_region:
         for j in range(total_steps):
             new_theta = _theta_old + step_frac * step_dir
-            set_param_values_to_model(self.ac.pi.net, new_theta)
+            set_param_values_to_model(self.actor_critic.pi.net, new_theta)
             acceptance_step = j + 1
 
             with torch.no_grad():
                 loss_pi_rew, _ = self.compute_loss_pi(data=data)
                 loss_pi_cost, _ = self.compute_loss_cost_performance(data=data)
                 # determine KL div between new and old policy
-                q_dist = self.ac.pi.dist(data['obs'])
+                q_dist = self.actor_critic.pi.dist(data['obs'])
                 torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
             loss_rew_improve = self.loss_pi_before - loss_pi_rew.item()
             cost_diff = loss_pi_cost.item() - self.loss_pi_cost_before
@@ -78,10 +78,8 @@ class PCPO(TRPO):
             torch_kl = distributed_utils.mpi_avg(torch_kl)
             loss_rew_improve = distributed_utils.mpi_avg(loss_rew_improve)
             cost_diff = distributed_utils.mpi_avg(cost_diff)
-
-            self.logger.log(
-                'Expected Improvement: %.3f Actual: %.3f' % (expected_rew_improve, loss_rew_improve)
-            )
+            menu = (expected_rew_improve, loss_rew_improve)
+            self.logger.log(f'Expected Improvement: {menu[0]} Actual: {menu[1]}')
 
             if not torch.isfinite(loss_pi_rew) and not torch.isfinite(loss_pi_cost):
                 self.logger.log('WARNING: loss_pi not finite')
@@ -103,7 +101,7 @@ class PCPO(TRPO):
             step_dir = torch.zeros_like(step_dir)
             acceptance_step = 0
 
-        set_param_values_to_model(self.ac.pi.net, _theta_old)
+        set_param_values_to_model(self.actor_critic.pi.net, _theta_old)
         return step_frac * step_dir, acceptance_step
 
     def algorithm_specific_logs(self):
@@ -119,28 +117,29 @@ class PCPO(TRPO):
         self.logger.log_tabular('Misc/OptimCase')
 
     def compute_loss_cost_performance(self, data):
-        dist, _log_p = self.ac.pi(data['obs'], data['act'])
+        """compute loss for cost performance"""
+        _, _log_p = self.actor_critic.pi(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
         cost_loss = (ratio * data['cost_adv']).mean()
-        # ent = dist.entropy().mean().item()
         info = {}
         return cost_loss, info
 
     def update_policy_net(self, data):
+        """update policy network"""
         # Get loss and info values before update
-        theta_old = get_flat_params_from(self.ac.pi.net)
+        theta_old = get_flat_params_from(self.actor_critic.pi.net)
         self.pi_optimizer.zero_grad()
         loss_pi, pi_info = self.compute_loss_pi(data=data)
         self.loss_pi_before = loss_pi.item()
         self.loss_v_before = self.compute_loss_v(data['obs'], data['target_v']).item()
         self.loss_c_before = self.compute_loss_c(data['obs'], data['target_c']).item()
         # get prob. distribution before updates
-        p_dist = self.ac.pi.dist(data['obs'])
+        p_dist = self.actor_critic.pi.dist(data['obs'])
         # Train policy with multiple steps of gradient descent
         loss_pi.backward()
         # average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.ac.pi.net)
-        g_flat = get_flat_gradients_from(self.ac.pi.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.pi.net)
+        g_flat = get_flat_gradients_from(self.actor_critic.pi.net)
 
         # flip sign since policy_loss = -(ration * adv)
         g_flat *= -1
@@ -159,11 +158,11 @@ class PCPO(TRPO):
         loss_cost, _ = self.compute_loss_cost_performance(data=data)
         loss_cost.backward()
         # average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.ac.pi.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.pi.net)
         self.loss_pi_cost_before = loss_cost.item()
-        b_flat = get_flat_gradients_from(self.ac.pi.net)
+        b_flat = get_flat_gradients_from(self.actor_critic.pi.net)
 
-        ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
+        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         c = ep_costs - self.cost_limit
         c /= self.logger.get_stats('Metrics/EpLen')[0] + eps  # rescale
         self.logger.log(f'c = {c}')
@@ -191,9 +190,9 @@ class PCPO(TRPO):
         )
         # update actor network parameters
         new_theta = theta_old + final_step_dir
-        set_param_values_to_model(self.ac.pi.net, new_theta)
+        set_param_values_to_model(self.actor_critic.pi.net, new_theta)
 
-        q_dist = self.ac.pi.dist(data['obs'])
+        q_dist = self.actor_critic.pi.dist(data['obs'])
         torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
 
         self.logger.store(

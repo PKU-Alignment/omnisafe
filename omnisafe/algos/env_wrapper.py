@@ -23,9 +23,7 @@ class EnvWrapper:
 
     def __init__(self, env_id, render_mode='none'):
         # check env_id is str
-        self.env = safety_gymnasium.make(
-            env_id, render_mode=render_mode
-        )  # , render_mode=render_mode)
+        self.env = safety_gymnasium.make(env_id, render_mode=render_mode)
         self.env_id = env_id
         self.render_mode = render_mode
         self.metadata = self.env.metadata  # TODO: change to __getattr__
@@ -62,23 +60,26 @@ class EnvWrapper:
         """set environment seed"""
         self.seed = seed
 
+    def set_rollout_cfgs(self, **kwargs):
+        """set rollout configs"""
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
     def step(self, action):
         """engine step"""
         next_obs, reward, cost, terminated, truncated, info = self.env.step(action)
         return next_obs, reward, cost, terminated, truncated, info
 
-    def roll_out(
-        self, agent, buf, logger, local_steps_per_epoch, penalty_param, use_cost, cost_gamma
-    ):
+    def roll_out(self, agent, buf, logger):
         """collect data and store to experience buffer."""
         obs, info = self.env.reset()
         # print(info)  ## need do
         ep_ret, ep_costs, ep_len = 0.0, 0.0, 0
-        for step_i in range(local_steps_per_epoch):
+        for step_i in range(self.local_steps_per_epoch):
             action, value, cost_value, logp = agent.step(torch.as_tensor(obs, dtype=torch.float32))
             next_obs, reward, cost, done, truncated, info = self.step(action)
             ep_ret += reward
-            ep_costs += (cost_gamma**ep_len) * cost
+            ep_costs += (self.cost_gamma**ep_len) * cost
             ep_len += 1
 
             # Save and log
@@ -96,7 +97,7 @@ class EnvWrapper:
             )
 
             # Store values for statistic purpose
-            if use_cost == True:
+            if self.use_cost == True:
                 logger.store(**{'Values/V': value, 'Values/C': cost_value})
             else:
                 logger.store(**{'Values/V': value})
@@ -106,7 +107,7 @@ class EnvWrapper:
 
             timeout = ep_len == self.max_ep_len
             terminal = done or timeout or truncated
-            epoch_ended = step_i == local_steps_per_epoch - 1
+            epoch_ended = step_i == self.local_steps_per_epoch - 1
 
             if terminal or epoch_ended:
                 if timeout or epoch_ended:
@@ -115,7 +116,7 @@ class EnvWrapper:
                     value, cost_value = 0.0, 0.0
 
                 # Automatically compute GAE in buffer
-                buf.finish_path(value, cost_value, penalty_param=float(penalty_param))
+                buf.finish_path(value, cost_value, penalty_param=float(self.penalty_param))
 
                 # Only save EpRet / EpLen if trajectory finished
                 if terminal:
@@ -123,21 +124,14 @@ class EnvWrapper:
                         **{
                             'Metrics/EpRet': ep_ret,
                             'Metrics/EpLen': ep_len,
-                            'Metrics/EpCosts': ep_costs,
+                            'Metrics/EpCost': ep_costs,
                         }
                     )
                 ep_ret, ep_costs, ep_len = 0.0, 0.0, 0
                 obs, info = self.env.reset()
 
-    def set_rollout_cfgs(self, determinstic, rand_a, ep_steps, max_ep_len):
-        self.rand_a = rand_a
-        self.ep_steps = ep_steps
-        self.deterministic = determinstic
-        self.max_ep_len = max_ep_len
-
     def roll_out_off(self, ac, buf, logger, use_cost):
         """collect data and store to experience buffer."""
-        # c_gamma_step = 0
         for t in range(self.ep_steps):
             ep_ret = self.ep_ret
             ep_len = self.ep_len
@@ -145,7 +139,7 @@ class EnvWrapper:
             o = self.curr_o
             a, v, cv, logp = ac.step(torch.as_tensor(o, dtype=torch.float32), self.deterministic)
             # Store values for statistic purpose
-            if use_cost:
+            if use_cost == True:
                 logger.store(**{'Values/V': v, 'Values/C': cv})
             else:
                 logger.store(**{'Values/V': v})

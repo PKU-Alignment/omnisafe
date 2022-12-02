@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+"""Implementation of the PPO algorithm."""
 import torch
 
 from omnisafe.algos import registry
@@ -32,7 +32,8 @@ class PPO(PolicyGradient):
         self.clip = clip
 
     def compute_loss_pi(self, data: dict):
-        dist, _log_p = self.ac.pi(data['obs'], data['act'])
+        """Compute policy loss."""
+        dist, _log_p = self.actor_critic.pi(data['obs'], data['act'])
         # Importance ratio
         ratio = torch.exp(_log_p - data['log_p'])
         ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)

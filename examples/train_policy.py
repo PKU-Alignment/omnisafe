@@ -14,7 +14,6 @@
 # ==============================================================================
 
 import argparse
-import time
 
 import omnisafe
 
@@ -25,7 +24,7 @@ if __name__ == '__main__':
         '--algo',
         type=str,
         default='PPO',
-        help='Choose from: {PolicyGradient, PPO, PPOLag, NaturalPG, TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid',
+        help='Choose certain algorithm to train policy',
     )
     parser.add_argument(
         '--env-id',

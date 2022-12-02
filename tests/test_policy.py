@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 # Copyright 2022 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,3 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+
+import helpers
+import omnisafe
+
+
+@helpers.parametrize(
+    algo=[
+        'PolicyGradient',
+        'PPO',
+        'PPOLag',
+        'NaturalPG',
+        'TRPO',
+        'TRPOLag',
+        'PDO',
+        'NPGLag',
+        'CPO',
+        'PCPO',
+        'FOCOPS',
+        'CPPOPid',
+        'DDPG',
+    ]
+)
+def test_on_policy(algo):
+    env_id = 'SafetyPointGoal1-v0'
+    custom_cfgs = {'epochs': 1, 'steps_per_epoch': 1000, 'pi_iters': 1, 'critic_iters': 1}
+    env = omnisafe.Env(env_id)
+    agent = omnisafe.Agent(algo, env, custom_cfgs=custom_cfgs, parallel=1)
+    agent.learn()

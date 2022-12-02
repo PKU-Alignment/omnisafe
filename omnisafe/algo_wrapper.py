@@ -19,8 +19,8 @@ import sys
 
 import psutil
 
-from omnisafe.algos import registry
-from omnisafe.algos.utils.distributed_utils import mpi_fork
+from omnisafe.algos import algo_type, registry
+from omnisafe.algos.utils import distributed_utils
 from omnisafe.algos.utils.tools import get_default_kwargs_yaml
 from omnisafe.evaluator import Evaluator
 
@@ -31,11 +31,30 @@ class AlgoWrapper:
     def __init__(self, algo, env, parallel=1, custom_cfgs=None):
         self.algo = algo
         self.env = env
-        self.env_id = env.env_id
-        self.seed = 0  # TOOD
         self.parallel = parallel
+        self.env_id = env.env_id
+        # algo_type will set in _init_checks()
+        self.algo_type = None
         self.custom_cfgs = custom_cfgs
         self.evaluator = None
+        self._init_checks()
+
+    def _init_checks(self):
+        """Init checks"""
+        assert isinstance(self.algo, str), 'algo must be a string!'
+        assert isinstance(self.parallel, int), 'parallel must be an integer!'
+        assert self.parallel > 0, 'parallel must be greater than 0!'
+        assert (
+            isinstance(self.custom_cfgs, dict) or self.custom_cfgs is None
+        ), 'custom_cfgs must be a dict!'
+        for key in algo_type.keys():
+            if self.algo in algo_type[key]:
+                self.algo_type = key
+                break
+        if algo_type == None or algo_type == '':
+            raise ValueError(f'{self.algo} is not supported!')
+        if algo_type == 'off-policy':
+            assert self.parallel == 1, 'off-policy only support parallel==1!'
 
     def recursive_update(self, args: dict, update_args: dict):
         """recursively update args"""
@@ -61,53 +80,13 @@ class AlgoWrapper:
         physical_cores = psutil.cpu_count(logical=False)
         use_number_of_threads = bool(self.parallel > physical_cores)
 
-        if mpi_fork(self.parallel, use_number_of_threads=use_number_of_threads):
+        if distributed_utils.mpi_fork(self.parallel, use_number_of_threads=use_number_of_threads):
             # Re-launches the current script with workers linked by MPI
             sys.exit()
 
         agent = None
-        on_policy_list = [
-            'PolicyGradient',
-            'PPO',
-            'PPOLag',
-            'NaturalPG',
-            'TRPO',
-            'TRPOLag',
-            'PDO',
-            'NPGLag',
-            'CPO',
-            'RCPO',
-            'CRPO',
-            'PCPO',
-            'P3O',
-            'IPO',
-            'FOCOPS',
-            'CPPOPid',
-        ]
-        off_policy_list = [
-            'DDPG',
-            'DDPGLag',
-            'TD3',
-            'TD3Lag',
-            'SAC',
-            'SACLag',
-            'CVPO',
-        ]
-        model_based_list = [
-            'MBPPOLag',
-            'SafeLoop',
-        ]
-        assert (
-            self.algo in on_policy_list + off_policy_list + model_based_list
-        ), f'{self.algo} is not supported!'
 
-        if self.algo in on_policy_list:
-            algo_flag = 1
-        elif self.algo in off_policy_list:
-            algo_flag = 2
-        elif self.algo in model_based_list:
-            algo_flag = 3
-        cfgs = get_default_kwargs_yaml(self.algo, self.env_id, algo_flag)
+        cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
         if self.custom_cfgs is not None:
             self.recursive_update(cfgs, self.custom_cfgs)
         exp_name = os.path.join(self.env.env_id, self.algo)
@@ -120,7 +99,7 @@ class AlgoWrapper:
             cfgs=cfgs,
         )
         ac = agent.learn()
-        if algo_flag != 3:
+        if self.algo_type != 'model-based':
             self.evaluator = Evaluator(self.env, ac.pi, ac.obs_oms)
 
     def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):

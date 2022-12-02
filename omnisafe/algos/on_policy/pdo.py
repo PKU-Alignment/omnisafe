@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+"""Implementation of the PDO algorithm."""
 import torch
 
 from omnisafe.algos import registry
@@ -22,12 +22,12 @@ from omnisafe.algos.on_policy.policy_gradient import PolicyGradient
 
 @registry.register
 class PDO(PolicyGradient, Lagrange):
-    def __init__(self, **cfgs):
+    """specific functions"""
 
+    def __init__(self, **cfgs):
+        """initialization"""
         PolicyGradient.__init__(self, **cfgs)
-        cfgs = cfgs['cfgs']
         Lagrange.__init__(self, **self.cfgs['lagrange_cfgs'])
-        self.max_grad_norm = cfgs['use_max_grad_norm']
 
     def compute_loss_pi(self, data: dict):
         """
@@ -37,7 +37,7 @@ class PDO(PolicyGradient, Lagrange):
             torch.Tensor
         """
         # Policy loss
-        dist, _log_p = self.ac.pi(data['obs'], data['act'])
+        dist, _log_p = self.actor_critic.pi(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
 
         # Compute loss via ratio and advantage
@@ -57,11 +57,12 @@ class PDO(PolicyGradient, Lagrange):
         return loss_pi, pi_info
 
     def update(self):
+        """update"""
         raw_data = self.buf.get()
         # pre-process data
         data = self.pre_process_data(raw_data)
         # Note that logger already uses MPI statistics across all processes..
-        ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
+        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
         self.update_lagrange_multiplier(ep_costs)
         # now update policy and value network
@@ -74,4 +75,4 @@ class PDO(PolicyGradient, Lagrange):
 
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()
-        self.logger.log_tabular('LagrangeMultiplier', self.lagrangian_multiplier.item())
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())

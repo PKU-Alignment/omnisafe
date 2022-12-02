@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+"""Implementation of the Natural PG algorithm."""
 import torch
 
 from omnisafe.algos import registry
@@ -28,6 +28,8 @@ from omnisafe.algos.utils.tools import (
 
 @registry.register
 class NaturalPG(PolicyGradient):
+    """Class-specific functions"""
+
     def __init__(self, algo: str = 'npg', **cfgs):
         PolicyGradient.__init__(self, algo=algo, **cfgs)
         cfgs = cfgs['cfgs']
@@ -38,7 +40,7 @@ class NaturalPG(PolicyGradient):
 
     def search_step_size(self, step_dir, g_flat, p_dist, data):
         """
-        NPG use full step_size
+        Natural Policy Gradient use full step_size
         """
         accept_step = 1
         return step_dir, accept_step
@@ -56,17 +58,17 @@ class NaturalPG(PolicyGradient):
         Build the Hessian-vector product based on an approximation of the KL-divergence.
         For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf
         """
-        self.ac.pi.net.zero_grad()
-        q_dist = self.ac.pi.dist(self.fvp_obs)
+        self.actor_critic.pi.net.zero_grad()
+        q_dist = self.actor_critic.pi.dist(self.fvp_obs)
         with torch.no_grad():
-            p_dist = self.ac.pi.dist(self.fvp_obs)
+            p_dist = self.actor_critic.pi.dist(self.fvp_obs)
         kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
 
-        grads = torch.autograd.grad(kl, self.ac.pi.net.parameters(), create_graph=True)
+        grads = torch.autograd.grad(kl, self.actor_critic.pi.net.parameters(), create_graph=True)
         flat_grad_kl = torch.cat([grad.view(-1) for grad in grads])
 
         kl_p = (flat_grad_kl * p).sum()
-        grads = torch.autograd.grad(kl_p, self.ac.pi.net.parameters(), retain_graph=False)
+        grads = torch.autograd.grad(kl_p, self.actor_critic.pi.net.parameters(), retain_graph=False)
         # contiguous indicating, if the memory is contiguously stored or not
         flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
         # average --->
@@ -93,19 +95,20 @@ class NaturalPG(PolicyGradient):
         self.update_running_statistics(raw_data)
 
     def update_policy_net(self, data):
+        """update policy network"""
         # Get loss and info values before update
-        theta_old = get_flat_params_from(self.ac.pi.net)
-        self.ac.pi.net.zero_grad()
+        theta_old = get_flat_params_from(self.actor_critic.pi.net)
+        self.actor_critic.pi.net.zero_grad()
         loss_pi, pi_info = self.compute_loss_pi(data=data)
         self.loss_pi_before = distributed_utils.mpi_avg(loss_pi.item())
         loss_v = self.compute_loss_v(data['obs'], data['target_v'])
         self.loss_v_before = distributed_utils.mpi_avg(loss_v.item())
-        p_dist = self.ac.pi.dist(data['obs'])
+        p_dist = self.actor_critic.pi.dist(data['obs'])
         # Train policy with multiple steps of gradient descent
         loss_pi.backward()
         # average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.ac.pi.net)
-        g_flat = get_flat_gradients_from(self.ac.pi.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.pi.net)
+        g_flat = get_flat_gradients_from(self.actor_critic.pi.net)
 
         # flip sign since policy_loss = -(ration * adv)
         g_flat *= -1
@@ -132,10 +135,10 @@ class NaturalPG(PolicyGradient):
 
         # update actor network parameters
         new_theta = theta_old + final_step_dir
-        set_param_values_to_model(self.ac.pi.net, new_theta)
+        set_param_values_to_model(self.actor_critic.pi.net, new_theta)
 
         with torch.no_grad():
-            q_dist = self.ac.pi.dist(data['obs'])
+            q_dist = self.actor_critic.pi.dist(data['obs'])
             kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
             loss_pi, pi_info = self.compute_loss_pi(data=data)
 
