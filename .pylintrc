@@ -42,13 +42,13 @@ fail-under=10
 #from-stdin=
 
 # Files or directories to be skipped. They should be base names, not paths.
-ignore=CVS
+ignore=CVS,.vscode,.history
 
 # Add files or directories matching the regular expressions patterns to the
 # ignore-list. The regex matches against paths and can be in Posix or Windows
 # format. Because '\' represents the directory delimiter on Windows systems, it
 # can't be used as an escape character.
-ignore-paths=
+ignore-paths=^examples/$,^tests/$
 
 # Files or directories matching the regular expression patterns are skipped.
 # The regex matches against base names, not paths. The default value ignores
@@ -68,7 +68,7 @@ ignored-modules=
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use, and will cap the count on Windows to
 # avoid hangs.
-jobs=1
+jobs=0
 
 # Control the amount of potential inferred values when inferring a single
 # object. This can help the performance when dealing with large functions or
@@ -84,7 +84,7 @@ persistent=yes
 
 # Minimum Python version to use for version dependent checks. Will default to
 # the version used to run pylint.
-py-version=3.7
+py-version=3.8
 
 # Discover python modules and packages in the file system subtree.
 recursive=no
@@ -408,14 +408,8 @@ confidence=HIGH,
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=raw-checker-failed,
-        bad-inline-option,
-        locally-disabled,
-        file-ignored,
-        suppressed-message,
-        useless-suppression,
-        deprecated-pragma,
-        use-symbolic-message-instead
+disable=duplicate-code,
+        consider-using-from-import
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -502,9 +496,9 @@ min-similarity-lines=4
 # Limits count of emitted suggestions for spelling mistakes.
 max-spelling-suggestions=4
 
-# Spelling dictionary name. Available dictionaries: none. To make it work,
-# install the 'python-enchant' package.
-spelling-dict=
+# Spelling dictionary name. Available dictionaries: en_AU (hunspell), en_CA
+# (hunspell), en_GB (hunspell), en_US (hunspell), en_ZA (hunspell).
+spelling-dict=en_US
 
 # List of comma separated words that should be considered directives if they
 # appear at the beginning of a comment and should not be checked.
@@ -514,7 +508,7 @@ spelling-ignore-comment-directives=fmt: on,fmt: off,noqa:,noqa,nosec,isort:skip,
 spelling-ignore-words=
 
 # A path to a file that contains the private dictionary; one word per line.
-spelling-private-dict-file=
+spelling-private-dict-file=docs/source/spelling_wordlist.txt
 
 # Tells whether to store unknown words to the private dictionary (see the
 # --spelling-private-dict-file option) instead of raising a message.
@@ -542,7 +536,12 @@ contextmanager-decorators=contextlib.contextmanager
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E1101 when accessed. Python regular
 # expressions are accepted.
-generated-members=
+generated-members=numpy.*,
+                  torch.*
+
+# Tells whether missing members accessed in mixin class should be ignored. A
+# class is considered mixin if its name matches the mixin-class-rgx option.
+ignore-mixin-members=yes
 
 # Tells whether to warn about missing members when the owner of the attribute
 # is inferred to be None.

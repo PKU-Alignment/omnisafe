@@ -15,12 +15,12 @@
 
 import torch
 
+from omnisafe.algos import registry
 from omnisafe.algos.common.lagrange import Lagrange
 from omnisafe.algos.on_policy.trpo import TRPO
-from omnisafe.algos.registry import REGISTRY
 
 
-@REGISTRY.register
+@registry.register
 class TRPOLag(TRPO, Lagrange):
     def __init__(self, algo: str = 'trpo-lag', **cfgs):
         TRPO.__init__(self, algo=algo, **cfgs)

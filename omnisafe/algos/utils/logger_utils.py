@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """logger_utils"""
+
 import json
 
 
@@ -39,7 +39,6 @@ def is_json_serializable(value):
         return False
 
 
-# pylint: disable=R0911,R1705,C0325
 def convert_json(obj):
     """Convert obj to a version which can be serialized with JSON."""
     if is_json_serializable(obj):

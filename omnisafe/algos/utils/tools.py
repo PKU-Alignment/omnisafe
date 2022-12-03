@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """tool_function_packages"""
+
 import os
 from typing import Any
 
@@ -22,13 +22,10 @@ import torch
 import yaml
 
 
-# pylint: disable=E1101
-
-
 # def get_defaults_kwargs_yaml_on_policy(algo, env_id):
 #     """get_defaults_kwargs_yaml_on_policy"""
 #     path = os.path.abspath(__file__).split('/')[:-2]
-#     cfg_path = os.path.join('/', *path, 'configs/on_policy_cfgs', f'{algo}.yaml')
+#     cfg_path = os.path.join('/', *path, 'configs/on-policy', f'{algo}.yaml')
 #     with open(cfg_path, 'r', encoding='utf-8') as file:
 #         try:
 #             kwargs = yaml.load(file, Loader=yaml.FullLoader)
@@ -41,7 +38,7 @@ import yaml
 # def get_defaults_kwargs_yaml_off_policy(algo, env_id=None):
 #     """get_defaults_kwargs_yaml_off_policy"""
 #     path = os.path.abspath(__file__).split('/')[:-2]
-#     cfg_path = os.path.join('/', *path, 'configs/off_policy_cfgs', f'{algo}.yaml')
+#     cfg_path = os.path.join('/', *path, 'configs/off-policy', f'{algo}.yaml')
 #     with open(cfg_path, 'r', encoding='utf-8') as file:
 #         try:
 #             kwargs = yaml.load(file, Loader=yaml.FullLoader)
@@ -55,11 +52,11 @@ def get_default_kwargs_yaml(algo, env_id, algo_class):
     """get_default_kwargs_yaml"""
     path = os.path.abspath(__file__).split('/')[:-2]
     if algo_class == 1:
-        dir_name = 'on_policy_cfgs'
+        dir_name = 'on-policy'
     elif algo_class == 2:
-        dir_name = 'off_policy_cfgs'
+        dir_name = 'off-policy'
     elif algo_class == 3:
-        dir_name = 'model_based_cfgs'
+        dir_name = 'model-based'
 
     cfg_path = os.path.join('/', *path, 'configs', dir_name, f'{algo}.yaml')
     with open(cfg_path, 'r', encoding='utf-8') as file:
@@ -80,7 +77,6 @@ def get_flat_params_from(model):
             data = data.view(-1)  # flatten tensor
             flat_params.append(data)
     assert flat_params, 'No gradients were found in model parameters.'
-    # pylint: disable=E1101
     return torch.cat(flat_params)
 
 
@@ -96,19 +92,17 @@ def get_flat_gradients_from(model):
     return torch.cat(grads)
 
 
-# pylint: disable=R0914,C0103
-def conjugate_gradients(Avp, b_vector, nsteps, residual_tol=1e-10, eps=1e-6):
+def conjugate_gradients(Avp, b_vector, num_steps, residual_tol=1e-10, eps=1e-6):
     """
     Conjugate gradient algorithm
     (see https://en.wikipedia.org/wiki/Conjugate_gradient_method)
 
-    nsteps: (int): Number of iterations of conjugate gradient to perform.
-            Increasing this will lead to a more accurate approximation
-            to :math:`H^{-1} g`, and possibly slightly-improved performance,
-            but at the cost of slowing things down.
-            Also probably don't play with this hyperparameter.
+    num_steps: (int): Number of iterations of conjugate gradient to perform.
+        Increasing this will lead to a more accurate approximation
+        to :math:`H^{-1} g`, and possibly slightly-improved performance,
+        but at the cost of slowing things down.
+        Also probably don't play with this hyperparameter.
     """
-    # pylint disable=E1101
     x = torch.zeros_like(b_vector)
     r = b_vector - Avp(x)
     p = r.clone()
@@ -117,7 +111,7 @@ def conjugate_gradients(Avp, b_vector, nsteps, residual_tol=1e-10, eps=1e-6):
     fmtstr = '%10i %10.3g %10.3g'
     verbose = False
 
-    for i in range(nsteps):
+    for i in range(num_steps):
         if verbose:
             print(fmtstr % (i, rdotr, np.linalg.norm(x)))
         z = Avp(p)

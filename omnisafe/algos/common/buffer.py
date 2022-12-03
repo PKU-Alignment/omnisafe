@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Buffer"""
+
 import numpy as np
 import torch
 
-import omnisafe.algos.utils.distributed_tools as distributed_tools
+from omnisafe.algos.utils import distributed_utils
 from omnisafe.algos.utils.core import combined_shape, discount_cumsum
 from omnisafe.algos.utils.vtrace import calculate_v_trace
 
 
 class Buffer:
-    """Buffer API"""
+    """Buffer API."""
 
     def __init__(
         self,
@@ -214,7 +214,7 @@ class Buffer:
         if self.use_standardized_reward:
             # the next two lines implement the advantage normalization trick
             # adv_mean, adv_std = np.mean(self.adv_buf), np.std(self.adv_buf)
-            adv_mean, adv_std = distributed_tools.mpi_statistics_scalar(self.adv_buf)
+            adv_mean, adv_std = distributed_utils.mpi_statistics_scalar(self.adv_buf)
             self.adv_buf = (self.adv_buf - adv_mean) / (adv_std + 1.0e-8)
             # also for cost advantages; only re-center but no rescale!
             # cadv_mean, cadv_std = mpi_tools.mpi_statistics_scalar(self.cost_adv_buf)
@@ -222,7 +222,7 @@ class Buffer:
 
         if self.use_standardized_cost:
             # also for cost advantages; only re-center but no rescale!
-            cadv_mean, cadv_std = distributed_tools.mpi_statistics_scalar(self.cost_adv_buf)
+            cadv_mean, cadv_std = distributed_utils.mpi_statistics_scalar(self.cost_adv_buf)
             self.cost_adv_buf = (self.cost_adv_buf - cadv_mean) / (cadv_std + 1.0e-8)
         # TODO
         # self.obs_buf = self.actor_critic.obs_oms(self.obs_buf, clip=False) \
