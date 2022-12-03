@@ -1,4 +1,5 @@
 * text eol=lf
+*.bat eol=crlf
 *.ipynb linguist-detectable=false
 
 *.png binary
