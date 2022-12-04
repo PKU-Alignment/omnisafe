@@ -21,9 +21,7 @@ import safety_gymnasium
 from gymnasium.utils.save_video import save_video
 
 
-WORKDIR = os.path.abspath('.')
-DIR = os.path.join(WORKDIR, 'omnisafe/envs/safety-gymnasium/examples', 'cached_test_vision_video')
-
+DIR = os.path.join(os.path.dirname(__file__), 'cached_test_vision_video')
 
 def run_random(env_name):
     env = safety_gymnasium.make(env_name)
