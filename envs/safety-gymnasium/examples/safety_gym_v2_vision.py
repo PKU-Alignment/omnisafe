@@ -23,6 +23,7 @@ from gymnasium.utils.save_video import save_video
 
 DIR = os.path.join(os.path.dirname(__file__), 'cached_test_vision_video')
 
+
 def run_random(env_name):
     env = safety_gymnasium.make(env_name)
     # env.seed(0)
