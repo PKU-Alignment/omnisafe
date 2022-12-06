@@ -52,7 +52,7 @@ In the previous chapters, we introduced that TRPO solves the following optimizat
 
 .. math::
     :nowrap:
-
+    
     \begin{eqnarray}
         &&\pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
         \text{s.t.}\quad&&D(\pi,\pi_k)\le\delta\tag{1}
@@ -86,6 +86,8 @@ Policy Performance Bounds
 CPO presents the theoretical foundation for its approach, a new bound on the difference in returns between two arbitrary policies.
 The following :bdg-info-line:`Theorem 1` connects the difference in returns (or constraint costs) between two arbitrary policies to an average divergence between them.
 
+.. _cpo-eq-3:
+
 .. _Theorem 1:
 
 .. card::
@@ -96,11 +98,12 @@ The following :bdg-info-line:`Theorem 1` connects the difference in returns (or 
     :link-type: ref
 
     Theorem 1 (Difference between two arbitrary policies)
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^
     **For any function** :math:`f : S \rightarrow \mathbb{R}` and any policies :math:`\pi` and :math:`\pi'`, define :math:`\delta_f(s,a,s') \doteq R(s,a,s') + \gamma f(s')-f(s)`,
 
     .. math::
         :nowrap:
+        :label: cpo-eq-3 cpo-eq-4 cpo-eq-5
 
         \begin{eqnarray}
             \epsilon_f^{\pi'} &\doteq& \max_s \left|\mathbb{E}_{a\sim\pi'~,s'\sim P }\left[\delta_f(s,a,s')\right] \right|\tag{3}\\
@@ -109,12 +112,12 @@ The following :bdg-info-line:`Theorem 1` connects the difference in returns (or 
         \end{eqnarray}
 
     where :math:`D_{T V}\left(\pi'|| \pi\right)[s]=\frac{1}{2} \sum_a\left|\pi'(a|s)-\pi(a|s)\right|` is the total variational divergence between action distributions at :math:`s`.
-    The conclusion is as follows:
+    The conclusion is as follows: :ref:`(11) <cpo-eq-3>`
 
     .. math:: D_{\pi, f}^{+}\left(\pi'\right) \geq J\left(\pi'\right)-J(\pi) \geq D_{\pi, f}^{-}\left(\pi'\right)\tag{6}
 
     Furthermore, the bounds are tight (when :math:`\pi=\pi^{\prime}`, all three expressions are identically zero).
-
+    +++
     The proof of the :bdg-info-line:`Theorem 1`` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
 By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-line:`Corollary 2`, :bdg-info-line:`Corollary 3` below:
@@ -133,7 +136,7 @@ By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-
             :class-footer: sd-font-weight-bold
 
             Corollary 1
-            ^^^^^^^^^^^
+            ^^^
             For any policies :math:`\pi'`, :math:`\pi`, with :math:`\epsilon_{\pi'}=\max _s|\mathbb{E}_{a \sim \pi'}[A_\pi(s, a)]|`, the following bound holds:
 
             .. math:: J^R\left(\pi^{\prime}\right)-J^R(\pi) \geq \frac{1}{1-\gamma} \mathbb{E}_{s \sim d^\pi\,a \sim \pi'}\left[A^R_\pi(s, a)-\frac{2 \gamma \epsilon_{\pi'}}{1-\gamma} D_{T V}\left(\pi' \| \pi\right)[s]\right]\tag{7}
@@ -146,7 +149,7 @@ By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-
             :class-footer: sd-font-weight-bold
 
             Corollary 2
-            ^^^^^^^^^^^
+            ^^^
             For any policies :math:`\pi'` and :math:`\pi`,
             with :math:`\epsilon^{C_i}_{\pi'}=\max _s|E_{a \sim \pi^{\prime}}[A^{C_i}_\pi(s, a)]|`
 
@@ -162,7 +165,7 @@ By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-
             :class-footer: sd-font-weight-bold
 
             Corollary 3
-            ^^^^^^^^^^^
+            ^^^
             Trust region methods prefer to constrain the KL-divergence between policies, so CPO use Pinsker's inequality to connect the :math:`D_{TV}` with :math:`D_{KL}`
 
             .. math:: D_{TV}(p \| q) \leq \sqrt{D_{KL}(p \| q) / 2}\tag{9}
@@ -181,8 +184,11 @@ Trust Region Methods
 
 For parameterized stationary policy, trust region algorithms for reinforcement learning have policy updates of the following form:
 
+.. _cpo-eq-11:
+
 .. math::
     :nowrap:
+    :label: cpo-eq-11
 
     \begin{eqnarray}
         &&\boldsymbol{\theta}_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\boldsymbol{\theta}_k}(s, a)]\\
@@ -194,6 +200,8 @@ where :math:`\bar{D}_{K L}(\pi \| \pi_k)=\mathbb{E}_{s \sim \pi_k}[D_{K L}(\pi \
 The set :math:`\left\{\pi_{\boldsymbol{\theta}} \in \Pi_{\boldsymbol{\theta}}: \bar{D}_{K L}\left(\pi \| \pi'\right) \leq \delta\right\}` is called trust region.
 The success motivation for this update is that,
 it approximates optimizing the lower bound on policy performance given in :bdg-info-line:`Corollary 1`, which would guarantee monotonic performance improvements.
+
+.. _cpo-eq-12:
 
 .. math::
     :nowrap:
@@ -224,8 +232,8 @@ Here we will introduce the propositions proposed by the CPO, one describes the w
             :class-footer: sd-font-weight-bold
 
             Trust Region Update Performance
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            Suppose :math:`\pi_k, \pi_{k+1}` are related by :math:`(11)`, and that :math:`\pi_k \in \Pi_{\boldsymbol{\theta}}`.
+            ^^^
+            Suppose :math:`\pi_k, \pi_{k+1}` are related by :ref:`(11) <cpo-eq-11>`, and that :math:`\pi_k \in \Pi_{\boldsymbol{\theta}}`.
             A lower bound on the policy performance difference between :math:`\pi_k` and :math:`\pi_{k+1}` is:
 
             .. math::
@@ -244,8 +252,8 @@ Here we will introduce the propositions proposed by the CPO, one describes the w
             :class-footer: sd-font-weight-bold
 
             CPO Update Worst-Case Constraint Violation
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            Suppose :math:`\pi_k, \pi_{k+1}` are related by :math:`(11)`, and that :math:`\pi_k \in \Pi_{\boldsymbol{\theta}}`.
+            ^^^
+            Suppose :math:`\pi_k, \pi_{k+1}` are related by :ref:`(11) <cpo-eq-11>`, and that :math:`\pi_k \in \Pi_{\boldsymbol{\theta}}`.
             An upper bound on the :math:`C_i`-return of :math:`\pi_{k+1}` is:
 
             .. math::
@@ -280,8 +288,8 @@ Practical Implementation
         :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
 
         Overview
-        ^^^^^^^^
-        In this section, we show how CPO implements an approximation to the update :math:`(12)` that can be efficiently computed, even when optimizing policies with thousands of parameters.
+        ^^^
+        In this section, we show how CPO implements an approximation to the update :ref:`(12) <cpo-eq-12>` that can be efficiently computed, even when optimizing policies with thousands of parameters.
         To address the issue of approximation and sampling errors that arise in practice and the potential violations described by Proposition 2, CPO proposes to tighten the constraints by constraining the upper bounds of the extra costs instead of the extra costs themselves.
 
     .. grid-item-card::
@@ -291,7 +299,7 @@ Practical Implementation
         :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
 
         Navigation
-        ^^^^^^^^^^
+        ^^^
         Approximately Solving the CPO Update
 
         :bdg-ref-success-line:`Click here<Approximately_Solving_the_CPO_Update>`
@@ -317,12 +325,14 @@ Practical Implementation
 Approximately Solving the CPO Update
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For policies with high-dimensional parameter spaces like neural networks, :math:`(12)` can be impractical to solve directly because of the computational cost.
+For policies with high-dimensional parameter spaces like neural networks, :ref:`(12) <cpo-eq-12>` can be impractical to solve directly because of the computational cost.
 
 .. hint::
     However, for small step sizes :math:`\delta`, the objective and cost constraints are well-approximated by linearizing around :math:`\pi_k`, and the KL-Divergence constraint is well-approximated by second-order expansion.
 
-Denoting the gradient of the objective as :math:`g`, the gradient of constraint :math:`i` as :math:`b_i`, the Hessian of the KL-divergence as :math:`H`, and defining :math:`c_i=J^{C_i}\left(\pi_k\right)-d_i`, the approximation to :math:`(12)` is:
+Denoting the gradient of the objective as :math:`g`, the gradient of constraint :math:`i` as :math:`b_i`, the Hessian of the KL-divergence as :math:`H`, and defining :math:`c_i=J^{C_i}\left(\pi_k\right)-d_i`, the approximation to :ref:`(12) <cpo-eq-12>` is:
+
+.. _cpo-eq-13:
 
 .. math::
     :nowrap:
@@ -333,19 +343,26 @@ Denoting the gradient of the objective as :math:`g`, the gradient of constraint 
         &&\frac{1}{2}\left(\boldsymbol{\theta}-\boldsymbol{\theta}_k\right)^T H\left(\boldsymbol{\theta}-\boldsymbol{\theta}_k\right) \leq \delta
     \end{eqnarray}
 
-With :math:`B=\left[b_1, \ldots, b_m\right]` and :math:`c=\left[c_1, \ldots, c_m\right]^T`, a dual to :math:`(13)` can be express as:
+With :math:`B=\left[b_1, \ldots, b_m\right]` and :math:`c=\left[c_1, \ldots, c_m\right]^T`, a dual to :ref:`(13) <cpo-eq-13>` can be express as:
 
 .. math:: \max_{\lambda \geq 0, \nu \geq 0} \frac{-1}{2 \lambda}\left(g^T H^{-1} g-2 r^T v+v^T S v\right)+v^T c-\frac{\lambda \delta}{2}
 
 where :math:`r=g^T H^{-1} B, S=B^T H^{-1} B`. If :math:`\lambda^*, v^*` are a solution to the dual, the solution to the primal is
 
-.. math:: {\boldsymbol{\theta}}^*={\boldsymbol{\theta}}_k+\frac{1}{\lambda^*} H^{-1}\left(g-B v^*\right)\tag{14}
+.. _cpo-eq-14:
 
-In a word, CPO solves the dual for :math:`\lambda^*, \nu^*` and uses it to propose the policy update :math:`(14)`, thus solving :math:`(12)` in a particular way.
+.. math::
+    :nowrap:
+
+    \begin{eqnarray}
+        {\boldsymbol{\theta}}^*={\boldsymbol{\theta}}_k+\frac{1}{\lambda^*} H^{-1}\left(g-B v^*\right)\tag{14}
+    \end{eqnarray}
+    
+In a word, CPO solves the dual for :math:`\lambda^*, \nu^*` and uses it to propose the policy update :ref:`(14) <cpo-eq-14>`, thus solving :ref:`(12) <cpo-eq-12>` in a particular way.
 In the experiment, CPO also uses two tricks to promise the update's performance.
 
 .. warning::
-    Because of the approximation error, the proposed update may not satisfy the constraints in :math:`(12)`; a backtracking line search is used to ensure surrogate constraint satisfaction.
+    Because of the approximation error, the proposed update may not satisfy the constraints in :ref:`(12) <cpo-eq-12>`; a backtracking line search is used to ensure surrogate constraint satisfaction.
 
 For high-dimensional policies, it is impractically expensive to invert the FIM.
 This poses a challenge for computing :math:`\mathrm{H}^{-1} \mathrm{~g}` and :math:`H^{-1} b`, which appear in the dual.
@@ -455,7 +472,7 @@ Quick start
             We use ``train_on_policy.py`` as the entrance file. You can train the agent with CPO simply using ``train_on_policy.py``, with arguments about CPO and enviroments does the training.
             For example, to run CPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
 
-            .. code-block:: guess
+            .. code-block:: bash
                 :linenos:
 
                 cd omnisafe/examples
@@ -470,22 +487,22 @@ Here are the documentation of CPO in PyTorch version.
 Architecture of functions
 """""""""""""""""""""""""
 
--  ``cpo.learn()``
+- ``cpo.learn()``
 
-    -  ``env.roll_out()``
-    -  ``cpo.update()``
+  - ``env.roll_out()``
+  - ``cpo.update()``
 
-        -  ``cpo.buf.get()``
-        -  ``cpo.update_policy_net()``
+    - ``cpo.buf.get()``
+    - ``cpo.update_policy_net()``
 
-            -  ``Fvp()``
-            -  ``conjugate_gradients()``
-            -  ``search_step_size()``
+      - ``Fvp()``
+      - ``conjugate_gradients()``
+      - ``search_step_size()``
 
-        -  ``cpo.update_cost_net()``
-        -  ``cpo.update_value_net()``
+    - ``cpo.update_cost_net()``
+    - ``cpo.update_value_net()``
 
-    -  ``cpo.log()``
+- ``cpo.log()``
 
 ------
 
@@ -500,7 +517,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         env.roll_out()
-        ^^^^^^^^^^^^^^
+        ^^^
         Collect data and store to experience buffer.
 
     .. card::
@@ -509,7 +526,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         cpo.update()
-        ^^^^^^^^^^^^
+        ^^^
         Update actor, critic, running statistics
 
     .. card::
@@ -518,7 +535,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         cpo.buf.get()
-        ^^^^^^^^^^^^^
+        ^^^
         Call this at the end of an epoch to get all of the data from the buffer
 
     .. card::
@@ -527,7 +544,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         cpo.update_value_net()
-        ^^^^^^^^^^^^^^^^^^^^^^
+        ^^^
         Update Critic network for estimating reward.
 
     .. card::
@@ -536,7 +553,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         cpo.update_cost_net()
-        ^^^^^^^^^^^^^^^^^^^^^
+        ^^^
         Update Critic network for estimating cost.
 
     .. card::
@@ -545,7 +562,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         cpo.log()
-        ^^^^^^^^^
+        ^^^
         Get the trainning log and show the performance of the algorithm
 
 Documentation of new functions
@@ -561,7 +578,7 @@ Documentation of new functions
             :class-footer: sd-font-weight-bold
 
             cpo.update_policy_net()
-            ^^^^^^^^^^^^^^^^^^^^^^^
+            ^^^
             Update the policy network, flowing the next steps:
 
             (1) Get the policy reward performance gradient g (flat as vector)
@@ -630,7 +647,7 @@ Documentation of new functions
             :class-footer: sd-font-weight-bold
 
             cpo.search_step_size()
-            ^^^^^^^^^^^^^^^^^^^^^^
+            ^^^
             CPO algorithm performs line-search to ensure constraint satisfaction for rewards and costs, flowing the next steps:
 
             (1) Calculate the expected reward improvement.
@@ -701,7 +718,7 @@ Parameters
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
-            ^^^^^^^^^^^^^^^^^^^
+            ^^^
             -  target_kl(float): Constraint for KL-distance to avoid too far gap
             -  cg_damping(float): parameter plays a role in building Hessian-vector
             -  cg_iters(int): Number of iterations of conjugate gradient to perform.
@@ -715,7 +732,7 @@ Parameters
             :class-footer: sd-font-weight-bold
 
             Basic parameters
-            ^^^^^^^^^^^^^^^^
+            ^^^
             -  algo (string): The name of algorithm corresponding to current class,
                it does not actually affect any things which happen in the following.
             -  actor (string): The type of network in actor, discrete or continuous.
@@ -769,7 +786,7 @@ Parameters
             :class-footer: sd-font-weight-bold
 
             Optional parameters
-            ^^^^^^^^^^^^^^^^^^^
+            ^^^
             -  use_cost_critic (bool): Use cost value function or not.
             -  linear_lr_decay (bool): Use linear learning rate decay or not.
             -  exploration_noise_anneal (bool): Use exploration noise anneal or not.
@@ -786,7 +803,7 @@ Parameters
             :class-footer: sd-font-weight-bold
 
             Buffer parameters
-            ^^^^^^^^^^^^^^^^^
+            ^^^
             .. hint::
                   ============= =============================================================================
                      Name                    Description
@@ -877,7 +894,14 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
     \end{array}\right]
     \end{aligned}
 
-.. math:: d_\pi=(1-\gamma) \sum_{t=0}^{\infty} \gamma^t p_\pi^t=(1-\gamma)\left(1-\gamma P_\pi\right)^{-1} \mu\tag{17}
+.. _cpo-eq-17:
+
+.. math::
+    :nowrap:
+
+    \begin{eqnarray} 
+        d_\pi=(1-\gamma) \sum_{t=0}^{\infty} \gamma^t p_\pi^t=(1-\gamma)\left(1-\gamma P_\pi\right)^{-1} \mu\tag{17}
+    \end{eqnarray}
 
 .. tab-set::
 
@@ -889,7 +913,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
             :class-footer: sd-font-weight-bold
 
             Lemma 1
-            ^^^^^^^
+            ^^^
             For any function :math:`f: S \rightarrow \mathbb{R}` and any policy :math:`\pi` :
 
             .. math:: (1-\gamma) E_{s \sim \mu}[f(s)]+E_{\tau \sim \pi}\left[\gamma f\left(s'\right)\right]-E_{s \sim d_\pi}[f(s)]=0
@@ -905,7 +929,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
             :class-footer: sd-font-weight-bold
 
             Lemma 2
-            ^^^^^^^
+            ^^^
             For any function :math:`f: S \rightarrow \mathbb{R}` and any policies
             :math:`\pi` and :math:`\pi'`, define
 
@@ -931,7 +955,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
             :class-footer: sd-font-weight-bold
 
             Lemma 3
-            ^^^^^^^
+            ^^^
             The divergence between discounted future state visitation
             distributions, :math:`\Vert d_{\pi'}-d_\pi\Vert_1`, is bounded by an
             average divergence of the policies :math:`\pi` and :math:`\pi` :
@@ -952,7 +976,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
             :class-footer: sd-font-weight-bold
 
             Corollary 4
-            ^^^^^^^^^^^
+            ^^^
             Define the matrices
             :math:`G \doteq\left(I-\gamma P_\pi\right)^{-1}, \bar{G} \doteq\left(I-\gamma P_{\pi^{\prime}}\right)^{-1}`,
             and :math:`\Delta=P_{\pi^{\prime}}-P_\pi`. Then:
@@ -966,7 +990,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
                \bar{G}-G &=\gamma \bar{G} \Delta G
                \end{aligned}
 
-            Thus, with :math:`(17)`
+            Thus, with :ref:`(17) <cpo-eq-17>`
 
             .. math::
               :nowrap:
@@ -985,10 +1009,12 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
             :class-footer: sd-font-weight-bold
 
             Corollary 5
-            ^^^^^^^^^^^
+            ^^^
             .. math:: \left\|P_{\pi^{\prime}}\right\|_1=\max _{s \in \mathcal{S}}\left\{\sum_{s^{\prime} \in \mathcal{S}} P_\pi\left(s^{\prime} \mid s\right)\right\}=1
 
 Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by :bdg-info-line:`Lemma 3`, :bdg-info-line:`Theorem 1` can be finally proved.
+
+.. _cpo-eq-18:
 
 .. tab-set::
 
@@ -1000,8 +1026,8 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
             :class-footer: sd-font-weight-bold
 
             Proof
-            ^^^^^
-            Multiply both sides of :math:`(17)` by :math:`\left(I-\gamma P_\pi\right)`, we get:
+            ^^^
+            Multiply both sides of :ref:`(17) <cpo-eq-17>` by :math:`\left(I-\gamma P_\pi\right)`, we get:
 
             .. math:: \left(I-\gamma P_\pi\right) d_\pi=(1-\gamma) \mu
 
@@ -1049,17 +1075,18 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
             :class-footer: sd-font-weight-bold
 
             Proof
-            ^^^^^
+            ^^^
             note that the objective function can be represented as:
 
             .. math::
+                :nowrap:
 
                 \begin{eqnarray}
                     J(\pi)&=&\frac{1}{1-\gamma} \mathbb{E}_{\tau \sim \pi}\left[R\left(s, a, s^{\prime}\right)\right]\tag{18}  \\
                     &=&\mathbb{E}_{s \sim \mu}[f(s)]+\frac{1}{1-\gamma} \mathbb{E}_{\tau \sim \pi}\left[R\left(s, a, s^{\prime}\right)+\gamma f\left(s^{\prime}\right)-f(s)\right]
                 \end{eqnarray}
 
-            Let :math:`\delta_f\left(s, a, s^{\prime}\right)\doteq R\left(s, a, s^{\prime}\right)+\gamma f\left(s^{\prime}\right)-f(s)`, then by :math:`(18)`, we easily obtain that:
+            Let :math:`\delta_f\left(s, a, s^{\prime}\right)\doteq R\left(s, a, s^{\prime}\right)+\gamma f\left(s^{\prime}\right)-f(s)`, then by :ref:`(18) <cpo-eq-18>`, we easily obtain that:
 
             .. math:: J\left(\pi'\right)-J(\pi)=\frac{1}{1-\gamma}\left\{\mathbb{E}_{\tau \sim \pi^{\prime}}\left[\delta_f\left(s, a, s^{\prime}\right)\right]-\mathbb{E}_{\tau \sim \pi}\left[\delta_f\left(s, a, s^{\prime}\right]\right\}\right.
 
@@ -1079,7 +1106,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
 
             .. note::
 
-               **Hölder's inequality**:
+                **Hölder's inequality**:
 
                 Let :math:`(\mathcal{S}, \sum, \mu)` be a measure space and let :math:`p, q \in [1, \infty]` with :math:`\frac{1}{p} + \frac{1}{q} = 1`. Then for all measurable real- or complex-valued function :math:`f` and :math:`g` on :math:`s`, :math:`\|f g\|_1 \leq\|f\|_p\|g\|_q`.
 
@@ -1129,7 +1156,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
             :class-footer: sd-font-weight-bold
 
             Proof
-            ^^^^^
+            ^^^
             First, using Corollary 4, we obtain
 
             .. math::
@@ -1165,7 +1192,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
 
                 :math:`\Vert d_{\pi'}-d_\pi \Vert_1=\sum_{a \in \mathcal{A}}\left|d_{\pi_{{\boldsymbol{\theta}}^{\prime}}}(a|s)-d_{\pi_{\boldsymbol{\theta}}}(a|s)\right|=2 D_{\mathrm{TV}}\left(d_{\pi_{{\boldsymbol{\theta}}'}}, d_\pi\right)[s]`
 
-            Finally, using :math:`(20)`, we obtain,
+            Finally, using :ref:`(20) <cpo-eq-18>`, we obtain,
 
             .. math::
 
@@ -1184,7 +1211,7 @@ Proof of Analytical Solution to LQCLP
     :class-footer: sd-font-weight-bold
 
     Theorem 2 (Optimizing Linear Objective with Linear, Quadratic Constraints)
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^
     Consider the problem
 
     .. math::
@@ -1267,7 +1294,7 @@ Proof of Analytical Solution to LQCLP
         &=-\frac{1}{2 \lambda}\left(q+2 \nu r+\nu^2 s\right)
         \end{aligned}
 
-   .. math::
+    .. math::
 
         \begin{aligned}
             p^*
