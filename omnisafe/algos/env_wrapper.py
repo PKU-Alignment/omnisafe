@@ -21,7 +21,7 @@ import torch
 class EnvWrapper:
     """env_wrapper"""
 
-    def __init__(self, env_id, render_mode='none'):
+    def __init__(self, env_id, render_mode=None):
         # check env_id is str
         self.env = safety_gymnasium.make(
             env_id, render_mode=render_mode
