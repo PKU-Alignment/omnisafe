@@ -1221,7 +1221,7 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
         For the KL divergence projection (:math:`\boldsymbol{L}=\boldsymbol{H}`), :ref:`(29) <pcpo-eq-29>` boils down to :math:`g\in-a`, and for the :math:`L2` norm projection (:math:`\boldsymbol{L}=\boldsymbol{I}`), :ref:`(29) <pcpo-eq-29>` is equivalent to :math:`\boldsymbol{H}^{-1}g\in-a`.
 
         Now we prove the second part of the theorem. Based on :bdg-info-line:`Lemma 3`, for the KL divergence projection, we have
-        
+
         .. _`pcpo-eq-30`:
 
         .. math::

@@ -42,7 +42,7 @@ Background
             -  Approximation errors resulting from Taylor approximations.
 
             -  Approximation errors result from using the conjugate method to calculate the inverse of the Fisher information matrix.
-            
+
     .. grid-item::
         :columns: 12 6 6 6
 
@@ -323,7 +323,7 @@ By applying gradient descent w.r.t :math:`\nu` to minimize :math:`L(\pi^*,\lambd
     The derivative of :math:`L(\pi^*,\lambda,\nu)` w.r.t :math:`\nu` is
 
     .. _`focops-eq-12`:
-    
+
     .. math::
         :nowrap:
 
@@ -975,9 +975,9 @@ Proof of Corollary
                 \end{eqnarray}
 
             Therefore the derivative of the expectation in the last term of :math:`L(\pi^*,\lambda,\nu)` can be written as:
-            
+
             .. _`focops-eq-22`:
-            
+
             .. math::
                 :nowrap:
 
@@ -1011,9 +1011,9 @@ Proof of Corollary
             .. math:: \frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}=\frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu} \frac{1}{Z_{\lambda, \nu}(s)}=-\frac{1}{\lambda} \underset{a \sim \pi^*(\cdot \mid s)}{\mathbb{E}}\left[A^C_{\pi_{\theta_k}}(s, a)\right]\tag{24}
 
             Plugging :ref:`(24) <focops-eq-24>`  into the last equality in :ref:`(22) <focops-eq-22>`  gives us:
-           
+
             .. _`focops-eq-25`:
-           
+
             .. math::
                 :nowrap:
 

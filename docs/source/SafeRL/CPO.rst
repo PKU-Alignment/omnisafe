@@ -52,7 +52,7 @@ In the previous chapters, we introduced that TRPO solves the following optimizat
 
 .. math::
     :nowrap:
-    
+
     \begin{eqnarray}
         &&\pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
         \text{s.t.}\quad&&D(\pi,\pi_k)\le\delta\tag{1}
@@ -357,7 +357,7 @@ where :math:`r=g^T H^{-1} B, S=B^T H^{-1} B`. If :math:`\lambda^*, v^*` are a so
     \begin{eqnarray}
         {\boldsymbol{\theta}}^*={\boldsymbol{\theta}}_k+\frac{1}{\lambda^*} H^{-1}\left(g-B v^*\right)\tag{14}
     \end{eqnarray}
-    
+
 In a word, CPO solves the dual for :math:`\lambda^*, \nu^*` and uses it to propose the policy update :ref:`(14) <cpo-eq-14>`, thus solving :ref:`(12) <cpo-eq-12>` in a particular way.
 In the experiment, CPO also uses two tricks to promise the update's performance.
 
@@ -899,7 +899,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
 .. math::
     :nowrap:
 
-    \begin{eqnarray} 
+    \begin{eqnarray}
         d_\pi=(1-\gamma) \sum_{t=0}^{\infty} \gamma^t p_\pi^t=(1-\gamma)\left(1-\gamma P_\pi\right)^{-1} \mu\tag{17}
     \end{eqnarray}
 
