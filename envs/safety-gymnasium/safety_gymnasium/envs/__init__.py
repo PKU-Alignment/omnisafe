@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Register environments."""
 
 from copy import deepcopy
 
@@ -175,3 +176,4 @@ bench_goal_base = SafexpEnvBase('Goal', goal)
 bench_goal_base.register('0', {})
 bench_goal_base.register('1', {})
 bench_goal_base.register('2', {})
+bench_goal_base.register('3', {})

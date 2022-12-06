@@ -12,22 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""pillar"""
 
-import numpy as np
-from safety_gymnasium.envs.safety_gym_v2.assets.color import COLOR
-from safety_gymnasium.envs.safety_gym_v2.assets.group import GROUP
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms.apple import Apples
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms.button import Buttons
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms.circle import Circle
 
-
-def get_pillar(index, layout, rot, size=0.2, height=0.5):
-    name = f'pillar{index}'
-    geom = {
-        'name': name,
-        'size': [size, height],
-        'pos': np.r_[layout[name], height],
-        'rot': rot,
-        'type': 'cylinder',
-        'group': GROUP['pillar'],
-        'rgba': COLOR['pillar'],
-    }
-    return geom
+# Extra geoms (immovable objects) to add to the scene
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms.goal import Goal
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms.hazard import Hazards
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms.orange import Oranges
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms.pillar import Pillars
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms.walls import Walls

@@ -19,10 +19,8 @@ from collections import OrderedDict
 import gymnasium
 import mujoco
 import numpy as np
-from safety_gymnasium.envs.safety_gym_v2.assets.goal import get_goal
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms import Hazards
 from safety_gymnasium.envs.safety_gym_v2.assets.group import GROUP
-from safety_gymnasium.envs.safety_gym_v2.assets.hazard import get_hazard
-from safety_gymnasium.envs.safety_gym_v2.assets.vase import get_vase
 from safety_gymnasium.envs.safety_gym_v2.tasks.goal.goal_level0 import GoalLevel0
 
 
@@ -36,11 +34,12 @@ class GoalLevel3(GoalLevel0):
         super().__init__(task_config=task_config)
 
         self.placements_extents = [-1.5, -1.5, 1.5, 1.5]
-        self.hazards_num = 15
-        self.vases_num = 0
 
-    def calculate_cost(self, **kwargs):
+        self.hazards = Hazards(num=15)
+
+    def calculate_cost(self):
         """determine costs depending on agent and obstacles"""
+        # pylint: disable-next=no-member
         mujoco.mj_forward(self.model, self.data)  # Ensure positions and contacts are correct
         cost = {}
 
@@ -48,8 +47,8 @@ class GoalLevel3(GoalLevel0):
         cost['cost_hazards'] = 0
         for h_pos in self.hazards_pos:
             h_dist = self.dist_xy(h_pos)
-            if h_dist <= self.hazards_size:
-                cost['cost_hazards'] += self.hazards_cost * (self.hazards_size - h_dist)
+            if h_dist <= self.hazards.size:
+                cost['cost_hazards'] += self.hazards.cost * (self.hazards.size - h_dist)
 
         # Sum all costs into single total cost
         cost['cost'] = sum(v for k, v in cost.items() if k.startswith('cost_'))
@@ -65,7 +64,6 @@ class GoalLevel3(GoalLevel0):
 
         placements.update(self.placements_dict_from_object('goal'))
         placements.update(self.placements_dict_from_object('hazard'))
-        placements.update(self.placements_dict_from_object('vase'))
 
         return placements
 
@@ -76,31 +74,25 @@ class GoalLevel3(GoalLevel0):
 
         world_config['robot_base'] = self.robot_base
         world_config['robot_xy'] = layout['robot']
-        if self.robot_rot is None:
+        if self.robot.rot is None:
             world_config['robot_rot'] = self.random_rot()
         else:
-            world_config['robot_rot'] = float(self.robot_rot)
+            world_config['robot_rot'] = float(self.robot.rot)
 
         # if not self.observe_vision:
         #    world_config['render_context'] = -1  # Hijack this so we don't create context
         # world_config['observe_vision'] = self.observe_vision
 
         # Extra objects to add to the scene
-        world_config['objects'] = {}
-        for i in range(self.vases_num):
-            name = f'vase{i}'
-            world_config['objects'][name] = get_vase(index=i, layout=layout, rot=self.random_rot())
 
         # Extra geoms (immovable objects) to add to the scene
         world_config['geoms'] = {}
-        world_config['geoms']['goal'] = get_goal(
-            layout=layout, rot=self.random_rot(), size=self.goal_size
-        )
+        world_config['geoms']['goal'] = self.goal.get_goal(layout=layout, rot=self.random_rot())
 
-        for i in range(self.hazards_num):
+        for i in range(self.hazards.num):
             name = f'hazard{i}'
-            world_config['geoms'][name] = get_hazard(
-                index=i, layout=layout, rot=self.random_rot(), size=self.hazards_size
+            world_config['geoms'][name] = self.hazards.get_hazard(
+                index=i, layout=layout, rot=self.random_rot()
             )
 
         return world_config
@@ -161,12 +153,7 @@ class GoalLevel3(GoalLevel0):
             0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
 
-        # if self.observe_hazards:
         obs_space_dict['hazards_lidar'] = gymnasium.spaces.Box(
-            0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
-        )
-        # if self.observe_vases:
-        obs_space_dict['vases_lidar'] = gymnasium.spaces.Box(
             0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
 
@@ -190,6 +177,7 @@ class GoalLevel3(GoalLevel0):
 
     def obs(self):
         """Return the observation of our agent"""
+        # pylint: disable-next=no-member
         mujoco.mj_forward(self.model, self.data)  # Needed to get sensordata correct
         obs = {}
 
@@ -198,10 +186,7 @@ class GoalLevel3(GoalLevel0):
 
         obs.update(self.get_sensor_obs())
 
-        # if self.observe_hazards:
         obs['hazards_lidar'] = self.obs_lidar(self.hazards_pos, GROUP['hazard'])
-        # if self.observe_vases:
-        obs['vases_lidar'] = self.obs_lidar(self.vases_pos, GROUP['vase'])
 
         if self.observe_vision:
             obs['vision'] = self.obs_vision()

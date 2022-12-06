@@ -24,8 +24,8 @@ from gymnasium import spaces
 from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen, Viewer
 from safety_gymnasium.envs.safety_gym_v2.assets.color import COLOR
 from safety_gymnasium.envs.safety_gym_v2.assets.group import GROUP
+from safety_gymnasium.envs.safety_gym_v2.assets.robot import Robot
 from safety_gymnasium.envs.safety_gym_v2.common import MujocoException, ResamplingError
-from safety_gymnasium.envs.safety_gym_v2.robot import Robot
 from safety_gymnasium.envs.safety_gym_v2.world import World
 
 
@@ -35,7 +35,7 @@ ORIGIN_COORDINATES = np.zeros(3)
 class Engine:
     """The engine for the Safety Gymnasium environment."""
 
-    def __init__(self, task, world_config={}, task_config={}):
+    def __init__(self, task, world_config=None, task_config=None):
         """Initialize the engine."""
         self.parse(world_config, task_config)
 
@@ -44,13 +44,12 @@ class Engine:
         self.robot = Robot(self.robot_base)
         self.action_space = spaces.Box(-1, 1, (self.robot.nu,), dtype=np.float64)
         self.placements = self.task.build_placements_dict()
-        # self.world = self.get_world()
         self.clear()
 
         self.world = None
         self.viewer = None
         self._viewers = {}
-        self.rs = None
+        self.random_generator = None
         self.world_config_dict = None
         self.reset_layout = None
         self.last_action = None
@@ -59,7 +58,11 @@ class Engine:
         self.observation_flatten = None
 
     def parse(self, world_config, task_config):
-        """Parse a config dict - see self.DEFAULT for description"""
+        """Parse a config dict.
+
+        Modify some attributes according to config.
+        So that easily adapt to different environment settings.
+        """
         self.world_config = {}
         self.world_config.update(deepcopy(world_config))
         for key, value in self.world_config.items():
@@ -70,22 +73,9 @@ class Engine:
         for key, value in self.task_config.items():
             setattr(self, key, value)
 
-    def set_rs(self, rs):
-        """Set the random state of the engine"""
-        self.rs = rs
-
-    def get_world(self):
-        """Create a new physics simulation environment"""
-        self.build_layout()
-        # Build the underlying physics world
-        self.world_config_dict = self.task.build_world_config(self.layout)
-
-        assert not hasattr(self, 'world') is None, 'World exists before get_world is called.'
-        world = World(self.world_config_dict)
-        world.reset()
-        world.build()
-
-        return world
+    def set_random_generator(self, random_generator):
+        """Set the random state of the engine."""
+        self.random_generator = random_generator
 
     def clear(self):
         """Reset internal state for building"""
@@ -143,11 +133,13 @@ class Engine:
             action, action_range[:, 0], action_range[:, 1]
         )  # np.clip(action * 2 / action_scale, -1, 1)
         if self.task.action_noise:
-            self.data.ctrl[:] += self.task.action_noise * self.rs.randn(self.model.nu)
+            self.data.ctrl[:] += self.task.action_noise * self.random_generator.randn(self.model.nu)
 
         # Simulate physics forward
         exception = False
-        for _ in range(self.rs.binomial(self.frameskip_binom_n, self.frameskip_binom_p)):
+        for _ in range(
+            self.random_generator.binomial(self.frameskip_binom_n, self.frameskip_binom_p)
+        ):
             try:
                 self.task.set_mocaps()
                 mujoco.mj_step(self.model, self.data)  # Physics simulation step
@@ -158,6 +150,7 @@ class Engine:
         if exception:
             return exception
         else:
+            # pylint: disable-next=no-member
             mujoco.mj_forward(self.model, self.data)  # Needed to get sensor readings correct!
             return exception
 
@@ -223,9 +216,11 @@ class Engine:
             else:
                 areas = [(x2 - x1) * (y2 - y1) for x1, y1, x2, y2 in constrained]
                 probs = np.array(areas) / np.sum(areas)
-                choice = constrained[self.rs.choice(len(constrained), p=probs)]
+                choice = constrained[self.random_generator.choice(len(constrained), p=probs)]
         xmin, ymin, xmax, ymax = choice
-        return np.array([self.rs.uniform(xmin, xmax), self.rs.uniform(ymin, ymax)])
+        return np.array(
+            [self.random_generator.uniform(xmin, xmax), self.random_generator.uniform(ymin, ymax)]
+        )
 
     def constrain_placement(self, placement, keepout):
         """Helper function to constrain a single placement by the keepout radius"""
@@ -234,7 +229,7 @@ class Engine:
 
     def update_layout(self):
         """Update layout dictionary with new places of objects"""
-        mujoco.mj_forward(self.model, self.data)
+        mujoco.mj_forward(self.model, self.data)  # pylint: disable=no-member
         for k in list(self.layout.keys()):
             # Mocap objects have to be handled separately
             if 'gremlin' in k:
@@ -432,6 +427,8 @@ class Engine:
             # Extract depth part of the read_pixels() tuple
             data = self._get_viewer(mode).read_pixels(depth=True)[1]
             # original image is upside-down, so flip it
+            self.viewer._markers[:] = []
+            self.viewer._overlays.clear()
             return data[::-1, :]
         elif mode == 'human':
             self._get_viewer(mode).render()
@@ -489,7 +486,7 @@ class Engine:
         # self.update_viewer_sim = True
         goal_body_id = self.model.body('goal').id
         self.model.body(goal_body_id).pos[:2] = self.layout['goal']
-        mujoco.mj_forward(self.model, self.data)
+        mujoco.mj_forward(self.model, self.data)  # pylint: disable=no-member
 
     def sample_goal_position(self):
         """Sample a new goal position and return True, else False if sample rejected"""

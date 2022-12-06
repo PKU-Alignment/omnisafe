@@ -22,8 +22,8 @@ import mujoco
 import numpy as np
 import safety_gymnasium.envs.safety_gym_v2
 import xmltodict
+from safety_gymnasium.envs.safety_gym_v2.assets.robot import Robot
 from safety_gymnasium.envs.safety_gym_v2.common import convert, rot2quat
-from safety_gymnasium.envs.safety_gym_v2.robot import Robot
 from safety_gymnasium.envs.safety_gym_v2.utils import get_body_xvelp
 
 
@@ -52,14 +52,15 @@ class World:
         'observe_vision': False,
     }
 
-    def __init__(self, config={}, render_context=None):
+    def __init__(self, config=None, render_context=None):
         """config - JSON string or dict of configuration.  See self.parse()"""
-        self.parse(config)  # Parse configuration
+        if config:
+            self.parse(config)  # Parse configuration
         self.first_reset = True
         self.viewer = None
         self.render_context = render_context
         # self.update_viewer_sim = False
-        self.robot = Robot(self.robot_base)
+        self.robot = Robot(self.robot_base)  # pylint: disable=no-member
         self.robot_base_path = None
         self.robot_base_xml = None
         self.xml = None
@@ -80,16 +81,16 @@ class World:
     # Then all uses of `self.world.get_sensor()` should change to `self.data.get_sensor`.
     def get_sensor(self, name):
         """get_sensor: Get the value of a sensor by name"""
-        id = self.model.sensor(name).id
+        id = self.model.sensor(name).id  # pylint: disable=redefined-builtin, invalid-name
         adr = self.model.sensor_adr[id]
         dim = self.model.sensor_dim[id]
         return self.data.sensordata[adr : adr + dim].copy()
 
-    def build(self):
+    def build(self):  # pylint: disable=too-many-locals
         """Build a world, including generating XML and moving objects"""
         # Read in the base XML (contains robot, camera, floor, etc)
-        self.robot_base_path = os.path.join(BASE_DIR, self.robot_base)
-        with open(self.robot_base_path, encoding='utf-8') as f:
+        self.robot_base_path = os.path.join(BASE_DIR, self.robot_base)  # pylint: disable=no-member
+        with open(self.robot_base_path, encoding='utf-8') as f:  # pylint: disable=invalid-name
             self.robot_base_xml = f.read()
         self.xml = xmltodict.parse(self.robot_base_xml)  # Nested OrderedDict objects
 
@@ -100,8 +101,10 @@ class World:
         worldbody = self.xml['mujoco']['worldbody']
 
         # Move robot position to starting position
-        worldbody['body']['@pos'] = convert(np.r_[self.robot_xy, self.robot.z_height])
-        worldbody['body']['@quat'] = convert(rot2quat(self.robot_rot))
+        worldbody['body']['@pos'] = convert(
+            np.r_[self.robot_xy, self.robot.z_height]
+        )  # pylint: disable=no-member
+        worldbody['body']['@quat'] = convert(rot2quat(self.robot_rot))  # pylint: disable=no-member
 
         # We need this because xmltodict skips over single-item lists in the tree
         worldbody['body'] = [worldbody['body']]
@@ -129,8 +132,9 @@ class World:
             asset = xmltodict.parse(
                 """
                 <asset>
-                    <texture type="skybox" builtin="gradient" rgb1="0.527 0.582 0.906" rgb2="0.1 0.1 0.35"
-                        width="800" height="800" markrgb="1 1 1" mark="random" random="0.001"/>
+                    <texture type="skybox" builtin="gradient" rgb1="0.527 0.582 0.906"
+                        rgb2="0.1 0.1 0.35" width="800" height="800" markrgb="1 1 1"
+                        mark="random" random="0.001"/>
                     <texture name="texplane" builtin="checker" height="100" width="100"
                         rgb1="0.7 0.7 0.7" rgb2="0.8 0.8 0.8" type="2d"/>
                     <material name="MatPlane" reflectance="0.1" shininess="0.1" specular="0.1"
@@ -159,11 +163,11 @@ class World:
             worldbody['geom'].append(floor['geom'])
 
         # Make sure floor renders the same for every world
-        for g in worldbody['geom']:
+        for g in worldbody['geom']:  # pylint: disable=invalid-name
             if g['@name'] == 'floor':
                 g.update(
                     {
-                        '@size': convert(self.floor_size),
+                        '@size': convert(self.floor_size),  # pylint: disable=no-member
                         '@rgba': '1 1 1 1',
                         '@material': 'MatPlane',
                     }
@@ -179,7 +183,7 @@ class World:
         worldbody['camera'] = cameras['b']['camera']
 
         # Build and add a tracking camera (logic needed to ensure orientation correct)
-        theta = self.robot_rot
+        theta = self.robot_rot  # pylint: disable=no-member
         xyaxes = dict(
             x1=np.cos(theta),
             x2=-np.sin(theta),
@@ -195,7 +199,8 @@ class World:
         )
         track_camera = xmltodict.parse(
             """<b>
-            <camera name="track" mode="track" pos="{xp} {yp} {zp}" xyaxes="{x1} {x2} {x3} {y1} {y2} {y3}"/>
+            <camera name="track" mode="track" pos="{xp} {yp} {zp}"
+                xyaxes="{x1} {x2} {x3} {y1} {y2} {y3}"/>
             </b>""".format(
                 **pos, **xyaxes
             )
@@ -206,7 +211,7 @@ class World:
         ]
 
         # Add objects to the XML dictionary
-        for name, object in self.objects.items():
+        for name, object in self.objects.items():  # pylint: disable=redefined-builtin, no-member
             assert object['name'] == name, f'Inconsistent {name} {object}'
             object = object.copy()  # don't modify original object
             object['quat'] = rot2quat(object['rot'])
@@ -222,14 +227,18 @@ class World:
                         <freejoint name="{name}"/>
                         <geom name="{name}" type="{type}" size="{size}" density="{density}"
                             rgba="{rgba}" group="{group}"/>
-                        <geom name="col1" type="{type}" size="{width} {width} {dim}" density="{density}"
-                            rgba="{rgba}" group="{group}" pos="{x} {y} 0"/>
-                        <geom name="col2" type="{type}" size="{width} {width} {dim}" density="{density}"
-                            rgba="{rgba}" group="{group}" pos="-{x} {y} 0"/>
-                        <geom name="col3" type="{type}" size="{width} {width} {dim}" density="{density}"
-                            rgba="{rgba}" group="{group}" pos="{x} -{y} 0"/>
-                        <geom name="col4" type="{type}" size="{width} {width} {dim}" density="{density}"
-                            rgba="{rgba}" group="{group}" pos="-{x} -{y} 0"/>
+                        <geom name="col1" type="{type}" size="{width} {width} {dim}"
+                            density="{density}" rgba="{rgba}" group="{group}"
+                            pos="{x} {y} 0"/>
+                        <geom name="col2" type="{type}" size="{width} {width} {dim}"
+                            density="{density}" rgba="{rgba}" group="{group}"
+                            pos="-{x} {y} 0"/>
+                        <geom name="col3" type="{type}" size="{width} {width} {dim}"
+                            density="{density}" rgba="{rgba}" group="{group}"
+                            pos="{x} -{y} 0"/>
+                        <geom name="col4" type="{type}" size="{width} {width} {dim}"
+                            density="{density}" rgba="{rgba}" group="{group}"
+                            pos="-{x} -{y} 0"/>
                     </body>
                 """.format(
                         **{k: convert(v) for k, v in object.items()}
@@ -251,10 +260,12 @@ class World:
             # Add the object to the world
             worldbody['body'].append(body['body'])
         # Add mocaps to the XML dictionary
-        for name, mocap in self.mocaps.items():
+        for name, mocap in self.mocaps.items():  # pylint: disable=no-member
             # Mocap names are suffixed with 'mocap'
             assert mocap['name'] == name, f'Inconsistent {name}'
-            assert name.replace('mocap', 'obj') in self.objects, f'missing object for {name}'
+            assert (
+                name.replace('mocap', 'obj') in self.objects
+            ), f'missing object for {name}'  # pylint: disable=no-member
             # Add the object to the world
             mocap = mocap.copy()  # don't modify original object
             mocap['quat'] = rot2quat(mocap['rot'])
@@ -281,7 +292,7 @@ class World:
             )
             equality['weld'].append(weld['weld'])
         # Add geoms to XML dictionary
-        for name, geom in self.geoms.items():
+        for name, geom in self.geoms.items():  # pylint: disable=no-member
             assert geom['name'] == name, f'Inconsistent {name} {geom}'
             geom = geom.copy()  # don't modify original object
             geom['quat'] = rot2quat(geom['rot'])
@@ -307,23 +318,24 @@ class World:
         self.xml_string = xmltodict.unparse(self.xml)
         # print(self.xml_string)
         # exit(0)
-        self.model = mujoco.MjModel.from_xml_string(self.xml_string)
-        self.data = mujoco.MjData(self.model)
+        self.model = mujoco.MjModel.from_xml_string(self.xml_string)  # pylint: disable=no-member
+        self.data = mujoco.MjData(self.model)  # pylint: disable=no-member
 
         # Recompute simulation intrinsics from new position
-        mujoco.mj_forward(self.model, self.data)
+        mujoco.mj_forward(self.model, self.data)  # pylint: disable=no-member
 
-    def rebuild(self, config={}, state=True):
+    def rebuild(self, config=None, state=True):
         """Build a new sim from a model if the model changed"""
         if state:
             old_state = self.get_state()
         # self.config.update(deepcopy(config))
         # self.parse(self.config)
-        self.parse(config)
+        if config:
+            self.parse(config)
         self.build()
         if state:
             self.set_state(old_state)
-        mujoco.mj_forward(self.model, self.data)
+        mujoco.mj_forward(self.model, self.data)  # pylint: disable=no-member
 
     def reset(self, build=True):
         """Reset the world (sim is accessed through self.sim)"""

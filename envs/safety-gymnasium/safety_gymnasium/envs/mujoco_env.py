@@ -343,7 +343,7 @@ class MujocoEnv(BaseMujocoEnv):
         self.data.qvel[:] = np.copy(qvel)
         if self.model.na == 0:
             self.data.act[:] = None
-        mujoco.mj_forward(self.model, self.data)
+        mujoco.mj_forward(self.model, self.data)  # pylint: disable=no-member
 
     def _step_mujoco_simulation(self, ctrl, n_frames):
         self.data.ctrl[:] = ctrl

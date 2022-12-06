@@ -15,6 +15,7 @@
 """robot"""
 
 import os
+from dataclasses import InitVar, dataclass, field
 
 import mujoco
 import safety_gymnasium.envs.safety_gym_v2
@@ -24,14 +25,21 @@ BASE_DIR = os.path.dirname(safety_gymnasium.__file__)
 BASE_DIR = os.path.join(BASE_DIR, 'envs', 'safety_gym_v2')
 
 
+@dataclass
 class Robot:
-    """Simple utility class for getting mujoco-specific info about a robot"""
+    path: InitVar[str]
 
-    def __init__(self, path):
+    placements: list = None  # Robot placements list (defaults to full extents)
+    locations: list = field(default_factory=list)  # Explicitly place robot XY coordinate
+    keepout: float = 0.4  # Needs to be set to match the robot XML used
+    base: str = 'xmls/car.xml'  # Which robot XML to use as the base
+    rot: float = None  # Override robot starting angle
+
+    def __post_init__(self, path):
         base_path = os.path.join(BASE_DIR, path)
-        self.model = mujoco.MjModel.from_xml_path(base_path)
-        self.data = mujoco.MjData(self.model)
-        mujoco.mj_forward(self.model, self.data)
+        self.model = mujoco.MjModel.from_xml_path(base_path)  # pylint: disable=no-member
+        self.data = mujoco.MjData(self.model)  # pylint: disable=no-member
+        mujoco.mj_forward(self.model, self.data)  # pylint: disable=no-member
 
         # Needed to figure out z-height of free joint of offset body
         self.z_height = self.data.body('robot').xpos[2]
@@ -43,10 +51,10 @@ class Robot:
         ]
 
         # Needed to figure out the observation spaces
-        self.nq = self.model.nq
-        self.nv = self.model.nv
+        self.nq = self.model.nq  # pylint: disable=invalid-name
+        self.nv = self.model.nv  # pylint: disable=invalid-name
         # Needed to figure out action space
-        self.nu = self.model.nu
+        self.nu = self.model.nu  # pylint: disable=invalid-name
         # Needed to figure out observation space
         # See engine.py for an explanation for why we treat these separately
         self.hinge_pos_names = []
@@ -56,26 +64,32 @@ class Robot:
         self.sensor_dim = {}
         for i in range(self.model.nsensor):
             name = self.model.sensor(i).name
-            id = self.model.sensor(name).id
+            id = self.model.sensor(name).id  # pylint: disable=redefined-builtin, invalid-name
             self.sensor_dim[name] = self.model.sensor(id).dim[0]
             sensor_type = self.model.sensor(id).type
-            if self.model.sensor(id).objtype == mujoco.mjtObj.mjOBJ_JOINT:
+            if (
+                self.model.sensor(id).objtype == mujoco.mjtObj.mjOBJ_JOINT
+            ):  # pylint: disable=no-member
                 joint_id = self.model.sensor(id).objid
                 joint_type = self.model.jnt(joint_id).type
-                if joint_type == mujoco.mjtJoint.mjJNT_HINGE:
-                    if sensor_type == mujoco.mjtSensor.mjSENS_JOINTPOS:
+                if joint_type == mujoco.mjtJoint.mjJNT_HINGE:  # pylint: disable=no-member
+                    if sensor_type == mujoco.mjtSensor.mjSENS_JOINTPOS:  # pylint: disable=no-member
                         self.hinge_pos_names.append(name)
-                    elif sensor_type == mujoco.mjtSensor.mjSENS_JOINTVEL:
+                    elif (
+                        sensor_type == mujoco.mjtSensor.mjSENS_JOINTVEL
+                    ):  # pylint: disable=no-member
                         self.hinge_vel_names.append(name)
                     else:
-                        t = self.model.sensor(i).type
+                        t = self.model.sensor(i).type  # pylint: disable=invalid-name
                         raise ValueError(f'Unrecognized sensor type {t} for joint')
-                elif joint_type == mujoco.mjtJoint.mjJNT_BALL:
-                    if sensor_type == mujoco.mjtSensor.mjSENS_BALLQUAT:
+                elif joint_type == mujoco.mjtJoint.mjJNT_BALL:  # pylint: disable=no-member
+                    if sensor_type == mujoco.mjtSensor.mjSENS_BALLQUAT:  # pylint: disable=no-member
                         self.ballquat_names.append(name)
-                    elif sensor_type == mujoco.mjtSensor.mjSENS_BALLANGVEL:
+                    elif (
+                        sensor_type == mujoco.mjtSensor.mjSENS_BALLANGVEL
+                    ):  # pylint: disable=no-member
                         self.ballangvel_names.append(name)
-                elif joint_type == mujoco.mjtJoint.mjJNT_SLIDE:
+                elif joint_type == mujoco.mjtJoint.mjJNT_SLIDE:  # pylint: disable=no-member
                     # Adding slide joints is trivially easy in code,
                     # but this removes one of the good properties about our observations.
                     # (That we are invariant to relative whole-world transforms)

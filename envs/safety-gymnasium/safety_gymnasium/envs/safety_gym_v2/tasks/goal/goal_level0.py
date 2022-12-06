@@ -19,7 +19,7 @@ from collections import OrderedDict
 import gymnasium
 import mujoco
 import numpy as np
-from safety_gymnasium.envs.safety_gym_v2.assets.goal import get_goal
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms import Goal
 from safety_gymnasium.envs.safety_gym_v2.assets.group import GROUP
 from safety_gymnasium.envs.safety_gym_v2.base_task import BaseTask
 from safety_gymnasium.envs.safety_gym_v2.utils import quat2mat
@@ -36,22 +36,14 @@ class GoalLevel0(BaseTask):
 
         self.placements_extents = [-1, -1, 1, 1]
 
-        self.goal_size = 0.3
-        self.goal_keepout = 0.305
-
-        # Reward is distance towards goal plus a constant for being within range of goal
-        # reward_distance should be positive to encourage moving towards the goal
-        # if reward_distance is 0, then the reward function is sparse
-        self.reward_distance = 1.0  # Dense reward multiplied by the distance moved to the goal
-
-        self.hazards_size = 0.2
-        self.hazards_keepout = 0.18
+        self.goal = Goal(keepout=0.305)
 
         self.agent_specific_config()
         self.last_dist_goal = None
 
-    def calculate_cost(self, **kwargs):
+    def calculate_cost(self):
         """determine costs depending on agent and obstacles"""
+        # pylint: disable-next=no-member
         mujoco.mj_forward(self.model, self.data)  # Ensure positions and contacts are correct
         cost = {}
 
@@ -64,18 +56,18 @@ class GoalLevel0(BaseTask):
         """Returns the reward of an agent running in a circle (clock-wise)."""
         reward = 0.0
         dist_goal = self.dist_goal()
-        reward += (self.last_dist_goal - dist_goal) * self.reward_distance
+        reward += (self.last_dist_goal - dist_goal) * self.goal.reward_distance
         self.last_dist_goal = dist_goal
 
         if self.goal_achieved:
-            reward += self.reward_goal
+            reward += self.goal.reward_goal
 
         return reward
 
     @property
     def goal_achieved(self):
         # agent runs endlessly
-        return self.dist_goal() <= self.goal_size
+        return self.dist_goal() <= self.goal.size
 
     @property
     def goal_pos(self):
@@ -85,12 +77,12 @@ class GoalLevel0(BaseTask):
     @property
     def hazards_pos(self):
         """Helper to get the hazards positions from layout"""
-        return [self.data.body(f'hazard{i}').xpos.copy() for i in range(self.hazards_num)]
+        return [self.data.body(f'hazard{i}').xpos.copy() for i in range(self.hazards.num)]
 
     @property
     def vases_pos(self):
         """Helper to get the list of vase positions"""
-        return [self.data.body(f'vase{p}').xpos.copy() for p in range(self.vases_num)]
+        return [self.data.body(f'vase{p}').xpos.copy() for p in range(self.vases.num)]
 
     def agent_specific_config(self):
         pass
@@ -98,7 +90,6 @@ class GoalLevel0(BaseTask):
     def specific_reset(self):
         """Reset agent position and set orientation towards desired run
         direction."""
-        pass
 
     def build_goal(self):
         """Build a new goal position, maybe with resampling due to hazards"""
@@ -123,7 +114,7 @@ class GoalLevel0(BaseTask):
 
         world_config['robot_base'] = self.robot_base
         world_config['robot_xy'] = layout['robot']
-        if self.robot_rot is None:
+        if self.robot.rot is None:
             world_config['robot_rot'] = self.random_rot()
         else:
             world_config['robot_rot'] = float(self.robot_rot)
@@ -137,9 +128,7 @@ class GoalLevel0(BaseTask):
 
         # Extra geoms (immovable objects) to add to the scene
         world_config['geoms'] = {}
-        world_config['geoms']['goal'] = get_goal(
-            layout=layout, rot=self.random_rot(), size=self.goal_size
-        )
+        world_config['geoms']['goal'] = self.goal.get_goal(layout=layout, rot=self.random_rot())
 
         return world_config
 
@@ -149,7 +138,6 @@ class GoalLevel0(BaseTask):
 
         obs_space_dict.update(self.build_sensor_observation_space())
 
-        # if self.observe_goal_lidar:
         obs_space_dict['goal_lidar'] = gymnasium.spaces.Box(
             0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
@@ -174,6 +162,7 @@ class GoalLevel0(BaseTask):
 
     def obs(self):
         """Return the observation of our agent"""
+        # pylint: disable-next=no-member
         mujoco.mj_forward(self.model, self.data)  # Needed to get sensordata correct
         obs = {}
 

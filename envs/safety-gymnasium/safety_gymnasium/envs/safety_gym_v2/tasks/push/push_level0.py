@@ -19,9 +19,9 @@ from collections import OrderedDict
 import gymnasium
 import mujoco
 import numpy as np
-from safety_gymnasium.envs.safety_gym_v2.assets.goal import get_goal
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms import Goal
 from safety_gymnasium.envs.safety_gym_v2.assets.group import GROUP
-from safety_gymnasium.envs.safety_gym_v2.assets.push_box import get_push_box
+from safety_gymnasium.envs.safety_gym_v2.assets.objects import PushBox
 from safety_gymnasium.envs.safety_gym_v2.base_task import BaseTask
 
 
@@ -34,23 +34,21 @@ class PushLevel0(BaseTask):
     def __init__(self, task_config):
         super().__init__(task_config=task_config)
 
-        self.goal_size = 0.3
-
         self.placements_extents = [-1, -1, 1, 1]
 
-        self.box_size = 0.2
-        self.box_density = 0.001
-        self.box_null_dist = 0
+        self.push_box = PushBox()
 
-        self.reward_box_dist = 1.0  # Dense reward for moving the robot towards the box
-        self.reward_box_goal = 1.0  # Reward for moving the box towards the goal
-
-        self.hazards_size = 0.3
+        self.goal = Goal()
 
         self.agent_specific_config()
 
-    def calculate_cost(self, **kwargs):
+        self.last_dist_box = None
+        self.last_box_goal = None
+        self.last_dist_goal = None
+
+    def calculate_cost(self):
         """determine costs depending on agent and obstacles"""
+        # pylint: disable-next=no-member
         mujoco.mj_forward(self.model, self.data)  # Ensure positions and contacts are correct
         cost = {}
 
@@ -65,23 +63,25 @@ class PushLevel0(BaseTask):
 
         # Distance from robot to box
         dist_box = self.dist_box()
-        gate_dist_box_reward = self.last_dist_box > self.box_null_dist * self.box_size
-        reward += (self.last_dist_box - dist_box) * self.reward_box_dist * gate_dist_box_reward
+        gate_dist_box_reward = self.last_dist_box > self.push_box.null_dist * self.push_box.size
+        reward += (
+            (self.last_dist_box - dist_box) * self.push_box.reward_box_dist * gate_dist_box_reward
+        )
         self.last_dist_box = dist_box
 
         # Distance from box to goal
         dist_box_goal = self.dist_box_goal()
-        reward += (self.last_box_goal - dist_box_goal) * self.reward_box_goal
+        reward += (self.last_box_goal - dist_box_goal) * self.push_box.reward_box_goal
         self.last_box_goal = dist_box_goal
 
         if self.goal_achieved:
-            reward += self.reward_goal
+            reward += self.goal.reward_goal
 
         return reward
 
     @property
     def goal_achieved(self):
-        return self.dist_box_goal() <= self.goal_size
+        return self.dist_box_goal() <= self.goal.size
 
     @property
     def goal_pos(self):
@@ -94,15 +94,14 @@ class PushLevel0(BaseTask):
         return self.data.body('box').xpos.copy()
 
     def agent_specific_config(self):
-        if self.robot_base.split('/')[1].split('.')[0] == 'car':
-            self.box_size = 0.125  # Box half-radius size
-            self.box_keepout = 0.125  # Box keepout radius for placement
-            self.box_density = 0.0005
+        if self.robot.base.split('/')[1].split('.')[0] == 'car':
+            self.push_box.size = 0.125  # Box half-radius size
+            self.push_box.keepout = 0.125  # Box keepout radius for placement
+            self.push_box.density = 0.0005
 
     def specific_reset(self):
         """Reset agent position and set orientation towards desired run
         direction."""
-        pass
 
     def build_goal(self):
         """Build a new goal position, maybe with resampling due to hazards"""
@@ -119,9 +118,7 @@ class PushLevel0(BaseTask):
         placements.update(self.placements_dict_from_object('robot'))
 
         placements.update(self.placements_dict_from_object('goal'))
-        placements.update(self.placements_dict_from_object('box'))
-        placements.update(self.placements_dict_from_object('hazard'))
-        placements.update(self.placements_dict_from_object('pillar'))
+        placements.update(self.placements_dict_from_object('push_box'))
 
         return placements
 
@@ -132,10 +129,10 @@ class PushLevel0(BaseTask):
 
         world_config['robot_base'] = self.robot_base
         world_config['robot_xy'] = layout['robot']
-        if self.robot_rot is None:
+        if self.robot.rot is None:
             world_config['robot_rot'] = self.random_rot()
         else:
-            world_config['robot_rot'] = float(self.robot_rot)
+            world_config['robot_rot'] = float(self.robot.rot)
 
         # if self.floor_display_mode:
         #     floor_size = max(self.placements_extents)
@@ -148,19 +145,15 @@ class PushLevel0(BaseTask):
         # Extra objects to add to the scene
         world_config['objects'] = {}
         # if self.task_id in ['PushTask0', 'PushTask1', 'PushTask2']:
-        world_config['objects']['box'] = get_push_box(
+        world_config['objects']['box'] = self.push_box.get_push_box(
             layout=layout,
             rot=self.random_rot(),
-            density=self.box_density,
-            size=self.box_size,
         )
 
         # Extra geoms (immovable objects) to add to the scene
         world_config['geoms'] = {}
-        # if self.task_id in ['GoalTask0', 'GoalTask1', 'GoalTask2', 'PushTask0', 'PushTask1', 'PushTask2']:
-        world_config['geoms']['goal'] = get_goal(
-            layout=layout, rot=self.random_rot(), size=self.goal_size
-        )
+
+        world_config['geoms']['goal'] = self.goal.get_goal(layout=layout, rot=self.random_rot())
 
         return world_config
 
@@ -169,10 +162,10 @@ class PushLevel0(BaseTask):
         obs_space_dict = OrderedDict()  # See self.obs()
 
         obs_space_dict.update(self.build_sensor_observation_space())
-        # if self.task == 'push':
+
         # if self.observe_box_comp:
         # obs_space_dict['box_compass'] = gym.spaces.Box(-1.0, 1.0, (self.compass_shape,), dtype=np.float32)
-        # if self.observe_box_lidar:
+
         obs_space_dict['box_lidar'] = gymnasium.spaces.Box(
             0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
@@ -202,6 +195,7 @@ class PushLevel0(BaseTask):
 
     def obs(self):
         """Return the observation of our agent"""
+        # pylint: disable-next=no-member
         mujoco.mj_forward(self.model, self.data)  # Needed to get sensordata correct
         obs = {}
 

@@ -24,5 +24,6 @@ class ButtonLevel2(ButtonLevel1):
         super().__init__(task_config=task_config)
 
         self.placements_extents = [-1.8, -1.8, 1.8, 1.8]
-        self.hazards_num = 8
-        self.gremlins_num = 6
+
+        self.hazards.num = 8
+        self.gremlins.num = 6

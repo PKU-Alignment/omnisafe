@@ -26,16 +26,16 @@ def quat2zalign(quat):
     # ]
     # so inner product with z_{ground} = [0,0,1] is
     # z_{body} dot z_{ground} = a**2 - b**2 - c**2 + d**2
-    a, b, c, d = quat
+    a, b, c, d = quat  # pylint: disable=invalid-name
     return a**2 - b**2 - c**2 + d**2
 
 
-def convert(v):
+def convert(value):
     """Convert a value into a string for mujoco XML"""
-    if isinstance(v, (int, float, str)):
-        return str(v)
+    if isinstance(value, (int, float, str)):
+        return str(value)
     # Numpy arrays and lists
-    return ' '.join(str(i) for i in np.asarray(v))
+    return ' '.join(str(i) for i in np.asarray(value))
 
 
 def rot2quat(theta):
@@ -46,8 +46,6 @@ def rot2quat(theta):
 class ResamplingError(AssertionError):
     """Raised when we fail to sample a valid distribution of objects or goals"""
 
-    pass
-
 
 class MujocoException(Exception):
-    pass
+    """Raise when mujoco raise an exception during simulation."""

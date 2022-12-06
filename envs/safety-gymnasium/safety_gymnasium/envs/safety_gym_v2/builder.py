@@ -30,13 +30,13 @@ DEFAULT_HEIGHT = 256
 
 
 class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
-
     """
     Builder: an environment-building tool for safe exploration research.
 
-    The Builder() class constructs the basic framework of environments, while the details were hidden.
-    There are two important parts, one is **engine module**, which is something related to mujoco and
-    general tools, the other is **task module** including all task specific operation.
+    The Builder() class constructs the basic framework of environments, while the details
+    were hidden. There are two important parts, one is **engine module**, which is
+    something related to mujoco and general tools, the other is **task module** including
+    all task specific operation.
     """
 
     # Default configuration (this should not be nested since it gets copied)
@@ -63,7 +63,7 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         'render_fps': 125,
     }
 
-    def __init__(self, config={}, **kwargs):
+    def __init__(self, config=None, **kwargs):
         # First, parse configuration. Important note: LOTS of stuff happens in
         # parse, and many attributes of the class get set through setattr. If you
         # are trying to track down where an attribute gets initially set, and
@@ -71,7 +71,8 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         # and this parse function.
         gymnasium.utils.EzPickle.__init__(self, config=config)
         self.input_parameters = locals()
-        self.get_config(config)
+        if config:
+            self.get_config(config)
         self.task_id = config['task']['task_id']
         self.seed()
 
@@ -80,6 +81,10 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         self.done = True
 
         self.render_mode = kwargs.get('render_mode', None)
+
+        self.steps = None
+        self.first_reset = None
+        self._cost = None
 
     @property
     def hazards_size(self):
@@ -136,12 +141,14 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
     def get_task(
         self,
     ) -> BaseTask:
+        """Instantiate a task object."""
         assert hasattr(tasks, self.task_id), f'Task={self.task_id} not implemented.'
         task = getattr(tasks, self.task_id)
 
         return task(task_config=self.task_config)
 
     def get_engine(self, task):
+        """Instantiate a :class:`safety_gym_v2.engine.Engine` object."""
         return Engine(task, self.world_config, self.task_config)
 
     def seed(self, seed=None):
@@ -152,22 +159,23 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         """Build a new physics simulation environment"""
         self.task.build_goal()
 
-    def set_rs(self, seed):
-        rs = np.random.RandomState(seed)
-        self.engine.set_rs(rs)
+    def set_random_seed(self, seed):
+        """Instantiate a :class:`np.random.RandomState` object using given seed."""
+        random_generator = np.random.RandomState(seed)  # pylint: disable=no-member
+        self.engine.set_random_generator(random_generator)
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed=None, options=None):  # pylint: disable=arguments-differ
         """Reset the physics simulation and return observation"""
         info = {}
 
         if seed is not None:
-            self._seed = seed
+            self._seed = seed  # pylint: disable=attribute-defined-outside-init
 
         if not self.task.randomize_layout:
-            self.set_rs(0)
+            self.set_random_seed(0)
         else:
             self._seed += 1  # Increment seed
-            self.set_rs(self._seed)
+            self.set_random_seed(self._seed)
 
         self.done = False
         self.steps = 0  # Count of steps taken in this episode
@@ -189,7 +197,7 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
     def world_xy(self, pos):
         """Return the world XY vector to a position from the robot"""
         assert pos.shape == (2,)
-        return pos - self.world.robot_pos()[:2]
+        return pos - self.world.robot_pos()[:2]  # pylint: disable=no-member
 
     def reward(self):
         """Calculate the dense component of reward.  Call exactly once per step"""
@@ -198,13 +206,15 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
 
         # Intrinsic reward for uprightness
         if self.task.reward_orientation:
-            zalign = quat2zalign(self.data.get_body_xquat(self.reward_orientation_body))
-            reward += self.reward_orientation_scale * zalign
+            zalign = quat2zalign(
+                self.data.get_body_xquat(self.reward_orientation_body)
+            )  # pylint: disable=no-member
+            reward += self.reward_orientation_scale * zalign  # pylint: disable=no-member
 
         # Clip reward
         if self.task.reward_clip:
-            in_range = reward < self.task.reward_clip and reward > -self.task.reward_clip
-            if not (in_range):
+            in_range = -self.task.reward_clip < reward < self.task.reward_clip
+            if not in_range:
                 reward = np.clip(reward, -self.task.reward_clip, self.task.reward_clip)
                 print('Warning: reward was outside of range!')
 
@@ -253,13 +263,14 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
             if self.task.goal_achieved:
                 info['goal_met'] = True
                 if self.task.continue_goal:
-                    # Update the internal layout so we can correctly resample (given objects have moved)
+                    # Update the internal layout
+                    # so we can correctly resample (given objects have moved)
                     self.engine.update_layout()
                     # Try to build a new goal, end if we fail
                     if self.task.terminate_resample_failure:
                         try:
                             self.task.build_goal()
-                        except ResamplingError as e:
+                        except ResamplingError:
                             # Normal end of episode
                             self.done = True
                     else:

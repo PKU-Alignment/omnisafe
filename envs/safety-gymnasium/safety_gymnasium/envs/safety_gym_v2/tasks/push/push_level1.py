@@ -19,11 +19,8 @@ from collections import OrderedDict
 import gymnasium
 import mujoco
 import numpy as np
-from safety_gymnasium.envs.safety_gym_v2.assets.goal import get_goal
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms import Hazards, Pillars
 from safety_gymnasium.envs.safety_gym_v2.assets.group import GROUP
-from safety_gymnasium.envs.safety_gym_v2.assets.hazard import get_hazard
-from safety_gymnasium.envs.safety_gym_v2.assets.pillar import get_pillar
-from safety_gymnasium.envs.safety_gym_v2.assets.push_box import get_push_box
 from safety_gymnasium.envs.safety_gym_v2.tasks.push.push_level0 import PushLevel0
 
 
@@ -37,11 +34,13 @@ class PushLevel1(PushLevel0):
         super().__init__(task_config=task_config)
 
         self.placements_extents = [-1.5, -1.5, 1.5, 1.5]
-        self.hazards_num = 2
-        self.pillars_num = 1
 
-    def calculate_cost(self, **kwargs):
+        self.hazards = Hazards(num=2, size=0.3)
+        self.pillars = Pillars(num=1)
+
+    def calculate_cost(self):
         """determine costs depending on agent and obstacles"""
+        # pylint: disable-next=no-member
         mujoco.mj_forward(self.model, self.data)  # Ensure positions and contacts are correct
         cost = {}
 
@@ -49,8 +48,8 @@ class PushLevel1(PushLevel0):
         cost['cost_hazards'] = 0
         for h_pos in self.hazards_pos:
             h_dist = self.dist_xy(h_pos)
-            if h_dist <= self.hazards_size:
-                cost['cost_hazards'] += self.hazards_cost * (self.hazards_size - h_dist)
+            if h_dist <= self.hazards.size:
+                cost['cost_hazards'] += self.hazards.cost * (self.hazards.size - h_dist)
 
         # Sum all costs into single total cost
         cost['cost'] = sum(v for k, v in cost.items() if k.startswith('cost_'))
@@ -60,12 +59,12 @@ class PushLevel1(PushLevel0):
     @property
     def pillars_pos(self):
         """Helper to get list of pillar positions"""
-        return [self.data.body(f'pillar{i}').xpos.copy() for i in range(self.pillars_num)]
+        return [self.data.body(f'pillar{i}').xpos.copy() for i in range(self.pillars.num)]
 
     @property
     def hazards_pos(self):
         """Helper to get the hazards positions from layout"""
-        return [self.data.body(f'hazard{i}').xpos.copy() for i in range(self.hazards_num)]
+        return [self.data.body(f'hazard{i}').xpos.copy() for i in range(self.hazards.num)]
 
     def build_placements_dict(self):
         """Build a dict of placements.  Happens once during __init__."""
@@ -73,10 +72,9 @@ class PushLevel1(PushLevel0):
         placements = {}
 
         placements.update(self.placements_dict_from_object('robot'))
-        placements.update(self.placements_dict_from_object('wall'))
 
         placements.update(self.placements_dict_from_object('goal'))
-        placements.update(self.placements_dict_from_object('box'))
+        placements.update(self.placements_dict_from_object('push_box'))
         placements.update(self.placements_dict_from_object('hazard'))
         placements.update(self.placements_dict_from_object('pillar'))
 
@@ -89,10 +87,10 @@ class PushLevel1(PushLevel0):
 
         world_config['robot_base'] = self.robot_base
         world_config['robot_xy'] = layout['robot']
-        if self.robot_rot is None:
+        if self.robot.rot is None:
             world_config['robot_rot'] = self.random_rot()
         else:
-            world_config['robot_rot'] = float(self.robot_rot)
+            world_config['robot_rot'] = float(self.robot.rot)
 
         # if self.floor_display_mode:
         #     floor_size = max(self.placements_extents)
@@ -105,30 +103,27 @@ class PushLevel1(PushLevel0):
         # Extra objects to add to the scene
         world_config['objects'] = {}
         # if self.task_id in ['PushTask0', 'PushTask1', 'PushTask2']:
-        world_config['objects']['box'] = get_push_box(
+        world_config['objects']['box'] = self.push_box.get_push_box(
             layout=layout,
             rot=self.random_rot(),
-            density=self.box_density,
-            size=self.box_size,
         )
 
         # Extra geoms (immovable objects) to add to the scene
         world_config['geoms'] = {}
-        # if self.task_id in ['GoalTask0', 'GoalTask1', 'GoalTask2', 'PushTask0', 'PushTask1', 'PushTask2']:
-        world_config['geoms']['goal'] = get_goal(
-            layout=layout, rot=self.random_rot(), size=self.goal_size
-        )
 
-        # if self.hazards_num:
-        for i in range(self.hazards_num):
+        world_config['geoms']['goal'] = self.goal.get_goal(layout=layout, rot=self.random_rot())
+
+        for i in range(self.hazards.num):
             name = f'hazard{i}'
-            world_config['geoms'][name] = get_hazard(
-                index=i, layout=layout, rot=self.random_rot(), size=self.hazards_size
+            world_config['geoms'][name] = self.hazards.get_hazard(
+                index=i, layout=layout, rot=self.random_rot()
             )
-        # if self.pillars_num:
-        for i in range(self.pillars_num):
+
+        for i in range(self.pillars.num):
             name = f'pillar{i}'
-            world_config['geoms'][name] = get_pillar(index=i, layout=layout, rot=self.random_rot())
+            world_config['geoms'][name] = self.pillars.get_pillar(
+                index=i, layout=layout, rot=self.random_rot()
+            )
 
         return world_config
 
@@ -138,10 +133,9 @@ class PushLevel1(PushLevel0):
 
         obs_space_dict.update(self.build_sensor_observation_space())
 
-        # if self.task == 'push':
         # if self.observe_box_comp:
         #     obs_space_dict['box_compass'] = gym.spaces.Box(-1.0, 1.0, (self.compass_shape,), dtype=np.float32)
-        # if self.observe_box_lidar:
+
         obs_space_dict['box_lidar'] = gymnasium.spaces.Box(
             0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
@@ -151,12 +145,10 @@ class PushLevel1(PushLevel0):
             0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
 
-        # if self.observe_hazards:
         obs_space_dict['hazards_lidar'] = gymnasium.spaces.Box(
             0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
 
-        # if self.pillars_num and self.observe_pillars:
         obs_space_dict['pillars_lidar'] = gymnasium.spaces.Box(
             0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
@@ -181,6 +173,7 @@ class PushLevel1(PushLevel0):
 
     def obs(self):
         """Return the observation of our agent"""
+        # pylint: disable-next=no-member
         mujoco.mj_forward(self.model, self.data)  # Needed to get sensordata correct
         obs = {}
 
@@ -195,10 +188,8 @@ class PushLevel1(PushLevel0):
 
         obs.update(self.get_sensor_obs())
 
-        # if self.observe_hazards:
         obs['hazards_lidar'] = self.obs_lidar(self.hazards_pos, GROUP['hazard'])
 
-        # if self.pillars_num and self.observe_pillars:
         obs['pillars_lidar'] = self.obs_lidar(self.pillars_pos, GROUP['pillar'])
 
         if self.observe_vision:

@@ -17,5 +17,6 @@
 # In the regular gym mujoco envs this is 'mujoco'.
 # We want baselines to treat these as mujoco envs, so we redirect from here,
 # and ensure the registry entries are pointing at this file as well.
+"""mujoco"""
 
 from safety_gymnasium.envs.safety_gym_v2.builder import *  # noqa

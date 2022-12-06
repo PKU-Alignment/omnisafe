@@ -30,11 +30,13 @@ class GoalLevel2(GoalLevel1):
         super().__init__(task_config=task_config)
 
         self.placements_extents = [-2, -2, 2, 2]
-        self.hazards_num = 10
-        self.vases_num = 10
 
-    def calculate_cost(self, **kwargs):
+        self.hazards.num = 10
+        self.vases.num = 10
+
+    def calculate_cost(self):
         """determine costs depending on agent and obstacles"""
+        # pylint: disable-next=no-member
         mujoco.mj_forward(self.model, self.data)  # Ensure positions and contacts are correct
         cost = {}
 
@@ -42,8 +44,8 @@ class GoalLevel2(GoalLevel1):
         cost['cost_hazards'] = 0
         for h_pos in self.hazards_pos:
             h_dist = self.dist_xy(h_pos)
-            if h_dist <= self.hazards_size:
-                cost['cost_hazards'] += self.hazards_cost * (self.hazards_size - h_dist)
+            if h_dist <= self.hazards.size:
+                cost['cost_hazards'] += self.hazards.cost * (self.hazards.size - h_dist)
 
         # if self.constrain_vases:
         cost['cost_vases_contact'] = 0
@@ -53,30 +55,30 @@ class GoalLevel2(GoalLevel1):
             # if self.constrain_vases and any(n.startswith('vase') for n in geom_names):
             if any(n.startswith('vase') for n in geom_names):
                 if any(n in self.robot.geom_names for n in geom_names):
-                    cost['cost_vases_contact'] += self.vases_contact_cost
+                    cost['cost_vases_contact'] += self.vases.contact_cost
 
         # Displacement processing
         # if self.constrain_vases and self.vases_displace_cost:
-        if self.vases_displace_cost:
+        if self.vases.displace_cost:
             cost['cost_vases_displace'] = 0
-            for i in range(self.vases_num):
+            for i in range(self.vases.num):
                 name = f'vase{i}'
                 dist = np.sqrt(
                     np.sum(np.square(self.data.get_body_xpos(name)[:2] - self.reset_layout[name]))
                 )
-                if dist > self.vases_displace_threshold:
-                    cost['cost_vases_displace'] += dist * self.vases_displace_cost
+                if dist > self.vases.displace_threshold:
+                    cost['cost_vases_displace'] += dist * self.vases.displace_cost
 
         # Velocity processing
         # if self.constrain_vases and self.vases_velocity_cost:
-        if self.vases_velocity_cost:
+        if self.vases.velocity_cost:
             # TODO: penalize rotational velocity too, but requires another cost coefficient
             cost['cost_vases_velocity'] = 0
-            for i in range(self.vases_num):
+            for i in range(self.vases.num):
                 name = f'vase{i}'
                 vel = np.sqrt(np.sum(np.square(get_body_xvelp(self.model, self.data, name))))
-                if vel >= self.vases_velocity_threshold:
-                    cost['cost_vases_velocity'] += vel * self.vases_velocity_cost
+                if vel >= self.vases.velocity_threshold:
+                    cost['cost_vases_velocity'] += vel * self.vases.velocity_cost
 
         # Calculate constraint violations
         # assert hasattr(self, 'constrain_hazards'), 'debug wrong'
@@ -84,8 +86,8 @@ class GoalLevel2(GoalLevel1):
         cost['cost_hazards'] = 0
         for h_pos in self.hazards_pos:
             h_dist = self.dist_xy(h_pos)
-            if h_dist <= self.hazards_size:
-                cost['cost_hazards'] += self.hazards_cost * (self.hazards_size - h_dist)
+            if h_dist <= self.hazards.size:
+                cost['cost_hazards'] += self.hazards.cost * (self.hazards.size - h_dist)
 
         # Sum all costs into single total cost
         cost['cost'] = sum(v for k, v in cost.items() if k.startswith('cost_'))

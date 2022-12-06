@@ -12,20 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""base_task"""
 
 import abc
-from collections import OrderedDict
 from copy import deepcopy
 
 import gymnasium
 import mujoco
 import numpy as np
-from safety_gymnasium.envs.safety_gym_v2.robot import Robot
+from safety_gymnasium.envs.safety_gym_v2.assets.robot import Robot
 from safety_gymnasium.envs.safety_gym_v2.utils import quat2mat, theta2vec
 
 
 class BaseTask(abc.ABC):
-    def __init__(self, task_config: dict):
+    """BaseTask"""
+
+    def __init__(self, task_config: dict):  # pylint: disable-next=too-many-statements
 
         self.num_steps = 1000  # Maximum number of environment steps in an episode
 
@@ -35,13 +37,6 @@ class BaseTask(abc.ABC):
         self.placements_margin = 0.0  # Additional margin added to keepout when placing objects
 
         self.floor_display_mode = False  # In display mode, the visible part of the floor is cropped
-        # self.floor_size = [3.5, 3.5, .1]
-
-        self.robot_placements = None  # Robot placements list (defaults to full extents)
-        self.robot_locations = []  # Explicitly place robot XY coordinate
-        self.robot_keepout = 0.4  # Needs to be set to match the robot XML used
-        self.robot_base = 'xmls/car.xml'  # Which robot XML to use as the base
-        self.robot_rot = None  # Override robot starting angle
 
         # Starting position distribution
         self.randomize_layout = True  # If false, set the random seed before layout to constant
@@ -51,15 +46,16 @@ class BaseTask(abc.ABC):
         # otherwise, raise a python exception.
         # TODO: randomize starting joint positions
 
-        self.observe_vision = False
-        self.observation_flatten = True
+        self.observe_vision = False  # Observe vision from the robot
+        self.observation_flatten = True  # Flatten observation into a vector
 
         # # Vision observation parameters
         # TODO JJM
         self.vision_size = (
             60,
             40,
-        )  # Size (width, height) of vision observation; gets flipped internally to (rows, cols) format
+        )  # Size (width, height) of vision observation;
+        # gets flipped internally to (rows, cols) format
         self.vision_render = True  # Render vision observation in the viewer
         self.vision_render_size = (300, 200)  # Size to render the vision in the viewer
 
@@ -75,28 +71,6 @@ class BaseTask(abc.ABC):
         # Compass observation parameters
         self.compass_shape = 2  # Set to 2 or 3 for XY or XYZ unit vector compass observation.
 
-        # Goal parameters
-        self.goal_placements = None  # Placements where goal may appear (defaults to full extents)
-        self.goal_locations = []  # Fixed locations to override placements
-        self.goal_keepout = 0.4  # Keepout radius when placing goals
-
-        self.apples_num = 0
-        self.apples_placements = None
-        self.apples_locations = []
-        self.apples_keepout = 0.3
-
-        self.oranges_num = 0
-        self.oranges_placements = None
-        self.oranges_locations = []
-        self.oranges_keepout = 0.3
-
-        # Box parameters (only used if task == 'push')
-        self.box_placements = None  # Box placements list (defaults to full extents)
-        self.box_locations = []  # Fixed locations to override placements
-        self.box_keepout = 0.2  # Box keepout radius for placement
-        self.box_null_dist = 2  # Within box_null_dist * box_size radius of box, no box reward given
-
-        self.reward_goal = 1.0  # Sparse reward for being inside the goal area
         self.reward_orientation = False  # Reward for being upright
         self.reward_orientation_scale = 0.002  # Scale for uprightness reward
         self.reward_orientation_body = 'robot'  # What body to get orientation from
@@ -106,16 +80,6 @@ class BaseTask(abc.ABC):
             10  # Clip reward, last resort against physics errors causing magnitude spikes
         )
 
-        # Buttons are small immovable spheres, to the environment
-        self.buttons_num = 0  # Number of buttons to add
-        self.buttons_placements = None  # Buttons placements list (defaults to full extents)
-        self.buttons_locations = []  # Fixed locations to override placements
-        self.buttons_keepout = 0.3  # Buttons keepout radius for placement
-        self.buttons_cost = 1.0  # Cost for pressing the wrong button, if constrain_buttons
-        self.buttons_resampling_delay = (
-            10  # Buttons have a timeout period (steps) before resampling
-        )
-
         # Sensor observations
         # Specify which sensors to add to observation space
         self.sensors_obs = (['accelerometer', 'velocimeter', 'gyro', 'magnetometer'],)
@@ -123,76 +87,44 @@ class BaseTask(abc.ABC):
         self.sensors_ball_joints = True  # Observe named balljoint position / velocity sensors
         self.sensors_angle_components = True  # Observe sin/cos theta instead of theta
 
-        # Walls - barriers in the environment not associated with any constraint
-        # NOTE: this is probably best to be auto-generated than manually specified
-        self.walls_num = 0  # Number of walls
-        self.walls_placements = None  # This should not be used
-        self.walls_locations = []  # This should be used and length == walls_num
-        self.walls_keepout = 0.0  # This should not be used
-
         self.constrain_indicator = True  # If true, all costs are either 1 or 0 for a given step.
 
-        # Hazardous areas
-        self.hazards_num = 0  # Number of hazards in an environment
-        self.hazards_placements = None  # Placements list for hazards (defaults to full extents)
-        self.hazards_locations = []  # Fixed locations to override placements
-        self.hazards_keepout = 0.4  # Radius of hazard keepout for placement
-        self.hazards_cost = 1.0  # Cost (per step) for violating the constraint
-
-        # Vases (objects we should not touch)
-        self.vases_num = 0  # Number of vases in the world
-        self.vases_placements = None  # Vases placements list (defaults to full extents)
-        self.vases_locations = []  # Fixed locations to override placements
-        self.vases_keepout = 0.15  # Radius of vases keepout for placement
-        self.vases_sink = 4e-5  # Experimentally measured, based on size and density,
-        # how far vases "sink" into the floor.
-        # Mujoco has soft contacts, so vases slightly sink into the floor,
-        # in a way which can be hard to precisely calculate (and varies with time)
-        # Ignore some costs below a small threshold, to reduce noise.
-        self.vases_contact_cost = 1.0  # Cost (per step) for being in contact with a vase
-        self.vases_displace_cost = 0.0  # Cost (per step) per meter of displacement for a vase
-        self.vases_displace_threshold = 1e-3  # Threshold for displacement being "real"
-        self.vases_velocity_cost = 1.0  # Cost (per step) per m/s of velocity for a vase
-        self.vases_velocity_threshold = 1e-4  # Ignore very small velocities
-
-        # Pillars (immovable obstacles we should not touch)
-        self.pillars_num = 0  # Number of pillars in the world
-        self.pillars_placements = None  # Pillars placements list (defaults to full extents)
-        self.pillars_locations = []  # Fixed locations to override placements
-        self.pillars_keepout = 0.3  # Radius for placement of pillars
-        self.pillars_cost = 1.0  # Cost (per step) for being in contact with a pillar
-
-        # Gremlins (moving objects we should avoid)
-        self.gremlins_num = 0  # Number of gremlins in the world
-        self.gremlins_placements = None  # Gremlins placements list (defaults to full extents)
-        self.gremlins_locations = []  # Fixed locations to override placements
-        self.gremlins_keepout = 0.5  # Radius for keeping out (contains gremlin path)
-        self.gremlins_travel = 0.3  # Radius of the circle traveled in
-        self.gremlins_contact_cost = 1.0  # Cost for touching a gremlin
-        self.gremlins_dist_threshold = 0.2  # Threshold for cost for being too close
-        self.gremlins_dist_cost = 1.0  # Cost for being within distance threshold
-
         self._seed = None  # Random state seed (avoid name conflict with self.seed)
+
+        self.engine = None
 
         self.parse(task_config)
         self.robot = Robot(self.robot_base)
         self.build_observation_space()
 
     def parse(self, config):
-        """Parse a config dict - see self.DEFAULT for description"""
+        """Parse a config dict.
+
+        Modify some attributes according to config.
+        So that easily adapt to different environment settings.
+        """
         self.config = {}
         self.config.update(deepcopy(config))
         for key, value in self.config.items():
             setattr(self, key, value)
 
     def set_engine(self, engine):
+        """Set the :class:`safety_gym_v2.engine.Engine` instance for computation."""
         self.engine = engine
 
     def specific_step(self):
-        pass
+        """Each task can define a specific step function.
+
+        It will be called when :func:`step()` is called using env.step().
+        For example, you can do specific data modification.
+        """
 
     def task_continue_reset(self):
-        pass
+        """Each task can define a specific step function.
+
+        It will be called when :func:`reset()` is called using env.reset().
+        For example, you can do specific data reset.
+        """
 
     @abc.abstractmethod
     def calculate_cost(self):
@@ -207,14 +139,16 @@ class BaseTask(abc.ABC):
 
     def build_goal(self):
         """Update one task specific goal."""
-        pass
 
     def update_world(self):
         """Some Tasks will update the world after achieving some goals."""
-        pass
 
     @abc.abstractmethod
     def agent_specific_config(self):
+        """Modify the agents property according to task.
+
+        In some tasks, agents should be modified a little.
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -231,10 +165,10 @@ class BaseTask(abc.ABC):
     @property
     def goal_pos(self):
         """Helper to get goal position from layout"""
-        pass
 
     @property
     def world(self):
+        """Helper to get :class:`safety_gym_v2.world.World` instance form self.engine."""
         return self.engine.world
 
     @property
@@ -258,8 +192,9 @@ class BaseTask(abc.ABC):
         return [self.data.body(f'wall{i}').xpos.copy() for i in range(self.walls_num)]
 
     @property
-    def rs(self):
-        return self.engine.rs
+    def random_generator(self):
+        """Helper to get the random number generator."""
+        return self.engine.random_generator
 
     def dist_goal(self):
         """Return the distance from the robot to the goal XY position"""
@@ -276,7 +211,6 @@ class BaseTask(abc.ABC):
     @abc.abstractmethod
     def build_observation_space(self):
         """Construct observtion space.  Happens only once at during __init__"""
-        pass
 
     @abc.abstractmethod
     def build_placements_dict(self):
@@ -286,22 +220,24 @@ class BaseTask(abc.ABC):
     def placements_dict_from_object(self, object_name):
         """Get the placements dict subset just for a given object name"""
         placements_dict = {}
-        if hasattr(self, object_name + 's_num'):  # Objects with multiplicity
+        if hasattr(self, object_name + 's'):  # Objects with multiplicity
+            data_obj = getattr(self, object_name + 's')
             plural_name = object_name + 's'
             object_fmt = object_name + '{i}'
-            object_num = getattr(self, plural_name + '_num', None)
-            object_locations = getattr(self, plural_name + '_locations', [])
-            object_placements = getattr(self, plural_name + '_placements', None)
-            object_keepout = getattr(self, plural_name + '_keepout')
+            object_num = getattr(data_obj, 'num', None)
+            object_locations = getattr(data_obj, 'locations', [])
+            object_placements = getattr(data_obj, 'placements', None)
+            object_keepout = getattr(data_obj, 'keepout')
         else:  # Unique objects
+            data_obj = getattr(self, object_name)
             object_fmt = object_name
             object_num = 1
-            object_locations = getattr(self, object_name + '_locations', [])
-            object_placements = getattr(self, object_name + '_placements', None)
-            object_keepout = getattr(self, object_name + '_keepout')
+            object_locations = getattr(data_obj, 'locations', [])
+            object_placements = getattr(data_obj, 'placements', None)
+            object_keepout = getattr(data_obj, 'keepout')
         for i in range(object_num):
             if i < len(object_locations):
-                x, y = object_locations[i]
+                x, y = object_locations[i]  # pylint: disable=invalid-name
                 k = object_keepout + 1e-9  # Epsilon to account for numerical issues
                 placements = [(x - k, y - k, x + k, y + k)]
             else:
@@ -312,12 +248,10 @@ class BaseTask(abc.ABC):
     @abc.abstractmethod
     def build_world_config(self, layout):
         """Create a world_config from our own config"""
-        pass
 
     @abc.abstractmethod
     def obs(self):
         """Return the observation of our agent"""
-        pass
 
     def set_mocaps(self):
         """Set mocap object positions before a physics step is executed"""
@@ -328,11 +262,10 @@ class BaseTask(abc.ABC):
         #         target = np.array([np.sin(phase), np.cos(phase)]) * self.gremlins_travel
         #         pos = np.r_[target, [self.gremlins_size]]
         #         self.data.set_mocap_pos(name + 'mocap', pos)
-        pass
 
     def random_rot(self):
         """Use internal random state to get a random rotation in radians"""
-        return self.rs.uniform(0, 2 * np.pi)
+        return self.random_generator.uniform(0, 2 * np.pi)
 
     def obs_compass(self, pos):
         """
@@ -373,10 +306,11 @@ class BaseTask(abc.ABC):
         """
         if self.lidar_type == 'pseudo':
             return self.obs_lidar_pseudo(positions)
-        elif self.lidar_type == 'natural':
+
+        if self.lidar_type == 'natural':
             return self.obs_lidar_natural(group)
-        else:
-            raise ValueError(f'Invalid lidar_type {self.lidar_type}')
+
+        raise ValueError(f'Invalid lidar_type {self.lidar_type}')
 
     def obs_lidar_natural(self, group):
         """
@@ -385,6 +319,7 @@ class BaseTask(abc.ABC):
         around the robot z axis.
         """
         body = self.model.body_name2id('robot')
+        # pylint: disable-next=no-member
         grp = np.asarray([i == group for i in range(int(mujoco.mjNGROUP))], dtype='uint8')
         pos = np.asarray(self.world.robot_pos(), dtype='float64')
         mat_t = self.world.robot_mat()
@@ -393,7 +328,7 @@ class BaseTask(abc.ABC):
             theta = (i / self.lidar_num_bins) * np.pi * 2
             vec = np.matmul(mat_t, theta2vec(theta))  # Rotate from ego to world frame
             vec = np.asarray(vec, dtype='float64')
-            dist, _ = self.sim.ray_fast_group(pos, vec, grp, 1, body)
+            dist, _ = self.sim.ray_fast_group(pos, vec, grp, 1, body)  # pylint: disable=no-member
             if dist >= 0:
                 obs[i] = np.exp(-dist)
         return obs
@@ -424,11 +359,12 @@ class BaseTask(abc.ABC):
             pos = np.asarray(pos)
             if pos.shape == (3,):
                 pos = pos[:2]  # Truncate Z coordinate
+            # pylint: disable-next=invalid-name
             z = complex(*self.ego_xy(pos))  # X, Y as real, imaginary components
             dist = np.abs(z)
             angle = np.angle(z) % (np.pi * 2)
             bin_size = (np.pi * 2) / self.lidar_num_bins
-            bin = int(angle / bin_size)
+            bin = int(angle / bin_size)  # pylint: disable=redefined-builtin
             bin_angle = bin_size * bin
             if self.lidar_max_dist is None:
                 sensor = np.exp(-self.lidar_exp_gain * dist)
@@ -455,6 +391,7 @@ class BaseTask(abc.ABC):
         return np.matmul(world_3vec, robot_mat)[:2]  # only take XY coordinates
 
     def get_sensor_obs(self):
+        """Get observations of all sensor types."""
         obs = {}
 
         # if self.observe_sensors:
@@ -482,6 +419,7 @@ class BaseTask(abc.ABC):
         return obs
 
     def build_sensor_observation_space(self):
+        """Build observation space for all sensor types."""
         obs_space_dict = {}
 
         # if self.observe_sensors:

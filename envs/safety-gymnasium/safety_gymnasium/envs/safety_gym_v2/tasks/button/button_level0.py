@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""button task 0"""
 
 from collections import OrderedDict
 
 import gymnasium
 import mujoco
 import numpy as np
-from safety_gymnasium.envs.safety_gym_v2.assets.button import get_button
+from safety_gymnasium.envs.safety_gym_v2.assets.geoms import Buttons
 from safety_gymnasium.envs.safety_gym_v2.assets.group import GROUP
 from safety_gymnasium.envs.safety_gym_v2.base_task import BaseTask
 
@@ -33,31 +34,19 @@ class ButtonLevel0(BaseTask):
         super().__init__(
             task_config=task_config,
         )
+
         self.placements_extents = [-1, -1, 1, 1]
 
-        # Reward is distance towards goal plus a constant for being within range of goal
-        # reward_distance should be positive to encourage moving towards the goal
-        # if reward_distance is 0, then the reward function is sparse
-        self.reward_distance = 1.0  # Dense reward multiplied by the distance moved to the goal
-
-        self.buttons_num = 4
-        self.buttons_size = 0.1
-        self.buttons_keepout = 0.2
-        self.observe_buttons = True
-
-        self.hazards_size = 0.2
-        self.hazards_keepout = 0.18
-
-        self.gremlins_travel = 0.35
-        self.gremlins_keepout = 0.4
+        self.buttons = Buttons(num=4)
 
         self.agent_specific_config()
         self.last_dist_goal = None
         self.buttons_timer = None
         self.goal_button = None
 
-    def calculate_cost(self, **kwargs):
+    def calculate_cost(self):
         """determine costs depending on agent and obstacles"""
+        # pylint: disable-next=no-member
         mujoco.mj_forward(self.model, self.data)  # Ensure positions and contacts are correct
         cost = {}
 
@@ -70,11 +59,11 @@ class ButtonLevel0(BaseTask):
         """Returns the reward of an agent running in a circle (clock-wise)."""
         reward = 0.0
         dist_goal = self.dist_goal()
-        reward += (self.last_dist_goal - dist_goal) * self.reward_distance
+        reward += (self.last_dist_goal - dist_goal) * self.buttons.reward_distance
         self.last_dist_goal = dist_goal
 
         if self.goal_achieved:
-            reward += self.reward_goal
+            reward += self.buttons.reward_goal
 
         return reward
 
@@ -96,17 +85,17 @@ class ButtonLevel0(BaseTask):
     @property
     def buttons_pos(self):
         """Helper to get the list of button positions"""
-        return [self.data.body(f'button{i}').xpos.copy() for i in range(self.buttons_num)]
+        return [self.data.body(f'button{i}').xpos.copy() for i in range(self.buttons.num)]
 
     @property
     def hazards_pos(self):
         """Helper to get the hazards positions from layout"""
-        return [self.data.body(f'hazard{i}').xpos.copy() for i in range(self.hazards_num)]
+        return [self.data.body(f'hazard{i}').xpos.copy() for i in range(self.hazards.num)]
 
     @property
     def gremlins_obj_pos(self):
         """Helper to get the current gremlin position"""
-        return [self.data.body(f'gremlin{i}obj').xpos.copy() for i in range(self.gremlins_num)]
+        return [self.data.body(f'gremlin{i}obj').xpos.copy() for i in range(self.gremlins.num)]
 
     def agent_specific_config(self):
         pass
@@ -121,10 +110,10 @@ class ButtonLevel0(BaseTask):
 
     def build_goal(self):
         """Build a new goal position, maybe with resampling due to hazards"""
-        assert self.buttons_num > 0, 'Must have at least one button'
+        assert self.buttons.num > 0, 'Must have at least one button'
         self.build_goal_button()
         self.last_dist_goal = self.dist_goal()
-        self.buttons_timer = self.buttons_resampling_delay
+        self.buttons_timer = self.buttons.resampling_delay
 
     def build_placements_dict(self):
         """Build a dict of placements.  Happens once during __init__."""
@@ -139,7 +128,7 @@ class ButtonLevel0(BaseTask):
 
     def build_goal_button(self):
         """Pick a new goal button, maybe with resampling due to hazards"""
-        self.goal_button = self.rs.choice(self.buttons_num)
+        self.goal_button = self.random_generator.choice(self.buttons.num)
 
     def build_world_config(self, layout):
         """Create a world_config from our own config"""
@@ -148,10 +137,10 @@ class ButtonLevel0(BaseTask):
 
         world_config['robot_base'] = self.robot_base
         world_config['robot_xy'] = layout['robot']
-        if self.robot_rot is None:
+        if self.robot.rot is None:
             world_config['robot_rot'] = self.random_rot()
         else:
-            world_config['robot_rot'] = float(self.robot_rot)
+            world_config['robot_rot'] = float(self.robot.rot)
 
         # if self.floor_display_mode:
         #     floor_size = max(self.placements_extents)
@@ -164,10 +153,10 @@ class ButtonLevel0(BaseTask):
         # Extra geoms (immovable objects) to add to the scene
         world_config['geoms'] = {}
         # if self.buttons_num:
-        for i in range(self.buttons_num):
+        for i in range(self.buttons.num):
             name = f'button{i}'
-            world_config['geoms'][name] = get_button(
-                index=i, layout=layout, rot=self.random_rot(), size=self.buttons_size
+            world_config['geoms'][name] = self.buttons.get_button(
+                index=i, layout=layout, rot=self.random_rot()
             )
 
         return world_config
@@ -182,7 +171,7 @@ class ButtonLevel0(BaseTask):
         obs_space_dict['goal_lidar'] = gymnasium.spaces.Box(
             0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
-        # if self.buttons_num and self.observe_buttons:
+
         obs_space_dict['buttons_lidar'] = gymnasium.spaces.Box(
             0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
         )
@@ -207,6 +196,7 @@ class ButtonLevel0(BaseTask):
 
     def obs(self):
         """Return the observation of our agent"""
+        # pylint: disable-next=no-member
         mujoco.mj_forward(self.model, self.data)  # Needed to get sensordata correct
         obs = {}
 
@@ -215,7 +205,6 @@ class ButtonLevel0(BaseTask):
 
         obs.update(self.get_sensor_obs())
 
-        # if self.buttons_num and self.observe_buttons:
         # Buttons observation is zero while buttons are resetting
         if self.buttons_timer == 0:
             obs['buttons_lidar'] = self.obs_lidar(self.buttons_pos, GROUP['button'])
@@ -239,18 +228,3 @@ class ButtonLevel0(BaseTask):
         """Tick the buttons resampling timer"""
         #  Button timer (used to delay button resampling)
         self.buttons_timer = max(0, self.buttons_timer - 1)
-
-    def set_mocaps(self, gremlin_size=0.1):
-        """Set mocap object positions before a physics step is executed"""
-        phase = float(self.data.time)
-        for i in range(self.gremlins_num):
-            name = f'gremlin{i}'
-            target = np.array([np.sin(phase), np.cos(phase)]) * self.gremlins_travel
-            pos = np.r_[target, [gremlin_size]]
-            self.set_mocap_pos(name + 'mocap', pos)
-
-    def set_mocap_pos(self, name, value):
-        """Set the position of a mocap object"""
-        body_id = self.model.body(name).id
-        mocap_id = self.model.body_mocapid[body_id]
-        self.data.mocap_pos[mocap_id] = value
