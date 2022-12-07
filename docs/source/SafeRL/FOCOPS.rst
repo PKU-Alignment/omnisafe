@@ -42,7 +42,7 @@ Background
             -  Approximation errors resulting from Taylor approximations.
 
             -  Approximation errors result from using the conjugate method to calculate the inverse of the Fisher information matrix.
-
+            
     .. grid-item::
         :columns: 12 6 6 6
 
@@ -180,7 +180,7 @@ The form of the optimal Policy is intuitive.
 It gives high probability mass to areas of the state-action space with high return, offset by a penalty term times the cost advantage.
 We will refer to the optimal solution to Problem :ref:`(4) <focops-eq-4>` ~ :ref:`(6) <focops-eq-4>` as the *optimal update policy*.
 Suppose you need help understanding the meaning of the above Equation.
-In that case, you can first think that FOCOPS finally solves Problem :ref:`(4) <focops-eq-4>` ~ :ref:`(6) <focops-eq-4>` by solving Problem :ref:`(7) <focops-eq-7>`and Problem :ref:`(8) <focops-eq-8>`.
+In that case, you can first think that FOCOPS finally solves Problem :ref:`(4) <focops-eq-4>` ~ :ref:`(6) <focops-eq-4>` by solving Problem :ref:`(7) <focops-eq-7>` and Problem :ref:`(8) <focops-eq-8>`.
 That is, the :bdg-info-line:`Theorem 1` is a viable solution.
 
 .. grid:: 2
@@ -226,7 +226,7 @@ That is, the :bdg-info-line:`Theorem 1` is a viable solution.
 
                     Answer
                     ^^^
-                    FOCOPS purpose that the optimal update policy :math:`\pi^*` satisfies the following bound for the worst-case guarantee for cost constraint in CPO:
+                    FOCOPS purposes that the optimal update policy :math:`\pi^*` satisfies the following bound for the worst-case guarantee for cost constraint in CPO:
 
                     .. math:: J^C\left(\pi^*\right) \leq d+\frac{\sqrt{2 \delta} \gamma \epsilon_C^{\pi^*}}{(1-\gamma)^2}
 
@@ -323,7 +323,7 @@ By applying gradient descent w.r.t :math:`\nu` to minimize :math:`L(\pi^*,\lambd
     The derivative of :math:`L(\pi^*,\lambda,\nu)` w.r.t :math:`\nu` is
 
     .. _`focops-eq-12`:
-
+    
     .. math::
         :nowrap:
 
@@ -486,16 +486,17 @@ Architecture of functions
 
 -  ``focops.learn()``
 
-  -  ``env.roll_out()``
-  -  ``focops.update()``
+   - ``env.roll_out()``
+   - ``focops.update()``
 
-    -  ``focops.buf.get()``
-    -  ``focops.pre_process_data(raw_data)``
-    -  ``focops.update_policy_net()``
-    -  ``focops.update_cost_net()``
-    -  ``focops.update_value_net()``
+     - ``focops.buf.get()``
+     - ``focops.pre_process_data(raw_data)``
+     - ``focops.update_policy_net()``
+     - ``focops.update_cost_net()``
+     - ``focops.update_value_net()``
 
--  ``focops.log()``
+
+- ``focops.log()``
 
 ------
 
@@ -617,7 +618,7 @@ Documentation of new functions
 
             focops.update_lagrange_multiplier(ep_costs: float)
             ^^^
-            FOCOPS algorithm update ``self.lagrangian_multiplier`` which is :math:`\nu` in FOCOPS paper by projection.
+            FOCOPS algorithm updates ``self.lagrangian_multiplier`` which is :math:`\nu` in FOCOPS paper by projection.
 
             .. code-block:: python
                 :linenos:
@@ -975,9 +976,9 @@ Proof of Corollary
                 \end{eqnarray}
 
             Therefore the derivative of the expectation in the last term of :math:`L(\pi^*,\lambda,\nu)` can be written as:
-
+            
             .. _`focops-eq-22`:
-
+            
             .. math::
                 :nowrap:
 
@@ -1011,9 +1012,9 @@ Proof of Corollary
             .. math:: \frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}=\frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu} \frac{1}{Z_{\lambda, \nu}(s)}=-\frac{1}{\lambda} \underset{a \sim \pi^*(\cdot \mid s)}{\mathbb{E}}\left[A^C_{\pi_{\theta_k}}(s, a)\right]\tag{24}
 
             Plugging :ref:`(24) <focops-eq-24>`  into the last equality in :ref:`(22) <focops-eq-22>`  gives us:
-
+           
             .. _`focops-eq-25`:
-
+           
             .. math::
                 :nowrap:
 

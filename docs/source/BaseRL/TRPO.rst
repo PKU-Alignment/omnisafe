@@ -1,4 +1,3 @@
-================================
 Trust Region Policy Optimization
 ================================
 
@@ -13,9 +12,9 @@ Quick Facts
     #. TRPO can be used for environments with both :bdg-success-line:`discrete` and :bdg-success-line:`continuous` action spaces.
     #. TRPO is an improvement work done on the basis of :bdg-success-line:`NPG` .
     #. TRPO is an important theoretical basis for :bdg-success-line:`CPO` .
-    #. The OmniSafe implementation of TRPO support :bdg-success-line:`parallelization`.
+    #. The OmniSafe implementation of TRPO supports :bdg-success-line:`parallelization`.
 
-------------------------------------------------------------------------
+------
 
 .. contents:: Table of Contents
     :depth: 3
@@ -100,6 +99,9 @@ As shown in **NPG**, the difference in performance between two policies :math:`\
 
     Theorem 1 (Performance Difference Bound)
     ^^^
+
+    .. _`trpo-eq-2`:
+
     .. math::
         :nowrap:
         :label: trpo-eq-2
@@ -123,6 +125,8 @@ which is of our interest.
 .. note::
 
     We can rewrite :bdg-info-line:`Theorem 1` with a sum over states instead of timesteps:
+
+    .. _`trpo-eq-3`:
 
     .. math::
         :nowrap:
@@ -149,10 +153,12 @@ that there will be some states :math:`s` for which the expected advantage is neg
 Surrogate function for the objective
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Equation :math:numref:`trpo-eq-3` requires knowledge about future state distribution under :math:`\pi'`,
+Equation :ref:`(3) <trpo-eq-3>` requires knowledge about future state distribution under :math:`\pi'`,
 which is usually unknown and difficult to estimate.
-The complex dependency of :math:`d_{\pi'}(s)` on :math:`\pi'` makes Equation :math:numref:`trpo-eq-3` difficult to optimize directly.
+The complex dependency of :math:`d_{\pi'}(s)` on :math:`\pi'` makes Equation :ref:`(3) <trpo-eq-3>` difficult to optimize directly.
 Instead, we introduce the following local approximation to :math:`J`:
+
+.. _`trpo-eq-4`:
 
 .. math::
     :nowrap:
@@ -190,6 +196,8 @@ It has been proved that if the two policy :math:`\pi'` and :math:`\pi` are close
             L_{\pi_{\theta_0}}\left(\pi_{\theta_0}\right)&=&J^R\left(\pi_{\theta_0}\right)\tag{5}
         \end{eqnarray}
 
+    .. _`trpo-eq-6`:
+
     .. math::
         :nowrap:
         :label: trpo-eq-6
@@ -200,7 +208,7 @@ It has been proved that if the two policy :math:`\pi'` and :math:`\pi` are close
     +++
     The proof of the :bdg-info-line:`Corollary 1` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-Equation :math:numref:`trpo-eq-6` implies that a sufficiently small step :math:`\pi_{\theta_0} \rightarrow \pi'` that improves :math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J`,
+Equation :ref:`(6) <trpo-eq-6>` implies that a sufficiently small step :math:`\pi_{\theta_0} \rightarrow \pi'` that improves :math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J`,
 but does not give us any guidance on how big of a step to take.
 
 To address this issue, **NPG** proposed a policy updating scheme called **conservative policy iteration(CPI)**,
@@ -219,6 +227,8 @@ The new policy :math:`\pi_{\text {new }}` was defined to be the following mixtur
 
 Kakade and Langford derived the following lower bound:
 
+.. _`trpo-eq-8`:
+
 .. math::
     :nowrap:
     :label: trpo-eq-8
@@ -229,14 +239,14 @@ Kakade and Langford derived the following lower bound:
     \text { where } &&\epsilon=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right| \nonumber
     \end{eqnarray}
 
-However, the lower bound in Equation :math:numref:`trpo-eq-8` only applies to mixture policies, so it needs to be extended to general policy cases.
+However, the lower bound in Equation :ref:`(8) <trpo-eq-8>` only applies to mixture policies, so it needs to be extended to general policy cases.
 
 ------
 
 Monotonic Improvement Guarantee for General Stochastic Policies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Based on the theoretical guarantee :math:numref:`trpo-eq-15` in mixture policies case,
+Based on the theoretical guarantee :ref:`(15) <trpo-eq-15>` in mixture policies case,
 TRPO extends the lower bound to general policies by replacing :math:`\alpha` with a distance measure between :math:`\pi` and :math:`\pi'`,
 and changing the constant :math:`\epsilon` appropriately.
 The chosen distance measurement is the total variation divergence (TV divergence),
@@ -288,6 +298,8 @@ Next, we note the following relationship between the total variation divergence 
 Let :math:`D_{\mathrm{KL}}^{\max }(\pi, \pi')=\max _s D_{\mathrm{KL}}(\pi(\cdot|s) \| \pi'(\cdot|s))`.
 The following bound then follows directly from :bdg-info-line:`Theorem 2` :
 
+.. _`trpo-eq-11`:
+
 .. math::
     :nowrap:
     :label: trpo-eq-11
@@ -297,10 +309,10 @@ The following bound then follows directly from :bdg-info-line:`Theorem 2` :
             & \quad \text { where } C=\frac{4 \epsilon \gamma}{(1-\gamma)^2}
         \end{eqnarray}
 
-TRPO describes an approximate policy iteration scheme based on the policy improvement bound in Equation :math:numref:`trpo-eq-11`.
+TRPO describes an approximate policy iteration scheme based on the policy improvement bound in Equation :ref:`(11) <trpo-eq-11>`.
 Note that for now, we assume exact evaluation of the advantage values :math:`A^R_{\pi}`.
 
-It follows from Equation :math:numref:`trpo-eq-11` that TRPO is guaranteed to generate a monotonically improving sequence of policies :math:`J\left(\pi_0\right) \leq J\left(\pi_1\right) \leq J\left(\pi_2\right) \leq \cdots`.
+It follows from Equation :ref:`(11) <trpo-eq-11>` that TRPO is guaranteed to generate a monotonically improving sequence of policies :math:`J\left(\pi_0\right) \leq J\left(\pi_1\right) \leq J\left(\pi_2\right) \leq \cdots`.
 To see this, let :math:`M_i(\pi)=L_{\pi_i}(\pi)-C D_{\mathrm{KL}}^{\max }\left(\pi_i, \pi\right)`.
 Then
 
@@ -354,7 +366,7 @@ TRPO uses fixed KL divergence constraint to bound the distance between :math:`\p
 This problem imposes a constraint that the KL divergence is bounded at every point in the state space.
 While it is motivated by the theory,
 this problem is impractical to solve due to the large number of constraints.
-Instead, TRPO use a heuristic approximation which considers the average KL divergence:
+Instead, TRPO uses a heuristic approximation which considers the average KL divergence:
 
 .. math::
     :nowrap:
@@ -366,7 +378,7 @@ Instead, TRPO use a heuristic approximation which considers the average KL diver
     \end{eqnarray}
 
 where :math:`\bar{D}_{\mathrm{KL}}:=\mathbb{E}_{s \sim \rho}\left[D_{\mathrm{KL}}\left(\pi_{\theta_1}(\cdot \mid s) \| \pi_{\theta_2}(\cdot \mid s)\right)\right]`
-The method TRPO describe involves two steps:
+The method TRPO describes involves two steps:
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
@@ -422,12 +434,12 @@ The method TRPO describe involves two steps:
 
             Computing the Fisher-Vector Product
             ^^^
-            TRPO approximately compute the search direction by solving the equation :math:`Hx=g`,
+            TRPO approximately computes the search direction by solving the equation :math:`Hx=g`,
             where :math:`H` is the Fisher information matrix, i.e.,
             the quadratic approximation to the KL divergence constraint :math:`\bar{D}_{\mathrm{KL}}\left(\theta_{\text {old }}, \theta\right) \approx \frac{1}{2}\left(\theta-\theta_{\text {old }}\right)^T H\left(\theta-\theta_{\text {old }}\right)`,
             where :math:`H_{i j}=\frac{\partial}{\partial \theta_i} \frac{\partial}{\partial \theta_j} \bar{D}_{\mathrm{KL}}\left(\theta_{\text {old }}, \theta\right)` (according to the definition of matrix :math:`H`).
             It is very difficult to calculate the entire :math:`H` or :math:`H^{-1}` directly,
-            so TRPO use conjugate gradient algorithm to approximately solve the equation :math:`Hx=g` without forming this full matrix.
+            so TRPO uses conjugate gradient algorithm to approximately solve the equation :math:`Hx=g` without forming this full matrix.
             +++
             The implementation of :bdg-success-line:`Computing the Fisher-Vector Product` can be seen in the :bdg-success:`Code with OmniSafe`, click on this :bdg-success-line:`card` to jump to view.
 
@@ -444,15 +456,15 @@ The method TRPO describe involves two steps:
             Computing The Final Update Step
             ^^^
             Having computed the search direction :math:`s\approx H^{-1}g`,
-            TRPO next need to compute the appropriate step length to ensure improvement of the surrogate objective and satisfaction of the KL divergence constraint.
-            First, TRPO compute the maximal step length :math:`\beta` such that :math:`\beta+\theta s` will satisfy the KL divergence constraint.
+            TRPO next needs to compute the appropriate step length to ensure improvement of the surrogate objective and satisfaction of the KL divergence constraint.
+            First, TRPO computes the maximal step length :math:`\beta` such that :math:`\beta+\theta s` will satisfy the KL divergence constraint.
             To do this, let :math:`\delta=\bar{D}_{\mathrm{KL}} \approx \frac{1}{2}(\beta s)^T H(\beta s)=\frac{1}{2} \beta^2 s^T A s`.
             From this, we obtain :math:`\beta=\sqrt{2 \delta / s^T H s}`.
 
             .. hint::
                 The term :math:`s^THs` is an intermediate result produced by the conjugate gradient algorithm.
 
-            To meet the constraints, TRPO use line search algorithm to compute the final step length.
+            To meet the constraints, TRPO uses line search algorithm to compute the final step length.
             Detailedly, TRPO perform the line search on the objective :math:`L_{\theta_{\text {old }}}(\theta)-\mathcal{X}\left[\bar{D}_{\text {KL }}\left(\theta_{\text {old }}, \theta\right) \leq \delta\right]`, where :math:`\mathcal{X}[\ldots]` equals zero,
             when its argument is true and :math:`+\infty` when it is false.
             Starting with the maximal value of the step length :math:`\beta` computed in the previous paragraph,
@@ -642,7 +654,7 @@ Documentation of new functions
 
             trpo.Fvp()
             ^^^
-            TRPO algorithm Build the Hessian-vector product instead of the full Hessian matrix based on an approximation of the KL-divergence,
+            TRPO algorithm Builds the Hessian-vector product instead of the full Hessian matrix based on an approximation of the KL-divergence,
             flowing the next steps:
 
             (1) Calculate the KL divergence between two policy.
@@ -940,6 +952,8 @@ Proof of Theorem 1 (Difference between two arbitrarily policies)
     First note that :math:`A^R_{\pi}(s, a)=\mathbb{E}_{s' \sim \mathbb{P}\left(s^{\prime} \mid s, a\right)}\left[r(s)+\gamma V^R_{\pi}\left(s^{\prime}\right)-V^R_{\pi}(s)\right]`.
     Therefore,
 
+    .. _`trpo-eq-15`:
+
     .. math::
         :nowrap:
         :label: trpo-eq-15
@@ -964,7 +978,7 @@ Proof of Corollary 1
 
     Proof of Corollary 1
     ^^^
-    From Equation :math:numref:`trpo-eq-2` and :math:numref:`trpo-eq-4` , we can easily know that
+    From Equation :ref:`(2) <trpo-eq-2>` and :ref:`(4) <trpo-eq-4>` , we can easily know that
 
     .. math::
         :nowrap:
@@ -976,7 +990,7 @@ Proof of Corollary 1
 
         \end{eqnarray}
 
-    Now Equation :math:numref:`trpo-eq-4` can be written as follows:
+    Now Equation :ref:`(4) <trpo-eq-4>` can be written as follows:
 
     .. math::
         :nowrap:
@@ -987,6 +1001,8 @@ Proof of Corollary 1
         \end{eqnarray}
 
     So,
+
+    .. _`trpo-eq-18`:
 
     .. math::
         :nowrap:
@@ -1002,6 +1018,8 @@ Proof of Corollary 1
         :math:`\sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)=0`
 
     Meanwhile,
+
+    .. _`trpo-eq-19`:
 
     .. math::
         :nowrap:
@@ -1022,8 +1040,8 @@ Proof of Corollary 1
                 \nabla L_{\pi_{\theta_0}}(\pi_{\theta}) | _{\theta = \theta_0}=J(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \nabla \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)\tag{20}
         \end{eqnarray}
 
-    Combine :math:numref:`trpo-eq-18`  and
-    :math:numref:`trpo-eq-19`, we have
+    Combine :ref:`(18) <trpo-eq-18>`  and
+    :ref:`(19) <trpo-eq-19>`, we have
 
     .. math::
         :nowrap:
@@ -1104,6 +1122,8 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             Given that :math:`\pi, \pi'` are :math:`\alpha`-coupled policies,
             for all s,
 
+            .. _`trpo-eq-25`:
+
             .. math::
                 :nowrap:
                 :label: trpo-eq-25
@@ -1148,6 +1168,9 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
 
             Proof of Lemma 1
             ^^^
+
+            .. _`trpo-eq-26`:
+
             .. math::
                 :nowrap:
                 :label: trpo-eq-26
@@ -1222,7 +1245,9 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
                 \end{eqnarray}
 
             because :math:`n_t=0` indicates that :math:`\pi` and :math:`\pi'` agreed on all timesteps less than :math:`t`.
-            Subtracting Equations :math:numref:`trpo-eq-25` and :math:numref:`trpo-eq-26`, we get
+            Subtracting Equations :ref:`(25) <trpo-eq-25>` and :ref:`(26) <trpo-eq-26>`, we get
+
+            .. _`trpo-eq-32`:
 
             .. math::
                 :nowrap:
@@ -1238,6 +1263,8 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             By definition of :math:`\alpha, P(\pi, \pi'` agree at timestep :math:`i) \geq 1-\alpha`,
             so :math:`P\left(n_t=0\right) \geq(1-\alpha)^t`, and
 
+            .. _`trpo-eq-33`:
+
             .. math::
                 :nowrap:
                 :label: trpo-eq-33
@@ -1248,6 +1275,8 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
                 \end{eqnarray}
 
             Next, note that
+
+            .. _`trpo-eq-34`:
 
             .. math::
                 :nowrap:
@@ -1261,7 +1290,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
                 \end{eqnarray}
 
             Where the second inequality follows from Lemma 2.
-            Plugging Equation :math:numref:`trpo-eq-33` and Equation :math:numref:`trpo-eq-34` into Equation :math:numref:`trpo-eq-32`, we get
+            Plugging Equation :ref:`(33) <trpo-eq-33>` and Equation :ref:`(34) <trpo-eq-34>` into Equation :ref:`(32) <trpo-eq-32>`, we get
 
             .. math::
                 :nowrap:
@@ -1274,6 +1303,8 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
 The preceding Lemma bounds the difference in expected advantage at each timestep :math:`t`.
 We can sum over time to bound the difference between :math:`J^R(\pi')` and :math:`L_\pi(\pi')`. Subtracting Equation :math:`(23)` and Equation :math:`(24)`,
 and defining :math:`\epsilon=\max _{s, a}\left|A^R_{\pi}(s, a)\right|`, we have
+
+.. _`trpo-eq-36`:
 
 .. math::
     :nowrap:
@@ -1305,5 +1336,5 @@ such that
 .. math:: \max_s D_{\mathrm{TV}}(\pi(\cdot|s) \| \pi'(\cdot|s)) \leq \alpha\tag{37}
 
 then we can define an :math:`\alpha`-coupled policy pair :math:`(\pi, \pi')` with appropriate marginals.
-Taking :math:`\alpha=\max _s D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right) \leq \alpha` in Equation :math:numref:`trpo-eq-36`,
+Taking :math:`\alpha=\max _s D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right) \leq \alpha` in Equation :ref:`(36) <trpo-eq-36>`,
 :bdg-info-line:`Theorem 2` follows.
