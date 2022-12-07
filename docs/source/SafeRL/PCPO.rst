@@ -37,6 +37,8 @@ In a word, PCPO is a CPO-based algorithm dedicated to solving problem of learnin
 
     If you have not previously learned the CPO type of algorithm, in order to facilitate your complete understanding of the PCPO algorithm ideas introduced in this section, we strongly recommend that you read this article after reading the CPO tutorial (:doc:`./CPO`) we wrote.
 
+------
+
 Optimization Objective
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -61,12 +63,14 @@ In order for you to have a clearer understanding, we hope that you will read the
     :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
 
     Questions
-    ^^^^^^^^^
+    ^^^
     -  What is two-stage policy update and how?
 
     -  What is performance bound for PCPO and how PCPO get it?
 
     -  How PCPO practically solve the optimal problem?
+
+------
 
 Two-stage Policy Update
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,7 +93,7 @@ Next, we will describe how PCPO completes the two-stage update.
             :class-footer: sd-font-weight-bold
 
             Reward Improvement Stage
-            ^^^^^^^^^^^^^^^^^^^^^^^^
+            ^^^
             First, PCPO optimizes the reward function by maximizing the reward advantage function :math:`A_{\pi}(s,a)` subject to KL-Divergence constraint.
             This constraints the intermediate policy :math:`\pi_{k+\frac12}` to be within a :math:`\delta`-neighbourhood of :math:`\pi_{k}`:
 
@@ -112,7 +116,7 @@ Next, we will describe how PCPO completes the two-stage update.
             :class-footer: sd-font-weight-bold
 
             Projection Stage
-            ^^^^^^^^^^^^^^^^
+            ^^^
             Second, PCPO projects the intermediate policy :math:`\pi_{k+\frac12}` onto the constraint set by minimizing a distance measure :math:`D` between :math:`\pi_{k+\frac12}` and :math:`\pi`:
 
             .. math::
@@ -127,6 +131,7 @@ The :bdg-ref-info-line:`Projection Stage<two stage update>` ensures that the con
 The :bdg-ref-info-line:`Reward Improvement Stage<two stage update>` ensures that the agent's updates are in the direction of maximizing rewards, so as not to violate the step size of distance measure :math:`D`.
 :bdg-ref-info-line:`Projection Stage<two stage update>` causes the agent to update in the direction of satisfying the constraint while avoiding crossing :math:`D` as much as possible.
 
+------
 
 Policy Performance Bounds
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -148,7 +153,7 @@ For the two cases where the agent satisfies the constraint and does not satisfy 
             :link-type: ref
 
             Worst-case Bound on Updating Constraint-satisfying Policies
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            ^^^
             Define :math:`\epsilon_{\pi_{k+1}}^{R}\doteq \max\limits_{s}\big|\mathbb{E}_{a\sim\pi_{k+1}}[A^{R}_{\pi_{k}}(s,a)]\big|`, and :math:`\epsilon_{\pi_{k+1}}^{C}\doteq \max\limits_{s}\big|\mathbb{E}_{a\sim\pi_{k+1}}[A^{C}_{\pi_{k}}(s,a)]\big|`.
             If the current policy :math:`\pi_k` satisfies the constraint, then under KL divergence projection, the lower bound on reward improvement, and upper bound on constraint violation for each policy update are
 
@@ -161,7 +166,7 @@ For the two cases where the agent satisfies the constraint and does not satisfy 
                 \end{eqnarray}
 
             where :math:`\delta` is the step size in the reward improvement step.
-
+            +++
             The proof of the :bdg-info-line:`Theorem 1` can be seen in the :bdg-info:`CPO tutorial`, click on this :bdg-info-line:`card` to jump to view.
 
     .. tab-item:: Theorem 2
@@ -174,7 +179,7 @@ For the two cases where the agent satisfies the constraint and does not satisfy 
             :link-type: ref
 
             Worst-case Bound on Updating Constraint-violating Policies
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            ^^^
             Define :math:`\epsilon_{\pi_{k+1}}^{R}\doteq \max\limits_{s}\big|\mathbb{E}_{a\sim\pi_{k+1}}[A^{R}_{\pi_{k}}(s,a)]\big|`, :math:`\epsilon_{\pi_{k+1}}^{C}\doteq \max\limits_{s}\big|\mathbb{E}_{a\sim\pi_{k+1}}[A^{C}_{\pi_{k}}(s,a)]\big|`, :math:`b^{+}\doteq \max(0,J^{C}(\pi_k)-d),` and :math:`\alpha_{KL} \doteq \frac{1}{2a^T\boldsymbol{H}^{-1}a},` where :math:`a` is the gradient of the cost advantage function and :math:`\boldsymbol{H}` is the Hessian of the KL divergence constraint.
             If the current policy :math:`\pi_k` violates the constraint, then under KL divergence projection, the lower bound on reward improvement and the upper bound on constraint violation for each policy update are
 
@@ -187,8 +192,10 @@ For the two cases where the agent satisfies the constraint and does not satisfy 
                 \end{eqnarray}
 
             where :math:`\delta` is the step size in the reward improvement step.
-
+            +++
             The proof of the :bdg-info-line:`Theorem 2` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
+
+------
 
 Practical Implementation
 ------------------------
@@ -196,7 +203,7 @@ Practical Implementation
 Implementation of Two-stage Update
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For a large neural network policy with hundreds of thousands of parameters, directly solving for the PCPO update in :math:`(2)` and :math:`(3)` is impractical due to the computational cost.
+For a large neural network policy with hundreds of thousands of parameters, directly solving for the PCPO update in :ref:`(2) <two stage update>` and :ref:`(3) <two stage update>` is impractical due to the computational cost.
 PCPO proposes that with a small step size :math:`\delta`, the reward function and constraints and the KL divergence constraint in the reward improvement step can be approximated with a first order expansion, while the KL divergence measure in the projection step can also be approximated with a second order expansion.
 
 .. tab-set::
@@ -211,7 +218,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
             :link-type: ref
 
             Reward Improvement Stage
-            ^^^^^^^^^^^^^^^^^^^^^^^^
+            ^^^
             Define:
 
             :math:`g\doteq\nabla_\theta\underset{\substack{s\sim d^{\pi_k}a\sim \pi}}{\mathbb{E}}[A_{\pi_k}^{R}(s,a)]` is the gradient of the reward advantage function,
@@ -228,7 +235,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
                 \end{eqnarray}
 
             In fact, the above problem is essentially an optimization problem presented in TRPO, which can be completely solved using the method we introduced in the TRPO tutorial.
-
+            +++
             The Omnisafe code of the :bdg-success-line:`Implementation of Stage I` can be seen in the :bdg-success:`Code with Omnisafe`, click on this :bdg-success-line:`card` to jump to view.
 
     .. tab-item:: Implementation of Stage 2
@@ -241,7 +248,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
             :link-type: ref
 
             Projection Stage
-            ^^^^^^^^^^^^^^^^
+            ^^^
             PCPO provides a selection reference for distance measures: if the projection is defined in the parameter space, :math:`L2` norm projection is selected, while if the projection is defined in the probability space, KL divergence projection is better.
             This can be approximated through the second order expansion.
             Again, PCPO linearizes the cost constraint at :math:`\pi_{k}`.
@@ -255,12 +262,14 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
                 \end{eqnarray}
 
             where :math:`\boldsymbol{L}=\boldsymbol{I}` for :math:`L2` norm projection, and :math:`\boldsymbol{L}=\boldsymbol{H}` for KL divergence projection.
-
+            +++
             The Omnisafe code of the :bdg-success-line:`Implementation of Stage II` can be seen in the :bdg-success:`Code with Omnisafe`, click on this :bdg-success-line:`card` to jump to view.
 
-PCPO solves Problem :math:`(6)` and Problem :math:`(7)` using :bdg-success-line:`convex programming`, see detailed in :bdg-ref-success:`Appendix<convex-programming>`.
+PCPO solves Problem :ref:`(6) <performance bound>` and Problem :ref:`(7) <performance bound>` using :bdg-success-line:`convex programming`, see detailed in :bdg-ref-success:`Appendix<convex-programming>`.
 
 For each policy update:
+
+.. _pcpo-eq-10:
 
 .. math::
     :nowrap:
@@ -291,7 +300,7 @@ For each policy update:
                     :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
 
                     Question
-                    ^^^^^^^^
+                    ^^^
                     Is using linear approximation to the constraint set enough to ensure constraint satisfaction since the real constraint set is maybe non-convex?
 
             .. tab-item:: Question II
@@ -302,7 +311,7 @@ For each policy update:
                     :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
 
                     Question
-                    ^^^^^^^^
+                    ^^^
                     Can PCPO solve the multi-constraint problem? And how PCPO actually do that?
 
     .. grid-item::
@@ -318,7 +327,7 @@ For each policy update:
                     :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
 
                     Answer
-                    ^^^^^^
+                    ^^^
                     In fact, if the step size :math:`\delta` is small, then the linearization of the constraint set is accurate enough to locally approximate it.
 
             .. tab-item:: Answer II
@@ -331,12 +340,14 @@ For each policy update:
                     Answer
                     ^^^
                     By sequentially projecting onto each of the sets,
-                    the update in :math:`(7)` can be extended by using alternating projections.
+                    the update in :ref:`(7) <performance bound>` can be extended by using alternating projections.
+
+------
 
 Analysis
 ~~~~~~~~
 
-The update rule in :math:`(7)` shows that the difference between PCPO with KL divergence and :math:`L2` norm projections is **the cost update direction**, leading to a difference in reward improvement.
+The update rule in :ref:`(7) <performance bound>` shows that the difference between PCPO with KL divergence and :math:`L2` norm projections is **the cost update direction**, leading to a difference in reward improvement.
 These two projections converge to different stationary points with different convergence rates related to the smallest and largest singular values of the Fisher information matrix shown in :bdg-info-line:`Theorem 3`.
 PCPO assumes that: PCPO minimizes the negative reward objective function :math:`f: R^n \rightarrow R` .
 The function :math:`f` is :math:`L`-smooth and twice continuously differentiable over the closed and convex constraint set :math:`\mathcal{C}`.
@@ -351,9 +362,9 @@ The function :math:`f` is :math:`L`-smooth and twice continuously differentiable
     :link-type: ref
 
     Theorem 3
-    ^^^^^^^^^
-    Let :math:`\eta\doteq \sqrt{\frac{2\delta}{g^{T}\boldsymbol{H}^{-1}g}}` in :math:`(7)`, where :math:`\delta` is the step size for reward improvement, :math:`g` is the gradient of :math:`f`, and :math:`\boldsymbol{H}` is the Fisher information matrix.
-    Let :math:`\sigma_\mathrm{max}(\boldsymbol{H})` be the largest singular value of :math:`\boldsymbol{H}`, and :math:`a` be the gradient of cost advantage function in :math:`(7)`.
+    ^^^
+    Let :math:`\eta\doteq \sqrt{\frac{2\delta}{g^{T}\boldsymbol{H}^{-1}g}}` in :ref:`(7) <performance bound>`, where :math:`\delta` is the step size for reward improvement, :math:`g` is the gradient of :math:`f`, and :math:`\boldsymbol{H}` is the Fisher information matrix.
+    Let :math:`\sigma_\mathrm{max}(\boldsymbol{H})` be the largest singular value of :math:`\boldsymbol{H}`, and :math:`a` be the gradient of cost advantage function in :ref:`(7) <performance bound>`.
     Then PCPO with KL divergence projection converges to a stationary point either inside the constraint set or in the boundary of the constraint set.
     In the latter case, the Lagrangian constraint :math:`g=-\alpha a, \alpha\geq0` holds.
     Moreover, at step :math:`k+1` the objective value satisfies
@@ -365,7 +376,7 @@ The function :math:`f` is :math:`L`-smooth and twice continuously differentiable
     If :math:`\sigma_\mathrm{max}(\boldsymbol{H})\leq1,` then a step :math:`k+1` objective value satisfies.
 
     .. math:: f(\theta_{k+1})\leq f(\theta_{k})+(\frac{L}{2}-\frac{1}{\eta})||\theta_{k+1}-\theta_{k}||^2_2.
-
+    +++
     The proof of the :bdg-info-line:`Theorem 3` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
 :bdg-info-line:`Theorem 3` shows that in the stationary point :math:`g` is a line that points to the opposite direction of :math:`a`.
@@ -392,7 +403,7 @@ Quick start
     :class-footer: sd-font-weight-bold
 
     Run PCPO in Omnisafe
-    ^^^^^^^^^^^^^^^^^^^^
+    ^^^
     Here are 3 ways to run CPO in OmniSafe:
 
     * Run Agent from preset yaml file
@@ -465,19 +476,19 @@ Architecture of functions
 
 -  ``pcpo.learn()``
 
-    -  ``env.roll_out()``
-    -  ``pcpo.update()``
+   -  ``env.roll_out()``
+   -  ``pcpo.update()``
 
-        -  ``pcpo.buf.get()``
-        -  ``pcpo.update_policy_net()``
+      -  ``pcpo.buf.get()``
+      -  ``pcpo.update_policy_net()``
 
-            -  ``Fvp()``
-            -  ``conjugate_gradients()``
-            -  ``search_step_size()``
+         -  ``Fvp()``
+         -  ``conjugate_gradients()``
+         -  ``search_step_size()``
 
 
-        -  ``pcpo.update_cost_net()``
-        -  ``pcpo.update_value_net()``
+      -  ``pcpo.update_cost_net()``
+      -  ``pcpo.update_value_net()``
 
 -  ``pcpo.log()``
 
@@ -494,7 +505,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         env.roll_out()
-        ^^^^^^^^^^^^^^
+        ^^^
         Collect data and store to experience buffer.
 
     .. card::
@@ -503,7 +514,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         pcpo.update()
-        ^^^^^^^^^^^^^
+        ^^^
         Update actor, critic, running statistics
 
     .. card::
@@ -512,7 +523,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         pcpo.buf.get()
-        ^^^^^^^^^^^^^^
+        ^^^
         Call this at the end of an epoch to get all of the data from the buffer
 
     .. card::
@@ -521,7 +532,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         pcpo.update_policy_net()
-        ^^^^^^^^^^^^^^^^^^^^^^^^
+        ^^^
         Update policy network in 5 kinds of optimization case
 
     .. card::
@@ -530,7 +541,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         pcpo.update_value_net()
-        ^^^^^^^^^^^^^^^^^^^^^^^
+        ^^^
         Update Critic network for estimating reward.
 
     .. card::
@@ -539,7 +550,7 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         pcpo.update_cost_net()
-        ^^^^^^^^^^^^^^^^^^^^^^
+        ^^^
         Update Critic network for estimating cost.
 
     .. card::
@@ -548,8 +559,10 @@ Documentation of basic functions
         :class-footer: sd-font-weight-bold
 
         pcpo.log()
-        ^^^^^^^^^^
+        ^^^
         Get the trainning log and show the performance of the algorithm
+
+------
 
 Documentation of new functions
 """"""""""""""""""""""""""""""
@@ -564,7 +577,7 @@ Documentation of new functions
             :class-footer: sd-font-weight-bold
 
             pcpo.update_policy_net()
-            ^^^^^^^^^^^^^^^^^^^^^^^^
+            ^^^
             Update the policy network, flowing the next steps:
 
             (1) Get the policy reward performance gradient g (flat as vector)
@@ -631,7 +644,7 @@ Documentation of new functions
             :class-footer: sd-font-weight-bold
 
             pcpo.adjust_cpo_step_direction()
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            ^^^
             PCPO algorithm performs line-search to ensure constraint satisfaction for rewards and costs, flowing the next steps:
 
             (1) Calculate the expected reward improvement.
@@ -701,7 +714,7 @@ Parameters
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
-            ^^^^^^^^^^^^^^^^^^^
+            ^^^
             -  target_kl(float): Constraint for KL-distance to avoid too far gap
             -  cg_damping(float): parameter plays a role in building Hessian-vector
             -  cg_iters(int): Number of iterations of conjugate gradient to perform.
@@ -715,7 +728,7 @@ Parameters
             :class-footer: sd-font-weight-bold
 
             Basic parameters
-            ^^^^^^^^^^^^^^^^
+            ^^^
             -  algo (string): The name of algorithm corresponding to current class, it does not actually affect any things which happen in the following.
             -  actor (string): The type of network in actor, discrete of continuous.
             -  model_cfgs (dictionary) : successrmation about actor and critic's net work configuration,it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
@@ -768,7 +781,7 @@ Parameters
             :class-footer: sd-font-weight-bold
 
             Optional parameters
-            ^^^^^^^^^^^^^^^^^^^
+            ^^^
             -  use_cost_critic (bool): Use cost value function or not.
             -  linear_lr_decay (bool): Use linear learning rate decay or not.
             -  exploration_noise_anneal (bool): Use exploration noise anneal or not.
@@ -785,7 +798,7 @@ Parameters
             :class-footer: sd-font-weight-bold
 
             Buffer parameters
-            ^^^^^^^^^^^^^^^^^
+            ^^^
             .. hint::
                 ============= =============================================================================
                     Name                    Description
@@ -828,7 +841,7 @@ Appendix
 Proof of Theorem 2
 ~~~~~~~~~~~~~~~~~~
 
-To prove the policy performance bound when the current policy is infeasible ( constraint-violating), we first prove two lemma os the KL divergence between :math:`\pi_{k}` and :math:`\pi^{k+1}` for the KL divergence projection.
+To prove the policy performance bound when the current policy is infeasible (constraint-violating), we first prove two lemma of the KL divergence between :math:`\pi_{k}` and :math:`\pi_{k+1}` for the KL divergence projection.
 We then prove the main theorem for the worst-case performance degradation.
 
 .. tab-set::
@@ -842,10 +855,10 @@ We then prove the main theorem for the worst-case performance degradation.
             :class-footer: sd-font-weight-bold
 
             Lemma 1
-            ^^^^^^^
+            ^^^
             If the current policy :math:`\pi_{k}` satisfies the constraint, the constraint set is closed and convex, the KL divergence constraint for the first step is :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`, where :math:`\delta` is the step size in the reward improvement step, then under KL divergence projection, we have
 
-            .. math:: \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi^{k+1} ||\pi_{k})[s]\big]\leq \delta.
+            .. math:: \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big]\leq \delta.
 
 
     .. tab-item:: Lemma 2
@@ -857,13 +870,15 @@ We then prove the main theorem for the worst-case performance degradation.
             :class-footer: sd-font-weight-bold
 
             Lemma 2
-            ^^^^^^^
+            ^^^
             If the current policy :math:`\pi_{k}` violates the constraint, the constraint set is closed and convex, the KL divergence constraint for the first step is :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`.
             where :math:`\delta` is the step size in the reward improvement step, then under the KL divergence projection, we have
 
             .. math:: \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big]\leq \delta+{b^+}^2\alpha_\mathrm{KL},
 
             where :math:`\alpha_\mathrm{KL} \doteq \frac{1}{2a^T\boldsymbol{H}^{-1}a}`, :math:`a` is the gradient of the cost advantage function, :math:`\boldsymbol{H}` is the Hessian of the KL divergence constraint, and :math:`b^+\doteq\max(0,J^{C}(\pi_k)-h)`.
+
+.. _pcpo-eq-11:
 
 .. tab-set::
 
@@ -876,7 +891,7 @@ We then prove the main theorem for the worst-case performance degradation.
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 1
-            ^^^^^^^^^^^^^^^^
+            ^^^
             By the Bregman divergence projection inequality, :math:`\pi_{k}` being in the constraint set, and :math:`\pi_{k+1}` being the projection of the :math:`\pi_{k+\frac{1}{2}}` onto the constraint set, we have
 
             .. math::
@@ -910,7 +925,7 @@ We then prove the main theorem for the worst-case performance degradation.
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 2
-            ^^^^^^^^^^^^^^^^
+            ^^^
             We define the sublevel set of cost constraint function for the current infeasible policy :math:`\pi_k`:
 
             .. math:: L^{\pi_k}=\{\pi~|~J^{C}(\pi_{k})+ \mathbb{E}_{\substack{s\sim d^{\pi_{k}}\\ a\sim \pi}}[A_{\pi_k}^{C}(s,a)]\leq J^{C}(\pi_{k})\}.
@@ -934,16 +949,16 @@ We then prove the main theorem for the worst-case performance degradation.
                 &&- \mathbb{E}_{s\sim d^{\pi_{k}}}\big[(\nabla\varphi(\pi_k)-\nabla\varphi(\pi_{k+1}^{l}))^T(\pi_{k+1}-\pi_{k+1}^l)[s]\big]. \tag{11}
                 \end{eqnarray}
 
-            The inequality :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL} (\pi^{k+1}_l ||\pi_{k})[s]\big]\leq\delta` comes from that :math:`\pi_{k}` and :math:`\pi^{k+1}_l` are in :math:`L^{\pi_k}`, and :bdg-info-line:`Lemma 1`.
+            The inequality :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1}^l ||\pi_{k})[s]\big]\leq\delta` comes from that :math:`\pi_{k}` and :math:`\pi_{k+1}^l` are in :math:`L^{\pi_k}`, and :bdg-info-line:`Lemma 1`.
 
-            If the constraint violation of the current policy :math:`\pi_k` is small, :math:`b^+` is small, :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL} (\pi^{k+1} ||\pi^{k+1}_l)[s]\big]` can be approximated by the second order expansion.
-            By the update rule in :math:`(7)`, we have
+            If the constraint violation of the current policy :math:`\pi_k` is small, :math:`b^+` is small, :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]` can be approximated by the second order expansion.
+            By the update rule in :ref:`(7) <performance bound>`, we have
 
             .. math::
                 :nowrap:
 
                 \begin{eqnarray}
-                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi^{k+1} ||\pi^{k+1}_l)[s]\big] &&\approx \frac{1}{2}(\theta_{k+1}-\theta_{k+1}^l)^{T}\boldsymbol{H}(\theta_{k+1}-\theta_{k+1}^l)\\
+                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k+1}^l)[s]\big] &&\approx \frac{1}{2}(\theta_{k+1}-\theta_{k+1}^l)^{T}\boldsymbol{H}(\theta_{k+1}-\theta_{k+1}^l)\\
                 &&=\frac{1}{2} \Big(\frac{b^+}{a^T\boldsymbol{H}^{-1}a}\boldsymbol{H}^{-1}a\Big)^T\boldsymbol{H}\Big(\frac{b^+}{a^T\boldsymbol{H}^{-1}a}\boldsymbol{H}^{-1}a\Big)\\
                 &&=\frac{{b^+}^2}{2a^T\boldsymbol{H}^{-1}a}\\
                 &&={b^+}^2\alpha_\mathrm{KL}, \tag{12}
@@ -952,10 +967,10 @@ We then prove the main theorem for the worst-case performance degradation.
             where :math:`\alpha_\mathrm{KL} \doteq \frac{1}{2a^T\boldsymbol{H}^{-1}a}.`
 
             And since :math:`\delta` is small, we have :math:`\nabla\varphi(\pi_k)-\nabla\varphi(\pi_{k+1}^{l})\approx \mathbf{0}` given :math:`s`.
-            Thus, the third term in :math:`(10)` can be eliminated.
+            Thus, the third term in :ref:`(10) <pcpo-eq-10>` can be eliminated.
 
-            Combining :math:`(10)` and :math:`(11)`, we have :math:`[
-            \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi^{k+1}||\pi_{k})[s]\big]\leq \delta+{b^+}^2\alpha_\mathrm{KL}.]`
+            Combining :ref:`(10) <pcpo-eq-10>` and :ref:`(11) <pcpo-eq-11>`, we have :math:`[
+            \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1}||\pi_{k})[s]\big]\leq \delta+{b^+}^2\alpha_\mathrm{KL}.]`
 
 
 Now we use :bdg-info-line:`Lemma 2` to prove the :bdg-info-line:`Theorem 2`.
@@ -973,7 +988,7 @@ Proof of Analytical Solution to PCPO
     :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
 
     Analytical Solution to PCPO
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^
     Consider the PCPO problem. In the first step, we optimize the reward:
 
     .. math::
@@ -1023,6 +1038,8 @@ Proof of Analytical Solution to PCPO
 
         And we have the following KKT conditions:
 
+        .. _`pcpo-eq-13`:
+
         .. math::
             :nowrap:
 
@@ -1034,9 +1051,11 @@ Proof of Analytical Solution to PCPO
                 \lambda^*\Big(\frac{1}{2}(\theta^{*}-\theta_{k})^{T}\boldsymbol{H}(\theta^{*}-\theta_{k})-\delta\Big)=0~~~~&~~~\text{complementary slackness}\tag{17}
             \end{eqnarray}
 
-        By :math:`(13)`, we have :math:`\theta^{*}=\theta_{k}+\frac{1}{\lambda^*}\boldsymbol{H}^{-1}g`.
-        And by plugging :math:`(13)` into :math:`(14)`, we have :math:`\lambda^*=\sqrt{\frac{g^T\boldsymbol{H}^{-1}g}{2\delta}}`.
+        By :ref:`(13) <pcpo-eq-13>`, we have :math:`\theta^{*}=\theta_{k}+\frac{1}{\lambda^*}\boldsymbol{H}^{-1}g`.
+        And by plugging :ref:`(13) <pcpo-eq-13>` into :ref:`(14) <pcpo-eq-13>`, we have :math:`\lambda^*=\sqrt{\frac{g^T\boldsymbol{H}^{-1}g}{2\delta}}`.
         Hence we have our optimal solution:
+
+        .. _`pcpo-eq-18`:
 
         .. math::
             :nowrap:
@@ -1045,7 +1064,7 @@ Proof of Analytical Solution to PCPO
             \theta_{k+\frac{1}{2}}=\theta^{*}=\theta_{k}+\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g \tag{18}
             \end{eqnarray}
 
-        which also satisfies :math:`(15)`, :math:`(16)`, and :math:`(17)`.
+        which also satisfies :ref:`(15) <pcpo-eq-13>`, :ref:`(16) <pcpo-eq-13>`, and :ref:`(17) <pcpo-eq-13>`.
 
         Following the same reasoning, we now form the Lagrangian of the second problem:
 
@@ -1058,6 +1077,8 @@ Proof of Analytical Solution to PCPO
 
         And we have the following KKT conditions:
 
+        .. _`pcpo-eq-20`:
+
         .. math::
             :nowrap:
 
@@ -1069,9 +1090,11 @@ Proof of Analytical Solution to PCPO
                 \lambda^*(a^T(\theta^*-\theta_{k})+b)=0~~~~&~~~\text{complementary slackness}\tag{24}
             \end{eqnarray}
 
-        By :math:`(20)`, we have :math:`\theta^{*}=\theta_{k+1}+\lambda^*\boldsymbol{L}^{-1}a`.
-        And by plugging :math:`(20)` into :math:`(21)` and :math:`(23)`, we have :math:`\lambda^*=\max(0,\\ \frac{a^T(\theta_{k+\frac{1}{2}}-\theta_{k})+b}{a\boldsymbol{L}^{-1}a})`.
+        By :ref:`(20) <pcpo-eq-20>`, we have :math:`\theta^{*}=\theta_{k+1}+\lambda^*\boldsymbol{L}^{-1}a`.
+        And by plugging :ref:`(20) <pcpo-eq-20>` into :ref:`(21) <pcpo-eq-20>` and :ref:`(23) <pcpo-eq-20>`, we have :math:`\lambda^*=\max(0,\\ \frac{a^T(\theta_{k+\frac{1}{2}}-\theta_{k})+b}{a\boldsymbol{L}^{-1}a})`.
         Hence we have our optimal solution:
+
+        .. _`pcpo-eq-25`:
 
         .. math::
             :nowrap:
@@ -1080,8 +1103,8 @@ Proof of Analytical Solution to PCPO
             \theta_{k+1}=\theta^{*}=\theta_{k+\frac{1}{2}}-\max(0,\frac{a^T(\theta_{k+\frac{1}{2}}-\theta_{k})+b}{a^T\boldsymbol{L}^{-1}a^T})\boldsymbol{L}^{-1}a\tag{25}
             \end{eqnarray}
 
-        which also satisfies :math:`(22)` and :math:`(24)`.
-        Hence by :math:`(18)` and :math:`(25)`, we have
+        which also satisfies :ref:`(22) <pcpo-eq-20>` and :ref:`(24) <pcpo-eq-20>`.
+        Hence by :ref:`(18) <pcpo-eq-18>` and :ref:`(25) <pcpo-eq-25>`, we have
 
         .. math::
             :nowrap:
@@ -1103,7 +1126,7 @@ We have the following :bdg-info-line:`Lemma 3` to characterize the projection an
     :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
 
     Lemma 3
-    ^^^^^^^
+    ^^^
     For any :math:`\theta`, :math:`\theta^{*}=\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)` if and only if :math:`(\theta-\theta^*)^T\boldsymbol{L}(\theta'-\theta^*)\leq0, \forall\theta'\in\mathcal{C}`,
     where :math:`\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)\doteq \underset{\theta' \in \mathrm{C}}{\arg\,min}||\theta-\theta'||^2_{\boldsymbol{L}}` and :math:`\boldsymbol{L}=\boldsymbol{H}` if using the KL divergence projection, and :math:`\boldsymbol{L}=\boldsymbol{I}` if using the :math:`L2` norm projection.
 
@@ -1118,6 +1141,8 @@ We have the following :bdg-info-line:`Lemma 3` to characterize the projection an
         :math:`\theta'\in\mathcal{C}` be such that
         :math:`\theta'\neq\theta^*,` and :math:`\alpha\in(0,1).` Then we have
 
+        .. _`pcpo-eq-26`:
+
         .. math::
             :nowrap:
 
@@ -1129,7 +1154,7 @@ We have the following :bdg-info-line:`Lemma 3` to characterize the projection an
                 && \Rightarrow\left(\theta-\theta^*\right)^T \boldsymbol{L}\left(\theta^{\prime}-\theta^*\right) \leq \frac{\alpha}{2}\left\|\theta^{\prime}-\theta^*\right\|_{\boldsymbol{L}}^2\tag{26}
             \end{eqnarray}
 
-        Since the right hand side of :math:`(26)` can be made arbitrarily small for a given :math:`\alpha`, and hence we have:
+        Since the right hand side of :ref:`(26) <pcpo-eq-26>` can be made arbitrarily small for a given :math:`\alpha`, and hence we have:
 
         .. math:: (\theta-\theta^*)^T\boldsymbol{L}(\theta'-\theta^*)\leq0, \forall\theta'\in\mathcal{C}.
 
@@ -1157,9 +1182,9 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
     :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
 
     Theorem 3 (Stationary Points of PCPO with the KL divergence and :math:`L2` Norm Projections)
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    Let :math:`\eta\doteq \sqrt{\frac{2\delta}{g^{T}\boldsymbol{H}^{-1}g}}` in :math:`(7)`, where :math:`\delta` is the step size for reward improvement, :math:`g` is the gradient of :math:`f`, :math:`\boldsymbol{H}` is the Fisher information matrix.
-    Let :math:`\sigma_\mathrm{max}(\boldsymbol{H})` be the largest singular value of :math:`\boldsymbol{H}`, and :math:`a` be the gradient of cost advantage function in :math:`(7)`.
+    ^^^
+    Let :math:`\eta\doteq \sqrt{\frac{2\delta}{g^{T}\boldsymbol{H}^{-1}g}}` in :ref:`(7) <performance bound>`, where :math:`\delta` is the step size for reward improvement, :math:`g` is the gradient of :math:`f`, :math:`\boldsymbol{H}` is the Fisher information matrix.
+    Let :math:`\sigma_\mathrm{max}(\boldsymbol{H})` be the largest singular value of :math:`\boldsymbol{H}`, and :math:`a` be the gradient of cost advantage function in :ref:`(7) <performance bound>`.
     Then PCPO with the KL divergence projection converges to stationary points with :math:`g\in-a` (i.e., the gradient of :math:`f` belongs to the negative gradient of the cost advantage function).
     The objective value changes by
 
@@ -1180,6 +1205,8 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
 
         When in stationary points :math:`\theta^*`, we have
 
+        .. _`pcpo-eq-29`:
+
         .. math::
             :nowrap:
 
@@ -1191,9 +1218,11 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
             \label{eq:appendixStationary}\tag{29}
             \end{eqnarray}
 
-        For the KL divergence projection (:math:`\boldsymbol{L}=\boldsymbol{H}`), :math:`(29)` boils down to :math:`g\in-a`, and for the :math:`L2` norm projection (:math:`\boldsymbol{L}=\boldsymbol{I}`), :math:`(29)` is equivalent to :math:`\boldsymbol{H}^{-1}g\in-a`.
+        For the KL divergence projection (:math:`\boldsymbol{L}=\boldsymbol{H}`), :ref:`(29) <pcpo-eq-29>` boils down to :math:`g\in-a`, and for the :math:`L2` norm projection (:math:`\boldsymbol{L}=\boldsymbol{I}`), :ref:`(29) <pcpo-eq-29>` is equivalent to :math:`\boldsymbol{H}^{-1}g\in-a`.
 
         Now we prove the second part of the theorem. Based on :bdg-info-line:`Lemma 3`, for the KL divergence projection, we have
+
+        .. _`pcpo-eq-30`:
 
         .. math::
             :nowrap:
@@ -1204,7 +1233,7 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
             \Rightarrow \boldsymbol{g}^T\left(\theta_{k+1}-\theta_k\right) \leq-\frac{1}{\eta}\left\|\theta_{k+1}-\theta_k\right\|_{\boldsymbol{H}}^2\tag{30}
             \end{eqnarray}
 
-        By :math:`(30)`, and :math:`L`-smooth continuous function :math:`f,` we have
+        By :ref:`(30) <pcpo-eq-30>`, and :math:`L`-smooth continuous function :math:`f,` we have
 
         .. math::
 
@@ -1217,15 +1246,17 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
 
         For the :math:`L2` norm projection, we have
 
+        .. _`pcpo-eq-31`:
+
         .. math::
+            :nowrap:
 
-            \begin{eqnarray}
-            \label{eq:appendix_converge_1}
-                (\theta_{k}-\theta_{k+1})^T(\theta_{k}-\eta\boldsymbol{H}^{-1}g-\theta_{k+1})\leq0\nonumber\\
-                \Rightarrow g^T\boldsymbol{H}^{-1}(\theta_{k+1}-\theta_{k})\leq -\frac{1}{\eta}||\theta_{k+1}-\theta_{k}||^2_2\tag{31}
-            \end{eqnarray}
+                \begin{eqnarray}
+                    (\theta_{k}-\theta_{k+1})^T(\theta_{k}-\eta\boldsymbol{H}^{-1}g-\theta_{k+1})\leq0\\
+                    \Rightarrow g^T\boldsymbol{H}^{-1}(\theta_{k+1}-\theta_{k})\leq -\frac{1}{\eta}||\theta_{k+1}-\theta_{k}||^2_2\tag{31}
+                \end{eqnarray}
 
-        By :math:`(31)`, :math:`L`-smooth continuous function :math:`f`, and if :math:`\sigma_\mathrm{max}(\boldsymbol{H})\leq1`, we have
+        By :ref:`(31) <pcpo-eq-31>`, :math:`L`-smooth continuous function :math:`f`, and if :math:`\sigma_\mathrm{max}(\boldsymbol{H})\leq1`, we have
 
         .. math::
 
@@ -1254,9 +1285,9 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
 
         .. note::
 
-            To make the objective value for PCPO with the KL divergence projection improves, the right hand side of :math:`(25)` needs to be negative.
+            To make the objective value for PCPO with the KL divergence projection improves, the right hand side of :ref:`(25) <pcpo-eq-25>` needs to be negative.
             Hence we have :math:`\frac{L\eta}{2}\boldsymbol{I}\prec\boldsymbol{H}`, implying that :math:`\sigma_\mathrm{min}(\boldsymbol{H})>\frac{L\eta}{2}`.
-            And to make the objective value for PCPO with the :math:`L2` norm projection improves, the right hand side of :math:`(26)` needs to be negative.
+            And to make the objective value for PCPO with the :math:`L2` norm projection improves, the right hand side of :ref:`(26) <pcpo-eq-26>` needs to be negative.
             Hence we have :math:`\eta<\frac{2}{L}`, implying that
 
             .. math::
@@ -1275,4 +1306,4 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
                     \tag{32}
                 \end{eqnarray}
 
-            By the definition of the condition number and :math:`(29)`, we have
+            By the definition of the condition number and :ref:`(29) <pcpo-eq-29>`, we have
