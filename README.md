@@ -112,6 +112,7 @@ Here we provide a table for comparison of **OmniSafe's algorithm core** and exis
           <li><a href="https://arxiv.org/abs/2112.07701">CAP (AAAI'2020)</a></li>
           <li><a href="https://arxiv.org/abs/2202.07789">SMBPO (NeurIPS'2021)</a></li>
           <li><a href="https://arxiv.org/abs/2210.07573">MBPPOL (NeurIPS'2022)</a></li>
+          <li><a href="https://arxiv.org/abs/2008.10066">SAFE-LOOP (CoRL'2021)</a></li>
         </ul>
         </ul>
         </ul>

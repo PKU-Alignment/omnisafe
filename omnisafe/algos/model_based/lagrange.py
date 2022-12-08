@@ -18,7 +18,6 @@ import abc
 
 import torch
 import torch.optim as optim
-from torch.nn.functional import softplus
 
 
 class Lagrange(abc.ABC):
@@ -26,6 +25,7 @@ class Lagrange(abc.ABC):
     Abstract base class for Lagrangian-base Algorithm
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         cost_limit: float,

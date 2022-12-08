@@ -17,7 +17,6 @@
 # ==============================================================================
 """Dynamics Model"""
 
-import gzip
 import itertools
 
 import numpy as np
@@ -27,10 +26,12 @@ import torch.nn.functional as F
 
 
 class StandardScaler:
+    """Normalize data"""
+
     def __init__(self, device=torch.device('cpu')):
-        self.mu = 0.0
+        self.mean = 0.0
         self.std = 1.0
-        self.mu_t = torch.tensor(self.mu).to(device)
+        self.mean_t = torch.tensor(self.mean).to(device)
         self.std_t = torch.tensor(self.std).to(device)
         self.device = device
 
@@ -44,10 +45,10 @@ class StandardScaler:
 
         Returns: None.
         """
-        self.mu = np.mean(data, axis=0, keepdims=True)
+        self.mean = np.mean(data, axis=0, keepdims=True)
         self.std = np.std(data, axis=0, keepdims=True)
         self.std[self.std < 1e-12] = 1.0
-        self.mu_t = torch.FloatTensor(self.mu).to(self.device)
+        self.mean_t = torch.FloatTensor(self.mean).to(self.device)
         self.std_t = torch.FloatTensor(self.std).to(self.device)
 
     def transform(self, data):
@@ -59,33 +60,41 @@ class StandardScaler:
         Returns: (np.array) The transformed dataset.
         """
         if torch.is_tensor(data):
-            return (data - self.mu_t) / self.std_t
-        return (data - self.mu) / self.std
+            return (data - self.mean_t) / self.std_t
+        return (data - self.mean) / self.std
 
 
-def init_weights(m):
-    def truncated_normal_init(t, mean=0.0, std=0.01):
-        torch.nn.init.normal_(t, mean=mean, std=std)
+def init_weights(layer):
+    """Initialize network weight"""
+
+    def truncated_normal_init(weight, mean=0.0, std=0.01):
+        """Initialize network weight"""
+        torch.nn.init.normal_(weight, mean=mean, std=std)
         while True:
-            cond = torch.logical_or(t < mean - 2 * std, t > mean + 2 * std)
+            cond = torch.logical_or(weight < mean - 2 * std, weight > mean + 2 * std)
             if not torch.sum(cond):
                 break
-            t = torch.where(cond, torch.nn.init.normal_(torch.ones(t.shape), mean=mean, std=std), t)
-        return t
+            weight = torch.where(
+                cond, torch.nn.init.normal_(torch.ones(weight.shape), mean=mean, std=std), weight
+            )
+        return weight
 
-    if type(m) == nn.Linear or isinstance(m, EnsembleFC):
-        input_dim = m.in_features
-        truncated_normal_init(m.weight, std=1 / (2 * np.sqrt(input_dim)))
-        m.bias.data.fill_(0.0)
+    if type(layer) == nn.Linear or isinstance(layer, EnsembleFC):
+        input_dim = layer.in_features
+        truncated_normal_init(layer.weight, std=1 / (2 * np.sqrt(input_dim)))
+        layer.bias.data.fill_(0.0)
 
 
 class EnsembleFC(nn.Module):
+    """Ensemble fully connected network"""
+
     __constants__ = ['in_features', 'out_features']
     in_features: int
     out_features: int
     ensemble_size: int
     weight: torch.Tensor
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         in_features: int,
@@ -107,19 +116,24 @@ class EnsembleFC(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
+        """reset parameters"""
         pass
 
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
-        w_times_x = torch.bmm(input, self.weight)
+    def forward(self, input_data: torch.Tensor) -> torch.Tensor:
+        """forward"""
+        w_times_x = torch.bmm(input_data, self.weight)
         return torch.add(w_times_x, self.bias[:, None, :])  # w times x + b
 
     def extra_repr(self) -> str:
+        """Output weight"""
         return 'in_features={}, out_features={}, bias={}'.format(
             self.in_features, self.out_features, self.bias is not None
         )
 
 
 class EnsembleModel(nn.Module):
+    """Ensemble dynamics model"""
+
     def __init__(
         self,
         algo,
@@ -158,8 +172,8 @@ class EnsembleModel(nn.Module):
         self.apply(init_weights)
         self.swish = Swish()
 
-    def forward(self, x, ret_log_var=False):
-        nn1_output = self.swish(self.nn1(x))
+    def forward(self, data, ret_log_var=False):
+        nn1_output = self.swish(self.nn1(data))
         nn2_output = self.swish(self.nn2(nn1_output))
         nn3_output = self.swish(self.nn3(nn2_output))
         nn4_output = self.swish(self.nn4(nn3_output))
@@ -172,14 +186,14 @@ class EnsembleModel(nn.Module):
 
         if ret_log_var:
             return mean, logvar
-        else:
-            return mean, torch.exp(logvar)
+        return mean, torch.exp(logvar)
 
     def get_decay_loss(self):
+        """Get decay loss"""
         decay_loss = 0.0
-        for m in self.children():
-            if isinstance(m, EnsembleFC):
-                decay_loss += m.weight_decay * torch.sum(torch.square(m.weight)) / 2.0
+        for layer in self.children():
+            if isinstance(layer, EnsembleFC):
+                decay_loss += layer.weight_decay * torch.sum(torch.square(layer.weight)) / 2.0
         return decay_loss
 
     def loss(self, mean, logvar, labels, inc_var_loss=True):
@@ -360,19 +374,17 @@ class EnsembleDynamicsModel:
             self._epochs_since_update = 0
         else:
             self._epochs_since_update += 1
-        if self._epochs_since_update > self._max_epochs_since_update:
-            return True
-        else:
-            return False
+        return self._epochs_since_update > self._max_epochs_since_update
 
     def predict_batch_t(self, inputs, batch_size=1024, factored=True):
+        """predict batch next state"""
         inputs = self.scaler.transform(inputs)
 
         ensemble_mean, ensemble_var = [], []
         for i in range(0, inputs.shape[0], batch_size):
-            input = inputs[i : min(i + batch_size, inputs.shape[0])].float().to(self.device)
+            model_input = inputs[i : min(i + batch_size, inputs.shape[0])].float().to(self.device)
 
-            b_mean, b_var = self.ensemble_model(input, ret_log_var=False)
+            b_mean, b_var = self.ensemble_model(model_input, ret_log_var=False)
             ensemble_mean.append(b_mean)
             ensemble_var.append(b_var)
         ensemble_mean = torch.cat(ensemble_mean, dim=1)
@@ -380,21 +392,21 @@ class EnsembleDynamicsModel:
 
         if factored:
             return ensemble_mean, ensemble_var
-        else:
-            assert False, 'Need to transform to numpy'
-            mean = torch.mean(ensemble_mean, dim=0)
-            var = torch.mean(ensemble_var, dim=0) + torch.mean(
-                torch.square(ensemble_mean - mean[None, :, :]), dim=0
-            )
-            return mean, var
+
+        assert False, 'Need to transform to numpy'
+        mean = torch.mean(ensemble_mean, dim=0)
+        var = torch.mean(ensemble_var, dim=0) + torch.mean(
+            torch.square(ensemble_mean - mean[None, :, :]), dim=0
+        )
+        return mean, var
 
     def predict_t(self, inputs, batch_size=1024, factored=True):
         inputs = self.scaler.transform(inputs)
         ensemble_mean, ensemble_var = [], []
         for i in range(0, inputs.shape[0], batch_size):
-            input = inputs[i : min(i + batch_size, inputs.shape[0])].float().to(self.device)
+            model_input = inputs[i : min(i + batch_size, inputs.shape[0])].float().to(self.device)
             b_mean, b_var = self.ensemble_model(
-                input[None, :, :].repeat([self.network_size, 1, 1]), ret_log_var=False
+                model_input[None, :, :].repeat([self.network_size, 1, 1]), ret_log_var=False
             )
             ensemble_mean.append(b_mean)
             ensemble_var.append(b_var)
@@ -403,25 +415,25 @@ class EnsembleDynamicsModel:
 
         if factored:
             return ensemble_mean, ensemble_var
-        else:
-            assert False, 'Need to transform to numpy'
-            mean = torch.mean(ensemble_mean, dim=0)
-            var = torch.mean(ensemble_var, dim=0) + torch.mean(
-                torch.square(ensemble_mean - mean[None, :, :]), dim=0
-            )
-            return mean, var
+
+        assert False, 'Need to transform to numpy'
+        mean = torch.mean(ensemble_mean, dim=0)
+        var = torch.mean(ensemble_var, dim=0) + torch.mean(
+            torch.square(ensemble_mean - mean[None, :, :]), dim=0
+        )
+        return mean, var
 
     def predict(self, inputs, batch_size=1024, factored=True):
         inputs = self.scaler.transform(inputs)
         ensemble_mean, ensemble_var = [], []
         for i in range(0, inputs.shape[0], batch_size):
-            input = (
+            model_input = (
                 torch.from_numpy(inputs[i : min(i + batch_size, inputs.shape[0])])
                 .float()
                 .to(self.device)
             )
             b_mean, b_var = self.ensemble_model(
-                input[None, :, :].repeat([self.network_size, 1, 1]), ret_log_var=False
+                model_input[None, :, :].repeat([self.network_size, 1, 1]), ret_log_var=False
             )
             ensemble_mean.append(b_mean.detach().cpu().numpy())
             ensemble_var.append(b_var.detach().cpu().numpy())
@@ -429,19 +441,22 @@ class EnsembleDynamicsModel:
         ensemble_var = np.hstack(ensemble_var)
         if factored:
             return ensemble_mean, ensemble_var
-        else:
-            assert False, 'Need to transform to numpy'
-            mean = torch.mean(ensemble_mean, dim=0)
-            var = torch.mean(ensemble_var, dim=0) + torch.mean(
-                torch.square(ensemble_mean - mean[None, :, :]), dim=0
-            )
-            return mean, var
+
+        assert False, 'Need to transform to numpy'
+        mean = torch.mean(ensemble_mean, dim=0)
+        var = torch.mean(ensemble_var, dim=0) + torch.mean(
+            torch.square(ensemble_mean - mean[None, :, :]), dim=0
+        )
+        return mean, var
 
 
 class Swish(nn.Module):
+    """Transform data using sigmoid function."""
+
     def __init__(self):
         super(Swish, self).__init__()
 
-    def forward(self, x):
-        x = x * F.sigmoid(x)
-        return x
+    def forward(self, input_data):
+        """sigmoid function"""
+        output = input_data * F.sigmoid(input_data)
+        return output
