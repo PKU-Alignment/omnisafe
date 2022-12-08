@@ -94,7 +94,6 @@ class EnsembleFC(nn.Module):
     ensemble_size: int
     weight: torch.Tensor
 
-    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         in_features: int,
@@ -102,7 +101,7 @@ class EnsembleFC(nn.Module):
         ensemble_size: int,
         weight_decay: float = 0.0,
         bias: bool = True,
-    ) -> None:
+    ) -> None:  # pylint: disable-next=too-many-arguments
         super(EnsembleFC, self).__init__()
         self.in_features = in_features
         self.out_features = out_features

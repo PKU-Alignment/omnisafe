@@ -38,7 +38,7 @@ class SafeLoop(PolicyGradientModelBased, Planner):  # pylint: disable=too-many-i
             self,
             self.device,
             self.env,
-            self.predict_env,
+            self.virtual_env,
             self.actor_critic,
             **self.cfgs['mpc_config'],
         )
@@ -246,7 +246,6 @@ class SafeLoop(PolicyGradientModelBased, Planner):  # pylint: disable=too-many-i
         action = np.clip(action, env.action_space.low, env.action_space.high)
         return action, None
 
-    # pylint: disable=too-many-arguments
     def store_real_data(
         self,
         timestep,
@@ -260,7 +259,7 @@ class SafeLoop(PolicyGradientModelBased, Planner):  # pylint: disable=too-many-i
         truncated,
         next_state,
         info,
-    ):
+    ):  # pylint: disable=too-many-arguments
         """store real data"""
         if not terminated and not truncated and not info['goal_met']:
             # Current goal position is not related to the last goal position, so do not store.

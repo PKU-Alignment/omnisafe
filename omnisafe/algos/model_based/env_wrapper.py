@@ -152,11 +152,14 @@ class EnvWrapper:  # pylint: disable=too-many-instance-attributes
         self.timestep = 0  # Reset internal timer
         self.env.reset()
         obs = self.get_obs_flatten()
-        # pylint: disable=attribute-defined-outside-init
         if self.algo == 'MBPPOLag':
-            self.goal_position = self.env.goal_pos
-            self.robot_position = self.env.robot_pos
-            self.hazards_position = self.env.hazards_pos
+            self.goal_position = self.env.goal_pos  # pylint: disable=attribute-defined-outside-init
+            self.robot_position = (
+                self.env.robot_pos
+            )  # pylint: disable=attribute-defined-outside-init
+            self.hazards_position = (
+                self.env.hazards_pos
+            )  # pylint: disable=attribute-defined-outside-init
             self.goal_distance = self.dist_xy(self.robot_position, self.goal_position)
 
         return obs

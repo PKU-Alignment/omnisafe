@@ -137,7 +137,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
         labels = delta_state
-        self.predict_env.model.train(inputs, labels, batch_size=256, holdout_ratio=0.2)
+        self.virtual_env.model.train(inputs, labels, batch_size=256, holdout_ratio=0.2)
 
     def update_policy_net(self, data):
         """update policy"""
@@ -224,7 +224,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
 
         for time_step in range(self.cfgs['imaging_steps_per_policy_update'] - mix_real):
             action, action_info = self.select_action(time_step, state, self.env_auxiliary)
-            next_state = self.predict_env.step(state, action)
+            next_state = self.virtual_env.step(state, action)
             next_state = np.nan_to_num(next_state)
             next_state = np.clip(next_state, -self.cfgs['obs_clip'], self.cfgs['obs_clip'])
             reward, cost, goal_flag = self.env_auxiliary.get_reward_cost(next_state)
@@ -276,12 +276,11 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         """policy validation"""
         valid_rets = np.zeros(self.cfgs['validation_num'])
         winner = 0
-        # pylint:disable=consider-using-enumerate
-        for valid_id in range(len(valid_rets)):
+        for valid_id in range(len(valid_rets)):  # pylint:disable=consider-using-enumerate
             state = self.env_auxiliary.reset()
             for step in range(self.cfgs['validation_horizon']):
                 action, _ = self.select_action(step, state, self.env_auxiliary)
-                next_state = self.predict_env.step_elite(state, action, valid_id)
+                next_state = self.virtual_env.step_elite(state, action, valid_id)
                 next_state = np.nan_to_num(next_state)
                 next_state = np.clip(next_state, -self.cfgs['obs_clip'], self.cfgs['obs_clip'])
                 reward, _, goal_flag = self.env_auxiliary.get_reward_cost(next_state)

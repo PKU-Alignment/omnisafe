@@ -72,7 +72,7 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes,
             cost_size=0,
             **self.cfgs['dynamics_cfgs'],
         )
-        self.predict_env = VirtualEnv(algo, self.dynamics, self.env_id, self.device)
+        self.virtual_env = VirtualEnv(algo, self.dynamics, self.env_id, self.device)
 
         # Initialize off-policy buffer
         # pylint: disable-next=line-too-long

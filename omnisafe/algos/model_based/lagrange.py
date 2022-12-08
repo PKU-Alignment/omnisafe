@@ -25,7 +25,6 @@ class Lagrange(abc.ABC):
     Abstract base class for Lagrangian-base Algorithm
     """
 
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         cost_limit: float,
@@ -34,7 +33,7 @@ class Lagrange(abc.ABC):
         lambda_optimizer: str,
         beta: float,
         device: str,
-    ):
+    ):  # pylint: disable=too-many-arguments
         self.cost_limit = cost_limit
         self.lambda_lr = lambda_lr
         self.beta = beta

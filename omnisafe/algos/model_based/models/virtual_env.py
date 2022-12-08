@@ -19,6 +19,8 @@ import torch
 
 
 class VirtualEnv:
+    """Virtual environment for generating data or planning"""
+
     def __init__(self, algo, model, env_name, device=torch.device('cpu')):
         self.algo = algo
         self.model = model
@@ -26,8 +28,8 @@ class VirtualEnv:
         self.device = device
 
     def _termination_fn(self, env_name, obs, act, next_obs):
-        # TODO
-        if env_name == 'Hopper-v2':
+        """Terminal function"""
+        if env_name == 'Hopper-v2':  # pylint: disable=no-else-return
             assert len(obs.shape) == len(next_obs.shape) == len(act.shape) == 2
 
             height = next_obs[:, 0]
@@ -70,16 +72,16 @@ class VirtualEnv:
         else:
             return False
 
-    def _get_logprob(self, x, means, variances):
+    def _get_logprob(self, input_data, means, variances):
 
-        k = x.shape[-1]
+        k = input_data.shape[-1]
         log_prob = (
             -1
             / 2
             * (
                 k * np.log(2 * np.pi)
                 + np.log(variances).sum(-1)
-                + (np.power(x - means, 2) / variances).sum(-1)
+                + (np.power(input_data - means, 2) / variances).sum(-1)
             )
         )
 
@@ -93,7 +95,8 @@ class VirtualEnv:
 
         return log_prob, stds
 
-    def step(self, obs, act, single=False, deterministic=False):
+    def step(self, obs, act, deterministic=False):  # pylint:disable=too-many-locals
+        """Predict next state"""
         if len(obs.shape) == 1:
             obs = obs[None]
             act = act[None]
@@ -116,7 +119,7 @@ class VirtualEnv:
                 + np.random.normal(size=ensemble_model_means.shape) * ensemble_model_stds
             )
 
-        num_models, batch_size, _ = ensemble_model_means.shape
+        _, batch_size, _ = ensemble_model_means.shape
         model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
         batch_idxes = np.arange(0, batch_size)
 
@@ -151,10 +154,10 @@ class VirtualEnv:
         if self.algo == 'safe-loop':
             info = {'mean': return_means, 'std': return_stds, 'log_prob': log_prob, 'dev': dev}
             return next_obs, rewards, terminals, info
-        elif self.algo == 'mbppo-lag':
-            return next_obs
+        return next_obs
 
-    def step_elite(self, obs, act, idx, single=False, deterministic=False):
+    def step_elite(self, obs, act, idx, deterministic=False):  # pylint:disable=too-many-locals
+        """Predict next state"""
         if len(obs.shape) == 1:
             obs = obs[None]
             act = act[None]
@@ -174,19 +177,12 @@ class VirtualEnv:
                 + np.random.normal(size=ensemble_model_means.shape) * ensemble_model_stds
             )
 
-        num_models, batch_size, _ = ensemble_model_means.shape
+        _, batch_size, _ = ensemble_model_means.shape
         model_idxes = np.random.choice([idx], size=batch_size)
         batch_idxes = np.arange(0, batch_size)
-
         samples = ensemble_samples[model_idxes, batch_idxes]
-        model_means = ensemble_model_means[model_idxes, batch_idxes]
-        model_stds = ensemble_model_stds[model_idxes, batch_idxes]
-
-        log_prob, dev = self._get_logprob(samples, ensemble_model_means, ensemble_model_vars)
-
         next_obs_delta = samples
         next_obs = next_obs_delta + obs
-        terminals = self._termination_fn(self.env_name, obs, act, next_obs)
 
         if return_single:
             next_obs = next_obs[0]
@@ -194,12 +190,10 @@ class VirtualEnv:
         return next_obs
 
     def get_forward_prediction_random_ensemble_t(self, obs, act, deterministic=False):
+        """Randomly predict next state"""
         if len(obs.shape) == 1:
             obs = obs[None]
             act = act[None]
-            return_single = True
-        else:
-            return_single = False
 
         inputs = torch.cat((obs, act), dim=-1)
         ensemble_model_means, ensemble_model_vars = self.model.predict_t(inputs)
@@ -215,7 +209,7 @@ class VirtualEnv:
                 + torch.randn(size=ensemble_model_means.shape) * ensemble_model_stds
             )
 
-        num_models, batch_size, _ = ensemble_model_means.shape
+        _, batch_size, _ = ensemble_model_means.shape
         model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
         batch_idxes = np.arange(0, batch_size)
 
@@ -224,12 +218,11 @@ class VirtualEnv:
         return samples
 
     def get_forward_prediction_random_ensemble(self, obs, act, deterministic=False):
+        """Predict next state"""
         if len(obs.shape) == 1:
             obs = obs[None]
             act = act[None]
-            return_single = True
-        else:
-            return_single = False
+
         if torch.is_tensor(obs):
             obs = obs.detach().cpu().numpy()
         if torch.is_tensor(act):
@@ -248,7 +241,7 @@ class VirtualEnv:
                 + np.random.normal(size=ensemble_model_means.shape) * ensemble_model_stds
             )
 
-        num_models, batch_size, _ = ensemble_model_means.shape
+        _, batch_size, _ = ensemble_model_means.shape
         model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
         batch_idxes = np.arange(0, batch_size)
 
@@ -257,12 +250,10 @@ class VirtualEnv:
         return samples
 
     def get_forward_prediction(self, obs, act, deterministic=False):
+        """Predict next state"""
         if len(obs.shape) == 1:
             obs = obs[None]
             act = act[None]
-            return_single = True
-        else:
-            return_single = False
 
         if torch.is_tensor(obs):
             obs = obs.detach().cpu().numpy()
@@ -283,20 +274,14 @@ class VirtualEnv:
                 + np.random.normal(size=ensemble_model_means.shape) * ensemble_model_stds
             )
 
-        num_models, batch_size, _ = ensemble_model_means.shape
-        model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
-        batch_idxes = np.arange(0, batch_size)
-
         samples = ensemble_samples[self.model.elite_model_idxes, :]
         return samples
 
     def get_forward_prediction_t(self, obs, act, deterministic=False):
+        """Predict next state"""
         if len(obs.shape) == 1:
             obs = obs[None]
             act = act[None]
-            return_single = True
-        else:
-            return_single = False
 
         inputs = torch.cat((obs, act), dim=-1)
         ensemble_model_means, ensemble_model_vars = self.model.predict_batch_t(inputs)
