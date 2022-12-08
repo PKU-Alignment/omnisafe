@@ -43,11 +43,16 @@ CONSTRAINTS_MBPPO = dict(
 )
 
 
-class EnvWrapper:
+class EnvWrapper:  # pylint: disable=too-many-instance-attributes
+    """Model-based Environment"""
+
     def __init__(self, algo, env_id, render_mode=None):
         self.algo = algo
         self.env_id = env_id  # safety gym not use this attribute
         self.render_mode = render_mode
+        self.timestep = 0
+        self.num_steps = 1000
+        self.goal_distance = 0
         if self.algo in ['MBPPOLag', 'SafeLoop']:
             assert env_id in [
                 'SafetyPointGoal3-v0',
@@ -57,8 +62,6 @@ class EnvWrapper:
             ]
             self.robot = 'Point' if 'Point' in env_id else 'Car'
             self.task = 'Goal'
-        elif self.algo == 'CAP' or self.algo == 'MpcCcem':
-            assert env_id == 'HalfCheetah-v3'
 
         mujoco_pools = [
             'Ant-v3',
@@ -72,8 +75,8 @@ class EnvWrapper:
         if self.env_type == 'gym':
             self.robot = self.robot.capitalize()  # mujoco  not use this attribute
             self.task = self.task.capitalize()  # mujoco  not use this attribute
-            assert self.robot in ROBOTS, 'can not recognize the robot type {}'.format(self.robot)
-            assert self.task in TASKS, 'can not recognize the task type {}'.format(self.task)
+            assert self.robot in ROBOTS, f'can not recognize the robot type {self.robot}'
+            assert self.task in TASKS, f'can not recognize the task type {self.task}'
             self.env = safety_gymnasium.make(env_id, render_mode=render_mode)
             self.init_sensor()
             self.observation_space = gymnasium.spaces.Box(
@@ -89,13 +92,15 @@ class EnvWrapper:
             self.action_space = self.env.action_space
 
     def set_eplen(self, eplen):
+        """Set episode length"""
         self.num_steps = eplen
 
     def get_observation_cost(self, obs):
-        N = obs.shape[0]
+        """Get batch cost from batch observation"""
+        batch_size = obs.shape[0]
         hazards_key = self.key_to_slice['hazards']
-        hazard_obs = obs[:, hazards_key].reshape(N, -1, 2)
-        hazards_dist = np.sqrt(np.sum(np.square(hazard_obs), axis=2)).reshape(N, -1)
+        hazard_obs = obs[:, hazards_key].reshape(batch_size, -1, 2)
+        hazards_dist = np.sqrt(np.sum(np.square(hazard_obs), axis=2)).reshape(batch_size, -1)
         cost = (
             (hazards_dist < self.env.hazards_size) * (self.env.hazards_size - hazards_dist)
         ).sum(1) * 10
@@ -103,6 +108,7 @@ class EnvWrapper:
         return cost
 
     def init_sensor(self):
+        """Initialize sensor observation"""
         self.xyz_sensors = XYZ_SENSORS[self.robot]
         self.angle_sensors = ANGLE_SENSORS[self.robot]
         self.constraints_name = CONSTRAINTS[self.task]
@@ -110,8 +116,7 @@ class EnvWrapper:
         self.base_state_name = self.xyz_sensors + self.angle_sensors + ['goal']
         self.env.reset()
         obs = self.get_obs()
-        self.obs_flat_size = sum([np.prod(i.shape) for i in obs.values()])
-
+        self.obs_flat_size = sum(np.prod(i.shape) for i in list(obs.values()))
         if self.algo == 'MBPPOLag':
             self.flatten_order = (
                 self.base_state_name + self.constraints_mbppo + ['robot_m'] + ['robot']
@@ -126,7 +131,7 @@ class EnvWrapper:
             self.key_to_slice[k] = slice(offset, offset + k_size)
 
             offset += k_size
-        self.base_state_dim = sum([np.prod(obs[k].shape) for k in self.base_state_name])
+        self.base_state_dim = sum(np.prod(obs[k].shape) for k in list(self.base_state_name))
         self.action_dim = self.env.action_space.shape[0]
         self.key_to_slice['base_state'] = slice(0, self.base_state_dim)
 
@@ -140,66 +145,59 @@ class EnvWrapper:
             self.ac_state_size = obs_flat.shape[0]  # 42
 
     def reset(self, seed=0):
+        """Reset Environment"""
         if self.env_type == 'mujoco':
-            obs = self.env.reset()
+            obs = self.env.reset(seed)
             return obs
+        self.timestep = 0  # Reset internal timer
+        self.env.reset(seed)
+        obs = self.get_obs_flatten()
+        # pylint: disable=attribute-defined-outside-init
+        if self.algo == 'MBPPOLag':
+            self.goal_position = self.env.goal_pos
+            self.robot_position = self.env.robot_pos
+            self.hazards_position = self.env.hazards_pos
+            self.goal_distance = self.dist_xy(self.robot_position, self.goal_position)
 
-        else:
-            self.t = 0  # Reset internal timer
-            self.env.reset()
-            obs = self.get_obs_flatten()
-            if self.algo == 'MBPPOLag':
-                self.goal_position = self.env.goal_pos
-                self.robot_position = self.env.robot_pos
-                self.hazards_position = self.env.hazards_pos
-                self.goal_distance = self.dist_xy(self.robot_position, self.goal_position)
+        return obs
 
-            return obs
+    def step(self, action, num_repeat):  # pylint: disable=too-many-locals
+        """Simulate Environment"""
+        reward = 0
+        cost = 0
+        step_num = 0
+        for _ in range(num_repeat):
+            control = action
+            _, reward_k, cost_k, terminated, truncated, info = self.env.step(control)
+            step_num += 1
+            reward += reward_k
+            cost += cost_k
+            self.timestep += 1  # Increment internal timer
+            if self.timestep >= self.num_steps:
+                truncated = True
+            observation = self.get_obs_flatten()
+            goal_met = 'goal_met' in info.keys()  # reach the goal
+            if terminated or truncated or goal_met:
+                # the action is not related to next state, so break
+                break
+        if self.algo == 'MBPPOLag':
+            info = {
+                'cost': cost,
+                'goal_met': goal_met,
+                'goal_pos': self.env.goal_pos,
+                'step_num': step_num,
+            }
+        elif self.algo == 'SafeLoop':
+            info = {'cost': cost, 'goal_met': goal_met, 'step_num': step_num}
 
-    def step(self, action, num_repeat):
-        if self.env_type == 'mujoco':
-            next_o, r, d, info = self.env.step(action)
-            if 'y_velocity' not in info:
-                c = np.abs(info['x_velocity'])
-            else:
-                c = np.sqrt(info['x_velocity'] ** 2 + info['y_velocity'] ** 2)
-
-            return next_o, r, c, d, info
-        else:
-            reward = 0
-            cost = 0
-            step_num = 0
-            for k in range(num_repeat):
-                control = action
-                state, reward_k, cost_k, terminated, truncated, info = self.env.step(control)
-                step_num += 1
-                reward += reward_k
-                cost += cost_k
-                self.t += 1  # Increment internal timer
-                if self.t >= self.num_steps:
-                    truncated = True
-                observation = self.get_obs_flatten()
-                goal_met = 'goal_met' in info.keys()  # reach the goal
-                if terminated or truncated or goal_met:
-                    # the action is not related to next state, so break
-                    break
-            if self.algo == 'MBPPOLag':
-                info = {
-                    'cost': cost,
-                    'goal_met': goal_met,
-                    'goal_pos': self.env.goal_pos,
-                    'step_num': step_num,
-                }
-            elif self.algo == 'SafeLoop':
-                info = {'cost': cost, 'goal_met': goal_met, 'step_num': step_num}
-
-            return observation, reward, cost, terminated, truncated, info
+        return observation, reward, cost, terminated, truncated, info
 
     def render(self):
         """render environment"""
         return self.env.render()
 
     def close(self):
+        """close environment"""
         self.env.close()
 
     def recenter(self, pos):
@@ -255,11 +253,11 @@ class EnvWrapper:
 
     def get_obs_flatten(self):
         '''get the flattened obs.'''
-        self.obs = self.get_obs()
+        obs = self.get_obs()
         flat_obs = np.zeros(self.obs_flat_size)
         for k in self.flatten_order:
             idx = self.key_to_slice[k]
-            flat_obs[idx] = self.obs[k].flat
+            flat_obs[idx] = obs[k].flat
         return flat_obs
 
     def get_dist_reward(self):
@@ -270,6 +268,7 @@ class EnvWrapper:
 
     @property
     def action_range(self):
+        """Get action range"""
         return float(self.env.action_space.low[0]), float(self.env.action_space.high[0])
 
     def sample_random_action(self):
@@ -325,12 +324,10 @@ class EnvWrapper:
         return reward, cost, goal_flag
 
     def get_goal_flag(self, robot_pos, goal_pos):
+        """Get goal flat"""
         dist_goal = self.dist_xy(robot_pos, goal_pos)
         goal_size = 0.3
-        if dist_goal < goal_size:
-            return True
-        else:
-            return False
+        return dist_goal < goal_size
 
     def ego_xy(self, robot_matrix, robot_pos, pos):
         '''Return the egocentric XY vector to a position from the robot'''
@@ -343,7 +340,9 @@ class EnvWrapper:
         world_3vec = pos_3vec - robot_3vec
         return np.matmul(world_3vec, robot_mat)[:2]
 
-    def obs_lidar_pseudo(self, robot_matrix, robot_pos, positions):
+    def obs_lidar_pseudo(
+        self, robot_matrix, robot_pos, positions
+    ):  # pylint:disable=too-many-locals
         '''
         Return a robot-centric lidar observation of a list of positions.
 
@@ -373,43 +372,47 @@ class EnvWrapper:
             pos = np.asarray(pos)
             if pos.shape == (3,):
                 pos = pos[:2]  # Truncate Z coordinate
-            z = np.complex(
+            position_z = np.complex(
                 *self.ego_xy(robot_matrix, robot_pos, pos)
             )  # X, Y as real, imaginary components
-            dist = np.abs(z)
-            angle = np.angle(z) % (np.pi * 2)
+            dist = np.abs(position_z)
+            angle = np.angle(position_z) % (np.pi * 2)
             bin_size = (np.pi * 2) / lidar_num_bins
-            bin = int(angle / bin_size)
-            bin_angle = bin_size * bin
+            sensor_bin = int(angle / bin_size)
+            bin_angle = bin_size * sensor_bin
             if lidar_max_dist is None:
                 sensor = np.exp(-lidar_exp_gain * dist)
             else:
                 sensor = max(0, lidar_max_dist - dist) / lidar_max_dist
-            obs[bin] = max(obs[bin], sensor)
+            obs[sensor_bin] = max(obs[sensor_bin], sensor)
             # Aliasing
             if lidar_alias:
                 alias = (angle - bin_angle) / bin_size
-                assert 0 <= alias <= 1, f'bad alias {alias}, dist {dist}, angle {angle}, bin {bin}'
-                bin_plus = (bin + 1) % lidar_num_bins
-                bin_minus = (bin - 1) % lidar_num_bins
+                assert (
+                    0 <= alias <= 1
+                ), f'bad alias {alias}, dist {dist}, angle {angle}, bin {sensor_bin}'
+                bin_plus = (sensor_bin + 1) % lidar_num_bins
+                bin_minus = (sensor_bin - 1) % lidar_num_bins
                 obs[bin_plus] = max(obs[bin_plus], alias * sensor)
                 obs[bin_minus] = max(obs[bin_minus], (1 - alias) * sensor)
         return obs
 
     def make_observation(self, state, lidar):
+        """Get observation"""
         state = list(state)
         lidar = list(lidar)
-        x = state[self.key_to_slice['base_state']]
-        obs = x + lidar + state[self.key_to_slice['robot']]
+        base_state = state[self.key_to_slice['base_state']]
+        obs = base_state + lidar + state[self.key_to_slice['robot']]
 
         return obs
 
     def generate_lidar(self, obs):
+        """Get lidar observation"""
         robot_matrix_x_y = obs[self.key_to_slice['robot_m']]
-        x = robot_matrix_x_y[0]
-        y = robot_matrix_x_y[1]
-        first_row = [x, y, 0]
-        second_row = [-y, x, 0]
+        robot_matrix_x = robot_matrix_x_y[0]
+        robot_matrix_y = robot_matrix_x_y[1]
+        first_row = [robot_matrix_x, robot_matrix_y, 0]
+        second_row = [-robot_matrix_y, robot_matrix_x, 0]
         third_row = [0, 0, 1]
         robot_matrix = [first_row, second_row, third_row]
         robot_pos = obs[self.key_to_slice['robot']]
