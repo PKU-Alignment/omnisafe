@@ -23,7 +23,7 @@ import torch.nn.functional as F
 from torch.optim import Adam
 
 from omnisafe.algos import registry
-from omnisafe.algos.model_based.models.core_ac import SoftActorCritic
+from omnisafe.algos.model_based.models.actor_critic import SoftActorCritic
 from omnisafe.algos.model_based.planner import Planner
 from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased
 

@@ -18,7 +18,7 @@ import numpy as np
 import torch
 
 
-class PredictEnv:
+class VirtualEnv:
     def __init__(self, algo, model, env_name, device=torch.device('cpu')):
         self.algo = algo
         self.model = model
