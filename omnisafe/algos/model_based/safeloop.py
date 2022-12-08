@@ -41,15 +41,6 @@ class SafeLoop(PolicyGradientModelBased, Planner):
             **self.cfgs['mpc_config'],
         )
         self.clip = clip
-        if self.cfgs['automatic_alpha_tuning']:
-            self.target_entropy = -torch.prod(
-                torch.Tensor(self.env.action_space.shape).to(self.device)
-            ).item()
-            self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
-            self.alpha_optim = Adam([self.log_alpha], lr=self.cfgs['sac_lr'])
-            self.alpha = self.log_alpha.exp()
-        else:
-            self.alpha = self.cfgs['alpha_init']
 
     def set_algorithm_specific_actor_critic(self):
         """Initialize Soft Actor-Critic"""
@@ -70,6 +61,15 @@ class SafeLoop(PolicyGradientModelBased, Planner):
         self.pi_optimizer = Adam(self.actor_critic.pi.parameters(), lr=self.cfgs['sac_lr'])
         self.q_optimizer = Adam(self.q_params, lr=self.cfgs['sac_lr'])
         self.v_optimizer = Adam(self.actor_critic.v.parameters(), lr=self.cfgs['sac_lr'])
+        if self.cfgs['automatic_alpha_tuning']:
+            self.target_entropy = -torch.prod(
+                torch.Tensor(self.env.action_space.shape).to(self.device)
+            ).item()
+            self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
+            self.alpha_optim = Adam([self.log_alpha], lr=self.cfgs['sac_lr'])
+            self.alpha = self.log_alpha.exp()
+        else:
+            self.alpha = self.cfgs['alpha_init']
         return self.actor_critic
 
     def algorithm_specific_logs(self, timestep):

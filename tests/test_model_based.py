@@ -36,15 +36,16 @@ import omnisafe
 def test_model_based(algo, env_id, device):
     seed = 0
     custom_cfgs = {
-        'max_real_time_steps': 3000,
+        'max_real_time_steps': 10000,
         'pi_iters': 1,
         'critic_iters': 1,
-        'imaging_steps_per_policy_update': 1000,
-        'update_dynamics_freq': 1000,
-        'update_policy_freq': 1000,
+        'imaging_steps_per_policy_update': 30000,
+        'mixed_real_time_steps':1500,
+        'update_dynamics_freq': 10000,
+        'update_policy_freq': 10000,
         'update_policy_start_timesteps': 0,
         'update_policy_iters': 1,
-        'log_freq': 1000,
+        'log_freq': 10000,
     }
     env = omnisafe.EnvModelBased(algo, env_id)
 
@@ -53,4 +54,4 @@ def test_model_based(algo, env_id, device):
 
 
 if __name__ == '__main__':
-    test_model_based(algo='CPO', env_id='SafetyPointGoal1-v0', devide='cpu')
+    test_model_based(algo='MBPPOLag', env_id='SafetyPointGoal1-v0', devide='cpu')
