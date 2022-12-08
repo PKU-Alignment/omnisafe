@@ -46,7 +46,8 @@ def test_model_based(algo, env_id, device):
         'update_policy_iters': 1,
         'log_freq': 1000,
     }
-    env = omnisafe.Env(algo, env_id)
+    env = omnisafe.EnvModelBased(algo, env_id)
+
     agent = omnisafe.Agent(algo, env, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
 
