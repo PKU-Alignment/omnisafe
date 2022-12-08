@@ -98,7 +98,7 @@ class SafeLoop(PolicyGradientModelBased, Planner):
     def update_actor_critic(self, timestep):
         """update actor and critic"""
         if timestep >= self.cfgs['update_policy_start_timesteps']:
-            for j in range(self.cfgs['update_iters']):
+            for j in range(self.cfgs['update_policy_iters']):
                 # Get one batch data from Off-policy buffer
                 data = self.off_replay_buffer.sample_batch()
                 # Update critic

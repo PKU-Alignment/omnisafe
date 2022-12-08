@@ -46,6 +46,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
             act_dim=self.env.action_space.shape[0],
             scale_rewards=self.cfgs['scale_rewards'],
             standardized_obs=self.cfgs['standardized_obs'],
+            size=self.cfgs['imaging_steps_per_policy_update'],
             **self.cfgs['buffer_cfgs'],
             device=self.device,
         )

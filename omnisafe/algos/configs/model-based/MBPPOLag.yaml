@@ -69,7 +69,6 @@ defaults:
     gamma: 0.99
     lam: 0.97
     lam_c: 0.97
-    size: 30000
     adv_estimation_method: "gae2"
     standardized_reward: True
     standardized_cost: True

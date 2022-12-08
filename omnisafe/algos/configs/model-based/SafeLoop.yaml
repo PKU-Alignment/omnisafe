@@ -24,7 +24,7 @@ defaults:
   # Soft Actor-Critic
   update_policy_start_timesteps: 50000
   update_policy_freq: 250
-  update_iters: 50
+  update_policy_iters: 50
   ac_hidden_sizes: [64, 64]
   sac_lr: 0.001
   alpha_init: 0.2
