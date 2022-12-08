@@ -350,9 +350,9 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
             )
             # reached max imaging horizon, mixed real timestep, real max timestep , or epsiode truncated.
             if (
-                (timestep % self.cfgs['horizon'] == 0)
-                or (timestep % self.cfgs['update_policy_freq'] == self.cfgs['mixed_real_time_steps'])
-                or (timestep == self.cfgs['max_real_time_steps'])
+                timestep % self.cfgs['horizon'] == 0
+                or timestep % self.cfgs['update_policy_freq'] == self.cfgs['mixed_real_time_steps']
+                or timestep == self.cfgs['max_real_time_steps']
                 or truncated
             ):
                 state_tensor = torch.as_tensor(
@@ -361,7 +361,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
                 _, val, cval, _ = self.actor_critic.step(state_tensor)
                 del state_tensor
                 self.buf.finish_path(val, cval, penalty_param=float(0))
-            elif terminated:  
+            elif terminated:
                 # this means episode is terminated, which will be triggered only in mujoco robots fall down case
                 val = 0
                 cval = 0
