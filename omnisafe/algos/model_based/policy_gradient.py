@@ -25,8 +25,8 @@ from omnisafe.algos import registry
 from omnisafe.algos.common.logger import Logger
 from omnisafe.algos.common.replay_buffer import ReplayBuffer as Off_ReplayBuffer
 from omnisafe.algos.model_based.models.actor_critic import MLPActorCritic
-from omnisafe.algos.model_based.models.virtual_env import VirtualEnv
 from omnisafe.algos.model_based.models.dynamic_model import EnsembleDynamicsModel
+from omnisafe.algos.model_based.models.virtual_env import VirtualEnv
 from omnisafe.algos.utils.distributed_utils import proc_id
 
 
