@@ -19,15 +19,12 @@ import helpers
 
 
 @helpers.parametrize(
-    agent_id=['Point', 'Car'],
-    env_id=['Goal', 'Push', 'Button'],
-    level=['0', '1', '2'],
-    render_mode=['rgb_array', 'depth_array'],
+    agent_id=['Point', 'Car'], env_id=['Goal', 'Push', 'Button'], level=['0', '1', '2']
 )
-def test_off_policy(agent_id, env_id, level, render_mode):
+def test_off_policy(agent_id, env_id, level):
     """test_env"""
     env_name = 'Safety' + agent_id + env_id + level + '-v0'
-    env = safety_gymnasium.make(env_name, render_mode=render_mode)
+    env = safety_gymnasium.make(env_name, render_mode='rgb_array')
     obs, _ = env.reset()
     terminled = False
     ep_ret = 0
@@ -48,5 +45,3 @@ def test_off_policy(agent_id, env_id, level, render_mode):
         obs, reward, cost, terminled, truncated, info = env.step(act)
         ep_ret += reward
         ep_cost += cost
-
-        env.render()

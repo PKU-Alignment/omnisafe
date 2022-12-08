@@ -70,3 +70,18 @@ Pieter
 Abbeel
 et
 al
+params
+Init
+eval
+cfgs
+Richard S. Sutton
+David McAllester
+Satinder Singh
+Yishay Mansour
+kl
+VCritic
+RMS
+frac
+init
+fname
+omnisafe
