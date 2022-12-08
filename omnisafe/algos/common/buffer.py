@@ -90,7 +90,7 @@ class Buffer:
             deltas = rews[:-1] + self.gamma * vals[1:] - vals[:-1]
             adv = discount_cumsum(deltas, self.gamma * lam)
             value_net_targets = adv + vals[:-1]
-            
+
         elif self.adv_estimation_method == 'gae2':
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
             lam = self.lam if lam is None else lam
