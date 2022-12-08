@@ -14,21 +14,24 @@
 # ==============================================================================
 import time
 from copy import deepcopy
+
 import numpy as np
 import torch
+
 from omnisafe.algos import registry
 from omnisafe.algos.common.logger import Logger
+from omnisafe.algos.common.replay_buffer import ReplayBuffer as Off_ReplayBuffer
+from omnisafe.algos.model_based.models.dynamics_predict_env import PredictEnv
+from omnisafe.algos.model_based.models.dynamicsmodel import EnsembleDynamicsModel
 from omnisafe.algos.utils import distributed_utils
 from omnisafe.algos.utils.distributed_utils import proc_id
 from omnisafe.algos.utils.tools import get_flat_params_from
-from omnisafe.algos.model_based.models.dynamics_predict_env import PredictEnv
-from omnisafe.algos.model_based.models.dynamicsmodel import EnsembleDynamicsModel
-from omnisafe.algos.common.replay_buffer import ReplayBuffer as Off_ReplayBuffer
 
 
 @registry.register
-class PolicyGradientModelBased():
+class PolicyGradientModelBased:
     """policy update base class"""
+
     def __init__(self, env, exp_name, data_dir, seed=0, algo='mbppo-lag', cfgs=None) -> None:
         self.env = env
         self.env_id = env.env_id
@@ -70,11 +73,16 @@ class PolicyGradientModelBased():
 
         # Init off-policy buffer
         # pylint: disable-next=line-too-long
-        self.off_replay_buffer = Off_ReplayBuffer(self.env.dynamics_state_size, self.env.action_space.shape[0], self.cfgs['replay_size'], self.cfgs['batch_size'])
+        self.off_replay_buffer = Off_ReplayBuffer(
+            self.env.dynamics_state_size,
+            self.env.action_space.shape[0],
+            self.cfgs['replay_size'],
+            self.cfgs['batch_size'],
+        )
 
         # Init Actor-Critic
         self.actor_critic = self.set_algorithm_specific_actor_critic()
-        
+
         # Set up model saving
         what_to_save = {
             'pi': self.actor_critic.pi,
@@ -96,19 +104,33 @@ class PolicyGradientModelBased():
         while t < self.cfgs['max_real_time_steps']:
             # select action
             action, action_info = self.select_action(t, state, self.env)
-            next_state, reward, cost, terminated, truncated, info = self.env.step(action, self.cfgs['action_repeat'])
+            next_state, reward, cost, terminated, truncated, info = self.env.step(
+                action, self.cfgs['action_repeat']
+            )
 
             t += info['step_num']
             ep_len += 1
             ep_ret += reward
             ep_cost += cost
 
-            self.store_real_data(t, ep_len, state, action_info, action, reward, cost, terminated, truncated, next_state, info)
+            self.store_real_data(
+                t,
+                ep_len,
+                state,
+                action_info,
+                action,
+                reward,
+                cost,
+                terminated,
+                truncated,
+                next_state,
+                info,
+            )
 
-            if t % self.cfgs['update_dynamics_freq'] == 0: 
+            if t % self.cfgs['update_dynamics_freq'] == 0:
                 self.update_dynamics_model()
 
-            if t % self.cfgs['update_policy_freq'] == 0: 
+            if t % self.cfgs['update_policy_freq'] == 0:
                 self.update_actor_critic(t)
 
             state = next_state
@@ -132,7 +154,7 @@ class PolicyGradientModelBased():
         # Close opened files to avoid number of open files overflow
         self.logger.close()
         return self.actor_critic
-    
+
     def log(self, timestep: int):
         """
         logging data
@@ -146,13 +168,12 @@ class PolicyGradientModelBased():
         self.logger.log_tabular('Time', int(time.time() - self.start_time))
         self.logger.dump_tabular()
 
-
     def set_algorithm_specific_actor_critic(self):
         """
         Use this method to initialize network.
         e.g. Initialize Soft Actor Critic
         """
-        
+
     def algorithm_specific_logs(self, timestep):
         """
         Use this method to collect log information.
@@ -174,7 +195,7 @@ class PolicyGradientModelBased():
         Returns:
             No return
         """
-        
+
     def algo_reset(self):
         """
         reset algo parameters
@@ -182,7 +203,21 @@ class PolicyGradientModelBased():
         Returns:
             No return
         """
-    def store_real_data(self, timestep, ep_len, state, action_info, action, reward, cost, terminated, truncated, next_state, info):
+
+    def store_real_data(
+        self,
+        timestep,
+        ep_len,
+        state,
+        action_info,
+        action,
+        reward,
+        cost,
+        terminated,
+        truncated,
+        next_state,
+        info,
+    ):
         """
         store real env data to buffer
 

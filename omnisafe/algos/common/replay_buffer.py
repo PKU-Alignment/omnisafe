@@ -33,6 +33,7 @@ class ReplayBuffer:
         self.ptr, self.size, self.max_size = 0, 0, size
         self.batch_size = batch_size
         self.device = device
+
     def store(self, obs, act, rew, cost, next_obs, done):
         """store"""
         self.obs_buf[self.ptr] = obs
@@ -55,4 +56,6 @@ class ReplayBuffer:
             cost=self.cost_buf[idxs],
             done=self.done_buf[idxs],
         )
-        return {k: torch.as_tensor(v, dtype=torch.float32).to(self.device) for k, v in batch.items()}
+        return {
+            k: torch.as_tensor(v, dtype=torch.float32).to(self.device) for k, v in batch.items()
+        }

@@ -14,19 +14,22 @@
 # ==============================================================================
 """MBPPOLag"""
 
+import copy
+
 import numpy as np
 import torch
 from torch.nn.functional import softplus
-from omnisafe.algos import registry
 from torch.optim import Adam
-from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased
-from omnisafe.algos.model_based.models.core_ac import MLPActorCritic
+
+from omnisafe.algos import registry
+from omnisafe.algos.common.buffer import Buffer
 from omnisafe.algos.model_based.lagrange import Lagrange
-from omnisafe.algos.common.buffer import Buffer 
-import copy
+from omnisafe.algos.model_based.models.core_ac import MLPActorCritic
+from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased
+
 
 @registry.register
-class MBPPOLag(PolicyGradientModelBased,Lagrange):
+class MBPPOLag(PolicyGradientModelBased, Lagrange):
     """MBPPO-Lag"""
 
     def __init__(self, algo='mbppo-lag', clip=0.2, **cfgs):
@@ -36,27 +39,29 @@ class MBPPOLag(PolicyGradientModelBased,Lagrange):
         self.loss_pi_before = 0.0
         self.loss_v_before = 0.0
         self.loss_c_before = 0.0
-        self.env_auxiliary =  copy.deepcopy(self.env)
+        self.env_auxiliary = copy.deepcopy(self.env)
         self.buf = Buffer(
-        actor_critic=self.actor_critic,
-        obs_dim=self.env.ac_state_size,
-        act_dim=self.env.action_space.shape[0],
-        scale_rewards=self.cfgs['scale_rewards'],
-        standardized_obs=self.cfgs['standardized_obs'],
-        **self.cfgs['buffer_cfgs'],
-        device=self.device
+            actor_critic=self.actor_critic,
+            obs_dim=self.env.ac_state_size,
+            act_dim=self.env.action_space.shape[0],
+            scale_rewards=self.cfgs['scale_rewards'],
+            standardized_obs=self.cfgs['standardized_obs'],
+            **self.cfgs['buffer_cfgs'],
+            device=self.device,
         )
-        
+
     def set_algorithm_specific_actor_critic(self):
         """Initialize Actor-Critic"""
         self.actor_critic = MLPActorCritic(
-            (self.env.ac_state_size,) , self.env.action_space, **dict(hidden_sizes=self.cfgs['ac_hidden_sizes'])
+            (self.env.ac_state_size,),
+            self.env.action_space,
+            **dict(hidden_sizes=self.cfgs['ac_hidden_sizes']),
         ).to(self.device)
         self.pi_optimizer = Adam(self.actor_critic.pi.parameters(), lr=self.cfgs['pi_lr'])
         self.vf_optimizer = Adam(self.actor_critic.v.parameters(), lr=self.cfgs['vf_lr'])
         self.cvf_optimizer = Adam(self.actor_critic.vc.parameters(), lr=self.cfgs['vf_lr'])
         return self.actor_critic
-    
+
     def algorithm_specific_logs(self, timestep):
         """log algo parameter"""
         super().algorithm_specific_logs(timestep)
@@ -78,10 +83,10 @@ class MBPPOLag(PolicyGradientModelBased,Lagrange):
         self.logger.log_tabular('Misc/StopIter')
         self.logger.log_tabular('PolicyRatio')
 
-    def update_actor_critic(self,timestep):
+    def update_actor_critic(self, timestep):
         """update actor critic"""
         megaiter = 0
-        last_valid_rets = np.zeros(self.cfgs['dynamics_cfgs']['elite_size']) 
+        last_valid_rets = np.zeros(self.cfgs['dynamics_cfgs']['elite_size'])
         while True:
             self.roll_out_in_imaginary(megaiter)
             # validation
@@ -116,7 +121,9 @@ class MBPPOLag(PolicyGradientModelBased,Lagrange):
     def compute_loss_v(self, data):
         """compute the loss of value function"""
         obs, ret, cret = data['obs'], data['target_v'], data['target_c']
-        return ((self.actor_critic.v(obs) - ret) ** 2).mean(), ((self.actor_critic.vc(obs) - cret) ** 2).mean()
+        return ((self.actor_critic.v(obs) - ret) ** 2).mean(), (
+            (self.actor_critic.vc(obs) - cret) ** 2
+        ).mean()
 
     def compute_loss_pi(self, data):
         """compute the loss of policy"""
@@ -135,12 +142,11 @@ class MBPPOLag(PolicyGradientModelBased,Lagrange):
         pi_info = dict(kl=approx_kl, ent=ent, cf=clipfrac)
         return loss_pi, pi_info
 
-
     def update_dynamics_model(self):
         """compute the loss of dynamics"""
-        state = self.off_replay_buffer.obs_buf[:self.off_replay_buffer.size,:]
-        action = self.off_replay_buffer.act_buf[:self.off_replay_buffer.size,:]
-        next_state = self.off_replay_buffer.obs2_buf[:self.off_replay_buffer.size,:]
+        state = self.off_replay_buffer.obs_buf[: self.off_replay_buffer.size, :]
+        action = self.off_replay_buffer.act_buf[: self.off_replay_buffer.size, :]
+        next_state = self.off_replay_buffer.obs2_buf[: self.off_replay_buffer.size, :]
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
         labels = delta_state
@@ -153,7 +159,7 @@ class MBPPOLag(PolicyGradientModelBased,Lagrange):
         self.loss_pi_before = pi_l_old.item()
         # Train policy with multiple steps of gradient descent
         for i in range(self.cfgs['pi_iters']):
-            loss_pi,pi_info = self.compute_loss_pi(data)
+            loss_pi, pi_info = self.compute_loss_pi(data)
             kl = pi_info['kl']
             if self.cfgs.get('kl_early_stopping', False):
                 if kl > 1.2 * self.cfgs['target_kl']:
@@ -170,14 +176,18 @@ class MBPPOLag(PolicyGradientModelBased,Lagrange):
                 'Values/Adv': data['adv'].cpu().numpy(),
                 'Values/Adv_C': data['cost_adv'].cpu().numpy(),
                 'Entropy': pi_info_old['ent'],
-                'KL':  pi_info['kl'],
+                'KL': pi_info['kl'],
                 'PolicyRatio': pi_info['cf'],
             }
         )
-    def update_value_net(self,data):
+
+    def update_value_net(self, data):
         """Value function learning"""
         v_l_old, cv_l_old = self.compute_loss_v(data)
-        self.loss_v_before, self.loss_c_before, = v_l_old.item(), cv_l_old.item()
+        self.loss_v_before, self.loss_c_before, = (
+            v_l_old.item(),
+            cv_l_old.item(),
+        )
 
         for i in range(self.cfgs['critic_iters']):
             loss_v, loss_vc = self.compute_loss_v(data)
@@ -189,16 +199,21 @@ class MBPPOLag(PolicyGradientModelBased,Lagrange):
             loss_vc.backward()
             self.cvf_optimizer.step()
 
-        self.logger.store(**{
-        'Loss/DeltaValue': loss_v.item() - self.loss_v_before,
-        'Loss/Value': self.loss_v_before,
-        'Loss/DeltaCValue': loss_vc.item()  - self.loss_c_before,
-        'Loss/CValue': self.loss_c_before,})
-         
+        self.logger.store(
+            **{
+                'Loss/DeltaValue': loss_v.item() - self.loss_v_before,
+                'Loss/Value': self.loss_v_before,
+                'Loss/DeltaCValue': loss_vc.item() - self.loss_c_before,
+                'Loss/CValue': self.loss_c_before,
+            }
+        )
+
     def get_param_values(self, model):
         """get the dynamics parameters"""
-        trainable_params = list(model.parameters()) 
-        params = np.concatenate([p.contiguous().view(-1).data.cpu().numpy() for p in trainable_params])
+        trainable_params = list(model.parameters())
+        params = np.concatenate(
+            [p.contiguous().view(-1).data.cpu().numpy() for p in trainable_params]
+        )
         return params.copy()
 
     def set_param_values(self, new_params, model, set_new=True):
@@ -225,25 +240,33 @@ class MBPPOLag(PolicyGradientModelBased,Lagrange):
             next_state = self.predict_env.step(state, action)
             next_state = np.nan_to_num(next_state)
             next_state = np.clip(next_state, -self.cfgs['obs_clip'], self.cfgs['obs_clip'])
-            reward, cost, goal_flag = self.env_auxiliary.get_reward_cost(next_state) 
-            
+            reward, cost, goal_flag = self.env_auxiliary.get_reward_cost(next_state)
+
             dep_ret += reward
             dep_cost += cost
             dep_len += 1
             self.buf.store(
-                obs=action_info['state_vec'], act=action, rew=reward, val=action_info['val'], logp=action_info['logp'], cost=cost, cost_val=action_info['cval']
+                obs=action_info['state_vec'],
+                act=action,
+                rew=reward,
+                val=action_info['val'],
+                logp=action_info['logp'],
+                cost=cost,
+                cost_val=action_info['cval'],
             )
             state = next_state
-            
+
             timeout = dep_len == self.cfgs['horizon']
             truncated = timeout
             epoch_ended = t == self.cfgs['imaging_steps_per_policy_update'] - 1
             if truncated or epoch_ended or goal_flag:
                 if timeout or epoch_ended or goal_flag:
-                    state_tensor = torch.as_tensor(action_info['state_vec'], device=self.device, dtype=torch.float32)
+                    state_tensor = torch.as_tensor(
+                        action_info['state_vec'], device=self.device, dtype=torch.float32
+                    )
                     _, val, cval, _ = self.actor_critic.step(state_tensor)
                     del state_tensor
-                else: # this means episode is terminated, and this will be triggered only in mujoco robots fall down case
+                else:  # this means episode is terminated, and this will be triggered only in mujoco robots fall down case
                     val = 0
                     cval = 0
                 self.buf.finish_path(val, cval, penalty_param=float(0))
@@ -252,7 +275,7 @@ class MBPPOLag(PolicyGradientModelBased,Lagrange):
                     self.logger.store(
                         **{
                             'DynaMetrics/EpRet': dep_ret,
-                            'DynaMetrics/EpLen': dep_len ,
+                            'DynaMetrics/EpLen': dep_len,
                             'DynaMetrics/EpCost': dep_cost,
                         }
                     )
@@ -260,18 +283,18 @@ class MBPPOLag(PolicyGradientModelBased,Lagrange):
                 dep_ret, dep_len, dep_cost = 0, 0, 0
 
     def validation(self, last_valid_rets):
-        """policy validation """
-        valid_rets = np.zeros(self.cfgs['validation_num']) 
+        """policy validation"""
+        valid_rets = np.zeros(self.cfgs['validation_num'])
         winner = 0
         # pylint:disable=consider-using-enumerate
         for valid_id in range(len(valid_rets)):
-            state = self.env_auxiliary.reset()  
+            state = self.env_auxiliary.reset()
             for step in range(self.cfgs['validation_horizon']):
                 action, action_info = self.select_action(step, state, self.env_auxiliary)
                 next_state = self.predict_env.step_elite(state, action, valid_id)
                 next_state = np.nan_to_num(next_state)
                 next_state = np.clip(next_state, -self.cfgs['obs_clip'], self.cfgs['obs_clip'])
-                reward, _ , goal_flag = self.env_auxiliary.get_reward_cost(next_state)
+                reward, _, goal_flag = self.env_auxiliary.get_reward_cost(next_state)
                 valid_rets[valid_id] += reward
                 state = next_state
                 if goal_flag:
@@ -280,42 +303,69 @@ class MBPPOLag(PolicyGradientModelBased,Lagrange):
                 winner += 1
         performance_ratio = winner / self.cfgs['validation_num']
         threshold = self.cfgs['validation_threshold_num'] / self.cfgs['validation_num']
-        result = performance_ratio <  threshold
+        result = performance_ratio < threshold
         return result, valid_rets
 
     def select_action(self, timestep, state, env):
-        """action selection """
+        """action selection"""
         state = env.generate_lidar(state)
         state_vec = np.array(state)
         state_tensor = torch.as_tensor(state_vec, device=self.device, dtype=torch.float32)
         action, val, cval, logp = self.actor_critic.step(state_tensor)
         action = np.nan_to_num(action)
-        action_info = {
-            "state_vec": state_vec,
-            "val": val,
-            "cval": cval,
-            "logp": logp
-        }
+        action_info = {'state_vec': state_vec, 'val': val, 'cval': cval, 'logp': logp}
         return action, action_info
 
-    def store_real_data(self,timestep, ep_len, state, action_info, action, reward, cost, terminated, truncated, next_state, info):
+    def store_real_data(
+        self,
+        timestep,
+        ep_len,
+        state,
+        action_info,
+        action,
+        reward,
+        cost,
+        terminated,
+        truncated,
+        next_state,
+        info,
+    ):
         """store real data"""
         if not terminated and not truncated and not info['goal_met']:
-            self.off_replay_buffer.store(obs=state, act=action, rew=reward, cost=cost, next_obs=next_state, done=truncated)            
-        if timestep % self.cfgs['update_policy_freq'] <= self.cfgs['mixed_real_time_steps'] and  self.buf.ptr < self.cfgs['mixed_real_time_steps']  :
+            self.off_replay_buffer.store(
+                obs=state, act=action, rew=reward, cost=cost, next_obs=next_state, done=truncated
+            )
+        if (
+            timestep % self.cfgs['update_policy_freq'] <= self.cfgs['mixed_real_time_steps']
+            and self.buf.ptr < self.cfgs['mixed_real_time_steps']
+        ):
             self.buf.store(
-                obs=action_info['state_vec'], act=action, rew=reward, val=action_info['val'], logp=action_info['logp'], cost=cost, cost_val=action_info['cval']
+                obs=action_info['state_vec'],
+                act=action,
+                rew=reward,
+                val=action_info['val'],
+                logp=action_info['logp'],
+                cost=cost,
+                cost_val=action_info['cval'],
             )
             # reached max imaging horizon, mixed real timestep, real max timestep , or epsiode truncated.
-            if (timestep % self.cfgs['horizon'] == 0) or ( timestep % self.cfgs['update_policy_freq'] == self.cfgs['mixed_real_time_steps'] ) or (timestep == self.cfgs['max_real_time_steps']) or truncated:
-                state_tensor = torch.as_tensor(action_info['state_vec'], device=self.device, dtype=torch.float32)
+            if (
+                (timestep % self.cfgs['horizon'] == 0)
+                or (timestep % self.cfgs['update_policy_freq'] == self.cfgs['mixed_real_time_steps'])
+                or (timestep == self.cfgs['max_real_time_steps'])
+                or truncated
+            ):
+                state_tensor = torch.as_tensor(
+                    action_info['state_vec'], device=self.device, dtype=torch.float32
+                )
                 _, val, cval, _ = self.actor_critic.step(state_tensor)
                 del state_tensor
                 self.buf.finish_path(val, cval, penalty_param=float(0))
-            elif terminated:# this means episode is terminated, which will be triggered only in mujoco robots fall down case
-                val=0
-                cval=0
-                self.buf.finish_path(val,cval,penalty_param=float(0))
+            elif terminated:  
+                # this means episode is terminated, which will be triggered only in mujoco robots fall down case
+                val = 0
+                cval = 0
+                self.buf.finish_path(val, cval, penalty_param=float(0))
+
     def algo_reset(self):
-            """reset algo parameters"""
-        
+        """reset algo parameters"""

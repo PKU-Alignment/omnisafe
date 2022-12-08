@@ -17,10 +17,10 @@ import numpy as np
 import scipy.signal
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from gymnasium.spaces import Box, Discrete
 from torch.distributions.categorical import Categorical
 from torch.distributions.normal import Normal
-import torch.nn.functional as F
 
 
 def combined_shape(length, shape=None):
@@ -135,7 +135,7 @@ class MLPActorCritic(nn.Module):
         with torch.no_grad():
             pi = self.pi._distribution(obs)
             a = pi.sample()
-            #a = self.pi.mu_net(obs)
+            # a = self.pi.mu_net(obs)
             logp_a = self.pi._log_prob_from_distribution(pi, a)
             v = self.v(obs)
             vc = self.vc(obs)
@@ -143,6 +143,7 @@ class MLPActorCritic(nn.Module):
 
     def act(self, obs):
         return self.step(obs)[0]
+
 
 class SoftActorCritic(nn.Module):
     def __init__(
@@ -175,6 +176,7 @@ class SoftActorCritic(nn.Module):
         with torch.no_grad():
             a, _ = self.pi(obs, deterministic, False)
             return a.cpu().data.numpy().flatten()
+
 
 class SquashedGaussianMLPActor(nn.Module):
     def __init__(self, obs_dim, act_dim, hidden_sizes, activation, act_limit):

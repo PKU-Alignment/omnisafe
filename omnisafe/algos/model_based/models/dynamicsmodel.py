@@ -24,6 +24,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class StandardScaler:
     def __init__(self, device=torch.device('cpu')):
         self.mu = 0.0
@@ -132,19 +133,23 @@ class EnsembleModel(nn.Module):
     ):
         super(EnsembleModel, self).__init__()
         self.algo = algo
-        if self.algo == 'mbppo-lag' :
+        if self.algo == 'mbppo-lag':
             self.output_dim = state_size
         elif self.algo == 'safeloop':
             self.output_dim = state_size + reward_size
         self.hidden_size = hidden_size
         self.use_decay = use_decay
 
-        self.nn1 = EnsembleFC(state_size + action_size, hidden_size, ensemble_size, weight_decay=0.000025)
+        self.nn1 = EnsembleFC(
+            state_size + action_size, hidden_size, ensemble_size, weight_decay=0.000025
+        )
         self.nn2 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.00005)
         self.nn3 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
         self.nn4 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
         if self.algo in ['mbppo-lag', 'safeloop']:
-            self.nn5 = EnsembleFC(hidden_size, self.output_dim * 2, ensemble_size, weight_decay=0.0001)
+            self.nn5 = EnsembleFC(
+                hidden_size, self.output_dim * 2, ensemble_size, weight_decay=0.0001
+            )
 
         self.register_buffer('max_logvar', (torch.ones((1, self.output_dim)).float() / 2))
         self.register_buffer('min_logvar', (-torch.ones((1, self.output_dim)).float() * 10))
@@ -226,9 +231,9 @@ class EnsembleDynamicsModel:
         self.cost_size = cost_size
         self.network_size = network_size
         self.device = device
-        if self.algo == 'mbppo-lag' :
+        if self.algo == 'mbppo-lag':
             self.elite_model_idxes = []
-            
+
         elif self.algo == 'safeloop':
             self.elite_model_idxes = [0, 1, 2, 3, 4]
 
@@ -270,9 +275,11 @@ class EnsembleDynamicsModel:
 
         for epoch in itertools.count():
             # training
-            train_idx = np.vstack([np.random.permutation(train_inputs.shape[0]) for _ in range(self.network_size)])
+            train_idx = np.vstack(
+                [np.random.permutation(train_inputs.shape[0]) for _ in range(self.network_size)]
+            )
             # shape: [train_inputs.shape[0],network_size]
-            
+
             losses = []
             for start_pos in range(0, train_inputs.shape[0], batch_size):
                 idx = train_idx[:, start_pos : start_pos + batch_size]
@@ -437,4 +444,3 @@ class Swish(nn.Module):
     def forward(self, x):
         x = x * F.sigmoid(x)
         return x
-

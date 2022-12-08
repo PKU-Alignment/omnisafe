@@ -19,7 +19,7 @@ defaults:
   max_ep_len: 1000
   action_repeat: 5
   seed: 0
-  device: "cpu" 
+  device: "cpu"
 
   # Soft Actor-Critic
   update_policy_start_timesteps: 50000
@@ -34,7 +34,7 @@ defaults:
   use_bc_loss: False
   sac_config_evaluation_mode: None
 
-  # log 
+  # log
   log_freq: 15000
   data_dir: "./runs"
 
@@ -49,7 +49,7 @@ defaults:
   # Configuration For Off-policy Buffer
   replay_size: 1000000
   batch_size: 256
-  
+
   # Configuration For dynamics model
   update_dynamics_freq: 1250
   dynamics_cfgs:
@@ -57,18 +57,17 @@ defaults:
     elite_size: 5
     hidden_size: 200
     use_decay: True
-  
+
   # Configuration For MPC controller
-  mpc_config: 
-    horizon: 8 
+  mpc_config:
+    horizon: 8
     reward_horizon: 8
-    popsize: 100           
-    particles: 4            
+    popsize: 100
+    particles: 4
     max_iters: 8
-    alpha: 0.1             
+    alpha: 0.1
     mixture_coefficient: 0.05
     kappa: 1
     safety_threshold: 0.2
     minimal_elites: 10
-    num_elites: 20 
-
+    num_elites: 20

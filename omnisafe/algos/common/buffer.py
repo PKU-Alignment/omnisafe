@@ -40,8 +40,7 @@ class Buffer:
         standardized_cost: bool,
         lam_c: float = 0.95,
         reward_penalty: bool = False,
-        device: torch.device = torch.device("cpu"),
-
+        device: torch.device = torch.device('cpu'),
     ):
         """
         A buffer for storing trajectories experienced by an agent interacting
@@ -80,7 +79,7 @@ class Buffer:
         self.use_reward_penalty = reward_penalty
         self.device = device
 
-        assert adv_estimation_method  in ['gae','gae2', 'vtrace', 'plain']
+        assert adv_estimation_method in ['gae', 'gae2', 'vtrace', 'plain']
 
     def calculate_adv_and_value_targets(self, vals, rews, lam=None):
         """Compute the estimated advantage"""
@@ -95,11 +94,11 @@ class Buffer:
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
             lam = self.lam if lam is None else lam
             deltas = rews[:-1] + self.gamma * vals[1:] - vals[:-1]
-            #print("deltas1",deltas)
+            # print("deltas1",deltas)
             adv = discount_cumsum(deltas, self.gamma * lam)
-            #print("adv1",adv)                 
+            # print("adv1",adv)
             value_net_targets = discount_cumsum(rews, self.gamma)[:-1]
-            
+
         elif self.adv_estimation_method == 'vtrace':
             #  v_s = V(x_s) + \sum^{T-1}_{t=s} \gamma^{t-s}
             #                * \prod_{i=s}^{t-1} c_i
@@ -250,4 +249,6 @@ class Buffer:
             target_c=self.target_cost_val_buf,
         )
 
-        return {k: torch.as_tensor(v, device=self.device,dtype=torch.float32) for k, v in data.items()}
+        return {
+            k: torch.as_tensor(v, device=self.device, dtype=torch.float32) for k, v in data.items()
+        }

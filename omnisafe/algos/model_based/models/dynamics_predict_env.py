@@ -82,10 +82,10 @@ class PredictEnv:
             )
         )
 
-        #[ batch_size ]
+        # [ batch_size ]
         prob = np.exp(log_prob).sum(0)
 
-        #[ batch_size ]
+        # [ batch_size ]
         log_prob = np.log(prob)
 
         stds = np.std(means, 0).mean(-1)
@@ -127,7 +127,7 @@ class PredictEnv:
 
         if self.algo == 'safeLoop':
             rewards, next_obs = samples[:, :1], samples[:, 1:]
-        elif self.algo == 'mbppo-lag' :
+        elif self.algo == 'mbppo-lag':
             next_obs_delta = samples
             next_obs = next_obs_delta + obs
         terminals = self._termination_fn(self.env_name, obs, act, next_obs)
@@ -186,10 +186,9 @@ class PredictEnv:
         next_obs_delta = samples
         next_obs = next_obs_delta + obs
         terminals = self._termination_fn(self.env_name, obs, act, next_obs)
-        
+
         if return_single:
             next_obs = next_obs[0]
-
 
         return next_obs
 

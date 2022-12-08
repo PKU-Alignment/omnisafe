@@ -13,25 +13,35 @@
 # limitations under the License.
 # ==============================================================================
 
+import itertools
+from copy import deepcopy
+
 import numpy as np
 import torch
-from copy import deepcopy
-import itertools
 from torch.optim import Adam
-from omnisafe.algos.model_based.planner import Planner
+
 from omnisafe.algos import registry
-from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased
 from omnisafe.algos.model_based.models.core_ac import SoftActorCritic
+from omnisafe.algos.model_based.planner import Planner
+from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased
 
 
 @registry.register
 class SafeLoop(PolicyGradientModelBased, Planner):
     """SafeLoop"""
+
     def __init__(self, algo='safeloop', clip=0.2, **cfgs):
         PolicyGradientModelBased.__init__(self, algo=algo, **cfgs)
-        Planner.__init__(self,self.device, self.env, self.predict_env, self.actor_critic, **self.cfgs['mpc_config'])
+        Planner.__init__(
+            self,
+            self.device,
+            self.env,
+            self.predict_env,
+            self.actor_critic,
+            **self.cfgs['mpc_config'],
+        )
         self.clip = clip
-        if self.cfgs['automatic_alpha_tuning'] :
+        if self.cfgs['automatic_alpha_tuning']:
             self.target_entropy = -torch.prod(
                 torch.Tensor(self.env.action_space.shape).to(self.device)
             ).item()
@@ -40,11 +50,13 @@ class SafeLoop(PolicyGradientModelBased, Planner):
             self.alpha = self.log_alpha.exp()
         else:
             self.alpha = self.cfgs['alpha_init']
-            
+
     def set_algorithm_specific_actor_critic(self):
         """Initialize Soft Actor-Critic"""
         self.actor_critic = SoftActorCritic(
-            self.env.ac_state_size, self.env.action_space, **dict(hidden_sizes=self.cfgs['ac_hidden_sizes'])
+            self.env.ac_state_size,
+            self.env.action_space,
+            **dict(hidden_sizes=self.cfgs['ac_hidden_sizes']),
         ).to(self.device)
         self.actor_critic_targ = deepcopy(self.actor_critic)
         # Freeze target networks with respect to optimizers (only update via polyak averaging)
@@ -59,7 +71,7 @@ class SafeLoop(PolicyGradientModelBased, Planner):
         self.q_optimizer = Adam(self.q_params, lr=self.cfgs['sac_lr'])
         self.v_optimizer = Adam(self.actor_critic.v.parameters(), lr=self.cfgs['sac_lr'])
         return self.actor_critic
-    
+
     def algorithm_specific_logs(self, timestep):
         """Log algo parameter"""
         super().algorithm_specific_logs(timestep)
@@ -83,8 +95,8 @@ class SafeLoop(PolicyGradientModelBased, Planner):
             self.logger.log_tabular('Loss/DynamicsTrainLoss')
             self.logger.log_tabular('Loss/DynamicsValLoss')
 
-    def update_actor_critic(self,timestep):
-        """update actor and critic """
+    def update_actor_critic(self, timestep):
+        """update actor and critic"""
         if timestep >= self.cfgs['update_policy_start_timesteps']:
             for j in range(self.cfgs['update_iters']):
                 # Get one batch data from Off-policy buffer
@@ -103,23 +115,20 @@ class SafeLoop(PolicyGradientModelBased, Planner):
                 # Unfree Critic
                 self.freeze_critic_network(requires_grad=True)
 
-    
-    def freeze_critic_network(self,requires_grad=True):
+    def freeze_critic_network(self, requires_grad=True):
         """Freeze Q-networks so you don't waste computational effort computing gradients for them during the policy learning step."""
         for p in self.q_params:
             p.requires_grad = requires_grad
-        
-    def update_value_net(self,data):
+
+    def update_value_net(self, data):
         """Value function learning"""
         # Run one gradient descent step for Q1 and Q2
         self.q_optimizer.zero_grad()
         loss_q, _ = self.compute_loss_q(data)
         loss_q.backward()
         self.q_optimizer.step()
-        self.logger.store(**{
-            'Loss/Q-networks': loss_q.item()
-            })
-        
+        self.logger.store(**{'Loss/Q-networks': loss_q.item()})
+
     def update_policy_net(self, data):
         """Update policy"""
         # Next run one gradient descent step for pi.
@@ -127,24 +136,23 @@ class SafeLoop(PolicyGradientModelBased, Planner):
         loss_pi, pi_info = self.compute_loss_pi(data)
         log_pi = pi_info['LogPi']
         loss_pi.backward()
-        self.pi_optimizer.step()            
-        self.logger.store(**{
-            'Loss/Pi': loss_pi.item()
-            })
+        self.pi_optimizer.step()
+        self.logger.store(**{'Loss/Pi': loss_pi.item()})
         return log_pi
-    
-    def update_alpha(self,log_pi):
+
+    def update_alpha(self, log_pi):
         """Update"""
         alpha_loss = -(self.log_alpha * (log_pi.to(self.device) + self.target_entropy)).mean()
         self.alpha_optim.zero_grad()
         alpha_loss.backward()
         self.alpha_optim.step()
-        self.alpha = self.log_alpha.exp() 
+        self.alpha = self.log_alpha.exp()
         self.logger.store(
             **{
                 'Loss/alpha': alpha_loss.item(),
-            })
-        
+            }
+        )
+
     def update_target_critic(self):
         """pdate target networks by polyak averaging."""
         with torch.no_grad():
@@ -204,11 +212,11 @@ class SafeLoop(PolicyGradientModelBased, Planner):
         return loss_pi, pi_info
 
     def update_dynamics_model(self):
-        """updata dynamics""" 
-        state = self.off_replay_buffer.obs_buf[:self.off_replay_buffer.size,:]
-        action = self.off_replay_buffer.act_buf[:self.off_replay_buffer.size,:]
-        reward = self.off_replay_buffer.rew_buf[:self.off_replay_buffer.size]
-        next_state = self.off_replay_buffer.obs2_buf[:self.off_replay_buffer.size,:]
+        """updata dynamics"""
+        state = self.off_replay_buffer.obs_buf[: self.off_replay_buffer.size, :]
+        action = self.off_replay_buffer.act_buf[: self.off_replay_buffer.size, :]
+        reward = self.off_replay_buffer.rew_buf[: self.off_replay_buffer.size]
+        next_state = self.off_replay_buffer.obs2_buf[: self.off_replay_buffer.size, :]
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
         labels = np.concatenate((np.reshape(reward, (reward.shape[0], -1)), delta_state), axis=-1)
@@ -219,6 +227,7 @@ class SafeLoop(PolicyGradientModelBased, Planner):
                 'Loss/DynamicsValLoss': valloss,
             }
         )
+
     def select_action(self, timestep, state, env):
         """action selection"""
         if timestep < self.cfgs['update_policy_start_timesteps']:
@@ -228,11 +237,27 @@ class SafeLoop(PolicyGradientModelBased, Planner):
             action = action + np.random.normal(action.shape) * self.cfgs['exploration_noise']
         action = np.clip(action, env.action_space.low, env.action_space.high)
         return action, None
-    def store_real_data(self,timestep, ep_len, state, action_info, action, reward, cost, terminated, truncated, next_state, info):
+
+    def store_real_data(
+        self,
+        timestep,
+        ep_len,
+        state,
+        action_info,
+        action,
+        reward,
+        cost,
+        terminated,
+        truncated,
+        next_state,
+        info,
+    ):
         """store real data"""
         if not terminated and not truncated and not info['goal_met']:
             # Current goal position is irrelate to next goal position, so do not store.
-            self.off_replay_buffer.store(obs=state, act=action, rew=reward, cost=cost, next_obs=next_state, done=truncated)
+            self.off_replay_buffer.store(
+                obs=state, act=action, rew=reward, cost=cost, next_obs=next_state, done=truncated
+            )
 
     def algo_reset(self):
         """reset planner"""

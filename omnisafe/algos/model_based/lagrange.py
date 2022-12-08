@@ -15,6 +15,7 @@
 """Lagrange"""
 
 import abc
+
 import torch
 import torch.optim as optim
 from torch.nn.functional import softplus
@@ -41,17 +42,19 @@ class Lagrange(abc.ABC):
         # fetch optimizer from PyTorch optimizer package
         assert hasattr(optim, lambda_optimizer), f'Optimizer={lambda_optimizer} not found in torch.'
         torch_opt = getattr(optim, lambda_optimizer)
-        self.lagrangian_multiplier = torch.tensor(init_value, device=device,requires_grad=True).float()
+        self.lagrangian_multiplier = torch.tensor(
+            init_value, device=device, requires_grad=True
+        ).float()
         self.penalty_optimizer = torch_opt(
             [
                 self.lagrangian_multiplier,
             ],
-            lr=self.lambda_lr ,
+            lr=self.lambda_lr,
         )
-        
+
     def compute_lambda_loss(self, ep_costs):
         """Penalty loss for Lagrange multiplier."""
-        return -self.lagrangian_multiplier * (ep_costs - self.cost_limit*self.beta)
+        return -self.lagrangian_multiplier * (ep_costs - self.cost_limit * self.beta)
 
     def update_lagrange_multiplier(self, ep_costs):
         """Update Lagrange multiplier (lambda)
@@ -62,4 +65,4 @@ class Lagrange(abc.ABC):
         lambda_loss = self.compute_lambda_loss(ep_costs)
         lambda_loss.backward()
         self.penalty_optimizer.step()
-        #self.lagrangian_multiplier.data.clamp_(0)  # enforce: lambda in [0, inf]
+        # self.lagrangian_multiplier.data.clamp_(0)  # enforce: lambda in [0, inf]

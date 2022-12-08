@@ -24,7 +24,9 @@ TASKS = ['Goal', 'Button']
 
 XYZ_SENSORS = dict(
     Point=['velocimeter'],
-    Car=[ 'velocimeter'],  # ,'accelerometer'],#,'ballquat_rear', 'right_wheel_vel', 'left_wheel_vel'],
+    Car=[
+        'velocimeter'
+    ],  # ,'accelerometer'],#,'ballquat_rear', 'right_wheel_vel', 'left_wheel_vel'],
     Doggo=['velocimeter', 'accelerometer'],
 )
 
@@ -47,8 +49,13 @@ class EnvWrapper:
         self.algo = algo
         self.env_id = env_id  # safety gym not use this attribute
         self.render_mode = render_mode
-        if self.algo in ['MBPPOLag' , 'SafeLoop']:
-            assert env_id in ['SafetyPointGoal3-v0','SafetyCarGoal3-v0', 'SafetyPointGoal1-v0', 'SafetyCarGoal1-v0']
+        if self.algo in ['MBPPOLag', 'SafeLoop']:
+            assert env_id in [
+                'SafetyPointGoal3-v0',
+                'SafetyCarGoal3-v0',
+                'SafetyPointGoal1-v0',
+                'SafetyCarGoal1-v0',
+            ]
             self.robot = 'Point' if 'Point' in env_id else 'Car'
             self.task = 'Goal'
         elif self.algo == 'CAP' or self.algo == 'MpcCcem':
@@ -93,33 +100,31 @@ class EnvWrapper:
         hazards_key = self.key_to_slice['hazards']
         hazard_obs = obs[:, hazards_key].reshape(N, -1, 2)
         hazards_dist = np.sqrt(np.sum(np.square(hazard_obs), axis=2)).reshape(N, -1)
-        cost = ((hazards_dist < self.env.hazards_size) * (self.env.hazards_size - hazards_dist)).sum(1) * 10
+        cost = (
+            (hazards_dist < self.env.hazards_size) * (self.env.hazards_size - hazards_dist)
+        ).sum(1) * 10
 
         return cost
 
-    
     def init_sensor(self):
         self.xyz_sensors = XYZ_SENSORS[self.robot]
         self.angle_sensors = ANGLE_SENSORS[self.robot]
         self.constraints_name = CONSTRAINTS[self.task]
         self.constraints_mbppo = CONSTRAINTS_MBPPO[self.task]
         self.base_state_name = self.xyz_sensors + self.angle_sensors + ['goal']
-        
-
 
         # get state space vector size
         self.env.reset()
         obs = self.get_obs()
         self.obs_flat_size = sum([np.prod(i.shape) for i in obs.values()])
 
-        if self.algo == 'MBPPOLag' :
-            self.flatten_order = (self.base_state_name  + self.constraints_mbppo + ['robot_m'] + ['robot']) 
-        elif self.algo == 'SafeLoop' :
-            self.flatten_order = (self.base_state_name  + self.constraints_name)  
+        if self.algo == 'MBPPOLag':
+            self.flatten_order = (
+                self.base_state_name + self.constraints_mbppo + ['robot_m'] + ['robot']
+            )
+        elif self.algo == 'SafeLoop':
+            self.flatten_order = self.base_state_name + self.constraints_name
 
-
-        
-        
         self.key_to_slice = {}
         offset = 0
         for k in self.flatten_order:
@@ -130,17 +135,17 @@ class EnvWrapper:
         self.base_state_dim = sum([np.prod(obs[k].shape) for k in self.base_state_name])
         self.action_dim = self.env.action_space.shape[0]
         self.key_to_slice['base_state'] = slice(0, self.base_state_dim)
-        
+
         self.reset()
         obs_flat = self.get_obs_flatten()
-        if self.algo == 'MBPPOLag' :
-            self.dynamics_state_size = obs_flat.shape[0] #42
-            self.ac_state_size = np.array(self.generate_lidar(obs_flat)).shape[0]  #26
-        elif self.algo == 'SafeLoop' :
-            self.dynamics_state_size = obs_flat.shape[0] #42
-            self.ac_state_size =  obs_flat.shape[0] #42
+        if self.algo == 'MBPPOLag':
+            self.dynamics_state_size = obs_flat.shape[0]  # 42
+            self.ac_state_size = np.array(self.generate_lidar(obs_flat)).shape[0]  # 26
+        elif self.algo == 'SafeLoop':
+            self.dynamics_state_size = obs_flat.shape[0]  # 42
+            self.ac_state_size = obs_flat.shape[0]  # 42
 
-    def reset(self,seed=0):
+    def reset(self, seed=0):
         if self.env_type == 'mujoco':
             obs = self.env.reset()
             return obs
@@ -152,9 +157,9 @@ class EnvWrapper:
             if self.algo == 'MBPPOLag':
                 self.goal_position = self.env.goal_pos
                 self.robot_position = self.env.robot_pos
-                self.hazards_position = self.env.hazards_pos        
+                self.hazards_position = self.env.hazards_pos
                 self.goal_distance = self.dist_xy(self.robot_position, self.goal_position)
-                
+
             return obs
 
     def step(self, action, num_repeat):
@@ -183,27 +188,31 @@ class EnvWrapper:
                     truncated = True
                 observation = self.get_obs_flatten()
                 goal_met = 'goal_met' in info.keys()  # reach the goal
-                if terminated  or truncated or goal_met :
+                if terminated or truncated or goal_met:
                     # the action is irrelate to next state, so break
                     break
             if self.algo == 'MBPPOLag':
-                info = {'cost': cost, 'goal_met': goal_met, 'goal_pos': self.env.goal_pos, 'step_num': step_num}
+                info = {
+                    'cost': cost,
+                    'goal_met': goal_met,
+                    'goal_pos': self.env.goal_pos,
+                    'step_num': step_num,
+                }
             elif self.algo == 'SafeLoop':
-                info = {'cost': cost, 'goal_met': goal_met,'step_num': step_num}
+                info = {'cost': cost, 'goal_met': goal_met, 'step_num': step_num}
 
             return observation, reward, cost, terminated, truncated, info
 
     def render(self):
         """render environment"""
         return self.env.render()
-    
+
     def close(self):
         self.env.close()
 
     def recenter(self, pos):
         '''Return the egocentric XY vector to a position from the robot'''
         return self.env.ego_xy(pos)
-
 
     def get_obs(self):
         '''
@@ -251,14 +260,14 @@ class EnvWrapper:
             # --------modification-----------------
             obs['robot'] = np.array(robot_pos[:2])
             # obs["static_goal"] = np.array(goal_pos)
-            #obs["vases"] = np.array(ego_vases_pos_list) # (vase_num, 2)
+            # obs["vases"] = np.array(ego_vases_pos_list) # (vase_num, 2)
             obs['hazards'] = np.array(ego_hazards_pos_list)  # (hazard_num, 2)
             robot_matrix = self.env.robot_mat()
             obs['robot_m'] = np.array(robot_matrix[0][:2])
             obs['goal'] = ego_goal_pos  # (2,)
             # obs["gremlins"] = np.array(ego_gremlins_pos_list) # (vase_num, 2)
             # obs["buttons"] = np.array(ego_buttons_pos_list) # (hazard_num, 2)
-        elif self.algo == 'SafeLoop' :
+        elif self.algo == 'SafeLoop':
             obs['vases'] = np.array(ego_vases_pos_list)  # (vase_num, 2)
             obs['hazards'] = np.array(ego_hazards_pos_list)  # (hazard_num, 2)
             obs['goal'] = ego_goal_pos  # (2,)
@@ -281,8 +290,6 @@ class EnvWrapper:
         '''
         return -self.env.dist_goal()
 
-
-
     @property
     def action_range(self):
         return float(self.env.action_space.low[0]), float(self.env.action_space.high[0])
@@ -290,9 +297,6 @@ class EnvWrapper:
     def sample_random_action(self):
         '''Sample an action randomly from a uniform distribution over all valid actions.'''
         return self.env.action_space.sample()
-
-
-
 
     def dist_xy(self, pos1, pos2):
         '''Return the distance from the robot to an XY position.'''
@@ -303,7 +307,7 @@ class EnvWrapper:
         if pos2.shape == (3,):
             pos2 = pos2[:2]
         return np.sqrt(np.sum(np.square(pos1 - pos2)))
-    
+
     def get_reward_cost(self, state):
         '''Assuming we have reward & cost function. available with us in closed form.'''
         last_dist_goal = self.goal_distance
@@ -391,7 +395,9 @@ class EnvWrapper:
             pos = np.asarray(pos)
             if pos.shape == (3,):
                 pos = pos[:2]  # Truncate Z coordinate
-            z = np.complex(*self.ego_xy(robot_matrix, robot_pos, pos))  # X, Y as real, imaginary components
+            z = np.complex(
+                *self.ego_xy(robot_matrix, robot_pos, pos)
+            )  # X, Y as real, imaginary components
             dist = np.abs(z)
             angle = np.angle(z) % (np.pi * 2)
             bin_size = (np.pi * 2) / lidar_num_bins
@@ -412,15 +418,13 @@ class EnvWrapper:
                 obs[bin_minus] = max(obs[bin_minus], (1 - alias) * sensor)
         return obs
 
-
     def make_observation(self, state, lidar):
         state = list(state)
         lidar = list(lidar)
-        x = state[self.key_to_slice['base_state']] 
+        x = state[self.key_to_slice['base_state']]
         obs = x + lidar + state[self.key_to_slice['robot']]
 
         return obs
-
 
     def generate_lidar(self, obs):
         robot_matrix_x_y = obs[self.key_to_slice['robot_m']]
