@@ -40,7 +40,7 @@ def test_model_based(algo, env_id, device):
         'pi_iters': 1,
         'critic_iters': 1,
         'imaging_steps_per_policy_update': 30000,
-        'mixed_real_time_steps':1500,
+        'mixed_real_time_steps': 1500,
         'update_dynamics_freq': 10000,
         'update_policy_freq': 10000,
         'update_policy_start_timesteps': 0,
