@@ -62,7 +62,8 @@ class SafeLoop(PolicyGradientModelBased, Planner):  # pylint: disable=too-many-i
         ).to(self.device)
         self.actor_critic_targ = deepcopy(self.actor_critic)
         # Freeze target networks with respect to optimizer (only update via polyak averaging)
-        self.freeze_critic_network(requires_grad=False)
+        for p in self.actor_critic_targ.parameters():
+            p.requires_grad = False
         # List of parameters for both Q-networks (save this for convenience)
         self.q_params = itertools.chain(
             self.actor_critic.q1.parameters(), self.actor_critic.q2.parameters()
