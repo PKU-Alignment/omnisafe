@@ -150,7 +150,7 @@ class EnvWrapper:  # pylint: disable=too-many-instance-attributes
             obs = self.env.reset(seed)
             return obs
         self.timestep = 0  # Reset internal timer
-        self.env.reset(seed)
+        self.env.reset()
         obs = self.get_obs_flatten()
         # pylint: disable=attribute-defined-outside-init
         if self.algo == 'MBPPOLag':
