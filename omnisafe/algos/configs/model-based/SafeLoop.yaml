@@ -20,6 +20,7 @@ defaults:
   action_repeat: 5
   seed: 0
   device: "cpu"
+  cost_gamma: 1.0
 
   # Soft Actor-Critic
   update_policy_start_timesteps: 50000

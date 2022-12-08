@@ -40,6 +40,7 @@ class PolicyGradientModelBased:
         self.data_dir = data_dir
         self.algo = algo
         self.device = torch.device(self.cfgs['device'])
+        self.cost_gamma = self.cfgs['cost_gamma']
 
         # Set up logger and save configuration to disk
         # Get local parameters before logger instance to avoid unnecessary print
@@ -109,9 +110,9 @@ class PolicyGradientModelBased:
             )
 
             t += info['step_num']
+            ep_cost += (self.cost_gamma**ep_len) * cost
             ep_len += 1
             ep_ret += reward
-            ep_cost += cost
 
             self.store_real_data(
                 t,

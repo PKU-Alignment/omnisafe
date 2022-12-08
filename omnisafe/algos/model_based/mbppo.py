@@ -244,8 +244,9 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
             reward, cost, goal_flag = self.env_auxiliary.get_reward_cost(next_state)
 
             dep_ret += reward
-            dep_cost += cost
+            dep_cost += (self.cost_gamma**dep_len) * cost
             dep_len += 1
+            
             self.buf.store(
                 obs=action_info['state_vec'],
                 act=action,

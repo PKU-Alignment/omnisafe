@@ -19,7 +19,7 @@ defaults:
   seed: 0
   action_repeat: 1
   obs_clip: 1000
-
+  cost_gamma: 1.0
   # Log
   log_freq: 10000
   data_dir: "./runs"
