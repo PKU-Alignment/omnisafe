@@ -17,7 +17,6 @@ import helpers
 import omnisafe
 
 
-
 @helpers.parametrize(
     algo=[
         'MBPPOLag',
@@ -33,14 +32,24 @@ import omnisafe
         'cpu',
         'cuda:0',
     ],
-    )
-
-def test_model_based(algo,env_id,device):
+)
+def test_model_based(algo, env_id, device):
     seed = 0
-    custom_cfgs = {'max_real_time_steps': 3000, 'pi_iters': 1, 'critic_iters': 1, 'imaging_steps_per_policy_update':1000, 'update_dynamics_freq':1000, 'update_policy_freq': 1000, 'update_policy_start_timesteps': 0,'update_policy_iters': 1 ,'log_freq':1000}
-    env = omnisafe.Env(algo,env_id)
+    custom_cfgs = {
+        'max_real_time_steps': 3000,
+        'pi_iters': 1,
+        'critic_iters': 1,
+        'imaging_steps_per_policy_update': 1000,
+        'update_dynamics_freq': 1000,
+        'update_policy_freq': 1000,
+        'update_policy_start_timesteps': 0,
+        'update_policy_iters': 1,
+        'log_freq': 1000,
+    }
+    env = omnisafe.Env(algo, env_id)
     agent = omnisafe.Agent(algo, env, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
-  
+
+
 if __name__ == '__main__':
-    test_model_based(algo='CPO',env_id='SafetyPointGoal1-v0', devide='cpu')
+    test_model_based(algo='CPO', env_id='SafetyPointGoal1-v0', devide='cpu')
