@@ -30,7 +30,6 @@ import omnisafe
     ],
     device=[
         'cpu',
-        'cuda:0',
     ],
 )
 def test_model_based(algo, env_id, device):
@@ -52,6 +51,7 @@ def test_model_based(algo, env_id, device):
     agent = omnisafe.Agent(algo, env, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
 
-
+import torch
+torch.set_num_threads(5)
 if __name__ == '__main__':
     test_model_based(algo='MBPPOLag', env_id='SafetyPointGoal1-v0', devide='cpu')
