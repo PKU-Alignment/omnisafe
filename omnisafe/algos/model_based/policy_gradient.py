@@ -12,24 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Policy Gradient"""
+
 import time
 from copy import deepcopy
 
 import numpy as np
 import torch
+from torch.optim import Adam
 
 from omnisafe.algos import registry
 from omnisafe.algos.common.logger import Logger
 from omnisafe.algos.common.replay_buffer import ReplayBuffer as Off_ReplayBuffer
+from omnisafe.algos.model_based.models.core_ac import MLPActorCritic
 from omnisafe.algos.model_based.models.dynamics_predict_env import PredictEnv
 from omnisafe.algos.model_based.models.dynamicsmodel import EnsembleDynamicsModel
-from omnisafe.algos.utils import distributed_utils
 from omnisafe.algos.utils.distributed_utils import proc_id
-from omnisafe.algos.utils.tools import get_flat_params_from
 
 
 @registry.register
-class PolicyGradientModelBased:
+class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes,too-many-arguments
     """policy update base class"""
 
     def __init__(self, env, exp_name, data_dir, seed=0, algo='mbppo-lag', cfgs=None) -> None:
@@ -59,8 +61,8 @@ class PolicyGradientModelBased:
         self.env.env.reset(seed=seed)
         self.env.set_eplen(int(self.cfgs['max_ep_len']))
 
-        # Init dynamics model
-        reward_size = 1 if self.algo == 'safeloop' else 0
+        # Initialize dynamics model
+        reward_size = 1 if self.algo == 'safe-loop' else 0
         self.dynamics = EnsembleDynamicsModel(
             algo,
             self.device,
@@ -72,7 +74,7 @@ class PolicyGradientModelBased:
         )
         self.predict_env = PredictEnv(algo, self.dynamics, self.env_id, self.device)
 
-        # Init off-policy buffer
+        # Initialize off-policy buffer
         # pylint: disable-next=line-too-long
         self.off_replay_buffer = Off_ReplayBuffer(
             self.env.dynamics_state_size,
@@ -81,7 +83,7 @@ class PolicyGradientModelBased:
             self.cfgs['batch_size'],
         )
 
-        # Init Actor-Critic
+        # Initialize Actor-Critic
         self.actor_critic = self.set_algorithm_specific_actor_critic()
 
         # Set up model saving
@@ -97,25 +99,25 @@ class PolicyGradientModelBased:
         self.logger.log('Start with training.')
 
     def learn(self):
-        """training the policy using safeloop"""
+        """training the policy."""
         self.start_time = time.time()
         ep_len, ep_ret, ep_cost = 0, 0, 0
         state = self.env.reset()
-        t = 0
-        while t < self.cfgs['max_real_time_steps']:
+        time_step = 0
+        while time_step < self.cfgs['max_real_time_steps']:
             # select action
-            action, action_info = self.select_action(t, state, self.env)
+            action, action_info = self.select_action(time_step, state, self.env)
             next_state, reward, cost, terminated, truncated, info = self.env.step(
                 action, self.cfgs['action_repeat']
             )
 
-            t += info['step_num']
+            time_step += info['step_num']
             ep_cost += (self.cost_gamma**ep_len) * cost
             ep_len += 1
             ep_ret += reward
 
             self.store_real_data(
-                t,
+                time_step,
                 ep_len,
                 state,
                 action_info,
@@ -128,11 +130,11 @@ class PolicyGradientModelBased:
                 info,
             )
 
-            if t % self.cfgs['update_dynamics_freq'] == 0:
+            if time_step % self.cfgs['update_dynamics_freq'] == 0:
                 self.update_dynamics_model()
 
-            if t % self.cfgs['update_policy_freq'] == 0:
-                self.update_actor_critic(t)
+            if time_step % self.cfgs['update_policy_freq'] == 0:
+                self.update_actor_critic(time_step)
 
             state = next_state
             if terminated or truncated:
@@ -148,9 +150,9 @@ class PolicyGradientModelBased:
                 self.algo_reset()
 
             # Evaluate episode
-            if (t) % self.cfgs['log_freq'] == 0:
-                self.log(t)
-                self.logger.torch_save(itr=t)
+            if (time_step) % self.cfgs['log_freq'] == 0:
+                self.log(time_step)
+                self.logger.torch_save(itr=time_step)
 
         # Close opened files to avoid number of open files overflow
         self.logger.close()
@@ -169,16 +171,46 @@ class PolicyGradientModelBased:
         self.logger.log_tabular('Time', int(time.time() - self.start_time))
         self.logger.dump_tabular()
 
+    def select_action(self, timestep, state, env):  # pylint: disable=unused-argument
+        """
+        Select action when interact with real environment.
+
+        Returns:
+            action
+        """
+        state = env.generate_lidar(state)
+        state_vec = np.array(state)
+        state_tensor = torch.as_tensor(state_vec, device=self.device, dtype=torch.float32)
+        action, val, cval, logp = self.actor_critic.step(state_tensor)
+        action = np.nan_to_num(action)
+        action_info = {'state_vec': state_vec, 'val': val, 'cval': cval, 'logp': logp}
+        return action, action_info
+
     def set_algorithm_specific_actor_critic(self):
         """
         Use this method to initialize network.
         e.g. Initialize Soft Actor Critic
+
+        Returns:
+            Actor_critic
         """
+        self.actor_critic = MLPActorCritic(
+            (self.env.ac_state_size,),
+            self.env.action_space,
+            **dict(hidden_sizes=self.cfgs['ac_hidden_sizes']),
+        ).to(self.device)
+        self.pi_optimizer = Adam(self.actor_critic.pi.parameters(), lr=self.cfgs['pi_lr'])
+        self.vf_optimizer = Adam(self.actor_critic.v.parameters(), lr=self.cfgs['vf_lr'])
+        self.cvf_optimizer = Adam(self.actor_critic.vc.parameters(), lr=self.cfgs['vf_lr'])
+        return self.actor_critic
 
     def algorithm_specific_logs(self, timestep):
         """
         Use this method to collect log information.
         e.g. log lagrangian for lagrangian-base , log q, r, s, c for CPO, etc
+
+        Returns:
+            No return
         """
 
     def update_dynamics_model(self):
@@ -189,7 +221,7 @@ class PolicyGradientModelBased:
             No return
         """
 
-    def update_actor_critic(self, data=None):
+    def update_actor_critic(self, timestep):
         """
         update the actor critic
 

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Environment"""
 
 import gymnasium
 import numpy as np
@@ -24,9 +25,7 @@ TASKS = ['Goal', 'Button']
 
 XYZ_SENSORS = dict(
     Point=['velocimeter'],
-    Car=[
-        'velocimeter'
-    ],  # ,'accelerometer'],#,'ballquat_rear', 'right_wheel_vel', 'left_wheel_vel'],
+    Car=['velocimeter'],
     Doggo=['velocimeter', 'accelerometer'],
 )
 
@@ -71,15 +70,12 @@ class EnvWrapper:
         ]
         self.env_type = 'mujoco' if self.env_id in mujoco_pools else 'gym'
         if self.env_type == 'gym':
-            self.robot = self.robot.capitalize()  # mujuco  not use this attribute
-            self.task = self.task.capitalize()  # mujuco  not use this attribute
+            self.robot = self.robot.capitalize()  # mujoco  not use this attribute
+            self.task = self.task.capitalize()  # mujoco  not use this attribute
             assert self.robot in ROBOTS, 'can not recognize the robot type {}'.format(self.robot)
             assert self.task in TASKS, 'can not recognize the task type {}'.format(self.task)
             self.env = safety_gymnasium.make(env_id, render_mode=render_mode)
-
             self.init_sensor()
-
-            # for uses with ppo in baseline
             self.observation_space = gymnasium.spaces.Box(
                 -np.inf, np.inf, (self.obs_flat_size,), dtype=np.float32
             )
@@ -112,8 +108,6 @@ class EnvWrapper:
         self.constraints_name = CONSTRAINTS[self.task]
         self.constraints_mbppo = CONSTRAINTS_MBPPO[self.task]
         self.base_state_name = self.xyz_sensors + self.angle_sensors + ['goal']
-
-        # get state space vector size
         self.env.reset()
         obs = self.get_obs()
         self.obs_flat_size = sum([np.prod(i.shape) for i in obs.values()])
@@ -163,8 +157,6 @@ class EnvWrapper:
             return obs
 
     def step(self, action, num_repeat):
-        # 2 dimensional numpy array, [vx, w]
-
         if self.env_type == 'mujoco':
             next_o, r, d, info = self.env.step(action)
             if 'y_velocity' not in info:
@@ -189,7 +181,7 @@ class EnvWrapper:
                 observation = self.get_obs_flatten()
                 goal_met = 'goal_met' in info.keys()  # reach the goal
                 if terminated or truncated or goal_met:
-                    # the action is irrelate to next state, so break
+                    # the action is not related to next state, so break
                     break
             if self.algo == 'MBPPOLag':
                 info = {
@@ -224,8 +216,6 @@ class EnvWrapper:
         goal_pos = self.env.goal_pos
         vases_pos_list = self.env.vases_pos  # list of shape (3,) ndarray
         hazards_pos_list = self.env.hazards_pos  # list of shape (3,) ndarray
-        # gremlins_pos_list = self.env.gremlins_obj_pos  # list of shape (3,) ndarray
-        # buttons_pos_list = self.env.buttons_pos  # list of shape (3,) ndarray
 
         ego_goal_pos = self.recenter(goal_pos[:2])
         ego_vases_pos_list = [
@@ -234,12 +224,6 @@ class EnvWrapper:
         ego_hazards_pos_list = [
             self.env.ego_xy(pos[:2]) for pos in hazards_pos_list
         ]  # list of shape (2,) ndarray
-        # ego_gremlins_pos_list = [
-        #     self.env.ego_xy(pos[:2]) for pos in gremlins_pos_list
-        # ]  # list of shape (2,) ndarray
-        # ego_buttons_pos_list = [
-        #     self.env.ego_xy(pos[:2]) for pos in buttons_pos_list
-        # ]  # list of shape (2,) ndarray
 
         # append obs to the dict
         for sensor in self.xyz_sensors:  # Explicitly listed sensors
@@ -259,20 +243,14 @@ class EnvWrapper:
         if self.algo == 'MBPPOLag':
             # --------modification-----------------
             obs['robot'] = np.array(robot_pos[:2])
-            # obs["static_goal"] = np.array(goal_pos)
-            # obs["vases"] = np.array(ego_vases_pos_list) # (vase_num, 2)
             obs['hazards'] = np.array(ego_hazards_pos_list)  # (hazard_num, 2)
             robot_matrix = self.env.robot_mat()
             obs['robot_m'] = np.array(robot_matrix[0][:2])
             obs['goal'] = ego_goal_pos  # (2,)
-            # obs["gremlins"] = np.array(ego_gremlins_pos_list) # (vase_num, 2)
-            # obs["buttons"] = np.array(ego_buttons_pos_list) # (hazard_num, 2)
         elif self.algo == 'SafeLoop':
             obs['vases'] = np.array(ego_vases_pos_list)  # (vase_num, 2)
             obs['hazards'] = np.array(ego_hazards_pos_list)  # (hazard_num, 2)
             obs['goal'] = ego_goal_pos  # (2,)
-            # obs["gremlins"] = np.array(ego_gremlins_pos_list)  # (vase_num, 2)
-            # obs["buttons"] = np.array(ego_buttons_pos_list)  # (hazard_num, 2)
         return obs
 
     def get_obs_flatten(self):

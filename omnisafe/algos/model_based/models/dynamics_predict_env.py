@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Virtual Environment"""
 
 import numpy as np
 import torch
@@ -102,7 +103,7 @@ class PredictEnv:
 
         inputs = np.concatenate((obs, act), axis=-1)
         ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
-        if self.algo == 'safeLoop':
+        if self.algo == 'safe-loop':
             ensemble_model_means[:, :, 1:] += obs
 
         ensemble_model_stds = np.sqrt(ensemble_model_vars)
@@ -125,13 +126,13 @@ class PredictEnv:
 
         log_prob, dev = self._get_logprob(samples, ensemble_model_means, ensemble_model_vars)
 
-        if self.algo == 'safeLoop':
+        if self.algo == 'safe-loop':
             rewards, next_obs = samples[:, :1], samples[:, 1:]
         elif self.algo == 'mbppo-lag':
             next_obs_delta = samples
             next_obs = next_obs_delta + obs
         terminals = self._termination_fn(self.env_name, obs, act, next_obs)
-        if self.algo == 'safeLoop':
+        if self.algo == 'safe-loop':
             batch_size = model_means.shape[0]
             return_means = np.concatenate(
                 (model_means[:, :1], terminals, model_means[:, 1:]), axis=-1
@@ -142,12 +143,12 @@ class PredictEnv:
 
         if return_single:
             next_obs = next_obs[0]
-            if self.algo == 'safeLoop':
+            if self.algo == 'safe-loop':
                 return_means = return_means[0]
                 return_stds = return_stds[0]
                 rewards = rewards[0]
                 terminals = terminals[0]
-        if self.algo == 'safeLoop':
+        if self.algo == 'safe-loop':
             info = {'mean': return_means, 'std': return_stds, 'log_prob': log_prob, 'dev': dev}
             return next_obs, rewards, terminals, info
         elif self.algo == 'mbppo-lag':

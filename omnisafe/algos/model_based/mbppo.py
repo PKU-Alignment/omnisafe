@@ -19,12 +19,10 @@ import copy
 import numpy as np
 import torch
 from torch.nn.functional import softplus
-from torch.optim import Adam
 
 from omnisafe.algos import registry
 from omnisafe.algos.common.buffer import Buffer
 from omnisafe.algos.model_based.lagrange import Lagrange
-from omnisafe.algos.model_based.models.core_ac import MLPActorCritic
 from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased
 
 
@@ -51,18 +49,6 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
             device=self.device,
         )
 
-    def set_algorithm_specific_actor_critic(self):
-        """Initialize Actor-Critic"""
-        self.actor_critic = MLPActorCritic(
-            (self.env.ac_state_size,),
-            self.env.action_space,
-            **dict(hidden_sizes=self.cfgs['ac_hidden_sizes']),
-        ).to(self.device)
-        self.pi_optimizer = Adam(self.actor_critic.pi.parameters(), lr=self.cfgs['pi_lr'])
-        self.vf_optimizer = Adam(self.actor_critic.v.parameters(), lr=self.cfgs['vf_lr'])
-        self.cvf_optimizer = Adam(self.actor_critic.vc.parameters(), lr=self.cfgs['vf_lr'])
-        return self.actor_critic
-
     def algorithm_specific_logs(self, timestep):
         """log algo parameter"""
         super().algorithm_specific_logs(timestep)
@@ -84,7 +70,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         self.logger.log_tabular('Misc/StopIter')
         self.logger.log_tabular('PolicyRatio')
 
-    def update_actor_critic(self, timestep):
+    def update_actor_critic(self, timestep):  # pylint: disable=unused-argument
         """update actor critic"""
         megaiter = 0
         last_valid_rets = np.zeros(self.cfgs['dynamics_cfgs']['elite_size'])
@@ -102,7 +88,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
                 self.update_value_net(data=data)
                 result, valid_rets = self.validation(last_valid_rets)
                 if result is True:
-                    # backtarck
+                    # backtrack
                     self.set_param_values(old_params_pi, self.actor_critic.pi)
                     self.set_param_values(old_params_v, self.actor_critic.v)
                     self.set_param_values(old_params_vc, self.actor_critic.vc)
@@ -132,8 +118,8 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         ratio = torch.exp(_log_p - data['log_p'])
         ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
         loss_pi = -(torch.min(ratio * data['adv'], ratio_clip * data['adv'])).mean()
-        p = softplus(self.lagrangian_multiplier)
-        penalty_item = p.item()
+        penalty = softplus(self.lagrangian_multiplier)
+        penalty_item = penalty.item()
         loss_pi += penalty_item * ((ratio * data['cost_adv']).mean())
         loss_pi /= 1 + penalty_item
         approx_kl = (data['log_p'] - _log_p).mean().item()
@@ -161,9 +147,9 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         # Train policy with multiple steps of gradient descent
         for i in range(self.cfgs['pi_iters']):
             loss_pi, pi_info = self.compute_loss_pi(data)
-            kl = pi_info['kl']
+            kl_div = pi_info['kl']
             if self.cfgs.get('kl_early_stopping', False):
-                if kl > 1.2 * self.cfgs['target_kl']:
+                if kl_div > 1.2 * self.cfgs['target_kl']:
                     self.logger.log(f'Reached ES criterion after {i+1} steps.')
                     break
             self.pi_optimizer.zero_grad()
@@ -190,7 +176,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
             cv_l_old.item(),
         )
 
-        for i in range(self.cfgs['critic_iters']):
+        for _ in range(self.cfgs['critic_iters']):
             loss_v, loss_vc = self.compute_loss_v(data)
             self.vf_optimizer.zero_grad()
             loss_v.backward()
@@ -230,14 +216,14 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
                 param.data = torch.from_numpy(vals).float().to(self.device)
                 current_idx += param_sizes[idx]
 
-    def roll_out_in_imaginary(self, megaiter):
+    def roll_out_in_imaginary(self, megaiter):  # pylint: disable=too-many-locals
         """collect data and store to experience buffer."""
         state = self.env_auxiliary.reset()
         dep_ret, dep_cost, dep_len = 0, 0, 0
         mix_real = self.cfgs['mixed_real_time_steps'] if megaiter == 0 else 0
 
-        for t in range(self.cfgs['imaging_steps_per_policy_update'] - mix_real):
-            action, action_info = self.select_action(t, state, self.env_auxiliary)
+        for time_step in range(self.cfgs['imaging_steps_per_policy_update'] - mix_real):
+            action, action_info = self.select_action(time_step, state, self.env_auxiliary)
             next_state = self.predict_env.step(state, action)
             next_state = np.nan_to_num(next_state)
             next_state = np.clip(next_state, -self.cfgs['obs_clip'], self.cfgs['obs_clip'])
@@ -260,7 +246,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
 
             timeout = dep_len == self.cfgs['horizon']
             truncated = timeout
-            epoch_ended = t == self.cfgs['imaging_steps_per_policy_update'] - 1
+            epoch_ended = time_step == self.cfgs['imaging_steps_per_policy_update'] - 1
             if truncated or epoch_ended or goal_flag:
                 if timeout or epoch_ended or goal_flag:
                     state_tensor = torch.as_tensor(
@@ -268,7 +254,9 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
                     )
                     _, val, cval, _ = self.actor_critic.step(state_tensor)
                     del state_tensor
-                else:  # this means episode is terminated, and this will be triggered only in mujoco robots fall down case
+                else:
+                    # this means episode is terminated,
+                    # and this will be triggered only in robots fall down case
                     val = 0
                     cval = 0
                 self.buf.finish_path(val, cval, penalty_param=float(0))
@@ -292,7 +280,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         for valid_id in range(len(valid_rets)):
             state = self.env_auxiliary.reset()
             for step in range(self.cfgs['validation_horizon']):
-                action, action_info = self.select_action(step, state, self.env_auxiliary)
+                action, _ = self.select_action(step, state, self.env_auxiliary)
                 next_state = self.predict_env.step_elite(state, action, valid_id)
                 next_state = np.nan_to_num(next_state)
                 next_state = np.clip(next_state, -self.cfgs['obs_clip'], self.cfgs['obs_clip'])
@@ -308,16 +296,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         result = performance_ratio < threshold
         return result, valid_rets
 
-    def select_action(self, timestep, state, env):
-        """action selection"""
-        state = env.generate_lidar(state)
-        state_vec = np.array(state)
-        state_tensor = torch.as_tensor(state_vec, device=self.device, dtype=torch.float32)
-        action, val, cval, logp = self.actor_critic.step(state_tensor)
-        action = np.nan_to_num(action)
-        action_info = {'state_vec': state_vec, 'val': val, 'cval': cval, 'logp': logp}
-        return action, action_info
-
+    # pylint: disable-next=too-many-arguments
     def store_real_data(
         self,
         timestep,
@@ -350,7 +329,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
                 cost=cost,
                 cost_val=action_info['cval'],
             )
-            # reached max imaging horizon, mixed real timestep, real max timestep , or epsiode truncated.
+            # reached max imaging horizon, mixed real timestep, real max timestep , or episode truncated.
             if (
                 timestep % self.cfgs['horizon'] == 0
                 or timestep % self.cfgs['update_policy_freq'] == self.cfgs['mixed_real_time_steps']
@@ -364,7 +343,8 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
                 del state_tensor
                 self.buf.finish_path(val, cval, penalty_param=float(0))
             elif terminated:
-                # this means episode is terminated, which will be triggered only in mujoco robots fall down case
+                # this means episode is terminated,
+                # which will be triggered only in robots fall down case
                 val = 0
                 cval = 0
                 self.buf.finish_path(val, cval, penalty_param=float(0))

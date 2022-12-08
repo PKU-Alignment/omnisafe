@@ -15,6 +15,7 @@
 # Modified version of model.py from  https://github.com/Xingyu-Lin/mbpo_pytorch/blob/main/model.py
 # original version doesn't validate model error batch-wise and is highly memory intensive.
 # ==============================================================================
+"""Dynamics Model"""
 
 import gzip
 import itertools
@@ -135,7 +136,7 @@ class EnsembleModel(nn.Module):
         self.algo = algo
         if self.algo == 'mbppo-lag':
             self.output_dim = state_size
-        elif self.algo == 'safeloop':
+        elif self.algo == 'safe-loop':
             self.output_dim = state_size + reward_size
         self.hidden_size = hidden_size
         self.use_decay = use_decay
@@ -146,7 +147,7 @@ class EnsembleModel(nn.Module):
         self.nn2 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.00005)
         self.nn3 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
         self.nn4 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
-        if self.algo in ['mbppo-lag', 'safeloop']:
+        if self.algo in ['mbppo-lag', 'safe-loop']:
             self.nn5 = EnsembleFC(
                 hidden_size, self.output_dim * 2, ensemble_size, weight_decay=0.0001
             )
@@ -234,7 +235,7 @@ class EnsembleDynamicsModel:
         if self.algo == 'mbppo-lag':
             self.elite_model_idxes = []
 
-        elif self.algo == 'safeloop':
+        elif self.algo == 'safe-loop':
             self.elite_model_idxes = [0, 1, 2, 3, 4]
 
         self.ensemble_model = EnsembleModel(
@@ -267,7 +268,7 @@ class EnsembleDynamicsModel:
         self.scaler.fit(train_inputs)
         train_inputs = self.scaler.transform(train_inputs)
         holdout_inputs = self.scaler.transform(holdout_inputs)
-        if self.algo == 'safeloop':
+        if self.algo == 'safe-loop':
             holdout_inputs = torch.from_numpy(holdout_inputs).float().to(self.device)
             holdout_labels = torch.from_numpy(holdout_labels).float().to(self.device)
             holdout_inputs = holdout_inputs[None, :, :].repeat([self.network_size, 1, 1])
@@ -290,7 +291,7 @@ class EnsembleDynamicsModel:
                 self.ensemble_model.train(loss)
                 if self.algo == 'mbppo-lag':
                     losses.append(mtrain)
-                elif self.algo == 'safeloop':
+                elif self.algo == 'safe-loop':
                     losses.append(loss)
             if self.algo == 'mbppo-lag':
                 # validation
@@ -328,7 +329,7 @@ class EnsembleDynamicsModel:
                 for i in losses:
                     train_mse_losses.append(i.detach().cpu().numpy())
 
-            elif self.algo == 'safeloop':
+            elif self.algo == 'safe-loop':
                 with torch.no_grad():
                     holdout_mean, holdout_logvar = self.ensemble_model(
                         holdout_inputs, ret_log_var=True
@@ -342,7 +343,7 @@ class EnsembleDynamicsModel:
                     break_train = self._save_best(epoch, holdout_mse_losses)
                     if break_train:
                         break
-        if self.algo == 'safeloop':
+        if self.algo == 'safe-loop':
             return 0, holdout_mse_losses.mean()
 
     def _save_best(self, epoch, holdout_losses):
