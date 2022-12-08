@@ -22,7 +22,7 @@ from omnisafe.algos.utils.core import combined_shape
 class ReplayBuffer:
     """A simple FIFO experience replay buffer for DDPG agents."""
 
-    def __init__(self, obs_dim, act_dim, size, batch_size):
+    def __init__(self, obs_dim, act_dim, size, batch_size, device=torch.device('cpu')):
         """init"""
         self.obs_buf = np.zeros(combined_shape(size, obs_dim), dtype=np.float32)
         self.obs2_buf = np.zeros(combined_shape(size, obs_dim), dtype=np.float32)
@@ -32,7 +32,7 @@ class ReplayBuffer:
         self.done_buf = np.zeros(size, dtype=np.float32)
         self.ptr, self.size, self.max_size = 0, 0, size
         self.batch_size = batch_size
-
+        self.device = device
     def store(self, obs, act, rew, cost, next_obs, done):
         """store"""
         self.obs_buf[self.ptr] = obs
@@ -55,4 +55,4 @@ class ReplayBuffer:
             cost=self.cost_buf[idxs],
             done=self.done_buf[idxs],
         )
-        return {k: torch.as_tensor(v, dtype=torch.float32) for k, v in batch.items()}
+        return {k: torch.as_tensor(v, dtype=torch.float32).to(self.device) for k, v in batch.items()}

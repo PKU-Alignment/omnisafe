@@ -18,12 +18,11 @@ import torch
 
 
 class PredictEnv:
-    def __init__(self, algo, model, env_name, model_type, device=torch.device('cpu')):
+    def __init__(self, algo, model, env_name, device=torch.device('cpu')):
         self.algo = algo
         self.model = model
         self.env_name = env_name
-        self.model_type = model_type
-        self.device = torch.device(device)
+        self.device = device
 
     def _termination_fn(self, env_name, obs, act, next_obs):
         # TODO
@@ -73,8 +72,6 @@ class PredictEnv:
     def _get_logprob(self, x, means, variances):
 
         k = x.shape[-1]
-
-        ## [ num_networks, batch_size ]
         log_prob = (
             -1
             / 2
@@ -85,10 +82,10 @@ class PredictEnv:
             )
         )
 
-        ## [ batch_size ]
+        #[ batch_size ]
         prob = np.exp(log_prob).sum(0)
 
-        ## [ batch_size ]
+        #[ batch_size ]
         log_prob = np.log(prob)
 
         stds = np.std(means, 0).mean(-1)
@@ -104,10 +101,7 @@ class PredictEnv:
             return_single = False
 
         inputs = np.concatenate((obs, act), axis=-1)
-        if self.model_type == 'pytorch':
-            ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
-        else:
-            ensemble_model_means, ensemble_model_vars = self.model.predict(inputs, factored=True)
+        ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
         if self.algo == 'safeLoop':
             ensemble_model_means[:, :, 1:] += obs
 
@@ -122,10 +116,7 @@ class PredictEnv:
             )
 
         num_models, batch_size, _ = ensemble_model_means.shape
-        if self.model_type == 'pytorch':
-            model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
-        else:
-            model_idxes = self.model.random_inds(batch_size)
+        model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
         batch_idxes = np.arange(0, batch_size)
 
         samples = ensemble_samples[model_idxes, batch_idxes]
@@ -136,7 +127,7 @@ class PredictEnv:
 
         if self.algo == 'safeLoop':
             rewards, next_obs = samples[:, :1], samples[:, 1:]
-        elif self.algo == 'mbppo-lag' or self.algo == 'mbppo_v2':
+        elif self.algo == 'mbppo-lag' :
             next_obs_delta = samples
             next_obs = next_obs_delta + obs
         terminals = self._termination_fn(self.env_name, obs, act, next_obs)
@@ -159,7 +150,7 @@ class PredictEnv:
         if self.algo == 'safeLoop':
             info = {'mean': return_means, 'std': return_stds, 'log_prob': log_prob, 'dev': dev}
             return next_obs, rewards, terminals, info
-        elif self.algo == 'mbppo-lag' or self.algo == 'mbppo_v2':
+        elif self.algo == 'mbppo-lag':
             return next_obs
 
     def step_elite(self, obs, act, idx, single=False, deterministic=False):
@@ -171,13 +162,7 @@ class PredictEnv:
             return_single = False
 
         inputs = np.concatenate((obs, act), axis=-1)
-        if self.model_type == 'pytorch':
-            ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
-        else:
-            ensemble_model_means, ensemble_model_vars = self.model.predict(inputs, factored=True)
-        # print(ensemble_model_means.shape, ensemble_model_vars.shape)
-        # random_idx = np.random.randint(5,size=1)#
-        # ensemble_model_means[random_idx] += obs
+        ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
         ensemble_model_stds = np.sqrt(ensemble_model_vars)
 
         if deterministic:
@@ -189,10 +174,7 @@ class PredictEnv:
             )
 
         num_models, batch_size, _ = ensemble_model_means.shape
-        if self.model_type == 'pytorch':
-            model_idxes = np.random.choice([idx], size=batch_size)
-        else:
-            model_idxes = self.model.random_inds(batch_size)
+        model_idxes = np.random.choice([idx], size=batch_size)
         batch_idxes = np.arange(0, batch_size)
 
         samples = ensemble_samples[model_idxes, batch_idxes]
@@ -202,25 +184,13 @@ class PredictEnv:
         log_prob, dev = self._get_logprob(samples, ensemble_model_means, ensemble_model_vars)
 
         next_obs_delta = samples
-        # print(obs, samples)
         next_obs = next_obs_delta + obs
-        # print(next_obs)
         terminals = self._termination_fn(self.env_name, obs, act, next_obs)
-
-        # batch_size = model_means.shape[0]
-        # return_means = np.concatenate((model_means[:, :1], terminals, model_means[:, 1:]), axis=-1)
-        # return_stds = np.concatenate((model_stds[:, :1], np.zeros((batch_size, 1)), model_stds[:, 1:]), axis=-1)
-
+        
         if return_single:
             next_obs = next_obs[0]
-            # reward = rewards[0]
-            # cost = costs[0]
-            # return_means = return_means[0]
-            # return_stds = return_stds[0]
 
-            # terminals = terminals[0]
 
-        # info = {'mean': return_means, 'std': return_stds, 'log_prob': log_prob, 'dev': dev}
         return next_obs
 
     def get_forward_prediction_random_ensemble_t(self, obs, act, deterministic=False):
@@ -232,11 +202,7 @@ class PredictEnv:
             return_single = False
 
         inputs = torch.cat((obs, act), dim=-1)
-        # inputs = np.concatenate((obs, act), axis=-1)
-        if self.model_type == 'pytorch':
-            ensemble_model_means, ensemble_model_vars = self.model.predict_t(inputs)
-        else:
-            ensemble_model_means, ensemble_model_vars = self.model.predict_t(inputs, factored=True)
+        ensemble_model_means, ensemble_model_vars = self.model.predict_t(inputs)
 
         ensemble_model_means[:, :, 1:] += obs
         ensemble_model_stds = torch.sqrt(ensemble_model_vars)
@@ -250,11 +216,7 @@ class PredictEnv:
             )
 
         num_models, batch_size, _ = ensemble_model_means.shape
-        if self.model_type == 'pytorch':
-            # print("self.model.elite_model_idxes",self.model.elite_model_idxes)
-            model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
-        else:
-            model_idxes = self.model.random_inds(batch_size)
+        model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
         batch_idxes = np.arange(0, batch_size)
 
         samples = ensemble_samples[model_idxes, batch_idxes]
@@ -273,10 +235,7 @@ class PredictEnv:
         if torch.is_tensor(act):
             act = act.detach().cpu().numpy()
         inputs = np.concatenate((obs, act), axis=-1)
-        if self.model_type == 'pytorch':
-            ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
-        else:
-            ensemble_model_means, ensemble_model_vars = self.model.predict(inputs, factored=True)
+        ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
 
         ensemble_model_means[:, :, 1:] += obs
         ensemble_model_stds = np.sqrt(ensemble_model_vars)
@@ -290,10 +249,7 @@ class PredictEnv:
             )
 
         num_models, batch_size, _ = ensemble_model_means.shape
-        if self.model_type == 'pytorch':
-            model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
-        else:
-            model_idxes = self.model.random_inds(batch_size)
+        model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
         batch_idxes = np.arange(0, batch_size)
 
         samples = ensemble_samples[model_idxes, batch_idxes]
@@ -314,10 +270,7 @@ class PredictEnv:
             act = act.detach().cpu().numpy()
 
         inputs = np.concatenate((obs, act), axis=-1)
-        if self.model_type == 'pytorch':
-            ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
-        else:
-            ensemble_model_means, ensemble_model_vars = self.model.predict(inputs, factored=True)
+        ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
 
         ensemble_model_means[:, :, 1:] += obs
         ensemble_model_stds = np.sqrt(ensemble_model_vars)
@@ -331,17 +284,13 @@ class PredictEnv:
             )
 
         num_models, batch_size, _ = ensemble_model_means.shape
-        if self.model_type == 'pytorch':
-            model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
-        else:
-            model_idxes = self.model.random_inds(batch_size)
+        model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
         batch_idxes = np.arange(0, batch_size)
 
         samples = ensemble_samples[self.model.elite_model_idxes, :]
         return samples
 
     def get_forward_prediction_t(self, obs, act, deterministic=False):
-        # import ipdb;ipdb.set_trace()
         if len(obs.shape) == 1:
             obs = obs[None]
             act = act[None]
@@ -350,12 +299,7 @@ class PredictEnv:
             return_single = False
 
         inputs = torch.cat((obs, act), dim=-1)
-        if self.model_type == 'pytorch':
-            ensemble_model_means, ensemble_model_vars = self.model.predict_batch_t(inputs)
-        else:
-            ensemble_model_means, ensemble_model_vars = self.model.predict_batch_t(
-                inputs, factored=True
-            )
+        ensemble_model_means, ensemble_model_vars = self.model.predict_batch_t(inputs)
 
         ensemble_model_means[:, :, 1:] += obs
         ensemble_model_stds = torch.sqrt(ensemble_model_vars)

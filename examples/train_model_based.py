@@ -15,13 +15,10 @@
 
 import argparse
 import time
-
 import torch
-
 import omnisafe
 
 
-torch.set_num_threads(5)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -35,8 +32,8 @@ if __name__ == '__main__':
         '--env-id',
         type=str,
         default='SafetyPointGoal1-v0',
-        help='MBPPOLag only support SafetyPointGoal3-v0, SafetyCarGoal1-v0,\
-        and SafeLoop only support SafetyPointGoal1-v0, SafetyCarGoal3-v0',
+        help='MBPPOLag only support SafetyPointGoal1-v0, SafetyCarGoal1-v0,SafetyPointGoal3-v0, SafetyCarGoal3-v0,\
+        and SafeLoop only support SafetyPointGoal1-v0, SafetyCarGoal1-v0,SafetyPointGoal3-v0, SafetyCarGoal3-v0',
     )
     parser.add_argument(
         '--parallel', default=1, type=int, help='Number of paralleled progress for calculations.'

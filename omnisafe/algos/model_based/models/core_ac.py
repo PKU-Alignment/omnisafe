@@ -20,6 +20,7 @@ import torch.nn as nn
 from gymnasium.spaces import Box, Discrete
 from torch.distributions.categorical import Categorical
 from torch.distributions.normal import Normal
+import torch.nn.functional as F
 
 
 def combined_shape(length, shape=None):
@@ -134,6 +135,7 @@ class MLPActorCritic(nn.Module):
         with torch.no_grad():
             pi = self.pi._distribution(obs)
             a = pi.sample()
+            #a = self.pi.mu_net(obs)
             logp_a = self.pi._log_prob_from_distribution(pi, a)
             v = self.v(obs)
             vc = self.vc(obs)
@@ -141,3 +143,107 @@ class MLPActorCritic(nn.Module):
 
     def act(self, obs):
         return self.step(obs)[0]
+
+class SoftActorCritic(nn.Module):
+    def __init__(
+        self,
+        obs_dim,
+        action_space,
+        hidden_sizes=(256, 256),
+        special_policy=None,
+        activation=nn.ReLU,
+    ):
+        super().__init__()
+
+        obs_dim = obs_dim
+        act_dim = action_space.shape[0]
+        act_limit = action_space.high[0]
+        # build policy and value functions
+        self.pi = SquashedGaussianMLPActor(obs_dim, act_dim, hidden_sizes, activation, act_limit)
+        self.q1 = MLPQFunction(obs_dim, act_dim, hidden_sizes, activation)
+        self.q2 = MLPQFunction(obs_dim, act_dim, hidden_sizes, activation)
+        self.v = MLPVFunction(obs_dim, act_dim, hidden_sizes, activation)
+
+    def act_batch(self, obs, deterministic=False, with_logprob=False):
+        with torch.no_grad():
+            a, logp = self.pi(obs, deterministic, True)
+            if with_logprob:
+                return a, logp
+            return a
+
+    def act(self, obs, deterministic=False):
+        with torch.no_grad():
+            a, _ = self.pi(obs, deterministic, False)
+            return a.cpu().data.numpy().flatten()
+
+class SquashedGaussianMLPActor(nn.Module):
+    def __init__(self, obs_dim, act_dim, hidden_sizes, activation, act_limit):
+        super().__init__()
+        self.net = mlp([obs_dim] + list(hidden_sizes), activation, activation)
+        self.mu_layer = nn.Linear(hidden_sizes[-1], act_dim)
+        self.log_std_layer = nn.Linear(hidden_sizes[-1], act_dim)
+        self.act_limit = act_limit
+        self.log_std_max = 2
+        self.log_std_min = -20
+
+    def forward(self, obs, deterministic=False, with_logprob=True):
+        net_out = self.net(obs)
+        mu = self.mu_layer(net_out)
+        log_std = self.log_std_layer(net_out)
+        log_std = torch.clamp(log_std, self.log_std_min, self.log_std_max)
+        std = torch.exp(log_std)
+
+        # Pre-squash distribution and sample
+        pi_distribution = Normal(mu, std)
+        if deterministic:
+            # Only used for evaluating policy at test time.
+            pi_action = mu
+        else:
+            pi_action = pi_distribution.rsample()
+
+        if with_logprob:
+            # Compute logprob from Gaussian, and then apply correction for Tanh squashing.
+            # NOTE: The correction formula is a little bit magic. To get an understanding
+            # of where it comes from, check out the original SAC paper (arXiv 1801.01290)
+            # and look in appendix C. This is a more numerically-stable equivalent to Eq 21.
+            # Try deriving it yourself as a (very difficult) exercise. :)
+            logp_pi = pi_distribution.log_prob(pi_action).sum(axis=-1)
+            logp_pi -= (2 * (np.log(2) - pi_action - F.softplus(-2 * pi_action))).sum(axis=1)
+        else:
+            logp_pi = None
+
+        pi_action = torch.tanh(pi_action)
+        pi_action = self.act_limit * pi_action
+
+        return pi_action, logp_pi
+
+    def get_logprob(self, obs, actions):
+        net_out = self.net(obs)
+        mu = self.mu_layer(net_out)
+        log_std = self.log_std_layer(net_out)
+        std = torch.exp(log_std)
+        pi_distribution = Normal(mu, std)
+        actions_u = torch.log1p(2 * actions / (1 - actions) + 1e-7) / 2
+        logp_pi = pi_distribution.log_prob(actions_u).sum(axis=-1)
+        logp_pi -= (2 * (np.log(2) - actions_u - F.softplus(-2 * actions_u))).sum(axis=1)
+        return logp_pi
+
+
+class MLPVFunction(nn.Module):
+    def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
+        super().__init__()
+        self.v = mlp([obs_dim] + list(hidden_sizes) + [1], activation)
+
+    def forward(self, obs):
+        v = self.v(obs)
+        return torch.squeeze(v, -1)  # Critical to ensure q has right shape.
+
+
+class MLPQFunction(nn.Module):
+    def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
+        super().__init__()
+        self.q = mlp([obs_dim + act_dim] + list(hidden_sizes) + [1], activation)
+
+    def forward(self, obs, act):
+        q = self.q(torch.cat([obs, act], dim=-1))
+        return torch.squeeze(q, -1)  # Critical to ensure q has right shape.

@@ -17,26 +17,46 @@
 import numpy as np
 import torch
 from torch.nn.functional import softplus
-
 from omnisafe.algos import registry
-from omnisafe.algos.model_based.aux import dist_xy, generate_lidar, get_reward_cost
+from torch.optim import Adam
 from omnisafe.algos.model_based.policy_gradient import PolicyGradientModelBased
-
+from omnisafe.algos.model_based.models.core_ac import MLPActorCritic
+from omnisafe.algos.model_based.lagrange import Lagrange
+from omnisafe.algos.common.buffer import Buffer 
+import copy
 
 @registry.register
-class MBPPOLag(PolicyGradientModelBased):
+class MBPPOLag(PolicyGradientModelBased,Lagrange):
     """MBPPO-Lag"""
 
     def __init__(self, algo='mbppo-lag', clip=0.2, **cfgs):
-        super().__init__(algo=algo, **cfgs)
+        PolicyGradientModelBased.__init__(self, algo=algo, **cfgs)
+        Lagrange.__init__(self, **self.cfgs['lagrange_cfgs'], device=self.cfgs['device'])
         self.clip = clip
-        self.cost_limit = self.cfgs['lagrange_cfgs']['cost_limit']
-        self.device = torch.device(self.cfgs['device'])
-
         self.loss_pi_before = 0.0
         self.loss_v_before = 0.0
         self.loss_c_before = 0.0
-
+        self.env_auxiliary =  copy.deepcopy(self.env)
+        self.buf = Buffer(
+        actor_critic=self.actor_critic,
+        obs_dim=self.env.ac_state_size,
+        act_dim=self.env.action_space.shape[0],
+        scale_rewards=self.cfgs['scale_rewards'],
+        standardized_obs=self.cfgs['standardized_obs'],
+        **self.cfgs['buffer_cfgs'],
+        device=self.device
+        )
+        
+    def set_algorithm_specific_actor_critic(self):
+        """Initialize Actor-Critic"""
+        self.actor_critic = MLPActorCritic(
+            (self.env.ac_state_size,) , self.env.action_space, **dict(hidden_sizes=self.cfgs['ac_hidden_sizes'])
+        ).to(self.device)
+        self.pi_optimizer = Adam(self.actor_critic.pi.parameters(), lr=self.cfgs['pi_lr'])
+        self.vf_optimizer = Adam(self.actor_critic.v.parameters(), lr=self.cfgs['vf_lr'])
+        self.cvf_optimizer = Adam(self.actor_critic.vc.parameters(), lr=self.cfgs['vf_lr'])
+        return self.actor_critic
+    
     def algorithm_specific_logs(self, timestep):
         """log algo parameter"""
         super().algorithm_specific_logs(timestep)
@@ -47,342 +67,255 @@ class MBPPOLag(PolicyGradientModelBased):
         self.logger.log_tabular('Loss/Value')
         self.logger.log_tabular('Loss/DeltaPi')
         self.logger.log_tabular('Loss/DeltaValue')
-        self.logger.log_tabular('Loss/Cost')
-        self.logger.log_tabular('Loss/DeltaCost')
-        self.logger.log_tabular('Penalty', softplus(self.penalty_param))
-        self.logger.log_tabular('Values/V')
-        self.logger.log_tabular('Values/C')
+        self.logger.log_tabular('Loss/CValue')
+        self.logger.log_tabular('Loss/DeltaCValue')
+        self.logger.log_tabular('Penalty', softplus(self.lagrangian_multiplier))
+        self.logger.log_tabular('Values/Adv')
+        self.logger.log_tabular('Values/Adv_C')
         self.logger.log_tabular('Megaiter')
         self.logger.log_tabular('Entropy')
         self.logger.log_tabular('KL')
+        self.logger.log_tabular('Misc/StopIter')
         self.logger.log_tabular('PolicyRatio')
 
-    def update_actor_critic(self):
+    def update_actor_critic(self,timestep):
         """update actor critic"""
-        # -------------------train actor and critic ----------------------
         megaiter = 0
-        perf_flag = True
-        while perf_flag:
-            if megaiter == 0:
-                last_valid_rets = [0] * 6
-
-            # env_model2 = torch.load(exp_name+"env_model.pkl")
-            # predict_env2 = PredictEnv(self.algo, self.dynamics, self.exp_name, 'pytorch')
-
-            self.roll_out_in_imaginary(
-                megaiter,
-                self.predict_env,
-                30000,
-                penalty_param=0,
-                cost_criteria=self.cost_criteria,
-                use_cost_critic=self.cfgs['use_cost_critic'],
-                gamma=self.cfgs['On_buffer_cfgs']['gamma'],
-            )
-
-            # ---------------validation--------------------------------------
+        last_valid_rets = np.zeros(self.cfgs['dynamics_cfgs']['elite_size']) 
+        while True:
+            self.roll_out_in_imaginary(megaiter)
+            # validation
             if megaiter > 0:
                 old_params_pi = self.get_param_values(self.actor_critic.pi)
                 old_params_v = self.get_param_values(self.actor_critic.v)
                 old_params_vc = self.get_param_values(self.actor_critic.vc)
-                self.update()
-                result, valid_rets = self.mbppo_valid(
-                    last_valid_rets,
-                    self.predict_env,
-                    penalty_param=0,
-                    cost_criteria=self.cost_criteria,
-                    use_cost_critic=self.cfgs['use_cost_critic'],
-                    gamma=self.cfgs['On_buffer_cfgs']['gamma'],
-                )
+                data = self.buf.get()
+                cur_cost = self.logger.get_stats('DynaMetrics/EpCost')[0]
+                self.update_lagrange_multiplier(cur_cost)
+                self.update_policy_net(data=data)
+                self.update_value_net(data=data)
+                result, valid_rets = self.validation(last_valid_rets)
                 if result is True:
-                    perf_flag = False
-                    # ------------backtarck-----------------
+                    # backtarck
                     self.set_param_values(old_params_pi, self.actor_critic.pi)
                     self.set_param_values(old_params_v, self.actor_critic.v)
                     self.set_param_values(old_params_vc, self.actor_critic.vc)
                     megaiter += 1
                     break
-
                 megaiter += 1
                 last_valid_rets = valid_rets
-
             else:
                 megaiter += 1
-                self.update()
-
+                data = self.buf.get()
+                cur_cost = self.logger.get_stats('DynaMetrics/EpCost')[0]
+                self.update_lagrange_multiplier(cur_cost)
+                self.update_policy_net(data=data)
+                self.update_value_net(data=data)
         self.logger.store(Megaiter=megaiter)
 
     def compute_loss_v(self, data):
         """compute the loss of value function"""
-        obs, ret, cret = data['obs'], data['ret'], data['cret']
-        obs.to(self.device)
-        ret.to(self.device)
-        cret.to(self.device)
-        return ((self.actor_critic.v(obs) - ret) ** 2).mean(), (
-            (self.actor_critic.vc(obs) - cret) ** 2
-        ).mean()
+        obs, ret, cret = data['obs'], data['target_v'], data['target_c']
+        return ((self.actor_critic.v(obs) - ret) ** 2).mean(), ((self.actor_critic.vc(obs) - cret) ** 2).mean()
 
     def compute_loss_pi(self, data):
         """compute the loss of policy"""
-        dist, _log_p = self.actor_critic.pi(data['obs'], data['act'].to(self.device))
-        ratio = torch.exp(_log_p - data['logp'])
+        dist, _log_p = self.actor_critic.pi(data['obs'], data['act'])
+        ratio = torch.exp(_log_p - data['log_p'])
         ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
         loss_pi = -(torch.min(ratio * data['adv'], ratio_clip * data['adv'])).mean()
-        # loss_pi -= self.entropy_coef * dist.entropy().mean()
-
-        p = softplus(self.penalty_param)
+        p = softplus(self.lagrangian_multiplier)
         penalty_item = p.item()
-        loss_pi += penalty_item * ((ratio * data['cadv']).mean())
+        loss_pi += penalty_item * ((ratio * data['cost_adv']).mean())
         loss_pi /= 1 + penalty_item
-
-        # Useful extra info
-        approx_kl = (data['logp'] - _log_p).mean().item()
+        approx_kl = (data['log_p'] - _log_p).mean().item()
         ent = dist.entropy().mean().item()
         clipped = ratio.gt(1 + self.clip) | ratio.lt(1 - self.clip)
-        clipfrac = torch.as_tensor(clipped, device=device, dtype=torch.float32).mean().item()
+        clipfrac = torch.as_tensor(clipped, device=self.device, dtype=torch.float32).mean().item()
         pi_info = dict(kl=approx_kl, ent=ent, cf=clipfrac)
-
         return loss_pi, pi_info
+
 
     def update_dynamics_model(self):
         """compute the loss of dynamics"""
-        state, action, _, _, next_state, _ = self.env_pool.sample(len(self.env_pool))
+        state = self.off_replay_buffer.obs_buf[:self.off_replay_buffer.size,:]
+        action = self.off_replay_buffer.act_buf[:self.off_replay_buffer.size,:]
+        next_state = self.off_replay_buffer.obs2_buf[:self.off_replay_buffer.size,:]
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
         labels = delta_state
         self.predict_env.model.train(inputs, labels, batch_size=256, holdout_ratio=0.2)
 
-    def update(self):
-        """update ac"""
-        data = self.buf.get()
-        cur_cost = self.logger.get_stats('DynaMetrics/EpCost')[0]
+    def update_policy_net(self, data):
+        """update policy"""
+        # Get prob. distribution before updates: used to measure KL distance
         pi_l_old, pi_info_old = self.compute_loss_pi(data)
-        beta_safety = self.cfgs['lagrange_cfgs']['beta']
-        cost_dev = cur_cost - self.cost_limit * beta_safety
-        loss_penalty = -self.penalty_param * cost_dev
-        self.penalty_optimizer.zero_grad()
-        loss_penalty.backward()
-        self.penalty_optimizer.step()
-        pi_l_old = pi_l_old.item()
-        v_l_old, cv_l_old = self.compute_loss_v(data)
-        v_l_old, cv_l_old = v_l_old.item(), cv_l_old.item()
-
+        self.loss_pi_before = pi_l_old.item()
         # Train policy with multiple steps of gradient descent
-        train_pi_iters = 80
-        for i in range(train_pi_iters):
-
-            loss_pi, pi_info = self.compute_loss_pi(data)
-            # kl = mpi_avg(pi_info['kl'])
-
+        for i in range(self.cfgs['pi_iters']):
+            loss_pi,pi_info = self.compute_loss_pi(data)
             kl = pi_info['kl']
-            if kl > 1.2 * 0.01:
-                self.logger.log('Early stopping at step %d due to reaching max kl.' % i)
-                break
-
+            if self.cfgs.get('kl_early_stopping', False):
+                if kl > 1.2 * self.cfgs['target_kl']:
+                    self.logger.log(f'Reached ES criterion after {i+1} steps.')
+                    break
             self.pi_optimizer.zero_grad()
             loss_pi.backward()
-            # mpi_avg_grads(ac.pi)
             self.pi_optimizer.step()
+        self.logger.store(
+            **{
+                'Loss/Pi': self.loss_pi_before,
+                'Loss/DeltaPi': loss_pi.item() - self.loss_pi_before,
+                'Misc/StopIter': i + 1,
+                'Values/Adv': data['adv'].cpu().numpy(),
+                'Values/Adv_C': data['cost_adv'].cpu().numpy(),
+                'Entropy': pi_info_old['ent'],
+                'KL':  pi_info['kl'],
+                'PolicyRatio': pi_info['cf'],
+            }
+        )
+    def update_value_net(self,data):
+        """Value function learning"""
+        v_l_old, cv_l_old = self.compute_loss_v(data)
+        self.loss_v_before, self.loss_c_before, = v_l_old.item(), cv_l_old.item()
 
-        # Value function learning
-        train_v_iters = 80
-        for i in range(train_v_iters):
+        for i in range(self.cfgs['critic_iters']):
             loss_v, loss_vc = self.compute_loss_v(data)
             self.vf_optimizer.zero_grad()
             loss_v.backward()
-            # mpi_avg_grads(ac.v)   # average grads across MPI processes
             self.vf_optimizer.step()
+
             self.cvf_optimizer.zero_grad()
             loss_vc.backward()
-            # mpi_avg_grads(ac.vc)  # average grads across MPI processes
             self.cvf_optimizer.step()
 
-        # Log changes from update
-        kl, ent, cf = pi_info['kl'], pi_info_old['ent'], pi_info['cf']
-        self.logger.store(
-            **{
-                'Loss/Pi': pi_l_old,
-                'Loss/Value': v_l_old,
-                'Loss/Cost': cv_l_old,
-                'Loss/DeltaPi': (loss_pi.item() - pi_l_old),
-                'Loss/DeltaValue': (loss_v.item() - v_l_old),
-                'Loss/DeltaCost': (loss_vc.item() - cv_l_old),
-                'Entropy': ent,
-                'KL': kl,
-                'PolicyRatio': cf,
-            }
-        )
-
+        self.logger.store(**{
+        'Loss/DeltaValue': loss_v.item() - self.loss_v_before,
+        'Loss/Value': self.loss_v_before,
+        'Loss/DeltaCValue': loss_vc.item()  - self.loss_c_before,
+        'Loss/CValue': self.loss_c_before,})
+         
     def get_param_values(self, model):
         """get the dynamics parameters"""
-        trainable_params = list(model.parameters())  # + [self.log_std]
-        params = np.concatenate([p.contiguous().view(-1).data.numpy() for p in trainable_params])
+        trainable_params = list(model.parameters()) 
+        params = np.concatenate([p.contiguous().view(-1).data.cpu().numpy() for p in trainable_params])
         return params.copy()
 
     def set_param_values(self, new_params, model, set_new=True):
         """set the dynamics parameters"""
         trainable_params = list(model.parameters())
-
-        param_shapes = [p.data.numpy().shape for p in trainable_params]
-        # print("param shapes",len(param_shapes))
-        param_sizes = [p.data.numpy().size for p in trainable_params]
+        param_shapes = [p.data.cpu().numpy().shape for p in trainable_params]
+        param_sizes = [p.data.cpu().numpy().size for p in trainable_params]
         if set_new:
             current_idx = 0
             for idx, param in enumerate(trainable_params):
                 vals = new_params[current_idx : current_idx + param_sizes[idx]]
                 vals = vals.reshape(param_shapes[idx])
-                param.data = torch.from_numpy(vals).float()
+                param.data = torch.from_numpy(vals).float().to(self.device)
                 current_idx += param_sizes[idx]
 
-    # collect experience in env to train dynamics models
-    def roll_out_in_imaginary(
-        self,
-        megaiter,
-        predict_env,
-        local_steps_per_epoch,
-        penalty_param,
-        cost_criteria,
-        use_cost_critic,
-        gamma,
-    ):
+    def roll_out_in_imaginary(self, megaiter):
         """collect data and store to experience buffer."""
-        max_ep_len2 = 80
-        o, static = self.env.reset()  ##generate the initial state!!!!
-        o = np.clip(o, -1000, 1000)
-        goal_pos = static['goal']  ### generate the initial goal position!!!!
-        hazards_pos = static['hazards']  ### generate the initial hazards position!!!!
-        ld = dist_xy(o[40:], goal_pos)  ## the distance between robot and goal
-        dep_ret = 0
-        dep_cost = 0
-        dep_len = 0
-        # print("training policy with imagination")
-        if megaiter == 0:
-            mix_real = 1500
-        else:
-            mix_real = 0
+        state = self.env_auxiliary.reset()
+        dep_ret, dep_cost, dep_len = 0, 0, 0
+        mix_real = self.cfgs['mixed_real_time_steps'] if megaiter == 0 else 0
 
-        for t in range(local_steps_per_epoch - mix_real):
-
-            # generate hazard lidar
-            obs_vec = generate_lidar(o, hazards_pos)
-            robot_pos = o[40:]
-            obs_vec = np.array(obs_vec)
-            obs_vec = np.clip(obs_vec, -1000, 1000)
-
-            otensor = torch.as_tensor(obs_vec, device=device, dtype=torch.float32)
-            a, v, vc, logp = self.actor_critic.step(otensor)
-            del otensor
-
-            if True in np.isnan(a):
-                print('produce nan in actor')
-                print('action,obs', a, obs_vec)
-                a = np.nan_to_num(a)
-            a = np.clip(a, self.env.action_space.low, self.env.action_space.high)
-
-            # --------USING LEARNED MODEL OF ENVIRONMENT TO GENERATE ROLLOUTS-----------------
-            next_o = predict_env.step(o, a)
-
-            if True in np.isnan(next_o):
-                print('produce nan in actor')
-                print('next_o,action,obs', next_o, a, o)
-                next_o = np.nan_to_num(next_o)
-            next_o = np.clip(next_o, -1000, 1000)
-            r, c, ld, goal_flag = get_reward_cost(ld, robot_pos, hazards_pos, goal_pos)
-
-            dep_ret += r
-            dep_cost += c
+        for t in range(self.cfgs['imaging_steps_per_policy_update'] - mix_real):
+            action, action_info = self.select_action(t, state, self.env_auxiliary)
+            next_state = self.predict_env.step(state, action)
+            next_state = np.nan_to_num(next_state)
+            next_state = np.clip(next_state, -self.cfgs['obs_clip'], self.cfgs['obs_clip'])
+            reward, cost, goal_flag = self.env_auxiliary.get_reward_cost(next_state) 
+            
+            dep_ret += reward
+            dep_cost += cost
             dep_len += 1
-
-            # save and log
-            self.buf.store(obs=obs_vec, act=a, rew=r, crew=c, val=v, cval=vc, logp=logp)
-
-            # Update obs (critical!)
-            o = next_o
-
-            # Model horizon (H)  = max_ep_len2
-            timeout = dep_len == max_ep_len2
-            terminal = timeout
-            epoch_ended = t == local_steps_per_epoch - 1
-            if terminal or epoch_ended or goal_flag:
-                # if epoch_ended and not(terminal):
-                #     print('Warning: trajectory cut off by epoch at %d steps.'%ep_len, flush=True)
-                # if trajectory didn't reach terminal state, bootstrap value target
+            self.buf.store(
+                obs=action_info['state_vec'], act=action, rew=reward, val=action_info['val'], logp=action_info['logp'], cost=cost, cost_val=action_info['cval']
+            )
+            state = next_state
+            
+            timeout = dep_len == self.cfgs['horizon']
+            truncated = timeout
+            epoch_ended = t == self.cfgs['imaging_steps_per_policy_update'] - 1
+            if truncated or epoch_ended or goal_flag:
                 if timeout or epoch_ended or goal_flag:
-                    otensort = torch.as_tensor(obs_vec, device=device, dtype=torch.float32)
-                    _, v, vc, _ = self.actor_critic.step(otensort)
-                    del otensort
-                else:
-                    v = 0
-                    vc = 0
-                self.buf.finish_path(v, vc)
-                # self.buf.finish_path(v, vc, penalty_param=float(0))
-                if terminal:
+                    state_tensor = torch.as_tensor(action_info['state_vec'], device=self.device, dtype=torch.float32)
+                    _, val, cval, _ = self.actor_critic.step(state_tensor)
+                    del state_tensor
+                else: # this means episode is terminated, and this will be triggered only in mujoco robots fall down case
+                    val = 0
+                    cval = 0
+                self.buf.finish_path(val, cval, penalty_param=float(0))
+                if timeout:
                     # only save EpRet / EpLen if trajectory finished
                     self.logger.store(
                         **{
                             'DynaMetrics/EpRet': dep_ret,
-                            'DynaMetrics/EpLen': dep_len + 1,
+                            'DynaMetrics/EpLen': dep_len ,
                             'DynaMetrics/EpCost': dep_cost,
                         }
                     )
-
-                o, static = self.env.reset()
-                o = np.clip(o, -1000, 1000)
-                goal_pos = static['goal']
-                hazards_pos = static['hazards']
-                ld = dist_xy(o[40:], goal_pos)
+                state = self.env_auxiliary.reset()
                 dep_ret, dep_len, dep_cost = 0, 0, 0
 
-    def mbppo_valid(
-        self, last_valid_rets, predict_env, penalty_param, cost_criteria, use_cost_critic, gamma
-    ):
-        """validation whether improve policy"""
-        # 6 ELITE MODELS OUT OF 8
-        valid_rets = [0] * 6
+    def validation(self, last_valid_rets):
+        """policy validation """
+        valid_rets = np.zeros(self.cfgs['validation_num']) 
         winner = 0
-        # print("validating............")
-        for va in range(len(valid_rets)):
-            ov, staticv = self.env.reset()  ##########  create initial state!!!!!
-            ov = np.clip(ov, -1000, 1000)
-
-            goal_posv = staticv['goal']
-            hazards_posv = staticv['hazards']
-            ldv = dist_xy(ov[40:], goal_posv)
-            step_iter = 0
-            while step_iter < 75:
-                obs_vecv = generate_lidar(ov, hazards_posv)  ## just generate lidar observation??
-                robot_posv = ov[40:]  ## use true robot position
-                obs_vecv = np.array(obs_vecv)
-                obs_vecv = np.clip(obs_vecv, -1000, 1000)
-
-                ovt = torch.as_tensor(obs_vecv, dtype=torch.float32, device=device)
-                av, _, _, _ = self.actor_critic.step(ovt)
-                if True in np.isnan(av):
-                    print('produce nan in vali actor')
-                    print('action,obs', av, obs_vecv)
-                    av = np.nan_to_num(av)
-                av = np.clip(av, self.env.action_space.low, self.env.action_space.high)
-                del ovt
-                next_ov = predict_env.step_elite(ov, av, va)
-                if True in np.isnan(next_ov):
-                    print('produce nan in  vali env')
-                    print('next_o,action,obs', next_ov, av, ov)
-                    next_ov = np.nan_to_num(next_ov)
-                next_ov = np.clip(next_ov, -1000, 1000)
-                rv, cv, ldv, goal_flagv = get_reward_cost(ldv, robot_posv, hazards_posv, goal_posv)
-                valid_rets[va] += rv
-                ov = next_ov
-                if goal_flagv:
-                    ov, staticv = self.env.reset()
-                    ov = np.clip(ov, -1000, 1000)
-                    goal_posv = staticv['goal']
-                    hazards_posv = staticv['hazards']
-                    ldv = dist_xy(ov[40:], goal_posv)
-                step_iter += 1
-            if valid_rets[va] > last_valid_rets[va]:
+        # pylint:disable=consider-using-enumerate
+        for valid_id in range(len(valid_rets)):
+            state = self.env_auxiliary.reset()  
+            for step in range(self.cfgs['validation_horizon']):
+                action, action_info = self.select_action(step, state, self.env_auxiliary)
+                next_state = self.predict_env.step_elite(state, action, valid_id)
+                next_state = np.nan_to_num(next_state)
+                next_state = np.clip(next_state, -self.cfgs['obs_clip'], self.cfgs['obs_clip'])
+                reward, _ , goal_flag = self.env_auxiliary.get_reward_cost(next_state)
+                valid_rets[valid_id] += reward
+                state = next_state
+                if goal_flag:
+                    state = self.env_auxiliary.reset()
+            if valid_rets[valid_id] > last_valid_rets[valid_id]:
                 winner += 1
-        # print(valid_rets,last_valid_rets)
-        performance_ratio = winner / 6
-        # print("Performance ratio=",performance_ratio)
-        thresh = 4 / 6  # BETTER THAN 50%
+        performance_ratio = winner / self.cfgs['validation_num']
+        threshold = self.cfgs['validation_threshold_num'] / self.cfgs['validation_num']
+        result = performance_ratio <  threshold
+        return result, valid_rets
 
-        return performance_ratio < thresh, valid_rets
+    def select_action(self, timestep, state, env):
+        """action selection """
+        state = env.generate_lidar(state)
+        state_vec = np.array(state)
+        state_tensor = torch.as_tensor(state_vec, device=self.device, dtype=torch.float32)
+        action, val, cval, logp = self.actor_critic.step(state_tensor)
+        action = np.nan_to_num(action)
+        action_info = {
+            "state_vec": state_vec,
+            "val": val,
+            "cval": cval,
+            "logp": logp
+        }
+        return action, action_info
+
+    def store_real_data(self,timestep, ep_len, state, action_info, action, reward, cost, terminated, truncated, next_state, info):
+        """store real data"""
+        if not terminated and not truncated and not info['goal_met']:
+            self.off_replay_buffer.store(obs=state, act=action, rew=reward, cost=cost, next_obs=next_state, done=truncated)            
+        if timestep % self.cfgs['update_policy_freq'] <= self.cfgs['mixed_real_time_steps'] and  self.buf.ptr < self.cfgs['mixed_real_time_steps']  :
+            self.buf.store(
+                obs=action_info['state_vec'], act=action, rew=reward, val=action_info['val'], logp=action_info['logp'], cost=cost, cost_val=action_info['cval']
+            )
+            # reached max imaging horizon, mixed real timestep, real max timestep , or epsiode truncated.
+            if (timestep % self.cfgs['horizon'] == 0) or ( timestep % self.cfgs['update_policy_freq'] == self.cfgs['mixed_real_time_steps'] ) or (timestep == self.cfgs['max_real_time_steps']) or truncated:
+                state_tensor = torch.as_tensor(action_info['state_vec'], device=self.device, dtype=torch.float32)
+                _, val, cval, _ = self.actor_critic.step(state_tensor)
+                del state_tensor
+                self.buf.finish_path(val, cval, penalty_param=float(0))
+            elif terminated:# this means episode is terminated, which will be triggered only in mujoco robots fall down case
+                val=0
+                cval=0
+                self.buf.finish_path(val,cval,penalty_param=float(0))
+    def algo_reset(self):
+            """reset algo parameters"""
+        
