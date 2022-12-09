@@ -48,7 +48,7 @@ class NaturalPG(PolicyGradient):
         self.target_kl = cfgs.target_kl
         self.fvp_obs = cfgs.fvp_obs
 
-    # pylint: disable=too-many-arguments,unused-argument
+    # pylint: disable-next=too-many-arguments,unused-argument
     def search_step_size(self, step_dir):
         """
         NPG use full step_size

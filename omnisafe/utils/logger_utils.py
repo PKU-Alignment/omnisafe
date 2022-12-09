@@ -39,7 +39,7 @@ def is_json_serializable(value):
         return False
 
 
-# pylint: disable=too-many-return-statements
+# pylint: disable-next=too-many-return-statements
 def convert_json(obj):
     """Convert obj to a version which can be serialized with JSON."""
     if is_json_serializable(obj):

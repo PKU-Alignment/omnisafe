@@ -21,7 +21,7 @@ from omnisafe.models.critic.v_critic import VCritic
 from omnisafe.utils.model_utils import Activation, InitFunction
 
 
-# pylint: disable=too-few-public-methods
+# pylint: disable-next=too-few-public-methods
 class CriticBuilder:
     """Implementation of CriticBuilder."""
 

@@ -30,7 +30,7 @@ from omnisafe.utils.online_mean_std import OnlineMeanStd
 class Evaluator:
     """This class includes common evaluation methods for safe RL algorithms."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         env=None,

@@ -24,7 +24,7 @@ from omnisafe.utils.model_utils import Activation, InitFunction
 class Actor(abc.ABC, nn.Module):
     """A abstract class for actor."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         obs_dim: int,
@@ -92,7 +92,7 @@ class Actor(abc.ABC, nn.Module):
 class Critic(abc.ABC, nn.Module):
     """A abstract class for critic."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         obs_dim: int,

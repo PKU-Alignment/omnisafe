@@ -24,11 +24,11 @@ from omnisafe.utils.core import combined_shape, discount_cumsum
 from omnisafe.utils.vtrace import calculate_v_trace
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes
 class Buffer:
     """Buffer API."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         actor_critic: torch.nn.Module,

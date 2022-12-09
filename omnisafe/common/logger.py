@@ -28,11 +28,11 @@ from omnisafe.utils.distributed_utils import mpi_statistics_scalar, proc_id
 from omnisafe.utils.logger_utils import colorize, convert_json
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes
 class Logger:
     """Implementation of the Logger."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         data_dir,
@@ -59,7 +59,7 @@ class Logger:
 
         if proc_id() == 0:
             os.makedirs(self.log_dir, exist_ok=True)
-            # pylint: disable=consider-using-with
+            # pylint: disable-next=consider-using-with
             self.output_file = open(osp.join(self.log_dir, output_fname), encoding='utf-8', mode='w')
             atexit.register(self.output_file.close)
             print(colorize(f'Logging data to {self.output_file.name}', 'cyan', bold=True))

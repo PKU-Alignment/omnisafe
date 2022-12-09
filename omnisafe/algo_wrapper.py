@@ -86,7 +86,7 @@ class AlgoWrapper:
         assert self.evaluator is not None, 'Please run learn() first!'
         self.evaluator.evaluate(num_episodes, horizon, cost_criteria)
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def render(
         self,
         num_episode: int = 0,

@@ -116,7 +116,7 @@ def set_param_values_to_model(model, vals):
     assert i == len(vals), f'Lengths do not match: {i} vs. {len(vals)}'
 
 
-# pylint: disable=too-many-branches,too-many-return-statements
+# pylint: disable-next=too-many-branches,too-many-return-statements
 def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
     r"""
     Overview:

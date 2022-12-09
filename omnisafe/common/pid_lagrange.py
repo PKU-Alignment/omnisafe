@@ -18,7 +18,7 @@ import abc
 from collections import deque
 
 
-# pylint: disable=too-few-public-methods, too-many-instance-attributes
+# pylint: disable-next=too-few-public-methods, too-many-instance-attributes
 class PIDLagrangian(abc.ABC):
     """Abstract base class for Lagrangian-base Algorithms."""
 

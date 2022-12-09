@@ -50,7 +50,7 @@ class PCPO(TRPO):
         )
         self.cost_limit = self.cfgs.cost_limit
 
-    # pylint: disable=too-many-locals, too-many-arguments
+    # pylint: disable-next=too-many-locals, too-many-arguments
     def adjust_cpo_step_direction(
         self,
         step_dir,

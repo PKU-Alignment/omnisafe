@@ -23,7 +23,7 @@ from omnisafe.models.actor.gaussian_stdnet_actor import GaussianStdNetActor
 from omnisafe.utils.model_utils import Activation, InitFunction
 
 
-# pylint: disable=too-few-public-methods
+# pylint: disable-next=too-few-public-methods
 class ActorBuilder:
     """Class for building actor networks."""
 

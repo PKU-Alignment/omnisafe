@@ -56,7 +56,7 @@ class QCritic(Critic):
             weight_initialization_mode=weight_initialization_mode,
         )
 
-    # pylint: disable=arguments-differ
+    # pylint: disable-next=arguments-differ
     def forward(self, obs: torch.Tensor, act: torch.Tensor):
         """Forward."""
         obs = self.obs_encoder(obs)

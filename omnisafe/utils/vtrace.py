@@ -17,7 +17,7 @@
 import numpy as np
 
 
-# pylint: disable=too-many-arguments,too-many-locals
+# pylint: disable-next=too-many-arguments,too-many-locals
 def calculate_v_trace(
     policy_action_probs: np.ndarray,
     values: np.ndarray,  # including bootstrap

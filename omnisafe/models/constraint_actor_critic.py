@@ -22,7 +22,7 @@ from omnisafe.models.critic import CriticBuilder
 class ConstraintActorCritic(ActorCritic):
     """ConstraintActorCritic is a wrapper around ActorCritic that adds a cost critic to the model."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         observation_space,
