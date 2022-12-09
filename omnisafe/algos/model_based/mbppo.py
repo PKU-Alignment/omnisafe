@@ -328,11 +328,18 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
                 cost=cost,
                 cost_val=action_info['cval'],
             )
+            if terminated:
+                # this means episode is terminated,
+                # which will be triggered only in robots fall down case
+                val = 0
+                cval = 0
+                self.buf.finish_path(val, cval, penalty_param=float(0))
+
             # reached max imaging horizon, mixed real timestep, real max timestep , or episode truncated.
-            if (
-                timestep % self.cfgs['horizon'] == 0
-                or timestep % self.cfgs['update_policy_freq'] == self.cfgs['mixed_real_time_steps']
-                or timestep == self.cfgs['max_real_time_steps']
+            elif (
+                timestep % self.cfgs['horizon'] < self.cfgs['action_repeat']
+                or self.buf.ptr == self.cfgs['mixed_real_time_steps']
+                or timestep >= self.cfgs['max_real_time_steps']
                 or truncated
             ):
                 state_tensor = torch.as_tensor(
@@ -340,12 +347,6 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
                 )
                 _, val, cval, _ = self.actor_critic.step(state_tensor)
                 del state_tensor
-                self.buf.finish_path(val, cval, penalty_param=float(0))
-            elif terminated:
-                # this means episode is terminated,
-                # which will be triggered only in robots fall down case
-                val = 0
-                cval = 0
                 self.buf.finish_path(val, cval, penalty_param=float(0))
 
     def algo_reset(self):

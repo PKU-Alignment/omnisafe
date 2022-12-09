@@ -131,10 +131,10 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes,
                 info,
             )
 
-            if time_step % self.cfgs['update_dynamics_freq'] == 0:
+            if time_step % self.cfgs['update_dynamics_freq'] < self.cfgs['action_repeat']:
                 self.update_dynamics_model()
 
-            if time_step % self.cfgs['update_policy_freq'] == 0:
+            if time_step % self.cfgs['update_policy_freq'] < self.cfgs['action_repeat']:
                 self.update_actor_critic(time_step)
 
             state = next_state
@@ -151,7 +151,7 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes,
                 self.algo_reset()
 
             # Evaluate episode
-            if (time_step) % self.cfgs['log_freq'] == 0:
+            if (time_step) % self.cfgs['log_freq'] < self.cfgs['action_repeat']:
                 self.log(time_step)
                 self.logger.torch_save(itr=time_step)
 

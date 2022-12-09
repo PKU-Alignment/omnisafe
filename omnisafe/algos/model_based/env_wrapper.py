@@ -33,7 +33,7 @@ ANGLE_SENSORS = dict(
     Point=['gyro', 'magnetometer'], Car=['magnetometer', 'gyro'], Doggo=['magnetometer', 'gyro']
 )
 
-CONSTRAINTS = dict(
+CONSTRAINTS_SAFELOOP = dict(
     Goal=['vases', 'hazards'],
     Button=['hazards', 'gremlins', 'buttons'],
 )
@@ -111,7 +111,7 @@ class EnvWrapper:  # pylint: disable=too-many-instance-attributes
         """Initialize sensor observation"""
         self.xyz_sensors = XYZ_SENSORS[self.robot]
         self.angle_sensors = ANGLE_SENSORS[self.robot]
-        self.constraints_name = CONSTRAINTS[self.task]
+        self.constraints_safeloop = CONSTRAINTS_SAFELOOP[self.task]
         self.constraints_mbppo = CONSTRAINTS_MBPPO[self.task]
         self.base_state_name = self.xyz_sensors + self.angle_sensors + ['goal']
         self.env.reset()
@@ -122,7 +122,7 @@ class EnvWrapper:  # pylint: disable=too-many-instance-attributes
                 self.base_state_name + self.constraints_mbppo + ['robot_m'] + ['robot']
             )
         elif self.algo == 'SafeLoop':
-            self.flatten_order = self.base_state_name + self.constraints_name
+            self.flatten_order = self.base_state_name + self.constraints_safeloop
 
         self.key_to_slice = {}
         offset = 0
@@ -172,6 +172,7 @@ class EnvWrapper:  # pylint: disable=too-many-instance-attributes
         for _ in range(num_repeat):
             control = action
             _, reward_k, cost_k, terminated, truncated, info = self.env.step(control)
+            terminated = False  # not used now
             step_num += 1
             reward += reward_k
             cost += cost_k
@@ -183,14 +184,7 @@ class EnvWrapper:  # pylint: disable=too-many-instance-attributes
             if terminated or truncated or goal_met:
                 # the action is not related to next state, so break
                 break
-        if self.algo == 'MBPPOLag':
-            info = {
-                'cost': cost,
-                'goal_met': goal_met,
-                'goal_pos': self.env.goal_pos,
-                'step_num': step_num,
-            }
-        elif self.algo == 'SafeLoop':
+        if self.algo in ['MBPPOLag', 'SafeLoop']:
             info = {'cost': cost, 'goal_met': goal_met, 'step_num': step_num}
 
         return observation, reward, cost, terminated, truncated, info
