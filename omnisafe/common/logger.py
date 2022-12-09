@@ -59,6 +59,7 @@ class Logger:
 
         if proc_id() == 0:
             os.makedirs(self.log_dir, exist_ok=True)
+            # pylint: disable=consider-using-with
             self.output_file = open(osp.join(self.log_dir, output_fname), encoding='utf-8', mode='w')
             atexit.register(self.output_file.close)
             print(colorize(f'Logging data to {self.output_file.name}', 'cyan', bold=True))
