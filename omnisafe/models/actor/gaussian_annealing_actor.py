@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of GaussianAnnealingActor."""
 
-import numpy as np
 import torch
 import torch.nn as nn
 from torch.distributions.normal import Normal
@@ -24,6 +23,9 @@ from omnisafe.utils.model_utils import build_mlp_network
 
 
 class GaussianAnnealingActor(Actor):
+    """Class for Gaussian Annealing Actor."""
+
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         obs_dim,
@@ -64,8 +66,8 @@ class GaussianAnnealingActor(Actor):
             )
 
     def _distribution(self, obs):
-        mu = self.net(obs)
-        return Normal(mu, self._std)
+        mean = self.net(obs)
+        return Normal(mean, self._std)
 
     def predict(self, obs, deterministic=False, need_log_prob=False):
         dist = self._distribution(obs)
@@ -98,4 +100,5 @@ class GaussianAnnealingActor(Actor):
 
     @property
     def std(self):
+        """Return the current std of the Gaussian distribution."""
         return self._std.mean().item()

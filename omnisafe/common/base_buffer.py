@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Implementation of ReplayBuffer."""
 
 import numpy as np
 import torch
@@ -19,7 +20,8 @@ import torch
 from omnisafe.utils.core import combined_shape
 
 
-class ReplayBuffer:
+# pylint: disable-next=too-many-instance-attributes
+class BaseBuffer:
     """A simple FIFO experience replay buffer for DDPG agents."""
 
     def __init__(self, obs_dim, act_dim, size, batch_size):
@@ -33,6 +35,7 @@ class ReplayBuffer:
         self.ptr, self.size, self.max_size = 0, 0, size
         self.batch_size = batch_size
 
+    # pylint: disable-next=too-many-arguments
     def store(self, obs, act, rew, cost, next_obs, done):
         """store"""
         self.obs_buf[self.ptr] = obs

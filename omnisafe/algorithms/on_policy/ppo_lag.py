@@ -79,7 +79,7 @@ class PPOLag(PolicyGradient, Lagrange):
         # pre-process data
         raw_data, data = self.buf.pre_process_data()
         # Note that logger already uses MPI statistics across all processes..
-        Jc = self.logger.get_stats('Metrics/EpCost')[0]
+        Jc = self.logger.get_stats('Metrics/EpCost')[0]  # pylint: disable=invalid-name
         # First update Lagrange multiplier parameter
         self.update_lagrange_multiplier(Jc)
         # now update policy and value network

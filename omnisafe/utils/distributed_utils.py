@@ -75,8 +75,7 @@ def mpi_fork(parallel: int, bind_to_core=False, use_number_of_threads=False) -> 
         bind_to_core (bool): Bind each MPI process to a core.
 
         use_number_of_threads (bool): If you want Open MPI to default to the
-        number of hardware threads instead of the number of processor cores, use
-        the --use-hwthread-cpus option.
+        number of hardware threads instead of the number of processor cores.
 
     Returns:
         bool
@@ -113,11 +112,6 @@ def mpi_fork(parallel: int, bind_to_core=False, use_number_of_threads=False) -> 
         subprocess.check_call(args, env=env)
         is_parent = True
     return is_parent
-
-
-# def msg(message, string=''):
-#     """msg"""
-#     print(('Message from %d: %s \t ' % (dist.get_rank(), string)) + str(message))
 
 
 def is_root_process() -> bool:
@@ -173,7 +167,6 @@ def num_procs():
 
 def broadcast(value, src=0):
     """broadcast"""
-    # assert isinstance(x, np.ndarray)
     dist.broadcast(value, src=src)
 
 

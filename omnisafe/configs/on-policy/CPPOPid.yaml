@@ -79,9 +79,9 @@ defaults:
     standardized_cost: False
     reward_penalty: False
   PID_cfgs:
-    pid_Kp: 0.01
-    pid_Ki: 0.01
-    pid_Kd: 0.01
+    pid_kp: 0.01
+    pid_ki: 0.01
+    pid_kd: 0.01
     lagrangian_multiplier_init: 0.001
     pid_d_delay: 10
     pid_delta_p_ema_alpha: 0.95 # 0 for hard update, 1 for no update

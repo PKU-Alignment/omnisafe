@@ -28,9 +28,11 @@ from omnisafe.utils.distributed_utils import mpi_statistics_scalar, proc_id
 from omnisafe.utils.logger_utils import colorize, convert_json
 
 
+# pylint: disable=too-many-instance-attributes
 class Logger:
     """Implementation of the Logger."""
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         data_dir,
@@ -57,9 +59,7 @@ class Logger:
 
         if proc_id() == 0:
             os.makedirs(self.log_dir, exist_ok=True)
-            self.output_file = open(
-                osp.join(self.log_dir, output_fname), encoding='utf-8', mode='w'
-            )
+            self.output_file = open(osp.join(self.log_dir, output_fname), encoding='utf-8', mode='w')
             atexit.register(self.output_file.close)
             print(colorize(f'Logging data to {self.output_file.name}', 'cyan', bold=True))
         else:
@@ -79,7 +79,7 @@ class Logger:
             else None
         )
 
-        self.epoch_dict = dict()
+        self.epoch_dict = {}
 
     def log(self, msg, color='green'):
         """Print a colorized message to stdout."""
@@ -172,12 +172,15 @@ class Logger:
             # Print formatted information into console
             key_lens = [len(key) for key in self.log_headers]
             max_key_len = max(15, max(key_lens))
-            keystr = '%' + '%d' % max_key_len
+            keystr = '%' + '%d' % max_key_len  # pylint: disable=consider-using-f-string
             fmt = '| ' + keystr + 's | %15s |'
             n_slashes = 22 + max_key_len
-            print('-' * n_slashes) if self.verbose and self.level > 0 else None
+            if self.verbose and self.level > 0:
+                print('-' * n_slashes)
+            # print('-' * n_slashes) if self.verbose and self.level > 0 else None
             for key in self.log_headers:
                 val = self.log_current_row.get(key, '')
+                # pylint: disable-next=consider-using-f-string
                 valstr = '%8.3g' % val if hasattr(val, '__float__') else val
                 if self.verbose and self.level > 0:
                     print(fmt % (key, valstr))
@@ -206,6 +209,7 @@ class Logger:
         self.first_row = False
 
         # Check if all values from dict are dumped -> prevent memory overflow
+        # pylint: disable-next=invalid-name
         for k, v in self.epoch_dict.items():
             if len(v) > 0:
                 print(f'epoch_dict: key={k} was not logged.')
@@ -225,21 +229,10 @@ class Logger:
             ), 'First have to setup saving with self.setup_torch_saver'
             fpath = 'torch_save'
             fpath = osp.join(self.log_dir, fpath)
-            fname = 'model' + ('%d' % itr if itr is not None else '') + '.pt'
+            fname = 'model ' + str(itr) + '.pt'
             fname = osp.join(fpath, fname)
             os.makedirs(fpath, exist_ok=True)
-            # with warnings.catch_warnings():
-            #     warnings.simplefilter('ignore')
-            #     # We are using a non-recommended way of saving PyTorch models,
-            #     # by pickling whole objects (which are dependent on the exact
-            #     # directory structure at the time of saving) as opposed to
-            #     # just saving network weights. This works sufficiently well
-            #     # for the purposes of Spinning Up, but you may want to do
-            #     # something different for your personal PyTorch project.
-            #     # We use a catch_warnings() context to avoid the warnings about
-            #     # not being able to save the source code.
-            #     torch.save(self.torch_saver_elements, fname)
-            # torch.save(self.torch_saver_elements.state_dict(), fname)
+
             params = {
                 k: v.state_dict() if isinstance(v, torch.nn.Module) else v
                 for k, v in self.torch_saver_elements.items()

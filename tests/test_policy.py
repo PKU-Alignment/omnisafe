@@ -31,10 +31,10 @@ import omnisafe
         'PCPO',
         'FOCOPS',
         'CPPOPid',
-        'DDPG',
     ]
 )
 def test_on_policy(algo):
+    """Test on-policy algorithms"""
     env_id = 'SafetyPointGoal1-v0'
     custom_cfgs = {'epochs': 1, 'steps_per_epoch': 1000, 'pi_iters': 1, 'critic_iters': 1}
     env = omnisafe.Env(env_id)

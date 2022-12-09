@@ -19,7 +19,12 @@ import torch
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.natural_pg import NaturalPG
 from omnisafe.utils import distributed_utils
-from omnisafe.utils.tools import get_flat_params_from, set_param_values_to_model
+from omnisafe.utils.tools import (
+    conjugate_gradients,
+    get_flat_gradients_from,
+    get_flat_params_from,
+    set_param_values_to_model,
+)
 
 
 @registry.register
@@ -39,7 +44,7 @@ class TRPO(NaturalPG):
             algo=algo,
         )
 
-    # pylint: disable-next= too-many-arguments, too-many-locals
+    # pylint: disable-next=too-many-arguments, too-many-locals, arguments-differ
     def search_step_size(
         self,
         step_dir,
@@ -109,3 +114,71 @@ class TRPO(NaturalPG):
         set_param_values_to_model(self.actor_critic.actor.net, _theta_old)
 
         return step_frac * step_dir, acceptance_step
+
+
+    # pylint: disable-next=too-many-locals
+    def update_policy_net(self, data):
+        """update policy network"""
+        # Get loss and info values before update
+        theta_old = get_flat_params_from(self.actor_critic.actor.net)
+        self.actor_critic.actor.net.zero_grad()
+        loss_pi, pi_info = self.compute_loss_pi(data=data)
+        loss_pi_before = distributed_utils.mpi_avg(loss_pi.item())
+        p_dist = self.actor_critic.actor(data['obs'])
+        # Train policy with multiple steps of gradient descent
+        loss_pi.backward()
+        # average grads across MPI processes
+        distributed_utils.mpi_avg_grads(self.actor_critic.actor.net)
+        g_flat = get_flat_gradients_from(self.actor_critic.actor.net)
+        g_flat *= -1
+
+        # pylint: disable-next=invalid-name
+        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
+        assert torch.isfinite(x).all()
+        # Note that xHx = g^T x, but calculating xHx is faster than g^T x
+        # pylint: disable-next=invalid-name
+        xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
+        assert xHx.item() >= 0, 'No negative values'
+
+        # perform descent direction
+        alpha = torch.sqrt(2 * self.target_kl / (xHx + 1e-8))
+        step_direction = alpha * x
+        assert torch.isfinite(step_direction).all()
+
+        # determine step direction and apply SGD step after grads where set
+        # TRPO uses custom backtracking line search
+        final_step_dir, accept_step = self.search_step_size(
+            step_dir=step_direction,
+            g_flat=g_flat,
+            p_dist=p_dist,
+            loss_pi_before=loss_pi_before,
+            data=data,
+        )
+
+        # update actor network parameters
+        new_theta = theta_old + final_step_dir
+        set_param_values_to_model(self.actor_critic.actor.net, new_theta)
+
+        with torch.no_grad():
+            q_dist = self.actor_critic.actor(data['obs'])
+            # pylint: disable-next=invalid-name
+            kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
+            loss_pi, pi_info = self.compute_loss_pi(data=data)
+
+        self.logger.store(
+            **{
+                'Values/Adv': data['adv'].numpy(),
+                'Train/Entropy': pi_info['ent'],
+                'Train/KL': kl,
+                'Train/PolicyRatio': pi_info['ratio'],
+                'Train/StopIter': 1,
+                'Loss/Loss_pi': loss_pi.item(),
+                'Loss/Delta_loss_pi': loss_pi.item() - loss_pi_before,
+                'Misc/AcceptanceStep': accept_step,
+                'Misc/Alpha': alpha.item(),
+                'Misc/FinalStepNorm': torch.norm(final_step_dir).numpy(),
+                'Misc/xHx': xHx.item(),
+                'Misc/gradient_norm': torch.norm(g_flat).numpy(),
+                'Misc/H_inv_g': x.norm().item(),
+            }
+        )

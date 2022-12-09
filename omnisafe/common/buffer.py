@@ -207,12 +207,12 @@ class Buffer:
         self.ptr, self.path_start_idx = 0, 0
 
         if self.use_standardized_reward:
-            adv_mean, adv_std = distributed_utils.mpi_statistics_scalar(self.adv_buf)
+            adv_mean, adv_std, *_ = distributed_utils.mpi_statistics_scalar(self.adv_buf)
             self.adv_buf = (self.adv_buf - adv_mean) / (adv_std + 1.0e-8)
 
         if self.use_standardized_cost:
             # also for cost advantages; only re-center but no rescale!
-            cadv_mean, _ = distributed_utils.mpi_statistics_scalar(self.cost_adv_buf)
+            cadv_mean, *_ = distributed_utils.mpi_statistics_scalar(self.cost_adv_buf)
             self.cost_adv_buf = self.cost_adv_buf - cadv_mean
 
         data = dict(

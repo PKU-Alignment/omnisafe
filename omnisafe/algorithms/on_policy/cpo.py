@@ -54,16 +54,18 @@ class CPO(TRPO):
         self.cost_limit = cfgs.cost_limit
         self.loss_pi_cost_before = 0.0
 
+    # pylint: disable-next=too-many-arguments, too-many-locals
     def search_step_size(
         self,
         step_dir,
         g_flat,
-        c,
-        optim_case,
         p_dist,
         data,
+        loss_pi_before,
         total_steps=25,
         decay=0.8,
+        c=0,
+        optim_case=0,
     ):
         """
         CPO algorithm performs line-search to ensure constraint satisfaction for rewards and costs.
@@ -79,15 +81,14 @@ class CPO(TRPO):
         step_frac = 1.0
         # Get and flatten parameters from pi-net
         _theta_old = get_flat_params_from(self.actor_critic.actor.net)
-        _, old_log_p = self.actor_critic.actor(data['obs'], data['act'])
-        # Reward improve expection,g-flat as gradient of reward
+        # Reward improvement, g-flat as gradient of reward
         expected_rew_improve = g_flat.dot(step_dir)
 
         # While not within_trust_region and not finish all steps:
         for j in range(total_steps):
-            # New θ=θ_0+Δ Δ=Δdistance * direction
+            # Get new theta
             new_theta = _theta_old + step_frac * step_dir
-            # Set new θ as new pi-net's parameters
+            # Set new theta as new actor parameters
             set_param_values_to_model(self.actor_critic.actor.net, new_theta)
             # The last acceptance steps to next step
             acceptance_step = j + 1
@@ -99,11 +100,9 @@ class CPO(TRPO):
                 loss_pi_cost, _ = self.compute_loss_cost_performance(data=data)
                 # Compute KL distance between new and old policy
                 q_dist = self.actor_critic.actor(data['obs'])
-                # Kl_divergence with a form of pi*log(pi/qi)
                 torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-            # Δloss(rew)(p-q)
-            loss_rew_improve = self.loss_pi_before - loss_pi_rew.item()
-            # Δcost(p-q)
+            # Compute improvement of reward
+            loss_rew_improve = loss_pi_before - loss_pi_rew.item()
             cost_diff = loss_pi_cost.item() - self.loss_pi_cost_before
 
             # Average across MPI processes...
@@ -113,7 +112,7 @@ class CPO(TRPO):
             cost_diff = distributed_utils.mpi_avg(cost_diff)
             menu = (expected_rew_improve, loss_rew_improve)
             self.logger.log(f'Expected Improvement: {menu[0]} Actual: {menu[1]}')
-            # Check whether there are nans
+            # Check whether there are nan.
             if not torch.isfinite(loss_pi_rew) and not torch.isfinite(loss_pi_cost):
                 self.logger.log('WARNING: loss_pi not finite')
             elif loss_rew_improve < 0 if optim_case > 1 else False:
@@ -131,7 +130,7 @@ class CPO(TRPO):
                 break
             step_frac *= decay
         else:
-            # If didnt find a step satisfys those conditions
+            # If didn't find a step satisfy those conditions
             self.logger.log('INFO: no suitable step found...')
             step_dir = torch.zeros_like(step_dir)
             acceptance_step = 0
@@ -162,13 +161,16 @@ class CPO(TRPO):
         info = {}
         return cost_loss, info
 
-    def update_policy_net(self, data):
+    def update_policy_net(
+        self,
+        data,
+    ):  # pylint: disable=too-many-statements, too-many-locals, invalid-name
         """update policy net"""
         # Get loss and info values before update
         theta_old = get_flat_params_from(self.actor_critic.actor.net)
         self.actor_optimizer.zero_grad()
         loss_pi, pi_info = self.compute_loss_pi(data=data)
-        self.loss_pi_before = loss_pi.item()
+        loss_pi_before = loss_pi.item()
         # Get prob. distribution before updates, previous dist of possibilities
         p_dist = self.actor_critic.actor(data['obs'])
         # Train policy with multiple steps of gradient descent
@@ -179,12 +181,13 @@ class CPO(TRPO):
 
         # Flip sign since policy_loss = -(ration * adv)
         g_flat *= -1
-        # x: g or g_T in original paper, stands for gradient of cost funtion
-        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
+        # x: g or g_T in original paper, stands for gradient of cost function
+        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)  # pylint: disable=invalid-name
         assert torch.isfinite(x).all()
         eps = 1.0e-8
         # Note that xHx = g^T x, but calculating xHx is faster than g^T x
-        xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
+        # equivalent to : g^T x
+        xHx = torch.dot(x, self.Fvp(x))  # pylint: disable=invalid-name
         alpha = torch.sqrt(2 * self.target_kl / (xHx + eps))
         assert xHx.item() >= 0, 'No negative values'
 
@@ -199,19 +202,20 @@ class CPO(TRPO):
         # :param ep_costs: do samplings to get approximate costs as ep_costs
         ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # :params c: how much sampled result of cost goes beyond limit
-        c = ep_costs - self.cost_limit
-        # Rescale, and add eps(small float) to avoid nan
-        c /= self.logger.get_stats('Metrics/EpLen')[0] + eps  # rescale
+        cost = ep_costs - self.cost_limit
+        # Rescale, and add small float to avoid nan
+        cost /= self.logger.get_stats('Metrics/EpLen')[0] + eps  # rescale
 
         # Set variable names as used in the paper with conjugate_gradient method,
-        # used to solve equation(compute Hassen Matrix) instead of Natural Gradient
+        # used to solve equation(compute Hessian Matrix) instead of Natural Gradient
+
         p = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
         q = xHx  # conjugate of matrix H
         r = g_flat.dot(p)  # g^T H^{-1} b
         s = b_flat.dot(p)  # b^T H^{-1} b
 
         # optim_case: divided into 5 kinds to compute
-        if b_flat.dot(b_flat) <= 1e-6 and c < 0:
+        if b_flat.dot(b_flat) <= 1e-6 and cost < 0:
             # feasible step and cost grad is zero: use plain TRPO update...
             A = torch.zeros(1)
             B = torch.zeros(1)
@@ -222,30 +226,30 @@ class CPO(TRPO):
 
             # A,b: mathematical value, not too much true meaning
             A = q - r**2 / s  # must be always >= 0 (Cauchy-Schwarz inequality)
-            B = 2 * self.target_kl - c**2 / s  # safety line intersects trust-region if B > 0
+            B = 2 * self.target_kl - cost**2 / s  # safety line intersects trust-region if B > 0
 
-            if c < 0 and B < 0:
+            if cost < 0 and B < 0:
                 # point in trust region is feasible and safety boundary doesn't intersect
                 # ==> entire trust region is feasible
                 optim_case = 3
-            elif c < 0 and B >= 0:
+            elif cost < 0 <= B:
                 # x = 0 is feasible and safety boundary intersects
                 # ==> most of trust region is feasible
                 optim_case = 2
-            elif c >= 0 and B >= 0:
+            elif cost >= 0 and B >= 0:
                 # x = 0 is infeasible and safety boundary intersects
                 # ==> part of trust region is feasible, recovery possible
                 optim_case = 1
                 self.logger.log('Alert! Attempting feasible recovery!', 'yellow')
             else:
-                # x = 0 infeasible, and safety halfspace is outside trust region
+                # x = 0 infeasible, and safety half space is outside trust region
                 # ==> whole trust region is infeasible, try to fail gracefully
                 optim_case = 0
                 self.logger.log('Alert! Attempting infeasible recovery!', 'red')
 
         # the following computes required nu_star and lambda_star
         if optim_case in [3, 4]:
-            # under 3 and 4 cases directly use trpo method
+            # under 3 and 4 cases directly use TRPO method
             alpha = torch.sqrt(
                 2 * self.target_kl / (xHx + 1e-8)
             )  # step gap fixed by KKT condition in conjugate algorithm
@@ -258,22 +262,23 @@ class CPO(TRPO):
             def project_on_set(data: torch.Tensor, low: float, high: float) -> torch.Tensor:
                 return torch.Tensor([max(low, min(data, high))])
 
-            #  Analytical Solution to LQCLP, employ lambda,nu to compute final solution of argmax-OLOLQC
+            #  Analytical Solution to LQCLP, employ lambda,nu to compute final solution of OLOLQC
             #  λ=argmax(f_a(λ),f_b(λ)) = λa_star or λb_star
-            #  (computing formula shown in appendix) λa and λb
+            #  computing formula shown in appendix, lambda_a and lambda_b
             lambda_a = torch.sqrt(A / B)
             lambda_b = torch.sqrt(q / (2 * self.target_kl))
             # λa_star = Proj(lambda_a ,0 ~ r/c)  λb_star=Proj(lambda_b,r/c~ +inf)
-            # where Proj(str,b,c)=max(b,min(str,c)) , may be regarded as a projection from effective region towards safety region
-            if c < 0:
-                lambda_a_star = project_on_set(lambda_a, 0.0, r / c)
-                lambda_b_star = project_on_set(lambda_b, r / c, np.inf)
+            # where projection(str,b,c)=max(b,min(str,c))
+            # may be regarded as a projection from effective region towards safety region
+            if cost < 0:
+                lambda_a_star = project_on_set(lambda_a, 0.0, r / cost)
+                lambda_b_star = project_on_set(lambda_b, r / cost, np.inf)
             else:
-                lambda_a_star = project_on_set(lambda_a, r / c, np.inf)
-                lambda_b_star = project_on_set(lambda_b, 0.0, r / c)
+                lambda_a_star = project_on_set(lambda_a, r / cost, np.inf)
+                lambda_b_star = project_on_set(lambda_b, 0.0, r / cost)
 
             def f_a(lam):
-                return -0.5 * (A / (lam + eps) + B * lam) - r * c / (s + eps)
+                return -0.5 * (A / (lam + eps) + B * lam) - r * cost / (s + eps)
 
             def f_b(lam):
                 return -0.5 * (q / (lam + eps) + 2 * self.target_kl * lam)
@@ -284,7 +289,7 @@ class CPO(TRPO):
 
             # Discard all negative values with torch.clamp(x, min=0)
             # Nu_star = (lambda_star * - r)/s
-            nu_star = torch.clamp(lambda_star * c - r, min=0) / (s + eps)
+            nu_star = torch.clamp(lambda_star * cost - r, min=0) / (s + eps)
             # final x_star as final direction played as policy's loss to backward and update
             step_dir = 1.0 / (lambda_star + eps) * (x - nu_star * p)
 
@@ -298,7 +303,8 @@ class CPO(TRPO):
         final_step_dir, accept_step = self.search_step_size(
             step_dir,
             g_flat,
-            c=c,
+            c=cost,
+            loss_pi_before=loss_pi_before,
             optim_case=optim_case,
             p_dist=p_dist,
             data=data,
@@ -317,8 +323,8 @@ class CPO(TRPO):
                 'Train/Entropy': pi_info['ent'],
                 'Train/KL': torch_kl,
                 'Train/PolicyRatio': pi_info['ratio'],
-                'Loss/Loss_pi': self.loss_pi_before,
-                'Loss/Delta_loss_pi': loss_pi.item() - self.loss_pi_before,
+                'Loss/Loss_pi': loss_pi_before,
+                'Loss/Delta_loss_pi': loss_pi.item() - loss_pi_before,
                 'Loss/Cost': 0.0,
                 'Loss/DeltaCost': 0.0,
                 'Train/StopIter': 1,

@@ -20,7 +20,6 @@ import sys
 import psutil
 
 from omnisafe.algorithms import algo_type, registry
-from omnisafe.evaluator import Evaluator
 from omnisafe.utils import distributed_utils
 from omnisafe.utils.config_utils import check_all_configs, recursive_update
 from omnisafe.utils.tools import get_default_kwargs_yaml
@@ -78,17 +77,16 @@ class AlgoWrapper:
             env=self.env,
             cfgs=cfgs,
         )
-        ac = agent.learn()
+        agent.learn()
 
-        # TODO: Adjust model-based according to algo wrapper
-        if self.algo_type != 'model-based':
-            self.evaluator = Evaluator(self.env, ac.actor, ac.obs_oms)
+        # self.evaluator = Evaluator(self.env, actor_critic.actor, actor_critic.obs_oms)
 
     def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
         """Agent Evaluation"""
         assert self.evaluator is not None, 'Please run learn() first!'
         self.evaluator.evaluate(num_episodes, horizon, cost_criteria)
 
+    # pylint: disable=too-many-arguments
     def render(
         self,
         num_episode: int = 0,

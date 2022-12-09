@@ -24,6 +24,7 @@ from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_netwo
 class CategoricalActor(Actor):
     """Categorical actor."""
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         obs_dim: int,
@@ -58,10 +59,10 @@ class CategoricalActor(Actor):
     def predict(self, obs, deterministic=False, need_log_prob=False):
         dist = self._distribution(obs)
         if deterministic:
-            a = dist.probs.argmax(dim=-1)
+            action = dist.probs.argmax(dim=-1)
         else:
-            a = dist.sample().squeeze(dim=-1)
+            action = dist.sample().squeeze(dim=-1)
         if need_log_prob:
-            logp_a = dist.log_prob(a)
-            return a, logp_a
-        return a
+            logp_a = dist.log_prob(action)
+            return action, logp_a
+        return action

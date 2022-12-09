@@ -18,15 +18,16 @@ import abc
 from collections import deque
 
 
-# pylint: disable-next=invalid-name
-class PID_Lagrangian(abc.ABC):
+# pylint: disable=too-few-public-methods, too-many-instance-attributes
+class PIDLagrangian(abc.ABC):
     """Abstract base class for Lagrangian-base Algorithms."""
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        pid_Kp: float,
-        pid_Ki: float,
-        pid_Kd: float,
+        pid_kp: float,
+        pid_ki: float,
+        pid_kd: float,
         pid_d_delay: int,
         pid_delta_p_ema_alpha: float,
         pid_delta_d_ema_alpha: float,
@@ -37,9 +38,9 @@ class PID_Lagrangian(abc.ABC):
         cost_limit: int,
     ):
         """init"""
-        self.pid_Kp = pid_Kp
-        self.pid_Ki = pid_Ki
-        self.pid_Kd = pid_Kd
+        self.pid_kp = pid_kp
+        self.pid_ki = pid_ki
+        self.pid_kd = pid_kd
         self.pid_d_delay = pid_d_delay
         self.pid_delta_p_ema_alpha = pid_delta_p_ema_alpha
         self.pid_delta_d_ema_alpha = pid_delta_d_ema_alpha
@@ -53,11 +54,12 @@ class PID_Lagrangian(abc.ABC):
         self._delta_p = 0
         self._cost_d = 0
         self.cost_limit = cost_limit
+        self.cost_penalty = None
 
     def pid_update(self, ep_cost_avg):
         """pid_update"""
-        delta = float(ep_cost_avg - self.cost_limit)  # ep_cost_avg: tensor
-        self.pid_i = max(0.0, self.pid_i + delta * self.pid_Ki)
+        delta = float(ep_cost_avg - self.cost_limit)
+        self.pid_i = max(0.0, self.pid_i + delta * self.pid_ki)
         if self.diff_norm:
             self.pid_i = max(0.0, min(1.0, self.pid_i))
         a_p = self.pid_delta_p_ema_alpha
@@ -67,7 +69,7 @@ class PID_Lagrangian(abc.ABC):
         self._cost_d *= a_d
         self._cost_d += (1 - a_d) * float(ep_cost_avg)
         pid_d = max(0.0, self._cost_d - self.cost_ds[0])
-        pid_o = self.pid_Kp * self._delta_p + self.pid_i + self.pid_Kd * pid_d
+        pid_o = self.pid_kp * self._delta_p + self.pid_i + self.pid_kd * pid_d
         self.cost_penalty = max(0.0, pid_o)
         if self.diff_norm:
             self.cost_penalty = min(1.0, self.cost_penalty)

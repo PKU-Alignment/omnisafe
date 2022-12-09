@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Registry for algorithms."""
 
 import inspect
 
 
-class Registry(object):
+class Registry:
     """A registry to map strings to classes.
     Args:
         name (str): Registry name.
@@ -24,23 +25,26 @@ class Registry(object):
 
     def __init__(self, name):
         self._name = name
-        self._module_dict = dict()
+        self._module_dict = {}
 
     def __repr__(self):
-        format_str = self.__class__.__name__ + '(name={}, items={})'.format(
-            self._name, list(self._module_dict.keys())
+        format_str = (
+            self.__class__.__name__ + f'(name={self._name}, items={list(self._module_dict.keys())})'
         )
         return format_str
 
     @property
     def name(self):
+        """Return the name of the registry."""
         return self._name
 
     @property
     def module_dict(self):
+        """Return a dict mapping names to classes."""
         return self._module_dict
 
     def get(self, key):
+        """Get the class that has been registered under the given key."""
         return self._module_dict.get(key, None)
 
     def _register_module(self, module_class):
@@ -49,19 +53,19 @@ class Registry(object):
             module (:obj:`nn.Module`): Module to be registered.
         """
         if not inspect.isclass(module_class):
-            raise TypeError('module must be a class, but got {}'.format(type(module_class)))
+            raise TypeError(f'module must be a class, but got {type(module_class)}')
         module_name = module_class.__name__
         if module_name in self._module_dict:
-            raise KeyError('{} is already registered in {}'.format(module_name, self.name))
+            raise KeyError(f'{module_name} is already registered in {self.name}')
         self._module_dict[module_name] = module_class
 
     def register(self, cls):
+        """Register a module class."""
         self._register_module(cls)
         return cls
 
 
 REGISTRY = Registry('OmniSafe')
-REGISTRY.__doc__ = 'The global registry for OmniSafe.'
 
 
 register = REGISTRY.register

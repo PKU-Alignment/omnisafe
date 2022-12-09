@@ -50,15 +50,17 @@ class PCPO(TRPO):
         )
         self.cost_limit = self.cfgs.cost_limit
 
+    # pylint: disable=too-many-locals, too-many-arguments
     def adjust_cpo_step_direction(
         self,
         step_dir,
         g_flat,
-        c,
+        cost,
         optim_case,
         p_dist,
         data,
         loss_pi_before,
+        loss_pi_cost_before,
         total_steps: int = 25,
         decay: float = 0.8,
     ):
@@ -83,7 +85,7 @@ class PCPO(TRPO):
                 q_dist = self.actor_critic.actor(data['obs'])
                 torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
             loss_rew_improve = loss_pi_before - loss_pi_rew.item()
-            cost_diff = loss_pi_cost.item() - self.loss_pi_cost_before
+            cost_diff = loss_pi_cost.item() - loss_pi_cost_before
 
             # Average across MPI processes...
             torch_kl = distributed_utils.mpi_avg(torch_kl)
@@ -97,8 +99,8 @@ class PCPO(TRPO):
             elif loss_rew_improve < 0 if optim_case > 1 else False:
                 self.logger.log('INFO: did not improve improve <0')
 
-            elif cost_diff > max(-c, 0):
-                self.logger.log(f'INFO: no improve {cost_diff} > {max(-c, 0)}')
+            elif cost_diff > max(-cost, 0):
+                self.logger.log(f'INFO: no improve {cost_diff} > {max(-cost, 0)}')
             elif torch_kl > self.target_kl * 1.5:
                 self.logger.log(f'INFO: violated KL constraint {torch_kl} at step {j + 1}.')
             else:
@@ -153,11 +155,13 @@ class PCPO(TRPO):
         # flip sign since policy_loss = -(ration * adv)
         g_flat *= -1
 
-        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
+        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)  # pylint: disable=invalid-name
         assert torch.isfinite(x).all()
         eps = 1.0e-8
         # Note that xHx = g^T x, but calculating xHx is faster than g^T x
+        # pylint: disable-next=invalid-name
         xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
+        # pylint: disable-next=invalid-name
         H_inv_g = self.Fvp(x)
         alpha = torch.sqrt(2 * self.target_kl / (xHx + eps))
         assert xHx.item() >= 0, 'No negative values'
@@ -168,34 +172,39 @@ class PCPO(TRPO):
         loss_cost.backward()
         # average grads across MPI processes
         distributed_utils.mpi_avg_grads(self.actor_critic.actor.net)
-        self.loss_pi_cost_before = loss_cost.item()
+        loss_pi_cost_before = loss_cost.item()
         b_flat = get_flat_gradients_from(self.actor_critic.actor.net)
 
         ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
-        c = ep_costs - self.cost_limit
-        c /= self.logger.get_stats('Metrics/EpLen')[0] + eps  # rescale
-        self.logger.log(f'c = {c}')
+        cost = ep_costs - self.cost_limit
+        cost /= self.logger.get_stats('Metrics/EpLen')[0] + eps  # rescale
+        self.logger.log(f'c = {cost}')
         self.logger.log(f'b^T b = {b_flat.dot(b_flat).item()}')
 
         # set variable names as used in the paper
-        p = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
-        q = xHx
-        r = g_flat.dot(p)  # g^T H^{-1} b
-        s = b_flat.dot(p)  # b^T H^{-1} b
+        p = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)  # pylint: disable=invalid-name
+        q = xHx  # pylint: disable=invalid-name
+        # g^T H^{-1} b
+        r = g_flat.dot(p)  # pylint: disable=invalid-name
+        # b^T H^{-1} b
+        s = b_flat.dot(p)  # pylint: disable=invalid-name
         step_dir = (
             torch.sqrt(2 * self.target_kl / (q + 1e-8)) * H_inv_g
-            - torch.clamp_min((torch.sqrt(2 * self.target_kl / q) * r + c) / s, torch.tensor(0.0))
+            - torch.clamp_min(
+                (torch.sqrt(2 * self.target_kl / q) * r + cost) / s, torch.tensor(0.0)
+            )
             * p
         )
 
         final_step_dir, accept_step = self.adjust_cpo_step_direction(
             step_dir,
             g_flat,
-            c=c,
+            cost=cost,
             optim_case=2,
             p_dist=p_dist,
             data=data,
             loss_pi_before=loss_pi_before,
+            loss_pi_cost_before=loss_pi_cost_before,
             total_steps=20,
         )
         # update actor network parameters

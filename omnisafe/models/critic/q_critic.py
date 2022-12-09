@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of QCritic."""
+"""Implementation of Q Critic."""
 
 import torch
 import torch.nn as nn
@@ -22,8 +22,9 @@ from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_netwo
 
 
 class QCritic(Critic):
-    """Implementation of QCritic."""
+    """Implementation of Q Critic."""
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         obs_dim: int,
@@ -55,6 +56,7 @@ class QCritic(Critic):
             weight_initialization_mode=weight_initialization_mode,
         )
 
+    # pylint: disable=arguments-differ
     def forward(self, obs: torch.Tensor, act: torch.Tensor):
         """Forward."""
         obs = self.obs_encoder(obs)

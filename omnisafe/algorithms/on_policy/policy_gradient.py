@@ -28,6 +28,7 @@ from omnisafe.utils import core, distributed_utils
 from omnisafe.utils.tools import get_flat_params_from
 
 
+# pylint: disable=too-many-instance-attributes
 @registry.register
 class PolicyGradient:
     """The PolicyGradient algorithm.
@@ -264,7 +265,7 @@ class PolicyGradient:
         return self.actor_critic
 
     def log(self, epoch: int):
-        # Log info about epoch
+        """Log information about epoch"""
         total_env_steps = (epoch + 1) * self.cfgs.steps_per_epoch
         fps = self.cfgs.steps_per_epoch / (time.time() - self.epoch_time)
         # Step the actor learning rate scheduler if provided

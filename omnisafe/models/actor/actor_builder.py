@@ -23,7 +23,11 @@ from omnisafe.models.actor.gaussian_stdnet_actor import GaussianStdNetActor
 from omnisafe.utils.model_utils import Activation, InitFunction
 
 
+# pylint: disable=too-few-public-methods
 class ActorBuilder:
+    """Class for building actor networks."""
+
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         obs_dim: int,
@@ -41,6 +45,7 @@ class ActorBuilder:
         self.shared = shared
 
     def build_actor(self, actor_type: str, **kwargs):
+        """Build actor network."""
         if actor_type == 'categorical':
             return CategoricalActor(
                 obs_dim=self.obs_dim,
@@ -51,7 +56,7 @@ class ActorBuilder:
                 shared=self.shared,
                 **kwargs,
             )
-        elif actor_type == 'gaussian_annealing':
+        if actor_type == 'gaussian_annealing':
             return GaussianAnnealingActor(
                 obs_dim=self.obs_dim,
                 act_dim=self.act_dim,
@@ -61,7 +66,7 @@ class ActorBuilder:
                 shared=self.shared,
                 **kwargs,
             )
-        elif actor_type == 'gaussian_stdnet':
+        if actor_type == 'gaussian_stdnet':
             return GaussianStdNetActor(
                 obs_dim=self.obs_dim,
                 act_dim=self.act_dim,
@@ -71,7 +76,7 @@ class ActorBuilder:
                 shared=self.shared,
                 **kwargs,
             )
-        elif actor_type == 'gaussian_learning':
+        if actor_type == 'gaussian_learning':
             return GaussianLearningActor(
                 obs_dim=self.obs_dim,
                 act_dim=self.act_dim,
@@ -81,5 +86,4 @@ class ActorBuilder:
                 shared=self.shared,
                 **kwargs,
             )
-        else:
-            raise NotImplementedError(f'Actor type {actor_type} is not implemented.')
+        raise NotImplementedError(f'Actor type {actor_type} is not implemented.')

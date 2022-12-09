@@ -18,11 +18,11 @@ import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
-from omnisafe.common.pid_lagrange import PID_Lagrangian
+from omnisafe.common.pid_lagrange import PIDLagrangian
 
 
 @registry.register
-class CPPOPid(PolicyGradient, PID_Lagrangian):
+class CPPOPid(PolicyGradient, PIDLagrangian):
     """class CPPOPid(PolicyGradient, PID_Lagrangian):"""
 
     def __init__(self, env, cfgs, algo: str = 'CPPO-PID'):
@@ -33,8 +33,7 @@ class CPPOPid(PolicyGradient, PID_Lagrangian):
             cfgs=cfgs,
             algo=algo,
         )
-        PID_Lagrangian.__init__(self, **self.cfgs.PID_cfgs._asdict())
-        # self.update_params_from_local(locals())
+        PIDLagrangian.__init__(self, **self.cfgs.PID_cfgs._asdict())
 
         self.clip = self.cfgs.clip
         self.cost_limit = self.cfgs.cost_limit
@@ -42,9 +41,9 @@ class CPPOPid(PolicyGradient, PID_Lagrangian):
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.cost_penalty)
-        self.logger.log_tabular('PID/pid_Kp', self.pid_Kp)
-        self.logger.log_tabular('PID/pid_Ki', self.pid_Ki)
-        self.logger.log_tabular('PID/pid_Kd', self.pid_Kd)
+        self.logger.log_tabular('PID/pid_Kp', self.pid_kp)
+        self.logger.log_tabular('PID/pid_Ki', self.pid_ki)
+        self.logger.log_tabular('PID/pid_Kd', self.pid_kd)
 
     def compute_loss_pi(self, data: dict):
         """compute loss for policy"""

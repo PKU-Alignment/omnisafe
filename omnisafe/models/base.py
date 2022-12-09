@@ -24,6 +24,7 @@ from omnisafe.utils.model_utils import Activation, InitFunction
 class Actor(abc.ABC, nn.Module):
     """A abstract class for actor."""
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         obs_dim: int,
@@ -58,7 +59,7 @@ class Actor(abc.ABC, nn.Module):
 
         Args:
             obs (torch.Tensor): observation.
-            determinstic (bool, optional): whether to predict deterministic action. Defaults to False.
+            deterministic (bool, optional): whether to predict deterministic action. Defaults to False.
             need_log_prob (bool, optional): whether to return log probability of action. Defaults to False.
 
         Returns:
@@ -91,6 +92,7 @@ class Actor(abc.ABC, nn.Module):
 class Critic(abc.ABC, nn.Module):
     """A abstract class for critic."""
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         obs_dim: int,

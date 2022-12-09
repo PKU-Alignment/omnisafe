@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of GaussianLearningActor."""
 
-import numpy as np
 import torch
 import torch.nn as nn
 from torch.distributions.normal import Normal

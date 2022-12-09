@@ -87,7 +87,7 @@ class FOCOPS(PolicyGradient, Lagrange):
         """Update."""
         raw_data, data = self.buf.pre_process_data()
         # First update Lagrange multiplier parameter
-        Jc = self.logger.get_stats('Metrics/EpCost')[0]
+        Jc = self.logger.get_stats('Metrics/EpCost')[0]  # pylint: disable=invalid-name
         self.update_lagrange_multiplier(Jc)
         # Then update policy network
         self.update_policy_net(data=data)

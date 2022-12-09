@@ -48,17 +48,10 @@ class NaturalPG(PolicyGradient):
         self.target_kl = cfgs.target_kl
         self.fvp_obs = cfgs.fvp_obs
 
-    # pylint: disable=unused-argument
-    def search_step_size(
-        self,
-        step_dir,
-        g_flat,
-        p_dist,
-        data,
-        loss_pi_before,
-    ):
+    # pylint: disable=too-many-arguments,unused-argument
+    def search_step_size(self, step_dir):
         """
-        Natural Policy Gradient use full step_size
+        NPG use full step_size
         """
         accept_step = 1
         return step_dir, accept_step
@@ -71,7 +64,8 @@ class NaturalPG(PolicyGradient):
         self.logger.log_tabular('Misc/xHx')
         self.logger.log_tabular('Misc/H_inv_g')
 
-    def Fvp(self, p):
+    # pylint: disable-next=invalid-name
+    def Fvp(self, params):
         """
         Build the Hessian-vector product based on an approximation of the KL-divergence.
         For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf
@@ -79,20 +73,21 @@ class NaturalPG(PolicyGradient):
         self.actor_critic.actor.net.zero_grad()
         q_dist = self.actor_critic.actor(self.fvp_obs)
         p_dist = self.actor_critic.actor(self.fvp_obs)
-        kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
+        kl = torch.distributions.kl.kl_divergence(
+            p_dist, q_dist
+        ).mean()  # pylint: disable=invalid-name
 
         grads = torch.autograd.grad(kl, self.actor_critic.actor.net.parameters(), create_graph=True)
         flat_grad_kl = torch.cat([grad.view(-1) for grad in grads])
 
-        kl_p = (flat_grad_kl * p).sum()
+        kl_p = (flat_grad_kl * params).sum()
         grads = torch.autograd.grad(
             kl_p, self.actor_critic.actor.net.parameters(), retain_graph=False
         )
         # contiguous indicating, if the memory is contiguously stored or not
         flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
-        # average --->
         distributed_utils.mpi_avg_torch_tensor(flat_grad_grad_kl)
-        return flat_grad_grad_kl + p * self.cg_damping
+        return flat_grad_grad_kl + params * self.cg_damping
 
     def update(self):
         """
@@ -110,6 +105,7 @@ class NaturalPG(PolicyGradient):
 
         return raw_data, data
 
+    # pylint: disable-next=too-many-locals
     def update_policy_net(self, data):
         """update policy network"""
         # Get loss and info values before update
@@ -125,9 +121,11 @@ class NaturalPG(PolicyGradient):
         g_flat = get_flat_gradients_from(self.actor_critic.actor.net)
         g_flat *= -1
 
+        # pylint: disable-next=invalid-name
         x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
         assert torch.isfinite(x).all()
         # Note that xHx = g^T x, but calculating xHx is faster than g^T x
+        # pylint: disable-next=invalid-name
         xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
         assert xHx.item() >= 0, 'No negative values'
 
@@ -139,11 +137,7 @@ class NaturalPG(PolicyGradient):
         # determine step direction and apply SGD step after grads where set
         # TRPO uses custom backtracking line search
         final_step_dir, accept_step = self.search_step_size(
-            step_dir=step_direction,
-            g_flat=g_flat,
-            p_dist=p_dist,
-            data=data,
-            loss_pi_before=loss_pi_before,
+            step_dir=step_direction
         )
 
         # update actor network parameters
@@ -152,6 +146,7 @@ class NaturalPG(PolicyGradient):
 
         with torch.no_grad():
             q_dist = self.actor_critic.actor(data['obs'])
+            # pylint: disable-next=invalid-name
             kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
             loss_pi, pi_info = self.compute_loss_pi(data=data)
 

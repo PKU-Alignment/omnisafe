@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Implementation of the online mean and standard deviation."""
 
 import numpy as np
 import torch
@@ -35,80 +36,82 @@ class OnlineMeanStd(torch.nn.Module):
 
     @property
     def var(self):
+        """Return variance."""
         return torch.square(self.std)
 
     @staticmethod
-    def _convert_to_torch(x, dtype=torch.float32) -> torch.Tensor:
-        if isinstance(x, np.ndarray):
-            x = torch.from_numpy(x).float()
-        if isinstance(x, float):
-            x = torch.tensor([x], dtype=dtype)  # use [] to make tensor torch.Size([1])
-        if isinstance(x, np.floating):
-            x = torch.tensor([x], dtype=dtype)  # use [] to make tensor torch.Size([1])
-        return x
+    def _convert_to_torch(params, dtype=torch.float32) -> torch.Tensor:
+        if isinstance(params, np.ndarray):
+            params = torch.from_numpy(params).float()
+        if isinstance(params, float):
+            params = torch.tensor([params], dtype=dtype)  # use [] to make tensor torch.Size([1])
+        if isinstance(params, np.floating):
+            params = torch.tensor([params], dtype=dtype)  # use [] to make tensor torch.Size([1])
+        return params
 
-    def forward(self, x, subtract_mean=True, clip=False):
+    def forward(self, data, subtract_mean=True, clip=False):
         """Make input average free and scale to standard deviation."""
         # sanity checks
-        if len(x.shape) >= 2:
+        if len(data.shape) >= 2:
             assert (
-                x.shape[-1] == self.mean.shape[-1]
-            ), f'got shape={x.shape} but expected: {self.mean.shape}'
+                data.shape[-1] == self.mean.shape[-1]
+            ), f'got shape={data.shape} but expected: {self.mean.shape}'
 
-        is_numpy = isinstance(x, np.ndarray)
-        x = self._convert_to_torch(x)
+        is_numpy = isinstance(data, np.ndarray)
+        data = self._convert_to_torch(data)
         if subtract_mean:
-            x_new = (x - self.mean) / (self.std + self.eps)
+            data_new = (data - self.mean) / (self.std + self.eps)
         else:
-            x_new = x / (self.std + self.eps)
+            data_new = data / (self.std + self.eps)
         if clip:
-            x_new = torch.clamp(x_new, -self.bound, self.bound)
-        x_new = x_new.numpy() if is_numpy else x_new
-        return x_new
+            data_new = torch.clamp(data_new, -self.bound, self.bound)
+        data_new = data_new.numpy() if is_numpy else data_new
+        return data_new
 
-    def update(self, x) -> None:
+    # pylint: disable-next=too-many-locals
+    def update(self, data) -> None:
         """Update internals incrementally.
         Note: works for both vector and matrix inputs.
 
         MPI implementation according to Chan et al.[10]; see:
         https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
         """
-        x = self._convert_to_torch(x)
+        data = self._convert_to_torch(data)
 
         # ==== Input checks
-        msg = f'Expected dim in [1, 2], but got dim={len(x.shape)}.'
-        assert len(x.shape) == 2 or len(x.shape) == 1, msg
+        msg = f'Expected dim in [1, 2], but got dim={len(data.shape)}.'
+        assert len(data.shape) == 2 or len(data.shape) == 1, msg
         if self.shape[0] > 1:  # expect matrix inputs
-            msg = f'Expected obs_dim={self.shape[0]} but got: {x.shape[1]}'
-            assert len(x.shape) == 2 and x.shape[1] == self.shape[0], msg
+            msg = f'Expected obs_dim={self.shape[0]} but got: {data.shape[1]}'
+            assert len(data.shape) == 2 and data.shape[1] == self.shape[0], msg
         if self.shape[0] == 1:
-            assert len(x.shape) == 1, f'Expected dim=1 but got: {x.shape}'
+            assert len(data.shape) == 1, f'Expected dim=1 but got: {data.shape}'
             # reshape is necessary since mean operator reduces vector dim by one
-            x = x.view((-1, 1))
+            data = data.view((-1, 1))
 
-        n_B = x.shape[0] * distributed_utils.num_procs()  # get batch size
-        n_A = self.count.clone()
-        n_AB = self.count + n_B
-        batch_mean = torch.mean(x, dim=0)
+        n_b = data.shape[0] * distributed_utils.num_procs()  # get batch size
+        n_a = self.count.clone()
+        n_a_b = self.count + n_b
+        batch_mean = torch.mean(data, dim=0)
 
         # 1) Calculate mean and average batch mean across processes
         distributed_utils.mpi_avg_torch_tensor(batch_mean)
         delta = batch_mean - self.mean
-        mean_new = self.mean + delta * n_B / n_AB
+        mean_new = self.mean + delta * n_b / n_a_b
 
         # 2) Determine variance and sync across processes
-        diff = x - mean_new
+        diff = data - mean_new
         batch_var = torch.mean(diff**2, dim=0)
         distributed_utils.mpi_avg_torch_tensor(batch_var)
 
         # Update running terms
-        M2_A = n_A * self.var
-        M2_B = n_B * batch_var
-        ratio = n_A * n_B / n_AB
-        M2_AB = M2_A + M2_B + delta**2 * ratio
+        m2_a = n_a * self.var
+        m2_b = n_b * batch_var
+        ratio = n_a * n_b / n_a_b
+        m2_a_b = m2_a + m2_b + delta**2 * ratio
 
         # 3) Update parameters - access internal values with data attribute
         self.mean.data = mean_new
-        self.count.data = n_AB
-        new_var = M2_AB / n_AB
+        self.count.data = n_a_b
+        new_var = m2_a_b / n_a_b
         self.std.data = torch.sqrt(new_var)

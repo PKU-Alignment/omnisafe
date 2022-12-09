@@ -28,6 +28,7 @@ from omnisafe.utils.online_mean_std import OnlineMeanStd
 class ActorCritic(nn.Module):
     """Actor-Critic methods"""
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         observation_space,

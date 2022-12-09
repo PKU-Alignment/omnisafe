@@ -19,6 +19,7 @@ from typing import List, Literal
 import numpy as np
 from torch import nn
 
+
 Activation = Literal['identity', 'relu', 'sigmoid', 'softplus', 'tanh']
 InitFunction = Literal['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal']
 

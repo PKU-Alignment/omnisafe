@@ -58,7 +58,13 @@ def get_flat_gradients_from(model):
     return torch.cat(grads)
 
 
-def conjugate_gradients(Avp, b_vector, num_steps, residual_tol=1e-10, eps=1e-6):
+def conjugate_gradients(
+    Avp,
+    b_vector,
+    num_steps,
+    residual_tol=1e-10,
+    eps=1e-6,
+):  # pylint: disable=invalid-name,too-many-locals
     """
     Conjugate gradient algorithm
     (see https://en.wikipedia.org/wiki/Conjugate_gradient_method)
@@ -69,6 +75,7 @@ def conjugate_gradients(Avp, b_vector, num_steps, residual_tol=1e-10, eps=1e-6):
         but at the cost of slowing things down.
         Also probably don't play with this hyperparameter.
     """
+
     x = torch.zeros_like(b_vector)
     r = b_vector - Avp(x)
     p = r.clone()
@@ -109,6 +116,7 @@ def set_param_values_to_model(model, vals):
     assert i == len(vals), f'Lengths do not match: {i} vs. {len(vals)}'
 
 
+# pylint: disable=too-many-branches,too-many-return-statements
 def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
     r"""
     Overview:
@@ -123,44 +131,41 @@ def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
         Now supports item type: :obj:`torch.Tensor`,  :obj:`dict`, :obj:`list`, :obj:`tuple` and :obj:`None`
     """
 
-    def transform(d):
-        if dtype is None:
-            return np.array(d)
-        else:
-            return np.array(d, dtype=dtype)
-
     if isinstance(item, dict):
         new_data = {}
-        for k, v in item.items():
+        for k, v in item.items():  # pylint: disable=invalid-name
             new_data[k] = to_ndarray(v, dtype)
         return new_data
-    elif isinstance(item, list) or isinstance(item, tuple):
+
+    if isinstance(item, (list, tuple)):
         if len(item) == 0:
             return None
-        elif hasattr(item, '_fields'):  # namedtuple
+        if hasattr(item, '_fields'):  # namedtuple
             return type(item)(*[to_ndarray(t, dtype) for t in item])
-        else:
-            new_data = []
-            for t in item:
-                new_data.append(to_ndarray(t, dtype))
-            return new_data
-    elif isinstance(item, torch.Tensor):
+        new_data = []
+        for data in item:
+            new_data.append(to_ndarray(data, dtype))
+        return new_data
+
+    if isinstance(item, torch.Tensor):
         if item.device != 'cpu':
             item = item.detach().cpu()
         if dtype is None:
             return item.numpy()
-        else:
-            return item.numpy().astype(dtype)
-    elif isinstance(item, np.ndarray):
+        return item.numpy().astype(dtype)
+
+    if isinstance(item, np.ndarray):
         if dtype is None:
             return item
-        else:
-            return item.astype(dtype)
-    elif isinstance(item, bool) or isinstance(item, str):
+        return item.astype(dtype)
+
+    if isinstance(item, (bool, str)):
         return item
-    elif np.isscalar(item):
+
+    if np.isscalar(item):
         return np.array(item)
-    elif item is None:
+
+    if item is None:
         return None
-    else:
-        raise TypeError(f'not support item type: {item}')
+
+    raise TypeError(f'not support item type: {item}')

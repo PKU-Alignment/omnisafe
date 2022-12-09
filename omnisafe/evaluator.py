@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Implementation of Evaluator."""
 
 import json
 import os
@@ -22,14 +23,22 @@ from gymnasium.spaces import Box, Discrete
 from gymnasium.utils.save_video import save_video
 
 from omnisafe.algorithms.env_wrapper import EnvWrapper
-from omnisafe.models import ActorBuilder, CriticBuilder
+from omnisafe.models.actor import ActorBuilder
 from omnisafe.utils.online_mean_std import OnlineMeanStd
 
 
 class Evaluator:
     """This class includes common evaluation methods for safe RL algorithms."""
 
-    def __init__(self, env=None, pi=None, obs_oms=None, play=True, save_replay=True):
+    # pylint: disable=too-many-arguments
+    def __init__(
+        self,
+        env=None,
+        actor=None,
+        obs_oms=None,
+        play=True,
+        save_replay=True,
+    ):
         """Initialize the evaluator.
         Args:
             env (gymnasium.Env): the environment. if None, the environment will be created from the config.
@@ -38,7 +47,7 @@ class Evaluator:
         """
         # set the attributes
         self.env = env
-        self.pi = pi
+        self.actor = actor
         self.obs_oms = obs_oms if obs_oms is not None else lambda x: x
 
         # set the render mode
@@ -57,6 +66,7 @@ class Evaluator:
         """Set the seed for the environment."""
         self.env.reset(seed=seed)
 
+    # pylint: disable-next=too-many-locals
     def load_saved_model(self, save_dir: str, model_name: str):
         """Load a saved model.
         Args:
@@ -66,17 +76,19 @@ class Evaluator:
         # load the config
         cfg_path = os.path.join(save_dir, 'config.json')
         try:
-            with open(cfg_path, 'r') as f:
-                cfg = json.load(f)
-        except FileNotFoundError:
-            raise FileNotFoundError('The config file is not found in the save directory.')
+            with open(cfg_path, encoding='utf-8', mode='r') as file:
+                cfg = json.load(file)
+        except FileNotFoundError as error:
+            raise FileNotFoundError(
+                'The config file is not found in the save directory.'
+            ) from error
 
         # load the saved model
         model_path = os.path.join(save_dir, 'torch_save', model_name)
         try:
             model_params = torch.load(model_path)
-        except FileNotFoundError:
-            raise FileNotFoundError('The model is not found in the save directory.')
+        except FileNotFoundError as error:
+            raise FileNotFoundError('The model is not found in the save directory.') from error
 
         # make the environment
         env_id = cfg['env_id']
@@ -87,24 +99,27 @@ class Evaluator:
         action_space = self.env.action_space
 
         if isinstance(action_space, Box):
-            actor_fn = GaussianActor
+            actor_type = 'gaussian_annealing'
             act_dim = action_space.shape[0]
         elif isinstance(action_space, Discrete):
-            actor_fn = CategoricalActor
+            actor_type = 'categorical'
             act_dim = action_space.n
         else:
             raise ValueError
         obs_dim = observation_space.shape[0]
-
         pi_cfg = cfg['cfgs']['model_cfgs']['ac_kwargs']['pi']
         weight_initialization_mode = cfg['cfgs']['model_cfgs']['weight_initialization_mode']
-        self.pi = actor_fn(
+        actor_builder = ActorBuilder(
             obs_dim=obs_dim,
             act_dim=act_dim,
+            hidden_sizes=pi_cfg['hidden_sizes'],
+            activation=pi_cfg['activation'],
             weight_initialization_mode=weight_initialization_mode,
-            **pi_cfg,
+            shared=None,
         )
-        self.pi.load_state_dict(model_params['pi'])
+
+        self.actor = actor_builder.build_actor(actor_type)
+        self.actor.load_state_dict(model_params['pi'])
 
         # make the observation OMS
         if cfg['cfgs']['standardized_obs']:
@@ -113,7 +128,13 @@ class Evaluator:
         else:
             self.obs_oms = lambda x: x
 
-    def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
+    # pylint: disable-next=too-many-locals
+    def evaluate(
+        self,
+        num_episodes: int = 10,
+        horizon: int = 1000,
+        cost_criteria: float = 1.0,
+    ):
         """Evaluate the agent for num_episodes episodes.
         Args:
             num_episodes (int): number of episodes to evaluate the agent.
@@ -124,7 +145,7 @@ class Evaluator:
             episode_costs (list): list of episode costs.
             episode_lengths (list): list of episode lengths.
         """
-        if self.env is None or self.pi is None:
+        if self.env is None or self.actor is None:
             raise ValueError(
                 'The environment and the policy must be provided or created before evaluating the agent.'
             )
@@ -139,7 +160,7 @@ class Evaluator:
 
             for step in range(horizon):
                 with torch.no_grad():
-                    act, _ = self.pi.predict(
+                    act, _ = self.actor.predict(
                         self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)), deterministic=True
                     )
                 obs, rew, cost, done, truncated, _ = self.env.step(act.numpy())
@@ -173,12 +194,12 @@ class Evaluator:
             save_replay_path (str): path to save the replay. If None, no replay is saved.
         """
         # remake the environment if the render mode can not support needed play or save_replay
-        if self.env is None or self.pi is None:
+        if self.env is None or self.actor is None:
             raise ValueError(
                 'The environment and the policy must be provided or created before evaluating the agent.'
             )
 
-        if self.env.render_mode == None:
+        if self.env.render_mode is None:
             print("Remake the environment with render_mode='rgb_array' to render the environment.")
             self.env = EnvWrapper(self.env.env_id, render_mode='rgb_array')
             self.render_mode = 'rgb_array'
@@ -205,7 +226,7 @@ class Evaluator:
         for episode_idx in range(num_episode):
             for step in range(horizon):
                 with torch.no_grad():
-                    act, _ = self.pi.predict(
+                    act, _ = self.actor.predict(
                         self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)), deterministic=True
                     )
                 obs, _, _, done, truncated, _ = self.env.step(act.numpy())
