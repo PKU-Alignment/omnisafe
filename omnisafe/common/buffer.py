@@ -135,6 +135,7 @@ class Buffer:
 
         return adv, value_net_targets
 
+    # pylint: disable-next=too-many-arguments
     def store(self, obs, act, rew, val, logp, cost=0.0, cost_val=0.0):
         """
         Append one timestep of agent-environment interaction to the buffer.

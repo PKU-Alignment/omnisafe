@@ -137,6 +137,7 @@ class PCPO(TRPO):
         info = {}
         return cost_loss, info
 
+    # pylint: disable-next=too-many-locals
     def update_policy_net(self, data):
         """update policy network"""
         # Get loss and info values before update

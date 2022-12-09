@@ -179,6 +179,7 @@ class Evaluator:
         print(f'Average episode length: {np.mean(episode_lengths):.3f}')
         return episode_rewards, episode_costs, episode_lengths
 
+    # pylint: disable-next=too-many-arguments
     def render(
         self,
         num_episode: int = 0,

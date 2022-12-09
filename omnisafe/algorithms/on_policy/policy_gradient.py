@@ -28,7 +28,7 @@ from omnisafe.utils import core, distributed_utils
 from omnisafe.utils.tools import get_flat_params_from
 
 
-# pylint: disable-next=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
 @registry.register
 class PolicyGradient:
     """The PolicyGradient algorithm.
