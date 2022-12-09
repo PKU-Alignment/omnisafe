@@ -12,9 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""OmniSafe: A comprehensive and reliable benchmark for safe reinforcement learning."""
 
-from omnisafe.algo_wrapper import AlgoWrapper as Agent
-from omnisafe.algorithms.env_wrapper import EnvWrapper as Env
-from omnisafe.algorithms.model_based.env_wrapper import EnvWrapper as EnvModelBased
-from omnisafe.version import __version__
+import helpers
+import omnisafe
+
+
+@helpers.parametrize(
+    algo=[
+        'PolicyGradient',
+        'PPO',
+        'PPOLag',
+        'NaturalPG',
+        'TRPO',
+        'TRPOLag',
+        'PDO',
+        'NPGLag',
+        'CPO',
+        'PCPO',
+        'FOCOPS',
+        'CPPOPid',
+        'DDPG',
+    ]
+)
+def test_on_policy(algo):
+    env_id = 'SafetyPointGoal1-v0'
+    custom_cfgs = {'epochs': 1, 'steps_per_epoch': 1000, 'pi_iters': 1, 'critic_iters': 1}
+    env = omnisafe.Env(env_id)
+    agent = omnisafe.Agent(algo, env, custom_cfgs=custom_cfgs, parallel=1)
+    agent.learn()

@@ -21,10 +21,9 @@ import torch
 from gymnasium.spaces import Box, Discrete
 from gymnasium.utils.save_video import save_video
 
-from omnisafe.algos.env_wrapper import EnvWrapper
-from omnisafe.algos.models.mlp_categorical_actor import MLPCategoricalActor
-from omnisafe.algos.models.mlp_gaussian_actor import MLPGaussianActor
-from omnisafe.algos.models.online_mean_std import OnlineMeanStd
+from omnisafe.algorithms.env_wrapper import EnvWrapper
+from omnisafe.models import ActorBuilder, CriticBuilder
+from omnisafe.utils.online_mean_std import OnlineMeanStd
 
 
 class Evaluator:
@@ -88,10 +87,10 @@ class Evaluator:
         action_space = self.env.action_space
 
         if isinstance(action_space, Box):
-            actor_fn = MLPGaussianActor
+            actor_fn = GaussianActor
             act_dim = action_space.shape[0]
         elif isinstance(action_space, Discrete):
-            actor_fn = MLPCategoricalActor
+            actor_fn = CategoricalActor
             act_dim = action_space.n
         else:
             raise ValueError
@@ -230,16 +229,3 @@ class Evaluator:
                 )
             step_starting_index = step + 1
             self.env.reset()
-
-
-if __name__ == '__main__':
-    evaluator = Evaluator()
-    evaluator.load_saved_model(
-        '/home/juntao/workspace/omnisafe_back/runs/Hopper-v4/PPO/seed-000-2022-11-18_23-20-39',
-        'model.pt',
-    )
-    evaluator.evaluate(num_episodes=100, horizon=1000, cost_criteria=1.0)
-    evaluator.render(
-        num_episode=10,
-        save_replay_path='/home/juntao/workspace/omnisafe_back/runs/Hopper-v4/PPO/seed-000-2022-11-18_23-20-39',
-    )

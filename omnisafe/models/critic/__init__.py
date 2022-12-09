@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""OmniSafe: A comprehensive and reliable benchmark for safe reinforcement learning."""
+"""Initialization of critic."""
 
-from omnisafe.algo_wrapper import AlgoWrapper as Agent
-from omnisafe.algorithms.env_wrapper import EnvWrapper as Env
-from omnisafe.algorithms.model_based.env_wrapper import EnvWrapper as EnvModelBased
-from omnisafe.version import __version__
+from omnisafe.models.critic.critic_builder import CriticBuilder
