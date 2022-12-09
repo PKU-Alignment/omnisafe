@@ -115,7 +115,6 @@ class TRPO(NaturalPG):
 
         return step_frac * step_dir, acceptance_step
 
-
     # pylint: disable-next=too-many-locals
     def update_policy_net(self, data):
         """update policy network"""

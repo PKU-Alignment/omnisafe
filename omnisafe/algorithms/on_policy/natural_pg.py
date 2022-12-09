@@ -74,9 +74,7 @@ class NaturalPG(PolicyGradient):
         q_dist = self.actor_critic.actor(self.fvp_obs)
         p_dist = self.actor_critic.actor(self.fvp_obs)
         # pylint: disable-next=invalid-name
-        kl = torch.distributions.kl.kl_divergence(
-            p_dist, q_dist
-        ).mean()
+        kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
 
         grads = torch.autograd.grad(kl, self.actor_critic.actor.net.parameters(), create_graph=True)
         flat_grad_kl = torch.cat([grad.view(-1) for grad in grads])
@@ -137,9 +135,7 @@ class NaturalPG(PolicyGradient):
 
         # determine step direction and apply SGD step after grads where set
         # TRPO uses custom backtracking line search
-        final_step_dir, accept_step = self.search_step_size(
-            step_dir=step_direction
-        )
+        final_step_dir, accept_step = self.search_step_size(step_dir=step_direction)
 
         # update actor network parameters
         new_theta = theta_old + final_step_dir
