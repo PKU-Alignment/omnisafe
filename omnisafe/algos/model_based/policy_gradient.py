@@ -81,6 +81,7 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes,
             self.env.action_space.shape[0],
             self.cfgs['replay_size'],
             self.cfgs['batch_size'],
+            device=self.device,
         )
 
         # Initialize Actor-Critic

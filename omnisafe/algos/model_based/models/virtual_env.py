@@ -206,7 +206,7 @@ class VirtualEnv:
         else:
             ensemble_samples = (
                 ensemble_model_means
-                + torch.randn(size=ensemble_model_means.shape) * ensemble_model_stds
+                + torch.randn(size=ensemble_model_means.shape).to(self.device) * ensemble_model_stds
             )
 
         _, batch_size, _ = ensemble_model_means.shape
