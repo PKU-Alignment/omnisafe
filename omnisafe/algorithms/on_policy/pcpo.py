@@ -44,8 +44,7 @@ class PCPO(TRPO):
         cfgs,
         algo='PCPO',
     ):
-        TRPO.__init__(
-            self,
+        super().__init__(
             env=env,
             cfgs=cfgs,
             algo=algo,

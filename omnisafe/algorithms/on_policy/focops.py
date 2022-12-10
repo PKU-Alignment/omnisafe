@@ -38,7 +38,7 @@ class FOCOPS(PolicyGradient, Lagrange):
         cfgs,
         algo='FOCOPS',
     ):
-        """init."""
+        r"""The :meth:`init` function."""
 
         PolicyGradient.__init__(
             self,

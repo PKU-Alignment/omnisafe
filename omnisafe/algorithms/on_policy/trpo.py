@@ -43,8 +43,7 @@ class TRPO(NaturalPG):
         cfgs,
         algo='TRPO',
     ):
-        NaturalPG.__init__(
-            self,
+        super().__init__(
             env=env,
             cfgs=cfgs,
             algo=algo,

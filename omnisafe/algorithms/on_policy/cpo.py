@@ -45,8 +45,7 @@ class CPO(TRPO):
         cfgs,
         algo='CPO',
     ):
-        TRPO.__init__(
-            self,
+        super().__init__(
             env=env,
             cfgs=cfgs,
             algo=algo,

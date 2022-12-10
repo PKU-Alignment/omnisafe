@@ -44,8 +44,7 @@ class NaturalPG(PolicyGradient):
         cfgs,
         algo: str = 'NaturalPolicyGradient',
     ):
-        PolicyGradient.__init__(
-            self,
+        super().__init__(
             env=env,
             cfgs=cfgs,
             algo=algo,

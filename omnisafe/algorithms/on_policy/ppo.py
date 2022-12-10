@@ -39,8 +39,7 @@ class PPO(PolicyGradient):
     ):
         """Initialize PPO."""
         self.clip = clip
-        PolicyGradient.__init__(
-            self,
+        super().__init__(
             env=env,
             cfgs=cfgs,
             algo=algo,
