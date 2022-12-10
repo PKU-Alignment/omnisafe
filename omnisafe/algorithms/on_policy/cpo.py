@@ -30,11 +30,11 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class CPO(TRPO):
-    """The PolicyGradient algorithm.
+    """The Constrained Policy Optimization(CPO) Algorithm.
 
     References:
-        Paper Name: Constrained Policy Optimization Algorithm.
-        Paper author: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel
+        Paper Name: Constrained Policy Optimization.
+        Paper author: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
         Paper URL: https://arxiv.org/abs/1705.10528
 
     """
@@ -54,7 +54,7 @@ class CPO(TRPO):
         self.cost_limit = cfgs.cost_limit
         self.loss_pi_cost_before = 0.0
 
-    # pylint: disable-next=too-many-arguments, too-many-locals
+    # pylint: disable-next=too-many-arguments,too-many-locals
     def search_step_size(
         self,
         step_dir,
@@ -67,15 +67,23 @@ class CPO(TRPO):
         c=0,
         optim_case=0,
     ):
-        """
-        CPO algorithm performs line-search to ensure constraint satisfaction for rewards and costs.
-        :param step_dir: direction theta changes towards
-        :param g_flat: gradient tensor of reward ,informs about how rewards improve with change of step direction
-        :param c: how much episode cost goes above limit
-        :param p_dist: inform about old policy, how the old policy p performs on observation this moment
-        :param optim_case: the way to optimize
-        :param data: data buffer,mainly with adv, costs, values, actions, and observations
-        :param decay: how search-step reduces in line-search
+        r"""Use line-search to find the step size that satisfies the constraint.
+
+        Args:
+            step_dir
+                direction theta changes towards
+            g_flat
+                gradient tensor of reward ,informs about how rewards improve with change of step direction
+            c
+                how much episode cost goes above limit
+            p_dist
+                inform about old policy, how the old policy p performs on observation this moment
+            optim_case
+                the way to optimize
+            data
+                data buffer,mainly with adv, costs, values, actions, and observations
+            decay
+                how search-step reduces in line-search
         """
         # Get distance each time theta goes towards certain direction
         step_frac = 1.0
@@ -164,7 +172,7 @@ class CPO(TRPO):
     def update_policy_net(
         self,
         data,
-    ):  # pylint: disable=too-many-statements, too-many-locals, invalid-name
+    ):  # pylint: disable=too-many-statements,too-many-locals,invalid-name
         """update policy net"""
         # Get loss and info values before update
         theta_old = get_flat_params_from(self.actor_critic.actor.net)

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of Q Critic."""
+"""Implementation of QCritic."""
 
 import torch
 import torch.nn as nn
@@ -22,7 +22,7 @@ from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_netwo
 
 
 class QCritic(Critic):
-    """Implementation of Q Critic."""
+    """Implementation of QCritic."""
 
     # pylint: disable-next=too-many-arguments
     def __init__(

@@ -22,10 +22,12 @@ from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
 
 @registry.register
 class PPO(PolicyGradient):
-    """
-    Paper Name: Proximal Policy Optimization Algorithms
-    Paper author: John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov
-    Paper URL: https://arxiv.org/pdf/1707.06347.pdf
+    """The Proximal Policy Optimization Algorithms(PPO) Algorithm.
+
+    References:
+        Paper Name: Proximal Policy Optimization Algorithms.
+        Paper author: John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov.
+        Paper URL: https://arxiv.org/pdf/1707.06347.pdf
     """
 
     def __init__(

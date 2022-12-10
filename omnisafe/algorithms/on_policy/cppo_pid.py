@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the CPPOPid algorithm."""
+"""Implementation of the CPPO Pid-Lagrange algorithm."""
 
 import torch
 
@@ -23,7 +23,14 @@ from omnisafe.common.pid_lagrange import PIDLagrangian
 
 @registry.register
 class CPPOPid(PolicyGradient, PIDLagrangian):
-    """class CPPOPid(PolicyGradient, PID_Lagrangian):"""
+    """The Responsive Safety in Reinforcement Learning by PID Lagrangian Methods.
+
+    References:
+        Paper Name: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods.
+        Paper author: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+        Paper URL: https://arxiv.org/abs/1705.10528
+
+    """
 
     def __init__(self, env, cfgs, algo: str = 'CPPO-PID'):
 

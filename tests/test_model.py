@@ -32,7 +32,6 @@ from omnisafe.utils.config_utils import create_namedtuple_from_dict
     activation=['tanh', 'softplus', 'sigmoid', 'identity', 'relu'],
 )
 def test_critic(obs_dim: int, act_dim, shared, hidden_sizes: int, activation: str) -> None:
-    ac_kwargs = {'hidden_sizes': [hidden_sizes, hidden_sizes], 'activation': activation}
     builder = CriticBuilder(
         obs_dim=obs_dim,
         act_dim=act_dim,

@@ -23,7 +23,14 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class FOCOPS(PolicyGradient, Lagrange):
-    """Class for the FOCOPS algorithm."""
+    """The First Order Constrained Optimization in Policy Space(FOCOPS) algorithm.
+
+    References:
+        Paper Name: First Order Constrained Optimization in Policy Space.
+        Paper author: Yiming Zhang, Quan Vuong, Keith W. Ross.
+        Paper URL: https://arxiv.org/abs/2002.06506
+
+    """
 
     def __init__(
         self,
@@ -87,7 +94,7 @@ class FOCOPS(PolicyGradient, Lagrange):
         """Update."""
         raw_data, data = self.buf.pre_process_data()
         # First update Lagrange multiplier parameter
-        Jc = self.logger.get_stats('Metrics/EpCost')[0]  # pylint: disable=invalid-name
+        Jc = self.logger.get_stats('Metrics/EpCost')[0]
         self.update_lagrange_multiplier(Jc)
         # Then update policy network
         self.update_policy_net(data=data)

@@ -23,7 +23,11 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class PDO(PolicyGradient, Lagrange):
-    """specific functions"""
+    """The Lagrange version of Policy Gradient algorithm.
+
+    A simple combination of Lagrange method and Policy Gradient algorithm.
+
+    """
 
     def __init__(self, env, cfgs, algo='PDO'):
         """initialization"""

@@ -29,11 +29,13 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class PCPO(TRPO):
-    """
-    Paper name: Constrained Policy Optimization Algorithm.
-    Paper author: Tsung-Yen Yang, Justinian Rosca, Karthik Narasimhan, Peter J. Ramadge
-    Paper URL: https://arxiv.org/abs/2010.03152
-    This implementation does not use cost shaping, but relies on exploration noise annealing.
+    """The Projection-Based Constrained Policy Optimization(PCPO) algorithm.
+
+    References:
+        Paper name: Projection-Based Constrained Policy Optimization.
+        Paper author: Tsung-Yen Yang, Justinian Rosca, Karthik Narasimhan, Peter J. Ramadge
+        Paper URL: https://arxiv.org/abs/2010.03152
+
     """
 
     def __init__(
@@ -50,7 +52,7 @@ class PCPO(TRPO):
         )
         self.cost_limit = self.cfgs.cost_limit
 
-    # pylint: disable-next=too-many-locals, too-many-arguments
+    # pylint: disable-next=too-many-locals,too-many-arguments
     def adjust_cpo_step_direction(
         self,
         step_dir,
@@ -69,7 +71,6 @@ class PCPO(TRPO):
         """
         step_frac = 1.0
         _theta_old = get_flat_params_from(self.actor_critic.actor.net)
-        _, _ = self.actor_critic.actor(data['obs'], data['act'])
         expected_rew_improve = g_flat.dot(step_dir)
 
         # while not within_trust_region:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Natural PG algorithm."""
+"""Implementation of the Natural Policy Gradient algorithm."""
 
 import torch
 
@@ -29,7 +29,14 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class NaturalPG(PolicyGradient):
-    """NaturalPG"""
+    """The Natural Policy Gradient algorithm.
+
+    References:
+        Paper Name: A Natural Policy Gradient.
+        Paper author: Sham Kakade.
+        Paper URL: https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf
+
+    """
 
     def __init__(
         self,
@@ -73,7 +80,6 @@ class NaturalPG(PolicyGradient):
         self.actor_critic.actor.net.zero_grad()
         q_dist = self.actor_critic.actor(self.fvp_obs)
         p_dist = self.actor_critic.actor(self.fvp_obs)
-        # pylint: disable-next=invalid-name
         kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
 
         grads = torch.autograd.grad(kl, self.actor_critic.actor.net.parameters(), create_graph=True)
@@ -143,7 +149,6 @@ class NaturalPG(PolicyGradient):
 
         with torch.no_grad():
             q_dist = self.actor_critic.actor(data['obs'])
-            # pylint: disable-next=invalid-name
             kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
             loss_pi, pi_info = self.compute_loss_pi(data=data)
 

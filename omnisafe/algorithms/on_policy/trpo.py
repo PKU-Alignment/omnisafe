@@ -29,7 +29,13 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class TRPO(NaturalPG):
-    """Class for TRPO."""
+    """The Trust Region Policy Optimization(TRPO) Algorithm.
+
+    References:
+        Paper Name: Trust Region Policy Optimization.
+        Paper author: John Schulman, Sergey Levine, Philipp Moritz, Michael I. Jordan, Pieter Abbeel.
+        Paper URL: https://arxiv.org/abs/1502.05477
+    """
 
     def __init__(
         self,
@@ -44,7 +50,7 @@ class TRPO(NaturalPG):
             algo=algo,
         )
 
-    # pylint: disable-next=too-many-arguments, too-many-locals, arguments-differ
+    # pylint: disable-next=too-many-arguments,too-many-locals,arguments-differ
     def search_step_size(
         self,
         step_dir,
@@ -55,16 +61,25 @@ class TRPO(NaturalPG):
         total_steps=15,
         decay=0.8,
     ):
-        """
-        TRPO performs line-search until constraint satisfaction.
-        main idea: search around for a satisfied step of policy update to improve loss and reward performance
-        :param step_dir:direction theta changes towards
-        :param g_flat:  gradient tensor of reward ,informs about how rewards improve with change of step direction
-        :param c:how much episode cost goes above limit
-        :param p_dist: inform about old policy, how the old policy p performs on observation this moment
-        :param optim_case: the way to optimize
-        :param data: data buffer,mainly with adv, costs, values, actions, and observations
-        :param decay: how search-step reduces in line-search
+        r"""TRPO performs line-search until constraint satisfaction.
+
+        search around for a satisfied step of policy update to improve loss and reward performance
+
+        Args:
+            step_dir:
+                direction theta changes towards
+            g_flat:
+                gradient tensor of reward ,informs about how rewards improve with change of step direction
+            c:
+                how much episode cost goes above limit
+            p_dist:
+                inform about old policy, how the old policy p performs on observation this moment
+            optim_case:
+                the way to optimize
+            data:
+                data buffer,mainly with adv, costs, values, actions, and observations
+            decay:
+                how search-step reduces in line-search
         """
         # How far to go in a single update
         step_frac = 1.0

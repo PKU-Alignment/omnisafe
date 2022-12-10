@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the PolicyGradient algorithm."""
+"""Implementation of the Policy Gradient algorithm."""
 
 import time
 from copy import deepcopy
@@ -47,7 +47,7 @@ class PolicyGradient:
         cfgs=None,
         algo: str = 'PolicyGradient',
     ) -> None:
-        """Initialize the algorithm.
+        r"""Initialize the algorithm.
 
         Args:
             env: The environment.

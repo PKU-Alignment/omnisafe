@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the PPO-Lag algorithm."""
+"""Implementation of the lagrange version of PPO algorithm."""
 
 import torch
 
@@ -23,7 +23,14 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class PPOLag(PolicyGradient, Lagrange):
-    """specific functions"""
+    """The Lagrange version of PPO algorithm.
+
+    References:
+        Paper Name: Benchmarking Safe Exploration in Deep Reinforcement Learning.
+        Paper author: Alex Ray, Joshua Achiam, Dario Amodei
+        Paper URL: https://cdn.openai.com/safexp-short.pdf
+
+    """
 
     def __init__(
         self,
@@ -79,7 +86,7 @@ class PPOLag(PolicyGradient, Lagrange):
         # pre-process data
         raw_data, data = self.buf.pre_process_data()
         # Note that logger already uses MPI statistics across all processes..
-        Jc = self.logger.get_stats('Metrics/EpCost')[0]  # pylint: disable=invalid-name
+        Jc = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
         self.update_lagrange_multiplier(Jc)
         # now update policy and value network

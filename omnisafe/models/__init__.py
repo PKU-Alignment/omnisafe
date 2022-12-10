@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Initialization of models."""
+"""This module contains the model for all methods."""
 
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.actor_critic import ActorCritic

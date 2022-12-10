@@ -70,7 +70,6 @@ Pieter
 Abbeel
 et
 al
-et
 al
 params
 Init
@@ -111,3 +110,6 @@ utils
 namedtuple
 vtrace
 NPG
+Dario
+Amodei
+Benchmarking

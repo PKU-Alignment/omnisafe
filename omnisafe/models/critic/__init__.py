@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Initialization of critic."""
+"""
+    A variety of critics are implemented,including q_critic, v_critic, etc.,
+    which are created via `CriticBuilder`.
+"""
 
 from omnisafe.models.critic.critic_builder import CriticBuilder

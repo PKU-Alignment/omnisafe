@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Initialization of actor."""
+"""
+    A variety of actors are implemented,including categorical_actor,
+    annealed versions of gaussian_annealing_actor, etc., which are
+    created via `ActorBuilder`.
+"""
 
 from omnisafe.models.actor.actor_builder import ActorBuilder
