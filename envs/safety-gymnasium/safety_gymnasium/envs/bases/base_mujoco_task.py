@@ -15,26 +15,25 @@
 """base_mujoco_task"""
 
 import abc
-from typing import Union
 from copy import deepcopy
+from typing import Union
 
 import gymnasium
-from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen, Viewer
 import mujoco
 import numpy as np
-
+from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen, Viewer
 from safety_gymnasium.envs.assets.color import COLOR
 from safety_gymnasium.envs.assets.group import GROUP
 from safety_gymnasium.envs.utils.common_utils import MujocoException, ResamplingError
 from safety_gymnasium.envs.world import World
 
+
 class BaseMujocoTask(abc.ABC):
     """Base class which is in charge of mujoco and underlying process.
-    
+
     In short: The engine for the Safety Gymnasium environment.
     """
 
-    
     def __init__(self, config=None):
         """Initialize the engine."""
         # Default configuration
@@ -47,9 +46,9 @@ class BaseMujocoTask(abc.ABC):
         self.render_lidar_offset_init = 0.5
         self.render_lidar_offset_delta = 0.06
 
-            # Frameskip is the number of physics simulation steps per environment step
-            # Frameskip is sampled as a binomial distribution
-            # For deterministic steps, set frameskip_binom_p = 1.0 (always take max frameskip)
+        # Frameskip is the number of physics simulation steps per environment step
+        # Frameskip is sampled as a binomial distribution
+        # For deterministic steps, set frameskip_binom_p = 1.0 (always take max frameskip)
         # Number of draws trials in binomial distribution (max frameskip)
         self.frameskip_binom_n = 10
         # Probability of trial return (controls distribution)
@@ -193,7 +192,7 @@ class BaseMujocoTask(abc.ABC):
         if len(self._mocaps):
             raise NotImplementedError(
                 'Please Implement your specific set_mocaps() function for mocaps in your task.'
-                )
+            )
 
     def sample_layout(self):
         """Sample a single layout, returning True if successful, else False."""
@@ -389,41 +388,26 @@ class BaseMujocoTask(abc.ABC):
             for geom in self._geoms.values():
                 if geom.is_observe_lidar:
                     self.render_lidar(
-                        getattr(self, geom.name + '_pos'),
-                        geom.color,
-                        offset,
-                        geom.group)
+                        getattr(self, geom.name + '_pos'), geom.color, offset, geom.group
+                    )
                 if hasattr(geom, 'is_observe_comp') and geom.is_observe_comp:
-                    self.render_compass(
-                        getattr(self, geom.name + '_pos'),
-                        geom.color,
-                        offset)
+                    self.render_compass(getattr(self, geom.name + '_pos'), geom.color, offset)
                 offset += self.render_lidar_offset_delta
             for obj in self._objects.values():
                 if obj.is_observe_lidar:
                     self.render_lidar(
-                        getattr(self, obj.name + '_pos'),
-                        obj.color,
-                        offset,
-                        obj.group)
+                        getattr(self, obj.name + '_pos'), obj.color, offset, obj.group
+                    )
                 if hasattr(obj, 'is_observe_comp') and obj.is_observe_comp:
-                    self.render_compass(
-                        getattr(self, obj.name + '_pos'),
-                        obj.color,
-                        offset)
+                    self.render_compass(getattr(self, obj.name + '_pos'), obj.color, offset)
                 offset += self.render_lidar_offset_delta
             for mocap in self._mocaps.values():
                 if mocap.is_observe_lidar:
                     self.render_lidar(
-                        getattr(self, mocap.name + '_pos'),
-                        mocap.color,
-                        offset,
-                        mocap.group)
+                        getattr(self, mocap.name + '_pos'), mocap.color, offset, mocap.group
+                    )
                 if hasattr(mocap, 'is_observe_comp') and mocap.is_observe_comp:
-                    self.render_compass(
-                        getattr(self, mocap.name + '_pos'),
-                        mocap.color,
-                        offset)
+                    self.render_compass(getattr(self, mocap.name + '_pos'), mocap.color, offset)
                 offset += self.render_lidar_offset_delta
 
         # Add goal marker
@@ -435,19 +419,11 @@ class BaseMujocoTask(abc.ABC):
                 'goal',
                 alpha=0.1,
             )
-            self.render_lidar(
-                getattr(self, 'goal' + '_pos'),
-                COLOR['goal'],
-                offset,
-                GROUP['goal'])
+            self.render_lidar(getattr(self, 'goal' + '_pos'), COLOR['goal'], offset, GROUP['goal'])
 
         # Add indicator for nonzero cost
         if cost.get('cost', 0) > 0:
-            self.render_sphere(
-                self.world.robot_pos(),
-                0.25,
-                COLOR['red'],
-                alpha=0.5)
+            self.render_sphere(self.world.robot_pos(), 0.25, COLOR['red'], alpha=0.5)
 
         # Draw vision pixels
         if mode == 'rgb_array':
@@ -467,9 +443,7 @@ class BaseMujocoTask(abc.ABC):
         if mode == 'human':
             self._get_viewer(mode).render()
             return None
-        raise NotImplementedError(
-            f'Render mode {mode} is not implemented.'
-        )
+        raise NotImplementedError(f'Render mode {mode} is not implemented.')
 
     def _get_viewer(
         self, mode
@@ -484,9 +458,7 @@ class BaseMujocoTask(abc.ABC):
             elif mode in {'rgb_array', 'depth_array'}:
                 self.viewer = RenderContextOffscreen(self.model, self.data)
             else:
-                raise AttributeError(
-                    f"Unexpected mode: {mode}"
-                )
+                raise AttributeError(f'Unexpected mode: {mode}')
 
             # self.viewer_setup()
             self._viewers[mode] = self.viewer

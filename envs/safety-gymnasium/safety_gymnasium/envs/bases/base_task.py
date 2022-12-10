@@ -18,21 +18,20 @@ import abc
 from collections import OrderedDict
 
 import gymnasium
-from gymnasium import spaces
 import mujoco
 import numpy as np
-
+from gymnasium import spaces
 from safety_gymnasium.envs.assets.geoms import GEOMS_REGISTER
-from safety_gymnasium.envs.assets.objects import OBJS_REGISTER
 from safety_gymnasium.envs.assets.mocaps import MOCAPS_REGISTER
+from safety_gymnasium.envs.assets.objects import OBJS_REGISTER
 from safety_gymnasium.envs.assets.robot import Robot
 from safety_gymnasium.envs.bases import BaseMujocoTask
 from safety_gymnasium.envs.utils.common_utils import ResamplingError
 from safety_gymnasium.envs.utils.task_utils import quat2mat, theta2vec
 
+
 class BaseTask(BaseMujocoTask):
     """Base task class for defining some common characteristic."""
-
 
     def __init__(self, config: dict):  # pylint: disable-next=too-many-statements
         super().__init__(config=config)
@@ -80,7 +79,7 @@ class BaseTask(BaseMujocoTask):
 
         self._seed = None  # Random state seed (avoid name conflict with self.seed)
 
-        self.robot = Robot(self.robot_base) # pylint: disable=no-member
+        self.robot = Robot(self.robot_base)  # pylint: disable=no-member
         self.action_space = spaces.Box(-1, 1, (self.robot.nu,), dtype=np.float64)
         self.action_noise = 0.0  # Magnitude of independent per-component gaussian action noise
         self.observe_vision = False  # Observe vision from the robot
@@ -95,24 +94,27 @@ class BaseTask(BaseMujocoTask):
     def add_geoms(self, *geoms):
         """Add geom type objects into environments and set coresponding attributes."""
         for geom in geoms:
-            assert type(geom) in GEOMS_REGISTER, \
-                'Please figure out the type of object before you add it into envs.'
+            assert (
+                type(geom) in GEOMS_REGISTER
+            ), 'Please figure out the type of object before you add it into envs.'
             self._geoms[geom.name] = geom
             setattr(self, geom.name, geom)
 
     def add_objects(self, *objects):
         """Add object type objects into environments and set coresponding attributes."""
         for obj in objects:
-            assert type(obj) in OBJS_REGISTER, \
-                'Please figure out the type of object before you add it into envs.'
+            assert (
+                type(obj) in OBJS_REGISTER
+            ), 'Please figure out the type of object before you add it into envs.'
             self._objects[obj.name] = obj
             setattr(self, obj.name, obj)
 
     def add_mocaps(self, *mocaps):
         """Add mocap type objects into environments and set coresponding attributes."""
         for mocap in mocaps:
-            assert type(mocap) in MOCAPS_REGISTER, \
-                'Please figure out the type of object before you add it into envs.'
+            assert (
+                type(mocap) in MOCAPS_REGISTER
+            ), 'Please figure out the type of object before you add it into envs.'
             self._mocaps[mocap.name] = mocap
             setattr(self, mocap.name, mocap)
 
@@ -221,8 +223,8 @@ class BaseTask(BaseMujocoTask):
         return obs_space_dict
 
     def build_placements_dict(self):
-        """Build a dict of placements.  
-        
+        """Build a dict of placements.
+
         Happens only once.
         """
         placements = {}
@@ -295,9 +297,7 @@ class BaseTask(BaseMujocoTask):
                 mocap_name = f'{mocap.name[:-1]}mocap'
                 obj_name = f'{mocap.name[:-1]}obj'
                 rot = self.random_rot()
-                world_config['objects'][obj_name] = mocap.get_obj(
-                    index=i, layout=layout, rot=rot
-                )
+                world_config['objects'][obj_name] = mocap.get_obj(index=i, layout=layout, rot=rot)
                 world_config['mocaps'][mocap_name] = mocap.get_mocap(
                     index=i, layout=layout, rot=rot
                 )
@@ -325,7 +325,7 @@ class BaseTask(BaseMujocoTask):
         """Get the placements dict subset just for a given object name."""
         placements_dict = {}
 
-        assert hasattr(self, object_name), f"object{object_name} does not exist, but you use it!"
+        assert hasattr(self, object_name), f'object{object_name} does not exist, but you use it!'
         data_obj = getattr(self, object_name)
 
         if hasattr(data_obj, 'num'):  # Objects with multiplicity
@@ -379,8 +379,9 @@ class BaseTask(BaseMujocoTask):
                 offset += k_size
             obs = flat_obs
             assert self.observation_space.contains(obs), f'Bad obs {obs} {self.observation_space}'
-            assert offset == self.obs_flat_size, \
-                'Obs from mujoco do not match env pre-specifed lenth.'
+            assert (
+                offset == self.obs_flat_size
+            ), 'Obs from mujoco do not match env pre-specifed lenth.'
         return obs
 
     def obs_sensor(self):
