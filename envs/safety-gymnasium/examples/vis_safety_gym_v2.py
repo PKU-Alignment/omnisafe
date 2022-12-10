@@ -32,7 +32,6 @@ def run_random(env_name):
             obs, _ = env.reset()
         assert env.observation_space.contains(obs)
         act = env.action_space.sample()
-        act = np.array([1, 0])
         assert env.action_space.contains(act)
         # Use the environment's built_in max_episode_steps
         if hasattr(env, '_max_episode_steps'):
