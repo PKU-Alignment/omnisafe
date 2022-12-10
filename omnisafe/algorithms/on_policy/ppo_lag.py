@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the lagrange version of PPO algorithm."""
+"""Implementation of the Lagrange version of PPO algorithm."""
 
 import torch
 

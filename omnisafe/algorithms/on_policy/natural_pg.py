@@ -71,7 +71,6 @@ class NaturalPG(PolicyGradient):
         self.logger.log_tabular('Misc/xHx')
         self.logger.log_tabular('Misc/H_inv_g')
 
-    # pylint: disable-next=invalid-name
     def Fvp(self, params):
         """
         Build the Hessian-vector product based on an approximation of the KL-divergence.
