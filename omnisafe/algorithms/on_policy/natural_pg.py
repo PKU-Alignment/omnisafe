@@ -129,7 +129,6 @@ class NaturalPG(PolicyGradient):
         x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
         assert torch.isfinite(x).all()
         # Note that xHx = g^T x, but calculating xHx is faster than g^T x
-        # pylint: disable-next=invalid-name
         xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
         assert xHx.item() >= 0, 'No negative values'
 

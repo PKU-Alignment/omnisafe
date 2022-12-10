@@ -22,7 +22,7 @@ from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
 
 @registry.register
 class PPO(PolicyGradient):
-    """The Proximal Policy Optimization Algorithms(PPO) Algorithm.
+    """The Proximal Policy Optimization Algorithms (PPO) Algorithm.
 
     References:
         Paper Name: Proximal Policy Optimization Algorithms.

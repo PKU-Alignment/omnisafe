@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Test policy algorithms"""
 
 import helpers
 import omnisafe
@@ -34,7 +35,7 @@ import omnisafe
     ]
 )
 def test_on_policy(algo):
-    """Test on-policy algorithms"""
+    """Test algorithms"""
     env_id = 'SafetyPointGoal1-v0'
     custom_cfgs = {'epochs': 1, 'steps_per_epoch': 1000, 'pi_iters': 1, 'critic_iters': 1}
     env = omnisafe.Env(env_id)

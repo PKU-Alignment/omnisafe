@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""
-    A variety of critics are implemented,including q_critic, v_critic, etc.,
-    which are created via `CriticBuilder`.
-"""
+"""The abstract interfaces of Critic networks for the Actor-Critic algorithm."""
 
 from omnisafe.models.critic.critic_builder import CriticBuilder

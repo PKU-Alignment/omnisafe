@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Example of training a policy with OmniSafe."""
 
 import argparse
 
@@ -24,7 +25,8 @@ if __name__ == '__main__':
         '--algo',
         type=str,
         default='PPO',
-        help='Choose certain algorithm to train policy',
+        help='Choose from: {PolicyGradient, PPO, PPOLag, NaturalPG,'
+        ' TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid',
     )
     parser.add_argument(
         '--env-id',
@@ -36,10 +38,9 @@ if __name__ == '__main__':
         '--parallel', default=1, type=int, help='Number of paralleled progress for calculations.'
     )
     args, unparsed_args = parser.parse_known_args()
-
-    keys = [k[2:] for k in unparsed_args[0::2]]  # remove -- from argument
-    values = [eval(v) for v in unparsed_args[1::2]]
-    unparsed_dict = {k: v for k, v in zip(keys, values)}
+    keys = [k[2:] for k in unparsed_args[0::2]]
+    values = list(unparsed_args[1::2])
+    unparsed_dict = dict(zip(keys, values))
     env = omnisafe.Env(args.env_id)
     agent = omnisafe.Agent(args.algo, env, parallel=args.parallel, custom_cfgs=unparsed_dict)
     agent.learn()

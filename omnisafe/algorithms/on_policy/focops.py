@@ -23,7 +23,7 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class FOCOPS(PolicyGradient, Lagrange):
-    """The First Order Constrained Optimization in Policy Space(FOCOPS) algorithm.
+    """The First Order Constrained Optimization in Policy Space (FOCOPS) algorithm.
 
     References:
         Paper Name: First Order Constrained Optimization in Policy Space.
@@ -71,7 +71,7 @@ class FOCOPS(PolicyGradient, Lagrange):
             self.lagrangian_multiplier = 2.0
 
     def compute_loss_pi(self, data: dict):
-        # Policy loss
+        """compute loss for policy"""
         dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
 

@@ -15,7 +15,9 @@
 """This module contains some base abstract classes for the models."""
 
 import abc
+from typing import Optional
 
+import torch
 import torch.nn as nn
 
 from omnisafe.utils.model_utils import Activation, InitFunction
@@ -111,8 +113,12 @@ class Critic(abc.ABC, nn.Module):
         self.hidden_sizes = hidden_sizes
 
     @abc.abstractmethod
-    def forward(self, obs):
-        """forward function for critic.
+    def forward(
+        self,
+        obs: torch.Tensor,
+        act: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Forward function for critic.
 
         Args:
             obs (torch.Tensor): observation.

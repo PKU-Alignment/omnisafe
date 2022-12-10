@@ -313,7 +313,7 @@ TRPO describes an approximate policy iteration scheme based on the policy improv
 Note that for now, we assume exact evaluation of the advantage values :math:`A^R_{\pi}`.
 
 It follows from Equation :ref:`(11) <trpo-eq-11>` that TRPO is guaranteed to generate a monotonically improving sequence of policies :math:`J\left(\pi_0\right) \leq J\left(\pi_1\right) \leq J\left(\pi_2\right) \leq \cdots`.
-To see this, let :math:`M_i(\pi)=L_{\pi_i}(\pi)-C D_{\mathrm{KL}}^{\max }\left(\pi_i, \pi\right)`.
+To see this, let :math:`M_i(\pi)=L_{\pi_i}(\pi)-C D_{\mathrm{}}^{\max }\left(\pi_i, \pi\right)`.
 Then
 
 .. math::

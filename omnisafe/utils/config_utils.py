@@ -74,4 +74,4 @@ def check_all_configs(configs, algo_type):
         ), 'gamma must be in [0, 1)'
         assert (
             configs.use_cost is False and configs.cost_gamma == 1.0
-        ) or configs.use_cost is True, 'if use_cost is False, cost_gamma must be 1.0'
+        ) or configs.use_cost, 'if use_cost is False, cost_gamma must be 1.0'

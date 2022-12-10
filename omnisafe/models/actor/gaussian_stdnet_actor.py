@@ -79,7 +79,7 @@ class GaussianStdNetActor(Actor):
         self.net = nn.ModuleList([self.mean, self.log_std])
 
     def _distribution(self, obs):
-        mean = self.mean(obs)  # pylint disable=invalid-name
+        mean = self.mean(obs)
         log_std = self.log_std(obs)
         log_std = torch.clamp(log_std, -20, 2)
         std = torch.exp(log_std)

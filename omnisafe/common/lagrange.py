@@ -54,7 +54,6 @@ class Lagrange(abc.ABC):
         """Penalty loss for Lagrange multiplier."""
         return -self.lagrangian_multiplier * (mean_ep_cost - self.cost_limit)
 
-    # pylint: disable-next=invalid-name
     def update_lagrange_multiplier(self, Jc):
         """Update Lagrange multiplier (lambda)
         Note: Jc obtained from: self.logger.get_stats('EpCosts')[0]

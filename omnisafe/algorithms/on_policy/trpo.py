@@ -29,7 +29,7 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class TRPO(NaturalPG):
-    """The Trust Region Policy Optimization(TRPO) Algorithm.
+    """The Trust Region Policy Optimization (TRPO) Algorithm.
 
     References:
         Paper Name: Trust Region Policy Optimization.
@@ -150,7 +150,6 @@ class TRPO(NaturalPG):
         x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
         assert torch.isfinite(x).all()
         # Note that xHx = g^T x, but calculating xHx is faster than g^T x
-        # pylint: disable-next=invalid-name
         xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
         assert xHx.item() >= 0, 'No negative values'
 
@@ -175,7 +174,6 @@ class TRPO(NaturalPG):
 
         with torch.no_grad():
             q_dist = self.actor_critic.actor(data['obs'])
-            # pylint: disable-next=invalid-name
             kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
             loss_pi, pi_info = self.compute_loss_pi(data=data)
 

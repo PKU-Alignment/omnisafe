@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Test models"""
 
 import numpy as np
 import torch
@@ -31,7 +32,14 @@ from omnisafe.utils.config_utils import create_namedtuple_from_dict
     hidden_sizes=[64, 128, 256],
     activation=['tanh', 'softplus', 'sigmoid', 'identity', 'relu'],
 )
-def test_critic(obs_dim: int, act_dim, shared, hidden_sizes: int, activation: str) -> None:
+def test_critic(
+    obs_dim: int,
+    act_dim,
+    shared,
+    hidden_sizes: int,
+    activation: str,
+) -> None:
+    """Test critic"""
     builder = CriticBuilder(
         obs_dim=obs_dim,
         act_dim=act_dim,
@@ -57,7 +65,7 @@ def test_critic(obs_dim: int, act_dim, shared, hidden_sizes: int, activation: st
     weight_initialization_mode=['kaiming_uniform'],
     shared=[None],
 )
-def test_CategoricalActor(
+def test_categorical_actor(
     obs_dim: int,
     act_dim: int,
     hidden_sizes: int,
@@ -78,11 +86,11 @@ def test_CategoricalActor(
 
     obs = torch.randn(obs_dim, dtype=torch.float32)
     dist = actor(obs)
-    assert isinstance(dist, Categorical), f'Actor output is not a Categorical distribution'
+    assert isinstance(dist, Categorical), 'Actor output is not a Categorical distribution'
 
     act = dist.sample()
     dist, logp = actor(obs, act)
-    assert isinstance(dist, Categorical), f'Actor output is not a Categorical distribution'
+    assert isinstance(dist, Categorical), 'Actor output is not a Categorical distribution'
     assert logp.shape == torch.Size([]), f'Actor logp output shape is {logp.shape}'
 
     act = actor.predict(obs)
@@ -105,7 +113,7 @@ def test_CategoricalActor(
     shared=[None],
     actor_type=['gaussian_annealing', 'gaussian_learning', 'gaussian_stdnet'],
 )
-def test_GaussianActor(
+def test_gaussian_actor(
     obs_dim: int,
     act_dim: int,
     hidden_sizes: int,
@@ -132,15 +140,11 @@ def test_GaussianActor(
 
     obs = torch.randn(obs_dim, dtype=torch.float32)
     dist = actor(obs)
-    assert isinstance(
-        dist, torch.distributions.Normal
-    ), f'Actor output is not a Normal distribution'
+    assert isinstance(dist, torch.distributions.Normal), 'Actor output is not a Normal distribution'
 
     act = dist.sample()
     dist, logp = actor(obs, act)
-    assert isinstance(
-        dist, torch.distributions.Normal
-    ), f'Actor output is not a Normal distribution'
+    assert isinstance(dist, torch.distributions.Normal), 'Actor output is not a Normal distribution'
     assert logp.shape == torch.Size([]), f'Actor logp output shape is {logp.shape}'
 
     act = actor.predict(obs)
@@ -165,7 +169,7 @@ def test_GaussianActor(
     weight_initialization_mode=['kaiming_uniform'],
     actor_type=['gaussian_annealing', 'gaussian_learning', 'gaussian_stdnet'],
 )
-def test_ActorCritic(
+def test_actor_critic(
     obs_dim: int,
     act_dim: int,
     space_type,

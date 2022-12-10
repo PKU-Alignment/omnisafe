@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""
-    A variety of actors are implemented,including categorical_actor,
-    annealed versions of gaussian_annealing_actor, etc., which are
-    created via `ActorBuilder`.
-"""
+"""The abstract interfaces of Actor networks for the Actor-Critic algorithm."""
 
 from omnisafe.models.actor.actor_builder import ActorBuilder

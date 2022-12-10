@@ -30,7 +30,7 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class CPO(TRPO):
-    """The Constrained Policy Optimization(CPO) Algorithm.
+    """The Constrained Policy Optimization (CPO) Algorithm.
 
     References:
         Paper Name: Constrained Policy Optimization.
@@ -195,7 +195,7 @@ class CPO(TRPO):
         eps = 1.0e-8
         # Note that xHx = g^T x, but calculating xHx is faster than g^T x
         # equivalent to : g^T x
-        xHx = torch.dot(x, self.Fvp(x))  # pylint: disable=invalid-name
+        xHx = torch.dot(x, self.Fvp(x))
         alpha = torch.sqrt(2 * self.target_kl / (xHx + eps))
         assert xHx.item() >= 0, 'No negative values'
 

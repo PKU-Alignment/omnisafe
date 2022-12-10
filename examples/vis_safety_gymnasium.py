@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Example of using Safety Gymnasium environments."""
 
 import argparse
 
@@ -19,6 +20,7 @@ import safety_gymnasium
 
 
 def run_random(env_name):
+    """Run a random agent in the environment."""
     env = safety_gymnasium.make(env_name, render_mode='rgb_array')
     # env.seed(0)
     obs, _ = env.reset()
@@ -28,16 +30,16 @@ def run_random(env_name):
     while True:
         print('rgb_array', env.render())
         if terminated:
-            print('Episode Return: %.3f \t Episode Cost: %.3f' % (ep_ret, ep_cost))
+            print(f'Episode Return: {ep_ret} \t Episode Cost: {ep_cost}')
             ep_ret, ep_cost = 0, 0
             obs, _ = env.reset()
         assert env.observation_space.contains(obs)
         act = env.action_space.sample()
         assert env.action_space.contains(act)
         # Use the environment's built_in max_episode_steps
-        if hasattr(env, '_max_episode_steps'):
-            max_ep_len = env._max_episode_steps
-        obs, reward, cost, terminated, truncated, info = env.step(act)
+        obs, reward, cost, terminated, truncated, info = env.step(
+            act
+        )  # pylint: disable=unused-variable
         ep_ret += reward
         ep_cost += cost
 

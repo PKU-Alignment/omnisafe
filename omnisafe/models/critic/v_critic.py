@@ -58,6 +58,9 @@ class VCritic(Critic):
                 weight_initialization_mode=weight_initialization_mode,
             )
 
-    def forward(self, obs: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        obs: torch.Tensor,
+    ) -> torch.Tensor:
         """Forward."""
         return torch.squeeze(self.net(obs), -1)

@@ -96,11 +96,10 @@ class Logger:
         Provide an arbitrary number of keyword arguments with numerical
         values.
         """
-        # pylint: disable-next=invalid-name
-        for k, v in kwargs.items():
-            if k not in self.epoch_dict:
-                self.epoch_dict[k] = []
-            self.epoch_dict[k].append(v)
+        for key, value in kwargs.items():
+            if key not in self.epoch_dict:
+                self.epoch_dict[key] = []
+            self.epoch_dict[key].append(value)
 
     def log_single_value(self, key, val):
         """
@@ -199,9 +198,8 @@ class Logger:
                 self.output_file.flush()
 
             if self.summary_writer is not None:
-                # pylint: disable-next=invalid-name
-                for k, v in zip(self.log_headers, vals):
-                    self.summary_writer.add_scalar(k, v, global_step=self.epoch)
+                for key, value in zip(self.log_headers, vals):
+                    self.summary_writer.add_scalar(key, value, global_step=self.epoch)
 
                 # Flushes the event file to disk. Call this method to make sure
                 # that all pending events have been written to disk.
@@ -212,11 +210,9 @@ class Logger:
         self.first_row = False
 
         # Check if all values from dict are dumped -> prevent memory overflow
-        # pylint: disable-next=invalid-name
-        for k, v in self.epoch_dict.items():
-            if len(v) > 0:
-                print(f'epoch_dict: key={k} was not logged.')
-            # assert len(v) > 0, f'epoch_dict: key={k} was not logged.'
+        for key, value in self.epoch_dict.items():
+            if len(value) > 0:
+                print(f'epoch_dict: key={key} was not logged.')
 
     def setup_torch_saver(self, what_to_save: dict):
         """Setup the torch saver."""
@@ -232,7 +228,7 @@ class Logger:
             ), 'First have to setup saving with self.setup_torch_saver'
             fpath = 'torch_save'
             fpath = osp.join(self.log_dir, fpath)
-            fname = 'model ' + str(itr) + '.pt'
+            fname = f'model {itr}.pt'
             fname = osp.join(fpath, fname)
             os.makedirs(fpath, exist_ok=True)
 

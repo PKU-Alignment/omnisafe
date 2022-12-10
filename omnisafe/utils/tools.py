@@ -133,8 +133,8 @@ def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
 
     if isinstance(item, dict):
         new_data = {}
-        for k, v in item.items():  # pylint: disable=invalid-name
-            new_data[k] = to_ndarray(v, dtype)
+        for key, value in item.items():
+            new_data[key] = to_ndarray(value, dtype)
         return new_data
 
     if isinstance(item, (list, tuple)):

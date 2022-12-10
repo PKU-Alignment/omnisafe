@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""init"""
+"""Safe Reinforcement Learning algorithms."""
 
 # On Policy Safe
 from omnisafe.algorithms.on_policy.cpo import CPO

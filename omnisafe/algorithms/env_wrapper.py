@@ -102,7 +102,7 @@ class EnvWrapper:
             )
 
             # Store values for statistic purpose
-            if self.use_cost is True:
+            if self.use_cost:
                 logger.store(**{'Values/V': value, 'Values/C': cost_value})
             else:
                 logger.store(**{'Values/V': value})

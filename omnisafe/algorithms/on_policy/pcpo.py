@@ -29,7 +29,7 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class PCPO(TRPO):
-    """The Projection-Based Constrained Policy Optimization(PCPO) algorithm.
+    """The Projection-Based Constrained Policy Optimization (PCPO) algorithm.
 
     References:
         Paper name: Projection-Based Constrained Policy Optimization.
@@ -138,8 +138,10 @@ class PCPO(TRPO):
         info = {}
         return cost_loss, info
 
-    # pylint: disable-next=too-many-locals
-    def update_policy_net(self, data):
+    def update_policy_net(
+        self,
+        data,
+    ):  # pylint: disable=too-many-locals,invalid-name
         """update policy network"""
         # Get loss and info values before update
         theta_old = get_flat_params_from(self.actor_critic.actor.net)
@@ -157,13 +159,11 @@ class PCPO(TRPO):
         # flip sign since policy_loss = -(ration * adv)
         g_flat *= -1
 
-        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)  # pylint: disable=invalid-name
+        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
         assert torch.isfinite(x).all()
         eps = 1.0e-8
         # Note that xHx = g^T x, but calculating xHx is faster than g^T x
-        # pylint: disable-next=invalid-name
         xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
-        # pylint: disable-next=invalid-name
         H_inv_g = self.Fvp(x)
         alpha = torch.sqrt(2 * self.target_kl / (xHx + eps))
         assert xHx.item() >= 0, 'No negative values'
@@ -184,12 +184,12 @@ class PCPO(TRPO):
         self.logger.log(f'b^T b = {b_flat.dot(b_flat).item()}')
 
         # set variable names as used in the paper
-        p = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)  # pylint: disable=invalid-name
-        q = xHx  # pylint: disable=invalid-name
+        p = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
+        q = xHx
         # g^T H^{-1} b
-        r = g_flat.dot(p)  # pylint: disable=invalid-name
+        r = g_flat.dot(p)
         # b^T H^{-1} b
-        s = b_flat.dot(p)  # pylint: disable=invalid-name
+        s = b_flat.dot(p)
         step_dir = (
             torch.sqrt(2 * self.target_kl / (q + 1e-8)) * H_inv_g
             - torch.clamp_min(
