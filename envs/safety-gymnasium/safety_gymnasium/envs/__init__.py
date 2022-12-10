@@ -64,36 +64,36 @@ for name in ROBOT_NAMES:
         config.update(ROBOT_OVERRIDES[name])
     robot_configs[name] = config
 
-    def combine(tasks, agents):
-        """Combine tasks and agents together to register environment tasks."""
-        for task_name, task_config in tasks.items():
-            for robot_name, robot_config in agents.items():
-                # Default
-                env_name = f'{PREFIX}{robot_name}{task_name}-{VERSION}'
-                combined_config = deepcopy(task_config)
-                combined_config.update(robot_config)
+def combine(tasks, agents):
+    """Combine tasks and agents together to register environment tasks."""
+    for task_name, task_config in tasks.items():
+        for robot_name, robot_config in agents.items():
+            # Default
+            env_name = f'{PREFIX}{robot_name}{task_name}-{VERSION}'
+            combined_config = deepcopy(task_config)
+            combined_config.update(robot_config)
 
+            register(
+                id=env_name,
+                entry_point='safety_gymnasium.envs.builder:Builder',
+                kwargs={'config': combined_config, 'task_id': env_name},
+            )
+
+            if MAKE_VISION_ENVIRONMENTS:
+                # Vision: note, these environments are experimental! Correct behavior not guaranteed
+                vision_env_name = f'{PREFIX}{robot_name}{task_name}Vision-{VERSION}'
+                vision_config = {
+                    'observe_vision': True,
+                    'observation_flatten': False,
+                    'vision_render': True,
+                }
+                combined_config = deepcopy(combined_config)
+                combined_config.update(vision_config)
                 register(
-                    id=env_name,
+                    id=vision_env_name,
                     entry_point='safety_gymnasium.envs.builder:Builder',
                     kwargs={'config': combined_config, 'task_id': env_name},
                 )
-
-                if MAKE_VISION_ENVIRONMENTS:
-                    # Vision: note, these environments are experimental! Correct behavior not guaranteed
-                    vision_env_name = f'{PREFIX}{robot_name}{task_name}Vision-{VERSION}'
-                    vision_config = {
-                        'observe_vision': True,
-                        'observation_flatten': False,
-                        'vision_render': True,
-                    }
-                    combined_config = deepcopy(combined_config)
-                    combined_config.update(vision_config)
-                    register(
-                        id=vision_env_name,
-                        entry_point='safety_gymnasium.envs.builder:Builder',
-                        kwargs={'config': combined_config, 'task_id': env_name},
-                    )
 
 
 # #=============================================================================#
