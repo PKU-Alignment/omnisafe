@@ -17,7 +17,6 @@
 from copy import deepcopy
 
 from safety_gymnasium.envs.registration import register
-from safety_gymnasium.envs.safety_gym_v2.utils import update_dict_from
 
 
 VERSION = 'v0'
@@ -51,68 +50,50 @@ MAKE_VISION_ENVIRONMENTS = True
 # Helper Class for Easy Gym Registration #
 # ========================================#
 
+"""Base used to allow for convenient hierarchies of environments"""
+PREFIX = 'Safety'
+robot_configs = {}
 
-class SafexpEnvBase:
-    """Base used to allow for convenient hierarchies of environments"""
+for name in ROBOT_NAMES:
+    config = {}
+    config['robot_base'] = ROBOT_XMLS[name]
+    config['sensors_obs'] = BASE_SENSORS
+    if name in EXTRA_SENSORS:
+        config['sensors_obs'] = BASE_SENSORS + EXTRA_SENSORS[name]
+    if name in ROBOT_OVERRIDES:
+        config.update(ROBOT_OVERRIDES[name])
+    robot_configs[name] = config
 
-    def __init__(self, name='', config={}, prefix='Safety'):
-        """init function"""
-        self.name = name
-        self.config = config
-        self.robot_configs = {}
-        self.prefix = prefix
-        for robot_name in ROBOT_NAMES:
-            robot_config = {}
-            robot_config['robot_base'] = ROBOT_XMLS[robot_name]
-            robot_config['sensors_obs'] = BASE_SENSORS
-            if robot_name in EXTRA_SENSORS:
-                robot_config['sensors_obs'] = BASE_SENSORS + EXTRA_SENSORS[robot_name]
-            if robot_name in ROBOT_OVERRIDES:
-                robot_config.update(ROBOT_OVERRIDES[robot_name])
-            self.robot_configs[robot_name] = robot_config
+    def combine(tasks, agents):
+        """Combine tasks and agents together to register environment tasks."""
+        for task_name, task_config in tasks.items():
+            for robot_name, robot_config in agents.items():
+                # Default
+                env_name = f'{PREFIX}{robot_name}{task_name}-{VERSION}'
+                combined_config = deepcopy(task_config)
+                combined_config.update(robot_config)
 
-    def copy(self, name='', config={}):
-        new_config = deepcopy(self.config)
-        update_dict_from(new_config, config)
-        return SafexpEnvBase(self.name + name, new_config)
+                register(
+                    id=env_name,
+                    entry_point='safety_gymnasium.envs.builder:Builder',
+                    kwargs={'config': combined_config, 'task_id': env_name},
+                )
 
-    def register(self, name='', config={}):
-        # Note: see safety_gym/envs/mujoco.py for an explanation why we're using
-        # 'safety_gym.envs.mujoco:Builder' as the entrypoint, instead of
-        # 'safety_gym.envs.engine:Builder'.
-
-        for robot_name, robot_config in self.robot_configs.items():
-            # Default
-            env_name = f'{self.prefix}{robot_name}{self.name + name}-{VERSION}'
-            reg_config = deepcopy(self.config)
-            if name:
-                reg_config['task']['task_id'] = reg_config['task']['task_id'][:-1] + name
-            update_dict_from(reg_config, {'task': robot_config})
-            update_dict_from(reg_config, config)
-            register(
-                id=env_name,
-                entry_point='safety_gymnasium.envs.safety_gym_v2.mujoco:Builder',
-                kwargs={'config': reg_config},
-            )
-
-            if MAKE_VISION_ENVIRONMENTS:
-                # Vision: note, these environments are experimental! Correct behavior not guaranteed
-                vision_env_name = f'{self.prefix}{robot_name}{self.name + name}Vision-{VERSION}'
-                vision_config = {
-                    'world': {},
-                    'task': {
+                if MAKE_VISION_ENVIRONMENTS:
+                    # Vision: note, these environments are experimental! Correct behavior not guaranteed
+                    vision_env_name = f'{PREFIX}{robot_name}{task_name}Vision-{VERSION}'
+                    vision_config = {
                         'observe_vision': True,
                         'observation_flatten': False,
                         'vision_render': True,
-                    },
-                }
-                reg_config = deepcopy(reg_config)
-                update_dict_from(reg_config, vision_config)
-                register(
-                    id=vision_env_name,
-                    entry_point='safety_gymnasium.envs.safety_gym_v2.mujoco:Builder',
-                    kwargs={'config': reg_config},
-                )
+                    }
+                    combined_config = deepcopy(combined_config)
+                    combined_config.update(vision_config)
+                    register(
+                        id=vision_env_name,
+                        entry_point='safety_gymnasium.envs.builder:Builder',
+                        kwargs={'config': combined_config, 'task_id': env_name},
+                    )
 
 
 # #=============================================================================#
@@ -122,18 +103,8 @@ class SafexpEnvBase:
 # #=============================================================================#
 
 # Shared among all (levels 0, 1, 2)
-button = {
-    'world': {},
-    'task': {
-        'task_id': 'ButtonLevelX',
-    },
-}
-
-# bench_button_base = bench_base.copy('Button', button_all)
-bench_button_base = SafexpEnvBase('Button', button)
-bench_button_base.register('0', {})
-bench_button_base.register('1', {})
-bench_button_base.register('2', {})
+button_tasks = {'Button0': {}, 'Button1': {}, 'Button2': {}}
+combine(button_tasks, robot_configs)
 
 
 # =============================================================================#
@@ -143,18 +114,9 @@ bench_button_base.register('2', {})
 # =============================================================================#
 
 # Shared among all (levels 0, 1, 2)
-push = {
-    'world': {},
-    'task': {
-        'task_id': 'PushLevelX',
-    },
-}
+push_tasks = {'Push0': {}, 'Push1': {}, 'Push2': {}}
+combine(push_tasks, robot_configs)
 
-# bench_push_base = bench_base.copy('Push', push)
-bench_push_base = SafexpEnvBase('Push', push)
-bench_push_base.register('0', {})
-bench_push_base.register('1', {})
-bench_push_base.register('2', {})
 
 # =============================================================================#
 #                                                                             #
@@ -163,17 +125,9 @@ bench_push_base.register('2', {})
 # =============================================================================#
 
 # Shared among all (levels 0, 1, 2)
-
-goal = {
-    'world': {},
-    'task': {
-        'task_id': 'GoalLevelX',
-    },
+goal_tasks = {
+    'Goal0': {},
+    'Goal1': {},
+    'Goal2': {},
 }
-
-# bench_goal_base = bench_base.copy('Goal', goal)
-bench_goal_base = SafexpEnvBase('Goal', goal)
-bench_goal_base.register('0', {})
-bench_goal_base.register('1', {})
-bench_goal_base.register('2', {})
-bench_goal_base.register('3', {})
+combine(goal_tasks, robot_configs)

@@ -26,14 +26,13 @@ DIR = os.path.join(os.path.dirname(__file__), 'cached_test_vision_video')
 
 def run_random(env_name):
     env = safety_gymnasium.make(env_name)
-    # env.seed(0)
-    obs, _ = env.reset()
-    terminled = False
+    obs, _ = env.reset()  # obs, _ = env.reset(seed=0)
+    terminated, truncated = False, False
     ep_ret = 0
     ep_cost = 0
     render_list = []
     for i in range(1001):
-        if terminled:
+        if terminated or truncated:
             print('Episode Return: %.3f \t Episode Cost: %.3f' % (ep_ret, ep_cost))
             ep_ret, ep_cost = 0, 0
             obs, _ = env.reset()
@@ -51,7 +50,7 @@ def run_random(env_name):
         if hasattr(env, '_max_episode_steps'):
             max_ep_len = env._max_episode_steps
         render_list.append(obs['vision'])
-        obs, reward, cost, terminled, truncated, info = env.step(act)
+        obs, reward, cost, terminated, truncated, info = env.step(act)
 
         ep_ret += reward
         ep_cost += cost

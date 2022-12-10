@@ -70,3 +70,6 @@ Pieter
 Abbeel
 et
 al
+keepout
+py
+entrypoint
