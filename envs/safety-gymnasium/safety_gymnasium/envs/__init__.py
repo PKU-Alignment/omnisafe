@@ -64,6 +64,7 @@ for name in ROBOT_NAMES:
         config.update(ROBOT_OVERRIDES[name])
     robot_configs[name] = config
 
+
 def combine(tasks, agents):
     """Combine tasks and agents together to register environment tasks."""
     for task_name, task_config in tasks.items():
