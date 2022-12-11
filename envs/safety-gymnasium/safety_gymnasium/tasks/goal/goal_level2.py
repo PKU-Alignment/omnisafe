@@ -12,4 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utils for Safety-Gymnasium."""
+"""Goal level 2."""
+
+from safety_gymnasium.tasks.goal.goal_level1 import GoalLevel1
+
+
+class GoalLevel2(GoalLevel1):
+    """A robot must navigate to a goal while avoiding more hazards and vases."""
+
+    def __init__(self, config):
+        super().__init__(config=config)
+        # pylint: disable=no-member
+
+        self.placements_extents = [-2, -2, 2, 2]
+
+        self.hazards.num = 10
+        self.vases.num = 10
+        self.vases.is_constrained = True

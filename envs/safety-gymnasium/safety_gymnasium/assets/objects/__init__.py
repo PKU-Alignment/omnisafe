@@ -12,4 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utils for Safety-Gymnasium."""
+"""Object type objects."""
+
+# Extra objects to add to the scene
+from safety_gymnasium.assets.objects.push_box import PushBox
+from safety_gymnasium.assets.objects.vase import Vases
+
+
+OBJS_REGISTER = [PushBox, Vases]
