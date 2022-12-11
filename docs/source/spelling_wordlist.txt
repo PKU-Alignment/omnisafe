@@ -70,6 +70,9 @@ Pieter
 Abbeel
 et
 al
+keepout
+py
+entrypoint
 params
 Init
 eval

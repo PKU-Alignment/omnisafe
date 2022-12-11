@@ -12,4 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utils for Safety-Gymnasium."""
+"""Geoms type objects."""
+
+from safety_gymnasium.assets.geoms.apple import Apples
+from safety_gymnasium.assets.geoms.button import Buttons
+from safety_gymnasium.assets.geoms.circle import Circle
+
+# Extra geoms (immovable objects) to add to the scene
+from safety_gymnasium.assets.geoms.goal import Goal
+from safety_gymnasium.assets.geoms.hazard import Hazards
+from safety_gymnasium.assets.geoms.orange import Oranges
+from safety_gymnasium.assets.geoms.pillar import Pillars
+from safety_gymnasium.assets.geoms.walls import Walls
+
+
+GEOMS_REGISTER = [Apples, Buttons, Circle, Goal, Hazards, Oranges, Pillars, Walls]

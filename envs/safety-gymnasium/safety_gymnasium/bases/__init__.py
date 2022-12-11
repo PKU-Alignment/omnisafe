@@ -12,4 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utils for Safety-Gymnasium."""
+"""Base classes."""
+
+from safety_gymnasium.bases.base_mujoco_task import BaseMujocoTask
+from safety_gymnasium.bases.base_task import BaseTask

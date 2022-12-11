@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utils for Safety-Gymnasium."""
+"""Assets which will be used in tasks."""
