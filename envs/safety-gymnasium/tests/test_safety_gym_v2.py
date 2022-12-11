@@ -29,12 +29,13 @@ def test_off_policy(agent_id, env_id, level, render_mode):
     env_name = 'Safety' + agent_id + env_id + level + '-v0'
     env = safety_gymnasium.make(env_name, render_mode=render_mode)
     obs, _ = env.reset()
+    # Use below to specify seed.
+    # obs, _ = env.reset(seed=0)
     terminated, truncated = False, False
-    ep_ret = 0
-    ep_cost = 0
+    ep_ret, ep_cost = 0, 0
     for step in range(1000):
         if terminated or truncated:
-            print('Episode Return: %.3f \t Episode Cost: %.3f' % (ep_ret, ep_cost))
+            print(f'Episode Return: {ep_ret} \t Episode Cost: {ep_cost}')
             ep_ret, ep_cost = 0, 0
             obs, _ = env.reset()
         assert env.observation_space.contains(obs)

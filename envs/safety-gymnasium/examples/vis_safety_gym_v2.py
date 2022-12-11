@@ -15,19 +15,19 @@
 
 import argparse
 
-import numpy as np
 import safety_gymnasium
 
 
 def run_random(env_name):
     env = safety_gymnasium.make(env_name, render_mode='human')
-    obs, _ = env.reset()  # obs, _ = env.reset(seed=0)
+    obs, _ = env.reset()
+    # Use below to specify seed.
+    # obs, _ = env.reset(seed=0)
     terminated, truncated = False, False
-    ep_ret = 0
-    ep_cost = 0
+    ep_ret, ep_cost = 0, 0
     while True:
         if terminated or truncated:
-            print('Episode Return: %.3f \t Episode Cost: %.3f' % (ep_ret, ep_cost))
+            print(f'Episode Return: {ep_ret} \t Episode Cost: {ep_cost}')
             ep_ret, ep_cost = 0, 0
             obs, _ = env.reset()
         assert env.observation_space.contains(obs)
@@ -46,6 +46,6 @@ def run_random(env_name):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', default='SafetyPointButton1-v0')
+    parser.add_argument('--env', default='SafetyPointPush1-v0')
     args = parser.parse_args()
     run_random(args.env)

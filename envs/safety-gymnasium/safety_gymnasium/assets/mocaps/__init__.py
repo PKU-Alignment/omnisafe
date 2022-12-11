@@ -12,4 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utils for Safety-Gymnasium."""
+"""Mocap type objects."""
+
+# Extra mocap bodies used for control (equality to object of same name)
+from safety_gymnasium.assets.mocaps.gremlin import Gremlins
+
+
+MOCAPS_REGISTER = [Gremlins]

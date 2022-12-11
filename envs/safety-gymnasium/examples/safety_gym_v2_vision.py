@@ -26,14 +26,15 @@ DIR = os.path.join(os.path.dirname(__file__), 'cached_test_vision_video')
 
 def run_random(env_name):
     env = safety_gymnasium.make(env_name)
-    obs, _ = env.reset()  # obs, _ = env.reset(seed=0)
+    obs, _ = env.reset()
+    # Use below to specify seed.
+    # obs, _ = env.reset(seed=0)
     terminated, truncated = False, False
-    ep_ret = 0
-    ep_cost = 0
+    ep_ret, ep_cost = 0, 0
     render_list = []
     for i in range(1001):
         if terminated or truncated:
-            print('Episode Return: %.3f \t Episode Cost: %.3f' % (ep_ret, ep_cost))
+            print(f'Episode Return: {ep_ret} \t Episode Cost: {ep_cost}')
             ep_ret, ep_cost = 0, 0
             obs, _ = env.reset()
             save_video(
