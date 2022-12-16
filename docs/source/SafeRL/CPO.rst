@@ -739,44 +739,44 @@ Parameters
             -  model_cfgs (dictionary) : successrmation about actor and critic's net work configuration,
                it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
-                -  shared_weights (bool) : Use shared weights between actor and critic network or not.
+               -  shared_weights (bool) : Use shared weights between actor and critic network or not.
 
-                -  weight_initialization_mode (string) : The type of weight initialization method.
+               -  weight_initialization_mode (string) : The type of weight initialization method.
 
-                -  pi (dictionary) : parameters for actor network ``pi``
-
-                    -  hidden_sizes:
-
-                        -  64
-                        -  64
-
-                    -  activations: tanh
-
-                -  val (dictionary) parameters for critic network ``v``
+                  -  pi (dictionary) : parameters for actor network ``pi``
 
                      -  hidden_sizes:
 
                         -  64
                         -  64
 
-                    .. hint::
+                     -  activations: tanh
 
-                        ======== ================  ========================================================================
-                        Name        Type              Description
-                        ======== ================  ========================================================================
-                        ``v``    ``nn.Module``        Gives the current estimate of **V** for states in ``s``.
-                        ``pi``   ``nn.Module``        Deterministically or continuously computes an action from the agent,
-                                                      conditioned on states in ``s``.
-                        ======== ================  ========================================================================
+                  -  val (dictionary) parameters for critic network ``v``
 
-                    -  activations: tanh
-                    -  env_id (string): The name of environment we want to roll out.
-                    -  seed (int): Define the seed of experiments.
-                    -  parallel (int): Define the seed of experiments.
-                    -  epochs (int): The number of epochs we want to roll out.
-                    -  steps_per_epoch (int):The number of time steps per epoch.
-                    -  pi_iters (int): The number of iteration when we update actor network per mini batch.
-                    -  critic_iters (int): The number of iteration when we update critic network per mini batch.
+                     -  hidden_sizes:
+
+                        -  64
+                        -  64
+
+                        .. hint::
+
+                            ======== ================  ========================================================================
+                            Name        Type              Description
+                            ======== ================  ========================================================================
+                            ``v``    ``nn.Module``     Gives the current estimate of **V** for states in ``s``.
+                            ``pi``   ``nn.Module``     Deterministically or continuously computes an action from the agent,
+                                                       conditioned on states in ``s``.
+                            ======== ================  ========================================================================
+
+                  -  activations: tanh
+                  -  env_id (string): The name of environment we want to roll out.
+                  -  seed (int): Define the seed of experiments.
+                  -  parallel (int): Define the seed of experiments.
+                  -  epochs (int): The number of epochs we want to roll out.
+                  -  steps_per_epoch (int):The number of time steps per epoch.
+                  -  pi_iters (int): The number of iteration when we update actor network per mini batch.
+                  -  critic_iters (int): The number of iteration when we update critic network per mini batch.
 
     .. tab-item:: Optional parameters
 

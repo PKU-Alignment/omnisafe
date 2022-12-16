@@ -815,6 +815,7 @@ Parameters
             -  target_kl(float): Constraint for KL-distance to avoid too far gap
             -  cg_damping(float): parameter plays a role in building Hessian-vector
             -  cg_iters(int): Number of iterations of conjugate gradient to perform.
+            -  cost_limit(float): Constraint for agent to avoid too much cost
 
     .. tab-item:: Basic parameters
 
@@ -825,54 +826,50 @@ Parameters
 
             Basic parameters
             ^^^
-            -  algo (string): The name of algorithm corresponding to current
-                class, it does not actually affect any things which happen in the
-                following.
-            -  actor (string): The type of network in actor, discrete of
-                continuous.
-            -  model_cfgs (dictionary) : successrmation about actor and critic's net
-                work configuration,it originates from ``algo.yaml`` file to describe
-                ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
+            -  algo (string): The name of algorithm corresponding to current class,
+               it does not actually affect any things which happen in the following.
+            -  actor (string): The type of network in actor, discrete or continuous.
+            -  model_cfgs (dictionary) : successrmation about actor and critic's net work configuration,
+               it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
-                -  shared_weights (bool) : Use shared weights between actor and critic network or not.
+               -  shared_weights (bool) : Use shared weights between actor and critic network or not.
 
-                -  weight_initialization_mode (string) : The type of weight initialization method.
+               -  weight_initialization_mode (string) : The type of weight initialization method.
 
-                -  pi (dictionary) : parameters for actor network ``pi``
+                  -  pi (dictionary) : parameters for actor network ``pi``
 
-                -  hidden_sizes:
+                     -  hidden_sizes:
 
-                   -  64
-                   -  64
+                        -  64
+                        -  64
 
-                -  activations: tanh
+                     -  activations: tanh
 
-                -  val (dictionary) parameters for critic network ``v``
+                  -  val (dictionary) parameters for critic network ``v``
 
-                -  hidden_sizes:
+                     -  hidden_sizes:
 
-                   -  64
-                   -  64
+                        -  64
+                        -  64
 
-                .. hint::
+                        .. hint::
 
-                    ======== ================  ====================================================================
-                    Name        Type              Description
-                    ======== ================  ====================================================================
-                    ``v``    ``nn.Module``        Gives the current estimate of **V** for states in ``s``.
-                    ``pi``   ``nn.Module``        Deterministically or continuously computes an action from the agent,
+                            ======== ================  ========================================================================
+                            Name        Type              Description
+                            ======== ================  ========================================================================
+                            ``v``    ``nn.Module``     Gives the current estimate of **V** for states in ``s``.
+                            ``pi``   ``nn.Module``     Deterministically or continuously computes an action from the agent,
+                                                       conditioned on states in ``s``.
+                            ======== ================  ========================================================================
 
-                                                    conditioned on states in ``s``.
-                    ======== ================  ====================================================================
-
-                -  activations: tanh
-                -  env_id (string): The name of environment we want to roll out.
-                -  seed (int): Define the seed of experiments.
-                -  parallel (int): Define the seed of experiments.
-                -  epochs (int): The number of epochs we want to roll out.
-                -  steps_per_epoch (int):The number of time steps per epoch.
-                -  pi_iters (int): The number of iteration when we update actor network per mini batch.
-                -  critic_iters (int): The number of iteration when we update critic network per mini batch.
+                  -  activations: tanh
+                  -  env_id (string): The name of environment we want to roll out.
+                  -  seed (int): Define the seed of experiments.
+                  -  parallel (int): Define the seed of experiments.
+                  -  epochs (int): The number of epochs we want to roll out.
+                  -  steps_per_epoch (int):The number of time steps per epoch.
+                  -  pi_iters (int): The number of iteration when we update actor network per mini batch.
+                  -  critic_iters (int): The number of iteration when we update critic network per mini batch.
 
     .. tab-item:: Optional parameters
 
@@ -900,33 +897,30 @@ Parameters
 
             Buffer parameters
             ^^^
-
             .. hint::
-                ============= =============================================================================
-                    Name                    Description
-                ============= =============================================================================
-                ``Buffer``      A buffer for storing trajectories experienced by an agent interacting
-
-                                with the environment, and using **Generalized Advantage Estimation (GAE)**
-
-                                for calculating the advantages of state-action pairs.
-                ============= =============================================================================
+                  ============= =============================================================================
+                     Name                    Description
+                  ============= =============================================================================
+                  ``Buffer``      A buffer for storing trajectories experienced by an agent interacting
+                                  with the environment, and using **Generalized Advantage Estimation (GAE)**
+                                  for calculating the advantages of state-action pairs.
+                  ============= =============================================================================
 
             .. warning::
-                    Buffer collects only raw data received from environment.
+                Buffer collects only raw data received from environment.
 
             -  gamma (float): The gamma for GAE.
             -  lam (float): The lambda for reward GAE.
             -  adv_estimation_method (float):Roughly what KL divergence we think is
-                appropriate between new and old policies after an update. This will
-                get used for early stopping. (Usually small, 0.01 or 0.05.)
+               appropriate between new and old policies after an update. This will
+               get used for early stopping. (Usually small, 0.01 or 0.05.)
             -  standardized_reward (int):  Use standarized reward or not.
             -  standardized_cost (bool): Use standarized cost or not.
 
-------------------------------------------------------------------------
+------
 
 Reference
-----------
+---------
 
 -  `A Natural Policy
    Gradient <https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf>`__
