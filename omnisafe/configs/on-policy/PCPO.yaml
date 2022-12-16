@@ -22,13 +22,9 @@ defaults:
   epochs: 500
   # Number of steps per epoch
   steps_per_epoch: 30000
-<<<<<<< HEAD:omnisafe/algos/configs/on-policy/PCPO.yaml
   # Number of update iteration for Actor network
   actor_iters: 80
   # Number of update iteration for Critic network
-=======
-  actor_iters: 80
->>>>>>> 89cc58f218eb28614f5b8daf0158a13c5917ad37:omnisafe/configs/on-policy/PCPO.yaml
   critic_iters: 40
   # Check if all models own the same parameter values every `check_freq` epoch
   check_freq: 25
@@ -40,16 +36,11 @@ defaults:
   max_ep_len: 1000
   # The size of mini batch
   num_mini_batches: 16
-<<<<<<< HEAD:omnisafe/algos/configs/on-policy/PCPO.yaml
   # The learning rate of Actor network
   actor_lr: 0.0003
   # The learning rate of Critic network
   critic_lr: 0.001
   # The Address for saving training process data
-=======
-  actor_lr: 0.0003
-  critic_lr: 0.001
->>>>>>> 89cc58f218eb28614f5b8daf0158a13c5917ad37:omnisafe/configs/on-policy/PCPO.yaml
   data_dir: "./runs"
   ## ----------------------------Basic configurations for derived class PCPO-------------------- ##
   # The thereshold for KL early stopping
@@ -95,13 +86,9 @@ defaults:
     ac_kwargs:
       # Configuration of Actor network
       pi:
-<<<<<<< HEAD:omnisafe/algos/configs/on-policy/PCPO.yaml
         # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
         actor_type: gaussian_annealing
         # Size of hidden layers
-=======
-        actor_type: gaussian_annealing
->>>>>>> 89cc58f218eb28614f5b8daf0158a13c5917ad37:omnisafe/configs/on-policy/PCPO.yaml
         hidden_sizes: [64, 64]
         # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
         activation: tanh

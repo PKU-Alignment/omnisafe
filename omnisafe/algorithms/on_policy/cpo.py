@@ -239,11 +239,7 @@ class CPO(TRPO):
                 # point in trust region is feasible and safety boundary doesn't intersect
                 # ==> entire trust region is feasible
                 optim_case = 3
-<<<<<<< HEAD:omnisafe/algos/on_policy/cpo.py
             elif cost < 0 and B >= 0:
-=======
-            elif cost < 0 <= B:
->>>>>>> 89cc58f218eb28614f5b8daf0158a13c5917ad37:omnisafe/algorithms/on_policy/cpo.py
                 # x = 0 is feasible and safety boundary intersects
                 # ==> most of trust region is feasible
                 optim_case = 2
@@ -336,13 +332,8 @@ class CPO(TRPO):
                 'Train/PolicyRatio': pi_info['ratio'],
                 'Loss/Loss_pi': loss_pi_before,
                 'Loss/Delta_loss_pi': loss_pi.item() - loss_pi_before,
-<<<<<<< HEAD:omnisafe/algos/on_policy/cpo.py
                 'Loss/Loss_cost_critic': 0.0,
                 'Loss/Delta_loss_cost_critic': 0.0,
-=======
-                'Loss/Cost': 0.0,
-                'Loss/DeltaCost': 0.0,
->>>>>>> 89cc58f218eb28614f5b8daf0158a13c5917ad37:omnisafe/algorithms/on_policy/cpo.py
                 'Train/StopIter': 1,
                 'Misc/AcceptanceStep': accept_step,
                 'Misc/Alpha': alpha.item(),
