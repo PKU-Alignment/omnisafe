@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Test models"""
 
 import numpy as np
 import torch
@@ -19,70 +20,41 @@ from gymnasium.spaces import Box, Discrete
 from torch.distributions import Categorical
 
 import helpers
-from omnisafe.algos.models.actor_critic import ActorCritic
-from omnisafe.algos.models.critic import Critic
-from omnisafe.algos.models.mlp_categorical_actor import MLPCategoricalActor
-from omnisafe.algos.models.mlp_gaussian_actor import MLPGaussianActor
-
-
-@helpers.parametrize(
-    obs_dim=[1, 10, 100],
-    shared=[None],
-    hidden_sizes=[64, 128, 256],
-    activation=['tanh', 'softplus', 'sigmoid', 'identity', 'relu'],
-)
-def test_critic(obs_dim: int, shared, hidden_sizes: int, activation: str) -> None:
-    ac_kwargs = {'hidden_sizes': [hidden_sizes, hidden_sizes], 'activation': activation}
-    print(ac_kwargs['hidden_sizes'])
-    critic = Critic(obs_dim, shared=shared, **ac_kwargs)
-    input = torch.rand(obs_dim, dtype=torch.float32)
-    out = critic(input)
+from omnisafe.models import ActorBuilder, CriticBuilder
+from omnisafe.models.actor_critic import ActorCritic
+from omnisafe.utils.config_utils import create_namedtuple_from_dict
 
 
 @helpers.parametrize(
     obs_dim=[1, 10, 100],
     act_dim=[1, 5, 10],
+    shared=[None],
     hidden_sizes=[64, 128, 256],
     activation=['tanh', 'softplus', 'sigmoid', 'identity', 'relu'],
-    weight_initialization_mode=[
-        'kaiming_uniform',
-        'xavier_normal',
-        'glorot',
-        'xavier_uniform',
-        'orthogonal',
-    ],
-    shared=[None],
 )
-def test_MLPGaussianActor(
+def test_critic(
     obs_dim: int,
-    act_dim: int,
+    act_dim,
+    shared,
     hidden_sizes: int,
     activation: str,
-    weight_initialization_mode: str,
-    shared,
 ) -> None:
-    """Test the MLP Gaussian Actor class."""
-    gaussianActor = MLPGaussianActor(
+    """Test critic"""
+    builder = CriticBuilder(
         obs_dim=obs_dim,
         act_dim=act_dim,
         hidden_sizes=[hidden_sizes, hidden_sizes],
         activation=activation,
-        weight_initialization_mode=weight_initialization_mode,
         shared=shared,
     )
     obs = torch.randn(obs_dim, dtype=torch.float32)
-    out, logpro = gaussianActor(obs)
-    assert isinstance(out, torch.distributions.normal.Normal) and logpro is None, 'Failed!'
-    out, logpro = gaussianActor(obs, torch.tensor(act_dim, dtype=torch.float32))
-    assert isinstance(out, torch.distributions.normal.Normal) and isinstance(
-        logpro, torch.Tensor
-    ), 'Failed!'
-
-    dist = gaussianActor.dist(obs)
-    assert isinstance(dist, torch.distributions.normal.Normal), 'Failed'
-
-    act, logpro = gaussianActor.predict(obs)
-    assert isinstance(act, torch.Tensor) and isinstance(logpro, torch.Tensor), 'Failed!'
+    act = torch.randn(act_dim, dtype=torch.float32)
+    q_critic = builder.build_critic(critic_type='q')
+    v_critic = builder.build_critic(critic_type='v')
+    out1 = q_critic(obs, act)
+    out2 = v_critic(obs)
+    assert out1.shape == torch.Size([]), f'q_critic output shape is {out1.shape}'
+    assert out2.shape == torch.Size([]), f'v_critic output shape is {out2.shape}'
 
 
 @helpers.parametrize(
@@ -90,16 +62,10 @@ def test_MLPGaussianActor(
     act_dim=[1, 5, 10],
     hidden_sizes=[64, 128, 256],
     activation=['tanh', 'softplus', 'sigmoid', 'identity', 'relu'],
-    weight_initialization_mode=[
-        'kaiming_uniform',
-        'xavier_normal',
-        'glorot',
-        'xavier_uniform',
-        'orthogonal',
-    ],
+    weight_initialization_mode=['kaiming_uniform'],
     shared=[None],
 )
-def test_MLPCategoricalActor(
+def test_categorical_actor(
     obs_dim: int,
     act_dim: int,
     hidden_sizes: int,
@@ -108,8 +74,7 @@ def test_MLPCategoricalActor(
     shared,
 ) -> None:
     """Test the MLP Categorical Actor class."""
-
-    mlpCategoricalActor = MLPCategoricalActor(
+    builder = ActorBuilder(
         obs_dim=obs_dim,
         act_dim=act_dim,
         hidden_sizes=[hidden_sizes, hidden_sizes],
@@ -117,18 +82,79 @@ def test_MLPCategoricalActor(
         weight_initialization_mode=weight_initialization_mode,
         shared=shared,
     )
+    actor = builder.build_actor('categorical')
+
     obs = torch.randn(obs_dim, dtype=torch.float32)
+    dist = actor(obs)
+    assert isinstance(dist, Categorical), 'Actor output is not a Categorical distribution'
 
-    out, logpro = mlpCategoricalActor(obs)
-    assert isinstance(out, Categorical) and logpro is None, 'Failed!'
-    out, logpro = mlpCategoricalActor(obs, torch.tensor(0, dtype=torch.float32))
-    assert isinstance(out, Categorical) and isinstance(logpro, torch.Tensor), 'Failed!'
+    act = dist.sample()
+    dist, logp = actor(obs, act)
+    assert isinstance(dist, Categorical), 'Actor output is not a Categorical distribution'
+    assert logp.shape == torch.Size([]), f'Actor logp output shape is {logp.shape}'
 
-    dist = mlpCategoricalActor.dist(obs)
-    assert isinstance(dist, Categorical), 'Failed'
+    act = actor.predict(obs)
+    assert act.shape == torch.Size([]), f'Actor predict output shape is {act.shape}'
 
-    act, logpro = mlpCategoricalActor.predict(obs)
-    assert isinstance(act, torch.Tensor) and isinstance(logpro, torch.Tensor), 'Failed!'
+    act = actor.predict(obs, deterministic=True)
+    assert act.shape == torch.Size([]), f'Actor predict output shape is {act.shape}'
+
+    act, logp = actor.predict(obs, deterministic=True, need_log_prob=True)
+    assert act.shape == torch.Size([]), f'Actor predict output shape is {act.shape}'
+    assert logp.shape == torch.Size([]), f'Actor logp output shape is {logp.shape}'
+
+
+@helpers.parametrize(
+    obs_dim=[1, 10, 100],
+    act_dim=[1, 5, 10],
+    hidden_sizes=[64, 128, 256],
+    activation=['tanh', 'softplus', 'sigmoid', 'identity', 'relu'],
+    weight_initialization_mode=['kaiming_uniform'],
+    shared=[None],
+    actor_type=['gaussian_annealing', 'gaussian_learning', 'gaussian_stdnet'],
+)
+def test_gaussian_actor(
+    obs_dim: int,
+    act_dim: int,
+    hidden_sizes: int,
+    activation: str,
+    weight_initialization_mode: str,
+    shared,
+    actor_type: str,
+) -> None:
+    """Test the MLP Gaussian Actor class."""
+    builder = ActorBuilder(
+        obs_dim=obs_dim,
+        act_dim=act_dim,
+        hidden_sizes=[hidden_sizes, hidden_sizes],
+        activation=activation,
+        weight_initialization_mode=weight_initialization_mode,
+        shared=shared,
+    )
+    kwargs = {
+        'act_min': torch.full((act_dim,), -1.0),
+        'act_max': torch.full((act_dim,), 1.0),
+    }
+
+    actor = builder.build_actor(actor_type=actor_type, **kwargs)
+
+    obs = torch.randn(obs_dim, dtype=torch.float32)
+    dist = actor(obs)
+    assert isinstance(dist, torch.distributions.Normal), 'Actor output is not a Normal distribution'
+
+    act = dist.sample()
+    dist, logp = actor(obs, act)
+    assert isinstance(dist, torch.distributions.Normal), 'Actor output is not a Normal distribution'
+    assert logp.shape == torch.Size([]), f'Actor logp output shape is {logp.shape}'
+
+    act = actor.predict(obs)
+    assert act.shape == torch.Size([act_dim]), f'Actor predict output shape is {act.shape}'
+
+    act = actor.predict(obs, deterministic=True)
+    assert act.shape == torch.Size([act_dim]), f'Actor predict output shape is {act.shape}'
+    act, logp = actor.predict(obs, deterministic=True, need_log_prob=True)
+    assert act.shape == torch.Size([act_dim]), f'Actor predict output shape is {act.shape}'
+    assert logp.shape == torch.Size([]), f'Actor logp output shape is {logp.shape}'
 
 
 @helpers.parametrize(
@@ -141,8 +167,9 @@ def test_MLPCategoricalActor(
     hidden_sizes=[64],
     activation=['relu'],
     weight_initialization_mode=['kaiming_uniform'],
+    actor_type=['gaussian_annealing', 'gaussian_learning', 'gaussian_stdnet'],
 )
-def test_ActorCritic(
+def test_actor_critic(
     obs_dim: int,
     act_dim: int,
     space_type,
@@ -152,6 +179,7 @@ def test_ActorCritic(
     hidden_sizes: int,
     activation: str,
     weight_initialization_mode: str,
+    actor_type: str,
 ) -> None:
     """Test the Actor Critic class."""
 
@@ -159,6 +187,7 @@ def test_ActorCritic(
         'pi': {
             'hidden_sizes': [hidden_sizes, hidden_sizes],
             'activation': activation,
+            'actor_type': actor_type,
         },
         'val': {
             'hidden_sizes': [hidden_sizes, hidden_sizes],
@@ -166,6 +195,13 @@ def test_ActorCritic(
         },
     }
     observation_space = Box(low=-1, high=1, shape=(obs_dim,))
+
+    model_cfgs = {
+        'ac_kwargs': ac_kwargs,
+        'weight_initialization_mode': weight_initialization_mode,
+        'shared_weights': shared_weights,
+    }
+    model_cfgs = create_namedtuple_from_dict(model_cfgs)
 
     if space_type == Discrete:
         action_space = space_type(act_dim)
@@ -177,9 +213,7 @@ def test_ActorCritic(
         action_space=action_space,
         standardized_obs=standardized_obs,
         scale_rewards=scale_rewards,
-        shared_weights=shared_weights,
-        ac_kwargs=ac_kwargs,
-        weight_initialization_mode=weight_initialization_mode,
+        model_cfgs=model_cfgs,
     )
 
     obs = torch.randn(obs_dim, dtype=torch.float32)
@@ -205,11 +239,4 @@ def test_ActorCritic(
         and isinstance(logpro, np.ndarray)
     ), 'Failed!'
 
-    act = actor_critic.act(obs)
-    assert isinstance(act, np.ndarray), 'Failed!'
-
     # TODO: Test anneal_exploration method.
-
-
-if __name__ == '__main__':
-    test_ActorCritic(100, 10, Discrete, False, False, False, 64, 'relu', 'kaiming_uniform')
