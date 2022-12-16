@@ -119,6 +119,8 @@ The final optimization goals are as follows:
 
 where :math:`D` is some distance measure and :math:`\delta` is the step size.
 
+------
+
 Lagrangian Method Theorem
 -------------------------
 
@@ -165,6 +167,8 @@ thus making infeasible solutions sub-optimal.
         The final solution is :math:`\left(\theta^*, \lambda^*\right)`.
         The goal is to find a saddle point :math:`\left(\theta^*\left(\lambda^*\right), \lambda^*\right)` of the Problem :ref:`(1)<lag-eq-1>`,
         which is a feasible solution. (A feasible solution of the CMDP is a solution which satisfies :math:`J^C(\pi) \leq d` )
+
+------
 
 Practical Implementation
 ------------------------
@@ -264,6 +268,8 @@ Policy update
                 - Else, it may violate the constriants.
 
                 So we often struggle to choose a compromise hyperparameter to balance reward and constraints.
+
+------
 
 Code with OmniSafe
 ~~~~~~~~~~~~~~~~~~
