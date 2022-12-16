@@ -94,6 +94,7 @@ class PolicyGradient:
             obs_dim=self.env.observation_space.shape,
             act_dim=self.env.action_space.shape,
             size=self.local_steps_per_epoch,
+            reward_penalty=cfgs.reward_penalty,
             scale_rewards=cfgs.scale_rewards,
             standardized_obs=cfgs.standardized_obs,
             gamma=cfgs.buffer_cfgs.gamma,
@@ -102,7 +103,6 @@ class PolicyGradient:
             adv_estimation_method=cfgs.buffer_cfgs.adv_estimation_method,
             standardized_reward=cfgs.buffer_cfgs.standardized_reward,
             standardized_cost=cfgs.buffer_cfgs.standardized_cost,
-            reward_penalty=cfgs.buffer_cfgs.reward_penalty,
         )
         # Set up optimizer for policy and value function
         self.actor_optimizer = core.set_optimizer(
@@ -221,7 +221,7 @@ class PolicyGradient:
             # Update internals of AC
             if self.cfgs.exploration_noise_anneal:
                 self.actor_critic.anneal_exploration(frac=epoch / self.cfgs.epochs)
-            if self.cfgs.buffer_cfgs.reward_penalty:
+            if self.cfgs.reward_penalty:
                 # Consider reward penalty parameter in reward calculation: r' = r - c
                 assert hasattr(self, 'lagrangian_multiplier')
                 assert hasattr(self, 'lambda_range_projection')

@@ -77,7 +77,8 @@ class NaturalPG(PolicyGradient):
         """
         self.actor_critic.actor.net.zero_grad()
         q_dist = self.actor_critic.actor(self.fvp_obs)
-        p_dist = self.actor_critic.actor(self.fvp_obs)
+        with torch.no_grad():
+            p_dist = self.actor_critic.actor(self.fvp_obs)
         kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
 
         grads = torch.autograd.grad(kl, self.actor_critic.actor.net.parameters(), create_graph=True)
