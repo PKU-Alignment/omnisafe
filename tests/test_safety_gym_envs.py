@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Test Environments"""
 
 import helpers
 import omnisafe
@@ -24,6 +25,7 @@ import omnisafe
     level=['0', '1', '2'],
 )
 def test_on_policy(algo, agent_id, env_id, level):
+    """Test environments"""
     env_id = 'Safety' + agent_id + env_id + level + '-v0'
     # env_id = 'PointGoal1'
     custom_cfgs = {'epochs': 1, 'steps_per_epoch': 1000, 'pi_iters': 1, 'critic_iters': 1}
