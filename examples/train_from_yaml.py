@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+"""Example of training a policy from default config yaml with OmniSafe."""
 import omnisafe
 
 
