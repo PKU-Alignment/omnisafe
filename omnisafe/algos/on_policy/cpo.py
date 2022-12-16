@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""CPO"""
+"""Implementation of the CPO algorithm."""
 
 import numpy as np
 import torch
 
-from omnisafe.algos import registry
-from omnisafe.algos.on_policy.trpo import TRPO
-from omnisafe.algos.utils import distributed_utils
-from omnisafe.algos.utils.tools import (
+from omnisafe.algorithms import registry
+from omnisafe.algorithms.on_policy.trpo import TRPO
+from omnisafe.utils import distributed_utils
+from omnisafe.utils.tools import (
     conjugate_gradients,
     get_flat_gradients_from,
     get_flat_params_from,
@@ -30,53 +30,73 @@ from omnisafe.algos.utils.tools import (
 
 @registry.register
 class CPO(TRPO):
-    """
-    Paper Name: Constrained Policy Optimization Algorithm.
-    Paper author: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel
-    Paper URL: https://arxiv.org/abs/1705.10528
+    """The Constrained Policy Optimization (CPO) Algorithm.
 
-    This implementation does not use cost shaping, but relies on exploration noise annealing.
+    References:
+        Paper Name: Constrained Policy Optimization.
+        Paper author: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+        Paper URL: https://arxiv.org/abs/1705.10528
 
-    :param algo: Name of the algorithm
-    :param cost_limit: Upper bound of max-cost, set as restriction
-    :param use_cost_value_function: Whether to use two critics value and cost net and update them
-    :param use_kl_early_stopping: Whether stop searching when kl-distance between target-policy and policy becomes too far
-    :param loss_pi_cost_before: Pi and cost loss last iter
     """
 
-    def __init__(self, algo='cpo', **cfgs):
-        TRPO.__init__(self, algo=algo, **cfgs)
-        cfgs = cfgs['cfgs']
-        self.cost_limit = cfgs['cost_limit']
+    def __init__(
+        self,
+        env,
+        cfgs,
+        algo='CPO',
+    ):
+        super().__init__(
+            env=env,
+            cfgs=cfgs,
+            algo=algo,
+        )
+        self.cost_limit = cfgs.cost_limit
         self.loss_pi_cost_before = 0.0
 
+    # pylint: disable-next=too-many-arguments,too-many-locals
     def search_step_size(
-        self, step_dir, g_flat, c, optim_case, p_dist, data, total_steps=25, decay=0.8
+        self,
+        step_dir,
+        g_flat,
+        p_dist,
+        data,
+        loss_pi_before,
+        total_steps=25,
+        decay=0.8,
+        c=0,
+        optim_case=0,
     ):
-        """
-        CPO algorithm performs line-search to ensure constraint satisfaction for rewards and costs.
-        :param step_dir:direction theta changes towards
-        :param g_flat:  gradient tensor of reward ,informs about how rewards improve with change of step direction
-        :param c:how much epcost goes above limit
-        :param p_dist: inform about old policy, how the old policy p performs on observation this moment
-        :param optim_case: the way to optimize
-        :param data: data buffer,mainly with adv, costs, values, actions, and observations
-        :param decay: how search-step reduces in line-search
+        r"""Use line-search to find the step size that satisfies the constraint.
+
+        Args:
+            step_dir
+                direction theta changes towards
+            g_flat
+                gradient tensor of reward ,informs about how rewards improve with change of step direction
+            c
+                how much episode cost goes above limit
+            p_dist
+                inform about old policy, how the old policy p performs on observation this moment
+            optim_case
+                the way to optimize
+            data
+                data buffer,mainly with adv, costs, values, actions, and observations
+            decay
+                how search-step reduces in line-search
         """
         # Get distance each time theta goes towards certain direction
         step_frac = 1.0
         # Get and flatten parameters from pi-net
-        _theta_old = get_flat_params_from(self.ac.pi.net)
-        _, old_log_p = self.ac.pi(data['obs'], data['act'])
-        # Reward improve expection,g-flat as gradient of reward
+        _theta_old = get_flat_params_from(self.actor_critic.actor.net)
+        # Reward improvement, g-flat as gradient of reward
         expected_rew_improve = g_flat.dot(step_dir)
 
         # While not within_trust_region and not finish all steps:
         for j in range(total_steps):
-            # New θ=θ_0+Δ Δ=Δdistance * direction
+            # Get new theta
             new_theta = _theta_old + step_frac * step_dir
-            # Set new θ as new pi-net's parameters
-            set_param_values_to_model(self.ac.pi.net, new_theta)
+            # Set new theta as new actor parameters
+            set_param_values_to_model(self.actor_critic.actor.net, new_theta)
             # The last acceptance steps to next step
             acceptance_step = j + 1
 
@@ -86,12 +106,10 @@ class CPO(TRPO):
                 # Loss of cost of policy cost from real/expected reward
                 loss_pi_cost, _ = self.compute_loss_cost_performance(data=data)
                 # Compute KL distance between new and old policy
-                q_dist = self.ac.pi.dist(data['obs'])
-                # Kl_divergence with a form of pi*log(pi/qi)
+                q_dist = self.actor_critic.actor(data['obs'])
                 torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-            # Δloss(rew)(p-q)
-            loss_rew_improve = self.loss_pi_before - loss_pi_rew.item()
-            # Δcost(p-q)
+            # Compute improvement of reward
+            loss_rew_improve = loss_pi_before - loss_pi_rew.item()
             cost_diff = loss_pi_cost.item() - self.loss_pi_cost_before
 
             # Average across MPI processes...
@@ -99,11 +117,9 @@ class CPO(TRPO):
             # Pi_average of torch_kl above
             loss_rew_improve = distributed_utils.mpi_avg(loss_rew_improve)
             cost_diff = distributed_utils.mpi_avg(cost_diff)
-
-            self.logger.log(
-                'Expected Improvement: %.3f Actual: %.3f' % (expected_rew_improve, loss_rew_improve)
-            )
-            # Check whether there are nans
+            menu = (expected_rew_improve, loss_rew_improve)
+            self.logger.log(f'Expected Improvement: {menu[0]} Actual: {menu[1]}')
+            # Check whether there are nan.
             if not torch.isfinite(loss_pi_rew) and not torch.isfinite(loss_pi_cost):
                 self.logger.log('WARNING: loss_pi not finite')
             elif loss_rew_improve < 0 if optim_case > 1 else False:
@@ -121,12 +137,12 @@ class CPO(TRPO):
                 break
             step_frac *= decay
         else:
-            # If didnt find a step satisfys those conditions
+            # If didn't find a step satisfy those conditions
             self.logger.log('INFO: no suitable step found...')
             step_dir = torch.zeros_like(step_dir)
             acceptance_step = 0
 
-        set_param_values_to_model(self.ac.pi.net, _theta_old)
+        set_param_values_to_model(self.actor_critic.actor.net, _theta_old)
         return step_frac * step_dir, acceptance_step
 
     def algorithm_specific_logs(self):
@@ -146,66 +162,67 @@ class CPO(TRPO):
         """
         Performance of cost on this moment
         """
-        dist, _log_p = self.ac.pi(data['obs'], data['act'])
+        _, _log_p = self.actor_critic.actor(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
         cost_loss = (ratio * data['cost_adv']).mean()
-        # ent = dist.entropy().mean().item()
         info = {}
         return cost_loss, info
 
-    def update_policy_net(self, data):
-        # Get loss and info values before update (one-dimensional parameters of net=pi, as θ-old)
-        theta_old = get_flat_params_from(self.ac.pi.net)
-        self.pi_optimizer.zero_grad()
+    def update_policy_net(
+        self,
+        data,
+    ):  # pylint: disable=too-many-statements,too-many-locals,invalid-name
+        """update policy net"""
+        # Get loss and info values before update
+        theta_old = get_flat_params_from(self.actor_critic.actor.net)
+        self.actor_optimizer.zero_grad()
         loss_pi, pi_info = self.compute_loss_pi(data=data)
-        self.loss_pi_before = loss_pi.item()
-        # Get previous loss of value
-        self.loss_v_before = self.compute_loss_v(data['obs'], data['target_v']).item()
-        # Get previous loss of cost
-        self.loss_c_before = self.compute_loss_c(data['obs'], data['target_c']).item()
+        loss_pi_before = loss_pi.item()
         # Get prob. distribution before updates, previous dist of possibilities
-        p_dist = self.ac.pi.dist(data['obs'])
+        p_dist = self.actor_critic.actor(data['obs'])
         # Train policy with multiple steps of gradient descent
         loss_pi.backward()
         # Average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.ac.pi.net)
-        g_flat = get_flat_gradients_from(self.ac.pi.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.actor.net)
+        g_flat = get_flat_gradients_from(self.actor_critic.actor.net)
 
         # Flip sign since policy_loss = -(ration * adv)
         g_flat *= -1
-        # x: g or g_T in original paper, stands for gradient of cost funtion
-        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
+        # x: g or g_T in original paper, stands for gradient of cost function
+        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)  # pylint: disable=invalid-name
         assert torch.isfinite(x).all()
         eps = 1.0e-8
         # Note that xHx = g^T x, but calculating xHx is faster than g^T x
-        xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
+        # equivalent to : g^T x
+        xHx = torch.dot(x, self.Fvp(x))
         alpha = torch.sqrt(2 * self.target_kl / (xHx + eps))
         assert xHx.item() >= 0, 'No negative values'
 
         # get the policy cost performance gradient b (flat as vector)
-        self.pi_optimizer.zero_grad()
+        self.actor_optimizer.zero_grad()
         loss_cost, _ = self.compute_loss_cost_performance(data=data)
         loss_cost.backward()
         # average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.ac.pi.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.actor.net)
         self.loss_pi_cost_before = loss_cost.item()
-        b_flat = get_flat_gradients_from(self.ac.pi.net)
+        b_flat = get_flat_gradients_from(self.actor_critic.actor.net)
         # :param ep_costs: do samplings to get approximate costs as ep_costs
-        ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
+        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # :params c: how much sampled result of cost goes beyond limit
-        c = ep_costs - self.cost_limit
-        # Rescale, and add eps(small float) to avoid nan
-        c /= self.logger.get_stats('Metrics/EpLen')[0] + eps  # rescale
+        cost = ep_costs - self.cost_limit
+        # Rescale, and add small float to avoid nan
+        cost /= self.logger.get_stats('Metrics/EpLen')[0] + eps  # rescale
 
         # Set variable names as used in the paper with conjugate_gradient method,
-        # used to solve equation(compute Hassen Matrix) instead of Natural Gradient
+        # used to solve equation(compute Hessian Matrix) instead of Natural Gradient
+
         p = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
         q = xHx  # conjugate of matrix H
         r = g_flat.dot(p)  # g^T H^{-1} b
         s = b_flat.dot(p)  # b^T H^{-1} b
 
         # optim_case: divided into 5 kinds to compute
-        if b_flat.dot(b_flat) <= 1e-6 and c < 0:
+        if b_flat.dot(b_flat) <= 1e-6 and cost < 0:
             # feasible step and cost grad is zero: use plain TRPO update...
             A = torch.zeros(1)
             B = torch.zeros(1)
@@ -216,30 +233,30 @@ class CPO(TRPO):
 
             # A,b: mathematical value, not too much true meaning
             A = q - r**2 / s  # must be always >= 0 (Cauchy-Schwarz inequality)
-            B = 2 * self.target_kl - c**2 / s  # safety line intersects trust-region if B > 0
+            B = 2 * self.target_kl - cost**2 / s  # safety line intersects trust-region if B > 0
 
-            if c < 0 and B < 0:
+            if cost < 0 and B < 0:
                 # point in trust region is feasible and safety boundary doesn't intersect
                 # ==> entire trust region is feasible
                 optim_case = 3
-            elif c < 0 and B >= 0:
+            elif cost < 0 and B >= 0:
                 # x = 0 is feasible and safety boundary intersects
                 # ==> most of trust region is feasible
                 optim_case = 2
-            elif c >= 0 and B >= 0:
+            elif cost >= 0 and B >= 0:
                 # x = 0 is infeasible and safety boundary intersects
                 # ==> part of trust region is feasible, recovery possible
                 optim_case = 1
                 self.logger.log('Alert! Attempting feasible recovery!', 'yellow')
             else:
-                # x = 0 infeasible, and safety halfspace is outside trust region
+                # x = 0 infeasible, and safety half space is outside trust region
                 # ==> whole trust region is infeasible, try to fail gracefully
                 optim_case = 0
                 self.logger.log('Alert! Attempting infeasible recovery!', 'red')
 
         # the following computes required nu_star and lambda_star
         if optim_case in [3, 4]:
-            # under 3 and 4 cases directly use trpo method
+            # under 3 and 4 cases directly use TRPO method
             alpha = torch.sqrt(
                 2 * self.target_kl / (xHx + 1e-8)
             )  # step gap fixed by KKT condition in conjugate algorithm
@@ -249,25 +266,26 @@ class CPO(TRPO):
 
         elif optim_case in [1, 2]:
             # in 1 and 2,
-            def project_on_set(t: torch.Tensor, low: float, high: float) -> torch.Tensor:
-                return torch.Tensor([max(low, min(t, high))])
+            def project_on_set(data: torch.Tensor, low: float, high: float) -> torch.Tensor:
+                return torch.Tensor([max(low, min(data, high))])
 
-            #  Analytical Solution to LQCLP, employ lambda,nu to compute final solution of argmax-OLOLQC
+            #  Analytical Solution to LQCLP, employ lambda,nu to compute final solution of OLOLQC
             #  λ=argmax(f_a(λ),f_b(λ)) = λa_star or λb_star
-            #  (computing formula shown in appendix) λa and λb
+            #  computing formula shown in appendix, lambda_a and lambda_b
             lambda_a = torch.sqrt(A / B)
             lambda_b = torch.sqrt(q / (2 * self.target_kl))
             # λa_star = Proj(lambda_a ,0 ~ r/c)  λb_star=Proj(lambda_b,r/c~ +inf)
-            # where Proj(str,b,c)=max(b,min(str,c)) , may be regarded as a projection from effective region towards safety region
-            if c < 0:
-                lambda_a_star = project_on_set(lambda_a, 0.0, r / c)
-                lambda_b_star = project_on_set(lambda_b, r / c, np.inf)
+            # where projection(str,b,c)=max(b,min(str,c))
+            # may be regarded as a projection from effective region towards safety region
+            if cost < 0:
+                lambda_a_star = project_on_set(lambda_a, 0.0, r / cost)
+                lambda_b_star = project_on_set(lambda_b, r / cost, np.inf)
             else:
-                lambda_a_star = project_on_set(lambda_a, r / c, np.inf)
-                lambda_b_star = project_on_set(lambda_b, 0.0, r / c)
+                lambda_a_star = project_on_set(lambda_a, r / cost, np.inf)
+                lambda_b_star = project_on_set(lambda_b, 0.0, r / cost)
 
             def f_a(lam):
-                return -0.5 * (A / (lam + eps) + B * lam) - r * c / (s + eps)
+                return -0.5 * (A / (lam + eps) + B * lam) - r * cost / (s + eps)
 
             def f_b(lam):
                 return -0.5 * (q / (lam + eps) + 2 * self.target_kl * lam)
@@ -278,7 +296,7 @@ class CPO(TRPO):
 
             # Discard all negative values with torch.clamp(x, min=0)
             # Nu_star = (lambda_star * - r)/s
-            nu_star = torch.clamp(lambda_star * c - r, min=0) / (s + eps)
+            nu_star = torch.clamp(lambda_star * cost - r, min=0) / (s + eps)
             # final x_star as final direction played as policy's loss to backward and update
             step_dir = 1.0 / (lambda_star + eps) * (x - nu_star * p)
 
@@ -292,31 +310,31 @@ class CPO(TRPO):
         final_step_dir, accept_step = self.search_step_size(
             step_dir,
             g_flat,
-            c=c,
+            c=cost,
+            loss_pi_before=loss_pi_before,
             optim_case=optim_case,
             p_dist=p_dist,
             data=data,
             total_steps=20,
         )
         # Update actor network parameters
-        # just like trpo update method
         new_theta = theta_old + final_step_dir
-        set_param_values_to_model(self.ac.pi.net, new_theta)
+        set_param_values_to_model(self.actor_critic.actor.net, new_theta)
         # Output the performance of pi policy on observation
-        q_dist = self.ac.pi.dist(data['obs'])
+        q_dist = self.actor_critic.actor(data['obs'])
         torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
 
         self.logger.store(
             **{
                 'Values/Adv': data['act'].numpy(),
-                'Entropy': pi_info['ent'],
-                'KL': torch_kl,
-                'PolicyRatio': pi_info['ratio'],
-                'Loss/Pi': self.loss_pi_before,
-                'Loss/DeltaPi': loss_pi.item() - self.loss_pi_before,
-                'Loss/Cost': 0.0,
-                'Loss/DeltaCost': 0.0,
-                'Misc/StopIter': 1,
+                'Train/Entropy': pi_info['ent'],
+                'Train/KL': torch_kl,
+                'Train/PolicyRatio': pi_info['ratio'],
+                'Loss/Loss_pi': loss_pi_before,
+                'Loss/Delta_loss_pi': loss_pi.item() - loss_pi_before,
+                'Loss/Loss_cost_critic': 0.0,
+                'Loss/Delta_loss_cost_critic': 0.0,
+                'Train/StopIter': 1,
                 'Misc/AcceptanceStep': accept_step,
                 'Misc/Alpha': alpha.item(),
                 'Misc/FinalStepNorm': final_step_dir.norm().numpy(),
