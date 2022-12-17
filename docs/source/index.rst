@@ -20,6 +20,13 @@
     Documentation/Installation
 
 .. toctree::
+    :maxdepth: 2
+    :caption: Foundations
+
+    Foundations/notations
+    Foundations/pre_know
+
+.. toctree::
     :maxdepth: 1
     :caption: Base RL Algorithm
 
