@@ -125,3 +125,5 @@ defaults:
     lambda_lr: 0.035
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
+    # The upper bound of lagrange multiplier
+    lagrangian_upper_bound: 2.0

@@ -23,7 +23,7 @@ defaults:
   # Number of steps per epoch
   steps_per_epoch: 30000
   # Number of update iteration for Actor network
-  actor_iters: 80
+  actor_iters: 1
   # Number of update iteration for Critic network
   critic_iters: 40
   # Check if all models own the same parameter values every `check_freq` epoch
@@ -42,17 +42,20 @@ defaults:
   critic_lr: 0.001
   # The Address for saving training process data
   data_dir: "./runs"
-  ## -----------------------------Basic configurations for derived class CPO--------------------- ##
+
+  ## ---------------------------Basic configurations for derived class FOCOPS------------------- ##
   # The thereshold for KL early stopping
   target_kl: 0.01
   # Tolerance of constraint violation
   cost_limit: 25
-  # Damping value for conjugate gradient
-  cg_damping: 0.1
-  # Number of conjugate gradient iterations
-  cg_iters: 10
-  # Subsampled observation
-  fvp_obs: None
+  # The thereshold for KL divergence in each policy update
+  eta: 0.02
+  # The hyperparameters related to the greediness of the algorithm
+  lam: 1.5
+  # The size of batch for policy update
+  batch_size: 2000
+  # The value to clip surrogate function
+  clip: 0.2
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
@@ -75,7 +78,8 @@ defaults:
   # Whether to use reward scaling
   scale_rewards: False
   # Whether to use standardized observation
-  standardized_obs: True
+  standardized_obs: False
+
   ## ---------------------------------------Configuration For Model----------------------------- ##
   model_cfgs:
     # Whether to share the weight of Actor network with Critic network
@@ -97,6 +101,7 @@ defaults:
         hidden_sizes: [64, 64]
         # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
         activation: tanh
+
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   buffer_cfgs:
     # Reward discounted factor
@@ -111,7 +116,8 @@ defaults:
     standardized_reward: True
     # Whether to use standardized cost
     standardized_cost: True
-   ## ----------------------------------Configuration For Lagrangian multiplier---------------------- ##
+
+## ----------------------------------Configuration For Lagrangian multiplier---------------------- ##
   lagrange_cfgs:
     # Tolerance of constraint violation
     cost_limit: 25.0
