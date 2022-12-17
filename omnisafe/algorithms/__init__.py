@@ -30,7 +30,7 @@ from omnisafe.algorithms.on_policy.ppo import PPO
 from omnisafe.algorithms.on_policy.ppo_lag import PPOLag
 from omnisafe.algorithms.on_policy.trpo import TRPO
 from omnisafe.algorithms.on_policy.trpo_lag import TRPOLag
-
+from omnisafe.algorithms.on_policy.cup import CUP
 
 algo_type = {
     'off-policy': ['DDPG'],
@@ -48,6 +48,7 @@ algo_type = {
         'PPOLag',
         'TRPO',
         'TRPOLag',
+        'CUP',
     ],
     'model-based': ['MBPPOLag', 'SafeLoop'],
 }
