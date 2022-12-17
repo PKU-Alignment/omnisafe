@@ -28,7 +28,7 @@ class Lagrange(abc.ABC):
         lagrangian_multiplier_init: float,
         lambda_lr: float,
         lambda_optimizer: str,
-        lagrangian_upper_bound: None,
+        lagrangian_upper_bound=None,
     ):
         """init"""
         self.cost_limit = cost_limit
