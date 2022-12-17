@@ -62,84 +62,65 @@ Here we provide a table for comparison of **OmniSafe's algorithm core** and exis
 
 ## Implemented Algorithms
 
-<div align="center">
-  <b>OmniSafe</b>
-</div>
-<table align="center">
-  <tbody>
-    <tr align="center" valign="bottom">
-      <td>
-        <b>On Policy</b>
-      </td>
-      <td>
-        <b>Off Policy</b>
-      </td>
-      <td>
-        <b>Other</b>
-      </td>
-    </tr>
-    <tr valign="top">
-      <td>
-        <ul>
-            <li>PDO</li>
-            <li><a href="https://cdn.openai.com/safexp-short.pdf">PPO-Lag (arxiv)</a></li>
-            <li><a href="https://cdn.openai.com/safexp-short.pdf">TRPO-Lag (arxiv)</a></li>
-            <li><a href="https://proceedings.mlr.press/v70/achiam17a">CPO (ICML'2017)</a></li>
-            <li><a href="https://openreview.net/forum?id=SkfrvsA9FX">RCPO (ICLR'2019)</a></li>
-            <li><a href="https://arxiv.org/abs/2007.03964">CPPOpid (ICML'2020)</a></li>
-            <li><a href="https://arxiv.org/abs/2002.06506">FOCOPS (NeurIPS'2020)</a></li>
-            <li><a href="https://arxiv.org/abs/1910.09615">IPO (AAAI'2020)</a></li>
-            <li><a href="https://openreview.net/forum?id=rke3TJrtPS">PCPO (ICLR'2020)</a></li>
-            <li><a href="https://arxiv.org/abs/2011.05869">CRPO (ICML'2021)</a></li>
-            <li><a href="https://arxiv.org/abs/2209.07089">CUP (NeurIPS'2022)</a></li>
-      </ul>
-      </td>
-      <td>
-        <ul>
-          <li>TD3-Lag</li>
-          <li>SAC-Lag</li>
-          <li>DDPG-Lag</li>
-          <li><a href="https://arxiv.org/abs/1901.10031">SDDPG (ICML'2019)</a></li>
-          <li><a href="https://arxiv.org/abs/1901.10031">SDDPG-modular (ICML'2019)</a></li>
-          <li><a href="https://arxiv.org/abs/2201.11927">CVPO (ICML'2022)</a></li>
-        </ul>
-      </td>
-      <td>
-        </ul>
-          <li><b>Model Base Safe</b></li>
-        <ul>
-        <ul>
-          <li><a href="https://arxiv.org/abs/2112.07701">CAP (AAAI'2020)</a></li>
-          <li><a href="https://arxiv.org/abs/2202.07789">SMBPO (NeurIPS'2021)</a></li>
-          <li><a href="https://arxiv.org/abs/2210.07573">MBPPOL (NeurIPS'2022)</a></li>
-        </ul>
-        </ul>
-        </ul>
-          <li><b>Offline Safe</b></li>
-        <ul>
-        <ul>
-          <li>BCQ-Lag</li>
-          <li>C-CRR</li>
-          <li><a href="https://arxiv.org/abs/2107.09003">CPQ (AAAI'2022)</a></li>
-          <li><a href="https://proceedings.mlr.press/v162/polosky22a.html">COPO (ICML'2022)</a></li>
-        </ul>
-        </ul>
-          <li><b>Control</b></li>
-        <ul>
-        <ul>
-          <li><a href="https://arxiv.org/abs/1801.08757">Safe Layer (arxiv)</a></li>
-          <li><a href="https://arxiv.org/abs/2010.15920">Recovery Rl (RA-L, ICRA'2021)</a></li>
-        </ul>
-        </ul>
-      </ul>
-      </td>
-    </tr>
-</td>
-    </tr>
-  </tbody>
-</table>
+The supported interface algorithms currently include:
 
-**Notes** IPO, PCPO, CRPO, CUP will be released before 2022.12.1. Offline Safe will be released before 12.1. Control will be released before 2022.12.1.
+### Published **in 2022**
+
+- **[AAAI 2023]** Augmented Proximal Policy Optimization for Safe Reinforcement Learning (APPO) **The original author of the paper contributed code**
+- :heavy_check_mark:**[NeurIPS 2022]** [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089) **The original author of the paper contributed code**
+- **[NeurIPS 2022]** [Effects of Safety State Augmentation on
+Safe Exploration](https://arxiv.org/abs/2206.02675) **Under Test**
+- :heavy_check_mark: **[NeurIPS 2022]** [Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
+- **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558) **Under Test**
+- **[ICML 2022]** [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927) **Under Test**
+- :heavy_check_mark:**[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning](https://arxiv.org/abs/2205.11814) **The original author of the paper contributed code**
+- **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LAMBDA)](https://arxiv.org/abs/2201.09802)
+- **[AAAI 2022]** [Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
+
+
+### Published **before 2022**
+
+> On Policy Safe
+- [The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
+- [The Lagrange version of TRPO (TRPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
+- [ICML 2017][Constrained Policy Optimization (CPO)](https://proceedings.mlr.press/v70/achiam17a)
+- [ICLR 2019][Reward Constrained Policy Optimization (RCPO)](https://openreview.net/forum?id=SkfrvsA9FX)
+- [ICML 2020][Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (PID-Lag)](https://arxiv.org/abs/2007.03964)
+- [NeurIPS 2020][First Order Constrained Optimization in Policy Space (FOCOPS)](https://arxiv.org/abs/2002.06506)
+- [AAAI 2020][IPO: Interior-point Policy Optimization under Constraints (IPO)](https://arxiv.org/abs/1910.09615)
+- [ICLR 2020][Projection-Based Constrained Policy Optimization (PCPO)](https://openreview.net/forum?id=rke3TJrtPS)
+- [ICML 2021][CRPO: A New Approach for Safe Reinforcement Learning with Convergence Guarantee](https://arxiv.org/abs/2011.05869)
+
+> Off Policy Safe
+- The Lagrange version of TD3 (TD3-Lag)
+- The Lagrange version of DDPG (DDPG-Lag)
+- The Lagrange version of SAC (SAC-Lag)
+- [ICML 2019][Lyapunov-based Safe Policy Optimization for Continuous Control (SDDPG)](https://arxiv.org/abs/1901.10031)
+- [ICML 2019][Lyapunov-based Safe Policy Optimization for Continuous Control (SDDPG-modular)](https://arxiv.org/abs/1901.10031)
+- [ICML 2022] [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
+
+> Model Base Safe
+
+- [NeurIPS 2021][Safe Reinforcement Learning by Imagining the Near Future (SMBPO)](https://arxiv.org/abs/2202.07789)
+- [CoRL 2021 Oral][Learning Off-Policy with Online Planning](https://arxiv.org/abs/2008.10066)
+- [AAAI 2022][Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
+- [NeurIPS 2022][Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
+- [ICLR 2022] [Constrained Policy Optimization via Bayesian World Models (LAMBDA)](https://arxiv.org/abs/2201.09802)
+
+> Offline Safe
+- [The Lagrange version of BCQ (BCQ-Lag)](https://arxiv.org/abs/1812.02900)
+- [The Constrained version of CRR (C-CRR)](https://proceedings.neurips.cc/paper/2020/hash/588cb956d6bbe67078f29f8de420a13d-Abstract.html)
+- [AAAI 2022] [Constraints Penalized Q-learning for Safe Offline Reinforcement Learning CPQ](https://arxiv.org/abs/2107.09003)
+- [ICLR 2022 spotlight] [COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation](https://arxiv.org/abs/2204.08957?context=cs.AI)
+- [ICML 2022][Constrained Offline Policy Optimization (COPO)](https://proceedings.mlr.press/v162/polosky22a.html)
+
+> Other
+- [Safe Exploration in Continuous Action Spaces (Safety Layer)](https://arxiv.org/abs/1801.08757)
+- [RA-L 2021] [Recovery RL: Safe Reinforcement Learning with Learned Recovery Zones](https://arxiv.org/abs/2010.15920)
+- [ICML 2022] [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
+- [NeurIPS 2022] [Effects of Safety State Augmentation on
+Safe Exploration](https://arxiv.org/abs/2206.02675)
+
 
 --------------------------------------------------------------------------------
 
@@ -258,7 +239,7 @@ pip install -e .
 
 ```bash
 cd examples
-python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1 --seed 0
+python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1 --seed 0
 ```
 
 **algo:** `PolicyGradient, PPO, PPOLag, NaturalPG, TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid`
