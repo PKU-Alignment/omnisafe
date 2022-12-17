@@ -20,6 +20,7 @@ body:
     id: questions
     attributes:
       label: Questions
-      description: Describe your questions with relevant resources such as snippets, links, images, etc.
+      placeholder: |
+        Describe your questions with relevant resources such as snippets, links, images, etc.
     validations:
       required: true
