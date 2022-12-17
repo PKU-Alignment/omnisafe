@@ -24,8 +24,8 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
 
 - [Overview](#overview)
 - [Implemented Algorithms](#implemented-algorithms)
-  -[Published in 2022](#published-in-2022)
-  -[List of Algorithms](#list-of-algorithms)
+  - [Published in 2022](#published-in-2022)
+  - [List of Algorithms](#list-of-algorithms)
 - [SafeRL Environments](#saferl-environments)
   - [Safety Gymnasium](#safety-gymnasium)
   - [Vision-base Safe RL](#vision-base-safe-rl)
