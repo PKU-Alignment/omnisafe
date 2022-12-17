@@ -24,6 +24,8 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
 
 - [Overview](#overview)
 - [Implemented Algorithms](#implemented-algorithms)
+  -[Published in 2022](#published-in-2022)
+  -[Published Beforce 2022](#published-before-2022)
 - [SafeRL Environments](#saferl-environments)
   - [Safety Gymnasium](#safety-gymnasium)
   - [Vision-base Safe RL](#vision-base-safe-rl)
@@ -108,8 +110,8 @@ Safe Exploration](https://arxiv.org/abs/2206.02675)
 - [ICLR 2022] [Constrained Policy Optimization via Bayesian World Models (LAMBDA)](https://arxiv.org/abs/2201.09802)
 
 > Offline Safe
-- [The Lagrange version of BCQ (BCQ-Lag)](https://arxiv.org/abs/1812.02900)
-- [The Constrained version of CRR (C-CRR)](https://proceedings.neurips.cc/paper/2020/hash/588cb956d6bbe67078f29f8de420a13d-Abstract.html)
+- :heavy_check_mark:[The Lagrange version of BCQ (BCQ-Lag)](https://arxiv.org/abs/1812.02900)
+- :heavy_check_mark:[The Constrained version of CRR (C-CRR)](https://proceedings.neurips.cc/paper/2020/hash/588cb956d6bbe67078f29f8de420a13d-Abstract.html)
 - [AAAI 2022] [Constraints Penalized Q-learning for Safe Offline Reinforcement Learning CPQ](https://arxiv.org/abs/2107.09003)
 - [ICLR 2022 spotlight] [COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation](https://arxiv.org/abs/2204.08957?context=cs.AI)
 - [ICML 2022][Constrained Offline Policy Optimization (COPO)](https://proceedings.mlr.press/v162/polosky22a.html)
