@@ -14,9 +14,9 @@
 # ==============================================================================
 """Implementation of QCritic."""
 from typing import Optional
+
 import torch
 import torch.nn as nn
-
 
 from omnisafe.models.base import Critic
 from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_network

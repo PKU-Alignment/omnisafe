@@ -22,9 +22,9 @@ import torch
 from gymnasium.spaces import Box, Discrete
 from gymnasium.utils.save_video import save_video
 
-from omnisafe.wrappers.on_policy_wrapper import OnPolicyEnvWrapper as EnvWrapper
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.utils.online_mean_std import OnlineMeanStd
+from omnisafe.wrappers.on_policy_wrapper import OnPolicyEnvWrapper as EnvWrapper
 
 
 class Evaluator:

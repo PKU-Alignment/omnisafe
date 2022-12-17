@@ -21,6 +21,7 @@ from torch.distributions import MultivariateNormal
 
 from omnisafe.utils.model_utils import build_mlp_network, initialize_layer
 
+
 # pylint: disable-next=too-many-instance-attributes
 class MLPCholeskyActor(nn.Module):
     """Implementation of CholeskyActor."""
