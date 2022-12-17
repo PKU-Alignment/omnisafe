@@ -71,7 +71,7 @@ The supported interface algorithms currently include:
 - :heavy_check_mark:**[AAAI 2023]** Augmented Proximal Policy Optimization for Safe Reinforcement Learning (APPO) **The original author of the paper contributed code**
 - :heavy_check_mark:**[NeurIPS 2022]** [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089) **The original author of the paper contributed code**
 - **Under Test[NeurIPS 2022]** [Effects of Safety State Augmentation on
-Safe Exploration](https://arxiv.org/abs/2206.02675)
+Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
 - :heavy_check_mark: **[NeurIPS 2022]** [Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
 - **Under Test[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
 - **Under Test[ICML 2022]** [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
