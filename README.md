@@ -25,7 +25,7 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
 - [Overview](#overview)
 - [Implemented Algorithms](#implemented-algorithms)
   -[Published in 2022](#published-in-2022)
-  -[Published Beforce 2022](#published-before-2022)
+  -[List of Algorithms](#list-of-algorithms)
 - [SafeRL Environments](#saferl-environments)
   - [Safety Gymnasium](#safety-gymnasium)
   - [Vision-base Safe RL](#vision-base-safe-rl)
@@ -80,7 +80,7 @@ Safe Exploration](https://arxiv.org/abs/2206.02675)
 - **[AAAI 2022]** [Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
 
 
-### Published **before 2022**
+### List of Algorithms
 
 > On Policy Safe
 - :heavy_check_mark:[The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
