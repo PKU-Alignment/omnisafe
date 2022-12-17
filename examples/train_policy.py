@@ -24,9 +24,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '--algo',
         type=str,
-        default='PPO',
+        default='PPOLag',
         help='Choose from: {PolicyGradient, PPO, PPOLag, NaturalPG,'
-        ' TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid',
+        ' TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid,CUP',
     )
     parser.add_argument(
         '--env-id',

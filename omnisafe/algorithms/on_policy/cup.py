@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the FOCOPS algorithm."""
-import time
+"""Implementation of the CUP algorithm."""
 
 import torch
-from torch.distributions.normal import Normal
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
@@ -31,7 +29,7 @@ class CUP(PolicyGradient, Lagrange):
     References:
         Paper Name: Constrained Update Projection Approach to Safe Policy Optimization.
         Paper author: Long Yang, Jiaming Ji, Juntao Dai, Linrui Zhang, Binbin Zhou, Pengfei Li, Yaodong Yang, Gang Pan.
-        Paper URL: https://arxiv.org/pdf/2209.07089.pdf
+        Paper URL: https://arxiv.org/abs/2209.07089
 
     """
 
@@ -56,8 +54,8 @@ class CUP(PolicyGradient, Lagrange):
             lagrangian_multiplier_init=self.cfgs.lagrange_cfgs.lagrangian_multiplier_init,
             lambda_lr=self.cfgs.lagrange_cfgs.lambda_lr,
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
+            lagrangian_upper_bound=self.cfgs.lagrange_cfgs.lagrangian_upper_bound,
         )
-        self.lagrangian_multiplier = 0.0
         self.lam = self.cfgs.lam
         self.eta = self.cfgs.eta
         self.clip = self.cfgs.clip
@@ -69,14 +67,6 @@ class CUP(PolicyGradient, Lagrange):
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier)
         self.logger.log_tabular('Train/MaxRatio', self.max_ratio)
         self.logger.log_tabular('Train/MinRatio', self.min_ratio)
-
-    def update_lagrange_multiplier(self, Jc):
-        """Update Lagrange multiplier."""
-        self.lagrangian_multiplier += self.lambda_lr * (Jc - self.cost_limit)
-        if self.lagrangian_multiplier < 0.0:
-            self.lagrangian_multiplier = 0.0
-        elif self.lagrangian_multiplier > 2.0:
-            self.lagrangian_multiplier = 2.0
 
     def compute_loss_pi(self, data: dict):
         """compute loss for policy"""
