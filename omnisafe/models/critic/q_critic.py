@@ -13,9 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of QCritic."""
-
+from typing import Optional
 import torch
 import torch.nn as nn
+
 
 from omnisafe.models.base import Critic
 from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_network
@@ -59,7 +60,7 @@ class QCritic(Critic):
     def forward(
         self,
         obs: torch.Tensor,
-        act: torch.Tensor,
+        act: Optional[torch.Tensor] = None,
     ):
         """Forward."""
         obs = self.obs_encoder(obs)

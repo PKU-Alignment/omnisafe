@@ -13,10 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the FOCOPS algorithm."""
-import time
 
 import torch
-from torch.distributions.normal import Normal
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
@@ -124,7 +122,6 @@ class FOCOPS(PolicyGradient, Lagrange):
                     'adv': adv[i * batch_size : (i + 1) * batch_size],
                     'discounted_ret': discounted_ret[i * batch_size : (i + 1) * batch_size],
                     'cost_adv': cost_adv[i * batch_size : (i + 1) * batch_size],
-                    'target_v': target_v[i * batch_size : (i + 1) * batch_size],
                 }
             )
 

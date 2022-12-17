@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Implementation of CholeskyActor."""
 
 import torch
 import torch.nn.functional as F
@@ -20,8 +21,9 @@ from torch.distributions import MultivariateNormal
 
 from omnisafe.utils.model_utils import build_mlp_network, initialize_layer
 
-
+# pylint: disable-next=too-many-instance-attributes
 class MLPCholeskyActor(nn.Module):
+    """Implementation of CholeskyActor."""
 
     COV_MIN = 1e-4  # last exp is 1e-2
     MEAN_CLAMP_MIN = -5
@@ -29,6 +31,7 @@ class MLPCholeskyActor(nn.Module):
     COV_CLAMP_MIN = -5
     COV_CLAMP_MAX = 20
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         obs_dim,
@@ -42,8 +45,8 @@ class MLPCholeskyActor(nn.Module):
         cov_clamp_min,
         cov_clamp_max,
         weight_initialization_mode,
-        shared=None,
     ):
+        """Initialize."""
         super().__init__()
         pi_sizes = [obs_dim] + hidden_sizes
         self.act_limit = act_limit
@@ -69,7 +72,11 @@ class MLPCholeskyActor(nn.Module):
         nn.init.constant_(self.mu_layer.bias, 0.0)
         nn.init.constant_(self.cholesky_layer.bias, 0.0)
 
-    def predict(self, obs, determinstic=False):
+    def predict(
+        self,
+        obs,
+        deterministic=False,
+    ):  # pylint: disable=invalid-name
         """
         forwards input through the network
         :param obs: (B, obs_dim)
@@ -82,9 +89,9 @@ class MLPCholeskyActor(nn.Module):
         net_out = self.net(obs)
 
         clamped_mu = torch.clamp(self.mu_layer(net_out), self.mu_clamp_min, self.mu_clamp_max)
-        mu = torch.sigmoid(clamped_mu)  # (B, act_dim)
+        mean = torch.sigmoid(clamped_mu)  # (B, act_dim)
 
-        mu = self.act_low + (self.act_high - self.act_low) * mu
+        mean = self.act_low + (self.act_high - self.act_low) * mean
         # Compute logprob from Gaussian, and then apply correction for Tanh squashing.
         # NOTE: The correction formula is a little bit magic. To get an understanding
         # of where it comes from, check out the original SAC paper (arXiv 1801.01290)
@@ -105,13 +112,16 @@ class MLPCholeskyActor(nn.Module):
         tril_indices = torch.tril_indices(row=self.act_dim, col=self.act_dim, offset=0)
         cholesky = torch.zeros(size=(B, self.act_dim, self.act_dim), dtype=torch.float32)
         cholesky[:, tril_indices[0], tril_indices[1]] = cholesky_vector
-        pi_distribution = MultivariateNormal(mu, scale_tril=cholesky)
+        pi_distribution = MultivariateNormal(mean, scale_tril=cholesky)
 
-        if determinstic == False:
-            pi_action = pi_distribution.rsample()
+        if deterministic:
+            pi_action = mean
         else:
-            pi_action = mu
+            pi_action = pi_distribution.rsample()
 
         pi_action = torch.tanh(pi_action)
         pi_action = self.act_limit * pi_action
         return pi_action.squeeze(), cholesky
+
+    def forward(self, obs, deterministic=False):
+        """Forward."""

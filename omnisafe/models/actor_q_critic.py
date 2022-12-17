@@ -12,19 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Implementation of ActorQCritic."""
 
 import numpy as np
 import torch
 import torch.nn as nn
-from gymnasium.spaces import Box, Discrete
+from gymnasium.spaces import Box
 
 from omnisafe.models.actor.mlp_actor import MLPActor
 from omnisafe.models.critic.q_critic import QCritic
 from omnisafe.utils.model_utils import build_mlp_network
 from omnisafe.utils.online_mean_std import OnlineMeanStd
 
-
+# pylint: disable-next=too-many-instance-attributes
 class ActorQCritic(nn.Module):
+    """Class for ActorQCritic."""
+
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         observation_space,
@@ -34,6 +38,7 @@ class ActorQCritic(nn.Module):
         model_cfgs,
         weight_initialization_mode='kaiming_uniform',
     ) -> None:
+        """Initialize ActorQCritic"""
         super().__init__()
 
         self.obs_shape = observation_space.shape
@@ -45,14 +50,7 @@ class ActorQCritic(nn.Module):
         if isinstance(action_space, Box):
             if model_cfgs.pi_type == 'dire':
                 actor_fn = MLPActor
-            # elif pi_type == 'chol':
-            #     actor_fn = MLPCholeskyActor
-            # else:
-            #     actor_fn = OMLPGaussianActor
             act_dim = action_space.shape[0]
-        # elif isinstance(action_space, Discrete):
-        #     actor_fn = CategoricalActor
-        #     act_dim = action_space.n
         else:
             raise ValueError
 
@@ -71,15 +69,6 @@ class ActorQCritic(nn.Module):
             )
         else:
             shared = None
-
-        # obs_dim: int,
-        # act_dim: int,
-        # act_noise,
-        # act_limit,
-        # hidden_sizes: list,
-        # activation: Activation,
-        # weight_initialization_mode: InitFunction = 'xavier_uniform',
-        # shared: nn.Module = None,
 
         self.actor = actor_fn(
             obs_dim=self.obs_dim,
@@ -108,7 +97,7 @@ class ActorQCritic(nn.Module):
             shared=shared,
         )
 
-    def step(self, obs, determinstic=False):
+    def step(self, obs, deterministic=False):
         """
         If training, this includes exploration noise!
         Expects that obs is not pre-processed.
@@ -126,13 +115,13 @@ class ActorQCritic(nn.Module):
                 # self.obs_oms.update(obs) if self.training else None
                 obs = self.obs_oms(obs)
             if isinstance(self.pi, MLPActor):
-                a = self.pi.predict(obs, determinstic=determinstic)
+                action = self.pi.predict(obs, determinstic=deterministic)
             else:
-                a, logp_a = self.pi.predict(obs, determinstic=determinstic)
-            v = self.v(obs, a)
-            a = np.clip(a.numpy(), -self.act_limit, self.act_limit)
+                action, logp_a = self.pi.predict(obs, determinstic=deterministic)
+            value = self.v(obs, action)
+            action = np.clip(action.numpy(), -self.act_limit, self.act_limit)
 
-        return a, v.numpy(), logp_a.numpy()
+        return action, value.numpy(), logp_a.numpy()
 
     def anneal_exploration(self, frac):
         """update internals of actors
@@ -142,3 +131,6 @@ class ActorQCritic(nn.Module):
         """
         if hasattr(self.pi, 'set_log_std'):
             self.pi.set_log_std(1 - frac)
+
+    def forward(self, obs, act):
+        """Compute the value of a given state-action pair."""

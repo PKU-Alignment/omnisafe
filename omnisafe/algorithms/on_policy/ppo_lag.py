@@ -32,6 +32,7 @@ class PPOLag(PolicyGradient, Lagrange):
 
     """
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         env_id,

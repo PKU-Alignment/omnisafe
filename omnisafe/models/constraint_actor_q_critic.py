@@ -1,3 +1,19 @@
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Implementation of ConstraintActorQCritic."""
+
 import numpy as np
 import torch
 
@@ -5,29 +21,19 @@ from omnisafe.models.actor_q_critic import ActorQCritic
 from omnisafe.models.critic.q_critic import QCritic
 
 
-# observation_space,
-# action_space,
-# pi_type,
-# standardized_obs: bool,
-# shared_weights: bool,
-# ac_kwargs: dict,
-
-
 class ConstraintActorQCritic(ActorQCritic):
+    """ConstraintActorQCritic is a wrapper around ActorQCritic that adds a cost critic to the model."""
+
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         observation_space,
         action_space,
         standardized_obs: bool,
-        scale_rewards: bool,
         model_cfgs,
     ):
-        #         observation_space,
-        # action_space,
-        # standardized_obs: bool,
-        # shared_weights: bool,
-        # model_cfgs,
-        # weight_initialization_mode='kaiming_uniform',
+        """Initialize ConstraintActorQCritic."""
+
         super().__init__(
             observation_space=observation_space,
             action_space=action_space,
@@ -61,9 +67,9 @@ class ConstraintActorQCritic(ActorQCritic):
                 # Note: Update RMS in Algorithm.running_statistics() method
                 # self.obs_oms.update(obs) if self.training else None
                 obs = self.obs_oms(obs)
-            a, logp_a = self.actor.predict(obs, deterministic=deterministic)
-            v = self.critic(obs, a)
-            c = self.cost_critic(obs, a)
-            a = np.clip(a.numpy(), -self.act_limit, self.act_limit)
+            action, logp_a = self.actor.predict(obs, deterministic=deterministic)
+            value = self.critic(obs, action)
+            cost_value = self.cost_critic(obs, action)
+            action = np.clip(action.numpy(), -self.act_limit, self.act_limit)
 
-        return a, v.numpy(), c.numpy(), logp_a.numpy()
+        return action, value.numpy(), cost_value.numpy(), logp_a.numpy()

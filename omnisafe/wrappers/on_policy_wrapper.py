@@ -20,9 +20,8 @@ import torch
 from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 
-# pylint: disable-next=too-many-instance-attributes
 @WRAPPER_REGISTRY.register
-class OnPolicyEnvWrapper:
+class OnPolicyEnvWrapper:  # pylint: disable=too-many-instance-attributes
     """env_wrapper"""
 
     def __init__(self, env_id, render_mode=None):

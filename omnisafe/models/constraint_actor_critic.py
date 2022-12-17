@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of ConstraintActorCritic."""
+
 import torch
 
 from omnisafe.models.actor_critic import ActorCritic

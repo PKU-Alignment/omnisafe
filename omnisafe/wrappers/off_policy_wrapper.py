@@ -20,6 +20,7 @@ import torch
 from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 
+# pylint: disable=too-many-instance-attributes
 @WRAPPER_REGISTRY.register
 class OffPolicyEnvWrapper:
     """OffPolicyEnvWrapper"""
@@ -82,6 +83,7 @@ class OffPolicyEnvWrapper:
         next_obs, reward, cost, terminated, truncated, info = self.env.step(action)
         return next_obs, reward, cost, terminated, truncated, info
 
+    # pylint: disable=too-many-arguments, too-many-locals
     def roll_out(
         self,
         actor_critic,
@@ -97,7 +99,7 @@ class OffPolicyEnvWrapper:
             ep_len = self.ep_len
             ep_cost = self.ep_cost
             obs = self.curr_o
-            action, value, cost_value, logp = actor_critic.step(
+            action, value, cost_value, _ = actor_critic.step(
                 torch.as_tensor(obs, dtype=torch.float32), deterministic=deterministic
             )
             # Store values for statistic purpose
@@ -108,6 +110,7 @@ class OffPolicyEnvWrapper:
             if use_rand_action:
                 action = self.env.action_space.sample()
             # Step the env
+            # pylint: disable=unused-variable
             obs_next, reward, cost, done, truncated, info = self.step(action)
             ep_ret += reward
             ep_cost += cost

@@ -134,3 +134,7 @@ Wierstra
 Pritzel
 Heess
 mul
+logprob
+Tanh
+Eq
+chol

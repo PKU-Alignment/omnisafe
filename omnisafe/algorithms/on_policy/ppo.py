@@ -30,6 +30,7 @@ class PPO(PolicyGradient):
         Paper URL: https://arxiv.org/pdf/1707.06347.pdf
     """
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         env_id,
