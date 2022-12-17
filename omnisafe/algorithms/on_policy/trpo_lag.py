@@ -34,16 +34,18 @@ class TRPOLag(TRPO, Lagrange):
 
     def __init__(
         self,
-        env,
+        env_id,
         cfgs,
         algo: str = 'TRPO-Lag',
+        wrapper_type: str = "OnPolicyEnvWrapper",
     ):
         """initialize"""
         TRPO.__init__(
             self,
-            env=env,
+            env_id=env_id,
             cfgs=cfgs,
             algo=algo,
+            wrapper_type=wrapper_type,
         )
         Lagrange.__init__(
             self,

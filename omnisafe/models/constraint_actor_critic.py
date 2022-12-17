@@ -29,9 +29,6 @@ class ConstraintActorCritic(ActorCritic):
         action_space,
         standardized_obs: bool,
         scale_rewards: bool,
-        # shared_weights: bool,
-        # ac_kwargs: dict,
-        # weight_initialization_mode='kaiming_uniform',
         model_cfgs,
     ) -> None:
         ActorCritic.__init__(

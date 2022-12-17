@@ -29,14 +29,21 @@ class NPGLag(NaturalPG, Lagrange):
 
     """
 
-    def __init__(self, env, cfgs, algo: str = 'NPG-LAG'):
+    def __init__(
+        self,
+        env_id,
+        cfgs,
+        algo: str = 'NPG-LAG',
+        wrapper_type: str = "OnPolicyEnvWrapper",
+    ):
         """initialize"""
 
         NaturalPG.__init__(
             self,
-            env=env,
+            env_id=env_id,
             cfgs=cfgs,
             algo=algo,
+            wrapper_type=wrapper_type,
         )
         Lagrange.__init__(
             self,

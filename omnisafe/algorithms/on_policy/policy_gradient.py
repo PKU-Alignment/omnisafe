@@ -23,6 +23,7 @@ import torch
 from omnisafe.algorithms import registry
 from omnisafe.common.buffer import Buffer
 from omnisafe.common.logger import Logger
+from omnisafe.wrappers import wrapper_registry
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core, distributed_utils
 from omnisafe.utils.tools import get_flat_params_from
@@ -43,9 +44,10 @@ class PolicyGradient:
     # pylint: disable-next=too-many-locals
     def __init__(
         self,
-        env,
+        env_id,
         cfgs=None,
         algo: str = 'PolicyGradient',
+        wrapper_type: str = "OnPolicyEnvWrapper",
     ) -> None:
         r"""Initialize the algorithm.
 
@@ -56,7 +58,7 @@ class PolicyGradient:
             cfgs: (default: :const:`None`)
                 This is a dictionary of the algorithm hyper-parameters.
         """
-        self.env = env
+        self.env = wrapper_registry.get(wrapper_type)(env_id)
         self.algo = algo
         self.cfgs = deepcopy(cfgs)
 
@@ -73,7 +75,7 @@ class PolicyGradient:
         self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
         self.logger.save_config(cfgs._asdict())
         # Set seed
-        seed = cfgs.seed + 10000 * distributed_utils.proc_id()
+        seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
         torch.manual_seed(seed)
         np.random.seed(seed)
         self.env.env.reset(seed=seed)

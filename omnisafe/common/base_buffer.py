@@ -27,7 +27,7 @@ class BaseBuffer:
     def __init__(self, obs_dim, act_dim, size, batch_size):
         """init"""
         self.obs_buf = np.zeros(combined_shape(size, obs_dim), dtype=np.float32)
-        self.obs2_buf = np.zeros(combined_shape(size, obs_dim), dtype=np.float32)
+        self.obs_next_buf = np.zeros(combined_shape(size, obs_dim), dtype=np.float32)
         self.act_buf = np.zeros(combined_shape(size, act_dim), dtype=np.float32)
         self.rew_buf = np.zeros(size, dtype=np.float32)
         self.cost_buf = np.zeros(size, dtype=np.float32)
@@ -39,7 +39,7 @@ class BaseBuffer:
     def store(self, obs, act, rew, cost, next_obs, done):
         """store"""
         self.obs_buf[self.ptr] = obs
-        self.obs2_buf[self.ptr] = next_obs
+        self.obs_next_buf[self.ptr] = next_obs
         self.act_buf[self.ptr] = act
         self.rew_buf[self.ptr] = rew
         self.cost_buf[self.ptr] = cost
@@ -52,7 +52,7 @@ class BaseBuffer:
         idxs = np.random.randint(0, self.size, size=self.batch_size)
         batch = dict(
             obs=self.obs_buf[idxs],
-            obs2=self.obs2_buf[idxs],
+            obs_next=self.obs_next_buf[idxs],
             act=self.act_buf[idxs],
             rew=self.rew_buf[idxs],
             cost=self.cost_buf[idxs],

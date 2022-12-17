@@ -29,13 +29,20 @@ class PDO(PolicyGradient, Lagrange):
 
     """
 
-    def __init__(self, env, cfgs, algo='PDO'):
+    def __init__(
+        self,
+        env_id,
+        cfgs,
+        algo='PDO',
+        wrapper_type: str = "OnPolicyEnvWrapper",
+    ):
         """initialization"""
         PolicyGradient.__init__(
             self,
-            env=env,
+            env_id=env_id,
             cfgs=cfgs,
             algo=algo,
+            wrapper_type=wrapper_type,
         )
         Lagrange.__init__(
             self,

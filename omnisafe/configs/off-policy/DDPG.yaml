@@ -37,7 +37,7 @@ defaults:
   # Optional Configuration
   ## Whether to use cost critic
   use_cost: False
-  use_linear_lr_decay: False
+  linear_lr_decay: False
   exploration_noise_anneal: False
   reward_penalty: False
   use_max_grad_norm: False

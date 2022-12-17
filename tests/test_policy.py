@@ -38,6 +38,5 @@ def test_on_policy(algo):
     """Test algorithms"""
     env_id = 'SafetyPointGoal1-v0'
     custom_cfgs = {'epochs': 1, 'steps_per_epoch': 1000, 'pi_iters': 1, 'critic_iters': 1}
-    env = omnisafe.Env(env_id)
-    agent = omnisafe.Agent(algo, env, custom_cfgs=custom_cfgs, parallel=1)
+    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()

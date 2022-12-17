@@ -127,3 +127,10 @@ FOCOPS
 Kakade
 QCritic
 yaml
+polyak
+MSE
+Daan
+Wierstra
+Pritzel
+Heess
+mul

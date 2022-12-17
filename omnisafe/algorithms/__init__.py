@@ -28,6 +28,9 @@ from omnisafe.algorithms.on_policy.ppo_lag import PPOLag
 from omnisafe.algorithms.on_policy.trpo import TRPO
 from omnisafe.algorithms.on_policy.trpo_lag import TRPOLag
 
+# Off Policy Safe
+from omnisafe.algorithms.off_policy.ddpg import DDPG
+
 
 algo_type = {
     'off-policy': ['DDPG'],
