@@ -20,6 +20,7 @@ from omnisafe.algorithms.off_policy.ddpg import DDPG
 # On Policy Safe
 from omnisafe.algorithms.on_policy.cpo import CPO
 from omnisafe.algorithms.on_policy.cppo_pid import CPPOPid
+from omnisafe.algorithms.on_policy.cup import CUP
 from omnisafe.algorithms.on_policy.focops import FOCOPS
 from omnisafe.algorithms.on_policy.natural_pg import NaturalPG
 from omnisafe.algorithms.on_policy.npg_lag import NPGLag
@@ -30,7 +31,7 @@ from omnisafe.algorithms.on_policy.ppo import PPO
 from omnisafe.algorithms.on_policy.ppo_lag import PPOLag
 from omnisafe.algorithms.on_policy.trpo import TRPO
 from omnisafe.algorithms.on_policy.trpo_lag import TRPOLag
-from omnisafe.algorithms.on_policy.cup import CUP
+
 
 algo_type = {
     'off-policy': ['DDPG'],
