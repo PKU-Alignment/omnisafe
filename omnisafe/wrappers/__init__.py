@@ -14,5 +14,5 @@
 # ==============================================================================
 """Environment wrappers."""
 
-from omnisafe.wrappers.on_policy_wrapper import OnPolicyEnvWrapper
 from omnisafe.wrappers.off_policy_wrapper import OffPolicyEnvWrapper
+from omnisafe.wrappers.on_policy_wrapper import OnPolicyEnvWrapper

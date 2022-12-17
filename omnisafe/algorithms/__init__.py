@@ -14,6 +14,9 @@
 # ==============================================================================
 """Safe Reinforcement Learning algorithms."""
 
+# Off Policy Safe
+from omnisafe.algorithms.off_policy.ddpg import DDPG
+
 # On Policy Safe
 from omnisafe.algorithms.on_policy.cpo import CPO
 from omnisafe.algorithms.on_policy.cppo_pid import CPPOPid
@@ -27,9 +30,6 @@ from omnisafe.algorithms.on_policy.ppo import PPO
 from omnisafe.algorithms.on_policy.ppo_lag import PPOLag
 from omnisafe.algorithms.on_policy.trpo import TRPO
 from omnisafe.algorithms.on_policy.trpo_lag import TRPOLag
-
-# Off Policy Safe
-from omnisafe.algorithms.off_policy.ddpg import DDPG
 
 
 algo_type = {

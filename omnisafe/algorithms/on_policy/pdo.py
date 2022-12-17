@@ -34,7 +34,7 @@ class PDO(PolicyGradient, Lagrange):
         env_id,
         cfgs,
         algo='PDO',
-        wrapper_type: str = "OnPolicyEnvWrapper",
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         """initialization"""
         PolicyGradient.__init__(

@@ -20,12 +20,12 @@ from copy import deepcopy
 import numpy as np
 import torch
 
-from omnisafe.utils import core, distributed_utils
+from omnisafe.algorithms import registry
 from omnisafe.common.base_buffer import BaseBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.algorithms import registry
-from omnisafe.utils.tools import get_flat_params_from
 from omnisafe.models.constraint_q_actor_critic import ConstraintActorQCritic
+from omnisafe.utils import core, distributed_utils
+from omnisafe.utils.tools import get_flat_params_from
 from omnisafe.wrappers import wrapper_registry
 
 
@@ -45,7 +45,7 @@ class DDPG:
         env_id: str,
         cfgs=None,
         algo: str = 'DDPG',
-        wrapper_type: str = "OffPolicyEnvWrapper",
+        wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
         """Initialize DDPG."""
         self.env = wrapper_registry.get(wrapper_type)(

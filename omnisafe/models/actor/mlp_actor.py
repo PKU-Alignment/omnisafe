@@ -1,10 +1,10 @@
 import numpy as np
 import torch
 from torch import nn
-from omnisafe.models.base import Actor
-from omnisafe.utils.model_utils import build_mlp_network
-from omnisafe.utils.model_utils import Activation, InitFunction
 from torch.distributions.normal import Normal
+
+from omnisafe.models.base import Actor
+from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_network
 
 
 class MLPActor(Actor):

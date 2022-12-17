@@ -23,10 +23,10 @@ import torch
 from omnisafe.algorithms import registry
 from omnisafe.common.buffer import Buffer
 from omnisafe.common.logger import Logger
-from omnisafe.wrappers import wrapper_registry
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core, distributed_utils
 from omnisafe.utils.tools import get_flat_params_from
+from omnisafe.wrappers import wrapper_registry
 
 
 # pylint: disable-next=too-many-instance-attributes
@@ -47,7 +47,7 @@ class PolicyGradient:
         env_id,
         cfgs=None,
         algo: str = 'PolicyGradient',
-        wrapper_type: str = "OnPolicyEnvWrapper",
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ) -> None:
         r"""Initialize the algorithm.
 

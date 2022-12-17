@@ -34,7 +34,7 @@ class NPGLag(NaturalPG, Lagrange):
         env_id,
         cfgs,
         algo: str = 'NPG-LAG',
-        wrapper_type: str = "OnPolicyEnvWrapper",
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         """initialize"""
 

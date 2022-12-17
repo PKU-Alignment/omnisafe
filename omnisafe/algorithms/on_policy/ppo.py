@@ -36,7 +36,7 @@ class PPO(PolicyGradient):
         cfgs,
         algo='ppo',
         clip=0.2,
-        wrapper_type: str = "OnPolicyEnvWrapper",
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         """Initialize PPO."""
         self.clip = clip

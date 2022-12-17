@@ -40,7 +40,7 @@ class FOCOPS(PolicyGradient, Lagrange):
         env_id,
         cfgs,
         algo='FOCOPS',
-        wrapper_type: str = "OnPolicyEnvWrapper",
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         r"""The :meth:`init` function."""
 

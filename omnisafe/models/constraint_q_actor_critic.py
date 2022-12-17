@@ -1,7 +1,8 @@
-import torch
 import numpy as np
-from omnisafe.models.critic.q_critic import QCritic
+import torch
+
 from omnisafe.models.actor_q_critic import ActorQCritic
+from omnisafe.models.critic.q_critic import QCritic
 
 
 # observation_space,

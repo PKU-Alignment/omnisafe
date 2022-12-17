@@ -42,7 +42,7 @@ class TRPO(NaturalPG):
         env_id,
         cfgs,
         algo='TRPO',
-        wrapper_type: str = "OnPolicyEnvWrapper",
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         super().__init__(
             env_id=env_id,

@@ -37,7 +37,7 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
         env_id,
         cfgs,
         algo: str = 'CPPO-PID',
-        wrapper_type: str = "OnPolicyEnvWrapper",
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
 
         PolicyGradient.__init__(

@@ -38,7 +38,7 @@ class PPOLag(PolicyGradient, Lagrange):
         cfgs,
         algo='PPO-Lag',
         clip=0.2,
-        wrapper_type: str = "OnPolicyEnvWrapper",
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         """Initialize PPO-Lag algorithm."""
         self.clip = clip
