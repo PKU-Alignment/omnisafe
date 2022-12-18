@@ -28,18 +28,19 @@ repos:
     hooks:
       - id: black-jupyter
         stages: [commit, push, manual]
-  # - repo: local
-  #   hooks:
-  #     - id: pylint
-  #       name: pylint
-  #       entry: pylint
-  #       language: system
-  #       types: [python]
-  #       require_serial: true
-  #       stages: [commit, push, manual]
-  #       exclude: |
-  #         (?x)(
-  #           ^examples/|
-  #           ^tests/|
-  #           ^setup.py$
-  #         )
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        require_serial: true
+        stages: [commit, push, manual]
+        exclude: |
+          (?x)(
+            ^examples/|
+            ^tests/|
+            ^setup.py$|
+            ^docs/source/conf.py$
+          )
