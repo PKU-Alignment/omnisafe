@@ -22,7 +22,7 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class Buttons:
+class Buttons:  # pylint: disable=too-many-instance-attributes
     """Buttons are small immovable spheres, to the environment."""
 
     name: str = 'buttons'
@@ -60,7 +60,7 @@ class Buttons:
         return geom
 
     def cal_cost(self, engine):
-        # Conctacts processing
+        """Contacts processing."""
         assert hasattr(
             engine, 'goal_button'
         ), 'Please make sure this method can get infomation about goal button.'

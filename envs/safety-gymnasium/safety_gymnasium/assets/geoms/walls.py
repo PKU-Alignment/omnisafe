@@ -22,7 +22,7 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class Walls:
+class Walls:  # pylint: disable=too-many-instance-attributes
     """Walls - barriers in the environment not associated with any constraint.
 
     # NOTE: this is probably best to be auto-generated than manually specified.

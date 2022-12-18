@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """A set of functions for passively checking environment implementations."""
+# pylint: disable=all
 
 import inspect
 from functools import partial
