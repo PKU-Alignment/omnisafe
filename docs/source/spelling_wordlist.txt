@@ -168,3 +168,16 @@ vel
 quaternion
 Quaternions
 Jacobian
+Lillicrap
+Erez
+Yuval
+Tassa
+Jiaming
+Ji
+Juntao
+Dai
+Linrui
+Binbin
+Zhou
+Pengfei
+Yaodong

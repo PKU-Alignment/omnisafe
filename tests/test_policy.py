@@ -32,6 +32,7 @@ import omnisafe
         'PCPO',
         'FOCOPS',
         'CPPOPid',
+        'CUP',
     ]
 )
 def test_on_policy(algo):

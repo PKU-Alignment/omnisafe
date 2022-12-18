@@ -40,6 +40,10 @@ jobs:
         run: |
           python -m pip install -vvv --editable '.[lint]'
 
+      - name: Install safety_gymnasium
+        run: |
+          python -m pip install -vvv --editable 'envs/safety-gymnasium'
+
       - name: pre-commit
         run: |
           python -m pre_commit run --all-files
