@@ -35,17 +35,19 @@ class CUP(PolicyGradient, Lagrange):
 
     def __init__(
         self,
-        env,
+        env_id,
         cfgs,
         algo='CUP',
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         r"""The :meth:`init` function."""
 
         PolicyGradient.__init__(
             self,
-            env=env,
+            env_id=env_id,
             cfgs=cfgs,
             algo=algo,
+            wrapper_type=wrapper_type,
         )
 
         Lagrange.__init__(
@@ -54,7 +56,6 @@ class CUP(PolicyGradient, Lagrange):
             lagrangian_multiplier_init=self.cfgs.lagrange_cfgs.lagrangian_multiplier_init,
             lambda_lr=self.cfgs.lagrange_cfgs.lambda_lr,
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
-            lagrangian_upper_bound=self.cfgs.lagrange_cfgs.lagrangian_upper_bound,
         )
         self.lam = self.cfgs.lam
         self.eta = self.cfgs.eta

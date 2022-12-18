@@ -32,13 +32,20 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
 
     """
 
-    def __init__(self, env, cfgs, algo: str = 'CPPO-PID'):
+    def __init__(
+        self,
+        env_id,
+        cfgs,
+        algo: str = 'CPPO-PID',
+        wrapper_type: str = 'OnPolicyEnvWrapper',
+    ):
 
         PolicyGradient.__init__(
             self,
-            env=env,
+            env_id=env_id,
             cfgs=cfgs,
             algo=algo,
+            wrapper_type=wrapper_type,
         )
         PIDLagrangian.__init__(self, **self.cfgs.PID_cfgs._asdict())
 

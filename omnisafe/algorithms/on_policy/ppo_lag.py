@@ -32,20 +32,23 @@ class PPOLag(PolicyGradient, Lagrange):
 
     """
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        env,
+        env_id,
         cfgs,
         algo='PPO-Lag',
         clip=0.2,
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         """Initialize PPO-Lag algorithm."""
         self.clip = clip
         PolicyGradient.__init__(
             self,
-            env=env,
+            env_id=env_id,
             cfgs=cfgs,
             algo=algo,
+            wrapper_type=wrapper_type,
         )
         Lagrange.__init__(
             self,
