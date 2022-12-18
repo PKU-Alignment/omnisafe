@@ -30,19 +30,22 @@ class PPO(PolicyGradient):
         Paper URL: https://arxiv.org/pdf/1707.06347.pdf
     """
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        env,
+        env_id,
         cfgs,
         algo='ppo',
         clip=0.2,
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         """Initialize PPO."""
         self.clip = clip
         super().__init__(
-            env=env,
+            env_id=env_id,
             cfgs=cfgs,
             algo=algo,
+            wrapper_type=wrapper_type,
         )
 
     def compute_loss_pi(self, data: dict):

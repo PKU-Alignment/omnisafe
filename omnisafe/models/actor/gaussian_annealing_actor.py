@@ -36,13 +36,13 @@ class GaussianAnnealingActor(Actor):
         activation,
         weight_initialization_mode,
         shared=None,
-        satrt_std: float = 0.5,
+        start_std: float = 0.5,
         end_std: float = 0.01,
     ):
         super().__init__(
             obs_dim, act_dim, hidden_sizes, activation, weight_initialization_mode, shared
         )
-        self.start_std = satrt_std
+        self.start_std = start_std
         self.end_std = end_std
         self._std = self.start_std * torch.ones(self.act_dim, dtype=torch.float32)
 
@@ -75,9 +75,6 @@ class GaussianAnnealingActor(Actor):
             out = dist.mean
         else:
             out = dist.sample()
-
-        action = torch.clamp(out, -1, 1)
-        action = self.act_min + (action + 1) * 0.5 * (self.act_max - self.act_min)
 
         if need_log_prob:
             log_prob = dist.log_prob(out).sum(axis=-1)

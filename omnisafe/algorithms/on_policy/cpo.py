@@ -41,14 +41,16 @@ class CPO(TRPO):
 
     def __init__(
         self,
-        env,
+        env_id,
         cfgs,
         algo='CPO',
+        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         super().__init__(
-            env=env,
+            env_id=env_id,
             cfgs=cfgs,
             algo=algo,
+            wrapper_type=wrapper_type,
         )
         self.cost_limit = cfgs.cost_limit
         self.loss_pi_cost_before = 0.0
@@ -239,7 +241,7 @@ class CPO(TRPO):
                 # point in trust region is feasible and safety boundary doesn't intersect
                 # ==> entire trust region is feasible
                 optim_case = 3
-            elif cost < 0 and B >= 0:
+            elif cost < 0 and B >= 0:  # pylint: disable=chained-comparison
                 # x = 0 is feasible and safety boundary intersects
                 # ==> most of trust region is feasible
                 optim_case = 2
