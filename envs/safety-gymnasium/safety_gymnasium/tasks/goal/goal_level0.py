@@ -15,7 +15,7 @@
 """Goal level 0."""
 
 from safety_gymnasium.assets.geoms import Goal
-from safety_gymnasium.bases import BaseTask
+from safety_gymnasium.bases.base_task import BaseTask
 
 
 class GoalLevel0(BaseTask):

@@ -30,12 +30,13 @@ from omnisafe.wrappers import wrapper_registry
 
 
 @registry.register
-class DDPG:
+class DDPG:  # pylint: disable=too-many-instance-attributes
     """Continuous control with deep reinforcement learning (DDPG) Algorithm.
 
     References:
         Paper Name: Continuous control with deep reinforcement learning.
-        Paper author: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
+        Paper author: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
+                      Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
         Paper URL: https://arxiv.org/abs/1509.02971
 
     """
@@ -96,7 +97,6 @@ class DDPG:
         self.actor_critic = ConstraintActorQCritic(
             observation_space=self.env.observation_space,
             action_space=self.env.action_space,
-            scale_rewards=cfgs.scale_rewards,
             standardized_obs=cfgs.standardized_obs,
             model_cfgs=cfgs.model_cfgs,
         )
@@ -223,16 +223,16 @@ class DDPG:
             data['obs_next'],
             data['done'],
         )
-        q = self.actor_critic.critic(obs, act)
+        q_value = self.actor_critic.critic(obs, act)
         # Bellman backup for Q function
         with torch.no_grad():
             act_targ, _ = self.ac_targ.actor.predict(obs, deterministic=True)
             q_targ = self.ac_targ.critic(obs_next, act_targ)
             backup = rew + self.cfgs.gamma * (1 - done) * q_targ
         # MSE loss against Bellman backup
-        loss_q = ((q - backup) ** 2).mean()
+        loss_q = ((q_value - backup) ** 2).mean()
         # Useful info for logging
-        q_info = dict(Q1Vals=q.detach().numpy())
+        q_info = dict(Q1Vals=q_value.detach().numpy())
         return loss_q, q_info
 
     def compute_loss_c(self, data):
@@ -249,7 +249,7 @@ class DDPG:
             data['obs_next'],
             data['done'],
         )
-        qc = self.actor_critic.cost_critic(obs, act)
+        cost_q_value = self.actor_critic.cost_critic(obs, act)
 
         # Bellman backup for Q function
         with torch.no_grad():
@@ -257,9 +257,9 @@ class DDPG:
             qc_targ = self.ac_targ.c(obs_next, action)
             backup = cost + self.cfgs.gamma * (1 - done) * qc_targ
         # MSE loss against Bellman backup
-        loss_qc = ((qc - backup) ** 2).mean()
+        loss_qc = ((cost_q_value - backup) ** 2).mean()
         # Useful info for logging
-        qc_info = dict(QCosts=qc.detach().numpy())
+        qc_info = dict(QCosts=cost_q_value.detach().numpy())
 
         return loss_qc, qc_info
 
