@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(safety_gymnasium.__file__)
 
 
 @dataclass
-class Robot:
+class Robot:  # pylint: disable=too-many-instance-attributes
     '''Simple utility class for getting mujoco-specific info about a robot.'''
 
     path: InitVar[str]
@@ -72,7 +72,7 @@ class Robot:
             if (
                 # pylint: disable-next=no-member
                 self.model.sensor(id).objtype
-                == mujoco.mjtObj.mjOBJ_JOINT
+                == mujoco.mjtObj.mjOBJ_JOINT  # pylint: disable=no-member
             ):  # pylint: disable=no-member
                 joint_id = self.model.sensor(id).objid
                 joint_type = self.model.jnt(joint_id).type
@@ -97,5 +97,5 @@ class Robot:
                     # Adding slide joints is trivially easy in code,
                     # but this removes one of the good properties about our observations.
                     # (That we are invariant to relative whole-world transforms)
-                    # If slide joints are added we sould ensure this stays true!
+                    # If slide joints are added we should ensure this stays true!
                     raise ValueError('Slide joints in robots not currently supported')

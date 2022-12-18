@@ -23,7 +23,7 @@ from safety_gymnasium.utils.task_utils import get_body_xvelp
 
 
 @dataclass
-class Vases:
+class Vases:  # pylint: disable=too-many-instance-attributes
     """Vases (objects we should not touch)"""
 
     name: str = 'vases'
@@ -66,6 +66,7 @@ class Vases:
         return obj
 
     def cal_cost(self, engine):
+        """Contacts processing."""
         cost = {}
         cost['cost_vases_contact'] = 0
         if self.contact_cost:

@@ -52,7 +52,7 @@ def get_body_jacp(model, data, name, jacp=None):
 
 
 def get_body_xvelp(model, data, name):
-    """Get specific body's cartesian velocity."""
+    """Get specific body's Cartesian velocity."""
     jacp = get_body_jacp(model, data, name).reshape((3, model.nv))
     xvelp = np.dot(jacp, data.qvel)
     return xvelp

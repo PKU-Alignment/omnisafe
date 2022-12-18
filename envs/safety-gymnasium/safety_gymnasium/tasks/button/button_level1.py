@@ -34,7 +34,7 @@ class ButtonLevel1(ButtonLevel0):
 
         self.add_geoms(Hazards(num=4))
         self.add_mocaps(Gremlins(num=4, travel=0.35, keepout=0.4))
-        self.buttons.is_constrained = True
+        self.buttons.is_constrained = True  # pylint: disable=no-member
 
         self._gremlins_rots = None
 

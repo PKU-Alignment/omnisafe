@@ -15,7 +15,6 @@
 """Goal."""
 
 from dataclasses import dataclass, field
-from typing import Union
 
 import numpy as np
 from safety_gymnasium.assets.color import COLOR
@@ -23,7 +22,7 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class Goal:
+class Goal:  # pylint: disable=too-many-instance-attributes
     """Goal parameters."""
 
     name: str = 'goal'
