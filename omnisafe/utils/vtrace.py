@@ -48,14 +48,12 @@ def calculate_v_trace(
     assert c_bar <= rho_bar
 
     sequence_length = policy_action_probs.shape[0]
-    # print('sequence_length:', sequence_length)
+    # pylint: disable-next=assignment-from-no-return
     rhos = np.divide(policy_action_probs, behavior_action_probs)
-    clip_rhos = np.minimum(rhos, rho_bar)
-    clip_cs = np.minimum(rhos, c_bar)
-    # values_plus_1 = np.append(values, bootstrap_value)
+    clip_rhos = np.minimum(rhos, rho_bar)  # pylint: disable=assignment-from-no-return
+    clip_cs = np.minimum(rhos, c_bar)  # pylint: disable=assignment-from-no-return
 
     v_s = np.copy(values[:-1])  # copy all values except bootstrap value
-    # v_s = np.zeros_like(values)
     last_v_s = values[-1]  # bootstrap from last state
 
     # calculate v_s

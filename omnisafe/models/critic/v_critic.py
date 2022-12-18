@@ -61,6 +61,7 @@ class VCritic(Critic):
     def forward(
         self,
         obs: torch.Tensor,
+        act: torch.Tensor = None,
     ) -> torch.Tensor:
         """Forward."""
         return torch.squeeze(self.net(obs), -1)

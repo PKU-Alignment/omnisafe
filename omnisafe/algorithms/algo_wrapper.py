@@ -28,11 +28,10 @@ from omnisafe.utils.tools import get_default_kwargs_yaml
 class AlgoWrapper:
     """Algo Wrapper for algo"""
 
-    def __init__(self, algo, env, parallel=1, custom_cfgs=None):
+    def __init__(self, algo, env_id, parallel=1, custom_cfgs=None):
         self.algo = algo
-        self.env = env
         self.parallel = parallel
-        self.env_id = env.env_id
+        self.env_id = env_id
         # algo_type will set in _init_checks()
         self.algo_type = None
         self.custom_cfgs = custom_cfgs
@@ -69,12 +68,12 @@ class AlgoWrapper:
             sys.exit()
 
         default_cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
-        exp_name = os.path.join(self.env.env_id, self.algo)
+        exp_name = os.path.join(self.env_id, self.algo)
         default_cfgs.update(exp_name=exp_name, env_id=self.env_id)
         cfgs = recursive_update(default_cfgs, self.custom_cfgs)
         check_all_configs(cfgs, self.algo_type)
         agent = registry.get(self.algo)(
-            env=self.env,
+            env_id=self.env_id,
             cfgs=cfgs,
         )
         agent.learn()
