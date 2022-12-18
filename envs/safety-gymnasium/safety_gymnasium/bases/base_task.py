@@ -30,7 +30,9 @@ from safety_gymnasium.utils.common_utils import ResamplingError
 from safety_gymnasium.utils.task_utils import quat2mat, theta2vec
 
 
-class BaseTask(BaseMujocoTask):
+class BaseTask(
+    BaseMujocoTask
+):  # pylint: disable=too-many-instance-attributes,too-many-public-methods
     """Base task class for defining some common characteristic."""
 
     def __init__(self, config: dict):  # pylint: disable-next=too-many-statements
@@ -51,7 +53,7 @@ class BaseTask(BaseMujocoTask):
         # Specify which sensors to add to observation space
         self.sensors_obs = ['accelerometer', 'velocimeter', 'gyro', 'magnetometer']
         self.sensors_hinge_joints = True  # Observe named joint position / velocity sensors
-        self.sensors_ball_joints = True  # Observe named balljoint position / velocity sensors
+        self.sensors_ball_joints = True  # Observe named ball joint position / velocity sensors
         self.sensors_angle_components = True  # Observe sin/cos theta instead of theta
 
         # Lidar observation parameters
@@ -69,8 +71,8 @@ class BaseTask(BaseMujocoTask):
         self.reward_orientation = False  # Reward for being upright
         self.reward_orientation_scale = 0.002  # Scale for uprightness reward
         self.reward_orientation_body = 'robot'  # What body to get orientation from
-        self.reward_exception = -10.0  # Reward when encoutering a mujoco exception
-        self.reward_z = 1.0  # Reward for standup tests (vel in z direction)
+        self.reward_exception = -10.0  # Reward when encountering a mujoco exception
+        self.reward_z = 1.0  # Reward for stand up tests (vel in z direction)
         self.reward_clip = (
             10  # Clip reward, last resort against physics errors causing magnitude spikes
         )
@@ -92,7 +94,7 @@ class BaseTask(BaseMujocoTask):
         self._mocaps = {}
 
     def add_geoms(self, *geoms):
-        """Add geom type objects into environments and set coresponding attributes."""
+        """Add geom type objects into environments and set corresponding attributes."""
         for geom in geoms:
             assert (
                 type(geom) in GEOMS_REGISTER
@@ -101,7 +103,7 @@ class BaseTask(BaseMujocoTask):
             setattr(self, geom.name, geom)
 
     def add_objects(self, *objects):
-        """Add object type objects into environments and set coresponding attributes."""
+        """Add object type objects into environments and set corresponding attributes."""
         for obj in objects:
             assert (
                 type(obj) in OBJS_REGISTER
@@ -110,7 +112,7 @@ class BaseTask(BaseMujocoTask):
             setattr(self, obj.name, obj)
 
     def add_mocaps(self, *mocaps):
-        """Add mocap type objects into environments and set coresponding attributes."""
+        """Add mocap type objects into environments and set corresponding attributes."""
         for mocap in mocaps:
             assert (
                 type(mocap) in MOCAPS_REGISTER
@@ -151,7 +153,7 @@ class BaseTask(BaseMujocoTask):
         return cost
 
     def build_observation_space(self):
-        """Construct observtion space.  Happens only once at during __init__ in Builder."""
+        """Construct observation space.  Happens only once at during __init__ in Builder."""
         obs_space_dict = OrderedDict()  # See self.obs()
 
         obs_space_dict.update(self.build_sensor_observation_space())
@@ -223,7 +225,7 @@ class BaseTask(BaseMujocoTask):
             # This also means that the first element of the quaternion is not expectation zero.
             # The SO(3) rotation representation would be a good replacement here,
             # since it smoothly varies between values in all directions (the property we want),
-            # but right now we have very little code to support SO(3) roatations.
+            # but right now we have very little code to support SO(3) rotations.
             # Instead we use a 3x3 rotation matrix, which if normalized, smoothly varies as well.
             for sensor in self.robot.ballquat_names:
                 obs_space_dict[sensor] = gymnasium.spaces.Box(
@@ -264,7 +266,7 @@ class BaseTask(BaseMujocoTask):
         self.observation_flatten = not self.observation_flatten
         self.build_observation_space()
 
-    def build_world_config(self, layout):
+    def build_world_config(self, layout):  # pylint: disable=too-many-branches
         """Create a world_config from our own config"""
         world_config = {}
 
@@ -373,7 +375,7 @@ class BaseTask(BaseMujocoTask):
     def obs(self):
         """Return the observation of our agent."""
         # pylint: disable-next=no-member
-        mujoco.mj_forward(self.model, self.data)  # Needed to get sensordata correct
+        mujoco.mj_forward(self.model, self.data)  # Needed to get sensor's data correct
         obs = {}
 
         obs.update(self.obs_sensor())
@@ -514,7 +516,7 @@ class BaseTask(BaseMujocoTask):
     def obs_compass(self, pos):
         """Return a robot-centric compass observation of a list of positions.
 
-        Compass is a normalized (unit-lenght) egocentric XY vector,
+        Compass is a normalized (unit-length) egocentric XY vector,
         from the agent to the object.
 
         This is equivalent to observing the egocentric XY angle to the target,

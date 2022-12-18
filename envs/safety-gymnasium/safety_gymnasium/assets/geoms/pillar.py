@@ -22,7 +22,7 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class Pillars:
+class Pillars:  # pylint: disable=too-many-instance-attributes
     """Pillars (immovable obstacles we should not touch)"""
 
     name: str = 'pillars'
@@ -53,6 +53,7 @@ class Pillars:
         return geom
 
     def cal_cost(self, engine):
+        """Contacts processing."""
         cost = {}
         cost['cost_pillars'] = 0
         for contact in engine.data.contact[: engine.data.ncon]:

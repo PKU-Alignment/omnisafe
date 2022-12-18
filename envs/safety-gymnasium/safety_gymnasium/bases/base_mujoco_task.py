@@ -28,7 +28,9 @@ from safety_gymnasium.utils.common_utils import MujocoException, ResamplingError
 from safety_gymnasium.world import World
 
 
-class BaseMujocoTask(abc.ABC):
+class BaseMujocoTask(
+    abc.ABC
+):  # pylint: disable=too-many-instance-attributes,too-many-public-methods
     """Base class which is in charge of mujoco and underlying process.
 
     In short: The engine for the Safety Gymnasium environment.
@@ -345,6 +347,7 @@ class BaseMujocoTask(abc.ABC):
             label=label if self.render_labels else '',
         )
 
+    # pylint: disable-next=too-many-arguments,too-many-branches
     def render(self, width, height, mode, camera_id=None, camera_name=None, cost=None):
         """Render the environment to the screen."""
         self.model.vis.global_.offwidth = width
@@ -472,14 +475,14 @@ class BaseMujocoTask(abc.ABC):
         self.viewer.data = data
 
     @abc.abstractmethod
-    def obs_lidar(self, poses, group):
+    def obs_lidar(self, positions, group):
         """Calculate and return a lidar observation.  See sub methods for implementation."""
 
     @abc.abstractmethod
     def obs_compass(self, pos):
         """Return a robot-centric compass observation of a list of positions.
 
-        Compass is a normalized (unit-lenght) egocentric XY vector,
+        Compass is a normalized (unit-length) egocentric XY vector,
         from the agent to the object.
 
         This is equivalent to observing the egocentric XY angle to the target,

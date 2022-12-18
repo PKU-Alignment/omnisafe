@@ -27,11 +27,11 @@ from safety_gymnasium.utils.common_utils import convert, rot2quat
 from safety_gymnasium.utils.task_utils import get_body_xvelp
 
 
-# Default location to look for /xmls folder:
+# Default location to look for xmls folder:
 BASE_DIR = os.path.dirname(safety_gymnasium.__file__)
 
 
-class World:
+class World:  # pylint: disable=too-many-instance-attributes
     """This class starts mujoco simulation.
 
     And contains some apis for interacting with mujoco."""
@@ -267,7 +267,7 @@ class World:
             assert (
                 # pylint: disable-next=no-member
                 name.replace('mocap', 'obj')
-                in self.objects
+                in self.objects  # pylint: disable=no-member
             ), f'missing object for {name}'  # pylint: disable=no-member
             # Add the object to the world
             mocap = mocap.copy()  # don't modify original object
