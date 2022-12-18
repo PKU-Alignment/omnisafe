@@ -176,7 +176,7 @@ class ButtonLevel0(BaseTask):
 
     @property
     def goal_achieved(self):
-        """Weather the goal of task is achieved."""
+        """Whether the goal of task is achieved."""
         for contact in self.data.contact[: self.data.ncon]:
             geom_ids = [contact.geom1, contact.geom2]
             geom_names = sorted([self.model.geom(g).name for g in geom_ids])

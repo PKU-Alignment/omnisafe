@@ -232,5 +232,5 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
 
     @property
     def done(self):
-        """Weather this episode is ended."""
+        """Whether this episode is ended."""
         return self.terminated or self.truncated

@@ -63,7 +63,7 @@ class GoalLevel0(BaseTask):
 
     @property
     def goal_achieved(self):
-        """Weather the goal of task is achieved."""
+        """Whether the goal of task is achieved."""
         # pylint: disable-next=no-member
         return self.dist_goal() <= self.goal.size
 
