@@ -16,7 +16,7 @@
 
 GROUP = {
     # Groups are a mujoco-specific mechanism for selecting which geom objects to "see"
-    # We use these for raycasting lidar, where there are different lidar types.
+    # We use these for ray casting lidar, where there are different lidar types.
     # These work by turning "on" the group to see and "off" all the other groups.
     # See obs_lidar_natural() for more.
     'goal': 0,

@@ -22,7 +22,7 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class Gremlins:
+class Gremlins:  # pylint: disable=too-many-instance-attributes
     """Gremlins (moving objects we should avoid)"""
 
     name: str = 'gremlins'
@@ -77,7 +77,7 @@ class Gremlins:
         return mocap
 
     def cal_cost(self, engine):
-        # Conctacts processing
+        """Contacts processing."""
         cost = {}
         cost['cost_gremlins'] = 0
         for contact in engine.data.contact[: engine.data.ncon]:
