@@ -14,9 +14,13 @@
 # ==============================================================================
 """Safe Reinforcement Learning algorithms."""
 
+# Off Policy Safe
+from omnisafe.algorithms.off_policy.ddpg import DDPG
+
 # On Policy Safe
 from omnisafe.algorithms.on_policy.cpo import CPO
 from omnisafe.algorithms.on_policy.cppo_pid import CPPOPid
+from omnisafe.algorithms.on_policy.cup import CUP
 from omnisafe.algorithms.on_policy.focops import FOCOPS
 from omnisafe.algorithms.on_policy.natural_pg import NaturalPG
 from omnisafe.algorithms.on_policy.npg_lag import NPGLag
@@ -45,6 +49,7 @@ algo_type = {
         'PPOLag',
         'TRPO',
         'TRPOLag',
+        'CUP',
     ],
     'model-based': ['MBPPOLag', 'SafeLoop'],
 }
