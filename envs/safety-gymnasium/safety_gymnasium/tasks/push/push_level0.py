@@ -17,7 +17,7 @@
 import numpy as np
 from safety_gymnasium.assets.geoms import Goal
 from safety_gymnasium.assets.objects import PushBox
-from safety_gymnasium.bases import BaseTask
+from safety_gymnasium.bases.base_task import BaseTask
 
 
 class PushLevel0(BaseTask):

@@ -25,7 +25,7 @@ from safety_gymnasium.assets.geoms import GEOMS_REGISTER
 from safety_gymnasium.assets.mocaps import MOCAPS_REGISTER
 from safety_gymnasium.assets.objects import OBJS_REGISTER
 from safety_gymnasium.assets.robot import Robot
-from safety_gymnasium.bases import BaseMujocoTask
+from safety_gymnasium.bases.base_mujoco_task import BaseMujocoTask
 from safety_gymnasium.utils.common_utils import ResamplingError
 from safety_gymnasium.utils.task_utils import quat2mat, theta2vec
 

@@ -21,7 +21,7 @@ import mujoco
 import numpy as np
 from safety_gymnasium.assets.geoms import Buttons
 from safety_gymnasium.assets.group import GROUP
-from safety_gymnasium.bases import BaseTask
+from safety_gymnasium.bases.base_task import BaseTask
 
 
 # pylint: disable-next=too-many-instance-attributes
