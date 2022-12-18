@@ -23,7 +23,8 @@ from safety_gymnasium.assets.geoms.goal import Goal
 from safety_gymnasium.assets.geoms.hazard import Hazards
 from safety_gymnasium.assets.geoms.orange import Oranges
 from safety_gymnasium.assets.geoms.pillar import Pillars
+from safety_gymnasium.assets.geoms.sigwalls import Sigwalls
 from safety_gymnasium.assets.geoms.walls import Walls
 
 
-GEOMS_REGISTER = [Apples, Buttons, Circle, Goal, Hazards, Oranges, Pillars, Walls]
+GEOMS_REGISTER = [Apples, Buttons, Circle, Goal, Hazards, Oranges, Pillars, Walls, Sigwalls]
