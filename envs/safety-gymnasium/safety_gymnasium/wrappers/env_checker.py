@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """A passive environment checker wrapper for an environment's observation and action space along with the reset, step and render functions."""
+# pylint: disable=all
 
 import gymnasium
 from gymnasium.core import ActType

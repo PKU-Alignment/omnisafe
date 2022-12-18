@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Wrapper for limiting the time steps of an environment."""
+# pylint: disable=all
 
 from typing import Optional
 

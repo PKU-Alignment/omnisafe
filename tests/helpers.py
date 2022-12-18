@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Helpers"""
 
 import itertools
 
@@ -22,14 +23,17 @@ import torch.types
 
 
 def dtype_numpy2torch(dtype: np.dtype) -> torch.dtype:
+    """Convert numpy dtype to torch dtype"""
     return torch.tensor(np.zeros(1, dtype=dtype)).dtype
 
 
 def dtype_torch2numpy(dtype: torch.dtype) -> np.dtype:
+    """Convert torch dtype to numpy dtype"""
     return torch.zeros(1, dtype=dtype).numpy().dtype
 
 
 def parametrize(**argvalues) -> pytest.mark.parametrize:
+    """Test with multiple parameters"""
     arguments = list(argvalues)
 
     if 'dtype' in argvalues:
