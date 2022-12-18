@@ -22,7 +22,7 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class Hazards:
+class Hazards:  # pylint: disable=too-many-instance-attributes
     """Hazardous areas."""
 
     name: str = 'hazards'
@@ -56,6 +56,7 @@ class Hazards:
         return geom
 
     def cal_cost(self, engine):
+        """Contacts Processing."""
         cost = {}
         cost['cost_hazards'] = 0
         for h_pos in engine.hazards_pos:

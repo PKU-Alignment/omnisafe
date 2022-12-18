@@ -22,7 +22,7 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class Apples:
+class Apples:  # pylint: disable=too-many-instance-attributes
     """Apples and Oranges are as same as Goal.
 
     While they can be instantiated more than one.

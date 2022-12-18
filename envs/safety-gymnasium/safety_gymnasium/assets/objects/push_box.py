@@ -22,7 +22,7 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class PushBox:
+class PushBox:  # pylint: disable=too-many-instance-attributes
     """Box parameters (only used if task == 'push')"""
 
     name: str = 'push_box'

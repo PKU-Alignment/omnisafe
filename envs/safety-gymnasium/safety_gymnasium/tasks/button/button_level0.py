@@ -24,6 +24,7 @@ from safety_gymnasium.assets.group import GROUP
 from safety_gymnasium.bases import BaseTask
 
 
+# pylint: disable-next=too-many-instance-attributes
 class ButtonLevel0(BaseTask):
     """A robot must press a goal button."""
 
@@ -82,7 +83,7 @@ class ButtonLevel0(BaseTask):
     def obs(self):
         """Return the observation of our agent."""
         # pylint: disable-next=no-member
-        mujoco.mj_forward(self.model, self.data)  # Needed to get sensordata correct
+        mujoco.mj_forward(self.model, self.data)  # Needed to get sensor data correct
         obs = {}
 
         obs.update(self.obs_sensor())
@@ -124,7 +125,7 @@ class ButtonLevel0(BaseTask):
         return obs
 
     def build_observation_space(self):
-        """Construct observtion space.  Happens only once at during __init__ in Builder."""
+        """Construct observation space.  Happens only once at during __init__ in Builder."""
         obs_space_dict = OrderedDict()  # See self.obs()
 
         obs_space_dict.update(self.build_sensor_observation_space())

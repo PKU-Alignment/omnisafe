@@ -47,7 +47,7 @@ class PushLevel0(BaseTask):
         reward += (
             # pylint: disable-next=no-member
             (self.last_dist_box - dist_box)
-            * self.push_box.reward_box_dist
+            * self.push_box.reward_box_dist  # pylint: disable=no-member
             * gate_dist_box_reward
         )
         self.last_dist_box = dist_box

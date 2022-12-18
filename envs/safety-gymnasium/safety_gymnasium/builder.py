@@ -21,6 +21,7 @@ from safety_gymnasium.utils.common_utils import ResamplingError, quat2zalign
 from safety_gymnasium.utils.task_utils import get_task_class_name
 
 
+# pylint: disable-next=too-many-instance-attributes
 class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
     """
     Builder: an environment-building tool for safe exploration research.
@@ -231,5 +232,5 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
 
     @property
     def done(self):
-        """Wheather this episode is ended."""
+        """Weather this episode is ended."""
         return self.terminated or self.truncated
