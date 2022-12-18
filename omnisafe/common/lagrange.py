@@ -28,10 +28,12 @@ class Lagrange(abc.ABC):
         lagrangian_multiplier_init: float,
         lambda_lr: float,
         lambda_optimizer: str,
+        lagrangian_upper_bound: None,
     ):
         """init"""
         self.cost_limit = cost_limit
         self.lambda_lr = lambda_lr
+        self.lagrangian_upper_bound = lagrangian_upper_bound
 
         init_value = max(lagrangian_multiplier_init, 1e-5)
         self.lagrangian_multiplier = torch.nn.Parameter(
@@ -63,4 +65,6 @@ class Lagrange(abc.ABC):
         lambda_loss = self.compute_lambda_loss(Jc)
         lambda_loss.backward()
         self.lambda_optimizer.step()
-        self.lagrangian_multiplier.data.clamp_(0)  # enforce: lambda in [0, inf]
+        self.lagrangian_multiplier.data.clamp_(
+            0, self.lagrangian_upper_bound
+        )  # enforce: lambda in [0, inf]
