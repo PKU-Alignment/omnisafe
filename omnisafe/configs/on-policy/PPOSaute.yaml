@@ -107,16 +107,8 @@ defaults:
     standardized_cost: True
   ## Configuration For Env_Wrapper
   env_cfgs:
-    unsafe_reward: -0.5
-    # ``budget`` in saute is actually the same as ``cost_limmit``.
-    lower_budget: 10
-    upper_budget: 25
-    simmer_gamma: 0.9997
+    unsafe_reward: -0.1
+    # ``safety_budget`` in saute is actually the same as ``cost_limmit``.
+    safety_budget: 25
+    saute_gamma: 0.9997
     scale_safety_budget: True
-    simmer_controller: 'PID'
-    controller_cfgs:
-      pid_kp: 0.1
-      pid_ki: 0.1
-      pid_kd: 0.1
-      step_size: 3
-      tau: 0.95

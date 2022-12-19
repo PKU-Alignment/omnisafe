@@ -105,3 +105,29 @@ defaults:
     standardized_reward: True
     # Whether to use standardized cost
     standardized_cost: True
+  ## Configuration For Env_Wrapper
+  env_cfgs:
+    # The reward when the state is unsafe
+    unsafe_reward: -0.1
+    # The lower bound of safety budget
+    lower_budget: 15
+    # The upper bound of safety budget
+    upper_budget: 25
+    # The dicounted factor
+    simmer_gamma: 0.9997
+    # Whether to scale the safety budget
+    scale_safety_budget: False
+    # Type of Simmer Controller
+    simmer_controller: 'PID'
+    # Configuration of Simmer Controller
+    controller_cfgs:
+      # Kp for PID
+      pid_kp: 0.1
+      # Ki for PID
+      pid_ki: 0.1
+      # Kd for PID
+      pid_kd: 0.1
+      # The step size for PID
+      step_size: 3
+      # Lowpass filter coefficient
+      tau: 0.95

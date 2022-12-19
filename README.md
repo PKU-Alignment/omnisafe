@@ -22,24 +22,26 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
 
 ### Table of Contents  <!-- omit in toc --> <!-- markdownlint-disable heading-increment -->
 
-- [Overview](#overview)
-- [Implemented Algorithms](#implemented-algorithms)
-  - [Published in 2022](#published-in-2022)
-  - [List of Algorithms](#list-of-algorithms)
-- [SafeRL Environments](#saferl-environments)
-  - [Safety Gymnasium](#safety-gymnasium)
-  - [Vision-base Safe RL](#vision-base-safe-rl)
-  - [Environment Usage](#environment-usage)
-- [Installation](#installation)
-  - [Prerequisites](#prerequisites)
-  - [Install from source](#install-from-source)
-  - [Examples](#examples)
-- [Getting Started](#getting-started)
-  - [1. Run Agent from preset yaml file](#1-run-agent-from-preset-yaml-file)
-  - [2. Run Agent from custom config dict](#2-run-agent-from-custom-config-dict)
-  - [3. Run Agent from custom terminal config](#3-run-agent-from-custom-terminal-config)
-- [The OmniSafe Team](#the-omnisafe-team)
-- [License](#license)
+- [OmniSafe](#omnisafe)
+    - [Table of Contents   ](#table-of-contents---)
+  - [Overview](#overview)
+  - [Implemented Algorithms](#implemented-algorithms)
+    - [Published **in 2022**](#published-in-2022)
+    - [List of Algorithms](#list-of-algorithms)
+  - [SafeRL Environments](#saferl-environments)
+    - [Safety Gymnasium](#safety-gymnasium)
+    - [Vision-base Safe RL](#vision-base-safe-rl)
+    - [Environment Usage](#environment-usage)
+  - [Installation](#installation)
+    - [Prerequisites](#prerequisites)
+    - [Install from source](#install-from-source)
+    - [Examples](#examples)
+  - [Getting Started](#getting-started)
+    - [1. Run Agent from preset yaml file](#1-run-agent-from-preset-yaml-file)
+    - [2. Run Agent from custom config dict](#2-run-agent-from-custom-config-dict)
+    - [3. Run Agent from custom terminal config](#3-run-agent-from-custom-terminal-config)
+  - [The OmniSafe Team](#the-omnisafe-team)
+  - [License](#license)
 
 --------------------------------------------------------------------------------
 
@@ -53,7 +55,7 @@ Here we provide a table for comparison of **OmniSafe's algorithm core** and exis
 | [safe-control-gym](https://github.com/utiasDSL/safe-control-gym)<br/>![GitHub last commit](https://img.shields.io/github/last-commit/utiasDSL/safe-control-gym?label=last%20update) | PyTorch |           PyBullet            | 5<sup>**(2)**</sup> |                       |              :x:              |         :x:         |
 |                                                                       Velocity-Constraints<sup>**(3)**</sup>                                                                        |   N/A   |              N/A              | N/A                 |          N/A          |              :x:              |         :x:         |
 |    [mujoco-circle](https://github.com/ymzhang01/mujoco-circle)<br/>![GitHub last commit](https://img.shields.io/github/last-commit/ymzhang01/mujoco-circle?label=last%20update)     | PyTorch |              N/A              | 0                   |          N/A          |              :x:              |         :x:         |
-|                                 OmniSafe<br/>![GitHub last commit](https://img.shields.io/github/last-commit/PKU-MARL/omnisafe?label=last%20update)                                 | PyTorch |       **MuJoCo 2.3.0+**       | **25+**             |  `torch.distributed`  |      :heavy_check_mark:       | :heavy_check_mark:  |
+|                                 OmniSafe<br/>![GitHub last commit](https://img.shields.io/github/last-commit/PKU-MARL/omnisafe?label=last%20update)                                 | PyTorch |       **MuJoCo 2.3.0+**       | **25+**             |  `torch.distributed`  |      ✅       | ✅  |
 
 <sup>(1): Maintenance (expect bug fixes and minor updates), the last commit is 19 Nov 2021. Safety Gym depends on `mujoco-py` 2.0.2.7, which was updated on Oct 12, 2019.</sup><br/>
 <sup>(2): We only count the safe's algorithm.</sup><br/>
@@ -68,14 +70,14 @@ The supported interface algorithms currently include:
 
 ### Published **in 2022**
 
-- 😃 **[AAAI 2023]** Augmented Proximal Policy Optimization for Safe Reinforcement Learning (APPO) **The original author of the paper contributed code**
-- 😃 **[NeurIPS 2022]** [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089) **The original author of the paper contributed code**
-- 😞 **Under Test**[NeurIPS 2022] [Effects of Safety State Augmentation on
+- ✅ **[AAAI 2023]** Augmented Proximal Policy Optimization for Safe Reinforcement Learning (APPO) **The original author of the paper contributed code**
+- ✅ **[NeurIPS 2022]** [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089) **The original author of the paper contributed code**
+-  **Under Test**[NeurIPS 2022] [Effects of Safety State Augmentation on
 Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
-- 😃 **[NeurIPS 2022]** [Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
-- 😞 **Under Test**[ICML 2022] [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
-- 😞 **Under Test**[ICML 2022] [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
-- 😃 **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning](https://arxiv.org/abs/2205.11814) **The original author of the paper contributed code**
+- ✅ **[NeurIPS 2022]** [Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
+-  **Under Test**[ICML 2022] [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
+-  **Under Test**[ICML 2022] [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
+- ✅ **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning](https://arxiv.org/abs/2205.11814) **The original author of the paper contributed code**
 - **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LAMBDA)](https://arxiv.org/abs/2201.09802)
 - **[AAAI 2022]** [Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
 
@@ -83,41 +85,41 @@ Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
 ### List of Algorithms
 
 > On Policy Safe
-- :heavy_check_mark:[The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
-- :heavy_check_mark:[The Lagrange version of TRPO (TRPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
-- :heavy_check_mark:[ICML 2017][Constrained Policy Optimization (CPO)](https://proceedings.mlr.press/v70/achiam17a)
-- :heavy_check_mark:[ICLR 2019][Reward Constrained Policy Optimization (RCPO)](https://openreview.net/forum?id=SkfrvsA9FX)
-- :heavy_check_mark:[ICML 2020][Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (PID-Lag)](https://arxiv.org/abs/2007.03964)
-- :heavy_check_mark:[NeurIPS 2020][First Order Constrained Optimization in Policy Space (FOCOPS)](https://arxiv.org/abs/2002.06506)
-- :heavy_check_mark:[AAAI 2020][IPO: Interior-point Policy Optimization under Constraints (IPO)](https://arxiv.org/abs/1910.09615)
-- :heavy_check_mark:[ICLR 2020][Projection-Based Constrained Policy Optimization (PCPO)](https://openreview.net/forum?id=rke3TJrtPS)
-- :heavy_check_mark:[ICML 2021][CRPO: A New Approach for Safe Reinforcement Learning with Convergence Guarantee](https://arxiv.org/abs/2011.05869)
+- ✅[The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
+- ✅[The Lagrange version of TRPO (TRPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
+- ✅[ICML 2017][Constrained Policy Optimization (CPO)](https://proceedings.mlr.press/v70/achiam17a)
+- ✅[ICLR 2019][Reward Constrained Policy Optimization (RCPO)](https://openreview.net/forum?id=SkfrvsA9FX)
+- ✅[ICML 2020][Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (PID-Lag)](https://arxiv.org/abs/2007.03964)
+- ✅[NeurIPS 2020][First Order Constrained Optimization in Policy Space (FOCOPS)](https://arxiv.org/abs/2002.06506)
+- ✅[AAAI 2020][IPO: Interior-point Policy Optimization under Constraints (IPO)](https://arxiv.org/abs/1910.09615)
+- ✅[ICLR 2020][Projection-Based Constrained Policy Optimization (PCPO)](https://openreview.net/forum?id=rke3TJrtPS)
+- ✅[ICML 2021][CRPO: A New Approach for Safe Reinforcement Learning with Convergence Guarantee](https://arxiv.org/abs/2011.05869)
 
 > Off Policy Safe
-- :heavy_check_mark:The Lagrange version of TD3 (TD3-Lag)
-- :heavy_check_mark:The Lagrange version of DDPG (DDPG-Lag)
-- :heavy_check_mark:The Lagrange version of SAC (SAC-Lag)
-- :heavy_check_mark:[ICML 2019][Lyapunov-based Safe Policy Optimization for Continuous Control (SDDPG)](https://arxiv.org/abs/1901.10031)
-- :heavy_check_mark:[ICML 2019][Lyapunov-based Safe Policy Optimization for Continuous Control (SDDPG-modular)](https://arxiv.org/abs/1901.10031)
+- ✅The Lagrange version of TD3 (TD3-Lag)
+- ✅The Lagrange version of DDPG (DDPG-Lag)
+- ✅The Lagrange version of SAC (SAC-Lag)
+- ✅[ICML 2019][Lyapunov-based Safe Policy Optimization for Continuous Control (SDDPG)](https://arxiv.org/abs/1901.10031)
+- ✅[ICML 2019][Lyapunov-based Safe Policy Optimization for Continuous Control (SDDPG-modular)](https://arxiv.org/abs/1901.10031)
 - [ICML 2022] [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
 
 > Model Base Safe
 
 - [NeurIPS 2021][Safe Reinforcement Learning by Imagining the Near Future (SMBPO)](https://arxiv.org/abs/2202.07789)
-- :heavy_check_mark:[CoRL 2021 Oral][Learning Off-Policy with Online Planning (SafeLoop)](https://arxiv.org/abs/2008.10066)
-- :heavy_check_mark:[AAAI 2022][Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
+- ✅[CoRL 2021 Oral][Learning Off-Policy with Online Planning (SafeLoop)](https://arxiv.org/abs/2008.10066)
+- ✅[AAAI 2022][Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
 - [NeurIPS 2022][Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
 - [ICLR 2022] [Constrained Policy Optimization via Bayesian World Models (LAMBDA)](https://arxiv.org/abs/2201.09802)
 
 > Offline Safe
-- :heavy_check_mark:[The Lagrange version of BCQ (BCQ-Lag)](https://arxiv.org/abs/1812.02900)
-- :heavy_check_mark:[The Constrained version of CRR (C-CRR)](https://proceedings.neurips.cc/paper/2020/hash/588cb956d6bbe67078f29f8de420a13d-Abstract.html)
+- ✅[The Lagrange version of BCQ (BCQ-Lag)](https://arxiv.org/abs/1812.02900)
+- ✅[The Constrained version of CRR (C-CRR)](https://proceedings.neurips.cc/paper/2020/hash/588cb956d6bbe67078f29f8de420a13d-Abstract.html)
 - [AAAI 2022] [Constraints Penalized Q-learning for Safe Offline Reinforcement Learning CPQ](https://arxiv.org/abs/2107.09003)
 - [ICLR 2022 spotlight] [COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation](https://arxiv.org/abs/2204.08957?context=cs.AI)
 - [ICML 2022][Constrained Offline Policy Optimization (COPO)](https://proceedings.mlr.press/v162/polosky22a.html)
 
 > Other
-- :heavy_check_mark:[Safe Exploration in Continuous Action Spaces (Safety Layer)](https://arxiv.org/abs/1801.08757)
+- ✅[Safe Exploration in Continuous Action Spaces (Safety Layer)](https://arxiv.org/abs/1801.08757)
 - [RA-L 2021] [Recovery RL: Safe Reinforcement Learning with Learned Recovery Zones](https://arxiv.org/abs/2010.15920)
 - [ICML 2022] [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
 - [NeurIPS 2022] [Effects of Safety State Augmentation on

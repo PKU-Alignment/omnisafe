@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Simmer algorithm."""
+"""Implementation of the Early terminated algorithm."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.ppo import PPO
 
 
 @registry.register
-class PPOSimmerPID(PPO):
-    """Simmer algorithm (PID version) implemented by PPO.
+class PPOEarlyTerminated(PPO):
+    """Early terminated algorithm implemented by PPO.
 
     References:
-        Paper Name: Effects of Safety State Augmentation on Safe Exploration.
-        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
-        Paper URL: https://arxiv.org/abs/2206.02675
+        Paper Name: Safe Exploration by Solving Early Terminated MDP
+        Paper author: Hao Sun, Ziping Xu, Meng Fang, Zhenghao Peng, Jiadong Guo, Bo Dai, Bolei Zhou
+        Paper URL: https://arxiv.org/abs/2107.04200
     """
 
     # pylint: disable-next=too-many-arguments
@@ -33,11 +33,11 @@ class PPOSimmerPID(PPO):
         self,
         env_id,
         cfgs,
-        algo='ppo_simmer_pid',
+        algo='ppo_early_terminated',
         clip=0.2,
-        wrapper_type: str = 'SimmerEnvWrapper',
+        wrapper_type: str = 'EarlyTerminatedEnvWrapper',
     ) -> None:
-        r"""Initialize PPO_Simmer_PID."""
+        r"""Initialize PPO_Earyly_Terminated."""
         self.clip = clip
         super().__init__(
             env_id=env_id,
@@ -45,9 +45,3 @@ class PPOSimmerPID(PPO):
             algo=algo,
             wrapper_type=wrapper_type,
         )
-
-    def algorithm_specific_logs(self):
-        r"""Log the algorithm specific metrics."""
-        super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/EpBudget')
-        self.logger.log_tabular('Metrics/SafetyBudget')

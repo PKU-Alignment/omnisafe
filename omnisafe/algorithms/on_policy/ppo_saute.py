@@ -12,21 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the PPO algorithm."""
-
-import torch
+"""Implementation of the Saute algorithm."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.ppo import PPO
 
 
 @registry.register
-class PPO_Saute(PPO):
+class PPOSaute(PPO):
     """Saute algorithm implemented by PPO.
 
     References:
         Paper Name: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation.
-        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang, David Mguni, Jun Wang, Haitham Bou-Ammar.
+        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
+                      David Mguni, Jun Wang, Haitham Bou-Ammar.
         Paper URL: https://arxiv.org/abs/2202.06558
     """
 
@@ -35,11 +34,11 @@ class PPO_Saute(PPO):
         self,
         env_id,
         cfgs,
-        algo='ppo',
+        algo='ppo_saute',
         clip=0.2,
         wrapper_type: str = 'SauteEnvWrapper',
-    ):
-        """Initialize PPO_Saute."""
+    ) -> None:
+        r"""Initialize PPO_Saute."""
         self.clip = clip
         super().__init__(
             env_id=env_id,

@@ -107,17 +107,29 @@ defaults:
     standardized_cost: True
   ## Configuration For Env_Wrapper
   env_cfgs:
-    unsafe_reward: -0.2
-    # ``budget`` in saute is actually the same as ``cost_limmit``.
+    # The reward when the state is unsafe
+    unsafe_reward: -0.1
+    # The lower bound of safety budget
     lower_budget: 15
+    # The upper bound of safety budget
     upper_budget: 25
+    # The dicounted factor
     simmer_gamma: 0.9997
+    # Whether to scale the safety budget
     scale_safety_budget: False
+    # Type of Simmer Controller
     simmer_controller: 'Q'
+    # Configurations for controller
     controller_cfgs:
+      # The dim of state space
       state_dim: 5
+      # The dim of action space
       act_dim: 3
+      # The theshold of safety budget
       threshold: 2
+      # The learning rate of Q network
       Q_lr: 0.1
+      # The hyperparameter of episilon greedy
       epsilon: 0.8
+      # Lowpass filter coefficient
       tau: 0.95

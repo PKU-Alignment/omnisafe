@@ -24,10 +24,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--algo',
         type=str,
-        default='PPO_Simmer_Q',
+        default='PPOSimmerPID',
         help='Choose from: {PolicyGradient, PPO, PPOLag, NaturalPG,'
-        ' TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid, CUP, PPO_Saute,'
-        'PPO_Simmer_PID, PPO_Simmer_Q,',
+        ' TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid, CUP, PPOSaute,'
+        'PPOSimmerPID, PPOSimmerQ, PPOEarlyTerminated',
     )
     parser.add_argument(
         '--env-id',

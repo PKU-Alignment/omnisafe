@@ -24,71 +24,107 @@ from omnisafe.wrappers.on_policy_wrapper import OnPolicyEnvWrapper
 from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 
-class PID_controller:
-    """Using PID controller to control the safety budget in Simmer environment"""
+class PidController:  # pylint: disable=too-many-instance-attributes
+    """Using PID controller to control the safety budget in Simmer environment."""
 
     def __init__(
         self,
         cfgs,
-        safety_budget=25.0,
-        lower_budget=1.0,
-        upper_budget=25.0,
-    ):
-        # PID parameters
+        safety_budget: float = 25.0,
+        lower_budget: float = 1.0,
+        upper_budget: float = 25.0,
+    ) -> None:
+        r"""Initialize the PID controller.
+
+        Args:
+            cfgs (CfgNode): Configurations.
+            safety_budget (float): The initial safety budget.
+            lower_budget (float): The lower bound of safety budget.
+            upper_budget (float): The upper bound of safety budget.
+        """
+        # PID parameters.
         self.pid_kp = cfgs.pid_kp
         self.pid_ki = cfgs.pid_ki
         self.pid_kd = cfgs.pid_kd
 
-        # Low pass filter
+        # Low pass filter.
         self.tau = cfgs.tau
 
-        # Initialize the PID controller
+        # Initialize the PID controller.
         self.error = 0.0
         self.error_i = 0.0
         self.prev_action = 0
         self.prev_raw_action = 0
         self.step_size = cfgs.step_size
 
-        # Set the initial safety budget
+        # Set the initial safety budget.
         self.safety_budget = safety_budget
         self.lower_budget = lower_budget
         self.upper_budget = upper_budget
 
-    def act(self, obs):
-        """Compute the safety budget based on the observation ``Jc``."""
+    def compute_raw_action(self, obs: float):
+        r"""Compute the raw action based on current obs.
 
-        # Low pass filter
-        self.error_p = self.tau * self.error + (1 - self.tau) * (self.safety_budget - obs)
+        Args:
+            obs (float): The current observation.
+
+        Returns:
+            float: The raw action.
+        """
+
+        # Low pass filter.
+        error_p = self.tau * self.error + (1 - self.tau) * (self.safety_budget - obs)
         self.error_i += self.error
-        self.erroe_d = self.pid_kd * (self.prev_action - self.prev_raw_action)
+        error_d = self.pid_kd * (self.prev_action - self.prev_raw_action)
 
-        # Compute PID error
-        curr_raw_action = (
-            self.pid_kp * self.error_p + self.pid_ki * self.error_i + self.pid_kd * self.erroe_d
-        )
+        # Compute PID error.
+        curr_raw_action = self.pid_kp * error_p + self.pid_ki * self.error_i + self.pid_kd * error_d
+        return curr_raw_action
+
+    def act(self, obs: float):
+        r"""Compute the safety budget based on the observation ``Jc``.
+
+        Args:
+            obs (float): The current observation.
+
+        Returns:
+            float: The safety budget.
+        """
+        curr_raw_action = self.compute_raw_action(obs)
+
+        # Clip the raw action.
         curr_action = np.clip(curr_raw_action, -self.step_size, self.step_size)
         self.prev_action = curr_action
         self.prev_raw_action = curr_raw_action
         raw_budget = self.safety_budget + curr_action
 
-        # Clip the safety budget
+        # Clip the safety budget.
         self.safety_budget = np.clip(raw_budget, self.lower_budget, self.upper_budget)
 
         return self.safety_budget
 
 
-class Q_controller:
-    """Using Q-learning to control the safety budget in Simmer environment"""
+class QController:  # pylint: disable=too-many-instance-attributes
+    """Using Q-learning to control the safety budget in Simmer environment."""
 
     def __init__(
         self,
         cfgs,
-        safety_budget=25.0,
-        lower_budget=1.0,
-        upper_budget=25.0,
-    ):
+        safety_budget: float = 25.0,
+        lower_budget: float = 1.0,
+        upper_budget: float = 25.0,
+    ) -> None:
+        r""" "
+        Initialize the Q-learning controller.
 
-        # Set the initial safety budget
+        Args:
+            cfgs (CfgNode): The config file.
+            safety_budget (float): The initial safety budget.
+            lower_budget (float): The lower bound of the safety budget.
+            upper_budget (float): The upper bound of the safety budget.
+        """
+
+        # Set the initial safety budget.
         self.lower_budget = lower_budget
         self.upper_budget = upper_budget
 
@@ -96,64 +132,110 @@ class Q_controller:
         self.state_dim = cfgs.state_dim
         self.act_dim = cfgs.act_dim
         self.q_function = np.zeros((cfgs.state_dim, cfgs.act_dim))
-        self.state_space = np.linspace(self.lower_budget, self.upper_budget, cfgs.state_dim - 1)
+        self.state_space = np.linspace(self.lower_budget, self.upper_budget, cfgs.state_dim)
         self.action_space = np.linspace(-1, 1, cfgs.act_dim, dtype=int)
         self.state = safety_budget
         self.init_idx = np.argwhere(self.state_space == self.state)
         self.action = 0
         self.step(self.action)
 
-        # Set the Q-learning parameters
+        # Set the Q-learning parameters.
         self.tau = cfgs.tau
         self.threshold = cfgs.threshold
-        self.Q_lr = cfgs.Q_lr
+        self.q_lr = cfgs.q_lr
 
-        # Use epsilon greedy to explore the environment
+        # Use epsilon greedy to explore the environment.
         self.epsilon = cfgs.epsilon
 
-        # Initialize the observation (Cost value per epoch) buffer
+        # Initialize the observation (Cost value per epoch) buffer.
         self.prev_obs = copy.copy(self.state)
         self.filtered_obs_buffer = []
         self.filtered_obs = 0
 
-    def get_state_idx(self, state):
+    def get_state_idx(self, state: float):
+        r"""Get the state index.
+
+        Args:
+            state (float): The current state.
+
+        Returns:
+            int: The state index."""
         state_idx = np.argwhere(self.state_space == state)[0][0]
         return state_idx
 
-    def get_action_idx(self, action):
+    def get_action_idx(self, action: float):
+        r"""Get the action index.
+
+        Args:
+            action (float): The current action.
+
+        Returns:
+            int: The action index.
+        """
         action_idx = np.argwhere(self.action_space == action)
         return action_idx
 
     def get_random_action(self):
+        r"""Get the random action.
+
+        Returns:
+            float: The random action.
+        """
         action_idx = np.random.randint(0, self.act_dim)
         return self.action_space[action_idx]
 
-    def get_greedy_action(self, state):
+    def get_greedy_action(self, state: float):
+        r"""Get the greedy action.
+
+        Args:
+            state (float): The current state(``cost_limit``).
+
+        Returns:
+            float: The greedy action."""
         state_idx = self.get_state_idx(state)
         action_idx = np.argmax(self.q_function[state_idx, :])
         action = self.action_space[action_idx]
         return action
 
-    def update_q_function(self, state, action, reward, next_state):
-        """Update the Q function using the Bellman equation."""
+    def update_q_function(self, state: float, action: float, reward: float, next_state: float):
+        r"""Update the Q function using the Bellman equation.
+
+        Args:
+            state (float): The current state.
+            action (float): The current action.
+            reward (float): The reward.
+            next_state (float): The next state.
+        """
         state_idx = self.get_state_idx(state)
         action_idx = self.get_action_idx(action)
         next_state_idx = self.get_state_idx(next_state)
-        self.q_function[state_idx, action_idx] = (1 - self.Q_lr) * self.q_function[
+        self.q_function[state_idx, action_idx] = (1 - self.q_lr) * self.q_function[
             state_idx, action_idx
-        ] + self.Q_lr * (reward + self.tau * np.max(self.q_function[next_state_idx, :]))
+        ] + self.q_lr * (reward + self.tau * np.max(self.q_function[next_state_idx, :]))
 
-    def step(self, action):
-        """Step the environment."""
+    def step(self, action: float):
+        r"""Step the environment.
+
+        Args:
+            action (float): The current action.
+        """
         state_idx = self.get_state_idx(self.state)
         state_idx = np.clip(state_idx + action, 0, self.state_dim - 1, dtype=int)
         self.state = self.state_space[state_idx]
         return self.state
 
-    def reward(self, state, action, obs):
-        """Get the reward function based on whether the observation is within the threshold,"""
+    def reward(self, state: float, action: float, obs: float):
+        r"""Get the reward function based on whether the observation is within the threshold.
+
+        Args:
+            state (float): The current state.
+            action (float): The current action.
+            obs (float): The observation.
+
+            Returns:
+                float: The reward.
+        """
         action_idx = self.get_action_idx(action)
-        print(obs - state)
         if int(self.threshold > obs - state and obs - state > -self.threshold):
             reward = np.array([-1, 1, 0.5])[action_idx]
         elif int(obs - state <= -self.threshold):
@@ -162,8 +244,15 @@ class Q_controller:
             reward = np.array([2, -1, -1])[action_idx]
         return reward[0]
 
-    def act(self, obs):
-        """Return the safety budget based on the observation."""
+    def act(self, obs: float):
+        r"""Return the safety budget based on the observation.
+
+        Args:
+            obs (float): The observation.
+
+        Returns:
+            float: The safety budget.
+        """
         prev_obs = self.filtered_obs
         self.filtered_obs = self.tau * prev_obs + (1 - self.tau) * obs
         self.filtered_obs_buffer.append(self.filtered_obs)
@@ -181,19 +270,26 @@ class Q_controller:
 
         # Update the Q function
         self.update_q_function(state, action, reward, next_state)
-        print((state, action, reward, next_state))
-        print(self.q_function)
         return safety_budget
 
 
 @WRAPPER_REGISTRY.register
-class SimmerEnvWrapper(OnPolicyEnvWrapper):
+class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance-attributes
+    """Wrapper for the Simmer environment."""
+
     def __init__(
         self,
         env_id,
         cfgs,
         render_mode=None,
-    ):
+    ) -> None:
+        r"""Initialize the Simmer environment wrapper.
+
+        Args:
+            env_id (str): The environment id.
+            cfgs (Config): The configuration.
+            render_mode (str): The render mode.
+        """
         super().__init__(env_id, render_mode)
 
         self.unsafe_reward = cfgs.unsafe_reward
@@ -223,18 +319,18 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):
             self.upper_budget = cfgs.upper_budget
         self.rel_safety_budget = self.safety_budget / self.upper_budget
         self.safety_obs = self.rel_safety_budget
-        self.high = np.array(np.hstack([self.env.observation_space.high, np.inf]), dtype=np.float32)
-        self.low = np.array(np.hstack([self.env.observation_space.low, np.inf]), dtype=np.float32)
-        self.observation_space = spaces.Box(high=self.high, low=self.low)
+        high = np.array(np.hstack([self.env.observation_space.high, np.inf]), dtype=np.float32)
+        low = np.array(np.hstack([self.env.observation_space.low, np.inf]), dtype=np.float32)
+        self.observation_space = spaces.Box(high=high, low=low)
         if cfgs.simmer_controller == 'PID':
-            self.controller = PID_controller(
+            self.controller = PidController(
                 cfgs.controller_cfgs,
                 safety_budget=self.safety_budget,
                 lower_budget=self.lower_budget,
                 upper_budget=self.upper_budget,
             )
         elif cfgs.simmer_controller == 'Q':
-            self.controller = Q_controller(
+            self.controller = QController(
                 cfgs.controller_cfgs,
                 safety_budget=self.safety_budget,
                 lower_budget=self.lower_budget,
@@ -246,22 +342,54 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):
             )
 
     def augment_obs(self, obs: np.array, safety_obs: np.array):
-        """Augmenting the obs with the safety obs, if needed"""
+        r"""Augmenting the obs with the safety obs, if needed.
+
+        Args:
+            obs (np.array): The observation.
+            safety_obs (np.array): The safety observation.
+
+        Returns:
+            np.array: The augmented observation.
+        """
         augmented_obs = np.hstack([obs, safety_obs])
         return augmented_obs
 
     def safety_step(self, cost: np.ndarray) -> np.ndarray:
-        """Update the normalized safety obs z' = (z - l / d) / gamma."""
+        r"""Update the normalized safety obs.
+
+        Args:
+            cost (np.ndarray): The cost.
+
+        Returns:
+            np.ndarray: The normalized safety obs.
+        """
         self.safety_obs -= cost / self.upper_budget
         self.safety_obs /= self.simmer_gamma
         return self.safety_obs
 
     def safety_reward(self, reward: np.ndarray, next_safety_obs: np.ndarray) -> np.ndarray:
+        r"""Update the reward based on the safety obs.
+
+        Args:
+            reward (np.ndarray): The reward.
+            next_safety_obs (np.ndarray): The next safety obs.
+
+        Returns:
+            np.ndarray: The updated reward.
+        """
         reward = reward * (next_safety_obs > 0) + self.unsafe_reward * (next_safety_obs <= 0)
         return reward
 
     def reset(self, seed=None):
-        """reset environment"""
+        r"""reset environment
+
+        Args:
+            seed (int): The seed.
+
+        Returns:
+            np.array: The augmented observation.
+            dict: The info.
+        """
         self.curr_o, info = self.env.reset(seed=seed)
         self.rel_safety_budget = self.safety_budget / self.upper_budget
         self.safety_obs = self.rel_safety_budget
@@ -269,7 +397,19 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):
         return self.curr_o, info
 
     def step(self, action):
-        """engine step"""
+        r"""step environment
+
+        Args:
+            action (np.array): The action.
+
+        Returns:
+            np.array: The augmented observation.
+            np.array: The reward.
+            np.array: The cost.
+            bool: The terminated flag.
+            bool: The truncated flag.
+            dict: The info.
+        """
         next_obs, reward, cost, terminated, truncated, info = self.env.step(action)
         next_safety_obs = self.safety_step(cost)
         info['true_reward'] = reward
@@ -280,11 +420,31 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):
         return augmented_obs, reward, cost, terminated, truncated, info
 
     def set_budget(self, Jc):
+        r"""Set the safety budget.
+
+        Args:
+            Jc (np.array): The safety budget.
+
+        Returns:
+            np.array: The safety budget.
+        """
         self.safety_budget = self.controller.act(Jc)
 
     # pylint: disable-next=too-many-locals
     def roll_out(self, agent, buf, logger):
-        """collect data and store to experience buffer."""
+        r"""collect data and store to experience buffer.
+
+        Args:
+            agent (Agent): The agent.
+            buf (Buffer): The buffer.
+            logger (Logger): The logger.
+
+        Returns:
+            float: The episode return.
+            float: The episode cost.
+            int: The episode length.
+            float: The episode budget.
+        """
         obs, _ = self.reset()
         ep_ret, ep_costs, ep_len, ep_budget = 0.0, 0.0, 0, 0.0
         for step_i in range(self.local_steps_per_epoch):

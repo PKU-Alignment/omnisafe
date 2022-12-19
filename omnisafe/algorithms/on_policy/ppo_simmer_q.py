@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the PPO algorithm."""
-
-import torch
+"""Implementation of the Simmer algorithm."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.ppo import PPO
 
 
 @registry.register
-class PPO_Simmer_Q(PPO):
+class PPOSimmerQ(PPO):
     """Simmer algorithm (Q version) implemented by PPO.
 
     References:
@@ -35,10 +33,10 @@ class PPO_Simmer_Q(PPO):
         self,
         env_id,
         cfgs,
-        algo='ppo',
+        algo='ppo_simmer_q',
         clip=0.2,
         wrapper_type: str = 'SimmerEnvWrapper',
-    ):
+    ) -> None:
         """Initialize PPO_Simmer_Q."""
         self.clip = clip
         super().__init__(

@@ -24,12 +24,22 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 @WRAPPER_REGISTRY.register
 class SauteEnvWrapper(OnPolicyEnvWrapper):
+    r"""SauteEnvWrapper."""
+
     def __init__(
         self,
         env_id,
         cfgs,
         render_mode=None,
-    ):
+    ) -> None:
+        r"""Initialize SauteEnvWrapper.
+
+        Args:
+            env_id (str): environment id
+            cfgs (dict): configuration dictionary
+            render_mode (str): render mode
+
+        """
         super().__init__(env_id, render_mode)
 
         self.unsafe_reward = cfgs.unsafe_reward
@@ -44,34 +54,78 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         else:
             self.safety_budget = cfgs.safety_budget
         self.safety_obs = 1.0
-        self.high = np.array(np.hstack([self.env.observation_space.high, np.inf]), dtype=np.float32)
-        self.low = np.array(np.hstack([self.env.observation_space.low, np.inf]), dtype=np.float32)
-        self.observation_space = spaces.Box(high=self.high, low=self.low)
+        high = np.array(np.hstack([self.env.observation_space.high, np.inf]), dtype=np.float32)
+        low = np.array(np.hstack([self.env.observation_space.low, np.inf]), dtype=np.float32)
+        self.observation_space = spaces.Box(high=high, low=low)
 
     def augment_obs(self, obs: np.array, safety_obs: np.array):
-        """Augmenting the obs with the safety obs, if needed"""
+        r"""Augmenting the obs with the safety obs.
+
+        Args:
+            obs (np.array): observation
+            safety_obs (np.array): safety observation
+
+        Returns:
+            augmented_obs (np.array): augmented observation
+        """
         augmented_obs = np.hstack([obs, safety_obs])
         return augmented_obs
 
     def safety_step(self, cost: np.ndarray) -> np.ndarray:
-        """Update the normalized safety obs z' = (z - l / d) / gamma."""
+        r"""Update the normalized safety obs.
+
+        Args:
+            cost (np.array): cost
+
+        Returns:
+            safety_obs (np.array): normalized safety observation
+        """
         self.safety_obs -= cost / self.safety_budget
         self.safety_obs /= self.saute_gamma
         return self.safety_obs
 
     def safety_reward(self, reward: np.ndarray, next_safety_obs: np.ndarray) -> np.ndarray:
+        r"""Update the reward.
+
+        Args:
+            reward (np.array): reward
+            next_safety_obs (np.array): next safety observation
+
+        Returns:
+            reward (np.array): updated reward
+        """
         reward = reward * (next_safety_obs > 0) + self.unsafe_reward * (next_safety_obs <= 0)
         return reward
 
     def reset(self, seed=None):
-        """reset environment"""
+        r"""reset environment
+
+        Args:
+            seed (int): seed for environment reset
+
+        Returns:
+            self.curr_o (np.array): current observation
+            info (dict): environment info
+        """
         self.curr_o, info = self.env.reset(seed=seed)
         self.safety_obs = 1.0
         self.curr_o = self.augment_obs(self.curr_o, self.safety_obs)
         return self.curr_o, info
 
     def step(self, action):
-        """engine step"""
+        r"""Step environment.
+
+        Args:
+            action (np.array): action
+
+        Returns:
+            augmented_obs (np.array): augmented observation
+            reward (np.array): reward
+            cost (np.array): cost
+            terminated (bool): whether the episode is terminated
+            truncated (bool): whether the episode is truncated
+            info (dict): environment info
+        """
         next_obs, reward, cost, terminated, truncated, info = self.env.step(action)
         next_safety_obs = self.safety_step(cost)
         info['true_reward'] = reward
@@ -83,7 +137,19 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
 
     # pylint: disable-next=too-many-locals
     def roll_out(self, agent, buf, logger):
-        """collect data and store to experience buffer."""
+        r"""Collect data and store to experience buffer.
+
+        Args:
+            agent (Agent): agent
+            buf (Buffer): buffer
+            logger (Logger): logger
+
+        Returns:
+            ep_ret (float): episode return
+            ep_costs (float): episode costs
+            ep_len (int): episode length
+            ep_budget (float): episode budget
+        """
         obs, _ = self.reset()
         ep_ret, ep_costs, ep_len, ep_budget = 0.0, 0.0, 0, 0.0
         for step_i in range(self.local_steps_per_epoch):

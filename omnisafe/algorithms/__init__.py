@@ -28,10 +28,11 @@ from omnisafe.algorithms.on_policy.pcpo import PCPO
 from omnisafe.algorithms.on_policy.pdo import PDO
 from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
 from omnisafe.algorithms.on_policy.ppo import PPO
+from omnisafe.algorithms.on_policy.ppo_early_terminated import PPOEarlyTerminated
 from omnisafe.algorithms.on_policy.ppo_lag import PPOLag
-from omnisafe.algorithms.on_policy.ppo_saute import PPO_Saute
-from omnisafe.algorithms.on_policy.ppo_simmer_pid import PPO_Simmer_PID
-from omnisafe.algorithms.on_policy.ppo_simmer_q import PPO_Simmer_Q
+from omnisafe.algorithms.on_policy.ppo_saute import PPOSaute
+from omnisafe.algorithms.on_policy.ppo_simmer_pid import PPOSimmerPID
+from omnisafe.algorithms.on_policy.ppo_simmer_q import PPOSimmerQ
 from omnisafe.algorithms.on_policy.trpo import TRPO
 from omnisafe.algorithms.on_policy.trpo_lag import TRPOLag
 
@@ -53,9 +54,10 @@ algo_type = {
         'TRPO',
         'TRPOLag',
         'CUP',
-        'PPO_Saute',
-        'PPO_Simmer_PID',
-        'PPO_Simmer_Q',
+        'PPOSaute',
+        'PPOSimmerPID',
+        'PPOSimmerQ',
+        'PPOEarlyTerminated',
     ],
     'model-based': ['MBPPOLag', 'SafeLoop'],
 }
