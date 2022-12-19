@@ -22,6 +22,7 @@ import torch
 class Lagrange(abc.ABC):
     """Abstract base class for Lagrangian-base Algorithms."""
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         cost_limit: float,

@@ -153,7 +153,6 @@ class CUP(PolicyGradient, Lagrange):
                     'adv': adv[i * batch_size : (i + 1) * batch_size],
                     'discounted_ret': discounted_ret[i * batch_size : (i + 1) * batch_size],
                     'cost_adv': cost_adv[i * batch_size : (i + 1) * batch_size],
-                    'target_v': target_v[i * batch_size : (i + 1) * batch_size],
                 }
             )
 
