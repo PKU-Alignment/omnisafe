@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--algo',
         type=str,
-        default='PPOLag',
+        default='PPOSimmerQ',
         help='Choose from: {PolicyGradient, PPO, PPOLag, NaturalPG,'
         ' TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid, CUP, PPOSaute,'
         'PPOSimmerPID, PPOSimmerQ, PPOEarlyTerminated',

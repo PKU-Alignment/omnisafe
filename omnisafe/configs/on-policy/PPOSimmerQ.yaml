@@ -128,7 +128,7 @@ defaults:
       # The theshold of safety budget
       threshold: 2
       # The learning rate of Q network
-      Q_lr: 0.1
+      q_lr: 0.1
       # The hyperparameter of episilon greedy
       epsilon: 0.8
       # Lowpass filter coefficient

@@ -66,7 +66,7 @@ class CUP(PolicyGradient, Lagrange):
 
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item)
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
         self.logger.log_tabular('Train/MaxRatio', self.max_ratio)
         self.logger.log_tabular('Train/MinRatio', self.min_ratio)
 
