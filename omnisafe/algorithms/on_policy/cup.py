@@ -56,6 +56,7 @@ class CUP(PolicyGradient, Lagrange):
             lagrangian_multiplier_init=self.cfgs.lagrange_cfgs.lagrangian_multiplier_init,
             lambda_lr=self.cfgs.lagrange_cfgs.lambda_lr,
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
+            lagrangian_upper_bound=self.cfgs.lagrange_cfgs.lagrangian_upper_bound,
         )
         self.lam = self.cfgs.lam
         self.eta = self.cfgs.eta
@@ -65,7 +66,7 @@ class CUP(PolicyGradient, Lagrange):
 
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier)
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item)
         self.logger.log_tabular('Train/MaxRatio', self.max_ratio)
         self.logger.log_tabular('Train/MinRatio', self.min_ratio)
 

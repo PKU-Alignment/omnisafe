@@ -57,9 +57,12 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
             cfgs: (default: :const:`None`)
                 This is a dictionary of the algorithm hyper-parameters.
         """
-        self.env = wrapper_registry.get(wrapper_type)(env_id)
         self.algo = algo
         self.cfgs = deepcopy(cfgs)
+        try:
+            self.env = wrapper_registry.get(wrapper_type)(env_id, cfgs=self.cfgs.env_cfgs)
+        except AttributeError:
+            self.env = wrapper_registry.get(wrapper_type)(env_id)
 
         assert self.cfgs.steps_per_epoch % distributed_utils.num_procs() == 0
         self.local_steps_per_epoch = cfgs.steps_per_epoch // distributed_utils.num_procs()

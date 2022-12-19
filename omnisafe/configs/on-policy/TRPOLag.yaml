@@ -53,6 +53,8 @@ defaults:
   cg_iters: 10
   # Subsampled observation
   fvp_obs: None
+  # The size of batch for policy update
+  batch_size: 1000
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
@@ -73,7 +75,7 @@ defaults:
   # The thereshold of max gradient norm
   max_grad_norm: 0.5
   # Whether to use reward scaling
-  scale_rewards: False
+  scale_rewards: True
   # Whether to use standardized observation
   standardized_obs: True
   ## ---------------------------------------Configuration For Model----------------------------- ##

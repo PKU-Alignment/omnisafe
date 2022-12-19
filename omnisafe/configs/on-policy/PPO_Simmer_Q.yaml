@@ -23,7 +23,7 @@ defaults:
   # Number of steps per epoch
   steps_per_epoch: 30000
   # Number of update iteration for Actor network
-  actor_iters: 1
+  actor_iters: 80
   # Number of update iteration for Critic network
   critic_iters: 40
   # Check if all models own the same parameter values every `check_freq` epoch
@@ -42,20 +42,11 @@ defaults:
   critic_lr: 0.001
   # The Address for saving training process data
   data_dir: "./runs"
-
-  ## ---------------------------Basic configurations for derived class FOCOPS------------------- ##
+  ## ---------------------------Basic configurations for derived class PPOLag------------------- ##
   # The thereshold for KL early stopping
   target_kl: 0.01
-  # Tolerance of constraint violation
-  cost_limit: 25
-  # The thereshold for KL divergence in each policy update
-  eta: 0.02
-  # The hyperparameters related to the greediness of the algorithm
-  lam: 1.5
   # The size of batch for policy update
   batch_size: 2000
-  # The value to clip surrogate function
-  clip: 0.2
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
@@ -70,7 +61,7 @@ defaults:
   # Whther to use reward penalty
   reward_penalty: False
   # Whether to use KL early stopping
-  kl_early_stopping: True
+  kl_early_stopping: False
   # Whether to use max gradient norm
   use_max_grad_norm: False
   # The thereshold of max gradient norm
@@ -79,7 +70,6 @@ defaults:
   scale_rewards: False
   # Whether to use standardized observation
   standardized_obs: False
-
   ## ---------------------------------------Configuration For Model----------------------------- ##
   model_cfgs:
     # Whether to share the weight of Actor network with Critic network
@@ -101,7 +91,6 @@ defaults:
         hidden_sizes: [64, 64]
         # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
         activation: tanh
-
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   buffer_cfgs:
     # Reward discounted factor
@@ -116,16 +105,19 @@ defaults:
     standardized_reward: True
     # Whether to use standardized cost
     standardized_cost: True
-
-## ----------------------------------Configuration For Lagrangian multiplier---------------------- ##
-  lagrange_cfgs:
-    # Tolerance of constraint violation
-    cost_limit: 25.0
-    # Initial value of lagrangian multiplier
-    lagrangian_multiplier_init: 0.001
-    # Learning rate of lagrangian multiplier
-    lambda_lr: 0.035
-    # Type of lagrangian optimizer
-    lambda_optimizer: "Adam"
-    # The upper bound of lagrange multiplier
-    lagrangian_upper_bound: 2.0
+  ## Configuration For Env_Wrapper
+  env_cfgs:
+    unsafe_reward: -0.2
+    # ``budget`` in saute is actually the same as ``cost_limmit``.
+    lower_budget: 15
+    upper_budget: 25
+    simmer_gamma: 0.9997
+    scale_safety_budget: False
+    simmer_controller: 'Q'
+    controller_cfgs:
+      state_dim: 5
+      act_dim: 3
+      threshold: 2
+      Q_lr: 0.1
+      epsilon: 0.8
+      tau: 0.95
