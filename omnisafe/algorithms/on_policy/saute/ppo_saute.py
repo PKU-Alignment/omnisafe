@@ -1,4 +1,5 @@
 # Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Simmer algorithm."""
+"""Implementation of the Saute algorithm."""
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.ppo import PPO
+from omnisafe.algorithms.on_policy.base.ppo import PPO
 
 
 @registry.register
-class PPOSimmerPID(PPO):
-    """Simmer algorithm (PID version) implemented by PPO.
+class PPOSaute(PPO):
+    """Saute algorithm implemented by PPO.
 
     References:
-        Paper Name: Effects of Safety State Augmentation on Safe Exploration.
-        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
-        Paper URL: https://arxiv.org/abs/2206.02675
+        Paper Name: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation.
+        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
+                      David Mguni, Jun Wang, Haitham Bou-Ammar.
+        Paper URL: https://arxiv.org/abs/2202.06558
     """
 
     # pylint: disable-next=too-many-arguments
@@ -33,11 +35,11 @@ class PPOSimmerPID(PPO):
         self,
         env_id,
         cfgs,
-        algo='ppo_simmer_pid',
+        algo='ppo_saute',
         clip=0.2,
-        wrapper_type: str = 'SimmerEnvWrapper',
+        wrapper_type: str = 'SauteEnvWrapper',
     ) -> None:
-        r"""Initialize PPO_Simmer_PID."""
+        r"""Initialize PPO_Saute."""
         self.clip = clip
         super().__init__(
             env_id=env_id,
@@ -47,7 +49,5 @@ class PPOSimmerPID(PPO):
         )
 
     def algorithm_specific_logs(self):
-        r"""Log the algorithm specific metrics."""
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/EpBudget')
-        self.logger.log_tabular('Metrics/SafetyBudget')

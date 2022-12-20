@@ -12,21 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Saute algorithm."""
+"""Implementation of the Lagrange version of PPO algorithm."""
+
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.ppo import PPO
+from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
 
 
 @registry.register
-class PPOSaute(PPO):
-    """Saute algorithm implemented by PPO.
+class PPOLagSimmerQ(PPOLag):
+    """Simmer algorithm (Q version) implemented by PPOLag.
 
     References:
-        Paper Name: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation.
-        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
-                      David Mguni, Jun Wang, Haitham Bou-Ammar.
-        Paper URL: https://arxiv.org/abs/2202.06558
+        Paper Name: Effects of Safety State Augmentation on Safe Exploration.
+        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
+        Paper URL: https://arxiv.org/abs/2206.02675
     """
 
     # pylint: disable-next=too-many-arguments
@@ -34,19 +34,19 @@ class PPOSaute(PPO):
         self,
         env_id,
         cfgs,
-        algo='ppo_saute',
-        clip=0.2,
-        wrapper_type: str = 'SauteEnvWrapper',
-    ) -> None:
-        r"""Initialize PPO_Saute."""
-        self.clip = clip
+        algo='PPO-Lag',
+        wrapper_type: str = 'SimmerEnvWrapper',
+    ):
+        """Initialize PPO-Lag algorithm."""
         super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
-        )
+            env_id = env_id,
+            cfgs = cfgs, 
+            algo = algo, 
+            wrapper_type = wrapper_type,
+            )
 
     def algorithm_specific_logs(self):
+        r"""Log the algorithm specific metrics."""
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/EpBudget')
+        self.logger.log_tabular('Metrics/SafetyBudget')

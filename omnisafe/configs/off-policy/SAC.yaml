@@ -23,13 +23,17 @@ defaults:
   save_freq: 10
   max_ep_len: 1000
   num_test_episodes: 10
-  actor_lr: 0.0003
+  actor_lr: 0.001
   critic_lr: 0.001
   polyak: 0.999
   gamma: 0.99
   start_steps: 10000
   data_dir: "./runs"
   seed: 0
+  #
+  act_target_noise: 0.1
+  alpha: 0.2
+  alpha_gamma: 0.999
 
   # Optional Configuration
   ## Whether to use cost critic
@@ -47,12 +51,12 @@ defaults:
     weight_initialization_mode: "kaiming_uniform"
     ac_kwargs:
       pi:
-        actor_type: "dire"
+        actor_type: "gaussian_stdnet"
         act_noise: 0.1
         hidden_sizes: [400, 300]
         activation: relu
       val:
-        num_critics: 1
+        num_critics: 2
         hidden_sizes: [400, 300]
         activation: relu
   ## Configuration For Buffer

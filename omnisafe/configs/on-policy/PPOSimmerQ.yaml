@@ -47,6 +47,8 @@ defaults:
   target_kl: 0.01
   # The size of batch for policy update
   batch_size: 2000
+  # The clip range for PPO loss
+  clip: 0.2
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##

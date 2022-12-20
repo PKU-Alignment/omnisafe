@@ -42,11 +42,9 @@ defaults:
   critic_lr: 0.001
   # The Address for saving training process data
   data_dir: "./runs"
-  ## ---------------------------Basic configurations for derived class PPO---------------------- ##
+  ## ---------------------------Basic configurations for derived class PPOLag------------------- ##
   # The thereshold for KL early stopping
   target_kl: 0.01
-  # The size of batch for policy update
-  batch_size: 2000
   # The clip range for PPO loss
   clip: 0.2
 
@@ -107,28 +105,39 @@ defaults:
     standardized_reward: True
     # Whether to use standardized cost
     standardized_cost: True
-
- ## --------------------------------------Configuration For PID--------------------------------- ##
-  PID_cfgs:
-    # KP for PID
-    pid_kp: 0.01
-    # KI for PID
-    pid_ki: 0.01
-    # KD for PID
-    pid_kd: 0.01
-    # The init value of lagrangian multiplier
-    lagrangian_multiplier_init: 0.001
-    # The delay rate of KD
-    pid_d_delay: 10
-    # 0 for hard update, 1 for no update
-    pid_delta_p_ema_alpha: 0.95
-    # The same as above
-    pid_delta_d_ema_alpha: 0.95
-    # L = (J_r - lam * J_c) / (1 + lam); lam <= 0
-    sum_norm: True
-    # L = (1 - lam) * J_r - lam * J_c; 0 <= lam <= 1
-    diff_norm: False
-    # Only used if sum_norm=diff_norm=False
-    penalty_max: 100
-    # Tolerance of violation
+   ## ----------------------------------Configuration For Lagrangian multiplier---------------------- ##
+  lagrange_cfgs:
+    # Tolerance of constraint violation
     cost_limit: 25.0
+    # Initial value of lagrangian multiplier
+    lagrangian_multiplier_init: 0.001
+    # Learning rate of lagrangian multiplier
+    lambda_lr: 0.035
+    # Type of lagrangian optimizer
+    lambda_optimizer: "Adam"
+  ## Configuration For Env_Wrapper
+  env_cfgs:
+    # The reward when the state is unsafe
+    unsafe_reward: -0.05
+    # The lower bound of safety budget
+    lower_budget: 15
+    # The upper bound of safety budget
+    upper_budget: 25
+    # The dicounted factor
+    simmer_gamma: 0.999
+    # Whether to scale the safety budget
+    scale_safety_budget: True
+    # Type of Simmer Controller
+    simmer_controller: 'PID'
+    # Configuration of Simmer Controller
+    controller_cfgs:
+      # Kp for PID
+      pid_kp: 0.1
+      # Ki for PID
+      pid_ki: 0.01
+      # Kd for PID
+      pid_kd: 0.01
+      # The step size for PID
+      step_size: 2
+      # Lowpass filter coefficient
+      tau: 0.95

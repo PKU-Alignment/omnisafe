@@ -52,7 +52,7 @@ defaults:
         hidden_sizes: [400, 300]
         activation: relu
       val:
-        num_critics: 1
+        num_critics: 2
         hidden_sizes: [400, 300]
         activation: relu
   ## Configuration For Buffer

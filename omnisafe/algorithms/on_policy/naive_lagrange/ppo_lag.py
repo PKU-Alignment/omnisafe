@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of TRPO algorithm."""
+"""Implementation of the Lagrange version of PPO algorithm."""
 
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.trpo import TRPO
+from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
 from omnisafe.common.lagrange import Lagrange
 
 
 @registry.register
-class TRPOLag(TRPO, Lagrange):
-    """The Lagrange version of TRPO algorithm.
+class PPOLag(PolicyGradient, Lagrange):
+    """The Lagrange version of PPO algorithm.
 
     References:
         Paper Name: Benchmarking Safe Exploration in Deep Reinforcement Learning.
@@ -32,15 +32,17 @@ class TRPOLag(TRPO, Lagrange):
 
     """
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         env_id,
         cfgs,
-        algo: str = 'TRPO-Lag',
+        algo='PPO-Lag',
         wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
-        """initialize"""
-        TRPO.__init__(
+        """Initialize PPO-Lag algorithm."""
+        self.clip = cfgs.clip
+        PolicyGradient.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
@@ -59,17 +61,19 @@ class TRPOLag(TRPO, Lagrange):
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
-    def compute_loss_pi(self, data: dict) -> tuple:
-        # Policy loss
+    def compute_loss_pi(self, data: dict):
+        """Compute policy loss."""
         dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
+        ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
+        loss_pi = -(torch.min(ratio * data['adv'], ratio_clip * data['adv'])).mean()
+        loss_pi += self.cfgs.entropy_coef * dist.entropy().mean()
 
-        loss_pi = -(ratio * data['adv']).mean()
-        loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
-
-        # ensure that Lagrange Multiplier is positive
-        penalty = torch.clamp_min(self.lagrangian_multiplier, 0.0)
-        loss_pi += penalty * (ratio * data['cost_adv']).mean()
+        # Ensure that Lagrange Multiplier is positive
+        penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
+        loss_pi += (
+            penalty * (torch.max(ratio * data['cost_adv'], ratio_clip * data['cost_adv'])).mean()
+        )
         loss_pi /= 1 + penalty
 
         # Useful extra info
@@ -83,12 +87,10 @@ class TRPOLag(TRPO, Lagrange):
         """Update."""
         # pre-process data
         raw_data, data = self.buf.pre_process_data()
-        # sub-sampling accelerates calculations
-        self.fvp_obs = data['obs'][::4]
         # Note that logger already uses MPI statistics across all processes..
-        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
+        Jc = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
-        self.update_lagrange_multiplier(ep_costs)
+        self.update_lagrange_multiplier(Jc)
         # now update policy and value network
         self.update_policy_net(data=data)
         self.update_value_net(data=data)

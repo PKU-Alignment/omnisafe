@@ -18,7 +18,7 @@ import numpy as np
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.trpo import TRPO
+from omnisafe.algorithms.on_policy.base.trpo import TRPO
 from omnisafe.utils import distributed_utils
 from omnisafe.utils.tools import (
     conjugate_gradients,

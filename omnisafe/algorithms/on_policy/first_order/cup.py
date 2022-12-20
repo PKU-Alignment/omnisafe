@@ -17,7 +17,7 @@
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
+from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
 from omnisafe.common.lagrange import Lagrange
 from omnisafe.utils import distributed_utils
 
