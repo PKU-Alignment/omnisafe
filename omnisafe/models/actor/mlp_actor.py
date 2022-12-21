@@ -43,6 +43,7 @@ class MLPActor(Actor):
         self.act_max = act_max
         self.act_min = act_min
         self.act_noise = act_noise
+        self._std = 0.5 * torch.ones(self.act_dim, dtype=torch.float32)
 
         if shared is not None:  # use shared layers
             action_head = build_mlp_network(
@@ -64,8 +65,12 @@ class MLPActor(Actor):
         mean = self.net(obs)
         return Normal(mean, self._std)
 
+    def get_distribution(self, obs):
+        """Get the distribution of actor."""
+        return self._distribution(obs)
+
     def forward(self, obs, act=None):
-        """forward"""
+        """Forward"""
         # Return output from network scaled to action space limits.
         return self.act_max * self.net(obs)
 

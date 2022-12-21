@@ -15,7 +15,7 @@
 
 defaults:
   # --------------------------------------Basic Configurations----------------------------------- #
-  ## -----------------------------Basic configurations for base class PG------------------------ ##
+  ## ----------------------------Basic configurations for base class DDPG----------------------- ##
   # The random seed
   seed: 0
   # Number of epochs

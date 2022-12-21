@@ -15,7 +15,7 @@
 
 defaults:
   # --------------------------------------Basic Configurations----------------------------------- #
-  ## -----------------------------Basic configurations for base class PG------------------------ ##
+  ## ----------------------------Basic configurations for base class DDPG----------------------- ##
   # The random seed
   seed: 0
   # Number of epochs
@@ -51,11 +51,10 @@ defaults:
   alpha: 0.2
   # The learning rate of Alpha
   alpha_gamma: 0.99
-
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
-  use_cost: False
+  use_cost: True
   # Cost discounted factor
   cost_gamma: 1.0
   # Whther to use linear decay of learning rate
@@ -113,6 +112,6 @@ defaults:
     # Initial value of lagrangian multiplier
     lagrangian_multiplier_init: 0.001
     # Learning rate of lagrangian multiplier
-    lambda_lr: 0.0035
+    lambda_lr: 0.01
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"

@@ -108,7 +108,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         # Bellman backup for Q function
         with torch.no_grad():
             act_targ, logp_a_next = self.ac_targ.actor.predict(
-                obs_next, deterministic=True, need_log_prob=True
+                obs_next, deterministic=False, need_log_prob=True
             )
             qc_targ = self.ac_targ.cost_critic(obs_next, act_targ)[0]
             backup = cost + self.cfgs.gamma * (1 - done) * (qc_targ - self.alpha * logp_a_next)
@@ -148,3 +148,4 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
 
         # Finally, update target networks by polyak averaging.
         self.polyak_update_target()
+        self.alpha_discount()

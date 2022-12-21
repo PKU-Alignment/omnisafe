@@ -42,7 +42,7 @@ defaults:
   critic_lr: 0.001
   # The Address for saving training process data
   data_dir: "./runs"
-  ## ---------------------------Basic configurations for derived class PPO---------------------- ##
+  ## -------------------------Basic configurations for derived class CPPOPid-------------------- ##
   # The thereshold for KL early stopping
   target_kl: 0.01
   # The size of batch for policy update

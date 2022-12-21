@@ -15,7 +15,7 @@
 
 defaults:
   # --------------------------------------Basic Configurations----------------------------------- #
-  ## -----------------------------Basic configurations for base class PG------------------------ ##
+  ## ----------------------------Basic configurations for base class DDPG----------------------- ##
   # The random seed
   seed: 0
   # Number of epochs
@@ -46,8 +46,6 @@ defaults:
   start_steps: 10000
   # The Address for saving training process data
   data_dir: "./runs"
-
-
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic

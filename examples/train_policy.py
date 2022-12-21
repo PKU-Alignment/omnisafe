@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--algo',
         type=str,
-        default='DDPGLag',
+        default='PPOLag',
         help='Choose from: '
         'On Policy:'
         'PolicyGradient, NaturalPG, TRPO, PPO,'
@@ -34,7 +34,8 @@ if __name__ == '__main__':
         'PPOLagSaute, PPOLagSimmerPid, PPOLagSimmerQ, PPOLagEarlyTerminated,'
         'Off Policy:'
         'DDPG, TD3, SAC,'
-        'DDPGLag, TD3Lag, SACLag,',
+        'DDPGLag, TD3Lag, SACLag,'
+        'SDDPG',
     )
     parser.add_argument(
         '--env-id',
