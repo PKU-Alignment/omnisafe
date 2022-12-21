@@ -30,7 +30,7 @@ class Sigwalls:
     lenth: float = 3.5
     placements: list = None
     locations: tuple = ((1.125, 0), (-1.125, 0))
-    keepout: float = 0.
+    keepout: float = 0.0
 
     color: np.array = COLOR['sigwall']
     group: np.array = GROUP['sigwall']
@@ -49,6 +49,6 @@ class Sigwalls:
             'contype': 0,
             'conaffinity': 0,
             'group': self.group,
-            'rgba': self.color * [1, 1, 1, 0.1]
+            'rgba': self.color * [1, 1, 1, 0.1],
         }
         return geom

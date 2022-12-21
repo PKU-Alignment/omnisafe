@@ -16,7 +16,6 @@
 
 import mujoco
 import numpy as np
-
 from safety_gymnasium.assets.geoms import Circle, Sigwalls
 from safety_gymnasium.bases import BaseTask
 
@@ -30,14 +29,22 @@ class CircleLevel0(BaseTask):
         self.num_steps = 500
 
         robot_placements_square = 0.8
-        self.robot.placements = [(-robot_placements_square, -robot_placements_square, \
-            robot_placements_square, robot_placements_square)]
+        self.robot.placements = [
+            (
+                -robot_placements_square,
+                -robot_placements_square,
+                robot_placements_square,
+                robot_placements_square,
+            )
+        ]
         self.robot.keepout = 0
 
         self.lidar_max_dist = 6
 
-        self.reward_factor: float = 1e-1  # Reward for circle goal (complicated formula depending on pos and vel)
-        
+        self.reward_factor: float = (
+            1e-1  # Reward for circle goal (complicated formula depending on pos and vel)
+        )
+
         self.add_geoms(Circle(), Sigwalls())
 
         self.specific_agent_config()
@@ -64,7 +71,9 @@ class CircleLevel0(BaseTask):
         u, v, _ = robot_vel
         radius = np.sqrt(x**2 + y**2)
         # pylint: disable-next=no-member
-        reward += (((-u*y + v*x)/radius)/(1 + np.abs(radius - self.circle.radius))) * self.reward_factor
+        reward += (
+            ((-u * y + v * x) / radius) / (1 + np.abs(radius - self.circle.radius))
+        ) * self.reward_factor
         return reward
 
     def specific_agent_config(self):

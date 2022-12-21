@@ -16,7 +16,6 @@
 
 import mujoco
 import numpy as np
-
 from safety_gymnasium.assets.geoms import Sigwalls
 from safety_gymnasium.bases import BaseTask
 
@@ -29,7 +28,7 @@ class RunLevel0(BaseTask):
 
         self.num_steps = 500
 
-        self.floor_size = [17.5, 17.5, .1]
+        self.floor_size = [17.5, 17.5, 0.1]
 
         self.robot.placements = [(-0.2, self.floor_size[0] - 1, 0.2, self.floor_size[0] - 1)]
         self.robot.keepout = 0
@@ -66,7 +65,9 @@ class RunLevel0(BaseTask):
         pass
 
     def specific_reset(self):
-        self.old_potential = -np.linalg.norm(self.robot_pos[:2] - self.goal_pos[0]) * self.reward_factor
+        self.old_potential = (
+            -np.linalg.norm(self.robot_pos[:2] - self.goal_pos[0]) * self.reward_factor
+        )
 
     def specific_step(self):
         pass
