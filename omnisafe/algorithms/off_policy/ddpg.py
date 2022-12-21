@@ -430,10 +430,10 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
 
         self.logger.log_tabular('Epoch', epoch)
         self.logger.log_tabular('Metrics/EpRet')
-        self.logger.log_tabular('Metrics/EpCosts')
+        self.logger.log_tabular('Metrics/EpCost')
         self.logger.log_tabular('Metrics/EpLen')
         self.logger.log_tabular('Test/EpRet')
-        self.logger.log_tabular('Test/EpCosts')
+        self.logger.log_tabular('Test/EpCost')
         self.logger.log_tabular('Test/EpLen')
         self.logger.log_tabular('Values/V', min_and_max=True)
         self.logger.log_tabular('QVals')

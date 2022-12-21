@@ -129,7 +129,7 @@ class OffPolicyEnvWrapper:
                         **{
                             'Metrics/EpRet': ep_ret,
                             'Metrics/EpLen': ep_len,
-                            'Metrics/EpCosts': ep_cost,
+                            'Metrics/EpCost': ep_cost,
                         }
                     )
                     self.curr_o, _ = self.env.reset(seed=self.seed)
@@ -141,7 +141,7 @@ class OffPolicyEnvWrapper:
                         **{
                             'Test/EpRet': ep_ret,
                             'Test/EpLen': ep_len,
-                            'Test/EpCosts': ep_cost,
+                            'Test/EpCost': ep_cost,
                         }
                     )
                     self.curr_o, _ = self.env.reset(seed=self.seed)
