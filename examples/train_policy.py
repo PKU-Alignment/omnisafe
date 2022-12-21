@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--algo',
         type=str,
-        default='TD3',
+        default='PPOLag',
         help='Choose from: '
         'On Policy:'
         'PolicyGradient, NaturalPG, TRPO, PPO,'
