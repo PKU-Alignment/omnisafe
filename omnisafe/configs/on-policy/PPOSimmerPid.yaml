@@ -132,4 +132,12 @@ defaults:
       # The step size for PID
       step_size: 3
       # Lowpass filter coefficient
+<<<<<<< HEAD
+<<<<<<<< HEAD:omnisafe/configs/on-policy/PPOSimmerPid.yaml
       tau: 0.05
+========
+      tau: 0.05
+>>>>>>>> e60e85c6799af1994d9ce34c26706d4e2a3e4e2b:omnisafe/configs/on-policy/PPOSimmerPID.yaml
+=======
+      tau: 0.05
+>>>>>>> e60e85c6799af1994d9ce34c26706d4e2a3e4e2b

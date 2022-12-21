@@ -142,4 +142,8 @@ defaults:
       # The hyperparameter of episilon greedy
       epsilon: 0.8
       # Lowpass filter coefficient
+<<<<<<< HEAD
       tau: 0.95
+=======
+      tau: 0.95
+>>>>>>> e60e85c6799af1994d9ce34c26706d4e2a3e4e2b
