@@ -32,14 +32,16 @@ class MLPActor(Actor):
         obs_dim: int,
         act_dim: int,
         act_noise,
-        act_limit,
+        act_max,
+        act_min,
         hidden_sizes: list,
         activation: Activation,
         weight_initialization_mode: InitFunction = 'xavier_uniform',
         shared: nn.Module = None,
     ):
         super().__init__(obs_dim, act_dim, hidden_sizes, activation)
-        self.act_limit = act_limit
+        self.act_max = act_max
+        self.act_min = act_min
         self.act_noise = act_noise
 
         if shared is not None:  # use shared layers
@@ -65,12 +67,17 @@ class MLPActor(Actor):
     def forward(self, obs, act=None):
         """forward"""
         # Return output from network scaled to action space limits.
-        return self.act_limit * self.net(obs)
+        return self.act_max * self.net(obs)
 
-    def predict(self, obs, deterministic=False, need_log_prob=False):
+    def predict(self, obs, deterministic=False, need_log_prob=True):
         if deterministic:
-            action = self.act_limit * self.net(obs)
+            action = self.act_max * self.net(obs)
         else:
-            action = self.act_limit * self.net(obs)
+            action = self.act_max * self.net(obs)
             action += self.act_noise * np.random.randn(self.act_dim)
-        return action.to(torch.float32), torch.tensor(1, dtype=torch.float32)
+
+        action = torch.clamp(action, self.act_min, self.act_max)
+        if need_log_prob:
+            return action.to(torch.float32), torch.tensor(1, dtype=torch.float32)
+
+        return action.to(torch.float32)

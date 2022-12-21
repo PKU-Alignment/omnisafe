@@ -12,20 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Early terminated algorithm."""
+"""Implementation of the Pid Simmer algorithm by PPOLag."""
+
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.ppo import PPO
+from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
 
 
 @registry.register
-class PPOEarlyTerminated(PPO):
-    """Early terminated algorithm implemented by PPO.
+class PPOLagSimmerPid(PPOLag):
+    """Simmer algorithm (PID version) implemented by PPOLag.
 
     References:
-        Paper Name: Safe Exploration by Solving Early Terminated MDP
-        Paper author: Hao Sun, Ziping Xu, Meng Fang, Zhenghao Peng, Jiadong Guo, Bo Dai, Bolei Zhou
-        Paper URL: https://arxiv.org/abs/2107.04200
+        Paper Name: Effects of Safety State Augmentation on Safe Exploration.
+        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
+        Paper URL: https://arxiv.org/abs/2206.02675
     """
 
     # pylint: disable-next=too-many-arguments
@@ -33,15 +34,19 @@ class PPOEarlyTerminated(PPO):
         self,
         env_id,
         cfgs,
-        algo='ppo_early_terminated',
-        clip=0.2,
-        wrapper_type: str = 'EarlyTerminatedEnvWrapper',
-    ) -> None:
-        r"""Initialize PPO_Earyly_Terminated."""
-        self.clip = clip
+        algo='ppo_lag_simmer_pid',
+        wrapper_type: str = 'SimmerEnvWrapper',
+    ):
+        r"""Initialize PPOLagSimmerPid algorithm."""
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
             algo=algo,
             wrapper_type=wrapper_type,
         )
+
+    def algorithm_specific_logs(self):
+        r"""Log the algorithm specific metrics."""
+        super().algorithm_specific_logs()
+        self.logger.log_tabular('Metrics/EpBudget')
+        self.logger.log_tabular('Metrics/SafetyBudget')

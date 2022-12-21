@@ -33,7 +33,7 @@ defaults:
 
   # Optional Configuration
   ## Whether to use cost critic
-  use_cost: False
+  use_cost: True
   linear_lr_decay: False
   exploration_noise_anneal: False
   reward_penalty: False
@@ -43,19 +43,24 @@ defaults:
   standardized_obs: False
 
   model_cfgs:
+    pi_type: "dire"
     shared_weights: False
     weight_initialization_mode: "kaiming_uniform"
     ac_kwargs:
       pi:
-        actor_type: "dire"
         act_noise: 0.1
         hidden_sizes: [400, 300]
         activation: relu
       val:
-        num_critics: 1
         hidden_sizes: [400, 300]
         activation: relu
   ## Configuration For Buffer
   replay_buffer_cfgs:
     size: 50000
-    batch_size: 256
+    batch_size: 512
+    ## Configuration For Lagrange
+  lagrange_cfgs:
+    cost_limit: 25.0
+    lagrangian_multiplier_init: 0.1
+    lambda_lr: 0.035
+    lambda_optimizer: "Adam"

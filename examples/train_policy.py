@@ -24,10 +24,17 @@ if __name__ == '__main__':
     parser.add_argument(
         '--algo',
         type=str,
-        default='PPOLag',
-        help='Choose from: {PolicyGradient, PPO, PPOLag, NaturalPG,'
-        ' TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid, CUP, PPOSaute,'
-        'PPOSimmerPID, PPOSimmerQ, PPOEarlyTerminated',
+        default='TD3',
+        help='Choose from: '
+        'On Policy:'
+        'PolicyGradient, NaturalPG, TRPO, PPO,'
+        'PDO, NPGLag, TRPOLag, PPOLag, CPO, PCPO, FOCOPS, CUP,'
+        'CPPOPid, TRPOPid,'
+        'PPOSaute, PPOSimmer, PPOSimmerPid, PPOSimmerQ, PPOEarlyTerminated,'
+        'PPOLagSaute, PPOLagSimmerPid, PPOLagSimmerQ, PPOLagEarlyTerminated,'
+        'Off Policy:'
+        'DDPG, TD3, SAC,'
+        'DDPGLag, TD3Lag, SACLag,',
     )
     parser.add_argument(
         '--env-id',

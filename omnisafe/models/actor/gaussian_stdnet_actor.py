@@ -30,9 +30,9 @@ class GaussianStdNetActor(Actor):
         self,
         obs_dim,
         act_dim,
-        act_min: torch.Tensor,
         act_max: torch.Tensor,
-        hidden_sizes,
+        act_min: torch.Tensor,
+        hidden_sizes: list,
         activation,
         weight_initialization_mode,
         shared=None,
@@ -94,12 +94,13 @@ class GaussianStdNetActor(Actor):
 
         action = torch.tanh(out)
         action = self.act_min + (action + 1) * 0.5 * (self.act_max - self.act_min)
+        action = torch.clamp(action, self.act_min, self.act_max)
 
         if need_log_prob:
             log_prob = dist.log_prob(out).sum(axis=-1)
             log_prob -= torch.log(1.00001 - torch.tanh(out) ** 2).sum(axis=-1)
-            return out, log_prob
-        return out
+            return action.to(torch.float32), log_prob
+        return action.to(torch.float32)
 
     def forward(self, obs, act=None):
         dist = self._distribution(obs)

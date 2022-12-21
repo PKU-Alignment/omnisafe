@@ -53,7 +53,6 @@ class OffPolicyEnvWrapper:
         # self.deterministic = False
         self.local_steps_per_epoch = None
         self.cost_gamma = None
-        self.use_cost = None
         self.penalty_param = None
 
     def make(self):
