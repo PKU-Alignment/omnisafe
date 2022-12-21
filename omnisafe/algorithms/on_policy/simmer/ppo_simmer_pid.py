@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Simmer algorithm."""
+"""Implementation of the Pid Simmer algorithm by PPOLag."""
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.ppo import PPO
+from omnisafe.algorithms.on_policy.base.ppo import PPO
 
 
 @registry.register
-class PPOSimmerQ(PPO):
-    """Simmer algorithm (Q version) implemented by PPO.
+class PPOSimmerPid(PPO):
+    """Simmer algorithm (PID version) implemented by PPO.
 
     References:
         Paper Name: Effects of Safety State Augmentation on Safe Exploration.
@@ -33,12 +33,10 @@ class PPOSimmerQ(PPO):
         self,
         env_id,
         cfgs,
-        algo='ppo_simmer_q',
-        clip=0.2,
+        algo='ppo_simmer_pid',
         wrapper_type: str = 'SimmerEnvWrapper',
     ) -> None:
-        """Initialize PPO_Simmer_Q."""
-        self.clip = clip
+        r"""Initialize PPOSimmerPid."""
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
@@ -47,6 +45,7 @@ class PPOSimmerQ(PPO):
         )
 
     def algorithm_specific_logs(self):
+        r"""Log the algorithm specific metrics."""
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/EpBudget')
         self.logger.log_tabular('Metrics/SafetyBudget')

@@ -12,58 +12,92 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the PPO algorithm."""
+"""Implementation of the FOCOPS algorithm."""
 
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
+from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
+from omnisafe.common.lagrange import Lagrange
 from omnisafe.utils import distributed_utils
 
 
 @registry.register
-class PPO(PolicyGradient):
-    """The Proximal Policy Optimization Algorithms (PPO) Algorithm.
+class FOCOPS(PolicyGradient, Lagrange):
+    """The First Order Constrained Optimization in Policy Space (FOCOPS) algorithm.
 
     References:
-        Paper Name: Proximal Policy Optimization Algorithms.
-        Paper author: John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov.
-        Paper URL: https://arxiv.org/pdf/1707.06347.pdf
+        Paper Name: First Order Constrained Optimization in Policy Space.
+        Paper author: Yiming Zhang, Quan Vuong, Keith W. Ross.
+        Paper URL: https://arxiv.org/abs/2002.06506
+
     """
 
-    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         env_id,
         cfgs,
-        algo='ppo',
-        clip=0.2,
+        algo='FOCOPS',
         wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
-        """Initialize PPO."""
-        self.clip = clip
-        super().__init__(
+        r"""The :meth:`init` function."""
+
+        PolicyGradient.__init__(
+            self,
             env_id=env_id,
             cfgs=cfgs,
             algo=algo,
             wrapper_type=wrapper_type,
         )
 
+        Lagrange.__init__(
+            self,
+            cost_limit=self.cfgs.lagrange_cfgs.cost_limit,
+            lagrangian_multiplier_init=self.cfgs.lagrange_cfgs.lagrangian_multiplier_init,
+            lambda_lr=self.cfgs.lagrange_cfgs.lambda_lr,
+            lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
+            lagrangian_upper_bound=self.cfgs.lagrange_cfgs.lagrangian_upper_bound,
+        )
+        self.lam = self.cfgs.lam
+        self.eta = self.cfgs.eta
+
+    def algorithm_specific_logs(self):
+        super().algorithm_specific_logs()
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier)
+
     def compute_loss_pi(self, data: dict):
-        """Compute policy loss."""
+        """compute loss for policy"""
         dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
-        # Importance ratio
         ratio = torch.exp(_log_p - data['log_p'])
-        ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
-        loss_pi = -(torch.min(ratio * data['adv'], ratio_clip * data['adv'])).mean()
-        loss_pi += self.cfgs.entropy_coef * dist.entropy().mean()
+
+        kl_new_old = torch.distributions.kl.kl_divergence(dist, self.p_dist).sum(-1, keepdim=True)
+        loss_pi = (
+            kl_new_old
+            - (1 / self.lam) * ratio * (data['adv'] - self.lagrangian_multiplier * data['cost_adv'])
+        ) * (kl_new_old.detach() <= self.eta).type(torch.float32)
+        loss_pi = loss_pi.mean()
+        loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
 
         # Useful extra info
-        approx_kl = (0.5 * (dist.mean - data['act']) ** 2 / dist.stddev**2).mean().item()
+        approx_kl = 0.5 * (data['log_p'] - _log_p).mean().item()
         ent = dist.entropy().mean().item()
-        pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio_clip.mean().item())
+        pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
 
         return loss_pi, pi_info
+
+    def update(self):
+        """Update."""
+        raw_data, data = self.buf.pre_process_data()
+        # First update Lagrange multiplier parameter
+        Jc = self.logger.get_stats('Metrics/EpCost')[0]
+        self.update_lagrange_multiplier(Jc)
+        # Then update policy network
+        self.update_policy_net(data=data)
+        # Update value network
+        self.update_value_net(data=data)
+        # Update cost network
+        self.update_cost_net(data=data)
+        return raw_data, data
 
     def slice_data(self, data) -> dict:
         """slice data for mini batch update"""
@@ -102,14 +136,18 @@ class PPO(PolicyGradient):
         # Get prob. distribution before updates: used to measure KL distance
         with torch.no_grad():
             self.p_dist = self.actor_critic.actor(slice_data[0]['obs'])
-
         # Get loss and info values before update
         pi_l_old, _ = self.compute_loss_pi(data=slice_data[0])
         loss_pi_before = pi_l_old.item()
 
         # Train policy with multiple steps of gradient descent
         for i in range(self.cfgs.actor_iters):
+
             for batch_data in slice_data:
+                # Update policy network with batch data
+                with torch.no_grad():
+                    self.p_dist = self.actor_critic.actor(batch_data['obs'])
+
                 self.actor_optimizer.zero_grad()
                 loss_pi, pi_info = self.compute_loss_pi(data=batch_data)
                 loss_pi.backward()

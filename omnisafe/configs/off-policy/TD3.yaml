@@ -16,7 +16,7 @@
 defaults:
   # Basic Configurations
   epochs: 500
-  steps_per_epoch: 6000
+  steps_per_epoch: 30000
   update_after: 1000
   update_every: 50
   check_freq: 25
@@ -52,7 +52,7 @@ defaults:
         hidden_sizes: [400, 300]
         activation: relu
       val:
-        num_critics: 1
+        num_critics: 2
         hidden_sizes: [400, 300]
         activation: relu
   ## Configuration For Buffer

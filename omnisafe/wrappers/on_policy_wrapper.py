@@ -29,7 +29,13 @@ class OnPolicyEnvWrapper:  # pylint: disable=too-many-instance-attributes
     """env_wrapper"""
 
     def __init__(self, env_id, cfgs: Optional[collections.namedtuple] = None, render_mode=None):
-        # check env_id is str
+        r"""Initialize environment wrapper.
+
+        Args:
+            env_id (str): environment id.
+            cfgs (collections.namedtuple): configs.
+            render_mode (str): render mode.
+        """
         self.env = safety_gymnasium.make(env_id, render_mode=render_mode)
         self.cfgs = deepcopy(cfgs)
         self.env_id = env_id
