@@ -67,12 +67,14 @@ class CircleLevel0(BaseTask):
         # Circle environment reward
         robot_com = self.world.robot_com()
         robot_vel = self.world.robot_vel()
-        x, y, _ = robot_com
-        u, v, _ = robot_vel
+        x, y, _ = robot_com  # pylint: disable=invalid-name
+        u, v, _ = robot_vel  # pylint: disable=invalid-name
         radius = np.sqrt(x**2 + y**2)
         # pylint: disable-next=no-member
         reward += (
-            ((-u * y + v * x) / radius) / (1 + np.abs(radius - self.circle.radius))
+            # pylint: disable-next=no-member
+            ((-u * y + v * x) / radius)
+            / (1 + np.abs(radius - self.circle.radius))  # pylint: disable=no-member
         ) * self.reward_factor
         return reward
 

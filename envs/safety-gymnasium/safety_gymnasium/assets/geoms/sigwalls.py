@@ -22,7 +22,7 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class Sigwalls:
+class Sigwalls:  # pylint: disable=too-many-instance-attributes
     """Non collision object."""
 
     name: str = 'sigwalls'
@@ -37,7 +37,7 @@ class Sigwalls:
     is_observe_lidar: bool = False
     is_constrained: bool = False
 
-    def get(self, index, layout, rot):
+    def get(self, index, layout, rot):  # pylint: disable=unused-argument
         """To facilitate get specific config for this object."""
         name = f'sigwall{index}'
         geom = {

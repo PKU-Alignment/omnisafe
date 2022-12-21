@@ -22,7 +22,7 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class Circle:
+class Circle:  # pylint: disable=too-many-instance-attributes
     """CircleTask specific."""
 
     name: str = 'circle'
@@ -36,7 +36,7 @@ class Circle:
     is_observe_lidar: bool = True
     is_constrained: bool = False
 
-    def get(self, layout, rot):
+    def get(self, layout, rot):  # pylint: disable=unused-argument
         """To facilitate get specific config for this object."""
         geom = {
             'name': 'circle',
