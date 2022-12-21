@@ -77,10 +77,14 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         Returns:
             torch.Tensor
         """
-        action, _ = self.actor_critic.actor.predict(data['obs'], deterministic=True)
-        loss_pi = self.actor_critic.critic(data['obs'], action)
+        action = self.actor_critic.actor.predict(
+            data['obs'], deterministic=True, need_log_prob=False
+        )
+        loss_pi = self.actor_critic.critic(data['obs'], action)[0]
         penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        loss_pi -= self.lagrangian_multiplier * self.actor_critic.cost_critic(data['obs'], action)
+        loss_pi -= (
+            self.lagrangian_multiplier * self.actor_critic.cost_critic(data['obs'], action)[0]
+        )
         loss_pi /= 1 + penalty
         pi_info = {}
         return -loss_pi.mean(), pi_info

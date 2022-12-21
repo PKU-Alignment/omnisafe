@@ -39,7 +39,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         algo: str = 'SAC-Lag',
         wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
-        r"""Initialize SAC.
+        r"""Initialize SACLag.
 
         Args:
             env_id (str): environment id
@@ -82,7 +82,9 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         )
         loss_pi = self.actor_critic.critic(data['obs'], action)[0] - self.alpha * logp_a
         penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        loss_pi -= self.lagrangian_multiplier * self.actor_critic.cost_critic(data['obs'], action)
+        loss_pi -= (
+            self.lagrangian_multiplier * self.actor_critic.cost_critic(data['obs'], action)[0]
+        )
         loss_pi /= 1 + penalty
         pi_info = {}
         return -loss_pi.mean(), pi_info

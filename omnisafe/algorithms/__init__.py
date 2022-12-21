@@ -73,7 +73,9 @@ algo_type = {
         'DDPG',
         'DDPGLag',
         'TD3',
+        'TD3Lag',
         'SAC',
+        'SACLag',
     ],
     'on-policy': [
         'PolicyGradient',

@@ -125,8 +125,8 @@ class ActorQCritic(nn.Module):
         frac: progress of epochs, i.e. current epoch / total epochs
                 e.g. 10 / 100 = 0.1
         """
-        if hasattr(self.pi, 'set_log_std'):
-            self.pi.set_log_std(1 - frac)
+        if hasattr(self.actor, 'set_log_std'):
+            self.actor.set_log_std(1 - frac)
 
     def forward(self, obs, act):
         """Compute the value of a given state-action pair."""

@@ -46,12 +46,16 @@ defaults:
   start_steps: 10000
   # The Address for saving training process data
   data_dir: "./runs"
-
+  ## ---------------------------Basic configurations for derived class SAC---------------------- ##
+  # The entropy coefficient
+  alpha: 0.2
+  # The learning rate of Alpha
+  alpha_gamma: 0.99
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
-  use_cost: True
+  use_cost: False
   # Cost discounted factor
   cost_gamma: 1.0
   # Whther to use linear decay of learning rate
@@ -81,7 +85,7 @@ defaults:
       # Configuration of Actor network
       pi:
         # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-        actor_type: "dire"
+        actor_type: "gaussian_stdnet"
         # The standard deviation of Gaussian noise
         act_noise: 0.1
         # Size of hidden layers
@@ -91,7 +95,7 @@ defaults:
       # Configuration of Critic network
       val:
         # Number of critic networks
-        num_critics: 1
+        num_critics: 2
         # Size of hidden layers
         hidden_sizes: [400, 300]
         # Activation function
@@ -102,3 +106,13 @@ defaults:
     size: 50000
     # The size of batch
     batch_size: 256
+## ----------------------------------Configuration For Lagrangian multiplier---------------------- ##
+  lagrange_cfgs:
+    # Tolerance of constraint violation
+    cost_limit: 25.0
+    # Initial value of lagrangian multiplier
+    lagrangian_multiplier_init: 0.001
+    # Learning rate of lagrangian multiplier
+    lambda_lr: 0.0035
+    # Type of lagrangian optimizer
+    lambda_optimizer: "Adam"
