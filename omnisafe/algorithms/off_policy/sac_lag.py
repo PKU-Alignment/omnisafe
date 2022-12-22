@@ -42,10 +42,10 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         r"""Initialize SACLag.
 
         Args:
-            env_id (str): environment id
-            cfgs (dict): configuration
-            algo (str): algorithm name
-            wrapper_type (str): environment wrapper type
+            env_id (str): environment id.
+            cfgs (dict): configuration.
+            algo (str): algorithm name.
+            wrapper_type (str): environment wrapper type.
         """
         SAC.__init__(
             self,
@@ -72,7 +72,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         r"""Computing pi/actor loss.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         action, logp_a = self.actor_critic.actor.predict(
             data['obs'], deterministic=True, need_log_prob=True
