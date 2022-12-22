@@ -13,6 +13,11 @@
 # limitations under the License.
 # ==============================================================================
 """Safe Reinforcement Learning algorithms."""
+
+import itertools
+from types import MappingProxyType
+
+# Off-Policy Safe
 from omnisafe.algorithms.off_policy.ddpg import DDPG
 from omnisafe.algorithms.off_policy.ddpg_lag import DDPGLag
 from omnisafe.algorithms.off_policy.sac import SAC
@@ -20,6 +25,8 @@ from omnisafe.algorithms.off_policy.sac_lag import SACLag
 from omnisafe.algorithms.off_policy.sddpg import SDDPG
 from omnisafe.algorithms.off_policy.td3 import TD3
 from omnisafe.algorithms.off_policy.td3_lag import TD3Lag
+
+# On-Policy Safe
 from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
 from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
 from omnisafe.algorithms.on_policy.base.ppo import PPO
@@ -46,8 +53,8 @@ from omnisafe.algorithms.on_policy.simmer.ppo_simmer_pid import PPOSimmerPid
 from omnisafe.algorithms.on_policy.simmer.ppo_simmer_q import PPOSimmerQ
 
 
-algo_type = {
-    'off-policy': [
+ALGORITHMS = {
+    'off-policy': (
         'DDPG',
         'DDPGLag',
         'TD3',
@@ -55,8 +62,8 @@ algo_type = {
         'SAC',
         'SACLag',
         'SDDPG',
-    ],
-    'on-policy': [
+    ),
+    'on-policy': (
         'PolicyGradient',
         'NaturalPG',
         'TRPO',
@@ -79,6 +86,20 @@ algo_type = {
         'PPOLagSaute',
         'PPOEarlyTerminated',
         'PPOLagEarlyTerminated',
-    ],
-    'model-based': ['MBPPOLag', 'SafeLoop'],
+    ),
+    'model-based': (
+        'MBPPOLag',
+        'SafeLoop',
+    ),
 }
+
+ALGORITHM2TYPE = {
+    algo: algo_type for algo_type, algorithms in ALGORITHMS.items() for algo in algorithms
+}
+
+__all__ = ALGORITHMS['all'] = list(itertools.chain.from_iterable(ALGORITHMS.values()))
+
+assert len(ALGORITHM2TYPE) == len(__all__), 'Duplicate algorithm names found.'
+
+ALGORITHMS = MappingProxyType(ALGORITHMS)  # make this immutable
+ALGORITHM2TYPE = MappingProxyType(ALGORITHM2TYPE)  # make this immutable

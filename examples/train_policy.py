@@ -24,27 +24,24 @@ if __name__ == '__main__':
     parser.add_argument(
         '--algo',
         type=str,
+        metavar='ALGO',
         default='PPOLag',
-        help='Choose from: '
-        'On Policy:'
-        'PolicyGradient, NaturalPG, TRPO, PPO,'
-        'PDO, NPGLag, TRPOLag, PPOLag, CPO, PCPO, FOCOPS, CUP,'
-        'CPPOPid, TRPOPid,'
-        'PPOSaute, PPOSimmer, PPOSimmerPid, PPOSimmerQ, PPOEarlyTerminated,'
-        'PPOLagSaute, PPOLagSimmerPid, PPOLagSimmerQ, PPOLagEarlyTerminated,'
-        'Off Policy:'
-        'DDPG, TD3, SAC,'
-        'DDPGLag, TD3Lag, SACLag,'
-        'SDDPG',
+        help='Algorithm to train',
+        choices=omnisafe.ALGORITHMS['all'],
     )
     parser.add_argument(
         '--env-id',
         type=str,
+        metavar='ENV',
         default='SafetyPointGoal1-v0',
         help='The name of test environment',
     )
     parser.add_argument(
-        '--parallel', default=1, type=int, help='Number of paralleled progress for calculations.'
+        '--parallel',
+        default=1,
+        type=int,
+        metavar='N',
+        help='Number of paralleled progress for calculations.',
     )
     args, unparsed_args = parser.parse_known_args()
     keys = [k[2:] for k in unparsed_args[0::2]]

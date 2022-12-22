@@ -19,7 +19,7 @@ import sys
 
 import psutil
 
-from omnisafe.algorithms import algo_type, registry
+from omnisafe.algorithms import ALGORITHM2TYPE, registry
 from omnisafe.utils import distributed_utils
 from omnisafe.utils.config_utils import check_all_configs, recursive_update
 from omnisafe.utils.tools import get_default_kwargs_yaml
@@ -46,13 +46,10 @@ class AlgoWrapper:
         assert (
             isinstance(self.custom_cfgs, dict) or self.custom_cfgs is None
         ), 'custom_cfgs must be a dict!'
-        for key, value in algo_type.items():
-            if self.algo in value:
-                self.algo_type = key
-                break
-        if algo_type is None or algo_type == '':
+        self.algo_type = ALGORITHM2TYPE.get(self.algo, None)
+        if self.algo_type is None or self.algo_type == '':
             raise ValueError(f'{self.algo} is not supported!')
-        if algo_type == 'off-policy':
+        if self.algo_type == 'off-policy':
             assert self.parallel == 1, 'off-policy only support parallel==1!'
 
     def learn(self):
