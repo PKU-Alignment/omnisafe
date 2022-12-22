@@ -43,7 +43,7 @@ defaults:
   # The Address for saving training process data
   data_dir: "./runs"
 
-  ## ---------------------------Basic configurations for derived class FOCOPS------------------- ##
+  ## ----------------------------Basic configurations for derived class CUP-------------------- ##
   # The thereshold for KL early stopping
   target_kl: 0.01
   # Tolerance of constraint violation
@@ -127,3 +127,5 @@ defaults:
     lambda_lr: 0.035
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
+    # The upper bound of lagrange multiplier
+    lagrangian_upper_bound: 2.0

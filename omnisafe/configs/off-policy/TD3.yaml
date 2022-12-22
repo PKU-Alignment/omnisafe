@@ -15,7 +15,7 @@
 
 defaults:
   # --------------------------------------Basic Configurations----------------------------------- #
-  ## -----------------------------Basic configurations for base class DDPG---------------------- ##
+  ## ----------------------------Basic configurations for base class DDPG----------------------- ##
   # The random seed
   seed: 0
   # Number of epochs
@@ -46,12 +46,10 @@ defaults:
   start_steps: 10000
   # The Address for saving training process data
   data_dir: "./runs"
-
-
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
-  use_cost: True
+  use_cost: False
   # Cost discounted factor
   cost_gamma: 1.0
   # Whther to use linear decay of learning rate
@@ -91,7 +89,7 @@ defaults:
       # Configuration of Critic network
       val:
         # Number of critic networks
-        num_critics: 1
+        num_critics: 2
         # Size of hidden layers
         hidden_sizes: [400, 300]
         # Activation function

@@ -47,7 +47,24 @@ defaults:
   # The Address for saving training process data
   data_dir: "./runs"
 
-
+## ----------------------------------Basic configurations for base class CVPO------------------- ##
+  kl_mean_constraint: 0.01
+  kl_var_constraint: 0.0001
+  kl_constraint: 0.01
+  alpha_mean_scale: 1.0
+  alpha_var_scale: 100.0
+  alpha_scale: 10.0
+  alpha_mean_max: 0.1
+  alpha_var_max: 10.0
+  alpha_max: 1.0
+  sample_action_num: 64
+  mstep_iteration_num: 5
+  dual_constraint: 0.1
+  cost_limit: 25
+  cost_start: 50
+  cost_end: 25
+  decay_epoch: 100
+  use_cost_decay: True
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
@@ -81,7 +98,13 @@ defaults:
       # Configuration of Actor network
       pi:
         # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-        actor_type: "dire"
+        actor_type: "cholesky"
+        cov_min: 1e-4
+        mu_clamp_min: -5
+        mu_clamp_max: 5
+        cov_clamp_min: -5
+        cov_clamp_max: 20
+
         # The standard deviation of Gaussian noise
         act_noise: 0.1
         # Size of hidden layers

@@ -34,6 +34,7 @@ class QCritic(Critic):
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'xavier_uniform',
         shared: nn.Module = None,
+        num_critics: int = 1,
     ) -> None:
         """Initialize."""
         Critic.__init__(
@@ -45,17 +46,22 @@ class QCritic(Critic):
             weight_initialization_mode=weight_initialization_mode,
             shared=shared,
         )
-        self.obs_encoder = build_mlp_network(
-            [obs_dim, hidden_sizes[0]],
-            activation=activation,
-            output_activation=activation,
-            weight_initialization_mode=weight_initialization_mode,
-        )
-        self.net = build_mlp_network(
-            [hidden_sizes[0] + act_dim] + hidden_sizes[1:] + [1],
-            activation=activation,
-            weight_initialization_mode=weight_initialization_mode,
-        )
+        self.critic_list = []
+        for idx in range(num_critics):
+            obs_encoder = build_mlp_network(
+                [obs_dim, hidden_sizes[0]],
+                activation=activation,
+                output_activation=activation,
+                weight_initialization_mode=weight_initialization_mode,
+            )
+            net = build_mlp_network(
+                [hidden_sizes[0] + act_dim] + hidden_sizes[1:] + [1],
+                activation=activation,
+                weight_initialization_mode=weight_initialization_mode,
+            )
+            critic = nn.Sequential(obs_encoder, net)
+            self.critic_list.append(critic)
+            self.add_module(f'critic_{idx}', critic)
 
     def forward(
         self,
@@ -63,5 +69,8 @@ class QCritic(Critic):
         act: Optional[torch.Tensor] = None,
     ):
         """Forward."""
-        obs = self.obs_encoder(obs)
-        return torch.squeeze(self.net(torch.cat([obs, act], dim=-1)), -1)
+        res = []
+        for critic in self.critic_list:
+            encodered_obs = critic[0](obs)
+            res.append(torch.squeeze(critic[1](torch.cat([encodered_obs, act], dim=-1)), -1))
+        return res

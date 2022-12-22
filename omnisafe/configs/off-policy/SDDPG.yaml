@@ -15,7 +15,7 @@
 
 defaults:
   # --------------------------------------Basic Configurations----------------------------------- #
-  ## -----------------------------Basic configurations for base class DDPG---------------------- ##
+  ## -----------------------------Basic configurations for base class PG------------------------ ##
   # The random seed
   seed: 0
   # Number of epochs
@@ -25,7 +25,7 @@ defaults:
   # Update after `update_after` steps
   update_after: 1000
   # Update every `update_every` steps
-  update_every: 50
+  update_every: 200
   # Check if all models own the same parameter values every `check_freq` epoch
   check_freq: 25
   # Save model to disk every `check_freq` epochs
@@ -47,7 +47,17 @@ defaults:
   # The Address for saving training process data
   data_dir: "./runs"
 
-
+  ## ---------------------------Basic configurations for derived class SDDPG-------------------- ##
+  # The normalize coefficient
+  beta: 1.5
+  # The discontinuous coefficient for conjugate gradient
+  cg_damping: 0.1
+  # The max iteration for conjugate gradient
+  cg_iters: 10
+  # The constraint for KL divergence
+  target_kl: 0.01
+  # Hypperparameter for SDDPG
+  d_init: 5
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic

@@ -13,43 +13,57 @@
 # limitations under the License.
 # ==============================================================================
 """Safe Reinforcement Learning algorithms."""
-
-# Off Policy Safe
-from omnisafe.algorithms.off_policy.ddpg import DDPG
-
-# On Policy Safe
-from omnisafe.algorithms.on_policy.cpo import CPO
-from omnisafe.algorithms.on_policy.cppo_pid import CPPOPid
-from omnisafe.algorithms.on_policy.cup import CUP
-from omnisafe.algorithms.on_policy.focops import FOCOPS
-from omnisafe.algorithms.on_policy.natural_pg import NaturalPG
-from omnisafe.algorithms.on_policy.npg_lag import NPGLag
-from omnisafe.algorithms.on_policy.pcpo import PCPO
-from omnisafe.algorithms.on_policy.pdo import PDO
-from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
-from omnisafe.algorithms.on_policy.ppo import PPO
-from omnisafe.algorithms.on_policy.ppo_lag import PPOLag
-from omnisafe.algorithms.on_policy.trpo import TRPO
-from omnisafe.algorithms.on_policy.trpo_lag import TRPOLag
+from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
+from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
+from omnisafe.algorithms.on_policy.base.ppo import PPO
+from omnisafe.algorithms.on_policy.base.trpo import TRPO
+from omnisafe.algorithms.on_policy.first_order.cup import CUP
+from omnisafe.algorithms.on_policy.first_order.focops import FOCOPS
+from omnisafe.algorithms.on_policy.naive_lagrange.npg_lag import NPGLag
+from omnisafe.algorithms.on_policy.naive_lagrange.pdo import PDO
+from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
+from omnisafe.algorithms.on_policy.naive_lagrange.trpo_lag import TRPOLag
+from omnisafe.algorithms.on_policy.pid_lagrange.cppo_pid import CPPOPid
+from omnisafe.algorithms.on_policy.saute.ppo_lag_saute import PPOLagSaute
+from omnisafe.algorithms.on_policy.saute.ppo_saute import PPOSaute
+from omnisafe.algorithms.on_policy.second_order.cpo import CPO
+from omnisafe.algorithms.on_policy.second_order.pcpo import PCPO
 
 
 algo_type = {
-    'off-policy': ['DDPG'],
+    'off-policy': [
+        'DDPG',
+        'DDPGLag',
+        'TD3',
+        'TD3Lag',
+        'SAC',
+        'SACLag',
+        'SDDPG',
+        'CVPO',
+    ],
     'on-policy': [
-        'CPO',
-        'FOCOPS',
-        'CPPOPid',
-        'FOCOPS',
-        'NaturalPG',
-        'NPGLag',
-        'PCPO',
-        'PDO',
         'PolicyGradient',
-        'PPO',
-        'PPOLag',
+        'NaturalPG',
         'TRPO',
+        'PPO',
+        'PDO',
+        'NPGLag',
         'TRPOLag',
+        'PPOLag',
+        'CPPOPid',
+        'TRPOPid',
+        'FOCOPS',
         'CUP',
+        'CPO',
+        'PCPO',
+        'PPOSimmerPid',
+        'PPOSimmerQ',
+        'PPOLagSimmerQ',
+        'PPOLagSimmerPid',
+        'PPOSaute',
+        'PPOLagSaute',
+        'PPOEarlyTerminated',
+        'PPOLagEarlyTerminated',
     ],
     'model-based': ['MBPPOLag', 'SafeLoop'],
 }
