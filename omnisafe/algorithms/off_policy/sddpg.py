@@ -29,7 +29,7 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-name
-    """Implementation of SDDPG Algorithm.
+    """Implementation of the SDDPG algorithm.
 
     References:
         Title: Lyapunov-based Safe Policy Optimization for Continuous Control
