@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Circle."""
+"""Hazard."""
 
 from dataclasses import dataclass
 
@@ -22,31 +22,33 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class Circle:  # pylint: disable=too-many-instance-attributes
-    """CircleTask specific."""
+class Sigwalls:  # pylint: disable=too-many-instance-attributes
+    """Non collision object."""
 
-    name: str = 'circle'
-    radius: float = 1.5
+    name: str = 'sigwalls'
+    num: int = 2
+    lenth: float = 3.5
     placements: list = None
-    locations: tuple = ((0, 0),)
+    locations: tuple = ((1.125, 0), (-1.125, 0))
     keepout: float = 0.0
 
-    color: np.array = COLOR['circle']
-    group: np.array = GROUP['circle']
-    is_observe_lidar: bool = True
+    color: np.array = COLOR['sigwall']
+    group: np.array = GROUP['sigwall']
+    is_observe_lidar: bool = False
     is_constrained: bool = False
 
-    def get(self, layout, rot):  # pylint: disable=unused-argument
+    def get(self, index, layout, rot):  # pylint: disable=unused-argument
         """To facilitate get specific config for this object."""
+        name = f'sigwall{index}'
         geom = {
-            'name': 'circle',
-            'size': np.array([self.radius, 1e-2]),
-            'pos': np.r_[layout['circle'], 1e-2],
+            'name': name,
+            'size': np.array([0.05, self.lenth, 0.3]),
+            'pos': np.r_[layout[name], 0.25],
             'rot': 0,
-            'type': 'cylinder',
+            'type': 'box',
             'contype': 0,
             'conaffinity': 0,
-            'group': GROUP['circle'],
-            'rgba': COLOR['circle'] * [1, 1, 1, 0.1],  # transparent
+            'group': self.group,
+            'rgba': self.color * [1, 1, 1, 0.1],
         }
         return geom

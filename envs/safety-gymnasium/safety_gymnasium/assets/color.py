@@ -33,4 +33,5 @@ COLOR = {
     'red': np.array([1, 0, 0, 1]),
     'apple': np.array([0.835, 0.169, 0.169, 1]),
     'orange': np.array([1, 0.6, 0, 1]),
+    'sigwall': np.array([1, 1, 0, 1]),
 }
