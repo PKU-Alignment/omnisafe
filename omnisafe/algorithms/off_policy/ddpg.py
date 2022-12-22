@@ -197,13 +197,13 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 assert np.allclose(global_min, global_max), f'{key} not synced.'
 
     def compute_loss_pi(self, data: dict):
-        r"""Computing pi/actor loss
+        r"""Computing pi/actor loss.
 
         Args:
-            data (dict): data dictionary
+            data (dict): data dictionary.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         action, _ = self.actor_critic.actor.predict(data['obs'], deterministic=True)
         loss_pi = self.actor_critic.critic(data['obs'], action)[0]
@@ -211,13 +211,13 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         return -loss_pi.mean(), pi_info
 
     def compute_loss_v(self, data):
-        r"""Computing value loss
+        r"""Computing value loss.
 
         Args:
-            data (dict): data dictionary
+            data (dict): data dictionary.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         obs, act, rew, obs_next, done = (
             data['obs'],
@@ -239,13 +239,13 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         return loss_q, q_info
 
     def compute_loss_c(self, data):
-        r"""Computing cost loss
+        r"""Computing cost loss.
 
         Args:
-            data (dict): data dictionary
+            data (dict): data dictionary.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         obs, act, cost, obs_next, done = (
             data['obs'],
@@ -276,7 +276,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             (3). log epoch/update information for visualization and terminal log print.
 
         Returns:
-            model and environment
+            model and environment.
         """
 
         for steps in range(0, self.local_steps_per_epoch * self.epochs, self.update_every):
@@ -319,10 +319,10 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         return self.actor_critic
 
     def update(self, data):
-        r"""Update
+        r"""Update.
 
         Args:
-            data (dict): data dictionary
+            data (dict): data dictionary.
         """
         # First run one gradient descent step for Q.
         self.update_value_net(data)
@@ -363,7 +363,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         r"""Update policy network.
 
         Args:
-            data (dict): data dictionary
+            data (dict): data dictionary.
         """
         # Train policy with one steps of gradient descent
         self.actor_optimizer.zero_grad()
@@ -389,7 +389,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         r"""Update cost network.
 
         Args:
-            data (dict): data dictionary
+            data (dict): data dictionary.
         """
         # Train cost critic with one steps of gradient descent
         self.cost_critic_optimizer.zero_grad()

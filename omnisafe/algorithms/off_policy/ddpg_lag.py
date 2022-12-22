@@ -62,13 +62,13 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
     def compute_loss_pi(self, data: dict):
-        r"""Computing pi/actor loss
+        r"""Computing pi/actor loss.
 
         Args:
-            data (dict): data from replay buffer
+            data (dict): data from replay buffer.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         action = self.actor_critic.actor.predict(
             data['obs'], deterministic=True, need_log_prob=False

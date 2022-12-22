@@ -41,10 +41,10 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         r"""Initialize TD3.
 
         Args:
-            env_id (str): environment id
-            cfgs (dict): configurations
-            algo (str): algorithm name
-            wrapper_type (str): environment wrapper type
+            env_id (str): environment id.
+            cfgs (dict): configurations.
+            algo (str): algorithm name.
+            wrapper_type (str): environment wrapper type.
         """
         TD3.__init__(
             self,
@@ -68,13 +68,13 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
     def compute_loss_pi(self, data: dict):
-        r"""Computing pi/actor loss
+        r"""Computing pi/actor loss.
 
         Args:
-            data (dict): data
+            data (dict): data.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         action = self.actor_critic.actor.predict(
             data['obs'], deterministic=True, need_log_prob=False

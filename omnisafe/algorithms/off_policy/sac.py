@@ -54,10 +54,10 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         r"""Computing value loss.
 
         Args:
-            data (dict): data from replay buffer
+            data (dict): data from replay buffer.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         obs, act, rew, obs_next, done = (
             data['obs'],
@@ -89,10 +89,10 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         r"""Computing pi/actor loss.
 
         Args:
-            data (dict): data from replay buffer
+            data (dict): data from replay buffer.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         action, logp_a = self.actor_critic.actor.predict(
             data['obs'], deterministic=True, need_log_prob=True

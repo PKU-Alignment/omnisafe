@@ -49,10 +49,10 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         r"""Initialize SDDPG.
 
         Args:
-            env_id (str): environment id
-            cfgs (dict): configurations
-            algo (str): algorithm name
-            wrapper_type (str): environment wrapper type
+            env_id (str): environment id.
+            cfgs (dict): configurations.
+            algo (str): algorithm name.
+            wrapper_type (str): environment wrapper type.
         """
         super().__init__(
             env_id=env_id,
@@ -107,10 +107,10 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf
 
         Args:
-            params (torch.Tensor): parameters
+            params (torch.Tensor): parameters.
 
         Returns:
-            flat_grad_grad_kl (torch.Tensor): flat gradient of gradient of KL
+            flat_grad_grad_kl (torch.Tensor): flat gradient of gradient of KL.
         """
         self.actor_critic.actor.net.zero_grad()
         q_dist = self.actor_critic.actor.get_distribution(self.fvp_obs)
@@ -131,13 +131,13 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         return flat_grad_grad_kl + params * self.cg_damping
 
     def compute_loss_cost_performance(self, data):
-        r"""Compute loss of cost performance
+        r"""Compute loss of cost performance.
 
         Args:
-            data (dict): data dictionary
+            data (dict): data dictionary.
 
         Returns:
-            loss (torch.Tensor): loss of cost performance
+            loss (torch.Tensor): loss of cost performance.
         """
         # Compute loss
         action, _ = self.actor_critic.actor.predict(data['obs'], deterministic=True)
@@ -150,7 +150,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         r"""Update policy network.
 
         Args:
-            data (dict): data dictionary
+            data (dict): data dictionary.
         """
         # Train policy with one steps of gradient descent
         theta_old = get_flat_params_from(self.actor_critic.actor.net)

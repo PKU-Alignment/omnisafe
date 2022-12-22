@@ -49,13 +49,13 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
 
     def compute_loss_v(self, data):
         r"""
-        computing value loss
+        computing value loss.
 
         Args:
-            data (dict): data from replay buffer
+            data (dict): data from replay buffer.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         obs, act, rew, obs_next, done = (
             data['obs'],
