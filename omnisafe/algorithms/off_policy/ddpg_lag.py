@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of the DDPGLag algorithm."""
 
-
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
 from omnisafe.common.lagrange import Lagrange

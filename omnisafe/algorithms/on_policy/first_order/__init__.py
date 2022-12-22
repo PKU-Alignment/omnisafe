@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""The first order algorithms."""
+"""FIrst-order algorithms."""
 
 from omnisafe.algorithms.on_policy.first_order.cup import CUP
 from omnisafe.algorithms.on_policy.first_order.focops import FOCOPS

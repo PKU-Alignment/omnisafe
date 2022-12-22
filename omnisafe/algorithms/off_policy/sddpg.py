@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of the SDDPG algorithm."""
 
-
 import torch
 
 from omnisafe.algorithms import registry

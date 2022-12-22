@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of the TD3Lag algorithm."""
 
-
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.td3 import TD3
 from omnisafe.common.lagrange import Lagrange

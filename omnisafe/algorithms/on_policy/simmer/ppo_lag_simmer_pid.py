@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Pid Simmer algorithm by PPOLag."""
+"""Implementation of the PID Simmer algorithm by PPOLag."""
 
 
 from omnisafe.algorithms import registry

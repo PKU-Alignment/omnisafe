@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Second order algorithms."""
+"""Second-order algorithms."""
 
 from omnisafe.algorithms.on_policy.second_order.cpo import CPO
 from omnisafe.algorithms.on_policy.second_order.pcpo import PCPO
