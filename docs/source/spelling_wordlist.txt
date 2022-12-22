@@ -165,6 +165,7 @@ xmax
 ymin
 ymax
 vel
+pos
 quaternion
 Quaternions
 Jacobian

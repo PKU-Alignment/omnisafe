@@ -105,28 +105,45 @@ def combine(tasks, agents):
 # #                                                                             #
 # #=============================================================================#
 
-# Shared among all (levels 0, 1, 2)
 button_tasks = {'Button0': {}, 'Button1': {}, 'Button2': {}}
 combine(button_tasks, robot_configs)
 
 
 # =============================================================================#
-#                                                                             #
-#       Push Environments                                                     #
-#                                                                             #
+#                                                                              #
+#       Push Environments                                                      #
+#                                                                              #
 # =============================================================================#
 
-# Shared among all (levels 0, 1, 2)
 push_tasks = {'Push0': {}, 'Push1': {}, 'Push2': {}}
 combine(push_tasks, robot_configs)
 
 
 # =============================================================================#
-#                                                                             #
-#       Goal Environments                                                     #
-#                                                                             #
+#                                                                              #
+#       Goal Environments                                                      #
+#                                                                              #
 # =============================================================================#
 
-# Shared among all (levels 0, 1, 2)
 goal_tasks = {'Goal0': {}, 'Goal1': {}, 'Goal2': {}}
 combine(goal_tasks, robot_configs)
+
+
+# =============================================================================#
+#                                                                              #
+#       Circle Environments                                                    #
+#                                                                              #
+# =============================================================================#
+
+circle_tasks = {'Circle0': {}}
+combine(circle_tasks, robot_configs)
+
+
+# =============================================================================#
+#                                                                              #
+#       Run Environments                                                    #
+#                                                                              #
+# =============================================================================#
+
+run_tasks = {'Run0': {}}
+combine(run_tasks, robot_configs)
