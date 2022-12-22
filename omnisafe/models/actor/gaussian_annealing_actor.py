@@ -76,10 +76,13 @@ class GaussianAnnealingActor(Actor):
         else:
             out = dist.sample()
 
+        action = torch.clamp(out, -1, 1)
+        action = 0.5 * (action + 1) * (self.act_max - self.act_min) + self.act_min
+
         if need_log_prob:
             log_prob = dist.log_prob(out).sum(axis=-1)
-            return out, log_prob
-        return out
+            return action, log_prob
+        return action
 
     def forward(self, obs, act=None):
         dist = self._distribution(obs)
