@@ -30,7 +30,7 @@ class GoalLevel1(GoalLevel0):
 
         self.placements_extents = [-1.5, -1.5, 1.5, 1.5]
 
-        self.add_geoms(Hazards(num=8))
+        self.add_geoms(Hazards(num=8, keepout=0.18))
         self.add_objects(Vases(num=1, is_constrained=False))
 
     @property

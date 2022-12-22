@@ -31,7 +31,6 @@ class Hazards:  # pylint: disable=too-many-instance-attributes
     placements: list = None  # Placements list for hazards (defaults to full extents)
     locations: list = field(default_factory=list)  # Fixed locations to override placements
     keepout: float = 0.4  # Radius of hazard keepout for placement
-    keepout: float = 0.18
     cost: float = 1.0  # Cost (per step) for violating the constraint
 
     color: np.array = COLOR['hazard']
