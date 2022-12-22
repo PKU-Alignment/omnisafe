@@ -59,6 +59,7 @@ def test_on_policy(on_policy_algo):
         'DDPGLag',
         'TD3Lag',
         'SACLag',
+        'SDDPG',
     ]
 )
 def test_off_policy(off_policy_algo):
