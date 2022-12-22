@@ -68,3 +68,5 @@ assert len(ALGORITHM2TYPE) == len(__all__), 'Duplicate algorithm names found.'
 
 ALGORITHMS = MappingProxyType(ALGORITHMS)  # make this immutable
 ALGORITHM2TYPE = MappingProxyType(ALGORITHM2TYPE)  # make this immutable
+
+del itertools, MappingProxyType
