@@ -29,7 +29,7 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-name
-    r"""The SDDPG algorithm.
+    """Implementation of SDDPG Algorithm.
 
     References:
         Title: Lyapunov-based Safe Policy Optimization for Continuous Control
@@ -45,7 +45,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         algo: str = 'SDDPG',
         wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
-        r"""Initialize SDDPG.
+        """Initialize SDDPG.
 
         Args:
             env_id (str): environment id.
@@ -68,7 +68,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         self.d_init = cfgs.d_init
 
     def update(self, data):
-        r"""Update.
+        """Update.
 
         Args:
             data (dict): data dictionary.
@@ -101,7 +101,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         self.polyak_update_target()
 
     def Fvp(self, params):
-        r"""
+        """
         Build the Hessian-vector product based on an approximation of the KL-divergence.
         For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf
 
@@ -130,7 +130,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         return flat_grad_grad_kl + params * self.cg_damping
 
     def compute_loss_cost_performance(self, data):
-        r"""Compute loss of cost performance.
+        """Compute loss of cost performance.
 
         Args:
             data (dict): data dictionary.
@@ -146,7 +146,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
 
     # pylint: disable=invalid-name,too-many-arguments,too-many-locals
     def update_policy_net(self, data) -> None:
-        r"""Update policy network.
+        """Update policy network.
 
         Args:
             data (dict): data dictionary.

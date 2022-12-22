@@ -46,8 +46,7 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
         )
 
     def compute_loss_v(self, data):
-        """
-        Computing value loss.
+        """Computing value loss.
 
         Args:
             data (dict): data from replay buffer.

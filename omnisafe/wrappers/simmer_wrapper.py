@@ -344,7 +344,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
             )
 
     def augment_obs(self, obs: np.array, safety_obs: np.array):
-        """Augmenting the obs with the safety obs, if needed.
+        """Augmenting the obs with the safety obs.
 
         Args:
             obs (np.array): The observation.
