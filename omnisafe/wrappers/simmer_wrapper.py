@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""env_wrapper"""
+"""Environment wrapper for Simmer algorithm."""
 
 import copy
 
@@ -25,7 +25,7 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 
 class PidController:  # pylint: disable=too-many-instance-attributes
-    """Using PID controller to control the safety budget in Simmer environment."""
+    r"""Using PID controller to control the safety budget in Simmer environment."""
 
     def __init__(
         self,
@@ -159,7 +159,8 @@ class QController:  # pylint: disable=too-many-instance-attributes
             state (float): The current state.
 
         Returns:
-            int: The state index."""
+            int: The state index.
+        """
         state_idx = np.argwhere(self.state_space == state)[0][0]
         return state_idx
 
@@ -191,7 +192,8 @@ class QController:  # pylint: disable=too-many-instance-attributes
             state (float): The current state(``cost_limit``).
 
         Returns:
-            float: The greedy action."""
+            float: The greedy action.
+        """
         state_idx = self.get_state_idx(state)
         action_idx = np.argmax(self.q_function[state_idx, :])
         action = self.action_space[action_idx]
@@ -381,7 +383,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
         return reward
 
     def reset(self, seed=None):
-        r"""reset environment
+        r"""Reset environment.
 
         Args:
             seed (int): The seed.
@@ -397,7 +399,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
         return self.curr_o, info
 
     def step(self, action):
-        r"""step environment
+        r"""Step environment.
 
         Args:
             action (np.array): The action.
@@ -432,7 +434,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
 
     # pylint: disable-next=too-many-locals
     def roll_out(self, agent, buf, logger):
-        r"""collect data and store to experience buffer.
+        r"""Collect data and store to experience buffer.
 
         Args:
             agent (Agent): The agent.

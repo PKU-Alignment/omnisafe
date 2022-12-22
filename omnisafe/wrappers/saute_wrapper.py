@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""saute env_wrapper"""
+"""Environment wrapper for saute algorithms."""
 
 import numpy as np
 import torch
@@ -35,9 +35,9 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         r"""Initialize SauteEnvWrapper.
 
         Args:
-            env_id (str): environment id
-            cfgs (dict): configuration dictionary
-            render_mode (str): render mode
+            env_id (str): environment id.
+            cfgs (dict): configuration dictionary.
+            render_mode (str): render mode.
 
         """
         super().__init__(env_id, render_mode)
@@ -62,11 +62,11 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         r"""Augmenting the obs with the safety obs.
 
         Args:
-            obs (np.array): observation
-            safety_obs (np.array): safety observation
+            obs (np.array): observation.
+            safety_obs (np.array): safety observation.
 
         Returns:
-            augmented_obs (np.array): augmented observation
+            augmented_obs (np.array): augmented observation.
         """
         augmented_obs = np.hstack([obs, safety_obs])
         return augmented_obs
@@ -75,10 +75,10 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         r"""Update the normalized safety obs.
 
         Args:
-            cost (np.array): cost
+            cost (np.array): cost.
 
         Returns:
-            safety_obs (np.array): normalized safety observation
+            safety_obs (np.array): normalized safety observation.
         """
         self.safety_obs -= cost / self.safety_budget
         self.safety_obs /= self.saute_gamma
@@ -88,24 +88,24 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         r"""Update the reward.
 
         Args:
-            reward (np.array): reward
-            next_safety_obs (np.array): next safety observation
+            reward (np.array): reward.
+            next_safety_obs (np.array): next safety observation.
 
         Returns:
-            reward (np.array): updated reward
+            reward (np.array): updated reward.
         """
         reward = reward * (next_safety_obs > 0) + self.unsafe_reward * (next_safety_obs <= 0)
         return reward
 
     def reset(self, seed=None):
-        r"""reset environment
+        r"""Reset environment.
 
         Args:
-            seed (int): seed for environment reset
+            seed (int): seed for environment reset.
 
         Returns:
-            self.curr_o (np.array): current observation
-            info (dict): environment info
+            self.curr_o (np.array): current observation.
+            info (dict): environment info.
         """
         self.curr_o, info = self.env.reset(seed=seed)
         self.safety_obs = 1.0
@@ -116,15 +116,15 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         r"""Step environment.
 
         Args:
-            action (np.array): action
+            action (np.array): action.
 
         Returns:
-            augmented_obs (np.array): augmented observation
-            reward (np.array): reward
-            cost (np.array): cost
-            terminated (bool): whether the episode is terminated
-            truncated (bool): whether the episode is truncated
-            info (dict): environment info
+            augmented_obs (np.array): augmented observation.
+            reward (np.array): reward.
+            cost (np.array): cost.
+            terminated (bool): whether the episode is terminated.
+            truncated (bool): whether the episode is truncated.
+            info (dict): environment info.
         """
         next_obs, reward, cost, terminated, truncated, info = self.env.step(action)
         next_safety_obs = self.safety_step(cost)
@@ -140,15 +140,15 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         r"""Collect data and store to experience buffer.
 
         Args:
-            agent (Agent): agent
-            buf (Buffer): buffer
-            logger (Logger): logger
+            agent (Agent): agent.
+            buf (Buffer): buffer.
+            logger (Logger): logger.
 
         Returns:
-            ep_ret (float): episode return
-            ep_costs (float): episode costs
-            ep_len (int): episode length
-            ep_budget (float): episode budget
+            ep_ret (float): episode return.
+            ep_costs (float): episode costs.
+            ep_len (int): episode length.
+            ep_budget (float): episode budget.
         """
         obs, _ = self.reset()
         ep_ret, ep_costs, ep_len, ep_budget = 0.0, 0.0, 0, 0.0
