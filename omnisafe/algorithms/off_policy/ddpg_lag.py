@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the DDPG algorithm."""
+"""Implementation of the DDPGLag algorithm."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
@@ -21,29 +21,26 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
-    """The Lagrange version of the DDPG Algorithm.
+    """The Lagrange version of DDPG Algorithm.
 
     References:
-        Title: Continuous control with deep reinforcement learning
-        Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
-                 Yuval Tassa, David Silver, Daan Wierstra.
-        URL: https://arxiv.org/abs/1509.02971
+        Paper Name: Continuous control with deep reinforcement learning.
+        Paper author: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
+                      Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
+        Paper URL: https://arxiv.org/abs/1509.02971
+
     """
 
     def __init__(
         self,
         env_id: str,
         cfgs=None,
-        algo: str = 'DDPG-Lag',
-        wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
         """Initialize DDPG."""
         DDPG.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
 
         Lagrange.__init__(

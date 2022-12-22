@@ -29,26 +29,22 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class TRPO(NaturalPG):
-    """The Trust Region Policy Optimization (TRPO) algorithm.
+    """The Trust Region Policy Optimization (TRPO) Algorithm.
 
     References:
-        Title: Trust Region Policy Optimization
-        Authors: John Schulman, Sergey Levine, Philipp Moritz, Michael I. Jordan, Pieter Abbeel.
-        URL: https://arxiv.org/abs/1502.05477
+        Paper Name: Trust Region Policy Optimization.
+        Paper author: John Schulman, Sergey Levine, Philipp Moritz, Michael I. Jordan, Pieter Abbeel.
+        Paper URL: https://arxiv.org/abs/1502.05477
     """
 
     def __init__(
         self,
         env_id,
         cfgs,
-        algo='TRPO',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
 
     # pylint: disable-next=too-many-arguments,too-many-locals,arguments-differ

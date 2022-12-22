@@ -29,21 +29,19 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-name
-    """Implementation of the SDDPG algorithm.
+    """Implementation of SDDPG Algorithm.
 
     References:
-        Title: Lyapunov-based Safe Policy Optimization for Continuous Control
-        Authors: Yinlam Chow, Ofir Nachum, Aleksandra Faust, Edgar Duenez-Guzman,
-                 Mohammad Ghavamzadeh.
-        URL: https://arxiv.org/abs/1901.10031
+        Paper Name: Lyapunov-based Safe Policy Optimization for Continuous Control.
+        Paper author: Yinlam Chow, Ofir Nachum, Aleksandra Faust, Edgar Duenez-Guzman, Mohammad Ghavamzadeh.
+        Paper URL: https://arxiv.org/abs/1901.10031
+
     """
 
     def __init__(
         self,
         env_id: str,
         cfgs=None,
-        algo: str = 'SDDPG',
-        wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
         """Initialize SDDPG.
 
@@ -56,8 +54,6 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
         self.beta = cfgs.beta
         self.cg_damping = cfgs.cg_damping

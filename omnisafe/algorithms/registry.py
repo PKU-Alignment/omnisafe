@@ -19,7 +19,6 @@ import inspect
 
 class Registry:
     """A registry to map strings to classes.
-
     Args:
         name (str): Registry name.
     """
@@ -29,9 +28,10 @@ class Registry:
         self._module_dict = {}
 
     def __repr__(self):
-        return (
-            f'{self.__class__.__name__ }(name={self._name}, items={list(self._module_dict.keys())})'
+        format_str = (
+            self.__class__.__name__ + f'(name={self._name}, items={list(self._module_dict.keys())})'
         )
+        return format_str
 
     @property
     def name(self):

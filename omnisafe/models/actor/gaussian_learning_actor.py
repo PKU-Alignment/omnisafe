@@ -72,15 +72,15 @@ class GaussianLearningActor(Actor):
         if deterministic:
             out = dist.mean
         else:
-            out = dist.rsample()
+            out = dist.sample()
 
         action = torch.clamp(out, -1, 1)
         action = self.act_min + (action + 1) * 0.5 * (self.act_max - self.act_min)
 
         if need_log_prob:
             log_prob = dist.log_prob(out).sum(axis=-1)
-            return action, log_prob
-        return action
+            return out, log_prob
+        return out
 
     def forward(self, obs, act=None):
         dist = self._distribution(obs)

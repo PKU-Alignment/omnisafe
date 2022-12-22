@@ -23,7 +23,7 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 # pylint: disable=too-many-instance-attributes
 @WRAPPER_REGISTRY.register
 class OffPolicyEnvWrapper:
-    """OffPolicyEnvWrapper"""
+    """OffPolicyEnvWrapperr"""
 
     def __init__(
         self,

@@ -34,9 +34,10 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
     """The Policy Gradient algorithm.
 
     References:
-        Title: Policy Gradient Methods for Reinforcement Learning with Function Approximation
-        Authors: Richard S. Sutton, David McAllester, Satinder Singh, Yishay Mansour.
-        URL: https://proceedings.neurips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf
+        Paper Name: Policy Gradient Methods for Reinforcement Learning with Function Approximation
+        Paper Author: Richard S. Sutton, David McAllester, Satinder Singh, Yishay Mansour
+        Paper URL: https://proceedings.neurips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf
+
     """
 
     # pylint: disable-next=too-many-locals
@@ -44,10 +45,8 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
         self,
         env_id,
         cfgs=None,
-        algo: str = 'PolicyGradient',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
     ) -> None:
-        r"""Initialize the algorithm.
+        """Initialize the algorithm.
 
         Args:
             env: The environment.
@@ -56,9 +55,10 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
             cfgs: (default: :const:`None`)
                 This is a dictionary of the algorithm hyper-parameters.
         """
-        self.algo = algo
+        self.algo = self.__class__.__name__
         self.cfgs = deepcopy(cfgs)
-        self.env = wrapper_registry.get(wrapper_type)(
+        self.wrapper_type = self.cfgs.wrapper_type
+        self.env = wrapper_registry.get(self.wrapper_type)(
             env_id, cfgs=self.cfgs._asdict().get('env_cfgs')
         )
 

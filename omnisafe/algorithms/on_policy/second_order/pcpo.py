@@ -32,23 +32,20 @@ class PCPO(TRPO):
     """The Projection-Based Constrained Policy Optimization (PCPO) algorithm.
 
     References:
-        Title: Projection-Based Constrained Policy Optimization
-        Authors: Tsung-Yen Yang, Justinian Rosca, Karthik Narasimhan, Peter J. Ramadge.
-        URL: https://arxiv.org/abs/2010.03152
+        Paper name: Projection-Based Constrained Policy Optimization.
+        Paper author: Tsung-Yen Yang, Justinian Rosca, Karthik Narasimhan, Peter J. Ramadge
+        Paper URL: https://arxiv.org/abs/2010.03152
+
     """
 
     def __init__(
         self,
         env_id,
         cfgs,
-        algo='PCPO',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
         self.cost_limit = self.cfgs.cost_limit
 

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the TRPO algorithm."""
+"""Implementation of the Lagrange version of TRPO algorithm."""
 
 import torch
 
@@ -23,12 +23,12 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class TRPOLag(TRPO, Lagrange):
-    """The Lagrange version of the TRPO algorithm.
+    """The Lagrange version of TRPO algorithm.
 
     References:
-        Title: Benchmarking Safe Exploration in Deep Reinforcement Learning
-        Authors: Alex Ray, Joshua Achiam, Dario Amodei.
-        URL: https://cdn.openai.com/safexp-short.pdf
+        Paper Name: Benchmarking Safe Exploration in Deep Reinforcement Learning.
+        Paper author: Alex Ray, Joshua Achiam, Dario Amodei
+        Paper URL: https://cdn.openai.com/safexp-short.pdf
 
     """
 
@@ -36,16 +36,12 @@ class TRPOLag(TRPO, Lagrange):
         self,
         env_id,
         cfgs,
-        algo: str = 'TRPO-Lag',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         """initialize"""
         TRPO.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
         Lagrange.__init__(
             self,
@@ -54,6 +50,7 @@ class TRPOLag(TRPO, Lagrange):
             lambda_lr=self.cfgs.lagrange_cfgs.lambda_lr,
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
         )
+        self.algo = self.__class__.__name__
 
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()

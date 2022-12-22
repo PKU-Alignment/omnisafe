@@ -32,23 +32,20 @@ class NaturalPG(PolicyGradient):
     """The Natural Policy Gradient algorithm.
 
     References:
-        Title: A Natural Policy Gradient
-        Author: Sham Kakade.
-        URL: https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf
+        Paper Name: A Natural Policy Gradient.
+        Paper author: Sham Kakade.
+        Paper URL: https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf
+
     """
 
     def __init__(
         self,
         env_id,
         cfgs,
-        algo: str = 'NaturalPolicyGradient',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
         self.cg_damping = cfgs.cg_damping
         self.cg_iters = cfgs.cg_iters

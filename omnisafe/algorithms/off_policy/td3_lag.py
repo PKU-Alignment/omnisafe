@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the TD3 algorithm."""
+"""Implementation of the TD3Lag algorithm."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.td3 import TD3
@@ -21,20 +21,19 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
-    """The Lagrange version of the TD3 algorithm
+    """The Lagrange version of TD3 Algorithm.
 
     References:
-        Title: Addressing Function Approximation Error in Actor-Critic Methods
-        Authors: Scott Fujimoto, Herke van Hoof, David Meger.
-        URL: https://arxiv.org/abs/1802.09477
+        Paper Name: Addressing Function Approximation Error in Actor-Critic Methods.
+        Paper author: Scott Fujimoto, Herke van Hoof, David Meger.
+        Paper URL: https://arxiv.org/abs/1802.09477
+
     """
 
     def __init__(
         self,
         env_id: str,
         cfgs=None,
-        algo: str = 'TD3-Lag',
-        wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
         """Initialize TD3.
 
@@ -48,10 +47,7 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
             self,
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
-
         Lagrange.__init__(
             self,
             cost_limit=self.cfgs.lagrange_cfgs.cost_limit,

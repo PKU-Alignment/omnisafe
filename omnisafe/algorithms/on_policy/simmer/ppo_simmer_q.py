@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Q Simmer algorithm using PPO."""
+"""Implementation of the Q Simmer algorithm by PPOLag."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
@@ -20,12 +20,12 @@ from omnisafe.algorithms.on_policy.base.ppo import PPO
 
 @registry.register
 class PPOSimmerQ(PPO):
-    r"""The Q Simmer algorithm implemented with PPO.
+    """Simmer algorithm (Q version) implemented by PPO.
 
     References:
-        Title: Effects of Safety State Augmentation on Safe Exploration
-        Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
-        URL: https://arxiv.org/abs/2206.02675
+        Paper Name: Effects of Safety State Augmentation on Safe Exploration.
+        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
+        Paper URL: https://arxiv.org/abs/2206.02675
     """
 
     # pylint: disable-next=too-many-arguments
@@ -33,15 +33,11 @@ class PPOSimmerQ(PPO):
         self,
         env_id,
         cfgs,
-        algo='ppo_simmer_q',
-        wrapper_type: str = 'SimmerEnvWrapper',
     ) -> None:
-        r"""Initialize PPOSimmerQ."""
+        """Initialize PPOSimmerQ."""
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
 
     def algorithm_specific_logs(self):

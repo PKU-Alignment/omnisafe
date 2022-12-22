@@ -31,21 +31,20 @@ from omnisafe.wrappers import wrapper_registry
 
 @registry.register
 class DDPG:  # pylint: disable=too-many-instance-attributes
-    """The Deep Deterministic Policy Gradient (DDPG) algorithm.
+    """Continuous control with deep reinforcement learning (DDPG) Algorithm.
 
     References:
-        Title: Continuous control with deep reinforcement learning
-        Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
-                 Yuval Tassa, David Silver, Daan Wierstra.
-        URL: https://arxiv.org/abs/1509.02971
+        Paper Name: Continuous control with deep reinforcement learning.
+        Paper author: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
+                      Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
+        Paper URL: https://arxiv.org/abs/1509.02971
+
     """
 
     def __init__(
         self,
         env_id: str,
         cfgs=None,
-        algo: str = 'DDPG',
-        wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
         """Initialize DDPG.
 
@@ -55,14 +54,15 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             algo (str): Algorithm name.
             wrapper_type (str): Wrapper type.
         """
-        self.env = wrapper_registry.get(wrapper_type)(
+        self.cfgs = deepcopy(cfgs)
+        self.wrapper_type = self.cfgs.wrapper_type
+        self.env = wrapper_registry.get(self.wrapper_type)(
             env_id,
             use_cost=cfgs.use_cost,
             max_ep_len=cfgs.max_ep_len,
         )
         self.env_id = env_id
-        self.algo = algo
-        self.cfgs = deepcopy(cfgs)
+        self.algo = self.__class__.__name__
 
         # Set up for learning and rolling out schedule
         self.steps_per_epoch = cfgs.steps_per_epoch

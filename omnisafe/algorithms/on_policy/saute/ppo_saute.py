@@ -20,13 +20,13 @@ from omnisafe.algorithms.on_policy.base.ppo import PPO
 
 @registry.register
 class PPOSaute(PPO):
-    r"""The Saute algorithm implemented with PPO.
+    r"""Saute algorithm implemented by PPO.
 
     References:
-        Title: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation
-        Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang, David Mguni,
-                 Jun Wang, Haitham Bou-Ammar.
-        URL: https://arxiv.org/abs/2202.06558
+        Paper Name: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation.
+        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
+                      David Mguni, Jun Wang, Haitham Bou-Ammar.
+        Paper URL: https://arxiv.org/abs/2202.06558
     """
 
     # pylint: disable-next=too-many-arguments
@@ -34,17 +34,13 @@ class PPOSaute(PPO):
         self,
         env_id,
         cfgs,
-        algo='ppo_saute',
         clip=0.2,
-        wrapper_type: str = 'SauteEnvWrapper',
     ) -> None:
-        r"""Initialize PPOSaute."""
+        """Initialize PPOSaute."""
         self.clip = clip
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
 
     def algorithm_specific_logs(self):

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the SAC algorithm."""
+"""Implementation of the SACLag algorithm."""
 
 import torch
 
@@ -26,17 +26,16 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
     """The Lagrange version of SAC algorithm.
 
     References:
-        Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
-        Authors: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine.
-        URL: https://arxiv.org/abs/1801.01290
+        Paper Name: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
+        Paper author: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine
+        Paper URL: https://arxiv.org/abs/1801.01290
+
     """
 
     def __init__(
         self,
         env_id: str,
         cfgs=None,
-        algo: str = 'SAC-Lag',
-        wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
         """Initialize SACLag.
 
@@ -50,8 +49,6 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
             self,
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
 
         Lagrange.__init__(

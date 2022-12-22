@@ -18,6 +18,8 @@ defaults:
   ## ----------------------------Basic configurations for base class DDPG----------------------- ##
   # The random seed
   seed: 0
+  # The environment wrapper type
+  wrapper_type: OffPolicyEnvWrapper
   # Number of epochs
   epochs: 500
   # Number of steps per epoch

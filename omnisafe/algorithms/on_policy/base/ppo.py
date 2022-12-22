@@ -23,12 +23,12 @@ from omnisafe.utils import distributed_utils
 
 @registry.register
 class PPO(PolicyGradient):
-    """The Proximal Policy Optimization (PPO) algorithm.
+    """The Proximal Policy Optimization Algorithms (PPO) Algorithm.
 
     References:
-        Title: Proximal Policy Optimization Algorithms
-        Authors: John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov.
-        URL: https://arxiv.org/abs/1707.06347
+        Paper Name: Proximal Policy Optimization Algorithms.
+        Paper author: John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov.
+        Paper URL: https://arxiv.org/pdf/1707.06347.pdf
     """
 
     # pylint: disable-next=too-many-arguments
@@ -36,16 +36,12 @@ class PPO(PolicyGradient):
         self,
         env_id,
         cfgs,
-        algo='ppo',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         """Initialize PPO."""
         self.clip = cfgs.clip
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
 
     def compute_loss_pi(self, data: dict):

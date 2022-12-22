@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the early terminated algorithm using PPOLag."""
+"""Implementation of the Early terminated algorithm by PPOLag."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
@@ -20,12 +20,12 @@ from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
 
 @registry.register
 class PPOLagEarlyTerminated(PPOLag):
-    r"""The Lagrange version of the early terminated algorithm implemented with PPOLag.
+    """Early terminated algorithm implemented by PPOLag.
 
     References:
-        Title: Safe Exploration by Solving Early Terminated MDP
-        Authors: Hao Sun, Ziping Xu, Meng Fang, Zhenghao Peng, Jiadong Guo, Bo Dai, Bolei Zhou.
-        URL: https://arxiv.org/abs/2107.04200
+        Paper Name: Safe Exploration by Solving Early Terminated MDP
+        Paper author: Hao Sun, Ziping Xu, Meng Fang, Zhenghao Peng, Jiadong Guo, Bo Dai, Bolei Zhou
+        Paper URL: https://arxiv.org/abs/2107.04200
     """
 
     # pylint: disable-next=too-many-arguments
@@ -33,13 +33,9 @@ class PPOLagEarlyTerminated(PPOLag):
         self,
         env_id,
         cfgs,
-        algo='ppo_lag_early_terminated',
-        wrapper_type: str = 'EarlyTerminatedEnvWrapper',
     ) -> None:
-        r"""Initialize PPO_Lag_Earyly_Terminated."""
+        """Initialize PPO_Lag_Earyly_Terminated."""
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )

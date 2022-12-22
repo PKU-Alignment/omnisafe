@@ -90,7 +90,7 @@ class GaussianStdNetActor(Actor):
         if deterministic:
             out = dist.mean
         else:
-            out = dist.rsample()
+            out = dist.sample()
 
         action = torch.tanh(out)
         action = self.act_min + (action + 1) * 0.5 * (self.act_max - self.act_min)

@@ -24,21 +24,19 @@ from omnisafe.utils import distributed_utils
 
 @registry.register
 class CUP(PolicyGradient, Lagrange):
-    """The Constrained Update Projection (CUP) Approach to Safe Policy Optimization.
+    """The Constrained Update Projection Approach to Safe Policy Optimization.
 
     References:
-        Title: Constrained Update Projection Approach to Safe Policy Optimization
-        Authors: Long Yang, Jiaming Ji, Juntao Dai, Linrui Zhang, Binbin Zhou, Pengfei Li,
-                 Yaodong Yang, Gang Pan.
-        URL: https://arxiv.org/abs/2209.07089
+        Paper Name: Constrained Update Projection Approach to Safe Policy Optimization.
+        Paper author: Long Yang, Jiaming Ji, Juntao Dai, Linrui Zhang, Binbin Zhou, Pengfei Li, Yaodong Yang, Gang Pan.
+        Paper URL: https://arxiv.org/abs/2209.07089
+
     """
 
     def __init__(
         self,
         env_id,
         cfgs,
-        algo='CUP',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
     ):
         r"""The :meth:`init` function."""
 
@@ -46,8 +44,6 @@ class CUP(PolicyGradient, Lagrange):
             self,
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
 
         Lagrange.__init__(
@@ -58,6 +54,7 @@ class CUP(PolicyGradient, Lagrange):
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
             lagrangian_upper_bound=self.cfgs.lagrange_cfgs.lagrangian_upper_bound,
         )
+        self.algo = self.__class__.__name__
         self.lam = self.cfgs.lam
         self.eta = self.cfgs.eta
         self.clip = self.cfgs.clip

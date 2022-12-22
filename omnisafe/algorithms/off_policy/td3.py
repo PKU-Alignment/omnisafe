@@ -22,27 +22,24 @@ from omnisafe.algorithms.off_policy.ddpg import DDPG
 
 @registry.register
 class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
-    """The Twin Delayed DDPG (TD3) algorithm.
+    """Implementation of TD3 Algorithm.
 
     References:
-        Title: Addressing Function Approximation Error in Actor-Critic Methods
-        Authors: Scott Fujimoto, Herke van Hoof, David Meger.
-        URL: https://arxiv.org/abs/1802.09477
+        Paper Name: Addressing Function Approximation Error in Actor-Critic Methods.
+        Paper author: Scott Fujimoto, Herke van Hoof, David Meger.
+        Paper URL: https://arxiv.org/abs/1802.09477
+
     """
 
     def __init__(
         self,
         env_id: str,
         cfgs=None,
-        algo: str = 'TD3',
-        wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
         """Initialize DDPG."""
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
 
     def compute_loss_v(self, data):

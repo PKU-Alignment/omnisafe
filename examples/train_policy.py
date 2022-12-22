@@ -25,7 +25,7 @@ if __name__ == '__main__':
         '--algo',
         type=str,
         metavar='ALGO',
-        default='PPOLag',
+        default='PPOLagEarlyTerminated',
         help='Algorithm to train',
         choices=omnisafe.ALGORITHMS['all'],
     )
