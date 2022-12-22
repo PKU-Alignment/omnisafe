@@ -97,7 +97,7 @@ ALGORITHM2TYPE = {
     algo: algo_type for algo_type, algorithms in ALGORITHMS.items() for algo in algorithms
 }
 
-__all__ = ALGORITHMS['all'] = list(itertools.chain.from_iterable(ALGORITHMS.values()))
+__all__ = ALGORITHMS['all'] = tuple(itertools.chain.from_iterable(ALGORITHMS.values()))
 
 assert len(ALGORITHM2TYPE) == len(__all__), 'Duplicate algorithm names found.'
 
