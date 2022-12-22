@@ -128,8 +128,9 @@ class World:  # pylint: disable=too-many-instance-attributes
             # light purple: ".676 .547 .996"
             # med blue: "0.527 0.582 0.906"
             # indigo: "0.293 0 0.508"
+            texrepeat = np.array(self.floor_size[:2]) / 3.5 * 10  # pylint: disable=no-member
             asset = xmltodict.parse(
-                """
+                f"""
                 <asset>
                     <texture type="skybox" builtin="gradient" rgb1="0.527 0.582 0.906"
                         rgb2="0.1 0.1 0.35" width="800" height="800" markrgb="1 1 1"
@@ -137,7 +138,7 @@ class World:  # pylint: disable=too-many-instance-attributes
                     <texture name="texplane" builtin="checker" height="100" width="100"
                         rgb1="0.7 0.7 0.7" rgb2="0.8 0.8 0.8" type="2d"/>
                     <material name="MatPlane" reflectance="0.1" shininess="0.1" specular="0.1"
-                        texrepeat="10 10" texture="texplane"/>
+                        texrepeat="{int(texrepeat[0])} {int(texrepeat[1])}" texture="texplane"/>
                 </asset>
                 """
             )

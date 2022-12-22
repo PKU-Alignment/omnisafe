@@ -40,6 +40,8 @@ class BaseTask(
 
         self.num_steps = 1000  # Maximum number of environment steps in an episode
 
+        self.floor_size = [3.5, 3.5, 0.1]  # Size of floor in environments
+
         self.placements_extents = [-2, -2, 2, 2]  # Placement limits (min X, min Y, max X, max Y)
         self.placements_margin = 0.0  # Additional margin added to keepout when placing objects
         # Starting position distribution
@@ -159,20 +161,23 @@ class BaseTask(
         obs_space_dict.update(self.build_sensor_observation_space())
 
         for geom in self._geoms.values():
-            name = geom.name + '_' + 'lidar'
-            obs_space_dict[name] = gymnasium.spaces.Box(
-                0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
-            )
+            if geom.is_observe_lidar:
+                name = geom.name + '_' + 'lidar'
+                obs_space_dict[name] = gymnasium.spaces.Box(
+                    0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
+                )
         for obj in self._objects.values():
-            name = obj.name + '_' + 'lidar'
-            obs_space_dict[name] = gymnasium.spaces.Box(
-                0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
-            )
+            if obj.is_observe_lidar:
+                name = obj.name + '_' + 'lidar'
+                obs_space_dict[name] = gymnasium.spaces.Box(
+                    0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
+                )
         for mocap in self._mocaps.values():
-            name = mocap.name + '_' + 'lidar'
-            obs_space_dict[name] = gymnasium.spaces.Box(
-                0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
-            )
+            if mocap.is_observe_lidar:
+                name = mocap.name + '_' + 'lidar'
+                obs_space_dict[name] = gymnasium.spaces.Box(
+                    0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
+                )
 
         if self.observe_vision:
             width, height = self.vision_size
@@ -267,9 +272,10 @@ class BaseTask(
         self.build_observation_space()
 
     def build_world_config(self, layout):  # pylint: disable=too-many-branches
-        """Create a world_config from our own config"""
+        """Create a world_config from our own config."""
         world_config = {}
 
+        world_config['floor_size'] = self.floor_size
         world_config['robot_base'] = self.robot.base
         world_config['robot_xy'] = layout['robot']
         if self.robot.rot is None:
@@ -381,14 +387,17 @@ class BaseTask(
         obs.update(self.obs_sensor())
 
         for geom in self._geoms.values():
-            name = geom.name + '_' + 'lidar'
-            obs[name] = self.obs_lidar(getattr(self, geom.name + '_pos'), geom.group)
+            if geom.is_observe_lidar:
+                name = geom.name + '_' + 'lidar'
+                obs[name] = self.obs_lidar(getattr(self, geom.name + '_pos'), geom.group)
         for obj in self._objects.values():
-            name = obj.name + '_' + 'lidar'
-            obs[name] = self.obs_lidar(getattr(self, obj.name + '_pos'), obj.group)
+            if obj.is_observe_lidar:
+                name = obj.name + '_' + 'lidar'
+                obs[name] = self.obs_lidar(getattr(self, obj.name + '_pos'), obj.group)
         for mocap in self._mocaps.values():
-            name = mocap.name + '_' + 'lidar'
-            obs[name] = self.obs_lidar(getattr(self, mocap.name + '_pos'), mocap.group)
+            if mocap.is_observe_lidar:
+                name = mocap.name + '_' + 'lidar'
+                obs[name] = self.obs_lidar(getattr(self, mocap.name + '_pos'), mocap.group)
 
         if self.observe_vision:
             obs['vision'] = self.obs_vision()

@@ -30,4 +30,5 @@ GROUP = {
     'circle': 6,
     'apple': 7,
     'orange': 8,
+    'sigwall': 9,
 }

@@ -32,7 +32,7 @@ class ButtonLevel1(ButtonLevel0):
 
         self.placements_extents = [-1.5, -1.5, 1.5, 1.5]
 
-        self.add_geoms(Hazards(num=4))
+        self.add_geoms(Hazards(num=4, keepout=0.18))
         self.add_mocaps(Gremlins(num=4, travel=0.35, keepout=0.4))
         self.buttons.is_constrained = True  # pylint: disable=no-member
 
