@@ -110,7 +110,6 @@ class ActorBuilder:
                 hidden_sizes=self.hidden_sizes,
                 activation=self.activation,
                 weight_initialization_mode=self.weight_initialization_mode,
-                shared=self.shared,
                 **kwargs,
             )
 
