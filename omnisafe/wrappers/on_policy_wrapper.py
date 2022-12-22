@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Enviroment wrapper for on-policy algorithms."""
+"""Environment wrapper for on-policy algorithms."""
 
 import collections
 from copy import deepcopy
