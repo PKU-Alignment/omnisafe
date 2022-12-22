@@ -23,7 +23,7 @@ from omnisafe.algorithms.off_policy.ddpg import DDPG
 
 @registry.register
 class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
-    r"""Implementation of TD3 Algorithm.
+    """Implementation of TD3 Algorithm.
 
     References:
         Paper Name: Addressing Function Approximation Error in Actor-Critic Methods.
@@ -48,7 +48,7 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
         )
 
     def compute_loss_v(self, data):
-        r"""
+        """
         Computing value loss.
 
         Args:

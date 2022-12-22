@@ -22,7 +22,7 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
-    r"""The Lagrange version of TD3 Algorithm.
+    """The Lagrange version of TD3 Algorithm.
 
     References:
         Paper Name: Addressing Function Approximation Error in Actor-Critic Methods.
@@ -38,7 +38,7 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         algo: str = 'TD3-Lag',
         wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
-        r"""Initialize TD3.
+        """Initialize TD3.
 
         Args:
             env_id (str): environment id.
@@ -63,12 +63,12 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         )
 
     def algorithm_specific_logs(self):
-        r"""Use this method to collect log information."""
+        """Use this method to collect log information."""
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
     def compute_loss_pi(self, data: dict):
-        r"""Computing pi/actor loss.
+        """Computing pi/actor loss.
 
         Args:
             data (dict): data.
@@ -89,7 +89,7 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         return -loss_pi.mean(), pi_info
 
     def update(self, data):
-        r"""Update."""
+        """Update."""
         Jc = data['cost'].sum().item()
         self.update_lagrange_multiplier(Jc)
         # First run one gradient descent step for Q.

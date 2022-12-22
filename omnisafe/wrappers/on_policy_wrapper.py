@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""env_wrapper"""
+"""Enviroment wrapper for on-policy algorithms."""
 
 import collections
 from copy import deepcopy
@@ -26,10 +26,10 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 @WRAPPER_REGISTRY.register
 class OnPolicyEnvWrapper:  # pylint: disable=too-many-instance-attributes
-    """env_wrapper"""
+    """env_wrapper."""
 
     def __init__(self, env_id, cfgs: Optional[collections.namedtuple] = None, render_mode=None):
-        r"""Initialize environment wrapper.
+        """Initialize environment wrapper.
 
         Args:
             env_id (str): environment id.

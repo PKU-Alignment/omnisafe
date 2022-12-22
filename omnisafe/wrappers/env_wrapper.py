@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""env_wrapper"""
+"""Environment wrapper."""
 
 import safety_gymnasium
 import torch
@@ -20,7 +20,7 @@ import torch
 
 # pylint: disable-next=too-many-instance-attributes
 class EnvWrapper:
-    """env_wrapper"""
+    """Environment wrapper."""
 
     def __init__(self, env_id, render_mode=None):
         # check env_id is str

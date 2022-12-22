@@ -22,7 +22,7 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
-    r"""The Lagrange version of DDPG Algorithm.
+    """The Lagrange version of DDPG Algorithm.
 
     References:
         Paper Name: Continuous control with deep reinforcement learning.
@@ -57,12 +57,12 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
         )
 
     def algorithm_specific_logs(self):
-        r"""Use this method to collect log information."""
+        """Use this method to collect log information."""
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
     def compute_loss_pi(self, data: dict):
-        r"""Computing pi/actor loss.
+        """Computing pi/actor loss.
 
         Args:
             data (dict): data from replay buffer.
@@ -83,7 +83,7 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
         return -loss_pi.mean(), pi_info
 
     def update(self, data):
-        r"""Update."""
+        """Update."""
         Jc = data['cost'].sum().item()
         self.update_lagrange_multiplier(Jc)
         # First run one gradient descent step for Q.

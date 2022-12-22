@@ -23,7 +23,7 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
-    r"""The Lagrange version of SAC algorithm.
+    """The Lagrange version of SAC algorithm.
 
     References:
         Paper Name: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
@@ -39,7 +39,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         algo: str = 'SAC-Lag',
         wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
-        r"""Initialize SACLag.
+        """Initialize SACLag.
 
         Args:
             env_id (str): environment id.
@@ -64,12 +64,12 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         )
 
     def algorithm_specific_logs(self):
-        r"""Use this method to collect log information."""
+        """Use this method to collect log information."""
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
     def compute_loss_pi(self, data: dict):
-        r"""Computing pi/actor loss.
+        """Computing pi/actor loss.
 
         Returns:
             torch.Tensor.
@@ -87,7 +87,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         return -loss_pi.mean(), pi_info
 
     def compute_loss_c(self, data):
-        r"""Computing cost loss.
+        """Computing cost loss.
 
         Returns:
             torch.Tensor.
@@ -116,7 +116,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         return loss_qc, qc_info
 
     def update(self, data):
-        r"""Update."""
+        """Update."""
         Jc = data['cost'].sum().item()
         self.update_lagrange_multiplier(Jc)
         # First run one gradient descent step for Q.

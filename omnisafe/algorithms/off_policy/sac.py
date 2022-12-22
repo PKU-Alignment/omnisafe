@@ -23,7 +23,7 @@ from omnisafe.algorithms.off_policy.ddpg import DDPG
 
 @registry.register
 class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
-    r"""Implementation of the SAC algorithm.
+    """Implementation of the SAC algorithm.
 
     References:
         Paper Name: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
@@ -39,7 +39,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         algo: str = 'SAC',
         wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
-        r"""Initialize SAC."""
+        """Initialize SAC."""
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
@@ -51,7 +51,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
 
     # pylint: disable=too-many-locals
     def compute_loss_v(self, data):
-        r"""Computing value loss.
+        """Computing value loss.
 
         Args:
             data (dict): data from replay buffer.
@@ -86,7 +86,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         return sum(loss_q), q_info
 
     def compute_loss_pi(self, data: dict):
-        r"""Computing pi/actor loss.
+        """Computing pi/actor loss.
 
         Args:
             data (dict): data from replay buffer.
@@ -102,7 +102,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         return -loss_pi.mean(), pi_info
 
     def update(self, data):
-        r"""Update."""
+        """Update."""
         # First run one gradient descent step for Q.
         self.update_value_net(data)
         if self.cfgs.use_cost:
@@ -131,5 +131,5 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         self.alpha_discount()
 
     def alpha_discount(self):
-        r"""Alpha discount."""
+        """Alpha discount."""
         self.alpha *= self.alpha_gamma

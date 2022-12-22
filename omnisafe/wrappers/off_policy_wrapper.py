@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""env_wrapper"""
+"""Environment wrapper for off-policy algorithms."""
 
 import safety_gymnasium
 import torch
@@ -23,7 +23,7 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 # pylint: disable=too-many-instance-attributes
 @WRAPPER_REGISTRY.register
 class OffPolicyEnvWrapper:
-    """OffPolicyEnvWrapper"""
+    """OffPolicyEnvWrapperr"""
 
     def __init__(
         self,

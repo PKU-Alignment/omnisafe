@@ -25,7 +25,7 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 
 class PidController:  # pylint: disable=too-many-instance-attributes
-    r"""Using PID controller to control the safety budget in Simmer environment."""
+    """Using PID controller to control the safety budget in Simmer environment."""
 
     def __init__(
         self,
@@ -34,7 +34,7 @@ class PidController:  # pylint: disable=too-many-instance-attributes
         lower_budget: float = 1.0,
         upper_budget: float = 25.0,
     ) -> None:
-        r"""Initialize the PID controller.
+        """Initialize the PID controller.
 
         Args:
             cfgs (CfgNode): Configurations.
@@ -63,7 +63,7 @@ class PidController:  # pylint: disable=too-many-instance-attributes
         self.upper_budget = upper_budget
 
     def compute_raw_action(self, obs: float):
-        r"""Compute the raw action based on current obs.
+        """Compute the raw action based on current obs.
 
         Args:
             obs (float): The current observation.
@@ -82,7 +82,7 @@ class PidController:  # pylint: disable=too-many-instance-attributes
         return curr_raw_action
 
     def act(self, obs: float):
-        r"""Compute the safety budget based on the observation ``Jc``.
+        """Compute the safety budget based on the observation ``Jc``.
 
         Args:
             obs (float): The current observation.
@@ -114,7 +114,7 @@ class QController:  # pylint: disable=too-many-instance-attributes
         lower_budget: float = 1.0,
         upper_budget: float = 25.0,
     ) -> None:
-        r""" "
+        """ "
         Initialize the Q-learning controller.
 
         Args:
@@ -153,7 +153,7 @@ class QController:  # pylint: disable=too-many-instance-attributes
         self.filtered_obs = 0
 
     def get_state_idx(self, state: float):
-        r"""Get the state index.
+        """Get the state index.
 
         Args:
             state (float): The current state.
@@ -165,7 +165,7 @@ class QController:  # pylint: disable=too-many-instance-attributes
         return state_idx
 
     def get_action_idx(self, action: float):
-        r"""Get the action index.
+        """Get the action index.
 
         Args:
             action (float): The current action.
@@ -177,7 +177,7 @@ class QController:  # pylint: disable=too-many-instance-attributes
         return action_idx
 
     def get_random_action(self):
-        r"""Get the random action.
+        """Get the random action.
 
         Returns:
             float: The random action.
@@ -186,7 +186,7 @@ class QController:  # pylint: disable=too-many-instance-attributes
         return self.action_space[action_idx]
 
     def get_greedy_action(self, state: float):
-        r"""Get the greedy action.
+        """Get the greedy action.
 
         Args:
             state (float): The current state(``cost_limit``).
@@ -200,7 +200,7 @@ class QController:  # pylint: disable=too-many-instance-attributes
         return action
 
     def update_q_function(self, state: float, action: float, reward: float, next_state: float):
-        r"""Update the Q function using the Bellman equation.
+        """Update the Q function using the Bellman equation.
 
         Args:
             state (float): The current state.
@@ -216,7 +216,7 @@ class QController:  # pylint: disable=too-many-instance-attributes
         ] + self.q_lr * (reward + self.tau * np.max(self.q_function[next_state_idx, :]))
 
     def step(self, action: float):
-        r"""Step the environment.
+        """Step the environment.
 
         Args:
             action (float): The current action.
@@ -227,7 +227,7 @@ class QController:  # pylint: disable=too-many-instance-attributes
         return self.state
 
     def reward(self, state: float, action: float, obs: float):
-        r"""Get the reward function based on whether the observation is within the threshold.
+        """Get the reward function based on whether the observation is within the threshold.
 
         Args:
             state (float): The current state.
@@ -247,7 +247,7 @@ class QController:  # pylint: disable=too-many-instance-attributes
         return reward[0]
 
     def act(self, obs: float):
-        r"""Return the safety budget based on the observation.
+        """Return the safety budget based on the observation.
 
         Args:
             obs (float): The observation.
@@ -285,7 +285,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
         cfgs,
         render_mode=None,
     ) -> None:
-        r"""Initialize the Simmer environment wrapper.
+        """Initialize the Simmer environment wrapper.
 
         Args:
             env_id (str): The environment id.
@@ -344,7 +344,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
             )
 
     def augment_obs(self, obs: np.array, safety_obs: np.array):
-        r"""Augmenting the obs with the safety obs, if needed.
+        """Augmenting the obs with the safety obs, if needed.
 
         Args:
             obs (np.array): The observation.
@@ -357,7 +357,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
         return augmented_obs
 
     def safety_step(self, cost: np.ndarray) -> np.ndarray:
-        r"""Update the normalized safety obs.
+        """Update the normalized safety obs.
 
         Args:
             cost (np.ndarray): The cost.
@@ -370,7 +370,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
         return self.safety_obs
 
     def safety_reward(self, reward: np.ndarray, next_safety_obs: np.ndarray) -> np.ndarray:
-        r"""Update the reward based on the safety obs.
+        """Update the reward based on the safety obs.
 
         Args:
             reward (np.ndarray): The reward.
@@ -383,7 +383,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
         return reward
 
     def reset(self, seed=None):
-        r"""Reset environment.
+        """Reset environment.
 
         Args:
             seed (int): The seed.
@@ -399,7 +399,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
         return self.curr_o, info
 
     def step(self, action):
-        r"""Step environment.
+        """Step environment.
 
         Args:
             action (np.array): The action.
@@ -422,7 +422,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
         return augmented_obs, reward, cost, terminated, truncated, info
 
     def set_budget(self, Jc):
-        r"""Set the safety budget.
+        """Set the safety budget.
 
         Args:
             Jc (np.array): The safety budget.
@@ -434,7 +434,7 @@ class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance
 
     # pylint: disable-next=too-many-locals
     def roll_out(self, agent, buf, logger):
-        r"""Collect data and store to experience buffer.
+        """Collect data and store to experience buffer.
 
         Args:
             agent (Agent): The agent.

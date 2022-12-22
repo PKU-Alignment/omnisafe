@@ -24,7 +24,7 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 @WRAPPER_REGISTRY.register
 class SauteEnvWrapper(OnPolicyEnvWrapper):
-    r"""SauteEnvWrapper."""
+    """SauteEnvWrapper."""
 
     def __init__(
         self,
@@ -32,7 +32,7 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         cfgs,
         render_mode=None,
     ) -> None:
-        r"""Initialize SauteEnvWrapper.
+        """Initialize SauteEnvWrapper.
 
         Args:
             env_id (str): environment id.
@@ -59,7 +59,7 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         self.observation_space = spaces.Box(high=high, low=low)
 
     def augment_obs(self, obs: np.array, safety_obs: np.array):
-        r"""Augmenting the obs with the safety obs.
+        """Augmenting the obs with the safety obs.
 
         Args:
             obs (np.array): observation.
@@ -72,7 +72,7 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         return augmented_obs
 
     def safety_step(self, cost: np.ndarray) -> np.ndarray:
-        r"""Update the normalized safety obs.
+        """Update the normalized safety obs.
 
         Args:
             cost (np.array): cost.
@@ -85,7 +85,7 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         return self.safety_obs
 
     def safety_reward(self, reward: np.ndarray, next_safety_obs: np.ndarray) -> np.ndarray:
-        r"""Update the reward.
+        """Update the reward.
 
         Args:
             reward (np.array): reward.
@@ -98,7 +98,7 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         return reward
 
     def reset(self, seed=None):
-        r"""Reset environment.
+        """Reset environment.
 
         Args:
             seed (int): seed for environment reset.
@@ -113,7 +113,7 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         return self.curr_o, info
 
     def step(self, action):
-        r"""Step environment.
+        """Step environment.
 
         Args:
             action (np.array): action.
@@ -137,7 +137,7 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
 
     # pylint: disable-next=too-many-locals
     def roll_out(self, agent, buf, logger):
-        r"""Collect data and store to experience buffer.
+        """Collect data and store to experience buffer.
 
         Args:
             agent (Agent): agent.

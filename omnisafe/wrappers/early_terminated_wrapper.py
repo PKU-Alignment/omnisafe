@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Early terminated wrapper"""
+"""Early terminated wrappe"""
 
 import torch
 
@@ -22,11 +22,11 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 @WRAPPER_REGISTRY.register
 class EarlyTerminatedEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance-attributes
-    r"""EarlyTerminatedEnvWrapper."""
+    """EarlyTerminatedEnvWrapper."""
 
     # pylint: disable-next=too-many-locals
     def roll_out(self, agent, buf, logger):
-        r"""Collect data and store to experience buffer.
+        """Collect data and store to experience buffer.
         Terminated when the episode is done or the episode length is larger than max_ep_len
         or cost is unequal to 0."""
         obs, _ = self.env.reset()
