@@ -39,7 +39,14 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         algo: str = 'SAC',
         wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
-        r"""Initialize SAC."""
+        r"""Initialize SAC.
+
+        Args:
+            env_id (str): environment id
+            cfgs (dict): configurations
+            algo (str): algorithm name
+            wrapper_type (str): environment wrapper type
+        """
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,

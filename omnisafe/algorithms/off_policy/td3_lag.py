@@ -38,7 +38,7 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         algo: str = 'TD3-Lag',
         wrapper_type: str = 'OffPolicyEnvWrapper',
     ):
-        r"""Initialize TD3.
+        r"""Initialize TD3Lag.
 
         Args:
             env_id (str): environment id
