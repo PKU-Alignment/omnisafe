@@ -131,5 +131,5 @@ class ActorCritic(nn.Module):
             frac: progress of epochs, i.e. current epoch / total epochs
                     e.g. 10 / 100 = 0.1
         """
-        if hasattr(self.actor, 'set_log_std'):
+        if hasattr(self.actor, 'set_std'):
             self.actor.set_std(1 - frac)
