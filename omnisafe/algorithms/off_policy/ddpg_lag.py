@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the DDPGLag algorithm."""
+"""Implementation of the Lagrange version of the DDPG algorithm."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
@@ -21,14 +21,13 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
-    """The Lagrange version of DDPG Algorithm.
+    """The Lagrange version of the DDPG Algorithm.
 
     References:
-        Paper Name: Continuous control with deep reinforcement learning.
-        Paper author: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-                      Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
-        Paper URL: https://arxiv.org/abs/1509.02971
-
+        Title: Continuous control with deep reinforcement learning
+        Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
+                 Yuval Tassa, David Silver, Daan Wierstra.
+        URL: https://arxiv.org/abs/1509.02971
     """
 
     def __init__(

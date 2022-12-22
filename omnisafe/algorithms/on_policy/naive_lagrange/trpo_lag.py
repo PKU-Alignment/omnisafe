@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of TRPO algorithm."""
+"""Implementation of the Lagrange version of the TRPO algorithm."""
 
 import torch
 
@@ -23,12 +23,12 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class TRPOLag(TRPO, Lagrange):
-    """The Lagrange version of TRPO algorithm.
+    """The Lagrange version of the TRPO algorithm.
 
     References:
-        Paper Name: Benchmarking Safe Exploration in Deep Reinforcement Learning.
-        Paper author: Alex Ray, Joshua Achiam, Dario Amodei
-        Paper URL: https://cdn.openai.com/safexp-short.pdf
+        Title: Benchmarking Safe Exploration in Deep Reinforcement Learning
+        Authors: Alex Ray, Joshua Achiam, Dario Amodei.
+        URL: https://cdn.openai.com/safexp-short.pdf
 
     """
 

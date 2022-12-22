@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the PID Simmer algorithm by PPOLag."""
+"""Implementation of the PID version of the Simmer algorithm using PPO."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
@@ -20,12 +20,12 @@ from omnisafe.algorithms.on_policy.base.ppo import PPO
 
 @registry.register
 class PPOSimmerPid(PPO):
-    r"""Simmer algorithm (PID version) implemented by PPO.
+    r"""The PID version of the Simmer algorithm implemented with PPO.
 
     References:
-        Paper Name: Effects of Safety State Augmentation on Safe Exploration.
-        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
-        Paper URL: https://arxiv.org/abs/2206.02675
+        Title: Effects of Safety State Augmentation on Safe Exploration
+        Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
+        URL: https://arxiv.org/abs/2206.02675
     """
 
     # pylint: disable-next=too-many-arguments

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the TD3Lag algorithm."""
+"""Implementation of the Lagrange version of the TD3 algorithm."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.td3 import TD3
@@ -21,13 +21,12 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
-    """The Lagrange version of TD3 Algorithm.
+    """The Lagrange version of the TD3 algorithm
 
     References:
-        Paper Name: Addressing Function Approximation Error in Actor-Critic Methods.
-        Paper author: Scott Fujimoto, Herke van Hoof, David Meger.
-        Paper URL: https://arxiv.org/abs/1802.09477
-
+        Title: Addressing Function Approximation Error in Actor-Critic Methods
+        Authors: Scott Fujimoto, Herke van Hoof, David Meger.
+        URL: https://arxiv.org/abs/1802.09477
     """
 
     def __init__(

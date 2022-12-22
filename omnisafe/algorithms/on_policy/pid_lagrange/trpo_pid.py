@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the TRPO PID-Lagrange algorithm."""
+"""Implementation of the PID-Lagrange version of the TRPO algorithm."""
 
 import torch
 
@@ -23,13 +23,12 @@ from omnisafe.common.pid_lagrange import PIDLagrangian
 
 @registry.register
 class TRPOPid(TRPO, PIDLagrangian):
-    """The Responsive Safety in Reinforcement Learning by PID Lagrangian Methods.
+    """The PID-Lagrange version of the TRPO algorithm.
 
     References:
-        Paper Name: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods.
-        Paper author: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
-        Paper URL: https://arxiv.org/abs/2007.03964
-
+        Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
+        Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+        URL: https://arxiv.org/abs/2007.03964
     """
 
     def __init__(

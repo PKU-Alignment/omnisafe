@@ -24,13 +24,13 @@ from omnisafe.utils import distributed_utils
 
 @registry.register
 class CUP(PolicyGradient, Lagrange):
-    """The Constrained Update Projection Approach to Safe Policy Optimization.
+    """The Constrained Update Projection (CUP) Approach to Safe Policy Optimization.
 
     References:
-        Paper Name: Constrained Update Projection Approach to Safe Policy Optimization.
-        Paper author: Long Yang, Jiaming Ji, Juntao Dai, Linrui Zhang, Binbin Zhou, Pengfei Li, Yaodong Yang, Gang Pan.
-        Paper URL: https://arxiv.org/abs/2209.07089
-
+        Title: Constrained Update Projection Approach to Safe Policy Optimization
+        Authors: Long Yang, Jiaming Ji, Juntao Dai, Linrui Zhang, Binbin Zhou, Pengfei Li,
+                 Yaodong Yang, Gang Pan.
+        URL: https://arxiv.org/abs/2209.07089
     """
 
     def __init__(

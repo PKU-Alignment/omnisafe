@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of PPO algorithm."""
+"""Implementation of the Lagrange version of the PPO algorithm."""
 
 import torch
 
@@ -23,13 +23,12 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class PPOLag(PolicyGradient, Lagrange):
-    """The Lagrange version of PPO algorithm.
+    """The Lagrange version of the PPO algorithm.
 
     References:
-        Paper Name: Benchmarking Safe Exploration in Deep Reinforcement Learning.
-        Paper author: Alex Ray, Joshua Achiam, Dario Amodei
-        Paper URL: https://cdn.openai.com/safexp-short.pdf
-
+        Title: Benchmarking Safe Exploration in Deep Reinforcement Learning
+        Authors: Alex Ray, Joshua Achiam, Dario Amodei.
+        URL: https://cdn.openai.com/safexp-short.pdf
     """
 
     # pylint: disable-next=too-many-arguments
