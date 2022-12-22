@@ -102,7 +102,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         return -loss_pi.mean(), pi_info
 
     def update(self, data):
-        r"""Update"""
+        r"""Update."""
         # First run one gradient descent step for Q.
         self.update_value_net(data)
         if self.cfgs.use_cost:

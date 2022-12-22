@@ -87,10 +87,10 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         return -loss_pi.mean(), pi_info
 
     def compute_loss_c(self, data):
-        r"""Computing cost loss
+        r"""Computing cost loss.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         obs, act, cost, obs_next, done = (
             data['obs'],

@@ -72,7 +72,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         r"""Update.
 
         Args:
-            data (dict): data dictionary
+            data (dict): data dictionary.
         """
         # First run one gradient descent step for Q.
         self.fvp_obs = data['obs'][::4]
