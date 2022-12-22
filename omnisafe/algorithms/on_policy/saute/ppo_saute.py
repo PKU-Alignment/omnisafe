@@ -20,7 +20,7 @@ from omnisafe.algorithms.on_policy.base.ppo import PPO
 
 @registry.register
 class PPOSaute(PPO):
-    """Saute algorithm implemented by PPO.
+    r"""Saute algorithm implemented by PPO.
 
     References:
         Paper Name: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation.

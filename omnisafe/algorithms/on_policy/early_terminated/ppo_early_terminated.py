@@ -20,7 +20,7 @@ from omnisafe.algorithms.on_policy.base.ppo import PPO
 
 @registry.register
 class PPOEarlyTerminated(PPO):
-    """Early terminated algorithm implemented by PPO.
+    r"""Early terminated algorithm implemented by PPO.
 
     References:
         Paper Name: Safe Exploration by Solving Early Terminated MDP

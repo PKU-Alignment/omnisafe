@@ -51,8 +51,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
 
     # pylint: disable=too-many-locals
     def compute_loss_v(self, data):
-        r"""
-        Computing value loss
+        r"""Computing value loss.
 
         Args:
             data (dict): data from replay buffer
@@ -87,8 +86,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         return sum(loss_q), q_info
 
     def compute_loss_pi(self, data: dict):
-        r"""
-        Computing pi/actor loss
+        r"""Computing pi/actor loss.
 
         Args:
             data (dict): data from replay buffer

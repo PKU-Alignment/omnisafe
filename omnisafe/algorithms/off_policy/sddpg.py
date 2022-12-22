@@ -69,7 +69,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         self.d_init = cfgs.d_init
 
     def update(self, data):
-        r"""Update
+        r"""Update.
 
         Args:
             data (dict): data dictionary
@@ -147,7 +147,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
 
     # pylint: disable=invalid-name,too-many-arguments,too-many-locals
     def update_policy_net(self, data) -> None:
-        r"""update policy network
+        r"""Update policy network.
 
         Args:
             data (dict): data dictionary

@@ -172,12 +172,10 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             self.logger.log(f'Done! (took {time.time()-start:0.3f} sec.)')
 
     def algorithm_specific_logs(self):
-        """
-        Use this method to collect log information.
-        """
+        r"""Use this method to collect log information."""
 
     def _ac_training_setup(self):
-        """Set up target network for off_policy training."""
+        r"""Set up target network for off_policy training."""
         self.ac_targ = deepcopy(self.actor_critic)
         # Freeze target networks with respect to optimizer (only update via polyak averaging)
         for param in self.ac_targ.actor.parameters():
@@ -188,9 +186,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             param.requires_grad = False
 
     def check_distributed_parameters(self):
-        """
-        Check if parameters are synchronized across all processes.
-        """
+        r"""Check if parameters are synchronized across all processes."""
         if distributed_utils.num_procs() > 1:
             self.logger.log('Check if distributed parameters are synchronous..')
             modules = {'Policy': self.actor_critic.actor.net, 'Value': self.actor_critic.critic.net}
@@ -201,8 +197,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 assert np.allclose(global_min, global_max), f'{key} not synced.'
 
     def compute_loss_pi(self, data: dict):
-        r"""
-        computing pi/actor loss
+        r"""Computing pi/actor loss
 
         Args:
             data (dict): data dictionary
@@ -216,8 +211,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         return -loss_pi.mean(), pi_info
 
     def compute_loss_v(self, data):
-        r"""
-        computing value loss
+        r"""Computing value loss
 
         Args:
             data (dict): data dictionary
@@ -245,8 +239,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         return loss_q, q_info
 
     def compute_loss_c(self, data):
-        r"""
-        computing cost loss
+        r"""Computing cost loss
 
         Args:
             data (dict): data dictionary
@@ -358,7 +351,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.polyak_update_target()
 
     def polyak_update_target(self):
-        r"""polyak update target network"""
+        r"""Polyak update target network."""
         with torch.no_grad():
             for param, param_targ in zip(self.actor_critic.parameters(), self.ac_targ.parameters()):
                 # Notes: We use an in-place operations "mul_", "add_" to update target
@@ -367,7 +360,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 param_targ.data.add_((1 - self.cfgs.polyak) * param.data)
 
     def update_policy_net(self, data) -> None:
-        r"""update policy network
+        r"""Update policy network.
 
         Args:
             data (dict): data dictionary
@@ -380,7 +373,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.logger.store(**{'Loss/Pi': loss_pi.item()})
 
     def update_value_net(self, data: dict) -> None:
-        r"""update value network
+        r"""Update value network.
 
         Args:
             data (dict): data dictionary
@@ -393,7 +386,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.logger.store(**{'Loss/Value': loss_q.item(), 'QVals': q_info['QVals']})
 
     def update_cost_net(self, data):
-        r"""update cost network
+        r"""Update cost network.
 
         Args:
             data (dict): data dictionary
@@ -406,7 +399,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.logger.store(**{'Loss/Cost': loss_qc.item(), 'QCosts': qc_info['QCosts']})
 
     def test_agent(self):
-        r"""Test agent"""
+        r"""Test agent."""
         for _ in range(self.num_test_episodes):
             # self.env.set_rollout_cfgs(deterministic=True, rand_a=False)
             self.env.roll_out(
@@ -419,7 +412,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             )
 
     def log(self, epoch, total_steps):
-        r"""Log info about epoch"""
+        r"""Log info about epoch."""
         fps = self.cfgs.steps_per_epoch / (time.time() - self.epoch_time)
         # Step the actor learning rate scheduler if provided
         if self.scheduler and self.cfgs.linear_lr_decay:

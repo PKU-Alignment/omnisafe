@@ -20,7 +20,7 @@ from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
 
 @registry.register
 class PPOLagEarlyTerminated(PPOLag):
-    """Early terminated algorithm implemented by PPOLag.
+    r"""Early terminated algorithm implemented by PPOLag.
 
     References:
         Paper Name: Safe Exploration by Solving Early Terminated MDP

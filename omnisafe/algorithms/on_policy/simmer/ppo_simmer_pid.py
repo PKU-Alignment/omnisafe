@@ -20,7 +20,7 @@ from omnisafe.algorithms.on_policy.base.ppo import PPO
 
 @registry.register
 class PPOSimmerPid(PPO):
-    """Simmer algorithm (PID version) implemented by PPO.
+    r"""Simmer algorithm (PID version) implemented by PPO.
 
     References:
         Paper Name: Effects of Safety State Augmentation on Safe Exploration.

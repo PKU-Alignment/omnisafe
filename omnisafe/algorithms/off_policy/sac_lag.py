@@ -64,15 +64,12 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         )
 
     def algorithm_specific_logs(self):
-        r"""
-        Use this method to collect log information.
-        """
+        r"""Use this method to collect log information."""
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
     def compute_loss_pi(self, data: dict):
-        r"""
-        Computing pi/actor loss
+        r"""Computing pi/actor loss.
 
         Returns:
             torch.Tensor
@@ -90,8 +87,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         return -loss_pi.mean(), pi_info
 
     def compute_loss_c(self, data):
-        r"""
-        computing cost loss
+        r"""Computing cost loss
 
         Returns:
             torch.Tensor
@@ -120,7 +116,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         return loss_qc, qc_info
 
     def update(self, data):
-        r"""update"""
+        r"""Update."""
         Jc = data['cost'].sum().item()
         self.update_lagrange_multiplier(Jc)
         # First run one gradient descent step for Q.

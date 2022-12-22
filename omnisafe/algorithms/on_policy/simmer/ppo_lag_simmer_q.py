@@ -21,7 +21,7 @@ from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
 
 @registry.register
 class PPOLagSimmerQ(PPOLag):
-    """Simmer algorithm (Q version) implemented by PPOLag.
+    r"""Simmer algorithm (Q version) implemented by PPOLag.
 
     References:
         Paper Name: Effects of Safety State Augmentation on Safe Exploration.

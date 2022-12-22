@@ -62,8 +62,7 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
     def compute_loss_pi(self, data: dict):
-        r"""
-        computing pi/actor loss
+        r"""Computing pi/actor loss
 
         Args:
             data (dict): data from replay buffer
@@ -84,7 +83,7 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
         return -loss_pi.mean(), pi_info
 
     def update(self, data):
-        r"""update"""
+        r"""Update."""
         Jc = data['cost'].sum().item()
         self.update_lagrange_multiplier(Jc)
         # First run one gradient descent step for Q.

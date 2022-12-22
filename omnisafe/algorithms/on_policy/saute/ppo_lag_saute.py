@@ -20,7 +20,7 @@ from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
 
 @registry.register
 class PPOLagSaute(PPOLag):
-    """Saute algorithm implemented by PPOLag.
+    r"""Saute algorithm implemented by PPOLag.
 
     References:
         Paper Name: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation.
