@@ -13,3 +13,16 @@
 # limitations under the License.
 # ==============================================================================
 """Simmer algorithms."""
+
+from omnisafe.algorithms.on_policy.simmer.ppo_lag_simmer_pid import PPOLagSimmerPid
+from omnisafe.algorithms.on_policy.simmer.ppo_lag_simmer_q import PPOLagSimmerQ
+from omnisafe.algorithms.on_policy.simmer.ppo_simmer_pid import PPOSimmerPid
+from omnisafe.algorithms.on_policy.simmer.ppo_simmer_q import PPOSimmerQ
+
+
+__all__ = [
+    'PPOLagSimmerPid',
+    'PPOLagSimmerQ',
+    'PPOSimmerPid',
+    'PPOSimmerQ',
+]

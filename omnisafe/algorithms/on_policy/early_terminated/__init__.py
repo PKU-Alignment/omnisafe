@@ -13,3 +13,14 @@
 # limitations under the License.
 # ==============================================================================
 """Early terminated algorithms."""
+
+from omnisafe.algorithms.on_policy.early_terminated.ppo_early_terminated import PPOEarlyTerminated
+from omnisafe.algorithms.on_policy.early_terminated.ppo_lag_early_terminated import (
+    PPOLagEarlyTerminated,
+)
+
+
+__all__ = [
+    'PPOEarlyTerminated',
+    'PPOLagEarlyTerminated',
+]

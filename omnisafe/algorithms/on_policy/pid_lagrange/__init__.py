@@ -13,3 +13,12 @@
 # limitations under the License.
 # ==============================================================================
 """PID Lagrange algorithms."""
+
+from omnisafe.algorithms.on_policy.pid_lagrange.cppo_pid import CPPOPid
+from omnisafe.algorithms.on_policy.pid_lagrange.trpo_pid import TRPOPid
+
+
+__all__ = [
+    'CPPOPid',
+    'TRPOPid',
+]

@@ -13,3 +13,16 @@
 # limitations under the License.
 # ==============================================================================
 """Naive Lagrange algorithms."""
+
+from omnisafe.algorithms.on_policy.naive_lagrange.npg_lag import NPGLag
+from omnisafe.algorithms.on_policy.naive_lagrange.pdo import PDO
+from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
+from omnisafe.algorithms.on_policy.naive_lagrange.trpo_lag import TRPOLag
+
+
+__all__ = [
+    'NPGLag',
+    'PDO',
+    'PPOLag',
+    'TRPOLag',
+]

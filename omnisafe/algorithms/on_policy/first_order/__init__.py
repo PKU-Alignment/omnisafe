@@ -13,3 +13,12 @@
 # limitations under the License.
 # ==============================================================================
 """The first order algorithms."""
+
+from omnisafe.algorithms.on_policy.first_order.cup import CUP
+from omnisafe.algorithms.on_policy.first_order.focops import FOCOPS
+
+
+__all__ = [
+    'CUP',
+    'FOCOPS',
+]

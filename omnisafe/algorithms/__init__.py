@@ -17,76 +17,41 @@
 import itertools
 from types import MappingProxyType
 
+from omnisafe.algorithms import off_policy, on_policy
+
 # Off-Policy Safe
-from omnisafe.algorithms.off_policy.ddpg import DDPG
-from omnisafe.algorithms.off_policy.ddpg_lag import DDPGLag
-from omnisafe.algorithms.off_policy.sac import SAC
-from omnisafe.algorithms.off_policy.sac_lag import SACLag
-from omnisafe.algorithms.off_policy.sddpg import SDDPG
-from omnisafe.algorithms.off_policy.td3 import TD3
-from omnisafe.algorithms.off_policy.td3_lag import TD3Lag
+from omnisafe.algorithms.off_policy import DDPG, SAC, SDDPG, TD3, DDPGLag, SACLag, TD3Lag
 
 # On-Policy Safe
-from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
-from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
-from omnisafe.algorithms.on_policy.base.ppo import PPO
-from omnisafe.algorithms.on_policy.base.trpo import TRPO
-from omnisafe.algorithms.on_policy.early_terminated.ppo_early_terminated import PPOEarlyTerminated
-from omnisafe.algorithms.on_policy.early_terminated.ppo_lag_early_terminated import (
+from omnisafe.algorithms.on_policy import (
+    CPO,
+    CUP,
+    FOCOPS,
+    PCPO,
+    PDO,
+    PPO,
+    TRPO,
+    CPPOPid,
+    NaturalPG,
+    NPGLag,
+    PolicyGradient,
+    PPOEarlyTerminated,
+    PPOLag,
     PPOLagEarlyTerminated,
+    PPOLagSaute,
+    PPOLagSimmerPid,
+    PPOLagSimmerQ,
+    PPOSaute,
+    PPOSimmerPid,
+    PPOSimmerQ,
+    TRPOLag,
+    TRPOPid,
 )
-from omnisafe.algorithms.on_policy.first_order.cup import CUP
-from omnisafe.algorithms.on_policy.first_order.focops import FOCOPS
-from omnisafe.algorithms.on_policy.naive_lagrange.npg_lag import NPGLag
-from omnisafe.algorithms.on_policy.naive_lagrange.pdo import PDO
-from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
-from omnisafe.algorithms.on_policy.naive_lagrange.trpo_lag import TRPOLag
-from omnisafe.algorithms.on_policy.pid_lagrange.cppo_pid import CPPOPid
-from omnisafe.algorithms.on_policy.pid_lagrange.trpo_pid import TRPOPid
-from omnisafe.algorithms.on_policy.saute.ppo_lag_saute import PPOLagSaute
-from omnisafe.algorithms.on_policy.saute.ppo_saute import PPOSaute
-from omnisafe.algorithms.on_policy.second_order.cpo import CPO
-from omnisafe.algorithms.on_policy.second_order.pcpo import PCPO
-from omnisafe.algorithms.on_policy.simmer.ppo_lag_simmer_pid import PPOLagSimmerPid
-from omnisafe.algorithms.on_policy.simmer.ppo_lag_simmer_q import PPOLagSimmerQ
-from omnisafe.algorithms.on_policy.simmer.ppo_simmer_pid import PPOSimmerPid
-from omnisafe.algorithms.on_policy.simmer.ppo_simmer_q import PPOSimmerQ
 
 
 ALGORITHMS = {
-    'off-policy': (
-        'DDPG',
-        'DDPGLag',
-        'TD3',
-        'TD3Lag',
-        'SAC',
-        'SACLag',
-        'SDDPG',
-    ),
-    'on-policy': (
-        'PolicyGradient',
-        'NaturalPG',
-        'TRPO',
-        'PPO',
-        'PDO',
-        'NPGLag',
-        'TRPOLag',
-        'PPOLag',
-        'CPPOPid',
-        'TRPOPid',
-        'FOCOPS',
-        'CUP',
-        'CPO',
-        'PCPO',
-        'PPOSimmerPid',
-        'PPOSimmerQ',
-        'PPOLagSimmerQ',
-        'PPOLagSimmerPid',
-        'PPOSaute',
-        'PPOLagSaute',
-        'PPOEarlyTerminated',
-        'PPOLagEarlyTerminated',
-    ),
+    'off-policy': tuple(off_policy.__all__),
+    'on-policy': tuple(on_policy.__all__),
     'model-based': (
         'MBPPOLag',
         'SafeLoop',

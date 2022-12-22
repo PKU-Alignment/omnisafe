@@ -13,3 +13,22 @@
 # limitations under the License.
 # ==============================================================================
 """Off-policy algorithms."""
+
+from omnisafe.algorithms.off_policy.ddpg import DDPG
+from omnisafe.algorithms.off_policy.ddpg_lag import DDPGLag
+from omnisafe.algorithms.off_policy.sac import SAC
+from omnisafe.algorithms.off_policy.sac_lag import SACLag
+from omnisafe.algorithms.off_policy.sddpg import SDDPG
+from omnisafe.algorithms.off_policy.td3 import TD3
+from omnisafe.algorithms.off_policy.td3_lag import TD3Lag
+
+
+__all__ = [
+    'DDPG',
+    'DDPGLag',
+    'SAC',
+    'SACLag',
+    'SDDPG',
+    'TD3',
+    'TD3Lag',
+]

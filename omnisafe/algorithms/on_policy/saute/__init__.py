@@ -13,3 +13,12 @@
 # limitations under the License.
 # ==============================================================================
 """Saute algorithms."""
+
+from omnisafe.algorithms.on_policy.saute.ppo_lag_saute import PPOLagSaute
+from omnisafe.algorithms.on_policy.saute.ppo_saute import PPOSaute
+
+
+__all__ = [
+    'PPOLagSaute',
+    'PPOSaute',
+]
