@@ -24,8 +24,13 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
 
 - [Overview](#overview)
 - [Implemented Algorithms](#implemented-algorithms)
-  - [Published **in 2022**](#published-in-2022)
+  - [Newly Published in 2022](#newly-published-in-2022)
   - [List of Algorithms](#list-of-algorithms)
+    - [On-Policy Safe](#on-policy-safe)
+    - [Off-Policy Safe](#off-policy-safe)
+    - [Model-Based Safe](#model-based-safe)
+    - [Offline Safe](#offline-safe)
+    - [Others](#others)
 - [SafeRL Environments](#saferl-environments)
   - [Safety Gymnasium](#safety-gymnasium)
   - [Vision-base Safe RL](#vision-base-safe-rl)
@@ -66,7 +71,7 @@ Here we provide a table for comparison of **OmniSafe's algorithm core** and exis
 
 The supported interface algorithms currently include:
 
-### Published **in 2022**
+### Newly Published in 2022
 
 - [X] **[AAAI 2023]** Augmented Proximal Policy Optimization for Safe Reinforcement Learning (APPO) **The original author of the paper contributed code**
 - [X] **[NeurIPS 2022]** [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089) **The original author of the paper contributed code**
@@ -81,7 +86,7 @@ Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
 
 ### List of Algorithms
 
-> On Policy Safe
+#### On-Policy Safe
 
 - [X] [The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
 - [X] [The Lagrange version of TRPO (TRPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
@@ -93,7 +98,7 @@ Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
 - [X] **[ICLR 2020]** [Projection-Based Constrained Policy Optimization (PCPO)](https://openreview.net/forum?id=rke3TJrtPS)
 - [X] **[ICML 2021]** [CRPO: A New Approach for Safe Reinforcement Learning with Convergence Guarantee](https://arxiv.org/abs/2011.05869)
 
-> Off Policy Safe
+#### Off-Policy Safe
 
 - [X] The Lagrange version of TD3 (TD3-Lag)
 - [X] The Lagrange version of DDPG (DDPG-Lag)
@@ -102,7 +107,7 @@ Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
 - [X] **[ICML 2019]** [Lyapunov-based Safe Policy Optimization for Continuous Control (SDDPG-modular)](https://arxiv.org/abs/1901.10031)
 - [ ] **[ICML 2022]** [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
 
-> Model Base Safe
+#### Model-Based Safe
 
 - [ ] **[NeurIPS 2021]** [Safe Reinforcement Learning by Imagining the Near Future (SMBPO)](https://arxiv.org/abs/2202.07789)
 - [X] **[CoRL 2021 (Oral)]** [Learning Off-Policy with Online Planning (SafeLoop)](https://arxiv.org/abs/2008.10066)
@@ -110,7 +115,7 @@ Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
 - [ ] **[NeurIPS 2022]** [Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
 - [ ] **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LAMBDA)](https://arxiv.org/abs/2201.09802)
 
-> Offline Safe
+#### Offline Safe
 
 - [X] [The Lagrange version of BCQ (BCQ-Lag)](https://arxiv.org/abs/1812.02900)
 - [X] [The Constrained version of CRR (C-CRR)](https://proceedings.neurips.cc/paper/2020/hash/588cb956d6bbe67078f29f8de420a13d-Abstract.html)
@@ -118,7 +123,7 @@ Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
 - [ ] **[ICLR 2022 (Spotlight)]** [COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation](https://arxiv.org/abs/2204.08957?context=cs.AI)
 - [ ] **[ICML 2022]** [Constrained Offline Policy Optimization (COPO)](https://proceedings.mlr.press/v162/polosky22a.html)
 
-> Other
+#### Others
 
 - [X] [Safe Exploration in Continuous Action Spaces (Safety Layer)](https://arxiv.org/abs/1801.08757)
 - [ ] **[RA-L 2021]** [Recovery RL: Safe Reinforcement Learning with Learned Recovery Zones](https://arxiv.org/abs/2010.15920)
