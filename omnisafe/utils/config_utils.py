@@ -38,11 +38,7 @@ def dict2namedtuple(obj):
     """Create namedtuple from dict"""
     if isinstance(obj, dict):
         fields = sorted(obj.keys())
-        namedtuple_type = namedtuple(
-            typename='GenericObject',
-            field_names=fields,
-            rename=True,
-        )
+        namedtuple_type = namedtuple('GenericObject', fields, rename=True)
         field_value_pairs = OrderedDict(
             (str(field), dict2namedtuple(obj[field])) for field in fields
         )
