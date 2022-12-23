@@ -12,71 +12,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the CUP algorithm."""
+"""Implementation of the FOCOPS algorithm."""
 
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
+from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
 from omnisafe.common.lagrange import Lagrange
 from omnisafe.utils import distributed_utils
 
 
 @registry.register
-class CUP(PolicyGradient, Lagrange):
-    """The Constrained Update Projection Approach to Safe Policy Optimization.
+class FOCOPS(PolicyGradient, Lagrange):
+    """The First Order Constrained Optimization in Policy Space (FOCOPS) algorithm.
 
     References:
-        Paper Name: Constrained Update Projection Approach to Safe Policy Optimization.
-        Paper author: Long Yang, Jiaming Ji, Juntao Dai, Linrui Zhang, Binbin Zhou, Pengfei Li, Yaodong Yang, Gang Pan.
-        Paper URL: https://arxiv.org/abs/2209.07089
-
+        Title: First Order Constrained Optimization in Policy Space
+        Authors: Yiming Zhang, Quan Vuong, Keith W. Ross.
+        URL: https://arxiv.org/abs/2002.06506
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-        algo='CUP',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
-    ):
+    def __init__(self, env_id, cfgs) -> None:
         r"""The :meth:`init` function."""
-
         PolicyGradient.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
-
         Lagrange.__init__(
             self,
             cost_limit=self.cfgs.lagrange_cfgs.cost_limit,
             lagrangian_multiplier_init=self.cfgs.lagrange_cfgs.lagrangian_multiplier_init,
             lambda_lr=self.cfgs.lagrange_cfgs.lambda_lr,
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
+            lagrangian_upper_bound=self.cfgs.lagrange_cfgs.lagrangian_upper_bound,
         )
         self.lam = self.cfgs.lam
         self.eta = self.cfgs.eta
-        self.clip = self.cfgs.clip
-        self.max_ratio = 0
-        self.min_ratio = 0
 
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier)
-        self.logger.log_tabular('Train/MaxRatio', self.max_ratio)
-        self.logger.log_tabular('Train/MinRatio', self.min_ratio)
 
     def compute_loss_pi(self, data: dict):
         """compute loss for policy"""
         dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
 
-        loss_pi = -torch.min(
-            ratio * data['adv'], torch.clamp(ratio, 1 - self.clip, 1 + self.clip) * data['adv']
-        ).mean()
+        kl_new_old = torch.distributions.kl.kl_divergence(dist, self.p_dist).sum(-1, keepdim=True)
+        loss_pi = (
+            kl_new_old
+            - (1 / self.lam) * ratio * (data['adv'] - self.lagrangian_multiplier * data['cost_adv'])
+        ) * (kl_new_old.detach() <= self.eta).type(torch.float32)
+        loss_pi = loss_pi.mean()
         loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
 
         # Useful extra info
@@ -85,35 +73,6 @@ class CUP(PolicyGradient, Lagrange):
         pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
 
         return loss_pi, pi_info
-
-    def compute_loss_cost_performance(self, data: dict):
-        """
-        Performance of cost on this moment
-        """
-        dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
-        ratio = torch.exp(_log_p - data['log_p'])
-
-        kl_new_old = torch.distributions.kl.kl_divergence(dist, self.p_dist).sum(-1, keepdim=True)
-
-        coef = (1 - self.cfgs.buffer_cfgs.gamma * self.cfgs.buffer_cfgs.lam) / (
-            1 - self.cfgs.buffer_cfgs.gamma
-        )
-        cost_loss = (
-            self.lagrangian_multiplier * coef * ratio * data['cost_adv'] + kl_new_old
-        ).mean()
-
-        # Useful extra info
-        temp_max = torch.max(ratio).detach().numpy()
-        temp_min = torch.min(ratio).detach().numpy()
-        if temp_max > self.max_ratio:
-            self.max_ratio = temp_max
-        if temp_min < self.min_ratio:
-            self.min_ratio = temp_min
-        approx_kl = 0.5 * (data['log_p'] - _log_p).mean().item()
-        ent = dist.entropy().mean().item()
-        pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
-
-        return cost_loss, pi_info
 
     def update(self):
         """Update."""
@@ -171,7 +130,6 @@ class CUP(PolicyGradient, Lagrange):
         loss_pi_before = pi_l_old.item()
 
         # Train policy with multiple steps of gradient descent
-        # CUP first performs a number of gradient descent steps to maximize reward
         for i in range(self.cfgs.actor_iters):
 
             for batch_data in slice_data:
@@ -181,36 +139,6 @@ class CUP(PolicyGradient, Lagrange):
 
                 self.actor_optimizer.zero_grad()
                 loss_pi, pi_info = self.compute_loss_pi(data=batch_data)
-                loss_pi.backward()
-                # Apply L2 norm
-                if self.cfgs.use_max_grad_norm:
-                    torch.nn.utils.clip_grad_norm_(
-                        self.actor_critic.actor.parameters(), self.cfgs.max_grad_norm
-                    )
-
-                # Average grads across MPI processes
-                distributed_utils.mpi_avg_grads(self.actor_critic.actor.net)
-                self.actor_optimizer.step()
-
-                q_dist = self.actor_critic.actor(batch_data['obs'])
-                torch_kl = torch.distributions.kl.kl_divergence(self.p_dist, q_dist).mean().item()
-
-                if self.cfgs.kl_early_stopping:
-                    # Average KL for consistent early stopping across processes
-                    if distributed_utils.mpi_avg(torch_kl) > self.cfgs.target_kl:
-                        self.logger.log(f'Reached ES criterion after {i+1} steps.')
-                        break
-
-        # Second, CUP perform a number of gradient descent steps to minimize cost
-        for i in range(self.cfgs.actor_iters):
-
-            for batch_data in slice_data:
-                # Update policy network with batch data
-                with torch.no_grad():
-                    self.p_dist = self.actor_critic.actor(batch_data['obs'])
-
-                self.actor_optimizer.zero_grad()
-                loss_pi, pi_info = self.compute_loss_cost_performance(data=batch_data)
                 loss_pi.backward()
                 # Apply L2 norm
                 if self.cfgs.use_max_grad_norm:

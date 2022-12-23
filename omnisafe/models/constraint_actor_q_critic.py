@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of ConstraintActorQCritic."""
 
-import numpy as np
 import torch
 
 from omnisafe.models.actor_q_critic import ActorQCritic
@@ -67,9 +66,10 @@ class ConstraintActorQCritic(ActorQCritic):
                 # Note: Update RMS in Algorithm.running_statistics() method
                 # self.obs_oms.update(obs) if self.training else None
                 obs = self.obs_oms(obs)
-            action, logp_a = self.actor.predict(obs, deterministic=deterministic)
-            value = self.critic(obs, action)
-            cost_value = self.cost_critic(obs, action)
-            action = np.clip(action.numpy(), -self.act_limit, self.act_limit)
+            action, logp_a = self.actor.predict(
+                obs, deterministic=deterministic, need_log_prob=True
+            )
+            value = self.critic(obs, action)[0]
+            cost_value = self.cost_critic(obs, action)[0]
 
-        return action, value.numpy(), cost_value.numpy(), logp_a.numpy()
+        return action.numpy(), value.numpy(), cost_value.numpy(), logp_a.numpy()

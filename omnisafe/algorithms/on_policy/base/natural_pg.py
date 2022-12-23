@@ -17,7 +17,7 @@
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
+from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
 from omnisafe.utils import distributed_utils
 from omnisafe.utils.tools import (
     conjugate_gradients,
@@ -32,31 +32,18 @@ class NaturalPG(PolicyGradient):
     """The Natural Policy Gradient algorithm.
 
     References:
-        Paper Name: A Natural Policy Gradient.
-        Paper author: Sham Kakade.
-        Paper URL: https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf
-
+        Title: A Natural Policy Gradient
+        Author: Sham Kakade.
+        URL: https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-        algo: str = 'NaturalPolicyGradient',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
-    ):
-        super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
-        )
+    def __init__(self, env_id, cfgs) -> None:
+        super().__init__(env_id=env_id, cfgs=cfgs)
         self.cg_damping = cfgs.cg_damping
         self.cg_iters = cfgs.cg_iters
         self.target_kl = cfgs.target_kl
         self.fvp_obs = cfgs.fvp_obs
 
-    # pylint: disable-next=too-many-arguments,unused-argument
     def search_step_size(self, step_dir):
         """
         NPG use full step_size

@@ -25,38 +25,40 @@ from omnisafe.common.base_buffer import BaseBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils import core, distributed_utils
+from omnisafe.utils.config_utils import namedtuple2dict
 from omnisafe.utils.tools import get_flat_params_from
 from omnisafe.wrappers import wrapper_registry
 
 
 @registry.register
 class DDPG:  # pylint: disable=too-many-instance-attributes
-    """Continuous control with deep reinforcement learning (DDPG) Algorithm.
+    """The Deep Deterministic Policy Gradient (DDPG) algorithm.
 
     References:
-        Paper Name: Continuous control with deep reinforcement learning.
-        Paper author: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-                      Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
-        Paper URL: https://arxiv.org/abs/1509.02971
-
+        Title: Continuous control with deep reinforcement learning
+        Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
+                 Yuval Tassa, David Silver, Daan Wierstra.
+        URL: https://arxiv.org/abs/1509.02971
     """
 
-    def __init__(
-        self,
-        env_id: str,
-        cfgs=None,
-        algo: str = 'DDPG',
-        wrapper_type: str = 'OffPolicyEnvWrapper',
-    ):
-        """Initialize DDPG."""
-        self.env = wrapper_registry.get(wrapper_type)(
+    def __init__(self, env_id: str, cfgs=None) -> None:
+        """Initialize DDPG.
+
+        Args:
+            env_id (str): Environment ID.
+            cfgs (dict): Configuration dictionary.
+            algo (str): Algorithm name.
+            wrapper_type (str): Wrapper type.
+        """
+        self.cfgs = deepcopy(cfgs)
+        self.wrapper_type = self.cfgs.wrapper_type
+        self.env = wrapper_registry.get(self.wrapper_type)(
             env_id,
             use_cost=cfgs.use_cost,
             max_ep_len=cfgs.max_ep_len,
         )
         self.env_id = env_id
-        self.algo = algo
-        self.cfgs = deepcopy(cfgs)
+        self.algo = self.__class__.__name__
 
         # Set up for learning and rolling out schedule
         self.steps_per_epoch = cfgs.steps_per_epoch
@@ -87,7 +89,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
 
         # Set up logger and save configuration to disk
         self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
-        self.logger.save_config(cfgs._asdict())
+        self.logger.save_config(namedtuple2dict(cfgs))
         # Set seed
         seed = cfgs.seed + 10000 * distributed_utils.proc_id()
         torch.manual_seed(seed)
@@ -140,6 +142,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
 
     def set_learning_rate_scheduler(self):
         """Set up learning rate scheduler."""
+
         scheduler = None
         if self.cfgs.linear_lr_decay:
             # Linear anneal
@@ -152,9 +155,8 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         return scheduler
 
     def _init_mpi(self):
-        """
-        Initialize MPI specifics
-        """
+        """Initialize MPI specifics."""
+
         if distributed_utils.num_procs() > 1:
             # Avoid slowdowns from PyTorch + MPI combo
             distributed_utils.setup_torch_for_mpi()
@@ -165,9 +167,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             self.logger.log(f'Done! (took {time.time()-start:0.3f} sec.)')
 
     def algorithm_specific_logs(self):
-        """
-        Use this method to collect log information.
-        """
+        """Use this method to collect log information."""
 
     def _ac_training_setup(self):
         """Set up target network for off_policy training."""
@@ -179,15 +179,9 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             param.requires_grad = False
         for param in self.ac_targ.cost_critic.parameters():
             param.requires_grad = False
-        if self.algo in ['SAC', 'TD3', 'SACLag', 'TD3Lag']:
-            # Freeze target networks with respect to optimizer (only update via polyak averaging)
-            for param in self.ac_targ.critic_.parameters():
-                param.requires_grad = False
 
     def check_distributed_parameters(self):
-        """
-        Check if parameters are synchronized across all processes.
-        """
+        """Check if parameters are synchronized across all processes."""
         if distributed_utils.num_procs() > 1:
             self.logger.log('Check if distributed parameters are synchronous..')
             modules = {'Policy': self.actor_critic.actor.net, 'Value': self.actor_critic.critic.net}
@@ -198,23 +192,27 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 assert np.allclose(global_min, global_max), f'{key} not synced.'
 
     def compute_loss_pi(self, data: dict):
-        """
-        computing pi/actor loss
+        """Computing pi/actor loss.
+
+        Args:
+            data (dict): data dictionary.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         action, _ = self.actor_critic.actor.predict(data['obs'], deterministic=True)
-        loss_pi = self.actor_critic.critic(data['obs'], action)
+        loss_pi = self.actor_critic.critic(data['obs'], action)[0]
         pi_info = {}
         return -loss_pi.mean(), pi_info
 
     def compute_loss_v(self, data):
-        """
-        computing value loss
+        """Computing value loss.
+
+        Args:
+            data (dict): data dictionary.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         obs, act, rew, obs_next, done = (
             data['obs'],
@@ -223,24 +221,26 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             data['obs_next'],
             data['done'],
         )
-        q_value = self.actor_critic.critic(obs, act)
+        q_value = self.actor_critic.critic(obs, act)[0]
         # Bellman backup for Q function
         with torch.no_grad():
-            act_targ, _ = self.ac_targ.actor.predict(obs, deterministic=True)
-            q_targ = self.ac_targ.critic(obs_next, act_targ)
+            act_targ = self.ac_targ.actor.predict(obs, deterministic=True, need_log_prob=False)
+            q_targ = self.ac_targ.critic(obs_next, act_targ)[0]
             backup = rew + self.cfgs.gamma * (1 - done) * q_targ
         # MSE loss against Bellman backup
         loss_q = ((q_value - backup) ** 2).mean()
         # Useful info for logging
-        q_info = dict(Q1Vals=q_value.detach().numpy())
+        q_info = dict(QVals=q_value.detach().numpy())
         return loss_q, q_info
 
     def compute_loss_c(self, data):
-        """
-        computing cost loss
+        """Computing cost loss.
+
+        Args:
+            data (dict): data dictionary.
 
         Returns:
-            torch.Tensor
+            torch.Tensor.
         """
         obs, act, cost, obs_next, done = (
             data['obs'],
@@ -249,12 +249,12 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             data['obs_next'],
             data['done'],
         )
-        cost_q_value = self.actor_critic.cost_critic(obs, act)
+        cost_q_value = self.actor_critic.cost_critic(obs, act)[0]
 
         # Bellman backup for Q function
         with torch.no_grad():
-            action, _ = self.ac_targ.pi.predict(obs_next, deterministic=True)
-            qc_targ = self.ac_targ.c(obs_next, action)
+            action, _ = self.ac_targ.actor.predict(obs_next, deterministic=True)
+            qc_targ = self.ac_targ.cost_critic(obs_next, action)[0]
             backup = cost + self.cfgs.gamma * (1 - done) * qc_targ
         # MSE loss against Bellman backup
         loss_qc = ((cost_q_value - backup) ** 2).mean()
@@ -271,7 +271,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             (3). log epoch/update information for visualization and terminal log print.
 
         Returns:
-            model and environment
+            model and environment.
         """
 
         for steps in range(0, self.local_steps_per_epoch * self.epochs, self.update_every):
@@ -314,7 +314,11 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         return self.actor_critic
 
     def update(self, data):
-        """update"""
+        """Update.
+
+        Args:
+            data (dict): data dictionary.
+        """
         # First run one gradient descent step for Q.
         self.update_value_net(data)
         if self.cfgs.use_cost:
@@ -327,7 +331,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = False
 
-        # Next run one gradient descent step for pi.
+        # Next run one gradient descent step for actor.
         self.update_policy_net(data)
 
         # Unfreeze Q-network so you can optimize it at next DDPG step.
@@ -342,7 +346,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.polyak_update_target()
 
     def polyak_update_target(self):
-        """polyak update target network"""
+        """Polyak update target network."""
         with torch.no_grad():
             for param, param_targ in zip(self.actor_critic.parameters(), self.ac_targ.parameters()):
                 # Notes: We use an in-place operations "mul_", "add_" to update target
@@ -351,7 +355,11 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 param_targ.data.add_((1 - self.cfgs.polyak) * param.data)
 
     def update_policy_net(self, data) -> None:
-        """update policy network"""
+        """Update policy network.
+
+        Args:
+            data (dict): data dictionary.
+        """
         # Train policy with one steps of gradient descent
         self.actor_optimizer.zero_grad()
         loss_pi, _ = self.compute_loss_pi(data)
@@ -360,16 +368,24 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.logger.store(**{'Loss/Pi': loss_pi.item()})
 
     def update_value_net(self, data: dict) -> None:
-        """update value network"""
+        """Update value network.
+
+        Args:
+            data (dict): data dictionary
+        """
         # Train value critic with one steps of gradient descent
         self.critic_optimizer.zero_grad()
         loss_q, q_info = self.compute_loss_v(data)
         loss_q.backward()
         self.critic_optimizer.step()
-        self.logger.store(**{'Loss/Value': loss_q.item(), 'Q1Vals': q_info['Q1Vals']})
+        self.logger.store(**{'Loss/Value': loss_q.item(), 'QVals': q_info['QVals']})
 
     def update_cost_net(self, data):
-        """update cost network"""
+        """Update cost network.
+
+        Args:
+            data (dict): data dictionary.
+        """
         # Train cost critic with one steps of gradient descent
         self.cost_critic_optimizer.zero_grad()
         loss_qc, qc_info = self.compute_loss_c(data)
@@ -378,7 +394,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.logger.store(**{'Loss/Cost': loss_qc.item(), 'QCosts': qc_info['QCosts']})
 
     def test_agent(self):
-        """test agent"""
+        """Test agent."""
         for _ in range(self.num_test_episodes):
             # self.env.set_rollout_cfgs(deterministic=True, rand_a=False)
             self.env.roll_out(
@@ -391,7 +407,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             )
 
     def log(self, epoch, total_steps):
-        """Log info about epoch"""
+        """Log info about epoch."""
         fps = self.cfgs.steps_per_epoch / (time.time() - self.epoch_time)
         # Step the actor learning rate scheduler if provided
         if self.scheduler and self.cfgs.linear_lr_decay:
@@ -402,13 +418,13 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
 
         self.logger.log_tabular('Epoch', epoch)
         self.logger.log_tabular('Metrics/EpRet')
-        self.logger.log_tabular('Metrics/EpCosts')
+        self.logger.log_tabular('Metrics/EpCost')
         self.logger.log_tabular('Metrics/EpLen')
         self.logger.log_tabular('Test/EpRet')
-        self.logger.log_tabular('Test/EpCosts')
+        self.logger.log_tabular('Test/EpCost')
         self.logger.log_tabular('Test/EpLen')
         self.logger.log_tabular('Values/V', min_and_max=True)
-        self.logger.log_tabular('Q1Vals')
+        self.logger.log_tabular('QVals')
         if self.cfgs.use_cost:
             self.logger.log_tabular('Values/C', min_and_max=True)
             self.logger.log_tabular('QCosts')
@@ -424,7 +440,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             self.logger.log_tabular('Misc/RewScaleMean', reward_scale_mean)
             self.logger.log_tabular('Misc/RewScaleStddev', reward_scale_stddev)
         if self.cfgs.exploration_noise_anneal:
-            noise_std = np.exp(self.actor_critic.pi.log_std[0].item())
+            noise_std = np.exp(self.actor_critic.actor.log_std[0].item())
             self.logger.log_tabular('Misc/ExplorationNoiseStd', noise_std)
         self.algorithm_specific_logs()
         self.logger.log_tabular('TotalEnvSteps', total_steps)

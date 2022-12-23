@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""env_wrapper"""
+"""Environment wrapper for on-policy algorithms."""
+
+import collections
+from copy import deepcopy
+from typing import Optional
 
 import safety_gymnasium
 import torch
@@ -22,11 +26,18 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 @WRAPPER_REGISTRY.register
 class OnPolicyEnvWrapper:  # pylint: disable=too-many-instance-attributes
-    """env_wrapper"""
+    """env_wrapper."""
 
-    def __init__(self, env_id, render_mode=None):
-        # check env_id is str
+    def __init__(self, env_id, cfgs: Optional[collections.namedtuple] = None, render_mode=None):
+        """Initialize environment wrapper.
+
+        Args:
+            env_id (str): environment id.
+            cfgs (collections.namedtuple): configs.
+            render_mode (str): render mode.
+        """
         self.env = safety_gymnasium.make(env_id, render_mode=render_mode)
+        self.cfgs = deepcopy(cfgs)
         self.env_id = env_id
         self.render_mode = render_mode
         self.metadata = self.env.metadata

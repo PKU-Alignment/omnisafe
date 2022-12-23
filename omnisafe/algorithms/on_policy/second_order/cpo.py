@@ -18,7 +18,7 @@ import numpy as np
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.trpo import TRPO
+from omnisafe.algorithms.on_policy.base.trpo import TRPO
 from omnisafe.utils import distributed_utils
 from omnisafe.utils.tools import (
     conjugate_gradients,
@@ -30,28 +30,16 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class CPO(TRPO):
-    """The Constrained Policy Optimization (CPO) Algorithm.
+    """The Constrained Policy Optimization (CPO) algorithm.
 
     References:
-        Paper Name: Constrained Policy Optimization.
-        Paper author: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
-        Paper URL: https://arxiv.org/abs/1705.10528
-
+        Title: Constrained Policy Optimization
+        Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+        URL: https://arxiv.org/abs/1705.10528
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-        algo='CPO',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
-    ):
-        super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
-        )
+    def __init__(self, env_id, cfgs) -> None:
+        super().__init__(env_id=env_id, cfgs=cfgs)
         self.cost_limit = cfgs.cost_limit
         self.loss_pi_cost_before = 0.0
 

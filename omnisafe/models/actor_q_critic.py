@@ -17,8 +17,8 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from gymnasium.spaces import Box
 
+from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.actor.mlp_actor import MLPActor
 from omnisafe.models.critic.q_critic import QCritic
 from omnisafe.utils.model_utils import build_mlp_network
@@ -45,15 +45,10 @@ class ActorQCritic(nn.Module):
         self.obs_shape = observation_space.shape
         self.obs_oms = OnlineMeanStd(shape=self.obs_shape) if standardized_obs else None
         self.act_dim = action_space.shape[0]
-        self.act_limit = action_space.high[0]
+        self.act_max = torch.as_tensor(action_space.high)
+        self.act_min = torch.as_tensor(action_space.low)
         self.ac_kwargs = model_cfgs.ac_kwargs
         # build policy and value functions
-        if isinstance(action_space, Box):
-            if model_cfgs.pi_type == 'dire':
-                actor_fn = MLPActor
-            act_dim = action_space.shape[0]
-        else:
-            raise ValueError
 
         self.obs_dim = observation_space.shape[0]
 
@@ -71,31 +66,42 @@ class ActorQCritic(nn.Module):
         else:
             shared = None
 
-        self.actor = actor_fn(
+        actor_builder = ActorBuilder(
             obs_dim=self.obs_dim,
-            act_dim=act_dim,
+            act_dim=self.act_dim,
             act_noise=model_cfgs.ac_kwargs.pi.act_noise,
-            act_limit=self.act_limit,
             hidden_sizes=model_cfgs.ac_kwargs.pi.hidden_sizes,
             activation=model_cfgs.ac_kwargs.pi.activation,
             weight_initialization_mode=weight_initialization_mode,
             shared=shared,
         )
+
+        if self.ac_kwargs.pi.actor_type == 'cholesky':
+            self.actor = actor_builder.build_actor(
+                self.ac_kwargs.pi.actor_type,
+                act_max=self.act_max,
+                act_min=self.act_min,
+                cov_min=self.ac_kwargs.pi.cov_min,
+                mu_clamp_min=self.ac_kwargs.pi.mu_clamp_min,
+                mu_clamp_max=self.ac_kwargs.pi.mu_clamp_max,
+                cov_clamp_min=self.ac_kwargs.pi.cov_clamp_min,
+                cov_clamp_max=self.ac_kwargs.pi.cov_clamp_max,
+            )
+        else:
+            self.actor = actor_builder.build_actor(
+                self.ac_kwargs.pi.actor_type,
+                act_max=self.act_max,
+                act_min=self.act_min,
+            )
+
         self.critic = QCritic(
             self.obs_dim,
-            act_dim,
+            self.act_dim,
             hidden_sizes=model_cfgs.ac_kwargs.val.hidden_sizes,
             activation=model_cfgs.ac_kwargs.val.activation,
             weight_initialization_mode=weight_initialization_mode,
             shared=shared,
-        )
-        self.critic_ = QCritic(
-            self.obs_dim,
-            act_dim,
-            hidden_sizes=model_cfgs.ac_kwargs.val.hidden_sizes,
-            activation=model_cfgs.ac_kwargs.val.activation,
-            weight_initialization_mode=weight_initialization_mode,
-            shared=shared,
+            num_critics=model_cfgs.ac_kwargs.val.num_critics,
         )
 
     def step(self, obs, deterministic=False):
@@ -120,7 +126,8 @@ class ActorQCritic(nn.Module):
             else:
                 action, logp_a = self.pi.predict(obs, determinstic=deterministic)
             value = self.v(obs, action)
-            action = np.clip(action.numpy(), -self.act_limit, self.act_limit)
+            action = action.to(torch.float32)
+            action = np.clip(action.numpy(), self.act_min, self.act_max)
 
         return action, value.numpy(), logp_a.numpy()
 
@@ -130,8 +137,8 @@ class ActorQCritic(nn.Module):
         frac: progress of epochs, i.e. current epoch / total epochs
                 e.g. 10 / 100 = 0.1
         """
-        if hasattr(self.pi, 'set_log_std'):
-            self.pi.set_log_std(1 - frac)
+        if hasattr(self.actor, 'set_log_std'):
+            self.actor.set_log_std(1 - frac)
 
     def forward(self, obs, act):
         """Compute the value of a given state-action pair."""

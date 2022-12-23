@@ -14,42 +14,59 @@
 # ==============================================================================
 """Safe Reinforcement Learning algorithms."""
 
-# Off Policy Safe
-from omnisafe.algorithms.off_policy.ddpg import DDPG
+import itertools
+from types import MappingProxyType
 
-# On Policy Safe
-from omnisafe.algorithms.on_policy.cpo import CPO
-from omnisafe.algorithms.on_policy.cppo_pid import CPPOPid
-from omnisafe.algorithms.on_policy.cup import CUP
-from omnisafe.algorithms.on_policy.focops import FOCOPS
-from omnisafe.algorithms.on_policy.natural_pg import NaturalPG
-from omnisafe.algorithms.on_policy.npg_lag import NPGLag
-from omnisafe.algorithms.on_policy.pcpo import PCPO
-from omnisafe.algorithms.on_policy.pdo import PDO
-from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
-from omnisafe.algorithms.on_policy.ppo import PPO
-from omnisafe.algorithms.on_policy.ppo_lag import PPOLag
-from omnisafe.algorithms.on_policy.trpo import TRPO
-from omnisafe.algorithms.on_policy.trpo_lag import TRPOLag
+from omnisafe.algorithms import off_policy, on_policy
+
+# Off-Policy Safe
+from omnisafe.algorithms.off_policy import DDPG, SAC, SDDPG, TD3, DDPGLag, SACLag, TD3Lag
+
+# On-Policy Safe
+from omnisafe.algorithms.on_policy import (
+    CPO,
+    CUP,
+    FOCOPS,
+    PCPO,
+    PDO,
+    PPO,
+    TRPO,
+    CPPOPid,
+    NaturalPG,
+    NPGLag,
+    PolicyGradient,
+    PPOEarlyTerminated,
+    PPOLag,
+    PPOLagEarlyTerminated,
+    PPOLagSaute,
+    PPOLagSimmerPid,
+    PPOLagSimmerQ,
+    PPOSaute,
+    PPOSimmerPid,
+    PPOSimmerQ,
+    TRPOLag,
+    TRPOPid,
+)
 
 
-algo_type = {
-    'off-policy': ['DDPG'],
-    'on-policy': [
-        'CPO',
-        'FOCOPS',
-        'CPPOPid',
-        'FOCOPS',
-        'NaturalPG',
-        'NPGLag',
-        'PCPO',
-        'PDO',
-        'PolicyGradient',
-        'PPO',
-        'PPOLag',
-        'TRPO',
-        'TRPOLag',
-        'CUP',
-    ],
-    'model-based': ['MBPPOLag', 'SafeLoop'],
+ALGORITHMS = {
+    'off-policy': tuple(off_policy.__all__),
+    'on-policy': tuple(on_policy.__all__),
+    'model-based': (
+        'MBPPOLag',
+        'SafeLoop',
+    ),
 }
+
+ALGORITHM2TYPE = {
+    algo: algo_type for algo_type, algorithms in ALGORITHMS.items() for algo in algorithms
+}
+
+__all__ = ALGORITHMS['all'] = tuple(itertools.chain.from_iterable(ALGORITHMS.values()))
+
+assert len(ALGORITHM2TYPE) == len(__all__), 'Duplicate algorithm names found.'
+
+ALGORITHMS = MappingProxyType(ALGORITHMS)  # make this immutable
+ALGORITHM2TYPE = MappingProxyType(ALGORITHM2TYPE)  # make this immutable
+
+del itertools, MappingProxyType
