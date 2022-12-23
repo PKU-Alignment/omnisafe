@@ -37,7 +37,6 @@ dependencies:
   - pip:
       - gymnasium[mujoco]
       - cpprb
-      - sphinxcontrib-katex  # for documentation
   - tensorboard
   - wandb
 
@@ -53,7 +52,6 @@ dependencies:
 
   # Documentation
   - sphinx
-  - sphinx_rtd_theme
   - sphinx-autobuild
   - sphinx-copybutton
   - sphinxcontrib-spelling
