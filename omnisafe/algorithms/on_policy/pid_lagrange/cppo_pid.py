@@ -31,11 +31,7 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
         URL: https://arxiv.org/abs/2007.03964
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ):
+    def __init__(self, env_id, cfgs) -> None:
         PolicyGradient.__init__(
             self,
             env_id=env_id,

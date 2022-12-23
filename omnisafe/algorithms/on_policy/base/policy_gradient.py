@@ -40,12 +40,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
         URL: https://proceedings.neurips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf
     """
 
-    # pylint: disable-next=too-many-locals
-    def __init__(
-        self,
-        env_id,
-        cfgs=None,
-    ) -> None:
+    def __init__(self, env_id, cfgs=None) -> None:
         """Initialize the algorithm.
 
         Args:

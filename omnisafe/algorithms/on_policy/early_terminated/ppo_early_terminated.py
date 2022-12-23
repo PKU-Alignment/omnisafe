@@ -28,14 +28,6 @@ class PPOEarlyTerminated(PPO):
         URL: https://arxiv.org/abs/2107.04200
     """
 
-    # pylint: disable-next=too-many-arguments
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ) -> None:
+    def __init__(self, env_id, cfgs) -> None:
         """Initialize PPO_Earyly_Terminated."""
-        super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-        )
+        super().__init__(env_id=env_id, cfgs=cfgs)

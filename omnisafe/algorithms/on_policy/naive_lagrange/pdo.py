@@ -28,11 +28,7 @@ class PDO(PolicyGradient, Lagrange):
     A simple combination of the Lagrange method and the Policy Gradient algorithm.
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ):
+    def __init__(self, env_id, cfgs) -> None:
         """initialization"""
         PolicyGradient.__init__(
             self,

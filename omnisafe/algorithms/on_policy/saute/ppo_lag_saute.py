@@ -29,17 +29,9 @@ class PPOLagSaute(PPOLag):
         URL: https://arxiv.org/abs/2202.06558
     """
 
-    # pylint: disable-next=too-many-arguments
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ) -> None:
+    def __init__(self, env_id, cfgs) -> None:
         """Initialize PPOLagSaute."""
-        super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-        )
+        super().__init__(env_id=env_id, cfgs=cfgs)
 
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()

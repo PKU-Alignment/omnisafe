@@ -37,15 +37,8 @@ class TRPO(NaturalPG):
         URL: https://arxiv.org/abs/1502.05477
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ):
-        super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-        )
+    def __init__(self, env_id, cfgs) -> None:
+        super().__init__(env_id=env_id, cfgs=cfgs)
 
     # pylint: disable-next=too-many-arguments,too-many-locals,arguments-differ
     def search_step_size(

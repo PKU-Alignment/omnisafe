@@ -32,11 +32,7 @@ class TRPOLag(TRPO, Lagrange):
 
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ):
+    def __init__(self, env_id, cfgs) -> None:
         """initialize"""
         TRPO.__init__(
             self,

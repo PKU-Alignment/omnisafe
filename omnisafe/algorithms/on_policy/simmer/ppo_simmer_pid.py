@@ -28,17 +28,9 @@ class PPOSimmerPid(PPO):
         URL: https://arxiv.org/abs/2206.02675
     """
 
-    # pylint: disable-next=too-many-arguments
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ) -> None:
+    def __init__(self, env_id, cfgs) -> None:
         """Initialize PPOSimmerPid."""
-        super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-        )
+        super().__init__(env_id=env_id, cfgs=cfgs)
 
     def algorithm_specific_logs(self):
         """Log the algorithm specific metrics."""

@@ -38,15 +38,8 @@ class CPO(TRPO):
         URL: https://arxiv.org/abs/1705.10528
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ):
-        super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-        )
+    def __init__(self, env_id, cfgs) -> None:
+        super().__init__(env_id=env_id, cfgs=cfgs)
         self.cost_limit = cfgs.cost_limit
         self.loss_pi_cost_before = 0.0
 

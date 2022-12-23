@@ -33,11 +33,7 @@ class CUP(PolicyGradient, Lagrange):
         URL: https://arxiv.org/abs/2209.07089
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ):
+    def __init__(self, env_id, cfgs) -> None:
         r"""The :meth:`init` function."""
         PolicyGradient.__init__(
             self,

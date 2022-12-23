@@ -31,12 +31,7 @@ class PPOLag(PolicyGradient, Lagrange):
         URL: https://cdn.openai.com/safexp-short.pdf
     """
 
-    # pylint: disable-next=too-many-arguments
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ):
+    def __init__(self, env_id, cfgs) -> None:
         """Initialize PPO-Lag algorithm."""
         self.clip = cfgs.clip
         PolicyGradient.__init__(

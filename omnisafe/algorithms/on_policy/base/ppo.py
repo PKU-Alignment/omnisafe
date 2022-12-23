@@ -31,12 +31,7 @@ class PPO(PolicyGradient):
         URL: https://arxiv.org/abs/1707.06347
     """
 
-    # pylint: disable-next=too-many-arguments
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ):
+    def __init__(self, env_id, cfgs) -> None:
         """Initialize PPO."""
         self.clip = cfgs.clip
         super().__init__(

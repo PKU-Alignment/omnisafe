@@ -37,15 +37,8 @@ class PCPO(TRPO):
         URL: https://arxiv.org/abs/2010.03152
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ):
-        super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-        )
+    def __init__(self, env_id, cfgs) -> None:
+        super().__init__(env_id=env_id, cfgs=cfgs)
         self.cost_limit = self.cfgs.cost_limit
 
     # pylint: disable-next=too-many-locals,too-many-arguments

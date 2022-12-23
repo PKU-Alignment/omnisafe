@@ -32,11 +32,7 @@ class FOCOPS(PolicyGradient, Lagrange):
         URL: https://arxiv.org/abs/2002.06506
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-    ):
+    def __init__(self, env_id, cfgs) -> None:
         r"""The :meth:`init` function."""
         PolicyGradient.__init__(
             self,
