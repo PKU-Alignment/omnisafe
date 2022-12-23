@@ -35,10 +35,9 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
     """The Policy Gradient algorithm.
 
     References:
-        Paper Name: Policy Gradient Methods for Reinforcement Learning with Function Approximation
-        Paper Author: Richard S. Sutton, David McAllester, Satinder Singh, Yishay Mansour
-        Paper URL: https://proceedings.neurips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf
-
+        Title: Policy Gradient Methods for Reinforcement Learning with Function Approximation
+        Authors: Richard S. Sutton, David McAllester, Satinder Singh, Yishay Mansour.
+        URL: https://proceedings.neurips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf
     """
 
     # pylint: disable-next=too-many-locals

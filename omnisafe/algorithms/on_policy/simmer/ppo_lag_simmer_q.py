@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Q Simmer algorithm by PPOLag."""
-
+"""Implementation of the Q Simmer algorithm using PPOLag."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
@@ -21,12 +20,12 @@ from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
 
 @registry.register
 class PPOLagSimmerQ(PPOLag):
-    """Simmer algorithm (Q version) implemented by PPOLag.
+    """The Q Simmer algorithm implemented with PPOLag.
 
     References:
-        Paper Name: Effects of Safety State Augmentation on Safe Exploration.
-        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
-        Paper URL: https://arxiv.org/abs/2206.02675
+        Title: Effects of Safety State Augmentation on Safe Exploration
+        Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
+        URL: https://arxiv.org/abs/2206.02675
     """
 
     # pylint: disable-next=too-many-arguments

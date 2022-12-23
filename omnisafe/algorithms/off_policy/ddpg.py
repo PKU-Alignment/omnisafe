@@ -32,14 +32,13 @@ from omnisafe.wrappers import wrapper_registry
 
 @registry.register
 class DDPG:  # pylint: disable=too-many-instance-attributes
-    """Continuous control with deep reinforcement learning (DDPG) Algorithm.
+    """The Deep Deterministic Policy Gradient (DDPG) algorithm.
 
     References:
-        Paper Name: Continuous control with deep reinforcement learning.
-        Paper author: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-                      Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
-        Paper URL: https://arxiv.org/abs/1509.02971
-
+        Title: Continuous control with deep reinforcement learning
+        Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
+                 Yuval Tassa, David Silver, Daan Wierstra.
+        URL: https://arxiv.org/abs/1509.02971
     """
 
     def __init__(

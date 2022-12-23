@@ -21,14 +21,13 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
-    """The Lagrange version of DDPG Algorithm.
+    """The Deep Deterministic Policy Gradient (DDPG) algorithm.
 
     References:
-        Paper Name: Continuous control with deep reinforcement learning.
-        Paper author: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-                      Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
-        Paper URL: https://arxiv.org/abs/1509.02971
-
+        Title: Continuous control with deep reinforcement learning
+        Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
+                 Yuval Tassa, David Silver, Daan Wierstra.
+        URL: https://arxiv.org/abs/1509.02971
     """
 
     def __init__(

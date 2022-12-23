@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of the SAC algorithm."""
 
-
 import torch
 
 from omnisafe.algorithms import registry
@@ -23,13 +22,12 @@ from omnisafe.algorithms.off_policy.ddpg import DDPG
 
 @registry.register
 class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
-    """Implementation of the SAC algorithm.
+    """The Soft Actor-Critic (SAC) algorithm.
 
     References:
-        Paper Name: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
-        Paper author: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine
-        Paper URL: https://arxiv.org/abs/1801.01290
-
+        Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
+        Authors: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine.
+        URL: https://arxiv.org/abs/1801.01290
     """
 
     def __init__(

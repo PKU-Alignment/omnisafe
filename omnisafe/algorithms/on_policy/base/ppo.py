@@ -23,12 +23,12 @@ from omnisafe.utils import distributed_utils
 
 @registry.register
 class PPO(PolicyGradient):
-    """The Proximal Policy Optimization Algorithms (PPO) Algorithm.
+    """The Proximal Policy Optimization (PPO) algorithm.
 
     References:
-        Paper Name: Proximal Policy Optimization Algorithms.
-        Paper author: John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov.
-        Paper URL: https://arxiv.org/pdf/1707.06347.pdf
+        Title: Proximal Policy Optimization Algorithms
+        Authors: John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov.
+        URL: https://arxiv.org/abs/1707.06347
     """
 
     # pylint: disable-next=too-many-arguments

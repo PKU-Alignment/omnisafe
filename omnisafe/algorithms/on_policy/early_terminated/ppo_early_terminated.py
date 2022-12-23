@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Early terminated algorithm by PPO."""
+"""Implementation of the early terminated algorithm using PPO."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
@@ -20,12 +20,12 @@ from omnisafe.algorithms.on_policy.base.ppo import PPO
 
 @registry.register
 class PPOEarlyTerminated(PPO):
-    """Early terminated algorithm implemented by PPO.
+    """The early terminated algorithm implemented with PPO.
 
     References:
-        Paper Name: Safe Exploration by Solving Early Terminated MDP
-        Paper author: Hao Sun, Ziping Xu, Meng Fang, Zhenghao Peng, Jiadong Guo, Bo Dai, Bolei Zhou
-        Paper URL: https://arxiv.org/abs/2107.04200
+        Title: Safe Exploration by Solving Early Terminated MDP
+        Authors: Hao Sun, Ziping Xu, Meng Fang, Zhenghao Peng, Jiadong Guo, Bo Dai, Bolei Zhou.
+        URL: https://arxiv.org/abs/2107.04200
     """
 
     # pylint: disable-next=too-many-arguments

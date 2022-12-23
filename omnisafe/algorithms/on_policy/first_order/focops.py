@@ -27,10 +27,9 @@ class FOCOPS(PolicyGradient, Lagrange):
     """The First Order Constrained Optimization in Policy Space (FOCOPS) algorithm.
 
     References:
-        Paper Name: First Order Constrained Optimization in Policy Space.
-        Paper author: Yiming Zhang, Quan Vuong, Keith W. Ross.
-        Paper URL: https://arxiv.org/abs/2002.06506
-
+        Title: First Order Constrained Optimization in Policy Space
+        Authors: Yiming Zhang, Quan Vuong, Keith W. Ross.
+        URL: https://arxiv.org/abs/2002.06506
     """
 
     def __init__(
@@ -54,7 +53,6 @@ class FOCOPS(PolicyGradient, Lagrange):
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
             lagrangian_upper_bound=self.cfgs.lagrange_cfgs.lagrangian_upper_bound,
         )
-        self.algo = self.__class__.__name__
         self.lam = self.cfgs.lam
         self.eta = self.cfgs.eta
 

@@ -30,13 +30,12 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class CPO(TRPO):
-    """The Constrained Policy Optimization (CPO) Algorithm.
+    """The Constrained Policy Optimization (CPO) algorithm.
 
     References:
-        Paper Name: Constrained Policy Optimization.
-        Paper author: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
-        Paper URL: https://arxiv.org/abs/1705.10528
-
+        Title: Constrained Policy Optimization
+        Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+        URL: https://arxiv.org/abs/1705.10528
     """
 
     def __init__(

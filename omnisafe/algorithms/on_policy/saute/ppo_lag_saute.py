@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Saute algorithm."""
+"""Implementation of the Lagrange version of the Saute algorithm using PPOLag."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
@@ -20,13 +20,13 @@ from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
 
 @registry.register
 class PPOLagSaute(PPOLag):
-    """Saute algorithm implemented by PPOLag.
+    """The Saute algorithm implemented with PPOLag.
 
     References:
-        Paper Name: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation.
-        Paper author: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
-                      David Mguni, Jun Wang, Haitham Bou-Ammar.
-        Paper URL: https://arxiv.org/abs/2202.06558
+        Title: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation
+        Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang, David Mguni,
+                 Jun Wang, Haitham Bou-Ammar.
+        URL: https://arxiv.org/abs/2202.06558
     """
 
     # pylint: disable-next=too-many-arguments

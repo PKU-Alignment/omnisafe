@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of Natural Policy Gradient algorithm."""
+"""Implementation of the Lagrange version of the Natural Policy Gradient algorithm."""
 
 import torch
 
@@ -23,10 +23,9 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class NPGLag(NaturalPG, Lagrange):
-    """The Lagrange version of  Natural Policy Gradient algorithm.
+    """The Lagrange version of the Natural Policy Gradient algorithm.
 
-    A simple combination of Lagrange method and Natural Policy Gradient algorithm.
-
+    A simple combination of the Lagrange method and the Natural Policy Gradient algorithm.
     """
 
     def __init__(
@@ -48,7 +47,6 @@ class NPGLag(NaturalPG, Lagrange):
             lambda_lr=self.cfgs.lagrange_cfgs.lambda_lr,
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
         )
-        self.algo = self.__class__.__name__
 
     def compute_loss_pi(self, data: dict):
         """

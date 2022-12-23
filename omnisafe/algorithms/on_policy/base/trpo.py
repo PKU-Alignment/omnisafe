@@ -29,12 +29,12 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class TRPO(NaturalPG):
-    """The Trust Region Policy Optimization (TRPO) Algorithm.
+    """The Trust Region Policy Optimization (TRPO) algorithm.
 
     References:
-        Paper Name: Trust Region Policy Optimization.
-        Paper author: John Schulman, Sergey Levine, Philipp Moritz, Michael I. Jordan, Pieter Abbeel.
-        Paper URL: https://arxiv.org/abs/1502.05477
+        Title: Trust Region Policy Optimization
+        Authors: John Schulman, Sergey Levine, Philipp Moritz, Michael I. Jordan, Pieter Abbeel.
+        URL: https://arxiv.org/abs/1502.05477
     """
 
     def __init__(
@@ -58,7 +58,7 @@ class TRPO(NaturalPG):
         total_steps=15,
         decay=0.8,
     ):
-        r"""TRPO performs line-search until constraint satisfaction.
+        """TRPO performs line-search until constraint satisfaction.
 
         search around for a satisfied step of policy update to improve loss and reward performance
 

@@ -32,10 +32,9 @@ class NaturalPG(PolicyGradient):
     """The Natural Policy Gradient algorithm.
 
     References:
-        Paper Name: A Natural Policy Gradient.
-        Paper author: Sham Kakade.
-        Paper URL: https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf
-
+        Title: A Natural Policy Gradient
+        Author: Sham Kakade.
+        URL: https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf
     """
 
     def __init__(

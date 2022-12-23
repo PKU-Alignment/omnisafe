@@ -23,10 +23,9 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class PDO(PolicyGradient, Lagrange):
-    """The Lagrange version of Policy Gradient algorithm.
+    """The Lagrange version of the Policy Gradient algorithm.
 
-    A simple combination of Lagrange method and Policy Gradient algorithm.
-
+    A simple combination of the Lagrange method and the Policy Gradient algorithm.
     """
 
     def __init__(
@@ -47,7 +46,6 @@ class PDO(PolicyGradient, Lagrange):
             lambda_lr=cfgs.lagrange_cfgs.lambda_lr,
             lambda_optimizer=cfgs.lagrange_cfgs.lambda_optimizer,
         )
-        self.algo = self.__class__.__name__
 
     def compute_loss_pi(self, data: dict):
         """

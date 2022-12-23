@@ -22,13 +22,12 @@ from omnisafe.algorithms.off_policy.ddpg import DDPG
 
 @registry.register
 class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
-    """Implementation of TD3 Algorithm.
+    """The Twin Delayed DDPG (TD3) algorithm.
 
     References:
-        Paper Name: Addressing Function Approximation Error in Actor-Critic Methods.
-        Paper author: Scott Fujimoto, Herke van Hoof, David Meger.
-        Paper URL: https://arxiv.org/abs/1802.09477
-
+        Title: Addressing Function Approximation Error in Actor-Critic Methods
+        Authors: Scott Fujimoto, Herke van Hoof, David Meger.
+        URL: https://arxiv.org/abs/1802.09477
     """
 
     def __init__(
