@@ -36,7 +36,6 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
         env_id,
         cfgs,
     ):
-
         PolicyGradient.__init__(
             self,
             env_id=env_id,

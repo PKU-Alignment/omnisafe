@@ -36,7 +36,6 @@ class TRPOPid(TRPO, PIDLagrangian):
         env_id,
         cfgs,
     ):
-
         TRPO.__init__(
             self,
             env_id=env_id,

@@ -34,7 +34,6 @@ class NPGLag(NaturalPG, Lagrange):
         cfgs,
     ):
         """initialize"""
-
         NaturalPG.__init__(
             self,
             env_id=env_id,

@@ -49,7 +49,6 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
             env_id=env_id,
             cfgs=cfgs,
         )
-
         Lagrange.__init__(
             self,
             cost_limit=self.cfgs.lagrange_cfgs.cost_limit,

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the DDPGLag algorithm."""
+"""Implementation of the Lagrange version of the DDPG algorithm."""
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
@@ -21,7 +21,7 @@ from omnisafe.common.lagrange import Lagrange
 
 @registry.register
 class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
-    """The Deep Deterministic Policy Gradient (DDPG) algorithm.
+    """The Lagrange version of the DDPG Algorithm.
 
     References:
         Title: Continuous control with deep reinforcement learning
@@ -41,7 +41,6 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
             env_id=env_id,
             cfgs=cfgs,
         )
-
         Lagrange.__init__(
             self,
             cost_limit=self.cfgs.lagrange_cfgs.cost_limit,

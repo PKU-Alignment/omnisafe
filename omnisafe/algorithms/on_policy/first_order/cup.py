@@ -39,13 +39,11 @@ class CUP(PolicyGradient, Lagrange):
         cfgs,
     ):
         r"""The :meth:`init` function."""
-
         PolicyGradient.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
         )
-
         Lagrange.__init__(
             self,
             cost_limit=self.cfgs.lagrange_cfgs.cost_limit,
