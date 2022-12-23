@@ -69,7 +69,7 @@ class GaussianAnnealingActor(Actor):
         mean = self.net(obs)
         return Normal(mean, self._std)
 
-    def predict(self, obs, deterministic=False, need_log_prob=True):
+    def predict(self, obs, deterministic=False, need_log_prob=False):
         dist = self._distribution(obs)
         if deterministic:
             out = dist.mean
