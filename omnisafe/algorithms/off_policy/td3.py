@@ -30,11 +30,7 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
         URL: https://arxiv.org/abs/1802.09477
     """
 
-    def __init__(
-        self,
-        env_id: str,
-        cfgs=None,
-    ):
+    def __init__(self, env_id: str, cfgs=None) -> None:
         """Initialize DDPG."""
         super().__init__(
             env_id=env_id,

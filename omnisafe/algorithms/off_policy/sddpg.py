@@ -28,7 +28,7 @@ from omnisafe.utils.tools import (
 
 
 @registry.register
-class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-name
+class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
     """Implementation of the SDDPG algorithm.
 
     References:
@@ -38,11 +38,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes，invalid-nam
         URL: https://arxiv.org/abs/1901.10031
     """
 
-    def __init__(
-        self,
-        env_id: str,
-        cfgs=None,
-    ):
+    def __init__(self, env_id: str, cfgs=None) -> None:
         """Initialize SDDPG.
 
         Args:

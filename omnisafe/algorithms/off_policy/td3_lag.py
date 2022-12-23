@@ -29,11 +29,7 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         URL: https://arxiv.org/abs/1802.09477
     """
 
-    def __init__(
-        self,
-        env_id: str,
-        cfgs=None,
-    ):
+    def __init__(self, env_id: str, cfgs=None) -> None:
         """Initialize TD3.
 
         Args:

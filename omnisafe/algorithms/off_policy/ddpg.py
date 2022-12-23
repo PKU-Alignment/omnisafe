@@ -41,11 +41,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         URL: https://arxiv.org/abs/1509.02971
     """
 
-    def __init__(
-        self,
-        env_id: str,
-        cfgs=None,
-    ):
+    def __init__(self, env_id: str, cfgs=None) -> None:
         """Initialize DDPG.
 
         Args:
