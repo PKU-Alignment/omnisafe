@@ -25,7 +25,7 @@ from omnisafe.common.buffer import Buffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core, distributed_utils
-from omnisafe.utils.config_utils import create_dict_from_namedtuple
+from omnisafe.utils.config_utils import namedtuple2dict
 from omnisafe.utils.tools import get_flat_params_from
 from omnisafe.wrappers import wrapper_registry
 
@@ -54,7 +54,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
         self.cfgs = deepcopy(cfgs)
         self.wrapper_type = self.cfgs.wrapper_type
         self.env = wrapper_registry.get(self.wrapper_type)(
-            env_id, cfgs=self.cfgs._asdict().get('env_cfgs')
+            env_id, cfgs=namedtuple2dict(self.cfgs).get('env_cfgs')
         )
 
         assert self.cfgs.steps_per_epoch % distributed_utils.num_procs() == 0
@@ -68,7 +68,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
 
         # Set up logger and save configuration to disk
         self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
-        self.logger.save_config(create_dict_from_namedtuple(cfgs))
+        self.logger.save_config(namedtuple2dict(cfgs))
         # Set seed
         seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
         torch.manual_seed(seed)

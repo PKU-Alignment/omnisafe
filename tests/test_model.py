@@ -22,7 +22,7 @@ from torch.distributions import Categorical
 import helpers
 from omnisafe.models import ActorBuilder, CriticBuilder
 from omnisafe.models.actor_critic import ActorCritic
-from omnisafe.utils.config_utils import create_namedtuple_from_dict
+from omnisafe.utils.config_utils import dict2namedtuple
 
 
 @helpers.parametrize(
@@ -196,12 +196,13 @@ def test_actor_critic(
     }
     observation_space = Box(low=-1, high=1, shape=(obs_dim,))
 
-    model_cfgs = {
-        'ac_kwargs': ac_kwargs,
-        'weight_initialization_mode': weight_initialization_mode,
-        'shared_weights': shared_weights,
-    }
-    model_cfgs = create_namedtuple_from_dict(model_cfgs)
+    model_cfgs = dict2namedtuple(
+        {
+            'ac_kwargs': ac_kwargs,
+            'weight_initialization_mode': weight_initialization_mode,
+            'shared_weights': shared_weights,
+        }
+    )
 
     if space_type == Discrete:
         action_space = space_type(act_dim)

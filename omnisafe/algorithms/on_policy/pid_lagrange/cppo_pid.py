@@ -19,6 +19,7 @@ import torch
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
 from omnisafe.common.pid_lagrange import PIDLagrangian
+from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
@@ -37,7 +38,7 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
             env_id=env_id,
             cfgs=cfgs,
         )
-        PIDLagrangian.__init__(self, **self.cfgs.PID_cfgs._asdict())
+        PIDLagrangian.__init__(self, **namedtuple2dict(self.cfgs.PID_cfgs))
 
         self.clip = self.cfgs.clip
         self.cost_limit = self.cfgs.PID_cfgs.cost_limit

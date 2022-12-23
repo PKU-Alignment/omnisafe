@@ -26,18 +26,15 @@ def recursive_update(args: dict, update_args: dict):
                     print(f'{key}:')
                     recursive_update(args[key], update_args[key])
                 else:
-                    # f-strings:
-                    # https://pylint.pycqa.org/en/latest/user_guide/messages/convention/consider-using-f-string.html
                     args[key] = update_args[key]
                     menus = (key, update_args[key])
                     print(f'- {menus[0]}: {menus[1]} is update!')
             elif isinstance(value, dict):
                 recursive_update(value, update_args)
+    return dict2namedtuple(args)
 
-    return create_namedtuple_from_dict(args)
 
-
-def create_namedtuple_from_dict(obj):
+def dict2namedtuple(obj):
     """Create namedtuple from dict"""
     if isinstance(obj, dict):
         fields = sorted(obj.keys())
@@ -47,7 +44,7 @@ def create_namedtuple_from_dict(obj):
             rename=True,
         )
         field_value_pairs = OrderedDict(
-            (str(field), create_namedtuple_from_dict(obj[field])) for field in fields
+            (str(field), dict2namedtuple(obj[field])) for field in fields
         )
         try:
             return namedtuple_type(**field_value_pairs)
@@ -55,15 +52,15 @@ def create_namedtuple_from_dict(obj):
             # Cannot create namedtuple instance so fallback to dict (invalid attribute names)
             return dict(**field_value_pairs)
     elif isinstance(obj, (list, set, tuple, frozenset)):
-        return [create_namedtuple_from_dict(item) for item in obj]
+        return [dict2namedtuple(item) for item in obj]
     else:
         return obj
 
 
-def create_dict_from_namedtuple(obj):
-    """Create dict from name-tuple"""
-    if isinstance(obj, tuple):
-        return {key: create_dict_from_namedtuple(value) for key, value in obj._asdict().items()}
+def namedtuple2dict(obj):
+    """Create a dict from a namedtuple."""
+    if isinstance(obj, tuple) and hasattr(obj, '_fields'):
+        return {key: namedtuple2dict(value) for key, value in obj._asdict().items()}
     return obj
 
 
