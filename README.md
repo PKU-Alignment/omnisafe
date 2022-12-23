@@ -14,7 +14,7 @@
 
 # OmniSafe
 
-OmniSafe is a comprehensive and trustworthy benchmark for safe reinforcement learning, covering a multitude of SafeRL domains and delivering a new suite of testing environments.
+OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learning, covering a multitude of SafeRL domains and delivering a new suite of testing environments.
 
 The simulation environment around OmniSafe and a series of reliable algorithm implementations will help the SafeRL research community easier to replicate and improve the excellent work already done while also helping to facilitate the validation of new ideas and new algorithms.
 
@@ -128,8 +128,7 @@ Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
 - [X] [Safe Exploration in Continuous Action Spaces (Safety Layer)](https://arxiv.org/abs/1801.08757)
 - [ ] **[RA-L 2021]** [Recovery RL: Safe Reinforcement Learning with Learned Recovery Zones](https://arxiv.org/abs/2010.15920)
 - [ ] **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
-- [ ] **[NeurIPS 2022]** [Effects of Safety State Augmentation on
-Safe Exploration](https://arxiv.org/abs/2206.02675)
+- [ ] **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration](https://arxiv.org/abs/2206.02675)
 
 --------------------------------------------------------------------------------
 
@@ -139,9 +138,9 @@ Safe Exploration](https://arxiv.org/abs/2206.02675)
 
 We designed a variety of safety-enhanced learning tasks around the latest version of Gymnasium, including safety-run, safety-circle, safety-goal, safety-button, etc., leading to a unified safety-enhanced learning benchmark environment called `safety-gymnasium`.
 
-Further, to facilitate the progress of community research, we redesigned [Safety_Gym](https://github.com/openai/safety-gym), removed the dependency on mujoco_py, made it created on top of [Mujoco](https://github.com/deepmind/mujoco), and fixed some bugs.
+Further, to facilitate the progress of community research, we redesigned [Safety-Gym](https://github.com/openai/safety-gym) and removed the dependency on `mujoco-py`. We build it on top of [MuJoCo](https://github.com/deepmind/mujoco), and fixed some bugs.
 
-After careful testing, we confirmed that it has the same dynamics parameters and training environment as the original safety gym, named `safety-gymnasium`.
+After careful testing, we confirmed that it has the same dynamics parameters and training environment as the original `safety-gym`, named `safety-gymnasium`.
 
 Here is a list of all the environments we support, some of them are being tested in our baseline and we will gradually release them within a month.
 
@@ -204,7 +203,7 @@ For the appetizer, the images are as follows
 
 ### Environment Usage
 
-**Notes:** We support new **Gym APIs**.
+**Notes:** We support new [**Gymnasium APIs**](https://github.com/Farama-Foundation/Gymnasium).
 
 ```python
 import safety_gymnasium
@@ -300,12 +299,12 @@ agent.learn()
 #     if done:
 #         obs = env.reset()
 # env.close()
-
 ```
 
 ### 3. Run Agent from custom terminal config
-cd `omnisafe/examples` and run
-```python
+
+```bash
+cd examples
 python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 5 --epochs 1
 ```
 
