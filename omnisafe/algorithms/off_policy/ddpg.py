@@ -200,7 +200,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         Returns:
             torch.Tensor.
         """
-        action, _ = self.actor_critic.actor.predict(data['obs'], deterministic=True)
+        action = self.actor_critic.actor.predict(data['obs'], deterministic=True)
         loss_pi = self.actor_critic.critic(data['obs'], action)[0]
         pi_info = {}
         return -loss_pi.mean(), pi_info
@@ -253,7 +253,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
 
         # Bellman backup for Q function
         with torch.no_grad():
-            action, _ = self.ac_targ.actor.predict(obs_next, deterministic=True)
+            action = self.ac_targ.actor.predict(obs_next, deterministic=True)
             qc_targ = self.ac_targ.cost_critic(obs_next, action)[0]
             backup = cost + self.cfgs.gamma * (1 - done) * qc_targ
         # MSE loss against Bellman backup

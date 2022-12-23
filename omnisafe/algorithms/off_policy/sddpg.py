@@ -131,7 +131,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
             loss (torch.Tensor): loss of cost performance.
         """
         # Compute loss
-        action, _ = self.actor_critic.actor.predict(data['obs'], deterministic=True)
+        action = self.actor_critic.actor.predict(data['obs'], deterministic=True)
         loss_pi = self.actor_critic.cost_critic(data['obs'], action)[0]
         pi_info = {}
         return loss_pi.mean(), pi_info

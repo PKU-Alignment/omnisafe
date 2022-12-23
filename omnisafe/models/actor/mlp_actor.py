@@ -74,7 +74,7 @@ class MLPActor(Actor):
         # Return output from network scaled to action space limits.
         return self.act_max * self.net(obs)
 
-    def predict(self, obs, deterministic=False, need_log_prob=True):
+    def predict(self, obs, deterministic=False, need_log_prob=False):
         if deterministic:
             action = self.act_max * self.net(obs)
         else:
