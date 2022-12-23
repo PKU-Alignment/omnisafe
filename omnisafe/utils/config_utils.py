@@ -60,6 +60,13 @@ def create_namedtuple_from_dict(obj):
         return obj
 
 
+def create_dict_from_namedtuple(obj):
+    """Create dict from name-tuple"""
+    if isinstance(obj, tuple):
+        return {key: create_dict_from_namedtuple(value) for key, value in obj._asdict().items()}
+    return obj
+
+
 def check_all_configs(configs, algo_type):
     """Check all configs"""
     if algo_type == 'on-policy':

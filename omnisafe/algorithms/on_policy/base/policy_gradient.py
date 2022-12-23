@@ -25,6 +25,7 @@ from omnisafe.common.buffer import Buffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core, distributed_utils
+from omnisafe.utils.config_utils import create_dict_from_namedtuple
 from omnisafe.utils.tools import get_flat_params_from
 from omnisafe.wrappers import wrapper_registry
 
@@ -73,7 +74,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
 
         # Set up logger and save configuration to disk
         self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
-        self.logger.save_config(cfgs._asdict())
+        self.logger.save_config(create_dict_from_namedtuple(cfgs))
         # Set seed
         seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
         torch.manual_seed(seed)
