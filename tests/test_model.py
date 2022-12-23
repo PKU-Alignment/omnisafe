@@ -51,7 +51,7 @@ def test_critic(
     act = torch.randn(act_dim, dtype=torch.float32)
     q_critic = builder.build_critic(critic_type='q')
     v_critic = builder.build_critic(critic_type='v')
-    out1 = q_critic(obs, act)
+    out1 = q_critic(obs, act)[0]
     out2 = v_critic(obs)
     assert out1.shape == torch.Size([]), f'q_critic output shape is {out1.shape}'
     assert out2.shape == torch.Size([]), f'v_critic output shape is {out2.shape}'
