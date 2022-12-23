@@ -18,7 +18,7 @@ import abc
 from copy import deepcopy
 from typing import Union
 
-# import gymnasium
+import gymnasium  # pylint: disable=unused-import
 import mujoco
 import numpy as np
 from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen, Viewer

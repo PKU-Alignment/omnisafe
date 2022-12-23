@@ -12,38 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of Natural Policy Gradient algorithm."""
+"""Implementation of the Lagrange version of the TRPO algorithm."""
 
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.natural_pg import NaturalPG
+from omnisafe.algorithms.on_policy.base.trpo import TRPO
 from omnisafe.common.lagrange import Lagrange
 
 
 @registry.register
-class NPGLag(NaturalPG, Lagrange):
-    """The Lagrange version of  Natural Policy Gradient algorithm.
+class TRPOLag(TRPO, Lagrange):
+    """The Lagrange version of the TRPO algorithm.
 
-    A simple combination of Lagrange method and Natural Policy Gradient algorithm.
+    References:
+        Title: Benchmarking Safe Exploration in Deep Reinforcement Learning
+        Authors: Alex Ray, Joshua Achiam, Dario Amodei.
+        URL: https://cdn.openai.com/safexp-short.pdf
 
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-        algo: str = 'NPG-Lag',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
-    ):
+    def __init__(self, env_id, cfgs) -> None:
         """initialize"""
-
-        NaturalPG.__init__(
+        TRPO.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
         Lagrange.__init__(
             self,
@@ -53,37 +47,32 @@ class NPGLag(NaturalPG, Lagrange):
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
         )
 
-    def compute_loss_pi(self, data: dict):
-        """
-        computing pi/actor loss
+    def algorithm_specific_logs(self):
+        super().algorithm_specific_logs()
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
-        Returns:
-            torch.Tensor
-        """
+    def compute_loss_pi(self, data: dict) -> tuple:
         # Policy loss
         dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
 
-        # Compute loss via ratio and advantage
-        penalty_lambda = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        adv = data['adv'] - penalty_lambda * data['cost_adv']
-        loss_pi = -(ratio * adv).mean()
-        loss_pi += self.cfgs.entropy_coef * dist.entropy().mean()
+        loss_pi = -(ratio * data['adv']).mean()
+        loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
+
+        # ensure that Lagrange Multiplier is positive
+        penalty = torch.clamp_min(self.lagrangian_multiplier, 0.0)
+        loss_pi += penalty * (ratio * data['cost_adv']).mean()
+        loss_pi /= 1 + penalty
 
         # Useful extra info
-        approx_kl = (0.5 * (dist.mean - data['act']) ** 2 / dist.stddev**2).mean().item()
-
-        # Compute policy's entropy
+        approx_kl = 0.5 * (data['log_p'] - _log_p).mean().item()
         ent = dist.entropy().mean().item()
-
         pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
 
         return loss_pi, pi_info
 
     def update(self):
-        """
-        Update actor, critic, running statistics
-        """
+        """Update."""
         # pre-process data
         raw_data, data = self.buf.pre_process_data()
         # sub-sampling accelerates calculations
@@ -92,13 +81,8 @@ class NPGLag(NaturalPG, Lagrange):
         ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
         self.update_lagrange_multiplier(ep_costs)
-        # Update Policy Network
-        self.update_policy_net(data)
-        # Update Value Function
+        # now update policy and value network
+        self.update_policy_net(data=data)
         self.update_value_net(data=data)
         self.update_cost_net(data=data)
         return raw_data, data
-
-    def algorithm_specific_logs(self):
-        super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())

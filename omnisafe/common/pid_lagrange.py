@@ -34,7 +34,7 @@ class PIDLagrangian(abc.ABC):
         sum_norm: bool,
         diff_norm: bool,
         penalty_max: int,
-        lagrangian_multiplier_init: 0.001,
+        lagrangian_multiplier_init: float,
         cost_limit: int,
     ):
         """init"""

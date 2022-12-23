@@ -17,7 +17,7 @@
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.trpo import TRPO
+from omnisafe.algorithms.on_policy.base.trpo import TRPO
 from omnisafe.utils import distributed_utils
 from omnisafe.utils.tools import (
     conjugate_gradients,
@@ -32,25 +32,13 @@ class PCPO(TRPO):
     """The Projection-Based Constrained Policy Optimization (PCPO) algorithm.
 
     References:
-        Paper name: Projection-Based Constrained Policy Optimization.
-        Paper author: Tsung-Yen Yang, Justinian Rosca, Karthik Narasimhan, Peter J. Ramadge
-        Paper URL: https://arxiv.org/abs/2010.03152
-
+        Title: Projection-Based Constrained Policy Optimization
+        Authors: Tsung-Yen Yang, Justinian Rosca, Karthik Narasimhan, Peter J. Ramadge.
+        URL: https://arxiv.org/abs/2010.03152
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-        algo='PCPO',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
-    ):
-        super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
-        )
+    def __init__(self, env_id, cfgs) -> None:
+        super().__init__(env_id=env_id, cfgs=cfgs)
         self.cost_limit = self.cfgs.cost_limit
 
     # pylint: disable-next=too-many-locals,too-many-arguments

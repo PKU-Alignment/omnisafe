@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""env_wrapper"""
+"""Environment wrapper for off-policy algorithms."""
 
 import safety_gymnasium
 import torch
@@ -23,7 +23,7 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 # pylint: disable=too-many-instance-attributes
 @WRAPPER_REGISTRY.register
 class OffPolicyEnvWrapper:
-    """OffPolicyEnvWrapper"""
+    """OffPolicyEnvWrapperr"""
 
     def __init__(
         self,
@@ -53,7 +53,6 @@ class OffPolicyEnvWrapper:
         # self.deterministic = False
         self.local_steps_per_epoch = None
         self.cost_gamma = None
-        self.use_cost = None
         self.penalty_param = None
 
     def make(self):
@@ -130,7 +129,7 @@ class OffPolicyEnvWrapper:
                         **{
                             'Metrics/EpRet': ep_ret,
                             'Metrics/EpLen': ep_len,
-                            'Metrics/EpCosts': ep_cost,
+                            'Metrics/EpCost': ep_cost,
                         }
                     )
                     self.curr_o, _ = self.env.reset(seed=self.seed)
@@ -142,7 +141,7 @@ class OffPolicyEnvWrapper:
                         **{
                             'Test/EpRet': ep_ret,
                             'Test/EpLen': ep_len,
-                            'Test/EpCosts': ep_cost,
+                            'Test/EpCost': ep_cost,
                         }
                     )
                     self.curr_o, _ = self.env.reset(seed=self.seed)

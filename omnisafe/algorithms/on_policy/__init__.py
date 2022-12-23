@@ -12,3 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""On-policy algorithms."""
+
+from omnisafe.algorithms.on_policy import (
+    base,
+    early_terminated,
+    first_order,
+    naive_lagrange,
+    pid_lagrange,
+    saute,
+    second_order,
+    simmer,
+)
+from omnisafe.algorithms.on_policy.base import PPO, TRPO, NaturalPG, PolicyGradient
+from omnisafe.algorithms.on_policy.early_terminated import PPOEarlyTerminated, PPOLagEarlyTerminated
+from omnisafe.algorithms.on_policy.first_order import CUP, FOCOPS
+from omnisafe.algorithms.on_policy.naive_lagrange import PDO, NPGLag, PPOLag, TRPOLag
+from omnisafe.algorithms.on_policy.pid_lagrange import CPPOPid, TRPOPid
+from omnisafe.algorithms.on_policy.saute import PPOLagSaute, PPOSaute
+from omnisafe.algorithms.on_policy.second_order import CPO, PCPO
+from omnisafe.algorithms.on_policy.simmer import (
+    PPOLagSimmerPid,
+    PPOLagSimmerQ,
+    PPOSimmerPid,
+    PPOSimmerQ,
+)
+
+
+__all__ = [
+    *base.__all__,
+    *early_terminated.__all__,
+    *first_order.__all__,
+    *naive_lagrange.__all__,
+    *pid_lagrange.__all__,
+    *saute.__all__,
+    *second_order.__all__,
+    *simmer.__all__,
+]

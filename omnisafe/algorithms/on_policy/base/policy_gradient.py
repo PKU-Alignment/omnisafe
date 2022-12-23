@@ -25,6 +25,7 @@ from omnisafe.common.buffer import Buffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core, distributed_utils
+from omnisafe.utils.config_utils import namedtuple2dict
 from omnisafe.utils.tools import get_flat_params_from
 from omnisafe.wrappers import wrapper_registry
 
@@ -34,21 +35,13 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
     """The Policy Gradient algorithm.
 
     References:
-        Paper Name: Policy Gradient Methods for Reinforcement Learning with Function Approximation
-        Paper Author: Richard S. Sutton, David McAllester, Satinder Singh, Yishay Mansour
-        Paper URL: https://proceedings.neurips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf
-
+        Title: Policy Gradient Methods for Reinforcement Learning with Function Approximation
+        Authors: Richard S. Sutton, David McAllester, Satinder Singh, Yishay Mansour.
+        URL: https://proceedings.neurips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf
     """
 
-    # pylint: disable-next=too-many-locals
-    def __init__(
-        self,
-        env_id,
-        cfgs=None,
-        algo: str = 'PolicyGradient',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
-    ) -> None:
-        r"""Initialize the algorithm.
+    def __init__(self, env_id, cfgs=None) -> None:
+        """Initialize the algorithm.
 
         Args:
             env: The environment.
@@ -57,9 +50,12 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
             cfgs: (default: :const:`None`)
                 This is a dictionary of the algorithm hyper-parameters.
         """
-        self.env = wrapper_registry.get(wrapper_type)(env_id)
-        self.algo = algo
+        self.algo = self.__class__.__name__
         self.cfgs = deepcopy(cfgs)
+        self.wrapper_type = self.cfgs.wrapper_type
+        self.env = wrapper_registry.get(self.wrapper_type)(
+            env_id, cfgs=namedtuple2dict(self.cfgs).get('env_cfgs')
+        )
 
         assert self.cfgs.steps_per_epoch % distributed_utils.num_procs() == 0
         self.local_steps_per_epoch = cfgs.steps_per_epoch // distributed_utils.num_procs()
@@ -72,7 +68,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
 
         # Set up logger and save configuration to disk
         self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
-        self.logger.save_config(cfgs._asdict())
+        self.logger.save_config(namedtuple2dict(cfgs))
         # Set seed
         seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
         torch.manual_seed(seed)

@@ -12,44 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the CPPO Pid-Lagrange algorithm."""
+"""Implementation of the PID-Lagrange version of the TRPO algorithm."""
 
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
+from omnisafe.algorithms.on_policy.base.trpo import TRPO
 from omnisafe.common.pid_lagrange import PIDLagrangian
+from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
-class CPPOPid(PolicyGradient, PIDLagrangian):
-    """The Responsive Safety in Reinforcement Learning by PID Lagrangian Methods.
+class TRPOPid(TRPO, PIDLagrangian):
+    """The PID-Lagrange version of the TRPO algorithm.
 
     References:
-        Paper Name: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods.
-        Paper author: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
-        Paper URL: https://arxiv.org/abs/1705.10528
-
+        Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
+        Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+        URL: https://arxiv.org/abs/2007.03964
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-        algo: str = 'CPPO-PID',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
-    ):
-
-        PolicyGradient.__init__(
+    def __init__(self, env_id, cfgs) -> None:
+        TRPO.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
-        PIDLagrangian.__init__(self, **self.cfgs.PID_cfgs._asdict())
-
-        self.clip = self.cfgs.clip
+        PIDLagrangian.__init__(self, **namedtuple2dict(self.cfgs.PID_cfgs))
         self.cost_limit = self.cfgs.cost_limit
 
     def algorithm_specific_logs(self):
@@ -63,16 +52,13 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
         """compute loss for policy"""
         dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
-        ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
 
-        surr_adv = (torch.min(ratio * data['adv'], ratio_clip * data['adv'])).mean()
-        surr_cadv = (torch.max(ratio * data['cost_adv'], ratio_clip * data['cost_adv'])).mean()
-
-        loss_pi = -surr_adv
+        # Compute loss via ratio and advantage
+        loss_pi = -(ratio * data['adv']).mean()
         loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
 
         penalty = self.cost_penalty
-        loss_pi += penalty * surr_cadv
+        loss_pi += penalty * (ratio * data['cost_adv']).mean()
         loss_pi /= 1 + penalty
 
         # Useful extra info
@@ -85,6 +71,8 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
     def update(self):
         """update policy"""
         raw_data, data = self.buf.pre_process_data()
+        # sub-sampling accelerates calculations
+        self.fvp_obs = data['obs'][::4]
         # Note that logger already uses MPI statistics across all processes..
         ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter

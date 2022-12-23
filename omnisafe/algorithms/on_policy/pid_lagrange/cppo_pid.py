@@ -12,64 +12,58 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of TRPO algorithm."""
+"""Implementation of the PID-Lagrange version of the CPPO algorithm."""
 
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.trpo import TRPO
-from omnisafe.common.lagrange import Lagrange
+from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
+from omnisafe.common.pid_lagrange import PIDLagrangian
+from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
-class TRPOLag(TRPO, Lagrange):
-    """The Lagrange version of TRPO algorithm.
+class CPPOPid(PolicyGradient, PIDLagrangian):
+    """The PID-Lagrange version of the CPPO algorithm.
 
     References:
-        Paper Name: Benchmarking Safe Exploration in Deep Reinforcement Learning.
-        Paper author: Alex Ray, Joshua Achiam, Dario Amodei
-        Paper URL: https://cdn.openai.com/safexp-short.pdf
-
+        Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
+        Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+        URL: https://arxiv.org/abs/2007.03964
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-        algo: str = 'TRPO-Lag',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
-    ):
-        """initialize"""
-        TRPO.__init__(
+    def __init__(self, env_id, cfgs) -> None:
+        PolicyGradient.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
-        Lagrange.__init__(
-            self,
-            cost_limit=self.cfgs.lagrange_cfgs.cost_limit,
-            lagrangian_multiplier_init=self.cfgs.lagrange_cfgs.lagrangian_multiplier_init,
-            lambda_lr=self.cfgs.lagrange_cfgs.lambda_lr,
-            lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
-        )
+        PIDLagrangian.__init__(self, **namedtuple2dict(self.cfgs.PID_cfgs))
+
+        self.clip = self.cfgs.clip
+        self.cost_limit = self.cfgs.PID_cfgs.cost_limit
 
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.cost_penalty)
+        self.logger.log_tabular('PID/pid_Kp', self.pid_kp)
+        self.logger.log_tabular('PID/pid_Ki', self.pid_ki)
+        self.logger.log_tabular('PID/pid_Kd', self.pid_kd)
 
-    def compute_loss_pi(self, data: dict) -> tuple:
-        # Policy loss
+    def compute_loss_pi(self, data: dict):
+        """compute loss for policy"""
         dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
         ratio = torch.exp(_log_p - data['log_p'])
+        ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
 
-        loss_pi = -(ratio * data['adv']).mean()
+        surr_adv = (torch.min(ratio * data['adv'], ratio_clip * data['adv'])).mean()
+        surr_cadv = (torch.max(ratio * data['cost_adv'], ratio_clip * data['cost_adv'])).mean()
+
+        loss_pi = -surr_adv
         loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
 
-        # ensure that Lagrange Multiplier is positive
-        penalty = torch.clamp_min(self.lagrangian_multiplier, 0.0)
-        loss_pi += penalty * (ratio * data['cost_adv']).mean()
+        penalty = self.cost_penalty
+        loss_pi += penalty * surr_cadv
         loss_pi /= 1 + penalty
 
         # Useful extra info
@@ -80,15 +74,12 @@ class TRPOLag(TRPO, Lagrange):
         return loss_pi, pi_info
 
     def update(self):
-        """Update."""
-        # pre-process data
+        """update policy"""
         raw_data, data = self.buf.pre_process_data()
-        # sub-sampling accelerates calculations
-        self.fvp_obs = data['obs'][::4]
         # Note that logger already uses MPI statistics across all processes..
         ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
-        self.update_lagrange_multiplier(ep_costs)
+        self.pid_update(ep_costs)
         # now update policy and value network
         self.update_policy_net(data=data)
         self.update_value_net(data=data)

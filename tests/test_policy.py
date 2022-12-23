@@ -18,26 +18,19 @@ import helpers
 import omnisafe
 
 
-@helpers.parametrize(
-    algo=[
-        'PolicyGradient',
-        'PPO',
-        'PPOLag',
-        'NaturalPG',
-        'TRPO',
-        'TRPOLag',
-        'PDO',
-        'NPGLag',
-        'CPO',
-        'PCPO',
-        'FOCOPS',
-        'CPPOPid',
-        'CUP',
-    ]
-)
-def test_on_policy(algo):
+@helpers.parametrize(on_policy_algo=omnisafe.ALGORITHMS['on-policy'])
+def test_on_policy(on_policy_algo):
     """Test algorithms"""
     env_id = 'SafetyPointGoal1-v0'
     custom_cfgs = {'epochs': 1, 'steps_per_epoch': 2000, 'pi_iters': 1, 'critic_iters': 1}
-    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
+    agent = omnisafe.Agent(on_policy_algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
+    agent.learn()
+
+
+@helpers.parametrize(off_policy_algo=omnisafe.ALGORITHMS['off-policy'])
+def test_off_policy(off_policy_algo):
+    """Test algorithms"""
+    env_id = 'SafetyPointGoal1-v0'
+    custom_cfgs = {'epochs': 1, 'steps_per_epoch': 2000, 'pi_iters': 1, 'critic_iters': 1}
+    agent = omnisafe.Agent(off_policy_algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()

@@ -17,32 +17,23 @@
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.policy_gradient import PolicyGradient
+from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
 from omnisafe.common.lagrange import Lagrange
 
 
 @registry.register
 class PDO(PolicyGradient, Lagrange):
-    """The Lagrange version of Policy Gradient algorithm.
+    """The Lagrange version of the Policy Gradient algorithm.
 
-    A simple combination of Lagrange method and Policy Gradient algorithm.
-
+    A simple combination of the Lagrange method and the Policy Gradient algorithm.
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-        algo='PDO',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
-    ):
+    def __init__(self, env_id, cfgs) -> None:
         """initialization"""
         PolicyGradient.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
         )
         Lagrange.__init__(
             self,

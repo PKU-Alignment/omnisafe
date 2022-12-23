@@ -17,7 +17,7 @@
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.natural_pg import NaturalPG
+from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
 from omnisafe.utils import distributed_utils
 from omnisafe.utils.tools import (
     conjugate_gradients,
@@ -29,27 +29,16 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class TRPO(NaturalPG):
-    """The Trust Region Policy Optimization (TRPO) Algorithm.
+    """The Trust Region Policy Optimization (TRPO) algorithm.
 
     References:
-        Paper Name: Trust Region Policy Optimization.
-        Paper author: John Schulman, Sergey Levine, Philipp Moritz, Michael I. Jordan, Pieter Abbeel.
-        Paper URL: https://arxiv.org/abs/1502.05477
+        Title: Trust Region Policy Optimization
+        Authors: John Schulman, Sergey Levine, Philipp Moritz, Michael I. Jordan, Pieter Abbeel.
+        URL: https://arxiv.org/abs/1502.05477
     """
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-        algo='TRPO',
-        wrapper_type: str = 'OnPolicyEnvWrapper',
-    ):
-        super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-            algo=algo,
-            wrapper_type=wrapper_type,
-        )
+    def __init__(self, env_id, cfgs) -> None:
+        super().__init__(env_id=env_id, cfgs=cfgs)
 
     # pylint: disable-next=too-many-arguments,too-many-locals,arguments-differ
     def search_step_size(
@@ -62,7 +51,7 @@ class TRPO(NaturalPG):
         total_steps=15,
         decay=0.8,
     ):
-        r"""TRPO performs line-search until constraint satisfaction.
+        """TRPO performs line-search until constraint satisfaction.
 
         search around for a satisfied step of policy update to improve loss and reward performance
 

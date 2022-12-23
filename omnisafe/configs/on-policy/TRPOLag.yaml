@@ -18,6 +18,8 @@ defaults:
   ## -----------------------------Basic configurations for base class PG------------------------ ##
   # The random seed
   seed: 0
+  # The environment wrapper type
+  wrapper_type: OnPolicyEnvWrapper
   # Number of epochs
   epochs: 500
   # Number of steps per epoch
@@ -75,7 +77,7 @@ defaults:
   # Whether to use reward scaling
   scale_rewards: False
   # Whether to use standardized observation
-  standardized_obs: True
+  standardized_obs: False
   ## ---------------------------------------Configuration For Model----------------------------- ##
   model_cfgs:
     # Whether to share the weight of Actor network with Critic network
