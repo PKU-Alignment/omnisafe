@@ -50,23 +50,19 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
-    def compute_loss_pi(self, data: dict):
+    def compute_loss_pi(self, obs):
         """Computing pi/actor loss.
 
         Args:
-            data (dict): data from replay buffer.
+            obs (torch.Tensor): ``observation`` saved in data.
 
         Returns:
             torch.Tensor.
         """
-        action = self.actor_critic.actor.predict(
-            data['obs'], deterministic=True, need_log_prob=False
-        )
-        loss_pi = self.actor_critic.critic(data['obs'], action)[0]
+        action = self.actor_critic.actor.predict(obs, deterministic=True, need_log_prob=False)
+        loss_pi = self.actor_critic.critic(obs, action)[0]
         penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        loss_pi -= (
-            self.lagrangian_multiplier * self.actor_critic.cost_critic(data['obs'], action)[0]
-        )
+        loss_pi -= self.lagrangian_multiplier * self.actor_critic.cost_critic(obs, action)[0]
         loss_pi /= 1 + penalty
         pi_info = {}
         return -loss_pi.mean(), pi_info
@@ -76,9 +72,29 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
         Jc = data['cost'].sum().item()
         self.update_lagrange_multiplier(Jc)
         # First run one gradient descent step for Q.
-        self.update_value_net(data)
+        obs, act, rew, cost, obs_next, done = (
+            data['obs'],
+            data['act'],
+            data['rew'],
+            data['cost'],
+            data['obs_next'],
+            data['done'],
+        )
+        self.update_value_net(
+            obs=obs,
+            act=act,
+            rew=rew,
+            obs_next=obs_next,
+            done=done,
+        )
         if self.cfgs.use_cost:
-            self.update_cost_net(data)
+            self.update_cost_net(
+                obs=obs,
+                act=act,
+                cost=cost,
+                obs_next=obs_next,
+                done=done,
+            )
             for param in self.actor_critic.cost_critic.parameters():
                 param.requires_grad = False
 
@@ -87,8 +103,8 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = False
 
-        # Next run one gradient descent step for pi.
-        self.update_policy_net(data)
+        # Next run one gradient descent step for actor.
+        self.update_policy_net(obs=obs)
 
         # Unfreeze Q-network so you can optimize it at next DDPG step.
         for param in self.actor_critic.critic.parameters():

@@ -27,7 +27,9 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
 
     References:
         Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
+
         Authors: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine.
+
         URL: https://arxiv.org/abs/1801.01290
     """
 
@@ -58,37 +60,46 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
-    def compute_loss_pi(self, data: dict):
+    def compute_loss_pi(self, obs):
         """Computing pi/actor loss.
+
+        Args:
+            obs (torch.Tensor): ``observation`` saved in data.
 
         Returns:
             torch.Tensor.
         """
         action, logp_a = self.actor_critic.actor.predict(
-            data['obs'], deterministic=True, need_log_prob=True
+            obs, deterministic=True, need_log_prob=True
         )
-        loss_pi = self.actor_critic.critic(data['obs'], action)[0] - self.alpha * logp_a
+        loss_pi = self.actor_critic.critic(obs, action)[0] - self.alpha * logp_a
         penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        loss_pi -= (
-            self.lagrangian_multiplier * self.actor_critic.cost_critic(data['obs'], action)[0]
-        )
+        loss_pi -= self.lagrangian_multiplier * self.actor_critic.cost_critic(obs, action)[0]
         loss_pi /= 1 + penalty
         pi_info = {}
         return -loss_pi.mean(), pi_info
 
-    def compute_loss_c(self, data):
+    # pylint: disable=too-many-arguments
+    def compute_loss_c(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        cost: torch.Tensor,
+        obs_next: torch.Tensor,
+        done: torch.Tensor,
+    ):
         """Computing cost loss.
+
+        Args:
+            obs (torch.Tensor): ``observation`` saved in data.
+            act (torch.Tensor): ``action`` saved in data.
+            cost (torch.Tensor): ``cost`` saved in data.
+            obs_next (torch.Tensor): ``next observations`` saved in data.
+            done (torch.Tensor): ``terminated`` saved in data.
 
         Returns:
             torch.Tensor.
         """
-        obs, act, cost, obs_next, done = (
-            data['obs'],
-            data['act'],
-            data['rew'],
-            data['obs_next'],
-            data['done'],
-        )
         cost_q_value = self.actor_critic.cost_critic(obs, act)[0]
 
         # Bellman backup for Q function
@@ -106,13 +117,41 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         return loss_qc, qc_info
 
     def update(self, data):
-        """Update."""
+        """Update.
+        Update step contains three parts:
+            #. Update value net
+            #. Update cost net
+            #. Update policy net
+
+        Args:
+            data (dict): data from replay buffer.
+        """
         Jc = data['cost'].sum().item()
         self.update_lagrange_multiplier(Jc)
         # First run one gradient descent step for Q.
-        self.update_value_net(data)
+        obs, act, rew, cost, obs_next, done = (
+            data['obs'],
+            data['act'],
+            data['rew'],
+            data['cost'],
+            data['obs_next'],
+            data['done'],
+        )
+        self.update_value_net(
+            obs=obs,
+            act=act,
+            rew=rew,
+            obs_next=obs_next,
+            done=done,
+        )
         if self.cfgs.use_cost:
-            self.update_cost_net(data)
+            self.update_cost_net(
+                obs=obs,
+                act=act,
+                cost=cost,
+                obs_next=obs_next,
+                done=done,
+            )
             for param in self.actor_critic.cost_critic.parameters():
                 param.requires_grad = False
 
@@ -121,10 +160,10 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = False
 
-        # Next run one gradient descent step for pi.
-        self.update_policy_net(data)
+        # Next run one gradient descent step for actor.
+        self.update_policy_net(obs=obs)
 
-        # Unfreeze Q-network so you can optimize it at next SAC step.
+        # Unfreeze Q-network so you can optimize it at next DDPG step.
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = True
 

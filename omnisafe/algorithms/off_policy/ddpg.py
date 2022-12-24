@@ -36,12 +36,14 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
 
     References:
         Title: Continuous control with deep reinforcement learning
+
         Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
-                 Yuval Tassa, David Silver, Daan Wierstra.
+                Yuval Tassa, David Silver, Daan Wierstra.
+
         URL: https://arxiv.org/abs/1509.02971
     """
 
-    def __init__(self, env_id: str, cfgs=None) -> None:
+    def __init__(self, env_id: str, cfgs) -> None:
         """Initialize DDPG.
 
         Args:
@@ -191,36 +193,41 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 global_max = distributed_utils.mpi_max(np.sum(flat_params))
                 assert np.allclose(global_min, global_max), f'{key} not synced.'
 
-    def compute_loss_pi(self, data: dict):
+    def compute_loss_pi(self, obs):
         """Computing pi/actor loss.
 
         Args:
-            data (dict): data dictionary.
+            obs (torch.Tensor): ``observation`` saved in data.
 
         Returns:
             torch.Tensor.
         """
-        action = self.actor_critic.actor.predict(data['obs'], deterministic=True)
-        loss_pi = self.actor_critic.critic(data['obs'], action)[0]
+        action = self.actor_critic.actor.predict(obs, deterministic=True)
+        loss_pi = self.actor_critic.critic(obs, action)[0]
         pi_info = {}
         return -loss_pi.mean(), pi_info
 
-    def compute_loss_v(self, data):
+    # pylint: disable=too-many-arguments
+    def compute_loss_v(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        rew: torch.Tensor,
+        obs_next: torch.Tensor,
+        done: torch.Tensor,
+    ):
         """Computing value loss.
 
         Args:
-            data (dict): data dictionary.
+            obs (torch.Tensor): ``observation`` saved in data.
+            act (torch.Tensor): ``action`` saved in data.
+            rew (torch.Tensor): ``reward`` saved in data.
+            obs_next (torch.Tensor): ``next observations`` saved in data.
+            done (torch.Tensor): ``terminated`` saved in data.
 
         Returns:
             torch.Tensor.
         """
-        obs, act, rew, obs_next, done = (
-            data['obs'],
-            data['act'],
-            data['rew'],
-            data['obs_next'],
-            data['done'],
-        )
         q_value = self.actor_critic.critic(obs, act)[0]
         # Bellman backup for Q function
         with torch.no_grad():
@@ -233,22 +240,27 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         q_info = dict(QVals=q_value.detach().numpy())
         return loss_q, q_info
 
-    def compute_loss_c(self, data):
+    # pylint: disable=too-many-arguments
+    def compute_loss_c(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        cost: torch.Tensor,
+        obs_next: torch.Tensor,
+        done: torch.Tensor,
+    ):
         """Computing cost loss.
 
         Args:
-            data (dict): data dictionary.
+            obs (torch.Tensor): ``observation`` saved in data.
+            act (torch.Tensor): ``action`` saved in data.
+            cost (torch.Tensor): ``cost`` saved in data.
+            obs_next (torch.Tensor): ``next observations`` saved in data.
+            done (torch.Tensor): ``terminated`` saved in data.
 
         Returns:
             torch.Tensor.
         """
-        obs, act, cost, obs_next, done = (
-            data['obs'],
-            data['act'],
-            data['rew'],
-            data['obs_next'],
-            data['done'],
-        )
         cost_q_value = self.actor_critic.cost_critic(obs, act)[0]
 
         # Bellman backup for Q function
@@ -266,9 +278,9 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
     def learn(self):
         """
         This is main function for algorithm update, divided into the following steps:
-            (1). self.rollout: collect interactive data from environment
-            (2). self.update: perform actor/critic updates
-            (3). log epoch/update information for visualization and terminal log print.
+            #. self.rollout: collect interactive data from environment
+            #. self.update: perform actor/critic updates
+            #. log epoch/update information for visualization and terminal log print.
 
         Returns:
             model and environment.
@@ -315,14 +327,38 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
 
     def update(self, data):
         """Update.
+        Update step contains three parts:
+            #. Update value net
+            #. Update cost net
+            #. Update policy net
 
         Args:
-            data (dict): data dictionary.
+            data (dict): data from replay buffer.
         """
         # First run one gradient descent step for Q.
-        self.update_value_net(data)
+        obs, act, rew, cost, obs_next, done = (
+            data['obs'],
+            data['act'],
+            data['rew'],
+            data['cost'],
+            data['obs_next'],
+            data['done'],
+        )
+        self.update_value_net(
+            obs=obs,
+            act=act,
+            rew=rew,
+            obs_next=obs_next,
+            done=done,
+        )
         if self.cfgs.use_cost:
-            self.update_cost_net(data)
+            self.update_cost_net(
+                obs=obs,
+                act=act,
+                cost=cost,
+                obs_next=obs_next,
+                done=done,
+            )
             for param in self.actor_critic.cost_critic.parameters():
                 param.requires_grad = False
 
@@ -332,7 +368,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             param.requires_grad = False
 
         # Next run one gradient descent step for actor.
-        self.update_policy_net(data)
+        self.update_policy_net(obs=obs)
 
         # Unfreeze Q-network so you can optimize it at next DDPG step.
         for param in self.actor_critic.critic.parameters():
@@ -354,41 +390,77 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 param_targ.data.mul_(self.cfgs.polyak)
                 param_targ.data.add_((1 - self.cfgs.polyak) * param.data)
 
-    def update_policy_net(self, data) -> None:
+    def update_policy_net(self, obs) -> None:
         """Update policy network.
 
         Args:
-            data (dict): data dictionary.
+            obs (torch.Tensor): observation.
         """
         # Train policy with one steps of gradient descent
         self.actor_optimizer.zero_grad()
-        loss_pi, _ = self.compute_loss_pi(data)
+        loss_pi, _ = self.compute_loss_pi(obs)
         loss_pi.backward()
         self.actor_optimizer.step()
         self.logger.store(**{'Loss/Pi': loss_pi.item()})
 
-    def update_value_net(self, data: dict) -> None:
+    # pylint: disable=too-many-arguments
+    def update_value_net(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        rew: torch.Tensor,
+        obs_next: torch.Tensor,
+        done: torch.Tensor,
+    ) -> None:
         """Update value network.
 
         Args:
-            data (dict): data dictionary
+            obs (torch.Tensor): ``observation`` saved in data.
+            act (torch.Tensor): ``action`` saved in data.
+            rew (torch.Tensor): ``reward`` saved in data.
+            obs_next (torch.Tensor): ``next observations`` saved in data.
+            done (torch.Tensor): ``terminated`` saved in data.
         """
         # Train value critic with one steps of gradient descent
         self.critic_optimizer.zero_grad()
-        loss_q, q_info = self.compute_loss_v(data)
+        loss_q, q_info = self.compute_loss_v(
+            obs=obs,
+            act=act,
+            rew=rew,
+            obs_next=obs_next,
+            done=done,
+        )
         loss_q.backward()
         self.critic_optimizer.step()
         self.logger.store(**{'Loss/Value': loss_q.item(), 'QVals': q_info['QVals']})
 
-    def update_cost_net(self, data):
+    # pylint: disable=too-many-arguments
+    def update_cost_net(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        cost: torch.Tensor,
+        obs_next: torch.Tensor,
+        done: torch.Tensor,
+    ) -> None:
         """Update cost network.
 
         Args:
-            data (dict): data dictionary.
+            obs (torch.Tensor): ``observation`` saved in data.
+            act (torch.Tensor): ``action`` saved in data.
+            cost (torch.Tensor): ``cost`` saved in data.
+            obs_next (torch.Tensor): ``next observations`` saved in data.
+            done (torch.Tensor): ``terminated`` saved in data.
         """
         # Train cost critic with one steps of gradient descent
         self.cost_critic_optimizer.zero_grad()
-        loss_qc, qc_info = self.compute_loss_c(data)
+        loss_qc, qc_info = self.compute_loss_c(
+            obs=obs,
+            act=act,
+            cost=cost,
+            obs_next=obs_next,
+            done=done,
+        )
         loss_qc.backward()
         self.cost_critic_optimizer.step()
         self.logger.store(**{'Loss/Cost': loss_qc.item(), 'QCosts': qc_info['QCosts']})
