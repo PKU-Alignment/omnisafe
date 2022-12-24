@@ -29,7 +29,7 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
-    """Implementation of the SDDPG algorithm.
+    """Lyapunov-based Safe Policy Optimization for Continuous Control.
 
     References:
         Title: Lyapunov-based Safe Policy Optimization for Continuous Control
@@ -67,9 +67,29 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         """
         # First run one gradient descent step for Q.
         self.fvp_obs = data['obs'][::4]
-        self.update_value_net(data)
+        obs, act, rew, cost, obs_next, done = (
+            data['obs'],
+            data['act'],
+            data['rew'],
+            data['cost'],
+            data['obs_next'],
+            data['done'],
+        )
+        self.update_value_net(
+            obs=obs,
+            act=act,
+            rew=rew,
+            obs_next=obs_next,
+            done=done,
+        )
         if self.cfgs.use_cost:
-            self.update_cost_net(data)
+            self.update_cost_net(
+                obs=obs,
+                act=act,
+                cost=cost,
+                obs_next=obs_next,
+                done=done,
+            )
             for param in self.actor_critic.cost_critic.parameters():
                 param.requires_grad = False
 
@@ -79,7 +99,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
             param.requires_grad = False
 
         # Next run one gradient descent step for actor.
-        self.update_policy_net(data)
+        self.update_policy_net(obs=obs)
 
         # Unfreeze Q-network so you can optimize it at next DDPG step.
         for param in self.actor_critic.critic.parameters():
@@ -121,7 +141,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         distributed_utils.mpi_avg_torch_tensor(flat_grad_grad_kl)
         return flat_grad_grad_kl + params * self.cg_damping
 
-    def compute_loss_cost_performance(self, data):
+    def compute_loss_cost_performance(self, obs):
         """Compute loss of cost performance.
 
         Args:
@@ -131,23 +151,23 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
             loss (torch.Tensor): loss of cost performance.
         """
         # Compute loss
-        action = self.actor_critic.actor.predict(data['obs'], deterministic=True)
-        loss_pi = self.actor_critic.cost_critic(data['obs'], action)[0]
+        action = self.actor_critic.actor.predict(obs, deterministic=True)
+        loss_pi = self.actor_critic.cost_critic(obs, action)[0]
         pi_info = {}
         return loss_pi.mean(), pi_info
 
     # pylint: disable=invalid-name,too-many-arguments,too-many-locals
-    def update_policy_net(self, data) -> None:
+    def update_policy_net(self, obs) -> None:
         """Update policy network.
 
         Args:
-            data (dict): data dictionary.
+            obs (torch.Tensor): observation.
         """
         # Train policy with one steps of gradient descent
         theta_old = get_flat_params_from(self.actor_critic.actor.net)
 
         self.actor_optimizer.zero_grad()
-        loss_pi, _ = self.compute_loss_pi(data)
+        loss_pi, _ = self.compute_loss_pi(obs)
         loss_pi.backward()
 
         g_flat = get_flat_gradients_from(self.actor_critic.actor.net)
@@ -162,7 +182,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         alpha = torch.sqrt(2 * self.target_kl / (xHx + eps))
 
         self.actor_optimizer.zero_grad()
-        loss_cost, _ = self.compute_loss_cost_performance(data)
+        loss_cost, _ = self.compute_loss_cost_performance(obs)
         loss_cost.backward()
 
         b_flat = get_flat_gradients_from(self.actor_critic.actor.net)

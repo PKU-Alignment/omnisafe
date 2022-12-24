@@ -39,23 +39,27 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         self.alpha = cfgs.alpha
         self.alpha_gamma = cfgs.alpha_gamma
 
-    # pylint: disable=too-many-locals
-    def compute_loss_v(self, data):
+    # pylint: disable=too-many-locals, disable=too-many-arguments
+    def compute_loss_v(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        rew: torch.Tensor,
+        obs_next: torch.Tensor,
+        done: torch.Tensor,
+    ):
         """Computing value loss.
 
         Args:
-            data (dict): data from replay buffer.
+            obs (torch.Tensor): ``observation`` saved in data.
+            act (torch.Tensor): ``action`` saved in data.
+            rew (torch.Tensor): ``reward`` saved in data.
+            obs_next (torch.Tensor): ``next observations`` saved in data.
+            done (torch.Tensor): ``terminated`` saved in data.
 
         Returns:
             torch.Tensor.
         """
-        obs, act, rew, obs_next, done = (
-            data['obs'],
-            data['act'],
-            data['rew'],
-            data['obs_next'],
-            data['done'],
-        )
         q_value_list = self.actor_critic.critic(obs, act)
         # Bellman backup for Q function
         with torch.no_grad():
@@ -75,28 +79,56 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         q_info = dict(QVals=sum(q_values).detach().numpy())
         return sum(loss_q), q_info
 
-    def compute_loss_pi(self, data: dict):
+    def compute_loss_pi(self, obs):
         """Computing pi/actor loss.
 
         Args:
-            data (dict): data from replay buffer.
+            obs (torch.Tensor): ``observation`` saved in data.
 
         Returns:
             torch.Tensor.
         """
         action, logp_a = self.actor_critic.actor.predict(
-            data['obs'], deterministic=True, need_log_prob=True
+            obs, deterministic=True, need_log_prob=True
         )
-        loss_pi = self.actor_critic.critic(data['obs'], action)[0] - self.alpha * logp_a
+        loss_pi = self.actor_critic.critic(obs, action)[0] - self.alpha * logp_a
         pi_info = {'LogPi': logp_a.detach().numpy()}
         return -loss_pi.mean(), pi_info
 
     def update(self, data):
-        """Update."""
+        """Update.
+        Update step contains three parts:
+            #. Update value net
+            #. Update cost net
+            #. Update policy net
+
+        Args:
+            data (dict): data from replay buffer.
+        """
         # First run one gradient descent step for Q.
-        self.update_value_net(data)
+        obs, act, rew, cost, obs_next, done = (
+            data['obs'],
+            data['act'],
+            data['rew'],
+            data['cost'],
+            data['obs_next'],
+            data['done'],
+        )
+        self.update_value_net(
+            obs=obs,
+            act=act,
+            rew=rew,
+            obs_next=obs_next,
+            done=done,
+        )
         if self.cfgs.use_cost:
-            self.update_cost_net(data)
+            self.update_cost_net(
+                obs=obs,
+                act=act,
+                cost=cost,
+                obs_next=obs_next,
+                done=done,
+            )
             for param in self.actor_critic.cost_critic.parameters():
                 param.requires_grad = False
 
@@ -106,7 +138,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
             param.requires_grad = False
 
         # Next run one gradient descent step for actor.
-        self.update_policy_net(data)
+        self.update_policy_net(obs=obs)
 
         # Unfreeze Q-network so you can optimize it at next DDPG step.
         for param in self.actor_critic.critic.parameters():

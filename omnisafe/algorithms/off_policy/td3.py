@@ -37,22 +37,27 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
             cfgs=cfgs,
         )
 
-    def compute_loss_v(self, data):
+    # pylint: disable=too-many-arguments
+    def compute_loss_v(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        rew: torch.Tensor,
+        obs_next: torch.Tensor,
+        done: torch.Tensor,
+    ):
         """Computing value loss.
 
         Args:
-            data (dict): data from replay buffer.
+            obs (torch.Tensor): ``observation`` saved in data.
+            act (torch.Tensor): ``action`` saved in data.
+            rew (torch.Tensor): ``reward`` saved in data.
+            obs_next (torch.Tensor): ``next observations`` saved in data.
+            done (torch.Tensor): ``terminated`` saved in data.
 
         Returns:
             torch.Tensor.
         """
-        obs, act, rew, obs_next, done = (
-            data['obs'],
-            data['act'],
-            data['rew'],
-            data['obs_next'],
-            data['done'],
-        )
         q_value_list = self.actor_critic.critic(obs, act)
         # Bellman backup for Q function
         with torch.no_grad():
