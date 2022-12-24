@@ -13,3 +13,81 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the algo utils."""
+import torch
+
+
+def get_transpose(tensor: torch.tensor):
+    """Transpose the last two dimensions of a tensor.
+
+    Args:
+        tensor: torch.Tensor
+
+    Returns:
+        torch.Tensor
+    """
+    return tensor.transpose(dim0=-2, dim1=-1)
+
+
+def get_diagonal(tensor: torch.tensor):
+    """Get the diagonal of the last two dimensions of a tensor.
+
+    Args:
+        tensor: torch.Tensor
+
+    Returns:
+        torch.Tensor
+    """
+    return tensor.diagonal(dim1=-2, dim2=-1).sum(-1)
+
+
+def safe_inverse(var_q, det):
+    """Inverse of a matrix with a safe guard for singular matrix.
+
+    Args:
+        var_q: torch.Tensor
+        det: torch.Tensor
+
+    Returns:
+        torch.Tensor
+    """
+    indices = torch.where(det <= 1e-6)
+    # pseudo inverse
+    if len(indices[0]) > 0:
+        return torch.linalg.pinv(var_q)
+    return var_q.inverse()
+
+
+def gaussian_kl(mean_p, mean_q, var_p, var_q):
+    """
+    Decoupled KL between two mean_qltivariate gaussian distribution.
+    ref : https://stanford.edu/~jduchi/projects/general_notes.pdf page.13
+
+    Args:
+        mean_p: torch.Tensor
+        mean_q: torch.Tensor
+        var_p: torch.Tensor
+        var_q: torch.Tensor
+
+    Returns:
+        torch.Tensor
+    """
+    len_q = var_q.size(-1)
+    mean_p = mean_p.unsqueeze(-1)  # (B, n, 1)
+    mean_q = mean_q.unsqueeze(-1)  # (B, n, 1)
+    sigma_p = var_p @ get_transpose(var_p)  # (B, n, n)
+    sigma_q = var_q @ get_transpose(var_q)  # (B, n, n)
+    sigma_p_det = sigma_p.det()  # (B,)
+    sigma_q_det = sigma_q.det()  # (B,)
+    sigma_p_inv = safe_inverse(sigma_p, sigma_p_det)  # (B, n, n)
+    sigma_q_inv = safe_inverse(sigma_q, sigma_q_det)  # (B, n, n)
+    # determinant can be minus due to numerical calculation error
+    # https://github.com/daisatojp/mpo/issues/11
+    sigma_p_det = torch.clamp_min(sigma_p_det, 1e-6)
+    sigma_q_det = torch.clamp_min(sigma_q_det, 1e-6)
+    inner_mean_q = ((mean_q - mean_p).transpose(-2, -1) @ sigma_p_inv @ (mean_q - mean_p)).squeeze()
+    inner_sigma_q = (
+        torch.log(sigma_q_det / sigma_p_det) - len_q + get_diagonal(sigma_q_inv @ sigma_p)
+    )
+    c_mean_q = 0.5 * torch.mean(inner_mean_q)
+    c_sigma_q = 0.5 * torch.mean(inner_sigma_q)
+    return c_mean_q, c_sigma_q, torch.mean(sigma_p_det), torch.mean(sigma_q_det)

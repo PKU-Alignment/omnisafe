@@ -20,7 +20,7 @@ from types import MappingProxyType
 from omnisafe.algorithms import off_policy, on_policy
 
 # Off-Policy Safe
-from omnisafe.algorithms.off_policy import DDPG, SAC, SDDPG, TD3, DDPGLag, SACLag, TD3Lag
+from omnisafe.algorithms.off_policy import CVPO, DDPG, SAC, SDDPG, TD3, DDPGLag, SACLag, TD3Lag
 
 # On-Policy Safe
 from omnisafe.algorithms.on_policy import (

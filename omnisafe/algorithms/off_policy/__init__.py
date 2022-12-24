@@ -14,6 +14,7 @@
 # ==============================================================================
 """Off-policy algorithms."""
 
+from omnisafe.algorithms.off_policy.cvpo import CVPO
 from omnisafe.algorithms.off_policy.ddpg import DDPG
 from omnisafe.algorithms.off_policy.ddpg_lag import DDPGLag
 from omnisafe.algorithms.off_policy.sac import SAC
@@ -31,4 +32,5 @@ __all__ = [
     'SDDPG',
     'TD3',
     'TD3Lag',
+    'CVPO',
 ]

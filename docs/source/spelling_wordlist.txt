@@ -228,7 +228,6 @@ Duenez
 Ghavamzadeh
 Karush
 Levin
-
 optimality
 invertible
 neighbourhood
@@ -269,3 +268,11 @@ linearizing
 linearization
 adaptively
 linearize
+Zuxin
+Zhepeng
+Liu
+Cen
+Vladislav
+Isenbaev
+Zhiwei
+Zhao

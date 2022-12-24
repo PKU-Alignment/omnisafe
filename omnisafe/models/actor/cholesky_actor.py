@@ -26,18 +26,13 @@ from omnisafe.utils.model_utils import build_mlp_network, initialize_layer
 class MLPCholeskyActor(nn.Module):
     """Implementation of CholeskyActor."""
 
-    COV_MIN = 1e-4  # last exp is 1e-2
-    MEAN_CLAMP_MIN = -5
-    MEAN_CLAMP_MAX = 5
-    COV_CLAMP_MIN = -5
-    COV_CLAMP_MAX = 20
-
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         obs_dim,
         act_dim,
-        act_limit,
+        act_max,
+        act_min,
         hidden_sizes,
         activation,
         cov_min,
@@ -50,12 +45,12 @@ class MLPCholeskyActor(nn.Module):
         """Initialize."""
         super().__init__()
         pi_sizes = [obs_dim] + hidden_sizes
-        self.act_limit = act_limit
+        self.act_limit = act_max
         self.act_low = torch.nn.Parameter(
-            torch.as_tensor(-act_limit), requires_grad=False
+            torch.as_tensor(act_min), requires_grad=False
         )  # (1, act_dim)
         self.act_high = torch.nn.Parameter(
-            torch.as_tensor(act_limit), requires_grad=False
+            torch.as_tensor(act_max), requires_grad=False
         )  # (1, act_dim)
         self.act_dim = act_dim
         self.obs_dim = obs_dim
@@ -77,11 +72,20 @@ class MLPCholeskyActor(nn.Module):
         self,
         obs,
         deterministic=False,
+        need_log_prob=False,
     ):  # pylint: disable=invalid-name
         """
-        forwards input through the network
-        :param obs: (B, obs_dim)
-        :return: mu vector (B, act_dim) and cholesky factorization of covariance matrix (B, act_dim, act_dim)
+        Forwards input through the network.
+
+        Args:
+            obs: input observation.
+            deterministic: whether to use deterministic policy.
+            need_log_prob: whether to return log probability.
+
+        Returns:
+            action: action.
+            cholesky: cholesky vector.
+
         """
         if len(obs.shape) == 1:
             obs = torch.unsqueeze(obs, dim=0)
@@ -108,12 +112,12 @@ class MLPCholeskyActor(nn.Module):
         )
         # add a small value to prevent the diagonal from being 0.
         cholesky_vector[:, cholesky_diag_index] = (
-            F.softplus(cholesky_vector[:, cholesky_diag_index]) + self.COV_MIN
+            F.softplus(cholesky_vector[:, cholesky_diag_index]) + self.cov_min
         )
         tril_indices = torch.tril_indices(row=self.act_dim, col=self.act_dim, offset=0)
         cholesky = torch.zeros(size=(B, self.act_dim, self.act_dim), dtype=torch.float32)
         cholesky[:, tril_indices[0], tril_indices[1]] = cholesky_vector
-        pi_distribution = MultivariateNormal(mean, scale_tril=cholesky)
+        pi_distribution = MultivariateNormal(mean.to(torch.float32), scale_tril=cholesky)
 
         if deterministic:
             pi_action = mean
@@ -122,7 +126,10 @@ class MLPCholeskyActor(nn.Module):
 
         pi_action = torch.tanh(pi_action)
         pi_action = self.act_limit * pi_action
-        return pi_action.squeeze(), cholesky
+
+        if need_log_prob:
+            return pi_action.squeeze().to(torch.float32), cholesky.to(torch.float32)
+        return pi_action.squeeze().to(torch.float32)
 
     def forward(self, obs, deterministic=False):
         """Forward."""
