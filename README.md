@@ -22,31 +22,29 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
 
 ### Table of Contents  <!-- omit in toc --> <!-- markdownlint-disable heading-increment -->
 
-- [OmniSafe](#omnisafe)
-    - [Table of Contents   ](#table-of-contents---)
-  - [Overview](#overview)
-  - [Implemented Algorithms](#implemented-algorithms)
-    - [Newly Published in 2022](#newly-published-in-2022)
-    - [List of Algorithms](#list-of-algorithms)
-      - [On-Policy Safe](#on-policy-safe)
-      - [Off-Policy Safe](#off-policy-safe)
-      - [Model-Based Safe](#model-based-safe)
-      - [Offline Safe](#offline-safe)
-      - [Others](#others)
-  - [SafeRL Environments](#saferl-environments)
-    - [Safety Gymnasium](#safety-gymnasium)
-    - [Vision-base Safe RL](#vision-base-safe-rl)
-    - [Environment Usage](#environment-usage)
-  - [Installation](#installation)
-    - [Prerequisites](#prerequisites)
-    - [Install from source](#install-from-source)
-    - [Examples](#examples)
-  - [Getting Started](#getting-started)
-    - [1. Run Agent from preset yaml file](#1-run-agent-from-preset-yaml-file)
-    - [2. Run Agent from custom config dict](#2-run-agent-from-custom-config-dict)
-    - [3. Run Agent from custom terminal config](#3-run-agent-from-custom-terminal-config)
-  - [The OmniSafe Team](#the-omnisafe-team)
-  - [License](#license)
+- [Overview](#overview)
+- [Implemented Algorithms](#implemented-algorithms)
+  - [Newly Published in 2022](#newly-published-in-2022)
+  - [List of Algorithms](#list-of-algorithms)
+    - [On-Policy Safe](#on-policy-safe)
+    - [Off-Policy Safe](#off-policy-safe)
+    - [Model-Based Safe](#model-based-safe)
+    - [Offline Safe](#offline-safe)
+    - [Others](#others)
+- [SafeRL Environments](#saferl-environments)
+  - [Safety Gymnasium](#safety-gymnasium)
+  - [Vision-base Safe RL](#vision-base-safe-rl)
+  - [Environment Usage](#environment-usage)
+- [Installation](#installation)
+  - [Prerequisites](#prerequisites)
+  - [Install from source](#install-from-source)
+  - [Examples](#examples)
+- [Getting Started](#getting-started)
+  - [1. Run Agent from preset yaml file](#1-run-agent-from-preset-yaml-file)
+  - [2. Run Agent from custom config dict](#2-run-agent-from-custom-config-dict)
+  - [3. Run Agent from custom terminal config](#3-run-agent-from-custom-terminal-config)
+- [The OmniSafe Team](#the-omnisafe-team)
+- [License](#license)
 
 --------------------------------------------------------------------------------
 
@@ -77,13 +75,12 @@ The supported interface algorithms currently include:
 
 - [X] **[AAAI 2023]** Augmented Proximal Policy Optimization for Safe Reinforcement Learning (APPO) **The original author of the paper contributed code**
 - [X] **[NeurIPS 2022]** [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089) **The original author of the paper contributed code**
-- [ ] **[NeurIPS 2022]** (Under Testing) [Effects of Safety State Augmentation on
-Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
+- [X] **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration (Simmer)](https://arxiv.org/abs/2206.02675)
 - [X] **[NeurIPS 2022]** [Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
-- [ ] **[ICML 2022]** (Under Testing) [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
-- [ ] **[ICML 2022]** (Under Testing) [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
+- [X] **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
+- [ ] **[ICML 2022]** [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
 - [X] **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning](https://arxiv.org/abs/2205.11814) **The original author of the paper contributed code**
-- [ ] **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LAMBDA)](https://arxiv.org/abs/2201.09802)
+- [ ] **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LA-MBDA)](https://arxiv.org/abs/2201.09802)
 - [ ] **[AAAI 2022]** [Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
 
 ### List of Algorithms
@@ -115,7 +112,7 @@ Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
 - [X] **[CoRL 2021 (Oral)]** [Learning Off-Policy with Online Planning (SafeLoop)](https://arxiv.org/abs/2008.10066)
 - [X] **[AAAI 2022]** [Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
 - [ ] **[NeurIPS 2022]** [Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
-- [ ] **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LAMBDA)](https://arxiv.org/abs/2201.09802)
+- [ ] **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LA-MBDA)](https://arxiv.org/abs/2201.09802)
 
 #### Offline Safe
 
@@ -129,8 +126,8 @@ Safe Exploration (Swimmer)](https://arxiv.org/abs/2206.02675)
 
 - [X] [Safe Exploration in Continuous Action Spaces (Safety Layer)](https://arxiv.org/abs/1801.08757)
 - [ ] **[RA-L 2021]** [Recovery RL: Safe Reinforcement Learning with Learned Recovery Zones](https://arxiv.org/abs/2010.15920)
-- [ ] **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
-- [ ] **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration](https://arxiv.org/abs/2206.02675)
+- [X] **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
+- [X] **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration](https://arxiv.org/abs/2206.02675)
 
 --------------------------------------------------------------------------------
 

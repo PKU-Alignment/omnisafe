@@ -1,8 +1,8 @@
-sphinx==5.3.0
-sphinx-copybutton==0.5.1
-sphinx-design==0.3.0
-sphinx-press-theme==0.8.0
-sphinx-markdown-tables==0.0.17
-recommonmark==0.7.1
-sphinx-autoapi==2.0.0
-sphinx-autobuild==2021.3.14
+sphinx
+sphinx-copybutton
+sphinx-design
+sphinx-press-theme
+sphinx-markdown-tables
+recommonmark
+sphinx-autoapi
+sphinx-autobuild
