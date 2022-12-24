@@ -32,9 +32,12 @@ class CVPO(DDPG):  # pylint: disable=too-many-instance-attributes,too-many-local
     """Constrained Variational Policy Optimization for Safe Reinforcement Learning.
 
     References:
-        Title: Constrained Variational Policy Optimization for Safe Reinforcement Learning..
+
+        Title: Constrained Variational Policy Optimization for Safe Reinforcement Learning.
+
         Authors: Zuxin Liu, Zhepeng Cen, Vladislav Isenbaev,
-                 Wei Liu, Zhiwei Steven Wu, Bo Li, Ding Zhao
+                Wei Liu, Zhiwei Steven Wu, Bo Li, Ding Zhao
+
         URL: https://arxiv.org/abs/2201.11927v2
 
     """
@@ -75,13 +78,12 @@ class CVPO(DDPG):  # pylint: disable=too-many-instance-attributes,too-many-local
         self.alpha_var = 0.0
         self.cost_limit = self.cfgs.cost_limit
 
-    def update_policy_net(self, data) -> None:  # pylint: disable=too-many-locals
+    def update_policy_net(self, obs) -> None:  # pylint: disable=too-many-locals
         """Update policy network.
 
         Args:
-            data (dict): data dictionary.
+            obs (torch.Tensor): observation.
         """
-        obs = data['obs']  # [batch, obs_dim]
         num_action = self.sample_action_num
         num_obs = obs.shape[0]
         act_dim = self.actor_critic.act_dim
