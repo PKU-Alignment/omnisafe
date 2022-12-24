@@ -225,7 +225,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
 
             :math:`a\doteq\nabla_\theta\underset{\substack{s\sim d^{\pi_k}a\sim \pi}}{\mathbb{E}}[A_{\pi_k}^{C}(s,a)]` is the gradient of the cost advantage function,
 
-            where :math:`\boldsymbol{H}_{i,j}\doteq \frac{\partial^2 \underset{s\sim d^{\pi_{k}}}{\mathbb{E}}\big[KL(\pi ||\pi_{k})[s]\big]}{\partial \theta_j\partial \theta_j}` is the Hessian of the KL divergence constraint (:math:`\boldsymbol{H}` is also called the Fisher information matrix. It is symmetric positive semi-definite), :math:`b\doteq J^{C}(\pi_k)-d` is the constraint violation of the policy :math:`\pi_{k}`, and :math:`\theta` is the parameter of the policy. PCPO linearizes the objective function at :math:`\pi_k` subject to second order approximation of the KL divergence constraint in order to obtain the following updates:
+            where :math:`\boldsymbol{H}_{i,j}\doteq \frac{\partial^2 \underset{s\sim d^{\pi_{k}}}{\mathbb{E}}\big[KL(\pi ||\pi_{k})[s]\big]}{\partial \theta_j\partial \theta_j}` is the Hessian of the KL divergence constraint (:math:`\boldsymbol{H}` is also called the Fisher information matrix. It is symmetric positive semi-definite), :math:`b\doteq J^{C}(\pi_k)-d` is the constraint violation of the policy :math:`\pi_{k}`, and :math:`\theta` is the parameter of the policy. PCPO linearize the objective function at :math:`\pi_k` subject to second order approximation of the KL divergence constraint in order to obtain the following updates:
 
             .. math::
 
@@ -251,7 +251,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
             ^^^
             PCPO provides a selection reference for distance measures: if the projection is defined in the parameter space, :math:`L2` norm projection is selected, while if the projection is defined in the probability space, KL divergence projection is better.
             This can be approximated through the second order expansion.
-            Again, PCPO linearizes the cost constraint at :math:`\pi_{k}`.
+            Again, PCPO linearize the cost constraint at :math:`\pi_{k}`.
             This gives the following update for the projection step:
 
             .. math::
@@ -283,7 +283,7 @@ For each policy update:
 
     :math:`\boldsymbol{H}` is assumed invertible and PCPO requires to invert :math:`\boldsymbol{H}`, which is impractical for huge neural network policies.
     Hence it use the conjugate gradient method.
-    (See appendix for a discussion of the tradeoff between the approximation error, and computational efficiency of the conjugate gradient method.)
+    (See appendix for a discussion of the trade-off between the approximation error, and computational efficiency of the conjugate gradient method.)
 
 .. grid:: 2
 
@@ -459,7 +459,7 @@ Quick start
 
                 We use ``train_on_policy.py`` as the entrance file.
                 You can train the agent with PCPO simply using ``train_on_policy.py``,
-                with arguments about PCPO and enviroments does the training.
+                with arguments about PCPO and environments does the training.
                 For example, to run PCPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
 
                 .. code-block:: guess
@@ -560,7 +560,7 @@ Documentation of basic functions
 
         pcpo.log()
         ^^^
-        Get the trainning log and show the performance of the algorithm
+        Get the training log and show the performance of the algorithm
 
 ------
 
@@ -732,7 +732,7 @@ Parameters
             -  algo (string): The name of algorithm corresponding to current class,
                it does not actually affect any things which happen in the following.
             -  actor (string): The type of network in actor, discrete or continuous.
-            -  model_cfgs (dictionary) : successrmation about actor and critic's net work configuration,
+            -  model_cfgs (dictionary) : Actor and critic's net work configuration,
                it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
                -  shared_weights (bool) : Use shared weights between actor and critic network or not.
@@ -817,8 +817,8 @@ Parameters
             -  adv_estimation_method (float):Roughly what KL divergence we think is
                appropriate between new and old policies after an update. This will
                get used for early stopping. (Usually small, 0.01 or 0.05.)
-            -  standardized_reward (int):  Use standarized reward or not.
-            -  standardized_cost (bool): Use standarized cost or not.
+            -  standardized_reward (int):  Use standardized reward or not.
+            -  standardized_cost (bool): Use standardized cost or not.
 
 ------
 
@@ -927,7 +927,7 @@ We then prove the main theorem for the worst-case performance degradation.
 
             Proof of Lemma 2
             ^^^
-            We define the sublevel set of cost constraint function for the current infeasible policy :math:`\pi_k`:
+            We define the sub-level set of cost constraint function for the current infeasible policy :math:`\pi_k`:
 
             .. math:: L^{\pi_k}=\{\pi~|~J^{C}(\pi_{k})+ \mathbb{E}_{\substack{s\sim d^{\pi_{k}}\\ a\sim \pi}}[A_{\pi_k}^{C}(s,a)]\leq J^{C}(\pi_{k})\}.
 

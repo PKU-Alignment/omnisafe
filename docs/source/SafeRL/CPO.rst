@@ -469,7 +469,7 @@ Quick start
 
         .. tab-item:: Terminal config style
 
-            We use ``train_on_policy.py`` as the entrance file. You can train the agent with CPO simply using ``train_on_policy.py``, with arguments about CPO and enviroments does the training.
+            We use ``train_on_policy.py`` as the entrance file. You can train the agent with CPO simply using ``train_on_policy.py``, with arguments about CPO and environments does the training.
             For example, to run CPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
 
             .. code-block:: bash
@@ -563,7 +563,7 @@ Documentation of basic functions
 
         cpo.log()
         ^^^
-        Get the trainning log and show the performance of the algorithm
+        Get the training log and show the performance of the algorithm
 
 Documentation of new functions
 """"""""""""""""""""""""""""""
@@ -736,7 +736,7 @@ Parameters
             -  algo (string): The name of algorithm corresponding to current class,
                it does not actually affect any things which happen in the following.
             -  actor (string): The type of network in actor, discrete or continuous.
-            -  model_cfgs (dictionary) : successrmation about actor and critic's net work configuration,
+            -  model_cfgs (dictionary) : Actor and critic's net work configuration,
                it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
                -  shared_weights (bool) : Use shared weights between actor and critic network or not.
@@ -821,8 +821,8 @@ Parameters
             -  adv_estimation_method (float):Roughly what KL divergence we think is
                appropriate between new and old policies after an update. This will
                get used for early stopping. (Usually small, 0.01 or 0.05.)
-            -  standardized_reward (int):  Use standarized reward or not.
-            -  standardized_cost (bool): Use standarized cost or not.
+            -  standardized_reward (int):  Use standardized reward or not.
+            -  standardized_cost (bool): Use standardized cost or not.
 
 ------
 
@@ -1270,7 +1270,7 @@ Proof of Analytical Solution to LQCLP
 
     This is a convex optimization problem. When there is at least one strictly feasible point, strong duality holds by Slater's theorem.
     We exploit strong duality to solve the problem analytically.
-    irst using the method of Lagrange multipliers, :math:`\exists \lambda, \mu \geq 0`
+    First using the method of Lagrange multipliers, :math:`\exists \lambda, \mu \geq 0`
 
     .. math:: \mathcal{L}(x, \lambda, \nu)=g^T x+\frac{\lambda}{2}\left(x^T H x-\delta\right)+\nu\left(b^T x+c\right)
 

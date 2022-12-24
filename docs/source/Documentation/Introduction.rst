@@ -273,7 +273,7 @@ We give an example below:
             .. tab-item:: Terminal config style
 
                     We use ``train_on_policy.py`` as the entrance file. You can train the agent with
-                    CPO simply using ``train_on_policy.py``, with arguments about CPO and enviroments
+                    CPO simply using ``train_on_policy.py``, with arguments about CPO and environments
                     does the training. For example, to run CPO in SafetyPointGoal1-v0 , with
                     4 cpu cores and seed 0, you can use the following command:
 

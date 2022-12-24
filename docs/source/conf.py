@@ -6,15 +6,10 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 import os
-import pathlib
 import sys
 
 
-# -- Project information -----------------------------------------------------
-
-ROOT_DIR = pathlib.Path(__file__).absolute().parent.parent.parent
-sys.path.insert(0, str(ROOT_DIR / 'omnisafe'))
-
+sys.path.insert(0, os.path.abspath('./omnisafe/'))
 project = 'OmniSafe'
 copyright = '2022, OmniSafe Team'
 author = 'OmniSafe Team'
@@ -34,28 +29,8 @@ pip install sphinx-press-theme
 pip install sphinx
 """
 
-extensions = [
-    'sphinx.ext.napoleon',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.extlinks',
-    'recommonmark',
-    'sphinx_markdown_tables',
-    'sphinx_design',
-    'sphinx_copybutton',
-    'sphinx_autodoc_typehints',
-]
+extensions = ['recommonmark', 'sphinx_markdown_tables', 'sphinx_design', 'sphinx_copybutton']
 
-if not os.getenv('READTHEDOCS', None):
-    extensions.append('sphinxcontrib.spelling')
 
 source_suffix = {'.rst': 'restructuredtext', '.md': 'markdown'}
 templates_path = ['_templates']

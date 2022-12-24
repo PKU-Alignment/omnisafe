@@ -167,7 +167,7 @@ we use :math:`\boldsymbol{\theta}` to represent :math:`\pi_{\theta}`.
             :math:`\mathcal{S} \times \mathcal{A} \times \mathcal{S} \rightarrow \mathbb{R}`
             mapping transition tuples to costs.
 
-            Let :math:`J^{C_i}(\boldsymbol{\theta})` denote the expectd discounted return of policy :math:`\boldsymbol{\theta}` in terms of cost function,
+            Let :math:`J^{C_i}(\boldsymbol{\theta})` denote the expected discounted return of policy :math:`\boldsymbol{\theta}` in terms of cost function,
 
             .. math::
 

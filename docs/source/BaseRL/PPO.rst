@@ -84,7 +84,7 @@ In the previous chapters, we introduced that TRPO solves the following optimizat
         \text{s.t.}\quad&&D(\pi,\pi_k)\le\delta\tag{1}
     \end{eqnarray}
 
-where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of parametrized policies with parameters :math:`\boldsymbol{\theta}`, and :math:`D` is some distance measure.
+where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of parameterized policies with parameters :math:`\boldsymbol{\theta}`, and :math:`D` is some distance measure.
 The problem that TRPO needs to solve is how to find a suitable update direction and update step,
 so that updating the actor can improve the performance without being too different from the original actor.
 Finally, TRPO rewrites Problem :ref:`(1) <ppo-eq-1>` as:
@@ -130,7 +130,7 @@ so finally TRPO abandoned this method.
 
 PPO-Penalty use an approach named Adaptive KL Penalty Coefficient to solve above problem,
 thus making :ref:`(3) <ppo-eq-3>` perform well in experiment.
-In the simplest instantiation of this algorithm,
+In the simplest implementation of this algorithm,
 PPO-Penalty perform the following steps in each policy update:
 
 
@@ -145,7 +145,7 @@ PPO-Penalty perform the following steps in each policy update:
 
             Step I
             ^^^
-            Using several epochs of minibatch SGD, optimize the KL-penalized objective shown as :ref:`(3) <ppo-eq-3>`,
+            Using several epochs of mini-batch SGD, optimize the KL-penalized objective shown as :ref:`(3) <ppo-eq-3>`,
 
             .. math::
                 :nowrap:
@@ -193,8 +193,8 @@ PPO-Clip rewrite the surrogate objective as:
     \end{eqnarray}
 
 in which :math:`\varepsilon` is a (small) hyperparameter which roughly says how far away the new policy is allowed to go from the old.
-This is a very complex fomula,
-and it's diffcult to tell at first glance what it's doing,
+This is a very complex formula,
+and it's difficult to tell at first glance what it's doing,
 or how it helps keep the new policy close to the old policy.
 To help you better understand the above expression,
 let :math:`L(s, a, \theta)` denote :math:`\max [r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a)]`,
@@ -216,7 +216,7 @@ we'll simplify the formula in two cases:
 
        .. math:: L(s, a, \theta)=\max (r(\theta),(1+\varepsilon)) \hat{A}_{\pi}(s, a)
 
-With above cliped surrogate function and :ref:`(5) <ppo-eq-5>`,
+With above clipped surrogate function and :ref:`(5) <ppo-eq-5>`,
 PPO-Clip can guarantee the new policy would not update so far away from the old.
 In experiment, PPO-Clip perform better that PPO-Penalty.
 
@@ -287,7 +287,7 @@ There are two notable special cases of this formula, obtained by setting :math:`
     \end{eqnarray}
 
 .. hint::
-    :math:`\text{GAE}(\gamma,1)` is the traditional MC-based method to esitimate the advantage function,
+    :math:`\text{GAE}(\gamma,1)` is the traditional MC-based method to estimate the advantage function,
     but it has high variance due to the sum of terms.
     :math:`\text{GAE}(\gamma,0)` is TD-based method with low variance,
     but is suffers from bias.
@@ -361,7 +361,7 @@ Quick start
 
         .. tab-item:: Terminal config style
 
-            We use ``train_on_policy.py`` as the entrance file. You can train the agent with PPO simply using ``train_on_policy.py``, with arguments about PPO and enviroments does the training.
+            We use ``train_on_policy.py`` as the entrance file. You can train the agent with PPO simply using ``train_on_policy.py``, with arguments about PPO and environments does the training.
             For example, to run PPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
 
             .. code-block:: bash
@@ -440,7 +440,7 @@ Documentation of basic functions
 
         ppo.log()
         ^^^
-        Get the trainning log and show the performance of the algorithm
+        Get the training log and show the performance of the algorithm
 
 Documentation of new functions
 """"""""""""""""""""""""""""""
@@ -468,7 +468,7 @@ Documentation of new functions
                 ratio = torch.exp(_log_p - data['log_p'])
 
 
-            (2) Get the cliped surrogate function.
+            (2) Get the clipped surrogate function.
 
             .. code-block:: python
                 :linenos:
@@ -522,7 +522,7 @@ Parameters
             -  algo (string): The name of algorithm corresponding to current class,
                it does not actually affect any things which happen in the following.
             -  actor (string): The type of network in actor, discrete or continuous.
-            -  model_cfgs (dictionary) : successrmation about actor and critic's net work configuration,
+            -  model_cfgs (dictionary) : Actor and critic's net work configuration,
                it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
                -  shared_weights (bool) : Use shared weights between actor and critic network or not.
@@ -607,8 +607,8 @@ Parameters
             -  adv_estimation_method (float):Roughly what KL divergence we think is
                appropriate between new and old policies after an update. This will
                get used for early stopping. (Usually small, 0.01 or 0.05.)
-            -  standardized_reward (int):  Use standarized reward or not.
-            -  standardized_cost (bool): Use standarized cost or not.
+            -  standardized_reward (int):  Use standardized reward or not.
+            -  standardized_cost (bool): Use standardized cost or not.
 
 ------
 

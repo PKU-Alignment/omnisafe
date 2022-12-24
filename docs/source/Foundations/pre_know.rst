@@ -119,7 +119,7 @@ Norms
 
             .. math:: \|\mathbf{A}\|_2=\sqrt{\lambda_{\max }\left(\mathbf{A}^{\top} \mathbf{A}\right)}=\max _i \sigma_i
 
-            where :math:`\sigma_i` is the :math:`i` 'th singular value. The nuclear
+            where :math:`\sigma_i` is the :math:`i^{th}`  singular value. The nuclear
             norm, also called the trace norm, is defined as
 
             .. math:: \|\mathbf{A}\|_*=\operatorname{tr}\left(\sqrt{\mathbf{A}^{\top} \mathbf{A}}\right)=\sum_i \sigma_i
@@ -307,7 +307,7 @@ problem, named as :math:`g^*`, satisfies:
             ^^^
             By definition,
             :math:`\theta_d(u,v)=\underset{x}{\text{min}}\quad L(x,u,v)` can be viewed as
-            pointwise infimum of affine functions of :math:`u` and :math:`v`, thus
+            point-wise infimum of affine functions of :math:`u` and :math:`v`, thus
             is concave. :math:`u \geq 0` is affine constraints. Hence dual problem
             is a concave maximization problem, which is a convex optimization
             problem.

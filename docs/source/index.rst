@@ -30,7 +30,6 @@
     :maxdepth: 1
     :caption: Base RL Algorithm
 
-    BaseRL/MDP
     BaseRL/PG
     BaseRL/NPG
     BaseRL/TRPO
