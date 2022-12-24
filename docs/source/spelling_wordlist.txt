@@ -10,7 +10,7 @@ pragma
 fmt
 func
 sys
-ol
+bool
 len
 str
 iter
@@ -165,6 +165,7 @@ xmax
 ymin
 ymax
 vel
+pos
 quaternion
 Quaternions
 Jacobian
@@ -190,11 +191,9 @@ Taher
 Jafferjee
 Ziyan
 Wang
-David
 Mguni
 Jun
 Haitham
-u
 Ammar
 Sun
 Ziping
@@ -206,9 +205,7 @@ Peng
 Jiadong
 Guo
 Bo
-Dai
 lei
-bool
 MDP
 Bolei
 Bou
@@ -228,10 +225,8 @@ Duenez
 Ghavamzadeh
 Karush
 Levin
-
 optimality
 invertible
-neighbourhood
 cpu
 ppo
 trpo

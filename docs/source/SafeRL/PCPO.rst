@@ -95,7 +95,7 @@ Next, we will describe how PCPO completes the two-stage update.
             Reward Improvement Stage
             ^^^
             First, PCPO optimizes the reward function by maximizing the reward advantage function :math:`A_{\pi}(s,a)` subject to KL-Divergence constraint.
-            This constraints the intermediate policy :math:`\pi_{k+\frac12}` to be within a :math:`\delta`-neighbourhood of :math:`\pi_{k}`:
+            This constraints the intermediate policy :math:`\pi_{k+\frac12}` to be within a :math:`\delta`-neighborhood of :math:`\pi_{k}`:
 
             .. math::
                 :nowrap:
@@ -908,7 +908,7 @@ We then prove the main theorem for the worst-case performance degradation.
                 \end{aligned}
 
             The derivation uses the fact that KL divergence is always greater than zero.
-            We know that KL divergence is asymptotically symmetric when updating the policy within a local neighbourhood.
+            We know that KL divergence is asymptotically symmetric when updating the policy within a local neighborhood.
             Thus, we have
 
             .. math::
