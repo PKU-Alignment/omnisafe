@@ -28,7 +28,12 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 class OnPolicyEnvWrapper:  # pylint: disable=too-many-instance-attributes
     """env_wrapper."""
 
-    def __init__(self, env_id, cfgs: Optional[collections.namedtuple] = None, render_mode=None):
+    def __init__(
+        self,
+        env_id,
+        cfgs: Optional[collections.namedtuple] = None,
+        **env_kwargs
+        ):
         """Initialize environment wrapper.
 
         Args:
@@ -36,10 +41,16 @@ class OnPolicyEnvWrapper:  # pylint: disable=too-many-instance-attributes
             cfgs (collections.namedtuple): configs.
             render_mode (str): render mode.
         """
-        self.env = safety_gymnasium.make(env_id, render_mode=render_mode)
+        self.env = safety_gymnasium.make(env_id, **env_kwargs)
         self.cfgs = deepcopy(cfgs)
         self.env_id = env_id
-        self.render_mode = render_mode
+        self.render_mode = env_kwargs.get('render_mode', None)
+        self.camera_id = env_kwargs.get('camera_id', None)
+        self.camera_name = env_kwargs.get('camera_name', None)
+        if hasattr(self.env, 'width'):
+            self.width = self.env.width
+        if hasattr(self.env, 'height'):
+            self.height = self.env.height
         self.metadata = self.env.metadata
 
         if hasattr(self.env, '_max_episode_steps'):

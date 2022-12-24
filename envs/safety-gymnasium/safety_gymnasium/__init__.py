@@ -88,7 +88,6 @@ def combine(tasks, agents):
                 vision_config = {
                     'observe_vision': True,
                     'observation_flatten': False,
-                    'vision_render': True,
                 }
                 combined_config = deepcopy(combined_config)
                 combined_config.update(vision_config)

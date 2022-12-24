@@ -37,10 +37,19 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
             'rgb_array',
             'depth_array',
         ],
-        'render_fps': 125,
+        'render_fps': 30,
     }
 
-    def __init__(self, task_id, config=None, **kwargs):
+    def __init__(
+        self, 
+        task_id,
+        config=None,
+        render_mode=None,
+        width = 256,
+        height = 256,
+        camera_id = None,
+        camera_name = None,
+        ):
         gymnasium.utils.EzPickle.__init__(self, config=config)
 
         self.input_parameters = locals()
@@ -56,7 +65,11 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         self.terminated = True
         self.truncated = False
 
-        self.render_mode = kwargs.get('render_mode', None)
+        self.render_mode = render_mode
+        self.width = width
+        self.height = height
+        self.camera_id = camera_id
+        self.camera_name = camera_name
 
     def _setup_simulation(self):
         """Set up mujoco the simulation instance."""
@@ -196,7 +209,7 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
 
         return cost
 
-    def render(self, camera_id=None, width=256, height=256):
+    def render(self):
         """Call underlying render() directly.
 
         Width and height in parameters are constant defaults for rendering
@@ -207,7 +220,7 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
             not self.task.observe_vision
         ), 'When you use vision envs, you should not call this function explicitly.'
         return self.task.render(
-            mode=self.render_mode, camera_id=camera_id, width=width, height=height, cost=self._cost
+            mode=self.render_mode, camera_id=self.camera_id, camera_name=self.camera_name, width=self.width, height=self.height, cost=self._cost
         )
 
     def world_xy(self, pos):

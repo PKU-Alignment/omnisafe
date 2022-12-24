@@ -74,6 +74,8 @@ class Evaluator:
             model_name (str): name of the model.
         """
         # load the config
+        setattr(self, 'save_dir', save_dir)
+        setattr(self, 'model_name', model_name)
         cfg_path = os.path.join(save_dir, 'config.json')
         try:
             with open(cfg_path, encoding='utf-8', mode='r') as file:
@@ -98,6 +100,8 @@ class Evaluator:
         observation_space = self.env.observation_space
         action_space = self.env.action_space
 
+        act_space_type = 'discrete' if isinstance(action_space, Discrete) else 'continuous'
+
         if isinstance(action_space, Box):
             actor_type = 'gaussian_annealing'
             act_dim = action_space.shape[0]
@@ -107,8 +111,8 @@ class Evaluator:
         else:
             raise ValueError
         obs_dim = observation_space.shape[0]
-        pi_cfg = cfg['cfgs']['model_cfgs']['ac_kwargs']['pi']
-        weight_initialization_mode = cfg['cfgs']['model_cfgs']['weight_initialization_mode']
+        pi_cfg = cfg['model_cfgs']['ac_kwargs']['pi']
+        weight_initialization_mode = cfg['model_cfgs']['weight_initialization_mode']
         actor_builder = ActorBuilder(
             obs_dim=obs_dim,
             act_dim=act_dim,
@@ -117,12 +121,18 @@ class Evaluator:
             weight_initialization_mode=weight_initialization_mode,
             shared=None,
         )
-
-        self.actor = actor_builder.build_actor(actor_type)
+        if act_space_type == 'discrete':
+            self.actor = actor_builder.build_actor('categorical')
+        else:
+            act_max = torch.as_tensor(action_space.high)
+            act_min = torch.as_tensor(action_space.low)
+            self.actor = actor_builder.build_actor(
+                actor_type, act_max=act_max, act_min=act_min
+            )
         self.actor.load_state_dict(model_params['pi'])
 
         # make the observation OMS
-        if cfg['cfgs']['standardized_obs']:
+        if cfg['standardized_obs']:
             self.obs_oms = OnlineMeanStd(shape=observation_space.shape)
             self.obs_oms.load_state_dict(model_params['obs_oms'])
         else:
@@ -132,13 +142,11 @@ class Evaluator:
     def evaluate(
         self,
         num_episodes: int = 10,
-        horizon: int = 1000,
         cost_criteria: float = 1.0,
     ):
         """Evaluate the agent for num_episodes episodes.
         Args:
             num_episodes (int): number of episodes to evaluate the agent.
-            horizon (int): maximum number of steps per episode.
             cost_criteria (float): the cost criteria for the evaluation.
         Returns:
             episode_rewards (list): list of episode rewards.
@@ -153,6 +161,7 @@ class Evaluator:
         episode_rewards = []
         episode_costs = []
         episode_lengths = []
+        horizon = self.env.max_ep_len
 
         for _ in range(num_episodes):
             obs, _ = self.env.reset()
@@ -183,38 +192,65 @@ class Evaluator:
     def render(
         self,
         num_episode: int = 0,
-        horizon: int = 1000,
         seed: int = None,
         play=True,
         save_replay_path: str = None,
+        camera_name: str = None,
+        camera_id: str = None,
+        width: int = None,
+        height: int = None,
     ):
         """Render the environment for one episode.
         Args:
-            horizon (int): maximum number of steps per episode.
             seed (int): seed for the environment. If None, the environment will be reset with a random seed.
             save_replay_path (str): path to save the replay. If None, no replay is saved.
         """
+
+        if save_replay_path is None:
+            save_replay_path = os.path.join(self.save_dir, 'video', self.model_name.split('.')[0])
+
         # remake the environment if the render mode can not support needed play or save_replay
         if self.env is None or self.actor is None:
             raise ValueError(
                 'The environment and the policy must be provided or created before evaluating the agent.'
             )
 
+        width = self.env.width if width is None else width
+        height = self.env.height if height is None else height
+        env_kwargs = {
+            'env_id': self.env.env_id,
+            'render_mode': 'rgb_array',
+            'camera_id': camera_id,
+            'camera_name': camera_name,
+            'width': width,
+            'height': height
+        }
         if self.env.render_mode is None:
             print("Remake the environment with render_mode='rgb_array' to render the environment.")
-            self.env = EnvWrapper(self.env.env_id, render_mode='rgb_array')
+            self.env = EnvWrapper(**env_kwargs)
             self.render_mode = 'rgb_array'
 
         if self.env.render_mode == 'human' and save_replay_path is not None:
             print("Remake the environment with render_mode='rgb_array' to save the replay.")
-            self.env = EnvWrapper(self.env.env_id, render_mode='rgb_array')
+            self.env = EnvWrapper(**env_kwargs)
             self.render_mode = 'rgb_array'
 
         if self.env.render_mode == 'rgb_array_list' and play:
             print("Remake the environment with render_mode='rgb_array' to render the environment.")
-            self.env = EnvWrapper(self.env.env_id, render_mode='rgb_array')
+            self.env = EnvWrapper(**env_kwargs)
             self.render_mode = 'rgb_array'
 
+        if self.env.camera_id != camera_id or self.env.camera_name != camera_name:
+            print("Remake the environment with render_mode='rgb_array' to change the camera.")
+            self.env = EnvWrapper(**env_kwargs)
+            self.render_mode = 'rgb_array'
+
+        if self.env.height != height or self.env.width != width:
+            print("Remake the environment with render_mode='rgb_array' to change the camera width or height.")
+            self.env = EnvWrapper(**env_kwargs)
+            self.render_mode = 'rgb_array'
+
+        horizon = self.env.max_ep_len
         frames = []
         obs, _ = self.env.reset(seed=seed)
 
@@ -223,7 +259,6 @@ class Evaluator:
         elif self.render_mode == 'rgb_array':
             frames.append(self.env.render())
 
-        step_starting_index = 0
         for episode_idx in range(num_episode):
             for step in range(horizon):
                 with torch.no_grad():
@@ -246,8 +281,9 @@ class Evaluator:
                     frames,
                     save_replay_path,
                     fps=self.env.metadata['render_fps'],
-                    step_starting_index=step_starting_index,
+                    episode_trigger=lambda x: True,
                     episode_index=episode_idx,
+                    name_prefix=f'eval',
                 )
-            step_starting_index = step + 1
             self.env.reset()
+            frames = []
