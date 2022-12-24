@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of Evaluator."""
+"""Implementation of Evaluator."""
 
 import json
 import os
@@ -22,6 +23,9 @@ import torch
 from gymnasium.spaces import Box, Discrete
 from gymnasium.utils.save_video import save_video
 
+from omnisafe.models.actor import ActorBuilder
+from omnisafe.utils.online_mean_std import OnlineMeanStd
+from omnisafe.wrappers.on_policy_wrapper import OnPolicyEnvWrapper as EnvWrapper
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.utils.online_mean_std import OnlineMeanStd
 from omnisafe.wrappers.on_policy_wrapper import OnPolicyEnvWrapper as EnvWrapper
@@ -39,6 +43,15 @@ class Evaluator:
         play=True,
         save_replay=True,
     ):
+    # pylint: disable-next=too-many-arguments
+    def __init__(
+        self,
+        env=None,
+        actor=None,
+        obs_oms=None,
+        play=True,
+        save_replay=True,
+    ):
         """Initialize the evaluator.
         Args:
             env (gymnasium.Env): the environment. if None, the environment will be created from the config.
@@ -47,6 +60,7 @@ class Evaluator:
         """
         # set the attributes
         self.env = env
+        self.actor = actor
         self.actor = actor
         self.obs_oms = obs_oms if obs_oms is not None else lambda x: x
 
@@ -67,6 +81,7 @@ class Evaluator:
         self.env.reset(seed=seed)
 
     # pylint: disable-next=too-many-locals
+    # pylint: disable-next=too-many-locals
     def load_saved_model(self, save_dir: str, model_name: str):
         """Load a saved model.
         Args:
@@ -84,11 +99,19 @@ class Evaluator:
             raise FileNotFoundError(
                 'The config file is not found in the save directory.'
             ) from error
+            with open(cfg_path, encoding='utf-8', mode='r') as file:
+                cfg = json.load(file)
+        except FileNotFoundError as error:
+            raise FileNotFoundError(
+                'The config file is not found in the save directory.'
+            ) from error
 
         # load the saved model
         model_path = os.path.join(save_dir, 'torch_save', model_name)
         try:
             model_params = torch.load(model_path)
+        except FileNotFoundError as error:
+            raise FileNotFoundError('The model is not found in the save directory.') from error
         except FileNotFoundError as error:
             raise FileNotFoundError('The model is not found in the save directory.') from error
 
@@ -104,8 +127,10 @@ class Evaluator:
 
         if isinstance(action_space, Box):
             actor_type = 'gaussian_annealing'
+            actor_type = 'gaussian_annealing'
             act_dim = action_space.shape[0]
         elif isinstance(action_space, Discrete):
+            actor_type = 'categorical'
             actor_type = 'categorical'
             act_dim = action_space.n
         else:
@@ -118,7 +143,10 @@ class Evaluator:
             act_dim=act_dim,
             hidden_sizes=pi_cfg['hidden_sizes'],
             activation=pi_cfg['activation'],
+            hidden_sizes=pi_cfg['hidden_sizes'],
+            activation=pi_cfg['activation'],
             weight_initialization_mode=weight_initialization_mode,
+            shared=None,
             shared=None,
         )
         if act_space_type == 'discrete':
@@ -154,6 +182,7 @@ class Evaluator:
             episode_lengths (list): list of episode lengths.
         """
         if self.env is None or self.actor is None:
+        if self.env is None or self.actor is None:
             raise ValueError(
                 'The environment and the policy must be provided or created before evaluating the agent.'
             )
@@ -169,6 +198,7 @@ class Evaluator:
 
             for step in range(horizon):
                 with torch.no_grad():
+                    act, _ = self.actor.predict(
                     act, _ = self.actor.predict(
                         self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)), deterministic=True
                     )
@@ -188,6 +218,7 @@ class Evaluator:
         print(f'Average episode length: {np.mean(episode_lengths):.3f}')
         return episode_rewards, episode_costs, episode_lengths
 
+    # pylint: disable-next=too-many-arguments
     # pylint: disable-next=too-many-arguments
     def render(
         self,
@@ -210,6 +241,7 @@ class Evaluator:
             save_replay_path = os.path.join(self.save_dir, 'video', self.model_name.split('.')[0])
 
         # remake the environment if the render mode can not support needed play or save_replay
+        if self.env is None or self.actor is None:
         if self.env is None or self.actor is None:
             raise ValueError(
                 'The environment and the policy must be provided or created before evaluating the agent.'
@@ -262,6 +294,7 @@ class Evaluator:
         for episode_idx in range(num_episode):
             for step in range(horizon):
                 with torch.no_grad():
+                    act, _ = self.actor.predict(
                     act, _ = self.actor.predict(
                         self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)), deterministic=True
                     )

@@ -54,7 +54,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes
         self.cfgs = deepcopy(cfgs)
         self.wrapper_type = self.cfgs.wrapper_type
         self.env = wrapper_registry.get(self.wrapper_type)(
-            env_id, cfgs=namedtuple2dict(self.cfgs).get('env_cfgs')
+            env_id, cfgs=self.cfgs._asdict().get('env_cfgs')
         )
 
         assert self.cfgs.steps_per_epoch % distributed_utils.num_procs() == 0
