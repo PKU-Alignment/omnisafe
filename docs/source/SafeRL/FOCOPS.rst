@@ -749,7 +749,7 @@ Parameters
                get used for early stopping. (Usually small, 0.01 or 0.05.)
             -  standardized_reward (int):  Use standardized reward or not.
             -  standardized_cost (bool): Use standardized cost or not.
-            
+
 ------
 
 References
