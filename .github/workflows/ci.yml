@@ -65,19 +65,20 @@ jobs:
         run: |
           make addlicense
 
-      # TODO: enable these when ready
+      # TODO: enable this when ready
       # - name: mypy
       #   run: |
       #     make mypy
 
-      # - name: Install dependencies
-      #   run: |
-      #     python -m pip install -r docs/requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install -r docs/requirements.txt
 
+      # TODO: enable this when ready
       # - name: docstyle
       #   run: |
       #     make docstyle
 
-      # - name: spelling
-      #   run: |
-      #     make spelling
+      - name: spelling
+        run: |
+          make spelling

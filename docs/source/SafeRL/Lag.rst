@@ -71,7 +71,7 @@ you will soon understand how it works.
 
             Problems of Lagrangian Methods
             ^^^
-            -  Different hyperparameters need to be set for different tasks.
+            -  Different hyper-parameters need to be set for different tasks.
 
             -  Not necessarily valid for all tasks.
 
@@ -173,7 +173,7 @@ thus making infeasible solutions sub-optimal.
 Practical Implementation
 ------------------------
 
-Institutively, we train the agent to maximize the reward in the classical strategy gradient descent algorithm.
+intuitively, we train the agent to maximize the reward in the classical strategy gradient descent algorithm.
 If a particular action :math:`a` in state :math:`s` can bring a relatively higher reward,
 we increase the probability that the agent will choose action :math:`a` under :math:`s`,
 and conversely, we will reduce this probability.
@@ -265,7 +265,7 @@ Policy update
 
                 - If the initial value of :math:`\lambda` or learning rate is chosen to be large,
                   the agent may suffer from a low reward.
-                - Else, it may violate the constriants.
+                - Else, it may violate the constraints.
 
                 So we often struggle to choose a compromise hyperparameter to balance reward and constraints.
 
@@ -341,7 +341,7 @@ Quick start
 
         .. tab-item:: Terminal config style
 
-                We use ``train_on_policy.py`` as the entrance file. You can train the agent with PPOLag simply using ``train_on_policy.py``, with arguments about PPOLag and enviroments does the training.
+                We use ``train_on_policy.py`` as the entrance file. You can train the agent with PPOLag simply using ``train_on_policy.py``, with arguments about PPOLag and environments does the training.
                 For example, to run PPOLag in SafetyPointGoal1-v0, with 4 cpu cores and seed 0, you can use the following command:
 
                 .. code-block:: bash
@@ -439,7 +439,7 @@ Documentation of basic functions
 
         PPOLag.log()
         ^^^
-        Get the trainning log and show the performance of the algorithm
+        Get the training log and show the performance of the algorithm
 
 ------
 
@@ -541,7 +541,7 @@ Parameters
             -  algo (string): The name of algorithm corresponding to current class,
                it does not actually affect any things which happen in the following.
             -  actor (string): The type of network in actor, discrete or continuous.
-            -  model_cfgs (dictionary) : successrmation about actor and critic's net work configuration,
+            -  model_cfgs (dictionary) : Actor and critic's net work configuration,
                it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
                -  shared_weights (bool) : Use shared weights between actor and critic network or not.
@@ -626,8 +626,8 @@ Parameters
             -  adv_estimation_method (float):Roughly what KL divergence we think is
                appropriate between new and old policies after an update. This will
                get used for early stopping. (Usually small, 0.01 or 0.05.)
-            -  standardized_reward (int):  Use standarized reward or not.
-            -  standardized_cost (bool): Use standarized cost or not.
+            -  standardized_reward (int):  Use standardized reward or not.
+            -  standardized_cost (bool): Use standardized cost or not.
 
 ------
 

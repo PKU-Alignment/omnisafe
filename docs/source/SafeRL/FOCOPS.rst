@@ -142,7 +142,7 @@ In the first stage, FOCOPS rewrites Problem :ref:`(1) <focops-eq-1>` ~ :ref:`(3)
         && \bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta\tag{6}
     \end{eqnarray}
 
-These problems are only slightly different from Problem :ref:`(1) <focops-eq-1>` ~ :ref:`(3) <focops-eq-1>`, that is, the parameter of interest is now the nonparameterized Policy :math:`\pi` and not the policy parameter :math:`\theta`.
+These problems are only slightly different from Problem :ref:`(1) <focops-eq-1>` ~ :ref:`(3) <focops-eq-1>`, that is, the parameter of interest is now the non-parameterized Policy :math:`\pi` and not the policy parameter :math:`\theta`.
 Then FOCOPS provides a solution as follows:
 
 .. _focops-theorem-1:
@@ -291,8 +291,8 @@ Note that Equation :ref:`(10) <focops-eq-10>` can be estimated by sampling from 
 
 At every iteration, we begin with a policy :math:`\pi_{\theta_k}`, which we use to run trajectories and gather data.
 We use that data and Equation :ref:`(8) <focops-eq-8>` first to estimate :math:`\lambda` and :math:`\nu`.
-We then draw a minibatch from the data to estimate :math:`\nabla_\theta \mathcal{L}(\theta)` given in :bdg-info-line:`Corollary 1`.
-After taking a gradient step using Equation:ref:`(10) <focops-eq-10>`, we draw another minibatch and repeat the process.
+We then draw a mini-batch from the data to estimate :math:`\nabla_\theta \mathcal{L}(\theta)` given in :bdg-info-line:`Corollary 1`.
+After taking a gradient step using Equation:ref:`(10) <focops-eq-10>`, we draw another mini-batch and repeat the process.
 
 ------
 
@@ -469,7 +469,7 @@ Quick start
 
         .. tab-item:: Terminal config style
 
-                We use ``train_on_policy.py`` as the entrance file. You can train the agent with FOCOPS simply using ``train_on_policy.py``, with arguments about FOCOPS and enviroments does the training.
+                We use ``train_on_policy.py`` as the entrance file. You can train the agent with FOCOPS simply using ``train_on_policy.py``, with arguments about FOCOPS and environments does the training.
                 For example, to run FOCOPS in SafetyPointGoal1-v0, with 4 cpu cores and seed 0, you can use the following command:
 
                 .. code-block:: guess
@@ -566,7 +566,7 @@ Documentation of basic functions
 
         focops.log()
         ^^^
-        Get the trainning log and show the performance of the algorithm
+        Get the training log and show the performance of the algorithm
 
 ------
 
@@ -662,7 +662,7 @@ Parameters
             -  algo (string): The name of algorithm corresponding to current class,
                it does not actually affect any things which happen in the following.
             -  actor (string): The type of network in actor, discrete or continuous.
-            -  model_cfgs (dictionary) : successrmation about actor and critic's net work configuration,
+            -  model_cfgs (dictionary) : Actor and critic's net work configuration,
                it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
                -  shared_weights (bool) : Use shared weights between actor and critic network or not.
@@ -747,10 +747,9 @@ Parameters
             -  adv_estimation_method (float):Roughly what KL divergence we think is
                appropriate between new and old policies after an update. This will
                get used for early stopping. (Usually small, 0.01 or 0.05.)
-            -  standardized_reward (int):  Use standarized reward or not.
-            -  standardized_cost (bool): Use standarized cost or not.
+            -  standardized_reward (int):  Use standardized reward or not.
+            -  standardized_cost (bool): Use standardized cost or not.
 
-------
 ------
 
 References

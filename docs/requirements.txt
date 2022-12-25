@@ -4,3 +4,5 @@ sphinx-design
 sphinx-press-theme
 sphinx-markdown-tables
 recommonmark
+sphinx-autoapi
+sphinx-autobuild

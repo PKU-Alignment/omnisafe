@@ -130,8 +130,7 @@ clean-docs:
 
 # TODO: add mypy when ready
 # TODO: add docstyle when ready
-# TODO: add spelling when ready
-lint: flake8 py-format pylint addlicense
+lint: flake8 py-format pylint addlicense spelling
 
 format: py-format-install addlicense-install
 	$(PYTHON) -m isort --project $(PROJECT_NAME) $(PYTHON_FILES)

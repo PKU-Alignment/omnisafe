@@ -417,7 +417,7 @@ The method TRPO describes involves two steps:
          ^^^
          -  :bdg-ref-success-line:`Conjugate gradient algorithm<conjugate>` can approximately search the update direction without forming this full Hessian matrix.
 
-         -  The max stepsize can be formed by an intermediate result produced by the conjugate gradient algorithm.
+         -  The max step-size can be formed by an intermediate result produced by the conjugate gradient algorithm.
 
          -  A :bdg-ref-success-line:`line search algorithm<conjugate>` can be used to meet the goal.
 
@@ -544,7 +544,7 @@ Quick start
         .. tab-item:: Terminal config style
 
                 We use ``train_on_policy.py`` as the entrance file. You can train the agent with
-                TRPO simply using ``train_on_policy.py``, with arguments about TRPO and enviroments
+                TRPO simply using ``train_on_policy.py``, with arguments about TRPO and environments
                 does the training. For example, to run TRPO in SafetyPointGoal1-v0 , with
                 5 cpu cores and seed 0, you can use the following command:
 
@@ -636,7 +636,7 @@ Documentation of basic functions
 
         trpo.log()
         ^^^
-        Get the trainning log and show the performance of the algorithm.
+        Get the training log and show the performance of the algorithm.
 
 .. _conjugate:
 
@@ -829,7 +829,7 @@ Parameters
             -  algo (string): The name of algorithm corresponding to current class,
                it does not actually affect any things which happen in the following.
             -  actor (string): The type of network in actor, discrete or continuous.
-            -  model_cfgs (dictionary) : successrmation about actor and critic's net work configuration,
+            -  model_cfgs (dictionary) : Actor and critic's net work configuration,
                it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
                -  shared_weights (bool) : Use shared weights between actor and critic network or not.
@@ -914,8 +914,8 @@ Parameters
             -  adv_estimation_method (float):Roughly what KL divergence we think is
                appropriate between new and old policies after an update. This will
                get used for early stopping. (Usually small, 0.01 or 0.05.)
-            -  standardized_reward (int):  Use standarized reward or not.
-            -  standardized_cost (bool): Use standarized cost or not.
+            -  standardized_reward (int):  Use standardized reward or not.
+            -  standardized_cost (bool): Use standardized cost or not.
 
 ------
 
