@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Lagrange version of the TD3 algorithm."""
+from typing import Tuple
+
+import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.td3 import TD3
@@ -29,7 +32,7 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         URL: https://arxiv.org/abs/1802.09477
     """
 
-    def __init__(self, env_id: str, cfgs=None) -> None:
+    def __init__(self, env_id: str, cfgs) -> None:
         """Initialize TD3.
 
         Args:
@@ -56,14 +59,17 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
-    def compute_loss_pi(self, obs):
-        """Computing pi/actor loss.
+    def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, dict]:
+        r"""Computing ``pi/actor`` loss.
+        In the lagrange version of TD3, the loss is defined as:
+
+        .. math::
+            L_{\pi} = \mathbb{E}_{s \sim \mathcal{D}} [ Q(s, \pi(s)) - \lambda C(s, \pi(s))]
+
+        where :math:`\lambda` is the lagrange multiplier.
 
         Args:
-            obs (torch.Tensor): ``observation`` saved in data.
-
-        Returns:
-            torch.Tensor.
+            obs (:class:`torch.Tensor`): ``observation`` saved in data.
         """
         action = self.actor_critic.actor.predict(obs, deterministic=True, need_log_prob=False)
         loss_pi = self.actor_critic.critic(obs, action)[0]
@@ -76,9 +82,12 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
     def update(self, data):
         """Update.
         Update step contains three parts:
-            #. Update value net
-            #. Update cost net
-            #. Update policy net
+
+        #.  Update lagrange multiplier by :func:`update_lagrange_multiplier()`
+        #.  Update value net by :func:`update_value_net()`
+        #.  Update cost net by :func:`update_cost_net()`
+        #.  Update policy net by :func:`update_policy_net()`
+        #.  Update target net by :func:`polyak_update_target()`
 
         Args:
             data (dict): data from replay buffer.

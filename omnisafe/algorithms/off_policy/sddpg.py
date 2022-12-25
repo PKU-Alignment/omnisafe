@@ -13,7 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the SDDPG algorithm."""
-
 import torch
 
 from omnisafe.algorithms import registry
@@ -38,7 +37,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         URL: https://arxiv.org/abs/1901.10031
     """
 
-    def __init__(self, env_id: str, cfgs=None) -> None:
+    def __init__(self, env_id: str, cfgs) -> None:
         """Initialize SDDPG.
 
         Args:
@@ -59,11 +58,17 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         self.gamma = cfgs.gamma
         self.d_init = cfgs.d_init
 
-    def update(self, data):
+    def update(self, data: dict) -> None:
         """Update.
+        Update step contains three parts:
+
+        #.  Update value net by :func:`update_value_net()`
+        #.  Update cost net by :func:`update_cost_net()`
+        #.  Update policy net by :func:`update_policy_net()`
+        #.  Update target net by :func:`polyak_update_target()`
 
         Args:
-            data (dict): data dictionary.
+            data (dict): data from replay buffer.
         """
         # First run one gradient descent step for Q.
         self.fvp_obs = data['obs'][::4]
@@ -112,16 +117,13 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         # Finally, update target networks by polyak averaging.
         self.polyak_update_target()
 
-    def Fvp(self, params):
+    def Fvp(self, params) -> torch.Tensor:
         """
         Build the Hessian-vector product based on an approximation of the KL-divergence.
         For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf
 
         Args:
             params (torch.Tensor): parameters.
-
-        Returns:
-            flat_grad_grad_kl (torch.Tensor): flat gradient of gradient of KL.
         """
         self.actor_critic.actor.net.zero_grad()
         q_dist = self.actor_critic.actor.get_distribution(self.fvp_obs)
@@ -161,7 +163,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         """Update policy network.
 
         Args:
-            obs (torch.Tensor): observation.
+            obs (:class:`torch.Tensor`): observation.
         """
         # Train policy with one steps of gradient descent
         theta_old = get_flat_params_from(self.actor_critic.actor.net)

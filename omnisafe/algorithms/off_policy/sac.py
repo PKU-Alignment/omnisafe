@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the SAC algorithm."""
 
+from typing import Tuple
+
 import torch
 
 from omnisafe.algorithms import registry
@@ -30,7 +32,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         URL: https://arxiv.org/abs/1801.01290
     """
 
-    def __init__(self, env_id: str, cfgs=None) -> None:
+    def __init__(self, env_id: str, cfgs) -> None:
         """Initialize SAC."""
         super().__init__(
             env_id=env_id,
@@ -47,8 +49,18 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         rew: torch.Tensor,
         obs_next: torch.Tensor,
         done: torch.Tensor,
-    ):
+    ) -> Tuple[torch.Tensor, dict]:
         """Computing value loss.
+
+        .. admonition:: Note
+            :class: hint
+
+            The same as TD3, SAC uses two Q functions to reduce overestimation bias.
+            In this function, we use the minimum of the two Q functions as the target Q value.
+
+            Also, SAC use action with noise to compute the target Q value.
+
+            Further more, SAC use the entropy of the action distribution to update Q value.
 
         Args:
             obs (torch.Tensor): ``observation`` saved in data.
@@ -56,9 +68,6 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
             rew (torch.Tensor): ``reward`` saved in data.
             obs_next (torch.Tensor): ``next observations`` saved in data.
             done (torch.Tensor): ``terminated`` saved in data.
-
-        Returns:
-            torch.Tensor.
         """
         q_value_list = self.actor_critic.critic(obs, act)
         # Bellman backup for Q function
@@ -79,14 +88,16 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         q_info = dict(QVals=sum(q_values).detach().numpy())
         return sum(loss_q), q_info
 
-    def compute_loss_pi(self, obs):
+    def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, dict]:
         """Computing pi/actor loss.
+
+        .. admonition:: Note
+            :class: hint
+
+            SAC use the entropy of the action distribution to update policy.
 
         Args:
             obs (torch.Tensor): ``observation`` saved in data.
-
-        Returns:
-            torch.Tensor.
         """
         action, logp_a = self.actor_critic.actor.predict(
             obs, deterministic=True, need_log_prob=True
@@ -98,9 +109,12 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
     def update(self, data):
         """Update.
         Update step contains three parts:
-            #. Update value net
-            #. Update cost net
-            #. Update policy net
+
+        #.  Update value net by :func:`update_value_net()`
+        #.  Update cost net by :func:`update_cost_net()`
+        #.  Update policy net by :func:`update_policy_net()`
+        #.  Update :meth:'alpha' by :func:`alpha_discount()`
+        #.  Update target net by :func:`polyak_update_target()`
 
         Args:
             data (dict): data from replay buffer.
@@ -153,5 +167,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         self.alpha_discount()
 
     def alpha_discount(self):
-        """Alpha discount."""
+        """Alpha discount.
+        SAC discount alpha by ``alpha_gamma`` to decrease the entropy of the action distribution.
+        """
         self.alpha *= self.alpha_gamma

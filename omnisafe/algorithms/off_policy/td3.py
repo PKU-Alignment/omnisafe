@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the TD3 algorithm."""
+from typing import Tuple
 
 import torch
 
@@ -30,7 +31,7 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
         URL: https://arxiv.org/abs/1802.09477
     """
 
-    def __init__(self, env_id: str, cfgs=None) -> None:
+    def __init__(self, env_id: str, cfgs) -> None:
         """Initialize DDPG."""
         super().__init__(
             env_id=env_id,
@@ -45,18 +46,23 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
         rew: torch.Tensor,
         obs_next: torch.Tensor,
         done: torch.Tensor,
-    ):
+    ) -> Tuple[torch.Tensor, dict]:
         """Computing value loss.
 
-        Args:
-            obs (torch.Tensor): ``observation`` saved in data.
-            act (torch.Tensor): ``action`` saved in data.
-            rew (torch.Tensor): ``reward`` saved in data.
-            obs_next (torch.Tensor): ``next observations`` saved in data.
-            done (torch.Tensor): ``terminated`` saved in data.
+        .. admonition:: Note
+            :class: hint
 
-        Returns:
-            torch.Tensor.
+            TD3 uses two Q functions to reduce overestimation bias.
+            In this function, we use the minimum of the two Q functions as the target Q value.
+
+            Also, TD3 use action with noise to compute the target Q value.
+
+        Args:
+            obs (:class:`torch.Tensor`): :meth:`observation` saved in data.
+            act (:class:`torch.Tensor`): :meth:`action` saved in data.
+            rew (:class:`torch.Tensor`): :meth:`reward` saved in data.
+            obs_next (:class:`torch.Tensor`): :meth:`next observations` saved in data.
+            done (:class:`torch.Tensor`): :meth:`terminated` saved in data.
         """
         q_value_list = self.actor_critic.critic(obs, act)
         # Bellman backup for Q function

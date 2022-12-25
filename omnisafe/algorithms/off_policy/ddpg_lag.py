@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Lagrange version of the DDPG algorithm."""
+from typing import Tuple
+
+import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
@@ -25,8 +28,10 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
 
     References:
         Title: Continuous control with deep reinforcement learning
+
         Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
-                 Yuval Tassa, David Silver, Daan Wierstra.
+                Yuval Tassa, David Silver, Daan Wierstra.
+
         URL: https://arxiv.org/abs/1509.02971
     """
 
@@ -45,19 +50,22 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
         )
 
-    def algorithm_specific_logs(self):
+    def algorithm_specific_logs(self) -> None:
         """Use this method to collect log information."""
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
-    def compute_loss_pi(self, obs):
-        """Computing pi/actor loss.
+    def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, dict]:
+        r"""Computing ``pi/actor`` loss.
+        In the lagrange version of DDPG, the loss is defined as:
+
+        .. math::
+            L_{\pi} = \mathbb{E}_{s \sim \mathcal{D}} [ Q(s, \pi(s)) - \lambda C(s, \pi(s))]
+
+        where :math:`\lambda` is the lagrange multiplier.
 
         Args:
-            obs (torch.Tensor): ``observation`` saved in data.
-
-        Returns:
-            torch.Tensor.
+            obs (:class:`torch.Tensor`): ``observation`` saved in data.
         """
         action = self.actor_critic.actor.predict(obs, deterministic=True, need_log_prob=False)
         loss_pi = self.actor_critic.critic(obs, action)[0]
@@ -67,8 +75,19 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
         pi_info = {}
         return -loss_pi.mean(), pi_info
 
-    def update(self, data):
-        """Update."""
+    def update(self, data: dict) -> None:
+        """Update.
+        Update step contains three parts:
+
+        #.  Update lagrange multiplier by :func:`update_lagrange_multiplier()`
+        #.  Update value net by :func:`update_value_net()`
+        #.  Update cost net by :func:`update_cost_net()`
+        #.  Update policy net by :func:`update_policy_net()`
+        #.  Update target net by :func:`polyak_update_target()`
+
+        Args:
+            data (dict): data from replay buffer.
+        """
         Jc = data['cost'].sum().item()
         self.update_lagrange_multiplier(Jc)
         # First run one gradient descent step for Q.

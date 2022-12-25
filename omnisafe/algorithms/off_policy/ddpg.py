@@ -13,9 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the DDPG algorithm."""
-
 import time
 from copy import deepcopy
+from typing import Tuple
 
 import numpy as np
 import torch
@@ -35,12 +35,14 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
     """The Deep Deterministic Policy Gradient (DDPG) algorithm.
 
     References:
+
         Title: Continuous control with deep reinforcement learning
 
         Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
                 Yuval Tassa, David Silver, Daan Wierstra.
 
         URL: https://arxiv.org/abs/1509.02971
+
     """
 
     def __init__(self, env_id: str, cfgs) -> None:
@@ -142,9 +144,8 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.epoch_time = time.time()
         self.logger.log('Start with training.')
 
-    def set_learning_rate_scheduler(self):
+    def set_learning_rate_scheduler(self) -> torch.optim.lr_scheduler.LambdaLR:
         """Set up learning rate scheduler."""
-
         scheduler = None
         if self.cfgs.linear_lr_decay:
             # Linear anneal
@@ -156,9 +157,8 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             )
         return scheduler
 
-    def _init_mpi(self):
+    def _init_mpi(self) -> None:
         """Initialize MPI specifics."""
-
         if distributed_utils.num_procs() > 1:
             # Avoid slowdowns from PyTorch + MPI combo
             distributed_utils.setup_torch_for_mpi()
@@ -168,10 +168,10 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             distributed_utils.sync_params(self.actor_critic)
             self.logger.log(f'Done! (took {time.time()-start:0.3f} sec.)')
 
-    def algorithm_specific_logs(self):
+    def algorithm_specific_logs(self) -> None:
         """Use this method to collect log information."""
 
-    def _ac_training_setup(self):
+    def _ac_training_setup(self) -> None:
         """Set up target network for off_policy training."""
         self.ac_targ = deepcopy(self.actor_critic)
         # Freeze target networks with respect to optimizer (only update via polyak averaging)
@@ -182,7 +182,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         for param in self.ac_targ.cost_critic.parameters():
             param.requires_grad = False
 
-    def check_distributed_parameters(self):
+    def check_distributed_parameters(self) -> None:
         """Check if parameters are synchronized across all processes."""
         if distributed_utils.num_procs() > 1:
             self.logger.log('Check if distributed parameters are synchronous..')
@@ -193,14 +193,11 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 global_max = distributed_utils.mpi_max(np.sum(flat_params))
                 assert np.allclose(global_min, global_max), f'{key} not synced.'
 
-    def compute_loss_pi(self, obs):
-        """Computing pi/actor loss.
+    def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, dict]:
+        """Computing ``pi/actor`` loss.
 
         Args:
-            obs (torch.Tensor): ``observation`` saved in data.
-
-        Returns:
-            torch.Tensor.
+            obs (:class:`torch.Tensor`): :meth:`observation` saved in data.
         """
         action = self.actor_critic.actor.predict(obs, deterministic=True)
         loss_pi = self.actor_critic.critic(obs, action)[0]
@@ -215,18 +212,15 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         rew: torch.Tensor,
         obs_next: torch.Tensor,
         done: torch.Tensor,
-    ):
+    ) -> Tuple[torch.Tensor, dict]:
         """Computing value loss.
 
         Args:
-            obs (torch.Tensor): ``observation`` saved in data.
-            act (torch.Tensor): ``action`` saved in data.
-            rew (torch.Tensor): ``reward`` saved in data.
-            obs_next (torch.Tensor): ``next observations`` saved in data.
-            done (torch.Tensor): ``terminated`` saved in data.
-
-        Returns:
-            torch.Tensor.
+            obs (:class:`torch.Tensor`): :meth:`observation` saved in data.
+            act (:class:`torch.Tensor`): :meth:`action` saved in data.
+            rew (:class:`torch.Tensor`): :meth:`reward` saved in data.
+            obs_next (:class:`torch.Tensor`): :meth:`next observations` saved in data.
+            done (:class:`torch.Tensor`): :meth:`terminated` saved in data.
         """
         q_value = self.actor_critic.critic(obs, act)[0]
         # Bellman backup for Q function
@@ -248,18 +242,15 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         cost: torch.Tensor,
         obs_next: torch.Tensor,
         done: torch.Tensor,
-    ):
+    ) -> Tuple[torch.Tensor, dict]:
         """Computing cost loss.
 
         Args:
-            obs (torch.Tensor): ``observation`` saved in data.
-            act (torch.Tensor): ``action`` saved in data.
-            cost (torch.Tensor): ``cost`` saved in data.
-            obs_next (torch.Tensor): ``next observations`` saved in data.
-            done (torch.Tensor): ``terminated`` saved in data.
-
-        Returns:
-            torch.Tensor.
+            obs (:class:`torch.Tensor`): :meth:`observation` saved in data.
+            act (:class:`torch.Tensor`): :meth:`action` saved in data.
+            cost (:class:`torch.Tensor`): :meth:`cost` saved in data.
+            obs_next (:class:`torch.Tensor`): :meth:`next observations` saved in data.
+            done (:class:`torch.Tensor`): :meth:`terminated` saved in data.
         """
         cost_q_value = self.actor_critic.cost_critic(obs, act)[0]
 
@@ -275,17 +266,14 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
 
         return loss_qc, qc_info
 
-    def learn(self):
+    def learn(self) -> torch.nn.Module:
         """
         This is main function for algorithm update, divided into the following steps:
-            #. self.rollout: collect interactive data from environment
-            #. self.update: perform actor/critic updates
-            #. log epoch/update information for visualization and terminal log print.
 
-        Returns:
-            model and environment.
+        #.  ``self.env.rollout()``: collect interactive data from environment
+        #.  ``self.update()``: perform actor/critic updates
+        #.  log epoch/update information for visualization and terminal log print.
         """
-
         for steps in range(0, self.local_steps_per_epoch * self.epochs, self.update_every):
             # Until start_steps have elapsed, randomly sample actions
             # from a uniform distribution for better exploration. Afterwards,
@@ -325,12 +313,14 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 self.log(epoch, steps)
         return self.actor_critic
 
-    def update(self, data):
+    def update(self, data: dict) -> None:
         """Update.
         Update step contains three parts:
-            #. Update value net
-            #. Update cost net
-            #. Update policy net
+
+        #.  Update value net by :func:`update_value_net()`
+        #.  Update cost net by :func:`update_cost_net()`
+        #.  Update policy net by :func:`update_policy_net()`
+        #.  Update target net by :func:`polyak_update_target()`
 
         Args:
             data (dict): data from replay buffer.
@@ -381,7 +371,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         # Finally, update target networks by polyak averaging.
         self.polyak_update_target()
 
-    def polyak_update_target(self):
+    def polyak_update_target(self) -> None:
         """Polyak update target network."""
         with torch.no_grad():
             for param, param_targ in zip(self.actor_critic.parameters(), self.ac_targ.parameters()):
@@ -394,7 +384,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         """Update policy network.
 
         Args:
-            obs (torch.Tensor): observation.
+            obs (:class:`torch.Tensor`): observation.
         """
         # Train policy with one steps of gradient descent
         self.actor_optimizer.zero_grad()
@@ -415,11 +405,11 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         """Update value network.
 
         Args:
-            obs (torch.Tensor): ``observation`` saved in data.
-            act (torch.Tensor): ``action`` saved in data.
-            rew (torch.Tensor): ``reward`` saved in data.
-            obs_next (torch.Tensor): ``next observations`` saved in data.
-            done (torch.Tensor): ``terminated`` saved in data.
+            obs (:class:`torch.Tensor`): :meth:`observation` saved in data.
+            act (:class:`torch.Tensor`): :meth:`action` saved in data.
+            rew (:class:`torch.Tensor`): :meth:`reward` saved in data.
+            obs_next (:class:`torch.Tensor`): :meth:`next observations` saved in data.
+            done (:class:`torch.Tensor`): :meth`terminated` saved in data.
         """
         # Train value critic with one steps of gradient descent
         self.critic_optimizer.zero_grad()
@@ -446,11 +436,11 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         """Update cost network.
 
         Args:
-            obs (torch.Tensor): ``observation`` saved in data.
-            act (torch.Tensor): ``action`` saved in data.
-            cost (torch.Tensor): ``cost`` saved in data.
-            obs_next (torch.Tensor): ``next observations`` saved in data.
-            done (torch.Tensor): ``terminated`` saved in data.
+            obs (:class:`torch.Tensor`): :meth:`observation` saved in data.
+            act (:class:`torch.Tensor`): :meth:`action` saved in data.
+            cost (:class:`torch.Tensor`): :meth:`cost` saved in data.
+            obs_next (:class:`torch.Tensor`): :meth:`next observations` saved in data.
+            done (:class:`torch.Tensor`): :meth`terminated` saved in data.
         """
         # Train cost critic with one steps of gradient descent
         self.cost_critic_optimizer.zero_grad()
@@ -465,8 +455,10 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.cost_critic_optimizer.step()
         self.logger.store(**{'Loss/Cost': loss_qc.item(), 'QCosts': qc_info['QCosts']})
 
-    def test_agent(self):
-        """Test agent."""
+    def test_agent(self) -> None:
+        """Test agent.
+        The algorithm uses a randomness strategy during training and a deterministic strategy during testing
+        """
         for _ in range(self.num_test_episodes):
             # self.env.set_rollout_cfgs(deterministic=True, rand_a=False)
             self.env.roll_out(
@@ -478,8 +470,60 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 ep_steps=self.max_ep_len,
             )
 
-    def log(self, epoch, total_steps):
-        """Log info about epoch."""
+    def log(self, epoch: int, total_steps: int) -> None:
+        """Log info about epoch.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   Epoch
+                -   current epoch.
+            *   -   Metrics/EpCost
+                -   average cost of the epoch.
+            *   -   Metrics/EpCost
+                -   average cost of the epoch.
+            *   -   Metrics/EpRet
+                -   average return of the epoch.
+            *   -   Metrics/EpLen
+                -   average length of the epoch.
+            *   -   Test/EpRet
+                -   average return of the test.
+            *   -   Test/EpCost
+                -   average cost of the test.
+            *   -   Test/EpLen
+                -   average length of the test.
+            *   -   Values/V
+                -   average value in :func:`roll_out()` (from critic network) of the epoch.
+            *   -   Values/Cost
+                -   average cost in :func:`roll_out()` (from critic network) of the epoch.
+            *   -   Values/QVals
+                -   average Q value in :func:`roll_out()` (from critic network) of the epoch.
+            *   -   Values/QCosts
+                -   average Q cost in :func:`roll_out()` (from critic network) of the epoch.
+            *   -   loss/Pi
+                -   loss of the policy network.
+            *   -   loss/Value
+                -   loss of the value network.
+            *   -   loss/Cost
+                -   loss of the cost network.
+            *   -   Misc/Seed
+                -   seed of the experiment.
+            *   -   LR
+                -   learning rate of the actor network.
+            *   -   Misc/RewScaleMean
+                -   mean of the reward scale.
+            *   -   Misc/RewScaleStddev
+                -   std of the reward scale.
+            *   -   Misc/ExplorationNoisestd
+                -   std of the exploration noise.
+            *   -   Misc/TotalEnvSteps
+                -   total steps of the experiment.
+            *   -   Time
+                -   total time.
+            *   -   FPS
+                -   frames per second of the epoch.
+        """
         fps = self.cfgs.steps_per_epoch / (time.time() - self.epoch_time)
         # Step the actor learning rate scheduler if provided
         if self.scheduler and self.cfgs.linear_lr_decay:

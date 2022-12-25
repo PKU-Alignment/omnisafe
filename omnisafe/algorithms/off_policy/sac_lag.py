@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Lagrange version of the SAC algorithm."""
+from typing import Tuple
 
 import torch
 
@@ -33,7 +34,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         URL: https://arxiv.org/abs/1801.01290
     """
 
-    def __init__(self, env_id: str, cfgs=None) -> None:
+    def __init__(self, env_id: str, cfgs) -> None:
         """Initialize SACLag.
 
         Args:
@@ -60,14 +61,17 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
-    def compute_loss_pi(self, obs):
-        """Computing pi/actor loss.
+    def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, dict]:
+        r"""Computing ``pi/actor`` loss.
+        In the lagrange version of DDPG, the loss is defined as:
+
+        .. math::
+            L_{\pi} = \mathbb{E}_{s \sim \mathcal{D}} [ Q(s, \pi(s)) - \lambda C(s, \pi(s)) - \mu \log \pi(s)]
+
+        where :math:`\lambda` is the lagrange multiplier, :math:`\mu` is the entropy coefficient.
 
         Args:
-            obs (torch.Tensor): ``observation`` saved in data.
-
-        Returns:
-            torch.Tensor.
+            obs (:class:`torch.Tensor`): ``observation`` saved in data.
         """
         action, logp_a = self.actor_critic.actor.predict(
             obs, deterministic=True, need_log_prob=True
@@ -87,18 +91,25 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         cost: torch.Tensor,
         obs_next: torch.Tensor,
         done: torch.Tensor,
-    ):
-        """Computing cost loss.
+    ) -> Tuple[torch.Tensor, dict]:
+        """Computing value loss.
+
+        .. admonition:: Note
+            :class: hint
+
+            The same as TD3, SAC uses two Q functions to reduce overestimation bias.
+            In this function, we use the minimum of the two Q functions as the target Q value.
+
+            Also, SAC use action with noise to compute the target Q value.
+
+            Further more, SAC use the entropy of the action distribution to update Q value.
 
         Args:
             obs (torch.Tensor): ``observation`` saved in data.
             act (torch.Tensor): ``action`` saved in data.
-            cost (torch.Tensor): ``cost`` saved in data.
+            rew (torch.Tensor): ``reward`` saved in data.
             obs_next (torch.Tensor): ``next observations`` saved in data.
             done (torch.Tensor): ``terminated`` saved in data.
-
-        Returns:
-            torch.Tensor.
         """
         cost_q_value = self.actor_critic.cost_critic(obs, act)[0]
 
@@ -119,9 +130,12 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
     def update(self, data):
         """Update.
         Update step contains three parts:
-            #. Update value net
-            #. Update cost net
-            #. Update policy net
+
+        #.  Update lagrange multiplier by :func:`update_lagrange_multiplier()`
+        #.  Update value net by :func:`update_value_net()`
+        #.  Update cost net by :func:`update_cost_net()`
+        #.  Update policy net by :func:`update_policy_net()`
+        #.  Update target net by :func:`polyak_update_target()`
 
         Args:
             data (dict): data from replay buffer.
