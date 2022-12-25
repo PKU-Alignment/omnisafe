@@ -380,7 +380,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 param_targ.data.mul_(self.cfgs.polyak)
                 param_targ.data.add_((1 - self.cfgs.polyak) * param.data)
 
-    def update_policy_net(self, obs) -> None:
+    def update_policy_net(self, obs: torch.Tensor) -> None:
         """Update policy network.
 
         Args:
