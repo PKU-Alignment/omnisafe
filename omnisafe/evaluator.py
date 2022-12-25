@@ -78,7 +78,6 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self.env.reset(seed=seed)
 
     # pylint: disable-next=too-many-locals
-    # pylint: disable-next=too-many-locals
     def load_saved_model(self, save_dir: str, model_name: str):
         """Load a saved model.
         Args:
