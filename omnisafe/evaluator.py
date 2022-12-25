@@ -51,7 +51,6 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         # set the attributes
         self.env = env
         self.actor = actor
-        self.actor = actor
         self.obs_oms = obs_oms if obs_oms is not None else lambda x: x
         self.env_wrapper_class = type(env) if env is not None else None
 
