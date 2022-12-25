@@ -160,7 +160,7 @@ class EnsembleModel(nn.Module):
             self.output_dim = state_size + reward_size
         elif self.algo == 'CAP' and self.env_type == 'gym':
             self.output_dim = state_size + reward_size
-        elif self.env_type == 'mujoco-speed':
+        elif self.env_type == 'mujoco-velocity':
             self.output_dim = state_size + reward_size + cost_size
         self.hidden_size = hidden_size
         self.use_decay = use_decay
@@ -197,7 +197,7 @@ class EnsembleModel(nn.Module):
                 if ret_log_var:
                     return mean, logvar
                 return mean, var
-            if not training and self.env_type == 'mujoco-speed':
+            if not training and self.env_type == 'mujoco-velocity':
                 state_noise = (
                     torch.randn_like(mean[:, :, 2:], device=mean.device) * var[:, :, 2:].sqrt()
                 )

@@ -17,7 +17,7 @@
 import numpy as np
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.model_based.planner import CCEMPlanner
+from omnisafe.algorithms.model_based.planner import CCEPlanner
 from omnisafe.algorithms.model_based.policy_gradient import PolicyGradientModelBased
 from omnisafe.common.lagrange import Lagrange
 from omnisafe.utils.config_utils import namedtuple2dict
@@ -25,13 +25,15 @@ from omnisafe.utils.config_utils import namedtuple2dict
 
 @registry.register
 class CAP(
-    PolicyGradientModelBased, CCEMPlanner, Lagrange
+    PolicyGradientModelBased, CCEPlanner, Lagrange
 ):  # pylint: disable=too-many-instance-attributes
     """The Conservative and Adaptive Penalty (CAP) algorithm.
 
     References:
         Title: Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning
-        Authors: Yecheng Jason Ma, Andrew Shen, Osbert Bastani, Dinesh Jayaraman
+
+        Authors: Yecheng Jason Ma, Andrew Shen, Osbert Bastani, Dinesh Jayaraman.
+
         URL: https://arxiv.org/abs/2112.07701
     """
 
@@ -42,7 +44,7 @@ class CAP(
             cfgs=cfgs,
         )
         Lagrange.__init__(self, **namedtuple2dict(self.cfgs.lagrange_cfgs), device=self.cfgs.device)
-        CCEMPlanner.__init__(
+        CCEPlanner.__init__(
             self,
             algo=self.algo,
             cfgs=self.cfgs,
@@ -77,7 +79,7 @@ class CAP(
         next_state = self.off_replay_buffer.obs_next_buf[: self.off_replay_buffer.size, :]
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
-        if self.env.env_type == 'mujoco-speed':
+        if self.env.env_type == 'mujoco-velocity':
             labels = np.concatenate(
                 (
                     np.reshape(reward, (reward.shape[0], -1)),

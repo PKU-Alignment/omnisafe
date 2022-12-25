@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of ActorQCritic."""
 
-import numpy as np
 import torch
 import torch.nn as nn
 
@@ -124,14 +123,10 @@ class ActorQCritic(nn.Module):
             action, logp_a = self.actor.predict(
                 obs, deterministic=deterministic, need_log_prob=True
             )
-            value = self.critic(obs, action)
+            value = self.critic(obs, action)[0]
             action = action.to(torch.float32)
-            action = np.clip(
-                action.cpu().detach().numpy(),
-                self.act_min.cpu().detach().numpy(),
-                self.act_max.cpu().detach().numpy(),
-            )
-            return action, value, logp_a
+
+            return action.cpu().numpy(), value.cpu().numpy(), logp_a.cpu().numpy()
 
     def anneal_exploration(self, frac):
         """update internals of actors

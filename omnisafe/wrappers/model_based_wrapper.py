@@ -101,7 +101,7 @@ class ModelBasedEnvWrapper:  # pylint: disable=too-many-instance-attributes
             self.robot_position = self.env.task.robot_pos
             self.hazards_position = self.env.task.hazards_pos
         elif env_id in self.modelbased_mujoco_speed:
-            self.env_type = 'mujoco-speed'
+            self.env_type = 'mujoco-velocity'
             self.env = gymnasium.make(env_id)
             self.observation_space = self.env.observation_space
             self.action_space = self.env.action_space
@@ -166,7 +166,7 @@ class ModelBasedEnvWrapper:  # pylint: disable=too-many-instance-attributes
         """Reset Environment"""
         self.timestep = 0  # Reset internal timer
 
-        if self.env_type == 'mujoco-speed':
+        if self.env_type == 'mujoco-velocity':
             obs, _ = self.env.reset()
             return obs
 
@@ -203,7 +203,7 @@ class ModelBasedEnvWrapper:  # pylint: disable=too-many-instance-attributes
                     break
             if self.algo in ['MBPPOLag', 'SafeLOOP', 'CAP']:
                 info = {'cost': cost, 'goal_met': goal_met, 'step_num': step_num}
-        elif self.env_type == 'mujoco-speed':
+        elif self.env_type == 'mujoco-velocity':
             for _ in range(num_repeat):
                 control = action
                 state_k, reward_k, terminated, truncated, info = self.env.step(control)

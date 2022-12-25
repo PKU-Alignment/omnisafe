@@ -35,7 +35,9 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
 
     References:
         Title: Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm
-        Authors: Ashish Kumar Jayant, Shalabh Bhatnagar
+
+        Authors: Ashish Kumar Jayant, Shalabh Bhatnagar.
+
         URL: https://arxiv.org/abs/2210.07573
     """
 
@@ -171,7 +173,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         cost = self.off_replay_buffer.cost_buf[: self.off_replay_buffer.size]
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
-        if self.env.env_type == 'mujoco-speed':
+        if self.env.env_type == 'mujoco-velocity':
             labels = np.concatenate(
                 (
                     np.reshape(reward, (reward.shape[0], -1)),
@@ -407,7 +409,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
             next_state = np.clip(next_state, -self.cfgs.obs_clip, self.cfgs.obs_clip)
             reward, cost, goal_flag = self.env_auxiliary.get_reward_cost(next_state)
             info = {'goal_flag': goal_flag}
-        elif self.env.env_type == 'mujoco-speed':
+        elif self.env.env_type == 'mujoco-velocity':
             next_state, reward, cost, _ = self.virtual_env.mbppo_step(state, action, idx)
             next_state = np.nan_to_num(next_state)
             reward = np.nan_to_num(reward)

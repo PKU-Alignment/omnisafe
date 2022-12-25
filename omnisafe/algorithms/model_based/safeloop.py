@@ -21,7 +21,7 @@ import numpy as np
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.model_based.planner import Planner
+from omnisafe.algorithms.model_based.planner import ARCPlanner
 from omnisafe.algorithms.model_based.policy_gradient import PolicyGradientModelBased
 from omnisafe.models.actor_q_critic import ActorQCritic
 from omnisafe.utils import core
@@ -29,12 +29,16 @@ from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
-class SafeLOOP(PolicyGradientModelBased, Planner):  # pylint: disable=too-many-instance-attributes
+class SafeLOOP(
+    PolicyGradientModelBased, ARCPlanner
+):  # pylint: disable=too-many-instance-attributes
     """The Safe Learning Off-Policy with Online Planning (SafeLOOP) algorithm.
 
     References:
         Title: Learning Off-Policy with Online Planning
-        Authors: Harshit Sikchi, Wenxuan Zhou, David Held
+
+        Authors: Harshit Sikchi, Wenxuan Zhou, David Held.
+
         URL: https://arxiv.org/abs/2008.10066
     """
 
@@ -51,7 +55,7 @@ class SafeLOOP(PolicyGradientModelBased, Planner):  # pylint: disable=too-many-i
 
         self.alpha = self.cfgs.alpha
         self.alpha_gamma = self.cfgs.alpha_gamma
-        Planner.__init__(
+        ARCPlanner.__init__(
             self,
             self.algo,
             self.cfgs,
@@ -253,7 +257,7 @@ class SafeLOOP(PolicyGradientModelBased, Planner):  # pylint: disable=too-many-i
         next_state = self.off_replay_buffer.obs_next_buf[: self.off_replay_buffer.size, :]
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
-        if self.env.env_type == 'mujoco-speed':
+        if self.env.env_type == 'mujoco-velocity':
             labels = np.concatenate(
                 (
                     np.reshape(reward, (reward.shape[0], -1)),

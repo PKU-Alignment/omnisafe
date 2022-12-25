@@ -30,7 +30,11 @@ class VirtualEnv:
             self.state_start_dim = 0
         elif self.model.env_type == 'gym' and self.algo in ['CAP', 'SafeLOOP']:
             self.state_start_dim = 1
-        elif self.model.env_type == 'mujoco-speed' and self.algo in ['MBPPOLag', 'CAP', 'SafeLOOP']:
+        elif self.model.env_type == 'mujoco-velocity' and self.algo in [
+            'MBPPOLag',
+            'CAP',
+            'SafeLOOP',
+        ]:
             self.state_start_dim = 2
 
     def _termination_fn(self, env_name, obs, act, next_obs):
@@ -135,7 +139,7 @@ class VirtualEnv:
 
         samples = ensemble_samples[model_idxes, batch_idxes]
 
-        if self.algo == 'MBPPOLag' and self.model.env_type == 'mujoco-speed':
+        if self.algo == 'MBPPOLag' and self.model.env_type == 'mujoco-velocity':
             rewards, cost, next_obs = (
                 samples[:, 0],
                 samples[:, 1],
@@ -148,10 +152,10 @@ class VirtualEnv:
 
         if return_single:
             next_obs = next_obs[0]
-            if self.model.env_type == 'mujoco-speed':
+            if self.model.env_type == 'mujoco-velocity':
                 rewards = rewards[0]
                 cost = cost[0]
-        if self.algo == 'MBPPOLag' and self.model.env_type == 'mujoco-speed':
+        if self.algo == 'MBPPOLag' and self.model.env_type == 'mujoco-velocity':
             return next_obs, rewards, cost, terminals
         if self.algo == 'MBPPOLag' and self.model.env_type == 'gym':
             return next_obs, None, None, None

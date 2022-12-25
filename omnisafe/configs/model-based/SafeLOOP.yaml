@@ -63,6 +63,8 @@ defaults:
   alpha: 0.2
   # The learning rate of Alpha
   alpha_gamma: 0.99
+  # The soft update coefficient
+  polyak: 0.995
   ## ---------------------------------------Configuration For Model----------------------------- ##
   model_cfgs:
     # Whether to share the weight of Actor network with Critic network

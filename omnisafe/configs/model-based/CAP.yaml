@@ -40,9 +40,9 @@ defaults:
   replay_size: 1000000
   # Batch size of Off-policy Buffer
   batch_size: 256
-  # log information every `log_freq` timestep
+  # log information every `log_freq` timesteps
   log_freq: 1000
-  # update dynamics every `update_dynamics_freq` timestep
+  # update dynamics every `update_dynamics_freq` timesteps
   update_dynamics_freq: 1000
 
   ## ----------------------------Basic configurations for dynamics model-------------------- ##

@@ -72,4 +72,9 @@ class ConstraintActorQCritic(ActorQCritic):
             value = self.critic(obs, action)[0]
             cost_value = self.cost_critic(obs, action)[0]
 
-        return action.numpy(), value.numpy(), cost_value.numpy(), logp_a.numpy()
+        return (
+            action.cpu().numpy(),
+            value.cpu().numpy(),
+            cost_value.cpu().numpy(),
+            logp_a.cpu().numpy(),
+        )

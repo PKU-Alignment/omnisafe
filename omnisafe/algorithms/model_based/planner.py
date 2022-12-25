@@ -19,8 +19,16 @@ import scipy.stats as stats
 import torch
 
 
-class Planner:  # pylint: disable=too-many-instance-attributes
-    """Model Predictive Control Planner"""
+class ARCPlanner:  # pylint: disable=too-many-instance-attributes
+    """The Actor Regularized Control (ARC) Planner.
+
+    References:
+        Title: Learning Off-Policy with Online Planning
+
+        Authors: Harshit Sikchi, Wenxuan Zhou, David Held.
+
+        URL: https://arxiv.org/abs/2008.10066
+    """
 
     # pylint: disable-next=too-many-locals, too-many-arguments
     def __init__(
@@ -68,7 +76,7 @@ class Planner:  # pylint: disable=too-many-instance-attributes
         self.kappa = kappa
         self.safety_threshold = safety_threshold
         self.minimal_elites = minimal_elites
-        self.state_start_dim = 2 if self.env.env_type == 'mujoco-speed' else 1
+        self.state_start_dim = 2 if self.env.env_type == 'mujoco-velocity' else 1
         self.obs_clip = obs_clip
         self.lagrangian_multiplier = lagrangian_multiplier
 
@@ -415,7 +423,7 @@ class Planner:  # pylint: disable=too-many-instance-attributes
                                 axis=0,
                             ),
                         )
-                    elif self.env.env_type == 'mujoco-speed':
+                    elif self.env.env_type == 'mujoco-velocity':
                         # use cost that dynamics predict at dimension one
                         safety_costs[traj_indices] += np.sum(
                             state_traj[
@@ -649,8 +657,16 @@ def default_termination_function(state, action, next_state):  # pylint: disable=
 
 
 # pylint: disable-next=too-many-instance-attributes
-class CCEMPlanner:
-    """Constrained Cross-Entropy Planner"""
+class CCEPlanner:
+    """Constrained Cross-Entropy (CCE) Planner.
+
+    References:
+        Title: Constrained Cross-Entropy Method for Safe Reinforcement Learning
+
+        Authors: Min Wen, Ufuk Topcu.
+
+        URL: https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html
+    """
 
     # pylint: disable-next=too-many-locals, too-many-arguments
     def __init__(
@@ -697,7 +713,7 @@ class CCEMPlanner:
         self.ac_buf = np.array([]).reshape(0, self.action_dim)
         self.prev_sol = np.tile((self.action_min + self.action_max) / 2, [self.horizon])
         self.init_var = np.tile(np.square(self.action_max - self.action_min) / 16, [self.horizon])
-        self.state_start_dim = 2 if self.env.env_type == 'mujoco-speed' else 1
+        self.state_start_dim = 2 if self.env.env_type == 'mujoco-velocity' else 1
         self.mixture_coefficient = mixture_coefficient
         self.lagrangian_multiplier = lagrangian_multiplier
         self.models = models
@@ -827,7 +843,7 @@ class CCEMPlanner:
         reward = self._flatten_to_matrix(reward)
         # [network_size * num_gaussian_traj * particles, 1]
 
-        if self.env.env_type == 'mujoco-speed':
+        if self.env.env_type == 'mujoco-velocity':
             cost, _ = output['cost']
             cost = self._flatten_to_matrix(cost)
         elif self.env.env_type == 'gym':

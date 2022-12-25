@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Policy Gradient"""
+"""Policy Gradient in Model-Based setting."""
 
 import time
 from copy import deepcopy
@@ -34,7 +34,15 @@ from omnisafe.wrappers import wrapper_registry
 
 @registry.register
 class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes,too-many-arguments
-    """policy update base class"""
+    """The Policy Gradient algorithm in Model-Based setting.
+
+    References:
+        Title: Policy Gradient Methods for Reinforcement Learning with Function Approximation
+
+        Authors: Richard S. Sutton, David McAllester, Satinder Singh, Yishay Mansour.
+
+        URL: https://proceedings.neurips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf
+    """
 
     def __init__(self, env_id, cfgs=None) -> None:
 
@@ -87,6 +95,9 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes,
         if self.algo in ['MBPPOLag', 'SafeLOOP']:
             self.use_actor = True
             self.actor_critic = self.set_algorithm_specific_actor_critic()
+        else:
+            self.use_actor = False
+
         # Setup statistics
         self.start_time = time.time()
         self.epoch_time = time.time()
