@@ -44,6 +44,7 @@ class Buffer:
         standardized_cost: bool,
         lam_c: float = 0.95,
         reward_penalty: bool = False,
+        device: torch.device = torch.device('cpu'),
     ):
         """
         A buffer for storing trajectories experienced by an agent interacting
@@ -80,8 +81,9 @@ class Buffer:
         self.cost_adv_buf = np.zeros(size, dtype=np.float32)
         self.target_cost_val_buf = np.zeros(size, dtype=np.float32)
         self.use_reward_penalty = reward_penalty
+        self.device = device
 
-        assert adv_estimation_method in ['gae', 'vtrace', 'plain']
+        assert adv_estimation_method in ['gae', 'gae-rtg', 'vtrace', 'plain']
 
     def calculate_adv_and_value_targets(self, vals, rews, lam=None):
         """Compute the estimated advantage"""
@@ -92,6 +94,14 @@ class Buffer:
             deltas = rews[:-1] + self.gamma * vals[1:] - vals[:-1]
             adv = discount_cumsum(deltas, self.gamma * lam)
             value_net_targets = adv + vals[:-1]
+
+        elif self.adv_estimation_method == 'gae-rtg':
+            # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
+            lam = self.lam if lam is None else lam
+            deltas = rews[:-1] + self.gamma * vals[1:] - vals[:-1]
+            adv = discount_cumsum(deltas, self.gamma * lam)
+            # compute rewards-to-go, to be targets for the value function update
+            value_net_targets = discount_cumsum(rews, self.gamma)[:-1]
 
         elif self.adv_estimation_method == 'vtrace':
             #  v_s = V(x_s) + \sum^{T-1}_{t=s} \gamma^{t-s}
@@ -227,7 +237,9 @@ class Buffer:
             target_c=self.target_cost_val_buf,
         )
 
-        return {k: torch.as_tensor(v, dtype=torch.float32) for k, v in data.items()}
+        return {
+            k: torch.as_tensor(v, device=self.device, dtype=torch.float32) for k, v in data.items()
+        }
 
     def pre_process_data(self):
         """
