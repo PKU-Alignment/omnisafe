@@ -40,16 +40,16 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         'render_fps': 30,
     }
 
-    def __init__(
-        self, 
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
         task_id,
         config=None,
         render_mode=None,
-        width = 256,
-        height = 256,
-        camera_id = None,
-        camera_name = None,
-        ):
+        width=256,
+        height=256,
+        camera_id=None,
+        camera_name=None,
+    ):
         gymnasium.utils.EzPickle.__init__(self, config=config)
 
         self.input_parameters = locals()
@@ -220,7 +220,12 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
             not self.task.observe_vision
         ), 'When you use vision envs, you should not call this function explicitly.'
         return self.task.render(
-            mode=self.render_mode, camera_id=self.camera_id, camera_name=self.camera_name, width=self.width, height=self.height, cost=self._cost
+            mode=self.render_mode,
+            camera_id=self.camera_id,
+            camera_name=self.camera_name,
+            width=self.width,
+            height=self.height,
+            cost=self._cost,
         )
 
     def world_xy(self, pos):

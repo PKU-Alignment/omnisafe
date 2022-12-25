@@ -30,12 +30,18 @@ class OffPolicyEnvWrapper:
         env_id,
         use_cost,
         max_ep_len,
-        render_mode=None,
+        **env_kwargs,
     ):
         # check env_id is str
-        self.env = safety_gymnasium.make(env_id, render_mode=render_mode)
+        self.env = safety_gymnasium.make(env_id, **env_kwargs)
         self.env_id = env_id
-        self.render_mode = render_mode
+        self.render_mode = env_kwargs.get('render_mode', None)
+        self.camera_id = env_kwargs.get('camera_id', None)
+        self.camera_name = env_kwargs.get('camera_name', None)
+        if hasattr(self.env, 'width'):
+            self.width = self.env.width
+        if hasattr(self.env, 'height'):
+            self.height = self.env.height
         self.metadata = self.env.metadata
         self.use_cost = use_cost
 

@@ -28,18 +28,13 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 class OnPolicyEnvWrapper:  # pylint: disable=too-many-instance-attributes
     """env_wrapper."""
 
-    def __init__(
-        self,
-        env_id,
-        cfgs: Optional[collections.namedtuple] = None,
-        **env_kwargs
-        ):
+    def __init__(self, env_id, cfgs: Optional[collections.namedtuple] = None, **env_kwargs):
         """Initialize environment wrapper.
 
         Args:
             env_id (str): environment id.
             cfgs (collections.namedtuple): configs.
-            render_mode (str): render mode.
+            env_kwargs (dict): The additional parameters of environments.
         """
         self.env = safety_gymnasium.make(env_id, **env_kwargs)
         self.cfgs = deepcopy(cfgs)
