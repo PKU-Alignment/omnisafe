@@ -139,7 +139,7 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
                     **{
                         'Metrics/EpRet': ep_ret,
                         'Metrics/EpLen': ep_len * self.cfgs.action_repeat,
-                        'Metrics/EpCosts': ep_cost,
+                        'Metrics/EpCost': ep_cost,
                     }
                 )
                 ep_ret, ep_cost, ep_len = 0, 0, 0
@@ -178,7 +178,7 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
         """
         self.logger.log_tabular('TotalEnvSteps3', time_step)
         self.logger.log_tabular('Metrics/EpRet')
-        self.logger.log_tabular('Metrics/EpCosts')
+        self.logger.log_tabular('Metrics/EpCost')
         self.logger.log_tabular('Metrics/EpLen')
         # Some child classes may add information to logs
         self.algorithm_specific_logs(time_step)
