@@ -80,7 +80,7 @@ defaults:
   ## ----------------------------------Configuration For Lagrangian multiplier---------------------- ##
   lagrange_cfgs:
     # Tolerance of constraint violation
-    cost_limit: 152
+    cost_limit: 152 # discount cost limit in HalfCheetah-v3
     # Initial value of lagrangian multiplier
     lagrangian_multiplier_init: 1.0
     # Learning rate of lagrangian multiplier

@@ -84,8 +84,7 @@ def init_weights(layer):
             )
         return weight
 
-    # pylint: disable-next=unidiomatic-typecheck
-    if type(layer) == nn.Linear or isinstance(layer, EnsembleFC):
+    if isinstance(layer, (nn.Linear, EnsembleFC)):
         input_dim = layer.in_features
         truncated_normal_init(layer.weight, std=1 / (2 * np.sqrt(input_dim)))
         layer.bias.data.fill_(0.0)
@@ -107,7 +106,7 @@ class EnsembleFC(nn.Module):
         ensemble_size: int,
         weight_decay: float = 0.0,
         bias: bool = True,
-    ) -> None:  # pylint: disable-next=too-many-arguments
+    ) -> None:
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -133,7 +132,7 @@ class EnsembleFC(nn.Module):
 class EnsembleModel(nn.Module):
     """Ensemble dynamics model"""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         algo,

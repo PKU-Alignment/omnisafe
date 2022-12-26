@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Policy Gradient in Model-Based setting."""
+"""The Policy Gradient algorithm in model-based setting."""
 
 import time
 from copy import deepcopy
@@ -21,8 +21,7 @@ import numpy as np
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.model_based.models.dynamic_model import EnsembleDynamicsModel
-from omnisafe.algorithms.model_based.models.virtual_env import VirtualEnv
+from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel, VirtualEnv
 from omnisafe.common.base_buffer import BaseBuffer as Off_ReplayBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
@@ -33,14 +32,12 @@ from omnisafe.wrappers import wrapper_registry
 
 
 @registry.register
-class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes,too-many-arguments
+class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
     """The Policy Gradient algorithm in Model-Based setting.
 
     References:
         Title: Policy Gradient Methods for Reinforcement Learning with Function Approximation
-
         Authors: Richard S. Sutton, David McAllester, Satinder Singh, Yishay Mansour.
-
         URL: https://proceedings.neurips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf
     """
 
@@ -83,7 +80,6 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes,
         self.virtual_env = VirtualEnv(self.algo, self.dynamics, self.env_id, self.device)
 
         # Initialize off-policy buffer
-        # pylint: disable-next=line-too-long
         self.off_replay_buffer = Off_ReplayBuffer(
             self.env.dynamics_state_size,
             self.env.action_space.shape[0],
@@ -267,6 +263,7 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes,
             No return
         """
 
+    # pylint: disable-next=too-many-arguments
     def store_real_data(
         self,
         time_step,

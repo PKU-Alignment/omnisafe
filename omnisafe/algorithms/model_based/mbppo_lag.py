@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""MBPPOLag"""
-
+"""Implementation of the Model-based PPO-Lag algorithm."""
 
 import numpy as np
 import torch
@@ -35,9 +34,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
 
     References:
         Title: Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm
-
         Authors: Ashish Kumar Jayant, Shalabh Bhatnagar.
-
         URL: https://arxiv.org/abs/2210.07573
     """
 

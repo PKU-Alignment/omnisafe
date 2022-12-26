@@ -31,7 +31,7 @@ defaults:
   # The Address for saving training process data
   data_dir: "./runs"
   # Time of strating update policy
-  update_policy_start_timesteps: 1000
+  update_policy_start_timesteps: 10000
   # Times of update actor-critic
   update_policy_iters: 50
   # The learning rate of Actor network

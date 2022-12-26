@@ -374,7 +374,7 @@ class ModelBasedEnvWrapper:  # pylint: disable=too-many-instance-attributes
 
     def obs_lidar_pseudo(
         self, robot_matrix, robot_pos, positions
-    ):  # pylint:disable=too-many-locals
+    ):  # pylint: disable=too-many-locals
         '''
         Return a robot-centric lidar observation of a list of positions.
 

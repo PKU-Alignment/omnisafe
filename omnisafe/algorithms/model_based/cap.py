@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""CAP"""
+"""Implementation of the CAP algorithm. The CAP in safety-gym may unable to converge."""
 
 import numpy as np
 
@@ -31,9 +31,7 @@ class CAP(
 
     References:
         Title: Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning
-
         Authors: Yecheng Jason Ma, Andrew Shen, Osbert Bastani, Dinesh Jayaraman.
-
         URL: https://arxiv.org/abs/2112.07701
     """
 

@@ -105,9 +105,10 @@ class VirtualEnv:
 
         return log_prob, stds
 
-    # pylint: disable-next=inconsistent-return-statements, too-many-locals
+    # pylint: disable-next=too-many-locals
     def mbppo_step(self, obs, act, idx=None, deterministic=False):
-        """use numpy input to predict single next state by randomly select one model result or select index model result"""  # pylint: disable=line-too-long
+        # pylint: disable-next=line-too-long
+        """use numpy input to predict single next state by randomly select one model result or select index model result."""
         if len(obs.shape) == 1:
             obs = obs[None]
             act = act[None]
@@ -144,22 +145,22 @@ class VirtualEnv:
                 samples[:, 1],
                 samples[:, self.state_start_dim :],
             )
+            terminals = self._termination_fn(self.env_name, obs, act, next_obs)
         elif self.algo == 'MBPPOLag' and self.model.env_type == 'gym':
             next_obs = samples
-
-        terminals = self._termination_fn(self.env_name, obs, act, next_obs)
+            rewards = None
+            cost = None
+            terminals = None
 
         if return_single:
             next_obs = next_obs[0]
             if self.model.env_type == 'mujoco-velocity':
                 rewards = rewards[0]
                 cost = cost[0]
-        if self.algo == 'MBPPOLag' and self.model.env_type == 'mujoco-velocity':
-            return next_obs, rewards, cost, terminals
-        if self.algo == 'MBPPOLag' and self.model.env_type == 'gym':
-            return next_obs, None, None, None
 
-    # pylint: disable-next=too-many-arguments, too-many-locals
+        return next_obs, rewards, cost, terminals
+
+    # pylint: disable-next=too-many-arguments,too-many-locals
     def safeloop_step(self, obs, act, deterministic=False, all_model=False, repeat_network=False):
         """Use tensor input to predict single next state by randomly select elite model result for online planning"""
         if len(obs.shape) == 1:

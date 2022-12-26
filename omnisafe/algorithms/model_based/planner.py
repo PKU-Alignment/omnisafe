@@ -24,13 +24,11 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
 
     References:
         Title: Learning Off-Policy with Online Planning
-
         Authors: Harshit Sikchi, Wenxuan Zhou, David Held.
-
         URL: https://arxiv.org/abs/2008.10066
     """
 
-    # pylint: disable-next=too-many-locals, too-many-arguments
+    # pylint: disable-next=too-many-locals,too-many-arguments
     def __init__(
         self,
         algo,
@@ -167,7 +165,7 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
             .to(self.device)
         )
         # Shape: [ (num_gau_traj + num_actor_traj) * particles,  action_dim ) ,
-        # action_traj is [ (num_gau_traj + num_actor_traj) * particles, H * action_dim]
+        # action_traj Shape: [ (num_gau_traj + num_actor_traj) * particles, H * action_dim]
 
         final_action = final_action.repeat(self.models.model.network_size, 1)
         # Shape: [ (num_gau_traj + num_actor_traj) * particles, network_size , action_dim )
@@ -212,9 +210,8 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
         # [ horizon+1, network_size, (num_gau_traj + num_actor_traj) * particles, 1]
         return all_safety_costs
 
-    def get_action(
-        self, curr_state
-    ):  # pylint: disable=too-many-statements, too-many-locals, too-many-branches
+    # pylint: disable-next=too-many-statements,too-many-locals,too-many-branches
+    def get_action(self, curr_state):
         """Select action when interact with environment."""
         # sample action from actor
         if self.num_actor_traj != 0.0:
@@ -321,8 +318,8 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
                 next_states = torch.nan_to_num(next_states)
 
                 state_traj = torch.cat((state_traj, next_states.unsqueeze(0)), axis=0)
-                # [ horizon + 1, network_size, (num_gau_traj + num_actor_traj) * particles, \
-                # reward_dim (+ cost_dim) + state_dim]
+                # pylint: disable-next=line-too-long
+                # [ horizon + 1, network_size, (num_gau_traj + num_actor_traj) * particles, reward_dim (+ cost_dim) + state_dim]
 
                 next_var = next_var[:, :, self.state_start_dim :].sqrt().norm(dim=2).unsqueeze(2)
                 # [network_size, (num_gau_traj + num_actor_traj) * particles,1]
@@ -331,15 +328,15 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
                 # [ horizon + 1, network_size, (num_gau_traj + num_actor_traj) * particles, 1]
 
             state_traj = state_traj.cpu().detach().numpy()
-            # [ horizon + 1, network_size, (num_gau_traj + num_actor_traj) * particles, \
-            # reward_dim (+ cost_dim) + state_dim]
+            # pylint: disable-next=line-too-long
+            # [ horizon + 1, network_size, (num_gau_traj + num_actor_traj) * particles, reward_dim (+ cost_dim) + state_dim]
 
             var_traj_numpy = var_traj.detach().cpu().numpy()
             del var_traj
 
             if self.env.env_type == 'mujoco-terminated':
                 done = np.zeros((state_traj.shape[1], state_traj.shape[2], 1))
-                # Shape :[network_size, (num_gau_traj + num_actor_traj) * particles, 1]
+                # [network_size, (num_gau_traj + num_actor_traj) * particles, 1]
 
                 # Set the reward of terminated states to zero
                 for current_horizon in range(1, self.horizon + 1):
@@ -503,9 +500,9 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
 
     def cap_elite_select(self, returns, safety_costs, action_traj):
         """TODO"""
-        # returns shape : [ num_gau_traj + num_actor_traj, 1]
-        # safety_costs shape : [ num_gau_traj + num_actor_traj, 1]
-        # action_traj shape : [ (num_gau_traj + num_actor_traj) * particle,  H * action_dim]
+        # returns: [ num_gau_traj + num_actor_traj, 1]
+        # safety_costs: [ num_gau_traj + num_actor_traj, 1]
+        # action_traj: [ (num_gau_traj + num_actor_traj) * particle,  H * action_dim]
         safety_costs_mean = np.mean(safety_costs)
         if (safety_costs < self.safety_threshold).sum() < self.minimal_elites:
             indices = np.argsort(safety_costs)
@@ -526,9 +523,9 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
 
     def cap_elite_selection(self, returns, safety_costs, action_traj):
         """TODO"""
-        # returns shape : [ num_gau_traj + num_actor_traj, 1]
-        # safety_costs shape : [ num_gau_traj + num_actor_traj, 1]
-        # action_traj shape : [ (num_gau_traj + num_actor_traj) * particle,  H * action_dim]
+        # returns: [ num_gau_traj + num_actor_traj, 1]
+        # safety_costs: [ num_gau_traj + num_actor_traj, 1]
+        # action_traj: [ (num_gau_traj + num_actor_traj) * particle,  H * action_dim]
         all_action = action_traj[
             np.arange(0, self.num_gaussian_traj + self.num_actor_traj, 1).astype(int)
             * self.particles,
@@ -559,9 +556,9 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
 
     def safe_loop_elite_select(self, returns, safety_costs, action_traj):
         """Update mean and var using reward and cost"""
-        # returns shape : [ num_gau_traj + num_actor_traj, 1]
-        # safety_costs shape : [ num_gau_traj + num_actor_traj, 1]
-        # action_traj shape : [ (num_gau_traj + num_actor_traj) * particle,  H * action_dim]
+        # returns: [ num_gau_traj + num_actor_traj, 1]
+        # safety_costs: [ num_gau_traj + num_actor_traj, 1]
+        # action_traj: [ (num_gau_traj + num_actor_traj) * particle,  H * action_dim]
         safety_costs_mean = np.mean(safety_costs)
 
         if (safety_costs < self.safety_threshold).sum() < self.minimal_elites:
@@ -662,9 +659,7 @@ class CCEPlanner:
 
     References:
         Title: Constrained Cross-Entropy Method for Safe Reinforcement Learning
-
         Authors: Min Wen, Ufuk Topcu.
-
         URL: https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html
     """
 
@@ -862,7 +857,7 @@ class CCEPlanner:
         acs = acs.detach().cpu().numpy()
 
         if self.cost_constrained and self.penalize_uncertainty:
-            # var shape: [network_size, num_gaussian_traj*particles/network_size, state_dim]
+            # var: [network_size, num_gaussian_traj*particles/network_size, state_dim]
             var_penalty = var.sqrt().norm(dim=2).max(0)[0]
             # cost_penalty: [num_gaussian_traj*particles/network_size]
             var_penalty = var_penalty.repeat_interleave(self.models.model.network_size).view(

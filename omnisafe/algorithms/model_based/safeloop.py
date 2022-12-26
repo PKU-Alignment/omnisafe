@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Safe-Loop"""
-
+"""Implementation of the SafeLOOP algorithm."""
 
 from copy import deepcopy
 
@@ -36,9 +35,7 @@ class SafeLOOP(
 
     References:
         Title: Learning Off-Policy with Online Planning
-
         Authors: Harshit Sikchi, Wenxuan Zhou, David Held.
-
         URL: https://arxiv.org/abs/2008.10066
     """
 
@@ -74,7 +71,7 @@ class SafeLOOP(
         self.logger.setup_torch_saver(what_to_save=what_to_save)
         self.logger.torch_save()
 
-    # pylint: disable=too-many-locals
+    # pylint: disable-next=too-many-locals
     def compute_loss_v(self, data):
         """Computing value loss.
 

@@ -12,3 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""The model-based dynamics model."""
+
+from omnisafe.algorithms.model_based.models.dynamic_model import EnsembleDynamicsModel
+from omnisafe.algorithms.model_based.models.virtual_env import VirtualEnv
