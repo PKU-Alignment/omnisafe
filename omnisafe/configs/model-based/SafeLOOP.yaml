@@ -1,0 +1,125 @@
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+defaults:
+  # --------------------------------------Basic Configurations----------------------------------- #
+  ## -----------------------------Basic configurations for base class PG------------------------ ##
+  # The random seed
+  seed: 0
+  # The environment wrapper type
+  wrapper_type: ModelBasedEnvWrapper
+  # Number of training time step
+  max_real_time_steps: 1000000
+  # Number of timestep in an episode
+  max_ep_len: 1000
+  # CUDA or CPU device
+  device: "cpu"
+  # Number of repeated action
+  action_repeat: 5
+  # The Address for saving training process data
+  data_dir: "./runs"
+  # Time of strating update policy
+  update_policy_start_timesteps: 10000
+  # Times of update actor-critic
+  update_policy_iters: 50
+  # The learning rate of Actor network
+  actor_lr: 0.001
+  # The learning rate of Critic network
+  critic_lr: 0.001
+  # Reward discounted factor
+  gamma: 0.99
+  # Cost discounted factor
+  cost_gamma: 1.0
+  # Size of Off-policy Buffer
+  replay_size: 1000000
+  # Batch size of Off-policy Buffer
+  batch_size: 256
+  # log information every `log_freq` timestep
+  log_freq: 20000
+  # update actor and critic every `update_policy_freq` timestep
+  update_policy_freq: 250
+  # update dynamics every `update_dynamics_freq` timestep
+  update_dynamics_freq: 1250
+  # Noise add to action for exploration
+  exploration_noise: 0.0
+  # Whether to use cost critic
+  use_cost: False
+  # Whether to use standardized observation
+  standardized_obs: False
+  ## ---------------------------Basic configurations for derived class SAC---------------------- ##
+  # The entropy coefficient
+  alpha: 0.2
+  # The learning rate of Alpha
+  alpha_gamma: 0.99
+  # The soft update coefficient
+  polyak: 0.995
+  ## ---------------------------------------Configuration For Model----------------------------- ##
+  model_cfgs:
+    # Whether to share the weight of Actor network with Critic network
+    shared_weights: False
+    # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
+    weight_initialization_mode: "kaiming_uniform"
+    # Configuration of Actor and Critic network
+    ac_kwargs:
+      # Configuration of Actor network
+      pi:
+        # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
+        actor_type: "gaussian_stdnet"
+        # The standard deviation of Gaussian noise
+        act_noise: 0.1
+        # Size of hidden layers
+        hidden_sizes: [64, 64]
+        # Activation function
+        activation: relu
+      # Configuration of Critic network
+      val:
+        # Number of critic networks
+        num_critics: 2
+        # Size of hidden layers
+        hidden_sizes: [64, 64]
+        # Activation function
+        activation: relu
+  ## ----------------------------Basic configurations for dynamics model-------------------- ##
+  dynamics_cfgs:
+    # Number of network for ensemble model
+    network_size: 7
+    # output size for ensemble model
+    elite_size: 5
+    # Size of hidden layers
+    hidden_size: 200
+    # Whether use decay loss
+    use_decay: True
+  ## ----------------------------Basic configurations for MPC controller-------------------- ##
+  mpc_config:
+    # Planning horizon
+    horizon: 8
+    # Sample population
+    popsize: 100
+    # Repeat sample population 'particles' times
+    particles: 4
+    # Number of planning iteration
+    max_iters: 8
+    # Update coefficicent for new mean and var
+    alpha: 0.1
+    # Mixed actor sample to gaussian sample
+    mixture_coefficient: 0.05
+    # Coefficicent for rescaling action score
+    kappa: 1
+    # Safety threshold
+    safety_threshold: 0.2
+    # Number of elite action trajectories
+    minimal_elites: 10
+    # Clip observation to [-obs_clip, obs_clip]
+    obs_clip: 1000

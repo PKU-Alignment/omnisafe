@@ -35,8 +35,10 @@ class QCritic(Critic):
         weight_initialization_mode: InitFunction = 'xavier_uniform',
         shared: nn.Module = None,
         num_critics: int = 1,
+        use_obs_encoder: bool = False,
     ) -> None:
         """Initialize."""
+        self.use_obs_encoder = use_obs_encoder
         Critic.__init__(
             self,
             obs_dim=obs_dim,
@@ -48,18 +50,26 @@ class QCritic(Critic):
         )
         self.critic_list = []
         for idx in range(num_critics):
-            obs_encoder = build_mlp_network(
-                [obs_dim, hidden_sizes[0]],
-                activation=activation,
-                output_activation=activation,
-                weight_initialization_mode=weight_initialization_mode,
-            )
-            net = build_mlp_network(
-                [hidden_sizes[0] + act_dim] + hidden_sizes[1:] + [1],
-                activation=activation,
-                weight_initialization_mode=weight_initialization_mode,
-            )
-            critic = nn.Sequential(obs_encoder, net)
+            if self.use_obs_encoder:
+                obs_encoder = build_mlp_network(
+                    [obs_dim, hidden_sizes[0]],
+                    activation=activation,
+                    output_activation=activation,
+                    weight_initialization_mode=weight_initialization_mode,
+                )
+                net = build_mlp_network(
+                    [hidden_sizes[0] + act_dim] + hidden_sizes[1:] + [1],
+                    activation=activation,
+                    weight_initialization_mode=weight_initialization_mode,
+                )
+                critic = nn.Sequential(obs_encoder, net)
+            else:
+                net = build_mlp_network(
+                    [obs_dim + act_dim] + hidden_sizes[:] + [1],
+                    activation=activation,
+                    weight_initialization_mode=weight_initialization_mode,
+                )
+                critic = nn.Sequential(net)
             self.critic_list.append(critic)
             self.add_module(f'critic_{idx}', critic)
 
@@ -71,6 +81,9 @@ class QCritic(Critic):
         """Forward."""
         res = []
         for critic in self.critic_list:
-            encodered_obs = critic[0](obs)
-            res.append(torch.squeeze(critic[1](torch.cat([encodered_obs, act], dim=-1)), -1))
+            if self.use_obs_encoder:
+                encodered_obs = critic[0](obs)
+                res.append(torch.squeeze(critic[1](torch.cat([encodered_obs, act], dim=-1)), -1))
+            else:
+                res.append(torch.squeeze(critic[0](torch.cat([obs, act], dim=-1)), -1))
         return res

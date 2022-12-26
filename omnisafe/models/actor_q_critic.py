@@ -14,12 +14,10 @@
 # ==============================================================================
 """Implementation of ActorQCritic."""
 
-import numpy as np
 import torch
 import torch.nn as nn
 
 from omnisafe.models.actor import ActorBuilder
-from omnisafe.models.actor.mlp_actor import MLPActor
 from omnisafe.models.critic.q_critic import QCritic
 from omnisafe.utils.model_utils import build_mlp_network
 from omnisafe.utils.online_mean_std import OnlineMeanStd
@@ -38,6 +36,7 @@ class ActorQCritic(nn.Module):
         shared_weights: bool,
         model_cfgs,
         weight_initialization_mode='kaiming_uniform',
+        device=torch.device('cpu'),
     ) -> None:
         """Initialize ActorQCritic"""
         super().__init__()
@@ -45,8 +44,8 @@ class ActorQCritic(nn.Module):
         self.obs_shape = observation_space.shape
         self.obs_oms = OnlineMeanStd(shape=self.obs_shape) if standardized_obs else None
         self.act_dim = action_space.shape[0]
-        self.act_max = torch.as_tensor(action_space.high)
-        self.act_min = torch.as_tensor(action_space.low)
+        self.act_max = torch.as_tensor(action_space.high).to(device)
+        self.act_min = torch.as_tensor(action_space.low).to(device)
         self.ac_kwargs = model_cfgs.ac_kwargs
         # build policy and value functions
 
@@ -121,15 +120,13 @@ class ActorQCritic(nn.Module):
                 # Note: Update RMS in Algorithm.running_statistics() method
                 # self.obs_oms.update(obs) if self.training else None
                 obs = self.obs_oms(obs)
-            if isinstance(self.pi, MLPActor):
-                action = self.pi.predict(obs, determinstic=deterministic)
-            else:
-                action, logp_a = self.pi.predict(obs, determinstic=deterministic)
-            value = self.v(obs, action)
+            action, logp_a = self.actor.predict(
+                obs, deterministic=deterministic, need_log_prob=True
+            )
+            value = self.critic(obs, action)[0]
             action = action.to(torch.float32)
-            action = np.clip(action.numpy(), self.act_min, self.act_max)
 
-        return action, value.numpy(), logp_a.numpy()
+            return action.cpu().numpy(), value.cpu().numpy(), logp_a.cpu().numpy()
 
     def anneal_exploration(self, frac):
         """update internals of actors
