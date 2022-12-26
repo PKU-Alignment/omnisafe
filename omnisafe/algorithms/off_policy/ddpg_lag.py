@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Lagrange version of the DDPG algorithm."""
+
 from typing import Tuple
 
 import torch
@@ -27,12 +28,10 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
     """The Lagrange version of the DDPG Algorithm.
 
     References:
-        Title: Continuous control with deep reinforcement learning
-
-        Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
+        - Title: Continuous control with deep reinforcement learning
+        - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
                 Yuval Tassa, David Silver, Daan Wierstra.
-
-        URL: https://arxiv.org/abs/1509.02971
+        - URL: https://arxiv.org/abs/1509.02971
     """
 
     def __init__(self, env_id: str, cfgs=None) -> None:
@@ -79,11 +78,11 @@ class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
         """Update.
         Update step contains three parts:
 
-        #.  Update lagrange multiplier by :func:`update_lagrange_multiplier()`
-        #.  Update value net by :func:`update_value_net()`
-        #.  Update cost net by :func:`update_cost_net()`
-        #.  Update policy net by :func:`update_policy_net()`
-        #.  Update target net by :func:`polyak_update_target()`
+        #.  Update lagrange multiplier by :meth:`update_lagrange_multiplier()`
+        #.  Update value net by :meth:`update_value_net()`
+        #.  Update cost net by :meth:`update_cost_net()`
+        #.  Update policy net by :meth:`update_policy_net()`
+        #.  Update target net by :meth:`polyak_update_target()`
 
         Args:
             data (dict): data from replay buffer.

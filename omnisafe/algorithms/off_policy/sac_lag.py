@@ -13,7 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Lagrange version of the SAC algorithm."""
-from typing import Tuple
+
+from typing import NamedTuple, Tuple
 
 import torch
 
@@ -27,14 +28,12 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
     """The Lagrange version of SAC algorithm.
 
     References:
-        Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
-
-        Authors: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine.
-
-        URL: https://arxiv.org/abs/1801.01290
+        - Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
+        - Authors: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine.
+        - URL: https://arxiv.org/abs/1801.01290
     """
 
-    def __init__(self, env_id: str, cfgs) -> None:
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
         """Initialize SACLag.
 
         Args:
@@ -92,10 +91,9 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         obs_next: torch.Tensor,
         done: torch.Tensor,
     ) -> Tuple[torch.Tensor, dict]:
-        """Computing value loss.
+        r"""Computing value loss.
 
-        .. admonition:: Note
-            :class: hint
+        .. hint::
 
             The same as TD3, SAC uses two Q functions to reduce overestimation bias.
             In this function, we use the minimum of the two Q functions as the target Q value.
@@ -131,11 +129,11 @@ class SACLag(SAC, Lagrange):  # pylint: disable=too-many-instance-attributes
         """Update.
         Update step contains three parts:
 
-        #.  Update lagrange multiplier by :func:`update_lagrange_multiplier()`
-        #.  Update value net by :func:`update_value_net()`
-        #.  Update cost net by :func:`update_cost_net()`
-        #.  Update policy net by :func:`update_policy_net()`
-        #.  Update target net by :func:`polyak_update_target()`
+        #.  Update lagrange multiplier by :meth:`update_lagrange_multiplier()`
+        #.  Update value net by :meth:`update_value_net()`
+        #.  Update cost net by :meth:`update_cost_net()`
+        #.  Update policy net by :meth:`update_policy_net()`
+        #.  Update target net by :meth:`polyak_update_target()`
 
         Args:
             data (dict): data from replay buffer.

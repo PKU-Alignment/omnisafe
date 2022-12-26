@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of the SAC algorithm."""
 
-from typing import Tuple
+from typing import NamedTuple, Tuple
 
 import torch
 
@@ -27,12 +27,13 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
     """The Soft Actor-Critic (SAC) algorithm.
 
     References:
-        Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
-        Authors: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine.
-        URL: https://arxiv.org/abs/1801.01290
+        - Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
+        - Authors: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine.
+        - URL: https://arxiv.org/abs/1801.01290
+
     """
 
-    def __init__(self, env_id: str, cfgs) -> None:
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
         """Initialize SAC."""
         super().__init__(
             env_id=env_id,
@@ -41,7 +42,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         self.alpha = cfgs.alpha
         self.alpha_gamma = cfgs.alpha_gamma
 
-    # pylint: disable=too-many-locals, disable=too-many-arguments
+    # pylint: disable-next=too-many-locals,too-many-arguments
     def compute_loss_v(
         self,
         obs: torch.Tensor,
@@ -52,8 +53,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
     ) -> Tuple[torch.Tensor, dict]:
         """Computing value loss.
 
-        .. admonition:: Note
-            :class: hint
+        .. hint::
 
             The same as TD3, SAC uses two Q functions to reduce overestimation bias.
             In this function, we use the minimum of the two Q functions as the target Q value.
@@ -91,8 +91,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, dict]:
         """Computing pi/actor loss.
 
-        .. admonition:: Note
-            :class: hint
+        .. hint::
 
             SAC use the entropy of the action distribution to update policy.
 

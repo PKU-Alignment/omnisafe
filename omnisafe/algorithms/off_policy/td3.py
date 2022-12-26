@@ -13,7 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the TD3 algorithm."""
-from typing import Tuple
+
+from typing import NamedTuple, Tuple
 
 import torch
 
@@ -26,19 +27,19 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
     """The Twin Delayed DDPG (TD3) algorithm.
 
     References:
-        Title: Addressing Function Approximation Error in Actor-Critic Methods
-        Authors: Scott Fujimoto, Herke van Hoof, David Meger.
-        URL: https://arxiv.org/abs/1802.09477
+        - Title: Addressing Function Approximation Error in Actor-Critic Methods
+        - Authors: Scott Fujimoto, Herke van Hoof, David Meger.
+        - URL: https://arxiv.org/abs/1802.09477
     """
 
-    def __init__(self, env_id: str, cfgs) -> None:
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
         """Initialize DDPG."""
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
         )
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def compute_loss_v(
         self,
         obs: torch.Tensor,
@@ -47,10 +48,9 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
         obs_next: torch.Tensor,
         done: torch.Tensor,
     ) -> Tuple[torch.Tensor, dict]:
-        """Computing value loss.
+        r"""Computing value loss.
 
-        .. admonition:: Note
-            :class: hint
+        .. hint::
 
             TD3 uses two Q functions to reduce overestimation bias.
             In this function, we use the minimum of the two Q functions as the target Q value.
@@ -58,11 +58,11 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
             Also, TD3 use action with noise to compute the target Q value.
 
         Args:
-            obs (:class:`torch.Tensor`): :meth:`observation` saved in data.
-            act (:class:`torch.Tensor`): :meth:`action` saved in data.
-            rew (:class:`torch.Tensor`): :meth:`reward` saved in data.
-            obs_next (:class:`torch.Tensor`): :meth:`next observations` saved in data.
-            done (:class:`torch.Tensor`): :meth:`terminated` saved in data.
+            obs (:class:`torch.Tensor`): ``observation`` saved in data.
+            act (:class:`torch.Tensor`): ``action`` saved in data.
+            rew (:class:`torch.Tensor`): ``reward`` saved in data.
+            obs_next (:class:`torch.Tensor`): ``net observation`` saved in data.
+            done (:class:`torch.Tensor`): ``terminated`` saved in data.
         """
         q_value_list = self.actor_critic.critic(obs, act)
         # Bellman backup for Q function

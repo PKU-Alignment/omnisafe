@@ -13,7 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Lagrange version of the TD3 algorithm."""
-from typing import Tuple
+
+from typing import NamedTuple, Tuple
 
 import torch
 
@@ -27,12 +28,12 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
     """The Lagrange version of the TD3 algorithm
 
     References:
-        Title: Addressing Function Approximation Error in Actor-Critic Methods
-        Authors: Scott Fujimoto, Herke van Hoof, David Meger.
-        URL: https://arxiv.org/abs/1802.09477
+        - Title: Addressing Function Approximation Error in Actor-Critic Methods
+        - Authors: Scott Fujimoto, Herke van Hoof, David Meger.
+        - URL: https://arxiv.org/abs/1802.09477
     """
 
-    def __init__(self, env_id: str, cfgs) -> None:
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
         """Initialize TD3.
 
         Args:
@@ -83,11 +84,11 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         """Update.
         Update step contains three parts:
 
-        #.  Update lagrange multiplier by :func:`update_lagrange_multiplier()`
-        #.  Update value net by :func:`update_value_net()`
-        #.  Update cost net by :func:`update_cost_net()`
-        #.  Update policy net by :func:`update_policy_net()`
-        #.  Update target net by :func:`polyak_update_target()`
+        #.  Update lagrange multiplier by :meth:`update_lagrange_multiplier()`
+        #.  Update value net by :meth:`update_value_net()`
+        #.  Update cost net by :meth:`update_cost_net()`
+        #.  Update policy net by :meth:`update_policy_net()`
+        #.  Update target net by :meth:`polyak_update_target()`
 
         Args:
             data (dict): data from replay buffer.

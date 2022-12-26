@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the SDDPG algorithm."""
+
+from typing import NamedTuple
+
 import torch
 
 from omnisafe.algorithms import registry
@@ -31,13 +34,13 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
     """Lyapunov-based Safe Policy Optimization for Continuous Control.
 
     References:
-        Title: Lyapunov-based Safe Policy Optimization for Continuous Control
-        Authors: Yinlam Chow, Ofir Nachum, Aleksandra Faust, Edgar Duenez-Guzman,
-                 Mohammad Ghavamzadeh.
-        URL: https://arxiv.org/abs/1901.10031
+        - Title: Lyapunov-based Safe Policy Optimization for Continuous Control
+        - Authors: Yinlam Chow, Ofir Nachum, Aleksandra Faust, Edgar Duenez-Guzman,
+                Mohammad Ghavamzadeh.
+        - URL: https://arxiv.org/abs/1901.10031
     """
 
-    def __init__(self, env_id: str, cfgs) -> None:
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
         """Initialize SDDPG.
 
         Args:
@@ -62,10 +65,10 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         """Update.
         Update step contains three parts:
 
-        #.  Update value net by :func:`update_value_net()`
-        #.  Update cost net by :func:`update_cost_net()`
-        #.  Update policy net by :func:`update_policy_net()`
-        #.  Update target net by :func:`polyak_update_target()`
+        #.  Update value net by :meth:`update_value_net()`
+        #.  Update cost net by :meth:`update_cost_net()`
+        #.  Update policy net by :meth:`update_policy_net()`
+        #.  Update target net by :meth:`polyak_update_target()`
 
         Args:
             data (dict): data from replay buffer.
@@ -87,16 +90,15 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
             obs_next=obs_next,
             done=done,
         )
-        if self.cfgs.use_cost:
-            self.update_cost_net(
-                obs=obs,
-                act=act,
-                cost=cost,
-                obs_next=obs_next,
-                done=done,
-            )
-            for param in self.actor_critic.cost_critic.parameters():
-                param.requires_grad = False
+        self.update_cost_net(
+            obs=obs,
+            act=act,
+            cost=cost,
+            obs_next=obs_next,
+            done=done,
+        )
+        for param in self.actor_critic.cost_critic.parameters():
+            param.requires_grad = False
 
         # Freeze Q-network so you don't waste computational effort
         # computing gradients for it during the policy learning step.
@@ -110,9 +112,8 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = True
 
-        if self.cfgs.use_cost:
-            for param in self.actor_critic.cost_critic.parameters():
-                param.requires_grad = True
+        for param in self.actor_critic.cost_critic.parameters():
+            param.requires_grad = True
 
         # Finally, update target networks by polyak averaging.
         self.polyak_update_target()
@@ -148,9 +149,6 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
 
         Args:
             data (dict): data dictionary.
-
-        Returns:
-            loss (torch.Tensor): loss of cost performance.
         """
         # Compute loss
         action = self.actor_critic.actor.predict(obs, deterministic=True)
@@ -158,8 +156,11 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         pi_info = {}
         return loss_pi.mean(), pi_info
 
-    # pylint: disable=invalid-name,too-many-arguments,too-many-locals
-    def update_policy_net(self, obs) -> None:
+    # pylint: disable-next=too-many-locals
+    def update_policy_net(
+        self,
+        obs,
+    ) -> None:  # pylint: disable=invalid-name
         """Update policy network.
 
         Args:
@@ -175,27 +176,27 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         g_flat = get_flat_gradients_from(self.actor_critic.actor.net)
         g_flat *= -1
 
-        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
-        assert torch.isfinite(x).all()
+        g_inv_x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
+        assert torch.isfinite(g_inv_x).all()
 
         eps = 1.0e-8
-        xHx = torch.dot(x, self.Fvp(x))
+        hessian_x = torch.dot(g_inv_x, self.Fvp(g_inv_x))
 
-        alpha = torch.sqrt(2 * self.target_kl / (xHx + eps))
+        alpha = torch.sqrt(2 * self.target_kl / (hessian_x + eps))
 
         self.actor_optimizer.zero_grad()
         loss_cost, _ = self.compute_loss_cost_performance(obs)
         loss_cost.backward()
 
         b_flat = get_flat_gradients_from(self.actor_critic.actor.net)
-        d = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
-        dHd = torch.dot(d, self.Fvp(d))
-        sHd = torch.dot(d, self.Fvp(d))
+        b_inv_d = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
+        hessian_d = torch.dot(b_inv_d, self.Fvp(b_inv_d))
+        hessian_s = torch.dot(b_inv_d, self.Fvp(b_inv_d))
 
         epsilon = (1 - self.gamma) * (self.d_init - loss_cost)
-        lambda_star = (-self.beta * epsilon - sHd) / (dHd + eps)
+        lambda_star = (-self.beta * epsilon - hessian_s) / (hessian_d + eps)
 
-        final_step_dir = -alpha / self.beta * (self.Fvp(x) - lambda_star * self.Fvp(d))
+        final_step_dir = -alpha / self.beta * (self.Fvp(g_inv_x) - lambda_star * self.Fvp(b_inv_d))
         new_theta = theta_old + final_step_dir
         set_param_values_to_model(self.actor_critic.actor.net, new_theta)
 
