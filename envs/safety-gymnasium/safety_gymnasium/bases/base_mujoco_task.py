@@ -375,7 +375,7 @@ class BaseMujocoTask(
                     camera_name,
                 )
 
-                self._get_viewer(mode).render(camera_id=camera_id)
+                self._get_viewer(mode)
 
         if mode == 'human':
             self._get_viewer(mode)
@@ -430,6 +430,7 @@ class BaseMujocoTask(
 
         # Draw vision pixels
         if mode == 'rgb_array':
+            self._get_viewer(mode).render(camera_id=camera_id)
             data = self._get_viewer(mode).read_pixels(depth=False)
             # original image is upside-down, so flip it
             self.viewer._markers[:] = []  # pylint: disable=protected-access
