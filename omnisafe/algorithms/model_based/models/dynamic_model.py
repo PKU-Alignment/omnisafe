@@ -178,78 +178,21 @@ class EnsembleModel(nn.Module):
         self.optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
         self.apply(init_weights)
 
-    # pylint: disable-next=too-many-locals, inconsistent-return-statements
-    def forward(self, data, ret_log_var=False, training=True):
+    # pylint: disable-next=too-many-locals
+    def forward(self, data, ret_log_var=False):
         """Compute next state, reward, cost"""
         nn1_output = swish(self.nn1(data))
         nn2_output = swish(self.nn2(nn1_output))
         nn3_output = swish(self.nn3(nn2_output))
         nn4_output = swish(self.nn4(nn3_output))
-        if self.algo == 'CAP':
-            nn5_output = self.nn5(nn4_output)
-            mean = nn5_output[:, :, : self.output_dim]
-            logvar = self.max_logvar - F.softplus(
-                self.max_logvar - nn5_output[:, :, self.output_dim :]
-            )
-            logvar = self.min_logvar + F.softplus(logvar - self.min_logvar)
-            var = torch.exp(logvar)
-            if training:
-                if ret_log_var:
-                    return mean, logvar
-                return mean, var
-            if not training and self.env_type == 'mujoco-velocity':
-                state_noise = (
-                    torch.randn_like(mean[:, :, 2:], device=mean.device) * var[:, :, 2:].sqrt()
-                )
-                reward_noise = torch.randn_like(mean[:, :, 0], device=mean.device).unsqueeze(2) * (
-                    var[:, :, 0].sqrt().unsqueeze(2)
-                )
-                cost_noise = torch.randn_like(mean[:, :, 1], device=mean.device).unsqueeze(2) * (
-                    var[:, :, 1].sqrt().unsqueeze(2)
-                )
-                output = {
-                    'state': (mean[:, :, 2:] + state_noise * var[:, :, 2:].sqrt(), var[:, :, 2:]),
-                    'reward': (
-                        mean[:, :, 0].unsqueeze(2)
-                        + reward_noise * var[:, :, 0].sqrt().unsqueeze(2),
-                        var[:, :, 0],
-                    ),
-                    'cost': (
-                        mean[:, :, 1].unsqueeze(2) + cost_noise * var[:, :, 1].sqrt().unsqueeze(2),
-                        var[:, :, 1],
-                    ),
-                }
-                return output
-            if not training and self.env_type == 'gym':
-                state_noise = (
-                    torch.randn_like(mean[:, :, 1:], device=mean.device) * var[:, :, 1:].sqrt()
-                )
-                reward_noise = torch.randn_like(mean[:, :, 0], device=mean.device).unsqueeze(2) * (
-                    var[:, :, 0].sqrt().unsqueeze(2)
-                )
-                output = {
-                    'state': (mean[:, :, 1:] + state_noise * var[:, :, 1:].sqrt(), var[:, :, 1:]),
-                    'reward': (
-                        mean[:, :, 0].unsqueeze(2)
-                        + reward_noise * var[:, :, 0].sqrt().unsqueeze(2),
-                        var[:, :, 0],
-                    ),
-                }
-                return output
-
-        else:
-            nn5_output = self.nn5(nn4_output)
-
-            mean = nn5_output[:, :, : self.output_dim]
-
-            logvar = self.max_logvar - F.softplus(
-                self.max_logvar - nn5_output[:, :, self.output_dim :]
-            )
-            logvar = self.min_logvar + F.softplus(logvar - self.min_logvar)
-
-            if ret_log_var:
-                return mean, logvar
-            return mean, torch.exp(logvar)
+        nn5_output = self.nn5(nn4_output)
+        mean = nn5_output[:, :, : self.output_dim]
+        logvar = self.max_logvar - F.softplus(self.max_logvar - nn5_output[:, :, self.output_dim :])
+        logvar = self.min_logvar + F.softplus(logvar - self.min_logvar)
+        var = torch.exp(logvar)
+        if ret_log_var:
+            return mean, logvar
+        return mean, var
 
     def get_decay_loss(self):
         """Get decay loss"""
@@ -460,12 +403,3 @@ class EnsembleDynamicsModel:
         ensemble_mean = np.hstack(ensemble_mean)
         ensemble_var = np.hstack(ensemble_var)
         return ensemble_mean, ensemble_var
-
-    def predic_cap(self, state, action):
-        """Predict next state, reward, cost for CAP algorithm"""
-        inputs = torch.cat([state, action], dim=-1).to(self.device)
-        inputs = self.scaler.transform(inputs)
-        with torch.no_grad():
-            output = self.ensemble_model(inputs, ret_log_var=True, training=False)
-            output['state'] = (output['state'][0] + state, output['state'][1])
-        return output

@@ -50,7 +50,7 @@ class CAP(
             cfgs=self.cfgs,
             device=self.device,
             env=self.env,
-            models=self.dynamics,
+            models=self.virtual_env,
             **namedtuple2dict(self.cfgs.mpc_config),
             lagrangian_multiplier=self.lagrangian_multiplier,
         )

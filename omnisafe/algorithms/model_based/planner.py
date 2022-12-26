@@ -114,7 +114,7 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
             # Shape: [1, action_dim]
             actor_actions_m = torch.tensor(actor_actions_m).to(self.device)
             # Use dynamics model to plan
-            actor_state_m, _ = self.models.get_forward_prediction_random_t(
+            actor_state_m, _ = self.models.safeloop_step(
                 actor_state_m[:, self.state_start_dim :],
                 actor_actions_m,
                 repeat_network=True,
@@ -136,7 +136,7 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
             actor_actions = torch.tensor(actor_actions).to(self.device)
 
             # Use dynamics model to plan
-            actor_state_m2, _ = self.models.get_forward_prediction_random_t(
+            actor_state_m2, _ = self.models.safeloop_step(
                 actor_state_m2[:, self.state_start_dim :],
                 actor_actions,
                 repeat_network=True,
@@ -303,7 +303,7 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
                 states_h = state_traj[current_horizon, :, :, self.state_start_dim :]
                 # [ network_size, (num_gau_traj + num_actor_traj) * particles, state_dim]
                 # use all dynamics model to predict next state (all_model=True)
-                next_states, next_var = self.models.get_forward_prediction_random_t(
+                next_states, next_var = self.models.safeloop_step(
                     states_h,
                     actions[
                         :,
@@ -835,7 +835,7 @@ class CCEPlanner:
         proc_obs = self._expand_to_ts_format(obs)
         # [network_size, num_gaussian_traj*particles/network_size, state_dim]
         proc_acs = self._expand_to_ts_format(acs)
-        output = self.models.predic_cap(proc_obs, proc_acs)
+        output = self.models.cap_step(proc_obs, proc_acs)
         next_obs, var = output['state']
         # [network_size, num_gaussian_traj*particles/network_size, state_dim]
         reward, _ = output['reward']
@@ -865,7 +865,9 @@ class CCEPlanner:
             # var shape: [network_size, num_gaussian_traj*particles/network_size, state_dim]
             var_penalty = var.sqrt().norm(dim=2).max(0)[0]
             # cost_penalty: [num_gaussian_traj*particles/network_size]
-            var_penalty = var_penalty.repeat_interleave(self.models.network_size).view(cost.shape)
+            var_penalty = var_penalty.repeat_interleave(self.models.model.network_size).view(
+                cost.shape
+            )
             # cost_penalty: [num_gaussian_traj*particles, 1]
             penalty = torch.nn.ReLU()(self.lagrangian_multiplier).item()
             cost += penalty * var_penalty
@@ -877,12 +879,15 @@ class CCEPlanner:
         dim = mat.shape[-1]
         # eg:state_dim
         reshaped = mat.view(
-            -1, self.models.network_size, self.particles // self.models.network_size, dim
+            -1,
+            self.models.model.network_size,
+            self.particles // self.models.model.network_size,
+            dim,
         )
         # [num_gaussian_traj, network_size, particles // network_size, state_dim]
         transposed = reshaped.transpose(0, 1)
         # [network_size, num_gaussian_traj, particles // network_size, state_dim]
-        reshaped = transposed.contiguous().view(self.models.network_size, -1, dim)
+        reshaped = transposed.contiguous().view(self.models.model.network_size, -1, dim)
         # [network_size, num_gaussian_traj * particles / network_size, state_dim]
 
         return reshaped
@@ -892,7 +897,10 @@ class CCEPlanner:
 
         dim = ts_fmt_arr.shape[-1]
         reshaped = ts_fmt_arr.view(
-            self.models.network_size, -1, self.particles // self.models.network_size, dim
+            self.models.model.network_size,
+            -1,
+            self.particles // self.models.model.network_size,
+            dim,
         )
         transposed = reshaped.transpose(0, 1)
         reshaped = transposed.contiguous().view(-1, dim)
