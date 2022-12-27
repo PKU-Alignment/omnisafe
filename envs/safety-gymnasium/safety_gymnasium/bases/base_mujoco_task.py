@@ -61,9 +61,6 @@ class BaseMujocoTask(
             60,
             40,
         )  # Size (width, height) of vision observation;
-        # gets flipped internally to (rows, cols) format
-        self.vision_render = True  # Render vision observation in the viewer
-        self.vision_render_size = (300, 200)  # Size to render the vision in the viewer
         self.parse(config)
 
         self.random_generator = None

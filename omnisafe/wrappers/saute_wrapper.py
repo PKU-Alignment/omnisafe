@@ -30,17 +30,16 @@ class SauteEnvWrapper(OnPolicyEnvWrapper):
         self,
         env_id,
         cfgs,
-        render_mode=None,
+        **env_kwargs,
     ) -> None:
         """Initialize SauteEnvWrapper.
 
         Args:
             env_id (str): environment id.
             cfgs (dict): configuration dictionary.
-            render_mode (str): render mode.
-
+            env_kwargs (dict): The additional parameters of environments.
         """
-        super().__init__(env_id, render_mode)
+        super().__init__(env_id, **env_kwargs)
 
         self.unsafe_reward = cfgs.unsafe_reward
         self.saute_gamma = cfgs.saute_gamma
