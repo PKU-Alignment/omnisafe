@@ -35,7 +35,7 @@ def recursive_update(args: dict, update_args: dict):
 
 
 def dict2namedtuple(obj):
-    """Create namedtuple from dict"""
+    """Create namedtuple from dict."""
     if isinstance(obj, dict):
         fields = sorted(obj.keys())
         namedtuple_type = namedtuple('GenericObject', fields, rename=True)
