@@ -13,7 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the SDDPG algorithm."""
-
 from typing import NamedTuple
 
 import torch
@@ -36,8 +35,8 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
     References:
         - Title: Lyapunov-based Safe Policy Optimization for Continuous Control
         - Authors: Yinlam Chow, Ofir Nachum, Aleksandra Faust, Edgar Duenez-Guzman,
-                Mohammad Ghavamzadeh.
-        - URL: https://arxiv.org/abs/1901.10031
+                   Mohammad Ghavamzadeh.
+        - URL: `SDDPG <https://arxiv.org/abs/1901.10031>`_
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
@@ -45,9 +44,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
 
         Args:
             env_id (str): environment id.
-            cfgs (dict): configurations.
-            algo (str): algorithm name.
-            wrapper_type (str): environment wrapper type.
+            cfgs (NamedTuple): configurations.
         """
         super().__init__(
             env_id=env_id,
@@ -62,19 +59,18 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         self.d_init = cfgs.d_init
 
     def update(self, data: dict) -> None:
-        """Update.
-        Update step contains three parts:
+        r"""Update actor, critic, running statistics as we used in the :class:`DDPG`.
 
-        #.  Update value net by :meth:`update_value_net()`
-        #.  Update cost net by :meth:`update_cost_net()`
-        #.  Update policy net by :meth:`update_policy_net()`
-        #.  Update target net by :meth:`polyak_update_target()`
+        .. note::
+            An additional step is to set the ``fvp_obs`` attribute to the current observation.
+            ``fvp_obs`` is a sub-sampled version of the observation,
+            which used to accelerate the calculating of the Hessian-vector product.
 
         Args:
             data (dict): data from replay buffer.
         """
         # First run one gradient descent step for Q.
-        self.fvp_obs = data['obs'][::4]
+        self.fvp_obs = data['obs'][::1]
         obs, act, rew, cost, obs_next, done = (
             data['obs'],
             data['act'],
@@ -119,12 +115,14 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         self.polyak_update_target()
 
     def Fvp(self, params) -> torch.Tensor:
-        """
-        Build the Hessian-vector product based on an approximation of the KL-divergence.
+        """Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_
+        based on an approximation of the KL-divergence.
+        The Hessian-vector product is approximated by the Fisher information matrix,
+        which is the second-order derivative of the KL-divergence.
         For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf
 
         Args:
-            params (torch.Tensor): parameters.
+            params (torch.Tensor): The parameters of the actor network.
         """
         self.actor_critic.actor.net.zero_grad()
         q_dist = self.actor_critic.actor.get_distribution(self.fvp_obs)
@@ -144,11 +142,23 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         distributed_utils.mpi_avg_torch_tensor(flat_grad_grad_kl)
         return flat_grad_grad_kl + params * self.cg_damping
 
-    def compute_loss_cost_performance(self, obs):
-        """Compute loss of cost performance.
+    def compute_loss_cost_performance(self, obs) -> tuple((torch.Tensor, dict)):
+        r"""Compute the performance of cost on this moment.
+
+        Detailedly, we compute the loss of cost of policy cost from real cost.
+
+        .. math::
+            L = \mathbb{E}_{\pi} \left[ \frac{\pi(a|s)}{\pi_{old}(a|s)} A^C(s, a) \right]
+
+        where :math:`A^C(s, a)` is the cost advantage,
+        :math:`\pi_{old}(a|s)` is the old policy,
+        :math:`\pi(a|s)` is the current policy.
 
         Args:
-            data (dict): data dictionary.
+            obs (torch.Tensor): Observation.
+            act (torch.Tensor): Action.
+            log_p (torch.Tensor): Log probability.
+            cost_adv (torch.Tensor): Cost advantage.
         """
         # Compute loss
         action = self.actor_critic.actor.predict(obs, deterministic=True)
@@ -163,8 +173,16 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
     ) -> None:  # pylint: disable=invalid-name
         """Update policy network.
 
+        SDDPG updates policy network using the conjugate gradient algorithm,
+        following the steps:
+
+        - Compute the gradient of the policy.
+        - Compute the step direction.
+        - Search for a step size that satisfies the constraint. (Both KL divergence and cost limit).
+        - Update the policy network.
+
         Args:
-            obs (:class:`torch.Tensor`): observation.
+            obs (torch.Tensor): The observation tensor.
         """
         # Train policy with one steps of gradient descent
         theta_old = get_flat_params_from(self.actor_critic.actor.net)

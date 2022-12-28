@@ -15,7 +15,7 @@
 """Implementation of the DDPG algorithm."""
 import time
 from copy import deepcopy
-from typing import NamedTuple, Tuple
+from typing import NamedTuple
 
 import numpy as np
 import torch
@@ -39,8 +39,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         - Title: Continuous control with deep reinforcement learning
         - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, Tom Erez,
                    Yuval Tassa, David Silver, Daan Wierstra.
-        - URL: https://arxiv.org/abs/1509.02971
-
+        - URL: `DDPG <https://arxiv.org/abs/1509.02971>`_
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
@@ -48,16 +47,12 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
 
         Args:
             env_id (str): Environment ID.
-            cfgs (dict): Configuration dictionary.
-            algo (str): Algorithm name.
-            wrapper_type (str): Wrapper type.
+            cfgs (NamedTuple): Configuration dictionary.
         """
         self.cfgs = deepcopy(cfgs)
         self.wrapper_type = self.cfgs.wrapper_type
         self.env = wrapper_registry.get(self.wrapper_type)(
-            env_id,
-            use_cost=cfgs.use_cost,
-            max_ep_len=cfgs.max_ep_len,
+            env_id, cfgs=self.cfgs._asdict().get('env_cfgs')
         )
         self.env_id = env_id
         self.algo = self.__class__.__name__
@@ -87,6 +82,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.env.set_rollout_cfgs(
             determinstic=False,
             rand_a=True,
+            use_cost=self.cfgs.use_cost,
         )
 
         # Set up logger and save configuration to disk
@@ -143,7 +139,9 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.logger.log('Start with training.')
 
     def set_learning_rate_scheduler(self) -> torch.optim.lr_scheduler.LambdaLR:
-        """Set up learning rate scheduler."""
+        """Set up learning rate scheduler.
+        If use linear learning rate decay, the learning rate will be annealed linearly.
+        """
         scheduler = None
         if self.cfgs.linear_lr_decay:
             # Linear anneal
@@ -167,10 +165,18 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             self.logger.log(f'Done! (took {time.time()-start:0.3f} sec.)')
 
     def algorithm_specific_logs(self) -> None:
-        """Use this method to collect log information."""
+        """Use this method to collect log information.
+
+        e.g. log lagrangian for lagrangian-base algorithms, etc.
+        """
 
     def _ac_training_setup(self) -> None:
-        """Set up target network for off_policy training."""
+        """Set up target network for off_policy training.
+
+        One target network,
+        which is frozen and can only be updated via polyak averaging,
+        by calling :meth`polyak_update`.
+        """
         self.ac_targ = deepcopy(self.actor_critic)
         # Freeze target networks with respect to optimizer (only update via polyak averaging)
         for param in self.ac_targ.actor.parameters():
@@ -191,8 +197,13 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 global_max = distributed_utils.mpi_max(np.sum(flat_params))
                 assert np.allclose(global_min, global_max), f'{key} not synced.'
 
-    def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, dict]:
-        """Computing ``pi/actor`` loss.
+    def compute_loss_pi(self, obs: torch.Tensor) -> tuple((torch.Tensor, dict)):
+        r"""Computing ``pi/actor`` loss.
+
+        Detailedly, the loss function in DDPG is defined as:
+
+        .. math::
+            L = -Q^V(s, \pi(s))
 
         Args:
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
@@ -210,14 +221,22 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         rew: torch.Tensor,
         obs_next: torch.Tensor,
         done: torch.Tensor,
-    ) -> Tuple[torch.Tensor, dict]:
-        """Computing value loss.
+    ) -> tuple((torch.Tensor, dict)):
+        r"""Computing value loss.
+
+        Specifically, the loss function in DDPG is defined as:
+
+        .. math::
+            L = [Q^V(s, a) - (r + \gamma (1-d) Q^V(s', \pi(s')))]^2
+
+        where :math:`\gamma` is the discount factor, :math:`d` is the terminal signal,
+        :math:`Q^V` is the value critic function, and :math:`\pi` is the policy.
 
         Args:
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
             act (:class:`torch.Tensor`): ``action`` saved in data.
             rew (:class:`torch.Tensor`): ``reward`` saved in data.
-            obs_next (:class:`torch.Tensor`): ``net observation`` saved in data.
+            obs_next (:class:`torch.Tensor`): ``next observation`` saved in data.
             done (:class:`torch.Tensor`): ``terminated`` saved in data.
         """
         q_value = self.actor_critic.critic(obs, act)[0]
@@ -240,14 +259,22 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         cost: torch.Tensor,
         obs_next: torch.Tensor,
         done: torch.Tensor,
-    ) -> Tuple[torch.Tensor, dict]:
-        """Computing cost loss.
+    ) -> tuple((torch.Tensor, dict)):
+        r"""Computing cost loss.
+
+        Specifically, the loss function is defined as:
+
+        .. math::
+            L = [Q^C(s, a) - (r + \gamma (1-d) Q^C(s', \pi(s')))]^2
+
+        where :math:`\gamma` is the discount factor, :math:`d` is the termination signal,
+        :math:`Q^C` is the cost critic function, and :math:`\pi` is the policy.
 
         Args:
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
             act (:class:`torch.Tensor`): ``action`` saved in data.
             cost (:class:`torch.Tensor`): ``cost`` saved in data.
-            obs_next (:class:`torch.Tensor`): ``net observation`` saved in data.
+            obs_next (:class:`torch.Tensor`): ``next observation`` saved in data.
             done (:class:`torch.Tensor`): ``terminated`` saved in data.
         """
         cost_q_value = self.actor_critic.cost_critic(obs, act)[0]
@@ -265,12 +292,19 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         return loss_qc, qc_info
 
     def learn(self) -> torch.nn.Module:
-        """
-        This is main function for algorithm update, divided into the following steps:
+        r"""This is main function for algorithm update, divided into the following steps:
 
-        #.  ``self.env.rollout()``: collect interactive data from environment
-        #.  ``self.update()``: perform actor/critic updates
-        #.  log epoch/update information for visualization and terminal log print.
+        - :meth:`rollout`: collect interactive data from environment.
+        - :meth:`update`: perform actor/critic updates.
+
+        .. note::
+            If you want to customize the algorithm, you can rewrite this function.
+            For example, In the Lagrange version of DDPG algorithm,
+            we need to update the Lagrange multiplier.
+            So a new function :meth:`update_lagrange_multiplier` is added.
+            For details, sees in :class:`DDPGLag`.
+
+        - :meth:`log`: epoch/update information for visualization and terminal log print.
         """
         for steps in range(0, self.local_steps_per_epoch * self.epochs, self.update_every):
             # Until start_steps have elapsed, randomly sample actions
@@ -312,17 +346,37 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         return self.actor_critic
 
     def update(self, data: dict) -> None:
-        """Update.
+        r"""Update actor, critic, running statistics, following next steps:
 
-        Update step contains three parts:
+        -  Get the ``data`` from buffer
 
-        #.  Update value net by :meth:`update_value_net()`
-        #.  Update cost net by :meth:`update_cost_net()`
-        #.  Update policy net by :meth:`update_policy_net()`
-        #.  Update target net by :meth:`polyak_update_target()`
+        .. note::
 
-        Args:
-            data (dict): data from replay buffer.
+            .. list-table::
+
+                *   -   obs
+                    -   ``obsertaion`` stored in buffer.
+                *   -   act
+                    -   ``action`` stored in buffer.
+                *   -   rew
+                    -   ``reward`` stored in buffer.
+                *   -   cost
+                    -   ``cost`` stored in buffer.
+                *   -   obs_next
+                    -   ``next obsertaion`` stored in buffer.
+                *   -   done
+                    -   ``terminated`` stored in buffer.
+
+        -  Update value net by :meth:`update_value_net`.
+        -  Update cost net by :meth:`update_cost_net`.
+        -  Update policy net by :meth:`update_policy_net`.
+
+        The basic process of each update is as follows:
+
+        #. Get the mini-batch data from buffer.
+        #. Get the loss of network.
+        #. Update the network by loss.
+        #. Repeat steps 2, 3 until the number of mini-batch data is used up.
         """
         # First run one gradient descent step for Q.
         obs, act, rew, cost, obs_next, done = (
@@ -371,7 +425,18 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.polyak_update_target()
 
     def polyak_update_target(self) -> None:
-        """Polyak update target network."""
+        r"""One important trick is to use a target network to stabilize the training of the Q-function.
+
+        .. note::
+            This is done by updating the target network according to:
+
+            .. math::
+                \theta_{\text{targ}} \leftarrow \tau \theta + (1 - \tau) \theta_{\text{targ}}
+
+            where :math:`\tau` is a small number (e.g. 0.005),
+            and :math:`\theta` are the parameters of the Q-network.
+            This is called a `polyak averaging <https://en.wikipedia.org/wiki/>`_
+        """
         with torch.no_grad():
             for param, param_targ in zip(self.actor_critic.parameters(), self.ac_targ.parameters()):
                 # Notes: We use an in-place operations "mul_", "add_" to update target
@@ -381,6 +446,10 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
 
     def update_policy_net(self, obs: torch.Tensor) -> None:
         """Update policy network.
+
+        - Get the loss of policy network.
+        - Update policy network by loss.
+        - Log useful information.
 
         Args:
             obs (:class:`torch.Tensor`): observation.
@@ -403,12 +472,16 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
     ) -> None:
         """Update value network.
 
+        - Get the loss of policy network.
+        - Update policy network by loss.
+        - Log useful information.
+
         Args:
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
             act (:class:`torch.Tensor`): ``action`` saved in data.
             rew (:class:`torch.Tensor`): ``reward`` saved in data.
-            obs_next (:class:`torch.Tensor`): ``net observation`` saved in data.
-            done (:class:`torch.Tensor`): :meth`terminated` saved in data.
+            obs_next (:class:`torch.Tensor`): ``next observation`` saved in data.
+            done (:class:`torch.Tensor`): ``terminated`` saved in data.
         """
         # Train value critic with one steps of gradient descent
         self.critic_optimizer.zero_grad()
@@ -434,6 +507,10 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
     ) -> None:
         r"""Update cost network.
 
+        - Get the loss of policy network.
+        - Update policy network by loss.
+        - Log useful information.
+
         Args:
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
             act (:class:`torch.Tensor`): ``action`` saved in data.
@@ -456,7 +533,9 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
 
     def test_agent(self) -> None:
         """Test agent.
-        The algorithm uses a randomness strategy during training and a deterministic strategy during testing
+
+        The algorithm uses a randomness strategy during training,
+        and a deterministic strategy during testing.
         """
         for _ in range(self.num_test_episodes):
             # self.env.set_rollout_cfgs(deterministic=True, rand_a=False)
@@ -493,13 +572,13 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             *   -   Test/EpLen
                 -   average length of the test.
             *   -   Values/V
-                -   average value in :meth:`roll_out()` (from critic network) of the epoch.
+                -   average value in :meth:`roll_out` (from critic network) of the epoch.
             *   -   Values/Cost
-                -   average cost in :meth:`roll_out()` (from critic network) of the epoch.
+                -   average cost in :meth:`roll_out` (from critic network) of the epoch.
             *   -   Values/QVals
-                -   average Q value in :meth:`roll_out()` (from critic network) of the epoch.
+                -   average Q value in :meth:`roll_out` (from critic network) of the epoch.
             *   -   Values/QCosts
-                -   average Q cost in :meth:`roll_out()` (from critic network) of the epoch.
+                -   average Q cost in :meth:`roll_out` (from critic network) of the epoch.
             *   -   loss/Pi
                 -   loss of the policy network.
             *   -   loss/Value

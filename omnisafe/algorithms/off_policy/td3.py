@@ -13,8 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the TD3 algorithm."""
-
-from typing import NamedTuple, Tuple
+from typing import NamedTuple
 
 import torch
 
@@ -29,11 +28,11 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
     References:
         - Title: Addressing Function Approximation Error in Actor-Critic Methods
         - Authors: Scott Fujimoto, Herke van Hoof, David Meger.
-        - URL: https://arxiv.org/abs/1802.09477
+        - URL: `TD3 <https://arxiv.org/abs/1802.09477>`_
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize DDPG."""
+        """Initialize TD3."""
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
@@ -47,10 +46,16 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
         rew: torch.Tensor,
         obs_next: torch.Tensor,
         done: torch.Tensor,
-    ) -> Tuple[torch.Tensor, dict]:
-        r"""Computing value loss.
+    ) -> tuple((torch.Tensor, dict)):
+        r"""Computing cost loss.
 
-        .. hint::
+        Detailedly, TD3 compute the loss by:
+
+        .. math::
+            L_1 = [Q^{C}_1 (s, a) - (r + \gamma (1-d) \underset{i = 1, 2}{\min} Q^{C}_i (s', \pi(s'))]^2\\
+            L_2 = [Q^{C}_2 (s, a) - (r + \gamma (1-d) \underset{i = 1, 2}{\min} Q^{C}_i (s', \pi(s'))]^2
+
+        .. note::
 
             TD3 uses two Q functions to reduce overestimation bias.
             In this function, we use the minimum of the two Q functions as the target Q value.
@@ -61,7 +66,7 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
             act (:class:`torch.Tensor`): ``action`` saved in data.
             rew (:class:`torch.Tensor`): ``reward`` saved in data.
-            obs_next (:class:`torch.Tensor`): ``net observation`` saved in data.
+            obs_next (:class:`torch.Tensor`): ``next observation`` saved in data.
             done (:class:`torch.Tensor`): ``terminated`` saved in data.
         """
         q_value_list = self.actor_critic.critic(obs, act)

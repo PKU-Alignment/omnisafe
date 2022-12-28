@@ -13,8 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the SAC algorithm."""
-
-from typing import NamedTuple, Tuple
+from typing import NamedTuple
 
 import torch
 
@@ -29,7 +28,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
     References:
         - Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
         - Authors: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine.
-        - URL: https://arxiv.org/abs/1801.01290
+        - URL: `SAC <https://arxiv.org/abs/1801.01290>`_
 
     """
 
@@ -50,10 +49,10 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         rew: torch.Tensor,
         obs_next: torch.Tensor,
         done: torch.Tensor,
-    ) -> Tuple[torch.Tensor, dict]:
+    ) -> tuple((torch.Tensor, dict)):
         """Computing value loss.
 
-        .. hint::
+        .. note::
 
             The same as TD3, SAC uses two Q functions to reduce overestimation bias.
             In this function, we use the minimum of the two Q functions as the target Q value.
@@ -88,10 +87,10 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         q_info = dict(QVals=sum(q_values).detach().numpy())
         return sum(loss_q), q_info
 
-    def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, dict]:
+    def compute_loss_pi(self, obs: torch.Tensor) -> tuple((torch.Tensor, dict)):
         """Computing pi/actor loss.
 
-        .. hint::
+        .. note::
 
             SAC use the entropy of the action distribution to update policy.
 
@@ -105,15 +104,15 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         pi_info = {'LogPi': logp_a.detach().numpy()}
         return -loss_pi.mean(), pi_info
 
-    def update(self, data):
+    def update(self, data) -> None:
         """Update.
         Update step contains three parts:
 
-        #.  Update value net by :func:`update_value_net()`
-        #.  Update cost net by :func:`update_cost_net()`
-        #.  Update policy net by :func:`update_policy_net()`
-        #.  Update :meth:'alpha' by :func:`alpha_discount()`
-        #.  Update target net by :func:`polyak_update_target()`
+        #.  Update value net by :meth:`update_value_net`
+        #.  Update cost net by :meth:`update_cost_net`
+        #.  Update policy net by :meth:`update_policy_net`
+        #.  Update :meth:'alpha' by :meth:`alpha_discount`
+        #.  Update target net by :meth:`polyak_update_target`
 
         Args:
             data (dict): data from replay buffer.
@@ -165,7 +164,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         self.polyak_update_target()
         self.alpha_discount()
 
-    def alpha_discount(self):
+    def alpha_discount(self) -> None:
         """Alpha discount.
         SAC discount alpha by ``alpha_gamma`` to decrease the entropy of the action distribution.
         """
