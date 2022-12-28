@@ -30,15 +30,17 @@ class Lagrange(abc.ABC):
         lambda_lr: float,
         lambda_optimizer: str,
         lagrangian_upper_bound=None,
+        beta: float = 1.0,
+        device: torch.device = torch.device('cpu'),
     ):
         """init"""
-        self.cost_limit = cost_limit
+        self.cost_limit = cost_limit * beta
         self.lambda_lr = lambda_lr
         self.lagrangian_upper_bound = lagrangian_upper_bound
 
         init_value = max(lagrangian_multiplier_init, 1e-5)
         self.lagrangian_multiplier = torch.nn.Parameter(
-            torch.as_tensor(init_value), requires_grad=True
+            torch.as_tensor(init_value, device=device), requires_grad=True
         )
         self.lambda_range_projection = torch.nn.ReLU()
         # fetch optimizer from PyTorch optimizer package

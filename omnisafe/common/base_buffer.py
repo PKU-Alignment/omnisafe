@@ -24,7 +24,9 @@ from omnisafe.utils.core import combined_shape
 class BaseBuffer:
     """A simple FIFO experience replay buffer for DDPG agents."""
 
-    def __init__(self, obs_dim, act_dim, size, batch_size):
+    # pylint: disable-next=too-many-arguments
+    def __init__(self, obs_dim, act_dim, size, batch_size, device=torch.device('cpu')):
+
         """init"""
         self.obs_buf = np.zeros(combined_shape(size, obs_dim), dtype=np.float32)
         self.obs_next_buf = np.zeros(combined_shape(size, obs_dim), dtype=np.float32)
@@ -34,6 +36,7 @@ class BaseBuffer:
         self.done_buf = np.zeros(size, dtype=np.float32)
         self.ptr, self.size, self.max_size = 0, 0, size
         self.batch_size = batch_size
+        self.device = device
 
     # pylint: disable-next=too-many-arguments
     def store(self, obs, act, rew, cost, next_obs, done):
@@ -58,4 +61,6 @@ class BaseBuffer:
             cost=self.cost_buf[idxs],
             done=self.done_buf[idxs],
         )
-        return {k: torch.as_tensor(v, dtype=torch.float32) for k, v in batch.items()}
+        return {
+            k: torch.as_tensor(v, dtype=torch.float32).to(self.device) for k, v in batch.items()
+        }

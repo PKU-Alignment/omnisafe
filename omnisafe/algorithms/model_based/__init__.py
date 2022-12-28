@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""OmniSafe: A comprehensive and reliable benchmark for safe reinforcement learning."""
+"""Model-Based algorithms."""
 
-from omnisafe import algorithms
-from omnisafe.algorithms import ALGORITHMS
-from omnisafe.algorithms.algo_wrapper import AlgoWrapper as Agent
-from omnisafe.evaluator import Evaluator
+from omnisafe.algorithms.model_based.cap import CAP
+from omnisafe.algorithms.model_based.mbppo_lag import MBPPOLag
+from omnisafe.algorithms.model_based.safeloop import SafeLOOP
 
-# from omnisafe.algorithms.env_wrapper import EnvWrapper as Env
-from omnisafe.version import __version__
+
+__all__ = [
+    'CAP',
+    'MBPPOLag',
+    'SafeLOOP',
+]

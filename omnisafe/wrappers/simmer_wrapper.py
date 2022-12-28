@@ -279,20 +279,15 @@ class QController:  # pylint: disable=too-many-instance-attributes
 class SimmerEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance-attributes
     """Wrapper for the Simmer environment."""
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-        render_mode=None,
-    ) -> None:
+    def __init__(self, env_id, cfgs, **env_kwargs) -> None:
         """Initialize the Simmer environment wrapper.
 
         Args:
             env_id (str): The environment id.
             cfgs (Config): The configuration.
-            render_mode (str): The render mode.
+            env_kwargs (dict): The additional parameters of environments.
         """
-        super().__init__(env_id, render_mode)
+        super().__init__(env_id, **env_kwargs)
 
         self.unsafe_reward = cfgs.unsafe_reward
         self.simmer_gamma = cfgs.simmer_gamma

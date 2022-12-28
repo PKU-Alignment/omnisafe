@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""OmniSafe: A comprehensive and reliable benchmark for safe reinforcement learning."""
+"""The model-based dynamics model."""
 
-from omnisafe import algorithms
-from omnisafe.algorithms import ALGORITHMS
-from omnisafe.algorithms.algo_wrapper import AlgoWrapper as Agent
-from omnisafe.evaluator import Evaluator
-
-# from omnisafe.algorithms.env_wrapper import EnvWrapper as Env
-from omnisafe.version import __version__
+from omnisafe.algorithms.model_based.models.dynamic_model import EnsembleDynamicsModel
+from omnisafe.algorithms.model_based.models.virtual_env import VirtualEnv
