@@ -344,7 +344,7 @@ class BaseMujocoTask(
             label=label if self.render_labels else '',
         )
 
-    # pylint: disable-next=too-many-arguments,too-many-branches
+    # pylint: disable-next=too-many-arguments,too-many-branches,too-many-statements
     def render(self, width, height, mode, camera_id=None, camera_name=None, cost=None):
         """Render the environment to the screen."""
         self.model.vis.global_.offwidth = width
@@ -372,7 +372,7 @@ class BaseMujocoTask(
                     camera_name,
                 )
 
-                self._get_viewer(mode).render(camera_id=camera_id)
+                self._get_viewer(mode)
 
         if mode == 'human':
             self._get_viewer(mode)
@@ -427,6 +427,7 @@ class BaseMujocoTask(
 
         # Draw vision pixels
         if mode == 'rgb_array':
+            self._get_viewer(mode).render(camera_id=camera_id)
             data = self._get_viewer(mode).read_pixels(depth=False)
             # original image is upside-down, so flip it
             self.viewer._markers[:] = []  # pylint: disable=protected-access

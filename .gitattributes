@@ -7,3 +7,6 @@
 *.jpeg binary
 *.gif binary
 *.pdf binary
+*.STL binary
+*.stl binary
+*.PNG binary
