@@ -63,7 +63,7 @@ class ModelBasedEnvWrapper:  # pylint: disable=too-many-instance-attributes
             'SafetyPointGoal1-v0',
             'SafetyCarGoal1-v0',
         ]
-        self.modelbased_mujoco_speed = [
+        self.modelbased_mujoco_velocity = [
             'Ant-v4',
             'Swimmer-v4',
             'HalfCheetah-v4',
@@ -78,7 +78,7 @@ class ModelBasedEnvWrapper:  # pylint: disable=too-many-instance-attributes
             'Walker2d-v3',
         ]
         assert (
-            env_id in self.modelbased_safetygym + self.modelbased_mujoco_speed
+            env_id in self.modelbased_safetygym + self.modelbased_mujoco_velocity
         ), f'not support {env_id}'
         if env_id in self.modelbased_safetygym:
             self.robot = 'Point' if 'Point' in env_id else 'Car'
@@ -100,7 +100,7 @@ class ModelBasedEnvWrapper:  # pylint: disable=too-many-instance-attributes
             self.goal_position = self.env.task.goal_pos[0][:2]
             self.robot_position = self.env.task.robot_pos
             self.hazards_position = self.env.task.hazards_pos
-        elif env_id in self.modelbased_mujoco_speed:
+        elif env_id in self.modelbased_mujoco_velocity:
             self.env_type = 'mujoco-velocity'
             self.env = gymnasium.make(env_id)
             self.observation_space = self.env.observation_space

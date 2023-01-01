@@ -816,7 +816,7 @@ class CCEPlanner:
 
         # Replace nan with high cost
         rewards = rewards.nan_to_num_(-1e6)
-        costs = rewards.nan_to_num_(1e6)
+        costs = costs.nan_to_num_(1e6)
 
         return (
             rewards.mean(dim=1).detach().cpu().numpy(),

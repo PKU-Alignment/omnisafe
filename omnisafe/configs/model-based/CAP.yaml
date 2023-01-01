@@ -25,7 +25,7 @@ defaults:
   # Number of timestep in an episode
   max_ep_len: 1000
   # CUDA or CPU device
-  device: "cpu"
+  device: "cuda:0"
   # Number of repeated action
   action_repeat: 1
   # The Address for saving training process data
@@ -88,4 +88,4 @@ defaults:
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
     # scaling factor of cost limit
-    beta: 0.02
+    beta: 1
