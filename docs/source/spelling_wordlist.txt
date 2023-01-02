@@ -334,3 +334,7 @@ tensorboard
 datestamp
 vals
 txt
+Tessler
+Mankowitz
+Shie
+Mannor
