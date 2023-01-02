@@ -22,29 +22,31 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
 
 ### Table of Contents  <!-- omit in toc --> <!-- markdownlint-disable heading-increment -->
 
-- [Overview](#overview)
-- [Implemented Algorithms](#implemented-algorithms)
-  - [Newly Published in 2022](#newly-published-in-2022)
-  - [List of Algorithms](#list-of-algorithms)
-    - [On-Policy Safe](#on-policy-safe)
-    - [Off-Policy Safe](#off-policy-safe)
-    - [Model-Based Safe](#model-based-safe)
-    - [Offline Safe](#offline-safe)
-    - [Others](#others)
-- [SafeRL Environments](#saferl-environments)
-  - [Safety Gymnasium](#safety-gymnasium)
-  - [Vision-base Safe RL](#vision-base-safe-rl)
-  - [Environment Usage](#environment-usage)
-- [Installation](#installation)
-  - [Prerequisites](#prerequisites)
-  - [Install from source](#install-from-source)
-  - [Examples](#examples)
-- [Getting Started](#getting-started)
-  - [1. Run Agent from preset yaml file](#1-run-agent-from-preset-yaml-file)
-  - [2. Run Agent from custom config dict](#2-run-agent-from-custom-config-dict)
-  - [3. Run Agent from custom terminal config](#3-run-agent-from-custom-terminal-config)
-- [The OmniSafe Team](#the-omnisafe-team)
-- [License](#license)
+- [OmniSafe](#omnisafe)
+    - [Table of Contents   ](#table-of-contents---)
+  - [Overview](#overview)
+  - [Implemented Algorithms](#implemented-algorithms)
+    - [Newly Published in 2022](#newly-published-in-2022)
+    - [List of Algorithms](#list-of-algorithms)
+      - [On-Policy Safe](#on-policy-safe)
+      - [Off-Policy Safe](#off-policy-safe)
+      - [Model-Based Safe](#model-based-safe)
+      - [Offline Safe](#offline-safe)
+      - [Others](#others)
+  - [SafeRL Environments](#saferl-environments)
+    - [Safety Gymnasium](#safety-gymnasium)
+    - [Vision-base Safe RL](#vision-base-safe-rl)
+    - [Environment Usage](#environment-usage)
+  - [Installation](#installation)
+    - [Prerequisites](#prerequisites)
+    - [Install from source](#install-from-source)
+    - [Examples](#examples)
+  - [Getting Started](#getting-started)
+    - [1. Run Agent from preset yaml file](#1-run-agent-from-preset-yaml-file)
+    - [2. Run Agent from custom config dict](#2-run-agent-from-custom-config-dict)
+    - [3. Run Agent from custom terminal config](#3-run-agent-from-custom-terminal-config)
+  - [The OmniSafe Team](#the-omnisafe-team)
+  - [License](#license)
 
 --------------------------------------------------------------------------------
 
@@ -246,10 +248,24 @@ pip install -e .
 
 ```bash
 cd examples
-python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1 --seed 0
+python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1
 ```
 
-**algo:** `PolicyGradient, PPO, PPOLag, NaturalPG, TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid`
+**algo:**
+Type           | Name
+---------------| ----------------------------------------------
+`Base-On-Policy`    | `PolicyGradient, PPO`<br> `NaturalPG, TRPO`
+`Base-Off-Policy`   | `DDPG, TD3, SAC`
+`Naive Lagrange`    | `RCPO, PPOLag, TRPOLag`<br> `DDPGLag, TD3Lag, SACLag`
+`PID Lagrange`      | `CPPOPid, TRPOPid`
+`First Order`       | `FOCOPS, CUP`
+`Second Order`      | `SDDPG, CPO, PCPO`
+`Saute RL`          | `PPOSaute, PPOLagSaute`
+`Simmer RL`         | `PPOSimmerQ, PPOSimmerPid` <br> `PPOLagSimmerQ, PPOLagSimmerPid`
+`EarlyTerminated`   | `PPOEarlyTerminated` <br> `PPOLagEarlyTerminated`
+`Model-Based`       | `CAP, MBPPOLag, SafeLOOP`
+
+
 
 **env-id:** `Safety{Robot-id}{Task-id}{0/1/2}-v0, (Robot-id: Point Car), (Task-id: Goal Push Button)`
 
@@ -264,7 +280,7 @@ python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1 -
 ```python
 import omnisafe
 
-env = omnisafe.Env('SafetyPointGoal1-v0')
+env = 'SafetyPointGoal1-v0'
 
 agent = omnisafe.Agent('PPOLag', env)
 agent.learn()
@@ -284,7 +300,7 @@ agent.learn()
 ```python
 import omnisafe
 
-env = omnisafe.Env('SafetyPointGoal1-v0')
+env = 'SafetyPointGoal1-v0'
 
 custom_dict = {'epochs': 1, 'data_dir': './runs'}
 agent = omnisafe.Agent('PPOLag', env, custom_cfgs=custom_dict)
@@ -304,7 +320,7 @@ agent.learn()
 
 ```bash
 cd examples
-python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 5 --epochs 1
+python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 5
 ```
 
 --------------------------------------------------------------------------------
