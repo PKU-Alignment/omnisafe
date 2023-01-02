@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the Natural Policy Gradient algorithm."""
 
+from typing import NamedTuple
+
 import torch
 
 from omnisafe.algorithms import registry
@@ -31,27 +33,61 @@ from omnisafe.utils.tools import (
 class NaturalPG(PolicyGradient):
     """The Natural Policy Gradient algorithm.
 
+    The Natural Policy Gradient algorithm is a policy gradient algorithm that uses the
+    `Fisher information matrix <https://en.wikipedia.org/wiki/Fisher_information>`_ to
+    approximate the Hessian matrix. The Fisher information matrix is the second-order derivative of the KL-divergence.
+
     References:
-        Title: A Natural Policy Gradient
-        Author: Sham Kakade.
-        URL: https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf
+        - Title: A Natural Policy Gradient
+        - Author: Sham Kakade.
+        - URL: `Natural PG <https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf>`_
     """
 
-    def __init__(self, env_id, cfgs) -> None:
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
+        """Initialize Natural Policy Gradient.
+
+        Args:
+            env_id (str): The environment id.
+            cfgs (NamedTuple): The configuration of the algorithm.
+        """
         super().__init__(env_id=env_id, cfgs=cfgs)
         self.cg_damping = cfgs.cg_damping
         self.cg_iters = cfgs.cg_iters
         self.target_kl = cfgs.target_kl
         self.fvp_obs = cfgs.fvp_obs
 
-    def search_step_size(self, step_dir):
-        """
-        NPG use full step_size
+    def search_step_size(self, step_dir) -> tuple((torch.Tensor, int)):
+        """NPG use full step_size, so we just return 1.
+
+        Args:
+            step_dir (torch.Tensor): The step direction.
         """
         accept_step = 1
         return step_dir, accept_step
 
-    def algorithm_specific_logs(self):
+    def algorithm_specific_logs(self) -> None:
+        r"""Log the Natural Policy Gradient specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   ``Misc/AcceptanceStep``
+                -   The acceptance step size.
+            *   -   ``Misc/Alpha``
+                -   :math:`\frac{\delta_{KL}}{xHx}` in original paper.
+                    where :math:`x` is the step direction, :math:`H` is the Hessian matrix,
+                    and :math:`\delta_{KL}` is the target KL divergence.
+            *   -   ``Misc/FinalStepNorm``
+                -   The final step norm.
+            *   -   ``Misc/gradient_norm``
+                -   The gradient norm.
+            *   -   ``Misc/xHx``
+                -   :math:`xHx` in original paper.
+            *   -   ``Misc/H_inv_g``
+                -   :math:`H^{-1}g` in original paper.
+
+        """
         self.logger.log_tabular('Misc/AcceptanceStep')
         self.logger.log_tabular('Misc/Alpha')
         self.logger.log_tabular('Misc/FinalStepNorm')
@@ -59,10 +95,15 @@ class NaturalPG(PolicyGradient):
         self.logger.log_tabular('Misc/xHx')
         self.logger.log_tabular('Misc/H_inv_g')
 
-    def Fvp(self, params):
-        """
-        Build the Hessian-vector product based on an approximation of the KL-divergence.
+    def Fvp(self, params: torch.Tensor) -> torch.Tensor:
+        """Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_
+        based on an approximation of the KL-divergence.
+        The Hessian-vector product is approximated by the Fisher information matrix,
+        which is the second-order derivative of the KL-divergence.
         For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf
+
+        Args:
+            params (torch.Tensor): The parameters of the actor network.
         """
         self.actor_critic.actor.net.zero_grad()
         q_dist = self.actor_critic.actor(self.fvp_obs)
@@ -82,31 +123,69 @@ class NaturalPG(PolicyGradient):
         distributed_utils.mpi_avg_torch_tensor(flat_grad_grad_kl)
         return flat_grad_grad_kl + params * self.cg_damping
 
-    def update(self):
-        """
-        Update actor, critic, running statistics
+    def update(self) -> None:
+        """Update actor, critic, running statistics as we used in the :class:`PolicyGradient`.
+
+        .. note::
+            An additional step is to set the ``fvp_obs`` attribute to the current observation.
+            ``fvp_obs`` is a sub-sampled version of the observation,
+            which used to accelerate the calculating of the Hessian-vector product.
+
         """
         raw_data, data = self.buf.pre_process_data()
         # sub-sampling accelerates calculations
         self.fvp_obs = data['obs'][::4]
         # Update Policy Network
-        self.update_policy_net(data)
-        # Update Value Function
-        self.update_value_net(data=data)
+        obs, act, target_v, target_c, log_p, adv, cost_adv = (
+            data['obs'],
+            data['act'],
+            data['target_v'],
+            data['target_c'],
+            data['log_p'],
+            data['adv'],
+            data['cost_adv'],
+        )
+        # Update critic
+        self.update_value_net(obs=obs, target_v=target_v)
         if self.cfgs.use_cost:
-            self.update_cost_net(data=data)
-
+            self.update_cost_net(obs=obs, target_c=target_c)
+        # Update actor
+        self.update_policy_net(obs=obs, act=act, log_p=log_p, adv=adv, cost_adv=cost_adv)
         return raw_data, data
 
-    # pylint: disable-next=too-many-locals
-    def update_policy_net(self, data):
-        """update policy network"""
+    # pylint: disable-next=too-many-locals,too-many-arguments
+    def update_policy_net(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        log_p: torch.Tensor,
+        adv: torch.Tensor,
+        cost_adv: torch.Tensor,
+    ) -> None:
+        """Update policy network.
+
+        Natural Policy Gradient (NPG) update policy network using the conjugate gradient algorithm,
+        following the steps:
+
+        - Calculate the gradient of the policy network,
+        - Use the conjugate gradient algorithm to calculate the step direction.
+        - Use the line search algorithm to find the step size.
+
+        Args:
+            obs (torch.Tensor): The observation tensor.
+            act (torch.Tensor): The action tensor.
+            log_p (torch.Tensor): The log probability of the action.
+            adv (torch.Tensor): The advantage tensor.
+            cost_adv (torch.Tensor): The cost advantage tensor.
+        """
         # Get loss and info values before update
         theta_old = get_flat_params_from(self.actor_critic.actor.net)
         self.actor_critic.actor.net.zero_grad()
-        loss_pi, pi_info = self.compute_loss_pi(data=data)
+        loss_pi, pi_info = self.compute_loss_pi(
+            obs=obs, act=act, log_p=log_p, adv=adv, cost_adv=cost_adv
+        )
         loss_pi_before = distributed_utils.mpi_avg(loss_pi.item())
-        p_dist = self.actor_critic.actor(data['obs'])
+        p_dist = self.actor_critic.actor(obs)
         # Train policy with multiple steps of gradient descent
         loss_pi.backward()
         # average grads across MPI processes
@@ -135,13 +214,15 @@ class NaturalPG(PolicyGradient):
         set_param_values_to_model(self.actor_critic.actor.net, new_theta)
 
         with torch.no_grad():
-            q_dist = self.actor_critic.actor(data['obs'])
+            q_dist = self.actor_critic.actor(obs)
             kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-            loss_pi, pi_info = self.compute_loss_pi(data=data)
+            loss_pi, pi_info = self.compute_loss_pi(
+                obs=obs, act=act, log_p=log_p, adv=adv, cost_adv=cost_adv
+            )
 
         self.logger.store(
             **{
-                'Values/Adv': data['adv'].numpy(),
+                'Values/Adv': adv.numpy(),
                 'Train/Entropy': pi_info['ent'],
                 'Train/KL': kl,
                 'Train/PolicyRatio': pi_info['ratio'],

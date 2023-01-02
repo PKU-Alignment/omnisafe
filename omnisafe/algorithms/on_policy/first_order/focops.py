@@ -14,6 +14,9 @@
 # ==============================================================================
 """Implementation of the FOCOPS algorithm."""
 
+from typing import NamedTuple
+
+import numpy as np
 import torch
 
 from omnisafe.algorithms import registry
@@ -27,13 +30,20 @@ class FOCOPS(PolicyGradient, Lagrange):
     """The First Order Constrained Optimization in Policy Space (FOCOPS) algorithm.
 
     References:
-        Title: First Order Constrained Optimization in Policy Space
-        Authors: Yiming Zhang, Quan Vuong, Keith W. Ross.
-        URL: https://arxiv.org/abs/2002.06506
+        - Title: First Order Constrained Optimization in Policy Space
+        - Authors: Yiming Zhang, Quan Vuong, Keith W. Ross.
+        - URL: `FOCOPS <https://arxiv.org/abs/2002.06506>`_
     """
 
-    def __init__(self, env_id, cfgs) -> None:
-        r"""The :meth:`init` function."""
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
+        """Initialize FOCOPS.
+
+        FOCOPS is a combination of :class:`PolicyGradient` and :class:`Lagrange` model.
+
+        Args:
+            env_id (str): The environment id.
+            cfgs (NamedTuple): The configuration of the algorithm.
+        """
         PolicyGradient.__init__(
             self,
             env_id=env_id,
@@ -49,97 +59,162 @@ class FOCOPS(PolicyGradient, Lagrange):
         )
         self.lam = self.cfgs.lam
         self.eta = self.cfgs.eta
+        self.p_dist_batch = None
 
-    def algorithm_specific_logs(self):
+    def algorithm_specific_logs(self) -> None:
+        """Log the FOCOPS specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   Metrics/LagrangeMultiplier
+                -   The Lagrange multiplier value in current epoch.
+        """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier)
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
-    def compute_loss_pi(self, data: dict):
-        """compute loss for policy"""
-        dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
-        ratio = torch.exp(_log_p - data['log_p'])
+    # pylint: disable=too-many-arguments
+    def compute_loss_pi(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        log_p: torch.Tensor,
+        adv: torch.Tensor,
+        cost_adv: torch.Tensor,
+    ) -> tuple((torch.Tensor, dict)):
+        r"""
+        Computing pi/actor loss.
+        In FOCOPS, the loss is defined as:
+
+        .. math::
+            :nowrap:
+
+            \begin{eqnarray}
+            L = \nabla_\theta D_{K L}\left(\pi_\theta \| \pi_{\theta^{old}}\right)[s]
+            -\frac{1}{\eta} \underset{a \sim \pi_{\theta^{old}}}
+            {\mathbb{E}}\left[\frac{\nabla_\theta \pi_\theta(a \mid s)}
+            {\pi_{\theta^{old}}(a \mid s)}\left(A^{R}_{\pi_{\theta^{old}}}(s, a)
+            -\lambda A^C_{\pi_{\theta^{old}}}(s, a)\right)\right]
+            \end{eqnarray}
+
+        where :math:`\eta` is a hyperparameter, :math:`\lambda` is the Lagrange multiplier,
+        :math:`A_{\pi_{\theta_k}}(s, a)` is the advantage function,
+        :math:`A^C_{\pi_{\theta_k}}(s, a)` is the cost advantage function,
+        :math:`\pi^*` is the optimal policy, and :math:`\pi_{\theta_k}` is the current policy.
+        """
+        dist, _log_p = self.actor_critic.actor(obs, act)
+        ratio = torch.exp(_log_p - log_p)
 
         kl_new_old = torch.distributions.kl.kl_divergence(dist, self.p_dist).sum(-1, keepdim=True)
         loss_pi = (
-            kl_new_old
-            - (1 / self.lam) * ratio * (data['adv'] - self.lagrangian_multiplier * data['cost_adv'])
+            kl_new_old - (1 / self.lam) * ratio * (adv - self.lagrangian_multiplier * cost_adv)
         ) * (kl_new_old.detach() <= self.eta).type(torch.float32)
         loss_pi = loss_pi.mean()
         loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
 
         # Useful extra info
-        approx_kl = 0.5 * (data['log_p'] - _log_p).mean().item()
+        approx_kl = 0.5 * (log_p - _log_p).mean().item()
         ent = dist.entropy().mean().item()
         pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
 
         return loss_pi, pi_info
 
-    def update(self):
-        """Update."""
+    def update(self) -> None:
+        """Update actor, critic, running statistics as we used in the :class:`PolicyGradient`.
+
+        In addition, we also update the Lagrange multiplier parameter,
+        by calling the :meth:`update_lagrange_multiplier` function.
+        """
         raw_data, data = self.buf.pre_process_data()
+        obs, act, target_v, target_c, log_p, adv, cost_adv = (
+            data['obs'],
+            data['act'],
+            data['target_v'],
+            data['target_c'],
+            data['log_p'],
+            data['adv'],
+            data['cost_adv'],
+        )
         # First update Lagrange multiplier parameter
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
         self.update_lagrange_multiplier(Jc)
-        # Then update policy network
-        self.update_policy_net(data=data)
-        # Update value network
-        self.update_value_net(data=data)
-        # Update cost network
-        self.update_cost_net(data=data)
+        # Then update value network
+        self.update_value_net(obs=obs, target_v=target_v)
+        self.update_cost_net(obs=obs, target_c=target_c)
+        # Update actor
+        self.update_policy_net(obs=obs, act=act, log_p=log_p, adv=adv, cost_adv=cost_adv)
         return raw_data, data
 
-    def slice_data(self, data) -> dict:
-        """slice data for mini batch update"""
+    # pylint: disable=too-many-locals
+    def update_policy_net(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        log_p: torch.Tensor,
+        adv: torch.Tensor,
+        cost_adv: torch.Tensor,
+    ) -> None:
+        r"""Update policy network under a double for loop.
 
-        slice_data = []
-        obs = data['obs']
-        act = data['act']
-        target_v = data['target_v']
-        log_p = data['log_p']
-        adv = data['adv']
-        discounted_ret = data['discounted_ret']
-        cost_adv = data['cost_adv']
-        target_v = data['target_v']
-        batch_size = self.cfgs.batch_size
-        for i in range(int(len(obs) / batch_size)):
-            slice_data.append(
-                {
-                    'obs': obs[i * batch_size : (i + 1) * batch_size],
-                    'act': act[i * batch_size : (i + 1) * batch_size],
-                    'target_v': target_v[i * batch_size : (i + 1) * batch_size],
-                    'log_p': log_p[i * batch_size : (i + 1) * batch_size],
-                    'adv': adv[i * batch_size : (i + 1) * batch_size],
-                    'discounted_ret': discounted_ret[i * batch_size : (i + 1) * batch_size],
-                    'cost_adv': cost_adv[i * batch_size : (i + 1) * batch_size],
-                }
-            )
+            The pseudo code is shown below:
 
-        return slice_data
+            .. code-block:: python
 
-    def update_policy_net(self, data) -> None:
-        """update policy network"""
+                for _ in range(self.cfgs.actor_iters):
+                    for _ in range(self.cfgs.num_mini_batches):
+                        # Get mini-batch data
+                        # Compute loss
+                        # Update network
 
-        # Slice data for mini batch update
-        slice_data = self.slice_data(data)
+            .. warning::
+                For some ``KL divergence`` based algorithms (e.g. TRPO, CPO, etc.),
+                the ``KL divergence`` between the old policy and the new policy is calculated.
+                And the ``KL divergence`` is used to determine whether the update is successful.
+                If the ``KL divergence`` is too large, the update will be terminated.
 
-        # Get prob. distribution before updates: used to measure KL distance
+        Args:
+            obs (torch.Tensor): ``observation`` stored in buffer.
+            act (torch.Tensor): ``action`` stored in buffer.
+            log_p (torch.Tensor): ``log_p`` stored in buffer.
+            adv (torch.Tensor): ``advantage`` stored in buffer.
+            cost_adv (torch.Tensor): ``cost_advantage`` stored in buffer.
+        """
+        # Divide whole local epoch data into mini_batches
+        mbs = self.local_steps_per_epoch // self.cfgs.num_mini_batches
+        assert mbs >= 16, f'Batch size {mbs}<16'
+
         with torch.no_grad():
-            self.p_dist = self.actor_critic.actor(slice_data[0]['obs'])
-        # Get loss and info values before update
-        pi_l_old, _ = self.compute_loss_pi(data=slice_data[0])
-        loss_pi_before = pi_l_old.item()
+            self.p_dist = self.actor_critic.actor(obs)
+            old_dist = self.p_dist
 
+        # Get loss and info values before update
+        pi_l_old, _ = self.compute_loss_pi(
+            obs=obs, act=act, log_p=log_p, adv=adv, cost_adv=cost_adv
+        )
+        loss_pi_before = pi_l_old.item()
+        indices = np.arange(self.local_steps_per_epoch)
+        pi_loss = []
         # Train policy with multiple steps of gradient descent
         for i in range(self.cfgs.actor_iters):
-
-            for batch_data in slice_data:
-                # Update policy network with batch data
-                with torch.no_grad():
-                    self.p_dist = self.actor_critic.actor(batch_data['obs'])
-
+            # Shuffle for mini-batch updates
+            np.random.shuffle(indices)
+            # 0 to mini_batch_size with batch_train_size step
+            for start in range(0, self.local_steps_per_epoch, mbs):
+                end = start + mbs  # iterate mini batch times
+                mb_indices = indices[start:end]
                 self.actor_optimizer.zero_grad()
-                loss_pi, pi_info = self.compute_loss_pi(data=batch_data)
+                with torch.no_grad():
+                    self.p_dist = self.actor_critic.actor(obs[mb_indices])
+                loss_pi, pi_info = self.compute_loss_pi(
+                    obs=obs[mb_indices],
+                    act=act[mb_indices],
+                    log_p=log_p[mb_indices],
+                    adv=adv[mb_indices],
+                    cost_adv=cost_adv[mb_indices],
+                )
                 loss_pi.backward()
+                pi_loss.append(loss_pi.item())
                 # Apply L2 norm
                 if self.cfgs.use_max_grad_norm:
                     torch.nn.utils.clip_grad_norm_(
@@ -150,22 +225,22 @@ class FOCOPS(PolicyGradient, Lagrange):
                 distributed_utils.mpi_avg_grads(self.actor_critic.actor.net)
                 self.actor_optimizer.step()
 
-                q_dist = self.actor_critic.actor(batch_data['obs'])
-                torch_kl = torch.distributions.kl.kl_divergence(self.p_dist, q_dist).mean().item()
+            q_dist = self.actor_critic.actor(obs)
+            torch_kl = torch.distributions.kl.kl_divergence(old_dist, q_dist).mean().item()
 
-                if self.cfgs.kl_early_stopping:
-                    # Average KL for consistent early stopping across processes
-                    if distributed_utils.mpi_avg(torch_kl) > self.cfgs.target_kl:
-                        self.logger.log(f'Reached ES criterion after {i+1} steps.')
-                        break
+            if self.cfgs.kl_early_stopping:
+                # Average KL for consistent early stopping across processes
+                if distributed_utils.mpi_avg(torch_kl) > self.cfgs.target_kl:
+                    self.logger.log(f'Reached ES criterion after {i+1} steps.')
+                    break
 
         # Track when policy iteration is stopped; Log changes from update
         self.logger.store(
             **{
-                'Loss/Loss_pi': loss_pi.item(),
-                'Loss/Delta_loss_pi': loss_pi.item() - loss_pi_before,
+                'Loss/Loss_pi': np.mean(pi_loss),
+                'Loss/Delta_loss_pi': np.mean(pi_loss) - loss_pi_before,
                 'Train/StopIter': i + 1,
-                'Values/Adv': data['adv'].numpy(),
+                'Values/Adv': adv.numpy(),
                 'Train/Entropy': pi_info['ent'],
                 'Train/KL': torch_kl,
                 'Train/PolicyRatio': pi_info['ratio'],

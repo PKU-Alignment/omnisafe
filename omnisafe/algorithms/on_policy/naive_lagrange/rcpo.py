@@ -12,32 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the TRPO algorithm."""
+"""Implementation of the Reward Constrained Policy Optimization algorithm."""
 
 from typing import NamedTuple
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.base.trpo import TRPO
+from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
 from omnisafe.common.lagrange import Lagrange
 
 
 @registry.register
-class TRPOLag(TRPO, Lagrange):
-    """The Lagrange version of the TRPO algorithm.
+class RCPO(NaturalPG, Lagrange):
+    """Reward Constrained Policy Optimization.
 
-    A simple combination of the Lagrange method and the Trust Region Policy Optimization algorithm.
+    References:
+        - Title: Reward Constrained Policy Optimization.
+        - Authors: Chen Tessler, Daniel J. Mankowitz, Shie Mannor.
+        - URL: `Reward Constrained Policy Optimization <https://arxiv.org/abs/1805.11074>`_
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize TRPOLag.
+        """Initialize RCPO.
 
-        TRPOLag is a combination of :class:`TRPO` and :class:`Lagrange` model.
+        RCPO is a combination of :class:`NaturalPG` and :class:`Lagrange` model.
 
         Args:
             env_id (str): The environment id.
             cfgs (NamedTuple): The configuration of the algorithm.
         """
-        TRPO.__init__(
+        NaturalPG.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
@@ -50,14 +53,14 @@ class TRPOLag(TRPO, Lagrange):
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
         )
 
-    def update(self):
-        r"""Update actor, critic, running statistics as we used in the :class:`TRPO` algorithm.
+    def update(self) -> None:
+        r"""Update actor, critic, running statistics as we used in the :class:`NaturalPG` algorithm.
 
         Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.
 
         .. note::
-            The :meth:`compute_loss_pi` method is defined in the :class:`PolicyGradient` algorithm.
+            The :meth:`compute_loss_pi` is defined in the :class:`PolicyGradient` algorithm.
             When a lagrange multiplier is used,
             the :meth:`compute_loss_pi` method will return the loss of the policy as:
 
@@ -93,7 +96,7 @@ class TRPOLag(TRPO, Lagrange):
         return raw_data, data
 
     def algorithm_specific_logs(self) -> None:
-        """Log the TRPOLag specific information.
+        """Log the RCPO specific information.
 
         .. list-table::
 

@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the TRPO algorithm."""
 
+from typing import NamedTuple, Tuple
+
 import torch
 
 from omnisafe.algorithms import registry
@@ -32,44 +34,55 @@ class TRPO(NaturalPG):
     """The Trust Region Policy Optimization (TRPO) algorithm.
 
     References:
-        Title: Trust Region Policy Optimization
-        Authors: John Schulman, Sergey Levine, Philipp Moritz, Michael I. Jordan, Pieter Abbeel.
-        URL: https://arxiv.org/abs/1502.05477
+        - Title: Trust Region Policy Optimization
+        - Authors: John Schulman, Sergey Levine, Philipp Moritz, Michael I. Jordan, Pieter Abbeel.
+        - URL: `TRPO <https://arxiv.org/abs/1502.05477>`_
     """
 
-    def __init__(self, env_id, cfgs) -> None:
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
+        """Initialize Trust Region Policy Optimization.
+
+        Args:
+            env_id (str): The environment id.
+            cfgs (NamedTuple): The configuration of the algorithm.
+        """
         super().__init__(env_id=env_id, cfgs=cfgs)
 
     # pylint: disable-next=too-many-arguments,too-many-locals,arguments-differ
     def search_step_size(
         self,
-        step_dir,
-        g_flat,
-        p_dist,
-        data,
-        loss_pi_before,
-        total_steps=15,
-        decay=0.8,
-    ):
-        """TRPO performs line-search until constraint satisfaction.
+        step_dir: torch.Tensor,
+        g_flat: torch.Tensor,
+        p_dist: torch.distributions.Distribution,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        log_p: torch.Tensor,
+        adv: torch.Tensor,
+        cost_adv: torch.Tensor,
+        loss_pi_before: float,
+        total_steps: int = 15,
+        decay: float = 0.8,
+    ) -> Tuple[torch.Tensor, int]:
+        """TRPO performs `line-search <https://en.wikipedia.org/wiki/Line_search>`_ until constraint satisfaction.
 
-        search around for a satisfied step of policy update to improve loss and reward performance
+        .. note::
+
+            TRPO search around for a satisfied step of policy update to improve loss and reward performance.
+            The search is done by line-search, which is a way to find a step size that satisfies the constraint.
+            The constraint is the KL-divergence between the old policy and the new policy.
 
         Args:
-            step_dir:
-                direction theta changes towards
-            g_flat:
-                gradient tensor of reward ,informs about how rewards improve with change of step direction
-            c:
-                how much episode cost goes above limit
-            p_dist:
-                inform about old policy, how the old policy p performs on observation this moment
-            optim_case:
-                the way to optimize
-            data:
-                data buffer,mainly with adv, costs, values, actions, and observations
-            decay:
-                how search-step reduces in line-search
+            step_dir (torch.Tensor): The step direction.
+            g_flat (torch.Tensor): The gradient of the policy.
+            p_dist (torch.distributions.Distribution): The old policy distribution.
+            obs (torch.Tensor): The observation.
+            act (torch.Tensor): The action.
+            log_p (torch.Tensor): The log probability of the action.
+            adv (torch.Tensor): The advantage.
+            cost_adv (torch.Tensor): The cost advantage.
+            loss_pi_before (float): The loss of the policy before the update.
+            total_steps (int, optional): The total steps to search. Defaults to 15.
+            decay (float, optional): The decay rate of the step size. Defaults to 0.8.
         """
         # How far to go in a single update
         step_frac = 1.0
@@ -88,9 +101,11 @@ class TRPO(NaturalPG):
             acceptance_step = j + 1
 
             with torch.no_grad():
-                loss_pi, _ = self.compute_loss_pi(data=data)
+                loss_pi, _ = self.compute_loss_pi(
+                    obs=obs, act=act, log_p=log_p, adv=adv, cost_adv=cost_adv
+                )
                 # Compute KL distance between new and old policy
-                q_dist = self.actor_critic.actor(data['obs'])
+                q_dist = self.actor_critic.actor(obs)
                 # KL-distance of old p-dist and new q-dist, applied in KLEarlyStopping
                 torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
             # Real loss improve: old policy loss - new policy loss
@@ -120,15 +135,41 @@ class TRPO(NaturalPG):
 
         return step_frac * step_dir, acceptance_step
 
-    # pylint: disable-next=too-many-locals
-    def update_policy_net(self, data):
-        """update policy network"""
+    # pylint: disable-next=too-many-locals,too-many-arguments
+    def update_policy_net(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        log_p: torch.Tensor,
+        adv: torch.Tensor,
+        cost_adv: torch.Tensor,
+    ) -> None:
+        """Update policy network.
+
+        Trust Policy Region Optimization updates policy network using the
+        `conjugate gradient <https://en.wikipedia.org/wiki/Conjugate_gradient_method>`_ algorithm,
+        following the steps:
+
+        - Compute the gradient of the policy.
+        - Compute the step direction.
+        - Search for a step size that satisfies the constraint.
+        - Update the policy network.
+
+        Args:
+            obs (torch.Tensor): The observation tensor.
+            act (torch.Tensor): The action tensor.
+            log_p (torch.Tensor): The log probability of the action.
+            adv (torch.Tensor): The advantage tensor.
+            cost_adv (torch.Tensor): The cost advantage tensor.
+        """
         # Get loss and info values before update
         theta_old = get_flat_params_from(self.actor_critic.actor.net)
         self.actor_critic.actor.net.zero_grad()
-        loss_pi, pi_info = self.compute_loss_pi(data=data)
+        loss_pi, pi_info = self.compute_loss_pi(
+            obs=obs, act=act, log_p=log_p, adv=adv, cost_adv=cost_adv
+        )
         loss_pi_before = distributed_utils.mpi_avg(loss_pi.item())
-        p_dist = self.actor_critic.actor(data['obs'])
+        p_dist = self.actor_critic.actor(obs)
         # Train policy with multiple steps of gradient descent
         loss_pi.backward()
         # average grads across MPI processes
@@ -155,7 +196,11 @@ class TRPO(NaturalPG):
             g_flat=g_flat,
             p_dist=p_dist,
             loss_pi_before=loss_pi_before,
-            data=data,
+            obs=obs,
+            act=act,
+            log_p=log_p,
+            adv=adv,
+            cost_adv=cost_adv,
         )
 
         # update actor network parameters
@@ -163,13 +208,15 @@ class TRPO(NaturalPG):
         set_param_values_to_model(self.actor_critic.actor.net, new_theta)
 
         with torch.no_grad():
-            q_dist = self.actor_critic.actor(data['obs'])
+            q_dist = self.actor_critic.actor(obs)
             kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-            loss_pi, pi_info = self.compute_loss_pi(data=data)
+            loss_pi, pi_info = self.compute_loss_pi(
+                obs=obs, act=act, log_p=log_p, adv=adv, cost_adv=cost_adv
+            )
 
         self.logger.store(
             **{
-                'Values/Adv': data['adv'].numpy(),
+                'Values/Adv': adv.numpy(),
                 'Train/Entropy': pi_info['ent'],
                 'Train/KL': kl,
                 'Train/PolicyRatio': pi_info['ratio'],

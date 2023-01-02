@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of the PDO algorithm."""
 
-import torch
+from typing import NamedTuple
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
@@ -25,11 +25,18 @@ from omnisafe.common.lagrange import Lagrange
 class PDO(PolicyGradient, Lagrange):
     """The Lagrange version of the Policy Gradient algorithm.
 
-    A simple combination of the Lagrange method and the Policy Gradient algorithm.
+    A simple combination of the :class:`Lagrange` method and the :class:`PolicyGradient` algorithm.
     """
 
-    def __init__(self, env_id, cfgs) -> None:
-        """initialization"""
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
+        """Initialize PDO.
+
+        PDO is a combination of :class:`PolicyGradient` and :class:`Lagrange` model.
+
+        Args:
+            env_id (str): The environment id.
+            cfgs (NamedTuple): The configuration of the algorithm.
+        """
         PolicyGradient.__init__(
             self,
             env_id=env_id,
@@ -43,46 +50,55 @@ class PDO(PolicyGradient, Lagrange):
             lambda_optimizer=cfgs.lagrange_cfgs.lambda_optimizer,
         )
 
-    def compute_loss_pi(self, data: dict):
+    def update(self) -> None:
+        r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
+
+        Additionally, we update the Lagrange multiplier parameter ,
+        by calling the :meth:`update_lagrange_multiplier` method.
+
+        .. note::
+            The :meth:`compute_loss_pi` is defined in the :class:`PolicyGradient` algorithm.
+            When a lagrange multiplier is used,
+            the :meth:`compute_loss_pi` method will return the loss of the policy as:
+
+            .. math::
+                L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[ \frac{\pi_\theta(a_t|s_t)}{\pi_\theta^{old}(a_t|s_t)}
+                [A^{R}(s_t, a_t) - \lambda A^{C}(s_t, a_t)] \right]
+
+            where :math:`\lambda` is the Lagrange multiplier parameter.
         """
-        computing pi/actor loss
-
-        Returns:
-            torch.Tensor
-        """
-        # Policy loss
-        dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
-        ratio = torch.exp(_log_p - data['log_p'])
-
-        # Compute loss via ratio and advantage
-        penalty_lambda = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        adv = data['adv'] - penalty_lambda * data['cost_adv']
-        loss_pi = -(ratio * adv).mean()
-        loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
-
-        # Useful extra info
-        approx_kl = (0.5 * (dist.mean - data['act']) ** 2 / dist.stddev**2).mean().item()
-
-        # Compute policy's entropy
-        ent = dist.entropy().mean().item()
-
-        pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
-
-        return loss_pi, pi_info
-
-    def update(self):
-        """update"""
-        raw_data, data = self.buf.pre_process_data()
         # Note that logger already uses MPI statistics across all processes..
-        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
+        Jc = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
-        self.update_lagrange_multiplier(ep_costs)
+        self.update_lagrange_multiplier(Jc)
         # now update policy and value network
-        self.update_policy_net(data=data)
-        self.update_value_net(data=data)
-        self.update_cost_net(data=data)
+        raw_data, data = self.buf.pre_process_data()
+        obs, act, target_v, target_c, log_p, adv, cost_adv = (
+            data['obs'],
+            data['act'],
+            data['target_v'],
+            data['target_c'],
+            data['log_p'],
+            data['adv'],
+            data['cost_adv'],
+        )
+        # Update critic
+        self.update_value_net(obs=obs, target_v=target_v)
+        if self.cfgs.use_cost:
+            self.update_cost_net(obs=obs, target_c=target_c)
+        # Update actor
+        self.update_policy_net(obs=obs, act=act, log_p=log_p, adv=adv, cost_adv=cost_adv)
         return raw_data, data
 
-    def algorithm_specific_logs(self):
+    def algorithm_specific_logs(self) -> None:
+        """Log the PDO specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   Metrics/LagrangeMultiplier
+                -   The Lagrange multiplier value in current epoch.
+        """
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())

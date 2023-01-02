@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the Q Simmer algorithm using PPO."""
 
+from typing import NamedTuple
+
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
 
@@ -23,16 +25,34 @@ class PPOSimmerQ(PPO):
     """The Q Simmer algorithm implemented with PPO.
 
     References:
-        Title: Effects of Safety State Augmentation on Safe Exploration
-        Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
-        URL: https://arxiv.org/abs/2206.02675
+        - Title: Effects of Safety State Augmentation on Safe Exploration
+        - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
+        - URL: https://arxiv.org/abs/2206.02675
     """
 
-    def __init__(self, env_id, cfgs) -> None:
-        """Initialize PPOSimmerQ."""
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
+        """Initialize PPOSimmerQ.
+
+        PPOSimmerQ is a combination of :class:`PPO` and :class:`Simmer` environment wrapper.
+
+        Args:
+            env_id (str): The environment id.
+            cfgs (NamedTuple): The configuration of the algorithm.
+        """
         super().__init__(env_id=env_id, cfgs=cfgs)
 
     def algorithm_specific_logs(self):
+        """Log the Saute specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   Metrics/EpBudget
+                -   The budget of the episode.
+            *   -   Metrics/SafetyBudget
+                -   The safety budget of the episode.
+        """
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/EpBudget')
         self.logger.log_tabular('Metrics/SafetyBudget')
