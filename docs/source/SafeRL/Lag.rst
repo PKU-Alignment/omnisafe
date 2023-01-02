@@ -493,7 +493,7 @@ Documentation of new functions
             Update Lagrange multiplier (:math:`\lambda`)
 
             .. hint::
-                ``ep_costs`` obtained from: ``self.logger.get_stats('EpCosts')[0]``
+                ``ep_costs`` obtained from: ``self.logger.get_stats('EpCost')[0]``
                 are already averaged across MPI processes.
 
             .. code-block:: python

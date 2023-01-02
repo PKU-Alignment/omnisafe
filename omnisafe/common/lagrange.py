@@ -61,7 +61,7 @@ class Lagrange(abc.ABC):
 
     def update_lagrange_multiplier(self, Jc):
         """Update Lagrange multiplier (lambda)
-        Note: Jc obtained from: self.logger.get_stats('EpCosts')[0]
+        Note: Jc obtained from: self.logger.get_stats('EpCost')[0]
         are already averaged across MPI processes.
         """
         self.lambda_optimizer.zero_grad()

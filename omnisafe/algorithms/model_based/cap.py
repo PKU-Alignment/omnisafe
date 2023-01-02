@@ -94,7 +94,7 @@ class CAP(
             inputs, labels, batch_size=256, holdout_ratio=0.2
         )
 
-        ep_costs = self.logger.get_stats('Metrics/EpCosts')[0]
+        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # update Lagrange multiplier parameter
         self.update_lagrange_multiplier(ep_costs)
 
