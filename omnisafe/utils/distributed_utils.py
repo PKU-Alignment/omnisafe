@@ -24,10 +24,14 @@ import torch.distributed as dist
 from torch.distributed import ReduceOp
 
 
-def setup_torch_for_mpi():
-    """
-    Avoid slowdowns caused by each separate process's PyTorch using
-    more than its fair share of CPU resources.
+def setup_torch_for_mpi() -> None:
+    """This function is used to setup torch for multi-processing.
+
+    .. note:
+
+        In each algorithm, you should call this function,
+        to avoid slowdowns caused by each separate process's PyTorch using
+        more than its fair share of CPU resources.
     """
     old_num_threads = torch.get_num_threads()
     # decrease number of torch threads for MPI
@@ -41,8 +45,12 @@ def setup_torch_for_mpi():
         )
 
 
-def mpi_avg_grads(module):
-    """Average contents of gradient buffers across MPI processes."""
+def mpi_avg_grads(module: torch.nn.Module) -> None:
+    """Average contents of gradient buffers across MPI processes.
+
+    Args:
+        module (torch.nn.Module): module to be averaged.
+    """
     if num_procs() > 1:
         for parameter in module.parameters():
             p_grad_numpy = parameter.grad.numpy()  # numpy view of tensor data
@@ -51,40 +59,39 @@ def mpi_avg_grads(module):
 
 
 def sync_params(module):
-    """Sync all parameters of module across all MPI processes."""
+    """Sync all parameters of module across all MPI processes.
+
+    .. note::
+
+        This function only works when the training is multi-processing.
+
+    Args:
+        module (torch.nn.Module): module to be synchronized.
+    """
     if num_procs() > 1:
         for parameter in module.parameters():
             p_numpy = parameter.data
             broadcast(p_numpy)
 
 
-def mpi_fork(parallel: int, bind_to_core=False, use_number_of_threads=False) -> bool:
-    """
+def mpi_fork(
+    parallel: int, bind_to_core: bool = False, use_number_of_threads: bool = False
+) -> bool:
+    """The entrance of multi-processing.
+
     Re-launches the current script with workers linked by MPI.
-
     Also, terminates the original process that launched it.
-
     Taken almost without modification from the Baselines function of the
-    `same name`_.
+    `same name <https://github.com/openai/baselines/blob/master/baselines/common/mpi_fork.py>`_.
 
-    .. _`same name`: https://github.com/openai/baselines/blob/master/baselines/common/mpi_fork.py
+    .. note::
+
+        Usage: if ``mpi_fork(n)`` : ``sys.exit()``
 
     Args:
-        n (int): Number of process to split into.
-
-        bind_to_core (bool): Bind each MPI process to a core.
-
-        use_number_of_threads (bool): If you want Open MPI to default to the
-        number of hardware threads instead of the number of processor cores.
-
-    Returns:
-        bool
-            True if process is parent process of MPI
-
-    Usage:
-        if mpi_fork(n):  # forks the current script and calls MPI
-            sys.exit()   # exit single thread python process
-
+        parallel (int): number of processes to launch.
+        bind_to_core (bool, optional): Defaults to False.
+        use_number_of_threads (bool, optional): Defaults to False.
     """
     is_parent = False
     if os.getenv('MASTER_ADDR') is not None:
@@ -115,36 +122,38 @@ def mpi_fork(parallel: int, bind_to_core=False, use_number_of_threads=False) -> 
 
 
 def is_root_process() -> bool:
-    """is_root_process"""
+    """Judge whether the process is the root process."""
     return bool(dist.get_rank() == 0)
 
 
-def proc_id():
+def proc_id() -> int:
     """Get rank of calling process."""
     if os.getenv('MASTER_ADDR') is None:
         return 0
     return dist.get_rank()
 
 
-def allreduce(*args, **kwargs):
-    """allreduce"""
+def allreduce(*args, **kwargs) -> torch.Tensor:
+    """Allreduce operation."""
     return dist.all_reduce(*args, **kwargs)
 
 
-def gather(*args, **kwargs):
-    """gather"""
+def gather(*args, **kwargs) -> torch.Tensor:
+    """Gather operation."""
     return dist.gather(*args, **kwargs)
 
 
 def gather_and_stack(x_vector: np.ndarray) -> np.array:
     """Gather values from all tasks and return flattened list.
-    Note: only the root process owns valid data.
+
+    Input is a 1D array of size N, and output is a list of size N * MPI_world_size.
+
+    .. note::
+
+        Only the root process owns valid data.
 
     Args:
         x: 1-D array of size N
-
-    Returns
-        list of size N * MPI_world_size
     """
     if num_procs() == 1:
         return x_vector
@@ -158,35 +167,45 @@ def gather_and_stack(x_vector: np.ndarray) -> np.array:
     return buf.flatten()
 
 
-def num_procs():
+def num_procs() -> int:
     """Count active MPI processes."""
-    if os.getenv('OMNISAFE_PARALLEL') is None:
+    if os.getenv('MASTER_ADDR') is None:
         return 1
     return dist.get_world_size()
 
 
-def broadcast(value, src=0):
+def broadcast(value: torch.Tensor, src: int = 0) -> torch.Tensor:
     """broadcast"""
     dist.broadcast(value, src=src)
 
 
-def mpi_avg(value):
+def mpi_avg(value: torch.Tensor) -> torch.Tensor:
     """Average a scalar or numpy vector over MPI processes."""
     return mpi_sum(value) / num_procs()
 
 
-def mpi_max(value):
+def mpi_max(value: torch.Tensor) -> torch.Tensor:
     """Determine global maximum of scalar or numpy array over MPI processes."""
     return mpi_op(value, ReduceOp.MAX)
 
 
-def mpi_min(value):
+def mpi_min(value: torch.Tensor) -> torch.Tensor:
     """Determine global minimum of scalar or numpy array over MPI processes."""
     return mpi_op(value, ReduceOp.MIN)
 
 
-def mpi_op(value, operation):
-    """mpi_op"""
+def mpi_op(value: torch.Tensor, operation: ReduceOp) -> torch.Tensor:
+    """Multi-processing operation.
+
+    .. note::
+
+        The operation can be ``ReduceOp.SUM``, ``ReduceOp.MAX``, ``ReduceOp.MIN``.
+        corresponding to :meth:`mpi_sum`, :meth:`mpi_max`, :meth:`mpi_min`, respectively.
+
+    Args:
+        value (torch.Tensor): value to be operated.
+        operation (ReduceOp): operation type.
+    """
     if num_procs() == 1:
         return value
     value, scalar = ([value], True) if np.isscalar(value) else (value, False)
@@ -195,16 +214,20 @@ def mpi_op(value, operation):
     return value[0] if scalar else value
 
 
-def mpi_sum(value):
-    """mpi_sum"""
+def mpi_sum(value: torch.Tensor) -> torch.Tensor:
+    """Sum a scalar or numpy vector over MPI processes."""
     return mpi_op(value, ReduceOp.SUM)
 
 
-def mpi_avg_torch_tensor(value) -> None:
+def mpi_avg_torch_tensor(value: torch.Tensor) -> None:
     """Average a torch tensor over MPI processes.
-    Since torch and numpy share same memory space, tensors of dim > 0 can be
-    be manipulated through call by reference, scalars must be assigned.
 
+    Since torch and numpy share same memory space,
+    tensors of dim > 0 can be be manipulated through call by reference,
+    scalars must be assigned.
+
+    Args:
+        value (torch.Tensor): value to be averaged.
     """
     assert isinstance(value, torch.Tensor)
     if num_procs() > 1:
@@ -218,15 +241,12 @@ def mpi_avg_torch_tensor(value) -> None:
             raise NotImplementedError
 
 
-def mpi_statistics_scalar(value, with_min_and_max=False) -> tuple:
+def mpi_statistics_scalar(value: torch.Tensor, with_min_and_max: bool = False) -> tuple:
     """Get mean/std and optional min/max of scalar x across MPI processes.
 
     Args:
-        value: An array containing samples of the scalar to produce statistics
-            for.
-
-        with_min_and_max (bool): If true, return min and max of x in
-            addition to mean and std.
+        value (torch.Tensor): value to be operated.
+        with_min_and_max (bool): whether to return min and max.
     """
     value = np.array(value, dtype=np.float32)
     global_sum, global_n = mpi_sum([np.sum(value), len(value)])
