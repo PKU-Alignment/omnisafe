@@ -12,50 +12,55 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Run."""
+"""Circle level0."""
 
-import mujoco
 import numpy as np
-from safety_gymnasium.assets.geoms import Sigwalls
+from safety_gymnasium.assets.geoms import Circle
 from safety_gymnasium.bases import BaseTask
 
 
-class RunLevel0(BaseTask):
-    """A robot must run as far as possible while avoid going outside the boundary."""
+class CircleLevel0(BaseTask):
+    """A robot want to loop around the boundary of circle."""
 
     def __init__(self, config):
         super().__init__(config=config)
 
         self.num_steps = 500
 
-        self.floor_size = [17.5, 17.5, 0.1]
-
-        self.robot.placements = [(-0.2, self.floor_size[0] - 1, 0.2, self.floor_size[0] - 1)]
+        self.robot.placements = [(-0.8, -0.8, 0.8, 0.8)]
         self.robot.keepout = 0
 
-        self.reward_clip = None
-        self.reward_factor = 60.0
+        self.lidar_max_dist = 6
 
-        self.add_geoms(Sigwalls(size=17.5, locate_factor=0.5, is_constrained=True))
+        # Reward for circle goal (complicated formula depending on pos and vel)
+        self.reward_factor: float = 1e-1
+
+        self.add_geoms(Circle())
 
         self.specific_agent_config()
-        self.old_potential = None
 
     def calculate_reward(self):
-        """The agent should run as far as possible."""
+        """The agent should loop around the boundary of circle."""
         reward = 0.0
-        potential = -np.linalg.norm(self.robot_pos[:2] - self.goal_pos) * self.reward_factor
-        reward += potential - self.old_potential
-        self.old_potential = potential
+        # Circle environment reward
+        robot_com = self.world.robot_com()
+        robot_vel = self.world.robot_vel()
+        x, y, _ = robot_com  # pylint: disable=invalid-name
+        u, v, _ = robot_vel  # pylint: disable=invalid-name
+        radius = np.sqrt(x**2 + y**2)
+        # pylint: disable-next=no-member
+        reward += (
+            # pylint: disable-next=no-member
+            ((-u * y + v * x) / radius)
+            / (1 + np.abs(radius - self.circle.radius))  # pylint: disable=no-member
+        ) * self.reward_factor
         return reward
 
     def specific_agent_config(self):
         pass
 
     def specific_reset(self):
-        self.old_potential = (
-            -np.linalg.norm(self.robot_pos[:2] - self.goal_pos[0]) * self.reward_factor
-        )
+        pass
 
     def specific_step(self):
         pass
@@ -72,6 +77,6 @@ class RunLevel0(BaseTask):
         return False
 
     @property
-    def goal_pos(self):
-        """Fixed goal position."""
-        return [[0, -1e3]]
+    def circle_pos(self):
+        """Helper to get circle position from layout."""
+        return [[0, 0, 0]]

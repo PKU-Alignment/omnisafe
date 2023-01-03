@@ -178,8 +178,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
             for step in range(horizon):
                 with torch.no_grad():
-                    act, _ = self.actor.predict(
-                        self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)), deterministic=True
+                    act = self.actor.predict(
+                        self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)), deterministic=True, need_log_prob=False
                     )
                 obs, rew, cost, done, truncated, _ = self.env.step(act.numpy())
                 ep_ret += rew
@@ -207,6 +207,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         camera_id: str = None,
         width: int = None,
         height: int = None,
+        cost_criteria: float = 1.0,
     ):
         """Render the environment for one episode.
         Args:
@@ -260,27 +261,40 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             self.env = self._make_env(**env_kwargs)
             self.render_mode = 'rgb_array'
 
+        episode_rewards = []
+        episode_costs = []
+        episode_lengths = []
         horizon = self.env.max_ep_len
+
         frames = []
         obs, _ = self.env.reset(seed=seed)
-
+        ep_ret, ep_cost = 0.0, 0.0
         if self.render_mode == 'human':
             self.env.render()
         elif self.render_mode == 'rgb_array':
             frames.append(self.env.render())
 
+        if not os.path.exists(save_replay_path):
+            os.makedirs(save_replay_path, exist_ok=True)
+        log = open(os.path.join(save_replay_path, 'log.txt'), mode='w', encoding='UTF-8')
         for episode_idx in range(num_episode):
-            for _ in range(horizon):
+            for step in range(horizon):
                 with torch.no_grad():
-                    act, _ = self.actor.predict(
-                        self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)), deterministic=True
+                    act = self.actor.predict(
+                        self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)), deterministic=True, need_log_prob=False
                     )
-                obs, _, _, done, truncated, _ = self.env.step(act.numpy())
+                obs, rew, cost, done, truncated, _ = self.env.step(act.numpy())
+                ep_ret += rew
+                ep_cost += (cost_criteria**step) * cost
 
                 if self.render_mode == 'rgb_array':
                     frames.append(self.env.render())
 
                 if done or truncated:
+                    episode_rewards.append(ep_ret)
+                    episode_costs.append(ep_cost)
+                    episode_lengths.append(step + 1)
+                    print(f'ep:{episode_idx} rew:{ep_ret} cost:{ep_cost} lenth:{step + 1}', file=log)
                     break
 
             if self.render_mode == 'rgb_array_list':
@@ -295,8 +309,16 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     episode_index=episode_idx,
                     name_prefix='eval',
                 )
-            self.env.reset()
+            obs, _ = self.env.reset()
+            ep_ret, ep_cost = 0.0, 0.0
             frames = []
+
+        print('Evaluation results:', file=log)
+        print(f'Average episode reward: {np.mean(episode_rewards):.3f}', file=log)
+        print(f'Average episode cost: {np.mean(episode_costs):.3f}', file=log)
+        print(f'Average episode length: {np.mean(episode_lengths):.3f}', file=log)
+
+        log.close()
 
     def _make_env(self, env_id, **env_kwargs):
         """Make wrapped environment."""

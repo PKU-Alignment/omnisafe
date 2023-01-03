@@ -12,23 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Group."""
+"""Circle level1."""
 
-GROUP = {
-    # Groups are a mujoco-specific mechanism for selecting which geom objects to "see"
-    # We use these for ray casting lidar, where there are different lidar types.
-    # These work by turning "on" the group to see and "off" all the other groups.
-    # See obs_lidar_natural() for more.
-    'push_box': 1,
-    'button': 1,
-    'wall': 2,
-    'pillar': 2,
-    'hazard': 3,
-    'vase': 4,
-    'gremlin': 5,
-    'circle': 6,
-    'apple': 7,
-    'orange': 8,
-    'goal': 9,
-    'sigwall': 10,
-}
+from safety_gymnasium.assets.geoms import Sigwalls
+from safety_gymnasium.tasks.circle.circle_level0 import CircleLevel0
+
+
+class CircleLevel1(CircleLevel0):
+    """A robot want to loop around the boundary of circle, while avoid going outside the boundaries."""
+
+    def __init__(self, config):
+        super().__init__(config=config)
+
+        self.add_geoms(Sigwalls(num=2, locate_factor=1.125, is_constrained=True))

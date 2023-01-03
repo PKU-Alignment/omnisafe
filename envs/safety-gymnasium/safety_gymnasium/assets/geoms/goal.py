@@ -40,7 +40,9 @@ class Goal:  # pylint: disable=too-many-instance-attributes
     color: np.array = COLOR['goal']
     group: np.array = GROUP['goal']
     is_observe_lidar: bool = True
+    is_observe_comp: bool = False
     is_constrained: bool = False
+    is_meshed: bool = False
 
     def get(self, layout, rot):
         """To facilitate get specific config for this object."""
@@ -55,4 +57,11 @@ class Goal:  # pylint: disable=too-many-instance-attributes
             'group': self.group,
             'rgba': self.color * [1, 1, 1, 0.25],  # transparent
         }
+        if self.is_meshed:
+            geom.update({
+                'type': 'mesh',
+                'mesh': 'flower_bush',
+                'material': 'flower_bush',
+                'euler': [np.pi / 2, 0, 0],
+            })
         return geom

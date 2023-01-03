@@ -31,12 +31,14 @@ class Hazards:  # pylint: disable=too-many-instance-attributes
     placements: list = None  # Placements list for hazards (defaults to full extents)
     locations: list = field(default_factory=list)  # Fixed locations to override placements
     keepout: float = 0.4  # Radius of hazard keepout for placement
+    keepout: float = 0.18
     cost: float = 1.0  # Cost (per step) for violating the constraint
 
     color: np.array = COLOR['hazard']
     group: np.array = GROUP['hazard']
     is_observe_lidar: bool = True
     is_constrained: bool = True
+    is_meshed: bool = False
 
     def get(self, index, layout, rot):
         """To facilitate get specific config for this object."""
@@ -52,6 +54,13 @@ class Hazards:  # pylint: disable=too-many-instance-attributes
             'group': self.group,
             'rgba': self.color * [1, 1, 1, 0.25],  # transparent
         }
+        if self.is_meshed:
+            geom.update({
+                'type': 'mesh',
+                'mesh': 'bush',
+                'material': 'bush',
+                'euler': [np.pi / 2, 0, 0],
+            })
         return geom
 
     def cal_cost(self, engine):
