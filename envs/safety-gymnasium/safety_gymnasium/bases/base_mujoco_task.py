@@ -18,9 +18,9 @@ import abc
 from copy import deepcopy
 from typing import Union
 
+import gymnasium
 import mujoco
 import numpy as np
-import gymnasium
 from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen, Viewer
 from safety_gymnasium.assets.color import COLOR
 from safety_gymnasium.assets.group import GROUP
