@@ -94,19 +94,21 @@ class World:  # pylint: disable=too-many-instance-attributes
 
         if 'compiler' not in self.xml['mujoco']:
             compiler = xmltodict.parse(
-            f'''<compiler
+                f'''<compiler
                 angle="radian"
                 meshdir="{BASE_DIR}/assets/meshes"
                 texturedir="{BASE_DIR}/assets/textures"
                 />'''
-        )
+            )
             self.xml['mujoco']['compiler'] = compiler['compiler']
         else:
-            self.xml['mujoco']['compiler'].update({
-                '@angle': 'radian',
-                '@meshdir': os.path.join(BASE_DIR, 'assets', 'meshes'),
-                '@texturedir': os.path.join(BASE_DIR, 'assets', 'textures'),
-            })
+            self.xml['mujoco']['compiler'].update(
+                {
+                    '@angle': 'radian',
+                    '@meshdir': os.path.join(BASE_DIR, 'assets', 'meshes'),
+                    '@texturedir': os.path.join(BASE_DIR, 'assets', 'textures'),
+                }
+            )
 
         # Convenience accessor for xml dictionary
         worldbody = self.xml['mujoco']['worldbody']
@@ -143,19 +145,40 @@ class World:  # pylint: disable=too-many-instance-attributes
             self.xml['mujoco']['asset']['mesh'] = []
         material = self.xml['mujoco']['asset']['material']
         texture = self.xml['mujoco']['asset']['texture']
-        texture.append({
-            '@type': 'skybox', '@builtin': 'gradient', '@rgb1': '0.527 0.582 0.906',
-            '@rgb2': '0.1 0.1 0.35', '@width': '800', '@height': '800', '@markrgb': '1 1 1',
-            '@mark': 'random', '@random': '0.001'
-            })
-        texture.append({
-            '@name': 'texplane', '@builtin': 'checker', '@height': '100', '@width': "100",
-            '@rgb1': "0.7 0.7 0.7", '@rgb2': "0.8 0.8 0.8", '@type': '2d'
-            })
-        material.append({
-            '@name': 'MatPlane', '@reflectance': '0.1', '@shininess': '0.1', '@specular': '0.1',
-            '@texrepeat': '10 10', '@texture': 'texplane'
-            })
+        texture.append(
+            {
+                '@type': 'skybox',
+                '@builtin': 'gradient',
+                '@rgb1': '0.527 0.582 0.906',
+                '@rgb2': '0.1 0.1 0.35',
+                '@width': '800',
+                '@height': '800',
+                '@markrgb': '1 1 1',
+                '@mark': 'random',
+                '@random': '0.001',
+            }
+        )
+        texture.append(
+            {
+                '@name': 'texplane',
+                '@builtin': 'checker',
+                '@height': '100',
+                '@width': '100',
+                '@rgb1': '0.7 0.7 0.7',
+                '@rgb2': '0.8 0.8 0.8',
+                '@type': '2d',
+            }
+        )
+        material.append(
+            {
+                '@name': 'MatPlane',
+                '@reflectance': '0.1',
+                '@shininess': '0.1',
+                '@specular': '0.1',
+                '@texrepeat': '10 10',
+                '@texture': 'texplane',
+            }
+        )
 
         # Add light to the XML dictionary
         light = xmltodict.parse(
