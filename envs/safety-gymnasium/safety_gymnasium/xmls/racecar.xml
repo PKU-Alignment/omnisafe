@@ -1,3 +1,19 @@
+<!--
+ Copyright 2022 OmniSafe Team. All Rights Reserved.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
 <mujoco>
     <size njmax="3000" nconmax="1000"/>
     <compiler angle="radian" meshdir="../assets/meshes" autolimits="true" />
@@ -29,11 +45,11 @@
         <site name="robot" pos="0.02 0 0"/>
         <body name="pos_change" pos="-0.16 0 0">
             <body name="car_body">
-                <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0 0.8 1" mesh="chassis_differential"/>
-                <geom type="mesh" rgba="0 0 0.8 1" mesh="chassis_differential"/>
+                <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="0.8 0 0 1" mesh="chassis_differential"/>
+                <geom type="mesh" rgba="0.8 0 0 1" mesh="chassis_differential"/>
             </body>
             <geom size="0.0165 0.0875 0.015" pos="0.39 0 0.04" type="box"/>
-            <geom size="0.0165 0.0875 0.015" pos="0.39 0 0.04" type="box" contype="0" conaffinity="0" density="0" rgba="0.8 0 0 1"/>
+            <geom size="0.0165 0.0875 0.015" pos="0.39 0 0.04" type="box" contype="0" conaffinity="0" density="0" rgba="0.6 0.6 0.6 1"/>
 
             <body name="left_steering_hinge" pos="0.325 0.1 0" quat="0.707105 0 0.707108 0">
                 <inertial pos="0 0 0" mass="0.1" diaginertia="4e-06 4e-06 4e-06"/>
@@ -42,8 +58,8 @@
                 <body name="left_front_wheel" pos="0 0 0" quat="0.707105 0.707108 0 0">
                     <inertial pos="0 0 -0.0225" quat="0.5 0.5 -0.5 0.5" mass="0.34055" diaginertia="0.00041226 0.00026046 0.00026046"/>
                     <joint name="left_front_wheel_joint" pos="0 0 0" axis="0 0 -1"/>
-                    <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="1 1 1 1" mesh="left_front_wheel"/>
-                    <geom size="0.05 0.0225" pos="0 0 -0.0225" type="cylinder" rgba="1 1 1 1"/>
+                    <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0 0 1" mesh="left_front_wheel"/>
+                    <geom size="0.05 0.0225" pos="0 0 -0.0225" type="cylinder" rgba="0 0 0 1"/>
                 </body>
             </body>
                 <body name="right_steering_hinge" pos="0.325 -0.1 0" quat="0.707105 0 0.707108 0">
@@ -53,8 +69,8 @@
                 <body name="right_front_wheel" pos="0 0 0" quat="0.707105 0.707108 0 0">
                     <inertial pos="0 0 0.0225" quat="0.5 0.5 -0.5 0.5" mass="0.34055" diaginertia="0.00041226 0.00026046 0.00026046"/>
                     <joint name="right_front_wheel_joint" pos="0 0 0" axis="0 0 -1"/>
-                    <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="1 1 1 1" mesh="right_front_wheel"/>
-                    <geom size="0.05 0.0225" pos="0 0 0.0225" type="cylinder" rgba="1 1 1 1"/>
+                    <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0 0 1" mesh="right_front_wheel"/>
+                    <geom size="0.05 0.0225" pos="0 0 0.0225" type="cylinder" rgba="0 0 0 1"/>
                 </body>
             </body>
             <body name="diff_ring" pos="0 0 0">
@@ -82,16 +98,16 @@
                             <!-- <joint name="diff_sideA_ring" pos="0 0 0" axis="0 1 0"/> -->
                             <geom quat="0.707107 0.707106 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="1 1 1 1" mesh="diff_side"/>
                             <geom size="0.015 0.005" pos="0 0.01 0" quat="0.707107 0.707106 0 0" type="cylinder" rgba="1 1 1 1" contype="0" conaffinity="0"/>
-                            <geom pos="0 0.1 0" quat="0.707105 0.707108 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="1 1 1 1" mesh="left_rear_wheel"/>
-                            <geom size="0.05 0.0225" pos="0 0.1225 8.26471e-08" quat="0.707105 0.707108 0 0" type="cylinder" rgba="1 1 1 1"/>
+                            <geom pos="0 0.1 0" quat="0.707105 0.707108 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0 0 1" mesh="left_rear_wheel"/>
+                            <geom size="0.05 0.0225" pos="0 0.1225 8.26471e-08" quat="0.707105 0.707108 0 0" type="cylinder" rgba="0 0 0 1"/>
                         </body>
                         <body name="diff_sideB" pos="0 0 0">
                             <inertial pos="0 -0.105201 -7.09759e-08" quat="0.5 0.5 -0.5 0.5" mass="0.39655" diaginertia="0.0450921 0.0256521 0.0250823"/>
                             <!-- <joint name="diff_sideB_ring" pos="0 0 0" axis="0 1 0"/> -->
                             <geom quat="0.707107 -0.707106 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="1 1 1 1" mesh="diff_side"/>
                             <geom size="0.015 0.005" pos="0 -0.01 0" quat="0.707107 -0.707106 0 0" type="cylinder" rgba="1 1 1 1" contype="0" conaffinity="0"/>
-                            <geom pos="0 -0.1 0" quat="0.707105 0.707108 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="1 1 1 1" mesh="right_rear_wheel"/>
-                            <geom size="0.05 0.0225" pos="0 -0.1225 -8.26471e-08" quat="0.707105 0.707108 0 0" type="cylinder" rgba="1 1 1 1"/>
+                            <geom pos="0 -0.1 0" quat="0.707105 0.707108 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0 0 1" mesh="right_rear_wheel"/>
+                            <geom size="0.05 0.0225" pos="0 -0.1225 -8.26471e-08" quat="0.707105 0.707108 0 0" type="cylinder" rgba="0 0 0 1"/>
                         </body>
                     </body>
             </body>
