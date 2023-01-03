@@ -23,4 +23,4 @@ class CircleLevel2(CircleLevel1):
     def __init__(self, config):
         super().__init__(config=config)
 
-        self.sigwalls.num = 4
+        self.sigwalls.num = 4  # pylint: disable=no-member

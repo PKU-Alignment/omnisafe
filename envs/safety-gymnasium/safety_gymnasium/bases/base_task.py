@@ -85,7 +85,7 @@ class BaseTask(
         self.robot = Robot(self.robot_base)  # pylint: disable=no-member
         bounds = self.robot.model.actuator_ctrlrange.copy().astype(np.float32)
         low, high = bounds.T
-        self.action_space = spaces.Box(low=low, high=high,  dtype=np.float64)
+        self.action_space = spaces.Box(low=low, high=high, dtype=np.float64)
         self.action_noise = 0.0  # Magnitude of independent per-component gaussian action noise
 
         # Obstacles which are added in environments.
@@ -469,7 +469,9 @@ class BaseTask(
             vec = np.matmul(mat_t, theta2vec(theta))  # Rotate from ego to world frame
             vec = np.asarray(vec, dtype='float64')
             geom_id = np.array([0], dtype='int32')
-            dist = mujoco.mj_ray(self.model, self.data, pos, vec, grp, 1, body, geom_id)  # pylint: disable=no-member
+            dist = mujoco.mj_ray(  # pylint: disable=no-member
+                self.model, self.data, pos, vec, grp, 1, body, geom_id
+            )
             if dist >= 0:
                 obs[i] = np.exp(-dist)
         return obs

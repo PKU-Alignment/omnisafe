@@ -179,7 +179,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             for step in range(horizon):
                 with torch.no_grad():
                     act = self.actor.predict(
-                        self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)), deterministic=True, need_log_prob=False
+                        self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)),
+                        deterministic=True,
+                        need_log_prob=False,
                     )
                 obs, rew, cost, done, truncated, _ = self.env.step(act.numpy())
                 ep_ret += rew
@@ -197,7 +199,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         print(f'Average episode length: {np.mean(episode_lengths):.3f}')
         return episode_rewards, episode_costs, episode_lengths
 
-    def render(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches
+    def render(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         self,
         num_episode: int = 0,
         seed: int = None,
@@ -276,49 +278,52 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         if not os.path.exists(save_replay_path):
             os.makedirs(save_replay_path, exist_ok=True)
-        log = open(os.path.join(save_replay_path, 'log.txt'), mode='w', encoding='UTF-8')
-        for episode_idx in range(num_episode):
-            for step in range(horizon):
-                with torch.no_grad():
-                    act = self.actor.predict(
-                        self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)), deterministic=True, need_log_prob=False
+        with open(os.path.join(save_replay_path, 'log.txt'), mode='w', encoding='UTF-8') as log:
+            for episode_idx in range(num_episode):
+                for step in range(horizon):
+                    with torch.no_grad():
+                        act = self.actor.predict(
+                            self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)),
+                            deterministic=True,
+                            need_log_prob=False,
+                        )
+                    obs, rew, cost, done, truncated, _ = self.env.step(act.numpy())
+                    ep_ret += rew
+                    ep_cost += (cost_criteria**step) * cost
+
+                    if self.render_mode == 'rgb_array':
+                        frames.append(self.env.render())
+
+                    if done or truncated:
+                        episode_rewards.append(ep_ret)
+                        episode_costs.append(ep_cost)
+                        episode_lengths.append(step + 1)
+                        print(
+                            f'ep:{episode_idx} rew:{ep_ret} cost:{ep_cost} lenth:{step + 1}',
+                            file=log,
+                        )
+                        break
+
+                if self.render_mode == 'rgb_array_list':
+                    frames = self.env.render()
+
+                if save_replay_path is not None:
+                    save_video(
+                        frames,
+                        save_replay_path,
+                        fps=self.env.metadata['render_fps'],
+                        episode_trigger=lambda x: True,
+                        episode_index=episode_idx,
+                        name_prefix='eval',
                     )
-                obs, rew, cost, done, truncated, _ = self.env.step(act.numpy())
-                ep_ret += rew
-                ep_cost += (cost_criteria**step) * cost
+                obs, _ = self.env.reset()
+                ep_ret, ep_cost = 0.0, 0.0
+                frames = []
 
-                if self.render_mode == 'rgb_array':
-                    frames.append(self.env.render())
-
-                if done or truncated:
-                    episode_rewards.append(ep_ret)
-                    episode_costs.append(ep_cost)
-                    episode_lengths.append(step + 1)
-                    print(f'ep:{episode_idx} rew:{ep_ret} cost:{ep_cost} lenth:{step + 1}', file=log)
-                    break
-
-            if self.render_mode == 'rgb_array_list':
-                frames = self.env.render()
-
-            if save_replay_path is not None:
-                save_video(
-                    frames,
-                    save_replay_path,
-                    fps=self.env.metadata['render_fps'],
-                    episode_trigger=lambda x: True,
-                    episode_index=episode_idx,
-                    name_prefix='eval',
-                )
-            obs, _ = self.env.reset()
-            ep_ret, ep_cost = 0.0, 0.0
-            frames = []
-
-        print('Evaluation results:', file=log)
-        print(f'Average episode reward: {np.mean(episode_rewards):.3f}', file=log)
-        print(f'Average episode cost: {np.mean(episode_costs):.3f}', file=log)
-        print(f'Average episode length: {np.mean(episode_lengths):.3f}', file=log)
-
-        log.close()
+            print('Evaluation results:', file=log)
+            print(f'Average episode reward: {np.mean(episode_rewards):.3f}', file=log)
+            print(f'Average episode cost: {np.mean(episode_costs):.3f}', file=log)
+            print(f'Average episode length: {np.mean(episode_lengths):.3f}', file=log)
 
     def _make_env(self, env_id, **env_kwargs):
         """Make wrapped environment."""

@@ -131,7 +131,6 @@ goal_tasks = {'Goal0': {}, 'Goal1': {}, 'Goal2': {}}
 combine(goal_tasks, robot_configs, max_episode_steps=1000)
 
 
-
 # =============================================================================#
 #                                                                              #
 #       Circle Environments                                                    #

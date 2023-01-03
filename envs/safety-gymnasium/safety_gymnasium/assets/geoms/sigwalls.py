@@ -14,7 +14,7 @@
 # ==============================================================================
 """Hazard."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import numpy as np
 from safety_gymnasium.assets.color import COLOR
@@ -38,11 +38,17 @@ class Sigwalls:  # pylint: disable=too-many-instance-attributes
     is_constrained: bool = False
 
     def __post_init__(self):
-        assert self.num == 2 or self.num == 4, "Sigwalls are specific for Circle and Run tasks."
-        assert self.locate_factor >= 0, "For cost calculation, the locate_factor\
-                                         must be greater than or equal to zero."
-        self.locations = [(self.locate_factor, 0), (-self.locate_factor, 0),
-                        (0, self.locate_factor), (0, -self.locate_factor)]
+        assert self.num in (2, 4), 'Sigwalls are specific for Circle and Run tasks.'
+        assert (
+            self.locate_factor >= 0
+        ), 'For cost calculation, the locate_factor\
+                                         must be greater than or equal to zero.'
+        self.locations = [
+            (self.locate_factor, 0),
+            (-self.locate_factor, 0),
+            (0, self.locate_factor),
+            (0, -self.locate_factor),
+        ]
 
     def get(self, index, layout, rot):  # pylint: disable=unused-argument
         """To facilitate get specific config for this object."""
@@ -59,9 +65,11 @@ class Sigwalls:  # pylint: disable=too-many-instance-attributes
             'rgba': self.color * [1, 1, 1, 0.1],
         }
         if index >= 2:
-            geom.update({
-            'rot': np.pi / 2,
-            })
+            geom.update(
+                {
+                    'rot': np.pi / 2,
+                }
+            )
         return geom
 
     def cal_cost(self, engine):
@@ -69,7 +77,8 @@ class Sigwalls:  # pylint: disable=too-many-instance-attributes
         cost = {}
         cost['cost_out_of_boundary'] = np.abs(engine.robot_pos[0]) > self.locate_factor
         if self.num == 4:
-            cost['cost_out_of_boundary'] = (cost['cost_out_of_boundary'] or
-                                            np.abs(engine.robot_pos[1]) > self.locate_factor)
+            cost['cost_out_of_boundary'] = (
+                cost['cost_out_of_boundary'] or np.abs(engine.robot_pos[1]) > self.locate_factor
+            )
 
         return cost

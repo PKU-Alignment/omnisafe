@@ -22,7 +22,7 @@ from safety_gymnasium.assets.group import GROUP
 
 
 @dataclass
-class Circle:
+class Circle:  # pylint: disable=too-many-instance-attributes
     """CircleTask specific."""
 
     name: str = 'circle'

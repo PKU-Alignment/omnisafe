@@ -64,11 +64,13 @@ class Apples:  # pylint: disable=too-many-instance-attributes
             'rgba': self.color * [1, 1, 1, 0.25],  # transparent
         }
         if self.is_meshed:
-            geom.update({
-                'pos': np.r_[layout[name], 0.3],
-                'type': 'mesh',
-                'mesh': 'apple',
-                'material': 'apple',
-                'euler': [np.pi / 2, 0, 0],
-            })
+            geom.update(
+                {
+                    'pos': np.r_[layout[name], 0.3],
+                    'type': 'mesh',
+                    'mesh': 'apple',
+                    'material': 'apple',
+                    'euler': [np.pi / 2, 0, 0],
+                }
+            )
         return geom

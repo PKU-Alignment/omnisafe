@@ -58,10 +58,12 @@ class Goal:  # pylint: disable=too-many-instance-attributes
             'rgba': self.color * [1, 1, 1, 0.25],  # transparent
         }
         if self.is_meshed:
-            geom.update({
-                'type': 'mesh',
-                'mesh': 'flower_bush',
-                'material': 'flower_bush',
-                'euler': [np.pi / 2, 0, 0],
-            })
+            geom.update(
+                {
+                    'type': 'mesh',
+                    'mesh': 'flower_bush',
+                    'material': 'flower_bush',
+                    'euler': [np.pi / 2, 0, 0],
+                }
+            )
         return geom
