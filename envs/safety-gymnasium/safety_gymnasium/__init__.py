@@ -23,7 +23,7 @@ __all__ = ['register', 'make']
 
 VERSION = 'v0'
 
-ROBOT_NAMES = ('Point', 'Car')
+ROBOT_NAMES = ('Point', 'Car', 'Racecar')
 ROBOT_XMLS = {name: f'xmls/{name.lower()}.xml' for name in ROBOT_NAMES}
 BASE_SENSORS = ['accelerometer', 'velocimeter', 'gyro', 'magnetometer']
 EXTRA_SENSORS = {
@@ -49,7 +49,7 @@ ROBOT_OVERRIDES = {
 MAKE_VISION_ENVIRONMENTS = True
 
 # ========================================#
-# Helper Class for Easy Gym Registration #
+# Helper Class for Easy Gym Registration  #
 # ========================================#
 
 """Base used to allow for convenient hierarchies of environments"""
@@ -67,7 +67,7 @@ for name in ROBOT_NAMES:
     robot_configs[name] = config
 
 
-def combine(tasks, agents):
+def combine(tasks, agents, max_episode_steps):
     """Combine tasks and agents together to register environment tasks."""
     for task_name, task_config in tasks.items():
         for robot_name, robot_config in agents.items():
@@ -80,6 +80,7 @@ def combine(tasks, agents):
                 id=env_name,
                 entry_point='safety_gymnasium.builder:Builder',
                 kwargs={'config': combined_config, 'task_id': env_name},
+                max_episode_steps=max_episode_steps,
             )
 
             if MAKE_VISION_ENVIRONMENTS:
@@ -96,6 +97,7 @@ def combine(tasks, agents):
                     id=vision_env_name,
                     entry_point='safety_gymnasium.builder:Builder',
                     kwargs={'config': combined_config, 'task_id': env_name},
+                    max_episode_steps=max_episode_steps,
                 )
 
 
@@ -106,7 +108,7 @@ def combine(tasks, agents):
 # #=============================================================================#
 
 button_tasks = {'Button0': {}, 'Button1': {}, 'Button2': {}}
-combine(button_tasks, robot_configs)
+combine(button_tasks, robot_configs, max_episode_steps=1000)
 
 
 # =============================================================================#
@@ -116,7 +118,7 @@ combine(button_tasks, robot_configs)
 # =============================================================================#
 
 push_tasks = {'Push0': {}, 'Push1': {}, 'Push2': {}}
-combine(push_tasks, robot_configs)
+combine(push_tasks, robot_configs, max_episode_steps=1000)
 
 
 # =============================================================================#
@@ -126,7 +128,7 @@ combine(push_tasks, robot_configs)
 # =============================================================================#
 
 goal_tasks = {'Goal0': {}, 'Goal1': {}, 'Goal2': {}}
-combine(goal_tasks, robot_configs)
+combine(goal_tasks, robot_configs, max_episode_steps=1000)
 
 
 # =============================================================================#
@@ -135,15 +137,15 @@ combine(goal_tasks, robot_configs)
 #                                                                              #
 # =============================================================================#
 
-circle_tasks = {'Circle0': {}}
-combine(circle_tasks, robot_configs)
+circle_tasks = {'Circle0': {}, 'Circle1': {}, 'Circle2': {}}
+combine(circle_tasks, robot_configs, max_episode_steps=500)
 
 
 # =============================================================================#
 #                                                                              #
-#       Run Environments                                                    #
+#       Run Environments                                                       #
 #                                                                              #
 # =============================================================================#
 
 run_tasks = {'Run0': {}}
-combine(run_tasks, robot_configs)
+combine(run_tasks, robot_configs, max_episode_steps=500)

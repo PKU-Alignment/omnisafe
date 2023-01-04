@@ -18,7 +18,7 @@ import abc
 from copy import deepcopy
 from typing import Union
 
-import gymnasium  # pylint: disable=unused-import
+import gymnasium
 import mujoco
 import numpy as np
 from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen, Viewer
@@ -61,7 +61,9 @@ class BaseMujocoTask(
             60,
             40,
         )  # Size (width, height) of vision observation;
-        self.parse(config)
+        # gets flipped internally to (rows, cols) format
+        self.vision_render = True  # Render vision observation in the viewer
+        self.vision_render_size = (300, 200)  # Size to render the vision in the viewer
 
         self.random_generator = None
 
@@ -79,6 +81,9 @@ class BaseMujocoTask(
         self.action_noise = None
         self.observation_space = None
         self.obs_space_dict = None
+        self.observe_vision = False  # Observe vision from the robot
+        self.observation_flatten = True  # Flatten observation into a vector
+        self.obs_flat_size = None
         self.lidar_type = None
         self.lidar_num_bins = None
 
@@ -87,6 +92,8 @@ class BaseMujocoTask(
         self._geoms = None
         self._objects = None
         self._mocaps = None
+
+        self.parse(config)
 
     def parse(self, config):
         """Parse a config dict.

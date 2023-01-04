@@ -41,7 +41,6 @@ class BaseTask(
         self.num_steps = 1000  # Maximum number of environment steps in an episode
 
         self.floor_size = [3.5, 3.5, 0.1]  # Size of floor in environments
-
         self.placements_extents = [-2, -2, 2, 2]  # Placement limits (min X, min Y, max X, max Y)
         self.placements_margin = 0.0  # Additional margin added to keepout when placing objects
         # Starting position distribution
@@ -84,11 +83,10 @@ class BaseTask(
         self._seed = None  # Random state seed (avoid name conflict with self.seed)
 
         self.robot = Robot(self.robot_base)  # pylint: disable=no-member
-        self.action_space = spaces.Box(-1, 1, (self.robot.nu,), dtype=np.float64)
+        bounds = self.robot.model.actuator_ctrlrange.copy().astype(np.float32)
+        low, high = bounds.T
+        self.action_space = spaces.Box(low=low, high=high, dtype=np.float64)
         self.action_noise = 0.0  # Magnitude of independent per-component gaussian action noise
-        self.observe_vision = False  # Observe vision from the robot
-        self.observation_flatten = True  # Flatten observation into a vector
-        self.obs_flat_size = None
 
         # Obstacles which are added in environments.
         self._geoms = {}
@@ -460,7 +458,7 @@ class BaseTask(
 
         Rays are circularly projected from the robot body origin around the robot z axis.
         """
-        body = self.model.body_name2id('robot')
+        body = self.model.body('robot').id
         # pylint: disable-next=no-member
         grp = np.asarray([i == group for i in range(int(mujoco.mjNGROUP))], dtype='uint8')
         pos = np.asarray(self.world.robot_pos(), dtype='float64')
@@ -470,7 +468,10 @@ class BaseTask(
             theta = (i / self.lidar_num_bins) * np.pi * 2
             vec = np.matmul(mat_t, theta2vec(theta))  # Rotate from ego to world frame
             vec = np.asarray(vec, dtype='float64')
-            dist, _ = self.sim.ray_fast_group(pos, vec, grp, 1, body)  # pylint: disable=no-member
+            geom_id = np.array([0], dtype='int32')
+            dist = mujoco.mj_ray(  # pylint: disable=no-member
+                self.model, self.data, pos, vec, grp, 1, body, geom_id
+            )
             if dist >= 0:
                 obs[i] = np.exp(-dist)
         return obs

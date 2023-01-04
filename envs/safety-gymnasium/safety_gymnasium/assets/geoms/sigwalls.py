@@ -27,9 +27,9 @@ class Sigwalls:  # pylint: disable=too-many-instance-attributes
 
     name: str = 'sigwalls'
     num: int = 2
-    lenth: float = 3.5
+    locate_factor: float = 1.125
+    size: float = 3.5
     placements: list = None
-    locations: tuple = ((1.125, 0), (-1.125, 0))
     keepout: float = 0.0
 
     color: np.array = COLOR['sigwall']
@@ -37,12 +37,25 @@ class Sigwalls:  # pylint: disable=too-many-instance-attributes
     is_observe_lidar: bool = False
     is_constrained: bool = False
 
+    def __post_init__(self):
+        assert self.num in (2, 4), 'Sigwalls are specific for Circle and Run tasks.'
+        assert (
+            self.locate_factor >= 0
+        ), 'For cost calculation, the locate_factor\
+                                         must be greater than or equal to zero.'
+        self.locations = [
+            (self.locate_factor, 0),
+            (-self.locate_factor, 0),
+            (0, self.locate_factor),
+            (0, -self.locate_factor),
+        ]
+
     def get(self, index, layout, rot):  # pylint: disable=unused-argument
         """To facilitate get specific config for this object."""
         name = f'sigwall{index}'
         geom = {
             'name': name,
-            'size': np.array([0.05, self.lenth, 0.3]),
+            'size': np.array([0.05, self.size, 0.3]),
             'pos': np.r_[layout[name], 0.25],
             'rot': 0,
             'type': 'box',
@@ -51,4 +64,21 @@ class Sigwalls:  # pylint: disable=too-many-instance-attributes
             'group': self.group,
             'rgba': self.color * [1, 1, 1, 0.1],
         }
+        if index >= 2:
+            geom.update(
+                {
+                    'rot': np.pi / 2,
+                }
+            )
         return geom
+
+    def cal_cost(self, engine):
+        """Contacts Processing."""
+        cost = {}
+        cost['cost_out_of_boundary'] = np.abs(engine.robot_pos[0]) > self.locate_factor
+        if self.num == 4:
+            cost['cost_out_of_boundary'] = (
+                cost['cost_out_of_boundary'] or np.abs(engine.robot_pos[1]) > self.locate_factor
+            )
+
+        return cost

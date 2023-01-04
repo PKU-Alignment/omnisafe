@@ -92,8 +92,23 @@ class World:  # pylint: disable=too-many-instance-attributes
             self.robot_base_xml = f.read()
         self.xml = xmltodict.parse(self.robot_base_xml)  # Nested OrderedDict objects
 
-        compiler = xmltodict.parse("""<compiler angle="radian" />""")
-        self.xml['mujoco']['compiler'] = compiler['compiler']
+        if 'compiler' not in self.xml['mujoco']:
+            compiler = xmltodict.parse(
+                f'''<compiler
+                angle="radian"
+                meshdir="{BASE_DIR}/assets/meshes"
+                texturedir="{BASE_DIR}/assets/textures"
+                />'''
+            )
+            self.xml['mujoco']['compiler'] = compiler['compiler']
+        else:
+            self.xml['mujoco']['compiler'].update(
+                {
+                    '@angle': 'radian',
+                    '@meshdir': os.path.join(BASE_DIR, 'assets', 'meshes'),
+                    '@texturedir': os.path.join(BASE_DIR, 'assets', 'textures'),
+                }
+            )
 
         # Convenience accessor for xml dictionary
         worldbody = self.xml['mujoco']['worldbody']
@@ -121,28 +136,49 @@ class World:  # pylint: disable=too-many-instance-attributes
 
         # Add asset section if missing
         if 'asset' not in self.xml['mujoco']:
-            # old default rgb1: ".4 .5 .6"
-            # old default rgb2: "0 0 0"
-            # light pink: "1 0.44 .81"
-            # light blue: "0.004 0.804 .996"
-            # light purple: ".676 .547 .996"
-            # med blue: "0.527 0.582 0.906"
-            # indigo: "0.293 0 0.508"
-            texrepeat = np.array(self.floor_size[:2]) / 3.5 * 10  # pylint: disable=no-member
-            asset = xmltodict.parse(
-                f"""
-                <asset>
-                    <texture type="skybox" builtin="gradient" rgb1="0.527 0.582 0.906"
-                        rgb2="0.1 0.1 0.35" width="800" height="800" markrgb="1 1 1"
-                        mark="random" random="0.001"/>
-                    <texture name="texplane" builtin="checker" height="100" width="100"
-                        rgb1="0.7 0.7 0.7" rgb2="0.8 0.8 0.8" type="2d"/>
-                    <material name="MatPlane" reflectance="0.1" shininess="0.1" specular="0.1"
-                        texrepeat="{int(texrepeat[0])} {int(texrepeat[1])}" texture="texplane"/>
-                </asset>
-                """
-            )
-            self.xml['mujoco']['asset'] = asset['asset']
+            self.xml['mujoco']['asset'] = {}
+        if 'texture' not in self.xml['mujoco']['asset']:
+            self.xml['mujoco']['asset']['texture'] = []
+        if 'material' not in self.xml['mujoco']['asset']:
+            self.xml['mujoco']['asset']['material'] = []
+        if 'mesh' not in self.xml['mujoco']['asset']:
+            self.xml['mujoco']['asset']['mesh'] = []
+        material = self.xml['mujoco']['asset']['material']
+        texture = self.xml['mujoco']['asset']['texture']
+        texture.append(
+            {
+                '@type': 'skybox',
+                '@builtin': 'gradient',
+                '@rgb1': '0.527 0.582 0.906',
+                '@rgb2': '0.1 0.1 0.35',
+                '@width': '800',
+                '@height': '800',
+                '@markrgb': '1 1 1',
+                '@mark': 'random',
+                '@random': '0.001',
+            }
+        )
+        texture.append(
+            {
+                '@name': 'texplane',
+                '@builtin': 'checker',
+                '@height': '100',
+                '@width': '100',
+                '@rgb1': '0.7 0.7 0.7',
+                '@rgb2': '0.8 0.8 0.8',
+                '@type': '2d',
+            }
+        )
+        material.append(
+            {
+                '@name': 'MatPlane',
+                '@reflectance': '0.1',
+                '@shininess': '0.1',
+                '@specular': '0.1',
+                '@texrepeat': '10 10',
+                '@texture': 'texplane',
+            }
+        )
 
         # Add light to the XML dictionary
         light = xmltodict.parse(

@@ -1,0 +1,171 @@
+<!--
+ Copyright 2022 OmniSafe Team. All Rights Reserved.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<mujoco>
+    <size njmax="3000" nconmax="1000"/>
+    <compiler angle="radian" meshdir="../assets/meshes" autolimits="true" />
+    <option integrator="RK4" timestep="0.004"/>
+    <default>
+        <geom condim="6" density="5" rgba="1 0 0 1" size=".05" type="sphere"/>
+        <joint damping=".001"/>
+        <motor ctrllimited="true" forcelimited="true" ctrlrange="-1 1" forcerange="-0.2 0.2"/>
+        <site size="0.032" type="sphere"/>
+    </default>
+  <asset>
+    <mesh name="chassis_differential" file="chassis_differential.STL"/>
+    <mesh name="left_rear_wheel" file="left_rear_wheel.obj"/>
+    <mesh name="right_rear_wheel" file="right_rear_wheel.obj"/>
+    <mesh name="left_steering_hinge" file="left_steering_hinge.STL"/>
+    <mesh name="right_steering_hinge" file="right_steering_hinge.STL"/>
+    <mesh name="left_front_wheel" file="left_front_wheel.obj"/>
+    <mesh name="right_front_wheel" file="right_front_wheel.obj"/>
+    <mesh name="diff_ring" file="diff_ring.stl" scale="0.0005 0.0005 0.001"/>
+    <mesh name="diff_carrier" file="diff_carrier.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="diff_spider" file="diff_spider.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="diff_side" file="diff_side.stl" scale="0.001 0.001 0.001"/>
+  </asset>
+  <worldbody>
+    <geom name="floor" size="5 5 0.1" type="plane" condim="6"/>
+    <body name="robot" pos="0 0 0.05">
+        <joint type="free" name="robot" damping="0"/>
+        <camera name="vision" pos="0.20 0 0.05" euler="1.57 -1.57 0"/>
+        <site name="robot" pos="0.02 0 0"/>
+        <body name="pos_change" pos="-0.16 0 0">
+            <body name="car_body">
+                <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="0.8 0 0 1" mesh="chassis_differential"/>
+                <geom type="mesh" rgba="0.8 0 0 1" mesh="chassis_differential"/>
+            </body>
+            <geom size="0.0165 0.0875 0.015" pos="0.39 0 0.04" type="box"/>
+            <geom size="0.0165 0.0875 0.015" pos="0.39 0 0.04" type="box" contype="0" conaffinity="0" density="0" rgba="0.6 0.6 0.6 1"/>
+
+            <body name="left_steering_hinge" pos="0.325 0.1 0" quat="0.707105 0 0.707108 0">
+                <inertial pos="0 0 0" mass="0.1" diaginertia="4e-06 4e-06 4e-06"/>
+                <joint name="left_steering_hinge_joint" pos="0 0 0" axis="-1 0 0" range="-0.785 0.785"/>
+                <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="0.2 0.2 0.2 1" mesh="left_steering_hinge"/>
+                <body name="left_front_wheel" pos="0 0 0" quat="0.707105 0.707108 0 0">
+                    <inertial pos="0 0 -0.0225" quat="0.5 0.5 -0.5 0.5" mass="0.34055" diaginertia="0.00041226 0.00026046 0.00026046"/>
+                    <joint name="left_front_wheel_joint" pos="0 0 0" axis="0 0 -1"/>
+                    <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0 0 1" mesh="left_front_wheel"/>
+                    <geom size="0.05 0.0225" pos="0 0 -0.0225" type="cylinder" rgba="0 0 0 1"/>
+                </body>
+            </body>
+                <body name="right_steering_hinge" pos="0.325 -0.1 0" quat="0.707105 0 0.707108 0">
+                <inertial pos="0 0 0" mass="0.1" diaginertia="4e-06 4e-06 4e-06"/>
+                <joint name="right_steering_hinge_joint" pos="0 0 0" axis="-1 0 0" range="-0.785 0.785"/>
+                <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="0.2 0.2 0.2 1" mesh="right_steering_hinge"/>
+                <body name="right_front_wheel" pos="0 0 0" quat="0.707105 0.707108 0 0">
+                    <inertial pos="0 0 0.0225" quat="0.5 0.5 -0.5 0.5" mass="0.34055" diaginertia="0.00041226 0.00026046 0.00026046"/>
+                    <joint name="right_front_wheel_joint" pos="0 0 0" axis="0 0 -1"/>
+                    <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0 0 1" mesh="right_front_wheel"/>
+                    <geom size="0.05 0.0225" pos="0 0 0.0225" type="cylinder" rgba="0 0 0 1"/>
+                </body>
+            </body>
+            <body name="diff_ring" pos="0 0 0">
+                <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="0.0637" diaginertia="0.04411 0.02467 0.02467"/>
+                <!-- <joint name="diff_ring_chassis" pos="0 0 0" axis="0 1 0"/> -->
+                <geom quat="0.707107 0.707107 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0.8 0 1" mesh="diff_ring"/>
+                <geom quat="0.707107 0.707107 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0.8 0 1" mesh="diff_carrier"/>
+                <geom size="0.025 0.005" pos="0 0.025 0" quat="0.707107 0.707106 0 0" type="cylinder" rgba="0 0.8 0 1"/>
+                <body name="diff_spiderA" pos="0 0 0" quat="0.707107 0 0 0.707106">
+                    <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="0.056" diaginertia="0.04411 0.02467 0.02467"/>
+                    <!-- <joint name="diff_spiderA_ring" pos="0 0 0" axis="0 1 0"/> -->
+                    <geom quat="0.707107 0.707107 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0.8 0 0 1" mesh="diff_spider"/>
+                    <geom size="0.015 0.005" pos="0 0.01 0" quat="0.707107 0.707106 0 0" type="cylinder" rgba="0.8 0 0 1" contype="0" conaffinity="0"/>
+                </body>
+                <body name="diff_spiderB" pos="0 0 0" quat="0.707107 0 0 -0.707106">
+                    <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="0.056" diaginertia="0.04411 0.02467 0.02467"/>
+                    <!-- <joint name="diff_spiderB_ring" pos="0 0 0" axis="0 1 0"/> -->
+                    <geom quat="0.707107 0.707107 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0.870588 0.811765 0.764706 1" mesh="diff_spider"/>
+                    <geom size="0.015 0.005" pos="0 0.01 0" quat="0.707107 0.707106 0 0" type="cylinder" rgba="0.870588 0.811765 0.764706 1" contype="0" conaffinity="0"/>
+                </body>
+                    <body>
+                        <joint name="diff_ring" pos="0 0 0" axis="0 1 0"/>
+                        <body name="diff_sideA" pos="0 0 0">
+                            <inertial pos="0 0.105201 7.09759e-08" quat="0.5 0.5 -0.5 0.5" mass="0.39655" diaginertia="0.0450921 0.0256521 0.0250823"/>
+                            <!-- <joint name="diff_sideA_ring" pos="0 0 0" axis="0 1 0"/> -->
+                            <geom quat="0.707107 0.707106 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="1 1 1 1" mesh="diff_side"/>
+                            <geom size="0.015 0.005" pos="0 0.01 0" quat="0.707107 0.707106 0 0" type="cylinder" rgba="1 1 1 1" contype="0" conaffinity="0"/>
+                            <geom pos="0 0.1 0" quat="0.707105 0.707108 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0 0 1" mesh="left_rear_wheel"/>
+                            <geom size="0.05 0.0225" pos="0 0.1225 8.26471e-08" quat="0.707105 0.707108 0 0" type="cylinder" rgba="0 0 0 1"/>
+                        </body>
+                        <body name="diff_sideB" pos="0 0 0">
+                            <inertial pos="0 -0.105201 -7.09759e-08" quat="0.5 0.5 -0.5 0.5" mass="0.39655" diaginertia="0.0450921 0.0256521 0.0250823"/>
+                            <!-- <joint name="diff_sideB_ring" pos="0 0 0" axis="0 1 0"/> -->
+                            <geom quat="0.707107 -0.707106 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="1 1 1 1" mesh="diff_side"/>
+                            <geom size="0.015 0.005" pos="0 -0.01 0" quat="0.707107 -0.707106 0 0" type="cylinder" rgba="1 1 1 1" contype="0" conaffinity="0"/>
+                            <geom pos="0 -0.1 0" quat="0.707105 0.707108 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0 0 1" mesh="right_rear_wheel"/>
+                            <geom size="0.05 0.0225" pos="0 -0.1225 -8.26471e-08" quat="0.707105 0.707108 0 0" type="cylinder" rgba="0 0 0 1"/>
+                        </body>
+                    </body>
+            </body>
+            <body name="diff2_ring" pos="0.32 0 0">
+                <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="0.0637" diaginertia="0.04411 0.02467 0.02467"/>
+                <!-- <joint name="diff2_ring_chassis" pos="0 0 0" axis="0 1 0"/> -->
+                <geom quat="0.707107 0.707107 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0.8 0 1" mesh="diff_ring"/>
+                <geom quat="0.707107 0.707107 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0 0.8 0 1" mesh="diff_carrier"/>
+                <geom size="0.025 0.005" pos="0 0.025 0" quat="0.707107 0.707106 0 0" type="cylinder" rgba="0 0.8 0 1" contype="0" conaffinity="0"/>
+                <body name="diff2_spiderA" pos="0 0 0" quat="0.707107 0 0 0.707106">
+                    <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="0.056" diaginertia="0.04411 0.02467 0.02467"/>
+                    <!-- <joint name="diff2_spiderA_ring" pos="0 0 0" axis="0 1 0"/> -->
+                    <geom quat="0.707107 0.707107 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0.8 0 0 1" mesh="diff_spider"/>
+                    <geom size="0.015 0.005" pos="0 0.01 0" quat="0.707107 0.707106 0 0" type="cylinder" rgba="0.8 0 0 1" contype="0" conaffinity="0"/>
+                </body>
+                <body name="diff2_spiderB" pos="0 0 0" quat="0.707107 0 0 -0.707106">
+                    <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="0.056" diaginertia="0.04411 0.02467 0.02467"/>
+                    <!-- <joint name="diff2_spiderB_ring" pos="0 0 0" axis="0 1 0"/> -->
+                    <geom quat="0.707107 0.707107 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="0.870588 0.811765 0.764706 1" mesh="diff_spider"/>
+                    <geom size="0.015 0.005" pos="0 0.01 0" quat="0.707107 0.707106 0 0" type="cylinder" rgba="0.870588 0.811765 0.764706 1" contype="0" conaffinity="0"/>
+                </body>
+                <body name="diff2_sideA" pos="0 0 0">
+                    <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="0.056" diaginertia="0.04411 0.02467 0.02467"/>
+                    <!-- <joint name="diff2_sideA_ring" pos="0 0 0" axis="0 1 0"/> -->
+                    <geom quat="0.707107 0.707106 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="1 1 1 1" mesh="diff_side"/>
+                    <geom size="0.015 0.005" pos="0 0.01 0" quat="0.707107 0.707106 0 0" type="cylinder" rgba="1 1 1 1" contype="0" conaffinity="0"/>
+                </body>
+                <body name="diff2_sideB" pos="0 0 0">
+                    <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="0.056" diaginertia="0.04411 0.02467 0.02467"/>
+                    <!-- <joint name="diff2_sideB_ring" pos="0 0 0" axis="0 1 0"/> -->
+                    <geom quat="0.707107 -0.707106 0 0" type="mesh" contype="0" conaffinity="0" density="0" rgba="1 1 1 1" mesh="diff_side"/>
+                    <geom size="0.015 0.005" pos="0 -0.01 0" quat="0.707107 -0.707106 0 0" type="cylinder" rgba="1 1 1 1" contype="0" conaffinity="0"/>
+                </body>
+            </body>
+        </body>
+    </body>
+  </worldbody>
+  <equality>
+    <joint joint1="left_steering_hinge_joint" joint2="right_steering_hinge_joint" />
+  </equality>
+  <contact>
+    <exclude name="left_body" body1="car_body" body2="left_front_wheel" />
+    <exclude name="right_body" body1="car_body" body2="right_front_wheel" />
+  </contact>
+  <actuator>
+    <velocity name="diff_ring" joint="diff_ring" forcerange="-1 1" ctrlrange="-20 20"/>
+    <position name="left_steering_hinge_joint" joint="left_steering_hinge_joint" forcerange="-1 1" ctrlrange="-0.785 0.785"/>
+  </actuator>
+    <sensor>
+        <!-- Used for observation -->
+        <accelerometer site="robot" name="accelerometer"/>
+        <velocimeter site="robot" name="velocimeter"/>
+        <gyro site="robot" name="gyro"/>
+        <magnetometer site="robot" name="magnetometer"/>
+
+        <!-- Used for intrinsic constraints -->
+        <subtreecom body="robot" name="subtreecom"/>
+        <subtreelinvel body="robot" name="subtreelinvel"/>
+        <subtreeangmom body="robot" name="subtreeangmom"/>
+    </sensor>
+</mujoco>

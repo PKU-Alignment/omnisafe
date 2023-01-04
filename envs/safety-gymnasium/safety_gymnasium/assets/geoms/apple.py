@@ -31,12 +31,46 @@ class Apples:  # pylint: disable=too-many-instance-attributes
 
     name: str = 'apples'
     num: int = 0
-    placements: list = None
-    locations: list = field(default_factory=list)
-    keepout: float = 0.3
+    size: float = 0.3
+    placements: list = None  # Placements where goal may appear (defaults to full extents)
+    locations: list = field(default_factory=list)  # Fixed locations to override placements
+    keepout: float = 0.3  # Keepout radius when placing goals
+
+    reward_apple: float = 1.0  # Sparse reward for being inside the goal area
+    # Reward is distance towards goal plus a constant for being within range of goal
+    # reward_distance should be positive to encourage moving towards the goal
+    # if reward_distance is 0, then the reward function is sparse
+    reward_distance: float = 1.0  # Dense reward multiplied by the distance moved to the goal
 
     color: np.array = COLOR['apple']
     group: np.array = GROUP['apple']
     is_observe_lidar: bool = True
     is_observe_comp: bool = False
     is_constrained: bool = False
+    is_meshed: bool = False
+
+    def get(self, index, layout, rot):
+        """To facilitate get specific config for this object."""
+        name = f'apple{index}'
+        geom = {
+            'name': name,
+            'size': [self.size, self.size / 2],
+            'pos': np.r_[layout[name], self.size / 2 + 1e-2],
+            'rot': rot,
+            'type': 'cylinder',
+            'contype': 0,
+            'conaffinity': 0,
+            'group': self.group,
+            'rgba': self.color * [1, 1, 1, 0.25],  # transparent
+        }
+        if self.is_meshed:
+            geom.update(
+                {
+                    'pos': np.r_[layout[name], 0.3],
+                    'type': 'mesh',
+                    'mesh': 'apple',
+                    'material': 'apple',
+                    'euler': [np.pi / 2, 0, 0],
+                }
+            )
+        return geom
