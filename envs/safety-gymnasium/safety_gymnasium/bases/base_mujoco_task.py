@@ -39,7 +39,6 @@ class BaseMujocoTask(
     def __init__(self, config=None):
         """Initialize the engine."""
         # Default configuration
-        self.floor_type = 'mat'  # choose from 'mat' and 'village'
 
         # Render options
         self.render_labels = False
