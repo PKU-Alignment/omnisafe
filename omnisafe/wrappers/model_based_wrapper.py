@@ -47,7 +47,7 @@ CONSTRAINTS_MBPPO = dict(
 
 
 @WRAPPER_REGISTRY.register
-class ModelBasedEnvWrapper:  # pylint: disable=too-many-instance-attributes
+class ModelBasedEnvWrapper:  # pylint: disable=too-many-instance-attributes,too-many-public-methods
     """Model-based Environment"""
 
     def __init__(self, algo, env_id, render_mode=None):
@@ -112,7 +112,7 @@ class ModelBasedEnvWrapper:  # pylint: disable=too-many-instance-attributes
         """Set episode length"""
         self.num_steps = eplen
 
-    def get_observation_cost(self, obs):
+    def get_cost_from_obs(self, obs, is_binary):
         """Get batch cost from batch observation"""
         if torch.is_tensor(obs):
             obs = obs.cpu().detach().numpy()
@@ -120,8 +120,14 @@ class ModelBasedEnvWrapper:  # pylint: disable=too-many-instance-attributes
         hazards_key = self.key_to_slice['hazards']
         hazard_obs = obs[:, hazards_key].reshape(batch_size, -1, 2)
         hazards_dist = np.sqrt(np.sum(np.square(hazard_obs), axis=2)).reshape(batch_size, -1)
-        cost = ((hazards_dist < self.hazards_size) * (self.hazards_size - hazards_dist)).sum(1) * 10
-
+        if is_binary:
+            cost = np.where(hazards_dist <= self.hazards_size, 1.0, 0.0)
+            cost = cost.sum(1)
+            cost = np.where(cost >= 1, 1.0, 0.0)
+        else:
+            cost = ((hazards_dist < self.hazards_size) * (self.hazards_size - hazards_dist)).sum(
+                1
+            ) * 10
         return cost
 
     def init_sensor(self):

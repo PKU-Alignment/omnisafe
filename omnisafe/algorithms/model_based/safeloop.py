@@ -66,6 +66,7 @@ class SafeLOOP(
         # Set up model saving
         what_to_save = {
             'pi': self.actor_critic.actor,
+            'ac': self.actor_critic,
             'dynamics': self.dynamics,
         }
         self.logger.setup_torch_saver(what_to_save=what_to_save)

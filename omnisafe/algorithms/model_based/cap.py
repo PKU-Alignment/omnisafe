@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the CAP algorithm. The CAP in safety-gym may unable to converge."""
+"""Implementation of the CAP algorithm."""
 
 import numpy as np
 
@@ -94,10 +94,6 @@ class CAP(
             inputs, labels, batch_size=256, holdout_ratio=0.2
         )
 
-        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
-        # update Lagrange multiplier parameter
-        self.update_lagrange_multiplier(ep_costs)
-
         self.logger.store(
             **{
                 'Loss/DynamicsTrainMseLoss': train_mse_losses,
@@ -133,6 +129,10 @@ class CAP(
 
     def algo_reset(self):
         """reset planner"""
+        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
+        # update Lagrange multiplier parameter
+        self.update_lagrange_multiplier(ep_costs)
+        self.planner_reset(self.lagrangian_multiplier)
 
     def set_algorithm_specific_actor_critic(self):
         """Initialize Soft Actor-Critic"""

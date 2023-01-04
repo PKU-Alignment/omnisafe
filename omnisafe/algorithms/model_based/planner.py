@@ -183,14 +183,13 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
             .float()
             .to(self.device)
         )
-        # [ (num_gau_traj + num_actor_traj) * particles, state_dim ]
+        # [ (num_gau_traj + num_actor_traj) * particles * network_size, state_dim ]
 
         terminal_reward = (
             self.actor_critic.critic(final_state, final_action)[0].cpu().detach().numpy()
         )
         terminal_reward = terminal_reward.reshape(state_traj.shape[1], -1)
-        # [ (num_gau_traj + num_actor_traj) * particles, 1]
-
+        # [network_size, (num_gau_traj + num_actor_traj) * particles ]
         return terminal_reward
 
     def compute_cost_from_state(self, state_traj):
@@ -201,7 +200,7 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
         all_safety_costs = np.zeros((states_flatten.shape[0],))
         # [ horizon+1 * network_size * (num_gau_traj + num_actor_traj) * particles, 1]
 
-        all_safety_costs = self.env.get_observation_cost(states_flatten)
+        all_safety_costs = self.env.get_cost_from_obs(states_flatten, is_binary=False)
         # [ horizon+1 * network_size * (num_gau_traj + num_actor_traj) * particles, 1]
 
         all_safety_costs = all_safety_costs.reshape(
@@ -364,7 +363,7 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
             # Shape: [ num_gau_traj + num_actor_traj,  1 ]
             if self.algo == 'SafeLOOP':
                 terminal_reward = self.compute_terminal_reward(action_traj, state_traj)
-                # [ (num_gau_traj + num_actor_traj) * particles, 1]
+                # [network_size, (num_gau_traj + num_actor_traj) * particles ]
 
             if self.env.env_type == 'gym':
                 all_safety_costs = self.compute_cost_from_state(state_traj)
@@ -385,6 +384,7 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
                             ),
                         )
                         not_done = 1 - done[ensemble, :, :]
+                        # get a network result
                         q_rews = terminal_reward[ensemble, :] * not_done.reshape(-1)
                     else:
                         q_rews = terminal_reward[ensemble, :]
@@ -407,7 +407,8 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
                             traj_indices * self.particles + particle
                         ]
                     if self.env.env_type == 'gym':
-                        # use state that dynamics predict to compute cost
+                        # get a network and a particle cost result,
+                        # and then compare among same action sequence to find a maximum total cost
                         safety_costs[traj_indices] = np.maximum(
                             safety_costs,
                             np.sum(
@@ -448,31 +449,14 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
             # [ num_gau_traj + num_actor_traj, 1]
 
             if self.algo == 'SafeLOOP':
-                new_mean, new_var, safety_costs_mean, fail_flag = self.safe_loop_elite_select(
+                new_mean, new_var, safety_costs_mean, fail_flag = self.arc_elite_select(
                     returns, safety_costs, action_traj
                 )
                 if fail_flag is False:
                     mean = new_mean
                 else:  # rare case for protecting bug
                     break
-            elif self.algo == 'CAP':
-                safety_costs /= state_traj.shape[1] * self.particles
-                if self.cfgs.cost_gamma == 1.0:
-                    c_gamma_discount = self.cfgs.max_ep_len / self.horizon
-                    # Extend the cost to the entire trajectory
-                else:
-                    c_gamma_discount = (1 / self.horizon) * (
-                        (1 - self.cfgs.cost_gamma**self.cfgs.max_ep_len)
-                        / (1 - self.cfgs.cost_gamma)
-                    )
-                    # average the cost, then view it as the starting element of the arithmetic progression
-                safety_costs = c_gamma_discount * safety_costs
 
-                penalty = torch.nn.ReLU()(self.lagrangian_multiplier).item()
-                safety_costs = safety_costs + penalty * trajectory_max_vars
-                mean, new_var, safety_costs_mean = self.cap_elite_select(
-                    returns, safety_costs, action_traj
-                )
             var = (self.alpha_plan) * var + (1 - self.alpha_plan) * new_var
             current_iter += 1
 
@@ -498,63 +482,7 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
         # Return [1, action_dim], that is the first action of H horizon action mean, which shape is [1, H * action_dim]
         return mean[: self.action_dim], safety_costs_mean
 
-    def cap_elite_select(self, returns, safety_costs, action_traj):
-        """TODO"""
-        # returns: [ num_gau_traj + num_actor_traj, 1]
-        # safety_costs: [ num_gau_traj + num_actor_traj, 1]
-        # action_traj: [ (num_gau_traj + num_actor_traj) * particle,  H * action_dim]
-        safety_costs_mean = np.mean(safety_costs)
-        if (safety_costs < self.safety_threshold).sum() < self.minimal_elites:
-            indices = np.argsort(safety_costs)
-            indices *= self.particles
-            elites = action_traj[indices][: self.minimal_elites]
-        else:
-            costs = (
-                -returns * (safety_costs < self.safety_threshold)
-                + (safety_costs >= self.safety_threshold) * 1e4
-            )
-            indices = np.argsort(costs)
-            indices = np.array([idx for idx in indices if costs[idx] < 1e3])
-            indices *= self.particles
-            elites = action_traj[indices][: min(self.minimal_elites, indices.shape[0])]
-        mean = np.mean(elites, axis=0)
-        new_var = np.var(elites, axis=0)
-        return mean, new_var, safety_costs_mean
-
-    def cap_elite_selection(self, returns, safety_costs, action_traj):
-        """TODO"""
-        # returns: [ num_gau_traj + num_actor_traj, 1]
-        # safety_costs: [ num_gau_traj + num_actor_traj, 1]
-        # action_traj: [ (num_gau_traj + num_actor_traj) * particle,  H * action_dim]
-        all_action = action_traj[
-            np.arange(0, self.num_gaussian_traj + self.num_actor_traj, 1).astype(int)
-            * self.particles,
-            :,
-        ]
-        # all_action is [ num_gau_traj + num_actor_traj, H * action_dim]
-
-        # find the index for safe trajectories
-        feasible_ids = (safety_costs <= self.safety_threshold).nonzero()[0]
-        if feasible_ids.shape[0] < self.minimal_elites:
-            # if safe trajectories not enough
-            elite_ids = np.argsort(safety_costs)[: self.minimal_elites]
-        else:
-            # if have enough safe trajectories
-            # select the top k reward in safe action trajectories
-            elite_ids = feasible_ids[np.argsort(-returns[feasible_ids])][: self.minimal_elites]
-
-        elite_action = all_action[elite_ids]
-        # [ elite_ids, H * action_dim]
-
-        mean = np.mean(elite_action, axis=0)
-        # [ 1, H * action_dim]
-
-        var = np.var(elite_action, axis=0)
-        # [ 1,  H * action_dim]
-
-        return mean, var
-
-    def safe_loop_elite_select(self, returns, safety_costs, action_traj):
+    def arc_elite_select(self, returns, safety_costs, action_traj):
         """Update mean and var using reward and cost"""
         # returns: [ num_gau_traj + num_actor_traj, 1]
         # safety_costs: [ num_gau_traj + num_actor_traj, 1]
@@ -713,6 +641,10 @@ class CCEPlanner:
         self.lagrangian_multiplier = lagrangian_multiplier
         self.models = models
         self.elites = None
+
+    def planner_reset(self, lagrangian_multiplier):
+        """Update lagrangian multiplier every episode"""
+        self.lagrangian_multiplier = lagrangian_multiplier
 
     def get_action(self, obs):
         """Get action from previous solution or planner"""
@@ -909,7 +841,7 @@ class CCEPlanner:
         all_safety_costs = np.zeros((states_flatten.shape[0],))
         # [ horizon+1 * network_size * (num_gau_traj + num_actor_traj) * particles, 1]
 
-        all_safety_costs = self.env.get_observation_cost(states_flatten)
+        all_safety_costs = self.env.get_cost_from_obs(states_flatten, is_binary=True)
         # [ horizon+1 * network_size * (num_gau_traj + num_actor_traj) * particles, 1]
 
         all_safety_costs = all_safety_costs.reshape(

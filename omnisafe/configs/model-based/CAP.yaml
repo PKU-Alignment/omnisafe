@@ -27,13 +27,13 @@ defaults:
   # CUDA or CPU device
   device: "cuda:0"
   # Number of repeated action
-  action_repeat: 1
+  action_repeat: 5
   # The Address for saving training process data
   data_dir: "./runs"
   # Reward discounted factor
   gamma: 0.99
   # Cost discounted factor
-  cost_gamma: 0.99
+  cost_gamma: 1
   # Noise add to action for exploration
   exploration_noise: 0.0
   # Size of Off-policy Buffer
@@ -41,7 +41,7 @@ defaults:
   # Batch size of Off-policy Buffer
   batch_size: 256
   # log information every `log_freq` timesteps
-  log_freq: 1000
+  log_freq: 20000
   # update dynamics every `update_dynamics_freq` timesteps
   update_dynamics_freq: 1000
 
@@ -59,7 +59,7 @@ defaults:
   ## ----------------------------Basic configurations for MPC controller-------------------- ##
   mpc_config:
     # Planning horizon
-    horizon: 30
+    horizon: 8
     # Sample population
     popsize: 500
     # Repeat sample population 'particles' times
@@ -80,7 +80,7 @@ defaults:
   ## ----------------------------------Configuration For Lagrangian multiplier---------------------- ##
   lagrange_cfgs:
     # Tolerance of constraint violation
-    cost_limit: 152 # discount cost limit in HalfCheetah-v3
+    cost_limit: 0
     # Initial value of lagrangian multiplier
     lagrangian_multiplier_init: 1.0
     # Learning rate of lagrangian multiplier
