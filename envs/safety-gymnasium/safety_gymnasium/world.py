@@ -164,8 +164,8 @@ class World:  # pylint: disable=too-many-instance-attributes
                 '@builtin': 'checker',
                 '@height': '100',
                 '@width': '100',
-                '@rgb1': '0.7 0.7 0.7',
-                '@rgb2': '0.8 0.8 0.8',
+                '@rgb1': '0.859 0.843 0.765',
+                '@rgb2': '0.949 0.914 0.855',
                 '@type': '2d',
             }
         )
