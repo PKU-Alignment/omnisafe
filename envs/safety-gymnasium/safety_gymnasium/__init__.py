@@ -24,7 +24,7 @@ __all__ = ['register', 'make']
 VERSION = 'v0'
 
 ROBOT_NAMES = ('Point', 'Car', 'Racecar')
-ROBOT_XMLS = {name: f'xmls/{name.lower()}.xml' for name in ROBOT_NAMES}
+ROBOT_XMLS = {name: f'assets/xmls/{name.lower()}.xml' for name in ROBOT_NAMES}
 BASE_SENSORS = ['accelerometer', 'velocimeter', 'gyro', 'magnetometer']
 EXTRA_SENSORS = {
     'Doggo': [
@@ -149,3 +149,45 @@ combine(circle_tasks, robot_configs, max_episode_steps=500)
 
 run_tasks = {'Run0': {}}
 combine(run_tasks, robot_configs, max_episode_steps=500)
+
+
+# Safety Velocity
+# ----------------------------------------
+register(
+    id='SafetyHalfCheetahVelocity-v4',
+    entry_point='safety_gymnasium.tasks.safety_velocity.safety_half_cheetah_velocity:SafetyHalfCheetahVelocityEnv',
+    max_episode_steps=1000,
+    reward_threshold=4800.0,
+)
+
+register(
+    id='SafetyHopperVelocity-v4',
+    entry_point='safety_gymnasium.tasks.safety_velocity.safety_hopper_velocity:SafetyHopperVelocityEnv',
+    max_episode_steps=1000,
+    reward_threshold=3800.0,
+)
+
+register(
+    id='SafetySwimmerVelocity-v4',
+    entry_point='safety_gymnasium.tasks.safety_velocity.safety_swimmer_velocity:SafetySwimmerVelocityEnv',
+    max_episode_steps=1000,
+    reward_threshold=360.0,
+)
+
+register(
+    id='SafetyWalker2dVelocity-v4',
+    max_episode_steps=1000,
+    entry_point='safety_gymnasium.tasks.safety_velocity.safety_walker2d_velocity:SafetyWalker2dVelocityEnv',
+)
+
+register(
+    id='SafetyAntVelocity-v4',
+    entry_point='safety_gymnasium.tasks.safety_velocity.safety_ant_velocity:SafetyAntVelocityEnv',
+    max_episode_steps=1000,
+    reward_threshold=6000.0,
+)
+register(
+    id='SafetyHumanoidVelocity-v4',
+    entry_point='safety_gymnasium.tasks.safety_velocity.safety_humanoid_velocity:SafetyHumanoidVelocityEnv',
+    max_episode_steps=1000,
+)

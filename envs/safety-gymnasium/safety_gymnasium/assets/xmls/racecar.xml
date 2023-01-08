@@ -16,7 +16,7 @@
 
 <mujoco>
     <size njmax="3000" nconmax="1000"/>
-    <compiler angle="radian" meshdir="../assets/meshes" autolimits="true" />
+    <compiler angle="radian" meshdir="../meshes" autolimits="true" />
     <option integrator="RK4" timestep="0.004"/>
     <default>
         <geom condim="6" density="5" rgba="1 0 0 1" size=".05" type="sphere"/>

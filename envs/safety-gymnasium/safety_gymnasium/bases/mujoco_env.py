@@ -19,6 +19,7 @@ from typing import Optional, Union
 
 import gymnasium
 import numpy as np
+import safety_gymnasium
 from gymnasium import error, logger, spaces
 from gymnasium.spaces import Space
 
@@ -58,7 +59,9 @@ class BaseMujocoEnv(gymnasium.Env):
         if model_path.startswith('/'):
             self.fullpath = model_path
         else:
-            self.fullpath = os.path.join(os.path.dirname(__file__), 'assets', model_path)
+            self.fullpath = os.path.join(
+                os.path.dirname(safety_gymnasium.__file__), 'assets/xmls', model_path
+            )
         if not os.path.exists(self.fullpath):
             raise OSError(f'File {self.fullpath} does not exist')
 
@@ -384,12 +387,16 @@ class MujocoEnv(BaseMujocoEnv):
 
         if self.render_mode == 'rgb_array':
             data = self._get_viewer(self.render_mode).read_pixels(depth=False)
+            self.viewer._markers[:] = []
+            self.viewer._overlays.clear()
             # original image is upside-down, so flip it
             return data[::-1, :, :]
         elif self.render_mode == 'depth_array':
             self._get_viewer(self.render_mode).render()
             # Extract depth part of the read_pixels() tuple
             data = self._get_viewer(self.render_mode).read_pixels(depth=True)[1]
+            self.viewer._markers[:] = []
+            self.viewer._overlays.clear()
             # original image is upside-down, so flip it
             return data[::-1, :]
         elif self.render_mode == 'human':
