@@ -194,7 +194,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         print(f'Average episode reward: {np.mean(episode_rewards):.3f}')
         print(f'Average episode cost: {np.mean(episode_costs):.3f}')
         print(f'Average episode length: {np.mean(episode_lengths):.3f}')
-        return episode_rewards, episode_costs, 
+        return (
+            episode_rewards,
+            episode_costs,
+        )
 
     def render(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         self,
