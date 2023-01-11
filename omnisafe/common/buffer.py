@@ -83,7 +83,6 @@ class Buffer:
             reward_penalty (bool, optional): Whether to use reward penalty. Defaults to False.
         """
         self.size = size
-        print(obs_dim)
         self.obs_buf = np.zeros((size, obs_dim), dtype=np.float32)
         self.act_buf = np.zeros((size, act_dim), dtype=np.float32)
         self.adv_buf = np.zeros((size), dtype=np.float32)

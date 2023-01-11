@@ -172,7 +172,7 @@ def num_procs() -> int:
 
 
 def broadcast(value: torch.Tensor, src: int = 0) -> torch.Tensor:
-    """Broadcast"""
+    """Broadcast."""
     dist.broadcast(value, src=src)
 
 
