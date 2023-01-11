@@ -70,7 +70,7 @@ class Normalize(nn.Module):
         return self.std
 
     def forward(self, raw_data=None):
-        """FOrward"""
+        """Forward."""
         return self.normalize(raw_data)
 
     def pre_process(self, raw_data):
