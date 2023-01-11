@@ -55,7 +55,7 @@ class Normalize(nn.Module):
             self.sumsq.data += (raw_data - old_mean.data) * (raw_data - self.mean.data)
             self.var.data = self.sumsq.data / (self.count.data - 1)
             self.std.data = torch.sqrt(self.var.data)
-            self.std.data = torch.maraw_data(self.std.data, 1e-2 * torch.ones_like(self.std.data))
+            self.std.data = torch.max(self.std.data, 1e-2 * torch.ones_like(self.std.data))
 
     def get_mean(self):
         """Get the mean value."""
