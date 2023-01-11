@@ -16,20 +16,23 @@
 
 from copy import deepcopy
 from dataclasses import dataclass
-from omnisafe.typing import RenderFrame, List, Optional, Union, NamedTuple, Tuple, Dict
-import safety_gymnasium
+
 import numpy as np
+import safety_gymnasium
 import torch
-from omnisafe.common.logger import Logger
-from omnisafe.common.vector_buffer import VectorBuffer as Buffer
-from omnisafe.models import ConstraintActorCritic, ConstraintActorQCritic
-from omnisafe.common.base_buffer import BaseBuffer
 from safety_gymnasium.bases import BaseTask
+
+from omnisafe.common.base_buffer import BaseBuffer
+from omnisafe.common.logger import Logger
 from omnisafe.common.normalize import Normalize
 from omnisafe.common.record_queue import RecordQueue
-from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
-from omnisafe.utils.tools import expand_dims, tile_images
+from omnisafe.common.vector_buffer import VectorBuffer as Buffer
+from omnisafe.models import ConstraintActorCritic, ConstraintActorQCritic
+from omnisafe.typing import Dict, List, NamedTuple, Optional, RenderFrame, Tuple, Union
 from omnisafe.utils import distributed_utils
+from omnisafe.utils.tools import expand_dims, tile_images
+from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
+
 
 @dataclass
 class RenderData:
@@ -40,12 +43,15 @@ class RenderData:
     width: int
     height: int
 
+
 @dataclass
 class RolloutLog:
     """Log for roll out."""
+
     ep_ret: np.ndarray
     ep_costs: np.ndarray
     ep_len: np.ndarray
+
 
 @dataclass
 class RolloutData:
@@ -98,36 +104,31 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
 
     """
 
-    def __init__(
-        self, 
-        env_id, 
-        cfgs: Optional[NamedTuple] = None,
-        **env_kwargs
-        ) -> None:
+    def __init__(self, env_id, cfgs: Optional[NamedTuple] = None, **env_kwargs) -> None:
         """Initialize environment wrapper.
         Args:
             env_id (str): environment id.
             cfgs (collections.namedtuple): configs.
             env_kwargs (dict): The additional parameters of environments.
         """
-        #self.env = gymnasium.make(env_id, **env_kwargs)
+        # self.env = gymnasium.make(env_id, **env_kwargs)
         self.cfgs = deepcopy(cfgs)
         self.env = None
         self.action_space = None
         self.observation_space = None
         self.make(env_id, env_kwargs)
-        if distributed_utils.num_procs() ==1:
+        if distributed_utils.num_procs() == 1:
             torch.set_num_threads(self.cfgs.num_threads)
         width = self.env.width if hasattr(self.env, 'width') else 256
         height = self.env.height if hasattr(self.env, 'height') else 256
         self.RenderData = RenderData(
-            env_id, 
-            env_kwargs.get('render_mode', None), 
-            env_kwargs.get('camera_id', None), 
+            env_id,
+            env_kwargs.get('render_mode', None),
+            env_kwargs.get('camera_id', None),
             env_kwargs.get('camera_name', None),
-            width, 
+            width,
             height,
-            )
+        )
         if hasattr(self.env, '_max_episode_steps'):
             max_ep_len = self.env._max_episode_steps
         else:
@@ -141,13 +142,21 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
                 np.zeros(self.cfgs.num_envs),
                 np.zeros(self.cfgs.num_envs),
                 np.zeros(self.cfgs.num_envs),
-            )
+            ),
         )
         self.set_seed(int(self.cfgs.env_seed) + 10000 * distributed_utils.proc_id())
-        self.obs_normalize = Normalize(shape = (self.cfgs.num_envs, self.observation_space.shape[0]) ,clip = 5) if self.cfgs.normalized_obs else None
-        self.rew_normalize = Normalize(shape = (self.cfgs.num_envs, 1), clip = 5) if self.cfgs.normalized_rew else None
-        self.cost_normalize = Normalize(shape = (self.cfgs.num_envs, 1), clip = 5) if self.cfgs.normalized_cost else None
-        self.record_queue = RecordQueue('ep_ret', 'ep_cost' ,'ep_len' ,maxlen=self.cfgs.max_len)
+        self.obs_normalize = (
+            Normalize(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5)
+            if self.cfgs.normalized_obs
+            else None
+        )
+        self.rew_normalize = (
+            Normalize(shape=(self.cfgs.num_envs, 1), clip=5) if self.cfgs.normalized_rew else None
+        )
+        self.cost_normalize = (
+            Normalize(shape=(self.cfgs.num_envs, 1), clip=5) if self.cfgs.normalized_cost else None
+        )
+        self.record_queue = RecordQueue('ep_ret', 'ep_cost', 'ep_len', maxlen=self.cfgs.max_len)
         self.rollout_data.current_obs = CMDPWrapper.reset(self)[0]
 
     def make(self, env_id, env_kwargs) -> BaseTask:
@@ -159,7 +168,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         else:
             raise NotImplementedError('OnPolicyEnvWrapper only supports single environment now.')
 
-    def reset(self) -> Tuple [np.ndarray, Dict]:
+    def reset(self) -> Tuple[np.ndarray, Dict]:
         """Reset environment.
 
         At the end of each episode, the environment will be reset.
@@ -182,7 +191,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
 
     def render(self) -> Optional[Union[RenderFrame, List[RenderFrame]]]:
         """Render environment"""
-        if self.cfgs.num_envs == 1 :
+        if self.cfgs.num_envs == 1:
             return self.env.render()
         else:
             imgs = self.get_images()
@@ -202,7 +211,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
 
     def get_images(self):
         for pipe in self.env.parent_pipes:
-            pipe.send(("render", None))
+            pipe.send(('render', None))
         imgs = [pipe.recv() for pipe in self.env.parent_pipes]
         return imgs
 
@@ -240,15 +249,16 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         """
         next_obs, reward, cost, terminated, truncated, info = self.env.step(action.squeeze())
         if self.cfgs.num_envs == 1:
-            next_obs, reward, cost, terminated, truncated, info = \
-                expand_dims(next_obs, reward, cost, terminated, truncated, info)
+            next_obs, reward, cost, terminated, truncated, info = expand_dims(
+                next_obs, reward, cost, terminated, truncated, info
+            )
             if terminated | truncated:
-                next_obs, info  = self.reset()
+                next_obs, info = self.reset()
         self.rollout_data.rollout_log.ep_ret += reward
         self.rollout_data.rollout_log.ep_costs += cost
         self.rollout_data.rollout_log.ep_len += np.ones(self.cfgs.num_envs)
         return next_obs, reward, cost, terminated, truncated, info
-    
+
     # pylint: disable-next=too-many-locals
     def on_policy_roll_out(
         self,
@@ -398,13 +408,19 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
                     self.rollout_log(logger=logger, idx=idx)
 
     def rollout_log(
-        self, 
+        self,
         logger,
         idx,
-        ) -> None:
+    ) -> None:
         """Log the information of the rollout."""
-        self.record_queue.append(ep_ret = self.rollout_data.rollout_log.ep_ret[idx], ep_cost = self.rollout_data.rollout_log.ep_costs[idx], ep_len = self.rollout_data.rollout_log.ep_len[idx])
-        avg_ep_ret, avg_ep_cost, avg_ep_len = self.record_queue.get_mean('ep_ret', 'ep_cost', 'ep_len')
+        self.record_queue.append(
+            ep_ret=self.rollout_data.rollout_log.ep_ret[idx],
+            ep_cost=self.rollout_data.rollout_log.ep_costs[idx],
+            ep_len=self.rollout_data.rollout_log.ep_len[idx],
+        )
+        avg_ep_ret, avg_ep_cost, avg_ep_len = self.record_queue.get_mean(
+            'ep_ret', 'ep_cost', 'ep_len'
+        )
         logger.store(
             **{
                 'Metrics/EpRet': avg_ep_ret,
@@ -412,5 +428,8 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
                 'Metrics/EpLen': avg_ep_len,
             }
         )
-        self.rollout_data.rollout_log.ep_ret[idx], self.rollout_data.rollout_log.ep_costs[idx], self.rollout_data.rollout_log.ep_len[idx] = 0.0, 0.0, 0.0
-        
+        (
+            self.rollout_data.rollout_log.ep_ret[idx],
+            self.rollout_data.rollout_log.ep_costs[idx],
+            self.rollout_data.rollout_log.ep_len[idx],
+        ) = (0.0, 0.0, 0.0)

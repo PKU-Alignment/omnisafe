@@ -15,12 +15,14 @@
 """Implementation of GaussianStdNetActor."""
 
 from typing import Optional, Tuple, Union
+
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.distributions.normal import Normal
+
 from omnisafe.models.base import Actor
-from omnisafe.utils.model_utils import build_mlp_network, Activation, InitFunction
+from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_network
 
 
 class GaussianActor(Actor):
@@ -44,7 +46,7 @@ class GaussianActor(Actor):
         activation: Activation = 'tanh',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
         shared: nn.Module = None,
-        log_std = -0.5,
+        log_std=-0.5,
     ) -> None:
         """Initialize GaussianStdNetActor.
 
@@ -85,7 +87,7 @@ class GaussianActor(Actor):
                 weight_initialization_mode=weight_initialization_mode,
             )
             self.mean_layer = nn.Linear(hidden_sizes[-1], act_dim)
-            self.logstd_layer = nn.Parameter(torch.ones(1, act_dim)*log_std)
+            self.logstd_layer = nn.Parameter(torch.ones(1, act_dim) * log_std)
             nn.init.kaiming_uniform_(self.mean_layer.weight, a=np.sqrt(5))
             nn.init.constant_(self.mean_layer.bias, 0)
 
@@ -102,8 +104,8 @@ class GaussianActor(Actor):
             obs (torch.Tensor): Observation.
         """
         mean, std = self.get_mean_std(obs)
-        return  Normal(mean, std)
-    
+        return Normal(mean, std)
+
     def get_mean_std(self, obs: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Get mean and std of the action.
 
@@ -112,14 +114,14 @@ class GaussianActor(Actor):
         """
         out = self.net(obs)
         mean = self.mean_layer(out)
-        #mean = self.act_max * torch.tanh(self.mean_layer(out))
+        # mean = self.act_max * torch.tanh(self.mean_layer(out))
         if len(mean.size()) == 1:
             mean = mean.view(1, -1)
         log_std = self.logstd_layer.expand_as(mean)
         std = torch.exp(log_std)
 
         return mean, std
-    
+
     def get_log_prob(self, obs: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
         """Get log probability of the action.
 
@@ -159,7 +161,7 @@ class GaussianActor(Actor):
         else:
             action = torch.normal(mean, std)
         if need_log_prob:
-            log_prob = dist.log_prob(action).sum(axis = -1)
+            log_prob = dist.log_prob(action).sum(axis=-1)
             return action, log_prob
         return action
 

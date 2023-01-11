@@ -14,9 +14,11 @@
 # ==============================================================================
 """Implementation of the Reward Constrained Policy Optimization algorithm."""
 
-from typing import NamedTuple, Tuple, Dict
+from typing import Dict, NamedTuple, Tuple
+
 import numpy as np
 import torch
+
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
 from omnisafe.common.lagrange import Lagrange
@@ -86,12 +88,12 @@ class RCPO(NaturalPG, Lagrange):
         """Compute surrogate loss.
 
         Policy Gradient only use reward advantage.
-        
+
         Args:
             adv (torch.Tensor): reward advantage
             cost_adv (torch.Tensor): cost advantage
         """
-        return adv - self.lagrangian_multiplier*cost_adv
+        return adv - self.lagrangian_multiplier * cost_adv
 
     def algorithm_specific_logs(self) -> None:
         """Log the RCPO specific information.
