@@ -55,7 +55,7 @@ class PDO(PolicyGradient, Lagrange):
     def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
 
-        Additionally, we update the Lagrange multiplier parameter ,
+        Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.
 
         .. note::
@@ -69,7 +69,7 @@ class PDO(PolicyGradient, Lagrange):
 
             where :math:`\lambda` is the Lagrange multiplier parameter.
         """
-        # note that logger already uses MPI statistics across all processes..
+        # note that logger already uses MPI statistics across all processes.
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
         # first update Lagrange multiplier parameter
         self.update_lagrange_multiplier(Jc)

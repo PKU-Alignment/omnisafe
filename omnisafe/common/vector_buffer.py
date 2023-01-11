@@ -90,7 +90,7 @@ class VectorBuffer:
     def get(self) -> Dict[str, torch.Tensor]:
         """Get all data in buffers."""
         data = {}
-        for _, buffer in enumerate(self.buffers):
+        for buffer in self.buffers:
             buffer_data = buffer.get()
             for key, value in buffer_data.items():
                 if key in data:

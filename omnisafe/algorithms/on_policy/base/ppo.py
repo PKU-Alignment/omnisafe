@@ -33,7 +33,7 @@ class PPO(PolicyGradient):
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize Proximal Policy Optimization .
+        """Initialize Proximal Policy Optimization.
 
         .. note::
             The ``clip`` parameter is the clip parameter in PPO,
@@ -59,6 +59,7 @@ class PPO(PolicyGradient):
         adv: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         r"""Computing pi/actor loss.
+
         In Proximal Policy Optimization, the loss is defined as:
 
         .. math::

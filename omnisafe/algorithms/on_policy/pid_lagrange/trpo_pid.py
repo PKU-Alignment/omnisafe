@@ -134,7 +134,7 @@ class TRPOPid(TRPO, PIDLagrangian):
         Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.
         """
-        # note that logger already uses MPI statistics across all processes..
+        # note that logger already uses MPI statistics across all processes.
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
         # first update Lagrange multiplier parameter
         self.pid_update(Jc)

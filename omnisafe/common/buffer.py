@@ -329,8 +329,4 @@ class Buffer:
         """
         raw_data = self.get()
         data = deepcopy(raw_data)
-        # Note: use_reward_scaling is currently applied in Buffer...
-        # If self.use_reward_scaling:
-        #     rew = self.ac.ret_oms(data['rew'], subtract_mean=False, clip=True)
-        #     data['rew'] = rew
         return raw_data, data

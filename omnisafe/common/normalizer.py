@@ -20,8 +20,8 @@ import torch.nn as nn
 
 
 class Normalizer(nn.Module):
-    """
-    Calculate normalized raw_data from running mean and std
+    """Calculate normalized raw_data from running mean and std
+
     See https://www.johndcook.com/blog/standard_deviation/
     """
 

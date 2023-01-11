@@ -142,8 +142,6 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             self.actor = actor_builder.build_actor(actor_type, act_max=act_max, act_min=act_min)
         self.actor.load_state_dict(self.model_params['pi'])
 
-        # make the observation OMS
-
     # pylint: disable-next=too-many-locals
     def evaluate(
         self,
@@ -243,12 +241,11 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             print("Remake the environment with render_mode='rgb_array' to render the environment.")
             self.env = self._make_env(**env_kwargs)
             self.render_mode = 'rgb_array'
-        print(env_kwargs)
+
         if env_kwargs.get('camara_id') != camera_id or env_kwargs.get('camera_name') != camera_name:
             print("Remake the environment with render_mode='rgb_array' to change the camera.")
             env_kwargs['camera_id'] = camera_id
             env_kwargs['camera_name'] = camera_name
-            print(env_kwargs)
             self.env = self._make_env(**env_kwargs)
             self.render_mode = 'rgb_array'
 
