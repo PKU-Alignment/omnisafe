@@ -19,13 +19,11 @@ from types import MappingProxyType
 
 from omnisafe.wrappers.cmdp_wrapper import CMDPWrapper
 from omnisafe.wrappers.early_terminated_wrapper import EarlyTerminatedWrapper
-from omnisafe.wrappers.model_based_wrapper import ModelBasedEnvWrapper
 from omnisafe.wrappers.saute_wrapper import SauteWrapper
 from omnisafe.wrappers.simmer_wrapper import PidController, QController, SimmerWrapper
 
 
 ENVWRAPPERS = {
-    'model-based-wrapper': ModelBasedEnvWrapper,
     'cmdp-wrapper': CMDPWrapper,
     'saute-wrapper': SauteWrapper,
     'simmer-wrapper': SimmerWrapper,

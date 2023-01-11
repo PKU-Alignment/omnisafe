@@ -176,7 +176,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             for step in range(horizon):
                 with torch.no_grad():
                     act = self.actor.predict(
-                        self.obs_normalize(torch.as_tensor(obs, dtype=torch.float32)),
+                        self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)),
                         deterministic=True,
                         need_log_prob=False,
                     )
@@ -194,7 +194,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         print(f'Average episode reward: {np.mean(episode_rewards):.3f}')
         print(f'Average episode cost: {np.mean(episode_costs):.3f}')
         print(f'Average episode length: {np.mean(episode_lengths):.3f}')
-        return episode_rewards, episode_costs, episode_lengths
+        return episode_rewards, episode_costs, 
 
     def render(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         self,
