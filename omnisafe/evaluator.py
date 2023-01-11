@@ -175,8 +175,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
             for step in range(horizon):
                 with torch.no_grad():
+                    if self.env.obs_normalize is not None:
+                        obs = self.env.obs_normalize.normalize(obs)
                     act = self.actor.predict(
-                        self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)),
+                        torch.as_tensor(obs, dtype=torch.float32),
                         deterministic=True,
                         need_log_prob=False,
                     )
@@ -257,7 +259,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             self.env = self._make_env(**env_kwargs)
             self.render_mode = 'rgb_array'
 
-        horizon = self.env.RolloutData.max_ep_len
+        horizon = self.env.rollout_data.max_ep_len
         frames = []
         obs, _ = self.env.reset()
 
