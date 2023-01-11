@@ -24,7 +24,6 @@ from gymnasium.spaces import Box
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.critic.q_critic import QCritic
 from omnisafe.utils.model_utils import build_mlp_network
-from omnisafe.utils.online_mean_std import OnlineMeanStd
 
 
 # pylint: disable-next=too-many-instance-attributes

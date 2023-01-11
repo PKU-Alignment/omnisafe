@@ -36,6 +36,8 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 @dataclass
 class RenderData:
+    """Data for rendering."""
+
     env_id: str
     render_mode: str
     camera_id: int
@@ -121,7 +123,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             torch.set_num_threads(self.cfgs.num_threads)
         width = self.env.width if hasattr(self.env, 'width') else 256
         height = self.env.height if hasattr(self.env, 'height') else 256
-        self.RenderData = RenderData(
+        self.render_data = RenderData(
             env_id,
             env_kwargs.get('render_mode', None),
             env_kwargs.get('camera_id', None),
@@ -193,23 +195,19 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         """Render environment"""
         if self.cfgs.num_envs == 1:
             return self.env.render()
-        else:
-            imgs = self.get_images()
-            bigimg = tile_images(imgs)
-            mode = self.RenderData.render_mode
-            if mode == 'human':
-                self.get_viewer().imshow(bigimg)
-                return self.get_viewer().isopen
-            elif mode == 'rgb_array':
-                return bigimg
-            else:
-                raise NotImplementedError
+        imgs = self.get_images()
+        bigimg = tile_images(imgs)
+        mode = self.render_data.render_mode
+        if mode == 'rgb_array':
+            return bigimg
+        raise NotImplementedError
 
     def sample_action(self):
         """Sample action from the environment."""
         return self.env.action_space.sample()
 
     def get_images(self):
+        """Get images from all environments."""
         for pipe in self.env.parent_pipes:
             pipe.send(('render', None))
         imgs = [pipe.recv() for pipe in self.env.parent_pipes]
