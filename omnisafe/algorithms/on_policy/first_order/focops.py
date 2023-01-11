@@ -72,7 +72,7 @@ class FOCOPS(PolicyGradient, Lagrange):
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def compute_loss_pi(
         self,
         obs: torch.Tensor,
@@ -110,23 +110,23 @@ class FOCOPS(PolicyGradient, Lagrange):
         loss_pi = loss_pi.mean()
         loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
 
-        # Useful extra info
+        # useful extra info
         approx_kl = 0.5 * (log_p - _log_p).mean().item()
         ent = dist.entropy().mean().item()
         pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
 
         return loss_pi, pi_info
 
-    # pylint: disable=too-many-locals
+    # pylint: disable-next=too-many-locals
     def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         """Update actor, critic, running statistics as we used in the :class:`PolicyGradient`.
 
         In addition, we also update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` function.
         """
-        # Note that logger already uses MPI statistics across all processes..
+        # note that logger already uses MPI statistics across all processes..
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
-        # First update Lagrange multiplier parameter
+        # first update Lagrange multiplier parameter
         self.update_lagrange_multiplier(Jc)
         data = self.buf.get()
         obs, act, log_p, target_v, target_c, adv, cost_adv = (
@@ -138,47 +138,47 @@ class FOCOPS(PolicyGradient, Lagrange):
             data['adv'],
             data['cost_adv'],
         )
-        # Get the loss before
+        # get the loss before
         loss_pi_before, loss_v_before = self.loss_record.get_mean('loss_pi', 'loss_v')
         if self.cfgs.use_cost:
             loss_c_before = self.loss_record.get_mean('loss_c')
         self.loss_record.reset('loss_pi', 'loss_v', 'loss_c')
-        # Compute the old distribution of policy net.
+        # compute the old distribution of policy net.
         old_dist = self.actor_critic.actor(obs)
 
-        # Load the data into the data loader.
+        # load the data into the data loader.
         dataset = torch.utils.data.TensorDataset(obs, act, target_v, target_c, log_p, adv, cost_adv)
         loader = torch.utils.data.DataLoader(
             dataset, batch_size=self.cfgs.num_mini_batches, shuffle=True
         )
 
-        # Update the value net, cost net and policy net for several times.
+        # update the value net, cost net and policy net for several times.
         for i in range(self.cfgs.actor_iters):
             for _, (obs_b, act_b, target_v_b, target_c_b, log_p_b, adv_b, cost_adv_b) in enumerate(
                 loader
             ):
-                # Update the value net.
+                # update the value net.
                 self.update_value_net(obs_b, target_v_b)
-                # Update the cost net, if use cost.
+                # update the cost net, if use cost.
                 if self.cfgs.use_cost:
                     self.update_cost_net(obs_b, target_c_b)
-                # Update the policy net.
+                # update the policy net.
                 self.p_dist, _ = self.actor_critic.actor(obs_b, act_b)
                 self.update_policy_net(obs_b, act_b, log_p_b, adv_b, cost_adv_b)
-            # Compute the new distribution of policy net.
+            # compute the new distribution of policy net.
             new_dist = self.actor_critic.actor(obs)
-            # Compute the KL divergence between old and new distribution.
+            # compute the KL divergence between old and new distribution.
             torch_kl = (
                 torch.distributions.kl.kl_divergence(old_dist, new_dist)
                 .sum(-1, keepdim=True)
                 .mean()
                 .item()
             )
-            # If the KL divergence is larger than the target KL divergence, stop the update.
+            # if the KL divergence is larger than the target KL divergence, stop the update.
             if self.cfgs.kl_early_stopping and torch_kl > self.cfgs.target_kl:
                 self.logger.log(f'KL early stop at the {i+1} th step.')
                 break
-        # Log the information.
+        # log the information.
         loss_pi, loss_v = self.loss_record.get_mean('loss_pi', 'loss_v')
         self.logger.store(
             **{

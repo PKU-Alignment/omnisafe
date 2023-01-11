@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Lagrange version of the TD3 algorithm."""
+
 from typing import Dict, NamedTuple, Tuple
 
 import torch
@@ -24,7 +25,8 @@ from omnisafe.models.constraint_actor_q_critic import ConstraintActorQCritic
 
 
 @registry.register
-class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes
+class TD3Lag(TD3, Lagrange):
     """The Lagrange version of the TD3 algorithm
 
     References:
@@ -91,7 +93,7 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
         - :meth:`log`: epoch/update information for visualization and terminal log print.
         """
         for steps in range(0, self.local_steps_per_epoch * self.epochs, self.update_every):
-            # Until start_steps have elapsed, randomly sample actions
+            # until start_steps have elapsed, randomly sample actions
             # from a uniform distribution for better exploration. Afterwards,
             # use the learned policy (with some noise, via act_noise).
             use_rand_action = steps < self.start_steps
@@ -104,13 +106,13 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
                 ep_steps=self.update_every,
             )
 
-            # Update handling
+            # update handling
             if steps >= self.update_after:
                 for _ in range(self.update_every):
                     batch = self.buf.sample_batch()
                     self.update(data=batch)
 
-            # End of epoch handling
+            # end of epoch handling
             if steps % self.steps_per_epoch == 0 and steps:
                 epoch = steps // self.steps_per_epoch
                 if self.cfgs.exploration_noise_anneal:
@@ -119,16 +121,16 @@ class TD3Lag(TD3, Lagrange):  # pylint: disable=too-many-instance-attributes
                 #     if self.use_cost_decay:
                 #         self.cost_limit_decay(epoch)
 
-                # Save model to disk
+                # save model to disk
                 if (epoch + 1) % self.cfgs.save_freq == 0:
                     self.logger.torch_save(itr=epoch)
 
-                # Test the performance of the deterministic version of the agent.
+                # test the performance of the deterministic version of the agent.
                 self.test_agent()
                 if self.cfgs.use_cost and hasattr(self, 'lagrangian_multiplier'):
                     Jc = self.logger.get_stats('Test/EpCost')[0]
                     self.update_lagrange_multiplier(Jc)
-                # Log info about epoch
+                # log info about epoch
                 self.log(epoch, steps)
         return self.actor_critic
 

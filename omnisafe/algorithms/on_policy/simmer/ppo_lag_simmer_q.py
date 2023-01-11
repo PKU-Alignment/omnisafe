@@ -27,7 +27,7 @@ class PPOLagSimmerQ(PPOLag):
     References:
         - Title: Effects of Safety State Augmentation on Safe Exploration
         - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
-        - URL: https://arxiv.org/abs/2206.02675
+        - URL: `Simmer RL <https://arxiv.org/abs/2206.02675>`_
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:

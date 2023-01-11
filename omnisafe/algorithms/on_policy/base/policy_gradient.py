@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Policy Gradient algorithm."""
+
 import time
 from copy import deepcopy
 from typing import Dict, NamedTuple, Tuple
@@ -33,13 +34,15 @@ from omnisafe.wrappers import wrapper_registry
 
 
 @registry.register
-class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-long
+# pylint: disable-next=too-many-instance-attributes
+class PolicyGradient:
     """The Policy Gradient algorithm.
 
     References:
         - Title: Policy Gradient Methods for Reinforcement Learning with Function Approximation
         - Authors: Richard S. Sutton, David McAllester, Satinder Singh, Yishay Mansour.
-        - URL: `Policy Gradient <https://proceedings.neurips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf>`_
+        - URL: `Policy Gradient <https://proceedings.neurips.cc/paper
+        /1999/file/64d828b85b0bed98e80ade0a5c43b0f-Paper.pdf>`_
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
@@ -62,29 +65,29 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
             cfgs.steps_per_epoch // cfgs.env_cfgs.num_envs // distributed_utils.num_procs()
         )
 
-        # Ensure local each local process can experience at least one complete episode
+        # ensure local each local process can experience at least one complete episode
         assert self.env.rollout_data.max_ep_len <= self.local_steps_per_epoch, (
             f'Reduce number of cores ({distributed_utils.num_procs()})'
             f'or reduce the number of parallel envrionments {self.env.cfgs.num_envs}'
             f'or increase batch size {self.cfgs.steps_per_epoch}.'
         )
 
-        # Set up logger and save configuration to disk
+        # set up logger and save configuration to disk
         self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
         self.logger.save_config(namedtuple2dict(cfgs))
-        # Set seed
+        # set seed
         seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
         torch.manual_seed(seed)
         np.random.seed(seed)
-        # Setup actor-critic module
+        # setup actor-critic module
         self.actor_critic = ConstraintActorCritic(
             observation_space=self.env.observation_space,
             action_space=self.env.action_space,
             model_cfgs=cfgs.model_cfgs,
         )
-        # Set PyTorch + MPI.
+        # set PyTorch + MPI.
         self.set_mpi()
-        # Set up experience buffer
+        # set up experience buffer
 
         self.buf = Buffer(
             obs_dim=self.env.observation_space.shape[0],
@@ -99,7 +102,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
             penalty_param=cfgs.penalty_param,
             num_envs=cfgs.env_cfgs.num_envs,
         )
-        # Set up optimizer for policy and value function
+        # set up optimizer for policy and value function
         self.actor_optimizer = core.set_optimizer(
             'Adam', module=self.actor_critic.actor, learning_rate=cfgs.actor_lr
         )
@@ -110,16 +113,16 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
             self.cost_critic_optimizer = core.set_optimizer(
                 'Adam', module=self.actor_critic.cost_critic, learning_rate=cfgs.critic_lr
             )
-        # Set up scheduler for policy learning rate decay
+        # set up scheduler for policy learning rate decay
         self.scheduler = self.set_learning_rate_scheduler()
-        # Set up model saving
+        # set up model saving
         what_to_save = {
             'pi': self.actor_critic.actor,
-            'obs_normalize': self.env.obs_normalize,
+            'obs_normalizer': self.env.obs_normalizer,
         }
         self.logger.setup_torch_saver(what_to_save=what_to_save)
         self.logger.torch_save()
-        # Setup statistics
+        # set up statistics
         self.start_time = time.time()
         self.logger.log('Start with training.')
         self.epoch_time = None
@@ -135,7 +138,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
         """
         scheduler = None
         if self.cfgs.linear_lr_decay:
-            # Linear anneal
+            # linear anneal
             def linear_anneal(epoch):
                 return 1 - epoch / self.cfgs.epochs
 
@@ -150,11 +153,11 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
         Sync parameters of actor and critic across cores,
         only once necessary."""
         if distributed_utils.num_procs() > 1:
-            # Avoid slowdowns from PyTorch + MPI combo
+            # avoid slowdowns from PyTorch + MPI combo
             distributed_utils.setup_torch_for_mpi()
             start = time.time()
             self.logger.log('INFO: Sync actor critic parameters')
-            # Sync parameters across cores: only once necessary, grads are averaged!
+            # sync parameters across cores: only once necessary, grads are averaged!
             distributed_utils.sync_params(self.actor_critic)
             self.logger.log(f'Done! (took {time.time()-start:0.3f} sec.)')
 
@@ -197,7 +200,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
         """
         return adv - 0.0 * cost_adv
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def compute_loss_pi(
         self,
         obs: torch.Tensor,
@@ -226,15 +229,15 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
             log_p (torch.Tensor): ``log probability`` of action stored in buffer.
             adv (torch.Tensor): ``advantage`` stored in buffer.
         """
-        # Policy loss
+        # policy loss
         dist, _log_p = self.actor_critic.actor(obs, act)
         ratio = torch.exp(_log_p - log_p)
 
         loss_pi = -(ratio * adv).mean()
-        # Useful extra info
+        # useful extra info
         approx_kl = (0.5 * (dist.mean - act) ** 2 / dist.stddev**2).mean().item()
 
-        # Compute policy's entropy
+        # compute policy's entropy
         ent = dist.entropy().mean().item()
 
         pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
@@ -248,13 +251,13 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
         - :meth:`update`: perform actor/critic updates.
         - :meth:`log`: epoch/update information for visualization and terminal log print.
         """
-        # Main loop: collect experience in env and update/log each epoch
+        # main loop: collect experience in env and update/log each epoch
         for epoch in range(self.cfgs.epochs):
             self.epoch_time = time.time()
-            # Update internals of AC
+            # update internals of AC
             if self.cfgs.exploration_noise_anneal:
                 self.actor_critic.anneal_exploration(frac=epoch / self.cfgs.epochs)
-            # Collect data from environment
+            # collect data from environment
             self.env.set_rollout_cfgs(
                 local_steps_per_epoch=self.local_steps_per_epoch,
                 use_cost=self.cfgs.use_cost,
@@ -264,18 +267,18 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
                 self.buf,
                 self.logger,
             )
-            # Update: actor, critic, running statistics
+            # update: actor, critic, running statistics
             self.update()
-            # Log and store information
+            # log and store information
             self.log(epoch)
-            # Check if all models own the same parameter values
+            # check if all models own the same parameter values
             if epoch % self.cfgs.check_freq == 0:
                 self.check_distributed_parameters()
-            # Save model to disk
+            # save model to disk
             if (epoch + 1) % self.cfgs.save_freq == 0:
                 self.logger.torch_save(itr=epoch)
 
-        # Close opened files to avoid number of open files overflow
+        # close opened files to avoid number of open files overflow
         self.logger.close()
         return self.actor_critic
 
@@ -344,7 +347,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
         """
         total_env_steps = (epoch + 1) * self.cfgs.steps_per_epoch
         fps = self.cfgs.steps_per_epoch / (time.time() - self.epoch_time)
-        # Step the actor learning rate scheduler if provided
+        # step the actor learning rate scheduler if provided
         if self.scheduler and self.cfgs.linear_lr_decay:
             current_lr = self.scheduler.get_last_lr()[0]
             self.scheduler.step()
@@ -356,18 +359,18 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
         self.logger.log_tabular('Metrics/EpCost')
         self.logger.log_tabular('Metrics/EpLen')
 
-        # Log information about actor
+        # log information about actor
         self.logger.log_tabular('Loss/Loss_pi')
         self.logger.log_tabular('Loss/Delta_loss_pi')
         self.logger.log_tabular('Values/Adv')
 
-        # Log information about critic
+        # log information about critic
         self.logger.log_tabular('Loss/Loss_reward_critic')
         self.logger.log_tabular('Loss/Delta_loss_reward_critic')
         self.logger.log_tabular('Values/V')
 
         if self.cfgs.use_cost:
-            # Log information about cost critic
+            # log information about cost critic
             self.logger.log_tabular('Loss/Loss_cost_critic')
             self.logger.log_tabular('Loss/Delta_loss_cost_critic')
             self.logger.log_tabular('Values/C')
@@ -378,8 +381,8 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
         self.logger.log_tabular('Train/PolicyRatio')
         self.logger.log_tabular('Train/LR', current_lr)
         if self.cfgs.env_cfgs.normalized_rew:
-            reward_norm_mean = self.env.rew_normalize.mean.mean().item()
-            reward_norm_stddev = self.env.rew_normalize.std.mean().item()
+            reward_norm_mean = self.env.rew_normalizer.mean.mean().item()
+            reward_norm_stddev = self.env.rew_normalizer.std.mean().item()
             self.logger.log_tabular('Misc/RewScaleMean', reward_norm_mean)
             self.logger.log_tabular('Misc/RewScaleStddev', reward_norm_stddev)
         if self.cfgs.exploration_noise_anneal:
@@ -387,7 +390,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
             self.logger.log_tabular('Misc/ExplorationNoiseStd', noise_std)
         if self.cfgs.model_cfgs.ac_kwargs.pi.actor_type == 'gaussian_learning':
             self.logger.log_tabular('Misc/ExplorationNoiseStd', self.actor_critic.actor.std)
-        # Some child classes may add information to logs
+        # some child classes may add information to logs
         self.algorithm_specific_logs()
         self.logger.log_tabular('TotalEnvSteps', total_env_steps)
         self.logger.log_tabular('Time', int(time.time() - self.start_time))
@@ -395,7 +398,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
 
         self.logger.dump_tabular()
 
-    # pylint: disable=too-many-locals
+    # pylint: disable-next=too-many-locals
     def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         r"""Update actor, critic, running statistics, following next steps:
 
@@ -436,7 +439,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
         #. Repeat steps 2, 3 until the number of mini-batch data is used up.
 
         """
-        # Get the data from buffer
+        # get the data from buffer
         data = self.buf.get()
         obs, act, log_p, target_v, target_c, adv, cost_adv = (
             data['obs'],
@@ -447,46 +450,46 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
             data['adv'],
             data['cost_adv'],
         )
-        # Get the loss before
+        # get the loss before
         loss_pi_before, loss_v_before = self.loss_record.get_mean('loss_pi', 'loss_v')
         if self.cfgs.use_cost:
             loss_c_before = self.loss_record.get_mean('loss_c')
         self.loss_record.reset('loss_pi', 'loss_v', 'loss_c')
-        # Compute the old distribution of policy net.
+        # compute the old distribution of policy net.
         old_dist = self.actor_critic.actor(obs)
 
-        # Load the data into the data loader.
+        # load the data into the data loader.
         dataset = torch.utils.data.TensorDataset(obs, act, target_v, target_c, log_p, adv, cost_adv)
         loader = torch.utils.data.DataLoader(
             dataset, batch_size=self.cfgs.num_mini_batches, shuffle=True
         )
 
-        # Update the value net, cost net and policy net for several times.
+        # update the value net, cost net and policy net for several times.
         for i in range(self.cfgs.actor_iters):
             for _, (obs_b, act_b, target_v_b, target_c_b, log_p_b, adv_b, cost_adv_b) in enumerate(
                 loader
             ):
-                # Update the value net.
+                # update the value net.
                 self.update_value_net(obs_b, target_v_b)
-                # Update the cost net, if use cost.
+                # update the cost net, if use cost.
                 if self.cfgs.use_cost:
                     self.update_cost_net(obs_b, target_c_b)
-                # Update the policy net.
+                # update the policy net.
                 self.update_policy_net(obs_b, act_b, log_p_b, adv_b, cost_adv_b)
-            # Compute the new distribution of policy net.
+            # compute the new distribution of policy net.
             new_dist = self.actor_critic.actor(obs)
-            # Compute the KL divergence between old and new distribution.
+            # compute the KL divergence between old and new distribution.
             torch_kl = (
                 torch.distributions.kl.kl_divergence(old_dist, new_dist)
                 .sum(-1, keepdim=True)
                 .mean()
                 .item()
             )
-            # If the KL divergence is larger than the target KL divergence, stop the update.
+            # if the KL divergence is larger than the target KL divergence, stop the update.
             if self.cfgs.kl_early_stopping and torch_kl > self.cfgs.target_kl:
                 self.logger.log(f'KL early stop at the {i+1} th step.')
                 break
-        # Log the information.
+        # log the information.
         loss_pi, loss_v = self.loss_record.get_mean('loss_pi', 'loss_v')
         self.logger.store(
             **{
@@ -509,7 +512,7 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
             )
         return data
 
-    # pylint: disable=too-many-locals
+    # pylint: disable-next=too-many-locals,too-many-arguments
     def update_policy_net(
         self,
         obs: torch.Tensor,
@@ -543,22 +546,22 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
             adv (torch.Tensor): ``advantage`` stored in buffer.
             cost_adv (torch.Tensor): ``cost_advantage`` stored in buffer.
         """
-        # Process the advantage function.
+        # process the advantage function.
         processed_adv = self.compute_surrogate(adv=adv, cost_adv=cost_adv)
-        # Compute the loss of policy net.
+        # compute the loss of policy net.
         loss_pi, pi_info = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=processed_adv)
-        # Log the loss of policy net.
+        # log the loss of policy net.
         self.loss_record.append(loss_pi=loss_pi.mean().item())
-        # Update the policy net.
+        # update the policy net.
         self.actor_optimizer.zero_grad()
-        # Backward the loss of policy net.
+        # backward the loss of policy net.
         loss_pi.backward()
-        # Clip the gradient of policy net.
+        # clip the gradient of policy net.
         if self.cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
                 self.actor_critic.actor.parameters(), self.cfgs.max_grad_norm
             )
-        # Average the gradient of policy net.
+        # average the gradient of policy net.
         distributed_utils.mpi_avg_grads(self.actor_critic.actor)
         self.actor_optimizer.step()
         self.logger.store(
@@ -597,25 +600,25 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
             target_v (torch.Tensor): ``target_v`` stored in buffer.
         """
         self.reward_critic_optimizer.zero_grad()
-        # Compute the loss of value net.
+        # compute the loss of value net.
         loss_v = self.critic_loss_fn(
             self.actor_critic.reward_critic(obs),
             target_v,
         )
-        # Add the norm of critic network parameters to the loss function.
+        # add the norm of critic network parameters to the loss function.
         if self.cfgs.use_critic_norm:
             for param in self.actor_critic.reward_critic.net.parameters():
                 loss_v += param.pow(2).sum() * self.cfgs.critic_norm_coeff
-        # Log the loss of value net.
+        # log the loss of value net.
         self.loss_record.append(loss_v=loss_v.mean().item())
-        # Backward
+        # backward
         loss_v.backward()
-        # Clip the gradient
+        # clip the gradient
         if self.cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
                 self.actor_critic.reward_critic.parameters(), self.cfgs.max_grad_norm
             )
-        # Average grads across MPI processes.
+        # average grads across MPI processes.
         distributed_utils.mpi_avg_grads(self.actor_critic.reward_critic.net)
         self.reward_critic_optimizer.step()
 
@@ -644,24 +647,24 @@ class PolicyGradient:  # pylint: disable=too-many-instance-attributes, line-too-
             target_c (torch.Tensor): ``target_c`` stored in buffer.
         """
         self.cost_critic_optimizer.zero_grad()
-        # Compute the loss of cost net.
+        # compute the loss of cost net.
         loss_c = self.critic_loss_fn(
             self.actor_critic.cost_critic(obs),
             target_c,
         )
-        # Add the norm of critic network parameters to the loss function.
+        # add the norm of critic network parameters to the loss function.
         if self.cfgs.use_critic_norm:
             for param in self.actor_critic.cost_critic.net.parameters():
                 loss_c += param.pow(2).sum() * self.cfgs.critic_norm_coeff
-        # Log the loss.
+        # log the loss.
         self.loss_record.append(loss_c=loss_c.mean().item())
-        # Backward.
+        # backward.
         loss_c.backward()
-        # Clip the gradient.
+        # clip the gradient.
         if self.cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
                 self.actor_critic.reward_critic.parameters(), self.cfgs.max_grad_norm
             )
-        # Average grads across MPI processes.
+        # average grads across MPI processes.
         distributed_utils.mpi_avg_grads(self.actor_critic.cost_critic.net)
         self.cost_critic_optimizer.step()

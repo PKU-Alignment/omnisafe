@@ -73,7 +73,7 @@ class TRPOPid(TRPO, PIDLagrangian):
         self.logger.log_tabular('PID/pid_Ki', self.pid_ki)
         self.logger.log_tabular('PID/pid_Kd', self.pid_kd)
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def compute_loss_pi(
         self,
         obs: torch.Tensor,
@@ -102,11 +102,11 @@ class TRPOPid(TRPO, PIDLagrangian):
         dist, _log_p = self.actor_critic.actor(obs, act)
         ratio = torch.exp(_log_p - log_p)
 
-        # Compute loss via ratio and advantage
+        # compute loss via ratio and advantage
         loss_pi = -(ratio * adv).mean()
         loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
 
-        # Useful extra info
+        # useful extra info
         approx_kl = 0.5 * (log_p - _log_p).mean().item()
         ent = dist.entropy().mean().item()
         pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
@@ -134,9 +134,9 @@ class TRPOPid(TRPO, PIDLagrangian):
         Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.
         """
-        # Note that logger already uses MPI statistics across all processes..
+        # note that logger already uses MPI statistics across all processes..
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
-        # First update Lagrange multiplier parameter
+        # first update Lagrange multiplier parameter
         self.pid_update(Jc)
-        # Then update the policy and value net.
+        # then update the policy and value net.
         TRPO.update(self)

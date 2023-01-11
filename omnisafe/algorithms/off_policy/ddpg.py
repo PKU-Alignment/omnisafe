@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the DDPG algorithm."""
+
 import time
 from copy import deepcopy
 from typing import Dict, NamedTuple, Tuple
@@ -31,7 +32,8 @@ from omnisafe.wrappers import wrapper_registry
 
 
 @registry.register
-class DDPG:  # pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes
+class DDPG:
     """The Deep Deterministic Policy Gradient (DDPG) algorithm.
 
     References:
@@ -57,20 +59,20 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.env_id = env_id
         self.algo = self.__class__.__name__
 
-        # Set up for learning and rolling out schedule
+        # set up for learning and rolling out schedule
         self.steps_per_epoch = cfgs.steps_per_epoch
         self.local_steps_per_epoch = cfgs.steps_per_epoch
         self.epochs = cfgs.epochs
         self.total_steps = self.epochs * self.steps_per_epoch
         self.start_steps = cfgs.start_steps
-        # The steps in each process should be integer
+        # the steps in each process should be integer
         assert cfgs.steps_per_epoch % distributed_utils.num_procs() == 0
-        # Ensure local each local process can experience at least one complete episode
+        # ensure local each local process can experience at least one complete episode
         assert self.env.rollout_data.max_ep_len <= self.local_steps_per_epoch, (
             f'Reduce number of cores ({distributed_utils.num_procs()}) or increase '
             f'batch size {self.steps_per_epoch}.'
         )
-        # Ensure valid number for iteration
+        # ensure valid number for iteration
         assert cfgs.update_every > 0
         self.max_ep_len = cfgs.max_ep_len
         if hasattr(self.env, '_max_episode_steps'):
@@ -84,22 +86,22 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             use_cost=self.cfgs.use_cost,
         )
 
-        # Set up logger and save configuration to disk
+        # set up logger and save configuration to disk
         self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
         self.logger.save_config(namedtuple2dict(cfgs))
-        # Set seed
+        # set seed
         seed = cfgs.seed + 10000 * distributed_utils.proc_id()
         torch.manual_seed(seed)
         np.random.seed(seed)
-        # Setup actor-critic module
+        # setup actor-critic module
         self.actor_critic = ConstraintActorQCritic(
             observation_space=self.env.observation_space,
             action_space=self.env.action_space,
             model_cfgs=cfgs.model_cfgs,
         )
-        # Set PyTorch + MPI.
+        # set PyTorch + MPI.
         self._init_mpi()
-        # Set up experience buffer
+        # set up experience buffer
         # obs_dim, act_dim, size, batch_size
         self.buf = BaseBuffer(
             obs_dim=self.env.observation_space.shape,
@@ -108,7 +110,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             batch_size=cfgs.replay_buffer_cfgs.batch_size,
             num_envs=cfgs.env_cfgs.num_envs,
         )
-        # Set up optimizer for policy and q-function
+        # set up optimizer for policy and q-function
         self.actor_optimizer = core.set_optimizer(
             'Adam', module=self.actor_critic.actor, learning_rate=cfgs.actor_lr
         )
@@ -119,19 +121,19 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             self.cost_critic_optimizer = core.set_optimizer(
                 'Adam', module=self.actor_critic.cost_critic, learning_rate=cfgs.critic_lr
             )
-        # Set up scheduler for policy learning rate decay
+        # set up scheduler for policy learning rate decay
         self.scheduler = self.set_learning_rate_scheduler()
-        # Set up target network for off_policy training
+        # set up target network for off_policy training
         self._ac_training_setup()
         torch.set_num_threads(10)
-        # Set up model saving
+        # set up model saving
         what_to_save = {
             'pi': self.actor_critic.actor,
-            'obs_normalize': self.env.obs_normalize,
+            'obs_normalizer': self.env.obs_normalizer,
         }
         self.logger.setup_torch_saver(what_to_save=what_to_save)
         self.logger.torch_save()
-        # Set up timer
+        # set up timer
         self.start_time = time.time()
         self.epoch_time = time.time()
         self.logger.log('Start with training.')
@@ -143,7 +145,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         """
         scheduler = None
         if self.cfgs.linear_lr_decay:
-            # Linear anneal
+            # linear anneal
             def linear_anneal(epoch):
                 return 1 - epoch / self.cfgs.epochs
 
@@ -155,11 +157,11 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
     def _init_mpi(self) -> None:
         """Initialize MPI specifics."""
         if distributed_utils.num_procs() > 1:
-            # Avoid slowdowns from PyTorch + MPI combo
+            # avoid slowdowns from PyTorch + MPI combo
             distributed_utils.setup_torch_for_mpi()
             start = time.time()
             self.logger.log('INFO: Sync actor critic parameters')
-            # Sync params across cores: only once necessary, grads are averaged!
+            # sync params across cores: only once necessary, grads are averaged!
             distributed_utils.sync_params(self.actor_critic)
             self.logger.log(f'Done! (took {time.time()-start:0.3f} sec.)')
 
@@ -177,7 +179,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         by calling :meth`polyak_update`.
         """
         self.ac_targ = deepcopy(self.actor_critic)
-        # Freeze target networks with respect to optimizer (only update via polyak averaging)
+        # freeze target networks with respect to optimizer (only update via polyak averaging)
         for param in self.ac_targ.actor.parameters():
             param.requires_grad = False
         for param in self.ac_targ.critic.parameters():
@@ -249,7 +251,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             backup = rew + self.cfgs.gamma * (1 - done) * q_targ
         # MSE loss against Bellman backup
         loss_q = ((q_value - backup) ** 2).mean()
-        # Useful info for logging
+        # useful info for logging
         q_info = dict(QVals=q_value.detach().numpy())
         return loss_q, q_info
 
@@ -288,7 +290,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             backup = cost + self.cfgs.gamma * (1 - done) * qc_targ
         # MSE loss against Bellman backup
         loss_qc = ((cost_q_value - backup) ** 2).mean()
-        # Useful info for logging
+        # useful info for logging
         qc_info = dict(QCosts=cost_q_value.detach().numpy())
 
         return loss_qc, qc_info
@@ -309,7 +311,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         - :meth:`log`: epoch/update information for visualization and terminal log print.
         """
         for steps in range(0, self.local_steps_per_epoch * self.epochs, self.update_every):
-            # Until start_steps have elapsed, randomly sample actions
+            # until start_steps have elapsed, randomly sample actions
             # from a uniform distribution for better exploration. Afterwards,
             # use the learned policy (with some noise, via act_noise).
             use_rand_action = steps < self.start_steps
@@ -322,13 +324,13 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 ep_steps=self.update_every,
             )
 
-            # Update handling
+            # update handling
             if steps >= self.update_after:
                 for _ in range(self.update_every):
                     batch = self.buf.sample_batch()
                     self.update(data=batch)
 
-            # End of epoch handling
+            # end of epoch handling
             if steps % self.steps_per_epoch == 0 and steps:
                 epoch = steps // self.steps_per_epoch
                 if self.cfgs.exploration_noise_anneal:
@@ -337,10 +339,10 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 #     if self.use_cost_decay:
                 #         self.cost_limit_decay(epoch)
 
-                # Save model to disk
+                # save model to disk
                 if (epoch + 1) % self.cfgs.save_freq == 0:
                     self.logger.torch_save(itr=epoch)
-                # Log info about epoch
+                # log info about epoch
                 self.log(epoch, steps)
         return self.actor_critic
 
@@ -377,7 +379,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         #. Update the network by loss.
         #. Repeat steps 2, 3 until the number of mini-batch data is used up.
         """
-        # First run one gradient descent step for Q.
+        # first run one gradient descent step for Q.
         obs, act, rew, cost, next_obs, done = (
             data['obs'],
             data['act'],
@@ -404,15 +406,15 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             for param in self.actor_critic.cost_critic.parameters():
                 param.requires_grad = False
 
-        # Freeze Q-network so you don't waste computational effort
+        # freeze Q-network so you don't waste computational effort
         # computing gradients for it during the policy learning step.
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = False
 
-        # Next run one gradient descent step for actor.
+        # next run one gradient descent step for actor.
         self.update_policy_net(obs=obs)
 
-        # Unfreeze Q-network so you can optimize it at next DDPG step.
+        # unfreeze Q-network so you can optimize it at next DDPG step.
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = True
 
@@ -420,7 +422,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             for param in self.actor_critic.cost_critic.parameters():
                 param.requires_grad = True
 
-        # Finally, update target networks by polyak averaging.
+        # finally, update target networks by polyak averaging.
         self.polyak_update_target()
 
     def polyak_update_target(self) -> None:
@@ -438,7 +440,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         """
         with torch.no_grad():
             for param, param_targ in zip(self.actor_critic.parameters(), self.ac_targ.parameters()):
-                # Notes: We use an in-place operations "mul_", "add_" to update target
+                # notes: We use an in-place operations "mul_", "add_" to update target
                 # params, as opposed to "mul" and "add", which would make new tensors.
                 param_targ.data.mul_(self.cfgs.polyak)
                 param_targ.data.add_((1 - self.cfgs.polyak) * param.data)
@@ -453,7 +455,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         Args:
             obs (:class:`torch.Tensor`): observation.
         """
-        # Train policy with one steps of gradient descent
+        # train policy with one steps of gradient descent
         self.actor_optimizer.zero_grad()
         loss_pi, _ = self.compute_loss_pi(obs)
         loss_pi.backward()
@@ -482,7 +484,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             next_obs (:class:`torch.Tensor`): ``next observation`` saved in data.
             done (:class:`torch.Tensor`): ``terminated`` saved in data.
         """
-        # Train value critic with one steps of gradient descent
+        # train value critic with one steps of gradient descent
         self.critic_optimizer.zero_grad()
         loss_q, q_info = self.compute_loss_v(
             obs=obs,
@@ -514,7 +516,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
             act (:class:`torch.Tensor`): ``action`` saved in data.
             cost (:class:`torch.Tensor`): ``cost`` saved in data.
-            next_obs (:class:`torch.Tensor`): ``next observations`` saved in data.
+            next_obs (:class:`torch.Tensor`): ``next observation`` saved in data.
             done (:class:`torch.Tensor`): ``terminated`` saved in data.
         """
         # Train cost critic with one steps of gradient descent
@@ -602,7 +604,7 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
                 -   Frames per second of the epoch.
         """
         fps = self.cfgs.steps_per_epoch / (time.time() - self.epoch_time)
-        # Step the actor learning rate scheduler if provided
+        # step the actor learning rate scheduler if provided
         if self.scheduler and self.cfgs.linear_lr_decay:
             current_lr = self.scheduler.get_last_lr()[0]
             self.scheduler.step()
@@ -625,8 +627,8 @@ class DDPG:  # pylint: disable=too-many-instance-attributes
         self.logger.log_tabular('Misc/Seed', self.cfgs.seed)
         self.logger.log_tabular('LR', current_lr)
         if self.cfgs.env_cfgs.normalized_rew:
-            reward_norm_mean = self.env.rew_normalize.mean.mean().item()
-            reward_norm_stddev = self.env.rew_normalize.std.mean().item()
+            reward_norm_mean = self.env.rew_normalizer.mean.mean().item()
+            reward_norm_stddev = self.env.rew_normalizer.std.mean().item()
             self.logger.log_tabular('Misc/RewScaleMean', reward_norm_mean)
             self.logger.log_tabular('Misc/RewScaleStddev', reward_norm_stddev)
         if self.cfgs.exploration_noise_anneal:

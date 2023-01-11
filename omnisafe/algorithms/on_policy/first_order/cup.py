@@ -89,7 +89,7 @@ class CUP(PPO, Lagrange):
         self.logger.log_tabular('Train/SecondStepEntropy')
         self.logger.log_tabular('Train/SecondStepPolicyRatio')
 
-    # pylint: disable=too-many-locals
+    # pylint: disable-next=too-many-locals
     def compute_loss_cost_performance(
         self,
         obs: torch.Tensor,
@@ -135,7 +135,7 @@ class CUP(PPO, Lagrange):
         cost_loss = (self.lagrangian_multiplier * coef * ratio * cost_adv + kl_new_old).mean()
         self.loss_record.append(loss_pi_c=cost_loss.item())
 
-        # Useful extra info
+        # useful extra info
         temp_max = torch.max(ratio).detach().numpy()
         temp_min = torch.min(ratio).detach().numpy()
         if temp_max > self.max_ratio:
@@ -148,20 +148,21 @@ class CUP(PPO, Lagrange):
 
         return cost_loss, pi_info
 
+    # pylint: disable-next=too-many-locals
     def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         """Update actor, critic, running statistics as we used in the :class:`PolicyGradient`.
 
         In addition, we also update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` function.
         """
-        # Note that logger already uses MPI statistics across all processes..
+        # note that logger already uses MPI statistics across all processes..
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
-        # First update Lagrange multiplier parameter
+        # first update Lagrange multiplier parameter
         self.update_lagrange_multiplier(Jc)
-        # The first stage is to maximize reward.
+        # the first stage is to maximize reward.
         data = PPO.update(self)
-        # The second stage is to minimize cost.
-        # Get the loss before
+        # the second stage is to minimize cost.
+        # get the loss before
         loss_pi_c_before = self.loss_record.get_mean('loss_pi_c')
         self.loss_record.reset('loss_pi_c')
         obs, act, log_p, cost_adv = (
@@ -173,49 +174,49 @@ class CUP(PPO, Lagrange):
         with torch.no_grad():
             old_dist = self.actor_critic.actor(obs)
             old_mean, old_std = old_dist.mean, old_dist.stddev
-        # Load the data into the data loader.
+        # load the data into the data loader.
         dataset = torch.utils.data.TensorDataset(obs, act, log_p, cost_adv, old_mean, old_std)
         loader = torch.utils.data.DataLoader(
             dataset, batch_size=self.cfgs.num_mini_batches, shuffle=True
         )
 
-        # Update the policy net several times
+        # update the policy net several times
         for i in range(self.cfgs.actor_iters):
             for _, (obs_b, act_b, log_p_b, cost_adv_b, old_mean_b, old_std_b) in enumerate(loader):
-                # Compute the old distribution of policy net.
+                # compute the old distribution of policy net.
                 self.p_dist = torch.distributions.Normal(old_mean_b, old_std_b)
-                # Compute the loss of cost performance.
+                # compute the loss of cost performance.
                 loss_pi_c, pi_info_c = self.compute_loss_cost_performance(
                     obs_b, act_b, log_p_b, cost_adv_b
                 )
-                # Update the policy net.
+                # update the policy net.
                 self.actor_optimizer.zero_grad()
-                # Backward
+                # backward
                 loss_pi_c.backward()
-                # Clip the gradient of policy net.
+                # clip the gradient of policy net.
                 if self.cfgs.use_max_grad_norm:
                     torch.nn.utils.clip_grad_norm_(
                         self.actor_critic.actor.parameters(), self.cfgs.max_grad_norm
                     )
-                # Average the gradient of policy net.
+                # average the gradient of policy net.
                 distributed_utils.mpi_avg_grads(self.actor_critic.actor)
                 self.actor_optimizer.step()
-            # Compute the new distribution of policy net.
+            # compute the new distribution of policy net.
             new_dist = self.actor_critic.actor(obs)
-            # Compute the KL divergence between old and new distribution.
+            # compute the KL divergence between old and new distribution.
             torch_kl = (
                 torch.distributions.kl.kl_divergence(old_dist, new_dist)
                 .sum(-1, keepdim=True)
                 .mean()
                 .item()
             )
-            # If the KL divergence is larger than the target KL divergence, stop the update.
+            # if the KL divergence is larger than the target KL divergence, stop the update.
             if self.cfgs.kl_early_stopping and torch_kl > self.cfgs.target_kl:
                 self.logger.log(f'KL early stop at the {i+1} th step in the second stage.')
                 break
 
         loss_pi_c = self.loss_record.get_mean('loss_pi_c')
-        # Log the information.
+        # log the information.
         self.logger.store(
             **{
                 'Loss/Loss_pi_c': loss_pi_c,

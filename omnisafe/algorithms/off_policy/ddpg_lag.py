@@ -25,7 +25,8 @@ from omnisafe.models.constraint_actor_q_critic import ConstraintActorQCritic
 
 
 @registry.register
-class DDPGLag(DDPG, Lagrange):  # pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes
+class DDPGLag(DDPG, Lagrange):
     """The Lagrange version of the DDPG Algorithm.
 
     References:

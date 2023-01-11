@@ -36,7 +36,7 @@ class PCPO(TRPO):
     References:
         Title: Projection-Based Constrained Policy Optimization
         Authors: Tsung-Yen Yang, Justinian Rosca, Karthik Narasimhan, Peter J. Ramadge.
-        URL: https://arxiv.org/abs/2010.03152
+        URL:`PCPO <https://arxiv.org/abs/2010.03152>_`
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
@@ -106,9 +106,9 @@ class PCPO(TRPO):
             acceptance_step = j + 1
 
             with torch.no_grad():
-                # Loss of policy reward from target/expected reward
+                # loss of policy reward from target/expected reward
                 loss_pi_rew, _ = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=adv)
-                # Loss of cost of policy cost from real/expected reward
+                # loss of cost of policy cost from real/expected reward
                 loss_pi_cost, _ = self.compute_loss_cost_performance(
                     obs=obs, act=act, log_p=log_p, cost_adv=cost_adv
                 )
@@ -119,7 +119,7 @@ class PCPO(TRPO):
             loss_rew_improve = loss_pi_before - loss_pi_rew.item()
             cost_diff = loss_pi_cost.item() - loss_pi_cost_before
 
-            # Average across MPI processes...
+            # average across MPI processes...
             torch_kl = distributed_utils.mpi_avg(torch_kl)
             loss_rew_improve = distributed_utils.mpi_avg(loss_rew_improve)
             cost_diff = distributed_utils.mpi_avg(cost_diff)
@@ -218,7 +218,7 @@ class PCPO(TRPO):
         info = {}
         return cost_loss, info
 
-    # pylint: disable=too-many-locals,invalid-name,too-many-arguments
+    # pylint: disable-next=too-many-locals,too-many-arguments
     def update_policy_net(
         self,
         obs: torch.Tensor,
@@ -247,14 +247,14 @@ class PCPO(TRPO):
         self.fvp_obs = obs[::4]
         theta_old = get_flat_params_from(self.actor_critic.actor)
         self.actor_optimizer.zero_grad()
-        # Process the advantage function.
+        # process the advantage function.
         processed_adv = self.compute_surrogate(adv=adv, cost_adv=cost_adv)
-        # Compute the loss of policy net.
+        # compute the loss of policy net.
         loss_pi, pi_info = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=processed_adv)
         loss_pi_before = loss_pi.item()
         # get prob. distribution before updates
         p_dist = self.actor_critic.actor(obs)
-        # Train policy with multiple steps of gradient descent
+        # train policy with multiple steps of gradient descent
         loss_pi.backward()
         # average grads across MPI processes
         distributed_utils.mpi_avg_grads(self.actor_critic.actor)
@@ -262,13 +262,12 @@ class PCPO(TRPO):
 
         # flip sign since policy_loss = -(ration * adv)
         g_flat *= -1
-
-        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
+        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)  # pylint: disable = invalid-name
         assert torch.isfinite(x).all()
         eps = 1.0e-8
-        # Note that xHx = g^T x, but calculating xHx is faster than g^T x
-        xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
-        H_inv_g = self.Fvp(x)
+        # note that xHx = g^T x, but calculating xHx is faster than g^T x
+        xHx = torch.dot(x, self.Fvp(x))  # pylint: disable = invalid-name
+        H_inv_g = self.Fvp(x)  # pylint: disable = invalid-name
         alpha = torch.sqrt(2 * self.target_kl / (xHx + eps))
         assert xHx.item() >= 0, 'No negative values'
 
@@ -290,19 +289,19 @@ class PCPO(TRPO):
         self.logger.log(f'b^T b = {b_flat.dot(b_flat).item()}')
 
         # set variable names as used in the paper
-        p = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
-        q = xHx
+        p = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)  # pylint: disable = invalid-name
+        q = xHx  # pylint: disable = invalid-name
         # g^T H^{-1} b
-        r = g_flat.dot(p)
+        r = g_flat.dot(p)  # pylint: disable = invalid-name
         # b^T H^{-1} b
-        s = b_flat.dot(p)
+        s = b_flat.dot(p)  # pylint: disable = invalid-name
         step_dir = (
             torch.sqrt(2 * self.target_kl / (q + 1e-8)) * H_inv_g
             - torch.clamp_min(
                 (torch.sqrt(2 * self.target_kl / q) * r + cost) / s, torch.tensor(0.0)
             )
             * p
-        )
+        )  # pylint: disable = invalid-name
 
         final_step_dir, accept_step = self.adjust_cpo_step_direction(
             step_dir,

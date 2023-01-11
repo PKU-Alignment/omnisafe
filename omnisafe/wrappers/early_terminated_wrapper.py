@@ -27,7 +27,8 @@ RenderFrame = TypeVar('RenderFrame')
 
 
 @WRAPPER_REGISTRY.register
-class EarlyTerminatedWrapper(CMDPWrapper):  # pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes
+class EarlyTerminatedWrapper(CMDPWrapper):
     """Implementation of the environment wrapper for early-terminated algorithms.
 
     ``omnisafe`` use different environment wrappers for different kinds of algorithms.

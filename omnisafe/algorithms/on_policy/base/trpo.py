@@ -92,22 +92,22 @@ class TRPO(NaturalPG):
 
         # While not within_trust_region and not out of total_steps:
         for j in range(total_steps):
-            # Update theta params
+            # update theta params
             new_theta = _theta_old + step_frac * step_dir
-            # Set new params as params of net
+            # set new params as params of net
             set_param_values_to_model(self.actor_critic.actor, new_theta)
-            # The stepNo this update accept
+            # the stepNo this update accept
             acceptance_step = j + 1
 
             with torch.no_grad():
                 loss_pi, _ = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=adv)
-                # Compute KL distance between new and old policy
+                # compute KL distance between new and old policy
                 q_dist = self.actor_critic.actor(obs)
                 # KL-distance of old p-dist and new q-dist, applied in KLEarlyStopping
                 torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-            # Real loss improve: old policy loss - new policy loss
+            # real loss improve: old policy loss - new policy loss
             loss_improve = loss_pi_before - loss_pi.item()
-            # Average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)
+            # average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)
             torch_kl = distributed_utils.mpi_avg(torch_kl)
             loss_improve = distributed_utils.mpi_avg(loss_improve)
             menu = (expected_improve, loss_improve)
@@ -159,17 +159,17 @@ class TRPO(NaturalPG):
             adv (torch.Tensor): The advantage tensor.
             cost_adv (torch.Tensor): The cost advantage tensor.
         """
-        # Get loss and info values before update
+        # get loss and info values before update
         self.fvp_obs = obs[::4]
         theta_old = get_flat_params_from(self.actor_critic.actor)
         self.actor_critic.actor.zero_grad()
-        # Process the advantage function.
+        # process the advantage function.
         processed_adv = self.compute_surrogate(adv=adv, cost_adv=cost_adv)
-        # Compute the loss of policy net.
+        # compute the loss of policy net.
         loss_pi, pi_info = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=processed_adv)
         loss_pi_before = distributed_utils.mpi_avg(loss_pi.item())
         p_dist = self.actor_critic.actor(obs)
-        # Train policy with multiple steps of gradient descent
+        # train policy with multiple steps of gradient descent
         loss_pi.backward()
         # average grads across MPI processes
         distributed_utils.mpi_avg_grads(self.actor_critic.actor)
@@ -179,7 +179,7 @@ class TRPO(NaturalPG):
         # pylint: disable-next=invalid-name
         x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
         assert torch.isfinite(x).all()
-        # Note that xHx = g^T x, but calculating xHx is faster than g^T x
+        # note that xHx = g^T x, but calculating xHx is faster than g^T x
         xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
         assert xHx.item() >= 0, 'No negative values'
 

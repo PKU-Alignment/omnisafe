@@ -21,7 +21,7 @@ from typing import Dict, Tuple
 import numpy as np
 from gymnasium import spaces
 
-from omnisafe.common.normalize import Normalize
+from omnisafe.common.normalizer import Normalizer
 from omnisafe.common.record_queue import RecordQueue
 from omnisafe.typing import NamedTuple, Optional
 from omnisafe.utils.tools import expand_dims
@@ -95,7 +95,8 @@ class QTable:
     state_space: np.ndarray
 
 
-class PidController:  # pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes
+class PidController:
     """Using PID controller to control the safety budget in Simmer environment."""
 
     def __init__(
@@ -187,7 +188,8 @@ class PidController:  # pylint: disable=too-many-instance-attributes
         return self.simmer_data.safety_budget
 
 
-class QController:  # pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes
+class QController:
     """Using Q-learning to control the safety budget in Simmer environment."""
 
     def __init__(
@@ -378,7 +380,8 @@ class QController:  # pylint: disable=too-many-instance-attributes
 
 
 @WRAPPER_REGISTRY.register
-class SimmerWrapper(CMDPWrapper):  # pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes
+class SimmerWrapper(CMDPWrapper):
     r"""SimmerEnvWrapper.
 
     Simmer is a safe RL algorithm that uses a safety budget to control the exploration of the RL agent.
@@ -459,8 +462,8 @@ class SimmerWrapper(CMDPWrapper):  # pylint: disable=too-many-instance-attribute
         high = np.array(np.hstack([self.env.observation_space.high, np.inf]), dtype=np.float32)
         low = np.array(np.hstack([self.env.observation_space.low, np.inf]), dtype=np.float32)
         self.observation_space = spaces.Box(high=high, low=low)
-        self.obs_normalize = (
-            Normalize(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5)
+        self.obs_normalizer = (
+            Normalizer(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5)
             if self.cfgs.normalized_obs
             else None
         )

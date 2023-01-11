@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the SDDPG algorithm."""
+
 from typing import Dict, NamedTuple, Tuple
 
 import torch
@@ -29,7 +30,8 @@ from omnisafe.utils.tools import (
 
 
 @registry.register
-class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
+# pylint: disable-next=too-many-instance-attributes
+class SDDPG(DDPG):
     """Lyapunov-based Safe Policy Optimization for Continuous Control.
 
     References:
@@ -69,7 +71,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         Args:
             data (dict): data from replay buffer.
         """
-        # First run one gradient descent step for Q.
+        # first run one gradient descent step for Q.
         self.fvp_obs = data['obs'][::1]
         obs, act, rew, cost, next_obs, done = (
             data['obs'],
@@ -96,22 +98,22 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         for param in self.actor_critic.cost_critic.parameters():
             param.requires_grad = False
 
-        # Freeze Q-network so you don't waste computational effort
+        # freeze Q-network so you don't waste computational effort
         # computing gradients for it during the policy learning step.
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = False
 
-        # Next run one gradient descent step for actor.
+        # next run one gradient descent step for actor.
         self.update_policy_net(obs=obs)
 
-        # Unfreeze Q-network so you can optimize it at next DDPG step.
+        # unfreeze Q-network so you can optimize it at next DDPG step.
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = True
 
         for param in self.actor_critic.cost_critic.parameters():
             param.requires_grad = True
 
-        # Finally, update target networks by polyak averaging.
+        # finally, update target networks by polyak averaging.
         self.polyak_update_target()
 
     def Fvp(self, params: torch.Tensor) -> torch.Tensor:
@@ -162,7 +164,7 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
             log_p (torch.Tensor): Log probability.
             cost_adv (torch.Tensor): Cost advantage.
         """
-        # Compute loss
+        # compute loss
         action = self.actor_critic.actor.predict(obs, deterministic=True)
         loss_pi = self.actor_critic.cost_critic(obs, action)[0]
         pi_info = {}

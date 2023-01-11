@@ -146,7 +146,7 @@ class NaturalPG(PolicyGradient):
             adv (torch.Tensor): The advantage tensor.
             cost_adv (torch.Tensor): The cost advantage tensor.
         """
-        # Get loss and info values before update
+        # get loss and info values before update
         self.fvp_obs = obs[::4]
         theta_old = get_flat_params_from(self.actor_critic.actor)
         self.actor_critic.actor.zero_grad()
@@ -157,7 +157,7 @@ class NaturalPG(PolicyGradient):
             log_p=log_p,
             adv=processed_adv,
         )
-        # Train policy with multiple steps of gradient descent
+        # train policy with multiple steps of gradient descent
         loss_pi.backward()
         # average grads across MPI processes
         distributed_utils.mpi_avg_grads(self.actor_critic.actor)
@@ -167,7 +167,7 @@ class NaturalPG(PolicyGradient):
         # pylint: disable-next=invalid-name
         x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
         assert torch.isfinite(x).all()
-        # Note that xHx = g^T x, but calculating xHx is faster than g^T x
+        # note that xHx = g^T x, but calculating xHx is faster than g^T x
         xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
         assert xHx.item() >= 0, 'No negative values'
 

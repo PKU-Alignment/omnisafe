@@ -69,11 +69,11 @@ class TRPOLag(TRPO, Lagrange):
 
             where :math:`\lambda` is the Lagrange multiplier parameter.
         """
-        # Note that logger already uses MPI statistics across all processes..
+        # note that logger already uses MPI statistics across all processes..
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
-        # First update Lagrange multiplier parameter
+        # first update Lagrange multiplier parameter
         self.update_lagrange_multiplier(Jc)
-        # Then update the policy and value function
+        # then update the policy and value function
         TRPO.update(self)
 
     def compute_surrogate(

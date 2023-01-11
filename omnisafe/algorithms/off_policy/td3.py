@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the TD3 algorithm."""
+
 from typing import Dict, NamedTuple, Tuple
 
 import torch
@@ -22,7 +23,8 @@ from omnisafe.algorithms.off_policy.ddpg import DDPG
 
 
 @registry.register
-class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes
+class TD3(DDPG):
     """The Twin Delayed DDPG (TD3) algorithm.
 
     References:
@@ -82,6 +84,6 @@ class TD3(DDPG):  # pylint: disable=too-many-instance-attributes
             loss_q.append(torch.mean((q_value - backup) ** 2))
             q_values.append(torch.mean(q_value))
 
-        # Useful info for logging
+        # useful info for logging
         q_info = dict(QVals=sum(q_values).detach().numpy())
         return sum(loss_q), q_info

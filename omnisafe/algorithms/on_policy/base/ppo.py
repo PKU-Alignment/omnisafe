@@ -50,7 +50,7 @@ class PPO(PolicyGradient):
             cfgs=cfgs,
         )
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def compute_loss_pi(
         self,
         obs: torch.Tensor,
@@ -76,12 +76,12 @@ class PPO(PolicyGradient):
             cost_adv (torch.Tensor): ``cost advantage`` stored in buffer.
         """
         dist, _log_p = self.actor_critic.actor(obs, act)
-        # Importance ratio
+        # importance ratio
         ratio = torch.exp(_log_p - log_p)
         ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
         loss_pi = -(torch.min(ratio * adv, ratio_clip * adv))
         loss_pi += self.cfgs.entropy_coef * dist.entropy().mean()
-        # Useful extra info
+        # useful extra info
         approx_kl = (0.5 * (dist.mean - act) ** 2 / dist.stddev**2).mean().item()
         ent = dist.entropy().mean().item()
         pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio_clip.mean().item())

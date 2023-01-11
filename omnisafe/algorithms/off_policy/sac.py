@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the SAC algorithm."""
+
 from typing import Dict, NamedTuple, Tuple
 
 import torch
@@ -22,7 +23,8 @@ from omnisafe.algorithms.off_policy.ddpg import DDPG
 
 
 @registry.register
-class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes
+class SAC(DDPG):
     """The Soft Actor-Critic (SAC) algorithm.
 
     References:
@@ -40,7 +42,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         self.alpha = cfgs.alpha
         self.alpha_gamma = cfgs.alpha_gamma
 
-    # pylint: disable-next=too-many-locals,too-many-arguments
+    # pylint: disable-next=too-many-locals, too-many-arguments
     def compute_loss_v(
         self,
         obs: torch.Tensor,
@@ -70,7 +72,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
             obs (torch.Tensor): ``observation`` saved in data.
             act (torch.Tensor): ``action`` saved in data.
             rew (torch.Tensor): ``reward`` saved in data.
-            next_obs (torch.Tensor): ``next observations`` saved in data.
+            next_obs (torch.Tensor): ``next observation`` saved in data.
             done (torch.Tensor): ``terminated`` saved in data.
         """
         q_value_list = self.actor_critic.critic(obs, act)
@@ -88,7 +90,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
             loss_q.append(torch.mean((q_value - backup) ** 2))
             q_values.append(torch.mean(q_value))
 
-        # Useful info for logging
+        # useful info for logging
         q_info = dict(QVals=sum(q_values).detach().numpy())
         return sum(loss_q), q_info
 
@@ -123,7 +125,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
         Args:
             data (dict): data from replay buffer.
         """
-        # First run one gradient descent step for Q.
+        # first run one gradient descent step for Q.
         obs, act, rew, cost, next_obs, done = (
             data['obs'],
             data['act'],
@@ -150,15 +152,15 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
             for param in self.actor_critic.cost_critic.parameters():
                 param.requires_grad = False
 
-        # Freeze Q-network so you don't waste computational effort
+        # freeze Q-network so you don't waste computational effort
         # computing gradients for it during the policy learning step.
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = False
 
-        # Next run one gradient descent step for actor.
+        # next run one gradient descent step for actor.
         self.update_policy_net(obs=obs)
 
-        # Unfreeze Q-network so you can optimize it at next DDPG step.
+        # unfreeze Q-network so you can optimize it at next DDPG step.
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = True
 
@@ -166,7 +168,7 @@ class SAC(DDPG):  # pylint: disable=too-many-instance-attributes
             for param in self.actor_critic.cost_critic.parameters():
                 param.requires_grad = True
 
-        # Finally, update target networks by polyak averaging.
+        # finally, update target networks by polyak averaging.
         self.polyak_update_target()
         self.alpha_discount()
 

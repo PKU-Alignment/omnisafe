@@ -83,7 +83,7 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
         self.logger.log_tabular('PID/pid_Ki', self.pid_ki)
         self.logger.log_tabular('PID/pid_Kd', self.pid_kd)
 
-    # pylint: disable=too-many-arguments,too-many-locals
+    # pylint: disable-next=too-many-arguments,too-many-locals
     def compute_loss_pi(
         self,
         obs: torch.Tensor,
@@ -120,7 +120,7 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
         loss_pi = -surr_adv
         loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
 
-        # Useful extra info
+        # useful extra info
         approx_kl = 0.5 * (log_p - _log_p).mean().item()
         ent = dist.entropy().mean().item()
         pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
@@ -148,9 +148,9 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
         Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.
         """
-        # Note that logger already uses MPI statistics across all processes..
+        # note that logger already uses MPI statistics across all processes..
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
-        # First update Lagrange multiplier parameter
+        # first update Lagrange multiplier parameter
         self.pid_update(Jc)
-        # Then update the policy and value net.
+        # then update the policy and value net.
         PolicyGradient.update(self)

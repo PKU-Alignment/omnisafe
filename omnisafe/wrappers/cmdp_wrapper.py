@@ -24,7 +24,7 @@ from safety_gymnasium.bases import BaseTask
 
 from omnisafe.common.base_buffer import BaseBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.common.normalize import Normalize
+from omnisafe.common.normalizer import Normalizer
 from omnisafe.common.record_queue import RecordQueue
 from omnisafe.common.vector_buffer import VectorBuffer as Buffer
 from omnisafe.models import ConstraintActorCritic, ConstraintActorQCritic
@@ -147,16 +147,16 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             ),
         )
         self.set_seed(int(self.cfgs.env_seed) + 10000 * distributed_utils.proc_id())
-        self.obs_normalize = (
-            Normalize(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5)
+        self.obs_normalizer = (
+            Normalizer(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5)
             if self.cfgs.normalized_obs
             else None
         )
-        self.rew_normalize = (
-            Normalize(shape=(self.cfgs.num_envs, 1), clip=5) if self.cfgs.normalized_rew else None
+        self.rew_normalizer = (
+            Normalizer(shape=(self.cfgs.num_envs, 1), clip=5) if self.cfgs.normalized_rew else None
         )
-        self.cost_normalize = (
-            Normalize(shape=(self.cfgs.num_envs, 1), clip=5) if self.cfgs.normalized_cost else None
+        self.cost_normalizer = (
+            Normalizer(shape=(self.cfgs.num_envs, 1), clip=5) if self.cfgs.normalized_cost else None
         )
         self.record_queue = RecordQueue('ep_ret', 'ep_cost', 'ep_len', maxlen=self.cfgs.max_len)
         self.rollout_data.current_obs = CMDPWrapper.reset(self)[0]
@@ -285,15 +285,15 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         for step_i in range(self.rollout_data.local_steps_per_epoch):
             if self.cfgs.normalized_obs:
                 # Note: do the updates at the end of batch!
-                obs = self.obs_normalize.normalize(obs)
+                obs = self.obs_normalizer.normalize(obs)
             action, value, cost_value, logp = agent.step(torch.as_tensor(obs, dtype=torch.float32))
             next_obs, reward, cost, done, truncated, _ = self.step(action)
             if self.cfgs.normalized_rew:
                 # Note: do the updates at the end of batch!
-                reward = self.rew_normalize.normalize(reward)
+                reward = self.rew_normalizer.normalize(reward)
             if self.cfgs.normalized_cost:
                 # Note: do the updates at the end of batch!
-                cost = self.cost_normalize.normalize(cost)
+                cost = self.cost_normalizer.normalize(cost)
 
             # Save and log
             # Notes:
@@ -340,7 +340,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
                     self.rollout_log(logger, idx)
                 # Only save EpRet / EpLen if trajectory finished
 
-    # pylint: disable=too-many-arguments, too-many-locals
+    # pylint: disable-next=too-many-arguments, too-many-locals
     def off_policy_roll_out(
         self,
         agent: Union[ConstraintActorCritic, ConstraintActorQCritic],
@@ -373,7 +373,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             obs = self.rollout_data.current_obs
             if self.cfgs.normalized_obs:
                 # Note: do the updates at the end of batch!
-                obs = self.obs_normalize.normalize(obs)
+                obs = self.obs_normalizer.normalize(obs)
             action, value, cost_value, _ = agent.step(
                 torch.as_tensor(obs, dtype=torch.float32), deterministic=deterministic
             )
@@ -385,18 +385,17 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             if use_rand_action:
                 action = self.env.action_space.sample()
             # Step the env
-            # pylint: disable=unused-variable
             next_obs, reward, cost, done, truncated, _ = self.step(action)
             if self.cfgs.normalized_rew:
                 # Note: do the updates at the end of batch!
-                reward = self.rew_normalize.normalize(reward)
+                reward = self.rew_normalizer.normalize(reward)
             # Ignore the "done" signal if it comes from hitting the time
             # horizon (that is, when it's an artificial terminal signal
             # that isn't based on the agent's state)
             self.rollout_data.current_obs = next_obs
             if self.cfgs.normalized_obs:
                 # Note: do the updates at the end of batch!
-                next_obs = self.obs_normalize.normalize(next_obs)
+                next_obs = self.obs_normalizer.normalize(next_obs)
             terminals = done | truncated
             epoch_ended = self.rollout_data.rollout_log.ep_len >= self.rollout_data.max_ep_len
             terminals = terminals & ~epoch_ended

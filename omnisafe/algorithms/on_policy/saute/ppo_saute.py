@@ -26,9 +26,9 @@ class PPOSaute(PPO):
 
     References:
         - Title: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation
-        - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang, David Mguni,
-                 Jun Wang, Haitham Bou-Ammar.
-        - URL: https://arxiv.org/abs/2202.06558
+        - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee,
+            Ziyan Wang, David Mguni, Jun Wang, Haitham Bou-Ammar.
+        - URL: `Saute RL<https://arxiv.org/abs/2202.06558>`_
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:

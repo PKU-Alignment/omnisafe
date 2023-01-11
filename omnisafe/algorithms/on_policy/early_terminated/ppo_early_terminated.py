@@ -27,7 +27,7 @@ class PPOEarlyTerminated(PPO):
     References:
         Title: Safe Exploration by Solving Early Terminated MDP
         Authors: Hao Sun, Ziping Xu, Meng Fang, Zhenghao Peng, Jiadong Guo, Bo Dai, Bolei Zhou.
-        URL: https://arxiv.org/abs/2107.04200
+        URL: `Safe Exploration by Solving Early Terminated MDP <https://arxiv.org/abs/2107.04200>`_
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:

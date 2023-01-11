@@ -146,7 +146,7 @@ class VectorBaseBuffer:
     def sample_batch(self):
         """Sample a batch of experiences from the buffer."""
         data = {}
-        for _, buffer in enumerate(self.buffers):
+        for buffer in self.buffers:
             buffer_data = buffer.sample_batch()
             for key, value in buffer_data.items():
                 if key in data:
