@@ -21,16 +21,18 @@ from omnisafe.typing import Dict
 from omnisafe.utils.core import combined_shape
 
 
-# pylint: disable-next=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes, too-many-arguments
 class BaseBuffer:
     """A simple FIFO (First In First Out) experience replay buffer for off-policy agents."""
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         obs_dim: tuple,
         act_dim: tuple,
         size: int,
         batch_size: int,
+        device: torch.device = torch.device('cpu'),
     ):
         r"""Initialize the replay buffer.
 
@@ -66,6 +68,7 @@ class BaseBuffer:
         self.done_buf = np.zeros(size, dtype=np.float32)
         self.ptr, self.size, self.max_size = 0, 0, size
         self.batch_size = batch_size
+        self.device = device
 
     # pylint: disable-next=too-many-arguments
     def store(

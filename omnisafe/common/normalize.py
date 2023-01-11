@@ -1,3 +1,19 @@
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Implementation of Vector Buffer."""
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -5,14 +21,14 @@ import torch.nn as nn
 
 class Normalize(nn.Module):
     """
-    Calculate normalized input from running mean and std
+    Calculate normalized raw_data from running mean and std
     See https://www.johndcook.com/blog/standard_deviation/
     """
 
     def __init__(self, shape, clip=1e6):
         """Initialize the normalize."""
         super().__init__()
-        self.input = nn.Parameter(
+        self.raw_data = nn.Parameter(
             torch.zeros(*shape), requires_grad=False
         )  # Current value of data stream
         self.mean = nn.Parameter(torch.zeros(*shape), requires_grad=False)  # Current mean
@@ -27,19 +43,19 @@ class Normalize(nn.Module):
 
         self.clip = nn.Parameter(clip * torch.ones(*shape), requires_grad=False)
 
-    def push(self, input):
+    def push(self, raw_data):
         """Push a new value into the stream."""
-        self.input.data = input
+        self.raw_data.data = raw_data
         self.count.data[0] += 1
         if self.count.data[0] == 1:
-            self.mean.data = input
+            self.mean.data = raw_data
         else:
             old_mean = self.mean
-            self.mean.data += (input - self.mean.data) / self.count.data
-            self.sumsq.data += (input - old_mean.data) * (input - self.mean.data)
+            self.mean.data += (raw_data - self.mean.data) / self.count.data
+            self.sumsq.data += (raw_data - old_mean.data) * (raw_data - self.mean.data)
             self.var.data = self.sumsq.data / (self.count.data - 1)
             self.std.data = torch.sqrt(self.var.data)
-            self.std.data = torch.mainput(self.std.data, 1e-2 * torch.ones_like(self.std.data))
+            self.std.data = torch.maraw_data(self.std.data, 1e-2 * torch.ones_like(self.std.data))
 
     def get_mean(self):
         """Get the mean value."""
@@ -53,22 +69,26 @@ class Normalize(nn.Module):
         """Get the std."""
         return self.std
 
-    def pre_process(self, input):
-        """Pre-process the input."""
-        if isinstance(input, np.ndarray):
-            input = torch.as_tensor(input, dtype=torch.float32)
-        if len(input.shape) == 1:
-            input = input.unsqueeze(-1)
-        return input
+    def forward(self, raw_data=None):
+        """FOrward"""
+        return self.normalize(raw_data)
 
-    def normalize(self, input=None):
-        """Nomalize the input."""
-        input = self.pre_process(input)
-        if input is not None:
-            self.push(input)
+    def pre_process(self, raw_data):
+        """Pre-process the raw_data."""
+        if isinstance(raw_data, np.ndarray):
+            raw_data = torch.as_tensor(raw_data, dtype=torch.float32)
+        if len(raw_data.shape) == 1:
+            raw_data = raw_data.unsqueeze(-1)
+        return raw_data
+
+    def normalize(self, raw_data=None):
+        """Normalize the raw_data."""
+        raw_data = self.pre_process(raw_data)
+        if raw_data is not None:
+            self.push(raw_data)
             if self.count <= 1:
-                return self.input.data
-            output = (self.input.data - self.mean.data) / self.std.data
+                return self.raw_data.data
+            output = (self.raw_data.data - self.mean.data) / self.std.data
         else:
-            output = (self.input - self.mean) / self.std
+            output = (self.raw_data - self.mean) / self.std
         return torch.clamp(output, -self.clip.data, self.clip.data)

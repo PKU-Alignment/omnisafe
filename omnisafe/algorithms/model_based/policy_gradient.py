@@ -229,8 +229,6 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
         self.actor_critic = ConstraintActorCritic(
             observation_space=self.env.observation_space,
             action_space=self.env.action_space,
-            scale_rewards=self.cfgs.scale_rewards,
-            standardized_obs=self.cfgs.standardized_obs,
             model_cfgs=self.cfgs.model_cfgs,
         ).to(self.device)
         # Set up optimizer for policy and value function

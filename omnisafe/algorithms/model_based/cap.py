@@ -74,7 +74,7 @@ class CAP(
         action = self.off_replay_buffer.act_buf[: self.off_replay_buffer.size, :]
         reward = self.off_replay_buffer.rew_buf[: self.off_replay_buffer.size]
         cost = self.off_replay_buffer.cost_buf[: self.off_replay_buffer.size]
-        next_state = self.off_replay_buffer.obs_next_buf[: self.off_replay_buffer.size, :]
+        next_state = self.off_replay_buffer.next_obs_buf[: self.off_replay_buffer.size, :]
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
         if self.env.env_type == 'mujoco-velocity':

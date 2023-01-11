@@ -14,19 +14,16 @@
 # ==============================================================================
 """Implementation of the Buffer."""
 
-from copy import deepcopy
-from typing import Dict, Tuple
+from typing import Dict
 
-import numpy as np
 import torch
 
 from omnisafe.common.buffer import Buffer
 from omnisafe.utils import distributed_utils
-from omnisafe.utils.core import combined_shape, discount_cumsum
-from omnisafe.utils.vtrace import calculate_v_trace
 
 
 class VectorBuffer:
+    """Vectored buffer for multi-envs training."""
 
     # pylint: disable-next=too-many-arguments
     def __init__(
@@ -66,6 +63,7 @@ class VectorBuffer:
                 )
             )
 
+    # pylint: disable-next=too-many-arguments
     def store(
         self,
         obs: float,
@@ -92,7 +90,7 @@ class VectorBuffer:
     def get(self) -> Dict[str, torch.Tensor]:
         """Get all data in buffers."""
         data = {}
-        for i, buffer in enumerate(self.buffers):
+        for _, buffer in enumerate(self.buffers):
             buffer_data = buffer.get()
             for key, value in buffer_data.items():
                 if key in data:
@@ -100,7 +98,7 @@ class VectorBuffer:
                 else:
                     data[key] = value
         adv_mean, adv_std, *_ = distributed_utils.mpi_statistics_scalar(data['adv'])
-        cadv_mean, cadv_std, *_ = distributed_utils.mpi_statistics_scalar(data['cost_adv'])
+        cadv_mean, *_ = distributed_utils.mpi_statistics_scalar(data['cost_adv'])
         if self.standardized_rew_adv:
             data['adv'] = (data['adv'] - adv_mean) / (adv_std + 1e-8)
         if self.standardized_cost_adv:

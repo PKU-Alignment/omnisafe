@@ -16,7 +16,6 @@
 
 from typing import Dict, NamedTuple, Tuple
 
-import numpy as np
 import torch
 
 from omnisafe.algorithms import registry
@@ -77,7 +76,7 @@ class RCPO(NaturalPG, Lagrange):
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
         self.update_lagrange_multiplier(Jc)
-        # Then update the policy and valuenet.
+        # Then update the policy and value net.
         NaturalPG.update(self)
 
     def compute_surrogate(
