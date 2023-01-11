@@ -72,7 +72,6 @@ class OnlineMeanStd(torch.nn.Module):
     def update(self, data) -> None:
         """Update internals incrementally.
         Note: works for both vector and matrix inputs.
-
         MPI implementation according to Chan et al.[10]; see:
         https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
         """

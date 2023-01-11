@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the SDDPG algorithm."""
+from typing import Dict, NamedTuple, Tuple
 
 import torch
 
@@ -29,23 +30,21 @@ from omnisafe.utils.tools import (
 
 @registry.register
 class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
-    """Implementation of the SDDPG algorithm.
+    """Lyapunov-based Safe Policy Optimization for Continuous Control.
 
     References:
-        Title: Lyapunov-based Safe Policy Optimization for Continuous Control
-        Authors: Yinlam Chow, Ofir Nachum, Aleksandra Faust, Edgar Duenez-Guzman,
-                 Mohammad Ghavamzadeh.
-        URL: https://arxiv.org/abs/1901.10031
+        - Title: Lyapunov-based Safe Policy Optimization for Continuous Control
+        - Authors: Yinlam Chow, Ofir Nachum, Aleksandra Faust, Edgar Duenez-Guzman,
+                   Mohammad Ghavamzadeh.
+        - URL: `SDDPG <https://arxiv.org/abs/1901.10031>`_
     """
 
-    def __init__(self, env_id: str, cfgs=None) -> None:
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
         """Initialize SDDPG.
 
         Args:
             env_id (str): environment id.
-            cfgs (dict): configurations.
-            algo (str): algorithm name.
-            wrapper_type (str): environment wrapper type.
+            cfgs (NamedTuple): configurations.
         """
         super().__init__(
             env_id=env_id,
@@ -59,19 +58,43 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         self.gamma = cfgs.gamma
         self.d_init = cfgs.d_init
 
-    def update(self, data):
-        """Update.
+    def update(self, data: dict) -> None:
+        r"""Update actor, critic, running statistics as we used in the :class:`DDPG`.
+
+        .. note::
+            An additional step is to set the ``fvp_obs`` attribute to the current observation.
+            ``fvp_obs`` is a sub-sampled version of the observation,
+            which used to accelerate the calculating of the Hessian-vector product.
 
         Args:
-            data (dict): data dictionary.
+            data (dict): data from replay buffer.
         """
         # First run one gradient descent step for Q.
-        self.fvp_obs = data['obs'][::4]
-        self.update_value_net(data)
-        if self.cfgs.use_cost:
-            self.update_cost_net(data)
-            for param in self.actor_critic.cost_critic.parameters():
-                param.requires_grad = False
+        self.fvp_obs = data['obs'][::1]
+        obs, act, rew, cost, next_obs, done = (
+            data['obs'],
+            data['act'],
+            data['rew'],
+            data['cost'],
+            data['next_obs'],
+            data['done'],
+        )
+        self.update_value_net(
+            obs=obs,
+            act=act,
+            rew=rew,
+            next_obs=next_obs,
+            done=done,
+        )
+        self.update_cost_net(
+            obs=obs,
+            act=act,
+            cost=cost,
+            next_obs=next_obs,
+            done=done,
+        )
+        for param in self.actor_critic.cost_critic.parameters():
+            param.requires_grad = False
 
         # Freeze Q-network so you don't waste computational effort
         # computing gradients for it during the policy learning step.
@@ -79,29 +102,27 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
             param.requires_grad = False
 
         # Next run one gradient descent step for actor.
-        self.update_policy_net(data)
+        self.update_policy_net(obs=obs)
 
         # Unfreeze Q-network so you can optimize it at next DDPG step.
         for param in self.actor_critic.critic.parameters():
             param.requires_grad = True
 
-        if self.cfgs.use_cost:
-            for param in self.actor_critic.cost_critic.parameters():
-                param.requires_grad = True
+        for param in self.actor_critic.cost_critic.parameters():
+            param.requires_grad = True
 
         # Finally, update target networks by polyak averaging.
         self.polyak_update_target()
 
-    def Fvp(self, params):
-        """
-        Build the Hessian-vector product based on an approximation of the KL-divergence.
+    def Fvp(self, params: torch.Tensor) -> torch.Tensor:
+        """Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_
+        based on an approximation of the KL-divergence.
+        The Hessian-vector product is approximated by the Fisher information matrix,
+        which is the second-order derivative of the KL-divergence.
         For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf
 
         Args:
-            params (torch.Tensor): parameters.
-
-        Returns:
-            flat_grad_grad_kl (torch.Tensor): flat gradient of gradient of KL.
+            params (torch.Tensor): The parameters of the actor network.
         """
         self.actor_critic.actor.net.zero_grad()
         q_dist = self.actor_critic.actor.get_distribution(self.fvp_obs)
@@ -121,59 +142,81 @@ class SDDPG(DDPG):  # pylint: disable=too-many-instance-attributes,invalid-name
         distributed_utils.mpi_avg_torch_tensor(flat_grad_grad_kl)
         return flat_grad_grad_kl + params * self.cg_damping
 
-    def compute_loss_cost_performance(self, data):
-        """Compute loss of cost performance.
+    def compute_loss_cost_performance(
+        self, obs: torch.Tensor
+    ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        r"""Compute the performance of cost on this moment.
+
+        Detailedly, we compute the loss of cost of policy cost from real cost.
+
+        .. math::
+            L = \mathbb{E}_{\pi} \left[ \frac{\pi(a|s)}{\pi_{old}(a|s)} A^C(s, a) \right]
+
+        where :math:`A^C(s, a)` is the cost advantage,
+        :math:`\pi_{old}(a|s)` is the old policy,
+        :math:`\pi(a|s)` is the current policy.
 
         Args:
-            data (dict): data dictionary.
-
-        Returns:
-            loss (torch.Tensor): loss of cost performance.
+            obs (torch.Tensor): Observation.
+            act (torch.Tensor): Action.
+            log_p (torch.Tensor): Log probability.
+            cost_adv (torch.Tensor): Cost advantage.
         """
         # Compute loss
-        action = self.actor_critic.actor.predict(data['obs'], deterministic=True)
-        loss_pi = self.actor_critic.cost_critic(data['obs'], action)[0]
+        action = self.actor_critic.actor.predict(obs, deterministic=True)
+        loss_pi = self.actor_critic.cost_critic(obs, action)[0]
         pi_info = {}
         return loss_pi.mean(), pi_info
 
-    # pylint: disable=invalid-name,too-many-arguments,too-many-locals
-    def update_policy_net(self, data) -> None:
+    # pylint: disable-next=too-many-locals
+    def update_policy_net(
+        self,
+        obs: torch.Tensor,
+    ) -> None:  # pylint: disable=invalid-name
         """Update policy network.
 
+        SDDPG updates policy network using the conjugate gradient algorithm,
+        following the steps:
+
+        - Compute the gradient of the policy.
+        - Compute the step direction.
+        - Search for a step size that satisfies the constraint. (Both KL divergence and cost limit).
+        - Update the policy network.
+
         Args:
-            data (dict): data dictionary.
+            obs (torch.Tensor): The observation tensor.
         """
         # Train policy with one steps of gradient descent
         theta_old = get_flat_params_from(self.actor_critic.actor.net)
 
         self.actor_optimizer.zero_grad()
-        loss_pi, _ = self.compute_loss_pi(data)
+        loss_pi, _ = self.compute_loss_pi(obs)
         loss_pi.backward()
 
         g_flat = get_flat_gradients_from(self.actor_critic.actor.net)
         g_flat *= -1
 
-        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
-        assert torch.isfinite(x).all()
+        g_inv_x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
+        assert torch.isfinite(g_inv_x).all()
 
         eps = 1.0e-8
-        xHx = torch.dot(x, self.Fvp(x))
+        hessian_x = torch.dot(g_inv_x, self.Fvp(g_inv_x))
 
-        alpha = torch.sqrt(2 * self.target_kl / (xHx + eps))
+        alpha = torch.sqrt(2 * self.target_kl / (hessian_x + eps))
 
         self.actor_optimizer.zero_grad()
-        loss_cost, _ = self.compute_loss_cost_performance(data)
+        loss_cost, _ = self.compute_loss_cost_performance(obs)
         loss_cost.backward()
 
         b_flat = get_flat_gradients_from(self.actor_critic.actor.net)
-        d = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
-        dHd = torch.dot(d, self.Fvp(d))
-        sHd = torch.dot(d, self.Fvp(d))
+        b_inv_d = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
+        hessian_d = torch.dot(b_inv_d, self.Fvp(b_inv_d))
+        hessian_s = torch.dot(b_inv_d, self.Fvp(b_inv_d))
 
         epsilon = (1 - self.gamma) * (self.d_init - loss_cost)
-        lambda_star = (-self.beta * epsilon - sHd) / (dHd + eps)
+        lambda_star = (-self.beta * epsilon - hessian_s) / (hessian_d + eps)
 
-        final_step_dir = -alpha / self.beta * (self.Fvp(x) - lambda_star * self.Fvp(d))
+        final_step_dir = -alpha / self.beta * (self.Fvp(g_inv_x) - lambda_star * self.Fvp(b_inv_d))
         new_theta = theta_old + final_step_dir
         set_param_values_to_model(self.actor_critic.actor.net, new_theta)
 

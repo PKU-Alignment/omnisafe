@@ -12,50 +12,52 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the PDO algorithm."""
+"""Implementation of the Reward Constrained Policy Optimization algorithm."""
 
-from typing import Dict, NamedTuple, Tuple
-
+from typing import NamedTuple, Tuple, Dict
+import numpy as np
 import torch
-
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
+from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
 from omnisafe.common.lagrange import Lagrange
 
 
 @registry.register
-class PDO(PolicyGradient, Lagrange):
-    """The Lagrange version of the Policy Gradient algorithm.
+class RCPO(NaturalPG, Lagrange):
+    """Reward Constrained Policy Optimization.
 
-    A simple combination of the :class:`Lagrange` method and the :class:`PolicyGradient` algorithm.
+    References:
+        - Title: Reward Constrained Policy Optimization.
+        - Authors: Chen Tessler, Daniel J. Mankowitz, Shie Mannor.
+        - URL: `Reward Constrained Policy Optimization <https://arxiv.org/abs/1805.11074>`_
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize PDO.
+        """Initialize RCPO.
 
-        PDO is a combination of :class:`PolicyGradient` and :class:`Lagrange` model.
+        RCPO is a combination of :class:`NaturalPG` and :class:`Lagrange` model.
 
         Args:
             env_id (str): The environment id.
             cfgs (NamedTuple): The configuration of the algorithm.
         """
-        PolicyGradient.__init__(
+        NaturalPG.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
         )
         Lagrange.__init__(
             self,
-            cost_limit=cfgs.lagrange_cfgs.cost_limit,
-            lagrangian_multiplier_init=cfgs.lagrange_cfgs.lagrangian_multiplier_init,
-            lambda_lr=cfgs.lagrange_cfgs.lambda_lr,
-            lambda_optimizer=cfgs.lagrange_cfgs.lambda_optimizer,
+            cost_limit=self.cfgs.lagrange_cfgs.cost_limit,
+            lagrangian_multiplier_init=self.cfgs.lagrange_cfgs.lagrangian_multiplier_init,
+            lambda_lr=self.cfgs.lagrange_cfgs.lambda_lr,
+            lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
         )
 
     def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
-        r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
+        r"""Update actor, critic, running statistics as we used in the :class:`NaturalPG` algorithm.
 
-        Additionally, we update the Lagrange multiplier parameter ,
+        Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.
 
         .. note::
@@ -73,8 +75,8 @@ class PDO(PolicyGradient, Lagrange):
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
         self.update_lagrange_multiplier(Jc)
-        # Then update the policy and value function
-        PolicyGradient.update(self)
+        # Then update the policy and valuenet.
+        NaturalPG.update(self)
 
     def compute_surrogate(
         self,
@@ -84,15 +86,15 @@ class PDO(PolicyGradient, Lagrange):
         """Compute surrogate loss.
 
         Policy Gradient only use reward advantage.
-
+        
         Args:
             adv (torch.Tensor): reward advantage
             cost_adv (torch.Tensor): cost advantage
         """
-        return adv - self.lagrangian_multiplier * cost_adv
+        return adv - self.lagrangian_multiplier*cost_adv
 
     def algorithm_specific_logs(self) -> None:
-        """Log the PDO specific information.
+        """Log the RCPO specific information.
 
         .. list-table::
 

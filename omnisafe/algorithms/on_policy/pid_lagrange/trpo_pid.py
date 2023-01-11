@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the PID-Lagrange version of the TRPO algorithm."""
 
+from typing import Dict, NamedTuple, Tuple
+
 import torch
 
 from omnisafe.algorithms import registry
@@ -27,12 +29,20 @@ class TRPOPid(TRPO, PIDLagrangian):
     """The PID-Lagrange version of the TRPO algorithm.
 
     References:
-        Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
-        Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
-        URL: https://arxiv.org/abs/2007.03964
+        - Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
+        - Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+        - URL: https://arxiv.org/abs/2007.03964
     """
 
-    def __init__(self, env_id, cfgs) -> None:
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
+        """Initialize TRPOPid.
+
+        TRPOPid is a simple combination of :class:`TRPO` and :class:`PIDLagrangian`.
+
+        Args:
+            env_id (str): The environment id.
+            cfgs (NamedTuple): The configuration of the algorithm.
+        """
         TRPO.__init__(
             self,
             env_id=env_id,
@@ -41,44 +51,92 @@ class TRPOPid(TRPO, PIDLagrangian):
         PIDLagrangian.__init__(self, **namedtuple2dict(self.cfgs.PID_cfgs))
         self.cost_limit = self.cfgs.cost_limit
 
-    def algorithm_specific_logs(self):
+    def algorithm_specific_logs(self) -> None:
+        """Log the TRPOPid specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   Metrics/LagrangeMultiplier
+                -   The Lagrange multiplier value in current epoch.
+            *   -   PID/pid_Kp
+                -   The Kp value in current epoch.
+            *   -   PID/pid_Ki
+                -   The Ki value in current epoch.
+            *   -   PID/pid_Kd
+                -   The Kd value in current epoch.
+        """
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.cost_penalty)
         self.logger.log_tabular('PID/pid_Kp', self.pid_kp)
         self.logger.log_tabular('PID/pid_Ki', self.pid_ki)
         self.logger.log_tabular('PID/pid_Kd', self.pid_kd)
 
-    def compute_loss_pi(self, data: dict):
-        """compute loss for policy"""
-        dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
-        ratio = torch.exp(_log_p - data['log_p'])
+    # pylint: disable=too-many-arguments
+    def compute_loss_pi(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        log_p: torch.Tensor,
+        adv: torch.Tensor,
+    ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        r"""
+        Computing pi/actor loss.
+        In CPPOPid, the loss is defined as:
+
+        .. math::
+            L = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[ \frac{\pi_\theta(a_t|s_t)}
+            {\pi_\theta^{old}(a_t|s_t)} [A^{R}_t(s_t, a_t) - \lambda A^{C}_t(s_t, a_t)] \right]
+
+        where :math:`A^{R}_t` is the advantage from the reward and :math:`A^{C}_t` is the advantage from the cost,
+        and :math:`\lambda` is the Lagrange multiplier controlled by the PID controller.
+
+        Args:
+            obs (torch.Tensor): :meth:`observation` stored in buffer.
+            act (torch.Tensor): :meth:`action` stored in buffer.
+            log_p (torch.Tensor): ``log probability`` of action stored in buffer.
+            adv (torch.Tensor): :meth:`advantage` stored in buffer.
+            cost_adv (torch.Tensor): :meth:`cost advantage` stored in buffer.
+        """
+        dist, _log_p = self.actor_critic.actor(obs, act)
+        ratio = torch.exp(_log_p - log_p)
 
         # Compute loss via ratio and advantage
-        loss_pi = -(ratio * data['adv']).mean()
+        loss_pi = -(ratio * adv).mean()
         loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
 
-        penalty = self.cost_penalty
-        loss_pi += penalty * (ratio * data['cost_adv']).mean()
-        loss_pi /= 1 + penalty
-
         # Useful extra info
-        approx_kl = 0.5 * (data['log_p'] - _log_p).mean().item()
+        approx_kl = 0.5 * (log_p - _log_p).mean().item()
         ent = dist.entropy().mean().item()
         pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
 
         return loss_pi, pi_info
 
-    def update(self):
-        """update policy"""
-        raw_data, data = self.buf.pre_process_data()
-        # sub-sampling accelerates calculations
-        self.fvp_obs = data['obs'][::4]
+    def compute_surrogate(
+        self,
+        adv: torch.Tensor,
+        cost_adv: torch.Tensor,
+    ) -> torch.Tensor:
+        """Compute surrogate loss.
+
+        Policy Gradient only use reward advantage.
+
+        Args:
+            adv (torch.Tensor): reward advantage
+            cost_adv (torch.Tensor): cost advantage
+        """
+        return adv - self.cost_penalty * cost_adv
+
+    def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
+        r"""Update actor, critic, running statistics as we used in the :class:`TRPO` algorithm.
+
+        Additionally, we update the Lagrange multiplier parameter,
+        by calling the :meth:`update_lagrange_multiplier` method.
+        """
         # Note that logger already uses MPI statistics across all processes..
-        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
+        Jc = self.logger.get_stats('Metrics/EpCost')[0]
         # First update Lagrange multiplier parameter
-        self.pid_update(ep_costs)
-        # now update policy and value network
-        self.update_policy_net(data=data)
-        self.update_value_net(data=data)
-        self.update_cost_net(data=data)
-        return raw_data, data
+        self.pid_update(Jc)
+        # Then update the policy and value net.
+        TRPO.update(self)

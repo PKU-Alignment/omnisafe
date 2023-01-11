@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the CPO algorithm."""
 
+from typing import Dict, NamedTuple, Tuple
+
 import numpy as np
 import torch
 
@@ -32,13 +34,21 @@ from omnisafe.utils.tools import (
 class CPO(TRPO):
     """The Constrained Policy Optimization (CPO) algorithm.
 
+    CPO is a derivative of TRPO.
+
     References:
-        Title: Constrained Policy Optimization
-        Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
-        URL: https://arxiv.org/abs/1705.10528
+        - Title: Constrained Policy Optimization
+        - Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+        - URL: https://arxiv.org/abs/1705.10528
     """
 
-    def __init__(self, env_id, cfgs) -> None:
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
+        """Initialize CPO.
+
+        Args:
+            env_id (str): The environment id.
+            cfgs (NamedTuple): The configuration of the algorithm.
+        """
         super().__init__(env_id=env_id, cfgs=cfgs)
         self.cost_limit = cfgs.cost_limit
         self.loss_pi_cost_before = 0.0
@@ -46,38 +56,51 @@ class CPO(TRPO):
     # pylint: disable-next=too-many-arguments,too-many-locals
     def search_step_size(
         self,
-        step_dir,
-        g_flat,
-        p_dist,
-        data,
-        loss_pi_before,
-        total_steps=25,
-        decay=0.8,
-        c=0,
-        optim_case=0,
-    ):
+        step_dir: torch.Tensor,
+        g_flat: torch.Tensor,
+        p_dist: torch.distributions.Distribution,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        log_p: torch.Tensor,
+        adv: torch.Tensor,
+        loss_pi_before: float,
+        total_steps: int = 15,
+        decay: float = 0.8,
+        cost_adv: torch.Tensor = None,
+        c: int = 0,
+        optim_case: int = 0,
+    ) -> Tuple[torch.Tensor, int]:
         r"""Use line-search to find the step size that satisfies the constraint.
 
+        CPO uses line-search to find the step size that satisfies the constraint.
+        The constraint is defined as:
+
+        .. math::
+            J^C(\theta + \alpha \delta) - J^C(\theta) \leq \max \{0, c\}\\
+            D_{KL}(\pi_{\theta}(\cdot|s) || \pi_{\theta + \alpha \delta}(\cdot|s)) \leq \delta_{KL}
+
+        where :math:`\delta_{KL}` is the constraint of KL divergence, :math:`\alpha` is the step size,
+        :math:`c` is the violation of constraint.
+
         Args:
-            step_dir
-                direction theta changes towards
-            g_flat
-                gradient tensor of reward ,informs about how rewards improve with change of step direction
-            c
-                how much episode cost goes above limit
-            p_dist
-                inform about old policy, how the old policy p performs on observation this moment
-            optim_case
-                the way to optimize
-            data
-                data buffer,mainly with adv, costs, values, actions, and observations
-            decay
-                how search-step reduces in line-search
+            step_dir (torch.Tensor): The step direction.
+            g_flat (torch.Tensor): The gradient of the policy.
+            p_dist (torch.distributions.Distribution): The old policy distribution.
+            obs (torch.Tensor): The observation.
+            act (torch.Tensor): The action.
+            log_p (torch.Tensor): The log probability of the action.
+            adv (torch.Tensor): The advantage.
+            cost_adv (torch.Tensor): The cost advantage.
+            loss_pi_before (float): The loss of the policy before the update.
+            total_steps (int, optional): The total steps to search. Defaults to 15.
+            decay (float, optional): The decay rate of the step size. Defaults to 0.8.
+            c (int, optional): The violation of constraint. Defaults to 0.
+            optim_case (int, optional): The optimization case. Defaults to 0.
         """
         # Get distance each time theta goes towards certain direction
         step_frac = 1.0
         # Get and flatten parameters from pi-net
-        _theta_old = get_flat_params_from(self.actor_critic.actor.net)
+        _theta_old = get_flat_params_from(self.actor_critic.actor)
         # Reward improvement, g-flat as gradient of reward
         expected_rew_improve = g_flat.dot(step_dir)
 
@@ -86,17 +109,20 @@ class CPO(TRPO):
             # Get new theta
             new_theta = _theta_old + step_frac * step_dir
             # Set new theta as new actor parameters
-            set_param_values_to_model(self.actor_critic.actor.net, new_theta)
+            set_param_values_to_model(self.actor_critic.actor, new_theta)
             # The last acceptance steps to next step
             acceptance_step = j + 1
 
             with torch.no_grad():
                 # Loss of policy reward from target/expected reward
-                loss_pi_rew, _ = self.compute_loss_pi(data=data)
+                loss_pi_rew, _ = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=adv)
                 # Loss of cost of policy cost from real/expected reward
-                loss_pi_cost, _ = self.compute_loss_cost_performance(data=data)
+                loss_pi_cost, _ = self.compute_loss_cost_performance(
+                    obs=obs, act=act, log_p=log_p, cost_adv=cost_adv
+                )
+                self.loss_record.append(loss_pi=(loss_pi_rew.mean() + loss_pi_cost.mean()).item())
                 # Compute KL distance between new and old policy
-                q_dist = self.actor_critic.actor(data['obs'])
+                q_dist = self.actor_critic.actor(obs)
                 torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
             # Compute improvement of reward
             loss_rew_improve = loss_pi_before - loss_pi_rew.item()
@@ -132,11 +158,37 @@ class CPO(TRPO):
             step_dir = torch.zeros_like(step_dir)
             acceptance_step = 0
 
-        set_param_values_to_model(self.actor_critic.actor.net, _theta_old)
+        set_param_values_to_model(self.actor_critic.actor, _theta_old)
         return step_frac * step_dir, acceptance_step
 
-    def algorithm_specific_logs(self):
-        # Sign up for chosen log items
+    def algorithm_specific_logs(self) -> None:
+        r"""Log the CPO specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   Misc/cost_gradient_norm
+                -   The norm of the cost gradient.
+            *   -   Misc/q
+                -   The :math:`q` vector, which is the conjugate of Hessian :math:`H`.
+            *   -   Misc/r
+                -   The :math:`r` vector, where :math:`r = g^T H^{-1} b`.
+            *   -   Misc/s
+                -   The :math:`s` vector, where :math:`s = b^T H^{-1} b`
+            *   -   Misc/A
+                -   The A matrix, where :math:`A = q - \frac{r^2}{s}`
+            *   -   Misc/B
+                -   The B matrix, where :math:`B = 2 \delta_{KL} - \frac{c^2}{s}` ,
+                    where :math:`c` is the cost violation in current epoch, and
+                    :math:`\delta_{KL}` is the target KL divergence.
+            *   -   Misc/Lambda_star
+                -   The :math:`\lambda^*` vector.
+            *   -   Misc/Nu_star
+                -   The :math:`\nu^*` vector.
+            *   -   Misc/OptimCase
+                -   The optimization case.
+        """
         TRPO.algorithm_specific_logs(self)
         self.logger.log_tabular('Misc/cost_gradient_norm')
         self.logger.log_tabular('Misc/A')
@@ -148,33 +200,78 @@ class CPO(TRPO):
         self.logger.log_tabular('Misc/Nu_star')
         self.logger.log_tabular('Misc/OptimCase')
 
-    def compute_loss_cost_performance(self, data):
+    def compute_loss_cost_performance(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        log_p: torch.Tensor,
+        cost_adv: torch.Tensor,
+    ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        r"""Compute the performance of cost on this moment.
+
+        Detailedly, we compute the loss of cost of policy cost from real cost.
+
+        .. math::
+            L = \mathbb{E}_{\pi} \left[ \frac{\pi(a|s)}{\pi_{old}(a|s)} A^C(s, a) \right]
+
+        where :math:`A^C(s, a)` is the cost advantage,
+        :math:`\pi_{old}(a|s)` is the old policy,
+        :math:`\pi(a|s)` is the current policy.
+
+        Args:
+            obs (torch.Tensor): Observation.
+            act (torch.Tensor): Action.
+            log_p (torch.Tensor): Log probability.
+            cost_adv (torch.Tensor): Cost advantage.
         """
-        Performance of cost on this moment
-        """
-        _, _log_p = self.actor_critic.actor(data['obs'], data['act'])
-        ratio = torch.exp(_log_p - data['log_p'])
-        cost_loss = (ratio * data['cost_adv']).mean()
+        _, _log_p = self.actor_critic.actor(obs, act)
+        ratio = torch.exp(_log_p - log_p)
+        cost_loss = (ratio * cost_adv).mean()
         info = {}
         return cost_loss, info
 
+    # pylint: disable=too-many-statements,too-many-locals,invalid-name,too-many-arguments
     def update_policy_net(
         self,
-        data,
-    ):  # pylint: disable=too-many-statements,too-many-locals,invalid-name
-        """update policy net"""
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        log_p: torch.Tensor,
+        adv: torch.Tensor,
+        cost_adv: torch.Tensor,
+    ) -> None:
+        """Update policy network.
+
+        Constrained Policy Optimization updates policy network using the conjugate gradient algorithm,
+        following the steps:
+
+        - Compute the gradient of the policy.
+        - Compute the step direction.
+        - Search for a step size that satisfies the constraint. (Both KL divergence and cost limit).
+        - Update the policy network.
+
+        Args:
+            obs (torch.Tensor): The observation tensor.
+            act (torch.Tensor): The action tensor.
+            log_p (torch.Tensor): The log probability of the action.
+            adv (torch.Tensor): The advantage tensor.
+            cost_adv (torch.Tensor): The cost advantage tensor.
+        """
         # Get loss and info values before update
-        theta_old = get_flat_params_from(self.actor_critic.actor.net)
+        self.fvp_obs = obs[::4]
+        theta_old = get_flat_params_from(self.actor_critic.actor)
         self.actor_optimizer.zero_grad()
-        loss_pi, pi_info = self.compute_loss_pi(data=data)
-        loss_pi_before = loss_pi.item()
+        # Process the advantage function.
+        processed_adv = self.compute_surrogate(adv=adv, cost_adv=cost_adv)
+        # Compute the loss of policy net.
+        loss_pi, pi_info = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=processed_adv)
+        loss_pi_before = distributed_utils.mpi_avg(loss_pi.item())
         # Get prob. distribution before updates, previous dist of possibilities
-        p_dist = self.actor_critic.actor(data['obs'])
+        p_dist = self.actor_critic.actor(obs)
         # Train policy with multiple steps of gradient descent
         loss_pi.backward()
         # Average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.actor_critic.actor.net)
-        g_flat = get_flat_gradients_from(self.actor_critic.actor.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.actor)
+        g_flat = get_flat_gradients_from(self.actor_critic.actor)
 
         # Flip sign since policy_loss = -(ration * adv)
         g_flat *= -1
@@ -190,12 +287,14 @@ class CPO(TRPO):
 
         # get the policy cost performance gradient b (flat as vector)
         self.actor_optimizer.zero_grad()
-        loss_cost, _ = self.compute_loss_cost_performance(data=data)
+        loss_cost, _ = self.compute_loss_cost_performance(
+            obs=obs, act=act, log_p=log_p, cost_adv=cost_adv
+        )
         loss_cost.backward()
         # average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.actor_critic.actor.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.actor)
         self.loss_pi_cost_before = loss_cost.item()
-        b_flat = get_flat_gradients_from(self.actor_critic.actor.net)
+        b_flat = get_flat_gradients_from(self.actor_critic.actor)
         # :param ep_costs: do samplings to get approximate costs as ep_costs
         ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
         # :params c: how much sampled result of cost goes beyond limit
@@ -304,27 +403,20 @@ class CPO(TRPO):
             loss_pi_before=loss_pi_before,
             optim_case=optim_case,
             p_dist=p_dist,
-            data=data,
+            obs=obs,
+            act=act,
+            log_p=log_p,
+            adv=adv,
+            cost_adv=cost_adv,
             total_steps=20,
         )
         # Update actor network parameters
         new_theta = theta_old + final_step_dir
-        set_param_values_to_model(self.actor_critic.actor.net, new_theta)
-        # Output the performance of pi policy on observation
-        q_dist = self.actor_critic.actor(data['obs'])
-        torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-
+        set_param_values_to_model(self.actor_critic.actor, new_theta)
         self.logger.store(
             **{
-                'Values/Adv': data['act'].numpy(),
                 'Train/Entropy': pi_info['ent'],
-                'Train/KL': torch_kl,
                 'Train/PolicyRatio': pi_info['ratio'],
-                'Loss/Loss_pi': loss_pi_before,
-                'Loss/Delta_loss_pi': loss_pi.item() - loss_pi_before,
-                'Loss/Loss_cost_critic': 0.0,
-                'Loss/Delta_loss_cost_critic': 0.0,
-                'Train/StopIter': 1,
                 'Misc/AcceptanceStep': accept_step,
                 'Misc/Alpha': alpha.item(),
                 'Misc/FinalStepNorm': final_step_dir.norm().numpy(),

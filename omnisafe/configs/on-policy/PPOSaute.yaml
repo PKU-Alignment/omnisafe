@@ -19,13 +19,13 @@ defaults:
   # The random seed
   seed: 0
   # The environment wrapper type
-  wrapper_type: SauteEnvWrapper
+  wrapper_type: SauteWrapper
   # Number of epochs
-  epochs: 500
+  epochs: 5000
   # Number of steps per epoch
-  steps_per_epoch: 30000
+  steps_per_epoch: 2048
   # Number of update iteration for Actor network
-  actor_iters: 80
+  actor_iters: 10
   # Number of update iteration for Critic network
   critic_iters: 40
   # Check if all models own the same parameter values every `check_freq` epoch
@@ -33,47 +33,49 @@ defaults:
   # Save model to disk every `check_freq` epochs
   save_freq: 100
   # Entropy coefficient for PPO loss
-  entropy_coef: 0.01
+  entropy_coef: 0.0
   # The max length of per epoch
   max_ep_len: 1000
   # The size of mini batch
-  num_mini_batches: 16
+  num_mini_batches: 64
   # The learning rate of Actor network
   actor_lr: 0.0003
   # The learning rate of Critic network
-  critic_lr: 0.001
+  critic_lr: 0.0003
   # The Address for saving training process data
   data_dir: "./runs"
-  ## ---------------------------Basic configurations for derived class PPOLag------------------- ##
+  ## ---------------------------Basic configurations for derived class PPO---------------------- ##
   # The thereshold for KL early stopping
-  target_kl: 0.01
+  target_kl: 0.02
   # The size of batch for policy update
-  batch_size: 2000
+  batch_size: 10000
   # The clip range for PPO loss
   clip: 0.2
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
-  use_cost: True
+  use_cost: False
   # Cost discounted factor
   cost_gamma: 1.0
   # Whther to use linear decay of learning rate
-  linear_lr_decay: False
+  linear_lr_decay: True
   # Whether to use exploration noise anneal
-  exploration_noise_anneal: True
-  # Whther to use reward penalty
-  reward_penalty: False
+  exploration_noise_anneal: False
+  # The coefficient of reward penalty
+  penalty_param: 0.0
   # Whether to use KL early stopping
-  kl_early_stopping: False
+  kl_early_stopping: True
   # Whether to use max gradient norm
-  use_max_grad_norm: False
+  use_max_grad_norm: True
   # The thereshold of max gradient norm
-  max_grad_norm: 0.5
-  # Whether to use reward scaling
-  scale_rewards: False
+  max_grad_norm: 40
   # Whether to use standardized observation
-  standardized_obs: False
+  standardized_obs: True
+  # Whether to use critic network norm
+  use_critic_norm: True
+  # The norm coefficient of critic network
+  critic_norm_coeff: 0.001
   ## ---------------------------------------Configuration For Model----------------------------- ##
   model_cfgs:
     # Whether to share the weight of Actor network with Critic network
@@ -85,7 +87,7 @@ defaults:
       # Configuration of Actor network
       pi:
         # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-        actor_type: gaussian_annealing
+        actor_type: gaussian
         # Size of hidden layers
         hidden_sizes: [64, 64]
         # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
@@ -105,14 +107,31 @@ defaults:
     lam_c: 0.95
     # Method to estimate the advantage reward/cost, choosing from "gae", "plain", "vtrace"
     adv_estimation_method: gae
-    # Whether to use standardized reward
-    standardized_reward: True
-    # Whether to use standardized cost
-    standardized_cost: True
+    # Whether to use reward standardized advantage estimation
+    standardized_rew_adv: True
+    # Whether to use cost standardized advantage estimation
+    standardized_cost_adv: True
   ## Configuration For Env_Wrapper
   env_cfgs:
+    # The reward when the state is unsafe
     unsafe_reward: -0.1
-    # ``safety_budget`` in saute is actually the same as ``cost_limmit``.
+    # safety_budget in saute is actually the same as ``cost_limmit``.
     safety_budget: 25
+    # The discount factor of cost in saute
     saute_gamma: 0.9997
+    # Whether to scale safety budget
     scale_safety_budget: True
+    # The seed of environment
+    env_seed: 0
+    # The number of parallel environments
+    num_envs: 1
+    # Whether to use standardized reward
+    normalized_rew: True
+    # Whether to use standardized cost
+    normalized_cost: True
+    # Whether to use standardized obs
+    normalized_obs: True
+    # The maximum length of record queue
+    max_len: 100
+    # The number of threads used to sample data
+    num_threads: 20

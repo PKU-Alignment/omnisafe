@@ -22,7 +22,12 @@ from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_netwo
 
 
 class VCritic(Critic):
-    """Implementation of VCritic."""
+    """Implementation of VCritic.
+
+    A V-function approximator that uses a multi-layer perceptron (MLP) to map observations to V-values.
+    This class is an inherit class of :class:`Critic`.
+    You can design your own V-function approximator by inheriting this class or :class:`Critic`.
+    """
 
     # pylint: disable-next=too-many-arguments
     def __init__(
@@ -34,7 +39,16 @@ class VCritic(Critic):
         weight_initialization_mode: InitFunction = 'xavier_uniform',
         shared: nn.Module = None,
     ) -> None:
-        """Initialize."""
+        """Initialize the critic network.
+
+        Args:
+            obs_dim (int): Observation dimension.
+            act_dim (int): Action dimension.
+            hidden_sizes (list): Hidden layer sizes.
+            activation (Activation): Activation function.
+            weight_initialization_mode (InitFunction): Weight initialization mode.
+            shared (nn.Module): Shared network.
+        """
         Critic.__init__(
             self,
             obs_dim=obs_dim,
@@ -63,5 +77,12 @@ class VCritic(Critic):
         obs: torch.Tensor,
         act: torch.Tensor = None,
     ) -> torch.Tensor:
-        """Forward."""
+        """Forward function.
+
+        Specifically, V function approximator maps observations to V-values.
+
+        Args:
+            obs (torch.Tensor): Observations.
+            act (torch.Tensor): Actions.
+        """
         return torch.squeeze(self.net(obs), -1)

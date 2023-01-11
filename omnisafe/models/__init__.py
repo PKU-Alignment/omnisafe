@@ -15,6 +15,17 @@
 """This module contains the model for all methods."""
 
 from omnisafe.models.actor import ActorBuilder
+from omnisafe.models.actor.categorical_actor import CategoricalActor
+from omnisafe.models.actor.cholesky_actor import MLPCholeskyActor
+from omnisafe.models.actor.gaussian_annealing_actor import GaussianAnnealingActor
+from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
+from omnisafe.models.actor.gaussian_stdnet_actor import GaussianStdNetActor
+from omnisafe.models.actor.mlp_actor import MLPActor
 from omnisafe.models.actor_critic import ActorCritic
+from omnisafe.models.actor_q_critic import ActorQCritic
+from omnisafe.models.base import Actor, Critic
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
+from omnisafe.models.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.models.critic import CriticBuilder
+from omnisafe.models.critic.q_critic import QCritic
+from omnisafe.models.critic.v_critic import VCritic

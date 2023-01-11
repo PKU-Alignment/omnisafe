@@ -14,6 +14,7 @@
 # ==============================================================================
 """Implementation of Evaluator."""
 
+import dataclasses
 import json
 import os
 
@@ -24,10 +25,9 @@ from gymnasium.utils.save_video import save_video
 
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.utils.config_utils import dict2namedtuple
-from omnisafe.utils.online_mean_std import OnlineMeanStd
-from omnisafe.wrappers.on_policy_wrapper import OnPolicyEnvWrapper as EnvWrapper
-from omnisafe.wrappers.saute_wrapper import SauteEnvWrapper
-from omnisafe.wrappers.simmer_wrapper import SimmerEnvWrapper
+from omnisafe.wrappers.cmdp_wrapper import CMDPWrapper as EnvWrapper
+from omnisafe.wrappers.saute_wrapper import SauteWrapper
+from omnisafe.wrappers.simmer_wrapper import SimmerWrapper
 
 
 class Evaluator:  # pylint: disable=too-many-instance-attributes
@@ -38,20 +38,21 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         env=None,
         actor=None,
-        obs_oms=None,
+        obs_normalize=None,
         play=True,
         save_replay=True,
     ):
         """Initialize the evaluator.
+
         Args:
             env (gymnasium.Env): the environment. if None, the environment will be created from the config.
             pi (omnisafe.algos.models.actor.Actor): the policy. if None, the policy will be created from the config.
-            obs_oms (omnisafe.algos.models.obs_oms.ObsOMS): the observation OMS. Only used if obs_oms is not None.
+            obs_normalize (omnisafe.algos.models.obs_normalize): the observation Normalize.
         """
         # set the attributes
         self.env = env
         self.actor = actor
-        self.obs_oms = obs_oms if obs_oms is not None else lambda x: x
+        self.obs_normalize = obs_normalize if obs_normalize is not None else lambda x: x
         self.env_wrapper_class = type(env) if env is not None else None
 
         # Used when load model from saved file.
@@ -59,6 +60,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self.save_dir = None
         self.model_name = None
         self.algo_name = None
+        self.model_params = None
 
         # set the render mode
         self.play = play
@@ -98,7 +100,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         # load the saved model
         model_path = os.path.join(save_dir, 'torch_save', model_name)
         try:
-            model_params = torch.load(model_path)
+            self.model_params = torch.load(model_path)
         except FileNotFoundError as error:
             raise FileNotFoundError('The model is not found in the save directory.') from error
 
@@ -138,14 +140,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             act_max = torch.as_tensor(action_space.high)
             act_min = torch.as_tensor(action_space.low)
             self.actor = actor_builder.build_actor(actor_type, act_max=act_max, act_min=act_min)
-        self.actor.load_state_dict(model_params['pi'])
+        self.actor.load_state_dict(self.model_params['pi'])
 
         # make the observation OMS
-        if self.cfg['standardized_obs']:
-            self.obs_oms = OnlineMeanStd(shape=observation_space.shape)
-            self.obs_oms.load_state_dict(model_params['obs_oms'])
-        else:
-            self.obs_oms = lambda x: x
 
     # pylint: disable-next=too-many-locals
     def evaluate(
@@ -179,7 +176,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             for step in range(horizon):
                 with torch.no_grad():
                     act = self.actor.predict(
-                        self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)),
+                        self.obs_normalize(torch.as_tensor(obs, dtype=torch.float32)),
                         deterministic=True,
                         need_log_prob=False,
                     )
@@ -202,14 +199,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     def render(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         self,
         num_episode: int = 0,
-        seed: int = None,
         play=True,
         save_replay_path: str = None,
         camera_name: str = None,
         camera_id: str = None,
         width: int = None,
         height: int = None,
-        cost_criteria: float = 1.0,
     ):
         """Render the environment for one episode.
         Args:
@@ -228,110 +223,87 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         width = self.env.width if width is None else width
         height = self.env.height if height is None else height
-        env_kwargs = {
-            'env_id': self.env.env_id,
-            'render_mode': 'rgb_array',
-            'camera_id': camera_id,
-            'camera_name': camera_name,
-            'width': width,
-            'height': height,
-        }
-        if self.env.render_mode is None:
+        env_kwargs = dataclasses.asdict(self.env.RenderData)
+        if env_kwargs.get('render_mode') is None:
             print("Remake the environment with render_mode='rgb_array' to render the environment.")
             self.env = self._make_env(**env_kwargs)
             self.render_mode = 'rgb_array'
 
-        if self.env.render_mode == 'human' and save_replay_path is not None:
+        if env_kwargs.get('render_mode') == 'human' and save_replay_path is not None:
             print("Remake the environment with render_mode='rgb_array' to save the replay.")
             self.env = self._make_env(**env_kwargs)
             self.render_mode = 'rgb_array'
 
-        if self.env.render_mode == 'rgb_array_list' and play:
+        if env_kwargs.get('render_mode') == 'rgb_array_list' and play:
             print("Remake the environment with render_mode='rgb_array' to render the environment.")
             self.env = self._make_env(**env_kwargs)
             self.render_mode = 'rgb_array'
-
-        if self.env.camera_id != camera_id or self.env.camera_name != camera_name:
+        print(env_kwargs)
+        if env_kwargs.get('camara_id') != camera_id or env_kwargs.get('camera_name') != camera_name:
             print("Remake the environment with render_mode='rgb_array' to change the camera.")
+            env_kwargs['camera_id'] = camera_id
+            env_kwargs['camera_name'] = camera_name
+            print(env_kwargs)
             self.env = self._make_env(**env_kwargs)
             self.render_mode = 'rgb_array'
 
-        if self.env.height != height or self.env.width != width:
+        if env_kwargs.get('height') != height or env_kwargs.get('width') != width:
             print(
                 "Remake the environment with render_mode='rgb_array' to change the camera width or height."
             )
             self.env = self._make_env(**env_kwargs)
             self.render_mode = 'rgb_array'
 
-        episode_rewards = []
-        episode_costs = []
-        episode_lengths = []
-        horizon = self.env.max_ep_len
-
+        horizon = self.env.RolloutData.max_ep_len
         frames = []
-        obs, _ = self.env.reset(seed=seed)
-        ep_ret, ep_cost = 0.0, 0.0
+        obs, _ = self.env.reset()
+
         if self.render_mode == 'human':
             self.env.render()
         elif self.render_mode == 'rgb_array':
             frames.append(self.env.render())
-
-        if not os.path.exists(save_replay_path):
-            os.makedirs(save_replay_path, exist_ok=True)
-        with open(os.path.join(save_replay_path, 'log.txt'), mode='w', encoding='UTF-8') as log:
-            for episode_idx in range(num_episode):
-                for step in range(horizon):
-                    with torch.no_grad():
-                        act = self.actor.predict(
-                            self.obs_oms(torch.as_tensor(obs, dtype=torch.float32)),
-                            deterministic=True,
-                            need_log_prob=False,
-                        )
-                    obs, rew, cost, done, truncated, _ = self.env.step(act.numpy())
-                    ep_ret += rew
-                    ep_cost += (cost_criteria**step) * cost
-
-                    if self.render_mode == 'rgb_array':
-                        frames.append(self.env.render())
-
-                    if done or truncated:
-                        episode_rewards.append(ep_ret)
-                        episode_costs.append(ep_cost)
-                        episode_lengths.append(step + 1)
-                        print(
-                            f'ep:{episode_idx} rew:{ep_ret} cost:{ep_cost} lenth:{step + 1}',
-                            file=log,
-                        )
-                        break
-
-                if self.render_mode == 'rgb_array_list':
-                    frames = self.env.render()
-
-                if save_replay_path is not None:
-                    save_video(
-                        frames,
-                        save_replay_path,
-                        fps=self.env.metadata['render_fps'],
-                        episode_trigger=lambda x: True,
-                        episode_index=episode_idx,
-                        name_prefix='eval',
+        if self.env.obs_normalize is not None:
+            self.env.obs_normalize.load_state_dict(self.model_params['obs_normalize'])
+        for episode_idx in range(num_episode):
+            for _ in range(horizon):
+                with torch.no_grad():
+                    if self.env.obs_normalize is not None:
+                        obs = self.env.obs_normalize.normalize(obs)
+                    act = self.actor.predict(
+                        torch.as_tensor(obs, dtype=torch.float32), deterministic=True
                     )
-                obs, _ = self.env.reset()
-                ep_ret, ep_cost = 0.0, 0.0
-                frames = []
+                obs, _, _, done, truncated, _ = self.env.step(act.numpy())
+                if done[0] or truncated[0]:
+                    break
 
-            print('Evaluation results:', file=log)
-            print(f'Average episode reward: {np.mean(episode_rewards):.3f}', file=log)
-            print(f'Average episode cost: {np.mean(episode_costs):.3f}', file=log)
-            print(f'Average episode length: {np.mean(episode_lengths):.3f}', file=log)
+                if self.render_mode == 'rgb_array':
+                    frames.append(self.env.render())
+
+            if self.render_mode == 'rgb_array_list':
+                frames = self.env.render()
+
+            if save_replay_path is not None:
+                save_video(
+                    frames,
+                    save_replay_path,
+                    fps=self.env.env.metadata['render_fps'],
+                    episode_trigger=lambda x: True,
+                    episode_index=episode_idx,
+                    name_prefix='eval',
+                )
+            self.env.reset()
+            frames = []
 
     def _make_env(self, env_id, **env_kwargs):
         """Make wrapped environment."""
+        env_cfgs = {'num_envs': 1, 'standardized_obs': False, 'standardized_rew': False}
+        env_cfgs = dict2namedtuple(env_cfgs)
         if self.cfg is not None and 'env_cfgs' in self.cfg:
+            # self.cfg['env_cfgs']['num_envs']= 1
             env_cfgs = dict2namedtuple(self.cfg['env_cfgs'])
 
         if self.algo_name in ['PPOSimmerPid', 'PPOSimmerQ', 'PPOLagSimmerQ', 'PPOLagSimmerPid']:
-            return SimmerEnvWrapper(env_id, env_cfgs, **env_kwargs)
+            return SimmerWrapper(env_id, env_cfgs, **env_kwargs)
         if self.algo_name in ['PPOSaute', 'PPOLagSaute']:
-            return SauteEnvWrapper(env_id, env_cfgs, **env_kwargs)
-        return EnvWrapper(env_id, **env_kwargs)
+            return SauteWrapper(env_id, env_cfgs, **env_kwargs)
+        return EnvWrapper(env_id, env_cfgs, **env_kwargs)

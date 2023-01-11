@@ -14,6 +14,9 @@
 # ==============================================================================
 """Implementation of ActorCritic."""
 
+from typing import NamedTuple, Tuple
+
+import numpy as np
 import torch
 import torch.nn as nn
 from gymnasium.spaces import Box, Discrete
@@ -21,31 +24,62 @@ from gymnasium.spaces import Box, Discrete
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.critic import CriticBuilder
 from omnisafe.utils.model_utils import build_mlp_network
-from omnisafe.utils.online_mean_std import OnlineMeanStd
 
 
 # pylint: disable-next=too-many-instance-attributes
 class ActorCritic(nn.Module):
-    """Class for ActorCritic."""
+    """Class for ActorCritic.
+
+    In ``omnisafe``, we combine the actor and critic into one this class.
+
+    .. list-table::
+
+        *   -   Model
+            -   Description
+            -   Function
+        *   -   Actor
+            -   The policy network, input is observation, output is action.
+                Choose the actor from the following options:
+                :class:`MLPActor`, :class:`CategoricalActor`, :class:`GaussianAnnealingActor`,
+                :class:`GaussianLearningActor`, :class:`GaussianStdNetActor`, :class:`MLPCholeskyActor`.
+            -   Choose the action based on the observation.
+        *   -   Value Critic
+            -   The value network, input is observation, output is reward value.
+                Choose the critic from the following options:
+                :class:`QCritic`, :class:`VCritic`.
+            -   Estimate the reward value of the observation.
+    """
 
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        observation_space,
-        action_space,
-        standardized_obs: bool,
-        scale_rewards: bool,
-        model_cfgs,
+        observation_space: Box,
+        action_space: Box,
+        model_cfgs: NamedTuple,
     ) -> None:
-        """Initialize ActorCritic"""
+        """Initialize ActorCritic
+
+        .. note::
+            Instead of creating the actor or critic directly, we use the builder to create them.
+            The advantage of this is that,
+            each type of critic has a uniform way of passing parameters.
+            This makes it easy for users to use existing critics,
+            and also facilitates the extension of new critic types.
+
+        Args:
+            observation_space (Box): Observation space.
+            action_space (Box): Action space.
+            standardized_obs (bool): Whether to standardize the observation.
+            scale_rewards (bool): Whether to scale the rewards.
+            model_cfgs (NamedTuple): Model configurations.
+        """
         super().__init__()
 
         self.obs_shape = observation_space.shape
-        self.obs_dim = observation_space.shape[0]
-        self.obs_oms = OnlineMeanStd(shape=self.obs_shape) if standardized_obs else None
+        self.obs_dim = observation_space.shape[-1]
 
         self.act_space_type = 'discrete' if isinstance(action_space, Discrete) else 'continuous'
-        self.act_dim = action_space.shape[0] if isinstance(action_space, Box) else action_space.n
+        self.act_dim = action_space.shape[-1] if isinstance(action_space, Box) else action_space.n
 
         self.model_cfgs = model_cfgs
         self.ac_kwargs = model_cfgs.ac_kwargs
@@ -92,29 +126,26 @@ class ActorCritic(nn.Module):
         )
         self.reward_critic = critic_builder.build_critic('v')
 
-        self.ret_oms = OnlineMeanStd(shape=(1,)) if scale_rewards else None
-
-    def forward(self, obs):
+    def forward(self, obs: torch.Tensor) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Forward pass of the actor-critic model"""
         return self.step(obs)
 
-    def step(self, obs, deterministic=False):
-        """
-        If training, this includes exploration noise!
-        Expects that obs is not pre-processed.
+    def step(
+        self, obs: torch.Tensor, deterministic: bool = False
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Step function of the actor-critic model
+
+        Input observation, output value (from :class:`Critic`) action,
+        and its log probability (from :class`Actor`).
+
+        .. note::
+            The observation is standardized by the running mean and standard deviation.
+
         Args:
-            obs, , description
-        Returns:
-            action, value, log_prob(action)
-        Note:
-            Training mode can be activated with ac.train()
-            Evaluation mode is activated by ac.eval()
+            obs (torch.Tensor): Observation.
+            deterministic (bool, optional): Whether to use deterministic action.
         """
         with torch.no_grad():
-            if self.obs_oms:
-                # Note: Update RMS in Algorithm.running_statistics() method
-                # self.obs_oms.update(obs) if self.training else None
-                obs = self.obs_oms(obs)
             value = self.reward_critic(obs)
             action, logp_a = self.actor.predict(
                 obs, deterministic=deterministic, need_log_prob=True
@@ -122,14 +153,13 @@ class ActorCritic(nn.Module):
 
         return action.numpy(), value.numpy(), logp_a.numpy()
 
-    def anneal_exploration(self, frac):
+    def anneal_exploration(self, frac: float) -> None:
         """update internals of actors
 
         Updates exploration parameters for Gaussian actors update log_std
 
         Args:
-            frac: progress of epochs, i.e. current epoch / total epochs
-                    e.g. 10 / 100 = 0.1
+            frac: progress of epochs. 1.0 is the end of training.
         """
         if hasattr(self.actor, 'set_std'):
             self.actor.set_std(1 - frac)
