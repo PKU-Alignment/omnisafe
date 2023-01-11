@@ -111,25 +111,23 @@ class DDPGLag(DDPG, Lagrange):
                 epoch = steps // self.steps_per_epoch
                 if self.cfgs.exploration_noise_anneal:
                     self.actor_critic.anneal_exploration(frac=epoch / self.epochs)
-                # if self.cfgs.use_cost_critic:
-                #     if self.use_cost_decay:
-                #         self.cost_limit_decay(epoch)
 
-                # Save model to disk
+                # save model to disk
                 if (epoch + 1) % self.cfgs.save_freq == 0:
                     self.logger.torch_save(itr=epoch)
 
-                # Test the performance of the deterministic version of the agent.
+                # test the performance of the deterministic version of the agent.
                 self.test_agent()
                 if self.cfgs.use_cost and hasattr(self, 'lagrangian_multiplier'):
                     Jc = self.logger.get_stats('Test/EpCost')[0]
                     self.update_lagrange_multiplier(Jc)
-                # Log info about epoch
+                # log info about epoch
                 self.log(epoch, steps)
         return self.actor_critic
 
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         r"""Computing ``pi/actor`` loss.
+
         In the lagrange version of DDPG, the loss is defined as:
 
         .. math::

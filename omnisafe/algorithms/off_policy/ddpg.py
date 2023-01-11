@@ -335,9 +335,6 @@ class DDPG:
                 epoch = steps // self.steps_per_epoch
                 if self.cfgs.exploration_noise_anneal:
                     self.actor_critic.anneal_exploration(frac=epoch / self.epochs)
-                # if self.cfgs.use_cost_critic:
-                #     if self.use_cost_decay:
-                #         self.cost_limit_decay(epoch)
 
                 # save model to disk
                 if (epoch + 1) % self.cfgs.save_freq == 0:
@@ -356,7 +353,7 @@ class DDPG:
             .. list-table::
 
                 *   -   obs
-                    -   ``obsertaion`` stored in buffer.
+                    -   ``observaion`` stored in buffer.
                 *   -   act
                     -   ``action`` stored in buffer.
                 *   -   rew
@@ -364,7 +361,7 @@ class DDPG:
                 *   -   cost
                     -   ``cost`` stored in buffer.
                 *   -   next_obs
-                    -   ``next obsertaion`` stored in buffer.
+                    -   ``next observaion`` stored in buffer.
                 *   -   done
                     -   ``terminated`` stored in buffer.
 

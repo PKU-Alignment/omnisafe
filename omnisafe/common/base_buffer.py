@@ -41,7 +41,7 @@ class BaseBuffer:
             .. list-table::
 
                 *   -   obs_buf (np.ndarray of shape ``(batch_size, obs_dim)``).
-                    -   ``obsertaion`` in :meth:`roll_out` session.
+                    -   ``observaion`` in :meth:`roll_out` session.
                 *   -   act_buf (np.ndarray of shape ``(batch_size, act_dim)``).
                     -   ``action`` in :meth:`roll_out` session.
                 *   -   rew_buf (np.ndarray of shape ``batch_size``).
@@ -49,7 +49,7 @@ class BaseBuffer:
                 *   -   cost_buf (np.ndarray of shape shape ``batch_size``).
                     -   ``cost`` in :meth:`roll_out` session.
                 *   -   next_obs_buf (np.ndarray of shape ``(batch_size, obs_dim)``).
-                    -   ``next obsertaion`` in :meth:`roll_out` session.
+                    -   ``next observaion`` in :meth:`roll_out` session.
                 *   -   done_buf (np.ndarray of shape shape ``batch_size``).
                     -   ``terminated`` in :meth:`roll_out` session.
 

@@ -52,7 +52,7 @@ class Buffer:
             .. list-table::
 
                 *   -   obs_buf (np.array of shape (``batch_size``, ``obs_dim``)).
-                    -   ``obsertaion`` in :meth:`roll_out` session.
+                    -   ``observaion`` in :meth:`roll_out` session.
                 *   -   act_buf (np.array of shape (``batch_size``, ``act_dim``)).
                     -   ``action`` in :meth:`roll_out` session.
                 *   -   adv_buf (np.array of shape (``batch_size``)

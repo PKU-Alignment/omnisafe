@@ -119,6 +119,7 @@ class SDDPG(DDPG):
     def Fvp(self, params: torch.Tensor) -> torch.Tensor:
         """Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_
         based on an approximation of the KL-divergence.
+
         The Hessian-vector product is approximated by the Fisher information matrix,
         which is the second-order derivative of the KL-divergence.
         For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf

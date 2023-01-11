@@ -411,7 +411,7 @@ class PolicyGradient:
             .. list-table::
 
                 *   -   obs
-                    -   ``obsertaion`` stored in buffer.
+                    -   ``observaion`` stored in buffer.
                 *   -   act
                     -   ``action`` stored in buffer.
                 *   -   target_v
