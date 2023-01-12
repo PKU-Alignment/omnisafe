@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of QCritic."""
-from typing import Optional
+from typing import List, Optional
 
 import torch
 import torch.nn as nn
@@ -23,7 +23,12 @@ from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_netwo
 
 
 class QCritic(Critic):
-    """Implementation of QCritic."""
+    """Implementation of QCritic.
+
+    A Q-function approximator that uses a multi-layer perceptron (MLP) to map observation-action pairs to Q-values.
+    This class is an inherit class of :class:`Critic`.
+    You can design your own Q-function approximator by inheriting this class or :class:`Critic`.
+    """
 
     # pylint: disable-next=too-many-arguments
     def __init__(
@@ -37,7 +42,35 @@ class QCritic(Critic):
         num_critics: int = 1,
         use_obs_encoder: bool = False,
     ) -> None:
-        """Initialize."""
+        """Initialize the critic network.
+
+        The Q critic network has two modes:
+
+        -  ``use_obs_encoder`` = ``False`` :
+           The input of the network is the concatenation of the observation and action.
+        -  ``use_obs_encoder`` = ``True`` :
+           The input of the network is the concatenation of the output of the observation encoder and action.
+
+        For example, in :class:`DDPG`,
+        the action is not directly concatenated with the observation,
+        but is concatenated with the output of the observation encoder.
+
+        .. note::
+            The Q critic network contains multiple critics,
+            and the output of the network :meth`forward` is a list of Q-values.
+            If you want to get the single Q-value of a specific critic,
+            you need to use the index to get it.
+
+        Args:
+            obs_dim (int): Observation dimension.
+            act_dim (int): Action dimension.
+            hidden_sizes (list): Hidden layer sizes.
+            activation (Activation): Activation function.
+            weight_initialization_mode (InitFunction): Weight initialization mode.
+            shared (nn.Module): Shared network.
+            num_critics (int): Number of critics.
+            use_obs_encoder (bool): Whether to use observation encoder.
+        """
         self.use_obs_encoder = use_obs_encoder
         Critic.__init__(
             self,
@@ -77,8 +110,18 @@ class QCritic(Critic):
         self,
         obs: torch.Tensor,
         act: Optional[torch.Tensor] = None,
-    ):
-        """Forward."""
+    ) -> List:
+        """Forward function.
+
+        As a multi-critic network, the output of the network is a list of Q-values.
+        If you want to use it as a single-critic network,
+        you only need to set the ``num_critics`` parameter to 1 when initializing the network,
+        and then use the index 0 to get the Q-value.
+
+        Args:
+            obs (torch.Tensor): Observation.
+            act (torch.Tensor): Action.
+        """
         res = []
         for critic in self.critic_list:
             if self.use_obs_encoder:

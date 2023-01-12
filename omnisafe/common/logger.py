@@ -19,6 +19,7 @@ import json
 import os
 import os.path as osp
 import time
+from typing import Tuple, Union
 
 import numpy as np
 import torch
@@ -30,23 +31,41 @@ from omnisafe.utils.logger_utils import colorize, convert_json
 
 # pylint: disable-next=too-many-instance-attributes
 class Logger:
-    """Implementation of the Logger."""
+    """Implementation of the Logger.
+
+    A logger to record the training process.
+    It can record the training process to a file and print it to the console.
+    It can also record the training process to tensorboard.
+    """
 
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        data_dir,
-        exp_name,
-        output_fname='progress.txt',
-        debug=False,
-        level=1,
-        datestamp=True,
-        hms_time=time.strftime('%Y-%m-%d_%H-%M-%S'),
-        use_tensor_board=True,
-        verbose=True,
-        seed=None,
-    ):
-        """Initialize the logger."""
+        data_dir: str,
+        exp_name: str,
+        output_fname: str = 'progress.txt',
+        debug: bool = False,
+        level: int = 1,
+        datestamp: int = True,
+        hms_time: int = time.strftime('%Y-%m-%d_%H-%M-%S'),
+        use_tensor_board: bool = True,
+        verbose: bool = True,
+        seed: int = 0,
+    ) -> None:
+        """Initialize the logger.
+
+        Args:
+            data_dir (str): The directory to save the config and progress.
+            exp_name (str): The name of the experiment.
+            output_fname (str, optional): The name of the progress file. Defaults to 'progress.txt'.
+            debug (bool, optional): Whether to print debug information. Defaults to False.
+            level (int, optional): The level of the logger. Defaults to 1.
+            datestamp (int, optional): Whether to add datestamp to the log directory. Defaults to True.
+            hms_time (int, optional): The time of the experiment. Defaults to time.strftime('%Y-%m-%d_%H-%M-%S').
+            use_tensor_board (bool, optional): Whether to use tensorboard. Defaults to True.
+            verbose (bool, optional): Whether to print the progress to the console. Defaults to True.
+            seed (int, optional): The seed of the experiment. Defaults to 0.
+        """
         relpath = hms_time if datestamp else ''
         if seed is not None:
             subfolder = '-'.join(['seed', str(seed).zfill(3)])
@@ -84,31 +103,37 @@ class Logger:
 
         self.epoch_dict = {}
 
-    def log(self, msg, color='green'):
+    def log(
+        self,
+        msg: str,
+        color: str = 'green',
+    ) -> None:
         """Print a colorized message to stdout."""
         if self.verbose and self.level > 0:
             print(colorize(msg, color, bold=False))
 
-    def store(self, **kwargs):
+    def store(self, **kwargs) -> None:
         """
         Save something into the epoch_logger's current state.
 
-        Provide an arbitrary number of keyword arguments with numerical
-        values.
+        Provide an arbitrary number of keyword arguments with numerical values.
         """
         for key, value in kwargs.items():
             if key not in self.epoch_dict:
                 self.epoch_dict[key] = []
             self.epoch_dict[key].append(value)
 
-    def log_single_value(self, key, val):
-        """
-        Log a value of some diagnostic.
+    def log_single_value(self, key: str, val: str) -> None:
+        """Log a value of some diagnostic.
 
         Call this only once for each diagnostic quantity, each iteration.
-        After using ``log_tabular`` to store values for each diagnostic,
-        make sure to call ``dump_tabular`` to write them out to file and
-        stdout (otherwise they will not get saved anywhere).
+        After using :meth:`log_tabular` to store values for each diagnostic,
+        make sure to call :meth:`dump_tabular` to write them out to file,
+        and stdout (otherwise they will not get saved anywhere).
+
+        Args:
+            key (str): The name of the diagnostic.
+            val (str): The value of the diagnostic.
         """
         if self.first_row:
             self.log_headers.append(key)
@@ -121,8 +146,17 @@ class Logger:
         ), f'You already set {key} this iteration. Maybe you forgot to call dump_tabular()'
         self.log_current_row[key] = val
 
-    def log_tabular(self, key, val=None, min_and_max=False, std=False):
-        """log_tabular"""
+    def log_tabular(
+        self, key: str, val: str = None, min_and_max: bool = False, std: bool = False
+    ) -> None:
+        """Log a value of some diagnostic.
+
+        Args:
+            key (str): The name of the diagnostic.
+            val (str, optional): The value of the diagnostic. Defaults to None.
+            min_and_max (bool, optional): Whether to log the min and max values. Defaults to False.
+            std (bool, optional): Whether to log the standard deviation. Defaults to False.
+        """
 
         if val is not None:
             self.log_single_value(key, val)
@@ -139,7 +173,7 @@ class Logger:
                 self.log_single_value(key + '/Max', stats[3])
         self.epoch_dict[key] = []
 
-    def save_config(self, config):
+    def save_config(self, config) -> None:
         """Save the configuration of the experiment."""
 
         if proc_id() == 0:  # only root process logs configurations
@@ -152,8 +186,19 @@ class Logger:
             with open(osp.join(self.log_dir, 'config.json'), encoding='utf-8', mode='w') as out:
                 out.write(output)
 
-    def get_stats(self, key, with_min_and_max=False):
-        """Get the statistics of a key."""
+    def get_stats(
+        self,
+        key: str,
+        with_min_and_max: bool = False,
+    ) -> Union[
+        Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+    ]:
+        """Get the statistics of a key.
+
+        Args:
+            key (str): The name of the diagnostic.
+            with_min_and_max (bool, optional): Whether to log the min and max values. Defaults to False.
+        """
         assert key in self.epoch_dict, f'key={key} not in dict'
 
         val = self.epoch_dict[key]
@@ -163,10 +208,14 @@ class Logger:
         return mpi_statistics_scalar(vals, with_min_and_max=with_min_and_max)
 
     def dump_tabular(self) -> None:
-        """
-        Write all of the diagnostics from the current iteration.
+        """Write all of the diagnostics from the current iteration,
+        both to stdout, and to the output file.
 
-        Writes both to stdout, and to the output file.
+        If you want to add more information to the diagnostics,
+        you should call :meth:`log_tabular` again after this.
+
+        .. warning::
+            This function should only be called once per iteration after :meth:`log_tabular`.
         """
         if proc_id() == 0:
             vals = []
@@ -214,11 +263,11 @@ class Logger:
             if len(value) > 0:
                 print(f'epoch_dict: key={key} was not logged.')
 
-    def setup_torch_saver(self, what_to_save: dict):
+    def setup_torch_saver(self, what_to_save: dict) -> None:
         """Setup the torch saver."""
         self.torch_saver_elements = what_to_save
 
-    def torch_save(self, itr=None):
+    def torch_save(self, itr: str = None) -> None:
         """
         Saves the PyTorch model (or models).
         """
@@ -238,11 +287,12 @@ class Logger:
             }
             torch.save(params, fname)
 
-    def close(self):
-        """
+    def close(self) -> None:
+        """Close the logger.
+
         Close opened output files immediately after training in order to
         avoid number of open files overflow. Avoids the following error:
-        OSError: [Errno 24] Too many open files
+        ``OSError: [Errno 24] Too many open files``.
         """
         if proc_id() == 0:
             self.output_file.close()

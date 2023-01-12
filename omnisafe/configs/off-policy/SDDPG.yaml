@@ -17,9 +17,9 @@ defaults:
   # --------------------------------------Basic Configurations----------------------------------- #
   ## -----------------------------Basic configurations for base class PG------------------------ ##
   # The random seed
-  seed: 0
+  seed: 10
   # The environment wrapper type
-  wrapper_type: OffPolicyEnvWrapper
+  wrapper_type: CMDPWrapper
   # Number of epochs
   epochs: 500
   # Number of steps per epoch
@@ -114,3 +114,19 @@ defaults:
     size: 50000
     # The size of batch
     batch_size: 256
+  ## --------------------------------------Configuration For Environment------------------------ ##
+  env_cfgs:
+    # The seed of environment
+    env_seed: 0
+    # The number of parallel environments
+    num_envs: 1
+    # Whether to use standardized reward
+    normalized_rew: True
+    # Whether to use standardized cost
+    normalized_cost: True
+    # Whether to use standardized obs
+    normalized_obs: True
+    # The maximum length of record queue
+    max_len: 100
+    # The number of threads used to sample data
+    num_threads: 20

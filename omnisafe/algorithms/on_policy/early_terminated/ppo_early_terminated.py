@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the early terminated algorithm using PPO."""
 
+from typing import NamedTuple
+
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
 
@@ -25,9 +27,14 @@ class PPOEarlyTerminated(PPO):
     References:
         Title: Safe Exploration by Solving Early Terminated MDP
         Authors: Hao Sun, Ziping Xu, Meng Fang, Zhenghao Peng, Jiadong Guo, Bo Dai, Bolei Zhou.
-        URL: https://arxiv.org/abs/2107.04200
+        URL: `Safe Exploration by Solving Early Terminated MDP <https://arxiv.org/abs/2107.04200>`_
     """
 
-    def __init__(self, env_id, cfgs) -> None:
-        """Initialize PPO_Earyly_Terminated."""
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
+        """Initialize PPO_Earyly_Terminated.
+
+        Args:
+            env_id (str): The environment id.
+            cfgs (NamedTuple): The configuration of the algorithm.
+        """
         super().__init__(env_id=env_id, cfgs=cfgs)

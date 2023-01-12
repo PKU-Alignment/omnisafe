@@ -12,34 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the PPO algorithm."""
+"""Implementation of the Reward Constrained Policy Optimization algorithm."""
 
 from typing import Dict, NamedTuple, Tuple
 
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.base.ppo import PPO
+from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
 from omnisafe.common.lagrange import Lagrange
 
 
 @registry.register
-class PPOLag(PPO, Lagrange):
-    """The Lagrange version of the PPO algorithm.
+class RCPO(NaturalPG, Lagrange):
+    """Reward Constrained Policy Optimization.
 
-    A simple combination of the Lagrange method and the Proximal Policy Optimization algorithm.
+    References:
+        - Title: Reward Constrained Policy Optimization.
+        - Authors: Chen Tessler, Daniel J. Mankowitz, Shie Mannor.
+        - URL: `Reward Constrained Policy Optimization <https://arxiv.org/abs/1805.11074>`_
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize PPOLag.
+        """Initialize RCPO.
 
-        PPOLag is a combination of :class:`PPO` and :class:`Lagrange` model.
+        RCPO is a combination of :class:`NaturalPG` and :class:`Lagrange` model.
 
         Args:
             env_id (str): The environment id.
             cfgs (NamedTuple): The configuration of the algorithm.
         """
-        PPO.__init__(
+        NaturalPG.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
@@ -53,13 +56,13 @@ class PPOLag(PPO, Lagrange):
         )
 
     def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
-        r"""Update actor, critic, running statistics as we used in the :class:`PPO` algorithm.
+        r"""Update actor, critic, running statistics as we used in the :class:`NaturalPG` algorithm.
 
         Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.
 
         .. note::
-            The :meth:`compute_loss_pi` is defined in the :class:`PPO` algorithm.
+            The :meth:`compute_loss_pi` is defined in the :class:`PolicyGradient` algorithm.
             When a lagrange multiplier is used,
             the :meth:`compute_loss_pi` method will return the loss of the policy as:
 
@@ -73,7 +76,8 @@ class PPOLag(PPO, Lagrange):
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
         # first update Lagrange multiplier parameter
         self.update_lagrange_multiplier(Jc)
-        PPO.update(self)
+        # then update the policy and value net.
+        NaturalPG.update(self)
 
     def compute_surrogate(
         self,
@@ -91,7 +95,7 @@ class PPOLag(PPO, Lagrange):
         return adv - self.lagrangian_multiplier * cost_adv
 
     def algorithm_specific_logs(self) -> None:
-        """Log the PPOLag specific information.
+        """Log the RCPO specific information.
 
         .. list-table::
 

@@ -14,196 +14,247 @@
 # ==============================================================================
 """Environment wrapper for saute algorithms."""
 
+from dataclasses import dataclass
+
 import numpy as np
-import torch
 from gymnasium import spaces
 
-from omnisafe.wrappers.on_policy_wrapper import OnPolicyEnvWrapper
+from omnisafe.common.normalizer import Normalizer
+from omnisafe.common.record_queue import RecordQueue
+from omnisafe.typing import NamedTuple, Optional
+from omnisafe.utils.tools import expand_dims
+from omnisafe.wrappers.cmdp_wrapper import CMDPWrapper
 from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 
+@dataclass
+class RolloutLog:
+    """Log for roll out."""
+
+    ep_ret: np.ndarray
+    ep_costs: np.ndarray
+    ep_len: np.ndarray
+    ep_budget: np.ndarray
+
+
+@dataclass
+class SauteData:
+    """Data for Saute RL."""
+
+    safety_budget: float
+    unsafe_reward: float
+    safety_obs: np.ndarray
+
+
+@dataclass
+class RolloutData:
+    """Data for roll out."""
+
+    local_steps_per_epoch: int
+    max_ep_len: int
+    use_cost: bool
+    current_obs: np.ndarray
+    rollout_log: RolloutLog
+    saute_data: SauteData
+
+
 @WRAPPER_REGISTRY.register
-class SauteEnvWrapper(OnPolicyEnvWrapper):
-    """SauteEnvWrapper."""
+class SauteWrapper(CMDPWrapper):
+    r"""SauteEnvWrapper.
 
-    def __init__(
-        self,
-        env_id,
-        cfgs,
-        **env_kwargs,
-    ) -> None:
-        """Initialize SauteEnvWrapper.
+    Saute is a safe RL algorithm that uses state augmentation to ensure safety.
+    The state augmentation is the concatenation of the original state and the safety state.
+    The safety state is the safety budget minus the cost divided by the safety budget.
 
+    .. note::
+
+        - If the safety state is greater than 0, the reward is the original reward.
+        - If the safety state is less than 0, the reward is the unsafe reward (always 0 or less than 0).
+
+    ``omnisafe`` provides two implementations of Saute RL: :class:`PPOSaute` and :class:`PPOLagSaute`.
+
+    References:
+
+    - Title: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation
+    - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
+      David Mguni, Jun Wang, Haitham Bou-Ammar.
+    - URL: https://arxiv.org/abs/2202.06558
+    """
+
+    def __init__(self, env_id, cfgs: Optional[NamedTuple] = None, **env_kwargs) -> None:
+        """Initialize environment wrapper.
         Args:
             env_id (str): environment id.
-            cfgs (dict): configuration dictionary.
+            cfgs (collections.namedtuple): configs.
             env_kwargs (dict): The additional parameters of environments.
         """
-        super().__init__(env_id, **env_kwargs)
-
-        self.unsafe_reward = cfgs.unsafe_reward
-        self.saute_gamma = cfgs.saute_gamma
+        # self.env = gymnasium.make(env_id, **env_kwargs)
+        super().__init__(env_id, cfgs, **env_kwargs)
+        if hasattr(self.env, '_max_episode_steps'):
+            max_ep_len = self.env._max_episode_steps
+        else:
+            max_ep_len = 1000
         if cfgs.scale_safety_budget:
-            self.safety_budget = (
+            safety_budget = (
                 cfgs.safety_budget
-                * (1 - self.saute_gamma**self.max_ep_len)
-                / (1 - self.saute_gamma)
-                / np.float32(self.max_ep_len)
+                * (1 - self.cfgs.saute_gamma**max_ep_len)
+                / (1 - self.cfgs.saute_gamma)
+                / np.float32(max_ep_len)
+                * np.ones((self.cfgs.num_envs, 1))
             )
         else:
-            self.safety_budget = cfgs.safety_budget
-        self.safety_obs = 1.0
-        high = np.array(np.hstack([self.env.observation_space.high, np.inf]), dtype=np.float32)
-        low = np.array(np.hstack([self.env.observation_space.low, np.inf]), dtype=np.float32)
+            safety_budget = cfgs.safety_budget * np.ones((self.cfgs.num_envs, 1))
+        safety_obs = np.ones((self.cfgs.num_envs, 1), dtype=np.float32)
+        self.rollout_data = RolloutData(
+            0.0,
+            max_ep_len,
+            False,
+            None,
+            RolloutLog(
+                np.zeros(self.cfgs.num_envs),
+                np.zeros(self.cfgs.num_envs),
+                np.zeros(self.cfgs.num_envs),
+                np.zeros((self.cfgs.num_envs, 1)),
+            ),
+            SauteData(
+                safety_budget=safety_budget,
+                unsafe_reward=cfgs.unsafe_reward,
+                safety_obs=safety_obs,
+            ),
+        )
+        high = np.array(np.hstack([self.observation_space.high, np.inf]), dtype=np.float32)
+        low = np.array(np.hstack([self.observation_space.low, np.inf]), dtype=np.float32)
         self.observation_space = spaces.Box(high=high, low=low)
+        self.obs_normalizer = (
+            Normalizer(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5)
+            if self.cfgs.normalized_obs
+            else None
+        )
+        self.record_queue = RecordQueue(
+            'ep_ret', 'ep_cost', 'ep_len', 'ep_budget', maxlen=self.cfgs.max_len
+        )
+        self.rollout_data.current_obs = self.reset()[0]
 
-    def augment_obs(self, obs: np.array, safety_obs: np.array):
+    def augment_obs(self, obs: np.array) -> np.array:
         """Augmenting the obs with the safety obs.
+
+        Detailedly, the augmented obs is the concatenation of the original obs and the safety obs.
+        The safety obs is the safety budget minus the cost divided by the safety budget.
 
         Args:
             obs (np.array): observation.
             safety_obs (np.array): safety observation.
-
-        Returns:
-            augmented_obs (np.array): augmented observation.
         """
-        augmented_obs = np.hstack([obs, safety_obs])
+        augmented_obs = np.hstack([obs, self.rollout_data.saute_data.safety_obs])
         return augmented_obs
 
-    def safety_step(self, cost: np.ndarray) -> np.ndarray:
+    def safety_step(self, cost: np.ndarray, done: bool) -> np.ndarray:
         """Update the normalized safety obs.
 
         Args:
             cost (np.array): cost.
-
-        Returns:
-            safety_obs (np.array): normalized safety observation.
         """
-        self.safety_obs -= cost / self.safety_budget
-        self.safety_obs /= self.saute_gamma
-        return self.safety_obs
+        if done:
+            self.rollout_data.saute_data.safety_obs = np.ones(
+                (self.cfgs.num_envs, 1), dtype=np.float32
+            )
+        else:
+            self.rollout_data.saute_data.safety_obs -= (
+                cost / self.rollout_data.saute_data.safety_budget
+            )
+            self.rollout_data.saute_data.safety_obs /= self.cfgs.saute_gamma
 
-    def safety_reward(self, reward: np.ndarray, next_safety_obs: np.ndarray) -> np.ndarray:
+    def safety_reward(self, reward: np.ndarray) -> np.ndarray:
         """Update the reward.
 
         Args:
             reward (np.array): reward.
             next_safety_obs (np.array): next safety observation.
-
-        Returns:
-            reward (np.array): updated reward.
         """
-        reward = reward * (next_safety_obs > 0) + self.unsafe_reward * (next_safety_obs <= 0)
+        reward = reward * (
+            self.rollout_data.saute_data.safety_obs > 0
+        ) + self.rollout_data.saute_data.unsafe_reward * (
+            self.rollout_data.saute_data.safety_obs <= 0
+        )
         return reward
 
-    def reset(self, seed=None):
+    def reset(self) -> tuple((np.array, dict)):
         """Reset environment.
+
+        .. note::
+            The safety obs is initialized to 1.0.
 
         Args:
             seed (int): seed for environment reset.
-
-        Returns:
-            self.curr_o (np.array): current observation.
-            info (dict): environment info.
         """
-        self.curr_o, info = self.env.reset(seed=seed)
-        self.safety_obs = 1.0
-        self.curr_o = self.augment_obs(self.curr_o, self.safety_obs)
-        return self.curr_o, info
+        obs, info = self.env.reset()
+        if self.cfgs.num_envs == 1:
+            obs = expand_dims(obs)
+            info = [info]
+        self.rollout_data.saute_data.safety_obs = np.ones((self.cfgs.num_envs, 1), dtype=np.float32)
+        obs = self.augment_obs(obs)
+        return obs, info
 
-    def step(self, action):
+    def step(self, action: np.array) -> tuple((np.array, np.array, np.array, bool, dict)):
         """Step environment.
+
+        .. note::
+            The safety obs is updated by the cost.
+            The reward is updated by the safety obs.
+            Detailedly, the reward is the original reward if the safety obs is greater than 0,
+            otherwise the reward is the unsafe reward.
 
         Args:
             action (np.array): action.
-
-        Returns:
-            augmented_obs (np.array): augmented observation.
-            reward (np.array): reward.
-            cost (np.array): cost.
-            terminated (bool): whether the episode is terminated.
-            truncated (bool): whether the episode is truncated.
-            info (dict): environment info.
         """
-        next_obs, reward, cost, terminated, truncated, info = self.env.step(action)
-        next_safety_obs = self.safety_step(cost)
-        info['true_reward'] = reward
-        info['safety_obs'] = next_safety_obs
-        reward = self.safety_reward(reward, next_safety_obs)
-        augmented_obs = self.augment_obs(next_obs, next_safety_obs)
+        next_obs, reward, cost, terminated, truncated, info = self.env.step(action.squeeze())
+        # next_obs, rew, done, info = env.step(act)
+        if self.cfgs.num_envs == 1:
+            next_obs, reward, cost, terminated, truncated, info = expand_dims(
+                next_obs, reward, cost, terminated, truncated, info
+            )
+            self.safety_step(cost, done=terminated | truncated)
+            if terminated | truncated:
+                augmented_obs, info = self.reset()
+            else:
+                augmented_obs = self.augment_obs(next_obs)
+        else:
+            self.safety_step(cost, done=terminated | truncated)
+            augmented_obs = self.augment_obs(next_obs)
+        self.rollout_data.rollout_log.ep_ret += reward
+        self.rollout_data.rollout_log.ep_costs += cost
+        self.rollout_data.rollout_log.ep_len += np.ones(self.cfgs.num_envs)
+        self.rollout_data.rollout_log.ep_budget += self.rollout_data.saute_data.safety_obs
+        reward = self.safety_reward(reward)
 
         return augmented_obs, reward, cost, terminated, truncated, info
 
-    # pylint: disable-next=too-many-locals
-    def roll_out(self, agent, buf, logger):
-        """Collect data and store to experience buffer.
-
-        Args:
-            agent (Agent): agent.
-            buf (Buffer): buffer.
-            logger (Logger): logger.
-
-        Returns:
-            ep_ret (float): episode return.
-            ep_costs (float): episode costs.
-            ep_len (int): episode length.
-            ep_budget (float): episode budget.
-        """
-        obs, _ = self.reset()
-        ep_ret, ep_costs, ep_len, ep_budget = 0.0, 0.0, 0, 0.0
-        for step_i in range(self.local_steps_per_epoch):
-            action, value, cost_value, logp = agent.step(torch.as_tensor(obs, dtype=torch.float32))
-            next_obs, reward, cost, done, truncated, info = self.step(action)
-            ep_ret += info['true_reward']
-            ep_costs += (self.cost_gamma**ep_len) * cost
-            ep_len += 1
-            ep_budget += self.safety_obs
-
-            # Save and log
-            # Notes:
-            #   - raw observations are stored to buffer (later transformed)
-            #   - reward scaling is performed in buffer
-            buf.store(
-                obs=obs,
-                act=action,
-                rew=reward,
-                val=value,
-                logp=logp,
-                cost=cost,
-                cost_val=cost_value,
-            )
-
-            # Store values for statistic purpose
-            if self.use_cost:
-                logger.store(**{'Values/V': value, 'Values/C': cost_value})
-            else:
-                logger.store(**{'Values/V': value})
-
-            # Update observation
-            obs = next_obs
-
-            timeout = ep_len == self.max_ep_len
-            terminal = done or timeout or truncated
-            epoch_ended = step_i == self.local_steps_per_epoch - 1
-
-            if terminal or epoch_ended:
-                if timeout or epoch_ended:
-                    _, value, cost_value, _ = agent(torch.as_tensor(obs, dtype=torch.float32))
-                else:
-                    value, cost_value = 0.0, 0.0
-
-                # Automatically compute GAE in buffer
-                buf.finish_path(value, cost_value, penalty_param=float(self.penalty_param))
-
-                # Only save EpRet / EpLen if trajectory finished
-                if terminal:
-                    logger.store(
-                        **{
-                            'Metrics/EpRet': ep_ret,
-                            'Metrics/EpLen': ep_len,
-                            'Metrics/EpCost': ep_costs,
-                            'Metrics/EpBudget': ep_budget,
-                        }
-                    )
-                ep_ret, ep_costs, ep_len, ep_budget = 0.0, 0.0, 0, 0.0
-                obs, _ = self.reset()
+    def rollout_log(
+        self,
+        logger,
+        idx,
+    ) -> None:
+        """Log the information of the rollout."""
+        self.record_queue.append(
+            ep_ret=self.rollout_data.rollout_log.ep_ret[idx],
+            ep_cost=self.rollout_data.rollout_log.ep_costs[idx],
+            ep_len=self.rollout_data.rollout_log.ep_len[idx],
+            ep_budget=self.rollout_data.rollout_log.ep_budget[idx],
+        )
+        avg_ep_ret, avg_ep_cost, avg_ep_len, avg_ep_budget = self.record_queue.get_mean(
+            'ep_ret', 'ep_cost', 'ep_len', 'ep_budget'
+        )
+        logger.store(
+            **{
+                'Metrics/EpRet': avg_ep_ret,
+                'Metrics/EpCost': avg_ep_cost,
+                'Metrics/EpLen': avg_ep_len,
+                'Metrics/EpBudget': avg_ep_budget,
+            }
+        )
+        (
+            self.rollout_data.rollout_log.ep_ret[idx],
+            self.rollout_data.rollout_log.ep_costs[idx],
+            self.rollout_data.rollout_log.ep_len[idx],
+            self.rollout_data.rollout_log.ep_budget[idx],
+        ) = (0.0, 0.0, 0.0, 0.0)

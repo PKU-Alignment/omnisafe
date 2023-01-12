@@ -14,29 +14,65 @@
 # ==============================================================================
 """Implementation of ConstraintActorQCritic."""
 
+from typing import NamedTuple, Tuple
+
+import numpy as np
 import torch
+from gymnasium.spaces import Box
 
 from omnisafe.models.actor_q_critic import ActorQCritic
 from omnisafe.models.critic.q_critic import QCritic
 
 
 class ConstraintActorQCritic(ActorQCritic):
-    """ConstraintActorQCritic is a wrapper around ActorQCritic that adds a cost critic to the model."""
+    """ConstraintActorCritic is a wrapper around ActorCritic that adds a cost critic to the model.
+
+    In ``omnisafe``, we combine the actor and critic into one this class.
+
+    .. list-table::
+
+        *   -   Model
+            -   Description
+            -   Function
+        *   -   Actor
+            -   The policy network, input is observation, output is action.
+                Choose the actor from the following options:
+                :class:`MLPActor`, :class:`CategoricalActor`, :class:`GaussianAnnealingActor`,
+                :class:`GaussianLearningActor`, :class:`GaussianStdNetActor`, :class:`MLPCholeskyActor`.
+            -   Choose the action based on the observation.
+        *   -   Reward Q-Critic
+            -   The value network, input is observation-action pair,
+                output is reward value.
+                Choose the critic from the following options:
+                :class:`QCritic`, :class:`VCritic`.
+            -   Estimate the reward value of the observation.
+        *   -   Cost Q-Critic
+            -   The value network, input is observation-action pair,
+                output is cost value.
+                Choose the critic from the following options:
+                :class:`QCritic`, :class:`VCritic`.
+            -   Estimate the cost value of the observation.
+    """
 
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        observation_space,
-        action_space,
-        standardized_obs: bool,
-        model_cfgs,
-    ):
-        """Initialize ConstraintActorQCritic."""
+        observation_space: Box,
+        action_space: Box,
+        model_cfgs: NamedTuple,
+    ) -> None:
+        """Initialize ConstraintActorQCritic.
+
+        Args:
+            observation_space: The observation space.
+            action_space: The action space.
+            standardized_obs: Whether to standardize the observation.
+            model_cfgs: The model configurations.
+        """
 
         super().__init__(
             observation_space=observation_space,
             action_space=action_space,
-            standardized_obs=standardized_obs,
             shared_weights=model_cfgs.shared_weights,
             model_cfgs=model_cfgs,
         )
@@ -49,23 +85,22 @@ class ConstraintActorQCritic(ActorQCritic):
             shared=model_cfgs.shared_weights,
         )
 
-    def step(self, obs, deterministic=False):
-        """
-        If training, this includes exploration noise!
-        Expects that obs is not pre-processed.
+    def step(
+        self, obs: torch.Tensor, deterministic: bool = False
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray,]:
+        """Step function of the actor-critic model
+
+        Input observation-action pair, output reward and cost value (from :class:`QCritic`) action,
+        and its log probability (from :class`Actor`).
+
+        .. note::
+            The observation is standardized by the running mean and standard deviation.
+
         Args:
-            obs, description
-        Returns:
-            action, value, log_prob(action)
-        Note:
-            Training mode can be activated with ac.train()
-            Evaluation mode is activated by ac.eval()
+            obs (torch.Tensor): Observation.
+            deterministic (bool, optional): Whether to use deterministic action.
         """
         with torch.no_grad():
-            if self.obs_oms:
-                # Note: Update RMS in Algorithm.running_statistics() method
-                # self.obs_oms.update(obs) if self.training else None
-                obs = self.obs_oms(obs)
             action, logp_a = self.actor.predict(
                 obs, deterministic=deterministic, need_log_prob=True
             )

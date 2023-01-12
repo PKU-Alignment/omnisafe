@@ -14,74 +14,57 @@
 # ==============================================================================
 """Early terminated wrapper."""
 
-import torch
+from typing import Dict, Tuple, TypeVar
 
-from omnisafe.wrappers.on_policy_wrapper import OnPolicyEnvWrapper
+import numpy as np
+
+from omnisafe.utils.tools import expand_dims
+from omnisafe.wrappers.cmdp_wrapper import CMDPWrapper
 from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 
+RenderFrame = TypeVar('RenderFrame')
+
+
 @WRAPPER_REGISTRY.register
-class EarlyTerminatedEnvWrapper(OnPolicyEnvWrapper):  # pylint: disable=too-many-instance-attributes
-    """EarlyTerminatedEnvWrapper."""
+# pylint: disable-next=too-many-instance-attributes
+class EarlyTerminatedWrapper(CMDPWrapper):
+    """Implementation of the environment wrapper for early-terminated algorithms.
 
-    # pylint: disable-next=too-many-locals
-    def roll_out(self, agent, buf, logger):
-        """Collect data and store to experience buffer.
-        Terminated when the episode is done or the episode length is larger than max_ep_len
-        or cost is unequal to 0."""
-        obs, _ = self.env.reset()
-        ep_ret, ep_costs, ep_len = 0.0, 0.0, 0
-        for step_i in range(self.local_steps_per_epoch):
-            action, value, cost_value, logp = agent.step(torch.as_tensor(obs, dtype=torch.float32))
-            next_obs, reward, cost, done, truncated, _ = self.step(action)
-            ep_ret += reward
-            ep_costs += (self.cost_gamma**ep_len) * cost
-            ep_len += 1
+    ``omnisafe`` use different environment wrappers for different kinds of algorithms.
+    This is the environment wrapper for early-terminated algorithms.
 
-            # Save and log
-            # Notes:
-            #   - raw observations are stored to buffer (later transformed)
-            #   - reward scaling is performed in buffer
-            buf.store(
-                obs=obs,
-                act=action,
-                rew=reward,
-                val=value,
-                logp=logp,
-                cost=cost,
-                cost_val=cost_value,
+    .. note::
+        The only difference between this wrapper and :class:`OnPolicyEnvWrapper` is that,
+        this wrapper terminates the episode when the cost is unequal to 0.
+        Any on-policy algorithm can use this wrapper,
+        to convert itself into an early-terminated algorithm.
+        ``omnisafe`` provides a implementation of :class:`PPOEarlyTerminated`,
+        and :class:`PPOLagarlyTerminated`.
+    """
+
+    def step(self, action: np.ndarray) -> Tuple[np.ndarray, np.ndarray, bool, bool, Dict]:
+        """Step the environment.
+
+        The environment will be stepped by the action from the agent.
+        Corresponding to the Markov Decision Process,
+        the environment will return the ``next observation``,
+        ``reward``, ``cost``, ``terminated``, ``truncated`` and ``info``.
+
+        Args:
+            action (np.ndarray): action.
+        """
+        next_obs, reward, cost, terminated, truncated, info = self.env.step(action.squeeze())
+        if self.cfgs.num_envs == 1:
+            next_obs, reward, cost, terminated, truncated, info = expand_dims(
+                next_obs, reward, cost, terminated, truncated, info
             )
-
-            # Store values for statistic purpose
-            if self.use_cost:
-                logger.store(**{'Values/V': value, 'Values/C': cost_value})
-            else:
-                logger.store(**{'Values/V': value})
-
-            # Update observation
-            obs = next_obs
-
-            timeout = ep_len == self.max_ep_len
-            terminal = done or timeout or truncated or cost
-            epoch_ended = step_i == self.local_steps_per_epoch - 1
-
-            if terminal or epoch_ended:
-                if timeout or epoch_ended:
-                    _, value, cost_value, _ = agent(torch.as_tensor(obs, dtype=torch.float32))
-                else:
-                    value, cost_value = 0.0, 0.0
-
-                # Automatically compute GAE in buffer
-                buf.finish_path(value, cost_value, penalty_param=float(self.penalty_param))
-
-                # Only save EpRet / EpLen if trajectory finished
-                if terminal:
-                    logger.store(
-                        **{
-                            'Metrics/EpRet': ep_ret,
-                            'Metrics/EpLen': ep_len,
-                            'Metrics/EpCost': ep_costs,
-                        }
-                    )
-                ep_ret, ep_costs, ep_len = 0.0, 0.0, 0
-                obs, _ = self.env.reset()
+            if terminated | truncated:
+                next_obs, info = self.reset()
+        for idx, single_cost in enumerate(cost):
+            if single_cost:
+                terminated[idx] = True
+        self.rollout_data.rollout_log.ep_ret += reward
+        self.rollout_data.rollout_log.ep_costs += cost
+        self.rollout_data.rollout_log.ep_len += np.ones(self.cfgs.num_envs)
+        return next_obs, reward, cost, terminated, truncated, info
