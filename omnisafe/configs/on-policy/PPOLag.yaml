@@ -23,7 +23,7 @@ defaults:
   # Number of epochs
   epochs: 5000
   # Number of steps per epoch
-  steps_per_epoch: 8192
+  steps_per_epoch: 2048
   # Number of update iteration for Actor network
   actor_iters: 10
   # Number of update iteration for Critic network
@@ -117,6 +117,8 @@ defaults:
     env_seed: 0
     # The number of parallel environments
     num_envs: 1
+    # Whther to use async environment
+    async_env: True
     # Whether to use standardized reward
     normalized_rew: False
     # Whether to use standardized cost
