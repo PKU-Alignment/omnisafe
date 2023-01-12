@@ -20,7 +20,17 @@ import torch
 
 
 class Lagrange(abc.ABC):
-    """Abstract base class for Lagrangian-base Algorithms."""
+    r"""Abstract base class for Lagrangian-base Algorithms.
+
+    This class implements the Lagrange multiplier update and the Lagrange loss.
+
+    ..  note::
+
+        Any traditional policy gradient algorithm can be converted to a Lagrangian-based algorithm by
+        inheriting from this class and implementing the :meth:`compute_loss_pi` method.
+        You can also inherit this class to implement your own Lagrangian-based algorithm,
+        with any policy gradient method you like in ``omnisafe``.
+    """
 
     # pylint: disable-next=too-many-arguments
     def __init__(
@@ -30,17 +40,15 @@ class Lagrange(abc.ABC):
         lambda_lr: float,
         lambda_optimizer: str,
         lagrangian_upper_bound=None,
-        beta: float = 1.0,
-        device: torch.device = torch.device('cpu'),
-    ):
-        """init"""
-        self.cost_limit = cost_limit * beta
+    ) -> None:
+        """Initialize Lagrange multiplier."""
+        self.cost_limit = cost_limit
         self.lambda_lr = lambda_lr
         self.lagrangian_upper_bound = lagrangian_upper_bound
 
         init_value = max(lagrangian_multiplier_init, 1e-5)
         self.lagrangian_multiplier = torch.nn.Parameter(
-            torch.as_tensor(init_value, device=device), requires_grad=True
+            torch.as_tensor(init_value), requires_grad=True
         )
         self.lambda_range_projection = torch.nn.ReLU()
         # fetch optimizer from PyTorch optimizer package
@@ -55,14 +63,34 @@ class Lagrange(abc.ABC):
             lr=lambda_lr,
         )
 
-    def compute_lambda_loss(self, mean_ep_cost):
-        """Penalty loss for Lagrange multiplier."""
+    def compute_lambda_loss(self, mean_ep_cost: float) -> torch.Tensor:
+        r"""Penalty loss for Lagrange multiplier.
+
+        .. note::
+
+            mean_ep_cost obtained from: ``self.logger.get_stats('EpCosts')[0]``, which
+            are already averaged across MPI processes.
+
+        Args:
+            mean_ep_cost (float): mean episode cost.
+        """
         return -self.lagrangian_multiplier * (mean_ep_cost - self.cost_limit)
 
-    def update_lagrange_multiplier(self, Jc):
-        """Update Lagrange multiplier (lambda)
-        Note: Jc obtained from: self.logger.get_stats('EpCost')[0]
-        are already averaged across MPI processes.
+    def update_lagrange_multiplier(self, Jc: float) -> None:
+        r"""Update Lagrange multiplier (lambda).
+
+        Detailedly speaking, we update the Lagrange multiplier by minimizing the
+        penalty loss, which is defined as:
+
+        .. math::
+            \lambda ^{'} = \lambda + \eta * (J_c - J_c^*)
+
+        where :math:`\lambda` is the Lagrange multiplier, :math:`\eta` is the
+        learning rate, :math:`J_c` is the mean episode cost, and :math:`J_c^*` is
+        the cost limit.
+
+        Args:
+            Jc (float): mean episode cost.
         """
         self.lambda_optimizer.zero_grad()
         lambda_loss = self.compute_lambda_loss(Jc)

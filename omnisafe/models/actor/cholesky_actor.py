@@ -14,48 +14,74 @@
 # ==============================================================================
 """Implementation of CholeskyActor."""
 
+from typing import Tuple, Union
+
 import torch
 import torch.nn.functional as F
 from torch import nn
 from torch.distributions import MultivariateNormal
 
-from omnisafe.utils.model_utils import build_mlp_network, initialize_layer
+from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_network, initialize_layer
 
 
 # pylint: disable-next=too-many-instance-attributes
 class MLPCholeskyActor(nn.Module):
-    """Implementation of CholeskyActor."""
+    r"""Implementation of CholeskyActor.
 
-    COV_MIN = 1e-4  # last exp is 1e-2
-    MEAN_CLAMP_MIN = -5
-    MEAN_CLAMP_MAX = 5
-    COV_CLAMP_MIN = -5
-    COV_CLAMP_MAX = 20
+    A Gaussian policy that uses a MLP to map observations to actions distributions.
+    :class:`MLPCholeskyActor` uses a double headed MLP ,
+    to predict the mean and Cholesky decomposition of the Gaussian distribution.
+
+    .. note::
+        The Cholesky decomposition is a lower triangular matrix L with positive diagonal entries,
+        such that :math:`L^T L = \Sigma`, where :math:`\Sigma` is the covariance matrix of the Gaussian distribution.
+        The Cholesky decomposition is a convenient way to represent a covariance matrix,
+        and it is more numerically stable than the standard representation of the covariance matrix.
+
+    This class is an inherit class of :class:`Actor`.
+    You can design your own Gaussian policy by inheriting this class or :class:`Actor`.
+    """
 
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        obs_dim,
-        act_dim,
-        act_limit,
-        hidden_sizes,
-        activation,
-        cov_min,
-        mu_clamp_min,
-        mu_clamp_max,
-        cov_clamp_min,
-        cov_clamp_max,
-        weight_initialization_mode,
-    ):
-        """Initialize."""
+        obs_dim: int,
+        act_dim: int,
+        act_max: torch.Tensor,
+        act_min: torch.Tensor,
+        hidden_sizes: list,
+        cov_min: float,
+        mu_clamp_min: float,
+        mu_clamp_max: float,
+        cov_clamp_min: float,
+        cov_clamp_max: float,
+        activation: Activation = 'relu',
+        weight_initialization_mode: InitFunction = 'xavier_uniform',
+    ) -> None:
+        """Initialize MLPCholeskyActor.
+
+        Args:
+            obs_dim (int): observation dimension.
+            act_dim (int): action dimension.
+            act_max (torch.Tensor): maximum value of the action.
+            act_min (torch.Tensor): minimum value of the action.
+            hidden_sizes (list): list of hidden layer sizes.
+            activation (str): activation function.
+            cov_min (float): minimum value of the covariance matrix.
+            mu_clamp_min (float): minimum value of the mean.
+            mu_clamp_max (float): maximum value of the mean.
+            cov_clamp_min (float): minimum value of the covariance matrix.
+            cov_clamp_max (float): maximum value of the covariance matrix.
+            weight_initialization_mode (str): weight initialization mode.
+        """
         super().__init__()
         pi_sizes = [obs_dim] + hidden_sizes
-        self.act_limit = act_limit
+        self.act_limit = act_max
         self.act_low = torch.nn.Parameter(
-            torch.as_tensor(-act_limit), requires_grad=False
+            torch.as_tensor(act_min), requires_grad=False
         )  # (1, act_dim)
         self.act_high = torch.nn.Parameter(
-            torch.as_tensor(act_limit), requires_grad=False
+            torch.as_tensor(act_max), requires_grad=False
         )  # (1, act_dim)
         self.act_dim = act_dim
         self.obs_dim = obs_dim
@@ -74,18 +100,24 @@ class MLPCholeskyActor(nn.Module):
         nn.init.constant_(self.cholesky_layer.bias, 0.0)
 
     def predict(
-        self,
-        obs,
-        deterministic=False,
-    ):  # pylint: disable=invalid-name
-        """
-        forwards input through the network
-        :param obs: (B, obs_dim)
-        :return: mu vector (B, act_dim) and cholesky factorization of covariance matrix (B, act_dim, act_dim)
+        self, obs: torch.Tensor, deterministic: bool = False, need_log_prob: bool = False
+    ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
+        r"""Predict action given observation.
+
+        .. note::
+            - Compute the mean and Cholesky decomposition of the Gaussian distribution.
+            - Compute logprob from Gaussian, and then apply correction for Tanh squashing.
+              For details of the correction formula,
+              please refer to the original `SAC paper <https://arxiv.org/abs/1801.01290>`_.
+            - Get action from Multi-variate Gaussian distribution.
+
+        Args:
+            obs (torch.Tensor): Observation.
+            deterministic (bool): Whether to use deterministic policy.
         """
         if len(obs.shape) == 1:
             obs = torch.unsqueeze(obs, dim=0)
-        B = obs.size(0)
+        obs_length = obs.size(0)
 
         net_out = self.net(obs)
 
@@ -93,27 +125,20 @@ class MLPCholeskyActor(nn.Module):
         mean = torch.sigmoid(clamped_mu)  # (B, act_dim)
 
         mean = self.act_low + (self.act_high - self.act_low) * mean
-        # Compute logprob from Gaussian, and then apply correction for Tanh squashing.
-        # NOTE: The correction formula is a little bit magic. To get an understanding
-        # of where it comes from, check out the original SAC paper (arXiv 1801.01290)
-        # and look in appendix C. This is a more numerically-stable equivalent to Eq 21.
-        # Try deriving it yourself as a (very difficult) exercise. :)
         cholesky_vector = torch.clamp(
             self.cholesky_layer(net_out), self.cov_clamp_min, self.cov_clamp_max
-        )  # (B, (act_dim*(act_dim+1))//2)
+        )
         cholesky_diag_index = torch.arange(self.act_dim, dtype=torch.long) + 1
-        # cholesky_diag_index = (cholesky_diag_index * (cholesky_diag_index + 1)) // 2 - 1
         cholesky_diag_index = (
             torch.div(cholesky_diag_index * (cholesky_diag_index + 1), 2, rounding_mode='floor') - 1
         )
-        # add a small value to prevent the diagonal from being 0.
         cholesky_vector[:, cholesky_diag_index] = (
-            F.softplus(cholesky_vector[:, cholesky_diag_index]) + self.COV_MIN
+            F.softplus(cholesky_vector[:, cholesky_diag_index]) + self.cov_min
         )
         tril_indices = torch.tril_indices(row=self.act_dim, col=self.act_dim, offset=0)
-        cholesky = torch.zeros(size=(B, self.act_dim, self.act_dim), dtype=torch.float32)
+        cholesky = torch.zeros(size=(obs_length, self.act_dim, self.act_dim), dtype=torch.float32)
         cholesky[:, tril_indices[0], tril_indices[1]] = cholesky_vector
-        pi_distribution = MultivariateNormal(mean, scale_tril=cholesky)
+        pi_distribution = MultivariateNormal(mean.to(torch.float32), scale_tril=cholesky)
 
         if deterministic:
             pi_action = mean
@@ -122,7 +147,10 @@ class MLPCholeskyActor(nn.Module):
 
         pi_action = torch.tanh(pi_action)
         pi_action = self.act_limit * pi_action
-        return pi_action.squeeze(), cholesky
+
+        if need_log_prob:
+            return pi_action.squeeze().to(torch.float32), cholesky.to(torch.float32)
+        return pi_action.squeeze().to(torch.float32)
 
     def forward(self, obs, deterministic=False):
         """Forward."""

@@ -17,9 +17,9 @@ defaults:
   # --------------------------------------Basic Configurations----------------------------------- #
   ## ----------------------------Basic configurations for base class DDPG----------------------- ##
   # The random seed
-  seed: 0
+  seed: 5
   # The environment wrapper type
-  wrapper_type: OffPolicyEnvWrapper
+  wrapper_type: CMDPWrapper
   # Number of epochs
   epochs: 500
   # Number of steps per epoch
@@ -111,6 +111,22 @@ defaults:
     # Initial value of lagrangian multiplier
     lagrangian_multiplier_init: 0.001
     # Learning rate of lagrangian multiplier
-    lambda_lr: 0.01
+    lambda_lr: 0.04
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
+  ## --------------------------------------Configuration For Environment------------------------ ##
+  env_cfgs:
+    # The seed of environment
+    env_seed: 0
+    # The number of parallel environments
+    num_envs: 1
+    # Whether to use standardized reward
+    normalized_rew: True
+    # Whether to use standardized cost
+    normalized_cost: True
+    # Whether to use standardized obs
+    normalized_obs: True
+    # The maximum length of record queue
+    max_len: 100
+    # The number of threads used to sample data
+    num_threads: 20

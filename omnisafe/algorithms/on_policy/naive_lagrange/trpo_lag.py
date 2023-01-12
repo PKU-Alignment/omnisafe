@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the Lagrange version of the TRPO algorithm."""
 
+from typing import Dict, NamedTuple, Tuple
+
 import torch
 
 from omnisafe.algorithms import registry
@@ -25,15 +27,18 @@ from omnisafe.common.lagrange import Lagrange
 class TRPOLag(TRPO, Lagrange):
     """The Lagrange version of the TRPO algorithm.
 
-    References:
-        Title: Benchmarking Safe Exploration in Deep Reinforcement Learning
-        Authors: Alex Ray, Joshua Achiam, Dario Amodei.
-        URL: https://cdn.openai.com/safexp-short.pdf
-
+    A simple combination of the Lagrange method and the Trust Region Policy Optimization algorithm.
     """
 
-    def __init__(self, env_id, cfgs) -> None:
-        """initialize"""
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
+        """Initialize TRPOLag.
+
+        TRPOLag is a combination of :class:`TRPO` and :class:`Lagrange` model.
+
+        Args:
+            env_id (str): The environment id.
+            cfgs (NamedTuple): The configuration of the algorithm.
+        """
         TRPO.__init__(
             self,
             env_id=env_id,
@@ -47,42 +52,54 @@ class TRPOLag(TRPO, Lagrange):
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
         )
 
-    def algorithm_specific_logs(self):
+    def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
+        r"""Update actor, critic, running statistics as we used in the :class:`TRPO` algorithm.
+
+        Additionally, we update the Lagrange multiplier parameter,
+        by calling the :meth:`update_lagrange_multiplier` method.
+
+        .. note::
+            The :meth:`compute_loss_pi` method is defined in the :class:`PolicyGradient` algorithm.
+            When a lagrange multiplier is used,
+            the :meth:`compute_loss_pi` method will return the loss of the policy as:
+
+            .. math::
+                L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[ \frac{\pi_\theta(a_t|s_t)}{\pi_\theta^{old}(a_t|s_t)}
+                [A^{R}(s_t, a_t) - \lambda A^{C}(s_t, a_t)] \right]
+
+            where :math:`\lambda` is the Lagrange multiplier parameter.
+        """
+        # note that logger already uses MPI statistics across all processes..
+        Jc = self.logger.get_stats('Metrics/EpCost')[0]
+        # first update Lagrange multiplier parameter
+        self.update_lagrange_multiplier(Jc)
+        # then update the policy and value function
+        TRPO.update(self)
+
+    def compute_surrogate(
+        self,
+        adv: torch.Tensor,
+        cost_adv: torch.Tensor,
+    ) -> torch.Tensor:
+        """Compute surrogate loss.
+
+        Policy Gradient only use reward advantage.
+
+        Args:
+            adv (torch.Tensor): reward advantage
+            cost_adv (torch.Tensor): cost advantage
+        """
+        return adv - self.lagrangian_multiplier * cost_adv
+
+    def algorithm_specific_logs(self) -> None:
+        """Log the TRPOLag specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   Metrics/LagrangeMultiplier
+                -   The Lagrange multiplier value in current epoch.
+        """
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
-
-    def compute_loss_pi(self, data: dict) -> tuple:
-        # Policy loss
-        dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
-        ratio = torch.exp(_log_p - data['log_p'])
-
-        loss_pi = -(ratio * data['adv']).mean()
-        loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
-
-        # ensure that Lagrange Multiplier is positive
-        penalty = torch.clamp_min(self.lagrangian_multiplier, 0.0)
-        loss_pi += penalty * (ratio * data['cost_adv']).mean()
-        loss_pi /= 1 + penalty
-
-        # Useful extra info
-        approx_kl = 0.5 * (data['log_p'] - _log_p).mean().item()
-        ent = dist.entropy().mean().item()
-        pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
-
-        return loss_pi, pi_info
-
-    def update(self):
-        """Update."""
-        # pre-process data
-        raw_data, data = self.buf.pre_process_data()
-        # sub-sampling accelerates calculations
-        self.fvp_obs = data['obs'][::4]
-        # Note that logger already uses MPI statistics across all processes..
-        ep_costs = self.logger.get_stats('Metrics/EpCost')[0]
-        # First update Lagrange multiplier parameter
-        self.update_lagrange_multiplier(ep_costs)
-        # now update policy and value network
-        self.update_policy_net(data=data)
-        self.update_value_net(data=data)
-        self.update_cost_net(data=data)
-        return raw_data, data

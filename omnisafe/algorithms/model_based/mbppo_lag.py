@@ -165,7 +165,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         """compute the loss of dynamics"""
         state = self.off_replay_buffer.obs_buf[: self.off_replay_buffer.size, :]
         action = self.off_replay_buffer.act_buf[: self.off_replay_buffer.size, :]
-        next_state = self.off_replay_buffer.obs_next_buf[: self.off_replay_buffer.size, :]
+        next_state = self.off_replay_buffer.next_obs_buf[: self.off_replay_buffer.size, :]
         reward = self.off_replay_buffer.rew_buf[: self.off_replay_buffer.size]
         cost = self.off_replay_buffer.cost_buf[: self.off_replay_buffer.size]
         delta_state = next_state - state
@@ -308,7 +308,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
                     # and this will be triggered only in robots fall down case
                     val = 0
                     cval = 0
-                self.buf.finish_path(val, cval, penalty_param=float(0))
+                self.buf.finish_path(val, cval)
                 if timeout:
                     # only save EpRet / EpLen if trajectory finished
                     self.logger.store(
@@ -379,7 +379,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
                 # which will be triggered only in robots fall down case
                 val = 0
                 cval = 0
-                self.buf.finish_path(val, cval, penalty_param=float(0))
+                self.buf.finish_path(val, cval)
 
             # reached max imaging horizon, mixed real timestep, real max timestep , or episode truncated.
             elif (
@@ -393,7 +393,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
                 )
                 _, val, cval, _ = self.actor_critic.step(state_tensor)
                 del state_tensor
-                self.buf.finish_path(val, cval, penalty_param=float(0))
+                self.buf.finish_path(val, cval)
 
     def algo_reset(self):
         """reset algo parameters"""
@@ -426,8 +426,6 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         self.actor_critic = ConstraintActorCritic(
             observation_space=self.env.observation_space,
             action_space=self.env.action_space,
-            scale_rewards=self.cfgs.scale_rewards,
-            standardized_obs=self.cfgs.standardized_obs,
             model_cfgs=self.cfgs.model_cfgs,
         ).to(self.device)
         # Set up optimizer for policy and value function

@@ -15,6 +15,7 @@
 """logger_utils"""
 
 import json
+from typing import Any, Dict, List, Tuple, Union
 
 
 color2num = dict(
@@ -30,8 +31,8 @@ color2num = dict(
 )
 
 
-def is_json_serializable(value):
-    """is_json_serializable"""
+def is_json_serializable(value: object) -> bool:
+    """Judge whether the value can be serialized with JSON."""
     try:
         json.dumps(value)
         return True
@@ -40,8 +41,20 @@ def is_json_serializable(value):
 
 
 # pylint: disable-next=too-many-return-statements
-def convert_json(obj):
-    """Convert obj to a version which can be serialized with JSON."""
+def convert_json(obj: Union[Dict, Tuple, List, Any]) -> Union[Dict, Tuple, List, Any]:
+    """Convert obj to a version which can be serialized with JSON.
+
+    This function can convert the following types:
+
+    - :class:`dict`
+    - :class:`tuple`
+    - :class:`list`
+    - :class:`object` with ``__name__`` attribute.
+    - :class:`object` with ``__dict__`` attribute.
+
+    Args:
+        obj (object): object to be converted.
+    """
     if is_json_serializable(obj):
         return obj
 
@@ -64,11 +77,16 @@ def convert_json(obj):
     return str(obj)
 
 
-def colorize(message, color, bold=False, highlight=False):
-    """
-    Colorize a string.
+def colorize(message: str, color: str, bold: bool = False, highlight: bool = False) -> str:
+    """Colorize a string.
 
     This function was originally written by John Schulman.
+
+    Args:
+        message (str): message to be colorized.
+        color (str): color of the message.
+        bold (bool): whether to use bold font.
+        highlight (bool): whether to use highlight.
     """
     attr = []
     num = color2num[color]

@@ -14,35 +14,74 @@
 # ==============================================================================
 """Implementation of ActorQCritic."""
 
+from typing import NamedTuple, Tuple
+
+import numpy as np
 import torch
 import torch.nn as nn
+from gymnasium.spaces import Box
 
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.critic.q_critic import QCritic
 from omnisafe.utils.model_utils import build_mlp_network
-from omnisafe.utils.online_mean_std import OnlineMeanStd
 
 
 # pylint: disable-next=too-many-instance-attributes
 class ActorQCritic(nn.Module):
-    """Class for ActorQCritic."""
+    """Class for ActorCritic.
+
+    In ``omnisafe``, we combine the actor and critic into one this class.
+
+    .. list-table::
+
+        *   -   Model
+            -   Description
+            -   Function
+        *   -   Actor
+            -   The policy network, input is observation, output is action.
+                Choose the actor from the following options:
+                :class:`MLPActor`, :class:`CategoricalActor`, :class:`GaussianAnnealingActor`,
+                :class:`GaussianLearningActor`, :class:`GaussianStdNetActor`, :class:`MLPCholeskyActor`.
+            -   Choose the action based on the observation.
+        *   -   Value Q Critic
+            -   The value network, input is observation-action pair,
+                output is reward value.
+                Choose the critic from the following options:
+                :class:`QCritic`, :class:`VCritic`.
+            -   Estimate the reward value of the observation.
+    """
 
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        observation_space,
-        action_space,
-        standardized_obs: bool,
+        observation_space: Box,
+        action_space: Box,
         shared_weights: bool,
-        model_cfgs,
+        model_cfgs: NamedTuple,
         weight_initialization_mode='kaiming_uniform',
         device=torch.device('cpu'),
     ) -> None:
-        """Initialize ActorQCritic"""
+        """Initialize ActorQCritic
+
+        .. note::
+            Instead of creating the actor or critic directly, we use the builder to create them.
+            The advantage of this is that,
+            each type of critic has a uniform way of passing parameters.
+            This makes it easy for users to use existing critics,
+            and also facilitates the extension of new critic types.
+
+        Args:
+            observation_space: observation space
+            action_space: action space
+            standardized_obs: whether to standardize observation
+            shared_weights: whether to share weights between actor and critic
+            model_cfgs: model configurations
+            weight_initialization_mode: weight initialization mode
+            device: device, cpu or cuda
+        """
         super().__init__()
 
         self.obs_shape = observation_space.shape
-        self.obs_oms = OnlineMeanStd(shape=self.obs_shape) if standardized_obs else None
         self.act_dim = action_space.shape[0]
         self.act_max = torch.as_tensor(action_space.high).to(device)
         self.act_min = torch.as_tensor(action_space.low).to(device)
@@ -103,23 +142,26 @@ class ActorQCritic(nn.Module):
             num_critics=model_cfgs.ac_kwargs.val.num_critics,
         )
 
-    def step(self, obs, deterministic=False):
-        """
-        If training, this includes exploration noise!
-        Expects that obs is not pre-processed.
+    def forward(self, obs: torch.Tensor) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Forward pass of the actor-critic model"""
+        return self.step(obs)
+
+    def step(
+        self, obs: torch.Tensor, deterministic: bool = False
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Step function of the actor-critic model
+
+        Input observation, output value (from :class:`Critic`) action,
+        and its log probability (from :class`Actor`).
+
+        .. note::
+            The observation is standardized by the running mean and standard deviation.
+
         Args:
-            obs, , description
-        Returns:
-            action, value, log_prob(action)
-        Note:
-            Training mode can be activated with ac.train()
-            Evaluation mode is activated by ac.eval()
+            obs (torch.Tensor): Observation.
+            deterministic (bool, optional): Whether to use deterministic action.
         """
         with torch.no_grad():
-            if self.obs_oms:
-                # Note: Update RMS in Algorithm.running_statistics() method
-                # self.obs_oms.update(obs) if self.training else None
-                obs = self.obs_oms(obs)
             action, logp_a = self.actor.predict(
                 obs, deterministic=deterministic, need_log_prob=True
             )
@@ -128,14 +170,13 @@ class ActorQCritic(nn.Module):
 
             return action.cpu().numpy(), value.cpu().numpy(), logp_a.cpu().numpy()
 
-    def anneal_exploration(self, frac):
+    def anneal_exploration(self, frac) -> None:
         """update internals of actors
-            1) Updates exploration parameters for Gaussian actors update log_std
-        frac: progress of epochs, i.e. current epoch / total epochs
-                e.g. 10 / 100 = 0.1
-        """
-        if hasattr(self.actor, 'set_log_std'):
-            self.actor.set_log_std(1 - frac)
 
-    def forward(self, obs, act):
-        """Compute the value of a given state-action pair."""
+        Updates exploration parameters for Gaussian actors update log_std
+
+        Args:
+            frac: progress of epochs. 1.0 is the end of training.
+        """
+        if hasattr(self.actor, 'set_std'):
+            self.actor.set_log_std(1 - frac)
