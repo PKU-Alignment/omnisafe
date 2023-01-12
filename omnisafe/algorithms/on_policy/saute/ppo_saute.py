@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the Saute algorithm."""
 
+from typing import NamedTuple
+
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
 
@@ -23,16 +25,32 @@ class PPOSaute(PPO):
     """The Saute algorithm implemented with PPO.
 
     References:
-        Title: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation
-        Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang, David Mguni,
-                 Jun Wang, Haitham Bou-Ammar.
-        URL: https://arxiv.org/abs/2202.06558
+        - Title: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation
+        - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee,
+            Ziyan Wang, David Mguni, Jun Wang, Haitham Bou-Ammar.
+        - URL: `Saute RL<https://arxiv.org/abs/2202.06558>`_
     """
 
-    def __init__(self, env_id, cfgs) -> None:
-        """Initialize PPOSaute."""
+    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
+        """Initialize PPOSaute.
+
+        PPOSaute is a combination of :class:`PPO` and :class:`Saute`.
+
+        Args:
+            env_id (str): The environment id.
+            cfgs (NamedTuple): The configuration of the algorithm.
+        """
         super().__init__(env_id=env_id, cfgs=cfgs)
 
-    def algorithm_specific_logs(self):
+    def algorithm_specific_logs(self) -> None:
+        """Log the Saute specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   Metrics/EpBudget
+                -   The budget of the episode.
+        """
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/EpBudget')

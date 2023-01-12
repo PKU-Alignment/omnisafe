@@ -14,7 +14,7 @@
 # ==============================================================================
 """This module contains the helper functions for the model."""
 
-from typing import List, Literal
+from typing import List, Literal, Union
 
 import numpy as np
 from torch import nn
@@ -26,6 +26,10 @@ InitFunction = Literal['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uni
 
 def initialize_layer(init_function: InitFunction, layer: nn.Linear) -> None:
     """Initialize the layer with the given initialization function.
+
+    The ``init_function`` can be chosen from:
+    ``kaiming_uniform``, ``xavier_normal``, ``glorot``,
+    ``xavier_uniform``, ``orthogonal``.
 
     Args:
         init_function (InitFunction): The initialization function.
@@ -43,14 +47,16 @@ def initialize_layer(init_function: InitFunction, layer: nn.Linear) -> None:
         raise TypeError(f'Invalid initialization function: {init_function}')
 
 
-def get_activation(activation: Activation) -> nn.Module:
+def get_activation(
+    activation: Activation,
+) -> Union[nn.Identity, nn.ReLU, nn.Sigmoid, nn.Softplus, nn.Tanh]:
     """Get the activation function.
+
+    The ``activation`` can be chosen from:
+    ``identity``, ``relu``, ``sigmoid``, ``softplus``, ``tanh``.
 
     Args:
         activation (Activation): The activation function.
-
-    Returns:
-        nn.Module: The activation function.
     """
     activations = {
         'identity': nn.Identity,
@@ -74,13 +80,8 @@ def build_mlp_network(
     Args:
         sizes (List[int]): The sizes of the layers.
         activation (Activation): The activation function.
-        output_activation (Activation, optional): The output activation function.
-            Defaults to 'identity'.
-        weight_initialization_mode (InitFunction, optional): The initialization
-            function. Defaults to 'kaiming_uniform'.
-
-    Returns:
-        nn.Module: The MLP network.
+        output_activation (Activation): The output activation function.
+        weight_initialization_mode (InitFunction): The initialization function.
     """
     activation = get_activation(activation)
     output_activation = get_activation(output_activation)

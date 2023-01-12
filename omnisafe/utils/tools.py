@@ -15,15 +15,26 @@
 """tool_function_packages"""
 
 import os
-from typing import Any
 
 import numpy as np
 import torch
 import yaml
 
+from omnisafe.typing import Any, Callable, Dict, Union
 
-def get_default_kwargs_yaml(algo, env_id, algo_type):
-    """get_default_kwargs_yaml"""
+
+def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Dict:
+    """Get the default kwargs from ``yaml`` file.
+
+    .. note::
+        This function search the ``yaml`` file by the algorithm name and environment name.
+        Make sure your new implemented algorithm or environment has the same name as the yaml file.
+
+    Args:
+        algo (str): algorithm name.
+        env_id (str): environment name.
+        algo_type (str): algorithm type.
+    """
     path = os.path.abspath(__file__).split('/')[:-2]
     cfg_path = os.path.join('/', *path, 'configs', algo_type, f'{algo}.yaml')
     with open(cfg_path, 'r', encoding='utf-8') as file:
@@ -35,8 +46,17 @@ def get_default_kwargs_yaml(algo, env_id, algo_type):
     return kwargs[kwargs_name]
 
 
-def get_flat_params_from(model):
-    """get_flat_params_from"""
+def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
+    """This function is used to get the flattened parameters from the model.
+
+    .. note::
+        Some algorithms need to get the flattened parameters from the model,
+        such as the :class:`TRPO` and :class:`CPO` algorithm.
+        In these algorithms, the parameters are flattened and then used to calculate the loss.
+
+    Args:
+        model (torch.nn.Module): model to be flattened.
+    """
     flat_params = []
     for _, param in model.named_parameters():
         if param.requires_grad:
@@ -47,8 +67,17 @@ def get_flat_params_from(model):
     return torch.cat(flat_params)
 
 
-def get_flat_gradients_from(model):
-    """get_flat_gradients_from"""
+def get_flat_gradients_from(model: torch.nn.Module) -> torch.Tensor:
+    """This function is used to get the flattened gradients from the model.
+
+    .. note::
+        Some algorithms need to get the flattened gradients from the model,
+        such as the :class:`TRPO` and :class:`CPO` algorithm.
+        In these algorithms, the gradients are flattened and then used to calculate the loss.
+
+    Args:
+        model (torch.nn.Module): model to be flattened.
+    """
     grads = []
     for _, param in model.named_parameters():
         if param.requires_grad and param.grad is not None:
@@ -59,21 +88,28 @@ def get_flat_gradients_from(model):
 
 
 def conjugate_gradients(
-    Avp,
-    b_vector,
-    num_steps,
-    residual_tol=1e-10,
-    eps=1e-6,
+    Avp: Callable[[torch.Tensor], torch.Tensor],
+    b_vector: torch.Tensor,
+    num_steps: int = 10,
+    residual_tol: float = 1e-10,
+    eps: float = 1e-6,
 ):  # pylint: disable=invalid-name,too-many-locals
-    """
-    Conjugate gradient algorithm
-    (see https://en.wikipedia.org/wiki/Conjugate_gradient_method)
 
-    num_steps: (int): Number of iterations of conjugate gradient to perform.
-        Increasing this will lead to a more accurate approximation
-        to :math:`H^{-1} g`, and possibly slightly-improved performance,
+    """Implementation of Conjugate gradient algorithm.
+
+    Conjugate gradient algorithm is used to solve the linear system of equations :math:`Ax = b`.
+    The algorithm is described in detail in the paper `Conjugate Gradient Method`_.
+
+    .. _Conjugate Gradient Method: https://en.wikipedia.org/wiki/Conjugate_gradient_method
+
+    .. note::
+        Increasing ``num_steps`` will lead to a more accurate approximation
+        to :math:`A^{-1} b`, and possibly slightly-improved performance,
         but at the cost of slowing things down.
         Also probably don't play with this hyperparameter.
+
+    Args:
+        num_steps (int): Number of iterations of conjugate gradient to perform.
     """
 
     x = torch.zeros_like(b_vector)
@@ -81,12 +117,7 @@ def conjugate_gradients(
     p = r.clone()
     rdotr = torch.dot(r, r)
 
-    fmtstr = '%10i %10.3g %10.3g'
-    verbose = False
-
-    for i in range(num_steps):
-        if verbose:
-            print(fmtstr % (i, rdotr, np.linalg.norm(x)))
+    for _ in range(num_steps):
         z = Avp(p)
         alpha = rdotr / (torch.dot(p, z) + eps)
         x += alpha * p
@@ -100,8 +131,17 @@ def conjugate_gradients(
     return x
 
 
-def set_param_values_to_model(model, vals):
-    """set_param_values_to_model"""
+def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> None:
+    """This function is used to set the parameters to the model.
+
+    .. note::
+        Some algorithms (e.g. TRPO, CPO, etc.) need to set the parameters to the model,
+        instead of using the ``optimizer.step()``.
+
+    Args:
+        model (torch.nn.Module): model to be set.
+        vals (torch.Tensor): parameters to be set.
+    """
     assert isinstance(vals, torch.Tensor)
     i = 0
     for _, param in model.named_parameters():
@@ -117,18 +157,17 @@ def set_param_values_to_model(model, vals):
 
 
 # pylint: disable-next=too-many-branches,too-many-return-statements
-def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
-    r"""
-    Overview:
-        Change `torch.Tensor`, sequence of scalars to ndarray, and keep other data types unchanged.
-    Arguments:
-        - item (:obj:`object`): the item to be changed
-        - dtype (:obj:`type`): the type of wanted ndarray
-    Returns:
-        - item (:obj:`object`): the changed ndarray
-    .. note:
+def to_ndarray(item: Any, dtype: np.dtype = None) -> Union[np.ndarray, TypeError, None]:
+    """This function is used to convert the data type to ndarray.
 
+    Change `torch.Tensor`, sequence of scalars to ndarray, and keep other data types unchanged.
+
+    .. note:
         Now supports item type: :obj:`torch.Tensor`,  :obj:`dict`, :obj:`list`, :obj:`tuple` and :obj:`None`
+
+    Args:
+        item (Any): item to be converted.
+        dtype (np.dtype): data type of the output ndarray. Default to None.
     """
 
     if isinstance(item, dict):
@@ -169,3 +208,61 @@ def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
         return None
 
     raise TypeError(f'not support item type: {item}')
+
+
+def expand_dims(*args):
+    """This function is used to expand the dimensions of the input data.
+
+    .. note::
+        This function is used to expand the dimensions of the input data.
+        For example, if the input data is a scalar, then the output data will be a 1-dim ndarray.
+
+    Args:
+        *args: input data to be expanded.
+    """
+    if len(args) == 1:
+        return np.expand_dims(args[0], axis=0)
+    return [np.expand_dims(item, axis=0) for item in args]
+
+
+def as_tensor(*args):
+    """This function is used to convert the input data to tensor.
+
+    .. note::
+        This function is used to convert the input data to tensor.
+        For example, if the input data is a scalar, then the output data will be a 0-dim tensor.
+
+    Args:
+        *args: input data to be converted.
+    """
+    if len(args) == 1:
+        return torch.as_tensor(args[0], dtype=torch.float32)
+    return [torch.as_tensor(item, dtype=torch.float32) for item in args]
+
+
+def tile_images(img_nhwc):
+    """
+    Tile N images into one big P*Q image
+
+    (P,Q) are chosen to be as close as possible, and if N
+    is square, then P=Q.
+
+    Args:
+        img_nhwc (np.ndarray): images to be tiled. The shape is (N, H, W, C).
+    """
+    img_nhwc = np.asarray(img_nhwc)
+    n_images, height, width, n_channels = img_nhwc.shape
+    # new_height was named H before
+    new_height = int(np.ceil(np.sqrt(n_images)))
+    # new_width was named W before
+    new_width = int(np.ceil(float(n_images) / new_height))
+    img_nhwc = np.array(
+        list(img_nhwc) + [img_nhwc[0] * 0 for _ in range(n_images, new_height * new_width)]
+    )
+    # img_HWhwc
+    out_image = img_nhwc.reshape((new_height, new_width, height, width, n_channels))
+    # img_HhWwc
+    out_image = out_image.transpose(0, 2, 1, 3, 4)
+    # img_Hh_Ww_c
+    out_image = out_image.reshape((new_height * height, new_width * width, n_channels))
+    return out_image

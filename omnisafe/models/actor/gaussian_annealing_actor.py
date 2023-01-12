@@ -74,7 +74,7 @@ class GaussianAnnealingActor(Actor):
         if deterministic:
             out = dist.mean
         else:
-            out = dist.sample()
+            out = dist.rsample()
 
         if need_log_prob:
             log_prob = dist.log_prob(out).sum(axis=-1)

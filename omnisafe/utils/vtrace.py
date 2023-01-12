@@ -14,6 +14,8 @@
 # ==============================================================================
 """vtrace"""
 
+from typing import Tuple
+
 import numpy as np
 
 
@@ -23,23 +25,31 @@ def calculate_v_trace(
     values: np.ndarray,  # including bootstrap
     rewards: np.ndarray,  # including bootstrap
     behavior_action_probs: np.ndarray,
-    gamma=0.99,
-    rho_bar=1.0,
-    c_bar=1.0,
-) -> tuple:
-    """
-    calculate V-trace targets for off-policy actor-critic learning recursively
-    as proposed in: Espeholt et al. 2018, IMPALA
+    gamma: float = 0.99,
+    rho_bar: float = 1.0,
+    c_bar: float = 1.0,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray,]:
+    r"""This function is used to calculate V-trace targets.
 
-    :param policy_action_probs:
-    :param values:
-    :param rewards:
-    :param bootstrap_value:
-    :param behavior_action_probs:
-    :param gamma:
-    :param rho_bar:
-    :param c_bar:
-    :return: V-trace targets, shape=(batch_size, sequence_length)
+    .. math::
+        A_t = \sum_{k=0}^{n-1} (\lambda \gamma)^k \delta_{t+k} +
+        (\lambda \gamma)^n * \rho_{t+n} * (1 - d_{t+n}) * (V(x_{t+n}) - b_{t+n})
+
+    Calculate V-trace targets for off-policy actor-critic learning recursively.
+    For more details,
+    please refer to the paper: `Espeholt et al. 2018, IMPALA <https://arxiv.org/abs/1802.01561>`_.
+
+    Args:
+        policy_action_probs (np.ndarray): action probabilities of policy network, shape=(sequence_length,)
+        values (np.ndarray): state values, shape=(sequence_length+1,)
+        rewards (np.ndarray): rewards, shape=(sequence_length+1,)
+        behavior_action_probs (np.ndarray): action probabilities of behavior network, shape=(sequence_length,)
+        gamma (float): discount factor
+        rho_bar (float): clip rho
+        c_bar (float): clip c
+
+    Returns:
+        tuple: V-trace targets, shape=(batch_size, sequence_length)
     """
     assert values.ndim == 1, 'Please provide 1d-arrays'
     assert rewards.ndim == 1

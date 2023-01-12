@@ -20,7 +20,21 @@ from collections import deque
 
 # pylint: disable-next=too-few-public-methods,too-many-instance-attributes
 class PIDLagrangian(abc.ABC):
-    """Abstract base class for Lagrangian-base Algorithms."""
+    """Abstract base class for Lagrangian-base Algorithms.
+
+    Similar to the :class:`Lagrange` module, this module implements the PID version of the lagrangian method.
+
+    .. note::
+        The PID-Lagrange is more general than the Lagrange, and can be used in any policy gradient algorithm.
+        As PID_Lagrange use the PID controller to control the lagrangian multiplier,
+        it is more stable than the naive Lagrange.
+
+    References:
+
+    - Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
+    - Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+    - URL: `PID Lagrange <https://arxiv.org/abs/2007.03964>`_
+    """
 
     # pylint: disable-next=too-many-arguments
     def __init__(
@@ -36,8 +50,8 @@ class PIDLagrangian(abc.ABC):
         penalty_max: int,
         lagrangian_multiplier_init: float,
         cost_limit: int,
-    ):
-        """init"""
+    ) -> None:
+        """Initialize PIDLagrangian."""
         self.pid_kp = pid_kp
         self.pid_ki = pid_ki
         self.pid_kd = pid_kd
@@ -56,8 +70,20 @@ class PIDLagrangian(abc.ABC):
         self.cost_limit = cost_limit
         self.cost_penalty = None
 
-    def pid_update(self, ep_cost_avg):
-        """pid_update"""
+    def pid_update(self, ep_cost_avg: float) -> None:
+        r"""Update the PID controller.
+
+        Detailedly, PID controller update the lagrangian multiplier following the next equation:
+
+        .. math::
+            \lambda_{t+1} = \lambda_t + (K_p e_p + K_i \int e_p dt + K_d \frac{d e_p}{d t}) \eta
+
+        where :math:`e_p` is the error between the current episode cost and the cost limit,
+        :math:`K_p`, :math:`K_i`, :math:`K_d` are the PID parameters, and :math:`\eta` is the learning rate.
+
+        Args:
+            ep_cost_avg (float): The average cost of the current episode.
+        """
         delta = float(ep_cost_avg - self.cost_limit)
         self.pid_i = max(0.0, self.pid_i + delta * self.pid_ki)
         if self.diff_norm:

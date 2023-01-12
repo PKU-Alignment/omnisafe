@@ -81,11 +81,11 @@ class SafeLOOP(
         Returns:
             torch.Tensor.
         """
-        obs, act, rew, obs_next, done = (
+        obs, act, rew, next_obs, done = (
             data['obs'],
             data['act'],
             data['rew'],
-            data['obs_next'],
+            data['next_obs'],
             data['done'],
         )
         q_value_list = self.actor_critic.critic(obs, act)
@@ -94,7 +94,7 @@ class SafeLOOP(
             act_targ, logp_a_next = self.ac_targ.actor.predict(
                 obs, deterministic=False, need_log_prob=True
             )
-            q_targ = torch.min(torch.vstack(self.ac_targ.critic(obs_next, act_targ)), dim=0).values
+            q_targ = torch.min(torch.vstack(self.ac_targ.critic(next_obs, act_targ)), dim=0).values
             backup = rew + self.cfgs.gamma * (1 - done) * (q_targ - self.alpha * logp_a_next)
         # MSE loss against Bellman backup
         loss_q = []
@@ -173,7 +173,6 @@ class SafeLOOP(
         self.actor_critic = ActorQCritic(
             observation_space=self.env.observation_space,
             action_space=self.env.action_space,
-            standardized_obs=self.cfgs.standardized_obs,
             shared_weights=self.cfgs.model_cfgs.shared_weights,
             model_cfgs=self.cfgs.model_cfgs,
             device=self.device,
@@ -251,7 +250,7 @@ class SafeLOOP(
         action = self.off_replay_buffer.act_buf[: self.off_replay_buffer.size, :]
         reward = self.off_replay_buffer.rew_buf[: self.off_replay_buffer.size]
         cost = self.off_replay_buffer.cost_buf[: self.off_replay_buffer.size]
-        next_state = self.off_replay_buffer.obs_next_buf[: self.off_replay_buffer.size, :]
+        next_state = self.off_replay_buffer.next_obs_buf[: self.off_replay_buffer.size, :]
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
         if self.env.env_type == 'mujoco-velocity':

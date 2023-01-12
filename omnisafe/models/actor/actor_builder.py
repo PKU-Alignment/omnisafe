@@ -14,12 +14,13 @@
 # ==============================================================================
 """Implementation of ActorBuilder."""
 
-from typing import Optional
+from typing import Optional, Union
 
 import torch.nn as nn
 
 from omnisafe.models.actor.categorical_actor import CategoricalActor
 from omnisafe.models.actor.cholesky_actor import MLPCholeskyActor
+from omnisafe.models.actor.gaussian_actor import GaussianActor
 from omnisafe.models.actor.gaussian_annealing_actor import GaussianAnnealingActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_stdnet_actor import GaussianStdNetActor
@@ -37,8 +38,8 @@ class ActorBuilder:
         obs_dim: int,
         act_dim: int,
         hidden_sizes: list,
-        activation: Activation = 'relu',
-        weight_initialization_mode: InitFunction = 'xavier_uniform',
+        activation: Activation = 'tanh',
+        weight_initialization_mode: InitFunction = 'kaiming_uniform',
         shared: nn.Module = None,
         act_noise: Optional[float] = None,
     ) -> None:
@@ -50,7 +51,19 @@ class ActorBuilder:
         self.shared = shared
         self.act_noise = act_noise
 
-    def build_actor(self, actor_type: str, **kwargs):
+    # pylint: disable-next=too-many-return-statements
+    def build_actor(
+        self, actor_type: str, **kwargs
+    ) -> Union[
+        MLPActor,
+        CategoricalActor,
+        GaussianAnnealingActor,
+        GaussianLearningActor,
+        GaussianStdNetActor,
+        MLPCholeskyActor,
+        GaussianActor,
+        NotImplementedError,
+    ]:
         """Build actor network."""
         if actor_type == 'categorical':
             return CategoricalActor(
@@ -105,6 +118,15 @@ class ActorBuilder:
             )
         if actor_type == 'cholesky':
             return MLPCholeskyActor(
+                obs_dim=self.obs_dim,
+                act_dim=self.act_dim,
+                hidden_sizes=self.hidden_sizes,
+                activation=self.activation,
+                weight_initialization_mode=self.weight_initialization_mode,
+                **kwargs,
+            )
+        if actor_type == 'gaussian':
+            return GaussianActor(
                 obs_dim=self.obs_dim,
                 act_dim=self.act_dim,
                 hidden_sizes=self.hidden_sizes,
