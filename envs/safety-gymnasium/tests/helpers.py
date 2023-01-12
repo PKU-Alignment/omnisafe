@@ -16,7 +16,7 @@
 
 import itertools
 
-import pytest
+import pytest  # pylint: disable=import-error
 
 
 def parametrize(**argvalues) -> pytest.mark.parametrize:
