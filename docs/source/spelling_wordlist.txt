@@ -294,3 +294,8 @@ Zhiwei
 Zhao
 Cen
 Borong
+boolean
+autoreset
+eg
+bools
+dtypes
