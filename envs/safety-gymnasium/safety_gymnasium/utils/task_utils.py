@@ -56,3 +56,31 @@ def get_body_xvelp(model, data, name):
     jacp = get_body_jacp(model, data, name).reshape((3, model.nv))
     xvelp = np.dot(jacp, data.qvel)
     return xvelp
+
+
+def add_velocity_marker(viewer, pos, vel, cost, velocity_threshold):
+    """Add a marker to the viewer to indicate the velocity of the agent."""
+    pos = pos + np.array([0, 0, 0.6])
+    safe_color = np.array([0.2, 0.8, 0.2, 0.5])
+    unsafe_color = np.array([0.5, 0, 0, 0.5])
+
+    if cost:
+        color = unsafe_color
+    else:
+        vel_ratio = vel / velocity_threshold
+        color = safe_color * (1 - vel_ratio)
+
+    viewer.add_marker(
+        pos=pos,
+        size=0.2 * np.ones(3),
+        type=mujoco.mjtGeom.mjGEOM_SPHERE,  # pylint: disable=no-member
+        rgba=color,
+        label='',
+    )
+
+
+def clear_viewer(viewer):
+    """Clear the viewer's all markers and overlays."""
+    # pylint: disable=protected-access
+    viewer._markers[:] = []
+    viewer._overlays.clear()
