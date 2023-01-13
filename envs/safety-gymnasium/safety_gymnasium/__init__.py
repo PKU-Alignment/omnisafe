@@ -19,6 +19,7 @@ from copy import deepcopy
 from safety_gymnasium.utils.registration import make, register
 from safety_gymnasium.version import __version__
 
+
 __all__ = ['register', 'make']
 
 VERSION = 'v0'

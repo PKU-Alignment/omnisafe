@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Safety-Gymaiusm."""
+"""Safety-Gymnasium."""
 
 __version__ = '0.0.1'
 __license__ = 'Apache License, Version 2.0'

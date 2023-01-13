@@ -21,24 +21,27 @@ import sys
 
 from setuptools import setup
 
+import version  # noqa
+
 
 HERE = pathlib.Path(__file__).absolute().parent
 VERSION_FILE = HERE / 'safety_gymnasium' / 'version.py'
 
 sys.path.insert(0, str(VERSION_FILE.parent))
-import version  # noqa
 
 
 VERSION_CONTENT = None
 
 try:
-    if not version.__release__:
+    if not version.__release__:  # pylint: disable=no-member
         try:
             VERSION_CONTENT = VERSION_FILE.read_text(encoding='UTF-8')
             VERSION_FILE.write_text(
                 data=re.sub(
                     r"""__version__\s*=\s*('[^']+'|"[^"]+")""",
-                    r"__version__ = '{}'".format(version.__version__),
+                    r"__version__ = '{}'".format(  # pylint: disable=consider-using-f-string
+                        version.__version__
+                    ),
                     string=VERSION_CONTENT,
                 ),
                 encoding='UTF-8',
