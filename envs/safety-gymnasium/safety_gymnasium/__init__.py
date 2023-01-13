@@ -16,10 +16,11 @@
 
 from copy import deepcopy
 
+from safety_gymnasium import vector
 from safety_gymnasium.utils.registration import make, register
 
 
-__all__ = ['register', 'make']
+__all__ = ['register', 'make', 'vector']
 
 VERSION = 'v0'
 
