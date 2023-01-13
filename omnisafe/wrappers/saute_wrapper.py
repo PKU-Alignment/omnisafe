@@ -171,11 +171,9 @@ class SauteWrapper(CMDPWrapper):
             reward (np.array): reward.
             next_safety_obs (np.array): next safety observation.
         """
-        reward = reward * (
-            self.rollout_data.saute_data.safety_obs > 0
-        ) + self.rollout_data.saute_data.unsafe_reward * (
-            self.rollout_data.saute_data.safety_obs <= 0
-        )
+        for idx, safety_obs in enumerate(self.rollout_data.saute_data.safety_obs):
+            if safety_obs <= 0:
+                reward[idx] = self.rollout_data.saute_data.unsafe_reward
         return reward
 
     def reset(self) -> tuple((np.array, dict)):
@@ -219,14 +217,12 @@ class SauteWrapper(CMDPWrapper):
             else:
                 augmented_obs = self.augment_obs(next_obs)
         else:
-            self.safety_step(cost, done=terminated | truncated)
             augmented_obs = self.augment_obs(next_obs)
         self.rollout_data.rollout_log.ep_ret += reward
         self.rollout_data.rollout_log.ep_costs += cost
         self.rollout_data.rollout_log.ep_len += np.ones(self.cfgs.num_envs)
         self.rollout_data.rollout_log.ep_budget += self.rollout_data.saute_data.safety_obs
         reward = self.safety_reward(reward)
-
         return augmented_obs, reward, cost, terminated, truncated, info
 
     def rollout_log(

@@ -28,9 +28,9 @@ from omnisafe.common.normalizer import Normalizer
 from omnisafe.common.record_queue import RecordQueue
 from omnisafe.common.vector_buffer import VectorBuffer as Buffer
 from omnisafe.models import ConstraintActorCritic, ConstraintActorQCritic
-from omnisafe.typing import Dict, List, NamedTuple, Optional, RenderFrame, Tuple, Union
+from omnisafe.typing import Dict, NamedTuple, Optional, Tuple, Union
 from omnisafe.utils import distributed_utils
-from omnisafe.utils.tools import expand_dims, tile_images
+from omnisafe.utils.tools import expand_dims
 from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
 
@@ -69,41 +69,36 @@ class RolloutData:
 @WRAPPER_REGISTRY.register
 class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
     """Implementation of the environment wrapper for on-policy algorithms.
-
     ``omnisafe`` use different environment wrappers for different kinds of algorithms.
     This is the environment wrapper for on-policy algorithms.
-
     .. list-table:: Environment Wrapper for Different Algorithms
-
         * - Algorithm
-          - Environment Wrapper
-          - Function
+        - Environment Wrapper
+        - Function
         * - On-Policy
-          - :class:`OnPolicyEnvWrapper`
-          - On-policy wrapper :meth:`rollout` for each episode,
+        - :class:`OnPolicyEnvWrapper`
+        - On-policy wrapper :meth:`rollout` for each episode,
             log useful information and collect data for training.
         * - Off-Policy
-          - :class:`OffPolicyEnvWrapper`
-          - Off-policy wrapper :meth:`rollout` for each episode,
+        - :class:`OffPolicyEnvWrapper`
+        - Off-policy wrapper :meth:`rollout` for each episode,
             log useful information and collect data for training.
             Off-policy algorithms need to update the policy network before the end of each episode.
-
         * - Saute
-          - :class:`SauteEnvWrapper`
-          - Saute wrapper additionally maintains a ``safety state`` for each episode.
+        - :class:`SauteEnvWrapper`
+        - Saute wrapper additionally maintains a ``safety state`` for each episode.
             If the safety state is ``safe``, the ``reward`` is the original reward.
             If the safety state is ``unsafe``, the ``reward`` is the ``unsafe reward`` (always 0).
         * - Simmer
-          - :class:`SimmerEnvWrapper`
-          - Simmer wrapper also maintains a ``safety state`` for each episode.
+        - :class:`SimmerEnvWrapper`
+        - Simmer wrapper also maintains a ``safety state`` for each episode.
             Additionally, it uses a ``PID controller`` and ``Q controller`` to control the ``safety state``.
         * - Early Terminated
-          - :class:`EarlyTerminatedEnvWrapper`
-          - Early terminated wrapper stop the episode when the ``cost`` is not 0.
+        - :class:`EarlyTerminatedEnvWrapper`
+        - Early terminated wrapper stop the episode when the ``cost`` is not 0.
         * - Safety Layer
-          - :class:`SafetyLayerEnvWrapper`
-          - Safety layer wrapper pre-train a ``safety layer`` to control the ``action``.
-
+        - :class:`SafetyLayerEnvWrapper`
+        - Safety layer wrapper pre-train a ``safety layer`` to control the ``action``.
     """
 
     def __init__(self, env_id, cfgs: Optional[NamedTuple] = None, **env_kwargs) -> None:
@@ -168,13 +163,15 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             self.observation_space = self.env.observation_space
             self.action_space = self.env.action_space
         else:
-            raise NotImplementedError('OnPolicyEnvWrapper only supports single environment now.')
+            self.env = safety_gymnasium.vector.make(
+                env_id, asynchronous=self.cfgs.async_env, num_envs=self.cfgs.num_envs, **env_kwargs
+            )
+            self.observation_space = self.env.single_observation_space
+            self.action_space = self.env.single_action_space
 
     def reset(self) -> Tuple[np.ndarray, Dict]:
         """Reset environment.
-
         At the end of each episode, the environment will be reset.
-
         Args:
             seed (int): random seed.
         """
@@ -191,41 +188,25 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         """
         self.env.reset(seed=seed)
 
-    def render(self) -> Optional[Union[RenderFrame, List[RenderFrame]]]:
-        """Render environment"""
-        if self.cfgs.num_envs == 1:
-            return self.env.render()
-        imgs = self.get_images()
-        bigimg = tile_images(imgs)
-        mode = self.render_data.render_mode
-        if mode == 'rgb_array':
-            return bigimg
-        raise NotImplementedError
-
     def sample_action(self):
         """Sample action from the environment."""
         return self.env.action_space.sample()
 
-    def get_images(self):
-        """Get images from all environments."""
-        for pipe in self.env.parent_pipes:
-            pipe.send(('render', None))
-        imgs = [pipe.recv() for pipe in self.env.parent_pipes]
-        return imgs
+    def render(self):
+        """render the vectored environment."""
+        return self.env.render()
 
     def set_rollout_cfgs(self, **kwargs: dict) -> None:
         """Set rollout configs
 
         .. note::
             Current On-Policy algorithms does not need to set the configs.
-
         If you implement a new algorithm and need to set the :class:`OnPolicyEnvWrapper` configs,
         for example, ``deteministic`` and ``local_steps_per_epoch``,
         you can just:
 
         .. code-block:: python
             :linenos:
-
             set_rollout_data(deteministic=True, local_steps_per_epoch=1000)
 
         Args:
@@ -271,7 +252,6 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
 
         .. note::
             In each step,
-
             - the environment will be stepped by the action from the agent.
             - Then the data will be stored to the experience buffer.
             - Finally the logger will log useful information.
@@ -357,12 +337,12 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
 
         .. note::
             In each step,
-
             - the environment will be stepped by the action from the agent.
             - Then the data will be stored to the experience buffer.
             - The logger will store the useful information.
             - Remember the current state and action.
-              Recall them after updating the policy network.
+
+            Recall them after updating the policy network.
 
         Args:
             agent (torch.nn.Module): agent.

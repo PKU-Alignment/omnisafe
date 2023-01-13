@@ -345,3 +345,5 @@ autoreset
 eg
 bools
 dtypes
+vectorized
+async
