@@ -58,7 +58,7 @@ defaults:
   use_cost: False
   # Cost discounted factor
   cost_gamma: 1.0
-  # Whther to use linear decay of learning rate
+  # Whether to use linear decay of learning rate
   linear_lr_decay: True
   # Whether to use exploration noise anneal
   exploration_noise_anneal: False
@@ -117,7 +117,7 @@ defaults:
     env_seed: 0
     # The number of parallel environments
     num_envs: 1
-    # Whther to use async environment
+    # Whether to use async environment
     async_env: True
     # Whether to use standardized reward
     normalized_rew: True

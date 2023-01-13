@@ -53,6 +53,10 @@ defaults:
   alpha: 0.2
   # The learning rate of Alpha
   alpha_gamma: 0.99
+  # Auto Alpha
+  auto_alpha: True
+  # The learning rate of Auto Alpha
+  alpha_lr: 0.0003
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
@@ -60,22 +64,22 @@ defaults:
   use_cost: False
   # Cost discounted factor
   cost_gamma: 1.0
-  # Whther to use linear decay of learning rate
+  # Whether to use linear decay of learning rate
   linear_lr_decay: False
   # Whether to use exploration noise anneal
   exploration_noise_anneal: False
-  # Whther to use reward penalty
+  # Whether to use reward penalty
   reward_penalty: False
   # Whether to use KL early stopping
   kl_early_stopping: False
   # Whether to use max gradient norm
   use_max_grad_norm: False
   # The thereshold of max gradient norm
-  max_grad_norm: 0.5
-  # Whether to use reward scaling
-  scale_rewards: False
-  # Whether to use standardized observation
-  standardized_obs: True
+  max_grad_norm: 40
+  # Whether to use critic network norm
+  use_critic_norm: False
+  # The norm coefficient of critic network
+  critic_norm_coeff: 0.001
   ## ---------------------------------------Configuration For Model----------------------------- ##
   model_cfgs:
     # Whether to share the weight of Actor network with Critic network
@@ -114,12 +118,12 @@ defaults:
     env_seed: 0
     # The number of parallel environments
     num_envs: 1
-    # Whther to use async environment
+    # Whether to use async environment
     async_env: True
     # Whether to use standardized reward
-    normalized_rew: True
+    normalized_rew: False
     # Whether to use standardized cost
-    normalized_cost: True
+    normalized_cost: False
     # Whether to use standardized obs
     normalized_obs: True
     # The maximum length of record queue
