@@ -663,7 +663,7 @@ class PolicyGradient:
         # clip the gradient.
         if self.cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self.actor_critic.reward_critic.parameters(), self.cfgs.max_grad_norm
+                self.actor_critic.cost_critic.parameters(), self.cfgs.max_grad_norm
             )
         # average grads across MPI processes.
         distributed_utils.mpi_avg_grads(self.actor_critic.cost_critic.net)

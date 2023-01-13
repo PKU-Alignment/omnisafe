@@ -137,10 +137,10 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
         Policy Gradient only use reward advantage.
 
         Args:
-            adv (torch.Tensor): reward advantage
-            cost_adv (torch.Tensor): cost advantage
+            adv (torch.Tensor): reward advantage.
+            cost_adv (torch.Tensor): cost advantage.
         """
-        return adv - self.cost_penalty * cost_adv
+        return (adv - self.cost_penalty * cost_adv) / (1 + self.cost_penalty)
 
     def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         r"""Update actor, critic, running statistics as we used in the :class:`PPO` algorithm.
@@ -148,9 +148,9 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
         Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.
         """
-        # note that logger already uses MPI statistics across all processes..
+        # note that logger already uses MPI statistics across all processes.
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
-        # first update Lagrange multiplier parameter
+        # first update Lagrange multiplier parameter.
         self.pid_update(Jc)
         # then update the policy and value net.
         PolicyGradient.update(self)

@@ -52,6 +52,14 @@ class PPOLag(PPO, Lagrange):
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
         )
 
+    def set_cost_limit(self, cost_limit: float) -> None:
+        """Set the cost limit.
+
+        Args:
+            cost_limit (float): The cost limit.
+        """
+        self.cost_limit = cost_limit
+
     def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         r"""Update actor, critic, running statistics as we used in the :class:`PPO` algorithm.
 
@@ -88,7 +96,8 @@ class PPOLag(PPO, Lagrange):
             adv (torch.Tensor): reward advantage
             cost_adv (torch.Tensor): cost advantage
         """
-        return adv - self.lagrangian_multiplier * cost_adv
+        penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
+        return (adv - penalty * cost_adv) / (1 + penalty)
 
     def algorithm_specific_logs(self) -> None:
         """Log the PPOLag specific information.

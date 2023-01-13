@@ -126,7 +126,7 @@ class TRPOPid(TRPO, PIDLagrangian):
             adv (torch.Tensor): reward advantage
             cost_adv (torch.Tensor): cost advantage
         """
-        return adv - self.cost_penalty * cost_adv
+        return (adv - self.cost_penalty * cost_adv) / (1 + self.cost_penalty)
 
     def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         r"""Update actor, critic, running statistics as we used in the :class:`TRPO` algorithm.
