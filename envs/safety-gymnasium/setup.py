@@ -15,15 +15,49 @@
 # ==============================================================================
 """Set up."""
 
+import pathlib
+import re
+import sys
+
 from setuptools import setup
 
 
-setup(
-    name='safety_gymnasium',
-    version='0.0.1',
-    install_requires=[
-        'gymnasium==0.26.3',
-        'pygame==2.1.0',
-        'mujoco==2.3.0',
-    ],
-)
+HERE = pathlib.Path(__file__).absolute().parent
+VERSION_FILE = HERE / 'safety_gymnasium' / 'version.py'
+
+sys.path.insert(0, str(VERSION_FILE.parent))
+import version  # pylint: disable=wrong-import-position,import-error
+
+
+VERSION_CONTENT = None
+
+try:
+    if not version.__release__:  # pylint: disable=no-member
+        try:
+            VERSION_CONTENT = VERSION_FILE.read_text(encoding='UTF-8')
+            VERSION_FILE.write_text(
+                data=re.sub(
+                    r"""__version__\s*=\s*('[^']+'|"[^"]+")""",
+                    r"__version__ = '{}'".format(  # pylint: disable=consider-using-f-string
+                        version.__version__
+                    ),
+                    string=VERSION_CONTENT,
+                ),
+                encoding='UTF-8',
+            )
+        except OSError:
+            VERSION_CONTENT = None
+
+    setup(
+        name='safety_gymnasium',
+        version=version.__version__,
+        install_requires=[
+            'gymnasium==0.26.3',
+            'pygame==2.1.0',
+            'mujoco==2.3.0',
+        ],
+    )
+finally:
+    if VERSION_CONTENT is not None:
+        with VERSION_FILE.open(mode='wt', encoding='UTF-8', newline='') as file:
+            file.write(VERSION_CONTENT)
