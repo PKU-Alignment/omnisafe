@@ -21,7 +21,6 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
 --------------------------------------------------------------------------------
 
 ### Table of Contents  <!-- omit in toc --> <!-- markdownlint-disable heading-increment -->
-
 - [OmniSafe](#omnisafe)
     - [Table of Contents   ](#table-of-contents---)
   - [Overview](#overview)
