@@ -340,5 +340,10 @@ Shie
 Mannor
 https
 neurips
+boolean
+autoreset
+eg
+bools
+dtypes
 vectorized
 async

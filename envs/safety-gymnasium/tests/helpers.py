@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# pylint: disable=all
+"""A parameterize decorator that allows for multiple dtypes to be tested."""
 
 import itertools
 
-import pytest
+import pytest  # pylint: disable=import-error
 
 
 def parametrize(**argvalues) -> pytest.mark.parametrize:
+    """A parameterize decorator that allows for multiple dtypes to be tested."""
     arguments = list(argvalues)
 
     if 'dtype' in argvalues:

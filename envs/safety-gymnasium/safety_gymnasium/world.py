@@ -39,7 +39,7 @@ class World:  # pylint: disable=too-many-instance-attributes
     # Default configuration (this should not be nested since it gets copied)
     # *NOTE:* Changes to this configuration should also be reflected in `Builder` configuration
     DEFAULT = {
-        'robot_base': 'xmls/car.xml',  # Which robot XML to use as the base
+        'robot_base': 'assets/xmls/car.xml',  # Which robot XML to use as the base
         'robot_xy': np.zeros(2),  # Robot XY location
         'robot_rot': 0,  # Robot rotation about Z axis
         'floor_size': [3.5, 3.5, 0.1],  # Used for displaying the floor
@@ -164,8 +164,8 @@ class World:  # pylint: disable=too-many-instance-attributes
                 '@builtin': 'checker',
                 '@height': '100',
                 '@width': '100',
-                '@rgb1': '0.7 0.7 0.7',
-                '@rgb2': '0.8 0.8 0.8',
+                '@rgb1': '0.859 0.843 0.765',
+                '@rgb2': '0.949 0.914 0.855',
                 '@type': '2d',
             }
         )

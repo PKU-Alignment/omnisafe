@@ -56,10 +56,10 @@ def test_vision_env(agent_id, env_id, level):
     level=['0'],
 )
 # pylint: disable-next=too-many-locals
-def test_new_env(agent_id, env_id, level, render_mode):
+def test_new_env(agent_id, env_id, level):
     """Test env."""
     env_name = 'Safety' + agent_id + env_id + level + 'Vision' + '-v0'
-    env = safety_gymnasium.make(env_name, render_mode=render_mode)
+    env = safety_gymnasium.make(env_name)
     obs, _ = env.reset()
     # Use below to specify seed.
     # obs, _ = env.reset(seed=0)
@@ -79,7 +79,6 @@ def test_new_env(agent_id, env_id, level, render_mode):
             max_ep_len = env._max_episode_steps  # pylint: disable=unused-variable,protected-access
         # pylint: disable-next=unused-variable
         obs, reward, cost, terminated, truncated, info = env.step(act)
+
         ep_ret += reward
         ep_cost += cost
-
-        env.render()

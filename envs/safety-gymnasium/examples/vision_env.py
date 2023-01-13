@@ -27,7 +27,7 @@ DIR = os.path.join(os.path.dirname(__file__), 'cached_test_vision_video')
 def run_random(env_name):
     """Random run."""
     env = safety_gymnasium.make(env_name)
-    obs, _ = env.reset()
+    obs, info = env.reset()  # pylint: disable=unused-variable
     # Use below to specify seed.
     # obs, _ = env.reset(seed=0)
     terminated, truncated = False, False
@@ -37,7 +37,7 @@ def run_random(env_name):
         if terminated or truncated:
             print(f'Episode Return: {ep_ret} \t Episode Cost: {ep_cost}')
             ep_ret, ep_cost = 0, 0
-            obs, _ = env.reset()
+            obs, info = env.reset()  # pylint: disable=unused-variable
             save_video(
                 frames=render_list,
                 video_folder=DIR,
@@ -62,6 +62,6 @@ def run_random(env_name):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', default='SafetyCarGoal0Vision-v0')
+    parser.add_argument('--env', default='SafetyCarRun0Vision-v0')
     args = parser.parse_args()
     run_random(args.env)

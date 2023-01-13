@@ -22,7 +22,7 @@ import safety_gymnasium
 def run_random(env_name):
     """Random run."""
     env = safety_gymnasium.make(env_name, render_mode='human')
-    obs, _ = env.reset()
+    obs, info = env.reset()  # pylint: disable=unused-variable
     # Use below to specify seed.
     # obs, _ = env.reset(seed=0)
     terminated, truncated = False, False
@@ -31,7 +31,7 @@ def run_random(env_name):
         if terminated or truncated:
             print(f'Episode Return: {ep_ret} \t Episode Cost: {ep_cost}')
             ep_ret, ep_cost = 0, 0
-            obs, _ = env.reset()
+            obs, info = env.reset()  # pylint: disable=unused-variable
         assert env.observation_space.contains(obs)
         act = env.action_space.sample()
         assert env.action_space.contains(act)
@@ -48,6 +48,6 @@ def run_random(env_name):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', default='SafetyRacecarCircle0-v0')
+    parser.add_argument('--env', default='SafetyAntVelocity-v4')
     args = parser.parse_args()
     run_random(args.env)
