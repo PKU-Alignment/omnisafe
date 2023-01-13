@@ -112,7 +112,7 @@ The supported interface algorithms currently include:
 - [X] **[CoRL 2021 (Oral)]** [Learning Off-Policy with Online Planning (SafeLOOP)](https://arxiv.org/abs/2008.10066)
 - [X] **[AAAI 2022]** [Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
 - [X] **[NeurIPS 2022]** [Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
-- [ ] **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LAMBDA)](https://arxiv.org/abs/2201.09802)
+- [ ] **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LA-MBDA)](https://arxiv.org/abs/2201.09802)
 
 #### Offline Safe
 
@@ -141,53 +141,13 @@ Further, to facilitate the progress of community research, we redesigned [Safety
 
 After careful testing, we confirmed that it has the same dynamics parameters and training environment as the original `safety-gym`, named `safety-gymnasium`.
 
-Here is a list of all the environments we support, some of them are being tested in our baseline and we will gradually release them within a month.
-
-<table>
-  <tbody>
-    <tr align="center" valign="bottom">
-      <td>
-        <b>Tasks</b>
-      </td>
-      <td>
-        <b>Diffcults</b>
-      </td>
-      <td>
-        <b>Agents</b>
-      </td>
-    </tr>
-    <tr valign="top">
-      <td>
-        <ul>
-            <li><b>Safety Velocity</b></li>
-            <li><b>Safety Run</b></li>
-            <li><b>Safety Circle</b></li>
-            <li><b>Safety Goal</b></li>
-            <li><b>Safety Button</b></li>
-            <li><b>Safety Push</b></li>
-            <li><b>Safety Race</b></li>
-            <li><b>Safety Narrow</b></li>
-      </ul>
-      </td>
-      <td>
-        <ul>
-          <li>Level-0</li>
-          <li>Level-1</li>
-          <li>Level-2</li>
-        </ul>
-      </td>
-      <td>
-        </ul>
-          <li>Ant-v4</b></li>
-          <li>Humanoid-v4</li>
-          <li>Hopper-v4</li>
-          <li>Point</li>
-          <li>Car</li>
-        <ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+Here are two pictures of all the environments we support, some of them are being tested in our baseline and we will gradually release them within a month.
+<div align="center">
+  <img src="./images/task.png" width="100%"/>
+</div>
+<div align="center">
+  <img src="./images/agent.png" width="100%"/>
+</div>
 
 ### Vision-base Safe RL
 
@@ -219,6 +179,57 @@ while not terminated:
     env.render()
 ```
 
+### Design environments by yourself
+
+We construct a highly expandable framework of code so that you can easily comprehend it and design your own environments to facilitate your research with no more than 100 lines of code on average.
+
+Here is a minimal example:
+```python
+# import the objects you want to use
+# or you can define specific objects by yourself, just make sure obeying our specification
+from safety_gymnasium.assets.geoms import Apples
+from safety_gymnasium.bases import BaseTask
+
+# inherit the basetask
+class MytaskLevel0(BaseTask):
+    def __init__(self, config):
+        super().__init__(config=config)
+        # define some properties
+        self.num_steps = 500
+        self.robot.placements = [(-0.8, -0.8, 0.8, 0.8)]
+        self.robot.keepout = 0
+        self.lidar_max_dist = 6
+        # add objects into environments
+        self.add_geoms(Apples(num=2, size=0.3))
+        self.specific_agent_config()
+
+    def calculate_reward(self):
+        # implement your reward function
+        # Note: cost calculation is based on objects, so it's automatic
+        reward = 1
+        return reward
+
+    def specific_agent_config(self):
+        # depending on your task
+        pass
+
+    def specific_reset(self):
+        # depending on your task
+
+    def specific_step(self):
+        # depending on your task
+
+    def build_goal(self):
+        # depending on your task
+
+    def update_world(self):
+        # depending on your task
+
+    @property
+    def goal_achieved(self):
+        # depending on your task
+```
+
 --------------------------------------------------------------------------------
 
 ## Installation
@@ -246,12 +257,26 @@ pip install -e .
 
 ```bash
 cd examples
-python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1 --seed 0
+python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1
 ```
 
-**algo:** `PolicyGradient, PPO, PPOLag, NaturalPG, TRPO, TRPOLag, PDO, NPGLag, CPO, PCPO, FOCOPS, CPPOPid`
+**algo:**
+Type           | Name
+---------------| ----------------------------------------------
+`Base-On-Policy`    | `PolicyGradient, PPO`<br> `NaturalPG, TRPO`
+`Base-Off-Policy`   | `DDPG, TD3, SAC`
+`Naive Lagrange`    | `RCPO, PPOLag, TRPOLag`<br> `DDPGLag, TD3Lag, SACLag`
+`PID Lagrange`      | `CPPOPid, TRPOPid`
+`First Order`       | `FOCOPS, CUP`
+`Second Order`      | `SDDPG, CPO, PCPO`
+`Saute RL`          | `PPOSaute, PPOLagSaute`
+`Simmer RL`         | `PPOSimmerQ, PPOSimmerPid` <br> `PPOLagSimmerQ, PPOLagSimmerPid`
+`EarlyTerminated`   | `PPOEarlyTerminated` <br> `PPOLagEarlyTerminated`
+`Model-Based`       | `CAP, MBPPOLag, SafeLOOP`
 
-**env-id:** `Safety{Robot-id}{Task-id}{0/1/2}-v0, (Robot-id: Point Car), (Task-id: Goal Push Button)`
+
+
+**env-id:** `Safety{Robot-id}{Task-id}{0/1/2}-v0, (Robot-id: Point Car Racecar), (Task-id: Goal Push Button Circle)`
 
 **parallel:** `Number of parallels`
 
@@ -264,7 +289,7 @@ python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1 -
 ```python
 import omnisafe
 
-env = omnisafe.Env('SafetyPointGoal1-v0')
+env = 'SafetyPointGoal1-v0'
 
 agent = omnisafe.Agent('PPOLag', env)
 agent.learn()
@@ -284,7 +309,7 @@ agent.learn()
 ```python
 import omnisafe
 
-env = omnisafe.Env('SafetyPointGoal1-v0')
+env = 'SafetyPointGoal1-v0'
 
 custom_dict = {'epochs': 1, 'data_dir': './runs'}
 agent = omnisafe.Agent('PPOLag', env, custom_cfgs=custom_dict)
@@ -304,7 +329,7 @@ agent.learn()
 
 ```bash
 cd examples
-python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 5 --epochs 1
+python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1
 ```
 
 --------------------------------------------------------------------------------
