@@ -117,6 +117,21 @@ class FOCOPS(PolicyGradient, Lagrange):
 
         return loss_pi, pi_info
 
+    def compute_surrogate(
+        self,
+        adv: torch.Tensor,
+        cost_adv: torch.Tensor,
+    ) -> torch.Tensor:
+        """Compute surrogate loss.
+
+        Policy Gradient only use reward advantage.
+
+        Args:
+            adv (torch.Tensor): reward advantage
+            cost_adv (torch.Tensor): cost advantage
+        """
+        return (adv - self.lagrangian_multiplier * cost_adv) / (1 + self.lagrangian_multiplier)
+
     # pylint: disable-next=too-many-locals
     def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         """Update actor, critic, running statistics as we used in the :class:`PolicyGradient`.
@@ -143,27 +158,38 @@ class FOCOPS(PolicyGradient, Lagrange):
         if self.cfgs.use_cost:
             loss_c_before = self.loss_record.get_mean('loss_c')
         self.loss_record.reset('loss_pi', 'loss_v', 'loss_c')
-        # compute the old distribution of policy net.
-        old_dist = self.actor_critic.actor(obs)
+        with torch.no_grad():
+            old_dist = self.actor_critic.actor(obs)
+            old_mean, old_std = old_dist.mean, old_dist.stddev
 
         # load the data into the data loader.
-        dataset = torch.utils.data.TensorDataset(obs, act, target_v, target_c, log_p, adv, cost_adv)
+        dataset = torch.utils.data.TensorDataset(
+            obs, act, target_v, target_c, log_p, adv, cost_adv, old_mean, old_std
+        )
         loader = torch.utils.data.DataLoader(
             dataset, batch_size=self.cfgs.num_mini_batches, shuffle=True
         )
 
         # update the value net, cost net and policy net for several times.
         for i in range(self.cfgs.actor_iters):
-            for _, (obs_b, act_b, target_v_b, target_c_b, log_p_b, adv_b, cost_adv_b) in enumerate(
-                loader
-            ):
+            for _, (
+                obs_b,
+                act_b,
+                target_v_b,
+                target_c_b,
+                log_p_b,
+                adv_b,
+                cost_adv_b,
+                old_mean_b,
+                old_std_b,
+            ) in enumerate(loader):
                 # update the value net.
                 self.update_value_net(obs_b, target_v_b)
                 # update the cost net, if use cost.
                 if self.cfgs.use_cost:
                     self.update_cost_net(obs_b, target_c_b)
                 # update the policy net.
-                self.p_dist, _ = self.actor_critic.actor(obs_b, act_b)
+                self.p_dist = torch.distributions.Normal(old_mean_b, old_std_b)
                 self.update_policy_net(obs_b, act_b, log_p_b, adv_b, cost_adv_b)
             # compute the new distribution of policy net.
             new_dist = self.actor_critic.actor(obs)

@@ -88,7 +88,8 @@ class PPOLag(PPO, Lagrange):
             adv (torch.Tensor): reward advantage
             cost_adv (torch.Tensor): cost advantage
         """
-        return adv - self.lagrangian_multiplier * cost_adv
+        penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
+        return (adv - penalty * cost_adv) / (1 + penalty)
 
     def algorithm_specific_logs(self) -> None:
         """Log the PPOLag specific information.
