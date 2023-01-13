@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""The vectored safety gymnasium wrapper."""
+"""The vectorized safety gymnasium wrapper."""
 
 from typing import Iterable, List, Optional, Union
 
+import gymnasium
 import safety_gymnasium
 from gymnasium.vector.vector_env import VectorEnv
 from safety_gymnasium.vector.async_vector_env import SafetyAsyncVectorEnv
@@ -38,15 +39,14 @@ def make(
     Example::
 
         >>> import safety_gymnasium
-        >>> env = safety_gymnasium.vector.make('CartPole-v1', num_envs=3)
-        >>> env.reset()
-        array([[-0.04456399,  0.04653909,  0.01326909, -0.02099827],
-               [ 0.03073904,  0.00145001, -0.03088818, -0.03131252],
-               [ 0.03468829,  0.01500225,  0.01230312,  0.01825218]],
-              dtype=float32)
+        >>> env = safety_gymnasium.vector.make('SafetyPointGoal1-v0', num_envs=3)
+        >>> env.obsevation_space
+        Box(-inf, inf, (3, 60), float64)
+        >>> env.action_space
+        Box(-1.0, 1.0, (3, 2), float64)
 
     Args:
-        id: The environment ID. This must be a valid ID from the registry.
+        id: The environment id. This must be a valid ID from the registry.
         num_envs: Number of copies of the environment.
         asynchronous: If `True`, wraps the environments in an :class:`AsyncVectorEnv`
         (which uses `multiprocessing`_ to run the environments in parallel). If ``False``,
@@ -56,18 +56,15 @@ def make(
         None will default to the environment spec `disable_env_checker` parameter
         (that is by default False), otherwise will run according to this argument (True = not run, False = run)
         **kwargs: Keywords arguments applied during `safety_gymnasium.make`
-
-    Returns:
-        The vectorized environment.
     """
 
-    def create_env(env_num: int):
+    def create_env(env_num: int) -> callable:
         """Creates an environment that can enable or disable the environment checker."""
-        # If the env_num > 0 then disable the environment checker otherwise use the parameter
+        # if the env_num > 0 then disable the environment checker otherwise use the parameter.
         _disable_env_checker = True if env_num > 0 else disable_env_checker
 
-        def _make_env():
-            """make the environment."""
+        def _make_env() -> gymnasium.Env:
+            """Make the environment."""
             env = safety_gymnasium.make(
                 env_id,
                 disable_env_checker=_disable_env_checker,

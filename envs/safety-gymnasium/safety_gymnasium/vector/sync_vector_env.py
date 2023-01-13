@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""The sync vectored environment."""
+"""The sync vectorized environment."""
 
 from copy import deepcopy
-from typing import Callable, Iterator
+from typing import Callable, Iterator, List, Tuple
 
 import numpy as np
 from gymnasium import Env
@@ -37,21 +37,23 @@ class SafetySyncVectorEnv(SyncVectorEnv):
         observation_space: Space = None,
         action_space: Space = None,
         copy: bool = True,
-    ):
+    ) -> None:
+        """Initializes the vectorized safe environment."""
         super().__init__(env_fns, observation_space, action_space, copy)
         self._costs = np.zeros((self.num_envs,), dtype=np.float64)
 
-    def render(self):
+    def render(self) -> np.ndarray:
+        """Render the environment."""
+        # get the images.
         imgs = self.get_images()
+        # tile the images.
         bigimg = tile_images(imgs)
         return bigimg
 
-    def step_wait(self):
-        """Steps through each of the environments returning the batched results.
-
-        Returns:
-            The batched environment step results
-        """
+    def step_wait(
+        self,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, List[dict]]:
+        """Steps through each of the environments returning the batched results."""
         observations, infos = [], {}
         for i, (env, action) in enumerate(zip(self.envs, self._actions)):
 
@@ -84,6 +86,6 @@ class SafetySyncVectorEnv(SyncVectorEnv):
             infos,
         )
 
-    def get_images(self):
+    def get_images(self) -> List[np.ndarray]:
         """Get images from child environments."""
         return [env.render('rgb_array') for env in self.envs]

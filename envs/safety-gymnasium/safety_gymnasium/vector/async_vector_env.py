@@ -33,7 +33,7 @@ __all__ = ['AsyncVectorEnv']
 class SafetyAsyncVectorEnv(AsyncVectorEnv):
     """The async vectorized environment for safety gymnasium."""
 
-    # pylint: disable-next = too-many-arguments
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         env_fns: Sequence[callable],
@@ -45,7 +45,18 @@ class SafetyAsyncVectorEnv(AsyncVectorEnv):
         daemon: bool = True,
         worker: Optional[callable] = None,
     ) -> None:
-        """The initialization."""
+        """Initialize the async vector environment.
+
+        Args:
+            env_fns: A list of callable functions that create the environments.
+            observation_space: The observation space of the environment.
+            action_space: The action space of the environment.
+            shared_memory: Whether to use shared memory for communication.
+            copy: Whether to copy the observation.
+            context: The context type of multiprocessing.
+            daemon: Whether the workers are daemons.
+            worker: The worker function.
+        """
         target = _worker_shared_memory if shared_memory else _worker
         target = worker or target
         super().__init__(
@@ -60,7 +71,7 @@ class SafetyAsyncVectorEnv(AsyncVectorEnv):
         )
 
     def get_images(self):
-        """get the images from the environment."""
+        """Get the images from the child environment."""
         self._assert_is_running()
         for pipe in self.parent_pipes:
             pipe.send(('render', None))
@@ -68,36 +79,43 @@ class SafetyAsyncVectorEnv(AsyncVectorEnv):
         return imgs
 
     def render(self):
+        """Render the environment."""
+        # get the images.
         imgs = self.get_images()
+        # tile the images.
         bigimg = tile_images(imgs)
         return bigimg
 
-    # pylint: disable-next = too-many-locals
+    # pylint: disable-next=too-many-locals
     def step_wait(
         self, timeout: Optional[Union[int, float]] = None
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, List[dict]]:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, List[dict]]:
         """Wait for the calls to :obj:`step` in each sub-environment to finish.
 
         Args:
             timeout: Number of seconds before the call to :meth:`step_wait`
             times out. If ``None``, the call to :meth:`step_wait` never times out.
         """
+        # check if the environment is running.
         self._assert_is_running()
+        # check if the state is waiting for step.
         if self._state != AsyncState.WAITING_STEP:
             raise NoAsyncCallError(
                 'Calling `step_wait` without any prior call to `step_async`.',
                 AsyncState.WAITING_STEP.value,
             )
 
+        # wait for the results.
         if not self._poll(timeout):
             self._state = AsyncState.DEFAULT
             raise mp.TimeoutError(
                 f'The call to `step_wait` has timed out after {timeout} second(s).'
             )
 
+        # get the results.
         observations_list, rewards, costs, terminateds, truncateds, infos = [], [], [], [], [], {}
         successes = []
-        for i, pipe in enumerate(self.parent_pipes):
+        for idx, pipe in enumerate(self.parent_pipes):
             result, success = pipe.recv()
             obs, rew, cost, terminated, truncated, info = result
 
@@ -107,8 +125,9 @@ class SafetyAsyncVectorEnv(AsyncVectorEnv):
             costs.append(cost)
             terminateds.append(terminated)
             truncateds.append(truncated)
-            infos = self._add_info(infos, info, i)
+            infos = self._add_info(infos, info, idx)
 
+        # check if there are any errors.
         self._raise_if_errors(successes)
         self._state = AsyncState.DEFAULT
 
@@ -130,7 +149,15 @@ class SafetyAsyncVectorEnv(AsyncVectorEnv):
 
 
 # pylint: disable-next=too-many-arguments,too-many-locals,too-many-branches
-def _worker(index, env_fn, pipe, parent_pipe, shared_memory, error_queue):
+def _worker(
+    index: int,
+    env_fn: callable,
+    pipe: mp.connection.Connection,
+    parent_pipe: mp.connection.Connection,
+    shared_memory: bool,
+    error_queue: mp.Queue,
+) -> None:
+    """The worker function for the async vector environment."""
     assert shared_memory is None
     env = env_fn()
     parent_pipe.close()
@@ -140,7 +167,6 @@ def _worker(index, env_fn, pipe, parent_pipe, shared_memory, error_queue):
             if command == 'reset':
                 observation, info = env.reset(**data)
                 pipe.send(((observation, info), True))
-
             elif command == 'step':
                 (
                     observation,
@@ -193,7 +219,7 @@ def _worker(index, env_fn, pipe, parent_pipe, shared_memory, error_queue):
                     'be one of {`reset`, `step`, `seed`, `close`, `render`, `_call`, '
                     '`_setattr`, `_check_spaces`}.'
                 )
-    # pylint: disable-next = broad-except
+    # pylint: disable-next=broad-except
     except (KeyboardInterrupt, Exception):
         error_queue.put((index,) + sys.exc_info()[:2])
         pipe.send((None, False))
@@ -202,7 +228,15 @@ def _worker(index, env_fn, pipe, parent_pipe, shared_memory, error_queue):
 
 
 # pylint: disable-next=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
-def _worker_shared_memory(index, env_fn, pipe, parent_pipe, shared_memory, error_queue):
+def _worker_shared_memory(
+    index: int,
+    env_fn: callable,
+    pipe: mp.connection.Connection,
+    parent_pipe: mp.connection.Connection,
+    shared_memory: bool,
+    error_queue: mp.Queue,
+) -> None:
+    """The shared memory version of worker function for the async vector environment."""
     assert shared_memory is not None
     env = env_fn()
     observation_space = env.observation_space
@@ -262,7 +296,7 @@ def _worker_shared_memory(index, env_fn, pipe, parent_pipe, shared_memory, error
                     'be one of {`reset`, `step`, `seed`, `close`, `render`, `_call`, '
                     '`_setattr`, `_check_spaces`}.'
                 )
-    # pylint: disable-next = broad-except
+    # pylint: disable-next=broad-except
     except (KeyboardInterrupt, Exception):
         error_queue.put((index,) + sys.exc_info()[:2])
         pipe.send((None, False))

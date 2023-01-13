@@ -17,7 +17,7 @@
 import numpy as np
 
 
-def tile_images(img_nhwc):
+def tile_images(img_nhwc, padding=5):
     """
     Tile N images into one big P*Q image
 
@@ -27,19 +27,38 @@ def tile_images(img_nhwc):
     Args:
         img_nhwc (np.ndarray): images to be tiled. The shape is (N, H, W, C).
     """
+    # read the image as array
     img_nhwc = np.asarray(img_nhwc)
+    # check the shape of the image
     n_images, height, width, n_channels = img_nhwc.shape
-    # new_height was named H before
+    # calculate the new height and width
     new_height = int(np.ceil(np.sqrt(n_images)))
-    # new_width was named W before
     new_width = int(np.ceil(float(n_images) / new_height))
-    img_nhwc = np.array(
-        list(img_nhwc) + [img_nhwc[0] * 0 for _ in range(n_images, new_height * new_width)]
+
+    # padding the images
+    new_img_nhwc = np.zeros(
+        (
+            img_nhwc.shape[0],
+            img_nhwc.shape[1] + 2 * padding,
+            img_nhwc.shape[2] + 2 * padding,
+            img_nhwc.shape[3],
+        )
     )
-    # img_HWhwc
-    out_image = img_nhwc.reshape((new_height, new_width, height, width, n_channels))
-    # img_HhWwc
+    for i in range(img_nhwc.shape[0]):
+        new_img_nhwc[i, :, :, :] = np.pad(
+            img_nhwc[i, :, :, :],
+            ((padding, padding), (padding, padding), (0, 0)),
+            'constant',
+            constant_values=0,
+        )
+    new_img_nhwc = np.array(
+        list(new_img_nhwc) + [new_img_nhwc[0] * 0 for _ in range(n_images, new_height * new_width)]
+    )
+    height += 2 * padding
+    width += 2 * padding
+
+    # adjust the output shape
+    out_image = new_img_nhwc.reshape((new_height, new_width, height, width, n_channels))
     out_image = out_image.transpose(0, 2, 1, 3, 4)
-    # img_Hh_Ww_c
     out_image = out_image.reshape((new_height * height, new_width * width, n_channels))
     return out_image
