@@ -21,13 +21,12 @@ import sys
 
 from setuptools import setup
 
-import version  # noqa
-
 
 HERE = pathlib.Path(__file__).absolute().parent
 VERSION_FILE = HERE / 'safety_gymnasium' / 'version.py'
 
 sys.path.insert(0, str(VERSION_FILE.parent))
+import version  # pylint: disable=wrong-import-position
 
 
 VERSION_CONTENT = None
