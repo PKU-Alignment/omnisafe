@@ -52,7 +52,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         # set the attributes
         self.env = env
         self.actor = actor
-        self.obs_normalize = obs_normalize if obs_normalize is not None else lambda x: x
+        self.obs_normalizer = obs_normalize if obs_normalize is not None else lambda x: x
         self.env_wrapper_class = type(env) if env is not None else None
 
         # Used when load model from saved file.
@@ -173,8 +173,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
             for step in range(horizon):
                 with torch.no_grad():
-                    if self.env.obs_normalize is not None:
-                        obs = self.env.obs_normalize.normalize(obs)
+                    if self.env.obs_normalizer is not None:
+                        obs = self.env.obs_normalizer.normalize(obs)
                     act = self.actor.predict(
                         torch.as_tensor(obs, dtype=torch.float32),
                         deterministic=True,
@@ -226,7 +226,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         width = self.env.width if width is None else width
         height = self.env.height if height is None else height
-        env_kwargs = dataclasses.asdict(self.env.RenderData)
+        env_kwargs = dataclasses.asdict(self.env.render_data)
         if env_kwargs.get('render_mode') is None:
             print("Remake the environment with render_mode='rgb_array' to render the environment.")
             self.env = self._make_env(**env_kwargs)
@@ -264,13 +264,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             self.env.render()
         elif self.render_mode == 'rgb_array':
             frames.append(self.env.render())
-        if self.env.obs_normalize is not None:
-            self.env.obs_normalize.load_state_dict(self.model_params['obs_normalize'])
+        if self.env.obs_normalizer is not None:
+            self.env.obs_normalizer.load_state_dict(self.model_params['obs_normalizer'])
         for episode_idx in range(num_episode):
             for _ in range(horizon):
                 with torch.no_grad():
-                    if self.env.obs_normalize is not None:
-                        obs = self.env.obs_normalize.normalize(obs)
+                    if self.env.obs_normalizer is not None:
+                        obs = self.env.obs_normalizer.normalize(obs)
                     act = self.actor.predict(
                         torch.as_tensor(obs, dtype=torch.float32), deterministic=True
                     )
