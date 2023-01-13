@@ -25,10 +25,14 @@ import torch.distributed as dist
 from torch.distributed import ReduceOp
 
 
-def setup_torch_for_mpi():
-    """
-    Avoid slowdowns caused by each separate process's PyTorch using
-    more than its fair share of CPU resources.
+def setup_torch_for_mpi() -> None:
+    """This function is used to setup torch for multi-processing.
+
+    .. note:
+
+        In each algorithm, you should call this function,
+        to avoid slowdowns caused by each separate process's PyTorch using
+        more than its fair share of CPU resources.
     """
     old_num_threads = torch.get_num_threads()
     # decrease number of torch threads for MPI
@@ -55,7 +59,7 @@ def mpi_avg_grads(module: torch.nn.Module) -> None:
             p_grad_numpy[:] = avg_p_grad[:]
 
 
-def sync_params(module: torch.nn.Module) -> None:
+def sync_params(module):
     """Sync all parameters of module across all MPI processes.
 
     .. note::
@@ -119,7 +123,7 @@ def mpi_fork(
 
 
 def is_root_process() -> bool:
-    """Test whether the process is the root process."""
+    """Judge whether the process is the root process."""
     return bool(dist.get_rank() == 0)
 
 
@@ -140,10 +144,10 @@ def gather(*args, **kwargs) -> torch.Tensor:
     return dist.gather(*args, **kwargs)
 
 
-def gather_and_stack(x_vector: np.ndarray) -> np.ndarray:
-    """Gather values from all tasks and return a flattened list.
+def gather_and_stack(x_vector: np.ndarray) -> np.array:
+    """Gather values from all tasks and return flattened list.
 
-    Input is a 1D array of size ``N``, and output is a list of size ``N * MPI_world_size``.
+    Input is a 1D array of size N, and output is a list of size N * MPI_world_size.
 
     .. note::
 
@@ -172,7 +176,7 @@ def num_procs() -> int:
 
 
 def broadcast(value: torch.Tensor, src: int = 0) -> torch.Tensor:
-    """Broadcast."""
+    """broadcast"""
     dist.broadcast(value, src=src)
 
 
@@ -238,9 +242,7 @@ def mpi_avg_torch_tensor(value: torch.Tensor) -> None:
             raise NotImplementedError
 
 
-def mpi_statistics_scalar(
-    value: torch.Tensor, with_min_and_max: bool = False
-) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]]:
+def mpi_statistics_scalar(value: torch.Tensor, with_min_and_max=False) -> tuple:
     """Get mean/std and optional min/max of scalar x across MPI processes.
 
     Args:
@@ -253,7 +255,7 @@ def mpi_statistics_scalar(
 
     global_sum_sq = mpi_sum(np.sum((value - mean) ** 2))
     # compute global std
-    std = np.sqrt(global_sum_sq / global_n)
+    std = np.sqrt(global_sum_sq / global_n).numpy()
     if with_min_and_max:
         global_min = mpi_op(np.min(value) if len(value) > 0 else np.inf, operation=ReduceOp.MIN)
         global_max = mpi_op(np.max(value) if len(value) > 0 else -np.inf, operation=ReduceOp.MAX)
