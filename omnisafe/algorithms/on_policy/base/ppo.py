@@ -44,7 +44,6 @@ class PPO(PolicyGradient):
             env_id (str): The environment id.
             cfgs (NamedTuple): The configuration of the algorithm.
         """
-        self.clip = cfgs.clip
         super().__init__(
             env_id=env_id,
             cfgs=cfgs,
@@ -79,7 +78,7 @@ class PPO(PolicyGradient):
         dist, _log_p = self.actor_critic.actor(obs, act)
         # importance ratio
         ratio = torch.exp(_log_p - log_p)
-        ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
+        ratio_clip = torch.clamp(ratio, 1 - self.cfgs.clip, 1 + self.cfgs.clip)
         loss_pi = -(torch.min(ratio * adv, ratio_clip * adv))
         loss_pi += self.cfgs.entropy_coef * dist.entropy().mean()
         # useful extra info

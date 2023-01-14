@@ -134,11 +134,13 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
     ) -> torch.Tensor:
         """Compute surrogate loss.
 
-        Policy Gradient only use reward advantage.
+        CPPOPid uses the Lagrange method to combine the reward and cost.
+        The surrogate loss is defined as the difference between the reward
+        advantage and the cost advantage
 
         Args:
-            adv (torch.Tensor): reward advantage.
-            cost_adv (torch.Tensor): cost advantage.
+            adv (torch.Tensor): reward advantage
+            cost_adv (torch.Tensor): cost advantage
         """
         return (adv - self.cost_penalty * cost_adv) / (1 + self.cost_penalty)
 

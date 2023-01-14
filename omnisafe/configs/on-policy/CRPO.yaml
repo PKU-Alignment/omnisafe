@@ -44,20 +44,28 @@ defaults:
   critic_lr: 0.0003
   # The Address for saving training process data
   data_dir: "./runs"
-  ## ---------------------------Basic configurations for derived class PPO---------------------- ##
+ ## --------------------------Basic configurations for derived class NaturalPG----------------- ##
   # The thereshold for KL early stopping
-  target_kl: 0.02
-  # The size of batch for policy update
-  batch_size: 10000
+  target_kl: 0.01
+  # Damping value for conjugate gradient
+  cg_damping: 0.1
+  # Number of conjugate gradient iterations
+  cg_iters: 10
+  # Subsampled observation
+  fvp_obs: None
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
-  use_cost: False
+  use_cost: True
+  # The cost limit
+  cost_limit: 25.0
+  # The distance limit
+  distance: 2.0
   # Cost discounted factor
   cost_gamma: 1.0
   # Whether to use linear decay of learning rate
-  linear_lr_decay: True
+  linear_lr_decay: False
   # Whether to use exploration noise anneal
   exploration_noise_anneal: False
   # The coefficient of reward penalty

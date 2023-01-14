@@ -14,17 +14,11 @@
 # ==============================================================================
 """Naive Lagrange algorithms."""
 
-from omnisafe.algorithms.on_policy.naive_lagrange.crpo import CRPO
-from omnisafe.algorithms.on_policy.naive_lagrange.pdo import PDO
-from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
-from omnisafe.algorithms.on_policy.naive_lagrange.rcpo import RCPO
-from omnisafe.algorithms.on_policy.naive_lagrange.trpo_lag import TRPOLag
+from omnisafe.algorithms.on_policy.penalty_function.ipo import IPO
+from omnisafe.algorithms.on_policy.penalty_function.p3o import P3O
 
 
 __all__ = [
-    'RCPO',
-    'PDO',
-    'PPOLag',
-    'TRPOLag',
-    'CRPO',
+    'P3O',
+    'IPO',
 ]
