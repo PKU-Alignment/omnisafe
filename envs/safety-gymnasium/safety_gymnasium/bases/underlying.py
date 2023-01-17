@@ -415,9 +415,7 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
         self.viewer = self._viewers.get(mode)
         if self.viewer is None:
             if mode == 'human':
-                self.viewer = Viewer(
-                    self.model, self.data
-                )
+                self.viewer = Viewer(self.model, self.data)
             elif mode in {'rgb_array', 'depth_array'}:
                 self.viewer = RenderContextOffscreen(self.model, self.data)
             else:
