@@ -26,7 +26,6 @@ __all__ = ['register', 'make', 'vector']
 VERSION = 'v0'
 ROBOT_NAMES = ('Point', 'Car', 'Racecar')
 MAKE_VISION_ENVIRONMENTS = True
-MAKE_DEBUG_ENVIRONMENTS = True
 
 # ========================================#
 #   Helper Class for Easy Registration    #
@@ -67,18 +66,6 @@ def combine(tasks, agents, max_episode_steps):
                     id=vision_env_name,
                     entry_point='safety_gymnasium.builder:Builder',
                     kwargs={'config': vision_config, 'task_id': env_name},
-                    max_episode_steps=max_episode_steps,
-                )
-
-            if MAKE_DEBUG_ENVIRONMENTS and robot_name in ['Point', 'Car', 'Racecar']:
-                # Vision: note, these environments are experimental! Correct behavior not guaranteed
-                vision_env_name = f'{PREFIX}{robot_name}{task_name}Debug-{VERSION}'
-                debug_config = deepcopy(combined_config)
-                debug_config.update({'debug': True})
-                register(
-                    id=vision_env_name,
-                    entry_point='safety_gymnasium.builder:Builder',
-                    kwargs={'config': debug_config, 'task_id': env_name},
                     max_episode_steps=max_episode_steps,
                 )
 

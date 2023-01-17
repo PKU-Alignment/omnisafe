@@ -19,6 +19,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Union
 
+import gymnasium
 import mujoco
 import numpy as np
 from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen, Viewer
