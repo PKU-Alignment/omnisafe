@@ -15,6 +15,7 @@
 """An async vector environment."""
 
 import multiprocessing as mp
+from multiprocessing import connection
 import sys
 from copy import deepcopy
 from typing import List, Optional, Sequence, Tuple, Union
@@ -152,8 +153,8 @@ class SafetyAsyncVectorEnv(AsyncVectorEnv):
 def _worker(
     index: int,
     env_fn: callable,
-    pipe: mp.connection.Connection,
-    parent_pipe: mp.connection.Connection,
+    pipe: connection.Connection,
+    parent_pipe: connection.Connection,
     shared_memory: bool,
     error_queue: mp.Queue,
 ) -> None:
@@ -231,8 +232,8 @@ def _worker(
 def _worker_shared_memory(
     index: int,
     env_fn: callable,
-    pipe: mp.connection.Connection,
-    parent_pipe: mp.connection.Connection,
+    pipe: connection.Connection,
+    parent_pipe: connection.Connection,
     shared_memory: bool,
     error_queue: mp.Queue,
 ) -> None:

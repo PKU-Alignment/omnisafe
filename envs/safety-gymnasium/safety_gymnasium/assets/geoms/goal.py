@@ -19,10 +19,11 @@ from dataclasses import dataclass, field
 import numpy as np
 from safety_gymnasium.assets.color import COLOR
 from safety_gymnasium.assets.group import GROUP
+from safety_gymnasium.bases.base_obstacle import Geoms
 
 
 @dataclass
-class Goal:  # pylint: disable=too-many-instance-attributes
+class Goal(Geoms):  # pylint: disable=too-many-instance-attributes
     """Goal parameters."""
 
     name: str = 'goal'
@@ -30,6 +31,7 @@ class Goal:  # pylint: disable=too-many-instance-attributes
     placements: list = None  # Placements where goal may appear (defaults to full extents)
     locations: list = field(default_factory=list)  # Fixed locations to override placements
     keepout: float = 0.4  # Keepout radius when placing goals
+    alpha: float = 0.25
 
     reward_goal: float = 1.0  # Sparse reward for being inside the goal area
     # Reward is distance towards goal plus a constant for being within range of goal
@@ -39,23 +41,23 @@ class Goal:  # pylint: disable=too-many-instance-attributes
 
     color: np.array = COLOR['goal']
     group: np.array = GROUP['goal']
-    is_observe_lidar: bool = True
-    is_observe_comp: bool = False
+    is_lidar_observed: bool = True
+    is_comp_observed: bool = False
     is_constrained: bool = False
     is_meshed: bool = False
 
-    def get(self, layout, rot):
+    def get_config(self, xy_pos, rot):
         """To facilitate get specific config for this object."""
         geom = {
             'name': 'goal',
             'size': [self.size, self.size / 2],
-            'pos': np.r_[layout['goal'], self.size / 2 + 1e-2],
+            'pos': np.r_[xy_pos, self.size / 2 + 1e-2],
             'rot': rot,
             'type': 'cylinder',
             'contype': 0,
             'conaffinity': 0,
             'group': self.group,
-            'rgba': self.color * [1, 1, 1, 0.25],  # transparent
+            'rgba': self.color * [1, 1, 1, self.alpha],  # transparent
         }
         if self.is_meshed:
             geom.update(
@@ -67,3 +69,8 @@ class Goal:  # pylint: disable=too-many-instance-attributes
                 }
             )
         return geom
+
+    @property
+    def pos(self):
+        """Helper to get goal position from layout."""
+        return self.engine.data.body('goal').xpos.copy()

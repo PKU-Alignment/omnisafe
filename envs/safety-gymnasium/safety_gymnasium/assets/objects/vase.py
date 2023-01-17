@@ -19,11 +19,12 @@ from dataclasses import dataclass, field
 import numpy as np
 from safety_gymnasium.assets.color import COLOR
 from safety_gymnasium.assets.group import GROUP
+from safety_gymnasium.bases.base_obstacle import Objects
 from safety_gymnasium.utils.task_utils import get_body_xvelp
 
 
 @dataclass
-class Vases:  # pylint: disable=too-many-instance-attributes
+class Vases(Objects):  # pylint: disable=too-many-instance-attributes
     """Vases (objects we should not touch)"""
 
     name: str = 'vases'
@@ -35,10 +36,10 @@ class Vases:  # pylint: disable=too-many-instance-attributes
     # how far vases "sink" into the floor.
     # Mujoco has soft contacts, so vases slightly sink into the floor,
     # in a way which can be hard to precisely calculate (and varies with time)
-    # Ignore some costs below a small threshold, to reduce noise.
     density: float = 0.001
     size: float = 0.1
 
+    # Ignore some costs below a small threshold, to reduce noise.
     contact_cost: float = 1.0  # Cost (per step) for being in contact with a vase
     displace_cost: float = 0.0  # Cost (per step) per meter of displacement for a vase
     displace_threshold: float = 1e-3  # Threshold for displacement being "real"
@@ -47,34 +48,35 @@ class Vases:  # pylint: disable=too-many-instance-attributes
 
     color: np.array = COLOR['vase']
     group: np.array = GROUP['vase']
-    is_observe_lidar: bool = True
+    is_lidar_observed: bool = True
     is_constrained: bool = True
 
-    def get(self, index, layout, rot):
+    def get_config(self, xy_pos, rot):
         """To facilitate get specific config for this object."""
-        name = f'vase{index}'
         obj = {
-            'name': f'vase{index}',
+            'name': self.name,
             'size': np.ones(3) * self.size,
             'type': 'box',
             'density': self.density,
-            'pos': np.r_[layout[name], self.size - self.sink],
+            'pos': np.r_[xy_pos, self.size - self.sink],
             'rot': rot,
             'group': self.group,
             'rgba': self.color,
         }
         return obj
 
-    def cal_cost(self, engine):
+    def cal_cost(self):
         """Contacts processing."""
         cost = {}
+        if not self.is_constrained:
+            return cost
         cost['cost_vases_contact'] = 0
         if self.contact_cost:
-            for contact in engine.data.contact[: engine.data.ncon]:
+            for contact in self.engine.data.contact[: self.engine.data.ncon]:
                 geom_ids = [contact.geom1, contact.geom2]
-                geom_names = sorted([engine.model.geom(g).name for g in geom_ids])
+                geom_names = sorted([self.engine.model.geom(g).name for g in geom_ids])
                 if any(n.startswith('vase') for n in geom_names):
-                    if any(n in engine.robot.geom_names for n in geom_names):
+                    if any(n in self.agent.body_info.geom_names for n in geom_names):
                         # pylint: disable-next=no-member
                         cost['cost_vases_contact'] += self.contact_cost
 
@@ -85,7 +87,11 @@ class Vases:  # pylint: disable=too-many-instance-attributes
             for i in range(self.num):
                 name = f'vase{i}'
                 dist = np.sqrt(
-                    np.sum(np.square(self.data.get_body_xpos(name)[:2] - self.reset_layout[name]))
+                    np.sum(
+                        np.square(
+                            self.data.get_body_xpos(name)[:2] - self.world_info.reset_layout[name]
+                        )
+                    )
                 )
                 if dist > self.displace_threshold:
                     cost['cost_vases_displace'] += dist * self.displace_cost
@@ -96,8 +102,16 @@ class Vases:  # pylint: disable=too-many-instance-attributes
             # pylint: disable=no-member
             for i in range(self.num):
                 name = f'vase{i}'
-                vel = np.sqrt(np.sum(np.square(get_body_xvelp(engine.model, engine.data, name))))
+                vel = np.sqrt(
+                    np.sum(np.square(get_body_xvelp(self.engine.model, self.engine.data, name)))
+                )
                 if vel >= self.velocity_threshold:
                     cost['cost_vases_velocity'] += vel * self.velocity_cost
 
         return cost
+
+    @property
+    def pos(self):
+        """Helper to get the list of vase positions."""
+        # pylint: disable-next=no-member
+        return [self.engine.data.body(f'vase{p}').xpos.copy() for p in range(self.num)]

@@ -14,11 +14,24 @@
 # ==============================================================================
 """Env builder."""
 
+from dataclasses import asdict, dataclass
+
 import gymnasium
 import numpy as np
 from safety_gymnasium import tasks
 from safety_gymnasium.utils.common_utils import ResamplingError, quat2zalign
 from safety_gymnasium.utils.task_utils import get_task_class_name
+
+
+@dataclass
+class RenderParameters:
+    """Render Parameters."""
+
+    mode: str = None
+    width: int = 256
+    height: int = 256
+    camera_id: int = None
+    camera_name: str = None
 
 
 # pylint: disable-next=too-many-instance-attributes
@@ -52,30 +65,27 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
     ):
         gymnasium.utils.EzPickle.__init__(self, config=config)
 
-        self.input_parameters = locals()
-
         self.task_id = task_id
         self.config = config
-        self.seed()
+        self._seed = None
         self._setup_simulation()
 
         self.first_reset = None
         self.steps = None
-        self._cost = None
+        self.cost = None
         self.terminated = True
         self.truncated = False
 
-        self.render_mode = render_mode
-        self.width = width
-        self.height = height
-        self.camera_id = camera_id
-        self.camera_name = camera_name
+        self.render_parameters = RenderParameters(
+            render_mode, width, height, camera_id, camera_name
+        )
 
     def _setup_simulation(self):
         """Set up mujoco the simulation instance."""
-        self.task = self.get_task()
+        self.task = self._get_task()
+        self.set_seed()
 
-    def get_task(self):
+    def _get_task(self):
         """Instantiate a task object."""
         class_name = get_task_class_name(self.task_id)
         assert hasattr(tasks, class_name), f'Task={class_name} not implemented.'
@@ -85,14 +95,10 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         task.build_observation_space()
         return task
 
-    def seed(self, seed=None):
+    def set_seed(self, seed=None):
         """Set internal random state seeds."""
         self._seed = np.random.randint(2**32) if seed is None else seed
-
-    def set_random_seed(self, seed):
-        """Instantiate a :class:`np.random.RandomState` object using given seed."""
-        random_generator = np.random.RandomState(seed)  # pylint: disable=no-member
-        self.task.set_random_generator(random_generator)
+        self.task.random_generator.set_random_seed(self._seed)
 
     def reset(self, seed=None, options=None):  # pylint: disable=arguments-differ
         """Reset the physics simulation and return observation."""
@@ -101,20 +107,22 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         if seed is not None:
             self._seed = seed  # pylint: disable=attribute-defined-outside-init
 
-        if not self.task.randomize_layout:
-            self.set_random_seed(0)
+        if not self.task.mechanism_conf.randomize_layout:
+            self.set_seed(0)
         else:
             self._seed += 1  # Increment seed
-            self.set_random_seed(self._seed)
+            self.set_seed(self._seed)
 
         self.terminated = False
         self.truncated = False
         self.steps = 0  # Count of steps taken in this episode
 
         self.task.reset()
-        self.task.build_goal()  # Build a new physics simulation environment
+        self.task.update_world()  # refresh specific settings
         self.task.specific_reset()
-        cost = self.cost()
+        self.task.agent.reset()
+
+        cost = self._cost()
         assert cost['cost'] == 0, f'World has starting cost! {cost}'
         # Reset stateful parts of the environment
         self.first_reset = False  # Built our first world successfully
@@ -129,83 +137,87 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
 
         info = {}
 
-        exception = self.task.apply_action(action)
+        exception = self.task.simulation_forward(action)
         if exception:
             self.truncated = True
 
-            reward = self.task.reward_exception
+            reward = self.task.reward_conf.reward_exception
             info['cost_exception'] = 1.0
         else:
             # Reward processing
-            reward = self.reward()
+            reward = self._reward()
 
             # Constraint violations
-            info.update(self.cost())
+            info.update(self._cost())
 
             cost = info['cost']
 
             self.task.specific_step()
-            self.task.update_world()
 
             # Goal processing
             if self.task.goal_achieved:
                 info['goal_met'] = True
-                if self.task.continue_goal:
+                if self.task.mechanism_conf.continue_goal:
                     # Update the internal layout
                     # so we can correctly resample (given objects have moved)
                     self.task.update_layout()
                     # Try to build a new goal, end if we fail
-                    if self.task.terminate_resample_failure:
+                    if self.task.mechanism_conf.terminate_resample_failure:
                         try:
-                            self.task.build_goal()
+                            self.task.update_world()
                         except ResamplingError:
                             # Normal end of episode
                             self.terminated = True
                     else:
                         # Try to make a goal, which could raise a ResamplingError exception
-                        self.task.build_goal()
+                        self.task.update_world()
                 else:
                     self.terminated = True
+
+        # termination of death processing
+        if not self.task.agent.is_alive():
+            self.terminated = True
 
         # Timeout
         self.steps += 1
         if self.steps >= self.task.num_steps:
             self.truncated = True  # Maximum number of steps in an episode reached
 
-        if self.render_mode == 'human':
+        if self.render_parameters.mode == 'human':
             self.render()
         return self.task.obs(), reward, cost, self.terminated, self.truncated, info
 
-    def reward(self):
+    def _reward(self):
         """Calculate the dense component of reward.  Call exactly once per step."""
         reward = self.task.calculate_reward()
 
         # Intrinsic reward for uprightness
-        if self.task.reward_orientation:
+        if self.task.reward_conf.reward_orientation:
             zalign = quat2zalign(
-                self.task.data.get_body_xquat(self.task.reward_orientation_body)
-            )  # pylint: disable=no-member
-            reward += self.reward_orientation_scale * zalign  # pylint: disable=no-member
+                self.task.data.get_body_xquat(self.task.reward_conf.reward_orientation_body)
+            )
+            reward += self.task.reward_conf.reward_orientation_scale * zalign
 
         # Clip reward
-        if self.task.reward_clip:
-            in_range = -self.task.reward_clip < reward < self.task.reward_clip
+        reward_clip = self.task.reward_conf.reward_clip
+        if reward_clip:
+            in_range = -reward_clip < reward < reward_clip
             if not in_range:
-                reward = np.clip(reward, -self.task.reward_clip, self.task.reward_clip)
+                reward = np.clip(reward, -reward_clip, reward_clip)
                 print('Warning: reward was outside of range!')
 
         return reward
 
-    def cost(self):
+    def _cost(self):
         """Calculate the current costs and return a dict."""
         cost = self.task.calculate_cost()
 
         # Optionally remove shaping from reward functions.
-        if self.task.constrain_indicator:
+        if self.task.cost_conf.constrain_indicator:
             for k in list(cost.keys()):
                 cost[k] = float(cost[k] > 0.0)  # Indicator function
 
-        self._cost = cost
+        self.cost = cost
 
         return cost
 
@@ -215,23 +227,11 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
         Width and height in parameters are constant defaults for rendering
         frames for humans. (not used for vision)
         """
-        assert self.render_mode, 'Please specify the render mode when you make env.'
+        assert self.render_parameters.mode, 'Please specify the render mode when you make env.'
         assert (
             not self.task.observe_vision
         ), 'When you use vision envs, you should not call this function explicitly.'
-        return self.task.render(
-            mode=self.render_mode,
-            camera_id=self.camera_id,
-            camera_name=self.camera_name,
-            width=self.width,
-            height=self.height,
-            cost=self._cost,
-        )
-
-    def world_xy(self, pos):
-        """Return the world XY vector to a position from the robot."""
-        assert pos.shape == (2,)
-        return pos - self.world.robot_pos()[:2]  # pylint: disable=no-member
+        return self.task.render(cost=self.cost, **asdict(self.render_parameters))
 
     @property
     def action_space(self):
@@ -246,7 +246,7 @@ class Builder(gymnasium.Env, gymnasium.utils.EzPickle):
     @property
     def obs_space_dict(self):
         """Helper to get observation space dictionary."""
-        return self.task.obs_space_dict
+        return self.task.obs_info.obs_space_dict
 
     @property
     def done(self):

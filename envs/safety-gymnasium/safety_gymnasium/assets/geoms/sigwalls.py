@@ -19,10 +19,11 @@ from dataclasses import dataclass
 import numpy as np
 from safety_gymnasium.assets.color import COLOR
 from safety_gymnasium.assets.group import GROUP
+from safety_gymnasium.bases.base_obstacle import Geoms
 
 
 @dataclass
-class Sigwalls:  # pylint: disable=too-many-instance-attributes
+class Sigwalls(Geoms):  # pylint: disable=too-many-instance-attributes
     """Non collision object."""
 
     name: str = 'sigwalls'
@@ -34,7 +35,7 @@ class Sigwalls:  # pylint: disable=too-many-instance-attributes
 
     color: np.array = COLOR['sigwall']
     group: np.array = GROUP['sigwall']
-    is_observe_lidar: bool = False
+    is_lidar_observed: bool = False
     is_constrained: bool = False
 
     def __post_init__(self):
@@ -43,20 +44,26 @@ class Sigwalls:  # pylint: disable=too-many-instance-attributes
             self.locate_factor >= 0
         ), 'For cost calculation, the locate_factor\
                                          must be greater than or equal to zero.'
-        self.locations = [
+        self.locations: list = [
             (self.locate_factor, 0),
             (-self.locate_factor, 0),
             (0, self.locate_factor),
             (0, -self.locate_factor),
         ]
 
-    def get(self, index, layout, rot):  # pylint: disable=unused-argument
+        self.index: int = 0
+
+    def index_tick(self):
+        """Count index."""
+        self.index += 1
+        self.index %= self.num
+
+    def get_config(self, xy_pos, rot):  # pylint: disable=unused-argument
         """To facilitate get specific config for this object."""
-        name = f'sigwall{index}'
         geom = {
-            'name': name,
+            'name': self.name,
             'size': np.array([0.05, self.size, 0.3]),
-            'pos': np.r_[layout[name], 0.25],
+            'pos': np.r_[xy_pos, 0.25],
             'rot': 0,
             'type': 'box',
             'contype': 0,
@@ -64,21 +71,28 @@ class Sigwalls:  # pylint: disable=too-many-instance-attributes
             'group': self.group,
             'rgba': self.color * [1, 1, 1, 0.1],
         }
-        if index >= 2:
+        if self.index >= 2:
             geom.update(
                 {
                     'rot': np.pi / 2,
                 }
             )
+        self.index_tick()
         return geom
 
-    def cal_cost(self, engine):
+    def cal_cost(self):
         """Contacts Processing."""
         cost = {}
-        cost['cost_out_of_boundary'] = np.abs(engine.robot_pos[0]) > self.locate_factor
+        if not self.is_constrained:
+            return cost
+        cost['cost_out_of_boundary'] = np.abs(self.agent.pos[0]) > self.locate_factor
         if self.num == 4:
             cost['cost_out_of_boundary'] = (
-                cost['cost_out_of_boundary'] or np.abs(engine.robot_pos[1]) > self.locate_factor
+                cost['cost_out_of_boundary'] or np.abs(self.agent.pos[1]) > self.locate_factor
             )
 
         return cost
+
+    @property
+    def pos(self):
+        """Helper to get list of Sigwalls positions."""

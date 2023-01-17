@@ -19,10 +19,11 @@ from dataclasses import dataclass, field
 import numpy as np
 from safety_gymnasium.assets.color import COLOR
 from safety_gymnasium.assets.group import GROUP
+from safety_gymnasium.bases.base_obstacle import Geoms
 
 
 @dataclass
-class Apples:  # pylint: disable=too-many-instance-attributes
+class Apples(Geoms):  # pylint: disable=too-many-instance-attributes
     """Apples and Oranges are as same as Goal.
 
     While they can be instantiated more than one.
@@ -44,18 +45,16 @@ class Apples:  # pylint: disable=too-many-instance-attributes
 
     color: np.array = COLOR['apple']
     group: np.array = GROUP['apple']
-    is_observe_lidar: bool = True
-    is_observe_comp: bool = False
+    is_lidar_observed: bool = True
     is_constrained: bool = False
     is_meshed: bool = False
 
-    def get(self, index, layout, rot):
+    def get_config(self, xy_pos, rot):
         """To facilitate get specific config for this object."""
-        name = f'apple{index}'
         geom = {
-            'name': name,
+            'name': self.name,
             'size': [self.size, self.size / 2],
-            'pos': np.r_[layout[name], self.size / 2 + 1e-2],
+            'pos': np.r_[xy_pos, self.size / 2 + 1e-2],
             'rot': rot,
             'type': 'cylinder',
             'contype': 0,
@@ -66,7 +65,7 @@ class Apples:  # pylint: disable=too-many-instance-attributes
         if self.is_meshed:
             geom.update(
                 {
-                    'pos': np.r_[layout[name], 0.3],
+                    'pos': np.r_[xy_pos, 0.3],
                     'type': 'mesh',
                     'mesh': 'apple',
                     'material': 'apple',
@@ -74,3 +73,8 @@ class Apples:  # pylint: disable=too-many-instance-attributes
                 }
             )
         return geom
+
+    @property
+    def pos(self):
+        '''Helper to get goal position from layout'''
+        return [self.engine.data.body(f'apple{i}').xpos.copy() for i in range(self.num)]

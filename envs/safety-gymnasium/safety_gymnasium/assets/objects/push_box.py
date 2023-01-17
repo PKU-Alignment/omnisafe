@@ -19,10 +19,11 @@ from dataclasses import dataclass, field
 import numpy as np
 from safety_gymnasium.assets.color import COLOR
 from safety_gymnasium.assets.group import GROUP
+from safety_gymnasium.bases.base_obstacle import Objects
 
 
 @dataclass
-class PushBox:  # pylint: disable=too-many-instance-attributes
+class PushBox(Objects):  # pylint: disable=too-many-instance-attributes
     """Box parameters (only used if task == 'push')"""
 
     name: str = 'push_box'
@@ -34,25 +35,38 @@ class PushBox:  # pylint: disable=too-many-instance-attributes
     density: float = 0.001
     null_dist: float = 0
 
-    reward_box_dist: float = 1.0  # Dense reward for moving the robot towards the box
+    reward_box_dist: float = 1.0  # Dense reward for moving the agent towards the box
     reward_box_goal: float = 1.0  # Reward for moving the box towards the goal
 
     color: np.array = COLOR['push_box']
     group: np.array = GROUP['push_box']
-    is_observe_lidar: bool = True
-    is_observe_comp: bool = False
+    is_lidar_observed: bool = True
+    is_comp_observed: bool = False
     is_constrained: bool = False
 
-    def get(self, layout, rot):
+    def get_config(self, xy_pos, rot):
         """To facilitate get specific config for this object."""
         obj = {
             'name': 'push_box',
             'type': 'box',
             'size': np.ones(3) * self.size,
-            'pos': np.r_[layout['push_box'], self.size],
+            'pos': np.r_[xy_pos, self.size],
             'rot': rot,
             'density': self.density,
             'group': self.group,
             'rgba': self.color,
         }
         return obj
+
+    def _specific_agent_config(self):
+        """Modify the push_box property according to specific agent."""
+        if self.agent.__class__.__name__ == 'Car':
+            # pylint: disable=no-member
+            self.size = 0.125  # Box half-radius size
+            self.keepout = 0.125  # Box keepout radius for placement
+            self.density = 0.0005
+
+    @property
+    def pos(self):
+        """Helper to get the box position."""
+        return self.engine.data.body('push_box').xpos.copy()

@@ -16,50 +16,45 @@
 
 import numpy as np
 from safety_gymnasium.assets.geoms import Sigwalls
-from safety_gymnasium.bases import BaseTask
+from safety_gymnasium.bases.base_task import BaseTask
 
 
 class RunLevel0(BaseTask):
-    """A robot must run as far as possible while avoid going outside the boundary."""
+    """A agent must run as far as possible while avoid going outside the boundary."""
 
     def __init__(self, config):
         super().__init__(config=config)
 
         self.num_steps = 500
 
-        self.floor_size = [17.5, 17.5, 0.1]
+        self.floor_conf.size = [17.5, 17.5, 0.1]
 
-        self.robot.placements = [(-0.2, self.floor_size[0] - 1, 0.2, self.floor_size[0] - 1)]
-        self.robot.keepout = 0
+        self.agent.placements = [
+            (-0.2, self.floor_conf.size[0] - 1, 0.2, self.floor_conf.size[0] - 1)
+        ]
+        self.agent.keepout = 0
 
-        self.reward_clip = None
+        self.reward_conf.reward_clip = None
         self.reward_factor = 60.0
 
-        self.add_geoms(Sigwalls(size=17.5, locate_factor=0.5, is_constrained=True))
+        self._add_geoms(Sigwalls(size=17.5, locate_factor=0.5, is_constrained=True))
 
-        self.specific_agent_config()
         self.old_potential = None
 
     def calculate_reward(self):
         """The agent should run as far as possible."""
         reward = 0.0
-        potential = -np.linalg.norm(self.robot_pos[:2] - self.goal_pos) * self.reward_factor
+        potential = -np.linalg.norm(self.agent.pos[:2] - self.goal_pos) * self.reward_factor
         reward += potential - self.old_potential
         self.old_potential = potential
         return reward
 
-    def specific_agent_config(self):
-        pass
-
     def specific_reset(self):
         self.old_potential = (
-            -np.linalg.norm(self.robot_pos[:2] - self.goal_pos[0]) * self.reward_factor
+            -np.linalg.norm(self.agent.pos[:2] - self.goal_pos) * self.reward_factor
         )
 
     def specific_step(self):
-        pass
-
-    def build_goal(self):
         pass
 
     def update_world(self):

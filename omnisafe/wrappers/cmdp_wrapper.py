@@ -20,7 +20,7 @@ from dataclasses import dataclass
 import numpy as np
 import safety_gymnasium
 import torch
-from safety_gymnasium.bases import BaseTask
+from safety_gymnasium.bases.base_task import BaseTask
 
 from omnisafe.common.base_buffer import BaseBuffer
 from omnisafe.common.logger import Logger

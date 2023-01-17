@@ -19,9 +19,9 @@ from safety_gymnasium.tasks.circle.circle_level0 import CircleLevel0
 
 
 class CircleLevel1(CircleLevel0):
-    """A robot want to loop around the boundary of circle, while avoid going outside the boundaries."""
+    """A agent want to loop around the boundary of circle, while avoid going outside the boundaries."""
 
     def __init__(self, config):
         super().__init__(config=config)
 
-        self.add_geoms(Sigwalls(num=2, locate_factor=1.125, is_constrained=True))
+        self._add_geoms(Sigwalls(num=2, locate_factor=1.125, is_constrained=True))
