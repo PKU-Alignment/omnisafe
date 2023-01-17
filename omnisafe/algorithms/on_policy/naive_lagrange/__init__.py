@@ -27,5 +27,4 @@ __all__ = [
     'PDO',
     'PPOLag',
     'TRPOLag',
-    'CRPO',
 ]
