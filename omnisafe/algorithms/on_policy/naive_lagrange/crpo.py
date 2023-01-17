@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the CRPO algorithm."""
+"""Implementation of the on-policy CRPO algorithm."""
 
 from typing import NamedTuple
 
@@ -23,8 +23,14 @@ from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
 
 
 @registry.register
-class CRPO(NaturalPG):
-    """The CRPO algorithm."""
+class OnCRPO(NaturalPG):
+    """The on-policy CRPO algorithm.
+
+    References:
+        - Title: CRPO: A New Approach for Safe Reinforcement Learning with Convergence Guarantee.
+        - Authors: Tengyu Xu, Yingbin Liang, Guanghui Lan.
+        - URL: `CRPO <https://arxiv.org/pdf/2011.05869.pdf>`_.
+    """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
         """Initialize CRPO.
@@ -38,11 +44,27 @@ class CRPO(NaturalPG):
             env_id=env_id,
             cfgs=cfgs,
         )
+        self.rew_update = 0
+        self.cost_update = 0
+
+    def algorithm_specific_logs(self) -> None:
+        """Log the CRPO specific information.
+
+        .. list-table::
+
+            *  -   Things to log
+               -   Description
+            *  -   Metrics/LagrangeMultiplier
+               -   The Lagrange multiplier value in current epoch.
+        """
+        super().algorithm_specific_logs()
+        self.logger.log_tabular('Misc/RewUpdate', self.rew_update)
+        self.logger.log_tabular('Misc/CostUpdate', self.cost_update)
 
     def compute_surrogate(self, adv: torch.Tensor, cost_adv: torch.Tensor) -> torch.Tensor:
         """Compute the surrogate loss of the policy.
 
-        In the CRPO algorithm, we first judge whether the cost is within the limit.
+        In CRPO algorithm, we first judge whether the cost is within the limit.
         If the cost is within the limit, we use the advantage of the policy.
         Otherwise, we use the advantage of the cost.
 
@@ -52,5 +74,7 @@ class CRPO(NaturalPG):
         """
         Jc = self.logger.get_stats('Metrics/EpCost')[0]
         if Jc <= self.cfgs.cost_limit + self.cfgs.distance:
+            self.rew_update += 1
             return adv
+        self.cost_update += 1
         return cost_adv

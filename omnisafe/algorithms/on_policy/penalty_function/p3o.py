@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the P3O algorithm."""
+"""Implementation of the P3O algorithm."""
 
 import torch
 import torch.nn.functional as F
@@ -24,7 +24,13 @@ from omnisafe.utils import distributed_utils
 
 @registry.register
 class P3O(PPO):
-    """The Implementation of the P3O algorithm."""
+    """The Implementation of the IPO algorithm.
+
+    References:
+        - Title: Penalized Proximal Policy Optimization for Safe Reinforcement Learning
+        - Authors: Linrui Zhang, Li Shen, Long Yang, Shixiang Chen, Bo Yuan, Xueqian Wang, Dacheng Tao.
+        - URL: `P3O <https://arxiv.org/pdf/2205.11814.pdf>`_
+    """
 
     def compute_loss_cost_performance(
         self,

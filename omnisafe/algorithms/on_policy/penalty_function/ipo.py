@@ -24,7 +24,13 @@ from omnisafe.algorithms.on_policy.base.ppo import PPO
 
 @registry.register
 class IPO(PPO):
-    """The Implementation of the IPO algorithm."""
+    """The Implementation of the IPO algorithm.
+
+    References:
+        - Title: IPO: Interior-point Policy Optimization under Constraints
+        - Authors: Yongshuai Liu, Jiaxin Ding, Xin Liu.
+        - URL: `IPO <https://arxiv.org/pdf/1910.09615.pdf>`_
+    """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
         """Initialize IPO."""
