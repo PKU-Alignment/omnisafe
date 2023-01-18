@@ -25,7 +25,7 @@ if __name__ == "__main__":
     eg = ExperimentGrid(exp_name="Safety_Gymnasium_Goal")
     eg.add('algo', ['PPO', 'PPOLag'])
     eg.add('env_id', ['SafetyPointGoal1-v0'])
-    eg.add('epochs', 100)
+    eg.add('epochs', 1)
     eg.add('actor_lr', [0.001, 0.003, 0.004], 'lr', True)
     eg.add('actor_iters', [1, 2], 'ac_iters', True)
     eg.add('seed', [0, 5, 10])

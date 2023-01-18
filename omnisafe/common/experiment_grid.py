@@ -350,7 +350,6 @@ class ExperimentGrid:
             for _ in prog_bar:
                 time.sleep(wait / steps)
 
-        # pool = multiprocessing.Pool(processes=num_pool)
         pool = Pool(max_workers=num_pool)
         # Run the variants.
         results = []
@@ -360,7 +359,7 @@ class ExperimentGrid:
             exp_names.append(exp_name)
             data_dir = os.path.join('./', 'exp-x', self.name, exp_name, '')
             var['data_dir'] = data_dir
-            pool.submit(thunk, idx, var['algo'], var['env_id'], var)
+            results.append(pool.submit(thunk, idx, var['algo'], var['env_id'], var))
         pool.shutdown()
 
         path = os.path.join('./', 'exp-x', self.name, 'exp-x-results.txt')
@@ -369,7 +368,7 @@ class ExperimentGrid:
         with open(path, 'a+') as f:
             for idx, var in enumerate(variants):
                 f.write(exp_names[idx] + ': ')
-                reward, cost, ep_len = results[idx].get()
+                reward, cost, ep_len = results[idx].result()
                 f.write("reward:" + str(round(reward, 2)) + ',')
                 f.write("cost:" + str(round(cost, 2)) + ',')
                 f.write("ep_len:" + str(ep_len))
