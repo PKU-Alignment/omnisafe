@@ -83,7 +83,9 @@ class PDO(PolicyGradient, Lagrange):
     ) -> torch.Tensor:
         """Compute surrogate loss.
 
-        Policy Gradient only use reward advantage.
+        PDO uses the Lagrange method to combine the reward and cost.
+        The surrogate loss is defined as the difference between the reward
+        advantage and the cost advantage
 
         Args:
             adv (torch.Tensor): reward advantage
