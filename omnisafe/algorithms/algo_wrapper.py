@@ -75,7 +75,7 @@ class AlgoWrapper:
         )
         agent.learn()
 
-        # self.evaluator = Evaluator(self.env, actor_critic.actor, actor_critic.obs_oms)
+        return agent.env.record_queue.get_mean('ep_ret', 'ep_cost', 'ep_len')
 
     def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
         """Agent Evaluation"""
