@@ -49,11 +49,19 @@ defaults:
   target_kl: 0.02
   # The size of batch for policy update
   batch_size: 10000
+  # The clip range for PPO loss
+  clip: 0.2
+  # The coefficient of cost penalty
+  kappa: 0.0
+  # The max of cost penalty
+  penalty_max: 0.0
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
   use_cost: False
+  # The cost limit
+  cost_limit: 25.0
   # Cost discounted factor
   cost_gamma: 1.0
   # Whether to use linear decay of learning rate
