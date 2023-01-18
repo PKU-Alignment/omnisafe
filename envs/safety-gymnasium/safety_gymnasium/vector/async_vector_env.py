@@ -15,9 +15,9 @@
 """An async vector environment."""
 
 import multiprocessing as mp
-from multiprocessing import connection
 import sys
 from copy import deepcopy
+from multiprocessing import connection
 from typing import List, Optional, Sequence, Tuple, Union
 
 import gymnasium
