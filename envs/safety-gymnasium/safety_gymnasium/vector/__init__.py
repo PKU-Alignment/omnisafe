@@ -39,7 +39,7 @@ def make(
     Example::
 
         >>> import safety_gymnasium
-        >>> env=safety_gymnasium.vector.make('SafetyPointGoal1-v0', num_envs=3)
+        >>> env = safety_gymnasium.vector.make('SafetyPointGoal1-v0', num_envs=3)
         >>> env.obsevation_space
         Box(-inf, inf, (3, 60), float64)
         >>> env.action_space
@@ -60,7 +60,7 @@ def make(
 
     def create_env(env_num: int) -> callable:
         """Creates an environment that can enable or disable the environment checker."""
-        # if the env_num>0 then disable the environment checker otherwise use the parameter.
+        # if the env_num > 0 then disable the environment checker otherwise use the parameter.
         _disable_env_checker = True if env_num > 0 else disable_env_checker
 
         def _make_env() -> gymnasium.Env:
