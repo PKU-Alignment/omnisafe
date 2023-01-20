@@ -29,7 +29,7 @@ class PushLevel0(BaseTask):
         self.placements_conf.extents = [-1, -1, 1, 1]
 
         self._add_geoms(Goal())
-        self._add_objects(PushBox())
+        self._add_objects(PushBox(null_dist=0))
 
         self.last_dist_box = None
         self.last_box_goal = None

@@ -33,7 +33,6 @@ class PushBox(Objects):  # pylint: disable=too-many-instance-attributes
     keepout: float = 0.2  # Box keepout radius for placement
     null_dist: float = 2  # Within box_null_dist * box_size radius of box, no box reward given
     density: float = 0.001
-    null_dist: float = 0
 
     reward_box_dist: float = 1.0  # Dense reward for moving the agent towards the box
     reward_box_goal: float = 1.0  # Reward for moving the box towards the goal
