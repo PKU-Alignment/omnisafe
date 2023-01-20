@@ -47,7 +47,7 @@ def register(**kwargs):
 
 # pylint: disable-next=too-many-arguments,too-many-branches,too-many-statements,too-many-locals
 def make(
-    id: Union[str, EnvSpec],  # pylint: disable=redefined-builtin
+    id: Union[str, EnvSpec],  # pylint: disable=invalid-name,redefined-builtin
     max_episode_steps: Optional[int] = None,
     autoreset: bool = False,
     apply_api_compatibility: Optional[bool] = None,
@@ -86,11 +86,11 @@ def make(
         if module is not None:
             try:
                 importlib.import_module(module)
-            except ModuleNotFoundError as e:
+            except ModuleNotFoundError as ex:
                 raise ModuleNotFoundError(
-                    f'{e}. Environment registration via importing a module failed. '
+                    f'{ex}. Environment registration via importing a module failed. '
                     f"Check whether '{module}' contains env registration and can be imported."
-                ) from e
+                ) from ex
         spec_ = registry.get(id)
 
         name_space, name, version = parse_env_id(id)
@@ -189,18 +189,14 @@ def make(
 
     try:
         env = env_creator(**_kwargs)
-    except TypeError as e:
-        if (
-            str(e).find("got an unexpected keyword argument 'render_mode'") >= 0
-            and apply_human_rendering
-        ):
+    except TypeError as ex:
+        if "got an unexpected keyword argument 'render_mode'" in str(ex) and apply_human_rendering:
             raise error.Error(
                 f"You passed render_mode='human' although {id} doesn't implement human-rendering natively. "
                 'Gym tried to apply the HumanRendering wrapper but it looks like your environment is using the old '
                 'rendering API, which is not supported by the HumanRendering wrapper.'
-            )
-
-        raise e
+            ) from ex
+        raise
 
     # Copies the environment creation specification and kwargs to add to the environment specification details
     spec_ = copy.deepcopy(spec_)

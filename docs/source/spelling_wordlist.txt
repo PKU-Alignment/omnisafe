@@ -285,7 +285,6 @@ adaptively
 linearize
 det
 Zuxin
-Liu
 Zhepeng
 Vladislav
 Isenbaev
@@ -343,7 +342,6 @@ neurips
 boolean
 autoreset
 eg
-bools
 dtypes
 vectorized
 async
@@ -359,3 +357,5 @@ Yingbin
 Liang
 Guanghui
 Lan
+Racecar
+Sigwalls

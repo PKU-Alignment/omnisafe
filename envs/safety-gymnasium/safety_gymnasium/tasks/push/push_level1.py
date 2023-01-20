@@ -19,7 +19,7 @@ from safety_gymnasium.tasks.push.push_level0 import PushLevel0
 
 
 class PushLevel1(PushLevel0):
-    """A robot must push a box to a goal while avoiding hazards.
+    """A agent must push a box to a goal while avoiding hazards.
 
     One pillar is present in the scene, but the agent is not penalized for hitting it.
     """
@@ -27,18 +27,6 @@ class PushLevel1(PushLevel0):
     def __init__(self, config):
         super().__init__(config=config)
 
-        self.placements_extents = [-1.5, -1.5, 1.5, 1.5]
+        self.placements_conf.extents = [-1.5, -1.5, 1.5, 1.5]
 
-        self.add_geoms(Hazards(num=2, size=0.3), Pillars(num=1, is_constrained=False))
-
-    @property
-    def pillars_pos(self):
-        """Helper to get list of pillar positions."""
-        # pylint: disable-next=no-member
-        return [self.data.body(f'pillar{i}').xpos.copy() for i in range(self.pillars.num)]
-
-    @property
-    def hazards_pos(self):
-        """Helper to get the hazards positions from layout."""
-        # pylint: disable-next=no-member
-        return [self.data.body(f'hazard{i}').xpos.copy() for i in range(self.hazards.num)]
+        self._add_geoms(Hazards(num=2, size=0.3), Pillars(num=1, is_constrained=False))

@@ -19,16 +19,15 @@ from safety_gymnasium.bases.base_task import BaseTask
 
 
 class GoalLevel0(BaseTask):
-    """A robot must navigate to a goal."""
+    """A agent must navigate to a goal."""
 
     def __init__(self, config):
         super().__init__(config=config)
 
-        self.placements_extents = [-1, -1, 1, 1]
+        self.placements_conf.extents = [-1, -1, 1, 1]
 
-        self.add_geoms(Goal(keepout=0.305))
+        self._add_geoms(Goal(keepout=0.305))
 
-        self.specific_agent_config()
         self.last_dist_goal = None
 
     def calculate_reward(self):
@@ -44,22 +43,16 @@ class GoalLevel0(BaseTask):
 
         return reward
 
-    def specific_agent_config(self):
-        pass
-
     def specific_reset(self):
         pass
 
     def specific_step(self):
         pass
 
-    def build_goal(self):
+    def update_world(self):
         """Build a new goal position, maybe with resampling due to hazards."""
         self.build_goal_position()
         self.last_dist_goal = self.dist_goal()
-
-    def update_world(self):
-        pass
 
     @property
     def goal_achieved(self):
@@ -70,4 +63,4 @@ class GoalLevel0(BaseTask):
     @property
     def goal_pos(self):
         """Helper to get goal position from layout."""
-        return [self.data.body('goal').xpos.copy()]
+        return self.goal.pos  # pylint: disable=no-member

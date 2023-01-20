@@ -1,7 +1,7 @@
 print-%  : ; @echo $* = $($*)
 PROJECT_NAME   = omnisafe
 COPYRIGHT      = "OmniSafe Team. All Rights Reserved."
-PROJECT_PATH   = $(PROJECT_NAME)
+PROJECT_PATH   = $(PROJECT_NAME) envs/safety-gymnasium/safety_gymnasium
 SHELL          = /bin/bash
 SOURCE_FOLDERS = $(PROJECT_PATH) envs examples tests docs
 PYTHON_FILES   = $(shell find $(SOURCE_FOLDERS) -type f -name "*.py" -o -name "*.pyi")

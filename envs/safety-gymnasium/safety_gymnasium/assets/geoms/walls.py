@@ -19,10 +19,11 @@ from dataclasses import dataclass, field
 import numpy as np
 from safety_gymnasium.assets.color import COLOR
 from safety_gymnasium.assets.group import GROUP
+from safety_gymnasium.bases.base_obstacle import Geoms
 
 
 @dataclass
-class Walls:  # pylint: disable=too-many-instance-attributes
+class Walls(Geoms):  # pylint: disable=too-many-instance-attributes
     """Walls - barriers in the environment not associated with any constraint.
 
     # NOTE: this is probably best to be auto-generated than manually specified.
@@ -36,5 +37,12 @@ class Walls:  # pylint: disable=too-many-instance-attributes
 
     color: np.array = COLOR['wall']
     group: np.array = GROUP['wall']
-    is_observe_lidar: bool = True
+    is_lidar_observed: bool = True
     is_constrained: bool = False
+
+    def get_config(self, xy_pos, rot):
+        """To facilitate get specific config for this object."""
+
+    @property
+    def pos(self):
+        """Helper to get list of Sigwalls positions."""
