@@ -93,7 +93,6 @@ class Gremlins(Mocaps):  # pylint: disable=too-many-instance-attributes
     def move(self):
         """Set mocap object positions before a physics step is executed."""
         phase = float(self.engine.data.time)
-        # pylint: disable=no-member
         for i in range(self.num):
             name = f'gremlin{i}'
             target = np.array([np.sin(phase), np.cos(phase)]) * self.travel

@@ -200,9 +200,7 @@ class BaseAgent(abc.ABC):  # pylint: disable=too-many-instance-attributes
         # Set action
         action_range = self.engine.model.actuator_ctrlrange
 
-        self.engine.data.ctrl[:] = np.clip(
-            action, action_range[:, 0], action_range[:, 1]
-        )  # np.clip(action * 2 / action_scale, -1, 1)
+        self.engine.data.ctrl[:] = np.clip(action, action_range[:, 0], action_range[:, 1])
 
         if noise:
             self.engine.data.ctrl[:] += noise

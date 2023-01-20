@@ -47,7 +47,6 @@ class Point(BaseAgent):
 
     def debug(self):
         """Apply action which inputted from keyboard."""
-
         action = np.array([0, 0])
         for key in self.debug_info.keys:
             if key == glfw.KEY_I:

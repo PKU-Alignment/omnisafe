@@ -61,7 +61,6 @@ class PushBox(Objects):  # pylint: disable=too-many-instance-attributes
     def _specific_agent_config(self):
         """Modify the push_box property according to specific agent."""
         if self.agent.__class__.__name__ == 'Car':
-            # pylint: disable=no-member
             self.size = 0.125  # Box half-radius size
             self.keepout = 0.125  # Box keepout radius for placement
             self.density = 0.0005
