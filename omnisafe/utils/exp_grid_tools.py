@@ -14,36 +14,32 @@
 # ==============================================================================
 """tools for experiment grid"""
 
-import os
-
-import numpy as np
-import torch
-import yaml
 import string
 
 
 def all_bools(vals):
-    return all([isinstance(v, bool) for v in vals])
+    """check if all values are bools"""
+    return all(isinstance(v, bool) for v in vals)
 
 
-def valid_str(v):
+def valid_str(vals):
     """
-    Convert a value or values to a string which could go in a filepath.
+    Convert a value or values to a string which could go in a path of file.
 
     Partly based on `this gist`_.
 
     .. _`this gist`: https://gist.github.com/seanh/93666
 
     """
-    if hasattr(v, '__name__'):
-        return valid_str(v.__name__)
+    if hasattr(vals, '__name__'):
+        return valid_str(vals.__name__)
 
-    if isinstance(v, tuple) or isinstance(v, list):
-        return '-'.join([valid_str(x) for x in v])
+    if isinstance(vals, (list, tuple)):
+        return '-'.join([valid_str(x) for x in vals])
 
     # Valid characters are '-', '_', and alphanumeric. Replace invalid chars
     # with '-'.
-    str_v = str(v).lower()
-    valid_chars = "-_%s%s" % (string.ascii_letters, string.digits)
+    str_v = str(vals).lower()
+    valid_chars = f'-_{string.ascii_letters}{string.digits}'
     str_v = ''.join(c if c in valid_chars else '-' for c in str_v)
     return str_v
