@@ -72,7 +72,11 @@ class Sigwalls(Geoms):  # pylint: disable=too-many-instance-attributes
             'rgba': self.color * [1, 1, 1, 0.1],
         }
         if self.index >= 2:
-            geom.update({'rot': np.pi / 2})
+            geom.update(
+                {
+                    'rot': np.pi / 2,
+                }
+            )
         self.index_tick()
         return geom
 

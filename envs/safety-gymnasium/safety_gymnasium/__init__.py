@@ -24,7 +24,7 @@ from safety_gymnasium.version import __version__
 __all__ = ['register', 'make', 'vector']
 
 VERSION = 'v0'
-ROBOT_NAMES = ('Point', 'Car', 'Racecar')
+ROBOT_NAMES = ('Point', 'Car', 'Racecar', 'Ant')
 MAKE_VISION_ENVIRONMENTS = True
 
 # ========================================#

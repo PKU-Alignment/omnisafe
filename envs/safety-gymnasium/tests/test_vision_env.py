@@ -20,7 +20,7 @@ import helpers
 
 
 @helpers.parametrize(
-    agent_id=['Point', 'Car', 'Racecar'], env_id=['Goal', 'Push', 'Button'], level=['0', '1', '2']
+    agent_id=['Point', 'Car', 'Racecar', 'Ant'], env_id=['Goal', 'Push', 'Button'], level=['0', '1', '2']
 )
 # pylint: disable-next=too-many-locals
 def test_vision_env(agent_id, env_id, level):
@@ -51,7 +51,7 @@ def test_vision_env(agent_id, env_id, level):
 
 
 @helpers.parametrize(
-    agent_id=['Point', 'Car', 'Racecar'],
+    agent_id=['Point', 'Car', 'Racecar', 'Ant'],
     env_id=['Run'],
     level=['0'],
 )
