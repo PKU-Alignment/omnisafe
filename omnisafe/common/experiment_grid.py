@@ -308,7 +308,7 @@ class ExperimentGrid:
         variants = self.variants()
 
         # Print variant names for the user.
-        var_names = {[self.variant_name(var) for var in variants]}
+        var_names = set([self.variant_name(var) for var in variants])
         var_names = sorted(list(var_names))
         line = '=' * self.div_line_width
         preparing = colorize(
