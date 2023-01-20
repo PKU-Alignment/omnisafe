@@ -35,6 +35,7 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
   - [Safety Gymnasium](#safety-gymnasium)
   - [Vision-base Safe RL](#vision-base-safe-rl)
   - [Environment Usage](#environment-usage)
+  - [Add new environments](#add-new-environments)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Install from source](#install-from-source)
@@ -158,8 +159,6 @@ For the appetizer, the images are as follows
   <img src="./images/vision_input.png" width="100%"/>
 </div>
 
-
-
 ### Environment Usage
 
 **Notes:** We support new [**Gymnasium APIs**](https://github.com/Farama-Foundation/Gymnasium).
@@ -179,14 +178,16 @@ while not terminated:
     env.render()
 ```
 
-### Design environments by yourself
+### Add new environments
 
-We construct a highly expandable framework of code so that you can easily comprehend it and design your own environments to facilitate your research with no more than 100 lines of code on average.
+We construct a highly expandable framework of code.
+You can easily comprehend it and design your own environments to facilitate your research with no more than 100 lines of code on average.
 
 Here is a minimal example:
+
 ```python
-# import the objects you want to use
-# or you can define specific objects by yourself, just make sure obeying our specification
+# import the objects you need
+# or you can define specific objects, just make sure obeying our specification
 from safety_gymnasium.assets.geoms import Apples
 from safety_gymnasium.bases import BaseTask
 

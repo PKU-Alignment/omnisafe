@@ -39,10 +39,10 @@
   </asset>
   <worldbody>
     <geom name="floor" size="5 5 0.1" type="plane" condim="6"/>
-    <body name="robot" pos="0 0 0.05">
-        <joint type="free" name="robot" damping="0"/>
+    <body name="agent" pos="0 0 0.05">
+        <joint type="free" name="agent" damping="0"/>
         <camera name="vision" pos="0.20 0 0.05" euler="1.57 -1.57 0"/>
-        <site name="robot" pos="0.02 0 0"/>
+        <site name="agent" pos="0.02 0 0"/>
         <body name="pos_change" pos="-0.16 0 0">
             <body name="car_body">
                 <geom type="mesh" contype="0" conaffinity="0" density="0" rgba="0.8 0 0 1" mesh="chassis_differential"/>
@@ -158,14 +158,14 @@
   </actuator>
     <sensor>
         <!-- Used for observation -->
-        <accelerometer site="robot" name="accelerometer"/>
-        <velocimeter site="robot" name="velocimeter"/>
-        <gyro site="robot" name="gyro"/>
-        <magnetometer site="robot" name="magnetometer"/>
+        <accelerometer site="agent" name="accelerometer"/>
+        <velocimeter site="agent" name="velocimeter"/>
+        <gyro site="agent" name="gyro"/>
+        <magnetometer site="agent" name="magnetometer"/>
 
         <!-- Used for intrinsic constraints -->
-        <subtreecom body="robot" name="subtreecom"/>
-        <subtreelinvel body="robot" name="subtreelinvel"/>
-        <subtreeangmom body="robot" name="subtreeangmom"/>
+        <subtreecom body="agent" name="subtreecom"/>
+        <subtreelinvel body="agent" name="subtreelinvel"/>
+        <subtreeangmom body="agent" name="subtreeangmom"/>
     </sensor>
 </mujoco>
