@@ -20,7 +20,7 @@ import helpers
 
 
 @helpers.parametrize(
-    agent_id=['Point', 'Car', 'Racecar'],
+    agent_id=['Point', 'Car', 'Racecar', 'Ant'],
     env_id=['Goal', 'Push', 'Button', 'Circle'],
     level=['0', '1', '2'],
     render_mode=['rgb_array', 'depth_array'],
@@ -56,7 +56,7 @@ def test_env(agent_id, env_id, level, render_mode):
 
 
 @helpers.parametrize(
-    agent_id=['Point', 'Car', 'Racecar'],
+    agent_id=['Point', 'Car', 'Racecar', 'Ant'],
     env_id=['Run'],
     level=['0'],
     render_mode=['rgb_array', 'depth_array'],
