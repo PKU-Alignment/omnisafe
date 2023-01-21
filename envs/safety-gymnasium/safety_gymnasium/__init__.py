@@ -24,59 +24,27 @@ from safety_gymnasium.version import __version__
 __all__ = ['register', 'make', 'vector']
 
 VERSION = 'v0'
-
-ROBOT_NAMES = ('Point', 'Car', 'Racecar')
-ROBOT_XMLS = {name: f'assets/xmls/{name.lower()}.xml' for name in ROBOT_NAMES}
-BASE_SENSORS = ['accelerometer', 'velocimeter', 'gyro', 'magnetometer']
-EXTRA_SENSORS = {
-    'Doggo': [
-        'touch_ankle_1a',
-        'touch_ankle_2a',
-        'touch_ankle_3a',
-        'touch_ankle_4a',
-        'touch_ankle_1b',
-        'touch_ankle_2b',
-        'touch_ankle_3b',
-        'touch_ankle_4b',
-    ],
-}
-ROBOT_OVERRIDES = {
-    'Car': {
-        'box_size': 0.125,  # Box half-radius size
-        'box_keepout': 0.125,  # Box keepout radius for placement
-        'box_density': 0.0005,
-    },
-}
-
+ROBOT_NAMES = ('Point', 'Car', 'Racecar', 'Ant')
 MAKE_VISION_ENVIRONMENTS = True
 
 # ========================================#
-# Helper Class for Easy Gym Registration  #
+#   Helper Class for Easy Registration    #
 # ========================================#
 
 """Base used to allow for convenient hierarchies of environments"""
 PREFIX = 'Safety'
-robot_configs = {}
 
-for name in ROBOT_NAMES:
-    config = {}
-    config['robot_base'] = ROBOT_XMLS[name]
-    config['sensors_obs'] = BASE_SENSORS
-    if name in EXTRA_SENSORS:
-        config['sensors_obs'] = BASE_SENSORS + EXTRA_SENSORS[name]
-    if name in ROBOT_OVERRIDES:
-        config.update(ROBOT_OVERRIDES[name])
-    robot_configs[name] = config
+robots = ROBOT_NAMES
 
 
 def combine(tasks, agents, max_episode_steps):
     """Combine tasks and agents together to register environment tasks."""
     for task_name, task_config in tasks.items():
-        for robot_name, robot_config in agents.items():
+        for robot_name in agents:
             # Default
             env_name = f'{PREFIX}{robot_name}{task_name}-{VERSION}'
             combined_config = deepcopy(task_config)
-            combined_config.update(robot_config)
+            combined_config.update({'agent_name': robot_name})
 
             register(
                 id=env_name,
@@ -91,14 +59,13 @@ def combine(tasks, agents, max_episode_steps):
                 vision_config = {
                     'observe_vision': True,
                     'observation_flatten': False,
-                    'vision_render': True,
                 }
-                combined_config = deepcopy(combined_config)
-                combined_config.update(vision_config)
+                vision_config = deepcopy(combined_config)
+                vision_config.update(vision_config)
                 register(
                     id=vision_env_name,
                     entry_point='safety_gymnasium.builder:Builder',
-                    kwargs={'config': combined_config, 'task_id': env_name},
+                    kwargs={'config': vision_config, 'task_id': env_name},
                     max_episode_steps=max_episode_steps,
                 )
 
@@ -110,7 +77,7 @@ def combine(tasks, agents, max_episode_steps):
 # #=============================================================================#
 
 button_tasks = {'Button0': {}, 'Button1': {}, 'Button2': {}}
-combine(button_tasks, robot_configs, max_episode_steps=1000)
+combine(button_tasks, robots, max_episode_steps=1000)
 
 
 # =============================================================================#
@@ -120,7 +87,7 @@ combine(button_tasks, robot_configs, max_episode_steps=1000)
 # =============================================================================#
 
 push_tasks = {'Push0': {}, 'Push1': {}, 'Push2': {}}
-combine(push_tasks, robot_configs, max_episode_steps=1000)
+combine(push_tasks, robots, max_episode_steps=1000)
 
 
 # =============================================================================#
@@ -130,7 +97,7 @@ combine(push_tasks, robot_configs, max_episode_steps=1000)
 # =============================================================================#
 
 goal_tasks = {'Goal0': {}, 'Goal1': {}, 'Goal2': {}}
-combine(goal_tasks, robot_configs, max_episode_steps=1000)
+combine(goal_tasks, robots, max_episode_steps=1000)
 
 
 # =============================================================================#
@@ -140,7 +107,7 @@ combine(goal_tasks, robot_configs, max_episode_steps=1000)
 # =============================================================================#
 
 circle_tasks = {'Circle0': {}, 'Circle1': {}, 'Circle2': {}}
-combine(circle_tasks, robot_configs, max_episode_steps=500)
+combine(circle_tasks, robots, max_episode_steps=500)
 
 
 # =============================================================================#
@@ -150,8 +117,7 @@ combine(circle_tasks, robot_configs, max_episode_steps=500)
 # =============================================================================#
 
 run_tasks = {'Run0': {}}
-combine(run_tasks, robot_configs, max_episode_steps=500)
-
+combine(run_tasks, robots, max_episode_steps=500)
 
 # Safety Velocity
 # ----------------------------------------
@@ -188,6 +154,7 @@ register(
     max_episode_steps=1000,
     reward_threshold=6000.0,
 )
+
 register(
     id='SafetyHumanoidVelocity-v4',
     entry_point='safety_gymnasium.tasks.safety_velocity.safety_humanoid_velocity:SafetyHumanoidVelocityEnv',

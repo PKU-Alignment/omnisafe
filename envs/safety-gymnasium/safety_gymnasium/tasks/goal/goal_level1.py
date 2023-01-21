@@ -20,7 +20,7 @@ from safety_gymnasium.tasks.goal.goal_level0 import GoalLevel0
 
 
 class GoalLevel1(GoalLevel0):
-    """A robot must navigate to a goal while avoiding hazards.
+    """A agent must navigate to a goal while avoiding hazards.
 
     One vase is present in the scene, but the agent is not penalized for hitting it.
     """
@@ -28,19 +28,7 @@ class GoalLevel1(GoalLevel0):
     def __init__(self, config):
         super().__init__(config=config)
 
-        self.placements_extents = [-1.5, -1.5, 1.5, 1.5]
+        self.placements_conf.extents = [-1.5, -1.5, 1.5, 1.5]
 
-        self.add_geoms(Hazards(num=8, keepout=0.18))
-        self.add_objects(Vases(num=1, is_constrained=False))
-
-    @property
-    def hazards_pos(self):
-        """Helper to get the hazards positions from layout."""
-        # pylint: disable-next=no-member
-        return [self.data.body(f'hazard{i}').xpos.copy() for i in range(self.hazards.num)]
-
-    @property
-    def vases_pos(self):
-        """Helper to get the list of vase positions."""
-        # pylint: disable-next=no-member
-        return [self.data.body(f'vase{p}').xpos.copy() for p in range(self.vases.num)]
+        self._add_geoms(Hazards(num=8, keepout=0.18))
+        self._add_objects(Vases(num=1, is_constrained=False))

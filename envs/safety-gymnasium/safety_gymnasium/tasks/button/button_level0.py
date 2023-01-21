@@ -14,31 +14,25 @@
 # ==============================================================================
 """Button task 0."""
 
-from collections import OrderedDict
-
-import gymnasium
 import mujoco
 import numpy as np
-from safety_gymnasium.assets.geoms import Buttons
-from safety_gymnasium.assets.group import GROUP
+from safety_gymnasium.assets.geoms import Buttons, Goal
 from safety_gymnasium.bases.base_task import BaseTask
 
 
 # pylint: disable-next=too-many-instance-attributes
 class ButtonLevel0(BaseTask):
-    """A robot must press a goal button."""
+    """A agent must press a goal button."""
 
     def __init__(self, config):
         super().__init__(config=config)
 
-        self.placements_extents = [-1, -1, 1, 1]
+        self.placements_conf.extents = [-1, -1, 1, 1]
 
-        self.add_geoms(Buttons(num=4, is_constrained=False))
+        self._add_geoms(Buttons(num=4, is_constrained=False))
+        self._add_geoms(Goal(size=self.buttons.size * 2, alpha=0.1))  # pylint: disable=no-member
 
-        self.specific_agent_config()
         self.last_dist_goal = None
-        self.buttons_timer = None
-        self.goal_button = None
 
     def calculate_reward(self):
         """Determine reward depending on the agent and tasks."""
@@ -53,126 +47,63 @@ class ButtonLevel0(BaseTask):
 
         return reward
 
-    def specific_agent_config(self):
-        pass
-
     def specific_reset(self):
         """Reset the buttons timer."""
-        self.buttons_timer = 0
+        self.buttons.timer = 0  # pylint: disable=no-member
 
     def specific_step(self):
         """Clock the buttons timer."""
-        self.buttons_timer_tick()
+        self.buttons.timer_tick()  # pylint: disable=no-member
 
-    def build_goal(self):
+    def update_world(self):
         """Build a new goal position, maybe with resampling due to hazards."""
         # pylint: disable-next=no-member
         assert self.buttons.num > 0, 'Must have at least one button.'
         self.build_goal_button()
         self.last_dist_goal = self.dist_goal()
-        self.buttons_timer = self.buttons.resampling_delay  # pylint: disable=no-member
+        self.buttons.reset_timer()  # pylint: disable=no-member
 
     def build_goal_button(self):
         """Pick a new goal button, maybe with resampling due to hazards."""
         # pylint: disable-next=no-member
-        self.goal_button = self.random_generator.choice(self.buttons.num)
-
-    def update_world(self):
-        pass
+        self.buttons.goal_button = self.random_generator.choice(self.buttons.num)
+        new_goal_pos = self.buttons.pos[self.buttons.goal_button]  # pylint: disable=no-member
+        self.world_info.world_config_dict['geoms']['goal']['pos'][:2] = new_goal_pos[:2]
+        self._set_goal(new_goal_pos[:2])
+        mujoco.mj_forward(self.model, self.data)  # pylint: disable=no-member
 
     def obs(self):
         """Return the observation of our agent."""
         # pylint: disable-next=no-member
-        mujoco.mj_forward(self.model, self.data)  # Needed to get sensor data correct
+        mujoco.mj_forward(self.model, self.data)  # Needed to get sensor's data correct
         obs = {}
 
-        obs.update(self.obs_sensor())
+        obs.update(self.agent.obs_sensor())
 
-        for geom in self._geoms.values():
-            name = geom.name + '_' + 'lidar'
-            if geom.name == 'buttons':
-                # Buttons observation is zero while buttons are resetting
-                if self.buttons_timer == 0:
-                    obs['buttons_lidar'] = self.obs_lidar(self.buttons_pos, geom.group)
-                else:
-                    obs['buttons_lidar'] = np.zeros(self.lidar_num_bins)
-            else:
-                obs[name] = self.obs_lidar(getattr(self, geom.name + '_pos'), geom.group)
-        for obj in self._objects.values():
-            name = obj.name + '_' + 'lidar'
-            obs[name] = self.obs_lidar(getattr(self, obj.name + '_pos'), obj.group)
-        for mocap in self._mocaps.values():
-            name = mocap.name + '_' + 'lidar'
-            obs[name] = self.obs_lidar(getattr(self, mocap.name + '_pos'), mocap.group)
+        for obstacle in self._obstacles:
+            if obstacle.is_lidar_observed:
+                obs[obstacle.name + '_lidar'] = self._obs_lidar(obstacle.pos, obstacle.group)
+            if hasattr(obstacle, 'is_comp_observed') and obstacle.is_comp_observed:
+                obs[obstacle.name + '_comp'] = self._obs_compass(obstacle.pos)
 
-        if 'buttons' in self._geoms:
-            obs['goal_lidar'] = self.obs_lidar(self.goal_pos, GROUP['goal'])
+        if self.buttons.timer != 0:  # pylint: disable=no-member
+            obs['buttons_lidar'] = np.zeros(self.lidar_conf.num_bins)
 
         if self.observe_vision:
-            obs['vision'] = self.obs_vision()
+            obs['vision'] = self._obs_vision()
         if self.observation_flatten:
-            flat_obs = np.zeros(self.obs_flat_size)
+            flat_obs = np.zeros(self.obs_info.obs_flat_size)
             offset = 0
-            for k in sorted(self.obs_space_dict.keys()):
+            for k in sorted(self.obs_info.obs_space_dict.keys()):
                 k_size = np.prod(obs[k].shape)
                 flat_obs[offset : offset + k_size] = obs[k].flat
                 offset += k_size
             obs = flat_obs
             assert self.observation_space.contains(obs), f'Bad obs {obs} {self.observation_space}'
             assert (
-                offset == self.obs_flat_size
+                offset == self.obs_info.obs_flat_size
             ), 'Obs from mujoco do not match env pre-specifed lenth.'
         return obs
-
-    def build_observation_space(self):
-        """Construct observation space.  Happens only once at during __init__ in Builder."""
-        obs_space_dict = OrderedDict()  # See self.obs()
-
-        obs_space_dict.update(self.build_sensor_observation_space())
-
-        for geom in self._geoms.values():
-            name = geom.name + '_' + 'lidar'
-            obs_space_dict[name] = gymnasium.spaces.Box(
-                0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
-            )
-        for obj in self._objects.values():
-            name = obj.name + '_' + 'lidar'
-            obs_space_dict[name] = gymnasium.spaces.Box(
-                0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
-            )
-        for mocap in self._mocaps.values():
-            name = mocap.name + '_' + 'lidar'
-            obs_space_dict[name] = gymnasium.spaces.Box(
-                0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
-            )
-
-        if 'buttons' in self._geoms:
-            obs_space_dict['goal_lidar'] = gymnasium.spaces.Box(
-                0.0, 1.0, (self.lidar_num_bins,), dtype=np.float64
-            )
-
-        if self.observe_vision:
-            width, height = self.vision_size
-            rows, cols = height, width
-            self.vision_size = (rows, cols)
-            obs_space_dict['vision'] = gymnasium.spaces.Box(
-                0, 255, self.vision_size + (3,), dtype=np.uint8
-            )
-
-        # Flatten it ourselves
-        self.obs_space_dict = obs_space_dict
-        if self.observation_flatten:
-            self.obs_flat_size = sum(np.prod(i.shape) for i in self.obs_space_dict.values())
-            self.observation_space = gymnasium.spaces.Box(
-                -np.inf, np.inf, (self.obs_flat_size,), dtype=np.float64
-            )
-        else:
-            self.observation_space = gymnasium.spaces.Dict(obs_space_dict)
-
-    def buttons_timer_tick(self):
-        """Tick the buttons resampling timer."""
-        #  Button timer (used to delay button resampling)
-        self.buttons_timer = max(0, self.buttons_timer - 1)
 
     @property
     def goal_achieved(self):
@@ -180,18 +111,13 @@ class ButtonLevel0(BaseTask):
         for contact in self.data.contact[: self.data.ncon]:
             geom_ids = [contact.geom1, contact.geom2]
             geom_names = sorted([self.model.geom(g).name for g in geom_ids])
-            if any(n == f'button{self.goal_button}' for n in geom_names):
-                if any(n in self.robot.geom_names for n in geom_names):
+            # pylint: disable-next=no-member
+            if any(n == f'button{self.buttons.goal_button}' for n in geom_names):
+                if any(n in self.agent.body_info.geom_names for n in geom_names):
                     return True
         return False
 
     @property
     def goal_pos(self):
         """Helper to get goal position from layout."""
-        return [self.data.body(f'button{self.goal_button}').xpos.copy()]
-
-    @property
-    def buttons_pos(self):
-        """Helper to get the list of button positions."""
-        # pylint: disable-next=no-member
-        return [self.data.body(f'button{i}').xpos.copy() for i in range(self.buttons.num)]
+        return self.goal.pos  # pylint: disable=no-member

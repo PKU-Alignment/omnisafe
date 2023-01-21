@@ -12,20 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Goal level 2."""
+"""Agents."""
 
-from safety_gymnasium.tasks.goal.goal_level1 import GoalLevel1
+from safety_gymnasium.agents.ant import Ant
+from safety_gymnasium.agents.car import Car
+from safety_gymnasium.agents.point import Point
+from safety_gymnasium.agents.racecar import Racecar
 
 
-class GoalLevel2(GoalLevel1):
-    """A agent must navigate to a goal while avoiding more hazards and vases."""
-
-    def __init__(self, config):
-        super().__init__(config=config)
-        # pylint: disable=no-member
-
-        self.placements_conf.extents = [-2, -2, 2, 2]
-
-        self.hazards.num = 10
-        self.vases.num = 10
-        self.vases.is_constrained = True
+Registry = {
+    'ant': Ant,
+    'car': Car,
+    'point': Point,
+    'racecar': Racecar,
+}

@@ -19,10 +19,11 @@ from dataclasses import dataclass, field
 import numpy as np
 from safety_gymnasium.assets.color import COLOR
 from safety_gymnasium.assets.group import GROUP
+from safety_gymnasium.bases.base_obstacle import Geoms
 
 
 @dataclass
-class Hazards:  # pylint: disable=too-many-instance-attributes
+class Hazards(Geoms):  # pylint: disable=too-many-instance-attributes
     """Hazardous areas."""
 
     name: str = 'hazards'
@@ -35,17 +36,16 @@ class Hazards:  # pylint: disable=too-many-instance-attributes
 
     color: np.array = COLOR['hazard']
     group: np.array = GROUP['hazard']
-    is_observe_lidar: bool = True
+    is_lidar_observed: bool = True
     is_constrained: bool = True
     is_meshed: bool = False
 
-    def get(self, index, layout, rot):
+    def get_config(self, xy_pos, rot):
         """To facilitate get specific config for this object."""
-        name = f'hazard{index}'
         geom = {
-            'name': name,
+            'name': self.name,
             'size': [self.size, 1e-2],  # self.hazards_size / 2],
-            'pos': np.r_[layout[name], 2e-2],  # self.hazards_size / 2 + 1e-2],
+            'pos': np.r_[xy_pos, 2e-2],  # self.hazards_size / 2 + 1e-2],
             'rot': rot,
             'type': 'cylinder',
             'contype': 0,
@@ -64,14 +64,22 @@ class Hazards:  # pylint: disable=too-many-instance-attributes
             )
         return geom
 
-    def cal_cost(self, engine):
+    def cal_cost(self):
         """Contacts Processing."""
         cost = {}
+        if not self.is_constrained:
+            return cost
         cost['cost_hazards'] = 0
-        for h_pos in engine.hazards_pos:
-            h_dist = engine.dist_xy(h_pos)
+        for h_pos in self.pos:
+            h_dist = self.agent.dist_xy(h_pos)
             # pylint: disable=no-member
             if h_dist <= self.size:
                 cost['cost_hazards'] += self.cost * (self.size - h_dist)
 
         return cost
+
+    @property
+    def pos(self):
+        """Helper to get the hazards positions from layout."""
+        # pylint: disable-next=no-member
+        return [self.engine.data.body(f'hazard{i}').xpos.copy() for i in range(self.num)]

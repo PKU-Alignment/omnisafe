@@ -21,17 +21,16 @@ from safety_gymnasium.bases.base_task import BaseTask
 
 
 class PushLevel0(BaseTask):
-    """A robot must push a box to a goal."""
+    """A agent must push a box to a goal."""
 
     def __init__(self, config):
         super().__init__(config=config)
 
-        self.placements_extents = [-1, -1, 1, 1]
+        self.placements_conf.extents = [-1, -1, 1, 1]
 
-        self.add_geoms(Goal())
-        self.add_objects(PushBox())
+        self._add_geoms(Goal())
+        self._add_objects(PushBox(null_dist=0))
 
-        self.specific_agent_config()
         self.last_dist_box = None
         self.last_box_goal = None
         self.last_dist_goal = None
@@ -40,7 +39,7 @@ class PushLevel0(BaseTask):
         """Determine reward depending on the agent and tasks."""
         reward = 0.0
 
-        # Distance from robot to box
+        # Distance from agent to box
         dist_box = self.dist_box()
         # pylint: disable-next=no-member
         gate_dist_box_reward = self.last_dist_box > self.push_box.null_dist * self.push_box.size
@@ -63,36 +62,28 @@ class PushLevel0(BaseTask):
 
         return reward
 
-    def specific_agent_config(self):
-        if self.robot.base.split('/')[1].split('.')[0] == 'car':
-            # pylint: disable=no-member
-            self.push_box.size = 0.125  # Box half-radius size
-            self.push_box.keepout = 0.125  # Box keepout radius for placement
-            self.push_box.density = 0.0005
-
     def specific_reset(self):
         pass
 
     def specific_step(self):
         pass
 
-    def build_goal(self):
+    def update_world(self):
         """Build a new goal position, maybe with resampling due to hazards."""
         self.build_goal_position()
         self.last_dist_goal = self.dist_goal()
         self.last_dist_box = self.dist_box()
         self.last_box_goal = self.dist_box_goal()
 
-    def update_world(self):
-        pass
-
     def dist_box(self):
-        """Return the distance. from the robot to the box (in XY plane only)"""
-        return np.sqrt(np.sum(np.square(self.push_box_pos[0] - self.world.robot_pos())))
+        """Return the distance. from the agent to the box (in XY plane only)"""
+        # pylint: disable-next=no-member
+        return np.sqrt(np.sum(np.square(self.push_box.pos - self.agent.pos)))
 
     def dist_box_goal(self):
         """Return the distance from the box to the goal XY position."""
-        return np.sqrt(np.sum(np.square(self.push_box_pos[0] - self.goal_pos[0])))
+        # pylint: disable-next=no-member
+        return np.sqrt(np.sum(np.square(self.push_box.pos - self.goal_pos)))
 
     @property
     def goal_achieved(self):
@@ -103,9 +94,4 @@ class PushLevel0(BaseTask):
     @property
     def goal_pos(self):
         """Helper to get goal position from layout."""
-        return [self.data.body('goal').xpos.copy()]
-
-    @property
-    def push_box_pos(self):
-        """Helper to get the box position."""
-        return [self.data.body('push_box').xpos.copy()]
+        return self.goal.pos  # pylint: disable=no-member
