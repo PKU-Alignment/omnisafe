@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""tools for experiment grid"""
+"""Tools for Experiment Grid."""
 
 import string
 
@@ -23,8 +23,7 @@ def all_bools(vals):
 
 
 def valid_str(vals):
-    """
-    Convert a value or values to a string which could go in a path of file.
+    r"""Convert a value or values to a string which could go in a path of file.
 
     Partly based on `this gist`_.
 

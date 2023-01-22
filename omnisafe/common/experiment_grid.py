@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""experiment grid"""
+"""Implementation of the Experiment Grid."""
 
 import os
 import string
@@ -29,9 +29,7 @@ from omnisafe.utils.logger_utils import colorize, convert_json
 
 # pylint: disable-next=too-many-instance-attributes
 class ExperimentGrid:
-    """
-    Tool for running many experiments given hyperparameter ranges.
-    """
+    """Tool for running many experiments given hyperparameter ranges."""
 
     def __init__(self, exp_name=''):
         self.keys = []
@@ -48,7 +46,7 @@ class ExperimentGrid:
         # Tells the GridSearch how many seconds to pause for before launching experiments
         self.wait_defore_launch = 0
 
-        # Whether to automatically insert a date and time stamp into the names of save directories:
+        # Whether to automatically insert a date and time stamp into the names of save directories
         self.foce_datastamp = False
 
     def print(self):
@@ -90,7 +88,7 @@ class ExperimentGrid:
         print('=' * self.div_line_width)
 
     def _default_shorthand(self, key):
-        """default shorthand
+        r"""Default shorthand.
         Create a default shorthand for the key, built from the first
         three letters of each colon-separated part.
         But if the first three letters contains something which isn't
@@ -106,8 +104,7 @@ class ExperimentGrid:
         return shorthand
 
     def add(self, key, vals, shorthand=None, in_name=False):
-        """
-        Add a parameter (key) to the grid config, with potential values (vals).
+        r"""Add a parameter (key) to the grid config, with potential values (vals).
 
         By default, if a shorthand isn't given, one is automatically generated
         from the key using the first three letters of each colon-separated
@@ -138,8 +135,7 @@ class ExperimentGrid:
         self.in_names.append(in_name)
 
     def variant_name(self, variant):
-        """
-        Given a variant (dict of valid param/value pairs), make an exp_name.
+        r"""Given a variant (dict of valid param/value pairs), make an exp_name.
 
         A variant's name is constructed as the grid name (if you've given it
         one), plus param names (or shorthands if available) and values
@@ -193,9 +189,7 @@ class ExperimentGrid:
         return var_name.lstrip('_')
 
     def _variants(self, keys, vals):
-        """
-        Recursively builds list of valid variants.
-        """
+        """Recursively builds list of valid variants."""
         if len(keys) == 1:
             pre_variants = [{}]
         else:
@@ -209,15 +203,13 @@ class ExperimentGrid:
                 v_temp[key_list[-1]] = val
                 for key in reversed(key_list[:-1]):
                     v_temp = {key: v_temp}
-                # v_temp[keys[0]] = val
                 v_temp.update(pre_v)
                 variants.append(v_temp)
 
         return variants
 
     def variants(self):
-        """
-        Makes a list of dict, where each dict is a valid config in the grid.
+        r"""Makes a list of dict, where each dict is a valid config in the grid.
 
         There is special handling for variant parameters whose names take
         the form
@@ -250,9 +242,7 @@ class ExperimentGrid:
         flat_variants = self._variants(self.keys, self.vals)
 
         def unflatten_var(var):
-            """
-            Build the full nested dict version of var, based on key names.
-            """
+            """Build the full nested dict version of var, based on key names."""
             new_var = {}
             unflatten_set = set()
 
@@ -286,8 +276,7 @@ class ExperimentGrid:
 
     # pylint: disable=too-many-locals
     def run(self, thunk, num_pool=1, data_dir=None):
-        """
-        Run each variant in the grid with function 'thunk'.
+        r"""Run each variant in the grid with function 'thunk'.
 
         Note: 'thunk' must be either a callable function, or a string. If it is
         a string, it must be the name of a parameter whose values are all
@@ -361,7 +350,6 @@ class ExperimentGrid:
         pool.shutdown()
 
         path = os.path.join('./', 'exp-x', self.name, 'exp-x-results.txt')
-        # str_len = max([len(exp_name) for exp_name in exp_names])
         str_len = max(len(exp_name) for exp_name in exp_names)
         exp_names = [exp_name.ljust(str_len) for exp_name in exp_names]
         with open(path, 'a+', encoding='utf-8') as f:
