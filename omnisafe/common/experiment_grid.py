@@ -29,7 +29,7 @@ from omnisafe.utils.logger_utils import colorize, convert_json
 
 # pylint: disable-next=too-many-instance-attributes
 class ExperimentGrid:
-    """Tool for running many experiments given hyperparameter ranges."""
+    """Tool for running many experiments given hyper-parameters ranges."""
 
     def __init__(self, exp_name=''):
         self.keys = []
@@ -274,7 +274,7 @@ class ExperimentGrid:
 
         return new_variants
 
-    # pylint: disable=too-many-locals
+    # pylint: disable-next=too-many-locals
     def run(self, thunk, num_pool=1, data_dir=None):
         r"""Run each variant in the grid with function 'thunk'.
 

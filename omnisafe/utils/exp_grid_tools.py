@@ -18,7 +18,7 @@ import string
 
 
 def all_bools(vals):
-    """check if all values are bools"""
+    """Check if all values are bools"""
     return all(isinstance(v, bool) for v in vals)
 
 
