@@ -48,5 +48,4 @@ if __name__ == '__main__':
     eg.add('actor_lr', [0.001, 0.003, 0.004], 'lr', True)
     eg.add('actor_iters', [1, 2], 'ac_iters', True)
     eg.add('seed', [0, 5, 10])
-    # eg.add('env_cfgs:num_envs', [2, 3])
-    eg.run(train, num_pool=5)
+    eg.run(train, num_pool=10)
