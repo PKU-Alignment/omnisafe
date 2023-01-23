@@ -20,7 +20,6 @@ from dataclasses import dataclass
 import numpy as np
 import safety_gymnasium
 import torch
-from safety_gymnasium.bases import BaseTask
 
 from omnisafe.common.base_buffer import BaseBuffer
 from omnisafe.common.logger import Logger
@@ -168,7 +167,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         self.record_queue = RecordQueue('ep_ret', 'ep_cost', 'ep_len', maxlen=self.cfgs.max_len)
         self.rollout_data.current_obs = CMDPWrapper.reset(self)[0]
 
-    def make(self, env_id, env_kwargs) -> BaseTask:
+    def make(self, env_id, env_kwargs):
         """Create environments"""
         if self.cfgs.num_envs == 1:
             self.env = safety_gymnasium.make(env_id, **env_kwargs)
