@@ -77,4 +77,4 @@ class OnCRPO(NaturalPG):
             self.rew_update += 1
             return adv
         self.cost_update += 1
-        return cost_adv
+        return -cost_adv

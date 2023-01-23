@@ -18,7 +18,7 @@ from typing import Dict, Tuple, TypeVar
 
 import numpy as np
 
-from omnisafe.utils.tools import expand_dims
+from omnisafe.utils.tools import as_tensor, expand_dims
 from omnisafe.wrappers.cmdp_wrapper import CMDPWrapper
 from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
@@ -54,7 +54,7 @@ class EarlyTerminatedWrapper(CMDPWrapper):
         Args:
             action (np.ndarray): action.
         """
-        next_obs, reward, cost, terminated, truncated, info = self.env.step(action.squeeze())
+        next_obs, reward, cost, terminated, truncated, info = self.env.step(action.cpu().squeeze())
         if self.cfgs.num_envs == 1:
             next_obs, reward, cost, terminated, truncated, info = expand_dims(
                 next_obs, reward, cost, terminated, truncated, info
@@ -67,4 +67,9 @@ class EarlyTerminatedWrapper(CMDPWrapper):
         self.rollout_data.rollout_log.ep_ret += reward
         self.rollout_data.rollout_log.ep_costs += cost
         self.rollout_data.rollout_log.ep_len += np.ones(self.cfgs.num_envs)
-        return next_obs, reward, cost, terminated, truncated, info
+        return (
+            as_tensor(next_obs, reward, cost, device=self.cfgs.device),
+            terminated,
+            truncated,
+            info,
+        )

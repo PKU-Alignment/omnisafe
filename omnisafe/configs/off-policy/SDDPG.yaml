@@ -18,6 +18,10 @@ defaults:
   ## -----------------------------Basic configurations for base class PG------------------------ ##
   # The random seed
   seed: 10
+  # The torch device
+  device: cpu
+  # The torch device id
+  device_id: 0
   # The environment wrapper type
   wrapper_type: CMDPWrapper
   # Number of epochs
@@ -64,6 +68,14 @@ defaults:
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
   use_cost: True
+  # Whether to use cost limit decay
+  cost_limit_decay: False
+  # The initial value of cost limit
+  init_cost_limit: 25.0
+  # The target value of cost limit
+  target_cost_limit: 25.0
+  # The end od cost limit decay epoch
+  end_epoch: 100
   # Cost discounted factor
   cost_gamma: 1.0
   # Whether to use linear decay of learning rate
@@ -88,24 +100,32 @@ defaults:
     shared_weights: False
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
+    # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
+    actor_type: gaussian
     # Configuration of Actor and Critic network
     ac_kwargs:
       # Configuration of Actor network
       pi:
-        # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-        actor_type: "dire"
-        # The standard deviation of Gaussian noise
-        act_noise: 0.1
         # Size of hidden layers
-        hidden_sizes: [400, 300]
+        hidden_sizes: [64, 64]
         # Activation function
         activation: relu
+        # Output activation function
+        output_activation: tanh
+        # Whether to scale action.
+        scale_action: True
+        # Whether to clip action.
+        clip_action: True
+        # Whther to learn the standard deviation of Gaussian noise
+        std_learning: False
+        # The initial value of standard deviation of Gaussian noise
+        std_init: 1.0
       # Configuration of Critic network
       val:
         # Number of critic networks
         num_critics: 1
         # Size of hidden layers
-        hidden_sizes: [400, 300]
+        hidden_sizes: [64, 64]
         # Activation function
         activation: relu
   ## --------------------------------------Configuration For Buffer----------------------------- ##

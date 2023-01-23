@@ -23,6 +23,7 @@ from gymnasium.spaces import Box, Discrete
 
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.critic import CriticBuilder
+from omnisafe.utils.config_utils import namedtuple2dict
 from omnisafe.utils.model_utils import build_mlp_network
 
 
@@ -101,10 +102,9 @@ class ActorCritic(nn.Module):
         actor_builder = ActorBuilder(
             obs_dim=self.obs_dim,
             act_dim=self.act_dim,
-            hidden_sizes=self.ac_kwargs.pi.hidden_sizes,
-            activation=self.ac_kwargs.pi.activation,
             weight_initialization_mode=model_cfgs.weight_initialization_mode,
             shared=self.shared,
+            **namedtuple2dict(self.ac_kwargs.pi),
         )
         if self.act_space_type == 'discrete':
             self.actor = actor_builder.build_actor('categorical')
@@ -112,7 +112,7 @@ class ActorCritic(nn.Module):
             act_max = torch.as_tensor(action_space.high)
             act_min = torch.as_tensor(action_space.low)
             self.actor = actor_builder.build_actor(
-                self.ac_kwargs.pi.actor_type, act_max=act_max, act_min=act_min
+                model_cfgs.actor_type, act_max=act_max, act_min=act_min
             )
 
         # Build critic
@@ -147,11 +147,11 @@ class ActorCritic(nn.Module):
         """
         with torch.no_grad():
             value = self.reward_critic(obs)
-            action, logp_a = self.actor.predict(
+            raw_action, action, logp_a = self.actor.predict(
                 obs, deterministic=deterministic, need_log_prob=True
             )
 
-        return action.numpy(), value.numpy(), logp_a.numpy()
+        return raw_action, action, value, logp_a
 
     def anneal_exploration(self, frac: float) -> None:
         """update internals of actors

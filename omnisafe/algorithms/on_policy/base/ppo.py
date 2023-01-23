@@ -49,6 +49,10 @@ class PPO(PolicyGradient):
             cfgs=cfgs,
         )
 
+    def algorithm_specific_logs(self) -> None:
+        super().algorithm_specific_logs()
+        self.logger.log_tabular('Train/Std')
+
     # pylint: disable-next=too-many-arguments
     def compute_loss_pi(
         self,

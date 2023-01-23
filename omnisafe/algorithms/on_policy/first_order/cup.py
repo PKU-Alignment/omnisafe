@@ -136,8 +136,8 @@ class CUP(PPO, Lagrange):
         self.loss_record.append(loss_pi_c=cost_loss.item())
 
         # useful extra info
-        temp_max = torch.max(ratio).detach().numpy()
-        temp_min = torch.min(ratio).detach().numpy()
+        temp_max = torch.max(ratio).detach().mean().item()
+        temp_min = torch.min(ratio).detach().mean().item()
         if temp_max > self.max_ratio:
             self.max_ratio = temp_max
         if temp_min < self.min_ratio:

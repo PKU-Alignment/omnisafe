@@ -16,7 +16,6 @@
 
 from typing import Optional, Tuple, Union
 
-import numpy as np
 import torch
 import torch.nn as nn
 from torch.distributions.normal import Normal
@@ -25,17 +24,11 @@ from omnisafe.models.base import Actor
 from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_network
 
 
+# pylint: disable-next=too-many-instance-attributes
 class GaussianActor(Actor):
-    """Implementation of GaussianStdNetActor.
+    """Implementation of GaussianStdNetActor."""
 
-    A Gaussian policy that uses a MLP to map observations to actions distributions.
-    :class:`GaussianStdNetActor` uses a double headed MLP to predict the mean and log standard deviation
-    of the Gaussian distribution.
-    This class is an inherit class of :class:`Actor`.
-    You can design your own Gaussian policy by inheriting this class or :class:`Actor`.
-    """
-
-    # pylint: disable-next=too-many-arguments
+    # pylint: disable-next=too-many-arguments, too-many-locals
     def __init__(
         self,
         obs_dim: int,
@@ -44,27 +37,56 @@ class GaussianActor(Actor):
         act_min: torch.Tensor,
         hidden_sizes: list,
         activation: Activation = 'tanh',
+        output_activation: Activation = 'identity',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
         shared: nn.Module = None,
-        log_std=-0.5,
+        scale_action: bool = False,
+        clip_action: bool = False,
+        std_learning: bool = True,
+        std_init: float = 1.0,
+        std_end: float = 1.0,
+        std_annealing: bool = False,
     ) -> None:
         """Initialize GaussianStdNetActor.
 
         Args:
             obs_dim (int): Observation dimension.
             act_dim (int): Action dimension.
-            act_max (torch.Tensor): Action maximum value.
-            act_min (torch.Tensor): Action minimum value.
-            hidden_sizes (list): Hidden layer sizes.
+            act_max (torch.Tensor): Maximum value of the action.
+            act_min (torch.Tensor): Minimum value of the action.
+            hidden_sizes (list): List of hidden layer sizes.
             activation (Activation): Activation function.
+            output_activation (Activation): Activation function for the output layer.
             weight_initialization_mode (InitFunction): Weight initialization mode.
-            shared (nn.Module): Shared network.
+            shared (nn.Module): Shared module.
+            scale_action (bool): Whether to scale the action.
+            clip_action (bool): Whether to clip the action.
+            std_learning (bool): Whether to learn the standard deviation.
+            std_init (float): Initial value of the standard deviation.
+            std_end (float): Final value of the standard deviation.
+            std_annealing (bool): Whether to anneal the standard deviation.
         """
         super().__init__(
             obs_dim, act_dim, hidden_sizes, activation, weight_initialization_mode, shared
         )
         self.act_min = act_min
         self.act_max = act_max
+        self.scale_action = scale_action
+        self.clip_action = clip_action
+        self.std_init = std_init
+        self._std = std_init
+        self.std_end = std_end
+        self.std_annealing = std_annealing
+        assert (
+            self.act_min.size() == self.act_max.size()
+        ), f'The size of act_min {self.act_min} and act_max {self.act_max} should be the same.'
+        if std_annealing:
+            assert (
+                std_init > std_end
+            ), 'If std_annealing is True, std_init should be greater than std_end.'
+            assert not std_learning, 'If std_annealing is True, std_learning should be False.'
+        if std_learning:
+            assert not std_annealing, 'If std_learning is True, std_annealing should be False.'
 
         if shared is not None:
             mean_head = build_mlp_network(
@@ -81,15 +103,12 @@ class GaussianActor(Actor):
             self.log_std = nn.Sequential(shared, std_head)
         else:
             self.net = build_mlp_network(
-                [obs_dim] + list(hidden_sizes),
+                [obs_dim] + list(hidden_sizes) + [act_dim],
                 activation=activation,
-                output_activation=activation,
+                output_activation=output_activation,
                 weight_initialization_mode=weight_initialization_mode,
             )
-            self.mean_layer = nn.Linear(hidden_sizes[-1], act_dim)
-            self.logstd_layer = nn.Parameter(torch.ones(1, act_dim) * log_std)
-            nn.init.kaiming_uniform_(self.mean_layer.weight, a=np.sqrt(5))
-            nn.init.constant_(self.mean_layer.bias, 0)
+            self.logstd_layer = nn.Parameter(torch.zeros(1, act_dim), requires_grad=std_learning)
 
     def _distribution(self, obs: torch.Tensor) -> Normal:
         """Get distribution of the action.
@@ -111,14 +130,13 @@ class GaussianActor(Actor):
 
         Args:
             obs (torch.Tensor): Observation.
+
         """
-        out = self.net(obs)
-        mean = self.mean_layer(out)
-        # mean = self.act_max * torch.tanh(self.mean_layer(out))
+        mean = self.net(obs)
         if len(mean.size()) == 1:
             mean = mean.view(1, -1)
         log_std = self.logstd_layer.expand_as(mean)
-        std = torch.exp(log_std)
+        std = torch.exp(log_std) * self._std
 
         return mean, std
 
@@ -157,13 +175,24 @@ class GaussianActor(Actor):
         mean, std = self.get_mean_std(obs)
         dist = Normal(mean, std)
         if deterministic:
-            action = mean
+            out = mean.to(torch.float64)
         else:
-            action = torch.normal(mean, std)
+            out = dist.rsample().to(torch.float64)
+
+        if self.scale_action:
+            self.act_min = self.act_min.to(mean.device)
+            self.act_max = self.act_max.to(mean.device)
+            action = self.act_min + (out + 1) / 2 * (self.act_max - self.act_min)
+        else:
+            action = out
+
+        if self.clip_action:
+            action = torch.clamp(action, self.act_min, self.act_max)
+
         if need_log_prob:
-            log_prob = dist.log_prob(action).sum(axis=-1)
-            return action, log_prob
-        return action
+            log_prob = dist.log_prob(out).sum(axis=-1)
+            return out.to(torch.float32), action.to(torch.float32), log_prob.to(torch.float32)
+        return out.to(torch.float32), action.to(torch.float32)
 
     def forward(
         self,
@@ -174,6 +203,7 @@ class GaussianActor(Actor):
 
         .. note::
             This forward function has two modes:
+
             - If ``act`` is not None, it will return the distribution and the log probability of action.
             - If ``act`` is None, it will return the distribution.
 
@@ -186,3 +216,16 @@ class GaussianActor(Actor):
             log_prob = dist.log_prob(act).sum(axis=-1)
             return dist, log_prob
         return dist
+
+    def get_distribution(self, obs: torch.Tensor) -> Normal:
+        """Get distribution of the action.
+        Args:
+            obs (torch.Tensor): Observation.
+        """
+        return self._distribution(obs)
+
+    def set_std(self, proportion: float) -> float:
+        """To support annealing exploration noise.
+
+        proportion is annealing from 1. to 0 over course of training"""
+        self._std = self.std_init * proportion + self.std_end * (1 - proportion)

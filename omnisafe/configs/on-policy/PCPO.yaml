@@ -18,14 +18,18 @@ defaults:
   ## -----------------------------Basic configurations for base class PG------------------------ ##
   # The random seed
   seed: 0
+  # The torch device
+  device: cpu
+  # The torch device id
+  device_id: 0
   # The environment wrapper type
   wrapper_type: CMDPWrapper
   # Number of epochs
   epochs: 5000
   # Number of steps per epoch
-  steps_per_epoch: 2048
+  steps_per_epoch: 32768
   # Number of update iteration for Actor network
-  actor_iters: 1
+  actor_iters: 10
   # Number of update iteration for Critic network
   critic_iters: 40
   # Check if all models own the same parameter values every `check_freq` epoch
@@ -37,11 +41,11 @@ defaults:
   # The max length of per epoch
   max_ep_len: 1000
   # The size of mini batch
-  num_mini_batches: 2048
+  num_mini_batches: 16384
   # The learning rate of Actor network
-  actor_lr: 0.0003
+  actor_lr: 0.001
   # The learning rate of Critic network
-  critic_lr: 0.0003
+  critic_lr: 0.001
   # The Address for saving training process data
   data_dir: "./runs"
   ## --------------------------Basic configurations for derived class NaturalPG----------------- ##
@@ -86,20 +90,33 @@ defaults:
     shared_weights: False
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
+    # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
+    actor_type: gaussian
     # Configuration of Actor and Critic network
     ac_kwargs:
       # Configuration of Actor network
       pi:
-        # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-        actor_type: gaussian
         # Size of hidden layers
         hidden_sizes: [64, 64]
-        # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+        # Activation function
         activation: tanh
+        # Output activation function
+        output_activation: identity
+        # Whether to scale action.
+        scale_action: False
+        # Whether to clip action.
+        clip_action: False
+        # Whther to learn the standard deviation of Gaussian noise
+        std_learning: True
+        # The initial value of standard deviation of Gaussian noise
+        std_init: 1.0
+      # Configuration of Critic network
       val:
+        # Number of critic networks
+        num_critics: 1
         # Size of hidden layers
         hidden_sizes: [64, 64]
-        # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+        # Activation function
         activation: tanh
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   buffer_cfgs:
@@ -118,15 +135,15 @@ defaults:
   ## --------------------------------------Configuration For Environment------------------------ ##
   env_cfgs:
     # The seed of environment
-    env_seed: 0
+    env_seed: 5
     # The number of parallel environments
     num_envs: 1
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward
-    normalized_rew: True
+    normalized_rew: False
     # Whether to use standardized cost
-    normalized_cost: True
+    normalized_cost: False
     # Whether to use standardized obs
     normalized_obs: True
     # The maximum length of record queue

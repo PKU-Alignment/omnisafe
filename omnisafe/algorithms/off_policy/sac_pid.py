@@ -21,14 +21,14 @@ import torch.nn.functional as F
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.sac import SAC
-from omnisafe.common.lagrange import Lagrange
+from omnisafe.common.pid_lagrange import PIDLagrangian
 from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes
-class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attributes
-    """The Lagrange version of SAC algorithm.
+class SACPid(SAC, PIDLagrangian):  # pylint: disable-next=too-many-instance-attributes
+    """The Pid-Lagrangian version of SAC algorithm.
 
     References:
         - Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
@@ -50,7 +50,8 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
             env_id=env_id,
             cfgs=cfgs,
         )
-        Lagrange.__init__(self, **namedtuple2dict(self.cfgs.lagrange_cfgs))
+        # self.cost_limit=self.set_cost_limit(self.cfgs.lagrange_cfgs.cost_limit)
+        PIDLagrangian.__init__(self, **namedtuple2dict(self.cfgs.PID_cfgs))
 
     def cost_limit_decay(
         self,
@@ -76,9 +77,12 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
                 -   The Lagrange multiplier value in current epoch.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.cost_penalty)
         self.logger.log_tabular('Loss/Loss_pi_c')
         self.logger.log_tabular('Misc/CostLimit', self.cost_limit)
+        self.logger.log_tabular('PID/pid_Kp', self.pid_kp)
+        self.logger.log_tabular('PID/pid_Ki', self.pid_ki)
+        self.logger.log_tabular('PID/pid_Kd', self.pid_kd)
 
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         r"""Computing ``pi/actor`` loss.
@@ -105,17 +109,15 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
         )
         loss_pi_c = self.actor_critic.cost_critic(obs, action)[0]
         loss_pi_c = F.relu(loss_pi_c - self.cost_limit)
-        self.update_lagrange_multiplier(loss_pi_c.mean().item())
-        penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        loss_pi -= penalty * loss_pi_c
-        loss_pi /= 1 + penalty
+        self.pid_update(loss_pi_c.mean().item())
+        loss_pi -= self.cost_penalty * loss_pi_c
+        loss_pi /= 1 + self.cost_penalty
         pi_info = {}
         self.logger.store(
             **{
                 'Loss/Loss_pi_c': loss_pi_c.mean().item(),
                 'Misc/LogPi': logp_a.detach().mean().item(),
                 'Misc/Alpha': self.alpha.detach().mean().item(),
-                'Metrics/LagrangeMultiplier': self.lagrangian_multiplier.item(),
             }
         )
         pi_info = {}
@@ -145,6 +147,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
             act (torch.Tensor): ``action`` saved in data.
             rew (torch.Tensor): ``reward`` saved in data.
             next_obs (torch.Tensor): ``next observation`` saved in data.
+            done (torch.Tensor): ``terminated`` saved in data.
         """
         cost_q_value = self.actor_critic.cost_critic(obs, act)[0]
         self.logger.store(

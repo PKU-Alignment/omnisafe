@@ -19,12 +19,13 @@ from dataclasses import dataclass
 from typing import Dict, Tuple
 
 import numpy as np
+import torch
 from gymnasium import spaces
 
 from omnisafe.common.normalizer import Normalizer
 from omnisafe.common.record_queue import RecordQueue
 from omnisafe.typing import NamedTuple, Optional
-from omnisafe.utils.tools import expand_dims
+from omnisafe.utils.tools import as_tensor, expand_dims
 from omnisafe.wrappers.cmdp_wrapper import CMDPWrapper
 from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
@@ -463,7 +464,9 @@ class SimmerWrapper(CMDPWrapper):
         low = np.array(np.hstack([self.observation_space.low, np.inf]), dtype=np.float32)
         self.observation_space = spaces.Box(high=high, low=low)
         self.obs_normalizer = (
-            Normalizer(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5)
+            Normalizer(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5).to(
+                device=self.cfgs.device
+            )
             if self.cfgs.normalized_obs
             else None
         )
@@ -490,15 +493,15 @@ class SimmerWrapper(CMDPWrapper):
             )
         self.rollout_data.current_obs = self.reset()[0]
 
-    def augment_obs(self, obs: np.array) -> np.array:
+    def augment_obs(self, obs: np.ndarray) -> np.ndarray:
         """Augmenting the obs with the safety obs.
 
         Detailedly, the augmented obs is the concatenation of the original obs and the safety obs.
         The safety obs is the safety budget minus the cost divided by the safety budget.
 
         Args:
-            obs (np.array): observation.
-            safety_obs (np.array): safety observation.
+            obs (np.ndarray): observation.
+            safety_obs (np.ndarray): safety observation.
         """
         augmented_obs = np.hstack([obs, self.rollout_data.simmer_data.safety_obs])
         return augmented_obs
@@ -507,7 +510,7 @@ class SimmerWrapper(CMDPWrapper):
         """Update the normalized safety obs.
 
         Args:
-            cost (np.array): cost.
+            cost (np.ndarray): cost.
         """
         if done:
             self.rollout_data.simmer_data.safety_obs = np.ones(
@@ -523,15 +526,15 @@ class SimmerWrapper(CMDPWrapper):
         """Update the reward.
 
         Args:
-            reward (np.array): reward.
-            next_safety_obs (np.array): next safety observation.
+            reward (np.ndarray): reward.
+            next_safety_obs (np.ndarray): next safety observation.
         """
         for idx, safety_obs in enumerate(self.rollout_data.simmer_data.safety_obs):
             if safety_obs <= 0:
                 reward[idx] = self.rollout_data.simmer_data.unsafe_reward
         return reward
 
-    def reset(self) -> Tuple[np.ndarray, Dict]:
+    def reset(self) -> Tuple[torch.Tensor, Dict]:
         r"""Reset environment.
 
         .. note::
@@ -554,9 +557,11 @@ class SimmerWrapper(CMDPWrapper):
             * np.ones((self.cfgs.num_envs, 1), dtype=np.float32)
         )
         obs = self.augment_obs(obs)
-        return obs, info
+        return torch.as_tensor(obs, dtype=torch.float32, device=self.cfgs.device), info
 
-    def step(self, action: np.array) -> tuple((np.array, np.array, np.array, bool, dict)):
+    def step(
+        self, action: torch.Tensor
+    ) -> tuple((torch.Tensor, torch.Tensor, torch.Tensor, bool, dict)):
         """Step environment.
 
         .. note::
@@ -566,9 +571,9 @@ class SimmerWrapper(CMDPWrapper):
             otherwise the reward is the unsafe reward.
 
         Args:
-            action (np.array): action.
+            action (torch.Tensor): action.
         """
-        next_obs, reward, cost, terminated, truncated, info = self.env.step(action.squeeze())
+        next_obs, reward, cost, terminated, truncated, info = self.env.step(action.cpu().squeeze())
         # next_obs, rew, done, info = env.step(act)
         if self.cfgs.num_envs == 1:
             next_obs, reward, cost, terminated, truncated, info = expand_dims(
@@ -586,13 +591,18 @@ class SimmerWrapper(CMDPWrapper):
         self.rollout_data.rollout_log.ep_len += np.ones(self.cfgs.num_envs)
         self.rollout_data.rollout_log.ep_budget += self.rollout_data.simmer_data.safety_obs
         reward = self.safety_reward(reward)
-        return augmented_obs, reward, cost, terminated, truncated, info
+        return (
+            as_tensor(augmented_obs, reward, cost, device=self.cfgs.device),
+            terminated,
+            truncated,
+            info,
+        )
 
     def set_budget(self, Jc):
         """Set the safety budget by the controller.
 
         Args:
-            Jc (np.array): The safety budget.
+            Jc (np.ndarray): The safety budget.
         """
         self.rollout_data.simmer_data.safety_budget = self.controller.act(Jc)
 
@@ -600,6 +610,7 @@ class SimmerWrapper(CMDPWrapper):
         self,
         logger,
         idx,
+        is_train: bool = True,
     ) -> None:
         """Log the information of the rollout."""
         self.record_queue.append(
@@ -611,16 +622,32 @@ class SimmerWrapper(CMDPWrapper):
         avg_ep_ret, avg_ep_cost, avg_ep_len, avg_ep_budget = self.record_queue.get_mean(
             'ep_ret', 'ep_cost', 'ep_len', 'ep_budget'
         )
-        logger.store(
-            **{
-                'Metrics/EpRet': avg_ep_ret,
-                'Metrics/EpCost': avg_ep_cost,
-                'Metrics/EpLen': avg_ep_len,
-                'Metrics/EpBudget': avg_ep_budget,
-                'Metrics/SafetyBudget': self.rollout_data.simmer_data.safety_budget,
-            }
-        )
-        self.set_budget(avg_ep_cost)
+        if is_train:
+            logger.store(
+                **{
+                    'Metrics/EpRet': avg_ep_ret,
+                    'Metrics/EpCost': avg_ep_cost,
+                    'Metrics/EpLen': avg_ep_len,
+                    'Metrics/EpBudget': avg_ep_budget,
+                    'Metrics/SafetyBudget': self.rollout_data.simmer_data.safety_budget,
+                }
+            )
+            self.set_budget(avg_ep_cost)
+        else:
+            logger.store(
+                **{
+                    'Test/EpRet': avg_ep_ret,
+                    'Test/EpCost': avg_ep_cost,
+                    'Test/EpLen': avg_ep_len,
+                    'Test/EpBudget': avg_ep_budget,
+                    'Test/SafetyBudget': self.rollout_data.simmer_data.safety_budget,
+                }
+            )
+
+    def reset_log(
+        self,
+        idx,
+    ) -> None:
         (
             self.rollout_data.rollout_log.ep_ret[idx],
             self.rollout_data.rollout_log.ep_costs[idx],

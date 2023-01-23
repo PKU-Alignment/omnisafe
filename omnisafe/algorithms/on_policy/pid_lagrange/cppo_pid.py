@@ -59,7 +59,6 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
         PIDLagrangian.__init__(self, **namedtuple2dict(self.cfgs.PID_cfgs))
 
         self.clip = self.cfgs.clip
-        self.cost_limit = self.cfgs.PID_cfgs.cost_limit
 
     def algorithm_specific_logs(self) -> None:
         """Log the CPPOPid specific information.

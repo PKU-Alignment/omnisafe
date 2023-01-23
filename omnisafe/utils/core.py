@@ -136,4 +136,27 @@ def discount_cumsum(x_vector: np.ndarray, discount: float) -> np.ndarray:
         x_vector (np.ndarray): input vector.
         discount (float): discount factor.
     """
-    return scipy.signal.lfilter([1], [1, float(-discount)], x_vector[::-1], axis=0)[::-1]
+    res = scipy.signal.lfilter([1], [1, float(-discount)], x_vector.cpu().numpy()[::-1], axis=0)[
+        ::-1
+    ]
+    return torch.from_numpy(res.copy()).to(device=x_vector.device)
+
+
+def discount_cumsum_torch(x_vector: torch.Tensor, discount: float) -> torch.Tensor:
+    """Compute the discounted cumulative sum of vectors."""
+    length = x_vector.shape[0]
+    x_vector = x_vector.type(torch.float64)
+    for idx in reversed(range(length)):
+        if idx == length - 1:
+            cumsum = x_vector[idx]
+        else:
+            cumsum = x_vector[idx] + discount * cumsum
+        x_vector[idx] = cumsum
+    return x_vector
+
+
+# Test
+if __name__ == '__main__':
+    x = torch.tensor([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=torch.float32)
+    print(discount_cumsum(x, 0.55555555555))
+    print(discount_cumsum_torch(x, 0.55555555555))

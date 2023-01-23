@@ -17,7 +17,7 @@
 import numpy as np
 import torch
 
-from omnisafe.typing import Dict
+from omnisafe.typing import Dict, Optional
 from omnisafe.utils.core import combined_shape
 
 
@@ -40,17 +40,17 @@ class BaseBuffer:
 
             .. list-table::
 
-                *   -   obs_buf (np.ndarray of shape ``(batch_size, obs_dim)``).
+                *   -   obs_buf (torch.ndarray of shape ``(batch_size, obs_dim)``).
                     -   ``observaion`` in :meth:`roll_out` session.
-                *   -   act_buf (np.ndarray of shape ``(batch_size, act_dim)``).
+                *   -   act_buf (torch.ndarray of shape ``(batch_size, act_dim)``).
                     -   ``action`` in :meth:`roll_out` session.
-                *   -   rew_buf (np.ndarray of shape ``batch_size``).
+                *   -   rew_buf (torch.ndarray of shape ``batch_size``).
                     -   ``reward`` in :meth:`roll_out` session.
-                *   -   cost_buf (np.ndarray of shape shape ``batch_size``).
+                *   -   cost_buf (torch.ndarray of shape shape ``batch_size``).
                     -   ``cost`` in :meth:`roll_out` session.
-                *   -   next_obs_buf (np.ndarray of shape ``(batch_size, obs_dim)``).
+                *   -   next_obs_buf (torch.ndarray of shape ``(batch_size, obs_dim)``).
                     -   ``next observaion`` in :meth:`roll_out` session.
-                *   -   done_buf (np.ndarray of shape shape ``batch_size``).
+                *   -   done_buf (torch.ndarray of shape shape ``batch_size``).
                     -   ``terminated`` in :meth:`roll_out` session.
 
         Args:
@@ -59,13 +59,21 @@ class BaseBuffer:
             size (int): buffer size.
             batch_size (int): batch size.
         """
-        self.obs_buf = np.zeros(combined_shape(size, obs_dim), dtype=np.float32)
-        self.next_obs_buf = np.zeros(combined_shape(size, obs_dim), dtype=np.float32)
-        self.act_buf = np.zeros(combined_shape(size, act_dim), dtype=np.float32)
-        self.rew_buf = np.zeros(size, dtype=np.float32)
-        self.cost_buf = np.zeros(size, dtype=np.float32)
-        self.pre_cost_buf = np.zeros(size, dtype=np.float32)  # previous cost for safety layer
-        self.done_buf = np.zeros(size, dtype=np.float32)
+        self.obs_buf = torch.zeros(
+            combined_shape(size, obs_dim), dtype=torch.float32, device=device
+        )
+        self.next_obs_buf = torch.zeros(
+            combined_shape(size, obs_dim), dtype=torch.float32, device=device
+        )
+        self.act_buf = torch.zeros(
+            combined_shape(size, act_dim), dtype=torch.float32, device=device
+        )
+        self.rew_buf = torch.zeros(size, dtype=torch.float32, device=device)
+        self.cost_buf = torch.zeros(size, dtype=torch.float32, device=device)
+        self.prev_cost_buf = torch.zeros(
+            size, dtype=torch.float32, device=device
+        )  # previous cost for safety layer
+        self.done_buf = torch.zeros(size, dtype=torch.float32, device=device)
         self.ptr, self.size, self.max_size = 0, 0, size
         self.batch_size = batch_size
         self.device = device
@@ -79,7 +87,7 @@ class BaseBuffer:
         cost: float,
         next_obs: float,
         done: float,
-        pre_cost: float = 0.0,
+        prev_cost: float = 0.0,
     ) -> None:
         """Store the experience in the buffer.
 
@@ -101,7 +109,7 @@ class BaseBuffer:
         self.act_buf[self.ptr] = act
         self.rew_buf[self.ptr] = rew
         self.cost_buf[self.ptr] = cost
-        self.pre_cost_buf[self.ptr] = pre_cost
+        self.prev_cost_buf[self.ptr] = prev_cost
         self.done_buf[self.ptr] = done
         self.ptr = (self.ptr + 1) % self.max_size
         self.size = min(self.size + 1, self.max_size)
@@ -116,9 +124,9 @@ class BaseBuffer:
             rew=self.rew_buf[idxs],
             cost=self.cost_buf[idxs],
             done=self.done_buf[idxs],
-            pre_cost=self.pre_cost_buf[idxs],
+            prev_cost=self.prev_cost_buf[idxs],
         )
-        return {k: torch.as_tensor(v, dtype=torch.float32) for k, v in batch.items()}
+        return batch
 
 
 class VectorBaseBuffer:
@@ -132,16 +140,22 @@ class VectorBaseBuffer:
         size: int,
         batch_size: int,
         num_envs: int,
+        device: torch.device = torch.device('cpu'),
     ):
         """Initialize the replay buffer."""
         self.num_envs = num_envs
-        self.buffers = [BaseBuffer(obs_dim, act_dim, size, batch_size) for _ in range(num_envs)]
+        self.buffers = [
+            BaseBuffer(obs_dim, act_dim, size, batch_size, device) for _ in range(num_envs)
+        ]
 
     # pylint: disable-next=too-many-arguments
-    def store(self, obs, act, rew, cost, next_obs, done, pre_cost=0.0):
+    def store(self, obs, act, rew, cost, next_obs, done, prev_cost: Optional[torch.Tensor] = None):
         """Store the experience in the buffer."""
+        prev_cost = torch.zeros_like(cost) if prev_cost is None else prev_cost
         for i in range(self.num_envs):
-            self.buffers[i].store(obs[i], act[i], rew[i], cost[i], next_obs[i], done[i], pre_cost)
+            self.buffers[i].store(
+                obs[i], act[i], rew[i], cost[i], next_obs[i], done[i], prev_cost[i]
+            )
 
     def sample_batch(self):
         """Sample a batch of experiences from the buffer."""

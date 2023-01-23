@@ -206,7 +206,7 @@ def mpi_op(value: torch.Tensor, operation: ReduceOp) -> torch.Tensor:
     if num_procs() == 1:
         return value
     value, scalar = ([value], True) if np.isscalar(value) else (value, False)
-    value = torch.as_tensor(value, dtype=torch.float32)
+    # value = torch.as_tensor(value, dtype=torch.float32)
     allreduce(value, op=operation)
     return value[0] if scalar else value
 
@@ -247,13 +247,13 @@ def mpi_statistics_scalar(
         value (torch.Tensor): value to be operated.
         with_min_and_max (bool): whether to return min and max.
     """
-    value = np.array(value, dtype=np.float32)
-    global_sum, global_n = mpi_sum([np.sum(value), len(value)])
-    mean = np.array(global_sum / global_n)
+    # value = np.array(value, dtype=np.float32)
+    global_sum, global_n = mpi_sum([torch.sum(value), len(value)])
+    mean = global_sum / global_n
 
-    global_sum_sq = mpi_sum(np.sum((value - mean) ** 2))
+    global_sum_sq = mpi_sum(torch.sum((value - mean) ** 2))
     # compute global std
-    std = np.sqrt(global_sum_sq / global_n)
+    std = torch.sqrt(global_sum_sq / global_n)
     if with_min_and_max:
         global_min = mpi_op(np.min(value) if len(value) > 0 else np.inf, operation=ReduceOp.MIN)
         global_max = mpi_op(np.max(value) if len(value) > 0 else -np.inf, operation=ReduceOp.MAX)

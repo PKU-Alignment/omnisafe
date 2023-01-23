@@ -194,9 +194,9 @@ class NaturalPG(PolicyGradient):
                 'Train/PolicyRatio': pi_info['ratio'],
                 'Misc/AcceptanceStep': accept_step,
                 'Misc/Alpha': alpha.item(),
-                'Misc/FinalStepNorm': torch.norm(final_step_dir).numpy(),
+                'Misc/FinalStepNorm': torch.norm(final_step_dir).mean().item(),
                 'Misc/xHx': xHx.item(),
-                'Misc/gradient_norm': torch.norm(g_flat).numpy(),
+                'Misc/gradient_norm': torch.norm(g_flat).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
             }
         )

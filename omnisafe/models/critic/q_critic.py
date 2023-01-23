@@ -40,7 +40,7 @@ class QCritic(Critic):
         weight_initialization_mode: InitFunction = 'xavier_uniform',
         shared: nn.Module = None,
         num_critics: int = 1,
-        use_obs_encoder: bool = False,
+        use_obs_encoder: bool = True,
     ) -> None:
         """Initialize the critic network.
 
@@ -72,6 +72,7 @@ class QCritic(Critic):
             use_obs_encoder (bool): Whether to use observation encoder.
         """
         self.use_obs_encoder = use_obs_encoder
+        print(use_obs_encoder)
         Critic.__init__(
             self,
             obs_dim=obs_dim,

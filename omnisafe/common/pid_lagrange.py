@@ -68,7 +68,7 @@ class PIDLagrangian(abc.ABC):
         self._delta_p = 0
         self._cost_d = 0
         self.cost_limit = cost_limit
-        self.cost_penalty = None
+        self.cost_penalty = 0
 
     def pid_update(self, ep_cost_avg: float) -> None:
         r"""Update the PID controller.
