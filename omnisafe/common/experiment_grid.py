@@ -18,8 +18,9 @@ import os
 import string
 import time
 from concurrent.futures import ProcessPoolExecutor as Pool
-from textwrap import dedent
 from copy import deepcopy
+from textwrap import dedent
+
 import numpy as np
 from tqdm import trange
 
@@ -150,7 +151,7 @@ class ExperimentGrid:
             # describes a path into the nested dict, such that k='a:b:c'
             # corresponds to value=variant['a']['b']['c']. Uses recursion
             # to get this.
-            print("value",value, "key", key)
+            print('value', value, 'key', key)
             if key in value:
                 return value[key]
 
@@ -192,16 +193,16 @@ class ExperimentGrid:
         '''Updater of multi-level dictionary.'''
         for idd in item_dic.keys():
             total_value = total_dic.get(idd)
-            item_value  = item_dic.get(idd)
+            item_value = item_dic.get(idd)
 
-            if total_value is None: # not exist, just add it
-                total_dic.update({idd : item_value})
+            if total_value is None:  # not exist, just add it
+                total_dic.update({idd: item_value})
             elif isinstance(item_value, dict):
                 self.update_dic(total_value, item_value)
-                total_dic.update({idd : total_value})
+                total_dic.update({idd: total_value})
             else:
                 total_value = item_value
-                total_dic.update({idd : total_value})
+                total_dic.update({idd: total_value})
 
     def _variants(self, keys, vals):
         """Recursively builds list of valid variants."""
@@ -359,7 +360,7 @@ class ExperimentGrid:
         results = []
         exp_names = []
         for idx, var in enumerate(variants):
-            print("current_config", var)
+            print('current_config', var)
             exp_name = '_'.join([k + '_' + str(v) for k, v in var.items()])
             exp_names.append(exp_name)
             data_dir = os.path.join('./', 'exp-x', self.name, exp_name, '')

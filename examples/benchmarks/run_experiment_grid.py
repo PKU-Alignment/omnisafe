@@ -18,14 +18,17 @@ import os
 import sys
 
 import torch
-from omnisafe.typing import NamedTuple, Tuple
+
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
+from omnisafe.typing import NamedTuple, Tuple
 
 
-def train(exp_id: str, algo:str, env_id:str, custom_cfgs:NamedTuple) -> Tuple[float, float, float]:
+def train(
+    exp_id: str, algo: str, env_id: str, custom_cfgs: NamedTuple
+) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
-    
+
     Args:
         exp_id (str): Experiment ID.
         algo (str): Algorithm to train.
