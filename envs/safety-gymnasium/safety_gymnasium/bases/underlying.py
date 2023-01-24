@@ -22,13 +22,15 @@ from typing import Union
 import gymnasium
 import mujoco
 import numpy as np
-from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen, Viewer
+import safety_gymnasium
+from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen
 from safety_gymnasium import agents
 from safety_gymnasium.assets.color import COLOR
 from safety_gymnasium.assets.geoms import GEOMS_REGISTER
 from safety_gymnasium.assets.mocaps import MOCAPS_REGISTER
 from safety_gymnasium.assets.objects import OBJS_REGISTER
 from safety_gymnasium.utils.common_utils import MujocoException
+from safety_gymnasium.utils.keyboard_viewer import KeyboardViewer
 from safety_gymnasium.utils.random_generator import RandomGenerator
 from safety_gymnasium.world import World
 
@@ -410,13 +412,15 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
     def _get_viewer(
         self, mode
     ) -> Union[
-        'gymnasium.envs.mujoco.mujoco_rendering.Viewer',
+        'safety_gymnasium.utils.keyboard_viewer.KeyboardViewer',
         'gymnasium.envs.mujoco.mujoco_rendering.RenderContextOffscreen',
     ]:
         self.viewer = self._viewers.get(mode)
         if self.viewer is None:
             if mode == 'human':
-                self.viewer = Viewer(self.model, self.data)
+                self.viewer = KeyboardViewer(
+                    self.model, self.data, self.agent.keyboard_control_callback
+                )
             elif mode in {'rgb_array', 'depth_array'}:
                 self.viewer = RenderContextOffscreen(self.model, self.data)
             else:
