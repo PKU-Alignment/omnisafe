@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the TD3 algorithm."""
+"""Implementation of the Pid-Lagrange version of the TD3 algorithm."""
 
 from typing import Dict, NamedTuple, Tuple
 
@@ -21,14 +21,14 @@ import torch.nn.functional as F
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.td3 import TD3
-from omnisafe.common.lagrange import Lagrange
+from omnisafe.common.pid_lagrange import PIDLagrangian
 from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes
-class TD3Lag(TD3, Lagrange):
-    """The Lagrange version of the TD3 algorithm
+class TD3Pid(TD3, PIDLagrangian):
+    """The PID Lagrangian version of Twin Delayed DDPG (TD3) algorithm.
 
     References:
         - Title: Addressing Function Approximation Error in Actor-Critic Methods
@@ -37,23 +37,16 @@ class TD3Lag(TD3, Lagrange):
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize Lagrange version of the TD3.
-
-        Args:
-            env_id (str): environment id.
-            cfgs (dict): configurations.
-            algo (str): algorithm name.
-            wrapper_type (str): environment wrapper type.
-        """
+        """Initialize the Pid-Lagrange version of the TD3."""
         TD3.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
         )
-        Lagrange.__init__(self, **namedtuple2dict(self.cfgs.lagrange_cfgs))
+        PIDLagrangian.__init__(self, **namedtuple2dict(self.cfgs.PID_cfgs))
 
     def algorithm_specific_logs(self) -> None:
-        """Log the TD3 Lag specific information.
+        """Log the TD3Pid specific information.
 
         .. list-table::
 
@@ -61,19 +54,32 @@ class TD3Lag(TD3, Lagrange):
                -   Description
             *  -   Metrics/LagrangeMultiplier
                -   The Lagrange multiplier value in current epoch.
+            *  -   Loss/Loss_pi_c
+               -   The cost loss of the ``pi/actor``.
+            *  -   Misc/CostLimit
+               -   The cost limit value in current epoch.
+            *  -   PID/pid_Kp
+               -   The proportional gain of the PID controller.
+            *  -   PID/pid_Ki
+               -   The integral gain of the PID controller.
+            *  -   PID/pid_Kd
+               -   The derivative gain of the PID controller.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.cost_penalty)
         self.logger.log_tabular('Loss/Loss_pi_c')
         self.logger.log_tabular('Misc/CostLimit', self.cost_limit)
+        self.logger.log_tabular('PID/pid_Kp', self.pid_kp)
+        self.logger.log_tabular('PID/pid_Ki', self.pid_ki)
+        self.logger.log_tabular('PID/pid_Kd', self.pid_kd)
 
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         r"""Computing ``pi/actor`` loss.
 
-        In the lagrange version of TD3, the loss is defined as:
+        In the pid-lagrange version of TD3, the loss is defined as:
 
         .. math::
-            L = \mathbb{E}_{s \sim \mathcal{D}} [ Q(s, \pi(s)) - \lambda C(s, \pi(s))]
+            L=\mathbb{E}_{s \sim \mathcal{D}} [ Q(s, \pi(s))- \lambda C(s, \pi(s))]
 
         where :math:`\lambda` is the lagrange multiplier.
 
@@ -86,10 +92,9 @@ class TD3Lag(TD3, Lagrange):
         )
         loss_pi_c = self.actor_critic.cost_critic(obs, action)[0]
         loss_pi_c = F.relu(loss_pi_c - self.cost_limit)
-        self.update_lagrange_multiplier(loss_pi_c.mean().item())
-        penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        loss_pi -= penalty * loss_pi_c
-        loss_pi /= 1 + penalty
+        self.pid_update(loss_pi_c.mean().item())
+        loss_pi -= self.cost_penalty * loss_pi_c
+        loss_pi /= 1 + self.cost_penalty
         pi_info = {}
         self.logger.store(
             **{

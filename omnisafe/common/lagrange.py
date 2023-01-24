@@ -97,5 +97,5 @@ class Lagrange(abc.ABC):
         lambda_loss.backward()
         self.lambda_optimizer.step()
         self.lagrangian_multiplier.data.clamp_(
-            0, self.lagrangian_upper_bound
+            0.0, self.lagrangian_upper_bound
         )  # enforce: lambda in [0, inf]

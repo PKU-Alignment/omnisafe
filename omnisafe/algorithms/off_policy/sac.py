@@ -16,6 +16,7 @@
 
 from typing import Dict, NamedTuple, Tuple
 
+import numpy as np
 import torch
 
 from omnisafe.algorithms import registry
@@ -40,7 +41,11 @@ class SAC(DDPG):
             cfgs=cfgs,
         )
         self.alpha = cfgs.alpha
-        self.alpha_gamma = cfgs.alpha_gamma
+        if self.cfgs.auto_alpha:
+            self.target_entropy = -np.prod(self.env.action_space.shape)
+            self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
+            self.alpha_optim = torch.optim.Adam([self.log_alpha], lr=self.cfgs.alpha_lr)
+            self.alpha = self.log_alpha.detach().exp()
 
     # pylint: disable-next=too-many-locals, too-many-arguments
     def compute_loss_v(
@@ -78,8 +83,8 @@ class SAC(DDPG):
         q_value_list = self.actor_critic.critic(obs, act)
         # Bellman backup for Q function
         with torch.no_grad():
-            act_targ, logp_a_next = self.ac_targ.actor.predict(
-                obs, deterministic=True, need_log_prob=True
+            act_targ, _, logp_a_next = self.ac_targ.actor.predict(
+                obs, deterministic=False, need_log_prob=True
             )
             q_targ = torch.min(torch.vstack(self.ac_targ.critic(next_obs, act_targ)), dim=0).values
             backup = rew + self.cfgs.gamma * (1 - done) * (q_targ - self.alpha * logp_a_next)
@@ -89,9 +94,13 @@ class SAC(DDPG):
         for q_value in q_value_list:
             loss_q.append(torch.mean((q_value - backup) ** 2))
             q_values.append(torch.mean(q_value))
-
+            self.logger.store(
+                **{
+                    'Train/RewardQValues': q_value.mean().item(),
+                }
+            )
         # useful info for logging
-        q_info = dict(QVals=sum(q_values).detach().numpy())
+        q_info = dict(QVals=sum(q_values).detach().mean().item())
         return sum(loss_q), q_info
 
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
@@ -104,75 +113,28 @@ class SAC(DDPG):
         Args:
             obs (torch.Tensor): ``observation`` saved in data.
         """
-        action, logp_a = self.actor_critic.actor.predict(
-            obs, deterministic=True, need_log_prob=True
+        action, _, logp_a = self.actor_critic.actor.predict(
+            obs, deterministic=False, need_log_prob=True
         )
-        loss_pi = self.actor_critic.critic(obs, action)[0] - self.alpha * logp_a
-        pi_info = {'LogPi': logp_a.detach().numpy()}
+        self.alpha_update(logp_a)
+
+        loss_pi = (
+            torch.min(
+                self.actor_critic.critic(obs, action)[0], self.actor_critic.critic(obs, action)[1]
+            )
+            - self.alpha * logp_a
+        )
+        alpha_value = self.alpha.detach().mean().item() if self.cfgs.auto_alpha else self.alpha
+        self.logger.store(
+            **{
+                'Misc/LogPi': logp_a.detach().mean().item(),
+                'Misc/Alpha': alpha_value,
+            }
+        )
+        pi_info = {}
         return -loss_pi.mean(), pi_info
 
-    def update(self, data) -> None:
-        """Update.
-
-        Update step contains five parts:
-
-        #.  Update value net by :meth:`update_value_net`
-        #.  Update cost net by :meth:`update_cost_net`
-        #.  Update policy net by :meth:`update_policy_net`
-        #.  Update ``alpha`` by :meth:`alpha_discount`
-        #.  Update target net by :meth:`polyak_update_target`
-
-        Args:
-            data (dict): data from replay buffer.
-        """
-        # first run one gradient descent step for Q.
-        obs, act, rew, cost, next_obs, done = (
-            data['obs'],
-            data['act'],
-            data['rew'],
-            data['cost'],
-            data['next_obs'],
-            data['done'],
-        )
-        self.update_value_net(
-            obs=obs,
-            act=act,
-            rew=rew,
-            next_obs=next_obs,
-            done=done,
-        )
-        if self.cfgs.use_cost:
-            self.update_cost_net(
-                obs=obs,
-                act=act,
-                cost=cost,
-                next_obs=next_obs,
-                done=done,
-            )
-            for param in self.actor_critic.cost_critic.parameters():
-                param.requires_grad = False
-
-        # freeze Q-network so you don't waste computational effort
-        # computing gradients for it during the policy learning step.
-        for param in self.actor_critic.critic.parameters():
-            param.requires_grad = False
-
-        # next run one gradient descent step for actor.
-        self.update_policy_net(obs=obs)
-
-        # unfreeze Q-network so you can optimize it at next DDPG step.
-        for param in self.actor_critic.critic.parameters():
-            param.requires_grad = True
-
-        if self.cfgs.use_cost:
-            for param in self.actor_critic.cost_critic.parameters():
-                param.requires_grad = True
-
-        # finally, update target networks by polyak averaging.
-        self.polyak_update_target()
-        self.alpha_discount()
-
-    def alpha_discount(self) -> None:
+    def alpha_update(self, log_prob) -> None:
         r"""Alpha discount.
 
         SAC discount alpha by ``alpha_gamma`` to decrease the entropy of the action distribution.
@@ -181,4 +143,19 @@ class SAC(DDPG):
         .. math::
             \alpha \leftarrow \alpha \gamma_{\alpha}
         """
-        self.alpha *= self.alpha_gamma
+        if self.cfgs.auto_alpha:
+            log_prob = log_prob.detach()
+            log_prob += self.target_entropy
+            # please take a look at issue #258 if you'd like to change this line
+            alpha_loss = -(self.log_alpha * log_prob).mean()
+            self.alpha_optim.zero_grad()
+            alpha_loss.backward()
+            self.alpha_optim.step()
+            self.alpha = self.log_alpha.detach().exp()
+        else:
+            self.alpha *= self.cfgs.alpha_gamma
+
+    def algorithm_specific_logs(self) -> None:
+        super().algorithm_specific_logs()
+        self.logger.log_tabular('Misc/Alpha')
+        self.logger.log_tabular('Misc/LogPi')

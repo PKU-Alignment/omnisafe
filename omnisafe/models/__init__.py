@@ -17,6 +17,7 @@
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.actor.categorical_actor import CategoricalActor
 from omnisafe.models.actor.cholesky_actor import MLPCholeskyActor
+from omnisafe.models.actor.gaussian_actor import GaussianActor
 from omnisafe.models.actor.gaussian_annealing_actor import GaussianAnnealingActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_stdnet_actor import GaussianStdNetActor

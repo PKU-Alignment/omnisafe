@@ -163,14 +163,14 @@ class Logger:
         else:
             stats = self.get_stats(key, min_and_max)
             if min_and_max or std:
-                self.log_single_value(key + '/Mean', stats[0])
+                self.log_single_value(key + '/Mean', stats[0].numpy())
             else:
-                self.log_single_value(key, stats[0])
+                self.log_single_value(key, stats[0].numpy())
             if std:
-                self.log_single_value(key + '/Std', stats[1])
+                self.log_single_value(key + '/Std', stats[1].numpy())
             if min_and_max:
-                self.log_single_value(key + '/Min', stats[2])
-                self.log_single_value(key + '/Max', stats[3])
+                self.log_single_value(key + '/Min', stats[2].numpy())
+                self.log_single_value(key + '/Max', stats[3].numpy())
         self.epoch_dict[key] = []
 
     def save_config(self, config) -> None:
@@ -205,7 +205,7 @@ class Logger:
         vals = (
             np.concatenate(val) if isinstance(val[0], np.ndarray) and len(val[0].shape) > 0 else val
         )
-        return mpi_statistics_scalar(vals, with_min_and_max=with_min_and_max)
+        return mpi_statistics_scalar(torch.tensor(vals), with_min_and_max=with_min_and_max)
 
     def dump_tabular(self) -> None:
         """Write all of the diagnostics from the current iteration,

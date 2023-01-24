@@ -20,7 +20,7 @@ from typing import Dict, Tuple
 import numpy as np
 import torch
 
-from omnisafe.utils.core import discount_cumsum
+from omnisafe.utils.core import discount_cumsum_torch
 from omnisafe.utils.vtrace import calculate_v_trace
 
 
@@ -83,14 +83,14 @@ class Buffer:
             reward_penalty (bool, optional): Whether to use reward penalty. Defaults to False.
         """
         self.size = size
-        self.obs_buf = np.zeros((size, obs_dim), dtype=np.float32)
-        self.act_buf = np.zeros((size, act_dim), dtype=np.float32)
-        self.adv_buf = np.zeros((size), dtype=np.float32)
-        self.discounted_ret_buf = np.zeros((size), dtype=np.float32)
-        self.rew_buf = np.zeros((size), dtype=np.float32)
-        self.target_val_buf = np.zeros((size), dtype=np.float32)
-        self.val_buf = np.zeros((size), dtype=np.float32)
-        self.logp_buf = np.zeros((size), dtype=np.float32)
+        self.obs_buf = torch.zeros((size, obs_dim), dtype=torch.float32, device=device)
+        self.act_buf = torch.zeros((size, act_dim), dtype=torch.float32, device=device)
+        self.adv_buf = torch.zeros((size), dtype=torch.float32, device=device)
+        self.discounted_ret_buf = torch.zeros((size), dtype=torch.float32, device=device)
+        self.rew_buf = torch.zeros((size), dtype=torch.float32, device=device)
+        self.target_val_buf = torch.zeros((size), dtype=torch.float32, device=device)
+        self.val_buf = torch.zeros((size), dtype=torch.float32, device=device)
+        self.logp_buf = torch.zeros((size), dtype=torch.float32, device=device)
         self.gamma = gamma
         self.lam = lam
         self.lam_c = lam_c
@@ -100,10 +100,10 @@ class Buffer:
         self.max_size = size
 
         # variables for cost-based RL
-        self.cost_buf = np.zeros(size, dtype=np.float32)
-        self.cost_val_buf = np.zeros(size, dtype=np.float32)
-        self.cost_adv_buf = np.zeros(size, dtype=np.float32)
-        self.target_cost_val_buf = np.zeros(size, dtype=np.float32)
+        self.cost_buf = torch.zeros(size, dtype=torch.float32, device=device)
+        self.cost_val_buf = torch.zeros(size, dtype=torch.float32, device=device)
+        self.cost_adv_buf = torch.zeros(size, dtype=torch.float32, device=device)
+        self.target_cost_val_buf = torch.zeros(size, dtype=torch.float32, device=device)
         self.penalty_param = penalty_param
         self.device = device
 
@@ -168,16 +168,16 @@ class Buffer:
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
             lam = self.lam if lam is None else lam
             deltas = rews[:-1] + self.gamma * vals[1:] - vals[:-1]
-            adv = discount_cumsum(deltas, self.gamma * lam)
+            adv = discount_cumsum_torch(deltas, self.gamma * lam)
             value_net_targets = adv + vals[:-1]
 
         elif self.adv_estimation_method == 'gae-rtg':
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
             lam = self.lam if lam is None else lam
             deltas = rews[:-1] + self.gamma * vals[1:] - vals[:-1]
-            adv = discount_cumsum(deltas, self.gamma * lam)
+            adv = discount_cumsum_torch(deltas, self.gamma * lam)
             # compute rewards-to-go, to be targets for the value function update
-            value_net_targets = discount_cumsum(rews, self.gamma)[:-1]
+            value_net_targets = discount_cumsum_torch(rews, self.gamma)[:-1]
 
         elif self.adv_estimation_method == 'vtrace':
             #  v_s = V(x_s) + \sum^{T-1}_{t=s} \gamma^{t-s}
@@ -186,10 +186,10 @@ class Buffer:
             path_slice = slice(self.path_start_idx, self.ptr)
             log_p = self.logp_buf[path_slice]
             value_net_targets, adv, _ = calculate_v_trace(
-                policy_action_probs=np.exp(log_p),
+                policy_action_probs=torch.exp(log_p),
                 values=vals,
                 rewards=rews,
-                behavior_action_probs=np.exp(self.logp_buf[path_slice]),
+                behavior_action_probs=torch.exp(self.logp_buf[path_slice]),
                 gamma=self.gamma,
                 rho_bar=1.0,  # default is 1.0
                 c_bar=1.0,  # default is 1.0
@@ -201,7 +201,7 @@ class Buffer:
 
             # compute rewards-to-go, to be targets for the value function update
             # value_net_targets are just the discounted returns
-            value_net_targets = discount_cumsum(rews, self.gamma)[:-1]
+            value_net_targets = discount_cumsum_torch(rews, self.gamma)[:-1]
 
         else:
             raise NotImplementedError
@@ -262,13 +262,16 @@ class Buffer:
         """
 
         path_slice = slice(self.path_start_idx, self.ptr)
-        rews = np.append(self.rew_buf[path_slice], last_val)
-        vals = np.append(self.val_buf[path_slice], last_val)
-        costs = np.append(self.cost_buf[path_slice], last_cost_val)
-        cost_vs = np.append(self.cost_val_buf[path_slice], last_cost_val)
+        rews = [self.rew_buf[path_slice], last_val]
+        vals = [self.val_buf[path_slice], last_val]
+        costs = [self.cost_buf[path_slice], last_cost_val]
+        cost_vs = [self.cost_val_buf[path_slice], last_cost_val]
+        rews = torch.cat(rews)
+        vals = torch.cat(vals)
+        costs = torch.cat(costs)
+        cost_vs = torch.cat(cost_vs)
 
-        # new: add discounted returns to buffer
-        discounted_ret = discount_cumsum(rews, self.gamma)[:-1]
+        discounted_ret = discount_cumsum_torch(rews, self.gamma)[:-1]
         self.discounted_ret_buf[path_slice] = discounted_ret
         assert self.penalty_param >= 0, 'reward_penalty assumes positive value.'
         rews -= self.penalty_param * costs
@@ -312,12 +315,10 @@ class Buffer:
             cost_adv=self.cost_adv_buf,
             target_c=self.target_cost_val_buf,
         )
-        self.adv_buf = np.zeros(self.size, dtype=np.float32)
-        self.cost_adv_buf = np.zeros(self.size, dtype=np.float32)
+        self.adv_buf = torch.zeros(self.size, dtype=torch.float32, device=self.device)
+        self.cost_adv_buf = torch.zeros(self.size, dtype=torch.float32, device=self.device)
 
-        return {
-            k: torch.as_tensor(v, device=self.device, dtype=torch.float32) for k, v in data.items()
-        }
+        return data
 
     def pre_process_data(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         """Pre-process.

@@ -18,12 +18,16 @@ defaults:
   ## -----------------------------Basic configurations for base class PG------------------------ ##
   # The random seed
   seed: 0
+  # The torch device
+  device: cpu
+  # The torch device id
+  device_id: 0
   # The environment wrapper type
   wrapper_type: CMDPWrapper
   # Number of epochs
   epochs: 5000
   # Number of steps per epoch
-  steps_per_epoch: 8192
+  steps_per_epoch: 2096
   # Number of update iteration for Actor network
   actor_iters: 10
   # Number of update iteration for Critic network
@@ -52,12 +56,12 @@ defaults:
   # The clip range for PPO loss
   clip: 0.2
   # The coefficient of cost penalty
-  kappa: 0.0
+  kappa: 20.0
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
-  use_cost: False
+  use_cost: True
   # The cost limit
   cost_limit: 25.0
   # Cost discounted factor
@@ -84,20 +88,33 @@ defaults:
     shared_weights: False
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
+    # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
+    actor_type: gaussian
     # Configuration of Actor and Critic network
     ac_kwargs:
       # Configuration of Actor network
       pi:
-        # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-        actor_type: gaussian
         # Size of hidden layers
         hidden_sizes: [64, 64]
-        # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+        # Activation function
         activation: tanh
+        # Output activation function
+        output_activation: identity
+        # Whether to scale action.
+        scale_action: False
+        # Whether to clip action.
+        clip_action: False
+        # Whther to learn the standard deviation of Gaussian noise
+        std_learning: True
+        # The initial value of standard deviation of Gaussian noise
+        std_init: 1.0
+      # Configuration of Critic network
       val:
+        # Number of critic networks
+        num_critics: 1
         # Size of hidden layers
         hidden_sizes: [64, 64]
-        # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+        # Activation function
         activation: tanh
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   buffer_cfgs:
@@ -122,11 +139,11 @@ defaults:
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward
-    normalized_rew: True
+    normalized_rew: False
     # Whether to use standardized cost
-    normalized_cost: True
+    normalized_cost: False
     # Whether to use standardized obs
-    normalized_obs: False
+    normalized_obs: True
     # The maximum length of record queue
     max_len: 100
     # The number of threads used to sample data

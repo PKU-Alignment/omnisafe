@@ -40,7 +40,7 @@ class QCritic(Critic):
         weight_initialization_mode: InitFunction = 'xavier_uniform',
         shared: nn.Module = None,
         num_critics: int = 1,
-        use_obs_encoder: bool = False,
+        use_obs_encoder: bool = True,
     ) -> None:
         """Initialize the critic network.
 

@@ -18,6 +18,7 @@ import os
 import string
 import time
 from concurrent.futures import ProcessPoolExecutor as Pool
+from copy import deepcopy
 from textwrap import dedent
 
 import numpy as np
@@ -31,7 +32,7 @@ from omnisafe.utils.logger_utils import colorize, convert_json
 class ExperimentGrid:
     """Tool for running many experiments given hyper-parameters ranges."""
 
-    def __init__(self, exp_name=''):
+    def __init__(self, exp_name='') -> None:
         self.keys = []
         self.vals = []
         self.shs = []
@@ -49,7 +50,7 @@ class ExperimentGrid:
         # Whether to automatically insert a date and time stamp into the names of save directories
         self.foce_datastamp = False
 
-    def print(self):
+    def print(self) -> None:
         """Print a helpful report about the experiment grid."""
         print('=' * self.div_line_width)
 
@@ -145,11 +146,12 @@ class ExperimentGrid:
         """
 
         def get_val(value, key):
-            # Utility method for getting the correct value out of a variant
+            # utility method for getting the correct value out of a variant
             # given as a nested dict. Assumes that a parameter name, k,
             # describes a path into the nested dict, such that k='a:b:c'
             # corresponds to value=variant['a']['b']['c']. Uses recursion
-            # to get this.
+            # to get this
+            print('value', value, 'key', key)
             if key in value:
                 return value[key]
 
@@ -157,10 +159,10 @@ class ExperimentGrid:
             k_0, k_1 = splits[0], ':'.join(splits[1:])
             return get_val(value[k_0], k_1)
 
-        # Start the name off with the name of the variant generator.
+        # start the name off with the name of the variant generator.
         var_name = self.name
 
-        # Build the rest of the name by looping through all parameters,
+        # build the rest of the name by looping through all parameters,
         # and deciding which ones need to go in there.
         for key, value, shorthand, inn in zip(self.keys, self.vals, self.shs, self.in_names):
 
@@ -171,22 +173,36 @@ class ExperimentGrid:
             # seeds, will be grouped by experiment name.
             if (len(value) > 1 or inn) and key != 'seed':
 
-                # Use the shorthand if available, otherwise the full name.
+                # use the shorthand if available, otherwise the full name.
                 param_name = shorthand if shorthand is not None else key
                 param_name = valid_str(param_name)
-
                 # Get variant value for parameter k
                 variant_val = get_val(variant, key)
 
-                # Append to name
+                # append to name
                 if all_bools(value):
-                    # If this is a param which only takes boolean values,
+                    # if this is a param which only takes boolean values,
                     # only include in the name if it's True for this variant.
                     var_name += ('_' + param_name) if variant_val else ''
                 else:
                     var_name += '_' + param_name + valid_str(variant_val)
 
         return var_name.lstrip('_')
+
+    def update_dic(self, total_dic, item_dic):
+        '''Updater of multi-level dictionary.'''
+        for idd in item_dic.keys():
+            total_value = total_dic.get(idd)
+            item_value = item_dic.get(idd)
+
+            if total_value is None:
+                total_dic.update({idd: item_value})
+            elif isinstance(item_value, dict):
+                self.update_dic(total_value, item_value)
+                total_dic.update({idd: total_value})
+            else:
+                total_value = item_value
+                total_dic.update({idd: total_value})
 
     def _variants(self, keys, vals):
         """Recursively builds list of valid variants."""
@@ -198,13 +214,14 @@ class ExperimentGrid:
         variants = []
         for val in vals[0]:
             for pre_v in pre_variants:
+                current_variants = deepcopy(pre_v)
                 v_temp = {}
                 key_list = keys[0].split(':')
                 v_temp[key_list[-1]] = val
                 for key in reversed(key_list[:-1]):
                     v_temp = {key: v_temp}
-                v_temp.update(pre_v)
-                variants.append(v_temp)
+                self.update_dic(current_variants, v_temp)
+                variants.append(current_variants)
 
         return variants
 
@@ -264,7 +281,7 @@ class ExperimentGrid:
                     assert not (key in new_var), "You can't assign multiple values to the same key."
                     new_var[key] = value
 
-            # Make sure to fill out the nested dict.
+            # make sure to fill out the nested dict.
             for key in unflatten_set:
                 new_var[key] = unflatten_var(new_var[key])
 
@@ -290,13 +307,13 @@ class ExperimentGrid:
         we presume the user may add it as a parameter in the grid.
         """
 
-        # Print info about self.
+        # print info about self.
         self.print()
 
-        # Make the list of all variants.
+        # make the list of all variants.
         variants = self.variants()
 
-        # Print variant names for the user.
+        # print variant names for the user.
         var_names = {self.variant_name(var) for var in variants}
         var_names = sorted(list(var_names))
         line = '=' * self.div_line_width
@@ -338,10 +355,11 @@ class ExperimentGrid:
                 time.sleep(wait / steps)
 
         pool = Pool(max_workers=num_pool)
-        # Run the variants.
+        # run the variants.
         results = []
         exp_names = []
         for idx, var in enumerate(variants):
+            print('current_config', var)
             exp_name = '_'.join([k + '_' + str(v) for k, v in var.items()])
             exp_names.append(exp_name)
             data_dir = os.path.join('./', 'exp-x', self.name, exp_name, '')

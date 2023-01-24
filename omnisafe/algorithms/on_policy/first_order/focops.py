@@ -211,7 +211,7 @@ class FOCOPS(PolicyGradient, Lagrange):
                 'Loss/Loss_pi': loss_pi,
                 'Loss/Delta_loss_pi': loss_pi - loss_pi_before,
                 'Train/StopIter': i + 1,
-                'Values/Adv': adv.numpy(),
+                'Values/Adv': adv.mean().item(),
                 'Train/KL': torch_kl,
                 'Loss/Delta_loss_reward_critic': loss_v - loss_v_before,
                 'Loss/Loss_reward_critic': loss_v,

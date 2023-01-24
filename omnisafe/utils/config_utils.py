@@ -18,7 +18,7 @@ from collections import OrderedDict, namedtuple
 from typing import Any, Dict, NamedTuple, Union
 
 
-def recursive_update(args: dict, update_args: dict) -> NamedTuple:
+def recursive_update(args: dict, update_args: dict, add_new_args: bool = False) -> NamedTuple:
     """Recursively update args.
 
     This function is used to update the args from :class:`dict` to :class:`namedtuple`.
@@ -38,8 +38,15 @@ def recursive_update(args: dict, update_args: dict) -> NamedTuple:
                     args[key] = update_args[key]
                     menus = (key, update_args[key])
                     print(f'- {menus[0]}: {menus[1]} is update!')
-            elif isinstance(value, dict):
-                recursive_update(value, update_args)
+                if isinstance(value, dict):
+                    recursive_update(value, update_args)
+    if add_new_args:
+        for key, value in update_args.items():
+            if key not in args:
+                args[key] = value
+                menus = (key, value)
+                print(f'- {menus[0]}: {menus[1]} is added!')
+
     return dict2namedtuple(args)
 
 
@@ -110,9 +117,7 @@ def check_all_configs(configs: NamedTuple, algo_type: str) -> None:
         algo_type (str): algorithm type.
     """
     if algo_type == 'on-policy':
-        assert (
-            configs.actor_iters > 0 and configs.critic_iters > 0
-        ), 'pi_iters and critic_iters must be greater than 0'
+        assert configs.actor_iters > 0, 'actor_iters must be greater than 0'
         assert (
             configs.actor_lr > 0 and configs.critic_lr > 0
         ), 'actor_lr and critic_lr must be greater than 0'

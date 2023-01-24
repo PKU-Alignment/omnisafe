@@ -23,6 +23,7 @@ from gymnasium.spaces import Box
 
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.critic.q_critic import QCritic
+from omnisafe.utils.config_utils import namedtuple2dict
 from omnisafe.utils.model_utils import build_mlp_network
 
 
@@ -103,31 +104,28 @@ class ActorQCritic(nn.Module):
             )
         else:
             shared = None
-
         actor_builder = ActorBuilder(
             obs_dim=self.obs_dim,
             act_dim=self.act_dim,
-            act_noise=model_cfgs.ac_kwargs.pi.act_noise,
-            hidden_sizes=model_cfgs.ac_kwargs.pi.hidden_sizes,
-            activation=model_cfgs.ac_kwargs.pi.activation,
             weight_initialization_mode=weight_initialization_mode,
             shared=shared,
+            **namedtuple2dict(model_cfgs.ac_kwargs.pi),
         )
 
-        if self.ac_kwargs.pi.actor_type == 'cholesky':
+        if model_cfgs.actor_type == 'cholesky':
             self.actor = actor_builder.build_actor(
-                self.ac_kwargs.pi.actor_type,
+                model_cfgs.actor_type,
                 act_max=self.act_max,
                 act_min=self.act_min,
-                cov_min=self.ac_kwargs.pi.cov_min,
-                mu_clamp_min=self.ac_kwargs.pi.mu_clamp_min,
-                mu_clamp_max=self.ac_kwargs.pi.mu_clamp_max,
-                cov_clamp_min=self.ac_kwargs.pi.cov_clamp_min,
-                cov_clamp_max=self.ac_kwargs.pi.cov_clamp_max,
+                cov_min=model_cfgs.cov_min,
+                mu_clamp_min=model_cfgs.mu_clamp_min,
+                mu_clamp_max=model_cfgs.mu_clamp_max,
+                cov_clamp_min=model_cfgs.cov_clamp_min,
+                cov_clamp_max=model_cfgs.cov_clamp_max,
             )
         else:
             self.actor = actor_builder.build_actor(
-                self.ac_kwargs.pi.actor_type,
+                model_cfgs.actor_type,
                 act_max=self.act_max,
                 act_min=self.act_min,
             )
@@ -162,13 +160,12 @@ class ActorQCritic(nn.Module):
             deterministic (bool, optional): Whether to use deterministic action.
         """
         with torch.no_grad():
-            action, logp_a = self.actor.predict(
+            raw_action, action, logp_a = self.actor.predict(
                 obs, deterministic=deterministic, need_log_prob=True
             )
             value = self.critic(obs, action)[0]
-            action = action.to(torch.float32)
 
-            return action.cpu().numpy(), value.cpu().numpy(), logp_a.cpu().numpy()
+        return raw_action, action, value, logp_a
 
     def anneal_exploration(self, frac) -> None:
         """update internals of actors

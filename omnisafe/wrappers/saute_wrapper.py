@@ -17,12 +17,13 @@
 from dataclasses import dataclass
 
 import numpy as np
+import torch
 from gymnasium import spaces
 
 from omnisafe.common.normalizer import Normalizer
 from omnisafe.common.record_queue import RecordQueue
 from omnisafe.typing import NamedTuple, Optional
-from omnisafe.utils.tools import expand_dims
+from omnisafe.utils.tools import as_tensor, expand_dims
 from omnisafe.wrappers.cmdp_wrapper import CMDPWrapper
 from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
@@ -53,7 +54,7 @@ class RolloutData:
     local_steps_per_epoch: int
     max_ep_len: int
     use_cost: bool
-    current_obs: np.ndarray
+    current_obs: torch.Tensor
     rollout_log: RolloutLog
     saute_data: SauteData
 
@@ -67,7 +68,6 @@ class SauteWrapper(CMDPWrapper):
     The safety state is the safety budget minus the cost divided by the safety budget.
 
     .. note::
-
         - If the safety state is greater than 0, the reward is the original reward.
         - If the safety state is less than 0, the reward is the unsafe reward (always 0 or less than 0).
 
@@ -83,12 +83,12 @@ class SauteWrapper(CMDPWrapper):
 
     def __init__(self, env_id, cfgs: Optional[NamedTuple] = None, **env_kwargs) -> None:
         """Initialize environment wrapper.
+
         Args:
             env_id (str): environment id.
             cfgs (collections.namedtuple): configs.
             env_kwargs (dict): The additional parameters of environments.
         """
-        # self.env = gymnasium.make(env_id, **env_kwargs)
         super().__init__(env_id, cfgs, **env_kwargs)
         if hasattr(self.env, '_max_episode_steps'):
             max_ep_len = self.env._max_episode_steps
@@ -126,7 +126,9 @@ class SauteWrapper(CMDPWrapper):
         low = np.array(np.hstack([self.observation_space.low, np.inf]), dtype=np.float32)
         self.observation_space = spaces.Box(high=high, low=low)
         self.obs_normalizer = (
-            Normalizer(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5)
+            Normalizer(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5).to(
+                self.cfgs.device
+            )
             if self.cfgs.normalized_obs
             else None
         )
@@ -135,15 +137,15 @@ class SauteWrapper(CMDPWrapper):
         )
         self.rollout_data.current_obs = self.reset()[0]
 
-    def augment_obs(self, obs: np.array) -> np.array:
+    def augment_obs(self, obs: np.ndarray) -> np.ndarray:
         """Augmenting the obs with the safety obs.
 
         Detailedly, the augmented obs is the concatenation of the original obs and the safety obs.
         The safety obs is the safety budget minus the cost divided by the safety budget.
 
         Args:
-            obs (np.array): observation.
-            safety_obs (np.array): safety observation.
+            obs (np.ndarray): observation.
+            safety_obs (np.ndarray): safety observation.
         """
         augmented_obs = np.hstack([obs, self.rollout_data.saute_data.safety_obs])
         return augmented_obs
@@ -152,7 +154,7 @@ class SauteWrapper(CMDPWrapper):
         """Update the normalized safety obs.
 
         Args:
-            cost (np.array): cost.
+            cost (np.ndarray): cost.
         """
         if done:
             self.rollout_data.saute_data.safety_obs = np.ones(
@@ -168,15 +170,15 @@ class SauteWrapper(CMDPWrapper):
         """Update the reward.
 
         Args:
-            reward (np.array): reward.
-            next_safety_obs (np.array): next safety observation.
+            reward (np.ndarray): reward.
+            next_safety_obs (np.ndarray): next safety observation.
         """
         for idx, safety_obs in enumerate(self.rollout_data.saute_data.safety_obs):
             if safety_obs <= 0:
                 reward[idx] = self.rollout_data.saute_data.unsafe_reward
         return reward
 
-    def reset(self) -> tuple((np.array, dict)):
+    def reset(self) -> tuple((torch.Tensor, dict)):
         """Reset environment.
 
         .. note::
@@ -191,9 +193,11 @@ class SauteWrapper(CMDPWrapper):
             info = [info]
         self.rollout_data.saute_data.safety_obs = np.ones((self.cfgs.num_envs, 1), dtype=np.float32)
         obs = self.augment_obs(obs)
-        return obs, info
+        return torch.as_tensor(obs, dtype=torch.float32, device=self.cfgs.device), info
 
-    def step(self, action: np.array) -> tuple((np.array, np.array, np.array, bool, dict)):
+    def step(
+        self, action: torch.Tensor
+    ) -> tuple((torch.Tensor, torch.Tensor, torch.Tensor, bool, dict)):
         """Step environment.
 
         .. note::
@@ -203,10 +207,11 @@ class SauteWrapper(CMDPWrapper):
             otherwise the reward is the unsafe reward.
 
         Args:
-            action (np.array): action.
+            action (torch.Tensor): action.
         """
-        next_obs, reward, cost, terminated, truncated, info = self.env.step(action.squeeze())
-        # next_obs, rew, done, info = env.step(act)
+        next_obs, reward, cost, terminated, truncated, info = self.env.step(
+            action.cpu().numpy().squeeze()
+        )
         if self.cfgs.num_envs == 1:
             next_obs, reward, cost, terminated, truncated, info = expand_dims(
                 next_obs, reward, cost, terminated, truncated, info
@@ -223,12 +228,29 @@ class SauteWrapper(CMDPWrapper):
         self.rollout_data.rollout_log.ep_len += np.ones(self.cfgs.num_envs)
         self.rollout_data.rollout_log.ep_budget += self.rollout_data.saute_data.safety_obs
         reward = self.safety_reward(reward)
-        return augmented_obs, reward, cost, terminated, truncated, info
+        return (
+            as_tensor(augmented_obs, reward, cost, device=self.cfgs.device),
+            terminated,
+            truncated,
+            info,
+        )
+
+    def reset_log(
+        self,
+        idx,
+    ) -> None:
+        (
+            self.rollout_data.rollout_log.ep_ret[idx],
+            self.rollout_data.rollout_log.ep_costs[idx],
+            self.rollout_data.rollout_log.ep_len[idx],
+            self.rollout_data.rollout_log.ep_budget[idx],
+        ) = (0.0, 0.0, 0.0, 0.0)
 
     def rollout_log(
         self,
         logger,
         idx,
+        is_train: bool = True,
     ) -> None:
         """Log the information of the rollout."""
         self.record_queue.append(
@@ -240,17 +262,21 @@ class SauteWrapper(CMDPWrapper):
         avg_ep_ret, avg_ep_cost, avg_ep_len, avg_ep_budget = self.record_queue.get_mean(
             'ep_ret', 'ep_cost', 'ep_len', 'ep_budget'
         )
-        logger.store(
-            **{
-                'Metrics/EpRet': avg_ep_ret,
-                'Metrics/EpCost': avg_ep_cost,
-                'Metrics/EpLen': avg_ep_len,
-                'Metrics/EpBudget': avg_ep_budget,
-            }
-        )
-        (
-            self.rollout_data.rollout_log.ep_ret[idx],
-            self.rollout_data.rollout_log.ep_costs[idx],
-            self.rollout_data.rollout_log.ep_len[idx],
-            self.rollout_data.rollout_log.ep_budget[idx],
-        ) = (0.0, 0.0, 0.0, 0.0)
+        if is_train:
+            logger.store(
+                **{
+                    'Metrics/EpRet': avg_ep_ret,
+                    'Metrics/EpCost': avg_ep_cost,
+                    'Metrics/EpLen': avg_ep_len,
+                    'Metrics/EpBudget': avg_ep_budget,
+                }
+            )
+        else:
+            logger.store(
+                **{
+                    'Test/EpRet': avg_ep_ret,
+                    'Test/EpCost': avg_ep_cost,
+                    'Test/EpLen': avg_ep_len,
+                    'Test/EpBudget': avg_ep_budget,
+                }
+            )

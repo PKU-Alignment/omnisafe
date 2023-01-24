@@ -215,15 +215,15 @@ class TRPO(NaturalPG):
 
         self.logger.store(
             **{
-                'Values/Adv': adv.numpy(),
+                'Values/Adv': adv.mean().item(),
                 'Train/Entropy': pi_info['ent'],
                 'Train/KL': kl,
                 'Train/PolicyRatio': pi_info['ratio'],
                 'Misc/AcceptanceStep': accept_step,
                 'Misc/Alpha': alpha.item(),
-                'Misc/FinalStepNorm': torch.norm(final_step_dir).numpy(),
+                'Misc/FinalStepNorm': torch.norm(final_step_dir).mean().item(),
                 'Misc/xHx': xHx.item(),
-                'Misc/gradient_norm': torch.norm(g_flat).numpy(),
+                'Misc/gradient_norm': torch.norm(g_flat).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
             }
         )

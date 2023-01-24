@@ -21,11 +21,22 @@ import torch
 
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
+from omnisafe.typing import NamedTuple, Tuple
 
 
-def train(exp_id, algo, env_id, custom_cfgs):
-    """Train a policy from exp-x config with OmniSafe."""
-    torch.set_num_threads(6)
+def train(
+    exp_id: str, algo: str, env_id: str, custom_cfgs: NamedTuple, num_threads: int = 6
+) -> Tuple[float, float, float]:
+    """Train a policy from exp-x config with OmniSafe.
+
+    Args:
+        exp_id (str): Experiment ID.
+        algo (str): Algorithm to train.
+        env_id (str): The name of test environment.
+        custom_cfgs (NamedTuple): Custom configurations.
+        num_threads (int, optional): Number of threads. Defaults to 6.
+    """
+    torch.set_num_threads(num_threads)
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
     print(f'exp-x: {exp_id} is training...')

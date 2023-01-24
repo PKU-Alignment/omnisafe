@@ -71,6 +71,7 @@ class VCritic(Critic):
                 activation=activation,
                 weight_initialization_mode=weight_initialization_mode,
             )
+            self.add_module('critic', self.net)
 
     def forward(
         self,

@@ -259,7 +259,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         horizon = self.env.rollout_data.max_ep_len
         frames = []
         obs, _ = self.env.reset()
-
+        self.actor.to(self.env.cfgs.device)
         if self.render_mode == 'human':
             self.env.render()
         elif self.render_mode == 'rgb_array':
@@ -271,13 +271,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 with torch.no_grad():
                     if self.env.obs_normalizer is not None:
                         obs = self.env.obs_normalizer.normalize(obs)
-                    act = self.actor.predict(
-                        torch.as_tensor(obs, dtype=torch.float32), deterministic=True
-                    )
-                obs, _, _, done, truncated, _ = self.env.step(act.numpy())
+                    act = self.actor.predict(obs, deterministic=True)
+                [obs, _, _], done, truncated, _ = self.env.step(act.cpu().squeeze())
                 if done[0] or truncated[0]:
                     break
-
                 if self.render_mode == 'rgb_array':
                     frames.append(self.env.render())
 
@@ -298,10 +295,16 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
     def _make_env(self, env_id, **env_kwargs):
         """Make wrapped environment."""
-        env_cfgs = {'num_envs': 1, 'standardized_obs': False, 'standardized_rew': False}
+        env_cfgs = {
+            'num_envs': 1,
+            'standardized_obs': False,
+            'standardized_rew': False,
+            'device': 'cpu',
+        }
         env_cfgs = dict2namedtuple(env_cfgs)
         if self.cfg is not None and 'env_cfgs' in self.cfg:
             # self.cfg['env_cfgs']['num_envs']= 1
+            self.cfg['env_cfgs']['device'] = 'cpu'
             env_cfgs = dict2namedtuple(self.cfg['env_cfgs'])
 
         if self.algo_name in ['PPOSimmerPid', 'PPOSimmerQ', 'PPOLagSimmerQ', 'PPOLagSimmerPid']:

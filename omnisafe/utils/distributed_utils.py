@@ -26,9 +26,8 @@ from torch.distributed import ReduceOp
 
 
 def setup_torch_for_mpi():
-    """
-    Avoid slowdowns caused by each separate process's PyTorch using
-    more than its fair share of CPU resources.
+    """Avoid slowdowns caused by each separate process's PyTorch,
+    using more than its fair share of CPU resources.
     """
     old_num_threads = torch.get_num_threads()
     # decrease number of torch threads for MPI
@@ -50,7 +49,7 @@ def mpi_avg_grads(module: torch.nn.Module) -> None:
     """
     if num_procs() > 1:
         for parameter in module.parameters():
-            p_grad_numpy = parameter.grad.numpy()  # numpy view of tensor data
+            p_grad_numpy = parameter.grad
             avg_p_grad = mpi_avg(parameter.grad)
             p_grad_numpy[:] = avg_p_grad[:]
 
@@ -72,7 +71,10 @@ def sync_params(module: torch.nn.Module) -> None:
 
 
 def mpi_fork(
-    parallel: int, bind_to_core: bool = False, use_number_of_threads: bool = False
+    parallel: int,
+    bind_to_core: bool = False,
+    use_number_of_threads: bool = False,
+    device: str = 'cpu',
 ) -> bool:
     """The entrance of multi-processing.
 
@@ -91,9 +93,10 @@ def mpi_fork(
         use_number_of_threads (bool, optional): Defaults to False.
     """
     is_parent = False
+    back_end = 'gloo' if device == 'cpu' else 'nccl'
     if os.getenv('MASTER_ADDR') is not None:
-        dist.init_process_group(backend='gloo')
-    # Check if MPI is already setup..
+        dist.init_process_group(backend=back_end)
+    # check if MPI is already setup..
     if parallel > 1 and os.getenv('MASTER_ADDR') is None:
         # MPI is not yet set up: quit parent process and start N child processes
         env = os.environ.copy()
@@ -112,7 +115,7 @@ def mpi_fork(
         if use_number_of_threads:
             args += ['--use-hwthread-cpus']
         args += sys.argv
-        # This is the parent process, spawn sub-processes..
+        # this is the parent process, spawn sub-processes..
         subprocess.check_call(args, env=env)
         is_parent = True
     return is_parent
@@ -228,13 +231,10 @@ def mpi_avg_torch_tensor(value: torch.Tensor) -> None:
     """
     assert isinstance(value, torch.Tensor)
     if num_procs() > 1:
-        # tensors can be manipulated in-place
         if len(value.shape) > 0:
-            # x_numpy = x.numpy()  # numpy view of tensor data
             avg_x = mpi_avg(value)
-            value[:] = avg_x[:]  # in-place memory update
+            value[:] = avg_x[:]
         else:
-            # scalars (tensors of dim = 0) must be assigned
             raise NotImplementedError
 
 
@@ -247,13 +247,12 @@ def mpi_statistics_scalar(
         value (torch.Tensor): value to be operated.
         with_min_and_max (bool): whether to return min and max.
     """
-    value = np.array(value, dtype=np.float32)
-    global_sum, global_n = mpi_sum([np.sum(value), len(value)])
-    mean = np.array(global_sum / global_n)
+    global_sum, global_n = mpi_sum([torch.sum(value), len(value)])
+    mean = global_sum / global_n
 
-    global_sum_sq = mpi_sum(np.sum((value - mean) ** 2))
+    global_sum_sq = mpi_sum(torch.sum((value - mean) ** 2))
     # compute global std
-    std = np.sqrt(global_sum_sq / global_n)
+    std = torch.sqrt(global_sum_sq / global_n)
     if with_min_and_max:
         global_min = mpi_op(np.min(value) if len(value) > 0 else np.inf, operation=ReduceOp.MIN)
         global_max = mpi_op(np.max(value) if len(value) > 0 else -np.inf, operation=ReduceOp.MAX)
