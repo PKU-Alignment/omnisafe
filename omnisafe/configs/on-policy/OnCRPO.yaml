@@ -18,12 +18,16 @@ defaults:
   ## -----------------------------Basic configurations for base class PG------------------------ ##
   # The random seed
   seed: 0
+  # The torch device
+  device: cpu
+  # The torch device id
+  device_id: 0
   # The environment wrapper type
   wrapper_type: CMDPWrapper
   # Number of epochs
   epochs: 5000
   # Number of steps per epoch
-  steps_per_epoch: 8192
+  steps_per_epoch: 2048
   # Number of update iteration for Actor network
   actor_iters: 10
   # Number of update iteration for Critic network
@@ -44,28 +48,26 @@ defaults:
   critic_lr: 0.0003
   # The Address for saving training process data
   data_dir: "./runs"
- ## --------------------------Basic configurations for derived class NaturalPG----------------- ##
+  ## ---------------------------Basic configurations for derived class PPO---------------------- ##
   # The thereshold for KL early stopping
-  target_kl: 0.01
-  # Damping value for conjugate gradient
-  cg_damping: 0.1
-  # Number of conjugate gradient iterations
-  cg_iters: 10
-  # Subsampled observation
-  fvp_obs: None
+  target_kl: 0.02
+  # The size of batch for policy update
+  batch_size: 10000
+  # The clip range for PPO loss
+  clip: 0.2
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
-  use_cost: True
+  use_cost: False
   # The cost limit
   cost_limit: 25.0
-  # The distance limit
+  # The tolerance of cost limit
   distance: 2.0
   # Cost discounted factor
   cost_gamma: 1.0
   # Whether to use linear decay of learning rate
-  linear_lr_decay: False
+  linear_lr_decay: True
   # Whether to use exploration noise anneal
   exploration_noise_anneal: False
   # The coefficient of reward penalty
@@ -86,20 +88,33 @@ defaults:
     shared_weights: False
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
+    # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
+    actor_type: gaussian
     # Configuration of Actor and Critic network
     ac_kwargs:
       # Configuration of Actor network
       pi:
-        # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-        actor_type: gaussian
         # Size of hidden layers
         hidden_sizes: [64, 64]
-        # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+        # Activation function
         activation: tanh
+        # Output activation function
+        output_activation: identity
+        # Whether to scale action.
+        scale_action: False
+        # Whether to clip action.
+        clip_action: False
+        # Whther to learn the standard deviation of Gaussian noise
+        std_learning: True
+        # The initial value of standard deviation of Gaussian noise
+        std_init: 1.0
+      # Configuration of Critic network
       val:
+        # Number of critic networks
+        num_critics: 1
         # Size of hidden layers
         hidden_sizes: [64, 64]
-        # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+        # Activation function
         activation: tanh
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   buffer_cfgs:
@@ -119,16 +134,18 @@ defaults:
   env_cfgs:
     # The seed of environment
     env_seed: 0
+    # The cost limit
+    cost_limit: 25.0
     # The number of parallel environments
     num_envs: 1
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward
-    normalized_rew: True
+    normalized_rew: False
     # Whether to use standardized cost
-    normalized_cost: True
+    normalized_cost: False
     # Whether to use standardized obs
-    normalized_obs: False
+    normalized_obs: True
     # The maximum length of record queue
     max_len: 100
     # The number of threads used to sample data

@@ -74,7 +74,7 @@ class TD3(DDPG):
         q_value_list = self.actor_critic.critic(obs, act)
         # Bellman backup for Q function
         with torch.no_grad():
-            act_targ = self.ac_targ.actor.predict(obs, deterministic=True, need_log_prob=False)
+            act_targ, _ = self.ac_targ.actor.predict(obs, deterministic=False, need_log_prob=False)
             q_targ = torch.min(torch.vstack(self.ac_targ.critic(next_obs, act_targ)), dim=0).values
             backup = rew + self.cfgs.gamma * (1 - done) * q_targ
         # MSE loss against Bellman backup
@@ -83,7 +83,32 @@ class TD3(DDPG):
         for q_value in q_value_list:
             loss_q.append(torch.mean((q_value - backup) ** 2))
             q_values.append(torch.mean(q_value))
-
+            self.logger.store(
+                **{
+                    'Train/RewardQValues': q_value.mean().item(),
+                }
+            )
         # useful info for logging
-        q_info = dict(QVals=sum(q_values).detach().numpy())
+        q_info = dict(QVals=sum(q_values).detach().mean().item())
         return sum(loss_q), q_info
+
+    def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        r"""Computing ``pi/actor`` loss.
+
+        Detailedly, the loss function in DDPG is defined as:
+
+        .. math::
+            L = -Q^V(s, \pi(s))
+
+        where :math:`Q^V` is the reward critic network,
+        and :math:`\pi` is the policy network.
+
+        Args:
+            obs (:class:`torch.Tensor`): ``observation`` saved in data.
+        """
+        action, _ = self.actor_critic.actor.predict(obs, deterministic=False)
+        loss_pi = torch.min(
+            self.actor_critic.critic(obs, action)[0], self.actor_critic.critic(obs, action)[1]
+        )
+        pi_info = {}
+        return -loss_pi.mean(), pi_info

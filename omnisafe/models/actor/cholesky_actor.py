@@ -149,8 +149,12 @@ class MLPCholeskyActor(nn.Module):
         pi_action = self.act_limit * pi_action
 
         if need_log_prob:
-            return pi_action.squeeze().to(torch.float32), cholesky.to(torch.float32)
-        return pi_action.squeeze().to(torch.float32)
+            return (
+                pi_action.to(torch.float32),
+                pi_action.to(torch.float32),
+                cholesky.to(torch.float32),
+            )
+        return pi_action.to(torch.float32), pi_action.to(torch.float32)
 
     def forward(self, obs, deterministic=False):
         """Forward."""

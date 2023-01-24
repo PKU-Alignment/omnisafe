@@ -28,7 +28,7 @@ from omnisafe.common.record_queue import RecordQueue
 from omnisafe.common.vector_buffer import VectorBuffer as Buffer
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core, distributed_utils
-from omnisafe.utils.config_utils import namedtuple2dict
+from omnisafe.utils.config_utils import namedtuple2dict, recursive_update
 from omnisafe.utils.tools import get_flat_params_from
 from omnisafe.wrappers import wrapper_registry
 
@@ -55,9 +55,17 @@ class PolicyGradient:
         self.algo = self.__class__.__name__
         self.cfgs = deepcopy(cfgs)
         self.wrapper_type = self.cfgs.wrapper_type
-        self.env = wrapper_registry.get(self.wrapper_type)(
-            env_id, cfgs=self.cfgs._asdict().get('env_cfgs')
+        self.device = (
+            f'cuda:{self.cfgs.device_id}'
+            if torch.cuda.is_available() and self.cfgs.device == 'cuda'
+            else 'cpu'
         )
+        added_cfgs = self._get_added_cfgs()
+        env_cfgs = recursive_update(
+            namedtuple2dict(self.cfgs.env_cfgs), added_cfgs, add_new_args=True
+        )
+
+        self.env = wrapper_registry.get(self.wrapper_type)(env_id, cfgs=env_cfgs)
 
         assert self.cfgs.steps_per_epoch % distributed_utils.num_procs() == 0
         self.steps_per_epoch = self.cfgs.steps_per_epoch
@@ -84,8 +92,7 @@ class PolicyGradient:
             observation_space=self.env.observation_space,
             action_space=self.env.action_space,
             model_cfgs=cfgs.model_cfgs,
-        )
-        # set PyTorch + MPI.
+        ).to(self.device)
         self.set_mpi()
         # set up experience buffer
 
@@ -101,6 +108,7 @@ class PolicyGradient:
             standardized_cost_adv=cfgs.buffer_cfgs.standardized_cost_adv,
             penalty_param=cfgs.penalty_param,
             num_envs=cfgs.env_cfgs.num_envs,
+            device=self.device,
         )
         # set up optimizer for policy and value function
         self.actor_optimizer = core.set_optimizer(
@@ -129,6 +137,18 @@ class PolicyGradient:
         self.penalty_param = None
         self.critic_loss_fn = nn.MSELoss()
         self.loss_record = RecordQueue('loss_pi', 'loss_v', 'loss_c', maxlen=100)
+
+    def _get_added_cfgs(self) -> dict:
+        """Get additional configurations.
+
+        Returns:
+            dict: The additional configurations.
+        """
+        return {
+            'device': f'cuda:{self.cfgs.device_id}'
+            if torch.cuda.is_available() and self.cfgs.device == 'cuda'
+            else 'cpu'
+        }
 
     def set_learning_rate_scheduler(self) -> torch.optim.lr_scheduler.LambdaLR:
         """Set up learning rate scheduler.
@@ -177,13 +197,13 @@ class PolicyGradient:
             self.logger.log('Check if distributed parameters are synchronous..')
             modules = {
                 'Policy': self.actor_critic.actor,
-                'Value': self.actor_critic.reward_critic.net,
+                'Value': self.actor_critic.reward_critic,
             }
             for key, module in modules.items():
-                flat_params = get_flat_params_from(module).numpy()
-                global_min = distributed_utils.mpi_min(np.sum(flat_params))
-                global_max = distributed_utils.mpi_max(np.sum(flat_params))
-                assert np.allclose(global_min, global_max), f'{key} not synced.'
+                flat_params = get_flat_params_from(module)
+                global_min = distributed_utils.mpi_min(torch.sum(flat_params))
+                global_max = distributed_utils.mpi_max(torch.sum(flat_params))
+                assert torch.allclose(global_min, global_max), f'{key} not synced.'
 
     def compute_surrogate(
         self,
@@ -355,7 +375,7 @@ class PolicyGradient:
             current_lr = self.cfgs.actor_lr
 
         self.logger.log_tabular('Train/Epoch', epoch + 1)
-        self.logger.log_tabular('Metrics/EpRet', min_and_max=True)
+        self.logger.log_tabular('Metrics/EpRet')
         self.logger.log_tabular('Metrics/EpCost')
         self.logger.log_tabular('Metrics/EpLen')
 
@@ -388,9 +408,9 @@ class PolicyGradient:
         if self.cfgs.exploration_noise_anneal:
             noise_std = self.actor_critic.actor.std
             self.logger.log_tabular('Misc/ExplorationNoiseStd', noise_std)
-        if self.cfgs.model_cfgs.ac_kwargs.pi.actor_type == 'gaussian_learning':
+        if self.cfgs.model_cfgs.actor_type == 'gaussian_learning':
             self.logger.log_tabular('Misc/ExplorationNoiseStd', self.actor_critic.actor.std)
-        # some child classes may add information to logs
+        # some sub-classes may add information to logs
         self.algorithm_specific_logs()
         self.logger.log_tabular('TotalEnvSteps', total_env_steps)
         self.logger.log_tabular('Time', int(time.time() - self.start_time))
@@ -485,6 +505,7 @@ class PolicyGradient:
                 .mean()
                 .item()
             )
+            torch_kl = distributed_utils.mpi_avg(torch_kl)
             # if the KL divergence is larger than the target KL divergence, stop the update.
             if self.cfgs.kl_early_stopping and torch_kl > self.cfgs.target_kl:
                 self.logger.log(f'KL early stop at the {i+1} th step.')
@@ -496,7 +517,7 @@ class PolicyGradient:
                 'Loss/Loss_pi': loss_pi,
                 'Loss/Delta_loss_pi': loss_pi - loss_pi_before,
                 'Train/StopIter': i + 1,
-                'Values/Adv': adv.numpy(),
+                'Values/Adv': adv.mean().item(),
                 'Train/KL': torch_kl,
                 'Loss/Delta_loss_reward_critic': loss_v - loss_v_before,
                 'Loss/Loss_reward_critic': loss_v,
@@ -607,7 +628,7 @@ class PolicyGradient:
         )
         # add the norm of critic network parameters to the loss function.
         if self.cfgs.use_critic_norm:
-            for param in self.actor_critic.reward_critic.net.parameters():
+            for param in self.actor_critic.reward_critic.parameters():
                 loss_v += param.pow(2).sum() * self.cfgs.critic_norm_coeff
         # log the loss of value net.
         self.loss_record.append(loss_v=loss_v.mean().item())
@@ -618,8 +639,7 @@ class PolicyGradient:
             torch.nn.utils.clip_grad_norm_(
                 self.actor_critic.reward_critic.parameters(), self.cfgs.max_grad_norm
             )
-        # average grads across MPI processes.
-        distributed_utils.mpi_avg_grads(self.actor_critic.reward_critic.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.reward_critic)
         self.reward_critic_optimizer.step()
 
     def update_cost_net(self, obs: torch.Tensor, target_c: torch.Tensor) -> None:
@@ -654,7 +674,7 @@ class PolicyGradient:
         )
         # add the norm of critic network parameters to the loss function.
         if self.cfgs.use_critic_norm:
-            for param in self.actor_critic.cost_critic.net.parameters():
+            for param in self.actor_critic.cost_critic.parameters():
                 loss_c += param.pow(2).sum() * self.cfgs.critic_norm_coeff
         # log the loss.
         self.loss_record.append(loss_c=loss_c.mean().item())
@@ -665,6 +685,5 @@ class PolicyGradient:
             torch.nn.utils.clip_grad_norm_(
                 self.actor_critic.cost_critic.parameters(), self.cfgs.max_grad_norm
             )
-        # average grads across MPI processes.
-        distributed_utils.mpi_avg_grads(self.actor_critic.cost_critic.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.cost_critic)
         self.cost_critic_optimizer.step()

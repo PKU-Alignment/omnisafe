@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the SAC algorithm."""
+"""Implementation of the Pid-Lagrange version of the SAC algorithm."""
 
 from typing import Dict, NamedTuple, Tuple
 
@@ -21,14 +21,14 @@ import torch.nn.functional as F
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.sac import SAC
-from omnisafe.common.lagrange import Lagrange
+from omnisafe.common.pid_lagrange import PIDLagrangian
 from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes
-class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attributes
-    """The Lagrange version of SAC algorithm.
+class SACPid(SAC, PIDLagrangian):  # pylint: disable-next=too-many-instance-attributes
+    """The Pid-Lagrange version of SAC algorithm.
 
     References:
         - Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
@@ -37,7 +37,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize SACLag.
+        """Initialize SACPid.
 
         Args:
             env_id (str): environment id.
@@ -50,22 +50,35 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
             env_id=env_id,
             cfgs=cfgs,
         )
-        Lagrange.__init__(self, **namedtuple2dict(self.cfgs.lagrange_cfgs))
+        PIDLagrangian.__init__(self, **namedtuple2dict(self.cfgs.PID_cfgs))
 
     def algorithm_specific_logs(self) -> None:
-        """Log the SAC Lag specific information.
+        """Log the SACPid specific information.
 
         .. list-table::
 
-            *   -   Things to log
-                -   Description
-            *   -   Metrics/LagrangeMultiplier
-                -   The Lagrange multiplier value in current epoch.
+            *  -   Things to log
+               -   Description
+            *  -   Metrics/LagrangeMultiplier
+               -   The Lagrange multiplier value in current epoch.
+            *  -   Loss/Loss_pi_c
+               -   The cost loss of the ``pi/actor``.
+            *  -   Misc/CostLimit
+               -   The cost limit value in current epoch.
+            *  -   PID/pid_Kp
+               -   The proportional gain of the PID controller.
+            *  -   PID/pid_Ki
+               -   The integral gain of the PID controller.
+            *  -   PID/pid_Kd
+               -   The derivative gain of the PID controller.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
+        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.cost_penalty)
         self.logger.log_tabular('Loss/Loss_pi_c')
         self.logger.log_tabular('Misc/CostLimit', self.cost_limit)
+        self.logger.log_tabular('PID/pid_Kp', self.pid_kp)
+        self.logger.log_tabular('PID/pid_Ki', self.pid_ki)
+        self.logger.log_tabular('PID/pid_Kd', self.pid_kd)
 
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         r"""Computing ``pi/actor`` loss.
@@ -92,17 +105,15 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
         )
         loss_pi_c = self.actor_critic.cost_critic(obs, action)[0]
         loss_pi_c = F.relu(loss_pi_c - self.cost_limit)
-        self.update_lagrange_multiplier(loss_pi_c.mean().item())
-        penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        loss_pi -= penalty * loss_pi_c
-        loss_pi /= 1 + penalty
+        self.pid_update(loss_pi_c.mean().item())
+        loss_pi -= self.cost_penalty * loss_pi_c
+        loss_pi /= 1 + self.cost_penalty
         pi_info = {}
         self.logger.store(
             **{
                 'Loss/Loss_pi_c': loss_pi_c.mean().item(),
                 'Misc/LogPi': logp_a.detach().mean().item(),
                 'Misc/Alpha': self.alpha.detach().mean().item(),
-                'Metrics/LagrangeMultiplier': self.lagrangian_multiplier.item(),
             }
         )
         pi_info = {}
@@ -132,6 +143,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
             act (torch.Tensor): ``action`` saved in data.
             rew (torch.Tensor): ``reward`` saved in data.
             next_obs (torch.Tensor): ``next observation`` saved in data.
+            done (torch.Tensor): ``terminated`` saved in data.
         """
         cost_q_value = self.actor_critic.cost_critic(obs, act)[0]
         self.logger.store(

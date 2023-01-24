@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the TD3 algorithm."""
+"""Implementation of the Lagrange version of the CRPO algorithm."""
 
 from typing import Dict, NamedTuple, Tuple
 
@@ -20,76 +20,76 @@ import torch
 import torch.nn.functional as F
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.off_policy.td3 import TD3
-from omnisafe.common.lagrange import Lagrange
-from omnisafe.utils.config_utils import namedtuple2dict
+from omnisafe.algorithms.off_policy.ddpg import DDPG
 
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes
-class TD3Lag(TD3, Lagrange):
-    """The Lagrange version of the TD3 algorithm
+class OffCRPO(DDPG):
+    """The CRPO algorithm.
 
     References:
-        - Title: Addressing Function Approximation Error in Actor-Critic Methods
-        - Authors: Scott Fujimoto, Herke van Hoof, David Meger.
-        - URL: `TD3 <https://arxiv.org/abs/1802.09477>`_
+        - Title: CRPO: A New Approach for Safe Reinforcement Learning with Convergence Guarantee
+        - Authors: Tengyu Xu, Yingbin Liang, Guanghui Lan.
+        - URL: `CRPO <https://arxiv.org/pdf/2011.05869.pdf>`_
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize Lagrange version of the TD3.
-
-        Args:
-            env_id (str): environment id.
-            cfgs (dict): configurations.
-            algo (str): algorithm name.
-            wrapper_type (str): environment wrapper type.
-        """
-        TD3.__init__(
+        """Initialize CRPO."""
+        DDPG.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,
         )
-        Lagrange.__init__(self, **namedtuple2dict(self.cfgs.lagrange_cfgs))
+        self.cost_limit = self.cfgs.init_cost_limit
+        self.rew_update = 0
+        self.cost_update = 0
 
     def algorithm_specific_logs(self) -> None:
-        """Log the TD3 Lag specific information.
+        """Log the CRPO specific information.
 
         .. list-table::
 
             *  -   Things to log
                -   Description
-            *  -   Metrics/LagrangeMultiplier
-               -   The Lagrange multiplier value in current epoch.
+            *  -   ``Loss/Loss_pi_c``
+               -   The loss of the cost critic.
+            *  -   ``Misc/CostLimit``
+               -   The cost limit.
+            *  -   ``Misc/RewUpdate``
+               -   The number of reward updates.
+            *  -   ``Misc/CostUpdate``
+               -   The number of cost updates.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
         self.logger.log_tabular('Loss/Loss_pi_c')
         self.logger.log_tabular('Misc/CostLimit', self.cost_limit)
+        self.logger.log_tabular('Misc/RewUpdate', self.rew_update)
+        self.logger.log_tabular('Misc/CostUpdate', self.cost_update)
 
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         r"""Computing ``pi/actor`` loss.
 
-        In the lagrange version of TD3, the loss is defined as:
+        In CRPO algorithm, the loss function is defined as:
 
         .. math::
-            L = \mathbb{E}_{s \sim \mathcal{D}} [ Q(s, \pi(s)) - \lambda C(s, \pi(s))]
 
-        where :math:`\lambda` is the lagrange multiplier.
+            \mathcal{L}_{\pi} = - Q^V(s, \pi(s)) \text{ if } \mathcal{L}_{\pi_c} \leq \mathcal{L}_{\text{limit}} \\
+
+            \mathcal{L}_{\pi} = Q^C(s, \pi(s)) \text{ if } \mathcal{L}_{\pi_c} > \mathcal{L}_{\text{limit}}
 
         Args:
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
         """
         action, _ = self.actor_critic.actor.predict(obs, deterministic=False, need_log_prob=False)
-        loss_pi = torch.min(
-            self.actor_critic.critic(obs, action)[0], self.actor_critic.critic(obs, action)[1]
-        )
         loss_pi_c = self.actor_critic.cost_critic(obs, action)[0]
         loss_pi_c = F.relu(loss_pi_c - self.cost_limit)
-        self.update_lagrange_multiplier(loss_pi_c.mean().item())
-        penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        loss_pi -= penalty * loss_pi_c
-        loss_pi /= 1 + penalty
+        if loss_pi_c.mean().item() > self.cost_limit:
+            loss_pi = -loss_pi_c
+            self.cost_update += 1
+        else:
+            loss_pi = self.actor_critic.critic(obs, action)[0]
+            self.rew_update += 1
         pi_info = {}
         self.logger.store(
             **{

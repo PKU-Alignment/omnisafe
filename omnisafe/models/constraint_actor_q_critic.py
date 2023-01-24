@@ -101,15 +101,10 @@ class ConstraintActorQCritic(ActorQCritic):
             deterministic (bool, optional): Whether to use deterministic action.
         """
         with torch.no_grad():
-            action, logp_a = self.actor.predict(
+            raw_action, action, logp_a = self.actor.predict(
                 obs, deterministic=deterministic, need_log_prob=True
             )
             value = self.critic(obs, action)[0]
             cost_value = self.cost_critic(obs, action)[0]
 
-        return (
-            action.cpu().numpy(),
-            value.cpu().numpy(),
-            cost_value.cpu().numpy(),
-            logp_a.cpu().numpy(),
-        )
+        return raw_action, action, value, cost_value, logp_a

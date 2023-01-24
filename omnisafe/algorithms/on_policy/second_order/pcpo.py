@@ -298,7 +298,8 @@ class PCPO(TRPO):
         step_dir = (
             torch.sqrt(2 * self.target_kl / (q + 1e-8)) * H_inv_g
             - torch.clamp_min(
-                (torch.sqrt(2 * self.target_kl / q) * r + cost) / s, torch.tensor(0.0)
+                (torch.sqrt(2 * self.target_kl / q) * r + cost) / s,
+                torch.tensor(0.0, device=self.cfgs.device),
             )
             * p
         )  # pylint: disable = invalid-name
@@ -328,11 +329,11 @@ class PCPO(TRPO):
                 'Train/PolicyRatio': pi_info['ratio'],
                 'Misc/AcceptanceStep': accept_step,
                 'Misc/Alpha': alpha.item(),
-                'Misc/FinalStepNorm': final_step_dir.norm().numpy(),
-                'Misc/xHx': xHx.numpy(),
+                'Misc/FinalStepNorm': final_step_dir.norm().mean().item(),
+                'Misc/xHx': xHx.mean().item(),
                 'Misc/H_inv_g': x.norm().item(),  # H^-1 g
-                'Misc/gradient_norm': torch.norm(g_flat).numpy(),
-                'Misc/cost_gradient_norm': torch.norm(b_flat).numpy(),
+                'Misc/gradient_norm': torch.norm(g_flat).mean().item(),
+                'Misc/cost_gradient_norm': torch.norm(b_flat).mean().item(),
                 'Misc/Lambda_star': 1.0,
                 'Misc/Nu_star': 1.0,
                 'Misc/OptimCase': int(1),

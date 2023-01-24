@@ -15,7 +15,7 @@
 
 defaults:
   # --------------------------------------Basic Configurations----------------------------------- #
-  ## -----------------------------Basic configurations for base class PG------------------------ ##
+  ## -----------------------------Basic configurations for base class DDPG---------------------- ##
   # The random seed
   seed: 0
   # The torch device
@@ -23,63 +23,71 @@ defaults:
   # The torch device id
   device_id: 0
   # The environment wrapper type
-  wrapper_type: SimmerWrapper
+  wrapper_type: SafetyLayerWrapper
   # Number of epochs
-  epochs: 5000
+  epochs: 500
   # Number of steps per epoch
-  steps_per_epoch: 4096
-  # Number of update iteration for Actor network
-  actor_iters: 10
-  # Number of update iteration for Critic network
-  critic_iters: 40
-  # Check if all models own the same parameter values every `check_freq` epoch
+  steps_per_epoch: 6000
+  # Update after `update_after` steps
+  update_after: 1000
+  # Update every `update_every` steps
+  update_every: 50
+  # Check if all models own the same parameter values every `check_freq` epochs
   check_freq: 25
   # Save model to disk every `check_freq` epochs
-  save_freq: 100
-  # Entropy coefficient for PPO loss
-  entropy_coef: 0.0
+  save_freq: 10
   # The max length of per epoch
   max_ep_len: 1000
-  # The size of mini batch
-  num_mini_batches: 64
+  # The number of test episodes
+  num_test_episodes: 10
   # The learning rate of Actor network
   actor_lr: 0.0003
   # The learning rate of Critic network
-  critic_lr: 0.0003
+  critic_lr: 0.001
+  # The learning rate of Cost network
+  model_lr: 0.001
+  # The soft update coefficient
+  polyak: 0.999
+  # The discount factor of GAE
+  gamma: 0.99
+  # Actor perdorm random action before `start_steps` steps
+  start_steps: 10000
   # The Address for saving training process data
   data_dir: "./runs"
-  ## ---------------------------Basic configurations for derived class PPO---------------------- ##
-  # The thereshold for KL early stopping
-  target_kl: 0.02
-  # The size of batch for policy update
-  batch_size: 10000
-  # The clip range for PPO loss
-  clip: 0.2
+
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
-  use_cost: False
+  use_cost: True
+  # Whether to use cost limit decay
+  cost_limit_decay: False
+  # The initial value of cost limit
+  init_cost_limit: 25.0
+  # The target value of cost limit
+  target_cost_limit: 25.0
+  # The end of cost limit decay epoch
+  end_epoch: 100
+  # The cost limit
+  cost_limit: 25.0
   # Cost discounted factor
   cost_gamma: 1.0
   # Whether to use linear decay of learning rate
-  linear_lr_decay: True
+  linear_lr_decay: False
   # Whether to use exploration noise anneal
   exploration_noise_anneal: False
-  # The coefficient of reward penalty
-  penalty_param: 0.0
+  # Whether to use reward penalty
+  reward_penalty: False
   # Whether to use KL early stopping
-  kl_early_stopping: True
+  kl_early_stopping: False
   # Whether to use max gradient norm
-  use_max_grad_norm: True
+  use_max_grad_norm: False
   # The thereshold of max gradient norm
-  max_grad_norm: 40
+  max_grad_norm: 0.5
+  # Whether to use reward scaling
+  scale_rewards: False
   # Whether to use standardized observation
   standardized_obs: True
-  # Whether to use critic network norm
-  use_critic_norm: True
-  # The norm coefficient of critic network
-  critic_norm_coeff: 0.001
   ## ---------------------------------------Configuration For Model----------------------------- ##
   model_cfgs:
     # Whether to share the weight of Actor network with Critic network
@@ -95,15 +103,15 @@ defaults:
         # Size of hidden layers
         hidden_sizes: [64, 64]
         # Activation function
-        activation: tanh
+        activation: relu
         # Output activation function
-        output_activation: identity
+        output_activation: tanh
         # Whether to scale action.
-        scale_action: False
+        scale_action: True
         # Whether to clip action.
-        clip_action: False
-        # Whther to learn the standard deviation of Gaussian noise
-        std_learning: True
+        clip_action: True
+        # Whether to learn the standard deviation of Gaussian noise
+        std_learning: False
         # The initial value of standard deviation of Gaussian noise
         std_init: 1.0
       # Configuration of Critic network
@@ -113,60 +121,22 @@ defaults:
         # Size of hidden layers
         hidden_sizes: [64, 64]
         # Activation function
-        activation: tanh
+        activation: relu
   ## --------------------------------------Configuration For Buffer----------------------------- ##
-  buffer_cfgs:
-    # Reward discounted factor
-    gamma: 0.99
-    # Parameters used to estimate future rewards in GAE
-    lam: 0.95
-    # Parameters used to estimate future costs in GAE
-    lam_c: 0.95
-    # Method to estimate the advantage reward/cost, choosing from "gae", "plain", "vtrace"
-    adv_estimation_method: gae
-    # Whether to use reward standardized advantage estimation
-    standardized_rew_adv: True
-    # Whether to use cost standardized advantage estimation
-    standardized_cost_adv: True
-  ## Configuration For Env_Wrapper
+  replay_buffer_cfgs:
+    # The size of replay buffer
+    size: 50000
+    # The size of batch
+    batch_size: 256
+  ## -----------------------------------Configuration For Safety Layer--------------------------- ##
   env_cfgs:
-    # The seed of environment
-    env_seed: 0
-    # The number of parallel environments
-    num_envs: 1
-    # Whether to use async environment
-    async_env: True
-    # Whether to use standardized reward
-    normalized_rew: True
-    # Whether to use standardized cost
-    normalized_cost: True
-    # Whether to use standardized obs
-    normalized_obs: True
-    # The maximum length of record queue
-    max_len: 100
-    # The number of threads used to sample data
-    num_threads: 20
-    # The reward when the state is unsafe
-    unsafe_reward: -0.1
-    # The lower bound of safety budget
-    lower_budget: 15
-    # The upper bound of safety budget
-    upper_budget: 25
-    # The dicounted factor
-    simmer_gamma: 0.9997
-    # Whether to scale the safety budget
-    scale_safety_budget: True
-    # Type of Simmer Controller
-    simmer_controller: 'PID'
-    # Configuration of Simmer Controller
-    controller_cfgs:
-      # Kp for PID
-      pid_kp: 0.1
-      # Ki for PID
-      pid_ki: 0.01
-      # Kd for PID
-      pid_kd: 0.01
-      # The step size for PID
-      step_size: 3
-      # Lowpass filter coefficient
-      tau: 0.05
+    # Configuration of LinearCostModel in SafetyLayerWrapper
+    cost_model:
+      # Size of hidden layers
+      hidden_sizes: [400, 300]
+      # Activation function
+      activation: relu
+      model_lr: 0.001
+    data_dir: "./runs"
+    buffer_size: 50000
+    batch_size: 256

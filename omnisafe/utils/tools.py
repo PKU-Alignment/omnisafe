@@ -225,7 +225,7 @@ def expand_dims(*args):
     return [np.expand_dims(item, axis=0) for item in args]
 
 
-def as_tensor(*args):
+def as_tensor(*args, device: torch.device = 'cpu'):
     """This function is used to convert the input data to tensor.
 
     .. note::
@@ -237,4 +237,4 @@ def as_tensor(*args):
     """
     if len(args) == 1:
         return torch.as_tensor(args[0], dtype=torch.float32)
-    return [torch.as_tensor(item, dtype=torch.float32) for item in args]
+    return [torch.as_tensor(item, dtype=torch.float32, device=device) for item in args]

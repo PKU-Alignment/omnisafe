@@ -19,12 +19,13 @@ from dataclasses import dataclass
 from typing import Dict, Tuple
 
 import numpy as np
+import torch
 from gymnasium import spaces
 
 from omnisafe.common.normalizer import Normalizer
 from omnisafe.common.record_queue import RecordQueue
 from omnisafe.typing import NamedTuple, Optional
-from omnisafe.utils.tools import expand_dims
+from omnisafe.utils.tools import as_tensor, expand_dims
 from omnisafe.wrappers.cmdp_wrapper import CMDPWrapper
 from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
@@ -114,7 +115,6 @@ class PidController:
             lower_budget (float): The lower bound of safety budget.
             upper_budget (float): The upper bound of safety budget.
         """
-        # PID parameters.
         self.pid_data = PidData(
             pid_kp=cfgs.pid_kp,
             pid_ki=cfgs.pid_ki,
@@ -128,7 +128,7 @@ class PidController:
             lower_budget=lower_budget,
         )
 
-        # Initialize the PID controller.
+        # initialize the PID controller.
         self.error = 0.0
         self.error_i = 0.0
         self.prev_action = 0
@@ -147,14 +147,14 @@ class PidController:
         Args:
             obs (float): The current observation.
         """
-        # Low pass filter.
+        # low pass filter.
         error_p = self.pid_data.tau * self.error + (1 - self.pid_data.tau) * (
             self.simmer_data.safety_budget - obs
         )
         self.error_i += self.error
         error_d = self.pid_data.pid_kd * (self.prev_action - self.prev_raw_action)
 
-        # Compute PID error.
+        # compute PID error.
         curr_raw_action = (
             self.pid_data.pid_kp * error_p
             + self.pid_data.pid_ki * self.error_i
@@ -174,13 +174,13 @@ class PidController:
         """
         curr_raw_action = self.compute_raw_action(obs)
 
-        # Clip the raw action.
+        # clip the raw action.
         curr_action = np.clip(curr_raw_action, -self.pid_data.step_size, self.pid_data.step_size)
         self.prev_action = curr_action
         self.prev_raw_action = curr_raw_action
         raw_budget = self.simmer_data.safety_budget + curr_action
 
-        # Clip the safety budget.
+        # clip the safety budget.
         self.simmer_data.safety_budget = np.clip(
             raw_budget, self.simmer_data.lower_budget, self.simmer_data.upper_budget
         )
@@ -225,7 +225,7 @@ class QController:
         self.action = 0
         self.step(self.action)
 
-        # Initialize the observation (Cost value per epoch) buffer.
+        # initialize the observation (Cost value per epoch) buffer.
         self.prev_obs = copy.copy(self.safety_budget)
         self.filtered_obs_buffer = []
         self.filtered_obs = 0
@@ -364,7 +364,7 @@ class QController:
         self.filtered_obs_buffer.append(self.filtered_obs)
         state = self.safety_budget
 
-        # Use epsilon greedy to explore the environment
+        # use epsilon greedy to explore the environment
         epsilon = np.random.random()
         if epsilon > self.q_data.epsilon:
             action = self.get_random_action()
@@ -374,7 +374,7 @@ class QController:
         next_state = self.step(action)
         safety_budget = next_state
 
-        # Update the Q function
+        # update the Q function
         self.update_q_function(state, action, reward, next_state)
         return safety_budget
 
@@ -406,6 +406,7 @@ class SimmerWrapper(CMDPWrapper):
 
     def __init__(self, env_id, cfgs: Optional[NamedTuple] = None, **env_kwargs) -> None:
         """Initialize environment wrapper.
+
         Args:
             env_id (str): environment id.
             cfgs (collections.namedtuple): configs.
@@ -463,7 +464,9 @@ class SimmerWrapper(CMDPWrapper):
         low = np.array(np.hstack([self.observation_space.low, np.inf]), dtype=np.float32)
         self.observation_space = spaces.Box(high=high, low=low)
         self.obs_normalizer = (
-            Normalizer(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5)
+            Normalizer(shape=(self.cfgs.num_envs, self.observation_space.shape[0]), clip=5).to(
+                device=self.cfgs.device
+            )
             if self.cfgs.normalized_obs
             else None
         )
@@ -490,15 +493,15 @@ class SimmerWrapper(CMDPWrapper):
             )
         self.rollout_data.current_obs = self.reset()[0]
 
-    def augment_obs(self, obs: np.array) -> np.array:
+    def augment_obs(self, obs: np.ndarray) -> np.ndarray:
         """Augmenting the obs with the safety obs.
 
         Detailedly, the augmented obs is the concatenation of the original obs and the safety obs.
         The safety obs is the safety budget minus the cost divided by the safety budget.
 
         Args:
-            obs (np.array): observation.
-            safety_obs (np.array): safety observation.
+            obs (np.ndarray): observation.
+            safety_obs (np.ndarray): safety observation.
         """
         augmented_obs = np.hstack([obs, self.rollout_data.simmer_data.safety_obs])
         return augmented_obs
@@ -507,7 +510,7 @@ class SimmerWrapper(CMDPWrapper):
         """Update the normalized safety obs.
 
         Args:
-            cost (np.array): cost.
+            cost (np.ndarray): cost.
         """
         if done:
             self.rollout_data.simmer_data.safety_obs = np.ones(
@@ -523,15 +526,15 @@ class SimmerWrapper(CMDPWrapper):
         """Update the reward.
 
         Args:
-            reward (np.array): reward.
-            next_safety_obs (np.array): next safety observation.
+            reward (np.ndarray): reward.
+            next_safety_obs (np.ndarray): next safety observation.
         """
         for idx, safety_obs in enumerate(self.rollout_data.simmer_data.safety_obs):
             if safety_obs <= 0:
                 reward[idx] = self.rollout_data.simmer_data.unsafe_reward
         return reward
 
-    def reset(self) -> Tuple[np.ndarray, Dict]:
+    def reset(self) -> Tuple[torch.Tensor, Dict]:
         r"""Reset environment.
 
         .. note::
@@ -554,9 +557,11 @@ class SimmerWrapper(CMDPWrapper):
             * np.ones((self.cfgs.num_envs, 1), dtype=np.float32)
         )
         obs = self.augment_obs(obs)
-        return obs, info
+        return torch.as_tensor(obs, dtype=torch.float32, device=self.cfgs.device), info
 
-    def step(self, action: np.array) -> tuple((np.array, np.array, np.array, bool, dict)):
+    def step(
+        self, action: torch.Tensor
+    ) -> tuple((torch.Tensor, torch.Tensor, torch.Tensor, bool, dict)):
         """Step environment.
 
         .. note::
@@ -566,10 +571,11 @@ class SimmerWrapper(CMDPWrapper):
             otherwise the reward is the unsafe reward.
 
         Args:
-            action (np.array): action.
+            action (torch.Tensor): action.
         """
-        next_obs, reward, cost, terminated, truncated, info = self.env.step(action.squeeze())
-        # next_obs, rew, done, info = env.step(act)
+        next_obs, reward, cost, terminated, truncated, info = self.env.step(
+            action.cpu().numpy().squeeze()
+        )
         if self.cfgs.num_envs == 1:
             next_obs, reward, cost, terminated, truncated, info = expand_dims(
                 next_obs, reward, cost, terminated, truncated, info
@@ -586,13 +592,18 @@ class SimmerWrapper(CMDPWrapper):
         self.rollout_data.rollout_log.ep_len += np.ones(self.cfgs.num_envs)
         self.rollout_data.rollout_log.ep_budget += self.rollout_data.simmer_data.safety_obs
         reward = self.safety_reward(reward)
-        return augmented_obs, reward, cost, terminated, truncated, info
+        return (
+            as_tensor(augmented_obs, reward, cost, device=self.cfgs.device),
+            terminated,
+            truncated,
+            info,
+        )
 
     def set_budget(self, Jc):
         """Set the safety budget by the controller.
 
         Args:
-            Jc (np.array): The safety budget.
+            Jc (np.ndarray): The safety budget.
         """
         self.rollout_data.simmer_data.safety_budget = self.controller.act(Jc)
 
@@ -600,6 +611,7 @@ class SimmerWrapper(CMDPWrapper):
         self,
         logger,
         idx,
+        is_train: bool = True,
     ) -> None:
         """Log the information of the rollout."""
         self.record_queue.append(
@@ -611,16 +623,32 @@ class SimmerWrapper(CMDPWrapper):
         avg_ep_ret, avg_ep_cost, avg_ep_len, avg_ep_budget = self.record_queue.get_mean(
             'ep_ret', 'ep_cost', 'ep_len', 'ep_budget'
         )
-        logger.store(
-            **{
-                'Metrics/EpRet': avg_ep_ret,
-                'Metrics/EpCost': avg_ep_cost,
-                'Metrics/EpLen': avg_ep_len,
-                'Metrics/EpBudget': avg_ep_budget,
-                'Metrics/SafetyBudget': self.rollout_data.simmer_data.safety_budget,
-            }
-        )
-        self.set_budget(avg_ep_cost)
+        if is_train:
+            logger.store(
+                **{
+                    'Metrics/EpRet': avg_ep_ret,
+                    'Metrics/EpCost': avg_ep_cost,
+                    'Metrics/EpLen': avg_ep_len,
+                    'Metrics/EpBudget': avg_ep_budget,
+                    'Metrics/SafetyBudget': self.rollout_data.simmer_data.safety_budget,
+                }
+            )
+            self.set_budget(avg_ep_cost)
+        else:
+            logger.store(
+                **{
+                    'Test/EpRet': avg_ep_ret,
+                    'Test/EpCost': avg_ep_cost,
+                    'Test/EpLen': avg_ep_len,
+                    'Test/EpBudget': avg_ep_budget,
+                    'Test/SafetyBudget': self.rollout_data.simmer_data.safety_budget,
+                }
+            )
+
+    def reset_log(
+        self,
+        idx,
+    ) -> None:
         (
             self.rollout_data.rollout_log.ep_ret[idx],
             self.rollout_data.rollout_log.ep_costs[idx],

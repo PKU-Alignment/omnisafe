@@ -106,8 +106,8 @@ class ConstraintActorCritic(ActorCritic):
             value = self.reward_critic(obs)
             cost_value = self.cost_critic(obs)
 
-            action, logp_a = self.actor.predict(
+            raw_action, action, logp_a = self.actor.predict(
                 obs, deterministic=deterministic, need_log_prob=True
             )
 
-        return action.numpy(), value.numpy(), cost_value.numpy(), logp_a.numpy()
+        return raw_action, action, value, cost_value, logp_a
