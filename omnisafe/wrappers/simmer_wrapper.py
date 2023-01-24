@@ -573,7 +573,9 @@ class SimmerWrapper(CMDPWrapper):
         Args:
             action (torch.Tensor): action.
         """
-        next_obs, reward, cost, terminated, truncated, info = self.env.step(action.cpu().numpy().squeeze())
+        next_obs, reward, cost, terminated, truncated, info = self.env.step(
+            action.cpu().numpy().squeeze()
+        )
         if self.cfgs.num_envs == 1:
             next_obs, reward, cost, terminated, truncated, info = expand_dims(
                 next_obs, reward, cost, terminated, truncated, info
