@@ -117,9 +117,7 @@ def check_all_configs(configs: NamedTuple, algo_type: str) -> None:
         algo_type (str): algorithm type.
     """
     if algo_type == 'on-policy':
-        assert (
-            configs.actor_iters > 0 and configs.critic_iters > 0
-        ), 'pi_iters and critic_iters must be greater than 0'
+        assert configs.actor_iters > 0, 'actor_iters must be greater than 0'
         assert (
             configs.actor_lr > 0 and configs.critic_lr > 0
         ), 'actor_lr and critic_lr must be greater than 0'

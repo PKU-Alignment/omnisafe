@@ -50,9 +50,9 @@ def mpi_avg_grads(module: torch.nn.Module) -> None:
     """
     if num_procs() > 1:
         for parameter in module.parameters():
-            p_grad_numpy = parameter.grad.numpy()  # numpy view of tensor data
+            p_grad = parameter.grad  # numpy view of tensor data
             avg_p_grad = mpi_avg(parameter.grad)
-            p_grad_numpy[:] = avg_p_grad[:]
+            p_grad[:] = avg_p_grad[:]
 
 
 def sync_params(module: torch.nn.Module) -> None:
@@ -72,7 +72,10 @@ def sync_params(module: torch.nn.Module) -> None:
 
 
 def mpi_fork(
-    parallel: int, bind_to_core: bool = False, use_number_of_threads: bool = False
+    parallel: int,
+    bind_to_core: bool = False,
+    use_number_of_threads: bool = False,
+    device: str = 'cpu',
 ) -> bool:
     """The entrance of multi-processing.
 
@@ -91,8 +94,9 @@ def mpi_fork(
         use_number_of_threads (bool, optional): Defaults to False.
     """
     is_parent = False
+    back_end = 'gloo' if device == 'cpu' else 'nccl'
     if os.getenv('MASTER_ADDR') is not None:
-        dist.init_process_group(backend='gloo')
+        dist.init_process_group(backend=back_end)
     # Check if MPI is already setup..
     if parallel > 1 and os.getenv('MASTER_ADDR') is None:
         # MPI is not yet set up: quit parent process and start N child processes
@@ -206,7 +210,7 @@ def mpi_op(value: torch.Tensor, operation: ReduceOp) -> torch.Tensor:
     if num_procs() == 1:
         return value
     value, scalar = ([value], True) if np.isscalar(value) else (value, False)
-    # value = torch.as_tensor(value, dtype=torch.float32)
+    value = torch.as_tensor(value, dtype=torch.float32)
     allreduce(value, op=operation)
     return value[0] if scalar else value
 

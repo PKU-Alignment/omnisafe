@@ -17,12 +17,12 @@
 import string
 
 
-def all_bools(vals):
+def all_bools(vals: list) -> bool:
     """Check if all values are bools"""
     return all(isinstance(v, bool) for v in vals)
 
 
-def valid_str(vals):
+def valid_str(vals: list or str or type) -> str:
     r"""Convert a value or values to a string which could go in a path of file.
 
     Partly based on `this gist`_.

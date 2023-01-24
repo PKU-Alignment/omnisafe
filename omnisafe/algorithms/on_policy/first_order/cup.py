@@ -210,6 +210,7 @@ class CUP(PPO, Lagrange):
                 .mean()
                 .item()
             )
+            torch_kl = distributed_utils.mpi_avg(torch_kl)
             # if the KL divergence is larger than the target KL divergence, stop the update.
             if self.cfgs.kl_early_stopping and torch_kl > self.cfgs.target_kl:
                 self.logger.log(f'KL early stop at the {i+1} th step in the second stage.')

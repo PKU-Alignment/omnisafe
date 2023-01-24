@@ -19,11 +19,11 @@ from typing import NamedTuple
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
+from omnisafe.algorithms.on_policy.base.ppo import PPO
 
 
 @registry.register
-class OnCRPO(NaturalPG):
+class OnCRPO(PPO):
     """The on-policy CRPO algorithm.
 
     References:
@@ -39,7 +39,7 @@ class OnCRPO(NaturalPG):
             env_id (str): The environment id.
             cfgs (NamedTuple): The configuration of the algorithm.
         """
-        NaturalPG.__init__(
+        PPO.__init__(
             self,
             env_id=env_id,
             cfgs=cfgs,

@@ -168,7 +168,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         self.rollout_data.current_obs = CMDPWrapper.reset(self)[0]
 
     def make(self, env_id, env_kwargs):
-        """Create environments"""
+        """Create environments."""
         if self.cfgs.num_envs == 1:
             self.env = safety_gymnasium.make(env_id, **env_kwargs)
             self.observation_space = self.env.observation_space
@@ -206,11 +206,11 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         return as_tensor(self.env.action_space.sample(), device=self.cfgs.device)
 
     def render(self):
-        """render the vectored environment."""
+        """Render the vectored environment."""
         return self.env.render()
 
     def set_rollout_cfgs(self, **kwargs: dict) -> None:
-        """Set rollout configs
+        """Set rollout configs.
 
         .. note::
 
@@ -249,8 +249,9 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         Args:
             action (torch.Tensor): action.
         """
-        # act=self.scale_action(action)
-        next_obs, reward, cost, terminated, truncated, info = self.env.step(action.cpu().squeeze())
+        next_obs, reward, cost, terminated, truncated, info = self.env.step(
+            action.cpu().numpy().squeeze()
+        )
         if self.cfgs.num_envs == 1:
             next_obs, reward, cost, terminated, truncated, info = expand_dims(
                 next_obs, reward, cost, terminated, truncated, info

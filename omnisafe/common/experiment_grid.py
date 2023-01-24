@@ -19,7 +19,7 @@ import string
 import time
 from concurrent.futures import ProcessPoolExecutor as Pool
 from textwrap import dedent
-
+from copy import deepcopy
 import numpy as np
 from tqdm import trange
 
@@ -31,7 +31,7 @@ from omnisafe.utils.logger_utils import colorize, convert_json
 class ExperimentGrid:
     """Tool for running many experiments given hyper-parameters ranges."""
 
-    def __init__(self, exp_name=''):
+    def __init__(self, exp_name='') -> None:
         self.keys = []
         self.vals = []
         self.shs = []
@@ -49,7 +49,7 @@ class ExperimentGrid:
         # Whether to automatically insert a date and time stamp into the names of save directories
         self.foce_datastamp = False
 
-    def print(self):
+    def print(self) -> None:
         """Print a helpful report about the experiment grid."""
         print('=' * self.div_line_width)
 
@@ -150,6 +150,7 @@ class ExperimentGrid:
             # describes a path into the nested dict, such that k='a:b:c'
             # corresponds to value=variant['a']['b']['c']. Uses recursion
             # to get this.
+            print("value",value, "key", key)
             if key in value:
                 return value[key]
 
@@ -174,7 +175,6 @@ class ExperimentGrid:
                 # Use the shorthand if available, otherwise the full name.
                 param_name = shorthand if shorthand is not None else key
                 param_name = valid_str(param_name)
-
                 # Get variant value for parameter k
                 variant_val = get_val(variant, key)
 
@@ -188,6 +188,21 @@ class ExperimentGrid:
 
         return var_name.lstrip('_')
 
+    def update_dic(self, total_dic, item_dic):
+        '''Updater of multi-level dictionary.'''
+        for idd in item_dic.keys():
+            total_value = total_dic.get(idd)
+            item_value  = item_dic.get(idd)
+
+            if total_value is None: # not exist, just add it
+                total_dic.update({idd : item_value})
+            elif isinstance(item_value, dict):
+                self.update_dic(total_value, item_value)
+                total_dic.update({idd : total_value})
+            else:
+                total_value = item_value
+                total_dic.update({idd : total_value})
+
     def _variants(self, keys, vals):
         """Recursively builds list of valid variants."""
         if len(keys) == 1:
@@ -198,13 +213,15 @@ class ExperimentGrid:
         variants = []
         for val in vals[0]:
             for pre_v in pre_variants:
+                # print("pre_v", pre_v)
+                current_variants = deepcopy(pre_v)
                 v_temp = {}
                 key_list = keys[0].split(':')
                 v_temp[key_list[-1]] = val
                 for key in reversed(key_list[:-1]):
                     v_temp = {key: v_temp}
-                v_temp.update(pre_v)
-                variants.append(v_temp)
+                self.update_dic(current_variants, v_temp)
+                variants.append(current_variants)
 
         return variants
 
@@ -342,6 +359,7 @@ class ExperimentGrid:
         results = []
         exp_names = []
         for idx, var in enumerate(variants):
+            print("current_config", var)
             exp_name = '_'.join([k + '_' + str(v) for k, v in var.items()])
             exp_names.append(exp_name)
             data_dir = os.path.join('./', 'exp-x', self.name, exp_name, '')

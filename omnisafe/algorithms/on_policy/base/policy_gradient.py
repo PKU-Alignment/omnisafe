@@ -198,13 +198,13 @@ class PolicyGradient:
             self.logger.log('Check if distributed parameters are synchronous..')
             modules = {
                 'Policy': self.actor_critic.actor,
-                'Value': self.actor_critic.reward_critic.net,
+                'Value': self.actor_critic.reward_critic,
             }
             for key, module in modules.items():
-                flat_params = get_flat_params_from(module).numpy()
-                global_min = distributed_utils.mpi_min(np.sum(flat_params))
-                global_max = distributed_utils.mpi_max(np.sum(flat_params))
-                assert np.allclose(global_min, global_max), f'{key} not synced.'
+                flat_params = get_flat_params_from(module)
+                global_min = distributed_utils.mpi_min(torch.sum(flat_params))
+                global_max = distributed_utils.mpi_max(torch.sum(flat_params))
+                assert torch.allclose(global_min, global_max), f'{key} not synced.'
 
     def compute_surrogate(
         self,
@@ -506,6 +506,7 @@ class PolicyGradient:
                 .mean()
                 .item()
             )
+            torch_kl = distributed_utils.mpi_avg(torch_kl)
             # if the KL divergence is larger than the target KL divergence, stop the update.
             if self.cfgs.kl_early_stopping and torch_kl > self.cfgs.target_kl:
                 self.logger.log(f'KL early stop at the {i+1} th step.')
@@ -628,7 +629,7 @@ class PolicyGradient:
         )
         # add the norm of critic network parameters to the loss function.
         if self.cfgs.use_critic_norm:
-            for param in self.actor_critic.reward_critic.net.parameters():
+            for param in self.actor_critic.reward_critic.parameters():
                 loss_v += param.pow(2).sum() * self.cfgs.critic_norm_coeff
         # log the loss of value net.
         self.loss_record.append(loss_v=loss_v.mean().item())
@@ -640,7 +641,7 @@ class PolicyGradient:
                 self.actor_critic.reward_critic.parameters(), self.cfgs.max_grad_norm
             )
         # average grads across MPI processes.
-        distributed_utils.mpi_avg_grads(self.actor_critic.reward_critic.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.reward_critic)
         self.reward_critic_optimizer.step()
 
     def update_cost_net(self, obs: torch.Tensor, target_c: torch.Tensor) -> None:
@@ -675,7 +676,7 @@ class PolicyGradient:
         )
         # add the norm of critic network parameters to the loss function.
         if self.cfgs.use_critic_norm:
-            for param in self.actor_critic.cost_critic.net.parameters():
+            for param in self.actor_critic.cost_critic.parameters():
                 loss_c += param.pow(2).sum() * self.cfgs.critic_norm_coeff
         # log the loss.
         self.loss_record.append(loss_c=loss_c.mean().item())
@@ -686,6 +687,5 @@ class PolicyGradient:
             torch.nn.utils.clip_grad_norm_(
                 self.actor_critic.cost_critic.parameters(), self.cfgs.max_grad_norm
             )
-        # average grads across MPI processes.
-        distributed_utils.mpi_avg_grads(self.actor_critic.cost_critic.net)
+        distributed_utils.mpi_avg_grads(self.actor_critic.cost_critic)
         self.cost_critic_optimizer.step()
