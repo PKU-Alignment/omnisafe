@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the TD3 algorithm."""
+"""Implementation of the Pid-Lagrange version of the TD3 algorithm."""
 
 from typing import Dict, NamedTuple, Tuple
 
@@ -37,7 +37,7 @@ class TD3Pid(TD3, PIDLagrangian):
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize TD3."""
+        """Initialize the Pid-Lagrange version of the TD3."""
         TD3.__init__(
             self,
             env_id=env_id,
@@ -45,21 +45,8 @@ class TD3Pid(TD3, PIDLagrangian):
         )
         PIDLagrangian.__init__(self, **namedtuple2dict(self.cfgs.PID_cfgs))
 
-    def cost_limit_decay(
-        self,
-        epoch: int,
-        end_epoch: int,
-    ) -> None:
-        """Decay cost limit."""
-        if epoch < end_epoch:
-            self.cost_limit = (
-                self.cfgs.init_cost_limit * (1 - epoch / end_epoch)
-                + self.cfgs.target_cost_limit * epoch / end_epoch
-            )
-            self.cost_limit /= (1 - self.cfgs.gamma**self.max_ep_len) / (1 - self.cfgs.gamma)
-
     def algorithm_specific_logs(self) -> None:
-        """Log the TD3 PID specific information.
+        """Log the TD3Pid specific information.
 
         .. list-table::
 
@@ -67,6 +54,16 @@ class TD3Pid(TD3, PIDLagrangian):
                -   Description
             *  -   Metrics/LagrangeMultiplier
                -   The Lagrange multiplier value in current epoch.
+            *  -   Loss/Loss_pi_c
+               -   The cost loss of the ``pi/actor``.
+            *  -   Misc/CostLimit
+               -   The cost limit value in current epoch.
+            *  -   PID/pid_Kp
+               -   The proportional gain of the PID controller.
+            *  -   PID/pid_Ki
+               -   The integral gain of the PID controller.
+            *  -   PID/pid_Kd
+               -   The derivative gain of the PID controller.
         """
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.cost_penalty)

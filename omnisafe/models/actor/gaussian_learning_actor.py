@@ -26,7 +26,6 @@ from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_netwo
 
 class GaussianLearningActor(Actor):
     """Implementation of GaussianLearningActor.
-
     A Gaussian policy that uses a MLP to map observations to actions distributions.
     :class:`GaussianLearningActor` use a neural network,
     to output the mean of action distribution,
@@ -49,7 +48,6 @@ class GaussianLearningActor(Actor):
         satrt_std: float = 1.0,
     ) -> None:
         """Initialize GaussianStdNetActor.
-
         Args:
             obs_dim (int): Observation dimension.
             act_dim (int): Action dimension.
@@ -89,11 +87,9 @@ class GaussianLearningActor(Actor):
 
     def _distribution(self, obs: torch.Tensor) -> Normal:
         """Get distribution of the action.
-
         .. note::
             The mean of the distribution is the output of the network,
             while the variance is the learnable tensor ``_std``.
-
         Args:
             obs (torch.Tensor): Observation.
         """
@@ -107,17 +103,13 @@ class GaussianLearningActor(Actor):
         need_log_prob: bool = False,
     ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
         r"""Predict action given observation.
-
         .. note::
             The action is scaled to the action space by:
-
             .. math::
                 a = a_{min} + \frac{a + 1}{2} \times (a_{max} - a_{min})
-
             where :math:`a` is the action predicted by the policy,
             :math:`a_{min}` and :math:`a_{max}` are the minimum and maximum values of the action space.
             After scaling, the action is clipped to the range of :math:`[a_{min}, a_{max}]`.
-
         Args:
             obs (torch.Tensor): Observation.
             deterministic (bool): Whether to use deterministic policy.
@@ -142,14 +134,10 @@ class GaussianLearningActor(Actor):
         act: Optional[torch.Tensor] = None,
     ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
         """Forward function for actor.
-
         .. note::
-
             This forward function has two modes:
-
             - If ``act`` is not None, it will return the distribution and the log probability of action.
             - If ``act`` is None, it will return the distribution.
-
         Args:
             obs (torch.Tensor): observation.
             act (torch.Tensor, optional): action. Defaults to None.

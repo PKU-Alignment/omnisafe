@@ -41,7 +41,7 @@ class DDPG:
 
         - Title: Continuous control with deep reinforcement learning
         - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-        Tom Erez,Yuval Tassa, David Silver, Daan Wierstra.
+        Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
         - URL: `DDPG <https://arxiv.org/abs/1509.02971>`_
     """
 
@@ -102,7 +102,6 @@ class DDPG:
             action_space=self.env.action_space,
             model_cfgs=cfgs.model_cfgs,
         ).to(self.device)
-        # set PyTorch + MPI.
         self._init_mpi()
         # set up experience buffer
         # obs_dim, act_dim, size, batch_size
@@ -597,7 +596,7 @@ class DDPG:
             next_obs (:class:`torch.Tensor`): ``next observation`` saved in data.
             done (:class:`torch.Tensor`): ``terminated`` saved in data.
         """
-        # Train cost critic with one steps of gradient descent
+        # train cost critic with one steps of gradient descent
         self.cost_critic_optimizer.zero_grad()
         loss_qc, _ = self.compute_loss_c(
             obs=obs,
@@ -726,7 +725,6 @@ class DDPG:
     def test_agent(self):
         """Test agent."""
         for _ in range(self.cfgs.num_test_episodes):
-            # self.env.set_rollout_cfgs(deterministic=True, rand_a=False)
             self.env.off_policy_roll_out(
                 self.actor_critic,
                 self.buf,

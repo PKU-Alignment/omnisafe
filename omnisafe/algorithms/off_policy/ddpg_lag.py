@@ -46,19 +46,6 @@ class DDPGLag(DDPG, Lagrange):
         )
         Lagrange.__init__(self, **namedtuple2dict(self.cfgs.lagrange_cfgs))
 
-    def cost_limit_decay(
-        self,
-        epoch: int,
-        end_epoch: int,
-    ) -> None:
-        """Decay cost limit."""
-        if epoch < end_epoch:
-            self.cost_limit = (
-                self.cfgs.init_cost_limit * (1 - epoch / end_epoch)
-                + self.cfgs.target_cost_limit * epoch / end_epoch
-            )
-            self.cost_limit /= (1 - self.cfgs.gamma**self.max_ep_len) / (1 - self.cfgs.gamma)
-
     def algorithm_specific_logs(self) -> None:
         """Log the DDPG Lag specific information.
 
@@ -68,6 +55,10 @@ class DDPGLag(DDPG, Lagrange):
                -   Description
             *  -   Metrics/LagrangeMultiplier
                -   The Lagrange multiplier value in current epoch.
+            *  -   Loss/Loss_pi_c
+               -   The loss of the critic network.
+            *  -   Misc/CostLimit
+               -   The cost limit.
         """
         super().algorithm_specific_logs()
         self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())

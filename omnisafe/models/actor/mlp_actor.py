@@ -26,7 +26,6 @@ from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_netwo
 
 class MLPActor(Actor):
     """Implementation of MLPActor.
-
     Different from gaussian actor,
     :class:`MLPActor` uses a multi-layer perceptron (MLP) to map observations directly to actions.
     This class is an inherit class of :class:`Actor`,
@@ -47,7 +46,6 @@ class MLPActor(Actor):
         shared: nn.Module = None,
     ) -> None:
         """Initialize the actor network.
-
         Args:
             obs_dim (int): Observation dimension.
             act_dim (int): Action dimension.
@@ -83,9 +81,7 @@ class MLPActor(Actor):
 
     def _distribution(self, obs: torch.Tensor) -> Normal:
         """Get the distribution of actor.
-
         Actually, this function is not used in this class.
-
         Args:
             obs (torch.Tensor): Observation.
         """
@@ -94,12 +90,10 @@ class MLPActor(Actor):
 
     def get_distribution(self, obs: torch.Tensor) -> Normal:
         """Get the distribution of actor.
-
         .. note::
             :class:`_distribution` is a private function,
             which can not be called outside the class.
             You can use this function to get the distribution of actor.
-
         Args:
             obs (torch.Tensor): Observation.
         """
@@ -111,9 +105,7 @@ class MLPActor(Actor):
         act: Optional[torch.Tensor] = None,
     ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
         """Forward function.
-
         The forward action of actor network needs to be scaled to the action space limits.
-
         Args:
             obs (torch.Tensor): Observation.
             act (Optional[torch.Tensor], optional): Action. Defaults to None.
@@ -128,36 +120,27 @@ class MLPActor(Actor):
         need_log_prob: bool = False,
     ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
         r"""Predict deterministic or stochastic action based on observation.
-
         - ``deterministic`` = ``True`` or ``False``.
-
         When training the actor,
         one important trick to avoid local minimum is to use stochastic actions,
         which can simply be achieved by sampling actions from the distribution
         (set ``deterministic`` = ``False``).
-
         When testing the actor,
         we want to know the actual action that the agent will take,
         so we should use deterministic actions (set ``deterministic`` = ``True``).
-
         - ``need_log_prob`` = ``True`` or ``False``.
-
         In some cases, we need to calculate the log probability of the action,
         which is used to calculate the loss of the actor.
         For example, in the case of continuous action space,
         the loss can be calculated as:
-
         .. math::
             L = -\mathbb{E}_{s \sim p(s)} [\log p(a | s) A^R (s, a)]
-
         where :math:`p(s)` is the distribution of observation,
         :math:`p(a | s)` is the distribution of action,
         and :math:`\log p(a | s)` is the log probability of action under the distribution.
-
         .. note::
             Specifically, the final action need to be clipped to the action space limits,
             by :meth:`torch.clamp` function.
-
         Args:
             obs (torch.Tensor): observation.
             deterministic (bool, optional): whether to predict deterministic action. Defaults to False.
@@ -171,6 +154,10 @@ class MLPActor(Actor):
 
         action = torch.clamp(action, self.act_min, self.act_max)
         if need_log_prob:
-            return action.to(torch.float32), torch.tensor(1, dtype=torch.float32)
+            return (
+                action.to(torch.float32),
+                action.to(torch.float32),
+                torch.tensor(1, dtype=torch.float32),
+            )
 
-        return action.to(torch.float32)
+        return action.to(torch.float32), action.to(torch.float32)

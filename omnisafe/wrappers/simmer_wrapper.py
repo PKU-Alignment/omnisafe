@@ -115,7 +115,6 @@ class PidController:
             lower_budget (float): The lower bound of safety budget.
             upper_budget (float): The upper bound of safety budget.
         """
-        # PID parameters.
         self.pid_data = PidData(
             pid_kp=cfgs.pid_kp,
             pid_ki=cfgs.pid_ki,
@@ -129,7 +128,7 @@ class PidController:
             lower_budget=lower_budget,
         )
 
-        # Initialize the PID controller.
+        # initialize the PID controller.
         self.error = 0.0
         self.error_i = 0.0
         self.prev_action = 0
@@ -148,14 +147,14 @@ class PidController:
         Args:
             obs (float): The current observation.
         """
-        # Low pass filter.
+        # low pass filter.
         error_p = self.pid_data.tau * self.error + (1 - self.pid_data.tau) * (
             self.simmer_data.safety_budget - obs
         )
         self.error_i += self.error
         error_d = self.pid_data.pid_kd * (self.prev_action - self.prev_raw_action)
 
-        # Compute PID error.
+        # compute PID error.
         curr_raw_action = (
             self.pid_data.pid_kp * error_p
             + self.pid_data.pid_ki * self.error_i
@@ -175,13 +174,13 @@ class PidController:
         """
         curr_raw_action = self.compute_raw_action(obs)
 
-        # Clip the raw action.
+        # clip the raw action.
         curr_action = np.clip(curr_raw_action, -self.pid_data.step_size, self.pid_data.step_size)
         self.prev_action = curr_action
         self.prev_raw_action = curr_raw_action
         raw_budget = self.simmer_data.safety_budget + curr_action
 
-        # Clip the safety budget.
+        # clip the safety budget.
         self.simmer_data.safety_budget = np.clip(
             raw_budget, self.simmer_data.lower_budget, self.simmer_data.upper_budget
         )
@@ -226,7 +225,7 @@ class QController:
         self.action = 0
         self.step(self.action)
 
-        # Initialize the observation (Cost value per epoch) buffer.
+        # initialize the observation (Cost value per epoch) buffer.
         self.prev_obs = copy.copy(self.safety_budget)
         self.filtered_obs_buffer = []
         self.filtered_obs = 0
@@ -365,7 +364,7 @@ class QController:
         self.filtered_obs_buffer.append(self.filtered_obs)
         state = self.safety_budget
 
-        # Use epsilon greedy to explore the environment
+        # use epsilon greedy to explore the environment
         epsilon = np.random.random()
         if epsilon > self.q_data.epsilon:
             action = self.get_random_action()
@@ -375,7 +374,7 @@ class QController:
         next_state = self.step(action)
         safety_budget = next_state
 
-        # Update the Q function
+        # update the Q function
         self.update_q_function(state, action, reward, next_state)
         return safety_budget
 
@@ -407,6 +406,7 @@ class SimmerWrapper(CMDPWrapper):
 
     def __init__(self, env_id, cfgs: Optional[NamedTuple] = None, **env_kwargs) -> None:
         """Initialize environment wrapper.
+
         Args:
             env_id (str): environment id.
             cfgs (collections.namedtuple): configs.
@@ -574,7 +574,6 @@ class SimmerWrapper(CMDPWrapper):
             action (torch.Tensor): action.
         """
         next_obs, reward, cost, terminated, truncated, info = self.env.step(action.cpu().squeeze())
-        # next_obs, rew, done, info = env.step(act)
         if self.cfgs.num_envs == 1:
             next_obs, reward, cost, terminated, truncated, info = expand_dims(
                 next_obs, reward, cost, terminated, truncated, info

@@ -153,10 +153,3 @@ def discount_cumsum_torch(x_vector: torch.Tensor, discount: float) -> torch.Tens
             cumsum = x_vector[idx] + discount * cumsum
         x_vector[idx] = cumsum
     return x_vector
-
-
-# Test
-if __name__ == '__main__':
-    x = torch.tensor([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=torch.float32)
-    print(discount_cumsum(x, 0.55555555555))
-    print(discount_cumsum_torch(x, 0.55555555555))

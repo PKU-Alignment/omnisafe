@@ -89,7 +89,6 @@ class SauteWrapper(CMDPWrapper):
             cfgs (collections.namedtuple): configs.
             env_kwargs (dict): The additional parameters of environments.
         """
-        # self.env = gymnasium.make(env_id, **env_kwargs)
         super().__init__(env_id, cfgs, **env_kwargs)
         if hasattr(self.env, '_max_episode_steps'):
             max_ep_len = self.env._max_episode_steps
@@ -211,7 +210,6 @@ class SauteWrapper(CMDPWrapper):
             action (torch.Tensor): action.
         """
         next_obs, reward, cost, terminated, truncated, info = self.env.step(action.cpu().squeeze())
-        # next_obs, rew, done, info = env.step(act)
         if self.cfgs.num_envs == 1:
             next_obs, reward, cost, terminated, truncated, info = expand_dims(
                 next_obs, reward, cost, terminated, truncated, info

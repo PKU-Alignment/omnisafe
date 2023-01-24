@@ -44,7 +44,7 @@ class CVPO(DDPG):
         env_id: str,
         cfgs,
     ) -> None:
-        """Constrained Variational Policy Optimization
+        """Constrained Variational Policy Optimization.
 
         Args:
             env_id (str): Environment ID.
@@ -77,7 +77,7 @@ class CVPO(DDPG):
             # sample N actions per state
             b_mean, _, b_var = self.ac_targ.actor.predict(
                 obs, deterministic=True, need_log_prob=True
-            )  # (K,)
+            )
             b_dist = MultivariateNormal(b_mean, scale_tril=b_var)
             sampled_actions = b_dist.sample((num_action,))
 
@@ -94,7 +94,7 @@ class CVPO(DDPG):
             target_qc_np = to_ndarray(target_qc).T
 
         def dual(val):
-            """dual function of the non-parametric variational."""
+            """Dual function of the non-parametric variational."""
             beta, lam = val
             target_q_np_comb = target_q_np - lam * target_qc_np
             max_q = np.max(target_q_np_comb, 1)
@@ -147,7 +147,7 @@ class CVPO(DDPG):
             if np.isnan(kl_sigma.item()):
                 raise RuntimeError('kl_sigma is nan')
 
-            # Update lagrange multipliers by gradient descent
+            # update lagrange multipliers by gradient descent
             self.alpha_mean -= (
                 self.cfgs.alpha_mean_scale * (self.cfgs.kl_mean_constraint - kl_mu).detach().item()
             )
@@ -178,7 +178,7 @@ class CVPO(DDPG):
             )
 
     def algorithm_specific_logs(self):
-        """Use this method to collect log information."""
+        """Log the CVPO specific information."""
         super().algorithm_specific_logs()
         self.logger.log_tabular('Loss/Loss_l')
         self.logger.log_tabular('Misc/mean_sigma_det')

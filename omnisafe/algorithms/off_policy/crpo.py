@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrange version of the DDPG algorithm."""
+"""Implementation of the Lagrange version of the CRPO algorithm."""
 
 from typing import Dict, NamedTuple, Tuple
 
@@ -45,21 +45,8 @@ class OffCRPO(DDPG):
         self.rew_update = 0
         self.cost_update = 0
 
-    def cost_limit_decay(
-        self,
-        epoch: int,
-        end_epoch: int,
-    ) -> None:
-        """Decay cost limit."""
-        if epoch < end_epoch:
-            self.cost_limit = (
-                self.cfgs.init_cost_limit * (1 - epoch / end_epoch)
-                + self.cfgs.target_cost_limit * epoch / end_epoch
-            )
-            self.cost_limit /= (1 - self.cfgs.gamma**self.max_ep_len) / (1 - self.cfgs.gamma)
-
     def algorithm_specific_logs(self) -> None:
-        """Log the DDPG Lag specific information.
+        """Log the CRPO specific information.
 
         .. list-table::
 
@@ -96,7 +83,6 @@ class OffCRPO(DDPG):
         """
         action, _ = self.actor_critic.actor.predict(obs, deterministic=False, need_log_prob=False)
         loss_pi_c = self.actor_critic.cost_critic(obs, action)[0]
-        # self.update_lagrange_multiplier(loss_pi_c.mean().item())
         loss_pi_c = F.relu(loss_pi_c - self.cost_limit)
         if loss_pi_c.mean().item() > self.cost_limit:
             loss_pi = -loss_pi_c

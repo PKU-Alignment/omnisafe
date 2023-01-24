@@ -26,9 +26,8 @@ from torch.distributed import ReduceOp
 
 
 def setup_torch_for_mpi():
-    """
-    Avoid slowdowns caused by each separate process's PyTorch using
-    more than its fair share of CPU resources.
+    """Avoid slowdowns caused by each separate process's PyTorch,
+    using more than its fair share of CPU resources.
     """
     old_num_threads = torch.get_num_threads()
     # decrease number of torch threads for MPI
@@ -50,9 +49,9 @@ def mpi_avg_grads(module: torch.nn.Module) -> None:
     """
     if num_procs() > 1:
         for parameter in module.parameters():
-            p_grad = parameter.grad  # numpy view of tensor data
+            p_grad_numpy = parameter.grad
             avg_p_grad = mpi_avg(parameter.grad)
-            p_grad[:] = avg_p_grad[:]
+            p_grad_numpy[:] = avg_p_grad[:]
 
 
 def sync_params(module: torch.nn.Module) -> None:
@@ -97,7 +96,7 @@ def mpi_fork(
     back_end = 'gloo' if device == 'cpu' else 'nccl'
     if os.getenv('MASTER_ADDR') is not None:
         dist.init_process_group(backend=back_end)
-    # Check if MPI is already setup..
+    # check if MPI is already setup..
     if parallel > 1 and os.getenv('MASTER_ADDR') is None:
         # MPI is not yet set up: quit parent process and start N child processes
         env = os.environ.copy()
@@ -116,7 +115,7 @@ def mpi_fork(
         if use_number_of_threads:
             args += ['--use-hwthread-cpus']
         args += sys.argv
-        # This is the parent process, spawn sub-processes..
+        # this is the parent process, spawn sub-processes..
         subprocess.check_call(args, env=env)
         is_parent = True
     return is_parent
@@ -232,13 +231,10 @@ def mpi_avg_torch_tensor(value: torch.Tensor) -> None:
     """
     assert isinstance(value, torch.Tensor)
     if num_procs() > 1:
-        # tensors can be manipulated in-place
         if len(value.shape) > 0:
-            # x_numpy = x.numpy()  # numpy view of tensor data
             avg_x = mpi_avg(value)
-            value[:] = avg_x[:]  # in-place memory update
+            value[:] = avg_x[:]
         else:
-            # scalars (tensors of dim = 0) must be assigned
             raise NotImplementedError
 
 
@@ -251,7 +247,6 @@ def mpi_statistics_scalar(
         value (torch.Tensor): value to be operated.
         with_min_and_max (bool): whether to return min and max.
     """
-    # value = np.array(value, dtype=np.float32)
     global_sum, global_n = mpi_sum([torch.sum(value), len(value)])
     mean = global_sum / global_n
 

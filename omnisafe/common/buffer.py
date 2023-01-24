@@ -271,7 +271,6 @@ class Buffer:
         costs = torch.cat(costs)
         cost_vs = torch.cat(cost_vs)
 
-        # new: add discounted returns to buffer
         discounted_ret = discount_cumsum_torch(rews, self.gamma)[:-1]
         self.discounted_ret_buf[path_slice] = discounted_ret
         assert self.penalty_param >= 0, 'reward_penalty assumes positive value.'

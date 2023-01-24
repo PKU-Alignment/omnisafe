@@ -70,9 +70,7 @@ class BaseBuffer:
         )
         self.rew_buf = torch.zeros(size, dtype=torch.float32, device=device)
         self.cost_buf = torch.zeros(size, dtype=torch.float32, device=device)
-        self.prev_cost_buf = torch.zeros(
-            size, dtype=torch.float32, device=device
-        )  # previous cost for safety layer
+        self.prev_cost_buf = torch.zeros(size, dtype=torch.float32, device=device)
         self.done_buf = torch.zeros(size, dtype=torch.float32, device=device)
         self.ptr, self.size, self.max_size = 0, 0, size
         self.batch_size = batch_size

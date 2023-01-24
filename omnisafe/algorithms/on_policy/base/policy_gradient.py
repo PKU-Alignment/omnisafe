@@ -93,7 +93,6 @@ class PolicyGradient:
             action_space=self.env.action_space,
             model_cfgs=cfgs.model_cfgs,
         ).to(self.device)
-        # set PyTorch + MPI.
         self.set_mpi()
         # set up experience buffer
 
@@ -411,7 +410,7 @@ class PolicyGradient:
             self.logger.log_tabular('Misc/ExplorationNoiseStd', noise_std)
         if self.cfgs.model_cfgs.actor_type == 'gaussian_learning':
             self.logger.log_tabular('Misc/ExplorationNoiseStd', self.actor_critic.actor.std)
-        # some child classes may add information to logs
+        # some sub-classes may add information to logs
         self.algorithm_specific_logs()
         self.logger.log_tabular('TotalEnvSteps', total_env_steps)
         self.logger.log_tabular('Time', int(time.time() - self.start_time))
@@ -640,7 +639,6 @@ class PolicyGradient:
             torch.nn.utils.clip_grad_norm_(
                 self.actor_critic.reward_critic.parameters(), self.cfgs.max_grad_norm
             )
-        # average grads across MPI processes.
         distributed_utils.mpi_avg_grads(self.actor_critic.reward_critic)
         self.reward_critic_optimizer.step()
 

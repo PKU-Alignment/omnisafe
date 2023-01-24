@@ -108,7 +108,6 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             cfgs (collections.namedtuple): configs.
             env_kwargs (dict): The additional parameters of environments.
         """
-        # self.env = gymnasium.make(env_id, **env_kwargs)
         self.cfgs = deepcopy(cfgs)
         self.env = None
         self.action_space = None
@@ -130,7 +129,6 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             max_ep_len = self.env._max_episode_steps
         else:
             max_ep_len = 1000
-        # max_ep_len = 400
         self.rollout_data = RolloutData(
             0.0,
             max_ep_len,
@@ -294,21 +292,14 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         obs, _ = self.reset()
         for step_i in range(self.rollout_data.local_steps_per_epoch):
             if self.cfgs.normalized_obs:
-                # Note: do the updates at the end of batch!
                 obs = self.obs_normalizer.normalize(obs)
             raw_action, action, value, cost_value, logp = agent.step(obs)
             [next_obs, reward, cost], done, truncated, _ = self.step(action)
             if self.cfgs.normalized_rew:
-                # Note: do the updates at the end of batch!
                 reward = self.rew_normalizer.normalize(reward)
             if self.cfgs.normalized_cost:
-                # Note: do the updates at the end of batch!
                 cost = self.cost_normalizer.normalize(cost)
 
-            # Save and log
-            # Notes:
-            #   - raw observations are stored to buffer (later transformed)
-            #   - reward scaling is performed in buffer
             buf.store(
                 obs=obs,
                 act=raw_action,
@@ -319,7 +310,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
                 cost_val=cost_value,
             )
 
-            # Store values for statistic purpose
+            # store values for statistic purpose
             if self.rollout_data.use_cost:
                 logger.store(
                     **{'Values/V': value.mean().item(), 'Values/C': cost_value.mean().item()}
@@ -327,7 +318,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             else:
                 logger.store(**{'Values/V': value.mean().item()})
 
-            # Update observation
+            # update observation
             obs = next_obs
             terminals = done | truncated
             epoch_ended = step_i >= self.rollout_data.local_steps_per_epoch - 1
@@ -352,7 +343,6 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
                         last_cost_val=terminal_cost_value,
                         idx=idx,
                     )
-                # Only save EpRet / EpLen if trajectory finished
 
     # pylint: disable-next=too-many-arguments, too-many-locals
     def off_policy_roll_out(
@@ -387,10 +377,9 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         for _ in range(ep_steps):
             obs = self.rollout_data.current_obs
             if self.cfgs.normalized_obs:
-                # Note: do the updates at the end of batch!
                 obs = self.obs_normalizer.normalize(obs)
             raw_action, action, value, cost_value, _ = agent.step(obs, deterministic=deterministic)
-            # Store values for statistic purpose
+            # store values for statistic purpose
             if self.rollout_data.use_cost:
                 logger.store(
                     **{'Values/V': value.mean().item(), 'Values/C': cost_value.mean().item()}
@@ -399,7 +388,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
                 logger.store(**{'Values/V': value.mean().item()})
             if use_rand_action:
                 action = self.sample_action()
-            # Step the env
+            # step the env
             [next_obs, reward, cost], done, truncated, _ = self.step(action)
             if self.cfgs.normalized_rew:
                 reward = self.rew_normalizer.normalize(reward)
@@ -410,7 +399,6 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             # that isn't based on the agent's state)
             self.rollout_data.current_obs = next_obs
             if self.cfgs.normalized_obs:
-                # Note: do the updates at the end of batch!
                 next_obs = self.obs_normalizer.normalize(next_obs)
             terminals = done | truncated
             epoch_ended = self.rollout_data.rollout_log.ep_len >= self.rollout_data.max_ep_len

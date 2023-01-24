@@ -227,5 +227,9 @@ class GaussianActor(Actor):
     def set_std(self, proportion: float) -> float:
         """To support annealing exploration noise.
 
-        proportion is annealing from 1. to 0 over course of training"""
+        Proportion is annealing from 1. to 0 over course of training.
+
+        Args:
+            proportion (float): proportion of annealing.
+        """
         self._std = self.std_init * proportion + self.std_end * (1 - proportion)

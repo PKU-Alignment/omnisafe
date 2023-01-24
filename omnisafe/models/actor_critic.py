@@ -85,7 +85,7 @@ class ActorCritic(nn.Module):
         self.model_cfgs = model_cfgs
         self.ac_kwargs = model_cfgs.ac_kwargs
 
-        # Use for shared weights
+        # use for shared weights
         layer_units = [self.obs_dim] + self.ac_kwargs.pi.hidden_sizes
         activation = self.ac_kwargs.pi.activation
         if model_cfgs.shared_weights:
@@ -98,7 +98,7 @@ class ActorCritic(nn.Module):
         else:
             self.shared = None
 
-        # Build actor
+        # build actor
         actor_builder = ActorBuilder(
             obs_dim=self.obs_dim,
             act_dim=self.act_dim,
@@ -115,7 +115,7 @@ class ActorCritic(nn.Module):
                 model_cfgs.actor_type, act_max=act_max, act_min=act_min
             )
 
-        # Build critic
+        # build critic
         critic_builder = CriticBuilder(
             obs_dim=self.obs_dim,
             act_dim=self.act_dim,
@@ -154,7 +154,7 @@ class ActorCritic(nn.Module):
         return raw_action, action, value, logp_a
 
     def anneal_exploration(self, frac: float) -> None:
-        """update internals of actors
+        """Update internals of actors
 
         Updates exploration parameters for Gaussian actors update log_std
 

@@ -60,15 +60,17 @@ class AlgoWrapper:
         physical_cores = psutil.cpu_count(logical=False)
         use_number_of_threads = bool(self.parallel > physical_cores)
 
-        if distributed_utils.mpi_fork(self.parallel, use_number_of_threads=use_number_of_threads):
-            # Re-launches the current script with workers linked by MPI
-            sys.exit()
-
         default_cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
         exp_name = os.path.join(self.env_id, self.algo)
         default_cfgs.update(exp_name=exp_name, env_id=self.env_id)
         cfgs = recursive_update(default_cfgs, self.custom_cfgs)
         check_all_configs(cfgs, self.algo_type)
+
+        if distributed_utils.mpi_fork(
+            self.parallel, use_number_of_threads=use_number_of_threads, device=cfgs.device
+        ):
+            # Re-launches the current script with workers linked by MPI
+            sys.exit()
         agent = registry.get(self.algo)(
             env_id=self.env_id,
             cfgs=cfgs,

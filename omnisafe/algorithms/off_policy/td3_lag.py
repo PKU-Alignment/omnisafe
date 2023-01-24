@@ -37,7 +37,7 @@ class TD3Lag(TD3, Lagrange):
     """
 
     def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize TD3.
+        """Initialize Lagrange version of the TD3.
 
         Args:
             env_id (str): environment id.
@@ -52,21 +52,8 @@ class TD3Lag(TD3, Lagrange):
         )
         Lagrange.__init__(self, **namedtuple2dict(self.cfgs.lagrange_cfgs))
 
-    def cost_limit_decay(
-        self,
-        epoch: int,
-        end_epoch: int,
-    ) -> None:
-        """Decay cost limit."""
-        if epoch < end_epoch:
-            self.cost_limit = (
-                self.cfgs.init_cost_limit * (1 - epoch / end_epoch)
-                + self.cfgs.target_cost_limit * epoch / end_epoch
-            )
-            self.cost_limit /= (1 - self.cfgs.gamma**self.max_ep_len) / (1 - self.cfgs.gamma)
-
     def algorithm_specific_logs(self) -> None:
-        """Log the DDPG Lag specific information.
+        """Log the TD3 Lag specific information.
 
         .. list-table::
 

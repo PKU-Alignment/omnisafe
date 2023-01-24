@@ -72,7 +72,6 @@ class QCritic(Critic):
             use_obs_encoder (bool): Whether to use observation encoder.
         """
         self.use_obs_encoder = use_obs_encoder
-        print(use_obs_encoder)
         Critic.__init__(
             self,
             obs_dim=obs_dim,

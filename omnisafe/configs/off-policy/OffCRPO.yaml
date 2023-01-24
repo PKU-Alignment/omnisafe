@@ -32,7 +32,7 @@ defaults:
   update_after: 1000
   # Update every `update_every` steps
   update_every: 50
-  # Check if all models own the same parameter values every `check_freq` epoch
+  # Check if all models own the same parameter values every `check_freq` epochs
   check_freq: 25
   # Save model to disk every `check_freq` epochs
   save_freq: 10
@@ -64,7 +64,7 @@ defaults:
   init_cost_limit: 25.0
   # The target value of cost limit
   target_cost_limit: 25.0
-  # The end od cost limit decay epoch
+  # The end of cost limit decay epoch
   end_epoch: 100
   # Cost discounted factor
   cost_gamma: 1.0
@@ -104,7 +104,7 @@ defaults:
         scale_action: True
         # Whether to clip action.
         clip_action: True
-        # Whther to learn the standard deviation of Gaussian noise
+        # Whether to learn the standard deviation of Gaussian noise
         std_learning: False
         # The initial value of standard deviation of Gaussian noise
         std_init: 1.0

@@ -23,7 +23,7 @@ defaults:
   # The torch device id
   device_id: 0
   # The environment wrapper type
-  wrapper_type: CMDPWrapper
+  wrapper_type: SafetyLayerWrapper
   # Number of epochs
   epochs: 500
   # Number of steps per epoch
@@ -44,6 +44,8 @@ defaults:
   actor_lr: 0.0003
   # The learning rate of Critic network
   critic_lr: 0.001
+  # The learning rate of Cost network
+  model_lr: 0.001
   # The soft update coefficient
   polyak: 0.999
   # The discount factor of GAE
@@ -52,46 +54,22 @@ defaults:
   start_steps: 10000
   # The Address for saving training process data
   data_dir: "./runs"
-  ## ----------------------------Basic configurations for derived class CVPO-------------------- ##
-  # Hard constraint of the mean in the M-step.
-  kl_mean_constraint: 0.01
-  # Hard constraint of the covariance in the M-step.
-  kl_var_constraint: 0.0001
-  # Hard constraint in the M-step.
-  kl_constraint: 0.01
-  # Scaling factor of the mean of lagrangian multiplier in the M-step.
-  alpha_mean_scale: 1.0
-  # Scaling factor of the variance of lagrangian multiplier in the M-step.
-  alpha_var_scale: 100.0
-  # Scaling factor of the lagrangian multiplier in the M-step.
-  alpha_scale: 10.0
-  # Maximum number of the mean of alpha
-  alpha_mean_max: 0.1
-  # Maximum number of the variance of alpha
-  alpha_var_max: 10.0
-  # Maximum of alpha
-  alpha_max: 1.0
-  # The number of sampled actions.
-  sample_action_num: 64
-  # The maximum number of steps of M.
-  mstep_iteration_num: 5
-  # The maximum number of steps of E.
-  dual_constraint: 0.1
-  # The tolerance of cost violation.
-  cost_limit: 25.0
+
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
   # Whether to use cost critic
   use_cost: True
   # Whether to use cost limit decay
-  cost_limit_decay: True
+  cost_limit_decay: False
   # The initial value of cost limit
-  init_cost_limit: 100.0
+  init_cost_limit: 25.0
   # The target value of cost limit
   target_cost_limit: 25.0
   # The end of cost limit decay epoch
   end_epoch: 100
+  # The cost limit
+  cost_limit: 25.0
   # Cost discounted factor
   cost_gamma: 1.0
   # Whether to use linear decay of learning rate
@@ -105,13 +83,11 @@ defaults:
   # Whether to use max gradient norm
   use_max_grad_norm: False
   # The thereshold of max gradient norm
-  max_grad_norm: 40
+  max_grad_norm: 0.5
+  # Whether to use reward scaling
+  scale_rewards: False
   # Whether to use standardized observation
   standardized_obs: True
-  # Whether to use critic network norm
-  use_critic_norm: False
-  # The norm coefficient of critic network
-  critic_norm_coeff: 0.001
   ## ---------------------------------------Configuration For Model----------------------------- ##
   model_cfgs:
     # Whether to share the weight of Actor network with Critic network
@@ -119,17 +95,7 @@ defaults:
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
     # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-    actor_type: "cholesky"
-    # Minimum value of covariance
-    cov_min: 0.0001
-    # Minimum value of mean of clamp
-    mu_clamp_min: -5
-    # Maximum value of mean of clamp
-    mu_clamp_max: 5
-    # Minimum value of covariance of clamp
-    cov_clamp_min: -5
-    # Maximum value of covariance of clamp
-    cov_clamp_max: 20
+    actor_type: gaussian
     # Configuration of Actor and Critic network
     ac_kwargs:
       # Configuration of Actor network
@@ -138,6 +104,16 @@ defaults:
         hidden_sizes: [64, 64]
         # Activation function
         activation: relu
+        # Output activation function
+        output_activation: tanh
+        # Whether to scale action.
+        scale_action: True
+        # Whether to clip action.
+        clip_action: True
+        # Whether to learn the standard deviation of Gaussian noise
+        std_learning: False
+        # The initial value of standard deviation of Gaussian noise
+        std_init: 1.0
       # Configuration of Critic network
       val:
         # Number of critic networks
@@ -152,21 +128,15 @@ defaults:
     size: 50000
     # The size of batch
     batch_size: 256
-  ## --------------------------------------Configuration For Environment------------------------ ##
+  ## -----------------------------------Configuration For Safety Layer--------------------------- ##
   env_cfgs:
-    # The seed of environment
-    env_seed: 0
-    # The number of parallel environments
-    num_envs: 1
-    # Whether to use async environment
-    async_env: True
-    # Whether to use standardized reward
-    normalized_rew: False
-    # Whether to use standardized cost
-    normalized_cost: False
-    # Whether to use standardized obs
-    normalized_obs: True
-    # The maximum length of record queue
-    max_len: 100
-    # The number of threads used to sample data
-    num_threads: 20
+    # Configuration of LinearCostModel in SafetyLayerWrapper
+    cost_model:
+      # Size of hidden layers
+      hidden_sizes: [400, 300]
+      # Activation function
+      activation: relu
+      model_lr: 0.001
+    data_dir: "./runs"
+    buffer_size: 50000
+    batch_size: 256
