@@ -147,7 +147,7 @@ defaults:
     # The number of threads used to sample data
     num_threads: 20
     # The reward when the state is unsafe
-    unsafe_reward: -0.5
+    unsafe_reward: -0.1
     # The lower bound of safety budget
     lower_budget: 15
     # The upper bound of safety budget

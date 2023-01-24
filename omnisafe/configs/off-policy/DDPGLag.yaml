@@ -145,9 +145,9 @@ defaults:
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward
-    normalized_rew: True
+    normalized_rew: False
     # Whether to use standardized cost
-    normalized_cost: True
+    normalized_cost: False
     # Whether to use standardized obs
     normalized_obs: True
     # The maximum length of record queue

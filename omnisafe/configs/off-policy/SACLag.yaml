@@ -131,7 +131,7 @@ defaults:
     # The size of replay buffer
     size: 50000
     # The size of batch
-    batch_size: 256
+    batch_size: 1024
 ## ----------------------------------Configuration For Lagrangian multiplier---------------------- ##
   lagrange_cfgs:
     # Tolerance of constraint violation

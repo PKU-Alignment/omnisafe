@@ -250,7 +250,7 @@ Pusher-v4:
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   replay_buffer_cfgs:
     # The size of replay buffer
-    size: 100000
+    size: 50000
     # The size of batch
     batch_size: 1024
   ## --------------------------------------Configuration For Environment------------------------ ##
@@ -266,7 +266,7 @@ Pusher-v4:
     # Whether to use standardized cost
     normalized_cost: False
     # Whether to use standardized obs
-    normalized_obs: False
+    normalized_obs: True
     # The maximum length of record queue
     max_len: 100
     # The number of threads used to sample data

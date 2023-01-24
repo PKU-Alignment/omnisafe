@@ -129,9 +129,9 @@ defaults:
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   replay_buffer_cfgs:
     # The size of replay buffer
-    size: 50000
+    size: 100000
     # The size of batch
-    batch_size: 256
+    batch_size: 1024
   ## --------------------------------------Configuration For Environment------------------------ ##
   env_cfgs:
     # The seed of environment

@@ -128,8 +128,18 @@ defaults:
     standardized_cost_adv: True
   ## --------------------------------------Configuration For Environment------------------------ ##
   env_cfgs:
+    # Configuration of LinearCostModel in SafetyLayerWrapper
+    cost_model:
+      # Size of hidden layers
+      hidden_sizes: [64, 64]
+      # Activation function
+      activation: relu
+      # The learning rate of cost model
+      model_lr: 0.001
     # The seed of environment
     env_seed: 0
+    # The cost limit
+    cost_limit: 25.0
     # The number of parallel environments
     num_envs: 1
     # Whether to use async environment
@@ -144,6 +154,12 @@ defaults:
     max_len: 100
     # The number of threads used to sample data
     num_threads: 20
+    # The directory to save training process data
+    data_dir: "./runs"
+    # The size of replay buffer
+    buffer_size: 50000
+    # The size of mini batch
+    batch_size: 256
 
 SafetyRacecarGoal1-v0:
   # --------------------------------------Basic Configurations----------------------------------- #
@@ -151,9 +167,9 @@ SafetyRacecarGoal1-v0:
   # The random seed
   seed: 0
   # The torch device
-  device: cpu
+  device: cuda
   # The torch device id
-  device_id: 0
+  device_id: 2
   # The environment wrapper type
   wrapper_type: CMDPWrapper
   # Number of epochs
@@ -243,6 +259,278 @@ SafetyRacecarGoal1-v0:
         # Size of hidden layers
         hidden_sizes: [64, 64]
         # Activation function
+        activation: tanh
+  ## --------------------------------------Configuration For Buffer----------------------------- ##
+  buffer_cfgs:
+    # Reward discounted factor
+    gamma: 0.99
+    # Parameters used to estimate future rewards in GAE
+    lam: 0.95
+    # Parameters used to estimate future costs in GAE
+    lam_c: 0.95
+    # Method to estimate the advantage reward/cost, choosing from "gae", "plain", "vtrace"
+    adv_estimation_method: gae
+    # Whether to use reward standardized advantage estimation
+    standardized_rew_adv: True
+    # Whether to use cost standardized advantage estimation
+    standardized_cost_adv: True
+  ## --------------------------------------Configuration For Environment------------------------ ##
+  env_cfgs:
+    # Configuration of LinearCostModel in SafetyLayerWrapper
+    cost_model:
+      # Size of hidden layers
+      hidden_sizes: [400, 300]
+      # Activation function
+      activation: relu
+      # The learning rate of cost model
+      model_lr: 0.001
+    # The seed of environment
+    env_seed: 0
+    # The cost limit
+    cost_limit: 25.0
+    # The number of parallel environments
+    num_envs: 1
+    # Whether to use async environment
+    async_env: True
+    # Whether to use standardized reward
+    normalized_rew: True
+    # Whether to use standardized cost
+    normalized_cost: True
+    # Whether to use standardized obs
+    normalized_obs: True
+    # The maximum length of record queue
+    max_len: 100
+    # The number of threads used to sample data
+    num_threads: 20
+    data_dir: "./runs"
+    buffer_size: 50000
+    batch_size: 256
+
+
+SafetyHumanoidVelocity-v4:
+  # --------------------------------------Basic Configurations----------------------------------- #
+  ## -----------------------------Basic configurations for base class PG------------------------ ##
+  # The random seed
+  seed: 0
+  # The torch device
+  device: cpu
+  # The torch device id
+  device_id: 0
+  # The environment wrapper type
+  wrapper_type: CMDPWrapper
+  # Number of epochs
+  epochs: 5000
+  # Number of steps per epoch
+  steps_per_epoch: 6048
+  # Number of update iteration for Actor network
+  actor_iters: 10
+  # Number of update iteration for Critic network
+  critic_iters: 40
+  # Check if all models own the same parameter values every `check_freq` epoch
+  check_freq: 25
+  # Save model to disk every `check_freq` epochs
+  save_freq: 50
+  # Entropy coefficient for PPO loss
+  entropy_coef: 0.0
+  # The max length of per epoch
+  max_ep_len: 1000
+  # The size of mini batch
+  num_mini_batches: 64
+  # The learning rate of Actor network
+  actor_lr: 0.0003
+  # The learning rate of Critic network
+  critic_lr: 0.0003
+  # The Address for saving training process data
+  data_dir: "./runs"
+  ## ---------------------------Basic configurations for derived class PPO---------------------- ##
+  # The thereshold for KL early stopping
+  target_kl: 0.02
+  # The size of batch for policy update
+  batch_size: 10000
+  # The clip range for PPO loss
+  clip: 0.2
+
+  # ---------------------------------------Optional Configuration-------------------------------- #
+  ## -----------------------------------Configuration For Cost Critic--------------------------- ##
+  # Whether to use cost critic
+  use_cost: False
+  # Cost discounted factor
+  cost_gamma: 1.0
+  # Whether to use linear decay of learning rate
+  linear_lr_decay: True
+  # Whether to use exploration noise anneal
+  exploration_noise_anneal: False
+  # The coefficient of reward penalty
+  penalty_param: 0.0
+  # Whether to use KL early stopping
+  kl_early_stopping: True
+  # Whether to use max gradient norm
+  use_max_grad_norm: True
+  # The thereshold of max gradient norm
+  max_grad_norm: 40
+  # Whether to use critic network norm
+  use_critic_norm: True
+  # The norm coefficient of critic network
+  critic_norm_coeff: 0.001
+  ## ---------------------------------------Configuration For Model----------------------------- ##
+  model_cfgs:
+    # Whether to share the weight of Actor network with Critic network
+    shared_weights: False
+    # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
+    weight_initialization_mode: "kaiming_uniform"
+    # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
+    actor_type: gaussian
+    # Configuration of Actor and Critic network
+    ac_kwargs:
+      # Configuration of Actor network
+      pi:
+        # Size of hidden layers
+        hidden_sizes: [64, 64]
+        # Activation function
+        activation: tanh
+        # Output activation function
+        output_activation: identity
+        # Whether to scale action.
+        scale_action: False
+        # Whether to clip action.
+        clip_action: False
+        # Whther to learn the standard deviation of Gaussian noise
+        std_learning: True
+        # The initial value of standard deviation of Gaussian noise
+        std_init: 1.0
+      # Configuration of Critic network
+      val:
+        # Number of critic networks
+        num_critics: 1
+        # Size of hidden layers
+        hidden_sizes: [64, 64]
+        # Activation function
+        activation: tanh
+  ## --------------------------------------Configuration For Buffer----------------------------- ##
+  buffer_cfgs:
+    # Reward discounted factor
+    gamma: 0.99
+    # Parameters used to estimate future rewards in GAE
+    lam: 0.95
+    # Parameters used to estimate future costs in GAE
+    lam_c: 0.95
+    # Method to estimate the advantage reward/cost, choosing from "gae", "plain", "vtrace"
+    adv_estimation_method: gae
+    # Whether to use reward standardized advantage estimation
+    standardized_rew_adv: True
+    # Whether to use cost standardized advantage estimation
+    standardized_cost_adv: True
+  ## --------------------------------------Configuration For Environment------------------------ ##
+  env_cfgs:
+    # The seed of environment
+    env_seed: 0
+    # The cost limit
+    cost_limit: 25.0
+    # The number of parallel environments
+    num_envs: 2
+    # Whether to use async environment
+    async_env: True
+    # Whether to use standardized reward
+    normalized_rew: True
+    # Whether to use standardized cost
+    normalized_cost: True
+    # Whether to use standardized obs
+    normalized_obs: True
+    # The maximum length of record queue
+    max_len: 100
+    # The number of threads used to sample data
+    num_threads: 20
+    data_dir: "./runs"
+    buffer_size: 50000
+    batch_size: 256
+
+Pusher-v4:
+  # --------------------------------------Basic Configurations----------------------------------- #
+  ## -----------------------------Basic configurations for base class PG------------------------ ##
+  # The random seed
+  seed: 0
+  # The torch device
+  device: cpu
+  # The torch device id
+  device_id: 3
+  # The environment wrapper type
+  wrapper_type: GymWrapper
+  # Number of epochs
+  epochs: 2000
+  # Number of steps per epoch
+  steps_per_epoch: 2048
+  # Number of update iteration for Actor network
+  actor_iters: 40
+  # Number of update iteration for Critic network
+  critic_iters: 40
+  # Check if all models own the same parameter values every `check_freq` epoch
+  check_freq: 25
+  # Save model to disk every `check_freq` epochs
+  save_freq: 50
+  # Entropy coefficient for PPO loss
+  entropy_coef: 0.01
+  # The max length of per epoch
+  max_ep_len: 1000
+  # The size of mini batch
+  num_mini_batches: 64
+  # The learning rate of Actor network
+  actor_lr: 0.001
+  # The learning rate of Critic network
+  critic_lr: 0.001
+  # The Address for saving training process data
+  data_dir: "./runs"
+  ## ---------------------------Basic configurations for derived class PPO---------------------- ##
+  # The thereshold for KL early stopping
+  target_kl: 0.02
+  # The size of batch for policy update
+  batch_size: 10000
+  # The clip range for PPO loss
+  clip: 0.2
+
+  # ---------------------------------------Optional Configuration-------------------------------- #
+  ## -----------------------------------Configuration For Cost Critic--------------------------- ##
+  # Whether to use cost critic
+  use_cost: False
+  # Cost discounted factor
+  cost_gamma: 1.0
+  # Whether to use linear decay of learning rate
+  linear_lr_decay: True
+  # Whether to use exploration noise anneal
+  exploration_noise_anneal: False
+  # The coefficient of reward penalty
+  penalty_param: 0.0
+  # Whether to use KL early stopping
+  kl_early_stopping: True
+  # Whether to use max gradient norm
+  use_max_grad_norm: True
+  # The thereshold of max gradient norm
+  max_grad_norm: 40
+  # Whether to use critic network norm
+  use_critic_norm: True
+  # The norm coefficient of critic network
+  critic_norm_coeff: 0.001
+  ## ---------------------------------------Configuration For Model----------------------------- ##
+  model_cfgs:
+    # Whether to share the weight of Actor network with Critic network
+    shared_weights: False
+    # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
+    weight_initialization_mode: "kaiming_uniform"
+    # Configuration of Actor and Critic network
+    ac_kwargs:
+      # Configuration of Actor network
+      pi:
+        # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
+        actor_type: gaussian
+        # Size of hidden layers
+        hidden_sizes: [64, 64]
+        # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+        activation: tanh
+        # Whether to scale action
+        scale_action: True
+      val:
+        # Size of hidden layers
+        hidden_sizes: [64, 64]
+        # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
         activation: tanh
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   buffer_cfgs:
