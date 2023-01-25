@@ -26,9 +26,9 @@ import safety_gymnasium
 from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen
 from safety_gymnasium import agents
 from safety_gymnasium.assets.color import COLOR
+from safety_gymnasium.assets.free_geoms import FREE_GEOMS_REGISTER
 from safety_gymnasium.assets.geoms import GEOMS_REGISTER
 from safety_gymnasium.assets.mocaps import MOCAPS_REGISTER
-from safety_gymnasium.assets.free_geoms import FREE_GEOMS_REGISTER
 from safety_gymnasium.utils.common_utils import MujocoException
 from safety_gymnasium.utils.keyboard_viewer import KeyboardViewer
 from safety_gymnasium.utils.random_generator import RandomGenerator
@@ -475,5 +475,7 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
     def _obstacles(self):
         """Get the obstacles in the task."""
         return (
-            list(self._geoms.values()) + list(self._free_geoms.values()) + list(self._mocaps.values())
+            list(self._geoms.values())
+            + list(self._free_geoms.values())
+            + list(self._mocaps.values())
         )

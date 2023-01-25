@@ -112,7 +112,7 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
 
     def dist_goal(self):
         """Return the distance from the agent to the goal XY position."""
-        assert hasattr(self, 'goal'), "Please make sure you have added goal into env."
+        assert hasattr(self, 'goal'), 'Please make sure you have added goal into env.'
         return self.agent.dist_xy(self.goal.pos)  # pylint: disable=no-member
 
     def calculate_cost(self):

@@ -91,6 +91,7 @@ class FreeGeom(BaseObstacle):
 
     type: str = 'free_geoms'
 
+
 @dataclass
 class Mocap(BaseObstacle):
     """Base class for obstacles that are mocaps."""

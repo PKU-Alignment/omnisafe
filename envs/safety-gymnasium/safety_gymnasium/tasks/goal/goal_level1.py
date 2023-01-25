@@ -14,8 +14,8 @@
 # ==============================================================================
 """Goal level 1."""
 
-from safety_gymnasium.assets.geoms import Hazards
 from safety_gymnasium.assets.free_geoms import Vases
+from safety_gymnasium.assets.geoms import Hazards
 from safety_gymnasium.tasks.goal.goal_level0 import GoalLevel0
 
 

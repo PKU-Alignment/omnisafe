@@ -15,8 +15,8 @@
 """Push level 0."""
 
 import numpy as np
-from safety_gymnasium.assets.geoms import Goal
 from safety_gymnasium.assets.free_geoms import PushBox
+from safety_gymnasium.assets.geoms import Goal
 from safety_gymnasium.bases.base_task import BaseTask
 
 
