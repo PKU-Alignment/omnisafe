@@ -27,7 +27,7 @@ defaults:
   # Number of epochs
   epochs: 5000
   # Number of steps per epoch
-  steps_per_epoch: 4096
+  steps_per_epoch: 2048
   # Number of update iteration for Actor network
   actor_iters: 10
   # Number of update iteration for Critic network

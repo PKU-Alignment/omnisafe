@@ -131,12 +131,16 @@ defaults:
   ## -----------------------------------Configuration For Safety Layer--------------------------- ##
   env_cfgs:
     # Configuration of LinearCostModel in SafetyLayerWrapper
-    cost_model:
+    safety_layer_cfgs:
       # Size of hidden layers
       hidden_sizes: [400, 300]
       # Activation function
       activation: relu
+      # The learning rate of cost model
       model_lr: 0.001
-    data_dir: "./runs"
-    buffer_size: 50000
-    batch_size: 256
+      # The directory to save cost model
+      data_dir: "./runs"
+      # The size of replay buffer
+      buffer_size: 50000
+      # The size of batch
+      batch_size: 256
