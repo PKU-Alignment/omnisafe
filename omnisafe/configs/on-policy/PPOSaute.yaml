@@ -149,6 +149,6 @@ defaults:
     # Whether to use standardized obs
     normalized_obs: True
     # The maximum length of record queue
-    max_len: 100
+    max_len: -10
     # The number of threads used to sample data
     num_threads: 20
