@@ -79,21 +79,20 @@ class BaseObstacle(abc.ABC):
 
 
 @dataclass
-class Geoms(BaseObstacle):
+class Geom(BaseObstacle):
     """Base class for obstacles that are geoms."""
 
     type: str = 'geoms'
 
 
 @dataclass
-class Objects(BaseObstacle):
-    """Base class for obstacles that are objects."""
+class FreeGeom(BaseObstacle):
+    """Base class for obstacles that are free_geoms."""
 
-    type: str = 'objects'
-
+    type: str = 'free_geoms'
 
 @dataclass
-class Mocaps(BaseObstacle):
+class Mocap(BaseObstacle):
     """Base class for obstacles that are mocaps."""
 
     type: str = 'mocaps'
@@ -109,8 +108,8 @@ class Mocaps(BaseObstacle):
                 obj_name = f'{self.name[:-1]}{i}obj'
                 layout_name = f'{self.name[:-1]}{i}'
                 configs = self.get_config(xy_pos=layout[layout_name], rot=rots[i])
-                config['objects'][obj_name] = configs['obj']
-                config['objects'][obj_name].update({'name': obj_name})
+                config['free_geoms'][obj_name] = configs['obj']
+                config['free_geoms'][obj_name].update({'name': obj_name})
                 config['mocaps'][mocap_name] = configs['mocap']
                 config['mocaps'][mocap_name].update({'name': mocap_name})
         else:
@@ -119,8 +118,8 @@ class Mocaps(BaseObstacle):
             obj_name = f'{self.name[:-1]}obj'
             layout_name = self.name[:-1]
             configs = self.get_config(xy_pos=layout[layout_name], rot=rots[0])
-            config['objects'][obj_name] = configs['obj']
-            config['objects'][obj_name].update({'name': obj_name})
+            config['free_geoms'][obj_name] = configs['obj']
+            config['free_geoms'][obj_name].update({'name': obj_name})
             config['mocaps'][mocap_name] = configs['mocap']
             config['mocaps'][mocap_name].update({'name': mocap_name})
 

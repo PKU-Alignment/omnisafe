@@ -116,8 +116,3 @@ class ButtonLevel0(BaseTask):
                 if any(n in self.agent.body_info.geom_names for n in geom_names):
                     return True
         return False
-
-    @property
-    def goal_pos(self):
-        """Helper to get goal position from layout."""
-        return self.goal.pos  # pylint: disable=no-member

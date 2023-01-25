@@ -112,7 +112,8 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
 
     def dist_goal(self):
         """Return the distance from the agent to the goal XY position."""
-        return self.agent.dist_xy(self.goal_pos)
+        assert hasattr(self, 'goal'), "Please make sure you have added goal into env."
+        return self.agent.dist_xy(self.goal.pos)  # pylint: disable=no-member
 
     def calculate_cost(self):
         """Determine costs depending on the agent and obstacles."""
@@ -199,7 +200,7 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
         world_config.update(
             {
                 'geoms': {},
-                'objects': {},
+                'free_geoms': {},
                 'mocaps': {},
             }
         )
@@ -450,10 +451,6 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
     @abc.abstractmethod
     def update_world(self):
         """Update one task specific goal."""
-
-    @property
-    def goal_pos(self):
-        """Helper to get goal position from layout."""
 
     @property
     @abc.abstractmethod

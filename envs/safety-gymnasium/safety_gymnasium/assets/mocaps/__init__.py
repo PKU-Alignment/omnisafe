@@ -15,7 +15,7 @@
 """Mocap type objects."""
 
 # Extra mocap bodies used for control (equality to object of same name)
-from safety_gymnasium.assets.mocaps.gremlin import Gremlins
+from safety_gymnasium.assets.mocaps.gremlins import Gremlins
 
 
 MOCAPS_REGISTER = [Gremlins]

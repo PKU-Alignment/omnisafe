@@ -16,14 +16,12 @@
 textures:
   skybox:
     '@type': skybox
-    '@builtin': gradient
-    '@rgb1': 0.527 0.582 0.906
-    '@rgb2': 0.1 0.1 0.35
-    '@width': 800
-    '@height': 800
-    '@markrgb': 1 1 1
-    '@mark': random
-    '@random': 0.001
+    '@fileright': star_hd.right.png
+    '@fileleft': star_hd.left.png
+    '@fileback': star_hd.back.png
+    '@filefront': star_hd.front.png
+    '@filedown': star_hd.bottom.png
+    '@fileup': star_hd.top.png
   matplane:
     '@name': matplane
     '@builtin': checker

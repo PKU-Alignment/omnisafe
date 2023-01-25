@@ -16,7 +16,7 @@
 
 import numpy as np
 from safety_gymnasium.assets.geoms import Goal
-from safety_gymnasium.assets.objects import PushBox
+from safety_gymnasium.assets.free_geoms import PushBox
 from safety_gymnasium.bases.base_task import BaseTask
 
 
@@ -29,7 +29,7 @@ class PushLevel0(BaseTask):
         self.placements_conf.extents = [-1, -1, 1, 1]
 
         self._add_geoms(Goal())
-        self._add_objects(PushBox(null_dist=0))
+        self._add_free_geoms(PushBox(null_dist=0))
 
         self.last_dist_box = None
         self.last_box_goal = None
@@ -83,15 +83,10 @@ class PushLevel0(BaseTask):
     def dist_box_goal(self):
         """Return the distance from the box to the goal XY position."""
         # pylint: disable-next=no-member
-        return np.sqrt(np.sum(np.square(self.push_box.pos - self.goal_pos)))
+        return np.sqrt(np.sum(np.square(self.push_box.pos - self.goal.pos)))
 
     @property
     def goal_achieved(self):
         """Whether the goal of task is achieved."""
         # pylint: disable-next=no-member
         return self.dist_box_goal() <= self.goal.size
-
-    @property
-    def goal_pos(self):
-        """Helper to get goal position from layout."""
-        return self.goal.pos  # pylint: disable=no-member
