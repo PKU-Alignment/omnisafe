@@ -27,7 +27,7 @@ defaults:
   # Number of epochs
   epochs: 500
   # Number of steps per epoch
-  steps_per_epoch: 4000
+  steps_per_epoch: 6000
   # Update after `update_after` steps
   update_after: 1000
   # Update every `update_every` steps
