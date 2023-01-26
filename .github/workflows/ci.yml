@@ -73,3 +73,16 @@ jobs:
       - name: spelling
         run: |
           make spelling
+
+      - name: Install pytest
+        run: |
+          python -m pip install -r tests/requirements.txt
+
+      - name: Run tests and collect coverage
+        run: |
+          pytest --cov .
+
+      - name: Upload coverage reports to Codecov
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
