@@ -9,6 +9,9 @@ on:
   # Allow to trigger the workflow manually
   workflow_dispatch:
 
+orbs:
+  codecov: codecov/codecov@3
+
 permissions:
   contents: read
 
@@ -82,3 +85,7 @@ jobs:
       - name: spelling
         run: |
           make spelling
+
+      - name: Run tests and collect coverage
+        run: |
+          pytest --cov app
