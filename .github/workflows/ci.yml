@@ -79,9 +79,13 @@ jobs:
       #   run: |
       #     make docstyle
 
-      - name: spelling
+      - name: Spelling
         run: |
           make spelling
+
+      - name: Install pytest
+        run: |
+          pip install pytest
 
       - name: Run tests and collect coverage
         run: |
