@@ -90,9 +90,3 @@ jobs:
       - name: Run tests and collect coverage
         run: |
           pytest tests/test_buffer.py
-
-      - name: Upload coverage reports to Codecov
-        run: |
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
-          ./codecov -t ${634594d3-0416-4632-ab6a-3bf34a8c0af3
