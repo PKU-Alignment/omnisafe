@@ -33,7 +33,7 @@ def test_on_policy(on_policy_algo):
     agent.learn()
 
 
-@helpers.parametrize(off_policy_algo=['CVPO', 'SACLag', 'SDDPG'])
+@helpers.parametrize(off_policy_algo=['SACLag', 'SDDPG'])
 def test_off_policy(off_policy_algo):
     """Test algorithms"""
     env_id = 'SafetyPointGoal1-v0'

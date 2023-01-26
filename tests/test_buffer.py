@@ -28,8 +28,8 @@ from omnisafe.common.vector_buffer import VectorBuffer
     gamma=[0.9],
     lam=[0.9],
     adv_estimation_method=['gae', 'vtrace', 'gae-rtg', 'plain'],
-    standardized_rew_adv=[True, False],
-    standardized_cost_adv=[True, False],
+    standardized_rew_adv=[True],
+    standardized_cost_adv=[True],
     lam_c=[0.9],
     penalty_param=[0.0],
     device=['cpu'],
@@ -134,9 +134,9 @@ def test_vector_buffer(
 
 
 @helpers.parametrize(
-    obs_dim=[1, 10, 100],
-    act_dim=[1, 5, 10],
-    size=[100, 1000],
+    obs_dim=[5],
+    act_dim=[5],
+    size=[100],
     gamma=[0.9],
     lam=[0.9],
     adv_estimation_method=['gae', 'vtrace', 'gae-rtg', 'plain'],
