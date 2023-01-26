@@ -89,7 +89,7 @@ jobs:
 
       - name: Run tests and collect coverage
         run: |
-          pytest test --ignore-glob='*profile.py' --cov=omnisafe --cov-report=xml --cov-report=term-missing --durations=0 -v --color=yes
+          pytest tests --ignore-glob='*profile.py' --cov=omnisafe --cov-report=xml --cov-report=term-missing --durations=0 -v --color=yes
 
       - name: Upload coverage reports to Codecov
         run: |
