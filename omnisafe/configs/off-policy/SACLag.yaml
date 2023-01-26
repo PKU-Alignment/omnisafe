@@ -144,8 +144,6 @@ defaults:
     lambda_optimizer: "Adam"
   ## --------------------------------------Configuration For Environment------------------------ ##
   env_cfgs:
-    # The seed of environment
-    env_seed: 0
     # The number of parallel environments
     num_envs: 1
     # Whether to use async environment

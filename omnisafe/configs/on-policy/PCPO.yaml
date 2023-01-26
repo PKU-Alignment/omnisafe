@@ -134,10 +134,8 @@ defaults:
     standardized_cost_adv: True
   ## --------------------------------------Configuration For Environment------------------------ ##
   env_cfgs:
-    # The seed of environment
-    env_seed: 0
     # The number of parallel environments
-    num_envs: 8
+    num_envs: 1
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward

@@ -113,6 +113,10 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         self.action_space = None
         self.observation_space = None
         self.make(env_id, env_kwargs)
+        seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
+        torch.manual_seed(seed)
+        np.random.seed(seed)
+        self.set_seed(int(self.cfgs.seed) + 10000 * distributed_utils.proc_id())
         if distributed_utils.num_procs() == 1:
             torch.set_num_threads(self.cfgs.num_threads)
         width = self.env.width if hasattr(self.env, 'width') else 256
@@ -140,7 +144,6 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
                 np.zeros(self.cfgs.num_envs),
             ),
         )
-        self.set_seed(int(self.cfgs.env_seed) + 10000 * distributed_utils.proc_id())
         self.obs_normalizer = (
             Normalizer(
                 shape=(self.cfgs.num_envs, self.observation_space.shape[0]),
@@ -164,6 +167,12 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         )
         self.record_queue = RecordQueue('ep_ret', 'ep_cost', 'ep_len', maxlen=self.cfgs.max_len)
         self.rollout_data.current_obs = CMDPWrapper.reset(self)[0]
+        self._init_check()
+
+    def _init_check(self) -> None:
+        """Check if the environment is initialized."""
+        if self.env is None:
+            raise RuntimeError('Environment is not initialized.')
 
     def make(self, env_id, env_kwargs):
         """Create environments."""

@@ -136,8 +136,6 @@ defaults:
     saute_gamma: 0.9997
     # Whether to scale safety budget
     scale_safety_budget: True
-    # The seed of environment
-    env_seed: 0
     # The number of parallel environments
     num_envs: 1
     # Whether to use async environment
@@ -149,6 +147,6 @@ defaults:
     # Whether to use standardized obs
     normalized_obs: True
     # The maximum length of record queue
-    max_len: -10
+    max_len: 100
     # The number of threads used to sample data
     num_threads: 20
