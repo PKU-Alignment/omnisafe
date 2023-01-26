@@ -85,13 +85,11 @@ jobs:
 
       - name: Install pytest
         run: |
-          pip install pytest
-          pip install coverage
-          pip install pytest-cov
+          python -m pip install -r tests/requirements.txt
 
-      - name: Run tests and collect coverage
+    - name: Run tests and collect coverage
         run: |
-          pytest --cov app
+          pytest --cov .
 
       - name: Upload coverage reports to Codecov
         run: |
