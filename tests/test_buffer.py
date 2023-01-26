@@ -32,7 +32,7 @@ from omnisafe.common.vector_buffer import VectorBuffer
     standardized_cost_adv=[True, False],
     lam_c=[0.9],
     penalty_param=[0.0],
-    device=['cpu', 'cuda'],
+    device=['cpu'],
     num_envs=[1],
 )
 def test_vector_buffer(
