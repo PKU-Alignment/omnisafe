@@ -18,7 +18,6 @@ import time
 from copy import deepcopy
 from typing import Dict, NamedTuple, Tuple
 
-import numpy as np
 import torch
 import torch.nn as nn
 
