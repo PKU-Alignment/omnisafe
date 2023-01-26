@@ -86,7 +86,14 @@ jobs:
       - name: Install pytest
         run: |
           pip install pytest
+          pip install coverage
+          pip install pytest-cov
 
       - name: Run tests and collect coverage
         run: |
           pytest --cov app
+
+      - name: Upload coverage reports to Codecov
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
