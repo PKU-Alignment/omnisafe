@@ -71,7 +71,7 @@ class PolicyGradient:
         self.steps_per_epoch = self.cfgs.steps_per_epoch
         self.local_steps_per_epoch = (
             cfgs.steps_per_epoch // cfgs.env_cfgs.num_envs // distributed_utils.num_procs()
-        )
+        ) + 1
 
         # ensure local each local process can experience at least one complete episode
         assert self.env.rollout_data.max_ep_len <= self.local_steps_per_epoch, (
@@ -83,10 +83,6 @@ class PolicyGradient:
         # set up logger and save configuration to disk
         self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
         self.logger.save_config(namedtuple2dict(cfgs))
-        # set seed
-        seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
-        torch.manual_seed(seed)
-        np.random.seed(seed)
         # setup actor-critic module
         self.actor_critic = ConstraintActorCritic(
             observation_space=self.env.observation_space,
@@ -144,11 +140,13 @@ class PolicyGradient:
         Returns:
             dict: The additional configurations.
         """
-        return {
+        added_configs = {
             'device': f'cuda:{self.cfgs.device_id}'
             if torch.cuda.is_available() and self.cfgs.device == 'cuda'
-            else 'cpu'
+            else 'cpu',
+            'seed': self.cfgs.seed,
         }
+        return added_configs
 
     def set_learning_rate_scheduler(self) -> torch.optim.lr_scheduler.LambdaLR:
         """Set up learning rate scheduler.
