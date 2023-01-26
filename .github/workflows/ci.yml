@@ -21,18 +21,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: "recursive"
-          fetch-depth: 1
-
+      - name: Codecov
+        uses: codecov/codecov-action@v3.1.1
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
           python-version: "3.8"
           update-environment: true
-
       - name: Upgrade pip
         run: |
           python -m pip install --upgrade pip setuptools
@@ -81,3 +76,6 @@ jobs:
       - name: Run tests and collect coverage
         run: |
           pytest --cov .
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3.1.1
