@@ -42,7 +42,7 @@ class VectorBuffer:
         num_envs: int = 1,
     ) -> None:
         """Initialize the buffer."""
-        self.num_buffer = num_envs
+        self.num_buffers = num_envs
         self.standardized_rew_adv = standardized_rew_adv
         self.standardized_cost_adv = standardized_cost_adv
         if num_envs < 1:

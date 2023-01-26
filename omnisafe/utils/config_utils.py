@@ -116,7 +116,10 @@ def check_all_configs(configs: NamedTuple, algo_type: str) -> None:
         configs (dict): configs to be checked.
         algo_type (str): algorithm type.
     """
+    check_env_configs(configs.env_cfgs, wrapper_type=configs.wrapper_type)
+    # check_model_configs(configs.model_cfgs)
     if algo_type == 'on-policy':
+        check_buffer_configs(configs.buffer_cfgs)
         assert configs.actor_iters > 0, 'actor_iters must be greater than 0'
         assert (
             configs.actor_lr > 0 and configs.critic_lr > 0
@@ -137,3 +140,48 @@ def check_all_configs(configs: NamedTuple, algo_type: str) -> None:
         assert (
             configs.update_every < configs.steps_per_epoch
         ), 'update_every must be less than steps_per_epoch'
+
+
+def check_env_configs(configs: NamedTuple, wrapper_type: str) -> None:
+    """Check env configs."""
+    assert configs.max_len > 0, 'max_len must be greater than 0'
+    if wrapper_type == 'SafetyLayerWrapper':
+        assert hasattr(
+            configs, 'safety_layer_cfgs'
+        ), 'SafetyLayerWrapper must have safety_layer_cfgs'
+    elif wrapper_type == 'SauteWrapper':
+        assert (
+            hasattr(configs, 'unsafe_reward')
+            and hasattr(configs, 'safety_budget')
+            and hasattr(configs, 'saute_gamma')
+            and hasattr(configs, 'scale_safety_budget')
+        ), 'SauteWrapper must have unsafe_reward, safety_budget, saute_gamma, scale_safety_budget'
+        assert configs.unsafe_reward <= 0, 'unsafe_reward must be less or equal than 0'
+        assert configs.safety_budget > 0, 'safety_budget must be greater than 0'
+        assert (
+            configs.saute_gamma >= 0 and configs.saute_gamma < 1.0
+        ), 'saute_gamma must be in [0, 1)'
+    elif wrapper_type == 'SimmerWrapper':
+        assert (
+            hasattr(configs, 'unsafe_reward')
+            and hasattr(configs, 'lower_budget')
+            and hasattr(configs, 'simmer_gamma')
+            and hasattr(configs, 'scale_safety_budget')
+        ), 'SimmerWrapper must have unsafe_reward, safety_budget, simmer_gamma, scale_safety_budget'
+        assert configs.unsafe_reward <= 0, 'unsafe_reward must be less or equal than 0'
+        assert configs.lower_budget > 0, 'safety_budget must be greater than 0'
+        assert (
+            configs.simmer_gamma >= 0 and configs.simmer_gamma < 1.0
+        ), 'simmer_gamma must be in [0, 1)'
+
+
+def check_buffer_configs(configs: NamedTuple) -> None:
+    """Check buffer configs."""
+    assert (
+        configs.gamma >= 0 and configs.gamma < 1.0
+    ), f'gamma must be in [0, 1) but got {configs.gamma}'
+    assert configs.lam >= 0 and configs.lam < 1.0, f'lam must be in [0, 1) but got {configs.lam}'
+    assert (
+        configs.lam_c >= 0 and configs.lam_c < 1.0
+    ), f'gamma must be in [0, 1) but got {configs.lam_c}'
+    assert configs.adv_estimation_method in ['gae', 'gae-rtg', 'vtrace', 'plain']

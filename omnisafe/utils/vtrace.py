@@ -16,19 +16,19 @@
 
 from typing import Tuple
 
-import numpy as np
+import torch
 
 
-# pylint: disable-next=too-many-arguments,too-many-locals
+# pylint: disable-next=too-many-arguments, too-many-locals
 def calculate_v_trace(
-    policy_action_probs: np.ndarray,
-    values: np.ndarray,  # including bootstrap
-    rewards: np.ndarray,  # including bootstrap
-    behavior_action_probs: np.ndarray,
+    policy_action_probs: torch.Tensor,
+    values: torch.Tensor,  # including bootstrap
+    rewards: torch.Tensor,  # including bootstrap
+    behavior_action_probs: torch.Tensor,
     gamma: float = 0.99,
     rho_bar: float = 1.0,
     c_bar: float = 1.0,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray,]:
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor,]:
     r"""This function is used to calculate V-trace targets.
 
     .. math::
@@ -40,10 +40,10 @@ def calculate_v_trace(
     please refer to the paper: `Espeholt et al. 2018, IMPALA <https://arxiv.org/abs/1802.01561>`_.
 
     Args:
-        policy_action_probs (np.ndarray): action probabilities of policy network, shape=(sequence_length,)
-        values (np.ndarray): state values, shape=(sequence_length+1,)
-        rewards (np.ndarray): rewards, shape=(sequence_length+1,)
-        behavior_action_probs (np.ndarray): action probabilities of behavior network, shape=(sequence_length,)
+        policy_action_probs (torch.Tensor): action probabilities of policy network, shape=(sequence_length,)
+        values (torch.Tensor): state values, shape=(sequence_length+1,)
+        rewards (torch.Tensor): rewards, shape=(sequence_length+1,)
+        behavior_action_probs (torch.Tensor): action probabilities of behavior network, shape=(sequence_length,)
         gamma (float): discount factor
         rho_bar (float): clip rho
         c_bar (float): clip c
@@ -59,11 +59,12 @@ def calculate_v_trace(
 
     sequence_length = policy_action_probs.shape[0]
     # pylint: disable-next=assignment-from-no-return
-    rhos = np.divide(policy_action_probs, behavior_action_probs)
-    clip_rhos = np.minimum(rhos, rho_bar)  # pylint: disable=assignment-from-no-return
-    clip_cs = np.minimum(rhos, c_bar)  # pylint: disable=assignment-from-no-return
-
-    v_s = np.copy(values[:-1])  # copy all values except bootstrap value
+    rhos = torch.div(policy_action_probs, behavior_action_probs)
+    clip_rhos = torch.min(
+        rhos, torch.as_tensor(rho_bar)
+    )  # pylint: disable=assignment-from-no-return
+    clip_cs = torch.min(rhos, torch.as_tensor(c_bar))  # pylint: disable=assignment-from-no-return
+    v_s = values[:-1].clone()  # copy all values except bootstrap value
     last_v_s = values[-1]  # bootstrap from last state
 
     # calculate v_s
@@ -73,7 +74,7 @@ def calculate_v_trace(
         last_v_s = v_s[index]  # accumulate current v_s for next iteration
 
     # calculate q_targets
-    v_s_plus_1 = np.append(v_s[1:], values[-1])
+    v_s_plus_1 = torch.cat((v_s[1:], values[-1:]))
     policy_advantage = clip_rhos * (rewards[:-1] + gamma * v_s_plus_1 - values[:-1])
 
     return v_s, policy_advantage, clip_rhos
