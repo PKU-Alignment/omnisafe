@@ -95,6 +95,10 @@ jobs:
         run: |
           pytest tests/test_safety_gym_envs.py --cov
 
+      - name: Run tests and collect coverage
+        run: |
+          pytest tests/test_policy.py --cov
+
       - name: Upload coverage reports to Codecov
         run: |
           # Replace `linux` below with the appropriate OS
