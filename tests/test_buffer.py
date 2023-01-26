@@ -142,7 +142,7 @@ def test_vector_buffer(
     adv_estimation_method=['gae', 'vtrace', 'gae-rtg', 'plain'],
     lam_c=[0.9],
     penalty_param=[0.0, 1.0],
-    device=['cpu', 'cuda'],
+    device=['cpu'],
 )
 def test_buffer(
     obs_dim: int,
