@@ -9,9 +9,6 @@ on:
   # Allow to trigger the workflow manually
   workflow_dispatch:
 
-orbs:
-  codecov: codecov/codecov@3
-
 permissions:
   contents: read
 
