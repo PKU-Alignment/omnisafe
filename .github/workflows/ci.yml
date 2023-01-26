@@ -89,4 +89,4 @@ jobs:
 
       - name: Run tests and collect coverage
         run: |
-          pytest test_buffer.py
+          pytest tests/test_buffer.py

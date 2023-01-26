@@ -11,7 +11,7 @@ jobs:
     - name: Install requirements
       run: pip install -r tests/requirements.txt
     - name: Run tests and collect coverage
-      run: pytest test_buffer.py --cov
+      run: pytest tests/test_buffer.py --cov
     - name: Upload coverage reports to Codecov
       run: |
         curl -Os https://uploader.codecov.io/latest/linux/codecov
