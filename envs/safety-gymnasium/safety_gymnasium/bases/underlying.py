@@ -26,9 +26,9 @@ import safety_gymnasium
 from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen
 from safety_gymnasium import agents
 from safety_gymnasium.assets.color import COLOR
+from safety_gymnasium.assets.free_geoms import FREE_GEOMS_REGISTER
 from safety_gymnasium.assets.geoms import GEOMS_REGISTER
 from safety_gymnasium.assets.mocaps import MOCAPS_REGISTER
-from safety_gymnasium.assets.objects import OBJS_REGISTER
 from safety_gymnasium.utils.common_utils import MujocoException
 from safety_gymnasium.utils.keyboard_viewer import KeyboardViewer
 from safety_gymnasium.utils.random_generator import RandomGenerator
@@ -122,7 +122,7 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
 
         # Obstacles which are added in environments.
         self._geoms = {}
-        self._objects = {}
+        self._free_geoms = {}
         self._mocaps = {}
 
         # something are parsed from pre-defined configs
@@ -168,13 +168,13 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
             setattr(self, geom.name, geom)
             geom.set_agent(self.agent)
 
-    def _add_objects(self, *objects):
-        """Add object type objects into environments and set corresponding attributes."""
-        for obj in objects:
+    def _add_free_geoms(self, *free_geoms):
+        """Add FreeGeom type objects into environments and set corresponding attributes."""
+        for obj in free_geoms:
             assert (
-                type(obj) in OBJS_REGISTER
+                type(obj) in FREE_GEOMS_REGISTER
             ), 'Please figure out the type of object before you add it into envs.'
-            self._objects[obj.name] = obj
+            self._free_geoms[obj.name] = obj
             setattr(self, obj.name, obj)
             obj.set_agent(self.agent)
 
@@ -475,5 +475,7 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
     def _obstacles(self):
         """Get the obstacles in the task."""
         return (
-            list(self._geoms.values()) + list(self._objects.values()) + list(self._mocaps.values())
+            list(self._geoms.values())
+            + list(self._free_geoms.values())
+            + list(self._mocaps.values())
         )
