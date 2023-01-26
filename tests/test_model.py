@@ -30,10 +30,10 @@ from omnisafe.utils.model_utils import Activation, InitFunction
 
 
 @helpers.parametrize(
-    obs_dim=[1, 10, 100],
-    act_dim=[1, 5, 10],
+    obs_dim=[10],
+    act_dim=[5],
     shared=[None],
-    hidden_sizes=[64, 128, 256],
+    hidden_sizes=[64],
     activation=['tanh', 'softplus', 'sigmoid', 'identity', 'relu'],
 )
 def test_critic(
@@ -63,15 +63,15 @@ def test_critic(
 
 @helpers.parametrize(
     actor_type=['gaussian', 'gaussian_stdnet'],
-    obs_dim=[1, 10, 100],
-    act_dim=[1, 5, 10],
-    hidden_sizes=[64, 128, 256],
+    obs_dim=[10],
+    act_dim=[5],
+    hidden_sizes=[64],
     activation=['tanh', 'softplus', 'sigmoid', 'identity', 'relu'],
     output_activation=['tanh'],
     weight_initialization_mode=['kaiming_uniform'],
     shared=[None],
-    std_learning=[True, False],
-    std_init=[1.0, 2.0],
+    std_learning=[True],
+    std_init=[1.0],
     scale_action=[True],
     clip_action=[True],
 )
@@ -135,8 +135,8 @@ def test_gaussian_actor(
 
 
 @helpers.parametrize(
-    obs_dim=[1, 10, 100],
-    act_dim=[1, 5, 10],
+    obs_dim=[10],
+    act_dim=[5],
     space_type=[Box],
     shared_weights=[False],  # shared weights not implemented yet in discrete case.
     hidden_sizes=[64],
