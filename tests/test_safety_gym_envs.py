@@ -52,7 +52,7 @@ def test_safety_velocity(algo, agent_id, env_id):
     """Test environments"""
     env_id = 'Safety' + agent_id + env_id + '-v4'
     # env_id = 'PointGoal1'
-    custom_cfgs = {'epochs': 1, 'steps_per_epoch': 1000, 'actor_iters': 1}
+    custom_cfgs = {'epochs': 1, 'actor_iters': 1}
 
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     # agent.set_seed(seed=0)
