@@ -25,7 +25,7 @@ defaults:
   # The environment wrapper type
   wrapper_type: CMDPWrapper
   # Number of epochs
-  epochs: 5000
+  epochs: 500
   # Number of steps per epoch
   steps_per_epoch: 32768
   # Number of update iteration for Actor network
@@ -105,7 +105,7 @@ defaults:
         # Whether to scale action.
         scale_action: False
         # Whether to clip action.
-        clip_action: False
+        clip_action: True
         # Whther to learn the standard deviation of Gaussian noise
         std_learning: True
         # The initial value of standard deviation of Gaussian noise

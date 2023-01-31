@@ -25,9 +25,9 @@ defaults:
   # The environment wrapper type
   wrapper_type: SauteWrapper
   # Number of epochs
-  epochs: 5000
+  epochs: 500
   # Number of steps per epoch
-  steps_per_epoch: 2048
+  steps_per_epoch: 32768
   # Number of update iteration for Actor network
   actor_iters: 10
   # Number of update iteration for Critic network
@@ -149,7 +149,7 @@ defaults:
     # Whether to scale safety budget
     scale_safety_budget: True
     # The number of parallel environments
-    num_envs: 1
+    num_envs: 8
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward
