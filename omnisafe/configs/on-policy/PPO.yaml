@@ -25,13 +25,13 @@ defaults:
   # The environment wrapper type
   wrapper_type: CMDPWrapper
   # Number of epochs
-  epochs: 5000
+  epochs: 500
   # Number of steps per epoch
-  steps_per_epoch: 2048
+  steps_per_epoch: 32768
   # Number of update iteration for Actor network
-  actor_iters: 40
+  actor_iters: 1
   # Number of update iteration for Critic network
-  critic_iters: 40
+  critic_iters: 1
   # Check if all models own the same parameter values every `check_freq` epoch
   check_freq: 25
   # Save model to disk every `check_freq` epochs
@@ -85,7 +85,7 @@ defaults:
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
     # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-    actor_type: gaussian
+    actor_type: gaussian_stdnet
     # Configuration of Actor and Critic network
     ac_kwargs:
       # Configuration of Actor network
@@ -131,7 +131,7 @@ defaults:
     # The cost limit
     cost_limit: 25.0
     # The number of parallel environments
-    num_envs: 1
+    num_envs: 8
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward
@@ -307,9 +307,9 @@ SafetyHumanoidVelocity-v4:
   # Number of steps per epoch
   steps_per_epoch: 2048
   # Number of update iteration for Actor network
-  actor_iters: 10
+  actor_iters: 1
   # Number of update iteration for Critic network
-  critic_iters: 40
+  critic_iters: 1
   # Check if all models own the same parameter values every `check_freq` epoch
   check_freq: 25
   # Save model to disk every `check_freq` epochs
