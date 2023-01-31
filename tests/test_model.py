@@ -25,6 +25,7 @@ from gymnasium.spaces import Box, Discrete
 import helpers
 from omnisafe.models import ActorBuilder, CriticBuilder
 from omnisafe.models.actor_critic import ActorCritic
+from omnisafe.models.actor_q_critic import ActorQCritic
 from omnisafe.utils.config_utils import dict2namedtuple
 from omnisafe.utils.model_utils import Activation, InitFunction
 
@@ -35,6 +36,7 @@ from omnisafe.utils.model_utils import Activation, InitFunction
     shared=[None],
     hidden_sizes=[64],
     activation=['tanh', 'relu'],
+    use_obs_encoder=[True, False],
 )
 def test_critic(
     obs_dim: int,
@@ -42,6 +44,7 @@ def test_critic(
     shared,
     hidden_sizes: int,
     activation: str,
+    use_obs_encoder: bool,
 ) -> None:
     """Test critic"""
     builder = CriticBuilder(
@@ -53,7 +56,7 @@ def test_critic(
     )
     obs = torch.randn(obs_dim, dtype=torch.float32)
     act = torch.randn(act_dim, dtype=torch.float32)
-    q_critic = builder.build_critic(critic_type='q')
+    q_critic = builder.build_critic(critic_type='q', use_obs_encoder=use_obs_encoder)
     v_critic = builder.build_critic(critic_type='v')
     out1 = q_critic(obs, act)[0]
     out2 = v_critic(obs)
@@ -137,11 +140,17 @@ def test_gaussian_actor(
 @helpers.parametrize(
     obs_dim=[10],
     act_dim=[5],
-    space_type=[Box],
+    space_type=[Box, Discrete],
     shared_weights=[False],  # shared weights not implemented yet in discrete case.
     hidden_sizes=[64],
     activation=['tanh'],
-    weight_initialization_mode=['kaiming_uniform'],
+    weight_initialization_mode=[
+        'kaiming_uniform',
+        'xavier_normal',
+        'glorot',
+        'xavier_uniform',
+        'orthogonal',
+    ],
     actor_type=['gaussian', 'gaussian_stdnet'],
 )
 def test_actor_critic(
@@ -214,4 +223,93 @@ def test_actor_critic(
         and isinstance(logpro, torch.Tensor)
     ), 'Failed!'
 
-    # TODO: Test anneal_exploration method.
+    actor_critic.anneal_exploration(0.5)
+
+@helpers.parametrize(
+    obs_dim=[10],
+    act_dim=[5],
+    space_type=[Box, Discrete],
+    shared_weights=[False],  # shared weights not implemented yet in discrete case.
+    hidden_sizes=[64],
+    activation=['tanh'],
+    weight_initialization_mode=[
+        'kaiming_uniform',
+        'xavier_normal',
+        'glorot',
+        'xavier_uniform',
+        'orthogonal',
+    ],
+    actor_type=['gaussian', 'gaussian_stdnet'],
+)
+def test_actor_q_critic(
+    obs_dim: int,
+    act_dim: int,
+    space_type,
+    shared_weights: bool,
+    hidden_sizes: int,
+    activation: str,
+    weight_initialization_mode: str,
+    actor_type: str,
+) -> None:
+    """Test the Actor Critic class."""
+
+    ac_kwargs = {
+        'pi': {
+            'hidden_sizes': [hidden_sizes, hidden_sizes],
+            'activation': activation,
+        },
+        'val': {
+            'hidden_sizes': [hidden_sizes, hidden_sizes],
+            'activation': activation,
+            'num_critics': 1,
+        },
+    }
+    observation_space = Box(low=-1, high=1, shape=(obs_dim,))
+
+    model_cfgs = dict2namedtuple(
+        {
+            'actor_type': actor_type,
+            'ac_kwargs': ac_kwargs,
+            'weight_initialization_mode': weight_initialization_mode,
+            'shared_weights': shared_weights,
+        }
+    )
+
+    if space_type == Discrete:
+        action_space = space_type(act_dim)
+    else:
+        action_space = space_type(low=-1, high=1, shape=(act_dim,))
+
+    actor_critic = ActorQCritic(
+        observation_space=observation_space,
+        action_space=action_space,
+        model_cfgs=model_cfgs,
+    )
+
+    obs = torch.randn((1, obs_dim), dtype=torch.float32)
+
+    raw_act, act, val, logpro = actor_critic(obs)
+    assert (
+        isinstance(raw_act, torch.Tensor)
+        and isinstance(act, torch.Tensor)
+        and isinstance(val, torch.Tensor)
+        and isinstance(logpro, torch.Tensor)
+    ), 'Failed!'
+
+    raw_act, act, val, logpro = actor_critic.step(obs)
+    assert (
+        isinstance(raw_act, torch.Tensor)
+        and isinstance(act, torch.Tensor)
+        and isinstance(val, torch.Tensor)
+        and isinstance(logpro, torch.Tensor)
+    ), 'Failed!'
+
+    raw_act, act, val, logpro = actor_critic.step(obs, deterministic=True)
+    assert (
+        isinstance(raw_act, torch.Tensor)
+        and isinstance(act, torch.Tensor)
+        and isinstance(val, torch.Tensor)
+        and isinstance(logpro, torch.Tensor)
+    ), 'Failed!'
+
+    actor_critic.anneal_exploration(0.5)

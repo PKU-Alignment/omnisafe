@@ -55,7 +55,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self.obs_normalizer = obs_normalize if obs_normalize is not None else lambda x: x
         self.env_wrapper_class = type(env) if env is not None else None
 
-        # Used when load model from saved file.
+        # used when load model from saved file.
         self.cfg = None
         self.save_dir = None
         self.model_name = None
@@ -74,13 +74,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         else:
             self.render_mode = None
 
-    def set_seed(self, seed):
-        """Set the seed for the environment."""
-        self.env.reset(seed=seed)
-
     # pylint: disable-next=too-many-locals
     def load_saved_model(self, save_dir: str, model_name: str):
         """Load a saved model.
+
         Args:
             save_dir (str): directory where the model is saved.
             model_name (str): name of the model.
@@ -115,7 +112,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         action_space = self.env.action_space
 
         act_space_type = 'discrete' if isinstance(action_space, Discrete) else 'continuous'
-        actor_type = self.cfg['model_cfgs']['ac_kwargs']['pi']['actor_type']
+        actor_type = self.cfg['model_cfgs']['actor_type']
         if isinstance(action_space, Box):
             act_dim = action_space.shape[0]
         elif isinstance(action_space, Discrete):
@@ -149,9 +146,11 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         cost_criteria: float = 1.0,
     ):
         """Evaluate the agent for num_episodes episodes.
+
         Args:
             num_episodes (int): number of episodes to evaluate the agent.
             cost_criteria (float): the cost criteria for the evaluation.
+
         Returns:
             episode_rewards (list): list of episode rewards.
             episode_costs (list): list of episode costs.
@@ -165,7 +164,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         episode_rewards = []
         episode_costs = []
         episode_lengths = []
-        horizon = self.env.max_ep_len
+        horizon = self.env.rollout_data.max_ep_len
 
         for _ in range(num_episodes):
             obs, _ = self.env.reset()
@@ -175,12 +174,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 with torch.no_grad():
                     if self.env.obs_normalizer is not None:
                         obs = self.env.obs_normalizer.normalize(obs)
-                    act = self.actor.predict(
+                    _, act = self.actor.predict(
                         torch.as_tensor(obs, dtype=torch.float32),
                         deterministic=True,
                         need_log_prob=False,
                     )
-                obs, rew, cost, done, truncated, _ = self.env.step(act.numpy())
+                [obs, rew, cost], done, truncated, _ = self.env.step(act)
                 ep_ret += rew
                 ep_cost += (cost_criteria**step) * cost
 
@@ -210,6 +209,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         height: int = None,
     ):
         """Render the environment for one episode.
+
         Args:
             seed (int): seed for the environment. If None, the environment will be reset with a random seed.
             save_replay_path (str): path to save the replay. If None, no replay is saved.
@@ -271,7 +271,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 with torch.no_grad():
                     if self.env.obs_normalizer is not None:
                         obs = self.env.obs_normalizer.normalize(obs)
-                    act = self.actor.predict(obs, deterministic=True)
+                    _, act = self.actor.predict(obs, deterministic=True)
                 [obs, _, _], done, truncated, _ = self.env.step(act.cpu().squeeze())
                 if done[0] or truncated[0]:
                     break
@@ -280,16 +280,15 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
             if self.render_mode == 'rgb_array_list':
                 frames = self.env.render()
-
-            if save_replay_path is not None:
-                save_video(
-                    frames,
-                    save_replay_path,
-                    fps=self.env.env.metadata['render_fps'],
-                    episode_trigger=lambda x: True,
-                    episode_index=episode_idx,
-                    name_prefix='eval',
-                )
+                if save_replay_path is not None:
+                    save_video(
+                        frames,
+                        save_replay_path,
+                        fps=self.env.env.metadata['render_fps'],
+                        episode_trigger=lambda x: True,
+                        episode_index=episode_idx,
+                        name_prefix='eval',
+                    )
             self.env.reset()
             frames = []
 
@@ -297,14 +296,19 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """Make wrapped environment."""
         env_cfgs = {
             'num_envs': 1,
-            'standardized_obs': False,
-            'standardized_rew': False,
+            'seed': 0,
+            'normalized_obs': False,
+            'normalized_rew': False,
+            'normalized_cost': False,
             'device': 'cpu',
+            'num_threads': 20,
+            'max_len': 100,
+            'async_env': True,
         }
         env_cfgs = dict2namedtuple(env_cfgs)
         if self.cfg is not None and 'env_cfgs' in self.cfg:
-            # self.cfg['env_cfgs']['num_envs']= 1
             self.cfg['env_cfgs']['device'] = 'cpu'
+            self.cfg['env_cfgs']['seed'] = 0
             env_cfgs = dict2namedtuple(self.cfg['env_cfgs'])
 
         if self.algo_name in ['PPOSimmerPid', 'PPOSimmerQ', 'PPOLagSimmerQ', 'PPOLagSimmerPid']:

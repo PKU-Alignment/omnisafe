@@ -1,0 +1,2 @@
+Train/Epoch Metrics/EpRet Metrics/EpCost Metrics/EpLen Loss/Loss_pi Loss/Delta_loss_pi Values/Adv Loss/Loss_reward_critic Loss/Delta_loss_reward_critic Values/V Train/Entropy Train/KL Train/StopIter Train/PolicyRatio Train/LR Misc/RewScaleMean Misc/RewScaleStddev TotalEnvSteps Time FPS
+1 82.87528838037103 0.0 24.688907381580563 -0.022868006548378617 -0.022868006548378617 -9.7653965e-09 14.763388872146606 14.763388872146606 -0.1061316 1.417297 0.02445267 2.0 0.9933741 0.0003 3.336341619491577 0.6652899384498596 1000 1 706
