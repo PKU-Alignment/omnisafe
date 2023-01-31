@@ -225,6 +225,7 @@ def test_actor_critic(
 
     actor_critic.anneal_exploration(0.5)
 
+
 @helpers.parametrize(
     obs_dim=[10],
     act_dim=[5],

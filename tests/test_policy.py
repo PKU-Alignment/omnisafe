@@ -183,6 +183,7 @@ def test_simmer_policy(algo):
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
 
+
 def test_evaluate_saved_policy():
     """Test evaluate policy."""
     DIR = os.path.join(os.path.dirname(__file__), 'saved_policy')
