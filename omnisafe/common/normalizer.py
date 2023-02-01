@@ -56,7 +56,7 @@ class Normalizer(nn.Module):
             self.std.data = torch.sqrt(self.var.data)
             self.std.data = torch.max(self.std.data, 1e-2 * torch.ones_like(self.std.data))
 
-    def forwarad(self, raw_data=None):
+    def forward(self, raw_data=None):
         """Normalize the raw_data."""
         return self.normalize(raw_data)
 
