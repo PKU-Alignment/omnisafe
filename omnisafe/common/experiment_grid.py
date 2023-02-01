@@ -371,6 +371,7 @@ class ExperimentGrid:
             self.save_results(exp_names, variants, results)
 
     def save_results(self, exp_names, variants, results):
+        """Save results to a file."""
         path = os.path.join('./', 'exp-x', self.name, 'exp-x-results.txt')
         str_len = max(len(exp_name) for exp_name in exp_names)
         exp_names = [exp_name.ljust(str_len) for exp_name in exp_names]

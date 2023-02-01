@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of Vector Buffer."""
 
-import numpy as np
 import torch
 import torch.nn as nn
 
@@ -57,7 +56,10 @@ class Normalizer(nn.Module):
             self.std.data = torch.sqrt(self.var.data)
             self.std.data = torch.max(self.std.data, 1e-2 * torch.ones_like(self.std.data))
 
-    #
+    def forwarad(self, raw_data=None):
+        """Normalize the raw_data."""
+        return self.normalize(raw_data)
+
     def pre_process(self, raw_data):
         """Pre-process the raw_data."""
         if len(raw_data.shape) == 1:
