@@ -29,7 +29,6 @@ repos:
       - id: black-jupyter
         stages: [commit, push, manual]
   - repo: local
-    rev: 2.15.10
     hooks:
       - id: pylint
         name: pylint
