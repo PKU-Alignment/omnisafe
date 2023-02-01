@@ -59,8 +59,3 @@ class GoalLevel0(BaseTask):
         """Whether the goal of task is achieved."""
         # pylint: disable-next=no-member
         return self.dist_goal() <= self.goal.size
-
-    @property
-    def goal_pos(self):
-        """Helper to get goal position from layout."""
-        return self.goal.pos  # pylint: disable=no-member

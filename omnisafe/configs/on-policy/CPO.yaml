@@ -105,7 +105,7 @@ defaults:
         # Whether to scale action.
         scale_action: False
         # Whether to clip action.
-        clip_action: False
+        clip_action: True
         # Whther to learn the standard deviation of Gaussian noise
         std_learning: True
         # The initial value of standard deviation of Gaussian noise
@@ -134,8 +134,6 @@ defaults:
     standardized_cost_adv: True
   ## --------------------------------------Configuration For Environment------------------------ ##
   env_cfgs:
-    # The seed of environment
-    env_seed: 0
     # The number of parallel environments
     num_envs: 8
     # Whether to use async environment

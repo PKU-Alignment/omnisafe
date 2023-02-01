@@ -68,7 +68,7 @@ class DDPG:
         self.env = wrapper_registry.get(self.wrapper_type)(env_id, cfgs=env_cfgs)
         # set up for learning and rolling out schedule
         self.local_steps_per_epoch = (
-            cfgs.steps_per_epoch // cfgs.env_cfgs.num_envs // distributed_utils.num_procs()
+            cfgs.steps_per_epoch // cfgs.env_cfgs.num_envs // distributed_utils.num_procs() + 1
         )
         self.total_steps = self.cfgs.epochs * self.cfgs.steps_per_epoch
         # the steps in each process should be integer
@@ -148,11 +148,13 @@ class DDPG:
         Returns:
             dict: The additional configurations.
         """
-        return {
+        added_configs = {
             'device': f'cuda:{self.cfgs.device_id}'
             if torch.cuda.is_available() and self.cfgs.device == 'cuda'
-            else 'cpu'
+            else 'cpu',
+            'seed': self.cfgs.seed,
         }
+        return added_configs
 
     def cost_limit_decay(
         self,

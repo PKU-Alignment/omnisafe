@@ -14,15 +14,15 @@
 # ==============================================================================
 """Geoms type objects."""
 
-from safety_gymnasium.assets.geoms.apple import Apples
-from safety_gymnasium.assets.geoms.button import Buttons
+from safety_gymnasium.assets.geoms.apples import Apples
+from safety_gymnasium.assets.geoms.buttons import Buttons
 from safety_gymnasium.assets.geoms.circle import Circle
 
 # Extra geoms (immovable objects) to add to the scene
 from safety_gymnasium.assets.geoms.goal import Goal
-from safety_gymnasium.assets.geoms.hazard import Hazards
-from safety_gymnasium.assets.geoms.orange import Oranges
-from safety_gymnasium.assets.geoms.pillar import Pillars
+from safety_gymnasium.assets.geoms.hazards import Hazards
+from safety_gymnasium.assets.geoms.oranges import Oranges
+from safety_gymnasium.assets.geoms.pillars import Pillars
 from safety_gymnasium.assets.geoms.sigwalls import Sigwalls
 from safety_gymnasium.assets.geoms.walls import Walls
 

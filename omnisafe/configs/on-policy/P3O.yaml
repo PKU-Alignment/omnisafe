@@ -25,9 +25,9 @@ defaults:
   # The environment wrapper type
   wrapper_type: CMDPWrapper
   # Number of epochs
-  epochs: 5000
+  epochs: 500
   # Number of steps per epoch
-  steps_per_epoch: 2096
+  steps_per_epoch: 32768
   # Number of update iteration for Actor network
   actor_iters: 10
   # Number of update iteration for Critic network
@@ -132,10 +132,8 @@ defaults:
     standardized_cost_adv: True
   ## --------------------------------------Configuration For Environment------------------------ ##
   env_cfgs:
-    # The seed of environment
-    env_seed: 0
     # The number of parallel environments
-    num_envs: 1
+    num_envs: 8
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward

@@ -19,11 +19,11 @@ from dataclasses import dataclass
 import numpy as np
 from safety_gymnasium.assets.color import COLOR
 from safety_gymnasium.assets.group import GROUP
-from safety_gymnasium.bases.base_obstacle import Geoms
+from safety_gymnasium.bases.base_obstacle import Geom
 
 
 @dataclass
-class Circle(Geoms):  # pylint: disable=too-many-instance-attributes
+class Circle(Geom):  # pylint: disable=too-many-instance-attributes
     """CircleTask specific."""
 
     name: str = 'circle'

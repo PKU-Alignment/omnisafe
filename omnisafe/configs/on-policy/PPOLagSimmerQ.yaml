@@ -25,9 +25,9 @@ defaults:
   # The environment wrapper type
   wrapper_type: SimmerWrapper
   # Number of epochs
-  epochs: 5000
+  epochs: 500
   # Number of steps per epoch
-  steps_per_epoch: 2048
+  steps_per_epoch: 32768
   # Number of update iteration for Actor network
   actor_iters: 10
   # Number of update iteration for Critic network
@@ -41,7 +41,7 @@ defaults:
   # The max length of per epoch
   max_ep_len: 1000
   # The size of mini batch
-  num_mini_batches: 512
+  num_mini_batches: 64
   # The learning rate of Actor network
   actor_lr: 0.0003
   # The learning rate of Critic network
@@ -140,10 +140,8 @@ defaults:
     lambda_optimizer: "Adam"
   ## Configuration For Env_Wrapper
   env_cfgs:
-    # The seed of environment
-    env_seed: 0
     # The number of parallel environments
-    num_envs: 1
+    num_envs: 8
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward

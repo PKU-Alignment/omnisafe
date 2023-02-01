@@ -58,8 +58,8 @@ class World:  # pylint: disable=too-many-instance-attributes
         'agent_xy': np.zeros(2),  # agent XY location
         'agent_rot': 0,  # agent rotation about Z axis
         'floor_size': [3.5, 3.5, 0.1],  # Used for displaying the floor
-        # Objects -- this is processed and added by the Builder class
-        'objects': {},  # map from name -> object dict
+        # FreeGeoms -- this is processed and added by the Builder class
+        'free_geoms': {},  # map from name -> object dict
         # Geoms -- similar to objects, but they are immovable and fixed in the scene.
         'geoms': {},  # map from name -> geom dict
         # Mocaps -- mocap objects which are used to control other objects
@@ -185,7 +185,7 @@ class World:  # pylint: disable=too-many-instance-attributes
                 selected_textures[mesh_name] = assets_config['textures'][mesh_name]
                 selected_materials[mesh_name] = assets_config['materials'][mesh_name]
                 selected_meshes[mesh_name] = assets_config['meshes'][mesh_name]
-        for name, config in self.objects.items():  # pylint: disable=no-member
+        for name, config in self.free_geoms.items():  # pylint: disable=no-member
             if config['type'] == 'mesh':
                 mesh_name = config['mesh']
                 selected_textures[mesh_name] = assets_config['textures'][mesh_name]
@@ -280,8 +280,8 @@ class World:  # pylint: disable=too-many-instance-attributes
                 track_camera['b']['camera'],
             ]
 
-        # Add objects to the XML dictionary
-        for name, object in self.objects.items():  # pylint: disable=redefined-builtin, no-member
+        # Add free_geoms to the XML dictionary
+        for name, object in self.free_geoms.items():  # pylint: disable=redefined-builtin, no-member
             assert object['name'] == name, f'Inconsistent {name} {object}'
             object = object.copy()  # don't modify original object
             if name == 'push_box':
@@ -347,7 +347,7 @@ class World:  # pylint: disable=too-many-instance-attributes
             # Mocap names are suffixed with 'mocap'
             assert mocap['name'] == name, f'Inconsistent {name}'
             assert (
-                name.replace('mocap', 'obj') in self.objects  # pylint: disable=no-member
+                name.replace('mocap', 'obj') in self.free_geoms  # pylint: disable=no-member
             ), f'missing object for {name}'  # pylint: disable=no-member
             # Add the object to the world
             mocap = mocap.copy()  # don't modify original object

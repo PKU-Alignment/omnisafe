@@ -25,9 +25,9 @@ defaults:
   # The environment wrapper type
   wrapper_type: CMDPWrapper
   # Number of epochs
-  epochs: 5000
+  epochs: 500
   # Number of steps per epoch
-  steps_per_epoch: 2048
+  steps_per_epoch: 32768
   # Number of update iteration for Actor network
   actor_iters: 40
   # Number of update iteration for Critic network
@@ -85,7 +85,7 @@ defaults:
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
     # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-    actor_type: gaussian
+    actor_type: gaussian_stdnet
     # Configuration of Actor and Critic network
     ac_kwargs:
       # Configuration of Actor network
@@ -128,12 +128,10 @@ defaults:
     standardized_cost_adv: True
   ## --------------------------------------Configuration For Environment------------------------ ##
   env_cfgs:
-    # The seed of environment
-    env_seed: 0
     # The cost limit
     cost_limit: 25.0
     # The number of parallel environments
-    num_envs: 1
+    num_envs: 8
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward
@@ -159,9 +157,9 @@ SafetyRacecarGoal1-v0:
   # The environment wrapper type
   wrapper_type: CMDPWrapper
   # Number of epochs
-  epochs: 5000
+  epochs: 500
   # Number of steps per epoch
-  steps_per_epoch: 2048
+  steps_per_epoch: 32768
   # Number of update iteration for Actor network
   actor_iters: 80
   # Number of update iteration for Critic network
@@ -275,7 +273,7 @@ SafetyRacecarGoal1-v0:
     # The cost limit
     cost_limit: 25.0
     # The number of parallel environments
-    num_envs: 1
+    num_envs: 8
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward
@@ -288,9 +286,6 @@ SafetyRacecarGoal1-v0:
     max_len: 100
     # The number of threads used to sample data
     num_threads: 20
-    data_dir: "./runs"
-    buffer_size: 50000
-    batch_size: 256
 
 
 SafetyHumanoidVelocity-v4:
@@ -305,11 +300,11 @@ SafetyHumanoidVelocity-v4:
   # The environment wrapper type
   wrapper_type: CMDPWrapper
   # Number of epochs
-  epochs: 5000
+  epochs: 500
   # Number of steps per epoch
-  steps_per_epoch: 2048
+  steps_per_epoch: 32768
   # Number of update iteration for Actor network
-  actor_iters: 10
+  actor_iters: 40
   # Number of update iteration for Critic network
   critic_iters: 40
   # Check if all models own the same parameter values every `check_freq` epoch
@@ -411,7 +406,7 @@ SafetyHumanoidVelocity-v4:
     # The seed of environment
     env_seed: 0
     # The number of parallel environments
-    num_envs: 1
+    num_envs: 8
     # Whether to use async environment
     async_env: True
     # Whether to use standardized reward
