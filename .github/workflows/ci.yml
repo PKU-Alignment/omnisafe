@@ -64,6 +64,7 @@ jobs:
       - name: addlicense
         run: |
           make addlicense
+
       # TODO: enable this when ready
       # - name: mypy
       #   run: |
@@ -72,6 +73,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install -r docs/requirements.txt
+
       # TODO: enable this when ready
       # - name: docstyle
       #   run: |
