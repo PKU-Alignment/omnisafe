@@ -18,7 +18,6 @@ import numpy as np
 import torch
 
 from omnisafe.typing import Dict, Optional
-from omnisafe.utils.core import combined_shape
 
 
 # pylint: disable-next=too-many-instance-attributes, too-many-arguments
@@ -59,15 +58,9 @@ class BaseBuffer:
             size (int): buffer size.
             batch_size (int): batch size.
         """
-        self.obs_buf = torch.zeros(
-            combined_shape(size, obs_dim), dtype=torch.float32, device=device
-        )
-        self.next_obs_buf = torch.zeros(
-            combined_shape(size, obs_dim), dtype=torch.float32, device=device
-        )
-        self.act_buf = torch.zeros(
-            combined_shape(size, act_dim), dtype=torch.float32, device=device
-        )
+        self.obs_buf = torch.zeros((size, obs_dim), dtype=torch.float32, device=device)
+        self.next_obs_buf = torch.zeros((size, obs_dim), dtype=torch.float32, device=device)
+        self.act_buf = torch.zeros((size, act_dim), dtype=torch.float32, device=device)
         self.rew_buf = torch.zeros(size, dtype=torch.float32, device=device)
         self.cost_buf = torch.zeros(size, dtype=torch.float32, device=device)
         self.prev_cost_buf = torch.zeros(size, dtype=torch.float32, device=device)

@@ -14,11 +14,16 @@
 # ==============================================================================
 """Test Utils"""
 
+import os
+import sys
+
 import numpy as np
 import torch
 
 import helpers
+import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
+from omnisafe.typing import NamedTuple, Tuple
 from omnisafe.utils.core import discount_cumsum_torch
 from omnisafe.utils.distributed_utils import mpi_fork, mpi_statistics_scalar
 from omnisafe.utils.logger_utils import colorize, convert_json
@@ -92,3 +97,48 @@ def test_convert_json(obj):
 def test_colorize(message, color, bold, highlight):
     """Test colorize"""
     colorize(message, color, bold, highlight)
+
+
+def train(
+    exp_id: str, algo: str, env_id: str, custom_cfgs: NamedTuple, num_threads: int = 6
+) -> Tuple[float, float, float]:
+    """Train a policy from exp-x config with OmniSafe.
+
+    Args:
+        exp_id (str): Experiment ID.
+        algo (str): Algorithm to train.
+        env_id (str): The name of test environment.
+        custom_cfgs (NamedTuple): Custom configurations.
+        num_threads (int, optional): Number of threads. Defaults to 6.
+    """
+    torch.set_num_threads(num_threads)
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+    print(f'exp-x: {exp_id} is training...')
+    USE_REDIRECTION = True
+    if USE_REDIRECTION:
+        if not os.path.exists(custom_cfgs['data_dir']):
+            os.makedirs(custom_cfgs['data_dir'])
+        sys.stdout = open(f'{custom_cfgs["data_dir"]}terminal.log', 'w', encoding='utf-8')
+        sys.stderr = open(f'{custom_cfgs["data_dir"]}error.log', 'w', encoding='utf-8')
+    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    reward, cost, ep_len = agent.learn()
+    return reward, cost, ep_len
+
+
+def test_train(
+    exp_name='Safety_Gymnasium_Goal',
+    algo='CPO',
+    env_id='SafetyHalfCheetahVelocity-v4',
+    epochs=1,
+    steps_per_epoch=1000,
+    num_envs=1,
+):
+    """Test train"""
+    eg = ExperimentGrid(exp_name=exp_name)
+    eg.add('algo', [algo])
+    eg.add('env_id', [env_id])
+    eg.add('epochs', [epochs])
+    eg.add('steps_per_epoch', [steps_per_epoch])
+    eg.add('env_cfgs', [{'num_envs': num_envs}])
+    eg.run(train, num_pool=1, is_test=True)

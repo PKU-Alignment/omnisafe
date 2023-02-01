@@ -292,7 +292,7 @@ class ExperimentGrid:
         return new_variants
 
     # pylint: disable-next=too-many-locals
-    def run(self, thunk, num_pool=1, data_dir=None):
+    def run(self, thunk, num_pool=1, data_dir=None, is_test=False):
         r"""Run each variant in the grid with function 'thunk'.
 
         Note: 'thunk' must be either a callable function, or a string. If it is
@@ -367,11 +367,15 @@ class ExperimentGrid:
             results.append(pool.submit(thunk, idx, var['algo'], var['env_id'], var))
         pool.shutdown()
 
+        if not is_test:
+            self.save_results(exp_names, variants, results)
+
+    def save_results(self, exp_names, variants, results):
         path = os.path.join('./', 'exp-x', self.name, 'exp-x-results.txt')
         str_len = max(len(exp_name) for exp_name in exp_names)
         exp_names = [exp_name.ljust(str_len) for exp_name in exp_names]
         with open(path, 'a+', encoding='utf-8') as f:
-            for idx, var in enumerate(variants):
+            for idx, _ in enumerate(variants):
                 f.write(exp_names[idx] + ': ')
                 reward, cost, ep_len = results[idx].result()
                 f.write('reward:' + str(round(reward, 2)) + ',')

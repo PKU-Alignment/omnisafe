@@ -141,7 +141,7 @@ def test_gaussian_actor(
     obs_dim=[10],
     act_dim=[5],
     space_type=[Box, Discrete],
-    shared_weights=[False],  # shared weights not implemented yet in discrete case.
+    shared_weights=[False, True],  # shared weights not implemented yet in discrete case.
     hidden_sizes=[64],
     activation=['tanh'],
     weight_initialization_mode=[
