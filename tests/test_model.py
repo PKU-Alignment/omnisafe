@@ -46,7 +46,7 @@ def test_critic(
     activation: str,
     use_obs_encoder: bool,
 ) -> None:
-    """Test critic"""
+    """Test critic."""
     builder = CriticBuilder(
         obs_dim=obs_dim,
         act_dim=act_dim,

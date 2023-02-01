@@ -29,7 +29,7 @@ import omnisafe
     level=['1'],
 )
 def test_safety_nvigation(algo, agent_id, env_id, level):
-    """Test environments"""
+    """Test environments."""
     env_id = 'Safety' + agent_id + env_id + level + '-v0'
     # env_id = 'PointGoal1'
     custom_cfgs = {
@@ -50,7 +50,7 @@ def test_safety_nvigation(algo, agent_id, env_id, level):
     env_id=['Velocity'],
 )
 def test_safety_velocity(algo, agent_id, env_id):
-    """Test environments"""
+    """Test environments."""
     env_id = 'Safety' + agent_id + env_id + '-v4'
     # env_id = 'PointGoal1'
     custom_cfgs = {
@@ -62,5 +62,4 @@ def test_safety_velocity(algo, agent_id, env_id):
         'parallel': 1,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
-    # agent.set_seed(seed=0)
     agent.learn()

@@ -34,7 +34,7 @@ model_based_policy = ['MBPPOLag', 'SafeLOOP', 'CAP']
 
 @helpers.parametrize(algo=base_policy)
 def test_base_policy(algo):
-    """Test base algorithms"""
+    """Test base algorithms."""
     env_id = 'SafetyHumanoidVelocity-v4'
     custom_cfgs = {
         'epochs': 1,
@@ -49,7 +49,7 @@ def test_base_policy(algo):
 
 @helpers.parametrize(off_policy_algo=omnisafe.ALGORITHMS['off-policy'])
 def test_off_policy(off_policy_algo):
-    """Test off policy algorithms"""
+    """Test off policy algorithms."""
     env_id = 'SafetyHumanoidVelocity-v4'
     custom_cfgs = {
         'epochs': 1,
@@ -63,7 +63,7 @@ def test_off_policy(off_policy_algo):
 
 @helpers.parametrize(algo=naive_lagrange_policy)
 def test_naive_lagrange_policy(algo):
-    """Test naive lagrange algorithms"""
+    """Test naive lagrange algorithms."""
     env_id = 'SafetyHumanoidVelocity-v4'
     custom_cfgs = {
         'epochs': 1,
@@ -78,7 +78,7 @@ def test_naive_lagrange_policy(algo):
 
 @helpers.parametrize(algo=first_order_policy)
 def test_first_order_policy(algo):
-    """Test first order algorithms"""
+    """Test first order algorithms."""
     env_id = 'SafetyHumanoidVelocity-v4'
     custom_cfgs = {
         'epochs': 1,
@@ -93,7 +93,7 @@ def test_first_order_policy(algo):
 
 @helpers.parametrize(algo=second_order_policy)
 def test_second_order_policy(algo):
-    """Test second order algorithms"""
+    """Test second order algorithms."""
     env_id = 'SafetyHumanoidVelocity-v4'
     custom_cfgs = {
         'epochs': 1,
@@ -109,7 +109,7 @@ def test_second_order_policy(algo):
 
 @helpers.parametrize(algo=pid_lagrange_policy)
 def test_pid_lagrange_policy(algo):
-    """Test pid lagrange algorithms"""
+    """Test pid lagrange algorithms."""
     env_id = 'SafetyHumanoidVelocity-v4'
     custom_cfgs = {
         'epochs': 1,
@@ -124,7 +124,7 @@ def test_pid_lagrange_policy(algo):
 
 @helpers.parametrize(algo=penalty_policy)
 def test_penalty_policy(algo):
-    """Test penalty algorithms"""
+    """Test penalty algorithms."""
     env_id = 'SafetyHumanoidVelocity-v4'
     custom_cfgs = {
         'epochs': 1,
@@ -141,7 +141,7 @@ def test_penalty_policy(algo):
 
 @helpers.parametrize(algo=early_terminated_policy)
 def test_early_terminated_policy(algo):
-    """Test early terminated algorithms"""
+    """Test early terminated algorithms."""
     env_id = 'SafetyHumanoidVelocity-v4'
     custom_cfgs = {
         'epochs': 1,
@@ -156,7 +156,7 @@ def test_early_terminated_policy(algo):
 
 @helpers.parametrize(algo=saute_policy)
 def test_saute_policy(algo):
-    """Test Saute algorithms"""
+    """Test Saute algorithms."""
     env_id = 'SafetyHumanoidVelocity-v4'
     custom_cfgs = {
         'epochs': 1,
@@ -171,7 +171,7 @@ def test_saute_policy(algo):
 
 @helpers.parametrize(algo=simmer_policy)
 def test_simmer_policy(algo):
-    """Test Simmer algorithms"""
+    """Test Simmer algorithms."""
     env_id = 'SafetyHumanoidVelocity-v4'
     custom_cfgs = {
         'epochs': 1,

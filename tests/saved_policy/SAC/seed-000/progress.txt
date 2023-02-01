@@ -1,2 +1,0 @@
-Train/Epoch Metrics/EpRet Metrics/EpCost Metrics/EpLen Test/EpRet Test/EpCost Test/EpLen Loss/Loss_pi Loss/Delta_loss_pi Loss/Loss_reward_critic Loss/Delta_loss_reward_critic Values/V Train/RewardQValues Misc/Seed LR Misc/Alpha Misc/LogPi TotalEnvSteps Time FPS
-1 124.08793684472346 0.0 24.502087704409995 187.38921762574844 0.0 35.860031091906265 -27.75140953063965 -27.75140953063965 475.7789001464844 475.7789001464844 -0.058359746 0.010319486 5 0.0001 0.99970007 -27.813366 999 15 64

@@ -32,7 +32,7 @@ from omnisafe.utils.tools import to_ndarray
 
 @helpers.parametrize(item=[1, 1.0, [1, 2, 3], (1, 2, 3), {'a': 1, 'b': 2}, torch.tensor([1, 2, 3])])
 def test_to_ndarray(item):
-    """Test to_ndarray"""
+    """Test to_ndarray."""
     if isinstance(item, torch.Tensor):
         assert isinstance(to_ndarray(item), np.ndarray)
     elif isinstance(item, list):
@@ -52,7 +52,7 @@ def test_to_ndarray(item):
 
 
 def get_answer(gamma: float) -> torch.Tensor:
-    """Input gamma and return the answer"""
+    """Input gamma and return the answer."""
     if gamma == 0.9:
         return torch.tensor([11.4265, 11.5850, 10.6500, 8.5000, 5.0000], dtype=torch.float64)
     elif gamma == 0.99:
@@ -67,7 +67,7 @@ def get_answer(gamma: float) -> torch.Tensor:
 def test_discount_cumsum_torch(
     discount: float,
 ):
-    """Test discount_cumsum_torch"""
+    """Test discount_cumsum_torch."""
     x1 = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0], dtype=torch.float64)
     y1 = get_answer(discount)
     assert torch.allclose(
@@ -76,7 +76,7 @@ def test_discount_cumsum_torch(
 
 
 def test_distributed_tools():
-    """Test mpi_fork"""
+    """Test mpi_fork."""
     mpi_fork(2, test_message=['examples/train_from_custom_dict.py', '--parallel', '2'])
 
 
@@ -84,7 +84,7 @@ def test_distributed_tools():
     obj=[{'a': 1, 'b': 2}, [1, 2, 3], ('a', 'b', 'c')],
 )
 def test_convert_json(obj):
-    """Test convert_json"""
+    """Test convert_json."""
     assert convert_json(obj) == obj
 
 
@@ -95,7 +95,7 @@ def test_convert_json(obj):
     highlight=[True, False],
 )
 def test_colorize(message, color, bold, highlight):
-    """Test colorize"""
+    """Test colorize."""
     colorize(message, color, bold, highlight)
 
 
@@ -134,7 +134,7 @@ def test_train(
     steps_per_epoch=1000,
     num_envs=1,
 ):
-    """Test train"""
+    """Test train."""
     eg = ExperimentGrid(exp_name=exp_name)
     eg.add('algo', [algo])
     eg.add('env_id', [env_id])

@@ -155,7 +155,7 @@ def test_buffer(
     penalty_param: float,
     device: str,
 ) -> None:
-    """Test buffer"""
+    """Test buffer."""
     # initialize buffer
     buffer = Buffer(
         obs_dim=obs_dim,

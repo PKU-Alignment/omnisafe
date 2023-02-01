@@ -19,7 +19,7 @@ from typing import Tuple
 import torch
 
 
-# pylint: disable-next=too-many-arguments, too-many-locals
+# pylint: disable-next=too-many-arguments,too-many-locals
 def calculate_v_trace(
     policy_action_probs: torch.Tensor,
     values: torch.Tensor,  # including bootstrap
