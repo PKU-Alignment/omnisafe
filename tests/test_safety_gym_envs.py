@@ -16,21 +16,50 @@
 
 import helpers
 import omnisafe
-from omnisafe.wrappers.env_wrapper import EnvWrapper as Env
 
 
 @helpers.parametrize(
-    algo=['PPOLag'],
-    agent_id=['Point', 'Car'],
-    env_id=['Goal', 'Push', 'Button'],
-    level=['0', '1', '2'],
+    algo=['PPOSimmerQ', 'PPOLag', 'PPOSaute', 'PPOEarlyTerminated'],
+    agent_id=['Point', 'Car', 'Racecar'],
+    env_id=[
+        'Goal',
+        'Button',
+        'Push',
+    ],
+    level=['1'],
 )
-def test_on_policy(algo, agent_id, env_id, level):
-    """Test environments"""
+def test_safety_nvigation(algo, agent_id, env_id, level):
+    """Test environments."""
     env_id = 'Safety' + agent_id + env_id + level + '-v0'
     # env_id = 'PointGoal1'
-    custom_cfgs = {'epochs': 1, 'steps_per_epoch': 1000, 'pi_iters': 1, 'critic_iters': 1}
-
+    custom_cfgs = {
+        'epochs': 1,
+        'steps_per_epoch': 1000,
+        'pi_iters': 1,
+        'critic_iters': 1,
+        'env_cfgs': {'num_envs': 1},
+    }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     # agent.set_seed(seed=0)
+    agent.learn()
+
+
+@helpers.parametrize(
+    algo=['PPOSimmerQ', 'PPOLag', 'PPOSaute', 'PPOEarlyTerminated'],
+    agent_id=['Ant', 'Humanoid', 'Walker2d', 'Hopper', 'HalfCheetah', 'Swimmer'],
+    env_id=['Velocity'],
+)
+def test_safety_velocity(algo, agent_id, env_id):
+    """Test environments."""
+    env_id = 'Safety' + agent_id + env_id + '-v4'
+    # env_id = 'PointGoal1'
+    custom_cfgs = {
+        'epochs': 1,
+        'steps_per_epoch': 1000,
+        'pi_iters': 1,
+        'critic_iters': 1,
+        'env_cfgs': {'num_envs': 1},
+        'parallel': 1,
+    }
+    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()

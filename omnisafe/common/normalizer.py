@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of Vector Buffer."""
 
-import numpy as np
 import torch
 import torch.nn as nn
 
@@ -57,26 +56,12 @@ class Normalizer(nn.Module):
             self.std.data = torch.sqrt(self.var.data)
             self.std.data = torch.max(self.std.data, 1e-2 * torch.ones_like(self.std.data))
 
-    def get_mean(self):
-        """Get the mean value."""
-        return self.mean
-
-    def get_var(self):
-        """Get the variance."""
-        return self.var
-
-    def get_std(self):
-        """Get the std."""
-        return self.std
-
     def forward(self, raw_data=None):
-        """Forward."""
+        """Normalize the raw_data."""
         return self.normalize(raw_data)
 
     def pre_process(self, raw_data):
         """Pre-process the raw_data."""
-        if isinstance(raw_data, np.ndarray):
-            raw_data = torch.as_tensor(raw_data, dtype=torch.float32)
         if len(raw_data.shape) == 1:
             raw_data = raw_data.unsqueeze(-1)
         return raw_data
@@ -84,11 +69,8 @@ class Normalizer(nn.Module):
     def normalize(self, raw_data=None):
         """Normalize the raw_data."""
         raw_data = self.pre_process(raw_data)
-        if raw_data is not None:
-            self.push(raw_data)
-            if self.count <= 1:
-                return self.raw_data.data
-            output = (self.raw_data.data - self.mean.data) / self.std.data
-        else:
-            output = (self.raw_data - self.mean) / self.std
+        self.push(raw_data)
+        if self.count <= 1:
+            return self.raw_data.data
+        output = (self.raw_data.data - self.mean.data) / self.std.data
         return torch.clamp(output, -self.clip.data, self.clip.data)
