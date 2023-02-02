@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ if not __release__:
                 ['git', 'describe', '--abbrev=7'],
                 cwd=os.path.dirname(os.path.abspath(__file__)),
                 stderr=subprocess.DEVNULL,
-                universal_newlines=True,
+                text=True,
             )
             .strip()
             .lstrip('v')

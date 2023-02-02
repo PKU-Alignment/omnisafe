@@ -84,6 +84,6 @@ class PPO(PolicyGradient):
         # useful extra info
         approx_kl = (0.5 * (dist.mean - act) ** 2 / dist.stddev**2).mean().item()
         ent = dist.entropy().mean().item()
-        pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio_clip.mean().item())
+        pi_info = {'kl': approx_kl, 'ent': ent, 'ratio': ratio_clip.mean().item()}
 
         return loss_pi.mean(), pi_info

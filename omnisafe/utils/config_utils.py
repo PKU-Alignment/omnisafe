@@ -68,7 +68,7 @@ def dict2namedtuple(obj: Any) -> Union[NamedTuple, Dict, Any]:
             return namedtuple_type(**field_value_pairs)
         except TypeError:
             # Cannot create namedtuple instance so fallback to dict (invalid attribute names)
-            return dict(**field_value_pairs)
+            return dict(field_value_pairs)
     elif isinstance(obj, (list, set, tuple, frozenset)):
         return [dict2namedtuple(item) for item in obj]
     else:

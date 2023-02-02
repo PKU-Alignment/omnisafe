@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self.model_name = model_name
         cfg_path = os.path.join(save_dir, 'config.json')
         try:
-            with open(cfg_path, encoding='utf-8', mode='r') as file:
+            with open(cfg_path, encoding='utf-8') as file:
                 self.cfg = json.load(file)
         except FileNotFoundError as error:
             raise FileNotFoundError(

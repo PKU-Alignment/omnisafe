@@ -149,6 +149,6 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
         # MSE loss against Bellman backup
         loss_qc = ((cost_q_value - backup) ** 2).mean()
         # useful info for logging
-        qc_info = dict(QCosts=cost_q_value.detach().numpy())
+        qc_info = {'QCosts': cost_q_value.detach().numpy()}
 
         return loss_qc, qc_info

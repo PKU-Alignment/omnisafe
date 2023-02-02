@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -347,7 +347,6 @@ class Underlying(abc.ABC):  # pylint: disable=too-many-instance-attributes
             'rgb_array',
             'depth_array',
         }:
-
             if camera_id is not None and camera_name is not None:
                 raise ValueError(
                     'Both `camera_id` and `camera_name` cannot be' + ' specified at the same time.'

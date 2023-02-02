@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -187,7 +187,7 @@ def _worker(
                 env.seed(data)
                 pipe.send((None, True))
             elif command == 'render':
-                pipe.send((env.render()))
+                pipe.send(env.render())
             elif command == 'close':
                 pipe.send((None, True))
                 break
@@ -266,7 +266,7 @@ def _worker_shared_memory(
                 write_to_shared_memory(observation_space, index, observation, shared_memory)
                 pipe.send(((None, reward, cost, terminated, truncated, info), True))
             elif command == 'render':
-                pipe.send((env.render()))
+                pipe.send(env.render())
             elif command == 'seed':
                 env.seed(data)
                 pipe.send((None, True))

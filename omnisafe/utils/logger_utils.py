@@ -18,17 +18,17 @@ import json
 from typing import Any, Dict, List, Tuple, Union
 
 
-color2num = dict(
-    gray=30,
-    red=31,
-    green=32,
-    yellow=33,
-    blue=34,
-    magenta=35,
-    cyan=36,
-    white=37,
-    crimson=38,
-)
+color2num = {
+    'gray': 30,
+    'red': 31,
+    'green': 32,
+    'yellow': 33,
+    'blue': 34,
+    'magenta': 35,
+    'cyan': 36,
+    'white': 37,
+    'crimson': 38,
+}
 
 
 def is_json_serializable(value: object) -> bool:

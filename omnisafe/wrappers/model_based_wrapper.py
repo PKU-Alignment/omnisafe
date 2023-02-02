@@ -26,24 +26,26 @@ from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 ROBOTS = ['Point', 'Car', 'Doggo']
 TASKS = ['Goal', 'Button']
 
-XYZ_SENSORS = dict(
-    Point=['velocimeter'],
-    Car=['velocimeter'],
-    Doggo=['velocimeter', 'accelerometer'],
-)
+XYZ_SENSORS = {
+    'Point': ['velocimeter'],
+    'Car': ['velocimeter'],
+    'Doggo': ['velocimeter', 'accelerometer'],
+}
 
-ANGLE_SENSORS = dict(
-    Point=['gyro', 'magnetometer'], Car=['magnetometer', 'gyro'], Doggo=['magnetometer', 'gyro']
-)
+ANGLE_SENSORS = {
+    'Point': ['gyro', 'magnetometer'],
+    'Car': ['magnetometer', 'gyro'],
+    'Doggo': ['magnetometer', 'gyro'],
+}
 
-CONSTRAINTS_SAFELOOP = dict(
-    Goal=['vases', 'hazards'],
-    Button=['hazards', 'gremlins', 'buttons'],
-)
-CONSTRAINTS_MBPPO = dict(
-    Goal=['hazards'],
-    Button=['hazards', 'gremlins', 'buttons'],
-)
+CONSTRAINTS_SAFELOOP = {
+    'Goal': ['vases', 'hazards'],
+    'Button': ['hazards', 'gremlins', 'buttons'],
+}
+CONSTRAINTS_MBPPO = {
+    'Goal': ['hazards'],
+    'Button': ['hazards', 'gremlins', 'buttons'],
+}
 
 
 @WRAPPER_REGISTRY.register

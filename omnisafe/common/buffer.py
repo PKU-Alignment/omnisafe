@@ -305,16 +305,16 @@ class Buffer:
         # cadv_mean, *_ = distributed_utils.mpi_statistics_scalar(self.cost_adv_buf)
         # self.cost_adv_buf = self.cost_adv_buf - cadv_mean
 
-        data = dict(
-            obs=self.obs_buf,
-            act=self.act_buf,
-            target_v=self.target_val_buf,
-            adv=self.adv_buf,
-            log_p=self.logp_buf,
-            discounted_ret=self.discounted_ret_buf,
-            cost_adv=self.cost_adv_buf,
-            target_c=self.target_cost_val_buf,
-        )
+        data = {
+            'obs': self.obs_buf,
+            'act': self.act_buf,
+            'target_v': self.target_val_buf,
+            'adv': self.adv_buf,
+            'log_p': self.logp_buf,
+            'discounted_ret': self.discounted_ret_buf,
+            'cost_adv': self.cost_adv_buf,
+            'target_c': self.target_cost_val_buf,
+        }
         self.adv_buf = torch.zeros(self.size, dtype=torch.float32, device=self.device)
         self.cost_adv_buf = torch.zeros(self.size, dtype=torch.float32, device=self.device)
 

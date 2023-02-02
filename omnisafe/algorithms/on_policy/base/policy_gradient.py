@@ -257,7 +257,7 @@ class PolicyGradient:
         # compute policy's entropy
         ent = dist.entropy().mean().item()
 
-        pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
+        pi_info = {'kl': approx_kl, 'ent': ent, 'ratio': ratio.mean().item()}
 
         return loss_pi, pi_info
 

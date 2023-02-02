@@ -108,15 +108,15 @@ class BaseBuffer:
     def sample_batch(self) -> Dict[str, torch.Tensor]:
         """Sample a batch of experiences from the buffer."""
         idxs = np.random.randint(0, self.size, size=self.batch_size)
-        batch = dict(
-            obs=self.obs_buf[idxs],
-            next_obs=self.next_obs_buf[idxs],
-            act=self.act_buf[idxs],
-            rew=self.rew_buf[idxs],
-            cost=self.cost_buf[idxs],
-            done=self.done_buf[idxs],
-            prev_cost=self.prev_cost_buf[idxs],
-        )
+        batch = {
+            'obs': self.obs_buf[idxs],
+            'next_obs': self.next_obs_buf[idxs],
+            'act': self.act_buf[idxs],
+            'rew': self.rew_buf[idxs],
+            'cost': self.cost_buf[idxs],
+            'done': self.done_buf[idxs],
+            'prev_cost': self.prev_cost_buf[idxs],
+        }
         return batch
 
 

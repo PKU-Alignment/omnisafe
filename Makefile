@@ -58,7 +58,7 @@ pre-commit-install:
 	$(PYTHON) -m pre_commit install --install-hooks
 
 docs-install:
-	$(call check_pip_install,pydocstyle)
+	$(call check_pip_install_extra,pydocstyle,pydocstyle[toml])
 	$(call check_pip_install_extra,doc8,"doc8<1.0.0a0")
 	$(call check_pip_install,sphinx)
 	$(call check_pip_install,sphinx-autoapi)
@@ -82,9 +82,9 @@ addlicense-install: go-install
 # Tests
 
 pytest: pytest-install
-	cd tests && \
+	cd tests && $(PYTHON) -c 'import $(PROJECT_NAME)' && \
 	$(PYTHON) -m pytest --verbose --color=yes --durations=0 \
-		--cov="$(PROJECT_NAME)" --cov-report=xml --cov-report=term-missing \
+		--cov="$(PROJECT_NAME)" --cov-config=.coveragerc --cov-report=xml --cov-report=term-missing \
 		$(PYTESTOPTS) .
 
 test: pytest
@@ -110,7 +110,7 @@ pre-commit: pre-commit-install
 # Documentation
 
 addlicense: addlicense-install
-	addlicense -c $(COPYRIGHT) -ignore tests/coverage.xml -l apache -y 2022 -check $(SOURCE_FOLDERS)
+	addlicense -c $(COPYRIGHT) -ignore tests/coverage.xml -l apache -y 2022-$(shell date +"%Y") -check $(SOURCE_FOLDERS)
 
 docstyle: docs-install
 	make -C docs clean
@@ -135,7 +135,7 @@ lint: flake8 py-format pylint addlicense spelling
 format: py-format-install addlicense-install
 	$(PYTHON) -m isort --project $(PROJECT_NAME) $(PYTHON_FILES)
 	$(PYTHON) -m black $(PYTHON_FILES)
-	addlicense -c $(COPYRIGHT) -ignore tests/coverage.xml -l apache -y 2022 $(SOURCE_FOLDERS)
+	addlicense -c $(COPYRIGHT) -ignore tests/coverage.xml -l apache -y 2022-$(shell date +"%Y") $(SOURCE_FOLDERS)
 
 clean-py:
 	find . -type f -name  '*.py[co]' -delete

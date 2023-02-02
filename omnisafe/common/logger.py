@@ -222,7 +222,7 @@ class Logger:
             self.epoch += 1
             # Print formatted information into console
             key_lens = [len(key) for key in self.log_headers]
-            max_key_len = max(15, max(key_lens))
+            max_key_len = max(15, max(key_lens))  # pylint: disable=nested-min-max
             keystr = '%' + '%d' % max_key_len  # pylint: disable=consider-using-f-string
             fmt = '| ' + keystr + 's | %15s |'
             n_slashes = 22 + max_key_len

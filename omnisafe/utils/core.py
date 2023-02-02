@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -86,9 +86,7 @@ def get_registered_actor_fn(actor_type: str, distribution_type: str) -> torch.nn
     return registered_actors[actor_fn]
 
 
-def combined_shape(
-    length: int, shape: tuple = None
-) -> Union[Tuple[int,], Tuple[int, int]]:
+def combined_shape(length: int, shape: tuple = None) -> Union[Tuple[int,], Tuple[int, int]]:
     """Combined vectors shape.
 
     This function is used to combine vector shape.

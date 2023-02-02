@@ -104,7 +104,7 @@ class SafeLOOP(
             q_values.append(torch.mean(q_value))
 
         # Useful info for logging
-        q_info = dict(QVals=sum(q_values).cpu().detach().numpy())
+        q_info = {'QVals': sum(q_values).cpu().detach().numpy()}
         return sum(loss_q), q_info
 
     def compute_loss_pi(self, data: dict):

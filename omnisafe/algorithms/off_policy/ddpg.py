@@ -290,7 +290,7 @@ class DDPG:
         # MSE loss against Bellman backup
         loss_q = ((q_value - backup) ** 2).mean()
         # useful info for logging
-        q_info = dict(QVals=q_value.detach().mean().item())
+        q_info = {'QVals': q_value.detach().mean().item()}
         return loss_q, q_info
 
     # pylint: disable-next=too-many-arguments
@@ -332,7 +332,7 @@ class DDPG:
         # MSE loss against Bellman backup
         loss_qc = ((cost_q_value - backup) ** 2).mean()
         # useful info for logging
-        qc_info = dict(QCosts=cost_q_value.detach().mean().item())
+        qc_info = {'QCosts': cost_q_value.detach().mean().item()}
 
         return loss_qc, qc_info
 
