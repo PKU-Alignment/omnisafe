@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -223,9 +223,7 @@ class BaseTask(Underlying):  # pylint: disable=too-many-instance-attributes,too-
 
         # load all config of meshes in specific environment from .yaml file
         base_dir = os.path.dirname(safety_gymnasium.__file__)
-        with open(
-            os.path.join(base_dir, f'configs/{config_name}.yaml'), 'r', encoding='utf-8'
-        ) as file:
+        with open(os.path.join(base_dir, f'configs/{config_name}.yaml'), encoding='utf-8') as file:
             meshes_config = yaml.load(file, Loader=yaml.FullLoader)
 
         for idx in range(level + 1):

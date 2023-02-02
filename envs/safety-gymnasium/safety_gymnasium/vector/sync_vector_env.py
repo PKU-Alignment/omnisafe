@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -56,7 +56,6 @@ class SafetySyncVectorEnv(SyncVectorEnv):
         """Steps through each of the environments returning the batched results."""
         observations, infos = [], {}
         for i, (env, action) in enumerate(zip(self.envs, self._actions)):
-
             (
                 observation,
                 self._rewards[i],

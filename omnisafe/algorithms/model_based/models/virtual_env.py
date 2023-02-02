@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,7 +83,6 @@ class VirtualEnv:
         return False
 
     def _get_logprob(self, input_data, means, variances):
-
         k = input_data.shape[-1]
         log_prob = (
             -1

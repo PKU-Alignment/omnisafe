@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -158,7 +158,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         ent = dist.entropy().mean().item()
         clipped = ratio.gt(1 + self.clip) | ratio.lt(1 - self.clip)
         clipfrac = torch.as_tensor(clipped, device=self.device, dtype=torch.float32).mean().item()
-        pi_info = dict(kl=approx_kl, ent=ent, cf=clipfrac)
+        pi_info = {'kl': approx_kl, 'ent': ent, 'cf': clipfrac}
         return loss_pi, pi_info
 
     def update_dynamics_model(self):
@@ -223,10 +223,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
     def update_value_net(self, data):
         """Value function learning"""
         v_l_old, cv_l_old = self.compute_loss_v(data)
-        self.loss_v_before, self.loss_c_before, = (
-            v_l_old.item(),
-            cv_l_old.item(),
-        )
+        self.loss_v_before, self.loss_c_before = v_l_old.item(), cv_l_old.item()
 
         for _ in range(self.cfgs.critic_iters):
             loss_v, loss_vc = self.compute_loss_v(data)

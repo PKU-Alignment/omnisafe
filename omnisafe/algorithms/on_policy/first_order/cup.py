@@ -144,7 +144,7 @@ class CUP(PPO, Lagrange):
             self.min_ratio = temp_min
         approx_kl = 0.5 * (log_p - _log_p).mean().item()
         ent = dist.entropy().mean().item()
-        pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio.mean().item())
+        pi_info = {'kl': approx_kl, 'ent': ent, 'ratio': ratio.mean().item()}
 
         return cost_loss, pi_info
 

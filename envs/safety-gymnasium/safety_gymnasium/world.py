@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -162,7 +162,7 @@ class World:  # pylint: disable=too-many-instance-attributes
         mesh = self.xml['mujoco']['asset']['mesh']
 
         # load all assets config from .yaml file
-        with open(os.path.join(BASE_DIR, 'configs/assets.yaml'), 'r', encoding='utf-8') as file:
+        with open(os.path.join(BASE_DIR, 'configs/assets.yaml'), encoding='utf-8') as file:
             assets_config = yaml.load(file, Loader=yaml.FullLoader)
 
         texture.append(assets_config['textures']['skybox'])
@@ -245,19 +245,19 @@ class World:  # pylint: disable=too-many-instance-attributes
 
         # Build and add a tracking camera (logic needed to ensure orientation correct)
         theta = self.agent_rot  # pylint: disable=no-member
-        xyaxes = dict(
-            x1=np.cos(theta),
-            x2=-np.sin(theta),
-            x3=0,
-            y1=np.sin(theta),
-            y2=np.cos(theta),
-            y3=1,
-        )
-        pos = dict(
-            xp=0 * np.cos(theta) + (-2) * np.sin(theta),
-            yp=0 * (-np.sin(theta)) + (-2) * np.cos(theta),
-            zp=2,
-        )
+        xyaxes = {
+            'x1': np.cos(theta),
+            'x2': -np.sin(theta),
+            'x3': 0,
+            'y1': np.sin(theta),
+            'y2': np.cos(theta),
+            'y3': 1,
+        }
+        pos = {
+            'xp': 0 * np.cos(theta) + (-2) * np.sin(theta),
+            'yp': 0 * (-np.sin(theta)) + (-2) * np.cos(theta),
+            'zp': 2,
+        }
         track_camera = xmltodict.parse(
             """<b>
             <camera name="track" mode="track" pos="{xp} {yp} {zp}"

@@ -89,7 +89,7 @@ class TD3(DDPG):
                 }
             )
         # useful info for logging
-        q_info = dict(QVals=sum(q_values).detach().mean().item())
+        q_info = {'QVals': sum(q_values).detach().mean().item()}
         return sum(loss_q), q_info
 
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:

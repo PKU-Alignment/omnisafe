@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -98,6 +98,7 @@ class EnsembleFC(nn.Module):
     out_features: int
     ensemble_size: int
     weight: torch.Tensor
+
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,

@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -165,14 +165,12 @@ class ExperimentGrid:
         # build the rest of the name by looping through all parameters,
         # and deciding which ones need to go in there.
         for key, value, shorthand, inn in zip(self.keys, self.vals, self.shs, self.in_names):
-
             # Include a parameter in a name if either 1) it can take multiple
             # values, or 2) the user specified that it must appear in the name.
             # Except, however, when the parameter is 'seed'. Seed is handled
             # differently so that runs of the same experiment, with different
             # seeds, will be grouped by experiment name.
             if (len(value) > 1 or inn) and key != 'seed':
-
                 # use the shorthand if available, otherwise the full name.
                 param_name = shorthand if shorthand is not None else key
                 param_name = valid_str(param_name)

@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Dict:
     """
     path = os.path.abspath(__file__).split('/')[:-2]
     cfg_path = os.path.join('/', *path, 'configs', algo_type, f'{algo}.yaml')
-    with open(cfg_path, 'r', encoding='utf-8') as file:
+    with open(cfg_path, encoding='utf-8') as file:
         try:
             kwargs = yaml.load(file, Loader=yaml.FullLoader)
         except yaml.YAMLError as exc:
@@ -94,7 +94,6 @@ def conjugate_gradients(
     residual_tol: float = 1e-10,
     eps: float = 1e-6,
 ):  # pylint: disable=invalid-name,too-many-locals
-
     """Implementation of Conjugate gradient algorithm.
 
     Conjugate gradient algorithm is used to solve the linear system of equations :math:`Ax = b`.
