@@ -67,6 +67,7 @@ class CriticBuilder:
     def build_critic(
         self,
         critic_type: str,
+        use_obs_encoder: bool = True,
     ) -> Union[QCritic, VCritic, NotImplementedError]:
         """Build critic.
 
@@ -84,6 +85,7 @@ class CriticBuilder:
                 activation=self.activation,
                 weight_initialization_mode=self.weight_initialization_mode,
                 shared=self.shared,
+                use_obs_encoder=use_obs_encoder,
             )
         if critic_type == 'v':
             return VCritic(

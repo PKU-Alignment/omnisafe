@@ -61,7 +61,6 @@ class PIDLagrangian(abc.ABC):
         self.penalty_max = penalty_max
         self.sum_norm = sum_norm
         self.diff_norm = diff_norm
-        self.penalty_max = lagrangian_multiplier_init
         self.pid_i = lagrangian_multiplier_init
         self.cost_ds = deque(maxlen=self.pid_d_delay)
         self.cost_ds.append(0)

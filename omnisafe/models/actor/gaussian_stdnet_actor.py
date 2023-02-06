@@ -86,6 +86,17 @@ class GaussianStdNetActor(Actor):
         self.net = nn.ModuleList([self.mean, self.log_std])
 
     def _distribution(self, obs):
+        """Get distribution of the action.
+
+        .. note::
+            The term ``log_std`` is used to control the noise level of the policy,
+            which is a trainable parameter.
+            To avoid the policy to be too explorative,
+            we use ``torch.clamp`` to limit the range of ``log_std``.
+
+        Args:
+            obs (torch.Tensor): Observation.
+        """
         mean = self.mean(obs)
         log_std = self.log_std(obs)
         log_std = torch.clamp(log_std, -20, 2)
@@ -93,6 +104,22 @@ class GaussianStdNetActor(Actor):
         return Normal(mean, std)
 
     def predict(self, obs, deterministic=False, need_log_prob=False):
+        r"""Predict action given observation.
+
+        .. note::
+            The action is scaled to the action space by:
+
+            .. math::
+                a = a_{min} + \frac{a + 1}{2} \times (a_{max} - a_{min})
+
+            where :math:`a` is the action predicted by the policy,
+            :math:`a_{min}` and :math:`a_{max}` are the minimum and maximum values of the action space.
+            After scaling, the action is clipped to the range of :math:`[a_{min}, a_{max}]`.
+
+        Args:
+            obs (torch.Tensor): Observation.
+            deterministic (bool): Whether to use deterministic policy.
+        """
         dist = self._distribution(obs)
         if deterministic:
             out = dist.mean
@@ -100,6 +127,10 @@ class GaussianStdNetActor(Actor):
             out = dist.rsample()
 
         if self.scale_action:
+            # If the action scale is inf, stop scaling the action
+            assert (
+                not torch.isinf(self.act_min).any() and not torch.isinf(self.act_max).any()
+            ), 'The action scale is inf, stop scaling the action.'
             self.act_min = self.act_min.to(out.device)
             self.act_max = self.act_max.to(out.device)
             action = self.act_min + (out + 1) / 2 * (self.act_max - self.act_min)
@@ -112,10 +143,22 @@ class GaussianStdNetActor(Actor):
         if need_log_prob:
             log_prob = dist.log_prob(out).sum(axis=-1)
             log_prob -= torch.log(1.00001 - torch.tanh(out) ** 2).sum(axis=-1)
-            return out.to(torch.float32), action.to(torch.float32), log_prob
+            return out.to(torch.float32), action.to(torch.float32), log_prob.to(torch.float32)
         return out.to(torch.float32), action.to(torch.float32)
 
     def forward(self, obs, act=None):
+        """Forward function for actor.
+
+        .. note::
+            This forward function has two modes:
+
+            - If ``act`` is not None, it will return the distribution and the log probability of action.
+            - If ``act`` is None, it will return the distribution.
+
+        Args:
+            obs (torch.Tensor): observation.
+            act (torch.Tensor, optional): action. Defaults to None.
+        """
         dist = self._distribution(obs)
         if act is not None:
             log_prob = dist.log_prob(act).sum(axis=-1)

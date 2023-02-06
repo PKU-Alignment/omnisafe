@@ -94,13 +94,7 @@ class GaussianActor(Actor):
                 activation=activation,
                 weight_initialization_mode=weight_initialization_mode,
             )
-            std_head = build_mlp_network(
-                sizes=[hidden_sizes[-1], act_dim],
-                activation=activation,
-                weight_initialization_mode=weight_initialization_mode,
-            )
-            self.mean = nn.Sequential(shared, mean_head)
-            self.log_std = nn.Sequential(shared, std_head)
+            self.net = nn.Sequential(shared, mean_head)
         else:
             self.net = build_mlp_network(
                 [obs_dim] + list(hidden_sizes) + [act_dim],
@@ -108,7 +102,7 @@ class GaussianActor(Actor):
                 output_activation=output_activation,
                 weight_initialization_mode=weight_initialization_mode,
             )
-            self.logstd_layer = nn.Parameter(torch.zeros(1, act_dim), requires_grad=std_learning)
+        self.logstd_layer = nn.Parameter(torch.zeros(1, act_dim), requires_grad=std_learning)
 
     def _distribution(self, obs: torch.Tensor) -> Normal:
         """Get distribution of the action.
@@ -180,6 +174,10 @@ class GaussianActor(Actor):
             out = dist.rsample().to(torch.float64)
 
         if self.scale_action:
+            # If the action scale is inf, stop scaling the action
+            assert (
+                not torch.isinf(self.act_min).any() and not torch.isinf(self.act_max).any()
+            ), 'The action scale is inf, stop scaling the action.'
             self.act_min = self.act_min.to(mean.device)
             self.act_max = self.act_max.to(mean.device)
             action = self.act_min + (out + 1) / 2 * (self.act_max - self.act_min)

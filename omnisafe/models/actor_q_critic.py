@@ -19,7 +19,7 @@ from typing import NamedTuple, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
-from gymnasium.spaces import Box
+from gymnasium.spaces import Box, Discrete
 
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.critic.q_critic import QCritic
@@ -57,10 +57,7 @@ class ActorQCritic(nn.Module):
         self,
         observation_space: Box,
         action_space: Box,
-        shared_weights: bool,
         model_cfgs: NamedTuple,
-        weight_initialization_mode='kaiming_uniform',
-        device=torch.device('cpu'),
     ) -> None:
         """Initialize ActorQCritic
 
@@ -83,23 +80,21 @@ class ActorQCritic(nn.Module):
         super().__init__()
 
         self.obs_shape = observation_space.shape
-        self.act_dim = action_space.shape[0]
-        self.act_max = torch.as_tensor(action_space.high).to(device)
-        self.act_min = torch.as_tensor(action_space.low).to(device)
+        self.act_dim = action_space.shape[-1] if isinstance(action_space, Box) else action_space.n
         self.ac_kwargs = model_cfgs.ac_kwargs
         # build policy and value functions
-
+        self.act_space_type = 'discrete' if isinstance(action_space, Discrete) else 'continuous'
         self.obs_dim = observation_space.shape[0]
 
         # Use for shared weights
         layer_units = [self.obs_dim] + model_cfgs.ac_kwargs.pi.hidden_sizes
 
         activation = model_cfgs.ac_kwargs.pi.activation
-        if shared_weights:
+        if model_cfgs.shared_weights:
             shared = build_mlp_network(
                 layer_units,
                 activation=activation,
-                weight_initialization_mode=weight_initialization_mode,
+                weight_initialization_mode=model_cfgs.weight_initialization_mode,
                 output_activation=activation,
             )
         else:
@@ -107,7 +102,7 @@ class ActorQCritic(nn.Module):
         actor_builder = ActorBuilder(
             obs_dim=self.obs_dim,
             act_dim=self.act_dim,
-            weight_initialization_mode=weight_initialization_mode,
+            weight_initialization_mode=model_cfgs.weight_initialization_mode,
             shared=shared,
             **namedtuple2dict(model_cfgs.ac_kwargs.pi),
         )
@@ -115,19 +110,23 @@ class ActorQCritic(nn.Module):
         if model_cfgs.actor_type == 'cholesky':
             self.actor = actor_builder.build_actor(
                 model_cfgs.actor_type,
-                act_max=self.act_max,
-                act_min=self.act_min,
+                act_max=torch.as_tensor(action_space.high),
+                act_min=torch.as_tensor(action_space.low),
                 cov_min=model_cfgs.cov_min,
                 mu_clamp_min=model_cfgs.mu_clamp_min,
                 mu_clamp_max=model_cfgs.mu_clamp_max,
                 cov_clamp_min=model_cfgs.cov_clamp_min,
                 cov_clamp_max=model_cfgs.cov_clamp_max,
             )
+        elif self.act_space_type == 'discrete':
+            self.actor = actor_builder.build_actor('categorical')
         else:
+            act_max = torch.as_tensor(action_space.high)
+            act_min = torch.as_tensor(action_space.low)
             self.actor = actor_builder.build_actor(
                 model_cfgs.actor_type,
-                act_max=self.act_max,
-                act_min=self.act_min,
+                act_max=act_max,
+                act_min=act_min,
             )
 
         self.critic = QCritic(
@@ -135,9 +134,10 @@ class ActorQCritic(nn.Module):
             self.act_dim,
             hidden_sizes=model_cfgs.ac_kwargs.val.hidden_sizes,
             activation=model_cfgs.ac_kwargs.val.activation,
-            weight_initialization_mode=weight_initialization_mode,
+            weight_initialization_mode=model_cfgs.weight_initialization_mode,
             shared=shared,
             num_critics=model_cfgs.ac_kwargs.val.num_critics,
+            action_type='continuous' if isinstance(action_space, Box) else 'discrete',
         )
 
     def forward(self, obs: torch.Tensor) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -167,8 +167,8 @@ class ActorQCritic(nn.Module):
 
         return raw_action, action, value, logp_a
 
-    def anneal_exploration(self, frac) -> None:
-        """update internals of actors
+    def anneal_exploration(self, frac: float) -> None:
+        """Update internals of actors
 
         Updates exploration parameters for Gaussian actors update log_std
 
@@ -176,4 +176,4 @@ class ActorQCritic(nn.Module):
             frac: progress of epochs. 1.0 is the end of training.
         """
         if hasattr(self.actor, 'set_std'):
-            self.actor.set_log_std(1 - frac)
+            self.actor.set_std(1 - frac)
