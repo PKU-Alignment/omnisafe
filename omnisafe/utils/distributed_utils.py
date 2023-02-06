@@ -95,7 +95,6 @@ def mpi_fork(
     """
     is_parent = False
     back_end = 'gloo' if device == 'cpu' else 'nccl'
-    print(parallel)
     if os.getenv('MASTER_ADDR') is not None and os.getenv('IN_DIST') is None:
         dist.init_process_group(backend=back_end)
         os.environ['IN_DIST'] = '1'
