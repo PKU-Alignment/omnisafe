@@ -145,5 +145,5 @@ class ActorBuilder:
 
         raise NotImplementedError(
             f'Actor type {actor_type} is not implemented! '
-            f'Did you mean {difflib.get_close_matches(actor_type, ["categorical", "gaussian_stdnet", "cholesky", "gaussian"], n=1)[0]}?'  # pylint: disable-next=line-too-long
+            f'Did you mean {difflib.get_close_matches(actor_type, ["categorical", "gaussian_stdnet", "cholesky", "gaussian"], n=1)[0]}?' # pylint: disable=line-too-long
         )

@@ -117,7 +117,6 @@ def check_all_configs(configs: NamedTuple, algo_type: str) -> None:
         algo_type (str): algorithm type.
     """
     check_env_configs(configs.env_cfgs, wrapper_type=configs.wrapper_type)
-    # check_model_configs(configs.model_cfgs)
     if algo_type == 'on-policy':
         check_buffer_configs(configs.buffer_cfgs)
         assert configs.actor_iters > 0, 'actor_iters must be greater than 0'
