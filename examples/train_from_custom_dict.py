@@ -14,13 +14,23 @@
 # ==============================================================================
 """Example of training a policy from custom dict with OmniSafe."""
 
+import argparse
+
 import omnisafe
 
 
-env = omnisafe.Env('SafetyPointGoal1-v0')
-
+parser = argparse.ArgumentParser()
+env_id = 'SafetyHumanoidVelocity-v4'
+parser.add_argument(
+    '--parallel',
+    default=1,
+    type=int,
+    metavar='N',
+    help='Number of paralleled progress for calculations.',
+)
 custom_dict = {'epochs': 1, 'data_dir': './runs'}
-agent = omnisafe.Agent('PPOLag', env, custom_cfgs=custom_dict)
+args, _ = parser.parse_known_args()
+agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_dict, parallel=args.parallel)
 agent.learn()
 
 # obs = env.reset()

@@ -75,6 +75,7 @@ def mpi_fork(
     bind_to_core: bool = False,
     use_number_of_threads: bool = False,
     device: str = 'cpu',
+    test_message: list = None,
 ) -> bool:
     """The entrance of multi-processing.
 
@@ -94,8 +95,9 @@ def mpi_fork(
     """
     is_parent = False
     back_end = 'gloo' if device == 'cpu' else 'nccl'
-    if os.getenv('MASTER_ADDR') is not None:
+    if os.getenv('MASTER_ADDR') is not None and os.getenv('IN_DIST') is None:
         dist.init_process_group(backend=back_end)
+        os.environ['IN_DIST'] = '1'
     # check if MPI is already setup..
     if parallel > 1 and os.getenv('MASTER_ADDR') is None:
         # MPI is not yet set up: quit parent process and start N child processes
@@ -114,7 +116,7 @@ def mpi_fork(
             args += ['-bind-to', 'core']
         if use_number_of_threads:
             args += ['--use-hwthread-cpus']
-        args += sys.argv
+        args += test_message or sys.argv
         # this is the parent process, spawn sub-processes..
         subprocess.check_call(args, env=env)
         is_parent = True
@@ -143,28 +145,19 @@ def gather(*args, **kwargs) -> torch.Tensor:
     return dist.gather(*args, **kwargs)
 
 
-def gather_and_stack(x_vector: np.ndarray) -> np.ndarray:
-    """Gather values from all tasks and return a flattened list.
-
-    Input is a 1D array of size ``N``, and output is a list of size ``N * MPI_world_size``.
-
-    .. note::
-
-        Only the root process owns valid data.
-
+def mpi_avg_torch_tensor(value: torch.Tensor) -> None:
+    """Average a torch tensor over MPI processes.
+    Since torch and numpy share same memory space,
+    tensors of dim > 0 can be be manipulated through call by reference,
+    scalars must be assigned.
     Args:
-        x: 1-D array of size N
+        value (torch.Tensor): value to be averaged.
     """
-    if num_procs() == 1:
-        return x_vector
-    assert x_vector.ndim == 1, 'Only lists or 1D-arrays supported.'
-    buf = None
-    size = num_procs()
-    length = x_vector.shape[0]
-    # if proc_id() == 0:
-    buf = np.empty([size, length], dtype=np.float32)
-    gather(x_vector, buf, root=0)
-    return buf.flatten()
+    assert isinstance(value, torch.Tensor)
+    if num_procs() > 1:
+        assert len(value.shape) > 0
+        avg_x = mpi_avg(value)
+        value[:] = avg_x[:]
 
 
 def num_procs() -> int:
@@ -217,25 +210,6 @@ def mpi_op(value: torch.Tensor, operation: ReduceOp) -> torch.Tensor:
 def mpi_sum(value: torch.Tensor) -> torch.Tensor:
     """Sum a scalar or numpy vector over MPI processes."""
     return mpi_op(value, ReduceOp.SUM)
-
-
-def mpi_avg_torch_tensor(value: torch.Tensor) -> None:
-    """Average a torch tensor over MPI processes.
-
-    Since torch and numpy share same memory space,
-    tensors of dim > 0 can be be manipulated through call by reference,
-    scalars must be assigned.
-
-    Args:
-        value (torch.Tensor): value to be averaged.
-    """
-    assert isinstance(value, torch.Tensor)
-    if num_procs() > 1:
-        if len(value.shape) > 0:
-            avg_x = mpi_avg(value)
-            value[:] = avg_x[:]
-        else:
-            raise NotImplementedError
 
 
 def mpi_statistics_scalar(

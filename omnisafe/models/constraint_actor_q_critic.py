@@ -73,7 +73,6 @@ class ConstraintActorQCritic(ActorQCritic):
         super().__init__(
             observation_space=observation_space,
             action_space=action_space,
-            shared_weights=model_cfgs.shared_weights,
             model_cfgs=model_cfgs,
         )
         self.cost_critic = QCritic(

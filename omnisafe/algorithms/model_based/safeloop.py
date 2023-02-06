@@ -173,9 +173,7 @@ class SafeLOOP(
         self.actor_critic = ActorQCritic(
             observation_space=self.env.observation_space,
             action_space=self.env.action_space,
-            shared_weights=self.cfgs.model_cfgs.shared_weights,
             model_cfgs=self.cfgs.model_cfgs,
-            device=self.device,
         ).to(self.device)
         # Set up optimizer for policy and q-function
         self.actor_optimizer = core.set_optimizer(

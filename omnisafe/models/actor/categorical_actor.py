@@ -126,8 +126,9 @@ class CategoricalActor(Actor):
         if deterministic:
             action = dist.probs.argmax(dim=-1)
         else:
-            action = dist.sample().squeeze(dim=-1)
+            action = dist.sample()
+        action = action.unsqueeze(0)
         if need_log_prob:
             logp_a = dist.log_prob(action)
-            return action, logp_a
-        return action
+            return action, action, logp_a
+        return action, action

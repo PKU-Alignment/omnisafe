@@ -133,6 +133,21 @@ class PidController:
         self.error_i = 0.0
         self.prev_action = 0
         self.prev_raw_action = 0
+        self._init_check()
+
+    def _init_check(self) -> None:
+        """Check the initial value of PID controller."""
+        assert self.pid_data.pid_kp >= 0, 'pid_kp should be non-negative.'
+        assert self.pid_data.pid_ki >= 0, 'pid_ki should be non-negative.'
+        assert self.pid_data.pid_kd >= 0, 'pid_kd should be non-negative.'
+        assert self.pid_data.tau >= 0 and self.pid_data.tau <= 1, 'tau should be in [0, 1].'
+        assert self.pid_data.step_size > 0, 'step_size should be positive.'
+        assert (
+            self.simmer_data.safety_budget >= self.simmer_data.lower_budget
+        ), 'safety_budget should be larger than lower_budget.'
+        assert (
+            self.simmer_data.safety_budget <= self.simmer_data.upper_budget
+        ), 'safety_budget should be smaller than upper_budget.'
 
     def compute_raw_action(self, obs: float) -> float:
         r"""Compute the raw action based on current obs.
@@ -229,6 +244,16 @@ class QController:
         self.prev_obs = copy.copy(self.safety_budget)
         self.filtered_obs_buffer = []
         self.filtered_obs = 0
+        self._init_check()
+
+    def _init_check(self) -> None:
+        """Check the initial value of Q-learning controller."""
+        assert self.q_data.state_dim > 0, 'state_dim should be positive.'
+        assert self.q_data.action_dim > 0, 'action_dim should be positive.'
+        assert self.q_data.tau >= 0 and self.q_data.tau <= 1, 'tau should be in [0, 1].'
+        assert self.q_data.threshold >= 0, 'threshold should be non-negative.'
+        assert self.q_data.learning_rate > 0, 'learning_rate should be positive.'
+        assert self.q_data.epsilon >= 0 and self.q_data.epsilon <= 1, 'epsilon should be in [0, 1].'
 
     def get_state_idx(self, state: float) -> int:
         """Get the state index.
@@ -492,6 +517,12 @@ class SimmerWrapper(CMDPWrapper):
                 f'Controller type {cfgs.simmer_controller} is not implemented.'
             )
         self.rollout_data.current_obs = self.reset()[0]
+
+    def _init_check(self) -> None:
+        super()._init_check()
+        assert (
+            self.cfgs.simmer_gamma >= 0 and self.cfgs.simmer_gamma <= 1
+        ), 'The simmer gamma should be in [0, 1].'
 
     def augment_obs(self, obs: np.ndarray) -> np.ndarray:
         """Augmenting the obs with the safety obs.

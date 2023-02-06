@@ -14,12 +14,14 @@
 # ==============================================================================
 """Implementation of the AlgoWrapper Class."""
 
+import difflib
 import os
 import sys
 
 import psutil
+from safety_gymnasium.utils.registration import safe_registry
 
-from omnisafe.algorithms import ALGORITHM2TYPE, registry
+from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
 from omnisafe.utils import distributed_utils
 from omnisafe.utils.config_utils import check_all_configs, recursive_update
 from omnisafe.utils.tools import get_default_kwargs_yaml
@@ -46,6 +48,14 @@ class AlgoWrapper:
         assert (
             isinstance(self.custom_cfgs, dict) or self.custom_cfgs is None
         ), 'custom_cfgs must be a dict!'
+        assert self.algo in ALGORITHMS['all'], (
+            f"{self.algo} doesn't exist. "
+            f"Did you mean {difflib.get_close_matches(self.algo, ALGORITHMS['all'], n=1)[0]}?"
+        )
+        assert self.env_id in safe_registry, (
+            f"{self.env_id} doesn't exist. "
+            f'Did you mean {difflib.get_close_matches(self.env_id, safe_registry, n=1)[0]}?'
+        )
         self.algo_type = ALGORITHM2TYPE.get(self.algo, None)
         if self.algo_type is None or self.algo_type == '':
             raise ValueError(f'{self.algo} is not supported!')
@@ -76,7 +86,6 @@ class AlgoWrapper:
             cfgs=cfgs,
         )
         agent.learn()
-
         return agent.env.record_queue.get_mean('ep_ret', 'ep_cost', 'ep_len')
 
     def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):

@@ -47,7 +47,7 @@ def recursive_update(args: dict, update_args: dict, add_new_args: bool = False) 
                 menus = (key, value)
                 print(f'- {menus[0]}: {menus[1]} is added!')
 
-    return dict2namedtuple(args)
+    return args
 
 
 def dict2namedtuple(obj: Any) -> Union[NamedTuple, Dict, Any]:
@@ -68,7 +68,7 @@ def dict2namedtuple(obj: Any) -> Union[NamedTuple, Dict, Any]:
             return namedtuple_type(**field_value_pairs)
         except TypeError:
             # Cannot create namedtuple instance so fallback to dict (invalid attribute names)
-            return dict(field_value_pairs)
+            return {**field_value_pairs}
     elif isinstance(obj, (list, set, tuple, frozenset)):
         return [dict2namedtuple(item) for item in obj]
     else:
