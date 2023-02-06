@@ -15,6 +15,7 @@
 """Some Core Functions"""
 
 from typing import Union
+
 import torch
 
 from omnisafe.models import ConstraintActorCritic, ConstraintActorQCritic
