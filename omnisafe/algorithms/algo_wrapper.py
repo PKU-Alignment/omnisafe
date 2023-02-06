@@ -28,7 +28,7 @@ from omnisafe.utils.tools import get_default_kwargs_yaml
 
 
 class AlgoWrapper:
-    """Algo Wrapper for algo"""
+    """Algo Wrapper for algo."""
 
     def __init__(self, algo, env_id, parallel=1, custom_cfgs=None):
         self.algo = algo
@@ -41,7 +41,7 @@ class AlgoWrapper:
         self._init_checks()
 
     def _init_checks(self):
-        """Init checks"""
+        """Init checks."""
         assert isinstance(self.algo, str), 'algo must be a string!'
         assert isinstance(self.parallel, int), 'parallel must be an integer!'
         assert self.parallel > 0, 'parallel must be greater than 0!'
@@ -63,7 +63,7 @@ class AlgoWrapper:
             assert self.parallel == 1, 'off-policy or model-based only support parallel==1!'
 
     def learn(self):
-        """Agent Learning"""
+        """Agent Learning."""
         # Use number of physical cores as default.
         # If also hardware threading CPUs should be used
         # enable this by the use_number_of_threads=True
@@ -93,7 +93,7 @@ class AlgoWrapper:
         return agent.env.record_queue.get_mean('ep_ret', 'ep_cost', 'ep_len')
 
     def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
-        """Agent Evaluation"""
+        """Agent Evaluation."""
         assert self.evaluator is not None, 'Please run learn() first!'
         self.evaluator.evaluate(num_episodes, horizon, cost_criteria)
 
