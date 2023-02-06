@@ -27,8 +27,7 @@ from omnisafe.common.logger import Logger
 from omnisafe.common.record_queue import RecordQueue
 from omnisafe.models.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils import core, distributed_utils
-from omnisafe.utils.config_utils import namedtuple2dict, recursive_update
-from omnisafe.utils.tools import get_flat_params_from
+from omnisafe.utils.config_utils import dict2namedtuple, namedtuple2dict, recursive_update
 from omnisafe.wrappers import wrapper_registry
 
 
@@ -64,6 +63,7 @@ class DDPG:
         env_cfgs = recursive_update(
             namedtuple2dict(self.cfgs.env_cfgs), added_cfgs, add_new_args=True
         )
+        env_cfgs = dict2namedtuple(env_cfgs)
 
         self.env = wrapper_registry.get(self.wrapper_type)(env_id, cfgs=env_cfgs)
         # set up for learning and rolling out schedule
@@ -80,9 +80,7 @@ class DDPG:
         )
         # ensure valid number for iteration
         assert cfgs.update_every > 0
-        self.max_ep_len = cfgs.max_ep_len
-        if hasattr(self.env, '_max_episode_steps'):
-            self.max_ep_len = self.env.env._max_episode_steps
+        self.max_ep_len = self.env.rollout_data.max_ep_len
 
         self.env.set_rollout_cfgs(
             determinstic=False,
@@ -102,12 +100,11 @@ class DDPG:
             action_space=self.env.action_space,
             model_cfgs=cfgs.model_cfgs,
         ).to(self.device)
-        self._init_mpi()
         # set up experience buffer
         # obs_dim, act_dim, size, batch_size
         self.buf = BaseBuffer(
-            obs_dim=self.env.observation_space.shape,
-            act_dim=self.env.action_space.shape,
+            obs_dim=self.env.observation_space.shape[0],
+            act_dim=self.env.action_space.shape[0],
             size=cfgs.replay_buffer_cfgs.size,
             batch_size=cfgs.replay_buffer_cfgs.batch_size,
             num_envs=cfgs.env_cfgs.num_envs,
@@ -141,6 +138,7 @@ class DDPG:
         self.epoch_time = time.time()
         self.logger.log('Start with training.')
         self.loss_record = RecordQueue('loss_pi', 'loss_q', 'loss_c', maxlen=100)
+        self.cost_limit = None
 
     def _get_added_cfgs(self) -> dict:
         """Get additional configurations.
@@ -163,13 +161,11 @@ class DDPG:
     ) -> None:
         """Decay cost limit."""
         if epoch < end_epoch:
-            if hasattr(self.env, 'cost_limit'):
-                self.env.cost_limit = (
-                    self.cfgs.init_cost_limit * (1 - epoch / end_epoch)
-                    + self.cfgs.target_cost_limit * epoch / end_epoch
-                )
-            else:
-                print('warning: no cost limit in env')
+            assert hasattr(self, 'cost_limit'), 'Cost limit is not set.'
+            self.cost_limit = (
+                self.cfgs.init_cost_limit * (1 - epoch / end_epoch)
+                + self.cfgs.target_cost_limit * epoch / end_epoch
+            )
 
     def set_learning_rate_scheduler(self) -> torch.optim.lr_scheduler.LambdaLR:
         """Set up learning rate scheduler.
@@ -186,17 +182,6 @@ class DDPG:
                 optimizer=self.actor_optimizer, lr_lambda=linear_anneal
             )
         return scheduler
-
-    def _init_mpi(self) -> None:
-        """Initialize MPI specifics."""
-        if distributed_utils.num_procs() > 1:
-            # avoid slowdowns from PyTorch + MPI combo
-            distributed_utils.setup_torch_for_mpi()
-            start = time.time()
-            self.logger.log('INFO: Sync actor critic parameters')
-            # sync params across cores: only once necessary, grads are averaged!
-            distributed_utils.sync_params(self.actor_critic)
-            self.logger.log(f'Done! (took {time.time()-start:0.3f} sec.)')
 
     def algorithm_specific_logs(self) -> None:
         """Use this method to collect log information.
@@ -219,17 +204,6 @@ class DDPG:
             param.requires_grad = False
         for param in self.ac_targ.cost_critic.parameters():
             param.requires_grad = False
-
-    def check_distributed_parameters(self) -> None:
-        """Check if parameters are synchronized across all processes."""
-        if distributed_utils.num_procs() > 1:
-            self.logger.log('Check if distributed parameters are synchronous..')
-            modules = {'Policy': self.actor_critic.actor.net, 'Value': self.actor_critic.critic.net}
-            for key, module in modules.items():
-                flat_params = get_flat_params_from(module).numpy()
-                global_min = distributed_utils.mpi_min(np.sum(flat_params))
-                global_max = distributed_utils.mpi_max(np.sum(flat_params))
-                assert np.allclose(global_min, global_max), f'{key} not synced.'
 
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         r"""Computing ``pi/actor`` loss.
@@ -290,7 +264,7 @@ class DDPG:
         # MSE loss against Bellman backup
         loss_q = ((q_value - backup) ** 2).mean()
         # useful info for logging
-        q_info = {'QVals': q_value.detach().mean().item()}
+        q_info = dict(QVals=q_value.detach().mean().item())
         return loss_q, q_info
 
     # pylint: disable-next=too-many-arguments
@@ -332,7 +306,7 @@ class DDPG:
         # MSE loss against Bellman backup
         loss_qc = ((cost_q_value - backup) ** 2).mean()
         # useful info for logging
-        qc_info = {'QCosts': cost_q_value.detach().mean().item()}
+        qc_info = dict(QCosts=cost_q_value.detach().mean().item())
 
         return loss_qc, qc_info
 
