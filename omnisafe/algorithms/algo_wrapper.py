@@ -59,8 +59,8 @@ class AlgoWrapper:
         self.algo_type = ALGORITHM2TYPE.get(self.algo, None)
         if self.algo_type is None or self.algo_type == '':
             raise ValueError(f'{self.algo} is not supported!')
-        if self.algo_type == 'off-policy':
-            assert self.parallel == 1, 'off-policy only support parallel==1!'
+        if self.algo_type in ['off-policy', 'model-based']:
+            assert self.parallel == 1, 'off-policy or model-based only support parallel==1!'
 
     def learn(self):
         """Agent Learning"""
@@ -91,8 +91,6 @@ class AlgoWrapper:
         )
         agent.learn()
         return agent.env.record_queue.get_mean('ep_ret', 'ep_cost', 'ep_len')
-
-        # self.evaluator = Evaluator(self.env, actor_critic.actor, actor_critic.obs_oms)
 
     def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
         """Agent Evaluation"""
