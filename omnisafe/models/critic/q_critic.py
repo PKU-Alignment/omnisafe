@@ -41,6 +41,7 @@ class QCritic(Critic):
         shared: nn.Module = None,
         num_critics: int = 1,
         use_obs_encoder: bool = True,
+        action_type: str = 'continuous',
     ) -> None:
         """Initialize the critic network.
 
@@ -82,6 +83,7 @@ class QCritic(Critic):
             shared=shared,
         )
         self.critic_list = []
+        expand_dim = act_dim if action_type == 'continuous' else 1
         for idx in range(num_critics):
             if self.use_obs_encoder:
                 obs_encoder = build_mlp_network(
@@ -91,7 +93,7 @@ class QCritic(Critic):
                     weight_initialization_mode=weight_initialization_mode,
                 )
                 net = build_mlp_network(
-                    [hidden_sizes[0] + act_dim] + hidden_sizes[1:] + [1],
+                    [hidden_sizes[0] + expand_dim] + hidden_sizes[1:] + [1],
                     activation=activation,
                     weight_initialization_mode=weight_initialization_mode,
                 )

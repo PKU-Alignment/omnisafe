@@ -15,7 +15,7 @@
 """This module contains some base abstract classes for the models."""
 
 import abc
-from typing import List, Optional, Tuple, Union
+from typing import List, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -128,28 +128,6 @@ class Actor(abc.ABC, nn.Module):
             deterministic (bool, optional): whether to predict deterministic action. Defaults to False.
             need_log_prob (bool, optional): whether to return log probability of action. Defaults to False.
         """
-
-    def forward(
-        self,
-        obs: torch.Tensor,
-        act: Optional[torch.Tensor] = None,
-    ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
-        """Forward function for actor.
-
-        .. note::
-            This forward function has two modes:
-            - If ``act`` is not None, it will return the distribution and the log probability of action.
-            - If ``act`` is None, it will return the distribution.
-
-        Args:
-            obs (torch.Tensor): observation.
-            act (torch.Tensor, optional): action. Defaults to None.
-        """
-        dist = self._distribution(obs)
-        if act is not None:
-            logp_a = dist.log_prob(act)
-            return dist, logp_a
-        return dist
 
 
 class Critic(abc.ABC, nn.Module):
