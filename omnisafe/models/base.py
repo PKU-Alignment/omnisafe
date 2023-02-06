@@ -15,7 +15,7 @@
 """This module contains some base abstract classes for the models."""
 
 import abc
-from typing import List, Optional, Tuple, Union
+from typing import List, Tuple, Union
 
 import torch
 import torch.nn as nn
