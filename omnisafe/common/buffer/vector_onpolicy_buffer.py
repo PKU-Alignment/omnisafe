@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of vector on-policy buffer."""
+"""Implementation of VectorOnPolicyBuffer."""
 
 from typing import Dict
 
@@ -26,7 +26,7 @@ from omnisafe.utils import distributed_utils
 class VectorOnPolicyBuffer(OnPolicyBuffer):
     """Vectorized on-policy buffer."""
 
-    def __init__(  # pylint: disable=super-init-not-called, too-many-arguments
+    def __init__(  # pylint: disable=super-init-not-called,too-many-arguments
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,

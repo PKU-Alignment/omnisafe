@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of ReplayBuffer."""
+"""Implementation of VectorOffPolicyBuffer."""
 
 from typing import Dict
 
@@ -24,9 +24,9 @@ from omnisafe.typing import OmnisafeSpace
 
 
 class VectorOffPolicyBuffer(OffPolicyBuffer):
-    """A ReplayBuffer for off_policy Algorithms."""
+    """A VectorReplayBuffer for OffPolicy Algorithms."""
 
-    def __init__(  # pylint: disable=super-init-not-called,  too-many-arguments
+    def __init__(  # pylint: disable=super-init-not-called,too-many-arguments
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,

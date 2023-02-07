@@ -350,7 +350,7 @@ def test_offpolicy_buffer(
         batch_size=batch_size,
         device=device,
     )
-    # checking the initialized value
+    # check the initialized value
     assert buffer.max_size == size, f'buffer.max_size is {buffer.max_size}'
     assert buffer.batch_size == batch_size, f'buffer.batch_size is {buffer.batch_size}'
     assert buffer.device == device, f'buffer.device is {buffer.device}'
