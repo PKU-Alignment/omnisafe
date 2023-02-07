@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2022 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,8 +42,10 @@ def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Dict:
             kwargs = yaml.load(file, Loader=yaml.FullLoader)
         except yaml.YAMLError as exc:
             assert False, f'{algo}.yaml error: {exc}'
-    kwargs_name = env_id if env_id in kwargs.keys() else 'defaults'
-    return kwargs[kwargs_name]
+    default_kwargs = kwargs['defaults']
+    env_spec_kwargs = kwargs[env_id] if env_id in kwargs.keys() else None
+
+    return default_kwargs, env_spec_kwargs
 
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
@@ -196,9 +198,6 @@ def to_ndarray(item: Any, dtype: np.dtype = None) -> Union[np.ndarray, TypeError
         if dtype is None:
             return item
         return item.astype(dtype)
-
-    if isinstance(item, (bool, str)):
-        return item
 
     if np.isscalar(item):
         return np.array(item)
