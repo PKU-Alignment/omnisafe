@@ -80,11 +80,6 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
 
         # Initialize off-policy buffer
         self.off_replay_buffer = OffPolicyBuffer(
-            # self.env.dynamics_state_size,
-            # self.env.action_space.shape[0],
-            # self.cfgs.replay_size,
-            # self.cfgs.batch_size,
-            # device=self.device,
             obs_space=self.env.observation_space,
             act_space=self.env.action_space,
             size=self.cfgs.replay_size,

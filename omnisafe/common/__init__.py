@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Initialization of models."""
+"""Common Common utilities for OmniSafe."""
 
 from omnisafe.common.lagrange import Lagrange
 from omnisafe.common.logger import Logger
