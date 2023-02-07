@@ -23,12 +23,12 @@ from safety_gymnasium.utils.registration import safe_registry
 
 from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
 from omnisafe.utils import distributed_utils
-from omnisafe.utils.config_utils import check_all_configs, recursive_update
+from omnisafe.utils.config_utils import check_all_configs, dict2namedtuple, recursive_update
 from omnisafe.utils.tools import get_default_kwargs_yaml
 
 
 class AlgoWrapper:
-    """Algo Wrapper for algo"""
+    """Algo Wrapper for algo."""
 
     def __init__(self, algo, env_id, parallel=1, custom_cfgs=None):
         self.algo = algo
@@ -41,7 +41,7 @@ class AlgoWrapper:
         self._init_checks()
 
     def _init_checks(self):
-        """Init checks"""
+        """Init checks."""
         assert isinstance(self.algo, str), 'algo must be a string!'
         assert isinstance(self.parallel, int), 'parallel must be an integer!'
         assert self.parallel > 0, 'parallel must be greater than 0!'
@@ -63,17 +63,21 @@ class AlgoWrapper:
             assert self.parallel == 1, 'off-policy or model-based only support parallel==1!'
 
     def learn(self):
-        """Agent Learning"""
+        """Agent Learning."""
         # Use number of physical cores as default.
         # If also hardware threading CPUs should be used
         # enable this by the use_number_of_threads=True
         physical_cores = psutil.cpu_count(logical=False)
         use_number_of_threads = bool(self.parallel > physical_cores)
 
-        default_cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
+        default_cfgs, env_spec_cfgs = get_default_kwargs_yaml(
+            self.algo, self.env_id, self.algo_type
+        )
         exp_name = os.path.join(self.env_id, self.algo)
         default_cfgs.update(exp_name=exp_name, env_id=self.env_id)
-        cfgs = recursive_update(default_cfgs, self.custom_cfgs)
+        cfgs = recursive_update(default_cfgs, env_spec_cfgs)
+        cfgs = recursive_update(cfgs, self.custom_cfgs)
+        cfgs = dict2namedtuple(cfgs)
         check_all_configs(cfgs, self.algo_type)
 
         if distributed_utils.mpi_fork(

@@ -27,7 +27,7 @@ from omnisafe.common.record_queue import RecordQueue
 from omnisafe.common.vector_buffer import VectorBuffer as Buffer
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core, distributed_utils
-from omnisafe.utils.config_utils import namedtuple2dict, recursive_update
+from omnisafe.utils.config_utils import dict2namedtuple, namedtuple2dict, recursive_update
 from omnisafe.utils.tools import get_flat_params_from
 from omnisafe.wrappers import wrapper_registry
 
@@ -63,6 +63,7 @@ class PolicyGradient:
         env_cfgs = recursive_update(
             namedtuple2dict(self.cfgs.env_cfgs), added_cfgs, add_new_args=True
         )
+        env_cfgs = dict2namedtuple(env_cfgs)
 
         self.env = wrapper_registry.get(self.wrapper_type)(env_id, cfgs=env_cfgs)
 
