@@ -41,7 +41,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         lam: float,
         lam_c: float,
         advantage_estimator: AdvatageEstimator,
-        penalty_coefficient: float,
+        penalty_coefficient: float = 0,
         standardized_adv_r: bool = False,
         standardized_adv_c: bool = False,
         device: torch.device = torch.device('cpu'),
