@@ -21,11 +21,10 @@ import numpy as np
 import safety_gymnasium
 import torch
 
-from omnisafe.common.base_buffer import BaseBuffer
+from omnisafe.common.buffer import OffPolicyBuffer, VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.common.normalizer import Normalizer
 from omnisafe.common.record_queue import RecordQueue
-from omnisafe.common.vector_buffer import VectorBuffer as Buffer
 from omnisafe.models import ConstraintActorCritic, ConstraintActorQCritic
 from omnisafe.typing import Dict, NamedTuple, Optional, Tuple, Union
 from omnisafe.utils import distributed_utils
@@ -279,7 +278,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
     def on_policy_roll_out(
         self,
         agent: Union[ConstraintActorCritic, ConstraintActorQCritic],
-        buf: Buffer,
+        buf: VectorOnPolicyBuffer,
         logger: Logger,
     ) -> None:
         """Collect data and store to experience buffer.
@@ -312,11 +311,11 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             buf.store(
                 obs=obs,
                 act=raw_action,
-                rew=reward,
-                val=value,
+                reward=reward,
+                value_r=value,
                 logp=logp,
                 cost=cost,
-                cost_val=cost_value,
+                value_c=cost_value,
             )
 
             # store values for statistic purpose
@@ -357,7 +356,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
     def off_policy_roll_out(
         self,
         agent: Union[ConstraintActorCritic, ConstraintActorQCritic],
-        buf: BaseBuffer,
+        buf: OffPolicyBuffer,
         logger: Logger,
         deterministic: bool,
         use_rand_action: bool,
@@ -413,12 +412,12 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             epoch_ended = self.rollout_data.rollout_log.ep_len >= self.rollout_data.max_ep_len
             terminals = terminals & ~epoch_ended
             buf.store(
-                obs,
-                raw_action,
-                reward,
-                cost,
-                next_obs,
-                as_tensor(terminals, device=self.cfgs.device),
+                obs=obs,
+                act=raw_action,
+                reward=reward,
+                cost=cost,
+                next_obs=next_obs,
+                done=as_tensor(terminals, device=self.cfgs.device),
             )
             for idx, terminal in enumerate(terminals):
                 if terminal or epoch_ended[idx]:

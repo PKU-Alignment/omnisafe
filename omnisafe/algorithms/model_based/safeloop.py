@@ -84,7 +84,7 @@ class SafeLOOP(
         obs, act, rew, next_obs, done = (
             data['obs'],
             data['act'],
-            data['rew'],
+            data['reward'],
             data['next_obs'],
             data['done'],
         )
@@ -244,11 +244,11 @@ class SafeLOOP(
 
     def update_dynamics_model(self):
         """Update dynamics."""
-        state = self.off_replay_buffer.obs_buf[: self.off_replay_buffer.size, :]
-        action = self.off_replay_buffer.act_buf[: self.off_replay_buffer.size, :]
-        reward = self.off_replay_buffer.rew_buf[: self.off_replay_buffer.size]
-        cost = self.off_replay_buffer.cost_buf[: self.off_replay_buffer.size]
-        next_state = self.off_replay_buffer.next_obs_buf[: self.off_replay_buffer.size, :]
+        state = self.off_replay_buffer.data['obs'][: self.off_replay_buffer.size, :]
+        action = self.off_replay_buffer.data['act'][: self.off_replay_buffer.size, :]
+        reward = self.off_replay_buffer.data['reward'][: self.off_replay_buffer.size]
+        cost = self.off_replay_buffer.data['cost'][: self.off_replay_buffer.size]
+        next_state = self.off_replay_buffer.data['next_obs'][: self.off_replay_buffer.size, :]
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
         if self.env.env_type == 'mujoco-velocity':
@@ -308,7 +308,7 @@ class SafeLOOP(
         if not terminated and not truncated and not info['goal_met']:
             # Current goal position is not related to the last goal position, so do not store.
             self.off_replay_buffer.store(
-                obs=state, act=action, rew=reward, cost=cost, next_obs=next_state, done=truncated
+                obs=state, act=action, reward=reward, cost=cost, next_obs=next_state, done=truncated
             )
 
     def algo_reset(self):

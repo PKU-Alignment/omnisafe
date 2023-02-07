@@ -147,11 +147,11 @@ class FOCOPS(PolicyGradient, Lagrange):
         obs, act, log_p, target_v, target_c, adv, cost_adv = (
             data['obs'],
             data['act'],
-            data['log_p'],
-            data['target_v'],
-            data['target_c'],
-            data['adv'],
-            data['cost_adv'],
+            data['logp'],
+            data['target_value_r'],
+            data['target_value_c'],
+            data['adv_r'],
+            data['adv_c'],
         )
         # get the loss before
         loss_pi_before, loss_v_before = self.loss_record.get_mean('loss_pi', 'loss_v')
