@@ -168,8 +168,8 @@ class CUP(PPO, Lagrange):
         obs, act, log_p, cost_adv = (
             data['obs'],
             data['act'],
-            data['log_p'],
-            data['cost_adv'],
+            data['logp'],
+            data['adv_c'],
         )
         with torch.no_grad():
             old_dist = self.actor_critic.actor(obs)

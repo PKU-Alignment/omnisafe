@@ -22,7 +22,7 @@ import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel, VirtualEnv
-from omnisafe.common.base_buffer import BaseBuffer as Off_ReplayBuffer
+from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core
@@ -79,11 +79,16 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
         self.virtual_env = VirtualEnv(self.algo, self.dynamics, self.env_id, self.device)
 
         # Initialize off-policy buffer
-        self.off_replay_buffer = Off_ReplayBuffer(
-            self.env.dynamics_state_size,
-            self.env.action_space.shape[0],
-            self.cfgs.replay_size,
-            self.cfgs.batch_size,
+        self.off_replay_buffer = OffPolicyBuffer(
+            # self.env.dynamics_state_size,
+            # self.env.action_space.shape[0],
+            # self.cfgs.replay_size,
+            # self.cfgs.batch_size,
+            # device=self.device,
+            obs_space=self.env.observation_space,
+            act_space=self.env.action_space,
+            size=self.cfgs.replay_size,
+            batch_size=self.cfgs.batch_size,
             device=self.device,
         )
 

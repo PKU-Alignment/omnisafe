@@ -19,14 +19,14 @@ from typing import Dict
 import torch
 from gymnasium.spaces import Box
 
-from omnisafe.common.buffer import BaseBuffer
+from omnisafe.common.buffer.base import BaseBuffer
 from omnisafe.typing import OmnisafeSpace
 
 
 class OffPolicyBuffer(BaseBuffer):
     """A ReplayBuffer for off_policy Algorithms."""
 
-    def __init__(  # pylint: too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,

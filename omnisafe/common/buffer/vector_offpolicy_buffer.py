@@ -19,7 +19,7 @@ from typing import Dict
 import torch
 from gymnasium.spaces import Box
 
-from omnisafe.common.buffer import OffPolicyBuffer
+from omnisafe.common.buffer.offpolicy_buffer import OffPolicyBuffer
 from omnisafe.typing import OmnisafeSpace
 
 

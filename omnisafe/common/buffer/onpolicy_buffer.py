@@ -18,7 +18,7 @@ from typing import Dict, Tuple
 
 import torch
 
-from omnisafe.common.buffer import BaseBuffer
+from omnisafe.common.buffer.base import BaseBuffer
 from omnisafe.typing import AdvatageEstimator, OmnisafeSpace
 from omnisafe.utils import distributed_utils
 from omnisafe.utils.core import discount_cumsum_torch

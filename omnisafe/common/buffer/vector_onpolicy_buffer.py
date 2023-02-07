@@ -18,7 +18,7 @@ from typing import Dict
 
 import torch
 
-from omnisafe.common.buffer import OnPolicyBuffer
+from omnisafe.common.buffer.onpolicy_buffer import OnPolicyBuffer
 from omnisafe.typing import AdvatageEstimator, OmnisafeSpace
 from omnisafe.utils import distributed_utils
 

@@ -58,6 +58,11 @@ class BaseBuffer(ABC):
         """Return the device of the buffer."""
         return self._device
 
+    @property
+    def size(self) -> int:
+        """Return the size of the buffer."""
+        return self._size
+
     def __len__(self):
         """Return the length of the buffer."""
         return self._size
