@@ -14,10 +14,26 @@
 # ==============================================================================
 """Typing utilities."""
 
-from typing import Any, Callable, Dict, List, NamedTuple, Optional, Sequence, Tuple, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+)
+
+from gymnasium.spaces import Box, Discrete
 
 
 RenderFrame = TypeVar('RenderFrame')
+OmnisafeSpace = Union[Box, Discrete]
+AdvatageEstimator = Literal['gae', 'gae-rtg', 'vtrace', 'plain']
 
 __all__ = [
     'Callable',
@@ -30,4 +46,5 @@ __all__ = [
     'Dict',
     'NamedTuple',
     'Any',
+    'OmnisafeSpace',
 ]

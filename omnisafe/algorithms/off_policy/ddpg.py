@@ -22,7 +22,7 @@ import numpy as np
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.common.base_buffer import VectorBaseBuffer as BaseBuffer
+from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.common.record_queue import RecordQueue
 from omnisafe.models.constraint_actor_q_critic import ConstraintActorQCritic
@@ -102,9 +102,9 @@ class DDPG:
         ).to(self.device)
         # set up experience buffer
         # obs_dim, act_dim, size, batch_size
-        self.buf = BaseBuffer(
-            obs_dim=self.env.observation_space.shape[0],
-            act_dim=self.env.action_space.shape[0],
+        self.buf = VectorOffPolicyBuffer(
+            obs_space=self.env.observation_space,
+            act_space=self.env.action_space,
             size=cfgs.replay_buffer_cfgs.size,
             batch_size=cfgs.replay_buffer_cfgs.batch_size,
             num_envs=cfgs.env_cfgs.num_envs,
@@ -406,7 +406,7 @@ class DDPG:
         obs, act, rew, cost, next_obs, done = (
             data['obs'],
             data['act'],
-            data['rew'],
+            data['reward'],
             data['cost'],
             data['next_obs'],
             data['done'],

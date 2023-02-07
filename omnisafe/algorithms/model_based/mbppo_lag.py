@@ -19,7 +19,7 @@ import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.policy_gradient import PolicyGradientModelBased
-from omnisafe.common.buffer import Buffer
+from omnisafe.common.buffer import OnPolicyBuffer
 from omnisafe.common.lagrange import Lagrange
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core
@@ -52,14 +52,17 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         self.env_auxiliary = wrapper_registry.get(self.wrapper_type)(self.algo, self.env_id)
         # Initialize Actor-Critic
         self.actor_critic = self.set_algorithm_specific_actor_critic()
-        self.buf = Buffer(
-            actor_critic=self.actor_critic,
-            obs_dim=self.env.ac_state_size,
-            act_dim=self.env.action_space.shape[0],
-            scale_rewards=self.cfgs.scale_rewards,
-            standardized_obs=self.cfgs.standardized_obs,
+        self.buf = OnPolicyBuffer(
+            obs_space=self.env.observation_space,
+            act_space=self.env.action_space,
             size=self.cfgs.imaging_steps_per_policy_update,
-            **namedtuple2dict(self.cfgs.buffer_cfgs),
+            gamma=self.cfgs.buffer_cfgs.gamma,
+            lam=self.cfgs.buffer_cfgs.lam,
+            lam_c=self.cfgs.buffer_cfgs.lam_c,
+            advantage_estimator=self.cfgs.buffer_cfgs.advantage_estimator,
+            penalty_coefficient=0,
+            standardized_adv_r=self.cfgs.buffer_cfgs.standardized_reward,
+            standardized_adv_c=self.cfgs.buffer_cfgs.standardized_cost,
             device=self.device,
         )
         # Set up model saving
@@ -163,11 +166,11 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
 
     def update_dynamics_model(self):
         """compute the loss of dynamics"""
-        state = self.off_replay_buffer.obs_buf[: self.off_replay_buffer.size, :]
-        action = self.off_replay_buffer.act_buf[: self.off_replay_buffer.size, :]
-        next_state = self.off_replay_buffer.next_obs_buf[: self.off_replay_buffer.size, :]
-        reward = self.off_replay_buffer.rew_buf[: self.off_replay_buffer.size]
-        cost = self.off_replay_buffer.cost_buf[: self.off_replay_buffer.size]
+        state = self.off_replay_buffer.data['obs'][: self.off_replay_buffer.size, :]
+        action = self.off_replay_buffer.data['act'][: self.off_replay_buffer.size, :]
+        reward = self.off_replay_buffer.data['reward'][: self.off_replay_buffer.size]
+        cost = self.off_replay_buffer.data['cost'][: self.off_replay_buffer.size]
+        next_state = self.off_replay_buffer.data['next_obs'][: self.off_replay_buffer.size, :]
         delta_state = next_state - state
         inputs = np.concatenate((state, action), axis=-1)
         if self.env.env_type == 'mujoco-velocity':
@@ -356,7 +359,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         """store real data"""
         if not terminated and not truncated and not info['goal_met']:
             self.off_replay_buffer.store(
-                obs=state, act=action, rew=reward, cost=cost, next_obs=next_state, done=truncated
+                obs=state, act=action, reward=reward, cost=cost, next_obs=next_state, done=truncated
             )
         if (
             time_step % self.cfgs.update_policy_freq <= self.cfgs.mixed_real_time_steps

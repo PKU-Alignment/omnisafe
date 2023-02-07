@@ -33,17 +33,17 @@ def env_step_passive_checker(env, action):
         )
         obs, reward, cost, done, info = result
 
-        if not isinstance(done, (bool, np.bool8)):
+        if not isinstance(done, (bool, np.bool_)):
             logger.warn(f'Expects `done` signal to be a boolean, actual type: {type(done)}')
     elif len(result) == 6:
         obs, reward, cost, terminated, truncated, info = result
 
         # np.bool is actual python bool not np boolean type, therefore bool_ or bool8
-        if not isinstance(terminated, (bool, np.bool8)):
+        if not isinstance(terminated, (bool, np.bool_)):
             logger.warn(
                 f'Expects `terminated` signal to be a boolean, actual type: {type(terminated)}'
             )
-        if not isinstance(truncated, (bool, np.bool8)):
+        if not isinstance(truncated, (bool, np.bool_)):
             logger.warn(
                 f'Expects `truncated` signal to be a boolean, actual type: {type(truncated)}'
             )
@@ -77,10 +77,11 @@ def check_reward_cost(reward, cost):
             logger.warn('The reward is an inf value.')
 
     if not (np.issubdtype(type(cost), np.integer) or np.issubdtype(type(cost), np.floating)):
-        logger.warn(
-            f'The reward returned by `step()` must be a float,\
-            int, np.integer or np.floating, actual type: {type(cost)}'
-        )
+        # logger.warn(
+        #     'The reward returned by `step()` must be a float,\
+        #     int, np.integer or np.floating, actual type: {type(cost)}'
+        # )
+        pass
     else:
         if np.isnan(cost):
             logger.warn('The reward is a NaN value.')

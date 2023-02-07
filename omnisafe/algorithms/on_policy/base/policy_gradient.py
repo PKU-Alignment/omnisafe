@@ -22,9 +22,9 @@ import torch
 import torch.nn as nn
 
 from omnisafe.algorithms import registry
+from omnisafe.common.buffer import VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.common.record_queue import RecordQueue
-from omnisafe.common.vector_buffer import VectorBuffer as Buffer
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core, distributed_utils
 from omnisafe.utils.config_utils import dict2namedtuple, namedtuple2dict, recursive_update
@@ -92,17 +92,17 @@ class PolicyGradient:
         self.set_mpi()
         # set up experience buffer
 
-        self.buf = Buffer(
-            obs_dim=self.env.observation_space.shape[0],
-            act_dim=self.env.action_space.shape[0],
+        self.buf = VectorOnPolicyBuffer(
+            obs_space=self.env.observation_space,
+            act_space=self.env.action_space,
             size=self.local_steps_per_epoch,
             gamma=cfgs.buffer_cfgs.gamma,
             lam=cfgs.buffer_cfgs.lam,
             lam_c=cfgs.buffer_cfgs.lam_c,
-            adv_estimation_method=cfgs.buffer_cfgs.adv_estimation_method,
-            standardized_rew_adv=cfgs.buffer_cfgs.standardized_rew_adv,
-            standardized_cost_adv=cfgs.buffer_cfgs.standardized_cost_adv,
-            penalty_param=cfgs.penalty_param,
+            advantage_estimator=cfgs.buffer_cfgs.adv_estimation_method,
+            standardized_adv_r=cfgs.buffer_cfgs.standardized_rew_adv,
+            standardized_adv_c=cfgs.buffer_cfgs.standardized_cost_adv,
+            penalty_coefficient=cfgs.penalty_param,
             num_envs=cfgs.env_cfgs.num_envs,
             device=self.device,
         )
@@ -462,11 +462,11 @@ class PolicyGradient:
         obs, act, log_p, target_v, target_c, adv, cost_adv = (
             data['obs'],
             data['act'],
-            data['log_p'],
-            data['target_v'],
-            data['target_c'],
-            data['adv'],
-            data['cost_adv'],
+            data['logp'],
+            data['target_value_r'],
+            data['target_value_c'],
+            data['adv_r'],
+            data['adv_c'],
         )
         # get the loss before
         loss_pi_before, loss_v_before = self.loss_record.get_mean('loss_pi', 'loss_v')
