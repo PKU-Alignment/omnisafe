@@ -148,7 +148,49 @@ Type           | Name
 `Model-Based`       | `CAP, MBPPOLag, SafeLOOP`
 
 
-**env-id:** `Safety{Robot-id}{Task-id}{0/1/2}-v0, (Robot-id: Point Car Racecar), (Task-id: Goal Push Button Circle)`
+**env-id:** Environment id in [Safety Gymnasium](https://www.safety-gymnasium.com/), here a list of envs that safety-gymnasium supports.
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-0lax{text-align:left;vertical-align:top}
+</style>
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-0lax">Category</th>
+    <th class="tg-0lax">Task</th>
+    <th class="tg-0lax">Agent</th>
+    <th class="tg-0lax">Example</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-0lax" rowspan="4">Safe Navigation</td>
+    <td class="tg-0lax">Goal[012]</td>
+    <td class="tg-0lax" rowspan="4">Point, Car, Racecar, Ant</td>
+    <td class="tg-0lax" rowspan="4">SafetyPointGoal1-v0</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">Button[012]</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">Push[012]</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">Circle[012]</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">Safe Velocity</td>
+    <td class="tg-0lax">Velocity</td>
+    <td class="tg-0lax">HalfCheetah, Hopper, Swimmer, Walker2d, Ant, Humanoid</td>
+    <td class="tg-0lax">SafetyHumanoidVelocity-v4</td>
+  </tr>
+</tbody>
+</table>
 
 More information about environments, please refer to [Safety Gymnasium](https://www.safety-gymnasium.com/)
 
