@@ -37,10 +37,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools
 
-      - name: Install Safety-Gymnasium
-        run: |
-          python -m pip install -vvv --editable 'envs/safety-gymnasium'
-
       - name: Install OmniSafe
         run: |
           python -m pip install -vvv --editable '.[lint]'

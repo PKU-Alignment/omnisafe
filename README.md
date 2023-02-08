@@ -22,7 +22,6 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
 
 ### Table of Contents  <!-- omit in toc --> <!-- markdownlint-disable heading-increment -->
 
-- [Overview](#overview)
 - [Implemented Algorithms](#implemented-algorithms)
   - [Newly Published in 2022](#newly-published-in-2022)
   - [List of Algorithms](#list-of-algorithms)
@@ -31,11 +30,6 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
     - [Model-Based Safe](#model-based-safe)
     - [Offline Safe](#offline-safe)
     - [Others](#others)
-- [SafeRL Environments](#saferl-environments)
-  - [Safety Gymnasium](#safety-gymnasium)
-  - [Vision-base Safe RL](#vision-base-safe-rl)
-  - [Environment Usage](#environment-usage)
-  - [Add new environments](#add-new-environments)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Install from source](#install-from-source)
@@ -44,27 +38,9 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
   - [1. Run Agent from preset yaml file](#1-run-agent-from-preset-yaml-file)
   - [2. Run Agent from custom config dict](#2-run-agent-from-custom-config-dict)
   - [3. Run Agent from custom terminal config](#3-run-agent-from-custom-terminal-config)
+  - [4. Evalutate Saved Policy](#4-evalutate-saved-policy)
 - [The OmniSafe Team](#the-omnisafe-team)
 - [License](#license)
-
---------------------------------------------------------------------------------
-
-## Overview
-
-Here we provide a table for comparison of **OmniSafe's algorithm core** and existing algorithm baseline.
-
-|                                                                                 SafeRL<br/>Platform                                                                                 | Backend |            Engine             | # Safe Algo.        | Parallel<br/> CPU/GPU | New Gym API<sup>**(4)**</sup> |    Vision Input     |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----: | :---------------------------: | ------------------- | :-------------------: | :---------------------------: | :-----------------: |
-|            [Safety-Gym](https://github.com/openai/safety-gym)<br/>![GitHub last commit](https://img.shields.io/github/last-commit/openai/safety-gym?label=last%20update)            |   TF1   | `mujoco-py`<sup>**(1)**</sup> | 3                   |  CPU Only (`mpi4py`)  |               ❌               | minimally supported |
-| [safe-control-gym](https://github.com/utiasDSL/safe-control-gym)<br/>![GitHub last commit](https://img.shields.io/github/last-commit/utiasDSL/safe-control-gym?label=last%20update) | PyTorch |           PyBullet            | 5<sup>**(2)**</sup> |                       |               ❌               |          ❌          |
-|                                                                       Velocity-Constraints<sup>**(3)**</sup>                                                                        |   N/A   |              N/A              | N/A                 |          N/A          |               ❌               |          ❌          |
-|    [mujoco-circle](https://github.com/ymzhang01/mujoco-circle)<br/>![GitHub last commit](https://img.shields.io/github/last-commit/ymzhang01/mujoco-circle?label=last%20update)     | PyTorch |              N/A              | 0                   |          N/A          |               ❌               |          ❌          |
-|                                 OmniSafe<br/>![GitHub last commit](https://img.shields.io/github/last-commit/PKU-MARL/omnisafe?label=last%20update)                                 | PyTorch |       **MuJoCo 2.3.0+**       | **25+**             |  `torch.distributed`  |               ✅               |          ✅          |
-
-<sup>(1): Maintenance (expect bug fixes and minor updates), the last commit is 19 Nov 2021. Safety Gym depends on `mujoco-py` 2.0.2.7, which was updated on Oct 12, 2019.</sup><br/>
-<sup>(2): We only count the safe's algorithm.</sup><br/>
-<sup>(3): There is no official library for speed-related libraries, and its associated cost constraints are constructed from info. But the task is widely used in the study of SafeRL, and we encapsulate it in OmniSafe.</sup><br/>
-<sup>(4): In the gym 0.26.0 release update, a new API of interaction was redefined.</sup>
 
 --------------------------------------------------------------------------------
 
@@ -132,107 +108,6 @@ The supported interface algorithms currently include:
 
 --------------------------------------------------------------------------------
 
-## SafeRL Environments
-
-### Safety Gymnasium
-
-We designed a variety of safety-enhanced learning tasks around the latest version of Gymnasium, including safety-run, safety-circle, safety-goal, safety-button, etc., leading to a unified safety-enhanced learning benchmark environment called `safety-gymnasium`.
-
-Further, to facilitate the progress of community research, we redesigned [Safety-Gym](https://github.com/openai/safety-gym) and removed the dependency on `mujoco-py`. We build it on top of [MuJoCo](https://github.com/deepmind/mujoco), and fixed some bugs.
-
-After careful testing, we confirmed that it has the same dynamics parameters and training environment as the original `safety-gym`, named `safety-gymnasium`.
-
-Here are two pictures of all the environments we support, some of them are being tested in our baseline and we will gradually release them within a month.
-<div align="center">
-  <img src="./images/task.png" width="100%"/>
-</div>
-<div align="center">
-  <img src="./images/agent.png" width="100%"/>
-</div>
-
-### Vision-base Safe RL
-
-Vision-based safety reinforcement learning lacks realistic scenarios. Although the original `safety-gym` could minimally support visual input, the scenarios were too homogeneous. To facilitate the validation of visual-based safety reinforcement learning algorithms, we have developed a set of realistic vision-based safeRL tasks, which are currently being validated on the baseline, and we will release that part of the environment in `safety-gymnasium` within a month.
-
-For the appetizer, the images are as follows
-<div align="center">
-  <img src="./images/vision_input.png" width="100%"/>
-</div>
-
-### Environment Usage
-
-**Notes:** We support new [**Gymnasium APIs**](https://github.com/Farama-Foundation/Gymnasium).
-
-```python
-import safety_gymnasium
-
-env_name = 'SafetyPointGoal1-v0'
-env = safety_gymnasium.make(env_name)
-
-obs, info = env.reset()
-terminated = False
-
-while not terminated:
-    act = env.action_space.sample()
-    obs, reward, cost, terminated, truncated, info = env.step(act)
-    env.render()
-```
-
-### Add new environments
-
-We construct a highly expandable framework of code.
-You can easily comprehend it and design your own environments to facilitate your research with no more than 100 lines of code on average.
-
-Here is a minimal example:
-
-```python
-# import the objects you need
-# or you can define specific objects, just make sure obeying our specification
-from safety_gymnasium.assets.geoms import Apples
-from safety_gymnasium.bases import BaseTask
-
-# inherit the basetask
-class MytaskLevel0(BaseTask):
-    def __init__(self, config):
-        super().__init__(config=config)
-        # define some properties
-        self.num_steps = 500
-        self.robot.placements = [(-0.8, -0.8, 0.8, 0.8)]
-        self.robot.keepout = 0
-        self.lidar_max_dist = 6
-        # add objects into environments
-        self.add_geoms(Apples(num=2, size=0.3))
-        self.specific_agent_config()
-
-    def calculate_reward(self):
-        # implement your reward function
-        # Note: cost calculation is based on objects, so it's automatic
-        reward = 1
-        return reward
-
-    def specific_agent_config(self):
-        # depending on your task
-        pass
-
-    def specific_reset(self):
-        # depending on your task
-
-    def specific_step(self):
-        # depending on your task
-
-    def build_goal(self):
-        # depending on your task
-
-    def update_world(self):
-        # depending on your task
-
-    @property
-    def goal_achieved(self):
-        # depending on your task
-```
-
---------------------------------------------------------------------------------
-
 ## Installation
 
 ### Prerequisites
@@ -246,10 +121,7 @@ git clone https://github.com/PKU-MARL/omnisafe
 cd omnisafe
 conda create -n omnisafe python=3.8
 conda activate omnisafe
-# Please refer to https://pytorch.org/get-started/previous-versions and install pytorch
 
-# Install safety-gymnasium
-pip install -e envs/safety-gymnasium
 # Install omnisafe
 pip install -e .
 ```
@@ -276,8 +148,43 @@ Type           | Name
 `Model-Based`       | `CAP, MBPPOLag, SafeLOOP`
 
 
+**env-id:** Environment id in [Safety Gymnasium](https://www.safety-gymnasium.com/), here a list of envs that safety-gymnasium supports.
 
-**env-id:** `Safety{Robot-id}{Task-id}{0/1/2}-v0, (Robot-id: Point Car Racecar), (Task-id: Goal Push Button Circle)`
+<table border="1">
+<thead>
+  <tr>
+    <th>Category</th>
+    <th>Task</th>
+    <th>Agent</th>
+    <th>Example</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td rowspan="4">Safe Navigation</td>
+    <td>Goal[012]</td>
+    <td rowspan="4">Point, Car, Racecar, Ant</td>
+    <td rowspan="4">SafetyPointGoal1-v0</td>
+  </tr>
+  <tr>
+    <td>Button[012]</td>
+  </tr>
+  <tr>
+    <td>Push[012]</td>
+  </tr>
+  <tr>
+    <td>Circle[012]</td>
+  </tr>
+  <tr>
+    <td>Safe Velocity</td>
+    <td>Velocity</td>
+    <td>HalfCheetah, Hopper, Swimmer, Walker2d, Ant, Humanoid</td>
+    <td>SafetyHumanoidVelocity-v4</td>
+  </tr>
+</tbody>
+</table>
+
+More information about environments, please refer to [Safety Gymnasium](https://www.safety-gymnasium.com/)
 
 **parallel:** `Number of parallels`
 
@@ -294,15 +201,6 @@ env = 'SafetyPointGoal1-v0'
 
 agent = omnisafe.Agent('PPOLag', env)
 agent.learn()
-
-# obs = env.reset()
-# for i in range(1000):
-#     action, _states = agent.predict(obs, deterministic=True)
-#     obs, reward, cost, done, info = env.step(action)
-#     env.render()
-#     if done:
-#         obs = env.reset()
-# env.close()
 ```
 
 ### 2. Run Agent from custom config dict
@@ -315,15 +213,6 @@ env = 'SafetyPointGoal1-v0'
 custom_dict = {'epochs': 1, 'data_dir': './runs'}
 agent = omnisafe.Agent('PPOLag', env, custom_cfgs=custom_dict)
 agent.learn()
-
-# obs = env.reset()
-# for i in range(1000):
-#     action, _states = agent.predict(obs, deterministic=True)
-#     obs, reward, done, info = env.step(action)
-#     env.render()
-#     if done:
-#         obs = env.reset()
-# env.close()
 ```
 
 ### 3. Run Agent from custom terminal config
@@ -331,6 +220,25 @@ agent.learn()
 ```bash
 cd examples
 python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1
+```
+
+### 4. Evalutate Saved Policy
+
+```python
+import os
+
+import omnisafe
+
+
+# Just fill your experiment's log directory in here.
+# Such as: ~/omnisafe/runs/SafetyPointGoal1-v0/CPO/seed-000-2022-12-25_14-45-05
+LOG_DIR = ''
+
+evaluator = omnisafe.Evaluator()
+for item in os.scandir(os.path.join(LOG_DIR, 'torch_save')):
+    if item.is_file() and item.name.split('.')[-1] == 'pt':
+        evaluator.load_saved_model(save_dir=LOG_DIR, model_name=item.name)
+        evaluator.render(num_episode=10, camera_name='track', width=256, height=256)
 ```
 
 --------------------------------------------------------------------------------

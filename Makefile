@@ -1,9 +1,9 @@
 print-%  : ; @echo $* = $($*)
 PROJECT_NAME   = omnisafe
 COPYRIGHT      = "OmniSafe Team. All Rights Reserved."
-PROJECT_PATH   = $(PROJECT_NAME) envs/safety-gymnasium/safety_gymnasium
+PROJECT_PATH   = $(PROJECT_NAME)
 SHELL          = /bin/bash
-SOURCE_FOLDERS = $(PROJECT_PATH) envs examples tests docs
+SOURCE_FOLDERS = $(PROJECT_PATH) examples tests docs
 PYTHON_FILES   = $(shell find $(SOURCE_FOLDERS) -type f -name "*.py" -o -name "*.pyi")
 COMMIT_HASH    = $(shell git log -1 --format=%h)
 PATH           := $(HOME)/go/bin:$(PATH)
@@ -14,19 +14,16 @@ PYTESTOPTS     ?=
 default: install
 
 install:
-	$(PYTHON) -m pip install -vvv envs/safety-gymnasium
 	$(PYTHON) -m pip install -vvv .
 
 install-editable:
 	$(PYTHON) -m pip install --upgrade pip
 	$(PYTHON) -m pip install --upgrade setuptools
-	$(PYTHON) -m pip install -vvv --editable envs/safety-gymnasium
 	$(PYTHON) -m pip install -vvv --editable .
 
 install-e: install-editable  # alias
 
 uninstall:
-	$(PYTHON) -m pip uninstall -y safety-gymnasium
 	$(PYTHON) -m pip uninstall -y $(PROJECT_NAME)
 
 build:

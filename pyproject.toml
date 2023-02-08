@@ -25,7 +25,7 @@ classifiers = [
     'Topic :: Software Development :: Libraries :: Python Modules',
 ]
 dependencies = [
-    "safety-gymnasium",
+    "safety-gymnasium >= 0.1.0b0",
     "torch >= 1.10.0",
     "numpy >= 1.20.0",
     "tensorboard >= 2.8.0",
@@ -109,4 +109,7 @@ convention = "google"
 max-line-length = 500
 
 [tool.pytest.ini_options]
-filterwarnings = ["error"]
+filterwarnings = [
+    "error",
+    "ignore: distutils Version classes are deprecated. Use packaging.version instead.",
+]
