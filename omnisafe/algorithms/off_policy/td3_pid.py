@@ -22,7 +22,6 @@ import torch.nn.functional as F
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.td3 import TD3
 from omnisafe.common.pid_lagrange import PIDLagrangian
-from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
@@ -43,7 +42,7 @@ class TD3Pid(TD3, PIDLagrangian):
             env_id=env_id,
             cfgs=cfgs,
         )
-        PIDLagrangian.__init__(self, **namedtuple2dict(self.cfgs.PID_cfgs))
+        PIDLagrangian.__init__(self, **self.cfgs.PID_cfgs)
 
     def algorithm_specific_logs(self) -> None:
         """Log the TD3Pid specific information.

@@ -16,7 +16,7 @@
 
 import time
 from copy import deepcopy
-from typing import Dict, NamedTuple, Tuple
+from typing import Dict, Tuple
 
 import torch
 import torch.nn as nn
@@ -27,7 +27,7 @@ from omnisafe.common.logger import Logger
 from omnisafe.common.record_queue import RecordQueue
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core, distributed_utils
-from omnisafe.utils.config_utils import dict2namedtuple, namedtuple2dict, recursive_update
+from omnisafe.utils.config import Config
 from omnisafe.utils.tools import get_flat_params_from
 from omnisafe.wrappers import wrapper_registry
 
@@ -44,7 +44,7 @@ class PolicyGradient:
         /1999/file/64d828b85b0bed98e80ade0a5c43b0f-Paper.pdf>`_
     """
 
-    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
+    def __init__(self, env_id: str, cfgs: Config) -> None:
         """Initialize PolicyGradient.
 
         Args:
@@ -60,10 +60,8 @@ class PolicyGradient:
             else 'cpu'
         )
         added_cfgs = self._get_added_cfgs()
-        env_cfgs = recursive_update(
-            namedtuple2dict(self.cfgs.env_cfgs), added_cfgs, add_new_args=True
-        )
-        env_cfgs = dict2namedtuple(env_cfgs)
+        self.cfgs.env_cfgs.recurisve_update(added_cfgs)
+        env_cfgs = self.cfgs.env_cfgs
 
         self.env = wrapper_registry.get(self.wrapper_type)(env_id, cfgs=env_cfgs)
 
@@ -82,7 +80,7 @@ class PolicyGradient:
 
         # set up logger and save configuration to disk
         self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
-        self.logger.save_config(namedtuple2dict(cfgs))
+        self.logger.save_config(cfgs.todict())
         # setup actor-critic module
         self.actor_critic = ConstraintActorCritic(
             observation_space=self.env.observation_space,

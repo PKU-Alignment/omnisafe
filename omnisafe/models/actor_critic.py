@@ -23,7 +23,6 @@ from gymnasium.spaces import Box, Discrete
 
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.critic import CriticBuilder
-from omnisafe.utils.config_utils import namedtuple2dict
 from omnisafe.utils.model_utils import build_mlp_network
 
 
@@ -104,7 +103,7 @@ class ActorCritic(nn.Module):
             act_dim=self.act_dim,
             weight_initialization_mode=model_cfgs.weight_initialization_mode,
             shared=self.shared,
-            **namedtuple2dict(self.ac_kwargs.pi),
+            **self.ac_kwargs.pi,
         )
         if self.act_space_type == 'discrete':
             self.actor = actor_builder.build_actor('categorical')

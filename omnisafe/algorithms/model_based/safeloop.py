@@ -24,7 +24,6 @@ from omnisafe.algorithms.model_based.planner import ARCPlanner
 from omnisafe.algorithms.model_based.policy_gradient import PolicyGradientModelBased
 from omnisafe.models.actor_q_critic import ActorQCritic
 from omnisafe.utils import core
-from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
@@ -60,7 +59,7 @@ class SafeLOOP(
             self.env,
             self.virtual_env,
             self.actor_critic,
-            **namedtuple2dict(self.cfgs.mpc_config),
+            **self.cfgs.mpc_config,
         )
 
         # Set up model saving

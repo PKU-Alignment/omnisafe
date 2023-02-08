@@ -22,7 +22,6 @@ import torch.nn.functional as F
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.sac import SAC
 from omnisafe.common.lagrange import Lagrange
-from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
@@ -50,7 +49,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
             env_id=env_id,
             cfgs=cfgs,
         )
-        Lagrange.__init__(self, **namedtuple2dict(self.cfgs.lagrange_cfgs))
+        Lagrange.__init__(self, **self.cfgs.lagrange_cfgs)
 
     def algorithm_specific_logs(self) -> None:
         """Log the SAC Lag specific information.

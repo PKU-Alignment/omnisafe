@@ -14,7 +14,6 @@
 # ==============================================================================
 """Test models"""
 
-from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
@@ -26,7 +25,7 @@ import helpers
 from omnisafe.models import ActorBuilder, CriticBuilder
 from omnisafe.models.actor_critic import ActorCritic
 from omnisafe.models.actor_q_critic import ActorQCritic
-from omnisafe.utils.config_utils import dict2namedtuple
+from omnisafe.utils.config import Config
 from omnisafe.utils.model_utils import Activation, InitFunction
 
 
@@ -177,8 +176,8 @@ def test_actor_critic(
     }
     observation_space = Box(low=-1, high=1, shape=(obs_dim,))
 
-    model_cfgs = dict2namedtuple(
-        {
+    model_cfgs = Config(
+        **{
             'actor_type': actor_type,
             'ac_kwargs': ac_kwargs,
             'weight_initialization_mode': weight_initialization_mode,
@@ -267,8 +266,8 @@ def test_actor_q_critic(
     }
     observation_space = Box(low=-1, high=1, shape=(obs_dim,))
 
-    model_cfgs = dict2namedtuple(
-        {
+    model_cfgs = Config(
+        **{
             'actor_type': actor_type,
             'ac_kwargs': ac_kwargs,
             'weight_initialization_mode': weight_initialization_mode,
