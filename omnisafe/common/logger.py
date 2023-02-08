@@ -32,8 +32,12 @@ from omnisafe.utils.logger_utils import colorize, convert_json
 # bug is that it attempts to import distutils then access distutils.version without actually
 # importing distutils.version.  We can workaround this by prepopulating the distutils.version
 # submodule in the distutils module.
-# pylint: disable-next=wrong-import-order,unused-import
-import distutils.version  # isort:skip  # noqa: F401
+
+try:
+    # pylint: disable-next=wrong-import-order,unused-import
+    import distutils.version  # isort:skip  # noqa: F401
+except ImportError:
+    pass
 
 # pylint: disable-next=wrong-import-order
 from torch.utils.tensorboard import SummaryWriter  # isort:skip
