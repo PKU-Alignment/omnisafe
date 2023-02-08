@@ -33,9 +33,14 @@ from gymnasium.spaces import Box, Discrete
 
 RenderFrame = TypeVar('RenderFrame')
 OmnisafeSpace = Union[Box, Discrete]
+Activation = Literal['identity', 'relu', 'sigmoid', 'softplus', 'tanh']
 AdvatageEstimator = Literal['gae', 'gae-rtg', 'vtrace', 'plain']
+InitFunction = Literal['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal']
 
 __all__ = [
+    'Activation',
+    'AdvatageEstimator',
+    'InitFunction',
     'Callable',
     'List',
     'Optional',
