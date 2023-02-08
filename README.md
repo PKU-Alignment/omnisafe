@@ -13,7 +13,13 @@
 [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License](https://img.shields.io/github/license/PKU-MARL/OmniSafe?label=license)](#license)
 
-[**Implemented Algorithms**](#implemented-algorithms) | [**Installation**](#installation) | [**Getting Started**](#getting-started) | [**The OmniSafe Team**](#the-omnisafe-team) | [**License**](#license)
+<p align="center">
+  <a href="https://omnisafe.readthedocs.io">Documentation</a> |
+  <a href="https://github.com/PKU-MARL/omnisafe#implemented-algorithms">Implemented Algorithms</a> |
+  <a href="https://github.com/PKU-MARL/omnisafe#installation">Installation</a> |
+  <a href="https://github.com/PKU-MARL/omnisafe#getting-started">Getting Started</a> |
+  <a href="https://github.com/PKU-MARL/omnisafe#license">License</a> 
+</p>
 
 # OmniSafe
 
