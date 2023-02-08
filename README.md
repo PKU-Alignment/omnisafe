@@ -134,6 +134,8 @@ The supported interface algorithms currently include:
 
 ## SafeRL Environments
 
+More safety-gymnasium information, please refer [safety-gymnasium](https://www.safety-gymnasium.com/).
+
 ### Safety Gymnasium
 
 We designed a variety of safety-enhanced learning tasks around the latest version of Gymnasium, including safety-run, safety-circle, safety-goal, safety-button, etc., leading to a unified safety-enhanced learning benchmark environment called `safety-gymnasium`.
@@ -158,8 +160,6 @@ For the appetizer, the images are as follows
 <div align="center">
   <img src="./images/vision_input.png" width="100%"/>
 </div>
-
-More safety-gymnasium information, please refer [safety-gymnasium](https://www.safety-gymnasium.com/)
 
 ## Installation
 
