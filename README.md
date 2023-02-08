@@ -159,79 +159,7 @@ For the appetizer, the images are as follows
   <img src="./images/vision_input.png" width="100%"/>
 </div>
 
-### Environment Usage
-
-**Notes:** We support new [**Gymnasium APIs**](https://github.com/Farama-Foundation/Gymnasium).
-
-```python
-import safety_gymnasium
-
-env_name = 'SafetyPointGoal1-v0'
-env = safety_gymnasium.make(env_name)
-
-obs, info = env.reset()
-terminated = False
-
-while not terminated:
-    act = env.action_space.sample()
-    obs, reward, cost, terminated, truncated, info = env.step(act)
-    env.render()
-```
-
-### Add new environments
-
-We construct a highly expandable framework of code.
-You can easily comprehend it and design your own environments to facilitate your research with no more than 100 lines of code on average.
-
-Here is a minimal example:
-
-```python
-# import the objects you need
-# or you can define specific objects, just make sure obeying our specification
-from safety_gymnasium.assets.geoms import Apples
-from safety_gymnasium.bases import BaseTask
-
-# inherit the basetask
-class MytaskLevel0(BaseTask):
-    def __init__(self, config):
-        super().__init__(config=config)
-        # define some properties
-        self.num_steps = 500
-        self.robot.placements = [(-0.8, -0.8, 0.8, 0.8)]
-        self.robot.keepout = 0
-        self.lidar_max_dist = 6
-        # add objects into environments
-        self.add_geoms(Apples(num=2, size=0.3))
-        self.specific_agent_config()
-
-    def calculate_reward(self):
-        # implement your reward function
-        # Note: cost calculation is based on objects, so it's automatic
-        reward = 1
-        return reward
-
-    def specific_agent_config(self):
-        # depending on your task
-        pass
-
-    def specific_reset(self):
-        # depending on your task
-
-    def specific_step(self):
-        # depending on your task
-
-    def build_goal(self):
-        # depending on your task
-
-    def update_world(self):
-        # depending on your task
-
-    @property
-    def goal_achieved(self):
-        # depending on your task
-```
-
---------------------------------------------------------------------------------
+More safety-gymnasium information, please refer [safety-gymnasium](https://www.safety-gymnasium.com/)
 
 ## Installation
 
@@ -246,10 +174,7 @@ git clone https://github.com/PKU-MARL/omnisafe
 cd omnisafe
 conda create -n omnisafe python=3.8
 conda activate omnisafe
-# Please refer to https://pytorch.org/get-started/previous-versions and install pytorch
 
-# Install safety-gymnasium
-pip install -e envs/safety-gymnasium
 # Install omnisafe
 pip install -e .
 ```
