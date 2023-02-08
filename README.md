@@ -2,7 +2,7 @@
 <!-- markdownlint-disable html -->
 
 <div align="center">
-  <img src="./images/logo.png" width="75%"/>
+  <img src="https://github.com/PKU-MARL/omnisafe/raw/HEAD/images/logo.png" width="75%"/>
 </div>
 
 [![Organization](https://img.shields.io/badge/Organization-PKU_MARL-blue.svg)](https://github.com/PKU-MARL)
@@ -10,7 +10,10 @@
 [![Documentation Status](https://img.shields.io/readthedocs/omnisafe?logo=readthedocs)](https://omnisafe.readthedocs.io)
 [![Downloads](https://static.pepy.tech/personalized-badge/omnisafe?period=total&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/omnisafe)
 [![GitHub Repo Stars](https://img.shields.io/github/stars/PKU-MARL/omnisafe?color=brightgreen&logo=github)](https://github.com/PKU-MARL/OmniSafe/stargazers)
+[![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License](https://img.shields.io/github/license/PKU-MARL/OmniSafe?label=license)](#license)
+
+[**Implemented Algorithms**](#implemented-algorithms)| [**Installation**](#installation)| [**Getting Started**](#getting-started)| [**The OmniSafe Team**](#the-omnisafe-team)| [**License**](#license)
 
 # OmniSafe
 
