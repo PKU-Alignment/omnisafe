@@ -35,8 +35,8 @@ dependencies:
   - pytorch::torchvision
   - pytorch::pytorch-mutex = *=*cuda*
   - pip:
-      - gymnasium[mujoco]
       - cpprb
+      - safety-gymnasium>=0.1.0b0
   - tensorboard
   - wandb
 
