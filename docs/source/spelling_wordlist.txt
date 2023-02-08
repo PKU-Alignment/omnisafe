@@ -361,3 +361,8 @@ shorthands
 Racecar
 Sigwalls
 pid
+setuptools
+distutils
+prepopulating
+submodule
+noqa
