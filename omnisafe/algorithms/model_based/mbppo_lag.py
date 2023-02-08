@@ -23,7 +23,6 @@ from omnisafe.common.buffer import OnPolicyBuffer
 from omnisafe.common.lagrange import Lagrange
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core
-from omnisafe.utils.config_utils import namedtuple2dict
 from omnisafe.wrappers import wrapper_registry
 
 
@@ -44,7 +43,7 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
             env_id=env_id,
             cfgs=cfgs,
         )
-        Lagrange.__init__(self, **namedtuple2dict(self.cfgs.lagrange_cfgs), device=self.cfgs.device)
+        Lagrange.__init__(self, **self.cfgs.lagrange_cfgs, device=self.cfgs.device)
         self.clip = self.cfgs.clip
         self.loss_pi_before = 0.0
         self.loss_v_before = 0.0

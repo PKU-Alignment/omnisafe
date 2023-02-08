@@ -27,7 +27,6 @@ from omnisafe.common.logger import Logger
 from omnisafe.common.record_queue import RecordQueue
 from omnisafe.models.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils import core, distributed_utils
-from omnisafe.utils.config_utils import dict2namedtuple, namedtuple2dict, recursive_update
 from omnisafe.wrappers import wrapper_registry
 
 
@@ -60,10 +59,8 @@ class DDPG:
             else 'cpu'
         )
         added_cfgs = self._get_added_cfgs()
-        env_cfgs = recursive_update(
-            namedtuple2dict(self.cfgs.env_cfgs), added_cfgs, add_new_args=True
-        )
-        env_cfgs = dict2namedtuple(env_cfgs)
+        self.cfgs.env_cfgs.recurisve_update(added_cfgs)
+        env_cfgs = self.cfgs.env_cfgs
 
         self.env = wrapper_registry.get(self.wrapper_type)(env_id, cfgs=env_cfgs)
         # set up for learning and rolling out schedule
@@ -89,7 +86,7 @@ class DDPG:
 
         # set up logger and save configuration to disk
         self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
-        self.logger.save_config(namedtuple2dict(cfgs))
+        self.logger.save_config(cfgs.todict())
         # set seed
         seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
         torch.manual_seed(seed)

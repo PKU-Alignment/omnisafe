@@ -14,38 +14,10 @@
 # ==============================================================================
 """tool_function_packages"""
 
-import os
-
 import numpy as np
 import torch
-import yaml
 
-from omnisafe.typing import Any, Callable, Dict, Union
-
-
-def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Dict:
-    """Get the default kwargs from ``yaml`` file.
-
-    .. note::
-        This function search the ``yaml`` file by the algorithm name and environment name.
-        Make sure your new implemented algorithm or environment has the same name as the yaml file.
-
-    Args:
-        algo (str): algorithm name.
-        env_id (str): environment name.
-        algo_type (str): algorithm type.
-    """
-    path = os.path.abspath(__file__).split('/')[:-2]
-    cfg_path = os.path.join('/', *path, 'configs', algo_type, f'{algo}.yaml')
-    with open(cfg_path, encoding='utf-8') as file:
-        try:
-            kwargs = yaml.load(file, Loader=yaml.FullLoader)
-        except yaml.YAMLError as exc:
-            assert False, f'{algo}.yaml error: {exc}'
-    default_kwargs = kwargs['defaults']
-    env_spec_kwargs = kwargs[env_id] if env_id in kwargs.keys() else None
-
-    return default_kwargs, env_spec_kwargs
+from omnisafe.typing import Any, Callable, Union
 
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:

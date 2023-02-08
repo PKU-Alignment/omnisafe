@@ -366,3 +366,5 @@ distutils
 prepopulating
 submodule
 noqa
+hyperparameters
+json
