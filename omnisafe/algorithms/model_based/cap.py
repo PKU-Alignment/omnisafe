@@ -20,7 +20,6 @@ from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.planner import CCEPlanner
 from omnisafe.algorithms.model_based.policy_gradient import PolicyGradientModelBased
 from omnisafe.common.lagrange import Lagrange
-from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
@@ -41,7 +40,7 @@ class CAP(
             env_id=env_id,
             cfgs=cfgs,
         )
-        Lagrange.__init__(self, **namedtuple2dict(self.cfgs.lagrange_cfgs), device=self.cfgs.device)
+        Lagrange.__init__(self, **self.cfgs.lagrange_cfgs, device=self.cfgs.device)
         CCEPlanner.__init__(
             self,
             algo=self.algo,
@@ -49,7 +48,7 @@ class CAP(
             device=self.device,
             env=self.env,
             models=self.virtual_env,
-            **namedtuple2dict(self.cfgs.mpc_config),
+            **self.cfgs.mpc_config,
             lagrangian_multiplier=self.lagrangian_multiplier,
         )
         # Set up model saving

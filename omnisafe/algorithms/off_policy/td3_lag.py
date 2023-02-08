@@ -22,7 +22,6 @@ import torch.nn.functional as F
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.td3 import TD3
 from omnisafe.common.lagrange import Lagrange
-from omnisafe.utils.config_utils import namedtuple2dict
 
 
 @registry.register
@@ -50,7 +49,7 @@ class TD3Lag(TD3, Lagrange):
             env_id=env_id,
             cfgs=cfgs,
         )
-        Lagrange.__init__(self, **namedtuple2dict(self.cfgs.lagrange_cfgs))
+        Lagrange.__init__(self, **self.cfgs.lagrange_cfgs)
 
     def algorithm_specific_logs(self) -> None:
         """Log the TD3 Lag specific information.

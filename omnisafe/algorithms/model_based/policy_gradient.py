@@ -26,7 +26,6 @@ from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core
-from omnisafe.utils.config_utils import namedtuple2dict
 from omnisafe.utils.distributed_utils import proc_id
 from omnisafe.wrappers import wrapper_registry
 
@@ -53,7 +52,7 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
         # Set up logger and save configuration to disk
         # Get local parameters before logger instance to avoid unnecessary print
         self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
-        self.logger.save_config(namedtuple2dict(cfgs))
+        self.logger.save_config(cfgs.todict())
 
         # Set seed
         seed = int(cfgs.seed)
@@ -74,7 +73,7 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
             action_size=self.env.action_space.shape[0],
             reward_size=1,
             cost_size=1,
-            **namedtuple2dict(self.cfgs.dynamics_cfgs),
+            **self.cfgs.dynamics_cfgs,
         )
         self.virtual_env = VirtualEnv(self.algo, self.dynamics, self.env_id, self.device)
 

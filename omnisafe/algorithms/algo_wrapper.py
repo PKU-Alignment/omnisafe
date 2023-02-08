@@ -23,8 +23,7 @@ from safety_gymnasium.utils.registration import safe_registry
 
 from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
 from omnisafe.utils import distributed_utils
-from omnisafe.utils.config_utils import check_all_configs, dict2namedtuple, recursive_update
-from omnisafe.utils.tools import get_default_kwargs_yaml
+from omnisafe.utils.config import check_all_configs, get_default_kwargs_yaml
 
 
 class AlgoWrapper:
@@ -70,14 +69,12 @@ class AlgoWrapper:
         physical_cores = psutil.cpu_count(logical=False)
         use_number_of_threads = bool(self.parallel > physical_cores)
 
-        default_cfgs, env_spec_cfgs = get_default_kwargs_yaml(
-            self.algo, self.env_id, self.algo_type
-        )
+        cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
         exp_name = os.path.join(self.env_id, self.algo)
-        default_cfgs.update(exp_name=exp_name, env_id=self.env_id)
-        cfgs = recursive_update(default_cfgs, env_spec_cfgs)
-        cfgs = recursive_update(cfgs, self.custom_cfgs)
-        cfgs = dict2namedtuple(cfgs)
+        cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id})
+        if self.custom_cfgs is not None:
+            cfgs.recurisve_update(self.custom_cfgs)
+
         check_all_configs(cfgs, self.algo_type)
 
         if distributed_utils.mpi_fork(

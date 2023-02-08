@@ -23,7 +23,6 @@ from gymnasium.spaces import Box, Discrete
 
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.critic.q_critic import QCritic
-from omnisafe.utils.config_utils import namedtuple2dict
 from omnisafe.utils.model_utils import build_mlp_network
 
 
@@ -104,7 +103,7 @@ class ActorQCritic(nn.Module):
             act_dim=self.act_dim,
             weight_initialization_mode=model_cfgs.weight_initialization_mode,
             shared=shared,
-            **namedtuple2dict(model_cfgs.ac_kwargs.pi),
+            **model_cfgs.ac_kwargs.pi,
         )
 
         if model_cfgs.actor_type == 'cholesky':

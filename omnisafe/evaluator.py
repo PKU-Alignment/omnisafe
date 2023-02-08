@@ -24,7 +24,7 @@ from gymnasium.spaces import Box, Discrete
 from gymnasium.utils.save_video import save_video
 
 from omnisafe.models.actor import ActorBuilder
-from omnisafe.utils.config_utils import dict2namedtuple
+from omnisafe.utils.config import Config
 from omnisafe.wrappers.cmdp_wrapper import CMDPWrapper as EnvWrapper
 from omnisafe.wrappers.saute_wrapper import SauteWrapper
 from omnisafe.wrappers.simmer_wrapper import SimmerWrapper
@@ -305,11 +305,11 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             'max_len': 100,
             'async_env': True,
         }
-        env_cfgs = dict2namedtuple(env_cfgs)
+        env_cfgs = Config(**env_cfgs)
         if self.cfg is not None and 'env_cfgs' in self.cfg:
             self.cfg['env_cfgs']['device'] = 'cpu'
             self.cfg['env_cfgs']['seed'] = 0
-            env_cfgs = dict2namedtuple(self.cfg['env_cfgs'])
+            env_cfgs = Config(**self.cfg['env_cfgs'])
 
         if self.algo_name in ['PPOSimmerPid', 'PPOSimmerQ', 'PPOLagSimmerQ', 'PPOLagSimmerPid']:
             return SimmerWrapper(env_id, env_cfgs, **env_kwargs)

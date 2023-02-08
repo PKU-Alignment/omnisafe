@@ -361,3 +361,5 @@ shorthands
 Racecar
 Sigwalls
 pid
+hyperparameters
+json
