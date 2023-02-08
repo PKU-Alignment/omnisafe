@@ -18,7 +18,7 @@
   <a href="https://github.com/PKU-MARL/omnisafe#implemented-algorithms">Implemented Algorithms</a> |
   <a href="https://github.com/PKU-MARL/omnisafe#installation">Installation</a> |
   <a href="https://github.com/PKU-MARL/omnisafe#getting-started">Getting Started</a> |
-  <a href="https://github.com/PKU-MARL/omnisafe#license">License</a> 
+  <a href="https://github.com/PKU-MARL/omnisafe#license">License</a>
 </p>
 
 # OmniSafe
