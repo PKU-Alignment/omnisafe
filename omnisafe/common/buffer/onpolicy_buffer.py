@@ -90,27 +90,27 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
     def finish_path(
         self,
-        last_val: torch.Tensor = torch.zeros(1),
-        last_cost_val: torch.Tensor = torch.zeros(1),
+        last_value_r: torch.Tensor = torch.zeros(1),
+        last_value_c: torch.Tensor = torch.zeros(1),
     ) -> None:
         """Finish the current path and calculate the advantages of state-action pairs."""
         path_slice = slice(self.path_start_idx, self.ptr)
-        last_val = last_val.to(self.device)
-        last_cost_val = last_cost_val.to(self.device)
-        rewards = torch.cat([self.data['reward'][path_slice], last_val])
-        values_r = torch.cat([self.data['value_r'][path_slice], last_val])
-        costs = torch.cat([self.data['cost'][path_slice], last_cost_val])
-        values_c = torch.cat([self.data['value_c'][path_slice], last_cost_val])
+        last_value_r = last_value_r.to(self.device)
+        last_value_c = last_value_c.to(self.device)
+        rewards = torch.cat([self.data['reward'][path_slice], last_value_r])
+        values_r = torch.cat([self.data['value_r'][path_slice], last_value_r])
+        costs = torch.cat([self.data['cost'][path_slice], last_value_c])
+        values_c = torch.cat([self.data['value_c'][path_slice], last_value_c])
 
         discountred_ret = discount_cumsum_torch(rewards, self._gamma)[:-1]
         self.data['discounted_ret'][path_slice] = discountred_ret
         rewards -= self._penalty_coefficient * costs
 
         adv_r, target_value_r = self._calculate_adv_and_value_targets(
-            rewards, values_r, lam=self._lam
+            values_r, rewards, lam=self._lam
         )
         adv_c, target_value_c = self._calculate_adv_and_value_targets(
-            costs, values_c, lam=self._lam_c
+            values_c, costs, lam=self._lam_c
         )
 
         self.data['adv_r'][path_slice] = adv_r
