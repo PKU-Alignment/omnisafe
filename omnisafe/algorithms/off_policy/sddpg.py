@@ -139,7 +139,7 @@ class SDDPG(DDPG):
         g_flat *= -1
 
         g_inv_x = conjugate_gradients(self.Fvp, g_flat, self.cfgs.cg_iters)
-        assert torch.isfinite(g_inv_x).all()
+        assert torch.isfinite(g_inv_x).all(), 'g_inv_x is not finite'
 
         eps = 1.0e-8
         hessian_x = torch.dot(g_inv_x, self.Fvp(g_inv_x))

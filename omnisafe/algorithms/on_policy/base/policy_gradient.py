@@ -65,7 +65,10 @@ class PolicyGradient:
 
         self.env = wrapper_registry.get(self.wrapper_type)(env_id, cfgs=env_cfgs)
 
-        assert self.cfgs.steps_per_epoch % distributed_utils.num_procs() == 0
+        assert self.cfgs.steps_per_epoch % distributed_utils.num_procs() == 0, (
+            f'Number of processes ({distributed_utils.num_procs()})'
+            f'is not a divisor of the number of steps per epoch {self.cfgs.steps_per_epoch}.'
+        )
         self.steps_per_epoch = self.cfgs.steps_per_epoch
         self.local_steps_per_epoch = (
             cfgs.steps_per_epoch // cfgs.env_cfgs.num_envs // distributed_utils.num_procs()

@@ -277,7 +277,7 @@ class CPO(TRPO):
         g_flat *= -1
         # x: g or g_T in original paper, stands for gradient of cost function
         x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)  # pylint: disable=invalid-name
-        assert torch.isfinite(x).all()
+        assert torch.isfinite(x).all(), 'x is not finite'  # pylint: disable=invalid-name
         eps = 1.0e-8
         # note that xHx = g^T x, but calculating xHx is faster than g^T x
         # equivalent to : g^T x
@@ -317,8 +317,8 @@ class CPO(TRPO):
             B = torch.zeros(1)  # pylint: disable = invalid-name
             optim_case = 4
         else:
-            assert torch.isfinite(r).all()
-            assert torch.isfinite(s).all()
+            assert torch.isfinite(r).all(), 'r is not finite'
+            assert torch.isfinite(s).all(), 's is not finite'
 
             # A,b: mathematical value, not too much true meaning
             A = q - r**2 / s  # pylint: disable = invalid-name
