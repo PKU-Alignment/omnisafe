@@ -263,7 +263,7 @@ class PCPO(TRPO):
         # flip sign since policy_loss = -(ration * adv)
         g_flat *= -1
         x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)  # pylint: disable = invalid-name
-        assert torch.isfinite(x).all()
+        assert torch.isfinite(x).all(), 'x is not finite'
         eps = 1.0e-8
         # note that xHx = g^T x, but calculating xHx is faster than g^T x
         xHx = torch.dot(x, self.Fvp(x))  # pylint: disable = invalid-name

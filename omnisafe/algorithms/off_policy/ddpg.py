@@ -69,14 +69,17 @@ class DDPG:
         )
         self.total_steps = self.cfgs.epochs * self.cfgs.steps_per_epoch
         # the steps in each process should be integer
-        assert cfgs.steps_per_epoch % distributed_utils.num_procs() == 0
+        assert self.cfgs.steps_per_epoch % distributed_utils.num_procs() == 0, (
+            f'Number of processes ({distributed_utils.num_procs()})'
+            f'is not a divisor of the number of steps per epoch {self.cfgs.steps_per_epoch}.'
+        )
         # ensure local each local process can experience at least one complete episode
         assert self.env.rollout_data.max_ep_len <= self.local_steps_per_epoch, (
             f'Reduce number of cores ({distributed_utils.num_procs()}) or increase '
             f'batch size {self.cfgs.steps_per_epoch}.'
         )
         # ensure valid number for iteration
-        assert cfgs.update_every > 0
+        assert cfgs.update_every > 0, 'update_every should be greater than 0.'
         self.max_ep_len = self.env.rollout_data.max_ep_len
 
         self.env.set_rollout_cfgs(

@@ -178,7 +178,7 @@ class TRPO(NaturalPG):
 
         # pylint: disable-next=invalid-name
         x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
-        assert torch.isfinite(x).all()
+        assert torch.isfinite(x).all(), 'x is not finite'
         # note that xHx = g^T x, but calculating xHx is faster than g^T x
         xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
         assert xHx.item() >= 0, 'No negative values'
@@ -186,7 +186,7 @@ class TRPO(NaturalPG):
         # perform descent direction
         alpha = torch.sqrt(2 * self.target_kl / (xHx + 1e-8))
         step_direction = alpha * x
-        assert torch.isfinite(step_direction).all()
+        assert torch.isfinite(step_direction).all(), 'step_direction is not finite'
 
         # determine step direction and apply SGD step after grads where set
         # TRPO uses custom backtracking line search
