@@ -347,8 +347,8 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
                         self.rollout_log(logger, idx)
                         self.reset_log(idx)
                     buf.finish_path(
-                        last_val=terminal_value,
-                        last_cost_val=terminal_cost_value,
+                        last_value_r=terminal_value,
+                        last_value_c=terminal_cost_value,
                         idx=idx,
                     )
 

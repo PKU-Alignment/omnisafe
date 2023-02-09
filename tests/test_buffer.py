@@ -121,9 +121,9 @@ def test_vector_onpolicy_buffer(
 
     # checking the finish_path function
     for idx, buffer in enumerate(vector_buffer.buffers):
-        last_val = torch.randn(1, device=device)
-        last_cost_val = torch.randn(1, device=device)
-        vector_buffer.finish_path(last_val, last_cost_val, idx)
+        last_value_r = torch.randn(1, device=device)
+        last_value_c = torch.randn(1, device=device)
+        vector_buffer.finish_path(last_value_r, last_value_c, idx)
         assert (
             buffer.path_start_idx == buffer.ptr
         ), f'buffer.path_start_idx is {buffer.path_start_idx}'
@@ -243,9 +243,9 @@ def test_onpolicy_buffer(
     assert buffer.ptr == size, f'buffer.ptr is {buffer.ptr}'
 
     # check the finish_path function
-    last_val = torch.randn(1, device=device)
-    last_cost_val = torch.randn(1, device=device)
-    buffer.finish_path(last_val=last_val, last_cost_val=last_cost_val)
+    last_value_r = torch.randn(1, device=device)
+    last_value_c = torch.randn(1, device=device)
+    buffer.finish_path(last_value_r=last_value_r, last_value_c=last_value_c)
     assert buffer.path_start_idx == buffer.ptr, f'buffer.path_start_idx is {buffer.path_start_idx}'
 
     # check the get function

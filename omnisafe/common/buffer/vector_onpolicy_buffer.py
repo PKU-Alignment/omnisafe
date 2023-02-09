@@ -73,12 +73,12 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
 
     def finish_path(
         self,
-        last_val: torch.Tensor = torch.zeros(1),
-        last_cost_val: torch.Tensor = torch.zeros(1),
+        last_value_r: torch.Tensor = torch.zeros(1),
+        last_value_c: torch.Tensor = torch.zeros(1),
         idx: int = 0,
     ) -> None:
         """Finish the path."""
-        self.buffers[idx].finish_path(last_val, last_cost_val)
+        self.buffers[idx].finish_path(last_value_r, last_value_c)
 
     def get(self) -> Dict[str, torch.Tensor]:
         """Get the data from the buffer."""

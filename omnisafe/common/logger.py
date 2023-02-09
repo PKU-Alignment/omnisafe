@@ -236,17 +236,15 @@ class Logger:
             self.epoch += 1
             # Print formatted information into console
             key_lens = [len(key) for key in self.log_headers]
-            max_key_len = max(15, max(key_lens))  # pylint: disable=nested-min-max
-            keystr = '%' + '%d' % max_key_len  # pylint: disable=consider-using-f-string
-            fmt = '| ' + keystr + 's | %15s |'
+            max_key_len = max(15, *key_lens)
+            fmt = f'| %{max_key_len}s | %15s |'
             n_slashes = 22 + max_key_len
             if self.verbose and self.level > 0:
                 print('-' * n_slashes)
             # print('-' * n_slashes) if self.verbose and self.level > 0 else None
             for key in self.log_headers:
                 val = self.log_current_row.get(key, '')
-                # pylint: disable-next=consider-using-f-string
-                valstr = '%8.3g' % val if hasattr(val, '__float__') else val
+                valstr = f'{val:8.3g}' if hasattr(val, '__float__') else val
                 if self.verbose and self.level > 0:
                     print(fmt % (key, valstr))
                 vals.append(val)
