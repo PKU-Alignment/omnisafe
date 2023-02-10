@@ -18,6 +18,10 @@ defaults:
   ## -----------------------------Basic configurations for base class PG------------------------ ##
   # The random seed
   seed: 0
+  # If use tensorboard
+  use_tensorboard: True
+  # if use wandb
+  use_wandb: True
   # The torch device
   device: cpu
   # The torch device id
