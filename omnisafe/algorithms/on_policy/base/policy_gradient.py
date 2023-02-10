@@ -94,8 +94,8 @@ class PolicyGradient:
             output_dir=cfgs.data_dir,
             exp_name=cfgs.exp_name,
             seed=cfgs.seed,
-            use_tensorboard=cfgs.use_tensorboard,
-            use_wandb=cfgs.use_wandb,
+            use_tensorboard=True,
+            use_wandb=True,
             config=cfgs,
             models=[self.actor_critic],
         )
@@ -151,12 +151,12 @@ class PolicyGradient:
         self.logger.register_key('Metrics/EpCost')
         self.logger.register_key('Metrics/EpLen')
 
-        # log information about actor
+        # # log information about actor
         self.logger.register_key('Loss/Loss_pi')
         self.logger.register_key('Loss/Delta_loss_pi')
         self.logger.register_key('Values/Adv')
 
-        # log information about critic
+        # # log information about critic
         self.logger.register_key('Loss/Loss_reward_critic')
         self.logger.register_key('Loss/Delta_loss_reward_critic')
         self.logger.register_key('Values/V')
@@ -183,15 +183,10 @@ class PolicyGradient:
         if self.cfgs.model_cfgs.actor_type == 'gaussian_learning':
             self.logger.register_key('Misc/ExplorationNoiseStd')
 
-        self._specific_init_logs()
-
         # some sub-classes may add information to logs
         self.logger.register_key('TotalEnvSteps')
         self.logger.register_key('Time')
         self.logger.register_key('FPS')
-
-    def _specific_init_logs(self):
-        pass
 
     def _get_added_cfgs(self) -> dict:
         """Get additional configurations.
