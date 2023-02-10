@@ -47,6 +47,11 @@ class OnCRPO(PPO):
         self.rew_update = 0
         self.cost_update = 0
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Misc/RewUpdate')
+        self.logger.register_key('Misc/CostUpdate')
+
     def algorithm_specific_logs(self) -> None:
         """Log the CRPO specific information.
 
@@ -58,8 +63,12 @@ class OnCRPO(PPO):
                -   The Lagrange multiplier value in current epoch.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Misc/RewUpdate', self.rew_update)
-        self.logger.log_tabular('Misc/CostUpdate', self.cost_update)
+        self.logger.store(
+            **{
+                'Misc/RewUpdate': self.rew_update,
+                'Misc/CostUpdate': self.cost_update,
+            }
+        )
 
     def compute_surrogate(self, adv: torch.Tensor, cost_adv: torch.Tensor) -> torch.Tensor:
         """Compute the surrogate loss of the policy.

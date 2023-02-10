@@ -51,6 +51,18 @@ class PCPO(TRPO):
         super().__init__(env_id=env_id, cfgs=cfgs)
         self.cost_limit = self.cfgs.cost_limit
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Misc/cost_gradient_norm')
+        self.logger.register_key('Misc/A')
+        self.logger.register_key('Misc/B')
+        self.logger.register_key('Misc/q')
+        self.logger.register_key('Misc/r')
+        self.logger.register_key('Misc/s')
+        self.logger.register_key('Misc/Lambda_star')
+        self.logger.register_key('Misc/Nu_star')
+        self.logger.register_key('Misc/OptimCase')
+
     # pylint: disable-next=too-many-locals,too-many-arguments
     def adjust_cpo_step_direction(
         self,
@@ -178,15 +190,6 @@ class PCPO(TRPO):
                 -   The optimization case.
         """
         TRPO.algorithm_specific_logs(self)
-        self.logger.log_tabular('Misc/cost_gradient_norm')
-        self.logger.log_tabular('Misc/A')
-        self.logger.log_tabular('Misc/B')
-        self.logger.log_tabular('Misc/q')
-        self.logger.log_tabular('Misc/r')
-        self.logger.log_tabular('Misc/s')
-        self.logger.log_tabular('Misc/Lambda_star')
-        self.logger.log_tabular('Misc/Nu_star')
-        self.logger.log_tabular('Misc/OptimCase')
 
     def compute_loss_cost_performance(
         self,

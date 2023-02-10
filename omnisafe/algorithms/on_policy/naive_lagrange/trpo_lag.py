@@ -52,6 +52,10 @@ class TRPOLag(TRPO, Lagrange):
             lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
         )
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Metrics/LagrangeMultiplier')
+
     def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
         r"""Update actor, critic, running statistics as we used in the :class:`TRPO` algorithm.
 
@@ -105,4 +109,8 @@ class TRPOLag(TRPO, Lagrange):
                 -   The Lagrange multiplier value in current epoch.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
+        self.logger.store(
+            **{
+                'Metrics/LagrangeMultiplier': self.lagrangian_multiplier.item(),
+            }
+        )

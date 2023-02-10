@@ -304,7 +304,9 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             )
             return mean.item(), min_val.item(), max_val.item(), std.item()
 
-        mean, std = mpi_statistics_scalar(torch.tensor(vals))  # pylint: disable=unbalanced-tuple-unpacking
+        mean, std = mpi_statistics_scalar(  # pylint: disable=unbalanced-tuple-unpacking
+            torch.tensor(vals)
+        )
         return (mean.item(),)
 
     def close(self) -> None:

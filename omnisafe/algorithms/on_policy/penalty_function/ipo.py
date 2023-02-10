@@ -41,9 +41,17 @@ class IPO(PPO):
         )
         self.penalty = 0
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Penalty')
+
     def algorithm_specific_logs(self):
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Penalty', self.penalty)
+        self.logger.store(
+            **{
+                'Penalty': self.penalty,
+            }
+        )
 
     def compute_surrogate(self, adv: torch.Tensor, cost_adv: torch.Tensor) -> torch.Tensor:
         """Compute surrogate loss."""

@@ -58,13 +58,16 @@ class CAP(
         self.logger.setup_torch_saver(what_to_save=what_to_save)
         self.logger.torch_save()
 
+    def _specific_init_logs(self):
+        self.logger.register_key('Loss/DynamicsTrainMseLoss')
+        self.logger.register_key('Loss/DynamicsValMseLoss')
+        self.logger.register_key('Penalty')
+
     def algorithm_specific_logs(self, time_step):
         """Log algo parameter"""
         super().algorithm_specific_logs(time_step)
-        self.logger.log_tabular('Loss/DynamicsTrainMseLoss')
-        self.logger.log_tabular('Loss/DynamicsValMseLoss')
-        self.logger.log_tabular(
-            'Penalty', self.lambda_range_projection(self.lagrangian_multiplier).item()
+        self.logger.store(
+            **{'Penalty': self.lambda_range_projection(self.lagrangian_multiplier).item()}
         )
 
     def update_dynamics_model(self):

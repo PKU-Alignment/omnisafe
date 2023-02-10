@@ -26,7 +26,6 @@ from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.typing import NamedTuple, Tuple
 from omnisafe.utils.core import discount_cumsum_torch
 from omnisafe.utils.distributed_utils import mpi_fork, mpi_statistics_scalar
-from omnisafe.utils.logger_utils import colorize, convert_json
 from omnisafe.utils.tools import to_ndarray
 
 
@@ -78,25 +77,6 @@ def test_discount_cumsum_torch(
 def test_distributed_tools():
     """Test mpi_fork."""
     mpi_fork(2, test_message=['examples/train_from_custom_dict.py', '--parallel', '2'])
-
-
-@helpers.parametrize(
-    obj=[{'a': 1, 'b': 2}, [1, 2, 3], ('a', 'b', 'c')],
-)
-def test_convert_json(obj):
-    """Test convert_json."""
-    assert convert_json(obj) == obj
-
-
-@helpers.parametrize(
-    message=['hello'],
-    color=['red', 'green'],
-    bold=[True, False],
-    highlight=[True, False],
-)
-def test_colorize(message, color, bold, highlight):
-    """Test colorize."""
-    colorize(message, color, bold, highlight)
 
 
 def train(

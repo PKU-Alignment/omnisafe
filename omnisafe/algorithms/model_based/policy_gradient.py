@@ -51,8 +51,16 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
         self.cost_gamma = self.cfgs.cost_gamma
         # Set up logger and save configuration to disk
         # Get local parameters before logger instance to avoid unnecessary print
-        self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
-        self.logger.save_config(cfgs.todict())
+        # self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
+        # self.logger.save_config(cfgs.todict())
+        self.logger = Logger(
+            output_dir=cfgs.data_dir,
+            exp_name=cfgs.exp_name,
+            seed=cfgs.seed,
+            use_tensorboard=True,
+            use_wandb=False,
+            config=cfgs,
+        )
 
         # Set seed
         seed = int(cfgs.seed)
@@ -97,6 +105,19 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
         self.epoch_time = time.time()
 
         self.logger.log('Start with training.')
+
+        self._init_log()
+
+    def _init_log(self):
+        self.logger.register_key('TotalEnvSteps3')
+        self.logger.register_key('Metrics/EpRet')
+        self.logger.register_key('Metrics/EpCost')
+        self.logger.register_key('Metrics/EpLen')
+        self._specific_init_logs()
+        self.logger.register_key('Time')
+
+    def _specific_init_logs(self):
+        pass
 
     def learn(self):  # pylint: disable=too-many-locals
         """training the policy."""
@@ -165,7 +186,7 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
                 and time_step - last_log >= self.cfgs.log_freq
             ) or time_step == self.cfgs.max_real_time_steps - 1:
                 self.log(time_step)
-                self.logger.torch_save(itr=time_step)
+                self.logger.torch_save()
                 last_log = time_step
         # Close opened files to avoid number of open files overflow
         self.logger.close()
@@ -174,13 +195,16 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
         """
         logging data
         """
-        self.logger.log_tabular('TotalEnvSteps3', time_step)
-        self.logger.log_tabular('Metrics/EpRet')
-        self.logger.log_tabular('Metrics/EpCost')
-        self.logger.log_tabular('Metrics/EpLen')
         # Some child classes may add information to logs
         self.algorithm_specific_logs(time_step)
-        self.logger.log_tabular('Time', int(time.time() - self.start_time))
+
+        self.logger.store(
+            **{
+                'TotalEnvSteps3': time_step,
+                'Time': int(time.time() - self.start_time),
+            }
+        )
+
         self.logger.dump_tabular()
 
     def select_action(self, time_step, state, env):  # pylint: disable=unused-argument

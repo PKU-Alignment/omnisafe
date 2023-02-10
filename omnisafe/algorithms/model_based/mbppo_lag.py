@@ -72,30 +72,33 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         self.logger.setup_torch_saver(what_to_save=what_to_save)
         self.logger.torch_save()
 
+    def _specific_init_logs(self):
+        self.logger.register_key('DynaMetrics/EpRet')
+        self.logger.register_key('DynaMetrics/EpLen')
+        self.logger.register_key('DynaMetrics/EpCost')
+        self.logger.register_key('Loss/DynamicsTrainMseLoss')
+        self.logger.register_key('Loss/DynamicsValMseLoss')
+        self.logger.register_key('Loss/Pi')
+        self.logger.register_key('Loss/Value')
+        self.logger.register_key('Loss/DeltaPi')
+        self.logger.register_key('Loss/DeltaValue')
+        self.logger.register_key('Loss/CValue')
+        self.logger.register_key('Loss/DeltaCValue')
+        self.logger.register_key('Penalty')
+        self.logger.register_key('Values/Adv')
+        self.logger.register_key('Values/Adv_C')
+        self.logger.register_key('Megaiter')
+        self.logger.register_key('Entropy')
+        self.logger.register_key('KL')
+        self.logger.register_key('Misc/StopIter')
+        self.logger.register_key('PolicyRatio')
+
     def algorithm_specific_logs(self, time_step):
         """log algo parameter"""
         super().algorithm_specific_logs(time_step)
-        self.logger.log_tabular('DynaMetrics/EpRet')
-        self.logger.log_tabular('DynaMetrics/EpLen')
-        self.logger.log_tabular('DynaMetrics/EpCost')
-        self.logger.log_tabular('Loss/DynamicsTrainMseLoss')
-        self.logger.log_tabular('Loss/DynamicsValMseLoss')
-        self.logger.log_tabular('Loss/Pi', std=False)
-        self.logger.log_tabular('Loss/Value')
-        self.logger.log_tabular('Loss/DeltaPi')
-        self.logger.log_tabular('Loss/DeltaValue')
-        self.logger.log_tabular('Loss/CValue')
-        self.logger.log_tabular('Loss/DeltaCValue')
-        self.logger.log_tabular(
-            'Penalty', self.lambda_range_projection(self.lagrangian_multiplier).item()
+        self.logger.store(
+            **{'Penalty': self.lambda_range_projection(self.lagrangian_multiplier).item()}
         )
-        self.logger.log_tabular('Values/Adv')
-        self.logger.log_tabular('Values/Adv_C')
-        self.logger.log_tabular('Megaiter')
-        self.logger.log_tabular('Entropy')
-        self.logger.log_tabular('KL')
-        self.logger.log_tabular('Misc/StopIter')
-        self.logger.log_tabular('PolicyRatio')
 
     def update_actor_critic(self, time_step):  # pylint: disable=unused-argument
         """update actor critic"""

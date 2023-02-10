@@ -88,8 +88,14 @@ class DDPG:
         )
 
         # set up logger and save configuration to disk
-        self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
-        self.logger.save_config(cfgs.todict())
+        self.logger = Logger(
+            output_dir=cfgs.data_dir,
+            exp_name=cfgs.exp_name,
+            seed=cfgs.seed,
+            use_tensorboard=True,
+            use_wandb=False,
+            config=cfgs,
+        )
         # set seed
         seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
         torch.manual_seed(seed)
@@ -139,6 +145,49 @@ class DDPG:
         self.logger.log('Start with training.')
         self.loss_record = RecordQueue('loss_pi', 'loss_q', 'loss_c', maxlen=100)
         self.cost_limit = None
+
+        self._init_log()
+
+    def _init_log(self):
+        self.logger.register_key('Train/Epoch')
+        self.logger.register_key('Metrics/EpRet')
+        self.logger.register_key('Metrics/EpCost')
+        self.logger.register_key('Metrics/EpLen')
+
+        self.logger.register_key('Test/EpRet')
+        self.logger.register_key('Test/EpCost')
+        self.logger.register_key('Test/EpLen')
+        # log information about actor
+        self.logger.register_key('Loss/Loss_pi')
+        self.logger.register_key('Loss/Delta_loss_pi')
+
+        # log information about critic
+        self.logger.register_key('Loss/Loss_reward_critic')
+        self.logger.register_key('Loss/Delta_loss_reward_critic')
+        self.logger.register_key('Values/V')
+        self.logger.register_key('Train/RewardQValues')
+
+        if self.cfgs.use_cost:
+            # log information about cost critic
+            self.logger.register_key('Loss/Loss_cost_critic')
+            self.logger.register_key('Loss/Delta_loss_cost_critic')
+            self.logger.register_key('Values/C')
+            self.logger.register_key('Train/CostQValues')
+
+        self.logger.register_key('Misc/Seed')
+        self.logger.register_key('LR')
+        if self.cfgs.env_cfgs.normalized_rew:
+            self.logger.register_key('Misc/RewScaleMean')
+            self.logger.register_key('Misc/RewScaleStddev')
+        if self.cfgs.exploration_noise_anneal:
+            self.logger.register_key('Misc/ExplorationNoiseStd')
+        self._specific_init_logs()
+        self.logger.register_key('TotalEnvSteps')
+        self.logger.register_key('Time')
+        self.logger.register_key('FPS')
+
+    def _specific_init_logs(self):
+        pass
 
     def _get_added_cfgs(self) -> dict:
         """Get additional configurations.
@@ -358,7 +407,7 @@ class DDPG:
 
                 # save model to disk
                 if (epoch + 1) % self.cfgs.save_freq == 0:
-                    self.logger.torch_save(itr=epoch)
+                    self.logger.torch_save()
                 # log info about epoch
                 self.test_agent()
                 self.log(epoch, steps)
@@ -656,46 +705,28 @@ class DDPG:
         else:
             current_lr = self.cfgs.actor_lr
 
-        self.logger.log_tabular('Train/Epoch', epoch)
-        self.logger.log_tabular('Metrics/EpRet')
-        self.logger.log_tabular('Metrics/EpCost')
-        self.logger.log_tabular('Metrics/EpLen')
+        self.logger.store(
+            **{
+                'Train/Epoch': epoch,
+                'LR': current_lr,
+                'TotalEnvSteps': total_steps,
+                'Time': int(time.time() - self.start_time),
+                'FPS': int(fps),
+            }
+        )
 
-        self.logger.log_tabular('Test/EpRet')
-        self.logger.log_tabular('Test/EpCost')
-        self.logger.log_tabular('Test/EpLen')
-        # log information about actor
-        self.logger.log_tabular('Loss/Loss_pi')
-        self.logger.log_tabular('Loss/Delta_loss_pi')
-
-        # log information about critic
-        self.logger.log_tabular('Loss/Loss_reward_critic')
-        self.logger.log_tabular('Loss/Delta_loss_reward_critic')
-        self.logger.log_tabular('Values/V')
-        self.logger.log_tabular('Train/RewardQValues')
-
-        if self.cfgs.use_cost:
-            # log information about cost critic
-            self.logger.log_tabular('Loss/Loss_cost_critic')
-            self.logger.log_tabular('Loss/Delta_loss_cost_critic')
-            self.logger.log_tabular('Values/C')
-            self.logger.log_tabular('Train/CostQValues')
-
-        self.logger.log_tabular('Misc/Seed', self.cfgs.seed)
-        self.logger.log_tabular('LR', current_lr)
         if self.cfgs.env_cfgs.normalized_rew:
             reward_norm_mean = self.env.rew_normalizer.mean.mean().item()
             reward_norm_stddev = self.env.rew_normalizer.std.mean().item()
-            self.logger.log_tabular('Misc/RewScaleMean', reward_norm_mean)
-            self.logger.log_tabular('Misc/RewScaleStddev', reward_norm_stddev)
+            self.logger.store(
+                **{'Misc/RewScaleMean': reward_norm_mean, 'Misc/RewScaleStddev': reward_norm_stddev}
+            )
+
         if self.cfgs.exploration_noise_anneal:
             noise_std = np.exp(self.actor_critic.actor.log_std[0].item())
-            self.logger.log_tabular('Misc/ExplorationNoiseStd', noise_std)
-        self.algorithm_specific_logs()
-        self.logger.log_tabular('TotalEnvSteps', total_steps)
-        self.logger.log_tabular('Time', int(time.time() - self.start_time))
-        self.logger.log_tabular('FPS', int(fps))
+            self.logger.store(**{'Misc/ExplorationNoiseStd': noise_std})
 
+        self.algorithm_specific_logs()
         self.logger.dump_tabular()
 
     def test_agent(self):

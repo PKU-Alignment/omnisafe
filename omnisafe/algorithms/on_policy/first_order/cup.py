@@ -65,6 +65,17 @@ class CUP(PPO, Lagrange):
         self.p_dist = None
         self.loss_record = RecordQueue('loss_pi', 'loss_v', 'loss_c', 'loss_pi_c', maxlen=100)
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Metrics/LagrangeMultiplier')
+        self.logger.register_key('Train/MaxRatio')
+        self.logger.register_key('Train/MinRatio')
+        self.logger.register_key('Loss/Loss_pi_c')
+        self.logger.register_key('Loss/Delta_loss_pi_c')
+        self.logger.register_key('Train/SecondStepStopIter')
+        self.logger.register_key('Train/SecondStepEntropy')
+        self.logger.register_key('Train/SecondStepPolicyRatio')
+
     def algorithm_specific_logs(self) -> None:
         """Log the CUP specific information.
 
@@ -80,14 +91,13 @@ class CUP(PPO, Lagrange):
                 -   The minimum ratio between the current policy and the old policy.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
-        self.logger.log_tabular('Train/MaxRatio', self.max_ratio)
-        self.logger.log_tabular('Train/MinRatio', self.min_ratio)
-        self.logger.log_tabular('Loss/Loss_pi_c')
-        self.logger.log_tabular('Loss/Delta_loss_pi_c')
-        self.logger.log_tabular('Train/SecondStepStopIter')
-        self.logger.log_tabular('Train/SecondStepEntropy')
-        self.logger.log_tabular('Train/SecondStepPolicyRatio')
+        self.logger.store(
+            **{
+                'Metrics/LagrangeMultiplier': self.lagrangian_multiplier.item(),
+                'Train/MaxRatio': self.max_ratio,
+                'Train/MinRatio': self.min_ratio,
+            }
+        )
 
     # pylint: disable-next=too-many-locals
     def compute_loss_cost_performance(

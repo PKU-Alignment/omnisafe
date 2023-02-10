@@ -61,6 +61,14 @@ class CVPO(DDPG):
         self.alpha_var = 0.0
         self.cost_limit = self.cfgs.cost_limit
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Loss/Loss_l')
+        self.logger.register_key('Misc/mean_sigma_det')
+        self.logger.register_key('Misc/max_kl_sigma')
+        self.logger.register_key('Misc/max_kl_mu')
+        self.logger.register_key('Misc/eta')
+
     # pylint: disable-next=too-many-locals
     def update_policy_net(self, obs) -> None:
         """Update policy network.
@@ -179,9 +187,3 @@ class CVPO(DDPG):
 
     def algorithm_specific_logs(self):
         """Log the CVPO specific information."""
-        super().algorithm_specific_logs()
-        self.logger.log_tabular('Loss/Loss_l')
-        self.logger.log_tabular('Misc/mean_sigma_det')
-        self.logger.log_tabular('Misc/max_kl_sigma')
-        self.logger.log_tabular('Misc/max_kl_mu')
-        self.logger.log_tabular('Misc/eta')
