@@ -94,8 +94,8 @@ class PolicyGradient:
             output_dir=cfgs.data_dir,
             exp_name=cfgs.exp_name,
             seed=cfgs.seed,
-            use_tensorboard=True,
-            use_wandb=False,
+            use_tensorboard=cfgs.use_tensorboard,
+            use_wandb=cfgs.use_wandb,
             config=cfgs,
             models=[self.actor_critic],
         )
