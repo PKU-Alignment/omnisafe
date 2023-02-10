@@ -14,6 +14,7 @@
 # ==============================================================================
 """Implementation of the Experiment Grid."""
 
+import json
 import os
 import string
 import time
@@ -24,8 +25,8 @@ from textwrap import dedent
 import numpy as np
 from tqdm import trange
 
+from omnisafe.common.logger import WordColor
 from omnisafe.utils.exp_grid_tools import all_bools, valid_str
-from omnisafe.utils.logger_utils import colorize, convert_json
 
 
 # pylint: disable-next=too-many-instance-attributes
@@ -63,14 +64,14 @@ class ExperimentGrid:
             msg = base_msg % name_insert
         else:
             msg = base_msg % (name_insert + '\n')
-        print(colorize(msg, color='green', bold=True))
+        print(WordColor.colorize(msg, color='green', bold=True))
 
         # List off parameters, shorthands, and possible values.
         for key, value, shorthand in zip(self.keys, self.vals, self.shs):
-            color_k = colorize(key.ljust(40), color='cyan', bold=True)
+            color_k = WordColor.colorize(key.ljust(40), color='cyan', bold=True)
             print('', color_k, '[' + shorthand + ']' if shorthand is not None else '', '\n')
             for _, val in enumerate(value):
-                print('\t' + str(convert_json(val)))
+                print('\t' + json.dumps(val, indent=4, sort_keys=True))
             print()
 
         # Count up the number of variants. The number counting seeds
@@ -315,7 +316,7 @@ class ExperimentGrid:
         var_names = {self.variant_name(var) for var in variants}
         var_names = sorted(list(var_names))
         line = '=' * self.div_line_width
-        preparing = colorize(
+        preparing = WordColor.colorize(
             'Preparing to run the following experiments...', color='green', bold=True
         )
         joined_var_names = '\n'.join(var_names)
@@ -324,7 +325,7 @@ class ExperimentGrid:
 
         if self.wait_defore_launch > 0:
             delay_msg = (
-                colorize(
+                WordColor.colorize(
                     dedent(
                         """
             Launch delayed to give you a few seconds to review your experiments.
