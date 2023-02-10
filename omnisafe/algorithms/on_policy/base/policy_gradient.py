@@ -95,7 +95,7 @@ class PolicyGradient:
             exp_name=cfgs.exp_name,
             seed=cfgs.seed,
             use_tensorboard=True,
-            use_wandb=True,
+            use_wandb=False,
             config=cfgs,
             models=[self.actor_critic],
         )
@@ -183,10 +183,15 @@ class PolicyGradient:
         if self.cfgs.model_cfgs.actor_type == 'gaussian_learning':
             self.logger.register_key('Misc/ExplorationNoiseStd')
 
+        self._specific_init_logs()
+
         # some sub-classes may add information to logs
         self.logger.register_key('TotalEnvSteps')
         self.logger.register_key('Time')
         self.logger.register_key('FPS')
+
+    def _specific_init_logs(self):
+        pass
 
     def _get_added_cfgs(self) -> dict:
         """Get additional configurations.

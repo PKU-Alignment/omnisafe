@@ -92,8 +92,8 @@ class DDPG:
             output_dir=cfgs.data_dir,
             exp_name=cfgs.exp_name,
             seed=cfgs.seed,
-            use_tensorboard=cfgs.use_tensorboard,
-            use_wandb=cfgs.use_wandb,
+            use_tensorboard=True,
+            use_wandb=False,
             config=cfgs,
         )
         # set seed

@@ -51,12 +51,14 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
         self.cost_gamma = self.cfgs.cost_gamma
         # Set up logger and save configuration to disk
         # Get local parameters before logger instance to avoid unnecessary print
+        # self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
+        # self.logger.save_config(cfgs.todict())
         self.logger = Logger(
             output_dir=cfgs.data_dir,
             exp_name=cfgs.exp_name,
             seed=cfgs.seed,
-            use_tensorboard=cfgs.use_tensorboard,
-            use_wandb=cfgs.use_wandb,
+            use_tensorboard=True,
+            use_wandb=False,
             config=cfgs,
         )
 
