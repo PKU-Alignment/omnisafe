@@ -130,6 +130,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self._data: Dict[str, Union[Deque[Union[int, float]], List[Union[int, float]]]] = {}
         self._headers_windwos: Dict[str, Optional[int]] = {}
         self._headers_minmax: Dict[str, bool] = {}
+        self._headers_delta: Dict[str, bool] = {}
         self._current_row: Dict[str, Union[int, float]] = {}
 
         if config is not None:
@@ -204,7 +205,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             torch.save(params, path)
 
     def register_key(
-        self, key: str, window_length: Optional[int] = None, min_and_max: bool = False
+        self, key: str, window_length: Optional[int] = None, min_and_max: bool = False, delta: bool = False
     ) -> None:
         """Register a key to the logger.
 
@@ -220,9 +221,16 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             self._current_row[f'{key}/Max'] = 0
             self._current_row[f'{key}/Std'] = 0
             self._headers_minmax[key] = True
+
         else:
             self._current_row[key] = 0
             self._headers_minmax[key] = False
+
+        if delta:
+            self._current_row[f'{key}/Delta'] = 0
+            self._headers_delta[key] = True
+        else:
+            self._headers_delta[key] = False
 
         if window_length is not None:
             self._data[key] = deque(maxlen=window_length)
@@ -252,14 +260,19 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         """Dump the tabular data to the console and the file."""
         for key in self._data:
             if self._headers_minmax[key]:
+                old_data = self._current_row[f'{key}/Mean']
                 mean, min_val, max_val, std = self.get_stats(key, True)
                 self._current_row[f'{key}/Mean'] = mean
                 self._current_row[f'{key}/Min'] = min_val
                 self._current_row[f'{key}/Max'] = max_val
                 self._current_row[f'{key}/Std'] = std
             else:
+                old_data = self._current_row[key]
                 mean = self.get_stats(key, False)[0]
                 self._current_row[key] = mean
+
+            if self._headers_delta[key]:
+                self._current_row[f'{key}/Delta'] = mean - old_data
 
             if self._headers_windwos[key] is None:
                 self._data[key] = []
