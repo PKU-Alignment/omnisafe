@@ -81,9 +81,6 @@ class PolicyGradient:
             f'or increase batch size {self.cfgs.steps_per_epoch}.'
         )
 
-        # set up logger and save configuration to disk
-        self.logger = Logger(exp_name=cfgs.exp_name, data_dir=cfgs.data_dir, seed=cfgs.seed)
-        self.logger.save_config(cfgs.todict())
         # setup actor-critic module
         self.actor_critic = ConstraintActorCritic(
             observation_space=self.env.observation_space,
@@ -91,8 +88,19 @@ class PolicyGradient:
             model_cfgs=cfgs.model_cfgs,
         ).to(self.device)
         self.set_mpi()
-        # set up experience buffer
 
+        # set up logger and save configuration to disk
+        self.logger = Logger(
+            output_dir=cfgs.data_dir,
+            exp_name=cfgs.exp_name,
+            seed=cfgs.seed,
+            use_tensorboard=cfgs.use_tensorboard,
+            use_wandb=cfgs.use_wandb,
+            config=cfgs,
+            models=[self.actor_critic],
+        )
+
+        # set up experience buffer
         self.buf = VectorOnPolicyBuffer(
             obs_space=self.env.observation_space,
             act_space=self.env.action_space,
@@ -134,6 +142,56 @@ class PolicyGradient:
         self.penalty_param = None
         self.critic_loss_fn = nn.MSELoss()
         self.loss_record = RecordQueue('loss_pi', 'loss_v', 'loss_c', maxlen=100)
+
+        self._init_log()
+
+    def _init_log(self):
+        self.logger.register_key('Train/Epoch')
+        self.logger.register_key('Metrics/EpRet')
+        self.logger.register_key('Metrics/EpCost')
+        self.logger.register_key('Metrics/EpLen')
+
+        # log information about actor
+        self.logger.register_key('Loss/Loss_pi')
+        self.logger.register_key('Loss/Delta_loss_pi')
+        self.logger.register_key('Values/Adv')
+
+        # log information about critic
+        self.logger.register_key('Loss/Loss_reward_critic')
+        self.logger.register_key('Loss/Delta_loss_reward_critic')
+        self.logger.register_key('Values/V')
+
+        if self.cfgs.use_cost:
+            # log information about cost critic
+            self.logger.register_key('Loss/Loss_cost_critic')
+            self.logger.register_key('Loss/Delta_loss_cost_critic')
+            self.logger.register_key('Values/C')
+
+        self.logger.register_key('Train/Entropy')
+        self.logger.register_key('Train/KL')
+        self.logger.register_key('Train/StopIter')
+        self.logger.register_key('Train/PolicyRatio')
+        self.logger.register_key('Train/LR')
+
+        if self.cfgs.env_cfgs.normalized_rew:
+            self.logger.register_key('Misc/RewScaleMean')
+            self.logger.register_key('Misc/RewScaleStddev')
+
+        if self.cfgs.exploration_noise_anneal:
+            self.logger.register_key('Misc/ExplorationNoiseStd')
+
+        if self.cfgs.model_cfgs.actor_type == 'gaussian_learning':
+            self.logger.register_key('Misc/ExplorationNoiseStd')
+
+        self._specific_init_logs()
+
+        # some sub-classes may add information to logs
+        self.logger.register_key('TotalEnvSteps')
+        self.logger.register_key('Time')
+        self.logger.register_key('FPS')
+
+    def _specific_init_logs(self):
+        pass
 
     def _get_added_cfgs(self) -> dict:
         """Get additional configurations.
@@ -295,7 +353,7 @@ class PolicyGradient:
                 self.check_distributed_parameters()
             # save model to disk
             if (epoch + 1) % self.cfgs.save_freq == 0:
-                self.logger.torch_save(itr=epoch)
+                self.logger.torch_save()
 
         # close opened files to avoid number of open files overflow
         self.logger.close()
@@ -373,48 +431,42 @@ class PolicyGradient:
         else:
             current_lr = self.cfgs.actor_lr
 
-        self.logger.log_tabular('Train/Epoch', epoch + 1)
-        self.logger.log_tabular('Metrics/EpRet')
-        self.logger.log_tabular('Metrics/EpCost')
-        self.logger.log_tabular('Metrics/EpLen')
+        self.logger.store(
+            **{
+                'Train/Epoch': epoch + 1,
+                'Train/LR': current_lr,
+                'TotalEnvSteps': total_env_steps,
+                'Time': (time.time() - self.start_time),
+                'FPS': fps,
+            }
+        )
 
-        # log information about actor
-        self.logger.log_tabular('Loss/Loss_pi')
-        self.logger.log_tabular('Loss/Delta_loss_pi')
-        self.logger.log_tabular('Values/Adv')
-
-        # log information about critic
-        self.logger.log_tabular('Loss/Loss_reward_critic')
-        self.logger.log_tabular('Loss/Delta_loss_reward_critic')
-        self.logger.log_tabular('Values/V')
-
-        if self.cfgs.use_cost:
-            # log information about cost critic
-            self.logger.log_tabular('Loss/Loss_cost_critic')
-            self.logger.log_tabular('Loss/Delta_loss_cost_critic')
-            self.logger.log_tabular('Values/C')
-
-        self.logger.log_tabular('Train/Entropy')
-        self.logger.log_tabular('Train/KL')
-        self.logger.log_tabular('Train/StopIter')
-        self.logger.log_tabular('Train/PolicyRatio')
-        self.logger.log_tabular('Train/LR', current_lr)
         if self.cfgs.env_cfgs.normalized_rew:
             reward_norm_mean = self.env.rew_normalizer.mean.mean().item()
             reward_norm_stddev = self.env.rew_normalizer.std.mean().item()
-            self.logger.log_tabular('Misc/RewScaleMean', reward_norm_mean)
-            self.logger.log_tabular('Misc/RewScaleStddev', reward_norm_stddev)
+            self.logger.store(
+                **{
+                    'Misc/RewScaleMean': reward_norm_mean,
+                    'Misc/RewScaleStddev': reward_norm_stddev,
+                }
+            )
+
         if self.cfgs.exploration_noise_anneal:
             noise_std = self.actor_critic.actor.std
-            self.logger.log_tabular('Misc/ExplorationNoiseStd', noise_std)
-        if self.cfgs.model_cfgs.actor_type == 'gaussian_learning':
-            self.logger.log_tabular('Misc/ExplorationNoiseStd', self.actor_critic.actor.std)
-        # some sub-classes may add information to logs
-        self.algorithm_specific_logs()
-        self.logger.log_tabular('TotalEnvSteps', total_env_steps)
-        self.logger.log_tabular('Time', int(time.time() - self.start_time))
-        self.logger.log_tabular('FPS', int(fps))
+            self.logger.store(
+                **{
+                    'Misc/ExplorationNoiseStd': noise_std,
+                }
+            )
 
+        if self.cfgs.model_cfgs.actor_type == 'gaussian_learning':
+            self.logger.store(
+                **{
+                    'Misc/ExplorationNoiseStd': self.actor_critic.actor.std,
+                }
+            )
+
+        self.algorithm_specific_logs()
         self.logger.dump_tabular()
 
     # pylint: disable-next=too-many-locals

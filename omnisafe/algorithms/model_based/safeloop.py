@@ -70,6 +70,14 @@ class SafeLOOP(
         self.logger.setup_torch_saver(what_to_save=what_to_save)
         self.logger.torch_save()
 
+    def _specific_init_logs(self):
+        self.logger.register_key('Loss/DynamicsTrainMseLoss')
+        self.logger.register_key('Loss/DynamicsValMseLoss')
+        self.logger.register_key('Plan/safety_costs_mean')
+        self.logger.register_key('QVals')
+        self.logger.register_key('Loss/Pi')
+        self.logger.register_key('Loss/Value')
+
     # pylint: disable-next=too-many-locals
     def compute_loss_v(self, data):
         """Computing value loss.
@@ -194,14 +202,7 @@ class SafeLOOP(
     def algorithm_specific_logs(self, time_step):
         """Log algo parameter"""
         super().algorithm_specific_logs(time_step)
-        if time_step >= self.cfgs.update_policy_start_timesteps:
-            self.logger.log_tabular('Loss/DynamicsTrainMseLoss')
-            self.logger.log_tabular('Loss/DynamicsValMseLoss')
-            self.logger.log_tabular('Plan/safety_costs_mean')
-            self.logger.log_tabular('QVals')
-            self.logger.log_tabular('Loss/Pi', std=False)
-            self.logger.log_tabular('Loss/Value')
-        else:
+        if time_step < self.cfgs.update_policy_start_timesteps:
             self.logger.store(
                 **{
                     'Loss/Pi': 0,
@@ -210,12 +211,6 @@ class SafeLOOP(
                     'Loss/Value': 0,
                 }
             )
-            self.logger.log_tabular('QVals')
-            self.logger.log_tabular('Loss/Pi', std=False)
-            self.logger.log_tabular('Loss/Value')
-            self.logger.log_tabular('Loss/DynamicsTrainMseLoss')
-            self.logger.log_tabular('Loss/DynamicsValMseLoss')
-            self.logger.log_tabular('Plan/safety_costs_mean')
 
     def update_actor_critic(self, time_step):
         """update actor and critic"""

@@ -47,6 +47,11 @@ class SAC(DDPG):
             self.alpha_optim = torch.optim.Adam([self.log_alpha], lr=self.cfgs.alpha_lr)
             self.alpha = self.log_alpha.detach().exp()
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Misc/Alpha')
+        self.logger.register_key('Misc/LogPi')
+
     # pylint: disable-next=too-many-locals, too-many-arguments
     def compute_loss_v(
         self,
@@ -156,6 +161,4 @@ class SAC(DDPG):
             self.alpha *= self.cfgs.alpha_gamma
 
     def algorithm_specific_logs(self) -> None:
-        super().algorithm_specific_logs()
-        self.logger.log_tabular('Misc/Alpha')
-        self.logger.log_tabular('Misc/LogPi')
+        ...

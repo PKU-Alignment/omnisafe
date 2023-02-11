@@ -17,7 +17,7 @@
 import os
 import subprocess
 import sys
-from typing import Tuple, Union
+from typing import Tuple
 
 import numpy as np
 import torch
@@ -214,7 +214,7 @@ def mpi_sum(value: torch.Tensor) -> torch.Tensor:
 
 def mpi_statistics_scalar(
     value: torch.Tensor, with_min_and_max: bool = False
-) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]]:
+) -> Tuple[torch.Tensor, ...]:
     """Get mean/std and optional min/max of scalar x across MPI processes.
 
     Args:
@@ -228,7 +228,7 @@ def mpi_statistics_scalar(
     # compute global std
     std = torch.sqrt(global_sum_sq / global_n)
     if with_min_and_max:
-        global_min = mpi_op(np.min(value) if len(value) > 0 else np.inf, operation=ReduceOp.MIN)
-        global_max = mpi_op(np.max(value) if len(value) > 0 else -np.inf, operation=ReduceOp.MAX)
+        global_min = mpi_min(value)
+        global_max = mpi_max(value)
         return mean, std, global_min, global_max
     return mean, std

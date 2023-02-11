@@ -59,6 +59,10 @@ class FOCOPS(PolicyGradient, Lagrange):
         self.eta = self.cfgs.eta
         self.p_dist = None
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Metrics/LagrangeMultiplier')
+
     def algorithm_specific_logs(self) -> None:
         """Log the FOCOPS specific information.
 
@@ -70,7 +74,11 @@ class FOCOPS(PolicyGradient, Lagrange):
                 -   The Lagrange multiplier value in current epoch.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
+        self.logger.store(
+            **{
+                'Metrics/LagrangeMultiplier': self.lagrangian_multiplier.item(),
+            }
+        )
 
     # pylint: disable-next=too-many-arguments
     def compute_loss_pi(

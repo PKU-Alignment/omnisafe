@@ -42,6 +42,7 @@ def test_base_policy(algo):
         'pi_iters': 1,
         'critic_iters': 1,
         'env_cfgs': {'num_envs': 1},
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
@@ -56,6 +57,7 @@ def test_off_policy(off_policy_algo):
         'steps_per_epoch': 1000,
         'update_after': 999,
         'update_every': 1,
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(off_policy_algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
@@ -71,6 +73,7 @@ def test_naive_lagrange_policy(algo):
         'pi_iters': 1,
         'critic_iters': 1,
         'env_cfgs': {'num_envs': 1},
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
@@ -86,6 +89,7 @@ def test_first_order_policy(algo):
         'pi_iters': 1,
         'critic_iters': 1,
         'env_cfgs': {'num_envs': 1},
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
@@ -102,6 +106,7 @@ def test_second_order_policy(algo):
         'critic_iters': 1,
         'env_cfgs': {'num_envs': 1},
         'cost_limit': 0.01,
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
@@ -117,6 +122,7 @@ def test_pid_lagrange_policy(algo):
         'pi_iters': 1,
         'critic_iters': 1,
         'env_cfgs': {'num_envs': 1},
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
@@ -134,6 +140,7 @@ def test_penalty_policy(algo):
         'env_cfgs': {'num_envs': 1},
         'parallel': 2,
         'cost_limit': 0.01,
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
@@ -149,6 +156,7 @@ def test_early_terminated_policy(algo):
         'pi_iters': 1,
         'critic_iters': 1,
         'env_cfgs': {'num_envs': 1},
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
@@ -164,6 +172,7 @@ def test_saute_policy(algo):
         'pi_iters': 1,
         'critic_iters': 1,
         'env_cfgs': {'num_envs': 1},
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
@@ -179,6 +188,7 @@ def test_simmer_policy(algo):
         'pi_iters': 1,
         'critic_iters': 1,
         'env_cfgs': {'num_envs': 1},
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()

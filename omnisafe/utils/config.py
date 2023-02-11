@@ -112,7 +112,7 @@ class Config(dict):
 
     def tojson(self) -> str:
         """Convert Config to json string."""
-        return json.dumps(self.todict())
+        return json.dumps(self.todict(), indent=4)
 
     @staticmethod
     def dict2config(config_dict: dict) -> 'Config':

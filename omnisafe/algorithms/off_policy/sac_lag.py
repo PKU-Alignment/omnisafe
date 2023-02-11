@@ -51,6 +51,12 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
         )
         Lagrange.__init__(self, **self.cfgs.lagrange_cfgs)
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Metrics/LagrangeMultiplier')
+        self.logger.register_key('Loss/Loss_pi_c')
+        self.logger.register_key('Misc/CostLimit')
+
     def algorithm_specific_logs(self) -> None:
         """Log the SAC Lag specific information.
 
@@ -62,9 +68,13 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
                 -   The Lagrange multiplier value in current epoch.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.lagrangian_multiplier.item())
-        self.logger.log_tabular('Loss/Loss_pi_c')
-        self.logger.log_tabular('Misc/CostLimit', self.cost_limit)
+
+        self.logger.store(
+            **{
+                'Metrics/LagrangeMultiplier': self.lagrangian_multiplier.item(),
+                'Misc/CostLimit': self.cost_limit,
+            }
+        )
 
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         r"""Computing ``pi/actor`` loss.

@@ -56,6 +56,15 @@ class NaturalPG(PolicyGradient):
         self.target_kl = cfgs.target_kl
         self.fvp_obs = cfgs.fvp_obs
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Misc/AcceptanceStep')
+        self.logger.register_key('Misc/Alpha')
+        self.logger.register_key('Misc/FinalStepNorm')
+        self.logger.register_key('Misc/gradient_norm')
+        self.logger.register_key('Misc/xHx')
+        self.logger.register_key('Misc/H_inv_g')
+
     def search_step_size(self, step_dir: torch.Tensor) -> Tuple[torch.Tensor, int]:
         """NPG use full step_size, so we just return 1.
 
@@ -88,12 +97,6 @@ class NaturalPG(PolicyGradient):
                 -   :math:`H^{-1}g` in original paper.
 
         """
-        self.logger.log_tabular('Misc/AcceptanceStep')
-        self.logger.log_tabular('Misc/Alpha')
-        self.logger.log_tabular('Misc/FinalStepNorm')
-        self.logger.log_tabular('Misc/gradient_norm')
-        self.logger.log_tabular('Misc/xHx')
-        self.logger.log_tabular('Misc/H_inv_g')
 
     def Fvp(self, params: torch.Tensor) -> torch.Tensor:
         """Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_

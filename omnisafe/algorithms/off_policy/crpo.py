@@ -45,6 +45,13 @@ class OffCRPO(DDPG):
         self.rew_update = 0
         self.cost_update = 0
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Loss/Loss_pi_c')
+        self.logger.register_key('Misc/CostLimit')
+        self.logger.register_key('Misc/RewUpdate')
+        self.logger.register_key('Misc/CostUpdate')
+
     def algorithm_specific_logs(self) -> None:
         """Log the CRPO specific information.
 
@@ -62,10 +69,13 @@ class OffCRPO(DDPG):
                -   The number of cost updates.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Loss/Loss_pi_c')
-        self.logger.log_tabular('Misc/CostLimit', self.cost_limit)
-        self.logger.log_tabular('Misc/RewUpdate', self.rew_update)
-        self.logger.log_tabular('Misc/CostUpdate', self.cost_update)
+        self.logger.store(
+            **{
+                'Misc/CostLimit': self.cost_limit,
+                'Misc/RewUpdate': self.rew_update,
+                'Misc/CostUpdate': self.cost_update,
+            }
+        )
 
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         r"""Computing ``pi/actor`` loss.

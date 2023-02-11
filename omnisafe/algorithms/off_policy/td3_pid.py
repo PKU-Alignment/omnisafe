@@ -44,6 +44,15 @@ class TD3Pid(TD3, PIDLagrangian):
         )
         PIDLagrangian.__init__(self, **self.cfgs.PID_cfgs)
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Metrics/LagrangeMultiplier')
+        self.logger.register_key('Loss/Loss_pi_c')
+        self.logger.register_key('Misc/CostLimit')
+        self.logger.register_key('PID/pid_Kp')
+        self.logger.register_key('PID/pid_Ki')
+        self.logger.register_key('PID/pid_Kd')
+
     def algorithm_specific_logs(self) -> None:
         """Log the TD3Pid specific information.
 
@@ -65,12 +74,15 @@ class TD3Pid(TD3, PIDLagrangian):
                -   The derivative gain of the PID controller.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.cost_penalty)
-        self.logger.log_tabular('Loss/Loss_pi_c')
-        self.logger.log_tabular('Misc/CostLimit', self.cost_limit)
-        self.logger.log_tabular('PID/pid_Kp', self.pid_kp)
-        self.logger.log_tabular('PID/pid_Ki', self.pid_ki)
-        self.logger.log_tabular('PID/pid_Kd', self.pid_kd)
+        self.logger.store(
+            **{
+                'Metrics/LagrangeMultiplier': self.cost_penalty,
+                'Misc/CostLimit': self.cost_limit,
+                'PID/pid_Kp': self.pid_kp,
+                'PID/pid_Ki': self.pid_ki,
+                'PID/pid_Kd': self.pid_kd,
+            }
+        )
 
     def compute_loss_pi(self, obs: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         r"""Computing ``pi/actor`` loss.

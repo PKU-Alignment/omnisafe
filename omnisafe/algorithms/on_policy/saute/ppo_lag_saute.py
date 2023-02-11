@@ -43,15 +43,6 @@ class PPOLagSaute(PPOLag):
         """
         super().__init__(env_id=env_id, cfgs=cfgs)
 
-    def algorithm_specific_logs(self) -> None:
-        """Log the Saute specific information.
-
-        .. list-table::
-
-            *   -   Things to log
-                -   Description
-            *   -   Metrics/EpBudget
-                -   The budget of the episode.
-        """
-        super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/EpBudget')
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Metrics/EpBudget')

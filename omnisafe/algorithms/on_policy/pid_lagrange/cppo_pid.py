@@ -59,6 +59,13 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
 
         self.clip = self.cfgs.clip
 
+    def _specific_init_logs(self):
+        super()._specific_init_logs()
+        self.logger.register_key('Metrics/LagrangeMultiplier')
+        self.logger.register_key('PID/pid_Kp')
+        self.logger.register_key('PID/pid_Ki')
+        self.logger.register_key('PID/pid_Kd')
+
     def algorithm_specific_logs(self) -> None:
         """Log the CPPOPid specific information.
 
@@ -76,10 +83,14 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
                 -   The Kd value in current epoch.
         """
         super().algorithm_specific_logs()
-        self.logger.log_tabular('Metrics/LagrangeMultiplier', self.cost_penalty)
-        self.logger.log_tabular('PID/pid_Kp', self.pid_kp)
-        self.logger.log_tabular('PID/pid_Ki', self.pid_ki)
-        self.logger.log_tabular('PID/pid_Kd', self.pid_kd)
+        self.logger.store(
+            **{
+                'Metrics/LagrangeMultiplier': self.cost_penalty,
+                'PID/pid_Kp': self.pid_kp,
+                'PID/pid_Ki': self.pid_ki,
+                'PID/pid_Kd': self.pid_kd,
+            }
+        )
 
     # pylint: disable-next=too-many-arguments,too-many-locals
     def compute_loss_pi(

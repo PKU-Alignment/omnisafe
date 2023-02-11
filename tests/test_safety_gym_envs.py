@@ -38,6 +38,7 @@ def test_safety_nvigation(algo, agent_id, env_id, level):
         'pi_iters': 1,
         'critic_iters': 1,
         'env_cfgs': {'num_envs': 1},
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     # agent.set_seed(seed=0)
@@ -60,6 +61,7 @@ def test_safety_velocity(algo, agent_id, env_id):
         'critic_iters': 1,
         'env_cfgs': {'num_envs': 1},
         'parallel': 1,
+        'use_wandb': False,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs, parallel=1)
     agent.learn()
