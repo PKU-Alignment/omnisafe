@@ -161,11 +161,6 @@ class FOCOPS(PolicyGradient, Lagrange):
             data['adv_r'],
             data['adv_c'],
         )
-        # get the loss before
-        loss_pi_before, loss_v_before = self.loss_record.get_mean('loss_pi', 'loss_v')
-        if self.cfgs.use_cost:
-            loss_c_before = self.loss_record.get_mean('loss_c')
-        self.loss_record.reset('loss_pi', 'loss_v', 'loss_c')
         with torch.no_grad():
             old_dist = self.actor_critic.actor(obs)
             old_mean, old_std = old_dist.mean, old_dist.stddev
@@ -213,24 +208,11 @@ class FOCOPS(PolicyGradient, Lagrange):
                 self.logger.log(f'KL early stop at the {i+1} th step.')
                 break
         # log the information.
-        loss_pi, loss_v = self.loss_record.get_mean('loss_pi', 'loss_v')
         self.logger.store(
             **{
-                'Loss/Loss_pi': loss_pi,
-                'Loss/Delta_loss_pi': loss_pi - loss_pi_before,
                 'Train/StopIter': i + 1,
                 'Values/Adv': adv.mean().item(),
                 'Train/KL': torch_kl,
-                'Loss/Delta_loss_reward_critic': loss_v - loss_v_before,
-                'Loss/Loss_reward_critic': loss_v,
             }
         )
-        if self.cfgs.use_cost:
-            loss_c = self.loss_record.get_mean('loss_c')
-            self.logger.store(
-                **{
-                    'Loss/Delta_loss_cost_critic': loss_c - loss_c_before,
-                    'Loss/Loss_cost_critic': loss_c,
-                }
-            )
         return data

@@ -124,7 +124,7 @@ class PCPO(TRPO):
                 loss_pi_cost, _ = self.compute_loss_cost_performance(
                     obs=obs, act=act, log_p=log_p, cost_adv=cost_adv
                 )
-                self.loss_record.append(loss_pi=(loss_pi_rew.mean() + loss_pi_cost.mean()).item())
+                self.logger.store(**{'Loss/Loss_pi': (loss_pi_rew.mean() + loss_pi_cost.mean()).item()})
                 # determine KL div between new and old policy
                 q_dist = self.actor_critic.actor(obs)
                 torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()

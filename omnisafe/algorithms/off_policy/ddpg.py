@@ -24,7 +24,6 @@ import torch
 from omnisafe.algorithms import registry
 from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.common.record_queue import RecordQueue
 from omnisafe.models.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils import core, distributed_utils
 from omnisafe.wrappers import wrapper_registry
@@ -143,7 +142,6 @@ class DDPG:
         self.start_time = time.time()
         self.epoch_time = time.time()
         self.logger.log('Start with training.')
-        self.loss_record = RecordQueue('loss_pi', 'loss_q', 'loss_c', maxlen=100)
         self.cost_limit = None
 
         self._init_log()
@@ -158,19 +156,16 @@ class DDPG:
         self.logger.register_key('Test/EpCost')
         self.logger.register_key('Test/EpLen')
         # log information about actor
-        self.logger.register_key('Loss/Loss_pi')
-        self.logger.register_key('Loss/Delta_loss_pi')
+        self.logger.register_key('Loss/Loss_pi', delta=True)
 
         # log information about critic
-        self.logger.register_key('Loss/Loss_reward_critic')
-        self.logger.register_key('Loss/Delta_loss_reward_critic')
+        self.logger.register_key('Loss/Loss_reward_critic', delta=True)
         self.logger.register_key('Values/V')
         self.logger.register_key('Train/RewardQValues')
 
         if self.cfgs.use_cost:
             # log information about cost critic
-            self.logger.register_key('Loss/Loss_cost_critic')
-            self.logger.register_key('Loss/Delta_loss_cost_critic')
+            self.logger.register_key('Loss/Loss_cost_critic', delta=True)
             self.logger.register_key('Values/C')
             self.logger.register_key('Train/CostQValues')
 
@@ -446,11 +441,6 @@ class DDPG:
         #. Update the network by loss.
         #. Repeat steps 2, 3 until the number of mini-batch data is used up.
         """
-        # get the loss before
-        loss_pi_before, loss_q_before = self.loss_record.get_mean('loss_pi', 'loss_q')
-        if self.cfgs.use_cost:
-            loss_c_before = self.loss_record.get_mean('loss_c')
-        self.loss_record.reset('loss_pi', 'loss_q', 'loss_c')
         # first run one gradient descent step for Q.
         obs, act, rew, cost, next_obs, done = (
             data['obs'],
@@ -495,23 +485,6 @@ class DDPG:
 
         # finally, update target networks by polyak averaging.
         self.polyak_update_target()
-        loss_pi, loss_q = self.loss_record.get_mean('loss_pi', 'loss_q')
-        self.logger.store(
-            **{
-                'Loss/Loss_pi': loss_pi,
-                'Loss/Delta_loss_pi': loss_pi - loss_pi_before,
-                'Loss/Delta_loss_reward_critic': loss_q - loss_q_before,
-                'Loss/Loss_reward_critic': loss_q,
-            }
-        )
-        if self.cfgs.use_cost:
-            loss_c = self.loss_record.get_mean('loss_c')
-            self.logger.store(
-                **{
-                    'Loss/Delta_loss_cost_critic': loss_c - loss_c_before,
-                    'Loss/Loss_cost_critic': loss_c,
-                }
-            )
 
     def polyak_update_target(self) -> None:
         r"""One important trick is to use a target network to stabilize the training of the Q-function.
@@ -546,8 +519,6 @@ class DDPG:
         # train policy with one steps of gradient descent
         self.actor_optimizer.zero_grad()
         loss_pi, _ = self.compute_loss_pi(obs)
-        # log the loss of policy net.
-        self.loss_record.append(loss_pi=loss_pi.mean().item())
         loss_pi.backward()
         # clip the gradient of policy net.
         if self.cfgs.use_max_grad_norm:
@@ -555,6 +526,8 @@ class DDPG:
                 self.actor_critic.actor.parameters(), self.cfgs.max_grad_norm
             )
         self.actor_optimizer.step()
+
+        self.logger.store(**{'Loss/Loss_pi': loss_pi.mean().item()})
 
     # pylint: disable-next=too-many-arguments
     def update_value_net(
@@ -591,14 +564,14 @@ class DDPG:
         if self.cfgs.use_critic_norm:
             for param in self.actor_critic.critic.parameters():
                 loss_q += param.pow(2).sum() * self.cfgs.critic_norm_coeff
-        # log the loss of value net.
-        self.loss_record.append(loss_q=loss_q.mean().item())
         loss_q.backward()
         if self.cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
                 self.actor_critic.critic.parameters(), self.cfgs.max_grad_norm
             )
         self.critic_optimizer.step()
+
+        self.logger.store(**{'Loss/Loss_reward_critic': loss_q.mean().item()})
 
     # pylint: disable-next=too-many-arguments
     def update_cost_net(
@@ -633,8 +606,6 @@ class DDPG:
         if self.cfgs.use_critic_norm:
             for param in self.actor_critic.cost_critic.parameters():
                 loss_qc += param.pow(2).sum() * self.cfgs.critic_norm_coeff
-        # log the loss of value net.
-        self.loss_record.append(loss_c=loss_qc.mean().item())
         loss_qc.backward()
         # clip the gradient.
         if self.cfgs.use_max_grad_norm:
@@ -642,6 +613,8 @@ class DDPG:
                 self.actor_critic.cost_critic.parameters(), self.cfgs.max_grad_norm
             )
         self.cost_critic_optimizer.step()
+
+        self.logger.store(**{'Loss/Loss_cost_critic': loss_qc.mean().item()})
 
     def log(self, epoch: int, total_steps: int) -> None:
         """Log info about epoch.

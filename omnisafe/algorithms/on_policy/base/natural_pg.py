@@ -189,7 +189,6 @@ class NaturalPG(PolicyGradient):
 
         with torch.no_grad():
             loss_pi, pi_info = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=adv)
-            self.loss_record.append(loss_pi=loss_pi.mean().item())
 
         self.logger.store(
             **{
@@ -201,5 +200,6 @@ class NaturalPG(PolicyGradient):
                 'Misc/xHx': xHx.item(),
                 'Misc/gradient_norm': torch.norm(g_flat).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
+                'Loss/Loss_pi': loss_pi.mean().item(),
             }
         )

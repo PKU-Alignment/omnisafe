@@ -108,7 +108,7 @@ class P3O(PPO):
             obs=obs, act=act, log_p=log_p, cost_adv=cost_adv
         )
         # log the loss of policy net.
-        self.loss_record.append(loss_pi=(loss_pi - loss_pi_c).mean().item())
+        self.logger.store(**{'Loss/Loss_pi': (loss_pi - loss_pi_c).mean().item()})
         # update the policy net.
         self.actor_optimizer.zero_grad()
         # backward the loss of policy net.

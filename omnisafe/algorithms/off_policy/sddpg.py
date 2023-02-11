@@ -150,8 +150,6 @@ class SDDPG(DDPG):
         loss_cost, _ = self.compute_loss_cost_performance(obs)
         loss_cost.backward()
 
-        self.loss_record.append(loss_pi=(loss_pi - loss_cost).mean().item())
-
         b_flat = get_flat_gradients_from(self.actor_critic.actor.net)
         b_inv_d = conjugate_gradients(self.Fvp, b_flat, self.cfgs.cg_iters)
         hessian_d = torch.dot(b_inv_d, self.Fvp(b_inv_d))
@@ -165,3 +163,5 @@ class SDDPG(DDPG):
         )
         new_theta = theta_old + final_step_dir
         set_param_values_to_model(self.actor_critic.actor.net, new_theta)
+
+        self.logger.store(**{'Loss/Loss_pi': (loss_pi - loss_cost).mean().item()})

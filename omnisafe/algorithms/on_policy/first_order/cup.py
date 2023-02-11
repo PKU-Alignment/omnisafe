@@ -21,7 +21,6 @@ import torch
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
 from omnisafe.common.lagrange import Lagrange
-from omnisafe.common.record_queue import RecordQueue
 from omnisafe.utils import distributed_utils
 
 
@@ -63,15 +62,13 @@ class CUP(PPO, Lagrange):
         self.max_ratio = 0
         self.min_ratio = 0
         self.p_dist = None
-        self.loss_record = RecordQueue('loss_pi', 'loss_v', 'loss_c', 'loss_pi_c', maxlen=100)
 
     def _specific_init_logs(self):
         super()._specific_init_logs()
         self.logger.register_key('Metrics/LagrangeMultiplier')
         self.logger.register_key('Train/MaxRatio')
         self.logger.register_key('Train/MinRatio')
-        self.logger.register_key('Loss/Loss_pi_c')
-        self.logger.register_key('Loss/Delta_loss_pi_c')
+        self.logger.register_key('Loss/Loss_pi_c', delta=True)
         self.logger.register_key('Train/SecondStepStopIter')
         self.logger.register_key('Train/SecondStepEntropy')
         self.logger.register_key('Train/SecondStepPolicyRatio')
@@ -143,7 +140,6 @@ class CUP(PPO, Lagrange):
             1 - self.cfgs.buffer_cfgs.gamma
         )
         cost_loss = (self.lagrangian_multiplier * coef * ratio * cost_adv + kl_new_old).mean()
-        self.loss_record.append(loss_pi_c=cost_loss.item())
 
         # useful extra info
         temp_max = torch.max(ratio).detach().mean().item()
@@ -155,6 +151,8 @@ class CUP(PPO, Lagrange):
         approx_kl = 0.5 * (log_p - _log_p).mean().item()
         ent = dist.entropy().mean().item()
         pi_info = {'kl': approx_kl, 'ent': ent, 'ratio': ratio.mean().item()}
+
+        self.logger.store(**{'Loss/Loss_pi_c': cost_loss.item()})
 
         return cost_loss, pi_info
 
@@ -172,9 +170,6 @@ class CUP(PPO, Lagrange):
         # the first stage is to maximize reward.
         data = PPO.update(self)
         # the second stage is to minimize cost.
-        # get the loss before
-        loss_pi_c_before = self.loss_record.get_mean('loss_pi_c')
-        self.loss_record.reset('loss_pi_c')
         obs, act, log_p, cost_adv = (
             data['obs'],
             data['act'],
@@ -226,12 +221,9 @@ class CUP(PPO, Lagrange):
                 self.logger.log(f'KL early stop at the {i+1} th step in the second stage.')
                 break
 
-        loss_pi_c = self.loss_record.get_mean('loss_pi_c')
         # log the information.
         self.logger.store(
             **{
-                'Loss/Loss_pi_c': loss_pi_c,
-                'Loss/Delta_loss_pi_c': loss_pi_c - loss_pi_c_before,
                 'Train/SecondStepStopIter': i + 1,
                 'Train/SecondStepEntropy': pi_info_c['ent'],
                 'Train/SecondStepPolicyRatio': pi_info_c['ratio'],
