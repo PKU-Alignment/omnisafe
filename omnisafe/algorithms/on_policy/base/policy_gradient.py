@@ -24,7 +24,6 @@ import torch.nn as nn
 from omnisafe.algorithms import registry
 from omnisafe.common.buffer import VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.common.record_queue import RecordQueue
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core, distributed_utils
 from omnisafe.utils.config import Config
@@ -141,30 +140,26 @@ class PolicyGradient:
         self.epoch_time = None
         self.penalty_param = None
         self.critic_loss_fn = nn.MSELoss()
-        self.loss_record = RecordQueue('loss_pi', 'loss_v', 'loss_c', maxlen=100)
 
         self._init_log()
 
     def _init_log(self):
         self.logger.register_key('Train/Epoch')
-        self.logger.register_key('Metrics/EpRet')
-        self.logger.register_key('Metrics/EpCost')
-        self.logger.register_key('Metrics/EpLen')
+        self.logger.register_key('Metrics/EpRet', window_length=50)
+        self.logger.register_key('Metrics/EpCost', window_length=50)
+        self.logger.register_key('Metrics/EpLen', window_length=50)
 
         # log information about actor
-        self.logger.register_key('Loss/Loss_pi')
-        self.logger.register_key('Loss/Delta_loss_pi')
+        self.logger.register_key('Loss/Loss_pi', delta=True)
         self.logger.register_key('Values/Adv')
 
         # log information about critic
-        self.logger.register_key('Loss/Loss_reward_critic')
-        self.logger.register_key('Loss/Delta_loss_reward_critic')
+        self.logger.register_key('Loss/Loss_reward_critic', delta=True)
         self.logger.register_key('Values/V')
 
         if self.cfgs.use_cost:
             # log information about cost critic
-            self.logger.register_key('Loss/Loss_cost_critic')
-            self.logger.register_key('Loss/Delta_loss_cost_critic')
+            self.logger.register_key('Loss/Loss_cost_critic', delta=True)
             self.logger.register_key('Values/C')
 
         self.logger.register_key('Train/Entropy')
@@ -521,11 +516,6 @@ class PolicyGradient:
             data['adv_r'],
             data['adv_c'],
         )
-        # get the loss before
-        loss_pi_before, loss_v_before = self.loss_record.get_mean('loss_pi', 'loss_v')
-        if self.cfgs.use_cost:
-            loss_c_before = self.loss_record.get_mean('loss_c')
-        self.loss_record.reset('loss_pi', 'loss_v', 'loss_c')
         # compute the old distribution of policy net.
         old_dist = self.actor_critic.actor(obs)
 
@@ -561,27 +551,13 @@ class PolicyGradient:
             if self.cfgs.kl_early_stopping and torch_kl > self.cfgs.target_kl:
                 self.logger.log(f'KL early stop at the {i+1} th step.')
                 break
-        # log the information.
-        loss_pi, loss_v = self.loss_record.get_mean('loss_pi', 'loss_v')
         self.logger.store(
             **{
-                'Loss/Loss_pi': loss_pi,
-                'Loss/Delta_loss_pi': loss_pi - loss_pi_before,
                 'Train/StopIter': i + 1,
                 'Values/Adv': adv.mean().item(),
                 'Train/KL': torch_kl,
-                'Loss/Delta_loss_reward_critic': loss_v - loss_v_before,
-                'Loss/Loss_reward_critic': loss_v,
             }
         )
-        if self.cfgs.use_cost:
-            loss_c = self.loss_record.get_mean('loss_c')
-            self.logger.store(
-                **{
-                    'Loss/Delta_loss_cost_critic': loss_c - loss_c_before,
-                    'Loss/Loss_cost_critic': loss_c,
-                }
-            )
         return data
 
     # pylint: disable-next=too-many-locals,too-many-arguments
@@ -622,8 +598,6 @@ class PolicyGradient:
         processed_adv = self.compute_surrogate(adv=adv, cost_adv=cost_adv)
         # compute the loss of policy net.
         loss_pi, pi_info = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=processed_adv)
-        # log the loss of policy net.
-        self.loss_record.append(loss_pi=loss_pi.mean().item())
         # update the policy net.
         self.actor_optimizer.zero_grad()
         # backward the loss of policy net.
@@ -640,6 +614,7 @@ class PolicyGradient:
             **{
                 'Train/Entropy': pi_info['ent'],
                 'Train/PolicyRatio': pi_info['ratio'],
+                'Loss/Loss_pi': loss_pi.mean().item(),
             }
         )
 
@@ -681,8 +656,7 @@ class PolicyGradient:
         if self.cfgs.use_critic_norm:
             for param in self.actor_critic.reward_critic.parameters():
                 loss_v += param.pow(2).sum() * self.cfgs.critic_norm_coeff
-        # log the loss of value net.
-        self.loss_record.append(loss_v=loss_v.mean().item())
+
         # backward
         loss_v.backward()
         # clip the gradient
@@ -692,6 +666,9 @@ class PolicyGradient:
             )
         distributed_utils.mpi_avg_grads(self.actor_critic.reward_critic)
         self.reward_critic_optimizer.step()
+
+        # log the loss of value net.
+        self.logger.store(**{'Loss/Loss_reward_critic': loss_v.mean().item()})
 
     def update_cost_net(self, obs: torch.Tensor, target_c: torch.Tensor) -> None:
         r"""Update cost network under a double for loop.
@@ -727,8 +704,6 @@ class PolicyGradient:
         if self.cfgs.use_critic_norm:
             for param in self.actor_critic.cost_critic.parameters():
                 loss_c += param.pow(2).sum() * self.cfgs.critic_norm_coeff
-        # log the loss.
-        self.loss_record.append(loss_c=loss_c.mean().item())
         # backward.
         loss_c.backward()
         # clip the gradient.
@@ -738,3 +713,6 @@ class PolicyGradient:
             )
         distributed_utils.mpi_avg_grads(self.actor_critic.cost_critic)
         self.cost_critic_optimizer.step()
+
+        # log the loss of cost net.
+        self.logger.store(**{'Loss/Loss_cost_critic': loss_c.mean().item()})
