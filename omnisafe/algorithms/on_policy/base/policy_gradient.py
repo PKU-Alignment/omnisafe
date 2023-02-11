@@ -151,12 +151,12 @@ class PolicyGradient:
         self.logger.register_key('Metrics/EpCost')
         self.logger.register_key('Metrics/EpLen')
 
-        # # log information about actor
+        # log information about actor
         self.logger.register_key('Loss/Loss_pi')
         self.logger.register_key('Loss/Delta_loss_pi')
         self.logger.register_key('Values/Adv')
 
-        # # log information about critic
+        # log information about critic
         self.logger.register_key('Loss/Loss_reward_critic')
         self.logger.register_key('Loss/Delta_loss_reward_critic')
         self.logger.register_key('Values/V')
