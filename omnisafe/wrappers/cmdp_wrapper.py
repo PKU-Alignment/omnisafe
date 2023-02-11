@@ -24,7 +24,6 @@ import torch
 from omnisafe.common.buffer import OffPolicyBuffer, VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.common.normalizer import Normalizer
-from omnisafe.common.record_queue import RecordQueue
 from omnisafe.models import ConstraintActorCritic, ConstraintActorQCritic
 from omnisafe.typing import Dict, NamedTuple, Optional, Tuple, Union
 from omnisafe.utils import distributed_utils
@@ -164,7 +163,6 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             if self.cfgs.normalized_cost
             else None
         )
-        self.record_queue = RecordQueue('ep_ret', 'ep_cost', 'ep_len', maxlen=self.cfgs.max_len)
         self.rollout_data.current_obs = CMDPWrapper.reset(self)[0]
         self._init_check()
 
@@ -444,27 +442,19 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         is_train: bool = True,
     ) -> None:
         """Log the information of the rollout."""
-        self.record_queue.append(
-            ep_ret=self.rollout_data.rollout_log.ep_ret[idx],
-            ep_cost=self.rollout_data.rollout_log.ep_costs[idx],
-            ep_len=self.rollout_data.rollout_log.ep_len[idx],
-        )
-        avg_ep_ret, avg_ep_cost, avg_ep_len = self.record_queue.get_mean(
-            'ep_ret', 'ep_cost', 'ep_len'
-        )
         if is_train:
             logger.store(
                 **{
-                    'Metrics/EpRet': avg_ep_ret,
-                    'Metrics/EpCost': avg_ep_cost,
-                    'Metrics/EpLen': avg_ep_len,
+                    'Metrics/EpRet': self.rollout_data.rollout_log.ep_ret[idx],
+                    'Metrics/EpCost': self.rollout_data.rollout_log.ep_costs[idx],
+                    'Metrics/EpLen': self.rollout_data.rollout_log.ep_len[idx],
                 }
             )
         else:
             logger.store(
                 **{
-                    'Test/EpRet': avg_ep_ret,
-                    'Test/EpCost': avg_ep_cost,
-                    'Test/EpLen': avg_ep_len,
+                    'Metrics/EpRet': self.rollout_data.rollout_log.ep_ret[idx],
+                    'Metrics/EpCost': self.rollout_data.rollout_log.ep_costs[idx],
+                    'Metrics/EpLen': self.rollout_data.rollout_log.ep_len[idx],
                 }
             )

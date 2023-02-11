@@ -87,7 +87,10 @@ class AlgoWrapper:
             cfgs=cfgs,
         )
         agent.learn()
-        return agent.env.record_queue.get_mean('ep_ret', 'ep_cost', 'ep_len')
+        ep_ret = agent.logger.get_stats('Metrics/EpRet')
+        ep_len = agent.logger.get_stats('Metrics/EpLen')
+        ep_cost = agent.logger.get_stats('Metrics/EpCost')
+        return ep_ret, ep_len, ep_cost
 
     def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
         """Agent Evaluation."""

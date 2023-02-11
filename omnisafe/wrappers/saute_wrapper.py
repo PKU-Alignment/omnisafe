@@ -21,7 +21,6 @@ import torch
 from gymnasium import spaces
 
 from omnisafe.common.normalizer import Normalizer
-from omnisafe.common.record_queue import RecordQueue
 from omnisafe.typing import NamedTuple, Optional
 from omnisafe.utils.tools import as_tensor, expand_dims
 from omnisafe.wrappers.cmdp_wrapper import CMDPWrapper
@@ -131,9 +130,6 @@ class SauteWrapper(CMDPWrapper):
             )
             if self.cfgs.normalized_obs
             else None
-        )
-        self.record_queue = RecordQueue(
-            'ep_ret', 'ep_cost', 'ep_len', 'ep_budget', maxlen=self.cfgs.max_len
         )
         self.rollout_data.current_obs = self.reset()[0]
 
@@ -253,30 +249,21 @@ class SauteWrapper(CMDPWrapper):
         is_train: bool = True,
     ) -> None:
         """Log the information of the rollout."""
-        self.record_queue.append(
-            ep_ret=self.rollout_data.rollout_log.ep_ret[idx],
-            ep_cost=self.rollout_data.rollout_log.ep_costs[idx],
-            ep_len=self.rollout_data.rollout_log.ep_len[idx],
-            ep_budget=self.rollout_data.rollout_log.ep_budget[idx],
-        )
-        avg_ep_ret, avg_ep_cost, avg_ep_len, avg_ep_budget = self.record_queue.get_mean(
-            'ep_ret', 'ep_cost', 'ep_len', 'ep_budget'
-        )
         if is_train:
             logger.store(
                 **{
-                    'Metrics/EpRet': avg_ep_ret,
-                    'Metrics/EpCost': avg_ep_cost,
-                    'Metrics/EpLen': avg_ep_len,
-                    'Metrics/EpBudget': avg_ep_budget,
+                    'Metrics/EpRet': self.rollout_data.rollout_log.ep_ret[idx],
+                    'Metrics/EpCost': self.rollout_data.rollout_log.ep_costs[idx],
+                    'Metrics/EpLen': self.rollout_data.rollout_log.ep_len[idx],
+                    'Metrics/EpBudget': self.rollout_data.rollout_log.ep_budget[idx],
                 }
             )
         else:
             logger.store(
                 **{
-                    'Test/EpRet': avg_ep_ret,
-                    'Test/EpCost': avg_ep_cost,
-                    'Test/EpLen': avg_ep_len,
-                    'Test/EpBudget': avg_ep_budget,
+                    'Metrics/EpRet': self.rollout_data.rollout_log.ep_ret[idx],
+                    'Metrics/EpCost': self.rollout_data.rollout_log.ep_costs[idx],
+                    'Metrics/EpLen': self.rollout_data.rollout_log.ep_len[idx],
+                    'Metrics/EpBudget': self.rollout_data.rollout_log.ep_budget[idx],
                 }
             )
