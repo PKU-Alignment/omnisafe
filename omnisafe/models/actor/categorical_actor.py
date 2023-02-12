@@ -21,7 +21,8 @@ import torch.nn as nn
 from torch.distributions.categorical import Categorical
 
 from omnisafe.models.base import Actor
-from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_network
+from omnisafe.typing import Activation, InitFunction
+from omnisafe.utils.model import build_mlp_network
 
 
 class CategoricalActor(Actor):

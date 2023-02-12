@@ -21,7 +21,8 @@ import torch.nn.functional as F
 from torch import nn
 from torch.distributions import MultivariateNormal
 
-from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_network, initialize_layer
+from omnisafe.typing import Activation, InitFunction
+from omnisafe.utils.model import build_mlp_network, initialize_layer
 
 
 # pylint: disable-next=too-many-instance-attributes

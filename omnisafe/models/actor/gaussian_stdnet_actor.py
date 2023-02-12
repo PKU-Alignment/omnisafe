@@ -19,7 +19,8 @@ import torch.nn as nn
 from torch.distributions.normal import Normal
 
 from omnisafe.models.base import Actor
-from omnisafe.utils.model_utils import Activation, build_mlp_network
+from omnisafe.typing import Activation
+from omnisafe.utils.model import build_mlp_network
 
 
 class GaussianStdNetActor(Actor):

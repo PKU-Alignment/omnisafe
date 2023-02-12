@@ -24,7 +24,7 @@ from omnisafe.models.actor.categorical_actor import CategoricalActor
 from omnisafe.models.actor.cholesky_actor import MLPCholeskyActor
 from omnisafe.models.actor.gaussian_actor import GaussianActor
 from omnisafe.models.actor.gaussian_stdnet_actor import GaussianStdNetActor
-from omnisafe.utils.model_utils import Activation, InitFunction
+from omnisafe.typing import Activation, InitFunction
 
 
 @dataclass

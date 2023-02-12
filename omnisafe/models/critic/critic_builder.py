@@ -20,7 +20,7 @@ import torch.nn as nn
 
 from omnisafe.models.critic.q_critic import QCritic
 from omnisafe.models.critic.v_critic import VCritic
-from omnisafe.utils.model_utils import Activation, InitFunction
+from omnisafe.typing import Activation, InitFunction
 
 
 # pylint: disable-next=too-few-public-methods

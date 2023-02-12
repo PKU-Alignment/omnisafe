@@ -21,7 +21,7 @@ import torch
 import torch.nn as nn
 from torch.distributions.normal import Normal
 
-from omnisafe.utils.model_utils import Activation, InitFunction
+from omnisafe.typing import Activation, InitFunction
 
 
 class Actor(abc.ABC, nn.Module):

@@ -19,7 +19,8 @@ import torch
 import torch.nn as nn
 
 from omnisafe.models.base import Critic
-from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_network
+from omnisafe.typing import Activation, InitFunction
+from omnisafe.utils.model import build_mlp_network
 
 
 class QCritic(Critic):
