@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of Vector Buffer."""
 
+from typing import Tuple
+
 import torch
 import torch.nn as nn
 
@@ -24,53 +26,61 @@ class Normalizer(nn.Module):
     See https://www.johndcook.com/blog/standard_deviation/
     """
 
-    def __init__(self, shape, clip=1e6):
+    def __init__(self, shape: Tuple[int, ...], clip: float = 1e6) -> None:
         """Initialize the normalize."""
         super().__init__()
-        self.raw_data = nn.Parameter(
-            torch.zeros(*shape), requires_grad=False
-        )  # Current value of data stream
-        self.mean = nn.Parameter(torch.zeros(*shape), requires_grad=False)  # Current mean
-        self.sumsq = nn.Parameter(
-            torch.zeros(*shape), requires_grad=False
-        )  # Current sum of squares, used in var/std calculation
+        self.register_buffer('_mean', torch.zeros(*shape))
+        self.register_buffer('_sumsq', torch.zeros(*shape))
+        self.register_buffer('_var', torch.zeros(*shape))
+        self.register_buffer('_std', torch.zeros(*shape))
+        self.register_buffer('_count', torch.tensor(0))
+        self.register_buffer('_clip', clip * torch.ones(*shape))
 
-        self.var = nn.Parameter(torch.zeros(*shape), requires_grad=False)  # Current variance
-        self.std = nn.Parameter(torch.zeros(*shape), requires_grad=False)  # Current std
+        self._mean: torch.Tensor  # running mean
+        self._sumsq: torch.Tensor  # running sum of squares
+        self._var: torch.Tensor  # running variance
+        self._std: torch.Tensor  # running standard deviation
+        self._count: torch.Tensor  # number of samples
+        self._clip: torch.Tensor  # clip value
 
-        self.count = nn.Parameter(torch.zeros(1), requires_grad=False)  # Counter
+        self._shape = shape
 
-        self.clip = nn.Parameter(clip * torch.ones(*shape), requires_grad=False)
+    @property
+    def shape(self) -> Tuple[int, ...]:
+        """Return the shape of the normalize."""
+        return self._shape
 
-    def push(self, raw_data):
-        """Push a new value into the stream."""
-        self.raw_data.data = raw_data
-        self.count.data[0] += 1
-        if self.count.data[0] == 1:
-            self.mean.data = raw_data
+    @property
+    def mean(self) -> torch.Tensor:
+        """Return the mean of the normalize."""
+        return self._mean
+
+    @property
+    def std(self) -> torch.Tensor:
+        """Return the std of the normalize."""
+        return self._std
+
+    def forward(self, data: torch.Tensor):
+        """Normalize the data."""
+        return self.normalize(data)
+
+    def normalize(self, data: torch.Tensor):
+        """Normalize the _data."""
+        self._push(data)
+        if self._count <= 1:
+            return data
+        output = (data - self._mean) / self._std
+        return torch.clamp(output, -self._clip, self._clip)
+
+    def _push(self, raw_data: torch.Tensor):
+        raw_data = raw_data.to(self._mean.device)
+        self._count += 1
+        if self._count == 1:
+            self._mean = raw_data
         else:
-            old_mean = self.mean
-            self.mean.data += (raw_data - self.mean.data) / self.count.data
-            self.sumsq.data += (raw_data - old_mean.data) * (raw_data - self.mean.data)
-            self.var.data = self.sumsq.data / (self.count.data - 1)
-            self.std.data = torch.sqrt(self.var.data)
-            self.std.data = torch.max(self.std.data, 1e-2 * torch.ones_like(self.std.data))
-
-    def forward(self, raw_data=None):
-        """Normalize the raw_data."""
-        return self.normalize(raw_data)
-
-    def pre_process(self, raw_data):
-        """Pre-process the raw_data."""
-        if len(raw_data.shape) == 1:
-            raw_data = raw_data.unsqueeze(-1)
-        return raw_data
-
-    def normalize(self, raw_data=None):
-        """Normalize the raw_data."""
-        raw_data = self.pre_process(raw_data)
-        self.push(raw_data)
-        if self.count <= 1:
-            return self.raw_data.data
-        output = (self.raw_data.data - self.mean.data) / self.std.data
-        return torch.clamp(output, -self.clip.data, self.clip.data)
+            old_mean = self._mean
+            self._mean += (raw_data - self._mean) / self._count
+            self._sumsq += (raw_data - old_mean) * (raw_data - self._mean)
+            self._var = self._sumsq / (self._count - 1)
+            self._std = torch.sqrt(self._var)
+            self._std = torch.max(self._std, 1e-2 * torch.ones_like(self._std))
