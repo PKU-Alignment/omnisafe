@@ -20,7 +20,7 @@ import torch
 
 from omnisafe.common.buffer.base import BaseBuffer
 from omnisafe.typing import AdvatageEstimator, OmnisafeSpace
-from omnisafe.utils import distributed_utils
+from omnisafe.utils import distributed
 from omnisafe.utils.core import discount_cumsum_torch
 from omnisafe.utils.vtrace import calculate_v_trace
 
@@ -95,8 +95,8 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
     ) -> None:
         """Finish the current path and calculate the advantages of state-action pairs."""
         path_slice = slice(self.path_start_idx, self.ptr)
-        last_value_r = last_value_r.to(self.device)
-        last_value_c = last_value_c.to(self.device)
+        last_value_r = last_value_r.to(self._device)
+        last_value_c = last_value_c.to(self._device)
         rewards = torch.cat([self.data['reward'][path_slice], last_value_r])
         values_r = torch.cat([self.data['value_r'][path_slice], last_value_r])
         costs = torch.cat([self.data['cost'][path_slice], last_value_c])
@@ -139,8 +139,8 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         self.data['adv_r'] = torch.zeros_like(self.data['adv_r'])
         self.data['adv_c'] = torch.zeros_like(self.data['adv_c'])
 
-        adv_mean, adv_std, *_ = distributed_utils.mpi_statistics_scalar(data['adv_r'])
-        cadv_mean, *_ = distributed_utils.mpi_statistics_scalar(data['adv_c'])
+        adv_mean, adv_std, *_ = distributed.dist_statistics_scalar(data['adv_r'])
+        cadv_mean, *_ = distributed.dist_statistics_scalar(data['adv_c'])
         if self._standardized_adv_r:
             data['adv_r'] = (data['adv_r'] - adv_mean) / (adv_std + 1e-8)
         if self._standardized_adv_c:

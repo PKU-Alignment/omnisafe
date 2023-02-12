@@ -20,7 +20,7 @@ import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
-from omnisafe.utils import distributed_utils
+from omnisafe.utils import distributed
 from omnisafe.utils.tools import (
     conjugate_gradients,
     get_flat_gradients_from,
@@ -121,7 +121,7 @@ class NaturalPG(PolicyGradient):
         grads = torch.autograd.grad(kl_p, self.actor_critic.actor.parameters(), retain_graph=False)
         # contiguous indicating, if the memory is contiguously stored or not
         flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
-        distributed_utils.mpi_avg_torch_tensor(flat_grad_grad_kl)
+        distributed.avg_tensor(flat_grad_grad_kl)
         return flat_grad_grad_kl + params * self.cg_damping
 
     # pylint: disable-next=too-many-locals,too-many-arguments
@@ -163,7 +163,7 @@ class NaturalPG(PolicyGradient):
         # train policy with multiple steps of gradient descent
         loss_pi.backward()
         # average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.actor_critic.actor)
+        distributed.avg_grads(self.actor_critic.actor)
         g_flat = get_flat_gradients_from(self.actor_critic.actor)
         g_flat *= -1
 

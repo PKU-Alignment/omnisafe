@@ -25,7 +25,7 @@ from omnisafe.algorithms import registry
 from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_q_critic import ConstraintActorQCritic
-from omnisafe.utils import core, distributed_utils
+from omnisafe.utils import core, distributed
 from omnisafe.wrappers import wrapper_registry
 
 
@@ -64,17 +64,17 @@ class DDPG:
         self.env = wrapper_registry.get(self.wrapper_type)(env_id, cfgs=env_cfgs)
         # set up for learning and rolling out schedule
         self.local_steps_per_epoch = (
-            cfgs.steps_per_epoch // cfgs.env_cfgs.num_envs // distributed_utils.num_procs() + 1
+            cfgs.steps_per_epoch // cfgs.env_cfgs.num_envs // distributed.world_size() + 1
         )
         self.total_steps = self.cfgs.epochs * self.cfgs.steps_per_epoch
         # the steps in each process should be integer
-        assert self.cfgs.steps_per_epoch % distributed_utils.num_procs() == 0, (
-            f'Number of processes ({distributed_utils.num_procs()})'
+        assert self.cfgs.steps_per_epoch % distributed.world_size() == 0, (
+            f'Number of processes ({distributed.world_size()})'
             f'is not a divisor of the number of steps per epoch {self.cfgs.steps_per_epoch}.'
         )
         # ensure local each local process can experience at least one complete episode
         assert self.env.rollout_data.max_ep_len <= self.local_steps_per_epoch, (
-            f'Reduce number of cores ({distributed_utils.num_procs()}) or increase '
+            f'Reduce number of cores ({distributed.world_size()}) or increase '
             f'batch size {self.cfgs.steps_per_epoch}.'
         )
         # ensure valid number for iteration
@@ -96,7 +96,7 @@ class DDPG:
             config=cfgs,
         )
         # set seed
-        seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
+        seed = int(cfgs.seed) + 10000 * distributed.get_rank()
         torch.manual_seed(seed)
         np.random.seed(seed)
         # setup actor-critic module

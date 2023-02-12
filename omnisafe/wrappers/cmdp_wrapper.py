@@ -26,7 +26,7 @@ from omnisafe.common.logger import Logger
 from omnisafe.common.normalizer import Normalizer
 from omnisafe.models import ConstraintActorCritic, ConstraintActorQCritic
 from omnisafe.typing import Dict, NamedTuple, Optional, Tuple, Union
-from omnisafe.utils import distributed_utils
+from omnisafe.utils import distributed
 from omnisafe.utils.tools import as_tensor, expand_dims
 from omnisafe.wrappers.wrapper_registry import WRAPPER_REGISTRY
 
@@ -111,11 +111,11 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
         self.action_space = None
         self.observation_space = None
         self.make(env_id, env_kwargs)
-        seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
+        seed = int(cfgs.seed) + 10000 * distributed.get_rank()
         torch.manual_seed(seed)
         np.random.seed(seed)
-        self.set_seed(int(self.cfgs.seed) + 10000 * distributed_utils.proc_id())
-        if distributed_utils.num_procs() == 1:
+        self.set_seed(int(self.cfgs.seed) + 10000 * distributed.get_rank())
+        if distributed.world_size() == 1:
             torch.set_num_threads(self.cfgs.num_threads)
         width = self.env.width if hasattr(self.env, 'width') else 256
         height = self.env.height if hasattr(self.env, 'height') else 256

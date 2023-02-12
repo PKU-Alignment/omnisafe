@@ -19,7 +19,7 @@ import torch.nn.functional as F
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
-from omnisafe.utils import distributed_utils
+from omnisafe.utils import distributed
 
 
 @registry.register
@@ -119,7 +119,7 @@ class P3O(PPO):
                 self.actor_critic.actor.parameters(), self.cfgs.max_grad_norm
             )
         # average the gradient of policy net.
-        distributed_utils.mpi_avg_grads(self.actor_critic.actor)
+        distributed.avg_grads(self.actor_critic.actor)
         self.actor_optimizer.step()
         self.logger.store(
             **{

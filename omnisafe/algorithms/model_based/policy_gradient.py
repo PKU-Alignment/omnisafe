@@ -26,7 +26,7 @@ from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import core
-from omnisafe.utils.distributed_utils import proc_id
+from omnisafe.utils.distributed import get_rank
 from omnisafe.wrappers import wrapper_registry
 
 
@@ -62,7 +62,7 @@ class PolicyGradientModelBased:  # pylint: disable=too-many-instance-attributes
 
         # Set seed
         seed = int(cfgs.seed)
-        seed += 10000 * proc_id()
+        seed += 10000 * get_rank()
         torch.manual_seed(seed)
         np.random.seed(seed)
 

@@ -21,7 +21,7 @@ import torch
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
 from omnisafe.common.lagrange import Lagrange
-from omnisafe.utils import distributed_utils
+from omnisafe.utils import distributed
 
 
 @registry.register
@@ -204,7 +204,7 @@ class CUP(PPO, Lagrange):
                         self.actor_critic.actor.parameters(), self.cfgs.max_grad_norm
                     )
                 # average the gradient of policy net.
-                distributed_utils.mpi_avg_grads(self.actor_critic.actor)
+                distributed.avg_grads(self.actor_critic.actor)
                 self.actor_optimizer.step()
             # compute the new distribution of policy net.
             new_dist = self.actor_critic.actor(obs)
@@ -215,7 +215,7 @@ class CUP(PPO, Lagrange):
                 .mean()
                 .item()
             )
-            torch_kl = distributed_utils.mpi_avg(torch_kl)
+            torch_kl = distributed.dist_avg(torch_kl)
             # if the KL divergence is larger than the target KL divergence, stop the update.
             if self.cfgs.kl_early_stopping and torch_kl > self.cfgs.target_kl:
                 self.logger.log(f'KL early stop at the {i+1} th step in the second stage.')

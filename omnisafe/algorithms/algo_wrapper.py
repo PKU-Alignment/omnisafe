@@ -22,7 +22,7 @@ import psutil
 from safety_gymnasium.utils.registration import safe_registry
 
 from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
-from omnisafe.utils import distributed_utils
+from omnisafe.utils import distributed
 from omnisafe.utils.config import check_all_configs, get_default_kwargs_yaml
 
 
@@ -77,7 +77,7 @@ class AlgoWrapper:
 
         check_all_configs(cfgs, self.algo_type)
 
-        if distributed_utils.mpi_fork(
+        if distributed.fork(
             self.parallel, use_number_of_threads=use_number_of_threads, device=cfgs.device
         ):
             # Re-launches the current script with workers linked by MPI

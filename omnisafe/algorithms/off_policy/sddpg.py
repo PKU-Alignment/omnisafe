@@ -20,7 +20,7 @@ import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
-from omnisafe.utils import distributed_utils
+from omnisafe.utils import distributed
 from omnisafe.utils.tools import (
     conjugate_gradients,
     get_flat_gradients_from,
@@ -80,7 +80,7 @@ class SDDPG(DDPG):
         )
         # contiguous indicating, if the memory is contiguously stored or not
         flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
-        distributed_utils.mpi_avg_torch_tensor(flat_grad_grad_kl)
+        distributed.avg_tensor(flat_grad_grad_kl)
         return flat_grad_grad_kl + params * self.cfgs.cg_damping
 
     def compute_loss_cost_performance(

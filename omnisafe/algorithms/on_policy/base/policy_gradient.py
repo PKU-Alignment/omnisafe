@@ -25,7 +25,7 @@ from omnisafe.algorithms import registry
 from omnisafe.common.buffer import VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
-from omnisafe.utils import core, distributed_utils
+from omnisafe.utils import core, distributed
 from omnisafe.utils.config import Config
 from omnisafe.utils.tools import get_flat_params_from
 from omnisafe.wrappers import wrapper_registry
@@ -64,18 +64,18 @@ class PolicyGradient:
 
         self.env = wrapper_registry.get(self.wrapper_type)(env_id, cfgs=env_cfgs)
 
-        assert self.cfgs.steps_per_epoch % distributed_utils.num_procs() == 0, (
-            f'Number of processes ({distributed_utils.num_procs()})'
+        assert self.cfgs.steps_per_epoch % distributed.world_size() == 0, (
+            f'Number of processes ({distributed.world_size()})'
             f'is not a divisor of the number of steps per epoch {self.cfgs.steps_per_epoch}.'
         )
         self.steps_per_epoch = self.cfgs.steps_per_epoch
         self.local_steps_per_epoch = (
-            cfgs.steps_per_epoch // cfgs.env_cfgs.num_envs // distributed_utils.num_procs()
+            cfgs.steps_per_epoch // cfgs.env_cfgs.num_envs // distributed.world_size()
         ) + 1
 
         # ensure local each local process can experience at least one complete episode
         assert self.env.rollout_data.max_ep_len <= self.local_steps_per_epoch, (
-            f'Reduce number of cores ({distributed_utils.num_procs()})'
+            f'Reduce number of cores ({distributed.world_size()})'
             f'or reduce the number of parallel envrionments {self.env.cfgs.num_envs}'
             f'or increase batch size {self.cfgs.steps_per_epoch}.'
         )
@@ -224,13 +224,13 @@ class PolicyGradient:
 
         Sync parameters of actor and critic across cores,
         only once necessary."""
-        if distributed_utils.num_procs() > 1:
+        if distributed.world_size() > 1:
             # avoid slowdowns from PyTorch + MPI combo
-            distributed_utils.setup_torch_for_mpi()
+            distributed.setup_distributed()
             start = time.time()
             self.logger.log('INFO: Sync actor critic parameters')
             # sync parameters across cores: only once necessary, grads are averaged!
-            distributed_utils.sync_params(self.actor_critic)
+            distributed.sync_params(self.actor_critic)
             self.logger.log(f'Done! (took {time.time()-start:0.3f} sec.)')
 
     def algorithm_specific_logs(self) -> None:
@@ -245,7 +245,7 @@ class PolicyGradient:
 
     def check_distributed_parameters(self) -> None:
         """Check if parameters are synchronized across all processes."""
-        if distributed_utils.num_procs() > 1:
+        if distributed.world_size() > 1:
             self.logger.log('Check if distributed parameters are synchronous..')
             modules = {
                 'Policy': self.actor_critic.actor,
@@ -253,8 +253,8 @@ class PolicyGradient:
             }
             for key, module in modules.items():
                 flat_params = get_flat_params_from(module)
-                global_min = distributed_utils.mpi_min(torch.sum(flat_params))
-                global_max = distributed_utils.mpi_max(torch.sum(flat_params))
+                global_min = distributed.dist_min(torch.sum(flat_params))
+                global_max = distributed.dist_max(torch.sum(flat_params))
                 assert torch.allclose(global_min, global_max), f'{key} not synced.'
 
     def compute_surrogate(
@@ -546,7 +546,7 @@ class PolicyGradient:
                 .mean()
                 .item()
             )
-            torch_kl = distributed_utils.mpi_avg(torch_kl)
+            torch_kl = distributed.dist_avg(torch_kl)
             # if the KL divergence is larger than the target KL divergence, stop the update.
             if self.cfgs.kl_early_stopping and torch_kl > self.cfgs.target_kl:
                 self.logger.log(f'KL early stop at the {i+1} th step.')
@@ -608,7 +608,7 @@ class PolicyGradient:
                 self.actor_critic.actor.parameters(), self.cfgs.max_grad_norm
             )
         # average the gradient of policy net.
-        distributed_utils.mpi_avg_grads(self.actor_critic.actor)
+        distributed.avg_grads(self.actor_critic.actor)
         self.actor_optimizer.step()
         self.logger.store(
             **{
@@ -664,7 +664,7 @@ class PolicyGradient:
             torch.nn.utils.clip_grad_norm_(
                 self.actor_critic.reward_critic.parameters(), self.cfgs.max_grad_norm
             )
-        distributed_utils.mpi_avg_grads(self.actor_critic.reward_critic)
+        distributed.avg_grads(self.actor_critic.reward_critic)
         self.reward_critic_optimizer.step()
 
         # log the loss of value net.
@@ -711,7 +711,7 @@ class PolicyGradient:
             torch.nn.utils.clip_grad_norm_(
                 self.actor_critic.cost_critic.parameters(), self.cfgs.max_grad_norm
             )
-        distributed_utils.mpi_avg_grads(self.actor_critic.cost_critic)
+        distributed.avg_grads(self.actor_critic.cost_critic)
         self.cost_critic_optimizer.step()
 
         # log the loss of cost net.

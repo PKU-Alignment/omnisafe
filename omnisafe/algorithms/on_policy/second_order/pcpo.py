@@ -20,7 +20,7 @@ import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.trpo import TRPO
-from omnisafe.utils import distributed_utils
+from omnisafe.utils import distributed
 from omnisafe.utils.tools import (
     conjugate_gradients,
     get_flat_gradients_from,
@@ -134,9 +134,9 @@ class PCPO(TRPO):
             cost_diff = loss_pi_cost.item() - loss_pi_cost_before
 
             # average across MPI processes...
-            torch_kl = distributed_utils.mpi_avg(torch_kl)
-            loss_rew_improve = distributed_utils.mpi_avg(loss_rew_improve)
-            cost_diff = distributed_utils.mpi_avg(cost_diff)
+            torch_kl = distributed.dist_avg(torch_kl)
+            loss_rew_improve = distributed.dist_avg(loss_rew_improve)
+            cost_diff = distributed.dist_avg(cost_diff)
             menu = (expected_rew_improve, loss_rew_improve)
             self.logger.log(f'Expected Improvement: {menu[0]} Actual: {menu[1]}')
 
@@ -262,7 +262,7 @@ class PCPO(TRPO):
         # train policy with multiple steps of gradient descent
         loss_pi.backward()
         # average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.actor_critic.actor)
+        distributed.avg_grads(self.actor_critic.actor)
         g_flat = get_flat_gradients_from(self.actor_critic.actor)
 
         # flip sign since policy_loss = -(ration * adv)
@@ -283,7 +283,7 @@ class PCPO(TRPO):
         )
         loss_cost.backward()
         # average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.actor_critic.actor)
+        distributed.avg_grads(self.actor_critic.actor)
         loss_pi_cost_before = loss_cost.item()
         b_flat = get_flat_gradients_from(self.actor_critic.actor)
 

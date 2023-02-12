@@ -17,7 +17,7 @@
 import os
 import subprocess
 import sys
-from typing import Tuple
+from typing import Any, Tuple, Union
 
 import numpy as np
 import torch
@@ -25,57 +25,54 @@ import torch.distributed as dist
 from torch.distributed import ReduceOp
 
 
-def setup_torch_for_mpi():
+def setup_distributed() -> None:
     """Avoid slowdowns caused by each separate process's PyTorch,
     using more than its fair share of CPU resources.
     """
     old_num_threads = torch.get_num_threads()
     # decrease number of torch threads for MPI
-    if old_num_threads > 1 and num_procs() > 1:
-        fair_num_threads = max(int(torch.get_num_threads() / num_procs()), 1)
+    if old_num_threads > 1 and world_size() > 1:
+        fair_num_threads = max(int(torch.get_num_threads() / world_size()), 1)
         torch.set_num_threads(fair_num_threads)
         print(
-            f'Proc {proc_id()}: Decreased number of Torch threads from '
+            f'Proc {get_rank()}: Decreased number of Torch threads from '
             f'{old_num_threads} to {torch.get_num_threads()}',
             flush=True,
         )
 
 
-def mpi_avg_grads(module: torch.nn.Module) -> None:
-    """Average contents of gradient buffers across MPI processes.
-
-    Args:
-        module (torch.nn.Module): module to be averaged.
-    """
-    if num_procs() > 1:
-        for parameter in module.parameters():
-            p_grad_numpy = parameter.grad
-            avg_p_grad = mpi_avg(parameter.grad)
-            p_grad_numpy[:] = avg_p_grad[:]
+def get_rank() -> int:
+    """Get rank of calling process."""
+    if os.getenv('MASTER_ADDR') is None:
+        return 0
+    return dist.get_rank()
 
 
-def sync_params(module: torch.nn.Module) -> None:
-    """Sync all parameters of module across all MPI processes.
-
-    .. note::
-
-        This function only works when the training is multi-processing.
-
-    Args:
-        module (torch.nn.Module): module to be synchronized.
-    """
-    if num_procs() > 1:
-        for parameter in module.parameters():
-            p_numpy = parameter.data
-            broadcast(p_numpy)
+def is_master() -> bool:
+    """Test whether the process is the root process."""
+    return bool(get_rank() == 0)
 
 
-def mpi_fork(
+def world_size() -> int:
+    """Count active MPI processes."""
+    if os.getenv('MASTER_ADDR') is None:
+        return 1
+    return dist.get_world_size()
+
+
+reduce = dist.reduce
+allreduce = dist.all_reduce
+gather = dist.gather
+allgather = dist.all_gather
+broadcast = dist.broadcast
+scatter = dist.scatter
+
+
+def fork(
     parallel: int,
     bind_to_core: bool = False,
     use_number_of_threads: bool = False,
     device: str = 'cpu',
-    test_message: list = None,
 ) -> bool:
     """The entrance of multi-processing.
 
@@ -93,10 +90,10 @@ def mpi_fork(
         bind_to_core (bool, optional): Defaults to False.
         use_number_of_threads (bool, optional): Defaults to False.
     """
-    is_parent = False
-    back_end = 'gloo' if device == 'cpu' else 'nccl'
+    is_parent: bool = False
+    backend = 'gloo' if device == 'cpu' else 'nccl'
     if os.getenv('MASTER_ADDR') is not None and os.getenv('IN_DIST') is None:
-        dist.init_process_group(backend=back_end)
+        dist.init_process_group(backend=backend)
         os.environ['IN_DIST'] = '1'
     # check if MPI is already setup..
     if parallel > 1 and os.getenv('MASTER_ADDR') is None:
@@ -116,36 +113,15 @@ def mpi_fork(
             args += ['-bind-to', 'core']
         if use_number_of_threads:
             args += ['--use-hwthread-cpus']
-        args += test_message or sys.argv
+        args += sys.argv
+        print(sys.argv)
         # this is the parent process, spawn sub-processes..
         subprocess.check_call(args, env=env)
         is_parent = True
     return is_parent
 
 
-def is_root_process() -> bool:
-    """Test whether the process is the root process."""
-    return bool(dist.get_rank() == 0)
-
-
-def proc_id() -> int:
-    """Get rank of calling process."""
-    if os.getenv('MASTER_ADDR') is None:
-        return 0
-    return dist.get_rank()
-
-
-def allreduce(*args, **kwargs) -> torch.Tensor:
-    """Allreduce operation."""
-    return dist.all_reduce(*args, **kwargs)
-
-
-def gather(*args, **kwargs) -> torch.Tensor:
-    """Gather operation."""
-    return dist.gather(*args, **kwargs)
-
-
-def mpi_avg_torch_tensor(value: torch.Tensor) -> None:
+def avg_tensor(value: torch.Tensor) -> None:
     """Average a torch tensor over MPI processes.
     Since torch and numpy share same memory space,
     tensors of dim > 0 can be be manipulated through call by reference,
@@ -154,40 +130,76 @@ def mpi_avg_torch_tensor(value: torch.Tensor) -> None:
         value (torch.Tensor): value to be averaged.
     """
     assert isinstance(value, torch.Tensor)
-    if num_procs() > 1:
+    if world_size() > 1:
         assert len(value.shape) > 0
-        avg_x = mpi_avg(value)
+        avg_x = dist_avg(value)
         value[:] = avg_x[:]
 
 
-def num_procs() -> int:
-    """Count active MPI processes."""
-    if os.getenv('MASTER_ADDR') is None:
-        return 1
-    return dist.get_world_size()
+def avg_grads(module: torch.nn.Module) -> None:
+    """Average contents of gradient buffers across MPI processes.
+
+    Args:
+        module (torch.nn.Module): module to be averaged.
+    """
+    if world_size() > 1:
+        for parameter in module.parameters():
+            if parameter.grad is not None:
+                p_grad = parameter.grad
+                avg_p_grad = dist_avg(parameter.grad)
+                p_grad[:] = avg_p_grad[:]
 
 
-def broadcast(value: torch.Tensor, src: int = 0) -> torch.Tensor:
-    """Broadcast."""
-    dist.broadcast(value, src=src)
+def sync_params(module: torch.nn.Module) -> None:
+    """Sync all parameters of module across all MPI processes.
+
+    .. note::
+
+        This function only works when the training is multi-processing.
+
+    Args:
+        module (torch.nn.Module): module to be synchronized.
+    """
+    if world_size() > 1:
+        for parameter in module.parameters():
+            p_numpy = parameter.data
+            broadcast(p_numpy, src=0)
 
 
-def mpi_avg(value: torch.Tensor) -> torch.Tensor:
-    """Average a scalar or numpy vector over MPI processes."""
-    return mpi_sum(value) / num_procs()
+def avg_params(module: torch.nn.Module) -> None:
+    """Average contents of all parameters across MPI processes.
+
+    Args:
+        module (torch.nn.Module): module to be averaged.
+    """
+    if world_size() > 1:
+        for parameter in module.parameters():
+            param_tensor = parameter.data
+            avg_param_tensor = dist_avg(param_tensor)
+            param_tensor[:] = avg_param_tensor[:]
 
 
-def mpi_max(value: torch.Tensor) -> torch.Tensor:
-    """Determine global maximum of scalar or numpy array over MPI processes."""
-    return mpi_op(value, ReduceOp.MAX)
+def dist_avg(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor:
+    """Average a tensor over distributed processes."""
+    return dist_sum(value) / world_size()
 
 
-def mpi_min(value: torch.Tensor) -> torch.Tensor:
-    """Determine global minimum of scalar or numpy array over MPI processes."""
-    return mpi_op(value, ReduceOp.MIN)
+def dist_max(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor:
+    """Determine global maximum of tensor over distributed processes."""
+    return dist_op(value, ReduceOp.MAX)
 
 
-def mpi_op(value: torch.Tensor, operation: ReduceOp) -> torch.Tensor:
+def dist_min(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor:
+    """Determine global minimum of tensor over distributed processes."""
+    return dist_op(value, ReduceOp.MIN)
+
+
+def dist_sum(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor:
+    """Sum a tensor over distributed processes."""
+    return dist_op(value, ReduceOp.SUM)
+
+
+def dist_op(value: Union[np.ndarray, torch.Tensor, int, float], operation: Any) -> torch.Tensor:
     """Multi-processing operation.
 
     .. note::
@@ -199,20 +211,15 @@ def mpi_op(value: torch.Tensor, operation: ReduceOp) -> torch.Tensor:
         value (torch.Tensor): value to be operated.
         operation (ReduceOp): operation type.
     """
-    if num_procs() == 1:
-        return value
-    value, scalar = ([value], True) if np.isscalar(value) else (value, False)
-    value = torch.as_tensor(value, dtype=torch.float32)
+    if world_size() == 1:
+        return torch.as_tensor(value, dtype=torch.float32)
+    value_, scalar = ([value], True) if np.isscalar(value) else (value, False)
+    value = torch.as_tensor(value_, dtype=torch.float32)
     allreduce(value, op=operation)
     return value[0] if scalar else value
 
 
-def mpi_sum(value: torch.Tensor) -> torch.Tensor:
-    """Sum a scalar or numpy vector over MPI processes."""
-    return mpi_op(value, ReduceOp.SUM)
-
-
-def mpi_statistics_scalar(
+def dist_statistics_scalar(
     value: torch.Tensor, with_min_and_max: bool = False
 ) -> Tuple[torch.Tensor, ...]:
     """Get mean/std and optional min/max of scalar x across MPI processes.
@@ -221,14 +228,15 @@ def mpi_statistics_scalar(
         value (torch.Tensor): value to be operated.
         with_min_and_max (bool): whether to return min and max.
     """
-    global_sum, global_n = mpi_sum([torch.sum(value), len(value)])
+    global_sum = dist_sum(torch.sum(value))
+    global_n = dist_sum(len(value))
     mean = global_sum / global_n
 
-    global_sum_sq = mpi_sum(torch.sum((value - mean) ** 2))
+    global_sum_sq = dist_sum(torch.sum((value - mean) ** 2))
     # compute global std
     std = torch.sqrt(global_sum_sq / global_n)
     if with_min_and_max:
-        global_min = mpi_min(value)
-        global_max = mpi_max(value)
+        global_min = dist_min(value)
+        global_max = dist_max(value)
         return mean, std, global_min, global_max
     return mean, std

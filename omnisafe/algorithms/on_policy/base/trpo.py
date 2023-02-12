@@ -20,7 +20,7 @@ import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
-from omnisafe.utils import distributed_utils
+from omnisafe.utils import distributed
 from omnisafe.utils.tools import (
     conjugate_gradients,
     get_flat_gradients_from,
@@ -108,8 +108,8 @@ class TRPO(NaturalPG):
             # real loss improve: old policy loss - new policy loss
             loss_improve = loss_pi_before - loss_pi.item()
             # average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)
-            torch_kl = distributed_utils.mpi_avg(torch_kl)
-            loss_improve = distributed_utils.mpi_avg(loss_improve)
+            torch_kl = distributed.dist_avg(torch_kl)
+            loss_improve = distributed.dist_avg(loss_improve)
             menu = (expected_improve, loss_improve)
             self.logger.log(f'Expected Improvement: {menu[0]} Actual: {menu[1]}')
             if not torch.isfinite(loss_pi):
@@ -167,12 +167,12 @@ class TRPO(NaturalPG):
         processed_adv = self.compute_surrogate(adv=adv, cost_adv=cost_adv)
         # compute the loss of policy net.
         loss_pi, pi_info = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=processed_adv)
-        loss_pi_before = distributed_utils.mpi_avg(loss_pi.item())
+        loss_pi_before = distributed.dist_avg(loss_pi.item())
         p_dist = self.actor_critic.actor(obs)
         # train policy with multiple steps of gradient descent
         loss_pi.backward()
         # average grads across MPI processes
-        distributed_utils.mpi_avg_grads(self.actor_critic.actor)
+        distributed.avg_grads(self.actor_critic.actor)
         g_flat = get_flat_gradients_from(self.actor_critic.actor)
         g_flat *= -1
 
