@@ -14,14 +14,12 @@
 # ==============================================================================
 """This module contains the helper functions for the model."""
 
-from typing import List, Literal, Union
+from typing import List, Type, Union
 
 import numpy as np
 from torch import nn
 
-
-Activation = Literal['identity', 'relu', 'sigmoid', 'softplus', 'tanh']
-InitFunction = Literal['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal']
+from omnisafe.typing import Activation, InitFunction
 
 
 def initialize_layer(init_function: InitFunction, layer: nn.Linear) -> None:
@@ -49,7 +47,7 @@ def initialize_layer(init_function: InitFunction, layer: nn.Linear) -> None:
 
 def get_activation(
     activation: Activation,
-) -> Union[nn.Identity, nn.ReLU, nn.Sigmoid, nn.Softplus, nn.Tanh]:
+) -> Union[Type[nn.Identity], Type[nn.ReLU], Type[nn.Sigmoid], Type[nn.Softplus], Type[nn.Tanh]]:
     """Get the activation function.
 
     The ``activation`` can be chosen from:
@@ -83,12 +81,12 @@ def build_mlp_network(
         output_activation (Activation): The output activation function.
         weight_initialization_mode (InitFunction): The initialization function.
     """
-    activation = get_activation(activation)
-    output_activation = get_activation(output_activation)
+    activation_fn = get_activation(activation)
+    output_activation_fn = get_activation(output_activation)
     layers = []
     for j in range(len(sizes) - 1):
-        act = activation if j < len(sizes) - 2 else output_activation
+        act_fn = activation_fn if j < len(sizes) - 2 else output_activation_fn
         affine_layer = nn.Linear(sizes[j], sizes[j + 1])
         initialize_layer(weight_initialization_mode, affine_layer)
-        layers += [affine_layer, act()]
+        layers += [affine_layer, act_fn()]
     return nn.Sequential(*layers)
