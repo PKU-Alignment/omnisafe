@@ -1,4 +1,4 @@
-safety-gymnasium >= 0.1.0b0
+safety-gymnasium >= 0.1.0
 torch >= 1.10.0
 numpy >= 1.20.0
 tensorboard >= 2.8.0
