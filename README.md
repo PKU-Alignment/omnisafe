@@ -2,7 +2,7 @@
 <!-- markdownlint-disable html -->
 
 <div align="center">
-  <img src="./images/logo.png" width="75%"/>
+  <img src="./images/logo2.png" width="75%"/>
 </div>
 
 [![Organization](https://img.shields.io/badge/Organization-PKU_MARL-blue.svg)](https://github.com/PKU-MARL)
