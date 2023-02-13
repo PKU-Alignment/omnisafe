@@ -25,7 +25,8 @@ from omnisafe.algorithms import registry
 from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_q_critic import ConstraintActorQCritic
-from omnisafe.utils import core, distributed
+from omnisafe.utils import distributed
+from omnisafe.utils.model import set_optimizer
 from omnisafe.wrappers import wrapper_registry
 
 
@@ -116,14 +117,14 @@ class DDPG:
             device=self.device,
         )
         # set up optimizer for policy and q-function
-        self.actor_optimizer = core.set_optimizer(
+        self.actor_optimizer = set_optimizer(
             'Adam', module=self.actor_critic.actor, learning_rate=cfgs.actor_lr
         )
-        self.critic_optimizer = core.set_optimizer(
+        self.critic_optimizer = set_optimizer(
             'Adam', module=self.actor_critic.critic, learning_rate=cfgs.critic_lr
         )
         if cfgs.use_cost:
-            self.cost_critic_optimizer = core.set_optimizer(
+            self.cost_critic_optimizer = set_optimizer(
                 'Adam', module=self.actor_critic.cost_critic, learning_rate=cfgs.critic_lr
             )
         # set up scheduler for policy learning rate decay

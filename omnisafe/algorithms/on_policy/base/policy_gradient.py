@@ -25,8 +25,9 @@ from omnisafe.algorithms import registry
 from omnisafe.common.buffer import VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
-from omnisafe.utils import core, distributed
+from omnisafe.utils import distributed
 from omnisafe.utils.config import Config
+from omnisafe.utils.model import set_optimizer
 from omnisafe.utils.tools import get_flat_params_from
 from omnisafe.wrappers import wrapper_registry
 
@@ -115,14 +116,14 @@ class PolicyGradient:
             device=self.device,
         )
         # set up optimizer for policy and value function
-        self.actor_optimizer = core.set_optimizer(
+        self.actor_optimizer = set_optimizer(
             'Adam', module=self.actor_critic.actor, learning_rate=cfgs.actor_lr
         )
-        self.reward_critic_optimizer = core.set_optimizer(
+        self.reward_critic_optimizer = set_optimizer(
             'Adam', module=self.actor_critic.reward_critic, learning_rate=cfgs.critic_lr
         )
         if cfgs.use_cost:
-            self.cost_critic_optimizer = core.set_optimizer(
+            self.cost_critic_optimizer = set_optimizer(
                 'Adam', module=self.actor_critic.cost_critic, learning_rate=cfgs.critic_lr
             )
         # set up scheduler for policy learning rate decay

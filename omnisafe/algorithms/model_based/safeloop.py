@@ -23,7 +23,7 @@ from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.planner import ARCPlanner
 from omnisafe.algorithms.model_based.policy_gradient import PolicyGradientModelBased
 from omnisafe.models.actor_q_critic import ActorQCritic
-from omnisafe.utils import core
+from omnisafe.utils.model import set_optimizer
 
 
 @registry.register
@@ -183,10 +183,10 @@ class SafeLOOP(
             model_cfgs=self.cfgs.model_cfgs,
         ).to(self.device)
         # Set up optimizer for policy and q-function
-        self.actor_optimizer = core.set_optimizer(
+        self.actor_optimizer = set_optimizer(
             'Adam', module=self.actor_critic.actor, learning_rate=self.cfgs.actor_lr
         )
-        self.critic_optimizer = core.set_optimizer(
+        self.critic_optimizer = set_optimizer(
             'Adam', module=self.actor_critic.critic, learning_rate=self.cfgs.critic_lr
         )
         return self.actor_critic

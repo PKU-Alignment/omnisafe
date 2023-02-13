@@ -17,6 +17,7 @@
 from typing import List, Type, Union
 
 import numpy as np
+import torch
 from torch import nn
 
 from omnisafe.typing import Activation, InitFunction
@@ -90,3 +91,38 @@ def build_mlp_network(
         initialize_layer(weight_initialization_mode, affine_layer)
         layers += [affine_layer, act_fn()]
     return nn.Sequential(*layers)
+
+
+def set_optimizer(
+    opt: str, module: Union[nn.Module, List[nn.Parameter]], learning_rate: float
+) -> torch.optim.Optimizer:
+    """Returns an initialized optimizer from PyTorch.
+
+    .. note::
+
+        The optimizer can be chosen from the following list:
+
+        - Adam
+        - AdamW
+        - Adadelta
+        - Adagrad
+        - Adamax
+        - ASGD
+        - LBFGS
+        - RMSprop
+        - Rprop
+        - SGD
+
+    Args:
+        opt (str): optimizer name.
+        module (Union[nn.Module, List[nn.Parameter]]): module or parameters.
+        learning_rate (float): learning rate.
+    """
+    assert hasattr(torch.optim, opt), f'Optimizer={opt} not found in torch.'
+    optimizer = getattr(torch.optim, opt)
+
+    if isinstance(module, list):
+        return optimizer(module, lr=learning_rate)
+    if isinstance(module, nn.Module):
+        return optimizer(module.parameters(), lr=learning_rate)
+    raise TypeError(f'Invalid module type: {type(module)}')

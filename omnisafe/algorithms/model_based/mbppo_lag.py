@@ -22,7 +22,7 @@ from omnisafe.algorithms.model_based.policy_gradient import PolicyGradientModelB
 from omnisafe.common.buffer import OnPolicyBuffer
 from omnisafe.common.lagrange import Lagrange
 from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
-from omnisafe.utils import core
+from omnisafe.utils.model import set_optimizer
 from omnisafe.wrappers import wrapper_registry
 
 
@@ -432,13 +432,13 @@ class MBPPOLag(PolicyGradientModelBased, Lagrange):
         ).to(self.device)
         # Set up optimizer for policy and value function
 
-        self.actor_optimizer = core.set_optimizer(
+        self.actor_optimizer = set_optimizer(
             'Adam', module=self.actor_critic.actor, learning_rate=self.cfgs.actor_lr
         )
-        self.reward_critic_optimizer = core.set_optimizer(
+        self.reward_critic_optimizer = set_optimizer(
             'Adam', module=self.actor_critic.reward_critic, learning_rate=self.cfgs.critic_lr
         )
-        self.cost_critic_optimizer = core.set_optimizer(
+        self.cost_critic_optimizer = set_optimizer(
             'Adam', module=self.actor_critic.cost_critic, learning_rate=self.cfgs.critic_lr
         )
 

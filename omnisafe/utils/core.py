@@ -14,42 +14,7 @@
 # ==============================================================================
 """Some Core Functions"""
 
-from typing import Union
-
 import torch
-
-from omnisafe.models import ConstraintActorCritic, ConstraintActorQCritic
-
-
-def set_optimizer(
-    opt: str, module: Union[ConstraintActorCritic, ConstraintActorQCritic], learning_rate: float
-) -> torch.optim.Optimizer:
-    """Returns an initialized optimizer from PyTorch.
-
-    .. note::
-
-        The optimizer can be chosen from the following list:
-
-        - Adam
-        - AdamW
-        - Adadelta
-        - Adagrad
-        - Adamax
-        - ASGD
-        - LBFGS
-        - RMSprop
-        - Rprop
-        - SGD
-
-    Args:
-        opt (str): optimizer name.
-        module (torch.nn.Module): module to be optimized.
-        learning_rate (float): learning rate.
-    """
-    assert hasattr(torch.optim, opt), f'Optimizer={opt} not found in torch.'
-    optimizer = getattr(torch.optim, opt)
-
-    return optimizer(module.parameters(), lr=learning_rate, eps=1e-5)
 
 
 def discount_cumsum_torch(x_vector: torch.Tensor, discount: float) -> torch.Tensor:
