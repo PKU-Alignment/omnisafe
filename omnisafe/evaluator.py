@@ -280,15 +280,15 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
             if self.render_mode == 'rgb_array_list':
                 frames = self.env.render()
-                if save_replay_path is not None:
-                    save_video(
-                        frames,
-                        save_replay_path,
-                        fps=self.env.env.metadata['render_fps'],
-                        episode_trigger=lambda x: True,
-                        episode_index=episode_idx,
-                        name_prefix='eval',
-                    )
+            if save_replay_path is not None:
+                save_video(
+                    frames,
+                    save_replay_path,
+                    fps=self.env.env.metadata['render_fps'],
+                    episode_trigger=lambda x: True,
+                    episode_index=episode_idx,
+                    name_prefix='eval',
+                )
             self.env.reset()
             frames = []
 
