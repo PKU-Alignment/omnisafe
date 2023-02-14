@@ -91,7 +91,7 @@ class OffCRPO(DDPG):
         Args:
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
         """
-        action, _ = self.actor_critic.actor.predict(obs, deterministic=False, need_log_prob=False)
+        _, action = self.actor_critic.actor.predict(obs, deterministic=False, need_log_prob=False)
         loss_pi_c = self.actor_critic.cost_critic(obs, action)[0]
         loss_pi_c = F.relu(loss_pi_c - self.cost_limit)
         if loss_pi_c.mean().item() > self.cost_limit:

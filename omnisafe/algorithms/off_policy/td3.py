@@ -74,7 +74,7 @@ class TD3(DDPG):
         q_value_list = self.actor_critic.critic(obs, act)
         # Bellman backup for Q function
         with torch.no_grad():
-            act_targ, _ = self.ac_targ.actor.predict(obs, deterministic=False, need_log_prob=False)
+            _, act_targ = self.ac_targ.actor.predict(obs, deterministic=False, need_log_prob=False)
             q_targ = torch.min(torch.vstack(self.ac_targ.critic(next_obs, act_targ)), dim=0).values
             backup = rew + self.cfgs.gamma * (1 - done) * q_targ
         # MSE loss against Bellman backup
@@ -106,7 +106,7 @@ class TD3(DDPG):
         Args:
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
         """
-        action, _ = self.actor_critic.actor.predict(obs, deterministic=False)
+        _, action = self.actor_critic.actor.predict(obs, deterministic=False)
         loss_pi = torch.min(
             self.actor_critic.critic(obs, action)[0], self.actor_critic.critic(obs, action)[1]
         )

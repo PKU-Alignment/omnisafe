@@ -386,7 +386,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             obs = self.rollout_data.current_obs
             if self.cfgs.normalized_obs:
                 obs = self.obs_normalizer.normalize(obs)
-            raw_action, action, value, cost_value, _ = agent.step(obs, deterministic=deterministic)
+            _, action, value, cost_value, _ = agent.step(obs, deterministic=deterministic)
             # store values for statistic purpose
             if self.rollout_data.use_cost:
                 logger.store(
@@ -413,7 +413,7 @@ class CMDPWrapper:  # pylint: disable=too-many-instance-attributes
             terminals = terminals & ~epoch_ended
             buf.store(
                 obs=obs,
-                act=raw_action,
+                act=action,
                 reward=reward,
                 cost=cost,
                 next_obs=next_obs,

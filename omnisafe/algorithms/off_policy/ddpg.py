@@ -268,7 +268,7 @@ class DDPG:
         Args:
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
         """
-        action, _ = self.actor_critic.actor.predict(obs, deterministic=True)
+        _, action = self.actor_critic.actor.predict(obs, deterministic=True)
         loss_pi = self.actor_critic.critic(obs, action)[0]
         pi_info = {}
         return -loss_pi.mean(), pi_info
@@ -307,7 +307,7 @@ class DDPG:
         )
         # Bellman backup for Q function
         with torch.no_grad():
-            act_targ, _ = self.ac_targ.actor.predict(obs, deterministic=True, need_log_prob=False)
+            _, act_targ = self.ac_targ.actor.predict(obs, deterministic=True, need_log_prob=False)
             q_targ = self.ac_targ.critic(next_obs, act_targ)[0]
             backup = rew + self.cfgs.gamma * (1 - done) * q_targ
         # MSE loss against Bellman backup
@@ -349,7 +349,7 @@ class DDPG:
         )
         # Bellman backup for Q function
         with torch.no_grad():
-            act_targ, _ = self.ac_targ.actor.predict(obs, deterministic=False, need_log_prob=False)
+            _, act_targ = self.ac_targ.actor.predict(obs, deterministic=False, need_log_prob=False)
             qc_targ = self.ac_targ.cost_critic(next_obs, act_targ)[0]
             backup = cost + self.cfgs.gamma * qc_targ
         # MSE loss against Bellman backup

@@ -89,7 +89,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
         Args:
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
         """
-        action, _, logp_a = self.actor_critic.actor.predict(
+        _, action, logp_a = self.actor_critic.actor.predict(
             obs, deterministic=False, need_log_prob=True
         )
         self.alpha_update(logp_a)
@@ -150,7 +150,7 @@ class SACLag(SAC, Lagrange):  # pylint: disable-next=too-many-instance-attribute
         )
         # Bellman backup for Q function
         with torch.no_grad():
-            act_targ, _, logp_a_next = self.ac_targ.actor.predict(
+            _, act_targ, logp_a_next = self.ac_targ.actor.predict(
                 next_obs, deterministic=False, need_log_prob=True
             )
             qc_targ = self.ac_targ.cost_critic(next_obs, act_targ)[0]
