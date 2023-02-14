@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the CVPO algorithm."""
 
+from typing import Any, Union
+
 import numpy as np
 import torch
 from scipy.optimize import minimize
@@ -22,8 +24,7 @@ from torch.nn.utils import clip_grad_norm_
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
-from omnisafe.utils.algo_utils import gaussian_kl
-from omnisafe.utils.tools import to_ndarray
+from omnisafe.utils.math import gaussian_kl
 
 
 @registry.register
@@ -187,3 +188,54 @@ class CVPO(DDPG):
 
     def algorithm_specific_logs(self):
         """Log the CVPO specific information."""
+
+
+# pylint: disable-next=too-many-branches,too-many-return-statements
+def to_ndarray(item: Any, dtype: np.dtype = None) -> Union[np.ndarray, TypeError, None]:
+    """This function is used to convert the data type to ndarray.
+
+    Change `torch.Tensor`, sequence of scalars to ndarray, and keep other data types unchanged.
+
+    .. note:
+        Now supports item type: :obj:`torch.Tensor`,  :obj:`dict`, :obj:`list`, :obj:`tuple` and :obj:`None`
+
+    Args:
+        item (Any): item to be converted.
+        dtype (np.dtype): data type of the output ndarray. Default to None.
+    """
+
+    if isinstance(item, dict):
+        new_data = {}
+        for key, value in item.items():
+            new_data[key] = to_ndarray(value, dtype)
+        return new_data
+
+    if isinstance(item, (list, tuple)):
+        if len(item) == 0:
+            return None
+        if hasattr(item, '_fields'):  # namedtuple
+            return type(item)(*[to_ndarray(t, dtype) for t in item])
+        new_data = []
+        for data in item:
+            new_data.append(to_ndarray(data, dtype))
+        return new_data
+
+    if isinstance(item, torch.Tensor):
+        if item.device != 'cpu':
+            item = item.detach().cpu()
+        if dtype is None:
+            return item.numpy()
+        return item.numpy().astype(dtype)
+
+    if isinstance(item, np.ndarray):
+        if dtype is None:
+            return item
+        return item.astype(dtype)
+
+    if np.isscalar(item):
+        return np.array(item)
+
+    if item is None:
+        return None
+
+    raise TypeError(f'not support item type: {item}')

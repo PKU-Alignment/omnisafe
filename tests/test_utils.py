@@ -24,9 +24,7 @@ import helpers
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.typing import NamedTuple, Tuple
-from omnisafe.utils.core import discount_cumsum_torch
 from omnisafe.utils.distributed import dist_statistics_scalar, fork
-from omnisafe.utils.tools import to_ndarray
 
 
 @helpers.parametrize(item=[1, 1.0, [1, 2, 3], (1, 2, 3), {'a': 1, 'b': 2}, torch.tensor([1, 2, 3])])
@@ -69,9 +67,7 @@ def test_discount_cumsum_torch(
     """Test discount_cumsum_torch."""
     x1 = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0], dtype=torch.float64)
     y1 = get_answer(discount)
-    assert torch.allclose(
-        discount_cumsum_torch(x1, discount), y1
-    ), 'discount_cumsum_torch is not correct'
+    assert torch.allclose(discount_cumsum(x1, discount), y1), 'discount_cumsum_torch is not correct'
 
 
 def test_distributed_tools():

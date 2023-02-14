@@ -21,7 +21,7 @@ import torch
 from omnisafe.common.buffer.base import BaseBuffer
 from omnisafe.typing import AdvatageEstimator, OmnisafeSpace
 from omnisafe.utils import distributed
-from omnisafe.utils.core import discount_cumsum_torch
+from omnisafe.utils.math import discount_cumsum
 
 
 class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attributes
@@ -101,7 +101,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         costs = torch.cat([self.data['cost'][path_slice], last_value_c])
         values_c = torch.cat([self.data['value_c'][path_slice], last_value_c])
 
-        discountred_ret = discount_cumsum_torch(rewards, self._gamma)[:-1]
+        discountred_ret = discount_cumsum(rewards, self._gamma)[:-1]
         self.data['discounted_ret'][path_slice] = discountred_ret
         rewards -= self._penalty_coefficient * costs
 
@@ -205,15 +205,15 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         if self._advantage_estimator == 'gae':
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
             deltas = rewards[:-1] + self._gamma * values[1:] - values[:-1]
-            adv = discount_cumsum_torch(deltas, self._gamma * lam)
+            adv = discount_cumsum(deltas, self._gamma * lam)
             target_value = adv + values[:-1]
 
         elif self._advantage_estimator == 'gae-rtg':
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
             deltas = rewards[:-1] + self._gamma * values[1:] - values[:-1]
-            adv = discount_cumsum_torch(deltas, self._gamma * lam)
+            adv = discount_cumsum(deltas, self._gamma * lam)
             # compute rewards-to-go, to be targets for the value function update
-            target_value = discount_cumsum_torch(rewards, self._gamma)[:-1]
+            target_value = discount_cumsum(rewards, self._gamma)[:-1]
 
         elif self._advantage_estimator == 'vtrace':
             #  v_s = V(x_s) + \sum^{T-1}_{t=s} \gamma^{t-s}
@@ -234,7 +234,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         elif self._advantage_estimator == 'plain':
             # A(x, u) = Q(x, u) - V(x) = r(x, u) + gamma V(x+1) - V(x)
             adv = rewards[:-1] + self._gamma * values[1:] - values[:-1]
-            target_value = discount_cumsum_torch(rewards, self._gamma)[:-1]
+            target_value = discount_cumsum(rewards, self._gamma)[:-1]
 
         else:
             raise NotImplementedError

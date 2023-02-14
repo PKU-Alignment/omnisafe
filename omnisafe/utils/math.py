@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the algo utils."""
-from typing import Tuple
+from typing import Callable, Tuple
 
 import torch
 
@@ -105,3 +105,59 @@ def gaussian_kl(
     c_mean_q = 0.5 * torch.mean(inner_mean_q)
     c_sigma_q = 0.5 * torch.mean(inner_sigma_q)
     return c_mean_q, c_sigma_q, torch.mean(sigma_p_det), torch.mean(sigma_q_det)
+
+
+def discount_cumsum(x_vector: torch.Tensor, discount: float) -> torch.Tensor:
+    """Compute the discounted cumulative sum of vectors."""
+    length = x_vector.shape[0]
+    x_vector = x_vector.type(torch.float64)
+    for idx in reversed(range(length)):
+        if idx == length - 1:
+            cumsum = x_vector[idx]
+        else:
+            cumsum = x_vector[idx] + discount * cumsum
+        x_vector[idx] = cumsum
+    return x_vector
+
+
+def conjugate_gradients(
+    Avp: Callable[[torch.Tensor], torch.Tensor],
+    b_vector: torch.Tensor,
+    num_steps: int = 10,
+    residual_tol: float = 1e-10,
+    eps: float = 1e-6,
+):  # pylint: disable=invalid-name,too-many-locals
+    """Implementation of Conjugate gradient algorithm.
+
+    Conjugate gradient algorithm is used to solve the linear system of equations :math:`Ax = b`.
+    The algorithm is described in detail in the paper `Conjugate Gradient Method`_.
+
+    .. _Conjugate Gradient Method: https://en.wikipedia.org/wiki/Conjugate_gradient_method
+
+    .. note::
+        Increasing ``num_steps`` will lead to a more accurate approximation
+        to :math:`A^{-1} b`, and possibly slightly-improved performance,
+        but at the cost of slowing things down.
+        Also probably don't play with this hyperparameter.
+
+    Args:
+        num_steps (int): Number of iterations of conjugate gradient to perform.
+    """
+
+    x = torch.zeros_like(b_vector)
+    r = b_vector - Avp(x)
+    p = r.clone()
+    rdotr = torch.dot(r, r)
+
+    for _ in range(num_steps):
+        z = Avp(p)
+        alpha = rdotr / (torch.dot(p, z) + eps)
+        x += alpha * p
+        r -= alpha * z
+        new_rdotr = torch.dot(r, r)
+        if torch.sqrt(new_rdotr) < residual_tol:
+            break
+        mu = new_rdotr / (rdotr + eps)
+        p = r + mu * p
+        rdotr = new_rdotr
+    return x
