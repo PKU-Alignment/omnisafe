@@ -15,9 +15,9 @@
 """The core module of the environment."""
 
 
-from abc import ABC, abstractmethod
-from typing import Dict, Tuple, Optional, Any, List, Type
 import inspect
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 import torch
 
@@ -25,9 +25,26 @@ from omnisafe.typing import OmnisafeSpace
 
 
 class CMDP(ABC):
+    """The core class of the environment.
+
+    The CMDP class is the core class of the environment. It defines the basic
+    interface of the environment. The environment should inherit from this class
+    and implement the abstract methods.
+
+    Attributes:
+        _support_envs (List[str]): the supported environments.
+        _action_space (OmnisafeSpace): the action space of the environment.
+        _observation_space (OmnisafeSpace): the observation space of the environment.
+        _num_envs (int): the parallel environments, for env that not support parallel, num_envs should be 1
+        _time_limit (Optional[int]): the time limit of the environment, if None, the environment is infinite.
+    """
+
     _support_envs: List[str]
     _action_space: OmnisafeSpace
     _observation_space: OmnisafeSpace
+
+    _num_envs: int
+    _time_limit: Optional[int] = None
 
     @classmethod
     def support_envs(cls) -> List[str]:
@@ -45,7 +62,9 @@ class CMDP(ABC):
         Args:
             env_id (str): the environment id.
         """
-        assert env_id in self.support_envs(), f"env_id {env_id} is not supported by {self.__class__.__name__}"
+        assert (
+            env_id in self.support_envs()
+        ), f'env_id {env_id} is not supported by {self.__class__.__name__}'
 
     @property
     def action_space(self) -> OmnisafeSpace:
@@ -65,8 +84,28 @@ class CMDP(ABC):
         """
         return self._observation_space
 
+    @property
+    def num_envs(self) -> int:
+        """The parallel environments.
+
+        Returns:
+            int: the parallel environments.
+        """
+        return self._num_envs
+
+    @property
+    def time_limit(self) -> Optional[int]:
+        """The time limit of the environment.
+
+        Returns:
+            Optional[int]: the time limit of the environment.
+        """
+        return self._time_limit
+
     @abstractmethod
-    def step(self, action: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+    def step(
+        self, action: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
@@ -76,7 +115,8 @@ class CMDP(ABC):
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
             cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended, in which case further step() calls will return undefined results.
+            terminated (torch.Tensor): whether the episode has ended, in which case further step()
+            calls will return undefined results.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
@@ -84,6 +124,19 @@ class CMDP(ABC):
     @abstractmethod
     def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
         """Resets the environment and returns an initial observation.
+
+        Args:
+            seed (Optional[int]): seed for the environment.
+
+        Returns:
+            observation (torch.Tensor): the initial observation of the space.
+            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+        """
+
+    @abstractmethod
+    def single_reset(self, idx: int, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
+        """For parallel env, reset one of the env and returns an initial observation,
+            if env not support parallel, should be same as reset.
 
         Args:
             seed (Optional[int]): seed for the environment.
@@ -119,11 +172,74 @@ class CMDP(ABC):
 
     @abstractmethod
     def close(self) -> None:
-        """Close the environment.
+        """Close the environment."""
+
+
+class Wrapper(CMDP):
+    """The wrapper class of the environment.
+
+    The Wrapper class is the wrapper class of the environment. It defines the basic
+    interface of the environment wrapper. The environment wrapper should inherit
+    from this class and implement the abstract methods.
+
+    Attributes:
+        _env (CMDP): the environment.
+
+    """
+
+    def __init__(self, env: CMDP) -> None:
+        """Initialize the wrapper.
+
+        Args:
+            env (CMDP): the environment.
         """
+        self._env = env
+
+    def __getattr__(self, name: str) -> Any:
+        """Get the attribute of the environment.
+
+        Args:
+            name (str): the attribute name.
+
+        Returns:
+            Any: the attribute.
+        """
+        if name.startswith('_'):
+            raise AttributeError(f'attempted to get missing private attribute {name}')
+        return getattr(self._env, name)
+
+    def step(
+        self, action: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+        return self._env.step(action)
+
+    def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
+        return self._env.reset(seed)
+
+    def single_reset(self, idx: int, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
+        return self._env.single_reset(idx, seed)
+
+    def set_seed(self, seed: int) -> None:
+        self._env.set_seed(seed)
+
+    def sample_action(self) -> torch.Tensor:
+        return self._env.sample_action()
+
+    def render(self) -> Any:
+        return self._env.render()
+
+    def close(self) -> None:
+        self._env.close()
 
 
 class EnvRegister:
+    """The environment register.
+
+    The EnvRegister is used to register the environment class. It provides the
+    method to get the environment class by the environment id.
+
+    """
+
     def __init__(self) -> None:
         self._class: Dict[str, Type[CMDP]] = {}
         self._support_envs: Dict[str, List[str]] = {}
@@ -135,12 +251,12 @@ class EnvRegister:
             env_class (Type[CMDP]): the environment class.
         """
         if not inspect.isclass(env_class):
-            raise TypeError(f"{env_class} must be a class")
+            raise TypeError(f'{env_class} must be a class')
         class_name = env_class.__name__
         if not issubclass(env_class, CMDP):
-            raise TypeError(f"{class_name} must be subclass of CMDP")
+            raise TypeError(f'{class_name} must be subclass of CMDP')
         if class_name in self._class:
-            raise ValueError(f"{class_name} has been registered")
+            raise ValueError(f'{class_name} has been registered')
         env_ids = env_class.support_envs()
         self._class[class_name] = env_class
         self._support_envs[class_name] = env_ids
@@ -168,14 +284,16 @@ class EnvRegister:
             Type[CMDP]: the environment class.
         """
         if class_name is not None:
-            assert class_name in self._class, f"{class_name} is not registered"
-            assert env_id in self._support_envs[class_name], f"{env_id} is not supported by {class_name}"
+            assert class_name in self._class, f'{class_name} is not registered'
+            assert (
+                env_id in self._support_envs[class_name]
+            ), f'{env_id} is not supported by {class_name}'
             return self._class[class_name]
-        else:
-            for class_name, env_ids in self._support_envs.items():
-                if env_id in env_ids:
-                    return self._class[class_name]
-            raise ValueError(f"{env_id} is not supported by any environment class")
+
+        for cls_name, env_ids in self._support_envs.items():
+            if env_id in env_ids:
+                return self._class[cls_name]
+        raise ValueError(f'{env_id} is not supported by any environment class')
 
     def support_envs(self) -> List[str]:
         """The supported environments.
@@ -183,7 +301,7 @@ class EnvRegister:
         Returns:
             List[str]: the supported environments.
         """
-        return list(set([env_id for env_ids in self._support_envs.values() for env_id in env_ids]))
+        return list({env_id for env_ids in self._support_envs.values() for env_id in env_ids})
 
 
 ENV_REGISTRY = EnvRegister()
@@ -208,8 +326,9 @@ def make(env_id: str, class_name: Optional[str] = None, **kwargs) -> CMDP:
 
 
 __all__ = [
-    "CMDP",
-    "env_register",
-    "support_envs",
-    "make",
+    'CMDP',
+    'Wrapper',
+    'env_register',
+    'support_envs',
+    'make',
 ]

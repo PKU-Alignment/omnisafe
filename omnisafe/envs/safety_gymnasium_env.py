@@ -15,15 +15,18 @@
 """Environments in the Safety Gymnasium."""
 
 
-from typing import Dict, Tuple, Optional, Any
+from typing import Any, Dict, Optional, Tuple
 
 import safety_gymnasium
 import torch
 
 from omnisafe.envs.core import CMDP, env_register
 
+
 @env_register
 class SafetyGymnasiumEnv(CMDP):
+    """Safety Gymnasium environment."""
+
     _support_envs = [
         'SafetyPointGoal0-v0',
         'SafetyPointGoal1-v0',
@@ -75,20 +78,28 @@ class SafetyGymnasiumEnv(CMDP):
             self._action_space = self._env.single_action_space
             self._observation_space = self._env.single_observation_space
         else:
-            self._env = safety_gymnasium.make(env_id=env_id, **kwargs)
+            self._env = safety_gymnasium.make(id=env_id, **kwargs)
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
 
         self._num_envs = num_envs
 
-    def step(self, action: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+    def step(
+        self, action: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         obs, reward, cost, terminated, truncated, info = self._env.step(action)
-        obs, reward, cost, terminated, truncated = map(torch.as_tensor, (obs, reward, cost, terminated, truncated))
+        obs, reward, cost, terminated, truncated = map(
+            torch.as_tensor, (obs, reward, cost, terminated, truncated)
+        )
         return obs, reward, cost, terminated, truncated, info
 
     def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
         obs, info = self._env.reset(seed=seed)
         return torch.as_tensor(obs), info
+
+    def single_reset(self, idx: int, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
+        obs, info = self.reset(seed=seed)
+        return obs[idx], info
 
     def set_seed(self, seed: int) -> None:
         self.reset(seed=seed)

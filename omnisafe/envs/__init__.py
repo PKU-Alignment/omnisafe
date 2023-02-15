@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Environment api for omnisafe."""
 
-
+from omnisafe.envs.core import CMDP, env_register, make, support_envs
 from omnisafe.envs.safety_gymnasium_env import SafetyGymnasiumEnv
-
-from omnisafe.envs.core import CMDP, env_register, support_envs, make

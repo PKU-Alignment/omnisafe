@@ -29,12 +29,20 @@ class Normalizer(nn.Module):
     def __init__(self, shape: Tuple[int, ...], clip: float = 1e6) -> None:
         """Initialize the normalize."""
         super().__init__()
-        self.register_buffer('_mean', torch.zeros(*shape))
-        self.register_buffer('_sumsq', torch.zeros(*shape))
-        self.register_buffer('_var', torch.zeros(*shape))
-        self.register_buffer('_std', torch.zeros(*shape))
-        self.register_buffer('_count', torch.tensor(0))
-        self.register_buffer('_clip', clip * torch.ones(*shape))
+        if shape == ():
+            self.register_buffer('_mean', torch.tensor(0.0))
+            self.register_buffer('_sumsq', torch.tensor(0.0))
+            self.register_buffer('_var', torch.tensor(0.0))
+            self.register_buffer('_std', torch.tensor(0.0))
+            self.register_buffer('_count', torch.tensor(0))
+            self.register_buffer('_clip', clip * torch.tensor(1.0))
+        else:
+            self.register_buffer('_mean', torch.zeros(*shape))
+            self.register_buffer('_sumsq', torch.zeros(*shape))
+            self.register_buffer('_var', torch.zeros(*shape))
+            self.register_buffer('_std', torch.zeros(*shape))
+            self.register_buffer('_count', torch.tensor(0))
+            self.register_buffer('_clip', clip * torch.ones(*shape))
 
         self._mean: torch.Tensor  # running mean
         self._sumsq: torch.Tensor  # running sum of squares
