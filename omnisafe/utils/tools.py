@@ -14,6 +14,9 @@
 # ==============================================================================
 """tool_function_packages"""
 
+import os
+import random
+
 import numpy as np
 import torch
 
@@ -112,3 +115,20 @@ def as_tensor(*args, device: torch.device = torch.device('cpu')):
     if len(args) == 1:
         return torch.as_tensor(args[0], dtype=torch.float32)
     return [torch.as_tensor(item, dtype=torch.float32, device=device) for item in args]
+
+
+def seed_all(seed: int):
+    """This function is used to set the random seed for all the packages."""
+
+    os.environ['PYTHONHASHSEED'] = str(seed)
+
+    random.seed(seed)
+    np.random.seed(seed)
+
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    try:
+        torch.use_deterministic_algorithms(True)
+    except AttributeError:
+        pass

@@ -29,6 +29,7 @@ from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import distributed
 from omnisafe.utils.config import Config
 from omnisafe.utils.model import set_optimizer
+from omnisafe.utils.tools import seed_all
 
 
 @registry.register
@@ -53,6 +54,7 @@ class PolicyGradient:
         self._algo = self.__class__.__name__
         self._cfgs = cfgs
         self._seed = cfgs.seed + 1000 * distributed.get_rank()
+        seed_all(self._seed)
         self._device = torch.device(self._cfgs.device)
 
         self._env = OnPolicyAdapter(env_id, cfgs.num_envs, self._seed, cfgs)
