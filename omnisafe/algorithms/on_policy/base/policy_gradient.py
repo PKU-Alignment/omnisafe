@@ -220,6 +220,7 @@ class PolicyGradient:
             data['adv_c'],
         )
 
+        original_obs = obs
         old_distribution = self._actor_critic.actor(obs)
 
         dataloader = DataLoader(
@@ -243,7 +244,7 @@ class PolicyGradient:
                     self._update_cost_critic(obs, target_value_c)
                 self._update_actor(obs, act, logp, adv_r, adv_c)
 
-            new_dist = self._actor_critic.actor(obs)
+            new_dist = self._actor_critic.actor(original_obs)
 
             kl = torch.distributions.kl.kl_divergence(old_distribution, new_dist).mean().item()
             kl = distributed.dist_avg(kl)
