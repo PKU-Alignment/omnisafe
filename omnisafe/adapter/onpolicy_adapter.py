@@ -31,15 +31,9 @@ class OnPolicyAdapter(OnlineAdapter):
     ) -> None:
         super().__init__(env_id, num_envs, seed, cfgs)
 
-        self._ep_ret = torch.zeros(
-            self._env.num_envs,
-        )
-        self._ep_cost = torch.zeros(
-            self._env.num_envs,
-        )
-        self._ep_len = torch.zeros(
-            self._env.num_envs,
-        )
+        self._ep_ret = torch.zeros(self._env.num_envs)
+        self._ep_cost = torch.zeros(self._env.num_envs)
+        self._ep_len = torch.zeros(self._env.num_envs)
 
     def roll_out(  # pylint: disable=too-many-locals
         self,
@@ -56,6 +50,10 @@ class OnPolicyAdapter(OnlineAdapter):
             buf (VectorOnPolicyBuffer): Buffer.
             logger (Logger): Logger.
         """
+        self._ep_ret = torch.zeros(self._env.num_envs)
+        self._ep_cost = torch.zeros(self._env.num_envs)
+        self._ep_len = torch.zeros(self._env.num_envs)
+
         obs, _ = self.reset()
         for step in range(steps_per_epoch):
             act, _, value_r, value_c, logp = agent.step(obs)
