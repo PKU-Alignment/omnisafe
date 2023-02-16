@@ -27,9 +27,9 @@ class OnPolicyAdapter(OnlineAdapter):
     """OnPolicy Adapter for OmniSafe."""
 
     def __init__(  # pylint: disable=too-many-arguments
-        self, env_id: str, env_cls: str, num_envs: int, seed: int, cfgs: Config
+        self, env_id: str, num_envs: int, seed: int, cfgs: Config
     ) -> None:
-        super().__init__(env_id, env_cls, num_envs, seed, cfgs)
+        super().__init__(env_id, num_envs, seed, cfgs)
 
         self._ep_ret = torch.zeros(
             self._env.num_envs,
@@ -45,7 +45,7 @@ class OnPolicyAdapter(OnlineAdapter):
         self,
         steps_per_epoch: int,
         agent: ConstraintActorCritic,
-        buf: VectorOnPolicyBuffer,
+        buffer: VectorOnPolicyBuffer,
         logger: Logger,
     ) -> None:
         """Roll out the environment and store the data in the buffer.
@@ -69,7 +69,7 @@ class OnPolicyAdapter(OnlineAdapter):
                 logger.store(**{'Value/cost': value_c})
             logger.store(**{'Value/reward': value_r})
 
-            buf.store(
+            buffer.store(
                 obs=obs,
                 act=act,
                 reward=reward,
@@ -80,28 +80,31 @@ class OnPolicyAdapter(OnlineAdapter):
             )
 
             obs = next_obs
-            dones = terminated or truncated
+            dones = torch.logical_or(terminated, truncated)
             epoch_end = step >= steps_per_epoch - 1
             for idx, done in enumerate(dones):
-                if epoch_end and not done:
-                    logger.log(
-                        f'Warning: trajectory cut off when rollout by epoch at {self._ep_len[idx]} steps.'
-                    )
-                    _, _, last_value_r, last_value_c, _ = agent.step(obs[idx])
-                elif done:
-                    last_value_r = torch.tensor(0.0)
-                    last_value_c = torch.tensor(0.0)
+                if epoch_end or done:
+                    if epoch_end and not done:
+                        logger.log(
+                            f'Warning: trajectory cut off when rollout by epoch at {self._ep_len[idx]} steps.'
+                        )
+                        _, _, last_value_r, last_value_c, _ = agent.step(obs[idx])
+                        last_value_r = last_value_r.unsqueeze(0)
+                        last_value_c = last_value_c.unsqueeze(0)
+                    elif done:
+                        last_value_r = torch.zeros(1)
+                        last_value_c = torch.zeros(1)
 
-                    logger.store(
-                        **{
-                            'Metrics/EpRet': self._ep_ret[idx],
-                            'Metrics/EpCost': self._ep_cost[idx],
-                            'Metrics/EpLen': self._ep_len[idx],
-                        }
-                    )
+                        logger.store(
+                            **{
+                                'Metrics/EpRet': self._ep_ret[idx],
+                                'Metrics/EpCost': self._ep_cost[idx],
+                                'Metrics/EpLen': self._ep_len[idx],
+                            }
+                        )
 
-                    self._ep_ret[idx] = 0.0
-                    self._ep_cost[idx] = 0.0
-                    self._ep_len[idx] = 0.0
+                        self._ep_ret[idx] = 0.0
+                        self._ep_cost[idx] = 0.0
+                        self._ep_len[idx] = 0.0
 
-                buf.finish_path(last_value_r, last_value_c, idx)
+                    buffer.finish_path(last_value_r, last_value_c, idx)

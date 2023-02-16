@@ -100,6 +100,10 @@ class Config(dict):
         except KeyError:
             return super().__getattribute__(name)
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Set attribute."""
+        self[name] = value
+
     def todict(self) -> dict:
         """Convert Config to dictionary."""
         config_dict = {}

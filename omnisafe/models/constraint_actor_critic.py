@@ -14,13 +14,14 @@
 # ==============================================================================
 """Implementation of ConstraintActorCritic."""
 
-from typing import NamedTuple, Tuple
+from typing import Tuple
 
 import torch
-from gymnasium.spaces import Box
 
 from omnisafe.models.actor_critic import ActorCritic
 from omnisafe.models.critic import CriticBuilder
+from omnisafe.typing import OmnisafeSpace
+from omnisafe.utils.config import Config
 
 
 class ConstraintActorCritic(ActorCritic):
@@ -56,9 +57,9 @@ class ConstraintActorCritic(ActorCritic):
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        observation_space: Box,
-        action_space: Box,
-        model_cfgs: NamedTuple,
+        observation_space: OmnisafeSpace,
+        action_space: OmnisafeSpace,
+        model_cfgs: Config,
     ) -> None:
         """Initialize ConstraintActorCritic
 

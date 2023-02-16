@@ -71,8 +71,8 @@ class SafetyGymnasiumEnv(CMDP):
         'SafetyAntVelocity-v4',
         'SafetyHumanoidVelocity-v4',
     ]
-    _need_auto_reset_wrapper = False
-    _need_time_limit_wrapper = False
+    need_auto_reset_wrapper = False
+    need_time_limit_wrapper = False
 
     def __init__(self, env_id: str, num_envs: int = 1, **kwargs) -> None:
         if num_envs > 1:
@@ -91,13 +91,14 @@ class SafetyGymnasiumEnv(CMDP):
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         obs, reward, cost, terminated, truncated, info = self._env.step(action)
         obs, reward, cost, terminated, truncated = map(
-            torch.as_tensor, (obs, reward, cost, terminated, truncated)
+            lambda x: torch.as_tensor(x, dtype=torch.float32),
+            (obs, reward, cost, terminated, truncated),
         )
         return obs, reward, cost, terminated, truncated, info
 
     def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
         obs, info = self._env.reset(seed=seed)
-        return torch.as_tensor(obs), info
+        return torch.as_tensor(obs, dtype=torch.float32), info
 
     def single_reset(self, idx: int, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
         obs, info = self.reset(seed=seed)
@@ -107,7 +108,7 @@ class SafetyGymnasiumEnv(CMDP):
         self.reset(seed=seed)
 
     def sample_action(self) -> torch.Tensor:
-        return torch.as_tensor(self._env.action_space.sample())
+        return torch.as_tensor(self._env.action_space.sample(), torch.float32)
 
     def render(self) -> Any:
         return self._env.render()

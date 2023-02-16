@@ -14,8 +14,6 @@
 # ==============================================================================
 """Implementation of CriticBuilder."""
 
-from typing import Union
-
 import torch.nn as nn
 
 from omnisafe.models.critic.q_critic import QCritic
@@ -68,7 +66,7 @@ class CriticBuilder:
         self,
         critic_type: str,
         use_obs_encoder: bool = True,
-    ) -> Union[QCritic, VCritic, NotImplementedError]:
+    ) -> nn.Module:
         """Build critic.
 
         Currently, we support two types of critics: ``q`` and ``v``.

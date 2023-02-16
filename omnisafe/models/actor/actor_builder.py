@@ -16,7 +16,7 @@
 
 import difflib
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Optional
 
 import torch.nn as nn
 
@@ -87,15 +87,7 @@ class ActorBuilder:
         )
 
     # pylint: disable-next=too-many-return-statements
-    def build_actor(
-        self, actor_type: str, **kwargs
-    ) -> Union[
-        CategoricalActor,
-        GaussianStdNetActor,
-        MLPCholeskyActor,
-        GaussianActor,
-        NotImplementedError,
-    ]:
+    def build_actor(self, actor_type: str, **kwargs) -> nn.Module:
         """Build actor network."""
         if actor_type == 'categorical':
             return CategoricalActor(

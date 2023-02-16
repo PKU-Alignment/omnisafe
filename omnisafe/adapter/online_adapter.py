@@ -38,7 +38,6 @@ class OnlineAdapter:
     def __init__(  # pylint: disable=too-many-arguments
         self,
         env_id: str,
-        env_cls: str,
         num_envs: int,
         seed: int,
         cfgs: Config,
@@ -46,7 +45,7 @@ class OnlineAdapter:
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id
-        self._env = make(env_id, class_name=env_cls, num_envs=num_envs)
+        self._env = make(env_id, num_envs=num_envs)
         self._wrapper(
             obs_normalize=cfgs.obs_normalize,
             reward_normalize=cfgs.reward_normalize,
