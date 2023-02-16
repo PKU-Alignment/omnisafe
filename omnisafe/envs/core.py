@@ -45,6 +45,8 @@ class CMDP(ABC):
 
     _num_envs: int
     _time_limit: Optional[int] = None
+    need_time_limit_wrapper: bool
+    need_auto_reset_wrapper: bool
 
     @classmethod
     def support_envs(cls) -> List[str]:

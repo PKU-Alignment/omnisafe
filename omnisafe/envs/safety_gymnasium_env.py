@@ -71,6 +71,8 @@ class SafetyGymnasiumEnv(CMDP):
         'SafetyAntVelocity-v4',
         'SafetyHumanoidVelocity-v4',
     ]
+    _need_auto_reset_wrapper = False
+    _need_time_limit_wrapper = False
 
     def __init__(self, env_id: str, num_envs: int = 1, **kwargs) -> None:
         if num_envs > 1:
@@ -78,7 +80,7 @@ class SafetyGymnasiumEnv(CMDP):
             self._action_space = self._env.single_action_space
             self._observation_space = self._env.single_observation_space
         else:
-            self._env = safety_gymnasium.make(id=env_id, **kwargs)
+            self._env = safety_gymnasium.make(id=env_id, autoreset=True, **kwargs)
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
 

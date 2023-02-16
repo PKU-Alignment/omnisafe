@@ -119,16 +119,19 @@ class ObsNormalize(Wrapper):
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         obs, reward, cost, terminated, truncated, info = super().step(action)
+        info['original_obs'] = obs
         obs = self._obs_normalizer.normalize(obs)
         return obs, reward, cost, terminated, truncated, info
 
     def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
         obs, info = super().reset(seed)
+        info['original_obs'] = obs
         obs = self._obs_normalizer.normalize(obs)
         return obs, info
 
     def single_reset(self, idx: int, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
         obs, info = super().single_reset(idx, seed)
+        info['original_obs'] = obs
         obs = self._obs_normalizer.normalize(obs.unsqueeze(0)).squeeze(0)
         return obs, info
 
@@ -165,6 +168,7 @@ class RewardNormalize(Wrapper):
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         obs, reward, cost, terminated, truncated, info = super().step(action)
+        info['original_reward'] = reward
         reward = self._reward_normalizer.normalize(reward)
         return obs, reward, cost, terminated, truncated, info
 
@@ -199,6 +203,7 @@ class CostNormalize(Wrapper):
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         obs, reward, cost, terminated, truncated, info = super().step(action)
+        info['original_cost'] = cost
         cost = self._cost_normalizer.normalize(cost)
         return obs, reward, cost, terminated, truncated, info
 
@@ -250,3 +255,43 @@ class ActionScale(Wrapper):
             action - self._min_action
         ) / (self._max_action - self._min_action)
         return super().step(action)
+
+
+class Unsqueeze(Wrapper):
+    """Unsqueeze the observation, reward, cost, terminated, truncated and info.
+
+    Example:
+        >>> env = Unsqueeze(env)
+    """
+
+    def __init__(self, env: CMDP) -> None:
+        """Initialize the wrapper.
+
+        Args:
+            env: The environment to wrap.
+        """
+        super().__init__(env)
+        assert self.num_envs == 1, 'Unsqueeze only works with single environment'
+        assert isinstance(self.observation_space, spaces.Box), 'Observation space must be Box'
+
+    def step(
+        self, action: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+        obs, reward, cost, terminated, truncated, info = super().step(action)
+        obs, reward, cost, terminated, truncated = map(
+            lambda x: x.unsqueeze(0), (obs, reward, cost, terminated, truncated)
+        )
+        for k, v in info.items():
+            if isinstance(v, torch.Tensor):
+                info[k] = v.unsqueeze(0)
+
+        return obs, reward, cost, terminated, truncated, info
+
+    def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
+        obs, info = super().reset(seed)
+        obs = obs.unsqueeze(0)
+        for k, v in info.items():
+            if isinstance(v, torch.Tensor):
+                info[k] = v.unsqueeze(0)
+
+        return obs, info

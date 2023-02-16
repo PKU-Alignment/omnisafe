@@ -16,7 +16,6 @@
 
 from typing import NamedTuple, Tuple
 
-import numpy as np
 import torch
 from gymnasium.spaces import Box
 
@@ -89,7 +88,7 @@ class ConstraintActorCritic(ActorCritic):
 
     def step(
         self, obs: torch.Tensor, deterministic: bool = False
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray,]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """Step function of the actor-critic model
 
         Input observation, output reward and cost value (from :class:`Critic`) action,
