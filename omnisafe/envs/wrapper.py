@@ -111,9 +111,9 @@ class ObsNormalize(Wrapper):
             self._obs_normalizer = norm
         else:
             if self.num_envs == 1:
-                self._obs_normalizer = Normalizer(self.observation_space.shape)
+                self._obs_normalizer = Normalizer(self.observation_space.shape, clip=5)
             else:
-                self._obs_normalizer = Normalizer((self.num_envs, *self.observation_space.shape))
+                self._obs_normalizer = Normalizer((self.num_envs, *self.observation_space.shape), clip=5)
 
     def step(
         self, action: torch.Tensor
@@ -160,9 +160,9 @@ class RewardNormalize(Wrapper):
             self._reward_normalizer = norm
         else:
             if self.num_envs == 1:
-                self._reward_normalizer = Normalizer(())
+                self._reward_normalizer = Normalizer((), clip=5)
             else:
-                self._reward_normalizer = Normalizer((self.num_envs,))
+                self._reward_normalizer = Normalizer((self.num_envs,), clip=5)
 
     def step(
         self, action: torch.Tensor
@@ -195,9 +195,9 @@ class CostNormalize(Wrapper):
             self._obs_normalizer = norm
         else:
             if self.num_envs == 1:
-                self._cost_normalizer = Normalizer(())
+                self._cost_normalizer = Normalizer((), clip=5)
             else:
-                self._cost_normalizer = Normalizer((self.num_envs,))
+                self._cost_normalizer = Normalizer((self.num_envs,), clip=5)
 
     def step(
         self, action: torch.Tensor

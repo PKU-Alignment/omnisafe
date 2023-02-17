@@ -109,6 +109,13 @@ class PolicyGradient:
                 'Adam', module=self._actor_critic.cost_critic, learning_rate=cfgs.critic_lr
             )
 
+        if self._cfgs.linear_lr_decay:
+            # linear anneal
+            def linear_anneal(epoch):
+                return 1 - epoch / self._cfgs.epochs
+
+            self.scheduler = torch.optim.lr_scheduler.LambdaLR(self._actor_optimizer, linear_anneal)
+
         what_to_save = {
             'pi': self._actor_critic.actor,
         }
@@ -190,6 +197,9 @@ class PolicyGradient:
 
             self._update()
 
+            if self._cfgs.linear_lr_decay:
+                self.scheduler.step()
+
             self._logger.store(
                 **{
                     'TotalEnvSteps': (epoch + 1) * self._cfgs.steps_per_epoch,
@@ -246,7 +256,12 @@ class PolicyGradient:
 
             new_dist = self._actor_critic.actor(original_obs)
 
-            kl = torch.distributions.kl.kl_divergence(old_distribution, new_dist).mean().item()
+            kl = (
+                torch.distributions.kl.kl_divergence(old_distribution, new_dist)
+                .sum(-1, keepdim=True)
+                .mean()
+                .item()
+            )
             kl = distributed.dist_avg(kl)
 
             if self._cfgs.kl_early_stopping and kl > self._cfgs.target_kl:
