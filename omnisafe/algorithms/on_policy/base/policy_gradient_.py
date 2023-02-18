@@ -21,6 +21,7 @@ from typing import Dict, Tuple
 import torch
 import torch.nn as nn
 
+from omnisafe.adapter import OnPolicyAdapter
 from omnisafe.algorithms import registry
 from omnisafe.common.buffer import VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
@@ -29,6 +30,7 @@ from omnisafe.utils import distributed
 from omnisafe.utils.config import Config
 from omnisafe.utils.model import set_optimizer
 from omnisafe.utils.tools import get_flat_params_from
+from omnisafe.utils.tools import seed_all
 from omnisafe.wrappers import wrapper_registry
 
 
@@ -63,7 +65,10 @@ class PolicyGradient:
         self.cfgs.env_cfgs.recurisve_update(added_cfgs)
         env_cfgs = self.cfgs.env_cfgs
 
-        self.env = wrapper_registry.get(self.wrapper_type)(env_id, cfgs=env_cfgs)
+        self._seed = cfgs.seed + 1000 * distributed.get_rank()
+        seed_all(self._seed)
+
+        self.env = OnPolicyAdapter(env_id, cfgs.num_envs, self._seed, cfgs)
 
         assert self.cfgs.steps_per_epoch % distributed.world_size() == 0, (
             f'Number of processes ({distributed.world_size()})'
@@ -74,12 +79,12 @@ class PolicyGradient:
             cfgs.steps_per_epoch // cfgs.env_cfgs.num_envs // distributed.world_size()
         ) + 1
 
-        # ensure local each local process can experience at least one complete episode
-        assert self.env.rollout_data.max_ep_len <= self.local_steps_per_epoch, (
-            f'Reduce number of cores ({distributed.world_size()})'
-            f'or reduce the number of parallel envrionments {self.env.cfgs.num_envs}'
-            f'or increase batch size {self.cfgs.steps_per_epoch}.'
-        )
+        # # ensure local each local process can experience at least one complete episode
+        # assert self.env.rollout_data.max_ep_len <= self.local_steps_per_epoch, (
+        #     f'Reduce number of cores ({distributed.world_size()})'
+        #     f'or reduce the number of parallel envrionments {self.cfgs.num_envs}'
+        #     f'or increase batch size {self.cfgs.steps_per_epoch}.'
+        # )
 
         # setup actor-critic module
         self.actor_critic = ConstraintActorCritic(
@@ -131,7 +136,7 @@ class PolicyGradient:
         # set up model saving
         what_to_save = {
             'pi': self.actor_critic.actor,
-            'obs_normalizer': self.env.obs_normalizer,
+            # 'obs_normalizer': self.env.obs_normalizer,
         }
         self.logger.setup_torch_saver(what_to_save=what_to_save)
         self.logger.torch_save()
@@ -156,7 +161,7 @@ class PolicyGradient:
 
         # log information about critic
         self.logger.register_key('Loss/Loss_reward_critic', delta=True)
-        self.logger.register_key('Values/V')
+        self.logger.register_key('Value/reward')
 
         if self.cfgs.use_cost:
             # log information about cost critic
@@ -331,14 +336,15 @@ class PolicyGradient:
             if self.cfgs.exploration_noise_anneal:
                 self.actor_critic.anneal_exploration(frac=epoch / self.cfgs.epochs)
             # collect data from environment
-            self.env.set_rollout_cfgs(
-                local_steps_per_epoch=self.local_steps_per_epoch,
-                use_cost=self.cfgs.use_cost,
-            )
-            self.env.on_policy_roll_out(
-                self.actor_critic,
-                self.buf,
-                self.logger,
+            # self.env.set_rollout_cfgs(
+            #     local_steps_per_epoch=self.local_steps_per_epoch,
+            #     use_cost=self.cfgs.use_cost,
+            # )
+            self.env.roll_out(
+                steps_per_epoch=self.local_steps_per_epoch,
+                agent=self.actor_critic,
+                buffer=self.buf,
+                logger=self.logger,
             )
             # update: actor, critic, running statistics
             self.update()
@@ -437,15 +443,15 @@ class PolicyGradient:
             }
         )
 
-        if self.cfgs.env_cfgs.normalized_rew:
-            reward_norm_mean = self.env.rew_normalizer.mean.mean().item()
-            reward_norm_stddev = self.env.rew_normalizer.std.mean().item()
-            self.logger.store(
-                **{
-                    'Misc/RewScaleMean': reward_norm_mean,
-                    'Misc/RewScaleStddev': reward_norm_stddev,
-                }
-            )
+        # if self.cfgs.env_cfgs.normalized_rew:
+        #     reward_norm_mean = self.env.rew_normalizer.mean.mean().item()
+        #     reward_norm_stddev = self.env.rew_normalizer.std.mean().item()
+        #     self.logger.store(
+        #         **{
+        #             'Misc/RewScaleMean': reward_norm_mean,
+        #             'Misc/RewScaleStddev': reward_norm_stddev,
+        #         }
+        #     )
 
         if self.cfgs.exploration_noise_anneal:
             noise_std = self.actor_critic.actor.std
