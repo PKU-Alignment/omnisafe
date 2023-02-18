@@ -113,7 +113,9 @@ class ObsNormalize(Wrapper):
             if self.num_envs == 1:
                 self._obs_normalizer = Normalizer(self.observation_space.shape, clip=5)
             else:
-                self._obs_normalizer = Normalizer((self.num_envs, *self.observation_space.shape), clip=5)
+                self._obs_normalizer = Normalizer(
+                    (self.num_envs, *self.observation_space.shape), clip=5
+                )
 
     def step(
         self, action: torch.Tensor
