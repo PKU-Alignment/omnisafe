@@ -235,7 +235,7 @@ class PolicyGradient:
 
         dataloader = DataLoader(
             dataset=TensorDataset(obs, act, logp, target_value_r, target_value_c, adv_r, adv_c),
-            batch_size=self._cfgs.batch_size,
+            batch_size=self._cfgs.num_mini_batches,
             shuffle=True,
         )
 
@@ -243,9 +243,9 @@ class PolicyGradient:
             for (
                 obs,
                 act,
+                logp,
                 target_value_r,
                 target_value_c,
-                logp,
                 adv_r,
                 adv_c,
             ) in dataloader:
