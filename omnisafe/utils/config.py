@@ -20,7 +20,7 @@ from typing import Any, Dict, List
 
 import yaml
 
-from omnisafe.typing import Activation, AdvatageEstimator, InitFunction
+from omnisafe.typing import Activation, ActorType, AdvatageEstimator, InitFunction
 
 
 class Config(dict):
@@ -54,21 +54,7 @@ class Config(dict):
     max_grad_norm: float
     use_critic_norm: bool
     critic_norm_coeff: bool
-    model_cfgs: 'Config'
-    shared_weights: bool
-    weight_initialization_mode: InitFunction
-    actor_type: str
-    ac_kwargs: 'Config'
-    pi: 'Config'
-    hidden_sizes: List[int]
-    activation: Activation
-    output_activation: Activation
-    scale_action: bool
-    clip_action: bool
-    std_learning: bool
-    std_init: float
-    val: 'Config'
-    num_critics: int
+    model_cfgs: 'ModelConfig'
     buffer_cfgs: 'Config'
     gamma: float
     lam: float
@@ -147,6 +133,20 @@ class Config(dict):
                     self[key] = Config.dict2config(value)
                 else:
                     self[key] = value
+
+
+class ModelConfig(Config):
+    """Model config."""
+
+    weight_initialization_mode: InitFunction
+    actor_type: ActorType
+    actor: 'ModelConfig'
+    critic: 'ModelConfig'
+    hidden_sizes: List[int]
+    activation: Activation
+    std: List[float]
+    use_obs_encoder: bool
+    lr: float
 
 
 def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:
