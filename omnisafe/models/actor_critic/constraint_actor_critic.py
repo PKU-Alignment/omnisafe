@@ -17,11 +17,12 @@
 from typing import Tuple
 
 import torch
+from torch import optim
 
-from omnisafe.models.actor_critic import ActorCritic
-from omnisafe.models.critic import CriticBuilder
+from omnisafe.models.actor_critic.actor_critic import ActorCritic
+from omnisafe.models.critic.critic_builder import CriticBuilder
 from omnisafe.typing import OmnisafeSpace
-from omnisafe.utils.config import Config
+from omnisafe.utils.config import ModelConfig
 
 
 class ConstraintActorCritic(ActorCritic):
@@ -54,60 +55,63 @@ class ConstraintActorCritic(ActorCritic):
             -   Estimate the cost value of the observation.
     """
 
-    # pylint: disable-next=too-many-arguments
     def __init__(
-        self,
-        observation_space: OmnisafeSpace,
-        action_space: OmnisafeSpace,
-        model_cfgs: Config,
+        self, obs_space: OmnisafeSpace, act_space: OmnisafeSpace, model_cfgs: ModelConfig
     ) -> None:
-        """Initialize ConstraintActorCritic
+        """Initialize ConstraintActorCritic."""
+        super().__init__(obs_space, act_space, model_cfgs)
+        self.cost_critic = CriticBuilder(
+            obs_space=obs_space,
+            act_space=act_space,
+            hidden_sizes=model_cfgs.critic.hidden_sizes,
+            activation=model_cfgs.critic.activation,
+            weight_initialization_mode=model_cfgs.critic.weight_initialization_mode,
+            num_critics=1,
+            use_obs_encoder=model_cfgs.critic.use_obs_encoder,
+        ).build_critic('v')
+        self.add_module('cost_critic', self.cost_critic)
 
-        Args:
-            observation_space (Box): Observation space.
-            action_space (Box): Action space.
-            standardized_obs (bool): Whether to standardize the observation.
-            scale_rewards (bool): Whether to scale the rewards.
-            model_cfgs (NamedTuple): Model configurations.
-        """
-        ActorCritic.__init__(
-            self,
-            observation_space,
-            action_space,
-            model_cfgs,
+        self.cost_critic_optimizer = optim.Adam(
+            self.cost_critic.parameters(), lr=model_cfgs.critic.lr
         )
-
-        critic_builder = CriticBuilder(
-            obs_dim=self.obs_dim,
-            act_dim=self.act_dim,
-            hidden_sizes=self.ac_kwargs.val.hidden_sizes,
-            activation=self.ac_kwargs.val.activation,
-            weight_initialization_mode=self.model_cfgs.weight_initialization_mode,
-            shared=self.shared,
-        )
-        self.cost_critic = critic_builder.build_critic('v')
 
     def step(
         self, obs: torch.Tensor, deterministic: bool = False
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Step function of the actor-critic model
-
-        Input observation, output reward and cost value (from :class:`Critic`) action,
-        and its log probability (from :class`Actor`).
-
-        .. note::
-            The observation is standardized by the running mean and standard deviation.
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Choose action based on observation.
 
         Args:
             obs (torch.Tensor): Observation.
-            deterministic (bool, optional): Whether to use deterministic action.
+            deterministic (bool): Whether to use deterministic policy.
+
+        Returns:
+            action (torch.Tensor): Action.
+            value_r (torch.Tensor): Reward value.
+            value_c (torch.Tensor): Cost value.
+            log_prob (torch.Tensor): Log probability of action.
         """
         with torch.no_grad():
-            value = self.reward_critic(obs)
-            cost_value = self.cost_critic(obs)
+            value_r = self.reward_critic(obs)
+            value_c = self.cost_critic(obs)
 
-            raw_action, action, logp_a = self.actor.predict(
-                obs, deterministic=deterministic, need_log_prob=True
-            )
+            action = self.actor(obs, deterministic=deterministic)
+            log_prob = self.actor.get_log_prob(obs, action)
 
-        return raw_action, action, value, cost_value, logp_a
+        return action, value_r, value_c, log_prob
+
+    def forward(
+        self, obs: torch.Tensor, deterministic: bool = False
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Choose action based on observation.
+
+        Args:
+            obs (torch.Tensor): Observation.
+            deterministic (bool): Whether to use deterministic policy.
+
+        Returns:
+            action (torch.Tensor): Action.
+            value_r (torch.Tensor): Reward value.
+            value_c (torch.Tensor): Cost value.
+            log_prob (torch.Tensor): Log probability of action.
+        """
+        return self.step(obs, deterministic=deterministic)

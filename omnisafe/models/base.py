@@ -14,17 +14,18 @@
 # ==============================================================================
 """This module contains some base abstract classes for the models."""
 
-import abc
-from typing import List, Tuple, Union
+from abc import ABC, abstractmethod
+from typing import List
 
 import torch
 import torch.nn as nn
-from torch.distributions.normal import Normal
+from gymnasium import spaces
+from torch.distributions import Distribution
 
-from omnisafe.typing import Activation, InitFunction
+from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
 
 
-class Actor(abc.ABC, nn.Module):
+class Actor(ABC, nn.Module):
     """A abstract class for actor.
 
     An actor approximates the policy function that maps observations to actions.
@@ -38,34 +39,45 @@ class Actor(abc.ABC, nn.Module):
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        obs_dim: int,
-        act_dim: int,
-        hidden_sizes: list,
+        obs_space: OmnisafeSpace,
+        act_space: OmnisafeSpace,
+        hidden_sizes: List[int],
         activation: Activation = 'relu',
-        weight_initialization_mode: InitFunction = 'xavier_uniform',
-        shared: nn.Module = None,
+        weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
         """Initialize the base actor.
 
         Args:
-            obs_dim (int): observation dimension.
-            act_dim (int): action dimension.
+            obs_space (OmnisafeSpace): observation space.
+            act_space (OmnisafeSpace): action space.
             hidden_sizes (list): hidden layer sizes.
             activation (Activation): activation function.
             weight_initialization_mode (InitFunction, optional): weight initialization mode.
-                                                                Defaults to ``xavier_uniform``.
+                                                                Defaults to ``kaiming_uniform``.
             shared (nn.Module, optional): shared module. Defaults to None.
         """
         nn.Module.__init__(self)
-        self.obs_dim = obs_dim
-        self.act_dim = act_dim
-        self.shared = shared
-        self.weight_initialization_mode = weight_initialization_mode
-        self.activation = activation
-        self.hidden_sizes = hidden_sizes
+        self._obs_space = obs_space
+        self._act_space = act_space
+        self._weight_initialization_mode = weight_initialization_mode
+        self._activation = activation
+        self._hidden_sizes = hidden_sizes
 
-    @abc.abstractmethod
-    def _distribution(self, obs) -> Normal:
+        self._current_dist: Distribution
+        self._after_inference: bool = False
+
+        if isinstance(self._obs_space, spaces.Box) and len(self._obs_space.shape) == 1:
+            self._obs_dim = self._obs_space.shape[0]
+        else:
+            raise NotImplementedError
+
+        if isinstance(self._act_space, spaces.Box) and len(self._act_space.shape) == 1:
+            self._act_dim = self._act_space.shape[0]
+        else:
+            raise NotImplementedError
+
+    @abstractmethod
+    def _distribution(self, obs: torch.Tensor) -> Distribution:
         r"""Return the distribution of action.
 
         An actor generates a distribution, which is used to sample actions during training.
@@ -86,15 +98,28 @@ class Actor(abc.ABC, nn.Module):
 
         Args:
             obs (torch.Tensor): observation.
+
+        Returns:
+            Distribution: the distribution of action.
         """
 
-    @abc.abstractmethod
+    @abstractmethod
+    def forward(self, obs: torch.Tensor) -> Distribution:
+        r"""Return the distribution of action.
+
+        Args:
+            obs (torch.Tensor): observation.
+
+        Returns:
+            Distribution: the distribution of action.
+        """
+
+    @abstractmethod
     def predict(
         self,
         obs: torch.Tensor,
         deterministic: bool = False,
-        need_log_prob: bool = False,
-    ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
+    ) -> torch.Tensor:
         r"""Predict deterministic or stochastic action based on observation.
 
         - ``deterministic`` = ``True`` or ``False``
@@ -108,13 +133,6 @@ class Actor(abc.ABC, nn.Module):
         we want to know the actual action that the agent will take,
         so we should use deterministic actions (set ``deterministic`` = ``True``).
 
-        - ``need_log_prob`` = ``True`` or ``False``
-
-        In some cases, we need to calculate the log probability of the action,
-        which is used to calculate the loss of the actor.
-        For example, in the case of Policy Gradient,
-        the loss is defined as
-
         .. math::
             L = -\mathbb{E}_{s \sim p(s)} [\log p(a | s) A^R (s, a)]
 
@@ -126,11 +144,24 @@ class Actor(abc.ABC, nn.Module):
         Args:
             obs (torch.Tensor): observation.
             deterministic (bool, optional): whether to predict deterministic action. Defaults to False.
-            need_log_prob (bool, optional): whether to return log probability of action. Defaults to False.
+        """
+
+    @abstractmethod
+    def log_prob(self, act: torch.Tensor) -> torch.Tensor:
+        r"""Return the log probability of action under the distribution.
+
+        log_prob only can be called after calling ``predict`` or ``forward``.
+
+        Args:
+            obs (torch.Tensor): observation.
+            act (torch.Tensor): action.
+
+        Returns:
+            torch.Tensor: the log probability of action under the distribution.
         """
 
 
-class Critic(abc.ABC, nn.Module):
+class Critic(ABC, nn.Module):
     """A abstract class for critic.
 
     A critic approximates the value function that maps observations to values.
@@ -147,46 +178,40 @@ class Critic(abc.ABC, nn.Module):
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        obs_dim: int,
-        act_dim: int,
-        hidden_sizes: list,
+        obs_space: OmnisafeSpace,
+        act_space: OmnisafeSpace,
+        hidden_sizes: List[int],
         activation: Activation = 'relu',
-        weight_initialization_mode: InitFunction = 'xavier_uniform',
-        shared: nn.Module = None,
+        weight_initialization_mode: InitFunction = 'kaiming_uniform',
+        num_critics: int = 1,
+        use_obs_encoder: bool = False,
     ) -> None:
         """Initialize the base critic.
 
         Args:
-            obs_dim (int): observation dimension.
-            act_dim (int): action dimension.
+            obs_space (OmnisafeSpace): observation space.
+            act_space (OmnisafeSpace): action space.
             hidden_sizes (list): hidden layer sizes.
             activation (Activation, optional): activation function. Defaults to 'relu'.
             weight_initialization_mode (InitFunction, optional): weight initialization mode.
-                                                                Defaults to 'xavier_uniform'.
+                                                                Defaults to 'kaiming_uniform'.
             shared (nn.Module, optional): shared module. Defaults to None.
         """
         nn.Module.__init__(self)
-        self.obs_dim = obs_dim
-        self.act_dim = act_dim
-        self.shared = shared
-        self.weight_initialization_mode = weight_initialization_mode
-        self.activation = activation
-        self.hidden_sizes = hidden_sizes
+        self._obs_space = obs_space
+        self._act_space = act_space
+        self._weight_initialization_mode = weight_initialization_mode
+        self._activation = activation
+        self._hidden_sizes = hidden_sizes
+        self._num_critics = num_critics
+        self._use_obs_encoder = use_obs_encoder
 
-    @abc.abstractmethod
-    def forward(
-        self,
-        obs: torch.Tensor,
-        act: torch.Tensor = None,
-    ) -> Union[torch.Tensor, List]:
-        """Forward function for critic.
+        if isinstance(self._obs_space, spaces.Box) and len(self._obs_space.shape) == 1:
+            self._obs_dim = self._obs_space.shape[0]
+        else:
+            raise NotImplementedError
 
-        .. note::
-            This forward function has two modes:
-            - If ``act`` is not None, it will return the value of the observation-action pair.
-            - If ``act`` is None, it will return the value of the observation.
-
-        Args:
-            obs (torch.Tensor): observation.
-            act (torch.Tensor, optional): action. Defaults to None.
-        """
+        if isinstance(self._act_space, spaces.Box) and len(self._act_space.shape) == 1:
+            self._act_dim = self._act_space.shape[0]
+        else:
+            raise NotImplementedError

@@ -14,11 +14,13 @@
 # ==============================================================================
 """Implementation of VCritic."""
 
+from typing import List
+
 import torch
 import torch.nn as nn
 
 from omnisafe.models.base import Critic
-from omnisafe.typing import Activation, InitFunction
+from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
 from omnisafe.utils.model import build_mlp_network
 
 
@@ -30,15 +32,14 @@ class VCritic(Critic):
     You can design your own V-function approximator by inheriting this class or :class:`Critic`.
     """
 
-    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        obs_dim: int,
-        act_dim: int,
-        hidden_sizes: list,
+        obs_space: OmnisafeSpace,
+        act_space: OmnisafeSpace,
+        hidden_sizes: List[int],
         activation: Activation = 'relu',
-        weight_initialization_mode: InitFunction = 'xavier_uniform',
-        shared: nn.Module = None,
+        weight_initialization_mode: InitFunction = 'kaiming_uniform',
+        num_critics: int = 1,
     ) -> None:
         """Initialize the critic network.
 
@@ -50,41 +51,37 @@ class VCritic(Critic):
             weight_initialization_mode (InitFunction): Weight initialization mode.
             shared (nn.Module): Shared network.
         """
-        Critic.__init__(
-            self,
-            obs_dim=obs_dim,
-            act_dim=act_dim,
-            hidden_sizes=hidden_sizes,
-            activation=activation,
-            weight_initialization_mode=weight_initialization_mode,
-            shared=shared,
+        super().__init__(
+            obs_space,
+            act_space,
+            hidden_sizes,
+            activation,
+            weight_initialization_mode,
+            num_critics,
+            use_obs_encoder=False,
         )
-        if shared is not None:
-            value_head = build_mlp_network(
-                sizes=[hidden_sizes[-1], 1],
-                activation=activation,
-                weight_initialization_mode=weight_initialization_mode,
+        self.net_lst: List[nn.Module] = []
+        for idx in range(self._num_critics):
+            net = build_mlp_network(
+                sizes=[self._obs_dim, *self._hidden_sizes, 1],
+                activation=self._activation,
+                weight_initialization_mode=self._weight_initialization_mode,
             )
-            self.net = nn.Sequential(shared, value_head)
-        else:
-            self.net = build_mlp_network(
-                [obs_dim] + list(hidden_sizes) + [1],
-                activation=activation,
-                weight_initialization_mode=weight_initialization_mode,
-            )
-            self.add_module('critic', self.net)
+            self.net_lst.append(net)
+            self.add_module(f'critic_{idx}', net)
 
     def forward(
         self,
         obs: torch.Tensor,
-        act: torch.Tensor = None,
-    ) -> torch.Tensor:
+    ) -> List[torch.Tensor]:
         """Forward function.
 
         Specifically, V function approximator maps observations to V-values.
 
         Args:
             obs (torch.Tensor): Observations.
-            act (torch.Tensor): Actions.
         """
-        return torch.squeeze(self.net(obs), -1)
+        res = []
+        for critic in self.net_lst:
+            res.append(torch.squeeze(critic(obs), -1))
+        return res
