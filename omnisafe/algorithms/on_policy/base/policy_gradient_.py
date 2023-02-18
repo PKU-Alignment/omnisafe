@@ -29,8 +29,7 @@ from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import distributed
 from omnisafe.utils.config import Config
 from omnisafe.utils.model import set_optimizer
-from omnisafe.utils.tools import get_flat_params_from
-from omnisafe.utils.tools import seed_all
+from omnisafe.utils.tools import get_flat_params_from, seed_all
 from omnisafe.wrappers import wrapper_registry
 
 
