@@ -16,6 +16,7 @@
 from typing import Callable, Tuple
 
 import torch
+from torch.distributions import Normal, TanhTransform, TransformedDistribution
 
 
 def get_transpose(tensor: torch.Tensor) -> torch.Tensor:
@@ -161,3 +162,75 @@ def conjugate_gradients(
         p = r + mu * p
         rdotr = new_rdotr
     return x
+
+
+class SafeTanhTransformer(TanhTransform):
+    """Safe Tanh Transformer."""
+
+    def _call(self, x: torch.Tensor) -> torch.Tensor:
+        return torch.clamp(torch.tanh(x), min=-0.999999, max=0.999999)
+
+    def _inverse(self, y: torch.Tensor) -> torch.Tensor:
+        if y.dtype.is_floating_point:
+            eps = torch.finfo(y.dtype).eps
+        else:
+            raise ValueError("Expected floating point type")
+        y = y.clamp(min=-1 + eps, max=1 - eps)
+        x = super()._inverse(y)
+        return x
+
+
+class TanhNormal(TransformedDistribution):
+    r"""
+    Creates a tanh-normal distribution parameterized by
+    :attr: `loc` and `scale` where::
+
+        X ~ Normal(loc, scale)
+        Y = tanh(X) ~ TanhNormal(loc, scale)
+
+    Example::
+
+        >>> m = TanhNormal(torch.tensor([0.0]), torch.tensor([1.0]))
+        >>> m.sample()  # tanh-normal distributed with mean=0 and stddev=1
+        tensor([-0.7616])
+
+    Args:
+        loc (float or Tensor): mean of the underlying normal distribution
+        scale (float or Tensor): standard deviation of the underlying normal distribution
+    """
+
+    arg_constraints = {
+        'loc': Normal.arg_constraints['loc'],
+        'scale': Normal.arg_constraints['scale'],
+    }
+    support = TransformedDistribution.support
+    has_rsample = True
+
+    def __init__(self, loc, scale, validate_args=None):
+        base_dist = Normal(loc, scale, validate_args=validate_args)
+        super(TanhNormal, self).__init__(
+            base_dist, SafeTanhTransformer(), validate_args=validate_args
+        )
+
+    def expand(self, batch_shape, _instance=None):
+        new = self._get_checked_instance(TanhNormal, _instance)
+        return super(TanhNormal, self).expand(batch_shape, _instance=new)
+
+    @property
+    def loc(self):
+        return self.base_dist.loc
+
+    @property
+    def scale(self):
+        return self.base_dist.scale
+
+    @property
+    def mean(self):
+        return SafeTanhTransformer()(self.base_dist.mean)
+
+    @property
+    def stddev(self):
+        return self.base_dist.stddev
+
+    def entropy(self):
+        return self.base_dist.entropy()
