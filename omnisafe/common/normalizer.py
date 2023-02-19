@@ -23,7 +23,9 @@ import torch.nn as nn
 class Normalizer(nn.Module):
     """Calculate normalized raw_data from running mean and std
 
-    See https://www.johndcook.com/blog/standard_deviation/
+    See  Chan, Tony F.; Golub, Gene H.; LeVeque, Randall J. (1979), "Updating Formulae and
+    a Pairwise Algorithm for Computing Sample Variances." (PDF), Technical Report STAN-CS-79-773,
+    Department of Computer Science, Stanford University.
     """
 
     def __init__(self, shape: Tuple[int, ...], clip: float = 1e6) -> None:
@@ -52,6 +54,7 @@ class Normalizer(nn.Module):
         self._clip: torch.Tensor  # clip value
 
         self._shape = shape
+        self._first = True
 
     @property
     def shape(self) -> Tuple[int, ...]:
@@ -68,27 +71,38 @@ class Normalizer(nn.Module):
         """Return the std of the normalize."""
         return self._std
 
-    def forward(self, data: torch.Tensor):
+    def forward(self, data: torch.Tensor) -> torch.Tensor:
         """Normalize the data."""
         return self.normalize(data)
 
-    def normalize(self, data: torch.Tensor):
+    def normalize(self, data: torch.Tensor) -> torch.Tensor:
         """Normalize the _data."""
+        data = data.to(self._mean.device)
         self._push(data)
         if self._count <= 1:
             return data
         output = (data - self._mean) / self._std
         return torch.clamp(output, -self._clip, self._clip)
 
-    def _push(self, raw_data: torch.Tensor):
-        raw_data = raw_data.to(self._mean.device)
-        self._count += 1
-        if self._count == 1:
-            self._mean = raw_data
+    def _push(self, raw_data: torch.Tensor) -> None:
+        if raw_data.shape == self._shape:
+            raw_data = raw_data.unsqueeze(0)
+        assert raw_data.shape[1:] == self._shape, 'data shape must be equal to (batch_size, *shape)'
+
+        if self._first:
+            self._mean = torch.mean(raw_data, dim=0)
+            self._sumsq = torch.sum((raw_data - self._mean) ** 2, dim=0)
+            self._count = torch.tensor(raw_data.shape[0], dtype=self._count.dtype, device=self._count.device)
+            self._first = False
         else:
-            old_mean = self._mean
-            self._mean += (raw_data - self._mean) / self._count
-            self._sumsq += (raw_data - old_mean) * (raw_data - self._mean)
-            self._var = self._sumsq / (self._count - 1)
-            self._std = torch.sqrt(self._var)
-            self._std = torch.max(self._std, 1e-2 * torch.ones_like(self._std))
+            count_raw = raw_data.shape[0]
+            count = self._count + count_raw
+            mean_raw = torch.mean(raw_data, dim=0)
+            delta = mean_raw - self._mean
+            self._mean += delta * count_raw / count
+            sumq_raw = torch.sum((raw_data - mean_raw) ** 2, dim=0)
+            self._sumsq += sumq_raw + delta ** 2 * self._count * count_raw / count
+            self._count = count
+        self._var = self._sumsq / (self._count - 1)
+        self._std = torch.sqrt(self._var)
+        self._std = torch.max(self._std, 1e-2 * torch.ones_like(self._std))
