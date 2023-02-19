@@ -25,11 +25,10 @@ from omnisafe.adapter import OnPolicyAdapter
 from omnisafe.algorithms import registry
 from omnisafe.common.buffer import VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
-from omnisafe.utils import distributed
+from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils.config import Config
-from omnisafe.utils.model import set_optimizer
 from omnisafe.utils.tools import seed_all
+from omnisafe.utils import distributed
 
 
 @registry.register
@@ -58,12 +57,10 @@ class PolicyGradient:
         self._device = torch.device(self._cfgs.device)
 
         self._env = OnPolicyAdapter(env_id, cfgs.num_envs, self._seed, cfgs)
-        assert self._cfgs.steps_per_epoch % distributed.world_size() == 0, (
-            'The number of steps per epoch must be divisible by the number of ' 'processes.'
-        )
         self._steps_per_epoch = (
             self._cfgs.steps_per_epoch // distributed.world_size() // cfgs.num_envs
         )
+        assert self._steps_per_epoch > 0, 'The number of steps per epoch is too small.'
 
         # set up logger and save configuration to disk
         self._logger = Logger(
@@ -76,9 +73,9 @@ class PolicyGradient:
         )
 
         self._actor_critic = ConstraintActorCritic(
-            observation_space=self._env.observation_space,
-            action_space=self._env.action_space,
-            model_cfgs=self._cfgs.model_cfgs,
+            obs_space=self._env.observation_space,
+            act_space=self._env.action_space,
+            model_cfgs=cfgs.model_cfgs,
         ).to(self._device)
         self._set_mpi()
 
@@ -93,28 +90,16 @@ class PolicyGradient:
             standardized_adv_r=cfgs.buffer_cfgs.standardized_rew_adv,
             standardized_adv_c=cfgs.buffer_cfgs.standardized_cost_adv,
             penalty_coefficient=cfgs.penalty_param,
-            num_envs=cfgs.env_cfgs.num_envs,
+            num_envs=cfgs.num_envs,
             device=self._device,
         )
-
-        # set up optimizer for policy and value function
-        self._actor_optimizer = set_optimizer(
-            'Adam', module=self._actor_critic.actor, learning_rate=cfgs.actor_lr
-        )
-        self._reward_critic_optimizer = set_optimizer(
-            'Adam', module=self._actor_critic.reward_critic, learning_rate=cfgs.critic_lr
-        )
-        if cfgs.use_cost:
-            self._cost_critic_optimizer = set_optimizer(
-                'Adam', module=self._actor_critic.cost_critic, learning_rate=cfgs.critic_lr
-            )
 
         if self._cfgs.linear_lr_decay:
             # linear anneal
             def linear_anneal(epoch):
                 return 1 - epoch / self._cfgs.epochs
 
-            self.scheduler = torch.optim.lr_scheduler.LambdaLR(self._actor_optimizer, linear_anneal)
+            self.scheduler = torch.optim.lr_scheduler.LambdaLR(self._actor_critic.actor_optimizer, linear_anneal)
 
         what_to_save = {
             'pi': self._actor_critic.actor,
@@ -140,6 +125,14 @@ class PolicyGradient:
 
     def _init_log(self):
         self._logger.register_key('Train/Epoch')
+        self._logger.register_key('Train/Entropy')
+        self._logger.register_key('Train/KL')
+        self._logger.register_key('Train/StopIter')
+        self._logger.register_key('Train/PolicyRatio')
+        self._logger.register_key('Train/LR')
+
+        self._logger.register_key('TotalEnvSteps')
+
         self._logger.register_key('Metrics/EpRet', window_length=50)
         self._logger.register_key('Metrics/EpCost', window_length=50)
         self._logger.register_key('Metrics/EpLen', window_length=50)
@@ -155,20 +148,16 @@ class PolicyGradient:
         if self._cfgs.use_cost:
             # log information about cost critic
             self._logger.register_key('Loss/Loss_cost_critic', delta=True)
-            self._logger.register_key('Value/reward')
-
-        self._logger.register_key('Train/Entropy')
-        self._logger.register_key('Train/KL')
-        self._logger.register_key('Train/StopIter')
-        self._logger.register_key('Train/PolicyRatio')
-        self._logger.register_key('Train/LR')
+            self._logger.register_key('Value/cost')
 
         self._specific_init_logs()
 
         # some sub-classes may add information to logs
-        self._logger.register_key('TotalEnvSteps')
-        self._logger.register_key('Time')
-        self._logger.register_key('FPS')
+        self._logger.register_key('Time/Total')
+        self._logger.register_key('Time/Rollout')
+        self._logger.register_key('Time/Update')
+        self._logger.register_key('Time/Epoch')
+        self._logger.register_key('Time/FPS')
 
     def _specific_init_logs(self):
         pass
@@ -185,17 +174,22 @@ class PolicyGradient:
 
         for epoch in range(self._cfgs.epochs):
             epoch_time = time.time()
-            if self._cfgs.exploration_noise_anneal:
-                self._actor_critic.anneal_exploration(frac=epoch / self._cfgs.epochs)
 
+            # if self._cfgs.exploration_noise_anneal:
+            #     self._actor_critic.anneal_exploration(frac=epoch / self._cfgs.epochs)
+
+            roll_out_time = time.time()
             self._env.roll_out(
                 steps_per_epoch=self._steps_per_epoch,
                 agent=self._actor_critic,
                 buffer=self._buf,
                 logger=self._logger,
             )
+            self._logger.store(**{'Time/Rollout': time.time() - roll_out_time})
 
+            update_time = time.time()
             self._update()
+            self._logger.store(**{'Time/Update': time.time() - update_time})
 
             if self._cfgs.linear_lr_decay:
                 self.scheduler.step()
@@ -203,10 +197,11 @@ class PolicyGradient:
             self._logger.store(
                 **{
                     'TotalEnvSteps': (epoch + 1) * self._cfgs.steps_per_epoch,
-                    'FPS': self._cfgs.steps_per_epoch / (time.time() - epoch_time),
+                    'Time/FPS': self._cfgs.steps_per_epoch / (time.time() - epoch_time),
+                    'Time/Total': (time.time() - start_time),
+                    'Time/Epoch': (time.time() - epoch_time),
                     'Train/Epoch': epoch,
-                    'Train/LR': self._actor_optimizer.param_groups[0]['lr'],
-                    'Time': (time.time() - start_time),
+                    'Train/LR': self._actor_critic.actor_optimizer.param_groups[0]['lr'],
                 }
             )
 
@@ -277,8 +272,8 @@ class PolicyGradient:
         )
 
     def _update_rewrad_critic(self, obs, target_value_r):
-        self._reward_critic_optimizer.zero_grad()
-        loss = nn.functional.mse_loss(self._actor_critic.reward_critic(obs), target_value_r)
+        self._actor_critic.reward_critic_optimizer.zero_grad()
+        loss = nn.functional.mse_loss(self._actor_critic.reward_critic(obs)[0], target_value_r)
 
         if self._cfgs.use_critic_norm:
             for param in self._actor_critic.reward_critic.parameters():
@@ -291,13 +286,13 @@ class PolicyGradient:
                 self._actor_critic.reward_critic.parameters(), self._cfgs.max_grad_norm
             )
         distributed.avg_grads(self._actor_critic.reward_critic)
-        self._reward_critic_optimizer.step()
+        self._actor_critic.reward_critic_optimizer.step()
 
         self._logger.store(**{'Loss/Loss_reward_critic': loss.mean().item()})
 
     def _update_cost_critic(self, obs, target_value_c):
-        self._cost_critic_optimizer.zero_grad()
-        loss = nn.functional.mse_loss(self._actor_critic.cost_critic(obs), target_value_c)
+        self._actor_critic.cost_critic_optimizer.zero_grad()
+        loss = nn.functional.mse_loss(self._actor_critic.cost_critic(obs)[0], target_value_c)
 
         if self._cfgs.use_critic_norm:
             for param in self._actor_critic.cost_critic.parameters():
@@ -310,20 +305,20 @@ class PolicyGradient:
                 self._actor_critic.cost_critic.parameters(), self._cfgs.max_grad_norm
             )
         distributed.avg_grads(self._actor_critic.cost_critic)
-        self._cost_critic_optimizer.step()
+        self._actor_critic.cost_critic_optimizer.step()
 
         self._logger.store(**{'Loss/Loss_cost_critic': loss.mean().item()})
 
     def _update_actor(self, obs, act, logp, adv_r, adv_c):  # pylint: disable=unused-argument
         loss, info = self._loss_pi(obs, act, logp, adv_r)
-        self._actor_optimizer.zero_grad()
+        self._actor_critic.actor_optimizer.zero_grad()
         loss.backward()
         if self._cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
                 self._actor_critic.actor.parameters(), self._cfgs.max_grad_norm
             )
         distributed.avg_grads(self._actor_critic.actor)
-        self._actor_optimizer.step()
+        self._actor_critic.actor_optimizer.step()
         self._logger.store(
             **{
                 'Train/Entropy': info['ent'],
@@ -333,7 +328,8 @@ class PolicyGradient:
         )
 
     def _loss_pi(self, obs, act, logp, adv) -> Tuple[torch.Tensor, Dict]:
-        distribution, logp_ = self._actor_critic.actor(obs, act)
+        distribution = self._actor_critic.actor(obs)
+        logp_ = self._actor_critic.actor.log_prob(act)
         ratio = torch.exp(logp_ - logp)
         loss = -(ratio * adv).mean()
         approx_kl = (0.5 * (distribution.mean - act) ** 2 / distribution.stddev**2).mean().item()

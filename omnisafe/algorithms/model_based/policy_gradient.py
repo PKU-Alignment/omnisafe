@@ -24,7 +24,7 @@ from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel, VirtualEnv
 from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.models.constraint_actor_critic import ConstraintActorCritic
+from omnisafe.models import ConstraintActorCritic
 from omnisafe.utils.distributed import get_rank
 from omnisafe.utils.model import set_optimizer
 from omnisafe.wrappers import wrapper_registry

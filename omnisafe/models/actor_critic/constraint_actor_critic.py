@@ -65,9 +65,9 @@ class ConstraintActorCritic(ActorCritic):
             act_space=act_space,
             hidden_sizes=model_cfgs.critic.hidden_sizes,
             activation=model_cfgs.critic.activation,
-            weight_initialization_mode=model_cfgs.critic.weight_initialization_mode,
+            weight_initialization_mode=model_cfgs.weight_initialization_mode,
             num_critics=1,
-            use_obs_encoder=model_cfgs.critic.use_obs_encoder,
+            use_obs_encoder=False,
         ).build_critic('v')
         self.add_module('cost_critic', self.cost_critic)
 
@@ -94,10 +94,10 @@ class ConstraintActorCritic(ActorCritic):
             value_r = self.reward_critic(obs)
             value_c = self.cost_critic(obs)
 
-            action = self.actor(obs, deterministic=deterministic)
-            log_prob = self.actor.get_log_prob(obs, action)
+            action = self.actor.predict(obs, deterministic=deterministic)
+            log_prob = self.actor.log_prob(action)
 
-        return action, value_r, value_c, log_prob
+        return action, value_r[0], value_c[0], log_prob
 
     def forward(
         self, obs: torch.Tensor, deterministic: bool = False

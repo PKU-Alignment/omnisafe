@@ -15,7 +15,6 @@
 """The abstract interfaces of Actor networks for the Actor-Critic algorithm."""
 
 from omnisafe.models.actor.actor_builder import ActorBuilder
-from omnisafe.models.actor.categorical_actor import CategoricalActor
-from omnisafe.models.actor.cholesky_actor import MLPCholeskyActor
 from omnisafe.models.actor.gaussian_actor import GaussianActor
-from omnisafe.models.actor.gaussian_stdnet_actor import GaussianStdNetActor
+from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
+from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor

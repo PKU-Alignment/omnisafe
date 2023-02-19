@@ -73,7 +73,7 @@ class ActorCritic(nn.Module):
             activation=model_cfgs.critic.activation,
             weight_initialization_mode=model_cfgs.weight_initialization_mode,
             num_critics=1,
-            use_obs_encoder=model_cfgs.critic.use_obs_encoder,
+            use_obs_encoder=False,
         ).build_critic(critic_type='v')
         self.add_module('actor', self.actor)
         self.add_module('reward_critic', self.reward_critic)
@@ -98,10 +98,10 @@ class ActorCritic(nn.Module):
             The action, value_r, and log_prob.
         """
         with torch.no_grad():
-            value_r: torch.Tensor = self.reward_critic(obs)
+            value_r = self.reward_critic(obs)
             act = self.actor.predict(obs, deterministic=deterministic)
             log_prob = self.actor.log_prob(act)
-        return act, value_r, log_prob
+        return act, value_r[0], log_prob
 
     def forward(
         self, obs: torch.Tensor, deterministic: bool = False

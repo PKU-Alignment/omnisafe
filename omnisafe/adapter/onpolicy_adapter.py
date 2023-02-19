@@ -19,7 +19,7 @@ import torch
 from omnisafe.adapter.online_adapter import OnlineAdapter
 from omnisafe.common.buffer import VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.models import ConstraintActorCritic
+from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils.config import Config
 
 
@@ -56,7 +56,7 @@ class OnPolicyAdapter(OnlineAdapter):
 
         obs, _ = self.reset()
         for step in range(steps_per_epoch):
-            act, _, value_r, value_c, logp = agent.step(obs)
+            act, value_r, value_c, logp = agent.step(obs)
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
 
             self._ep_ret += info.get('original_reward', reward)
@@ -86,7 +86,7 @@ class OnPolicyAdapter(OnlineAdapter):
                         logger.log(
                             f'Warning: trajectory cut off when rollout by epoch at {self._ep_len[idx]} steps.'
                         )
-                        _, _, last_value_r, last_value_c, _ = agent.step(obs[idx])
+                        _, last_value_r, last_value_c, _ = agent.step(obs[idx])
                         last_value_r = last_value_r.unsqueeze(0)
                         last_value_c = last_value_c.unsqueeze(0)
                     elif done:
