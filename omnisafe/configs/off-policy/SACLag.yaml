@@ -45,9 +45,9 @@ defaults:
   # The number of test episodes
   num_test_episodes: 10
   # The learning rate of Actor network
-  actor_lr: 0.0003
+  actor_lr: 0.001
   # The learning rate of Critic network
-  critic_lr: 0.001
+  critic_lr: 0.0003
   # The soft update coefficient
   polyak: 0.999
   # The discount factor of GAE
@@ -73,9 +73,9 @@ defaults:
   # Whether to use cost limit decay
   cost_limit_decay: False
   # The initial value of cost limit
-  init_cost_limit: 25.0
-  # The target value of cost limit
-  target_cost_limit: 25.0
+  init_cost_limit: 2.5
+  # The target value if cost limit
+  target_cost_limit: 2.5
   # The end of cost limit decay epoch
   end_epoch: 100
   # Cost discounted factor
@@ -139,7 +139,7 @@ defaults:
 ## ----------------------------------Configuration For Lagrangian multiplier---------------------- ##
   lagrange_cfgs:
     # Tolerance of constraint violation
-    cost_limit: 25.0
+    cost_limit: 2.5
     # Initial value of lagrangian multiplier
     lagrangian_multiplier_init: 0.0
     # Learning rate of lagrangian multiplier

@@ -96,10 +96,6 @@ class DDPG:
             use_wandb=cfgs.use_wandb,
             config=cfgs,
         )
-        # set seed
-        seed = int(cfgs.seed) + 10000 * distributed_utils.proc_id()
-        torch.manual_seed(seed)
-        np.random.seed(seed)
         # setup actor-critic module
         self.actor_critic = ConstraintActorQCritic(
             observation_space=self.env.observation_space,
@@ -174,7 +170,6 @@ class DDPG:
             self.logger.register_key('Values/C')
             self.logger.register_key('Train/CostQValues')
 
-        self.logger.register_key('Misc/Seed')
         self.logger.register_key('LR')
         if self.cfgs.env_cfgs.normalized_rew:
             self.logger.register_key('Misc/RewScaleMean')
@@ -307,7 +302,9 @@ class DDPG:
         )
         # Bellman backup for Q function
         with torch.no_grad():
-            _, act_targ = self.ac_targ.actor.predict(obs, deterministic=True, need_log_prob=False)
+            _, act_targ = self.ac_targ.actor.predict(
+                next_obs, deterministic=True, need_log_prob=False
+            )
             q_targ = self.ac_targ.critic(next_obs, act_targ)[0]
             backup = rew + self.cfgs.gamma * (1 - done) * q_targ
         # MSE loss against Bellman backup
@@ -349,7 +346,9 @@ class DDPG:
         )
         # Bellman backup for Q function
         with torch.no_grad():
-            _, act_targ = self.ac_targ.actor.predict(obs, deterministic=False, need_log_prob=False)
+            _, act_targ = self.ac_targ.actor.predict(
+                next_obs, deterministic=False, need_log_prob=False
+            )
             qc_targ = self.ac_targ.cost_critic(next_obs, act_targ)[0]
             backup = cost + self.cfgs.gamma * qc_targ
         # MSE loss against Bellman backup
