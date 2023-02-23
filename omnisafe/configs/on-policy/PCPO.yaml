@@ -63,6 +63,14 @@ defaults:
   cg_iters: 10
   # Subsampled observation
   fvp_obs: None
+  # The number of parallel environments
+  num_envs: 32
+  # Whether to use standardized reward
+  reward_normalize: True
+  # Whether to use standardized cost
+  cost_normalize: True
+  # Whether to use standardized obs
+  obs_normalize: True
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
@@ -74,6 +82,8 @@ defaults:
   linear_lr_decay: False
   # Whether to use exploration noise anneal
   exploration_noise_anneal: False
+  # std
+  std: [0.5, 0.1]
   # The coefficient of reward penalty
   penalty_param: 0.0
   # Whether to use KL early stopping
@@ -90,38 +100,28 @@ defaults:
   critic_norm_coeff: 0.001
   ## ---------------------------------------Configuration For Model----------------------------- ##
   model_cfgs:
-    # Whether to share the weight of Actor network with Critic network
-    shared_weights: False
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
     # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-    actor_type: gaussian
-    # Configuration of Actor and Critic network
-    ac_kwargs:
-      # Configuration of Actor network
-      pi:
-        # Size of hidden layers
-        hidden_sizes: [64, 64]
-        # Activation function
-        activation: tanh
-        # Output activation function
-        output_activation: identity
-        # Whether to scale action.
-        scale_action: False
-        # Whether to clip action.
-        clip_action: False
-        # Whther to learn the standard deviation of Gaussian noise
-        std_learning: True
-        # The initial value of standard deviation of Gaussian noise
-        std_init: 1.0
-      # Configuration of Critic network
-      val:
-        # Number of critic networks
-        num_critics: 1
-        # Size of hidden layers
-        hidden_sizes: [64, 64]
-        # Activation function
-        activation: tanh
+    actor_type: gaussian_learning
+    # Whether to use linear decay of learning rate
+    linear_lr_decay: True
+    # Configuration of Actor network
+    actor:
+      # Size of hidden layers
+      hidden_sizes: [64, 64]
+      # Activation function
+      activation: tanh
+      # The learning rate of Actor network
+      lr: 0.0003
+    # Configuration of Critic network
+    critic:
+      # Size of hidden layers
+      hidden_sizes: [64, 64]
+      # Activation function
+      activation: tanh
+      # The learning rate of Critic network
+      lr: 0.0003
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   buffer_cfgs:
     # Reward discounted factor

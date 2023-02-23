@@ -14,13 +14,13 @@
 # ==============================================================================
 """Implementation of CriticBuilder."""
 
-from typing import Union
+import difflib
+from typing import List
 
-import torch.nn as nn
-
+from omnisafe.models.base import Critic
 from omnisafe.models.critic.q_critic import QCritic
 from omnisafe.models.critic.v_critic import VCritic
-from omnisafe.utils.model_utils import Activation, InitFunction
+from omnisafe.typing import Activation, CriticType, InitFunction, OmnisafeSpace
 
 
 # pylint: disable-next=too-few-public-methods
@@ -40,35 +40,37 @@ class CriticBuilder:
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        obs_dim: int,
-        act_dim: int,
-        hidden_sizes: list,
+        obs_space: OmnisafeSpace,
+        act_space: OmnisafeSpace,
+        hidden_sizes: List[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
-        shared: nn.Module = None,
+        num_critics: int = 1,
+        use_obs_encoder: bool = False,
     ) -> None:
         """Initialize CriticBuilder.
 
         Args:
-            obs_dim (int): Observation dimension.
-            act_dim (int): Action dimension.
-            hidden_sizes (list): Hidden layer sizes.
+            obs_space (OmnisafeSpace): Observation space.
+            act_space (OmnisafeSpace): Action space.
+            hidden_sizes (List[int]): Hidden sizes of the critic network.
             activation (Activation): Activation function.
             weight_initialization_mode (InitFunction): Weight initialization mode.
-            shared (nn.Module): Shared network.
+            num_critics (int): Number of critics.
+            use_obs_encoder (bool): Whether to use observation encoder, only used in q critic.
         """
-        self.obs_dim = obs_dim
-        self.act_dim = act_dim
-        self.hidden_sizes = hidden_sizes
-        self.activation = activation
-        self.weight_initialization_mode = weight_initialization_mode
-        self.shared = shared
+        self._obs_space = obs_space
+        self._act_space = act_space
+        self._weight_initialization_mode = weight_initialization_mode
+        self._activation = activation
+        self._hidden_sizes = hidden_sizes
+        self._num_critics = num_critics
+        self._use_obs_encoder = use_obs_encoder
 
     def build_critic(
         self,
-        critic_type: str,
-        use_obs_encoder: bool = True,
-    ) -> Union[QCritic, VCritic, NotImplementedError]:
+        critic_type: CriticType,
+    ) -> Critic:
         """Build critic.
 
         Currently, we support two types of critics: ``q`` and ``v``.
@@ -79,22 +81,25 @@ class CriticBuilder:
         """
         if critic_type == 'q':
             return QCritic(
-                obs_dim=self.obs_dim,
-                act_dim=self.act_dim,
-                hidden_sizes=self.hidden_sizes,
-                activation=self.activation,
-                weight_initialization_mode=self.weight_initialization_mode,
-                shared=self.shared,
-                use_obs_encoder=use_obs_encoder,
+                obs_space=self._obs_space,
+                act_space=self._act_space,
+                hidden_sizes=self._hidden_sizes,
+                activation=self._activation,
+                weight_initialization_mode=self._weight_initialization_mode,
+                num_critics=self._num_critics,
+                use_obs_encoder=self._use_obs_encoder,
             )
         if critic_type == 'v':
             return VCritic(
-                obs_dim=self.obs_dim,
-                act_dim=self.act_dim,
-                hidden_sizes=self.hidden_sizes,
-                activation=self.activation,
-                weight_initialization_mode=self.weight_initialization_mode,
-                shared=self.shared,
+                obs_space=self._obs_space,
+                act_space=self._act_space,
+                hidden_sizes=self._hidden_sizes,
+                activation=self._activation,
+                weight_initialization_mode=self._weight_initialization_mode,
+                num_critics=self._num_critics,
             )
 
-        raise NotImplementedError(f'critic_type "{critic_type}" is not implemented.')
+        raise NotImplementedError(
+            f'critic_type "{critic_type}" is not implemented.'
+            f'Did you mean one of {difflib.get_close_matches(critic_type, ["q", "v"])[0]}?'
+        )

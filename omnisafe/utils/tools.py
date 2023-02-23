@@ -14,10 +14,11 @@
 # ==============================================================================
 """tool_function_packages"""
 
+import os
+import random
+
 import numpy as np
 import torch
-
-from omnisafe.typing import Any, Callable, Union
 
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
@@ -61,49 +62,6 @@ def get_flat_gradients_from(model: torch.nn.Module) -> torch.Tensor:
     return torch.cat(grads)
 
 
-def conjugate_gradients(
-    Avp: Callable[[torch.Tensor], torch.Tensor],
-    b_vector: torch.Tensor,
-    num_steps: int = 10,
-    residual_tol: float = 1e-10,
-    eps: float = 1e-6,
-):  # pylint: disable=invalid-name,too-many-locals
-    """Implementation of Conjugate gradient algorithm.
-
-    Conjugate gradient algorithm is used to solve the linear system of equations :math:`Ax = b`.
-    The algorithm is described in detail in the paper `Conjugate Gradient Method`_.
-
-    .. _Conjugate Gradient Method: https://en.wikipedia.org/wiki/Conjugate_gradient_method
-
-    .. note::
-        Increasing ``num_steps`` will lead to a more accurate approximation
-        to :math:`A^{-1} b`, and possibly slightly-improved performance,
-        but at the cost of slowing things down.
-        Also probably don't play with this hyperparameter.
-
-    Args:
-        num_steps (int): Number of iterations of conjugate gradient to perform.
-    """
-
-    x = torch.zeros_like(b_vector)
-    r = b_vector - Avp(x)
-    p = r.clone()
-    rdotr = torch.dot(r, r)
-
-    for _ in range(num_steps):
-        z = Avp(p)
-        alpha = rdotr / (torch.dot(p, z) + eps)
-        x += alpha * p
-        r -= alpha * z
-        new_rdotr = torch.dot(r, r)
-        if torch.sqrt(new_rdotr) < residual_tol:
-            break
-        mu = new_rdotr / (rdotr + eps)
-        p = r + mu * p
-        rdotr = new_rdotr
-    return x
-
-
 def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> None:
     """This function is used to set the parameters to the model.
 
@@ -116,68 +74,17 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
         vals (torch.Tensor): parameters to be set.
     """
     assert isinstance(vals, torch.Tensor)
-    i = 0
+    i: int = 0
     for _, param in model.named_parameters():
         if param.requires_grad:  # param has grad and, hence, must be set
             orig_size = param.size()
             size = np.prod(list(param.size()))
-            new_values = vals[i : i + size]
+            new_values = vals[i : int(i + size)]
             # set new param values
             new_values = new_values.view(orig_size)
             param.data = new_values
-            i += size  # increment array position
+            i += int(size)  # increment array position
     assert i == len(vals), f'Lengths do not match: {i} vs. {len(vals)}'
-
-
-# pylint: disable-next=too-many-branches,too-many-return-statements
-def to_ndarray(item: Any, dtype: np.dtype = None) -> Union[np.ndarray, TypeError, None]:
-    """This function is used to convert the data type to ndarray.
-
-    Change `torch.Tensor`, sequence of scalars to ndarray, and keep other data types unchanged.
-
-    .. note:
-        Now supports item type: :obj:`torch.Tensor`,  :obj:`dict`, :obj:`list`, :obj:`tuple` and :obj:`None`
-
-    Args:
-        item (Any): item to be converted.
-        dtype (np.dtype): data type of the output ndarray. Default to None.
-    """
-
-    if isinstance(item, dict):
-        new_data = {}
-        for key, value in item.items():
-            new_data[key] = to_ndarray(value, dtype)
-        return new_data
-
-    if isinstance(item, (list, tuple)):
-        if len(item) == 0:
-            return None
-        if hasattr(item, '_fields'):  # namedtuple
-            return type(item)(*[to_ndarray(t, dtype) for t in item])
-        new_data = []
-        for data in item:
-            new_data.append(to_ndarray(data, dtype))
-        return new_data
-
-    if isinstance(item, torch.Tensor):
-        if item.device != 'cpu':
-            item = item.detach().cpu()
-        if dtype is None:
-            return item.numpy()
-        return item.numpy().astype(dtype)
-
-    if isinstance(item, np.ndarray):
-        if dtype is None:
-            return item
-        return item.astype(dtype)
-
-    if np.isscalar(item):
-        return np.array(item)
-
-    if item is None:
-        return None
-
-    raise TypeError(f'not support item type: {item}')
 
 
 def expand_dims(*args):
@@ -195,7 +102,7 @@ def expand_dims(*args):
     return [np.expand_dims(item, axis=0) for item in args]
 
 
-def as_tensor(*args, device: torch.device = 'cpu'):
+def as_tensor(*args, device: torch.device = torch.device('cpu')):
     """This function is used to convert the input data to tensor.
 
     .. note::
@@ -208,3 +115,20 @@ def as_tensor(*args, device: torch.device = 'cpu'):
     if len(args) == 1:
         return torch.as_tensor(args[0], dtype=torch.float32)
     return [torch.as_tensor(item, dtype=torch.float32, device=device) for item in args]
+
+
+def seed_all(seed: int):
+    """This function is used to set the random seed for all the packages."""
+
+    os.environ['PYTHONHASHSEED'] = str(seed)
+
+    random.seed(seed)
+    np.random.seed(seed)
+
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    try:
+        torch.use_deterministic_algorithms(True)
+    except AttributeError:
+        pass

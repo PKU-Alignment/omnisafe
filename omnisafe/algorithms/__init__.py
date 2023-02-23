@@ -17,16 +17,11 @@
 import itertools
 from types import MappingProxyType
 
-from omnisafe.algorithms import model_based, off_policy, on_policy
-
-# Model-based Safe
-from omnisafe.algorithms.model_based import CAP, MBPPOLag, SafeLOOP
-
-# Off-Policy Safe
-from omnisafe.algorithms.off_policy import DDPG, SAC, SDDPG, TD3, DDPGLag, SACLag, TD3Lag
+from omnisafe.algorithms import on_policy
+from omnisafe.algorithms.base_algo import BaseAlgo
 
 # On-Policy Safe
-from omnisafe.algorithms.on_policy import (
+from omnisafe.algorithms.on_policy import (  # PPOLagSimmerPid,; PPOLagSimmerQ,; PPOSimmerPid,; PPOSimmerQ,
     CPO,
     CUP,
     FOCOPS,
@@ -43,20 +38,23 @@ from omnisafe.algorithms.on_policy import (
     PPOLag,
     PPOLagEarlyTerminated,
     PPOLagSaute,
-    PPOLagSimmerPid,
-    PPOLagSimmerQ,
     PPOSaute,
-    PPOSimmerPid,
-    PPOSimmerQ,
     TRPOLag,
     TRPOPid,
 )
 
 
+# Model-based Safe
+# from omnisafe.algorithms.model_based import CAP, MBPPOLag, SafeLOOP
+
+# Off-Policy Safe
+# from omnisafe.algorithms.off_policy import DDPG, SAC, SDDPG, TD3, DDPGLag, SACLag, TD3Lag
+
+
 ALGORITHMS = {
-    'off-policy': tuple(off_policy.__all__),
+    # 'off-policy': tuple(off_policy.__all__),
     'on-policy': tuple(on_policy.__all__),
-    'model-based': tuple(model_based.__all__),
+    # 'model-based': tuple(model_based.__all__),
 }
 
 ALGORITHM2TYPE = {

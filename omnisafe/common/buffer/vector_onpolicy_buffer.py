@@ -20,7 +20,7 @@ import torch
 
 from omnisafe.common.buffer.onpolicy_buffer import OnPolicyBuffer
 from omnisafe.typing import AdvatageEstimator, OmnisafeSpace
-from omnisafe.utils import distributed_utils
+from omnisafe.utils import distributed
 
 
 class VectorOnPolicyBuffer(OnPolicyBuffer):
@@ -88,8 +88,8 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
                 data_pre[k].append(v)
         data = {k: torch.cat(v, dim=0) for k, v in data_pre.items()}
 
-        adv_mean, adv_std, *_ = distributed_utils.mpi_statistics_scalar(data['adv_r'])
-        cadv_mean, *_ = distributed_utils.mpi_statistics_scalar(data['adv_c'])
+        adv_mean, adv_std, *_ = distributed.dist_statistics_scalar(data['adv_r'])
+        cadv_mean, *_ = distributed.dist_statistics_scalar(data['adv_c'])
         if self._standardized_adv_r:
             data['adv_r'] = (data['adv_r'] - adv_mean) / (adv_std + 1e-8)
         if self._standardized_adv_c:

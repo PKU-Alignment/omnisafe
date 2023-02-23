@@ -14,8 +14,6 @@
 # ==============================================================================
 """Implementation of the Lagrange version of the PPO algorithm."""
 
-from typing import Dict, NamedTuple, Tuple
-
 import torch
 
 from omnisafe.algorithms import registry
@@ -24,46 +22,28 @@ from omnisafe.common.lagrange import Lagrange
 
 
 @registry.register
-class PPOLag(PPO, Lagrange):
+class PPOLag(PPO):
     """The Lagrange version of the PPO algorithm.
 
     A simple combination of the Lagrange method and the Proximal Policy Optimization algorithm.
     """
 
-    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize PPOLag.
+    def _init(self) -> None:
+        super()._init()
+        self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
-        PPOLag is a combination of :class:`PPO` and :class:`Lagrange` model.
+    def _init_log(self) -> None:
+        super()._init_log()
+        self._logger.register_key('Metrics/LagrangeMultiplier')
 
-        Args:
-            env_id (str): The environment id.
-            cfgs (NamedTuple): The configuration of the algorithm.
-        """
-        PPO.__init__(
-            self,
-            env_id=env_id,
-            cfgs=cfgs,
-        )
-        Lagrange.__init__(
-            self,
-            cost_limit=self.cfgs.lagrange_cfgs.cost_limit,
-            lagrangian_multiplier_init=self.cfgs.lagrange_cfgs.lagrangian_multiplier_init,
-            lambda_lr=self.cfgs.lagrange_cfgs.lambda_lr,
-            lambda_optimizer=self.cfgs.lagrange_cfgs.lambda_optimizer,
-        )
-
-    def _specific_init_logs(self):
-        super()._specific_init_logs()
-        self.logger.register_key('Metrics/LagrangeMultiplier')
-
-    def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
-        r"""Update actor, critic, running statistics as we used in the :class:`PPO` algorithm.
+    def _update(self) -> None:
+        r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
 
         Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.
 
         .. note::
-            The :meth:`compute_loss_pi` is defined in the :class:`PPO` algorithm.
+            The :meth:`compute_loss_pi` is defined in the :class:`PolicyGradient` algorithm.
             When a lagrange multiplier is used,
             the :meth:`compute_loss_pi` method will return the loss of the policy as:
 
@@ -74,42 +54,14 @@ class PPOLag(PPO, Lagrange):
             where :math:`\lambda` is the Lagrange multiplier parameter.
         """
         # note that logger already uses MPI statistics across all processes..
-        Jc = self.logger.get_stats('Metrics/EpCost')[0]
+        Jc = self._logger.get_stats('Metrics/EpCost')[0]
         # first update Lagrange multiplier parameter
-        self.update_lagrange_multiplier(Jc)
-        PPO.update(self)
+        self._lagrange.update_lagrange_multiplier(Jc)
+        # then update the policy and value function
+        super()._update()
 
-    def compute_surrogate(
-        self,
-        adv: torch.Tensor,
-        cost_adv: torch.Tensor,
-    ) -> torch.Tensor:
-        """Compute surrogate loss.
+        self._logger.store(**{'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier})
 
-        PPOLag uses the Lagrange method to combine the reward and cost.
-        The surrogate loss is defined as the difference between the reward
-        advantage and the cost advantage
-
-        Args:
-            adv (torch.Tensor): reward advantage
-            cost_adv (torch.Tensor): cost advantage
-        """
-        penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        return (adv - penalty * cost_adv) / (1 + penalty)
-
-    def algorithm_specific_logs(self) -> None:
-        """Log the PPOLag specific information.
-
-        .. list-table::
-
-            *   -   Things to log
-                -   Description
-            *   -   Metrics/LagrangeMultiplier
-                -   The Lagrange multiplier value in current epoch.
-        """
-        super().algorithm_specific_logs()
-        self.logger.store(
-            **{
-                'Metrics/LagrangeMultiplier': self.lagrangian_multiplier.item(),
-            }
-        )
+    def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
+        penalty = self._lagrange.lagrangian_multiplier.item()
+        return (adv_r - penalty * adv_c) / (1 + penalty)
