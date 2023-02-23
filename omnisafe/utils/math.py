@@ -174,16 +174,15 @@ class SafeTanhTransformer(TanhTransform):
         if y.dtype.is_floating_point:
             eps = torch.finfo(y.dtype).eps
         else:
-            raise ValueError("Expected floating point type")
+            raise ValueError('Expected floating point type')
         y = y.clamp(min=-1 + eps, max=1 - eps)
         x = super()._inverse(y)
         return x
 
 
-class TanhNormal(TransformedDistribution):
+class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     r"""
-    Creates a tanh-normal distribution parameterized by
-    :attr: `loc` and `scale` where::
+    Creates a tanh-normal distribution.
 
         X ~ Normal(loc, scale)
         Y = tanh(X) ~ TanhNormal(loc, scale)
@@ -208,21 +207,11 @@ class TanhNormal(TransformedDistribution):
 
     def __init__(self, loc, scale, validate_args=None):
         base_dist = Normal(loc, scale, validate_args=validate_args)
-        super(TanhNormal, self).__init__(
-            base_dist, SafeTanhTransformer(), validate_args=validate_args
-        )
+        super().__init__(base_dist, SafeTanhTransformer(), validate_args=validate_args)
 
     def expand(self, batch_shape, _instance=None):
         new = self._get_checked_instance(TanhNormal, _instance)
-        return super(TanhNormal, self).expand(batch_shape, _instance=new)
-
-    @property
-    def loc(self):
-        return self.base_dist.loc
-
-    @property
-    def scale(self):
-        return self.base_dist.scale
+        return super().expand(batch_shape, _instance=new)
 
     @property
     def mean(self):
@@ -234,3 +223,7 @@ class TanhNormal(TransformedDistribution):
 
     def entropy(self):
         return self.base_dist.entropy()
+
+    @property
+    def variance(self):
+        return self.base_dist.variance

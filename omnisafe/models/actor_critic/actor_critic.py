@@ -18,6 +18,7 @@ from typing import List, Tuple
 
 import torch
 from torch import nn, optim
+from torch.optim.lr_scheduler import ConstantLR, LinearLR, _LRScheduler
 
 from omnisafe.models.actor.actor_builder import ActorBuilder
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
@@ -56,6 +57,7 @@ class ActorCritic(nn.Module):
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
         model_cfgs: ModelConfig,
+        epochs: int,
     ) -> None:
         """Initialize ActorCritic."""
         super().__init__()
@@ -83,11 +85,23 @@ class ActorCritic(nn.Module):
             self.reward_critic.parameters(), lr=model_cfgs.critic.lr
         )
 
+        self.actor_scheduler: _LRScheduler
+        if model_cfgs.linear_lr_decay:
+            self.actor_scheduler = LinearLR(
+                self.actor_optimizer,
+                start_factor=1.0,
+                end_factor=0.0,
+                total_iters=epochs,
+                verbose=True,
+            )
+        else:
+            self.actor_scheduler = ConstantLR(
+                self.actor_optimizer, factor=1.0, total_iters=epochs, verbose=True
+            )
+
         self.std_schedule: Schedule
 
-    def step(
-        self, obs: torch.Tensor, deterministic: bool = False
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def step(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in rollout without gradient.
 
         Args:
@@ -103,9 +117,7 @@ class ActorCritic(nn.Module):
             log_prob = self.actor.log_prob(act)
         return act, value_r[0], log_prob
 
-    def forward(
-        self, obs: torch.Tensor, deterministic: bool = False
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in training with gradient.
 
         Args:

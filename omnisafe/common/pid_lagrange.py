@@ -16,6 +16,7 @@
 
 import abc
 from collections import deque
+from typing import Deque
 
 
 # pylint: disable-next=too-few-public-methods,too-many-instance-attributes
@@ -62,12 +63,12 @@ class PIDLagrangian(abc.ABC):
         self.sum_norm = sum_norm
         self.diff_norm = diff_norm
         self.pid_i = lagrangian_multiplier_init
-        self.cost_ds = deque(maxlen=self.pid_d_delay)
+        self.cost_ds: Deque[float] = deque(maxlen=self.pid_d_delay)
         self.cost_ds.append(0)
-        self._delta_p = 0
-        self._cost_d = 0
-        self.cost_limit = cost_limit
-        self.cost_penalty = 0
+        self._delta_p: float = 0
+        self._cost_d: float = 0
+        self.cost_limit: float = cost_limit
+        self.cost_penalty: float = 0
 
     def pid_update(self, ep_cost_avg: float) -> None:
         r"""Update the PID controller.

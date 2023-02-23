@@ -14,6 +14,8 @@
 # ==============================================================================
 """OnPolicy Adapter for OmniSafe."""
 
+from typing import Dict, Optional
+
 import torch
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
@@ -31,9 +33,10 @@ class OnPolicyAdapter(OnlineAdapter):
     ) -> None:
         super().__init__(env_id, num_envs, seed, cfgs)
 
-        self._ep_ret = torch.zeros(self._env.num_envs)
-        self._ep_cost = torch.zeros(self._env.num_envs)
-        self._ep_len = torch.zeros(self._env.num_envs)
+        self._ep_ret: torch.Tensor
+        self._ep_cost: torch.Tensor
+        self._ep_len: torch.Tensor
+        self._reset_log()
 
     def roll_out(  # pylint: disable=too-many-locals
         self,
@@ -50,18 +53,14 @@ class OnPolicyAdapter(OnlineAdapter):
             buf (VectorOnPolicyBuffer): Buffer.
             logger (Logger): Logger.
         """
-        self._ep_ret = torch.zeros(self._env.num_envs)
-        self._ep_cost = torch.zeros(self._env.num_envs)
-        self._ep_len = torch.zeros(self._env.num_envs)
+        self._reset_log()
 
         obs, _ = self.reset()
         for step in range(steps_per_epoch):
             act, value_r, value_c, logp = agent.step(obs)
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
 
-            self._ep_ret += info.get('original_reward', reward)
-            self._ep_cost += info.get('original_cost', cost)
-            self._ep_len += 1
+            self._log_value(reward=reward, cost=cost, info=info)
 
             if self._cfgs.use_cost:
                 logger.store(**{'Value/cost': value_c})
@@ -93,16 +92,45 @@ class OnPolicyAdapter(OnlineAdapter):
                         last_value_r = torch.zeros(1)
                         last_value_c = torch.zeros(1)
 
-                        logger.store(
-                            **{
-                                'Metrics/EpRet': self._ep_ret[idx],
-                                'Metrics/EpCost': self._ep_cost[idx],
-                                'Metrics/EpLen': self._ep_len[idx],
-                            }
-                        )
+                        self._log_metrics(logger, idx)
+                        self._reset_log(idx)
 
                         self._ep_ret[idx] = 0.0
                         self._ep_cost[idx] = 0.0
                         self._ep_len[idx] = 0.0
 
                     buffer.finish_path(last_value_r, last_value_c, idx)
+
+    def _log_value(
+        self,
+        reward: torch.Tensor,
+        cost: torch.Tensor,
+        info: Dict,
+        **kwargs,  # pylint: disable=unused-argument
+    ) -> None:  # pylint: disable=unused-argument
+        """Log value."""
+        self._ep_ret += info.get('original_reward', reward)
+        self._ep_cost += info.get('original_cost', cost)
+        self._ep_len += 1
+
+    def _log_metrics(self, logger: Logger, idx: int) -> None:
+        """Log metrics."""
+
+        logger.store(
+            **{
+                'Metrics/EpRet': self._ep_ret[idx],
+                'Metrics/EpCost': self._ep_cost[idx],
+                'Metrics/EpLen': self._ep_len[idx],
+            }
+        )
+
+    def _reset_log(self, idx: Optional[int] = None) -> None:
+        """Reset log."""
+        if idx is None:
+            self._ep_ret = torch.zeros(self._env.num_envs)
+            self._ep_cost = torch.zeros(self._env.num_envs)
+            self._ep_len = torch.zeros(self._env.num_envs)
+        else:
+            self._ep_ret[idx] = 0.0
+            self._ep_cost[idx] = 0.0
+            self._ep_len[idx] = 0.0

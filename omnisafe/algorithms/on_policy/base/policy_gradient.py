@@ -23,17 +23,16 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from omnisafe.adapter import OnPolicyAdapter
 from omnisafe.algorithms import registry
+from omnisafe.algorithms.base_algo import BaseAlgo
 from omnisafe.common.buffer import VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
-from omnisafe.utils.config import Config
-from omnisafe.utils.tools import seed_all
 from omnisafe.utils import distributed
 
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
-class PolicyGradient:
+class PolicyGradient(BaseAlgo):
     """The Policy Gradient algorithm.
 
     References:
@@ -43,63 +42,57 @@ class PolicyGradient:
         /1999/file/64d828b85b0bed98e80ade0a5c43b0f-Paper.pdf>`_
     """
 
-    def __init__(self, env_id: str, cfgs: Config) -> None:
-        """Initialize PolicyGradient.
-
-        Args:
-            env_id (str): The environment id.
-            cfgs (NamedTuple): The configuration of the algorithm.
-        """
-        self._algo = self.__class__.__name__
-        self._cfgs = cfgs
-        self._seed = cfgs.seed + 1000 * distributed.get_rank()
-        seed_all(self._seed)
-        self._device = torch.device(self._cfgs.device)
-
-        self._env = OnPolicyAdapter(env_id, cfgs.num_envs, self._seed, cfgs)
+    def _init_env(self) -> None:
+        self._env = OnPolicyAdapter(self._env_id, self._cfgs.num_envs, self._seed, self._cfgs)
+        assert self._cfgs.steps_per_epoch % (distributed.world_size() * self._cfgs.num_envs) == 0, (
+            'The number of steps per epoch is not divisible by the number of ' 'environments.'
+        )
         self._steps_per_epoch = (
-            self._cfgs.steps_per_epoch // distributed.world_size() // cfgs.num_envs
-        )
-        assert self._steps_per_epoch > 0, 'The number of steps per epoch is too small.'
-
-        # set up logger and save configuration to disk
-        self._logger = Logger(
-            output_dir=cfgs.data_dir,
-            exp_name=cfgs.exp_name,
-            seed=cfgs.seed,
-            use_tensorboard=cfgs.use_tensorboard,
-            use_wandb=cfgs.use_wandb,
-            config=cfgs,
+            self._cfgs.steps_per_epoch // distributed.world_size() // self._cfgs.num_envs
         )
 
+    def _init_model(self) -> None:
         self._actor_critic = ConstraintActorCritic(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
-            model_cfgs=cfgs.model_cfgs,
+            model_cfgs=self._cfgs.model_cfgs,
+            epochs=self._cfgs.epochs,
         ).to(self._device)
-        self._set_mpi()
 
+        if distributed.world_size() > 1:
+            distributed.sync_params(self._actor_critic)
+
+        if self._cfgs.exploration_noise_anneal:
+            self._actor_critic.set_annealing(
+                epochs=[0, self._cfgs.epochs],
+                std=self._cfgs.std,
+            )
+
+    def _init(self) -> None:
         self._buf = VectorOnPolicyBuffer(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
             size=self._steps_per_epoch,
-            gamma=cfgs.buffer_cfgs.gamma,
-            lam=cfgs.buffer_cfgs.lam,
-            lam_c=cfgs.buffer_cfgs.lam_c,
-            advantage_estimator=cfgs.buffer_cfgs.adv_estimation_method,
-            standardized_adv_r=cfgs.buffer_cfgs.standardized_rew_adv,
-            standardized_adv_c=cfgs.buffer_cfgs.standardized_cost_adv,
-            penalty_coefficient=cfgs.penalty_param,
-            num_envs=cfgs.num_envs,
+            gamma=self._cfgs.buffer_cfgs.gamma,
+            lam=self._cfgs.buffer_cfgs.lam,
+            lam_c=self._cfgs.buffer_cfgs.lam_c,
+            advantage_estimator=self._cfgs.buffer_cfgs.adv_estimation_method,
+            standardized_adv_r=self._cfgs.buffer_cfgs.standardized_rew_adv,
+            standardized_adv_c=self._cfgs.buffer_cfgs.standardized_cost_adv,
+            penalty_coefficient=self._cfgs.penalty_param,
+            num_envs=self._cfgs.num_envs,
             device=self._device,
         )
 
-        if self._cfgs.linear_lr_decay:
-            # linear anneal
-            def linear_anneal(epoch):
-                return 1 - epoch / self._cfgs.epochs
-
-            self.scheduler = torch.optim.lr_scheduler.LambdaLR(self._actor_critic.actor_optimizer, linear_anneal)
+    def _init_log(self) -> None:
+        self._logger = Logger(
+            output_dir=self._cfgs.data_dir,
+            exp_name=self._cfgs.exp_name,
+            seed=self._cfgs.seed,
+            use_tensorboard=self._cfgs.use_tensorboard,
+            use_wandb=self._cfgs.use_wandb,
+            config=self._cfgs,
+        )
 
         what_to_save = {
             'pi': self._actor_critic.actor,
@@ -107,35 +100,20 @@ class PolicyGradient:
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
 
-        self._init_log()
+        self._logger.register_key('Metrics/EpRet', window_length=50)
+        self._logger.register_key('Metrics/EpCost', window_length=50)
+        self._logger.register_key('Metrics/EpLen', window_length=50)
 
-    def _set_mpi(self) -> None:
-        """Initialize MPI specifics.
-
-        Sync parameters of actor and critic across cores,
-        only once necessary."""
-        if distributed.world_size() > 1:
-            # avoid slowdowns from PyTorch + MPI combo
-            distributed.setup_distributed()
-            start = time.time()
-            self._logger.log('INFO: Sync actor critic parameters')
-            # sync parameters across cores: only once necessary, grads are averaged!
-            distributed.sync_params(self._actor_critic)
-            self._logger.log(f'Done! (took {time.time()-start:0.3f} sec.)')
-
-    def _init_log(self):
         self._logger.register_key('Train/Epoch')
         self._logger.register_key('Train/Entropy')
         self._logger.register_key('Train/KL')
         self._logger.register_key('Train/StopIter')
         self._logger.register_key('Train/PolicyRatio')
         self._logger.register_key('Train/LR')
+        if self._cfgs.model_cfgs.actor_type == 'gaussian_learning':
+            self._logger.register_key('Train/PolicyStd')
 
         self._logger.register_key('TotalEnvSteps')
-
-        self._logger.register_key('Metrics/EpRet', window_length=50)
-        self._logger.register_key('Metrics/EpCost', window_length=50)
-        self._logger.register_key('Metrics/EpLen', window_length=50)
 
         # log information about actor
         self._logger.register_key('Loss/Loss_pi', delta=True)
@@ -150,19 +128,13 @@ class PolicyGradient:
             self._logger.register_key('Loss/Loss_cost_critic', delta=True)
             self._logger.register_key('Value/cost')
 
-        self._specific_init_logs()
-
-        # some sub-classes may add information to logs
         self._logger.register_key('Time/Total')
         self._logger.register_key('Time/Rollout')
         self._logger.register_key('Time/Update')
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
-    def _specific_init_logs(self):
-        pass
-
-    def learn(self):
+    def learn(self) -> None:
         """This is main function for algorithm update, divided into the following steps:
 
         - :meth:`rollout`: collect interactive data from environment.
@@ -191,8 +163,9 @@ class PolicyGradient:
             self._update()
             self._logger.store(**{'Time/Update': time.time() - update_time})
 
-            if self._cfgs.linear_lr_decay:
-                self.scheduler.step()
+            self._actor_critic.actor_scheduler.step()
+            if self._cfgs.exploration_noise_anneal:
+                self._actor_critic.annealing(epoch)
 
             self._logger.store(
                 **{
@@ -201,7 +174,7 @@ class PolicyGradient:
                     'Time/Total': (time.time() - start_time),
                     'Time/Epoch': (time.time() - epoch_time),
                     'Train/Epoch': epoch,
-                    'Train/LR': self._actor_critic.actor_optimizer.param_groups[0]['lr'],
+                    'Train/LR': self._actor_critic.actor_scheduler.get_last_lr()[0],
                 }
             )
 
@@ -213,7 +186,7 @@ class PolicyGradient:
 
         self._logger.close()
 
-    def _update(self):
+    def _update(self) -> None:
         data = self._buf.get()
         obs, act, logp, target_value_r, target_value_c, adv_r, adv_c = (
             data['obs'],
@@ -249,10 +222,10 @@ class PolicyGradient:
                     self._update_cost_critic(obs, target_value_c)
                 self._update_actor(obs, act, logp, adv_r, adv_c)
 
-            new_dist = self._actor_critic.actor(original_obs)
+            new_distribution = self._actor_critic.actor(original_obs)
 
             kl = (
-                torch.distributions.kl.kl_divergence(old_distribution, new_dist)
+                torch.distributions.kl.kl_divergence(old_distribution, new_distribution)
                 .sum(-1, keepdim=True)
                 .mean()
                 .item()
@@ -271,7 +244,7 @@ class PolicyGradient:
             }
         )
 
-    def _update_rewrad_critic(self, obs, target_value_r):
+    def _update_rewrad_critic(self, obs: torch.Tensor, target_value_r: torch.Tensor) -> None:
         self._actor_critic.reward_critic_optimizer.zero_grad()
         loss = nn.functional.mse_loss(self._actor_critic.reward_critic(obs)[0], target_value_r)
 
@@ -290,7 +263,7 @@ class PolicyGradient:
 
         self._logger.store(**{'Loss/Loss_reward_critic': loss.mean().item()})
 
-    def _update_cost_critic(self, obs, target_value_c):
+    def _update_cost_critic(self, obs: torch.Tensor, target_value_c: torch.Tensor) -> None:
         self._actor_critic.cost_critic_optimizer.zero_grad()
         loss = nn.functional.mse_loss(self._actor_critic.cost_critic(obs)[0], target_value_c)
 
@@ -309,8 +282,16 @@ class PolicyGradient:
 
         self._logger.store(**{'Loss/Loss_cost_critic': loss.mean().item()})
 
-    def _update_actor(self, obs, act, logp, adv_r, adv_c):  # pylint: disable=unused-argument
-        loss, info = self._loss_pi(obs, act, logp, adv_r)
+    def _update_actor(  # pylint: disable=too-many-arguments
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        logp: torch.Tensor,
+        adv_r: torch.Tensor,
+        adv_c: torch.Tensor,
+    ) -> None:
+        adv = self._compute_adv_surrogate(adv_r, adv_c)
+        loss, info = self._loss_pi(obs, act, logp, adv)
         self._actor_critic.actor_optimizer.zero_grad()
         loss.backward()
         if self._cfgs.use_max_grad_norm:
@@ -321,18 +302,30 @@ class PolicyGradient:
         self._actor_critic.actor_optimizer.step()
         self._logger.store(
             **{
-                'Train/Entropy': info['ent'],
+                'Train/Entropy': info['entrophy'],
                 'Train/PolicyRatio': info['ratio'],
+                'Train/PolicyStd': info['std'],
                 'Loss/Loss_pi': loss.mean().item(),
             }
         )
 
-    def _loss_pi(self, obs, act, logp, adv) -> Tuple[torch.Tensor, Dict]:
+    def _compute_adv_surrogate(  # pylint: disable=unused-argument
+        self, adv_r: torch.Tensor, adv_c: torch.Tensor
+    ) -> torch.Tensor:
+        return adv_r
+
+    def _loss_pi(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        logp: torch.Tensor,
+        adv: torch.Tensor,
+    ) -> Tuple[torch.Tensor, Dict[str, float]]:
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
+        std = self._actor_critic.actor.std
         ratio = torch.exp(logp_ - logp)
         loss = -(ratio * adv).mean()
-        approx_kl = (0.5 * (distribution.mean - act) ** 2 / distribution.stddev**2).mean().item()
         entrophy = distribution.entropy().mean().item()
-        info = {'kl': approx_kl, 'ent': entrophy, 'ratio': ratio.mean().item()}
+        info = {'entrophy': entrophy, 'ratio': ratio.mean().item(), 'std': std}
         return loss, info

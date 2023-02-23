@@ -14,13 +14,12 @@
 # ==============================================================================
 """Implementation of the Natural Policy Gradient algorithm."""
 
-from typing import NamedTuple, Tuple
-
 import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
 from omnisafe.utils import distributed
+from omnisafe.utils.config import Config
 from omnisafe.utils.math import conjugate_gradients
 from omnisafe.utils.tools import (
     get_flat_gradients_from,
@@ -43,62 +42,21 @@ class NaturalPG(PolicyGradient):
         - URL: `Natural PG <https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf>`_
     """
 
-    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize Natural Policy Gradient.
+    def __init__(self, env_id: str, cfgs: Config) -> None:
+        super().__init__(env_id, cfgs)
 
-        Args:
-            env_id (str): The environment id.
-            cfgs (NamedTuple): The configuration of the algorithm.
-        """
-        super().__init__(env_id=env_id, cfgs=cfgs)
-        self.cg_damping = cfgs.cg_damping
-        self.cg_iters = cfgs.cg_iters
-        self.target_kl = cfgs.target_kl
-        self.fvp_obs = cfgs.fvp_obs
+        self._fvp_obs: torch.Tensor
 
-    def _specific_init_logs(self):
-        super()._specific_init_logs()
-        self.logger.register_key('Misc/AcceptanceStep')
-        self.logger.register_key('Misc/Alpha')
-        self.logger.register_key('Misc/FinalStepNorm')
-        self.logger.register_key('Misc/gradient_norm')
-        self.logger.register_key('Misc/xHx')
-        self.logger.register_key('Misc/H_inv_g')
+    def _init_log(self) -> None:
+        super()._init_log()
 
-    def search_step_size(self, step_dir: torch.Tensor) -> Tuple[torch.Tensor, int]:
-        """NPG use full step_size, so we just return 1.
+        self._logger.register_key('Misc/Alpha')
+        self._logger.register_key('Misc/FinalStepNorm')
+        self._logger.register_key('Misc/gradient_norm')
+        self._logger.register_key('Misc/xHx')
+        self._logger.register_key('Misc/H_inv_g')
 
-        Args:
-            step_dir (torch.Tensor): The step direction.
-        """
-        accept_step = 1
-        return step_dir, accept_step
-
-    def algorithm_specific_logs(self) -> None:
-        r"""Log the Natural Policy Gradient specific information.
-
-        .. list-table::
-
-            *   -   Things to log
-                -   Description
-            *   -   ``Misc/AcceptanceStep``
-                -   The acceptance step size.
-            *   -   ``Misc/Alpha``
-                -   :math:`\frac{\delta_{KL}}{xHx}` in original paper.
-                    where :math:`x` is the step direction, :math:`H` is the Hessian matrix,
-                    and :math:`\delta_{KL}` is the target KL divergence.
-            *   -   ``Misc/FinalStepNorm``
-                -   The final step norm.
-            *   -   ``Misc/gradient_norm``
-                -   The gradient norm.
-            *   -   ``Misc/xHx``
-                -   :math:`xHx` in original paper.
-            *   -   ``Misc/H_inv_g``
-                -   :math:`H^{-1}g` in original paper.
-
-        """
-
-    def Fvp(self, params: torch.Tensor) -> torch.Tensor:
+    def _fvp(self, params: torch.Tensor) -> torch.Tensor:
         """Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_
         based on an approximation of the KL-divergence.
         The Hessian-vector product is approximated by the Fisher information matrix,
@@ -108,98 +66,64 @@ class NaturalPG(PolicyGradient):
         Args:
             params (torch.Tensor): The parameters of the actor network.
         """
-        self.actor_critic.actor.zero_grad()
-        q_dist = self.actor_critic.actor(self.fvp_obs)
+        self._actor_critic.actor.zero_grad()
+        q_dist = self._actor_critic.actor(self._fvp_obs)
         with torch.no_grad():
-            p_dist = self.actor_critic.actor(self.fvp_obs)
+            p_dist = self._actor_critic.actor(self._fvp_obs)
         kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
 
-        grads = torch.autograd.grad(kl, self.actor_critic.actor.parameters(), create_graph=True)
+        grads = torch.autograd.grad(kl, self._actor_critic.actor.parameters(), create_graph=True)  # type: ignore
         flat_grad_kl = torch.cat([grad.view(-1) for grad in grads])
 
         kl_p = (flat_grad_kl * params).sum()
-        grads = torch.autograd.grad(kl_p, self.actor_critic.actor.parameters(), retain_graph=False)
-        # contiguous indicating, if the memory is contiguously stored or not
+        grads = torch.autograd.grad(kl_p, self._actor_critic.actor.parameters(), retain_graph=False)  # type: ignore
+
         flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
         distributed.avg_tensor(flat_grad_grad_kl)
-        return flat_grad_grad_kl + params * self.cg_damping
+        return flat_grad_grad_kl + params * self._cfgs.cg_damping
 
-    # pylint: disable-next=too-many-locals,too-many-arguments
-    def update_policy_net(
+    def _update_actor(  # pylint: disable=too-many-arguments, too-many-locals
         self,
         obs: torch.Tensor,
         act: torch.Tensor,
-        log_p: torch.Tensor,
-        adv: torch.Tensor,
-        cost_adv: torch.Tensor,
+        logp: torch.Tensor,
+        adv_r: torch.Tensor,
+        adv_c: torch.Tensor,
     ) -> None:
-        """Update policy network.
+        self._fvp_obs = obs[::4]
+        theta_old = get_flat_params_from(self._actor_critic.actor)
+        self._actor_critic.actor.zero_grad()
+        adv = self._compute_adv_surrogate(adv_r, adv_c)
+        loss, info = self._loss_pi(obs, act, logp, adv)
 
-        Natural Policy Gradient (NPG) update policy network using the conjugate gradient algorithm,
-        following the steps:
+        loss.backward()
+        distributed.avg_grads(self._actor_critic.actor)
 
-        - Calculate the gradient of the policy network,
-        - Use the conjugate gradient algorithm to calculate the step direction.
-        - Use the line search algorithm to find the step size.
-
-        Args:
-            obs (torch.Tensor): The observation tensor.
-            act (torch.Tensor): The action tensor.
-            log_p (torch.Tensor): The log probability of the action.
-            adv (torch.Tensor): The advantage tensor.
-            cost_adv (torch.Tensor): The cost advantage tensor.
-        """
-        # get loss and info values before update
-        self.fvp_obs = obs[::4]
-        theta_old = get_flat_params_from(self.actor_critic.actor)
-        self.actor_critic.actor.zero_grad()
-        processed_adv = self.compute_surrogate(adv=adv, cost_adv=cost_adv)
-        loss_pi, pi_info = self.compute_loss_pi(
-            obs=obs,
-            act=act,
-            log_p=log_p,
-            adv=processed_adv,
-        )
-        # train policy with multiple steps of gradient descent
-        loss_pi.backward()
-        # average grads across MPI processes
-        distributed.avg_grads(self.actor_critic.actor)
-        g_flat = get_flat_gradients_from(self.actor_critic.actor)
-        g_flat *= -1
-
-        # pylint: disable-next=invalid-name
-        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
+        grad = -get_flat_gradients_from(self._actor_critic.actor)
+        x = conjugate_gradients(self._fvp, grad, self._cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
-        # note that xHx = g^T x, but calculating xHx is faster than g^T x
-        xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
-        assert xHx.item() >= 0, 'No negative values'
-
-        # perform descent direction
-        alpha = torch.sqrt(2 * self.target_kl / (xHx + 1e-8))
-        step_direction = alpha * x
+        xHx = torch.dot(x, self._fvp(x))
+        assert xHx.item() >= 0, 'xHx is negative'
+        alpha = torch.sqrt(2 * self._cfgs.target_kl / (xHx + 1e-8))
+        step_direction = x * alpha
         assert torch.isfinite(step_direction).all(), 'step_direction is not finite'
 
-        # determine step direction and apply SGD step after grads where set
-        # TRPO uses custom backtracking line search
-        final_step_dir, accept_step = self.search_step_size(step_dir=step_direction)
-
-        # update actor network parameters
-        new_theta = theta_old + final_step_dir
-        set_param_values_to_model(self.actor_critic.actor, new_theta)
+        theta_new = theta_old + step_direction
+        set_param_values_to_model(self._actor_critic.actor, theta_new)
 
         with torch.no_grad():
-            loss_pi, pi_info = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=adv)
+            loss, info = self._loss_pi(obs, act, logp, adv)
 
-        self.logger.store(
+        self._logger.store(
             **{
-                'Train/Entropy': pi_info['ent'],
-                'Train/PolicyRatio': pi_info['ratio'],
-                'Misc/AcceptanceStep': accept_step,
+                'Train/Entropy': info['entrophy'],
+                'Train/PolicyRatio': info['ratio'],
+                'Train/PolicyStd': info['std'],
+                'Loss/Loss_pi': loss.mean().item(),
                 'Misc/Alpha': alpha.item(),
-                'Misc/FinalStepNorm': torch.norm(final_step_dir).mean().item(),
+                'Misc/FinalStepNorm': torch.norm(step_direction).mean().item(),
                 'Misc/xHx': xHx.item(),
-                'Misc/gradient_norm': torch.norm(g_flat).mean().item(),
+                'Misc/gradient_norm': torch.norm(grad).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
-                'Loss/Loss_pi': loss_pi.mean().item(),
             }
         )

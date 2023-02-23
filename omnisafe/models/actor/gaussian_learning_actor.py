@@ -14,12 +14,11 @@
 # ==============================================================================
 """Implementation of GaussianStdNetActor."""
 
-from typing import List, Optional
+from typing import List
 
 import torch
 import torch.nn as nn
 from torch.distributions import Distribution, Normal
-from torch.distributions.normal import Normal
 
 from omnisafe.models.actor.gaussian_actor import GaussianActor
 from omnisafe.typing import Activation, InitFunction, OmnisafeSpace

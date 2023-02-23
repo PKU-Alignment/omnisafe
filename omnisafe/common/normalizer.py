@@ -92,7 +92,9 @@ class Normalizer(nn.Module):
         if self._first:
             self._mean = torch.mean(raw_data, dim=0)
             self._sumsq = torch.sum((raw_data - self._mean) ** 2, dim=0)
-            self._count = torch.tensor(raw_data.shape[0], dtype=self._count.dtype, device=self._count.device)
+            self._count = torch.tensor(
+                raw_data.shape[0], dtype=self._count.dtype, device=self._count.device
+            )
             self._first = False
         else:
             count_raw = raw_data.shape[0]
@@ -101,7 +103,7 @@ class Normalizer(nn.Module):
             delta = mean_raw - self._mean
             self._mean += delta * count_raw / count
             sumq_raw = torch.sum((raw_data - mean_raw) ** 2, dim=0)
-            self._sumsq += sumq_raw + delta ** 2 * self._count * count_raw / count
+            self._sumsq += sumq_raw + delta**2 * self._count * count_raw / count
             self._count = count
         self._var = self._sumsq / (self._count - 1)
         self._std = torch.sqrt(self._var)

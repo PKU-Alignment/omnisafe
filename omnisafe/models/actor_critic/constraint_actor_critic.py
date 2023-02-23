@@ -56,10 +56,14 @@ class ConstraintActorCritic(ActorCritic):
     """
 
     def __init__(
-        self, obs_space: OmnisafeSpace, act_space: OmnisafeSpace, model_cfgs: ModelConfig
+        self,
+        obs_space: OmnisafeSpace,
+        act_space: OmnisafeSpace,
+        model_cfgs: ModelConfig,
+        epochs: int,
     ) -> None:
         """Initialize ConstraintActorCritic."""
-        super().__init__(obs_space, act_space, model_cfgs)
+        super().__init__(obs_space, act_space, model_cfgs, epochs)
         self.cost_critic = CriticBuilder(
             obs_space=obs_space,
             act_space=act_space,
@@ -75,9 +79,7 @@ class ConstraintActorCritic(ActorCritic):
             self.cost_critic.parameters(), lr=model_cfgs.critic.lr
         )
 
-    def step(
-        self, obs: torch.Tensor, deterministic: bool = False
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def step(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
         """Choose action based on observation.
 
         Args:
@@ -99,9 +101,7 @@ class ConstraintActorCritic(ActorCritic):
 
         return action, value_r[0], value_c[0], log_prob
 
-    def forward(
-        self, obs: torch.Tensor, deterministic: bool = False
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
         """Choose action based on observation.
 
         Args:

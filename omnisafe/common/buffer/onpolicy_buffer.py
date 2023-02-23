@@ -121,7 +121,6 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
     def get(self) -> Dict[str, torch.Tensor]:
         """Get the data in the buffer."""
-        assert self.ptr == self.max_size, 'The buffer is not full!'
         self.ptr, self.path_start_idx = 0, 0
 
         data = {
@@ -135,8 +134,8 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             'target_value_c': self.data['target_value_c'],
         }
 
-        self.data['adv_r'] = torch.zeros_like(self.data['adv_r'])
-        self.data['adv_c'] = torch.zeros_like(self.data['adv_c'])
+        # self.data['adv_r'] = torch.zeros_like(self.data['adv_r'])
+        # self.data['adv_c'] = torch.zeros_like(self.data['adv_c'])
 
         adv_mean, adv_std, *_ = distributed.dist_statistics_scalar(data['adv_r'])
         cadv_mean, *_ = distributed.dist_statistics_scalar(data['adv_c'])

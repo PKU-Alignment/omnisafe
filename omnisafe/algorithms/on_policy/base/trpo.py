@@ -14,9 +14,10 @@
 # ==============================================================================
 """Implementation of the TRPO algorithm."""
 
-from typing import NamedTuple, Tuple
+from typing import Tuple
 
 import torch
+from torch.distributions import Distribution
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
@@ -39,26 +40,21 @@ class TRPO(NaturalPG):
         - URL: `TRPO <https://arxiv.org/abs/1502.05477>`_
     """
 
-    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize Trust Region Policy Optimization.
-
-        Args:
-            env_id (str): The environment id.
-            cfgs (NamedTuple): The configuration of the algorithm.
-        """
-        super().__init__(env_id=env_id, cfgs=cfgs)
+    def _init_log(self) -> None:
+        super()._init_log()
+        self._logger.register_key('Misc/AcceptanceStep')
 
     # pylint: disable-next=too-many-arguments,too-many-locals,arguments-differ
-    def search_step_size(
+    def _search_step_size(
         self,
-        step_dir: torch.Tensor,
-        g_flat: torch.Tensor,
-        p_dist: torch.distributions.Distribution,
+        step_direction: torch.Tensor,
+        grad: torch.Tensor,
+        p_dist: Distribution,
         obs: torch.Tensor,
         act: torch.Tensor,
-        log_p: torch.Tensor,
+        logp: torch.Tensor,
         adv: torch.Tensor,
-        loss_pi_before: float,
+        loss_before: float,
         total_steps: int = 15,
         decay: float = 0.8,
     ) -> Tuple[torch.Tensor, int]:
@@ -86,60 +82,58 @@ class TRPO(NaturalPG):
         # How far to go in a single update
         step_frac = 1.0
         # Get old parameterized policy expression
-        _theta_old = get_flat_params_from(self.actor_critic.actor)
+        theta_old = get_flat_params_from(self._actor_critic.actor)
         # Change expected objective function gradient = expected_imrpove best this moment
-        expected_improve = g_flat.dot(step_dir)
+        expected_improve = grad.dot(step_direction)
+        expected_improve = torch.dot(grad, step_direction)
 
         # While not within_trust_region and not out of total_steps:
-        for j in range(total_steps):
+        for step in range(total_steps):
             # update theta params
-            new_theta = _theta_old + step_frac * step_dir
+            new_theta = theta_old + step_frac * step_direction
             # set new params as params of net
-            set_param_values_to_model(self.actor_critic.actor, new_theta)
-            # the stepNo this update accept
-            acceptance_step = j + 1
+            set_param_values_to_model(self._actor_critic.actor, new_theta)
 
             with torch.no_grad():
-                loss_pi, _ = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=adv)
+                loss, _ = self._loss_pi(obs, act, logp, adv)
                 # compute KL distance between new and old policy
-                q_dist = self.actor_critic.actor(obs)
+                q_dist = self._actor_critic.actor(obs)
                 # KL-distance of old p-dist and new q-dist, applied in KLEarlyStopping
-                torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
+                kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
+                kl = distributed.dist_avg(kl)
             # real loss improve: old policy loss - new policy loss
-            loss_improve = loss_pi_before - loss_pi.item()
+            loss_improve = loss_before - loss.item()
             # average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)
-            torch_kl = distributed.dist_avg(torch_kl)
             loss_improve = distributed.dist_avg(loss_improve)
-            menu = (expected_improve, loss_improve)
-            self.logger.log(f'Expected Improvement: {menu[0]} Actual: {menu[1]}')
-            if not torch.isfinite(loss_pi):
-                self.logger.log('WARNING: loss_pi not finite')
+            self._logger.log(f'Expected Improvement: {expected_improve} Actual: {loss_improve}')
+            if not torch.isfinite(loss):
+                self._logger.log('WARNING: loss_pi not finite')
             elif loss_improve < 0:
-                self.logger.log('INFO: did not improve improve <0')
-            elif torch_kl > self.target_kl * 1.5:
-                self.logger.log('INFO: violated KL constraint.')
+                self._logger.log('INFO: did not improve improve <0')
+            elif kl > self._cfgs.target_kl * 1.5:
+                self._logger.log('INFO: violated KL constraint.')
             else:
                 # step only if surrogate is improved and when within trust reg.
-                self.logger.log(f'Accept step at i={acceptance_step}')
+                acceptance_step = step + 1
+                self._logger.log(f'Accept step at i={acceptance_step}')
                 break
             step_frac *= decay
         else:
-            self.logger.log('INFO: no suitable step found...')
-            step_dir = torch.zeros_like(step_dir)
+            self._logger.log('INFO: no suitable step found...')
+            step_direction = torch.zeros_like(step_direction)
             acceptance_step = 0
 
-        set_param_values_to_model(self.actor_critic.actor, _theta_old)
+        set_param_values_to_model(self._actor_critic.actor, theta_old)
 
-        return step_frac * step_dir, acceptance_step
+        return step_frac * step_direction, acceptance_step
 
-    # pylint: disable-next=too-many-locals,too-many-arguments
-    def update_policy_net(
+    def _update_actor(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         obs: torch.Tensor,
         act: torch.Tensor,
-        log_p: torch.Tensor,
-        adv: torch.Tensor,
-        cost_adv: torch.Tensor,
+        logp: torch.Tensor,
+        adv_r: torch.Tensor,
+        adv_c: torch.Tensor,
     ) -> None:
         """Update policy network.
 
@@ -155,75 +149,58 @@ class TRPO(NaturalPG):
         Args:
             obs (torch.Tensor): The observation tensor.
             act (torch.Tensor): The action tensor.
-            log_p (torch.Tensor): The log probability of the action.
-            adv (torch.Tensor): The advantage tensor.
-            cost_adv (torch.Tensor): The cost advantage tensor.
+            logp (torch.Tensor): The log probability of the action.
+            adv_r (torch.Tensor): The advantage tensor.
+            adv_c (torch.Tensor): The cost advantage tensor.
         """
-        # get loss and info values before update
-        self.fvp_obs = obs[::4]
-        theta_old = get_flat_params_from(self.actor_critic.actor)
-        self.actor_critic.actor.zero_grad()
-        # process the advantage function.
-        processed_adv = self.compute_surrogate(adv=adv, cost_adv=cost_adv)
-        # compute the loss of policy net.
-        loss_pi, pi_info = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=processed_adv)
-        loss_pi_before = distributed.dist_avg(loss_pi.item())
-        p_dist = self.actor_critic.actor(obs)
-        # train policy with multiple steps of gradient descent
-        loss_pi.backward()
-        # average grads across MPI processes
-        distributed.avg_grads(self.actor_critic.actor)
-        g_flat = get_flat_gradients_from(self.actor_critic.actor)
-        g_flat *= -1
+        self._fvp_obs = obs[::4]
+        theta_old = get_flat_params_from(self._actor_critic.actor)
+        self._actor_critic.actor.zero_grad()
+        adv = self._compute_adv_surrogate(adv_r, adv_c)
+        loss, info = self._loss_pi(obs, act, logp, adv)
+        loss_before = distributed.dist_avg(loss).item()
+        p_dist = self._actor_critic.actor(obs)
 
-        # pylint: disable-next=invalid-name
-        x = conjugate_gradients(self.Fvp, g_flat, self.cg_iters)
+        loss.backward()
+        distributed.avg_grads(self._actor_critic.actor)
+
+        grad = -get_flat_gradients_from(self._actor_critic.actor)
+        x = conjugate_gradients(self._fvp, grad, self._cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
-        # note that xHx = g^T x, but calculating xHx is faster than g^T x
-        xHx = torch.dot(x, self.Fvp(x))  # equivalent to : g^T x
-        assert xHx.item() >= 0, 'No negative values'
-
-        # perform descent direction
-        alpha = torch.sqrt(2 * self.target_kl / (xHx + 1e-8))
-        step_direction = alpha * x
+        xHx = torch.dot(x, self._fvp(x))
+        assert xHx.item() >= 0, 'xHx is negative'
+        alpha = torch.sqrt(2 * self._cfgs.target_kl / (xHx + 1e-8))
+        step_direction = x * alpha
         assert torch.isfinite(step_direction).all(), 'step_direction is not finite'
 
-        # determine step direction and apply SGD step after grads where set
-        # TRPO uses custom backtracking line search
-        final_step_dir, accept_step = self.search_step_size(
-            step_dir=step_direction,
-            g_flat=g_flat,
+        step_direction, accept_step = self._search_step_size(
+            step_direction=step_direction,
+            grad=grad,
             p_dist=p_dist,
-            loss_pi_before=loss_pi_before,
             obs=obs,
             act=act,
-            log_p=log_p,
+            logp=logp,
             adv=adv,
+            loss_before=loss_before,
         )
 
-        # update actor network parameters
-        new_theta = theta_old + final_step_dir
-        set_param_values_to_model(self.actor_critic.actor, new_theta)
+        theta_new = theta_old + step_direction
+        set_param_values_to_model(self._actor_critic.actor, theta_new)
 
         with torch.no_grad():
-            q_dist = self.actor_critic.actor(obs)
-            kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-            loss_pi, pi_info = self.compute_loss_pi(
-                obs=obs, act=act, log_p=log_p, adv=processed_adv
-            )
+            loss, info = self._loss_pi(obs, act, logp, adv)
 
-        self.logger.store(
+        self._logger.store(
             **{
-                'Values/Adv': adv.mean().item(),
-                'Train/Entropy': pi_info['ent'],
-                'Train/KL': kl,
-                'Train/PolicyRatio': pi_info['ratio'],
-                'Misc/AcceptanceStep': accept_step,
+                'Train/Entropy': info['entrophy'],
+                'Train/PolicyRatio': info['ratio'],
+                'Train/PolicyStd': info['std'],
+                'Loss/Loss_pi': loss.mean().item(),
                 'Misc/Alpha': alpha.item(),
-                'Misc/FinalStepNorm': torch.norm(final_step_dir).mean().item(),
+                'Misc/FinalStepNorm': torch.norm(step_direction).mean().item(),
                 'Misc/xHx': xHx.item(),
-                'Misc/gradient_norm': torch.norm(g_flat).mean().item(),
+                'Misc/gradient_norm': torch.norm(grad).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
-                'Loss/Loss_pi': loss_pi.mean().item(),
+                'Misc/AcceptanceStep': accept_step,
             }
         )
