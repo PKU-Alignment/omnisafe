@@ -14,7 +14,7 @@
 # ==============================================================================
 """On-policy algorithms."""
 
-from omnisafe.algorithms.on_policy import (
+from omnisafe.algorithms.on_policy import (  # simmer,
     base,
     early_terminated,
     first_order,
@@ -23,7 +23,6 @@ from omnisafe.algorithms.on_policy import (
     pid_lagrange,
     saute,
     second_order,
-    simmer,
 )
 from omnisafe.algorithms.on_policy.base import PPO, TRPO, NaturalPG, PolicyGradient
 from omnisafe.algorithms.on_policy.early_terminated import PPOEarlyTerminated, PPOLagEarlyTerminated
@@ -33,12 +32,14 @@ from omnisafe.algorithms.on_policy.penalty_function import IPO, P3O
 from omnisafe.algorithms.on_policy.pid_lagrange import CPPOPid, TRPOPid
 from omnisafe.algorithms.on_policy.saute import PPOLagSaute, PPOSaute
 from omnisafe.algorithms.on_policy.second_order import CPO, PCPO
-from omnisafe.algorithms.on_policy.simmer import (
-    PPOLagSimmerPid,
-    PPOLagSimmerQ,
-    PPOSimmerPid,
-    PPOSimmerQ,
-)
+
+
+# from omnisafe.algorithms.on_policy.simmer import (
+#     PPOLagSimmerPid,
+#     PPOLagSimmerQ,
+#     PPOSimmerPid,
+#     PPOSimmerQ,
+# )
 
 
 __all__ = [
@@ -50,5 +51,5 @@ __all__ = [
     *pid_lagrange.__all__,
     *saute.__all__,
     *second_order.__all__,
-    *simmer.__all__,
+    # *simmer.__all__,
 ]

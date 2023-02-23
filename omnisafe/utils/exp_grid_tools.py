@@ -15,6 +15,7 @@
 """Tools for Experiment Grid."""
 
 import string
+from typing import List, Union
 
 
 def all_bools(vals: list) -> bool:
@@ -22,7 +23,7 @@ def all_bools(vals: list) -> bool:
     return all(isinstance(v, bool) for v in vals)
 
 
-def valid_str(vals: list or str or type) -> str:
+def valid_str(vals: Union[List, str]) -> str:
     r"""Convert a value or values to a string which could go in a path of file.
 
     Partly based on `this gist`_.

@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of the PPO algorithm."""
 
-from typing import NamedTuple, Tuple
+from typing import Dict, Tuple
 
 import torch
 
@@ -32,31 +32,9 @@ class PPO(PolicyGradient):
         - URL: `PPO <https://arxiv.org/abs/1707.06347>`_
     """
 
-    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize Proximal Policy Optimization.
-
-        .. note::
-            The ``clip`` parameter is the clip parameter in PPO,
-            which is used to clip the ratio of the new policy and the old policy.
-            The ``clip`` parameter is set to 0.2 in the original paper.
-
-        Args:
-            env_id (str): The environment id.
-            cfgs (NamedTuple): The configuration of the algorithm.
-        """
-        super().__init__(
-            env_id=env_id,
-            cfgs=cfgs,
-        )
-
-    # pylint: disable-next=too-many-arguments
-    def compute_loss_pi(
-        self,
-        obs: torch.Tensor,
-        act: torch.Tensor,
-        log_p: torch.Tensor,
-        adv: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _loss_pi(
+        self, obs: torch.Tensor, act: torch.Tensor, logp: torch.Tensor, adv: torch.Tensor
+    ) -> Tuple[torch.Tensor, Dict[str, float]]:
         r"""Computing pi/actor loss.
 
         In Proximal Policy Optimization, the loss is defined as:
@@ -75,15 +53,14 @@ class PPO(PolicyGradient):
             adv (torch.Tensor): ``advantage`` stored in buffer.
             cost_adv (torch.Tensor): ``cost advantage`` stored in buffer.
         """
-        dist, _log_p = self.actor_critic.actor(obs, act)
-        # importance ratio
-        ratio = torch.exp(_log_p - log_p)
-        ratio_clip = torch.clamp(ratio, 1 - self.cfgs.clip, 1 + self.cfgs.clip)
-        loss_pi = -(torch.min(ratio * adv, ratio_clip * adv))
-        loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
+        distribution = self._actor_critic.actor(obs)
+        logp_ = self._actor_critic.actor.log_prob(act)
+        std = self._actor_critic.actor.std
+        ratio = torch.exp(logp_ - logp)
+        ratio_cliped = torch.clamp(ratio, 1 - self._cfgs.clip, 1 + self._cfgs.clip)
+        loss = -torch.min(ratio * adv, ratio_cliped * adv).mean()
+        loss += self._cfgs.entropy_coef * distribution.entropy().mean()
         # useful extra info
-        approx_kl = (0.5 * (dist.mean - act) ** 2 / dist.stddev**2).mean().item()
-        ent = dist.entropy().mean().item()
-        pi_info = {'kl': approx_kl, 'ent': ent, 'ratio': ratio_clip.mean().item()}
-
-        return loss_pi.mean(), pi_info
+        entrophy = distribution.entropy().mean().item()
+        info = {'entrophy': entrophy, 'ratio': ratio.mean().item(), 'std': std}
+        return loss, info

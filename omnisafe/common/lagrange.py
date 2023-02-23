@@ -14,12 +14,10 @@
 # ==============================================================================
 """Implementation of Lagrange."""
 
-import abc
-
 import torch
 
 
-class Lagrange(abc.ABC):
+class Lagrange:
     r"""Abstract base class for Lagrangian-base Algorithms.
 
     This class implements the Lagrange multiplier update and the Lagrange loss.

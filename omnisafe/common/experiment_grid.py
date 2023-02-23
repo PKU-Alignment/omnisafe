@@ -21,6 +21,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor as Pool
 from copy import deepcopy
 from textwrap import dedent
+from typing import Any, Dict, List
 
 import numpy as np
 from tqdm import trange
@@ -34,10 +35,10 @@ class ExperimentGrid:
     """Tool for running many experiments given hyper-parameters ranges."""
 
     def __init__(self, exp_name='') -> None:
-        self.keys = []
-        self.vals = []
-        self.shs = []
-        self.in_names = []
+        self.keys: List[str] = []
+        self.vals: List[Any] = []
+        self.shs: List[str] = []
+        self.in_names: List[str] = []
         self.div_line_width = 80
         assert isinstance(exp_name, str), 'Name has to be a string.'
         self.name = exp_name
@@ -206,7 +207,7 @@ class ExperimentGrid:
     def _variants(self, keys, vals):
         """Recursively builds list of valid variants."""
         if len(keys) == 1:
-            pre_variants = [{}]
+            pre_variants: List[Dict] = [{}]
         else:
             pre_variants = self._variants(keys[1:], vals[1:])
 
@@ -259,7 +260,7 @@ class ExperimentGrid:
 
         def unflatten_var(var):
             """Build the full nested dict version of var, based on key names."""
-            new_var = {}
+            new_var: Dict = {}
             unflatten_set = set()
 
             for key, value in var.items():
