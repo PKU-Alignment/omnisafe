@@ -61,10 +61,9 @@ jobs:
         run: |
           make addlicense
 
-      # TODO: enable this when ready
-      # - name: mypy
-      #   run: |
-      #     make mypy
+      - name: mypy
+        run: |
+          make mypy
 
       - name: Install dependencies
         run: |

@@ -15,135 +15,54 @@
 """Implementation of ActorBuilder."""
 
 import difflib
-from dataclasses import dataclass
-from typing import Optional, Union
+from typing import List
 
-import torch.nn as nn
-
-from omnisafe.models.actor.categorical_actor import CategoricalActor
-from omnisafe.models.actor.cholesky_actor import MLPCholeskyActor
-from omnisafe.models.actor.gaussian_actor import GaussianActor
-from omnisafe.models.actor.gaussian_stdnet_actor import GaussianStdNetActor
-from omnisafe.utils.model_utils import Activation, InitFunction
-
-
-@dataclass
-class NetworkConfig:
-    """Class for storing network configurations."""
-
-    obs_dim: int
-    act_dim: int
-    hidden_sizes: list
-    activation: Activation = 'tanh'
-    weight_initialization_mode: InitFunction = 'kaiming_uniform'
-    shared: nn.Module = None
-    output_activation: Optional[Activation] = None
-
-
-@dataclass
-class ActionConfig:
-    """Class for storing action configurations."""
-
-    scale_action: bool = False
-    clip_action: bool = False
-    std_learning: bool = True
-    std_init: float = 1.0
+from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
+from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
+from omnisafe.models.base import Actor
+from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 
 
 # pylint: disable-next=too-few-public-methods
 class ActorBuilder:
     """Class for building actor networks."""
 
-    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        obs_dim: int,
-        act_dim: int,
-        hidden_sizes: list,
-        activation: Activation = 'tanh',
+        obs_space: OmnisafeSpace,
+        act_space: OmnisafeSpace,
+        hidden_sizes: List[int],
+        activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
-        shared: nn.Module = None,
-        scale_action: bool = False,
-        clip_action: bool = False,
-        output_activation: Optional[Activation] = 'identity',
-        std_learning: bool = True,
-        std_init: float = 1.0,
     ) -> None:
         """Initialize ActorBuilder."""
-        self.network_config = NetworkConfig(
-            obs_dim=obs_dim,
-            act_dim=act_dim,
-            hidden_sizes=hidden_sizes,
-            activation=activation,
-            output_activation=output_activation,
-            weight_initialization_mode=weight_initialization_mode,
-            shared=shared,
-        )
-        self.action_config = ActionConfig(
-            scale_action=scale_action,
-            clip_action=clip_action,
-            std_learning=std_learning,
-            std_init=std_init,
-        )
+        self._obs_space = obs_space
+        self._act_space = act_space
+        self._weight_initialization_mode = weight_initialization_mode
+        self._activation = activation
+        self._hidden_sizes = hidden_sizes
 
     # pylint: disable-next=too-many-return-statements
-    def build_actor(
-        self, actor_type: str, **kwargs
-    ) -> Union[
-        CategoricalActor,
-        GaussianStdNetActor,
-        MLPCholeskyActor,
-        GaussianActor,
-        NotImplementedError,
-    ]:
+    def build_actor(self, actor_type: ActorType) -> Actor:
         """Build actor network."""
-        if actor_type == 'categorical':
-            return CategoricalActor(
-                obs_dim=self.network_config.obs_dim,
-                act_dim=self.network_config.act_dim,
-                hidden_sizes=self.network_config.hidden_sizes,
-                activation=self.network_config.activation,
-                weight_initialization_mode=self.network_config.weight_initialization_mode,
-                shared=self.network_config.shared,
-                **kwargs,
+        if actor_type == 'gaussian_learning':
+            return GaussianLearningActor(
+                self._obs_space,
+                self._act_space,
+                self._hidden_sizes,
+                activation=self._activation,
+                weight_initialization_mode=self._weight_initialization_mode,
             )
-        if actor_type == 'gaussian_stdnet':
-            return GaussianStdNetActor(
-                obs_dim=self.network_config.obs_dim,
-                act_dim=self.network_config.act_dim,
-                hidden_sizes=self.network_config.hidden_sizes,
-                activation=self.network_config.activation,
-                weight_initialization_mode=self.network_config.weight_initialization_mode,
-                shared=self.network_config.shared,
-                scale_action=self.action_config.scale_action,
-                **kwargs,
-            )
-        if actor_type == 'cholesky':
-            return MLPCholeskyActor(
-                obs_dim=self.network_config.obs_dim,
-                act_dim=self.network_config.act_dim,
-                hidden_sizes=self.network_config.hidden_sizes,
-                activation=self.network_config.activation,
-                weight_initialization_mode=self.network_config.weight_initialization_mode,
-                **kwargs,
-            )
-        if actor_type == 'gaussian':
-            return GaussianActor(
-                obs_dim=self.network_config.obs_dim,
-                act_dim=self.network_config.act_dim,
-                hidden_sizes=self.network_config.hidden_sizes,
-                activation=self.network_config.activation,
-                weight_initialization_mode=self.network_config.weight_initialization_mode,
-                scale_action=self.action_config.scale_action,
-                clip_action=self.action_config.clip_action,
-                output_activation=self.network_config.output_activation,
-                std_learning=self.action_config.std_learning,
-                std_init=self.action_config.std_init,
-                shared=self.network_config.shared,
-                **kwargs,
+        if actor_type == 'gaussian_sac':
+            return GaussianSACActor(
+                self._obs_space,
+                self._act_space,
+                self._hidden_sizes,
+                activation=self._activation,
+                weight_initialization_mode=self._weight_initialization_mode,
             )
 
         raise NotImplementedError(
             f'Actor type {actor_type} is not implemented! '
-            f'Did you mean {difflib.get_close_matches(actor_type, ["categorical", "gaussian_stdnet", "cholesky", "gaussian"], n=1)[0]}?'  # pylint: disable=line-too-long
+            f'Did you mean {difflib.get_close_matches(actor_type, ["gaussian_learning", "gaussian_sac"])[0]}?'
         )

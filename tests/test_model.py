@@ -25,8 +25,8 @@ import helpers
 from omnisafe.models import ActorBuilder, CriticBuilder
 from omnisafe.models.actor_critic import ActorCritic
 from omnisafe.models.actor_q_critic import ActorQCritic
+from omnisafe.typing import Activation, InitFunction
 from omnisafe.utils.config import Config
-from omnisafe.utils.model_utils import Activation, InitFunction
 
 
 @helpers.parametrize(

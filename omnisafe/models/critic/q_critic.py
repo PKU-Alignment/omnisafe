@@ -13,13 +13,15 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of QCritic."""
-from typing import List, Optional
+
+from typing import List
 
 import torch
 import torch.nn as nn
 
 from omnisafe.models.base import Critic
-from omnisafe.utils.model_utils import Activation, InitFunction, build_mlp_network
+from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
+from omnisafe.utils.model import build_mlp_network
 
 
 class QCritic(Critic):
@@ -33,24 +35,22 @@ class QCritic(Critic):
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        obs_dim: int,
-        act_dim: int,
-        hidden_sizes: list,
+        obs_space: OmnisafeSpace,
+        act_space: OmnisafeSpace,
+        hidden_sizes: List[int],
         activation: Activation = 'relu',
-        weight_initialization_mode: InitFunction = 'xavier_uniform',
-        shared: nn.Module = None,
+        weight_initialization_mode: InitFunction = 'kaiming_uniform',
         num_critics: int = 1,
-        use_obs_encoder: bool = True,
-        action_type: str = 'continuous',
+        use_obs_encoder: bool = False,
     ) -> None:
         """Initialize the critic network.
 
         The Q critic network has two modes:
 
         -  ``use_obs_encoder`` = ``False`` :
-           The input of the network is the concatenation of the observation and action.
+            The input of the network is the concatenation of the observation and action.
         -  ``use_obs_encoder`` = ``True`` :
-           The input of the network is the concatenation of the output of the observation encoder and action.
+            The input of the network is the concatenation of the output of the observation encoder and action.
 
         For example, in :class:`DDPG`,
         the action is not directly concatenated with the observation,
@@ -63,56 +63,55 @@ class QCritic(Critic):
             you need to use the index to get it.
 
         Args:
-            obs_dim (int): Observation dimension.
-            act_dim (int): Action dimension.
-            hidden_sizes (list): Hidden layer sizes.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-            shared (nn.Module): Shared network.
-            num_critics (int): Number of critics.
-            use_obs_encoder (bool): Whether to use observation encoder.
+            obs_space (OmnisafeSpace): observation space.
+            act_space (OmnisafeSpace): action space.
+            hidden_sizes (list): list of hidden layer sizes.
+            activation (Activation): activation function.
+            weight_initialization_mode (InitFunction): weight initialization mode.
+            shared (nn.Module): shared network.
+            num_critics (int): number of critics.
+            use_obs_encoder (bool): whether to use observation encoder.
+
         """
-        self.use_obs_encoder = use_obs_encoder
-        Critic.__init__(
-            self,
-            obs_dim=obs_dim,
-            act_dim=act_dim,
-            hidden_sizes=hidden_sizes,
-            activation=activation,
-            weight_initialization_mode=weight_initialization_mode,
-            shared=shared,
+        super().__init__(
+            obs_space,
+            act_space,
+            hidden_sizes,
+            activation,
+            weight_initialization_mode,
+            num_critics,
+            use_obs_encoder,
         )
-        self.critic_list = []
-        expand_dim = act_dim if action_type == 'continuous' else 1
-        for idx in range(num_critics):
-            if self.use_obs_encoder:
+        self.net_lst: List[nn.Module] = []
+        for idx in range(self._num_critics):
+            if self._use_obs_encoder:
                 obs_encoder = build_mlp_network(
-                    [obs_dim, hidden_sizes[0]],
+                    [self._obs_dim, hidden_sizes[0]],
                     activation=activation,
                     output_activation=activation,
                     weight_initialization_mode=weight_initialization_mode,
                 )
                 net = build_mlp_network(
-                    [hidden_sizes[0] + expand_dim] + hidden_sizes[1:] + [1],
+                    [hidden_sizes[0] + self._act_dim] + hidden_sizes[1:] + [1],
                     activation=activation,
                     weight_initialization_mode=weight_initialization_mode,
                 )
                 critic = nn.Sequential(obs_encoder, net)
             else:
                 net = build_mlp_network(
-                    [obs_dim + act_dim] + hidden_sizes[:] + [1],
+                    [self._obs_dim + self._act_dim] + hidden_sizes + [1],
                     activation=activation,
                     weight_initialization_mode=weight_initialization_mode,
                 )
                 critic = nn.Sequential(net)
-            self.critic_list.append(critic)
+            self.net_lst.append(critic)
             self.add_module(f'critic_{idx}', critic)
 
     def forward(
         self,
         obs: torch.Tensor,
-        act: Optional[torch.Tensor] = None,
-    ) -> List:
+        act: torch.Tensor,
+    ) -> List[torch.Tensor]:
         """Forward function.
 
         As a multi-critic network, the output of the network is a list of Q-values.
@@ -125,10 +124,6 @@ class QCritic(Critic):
             act (torch.Tensor): Action.
         """
         res = []
-        for critic in self.critic_list:
-            if self.use_obs_encoder:
-                encodered_obs = critic[0](obs)
-                res.append(torch.squeeze(critic[1](torch.cat([encodered_obs, act], dim=-1)), -1))
-            else:
-                res.append(torch.squeeze(critic[0](torch.cat([obs, act], dim=-1)), -1))
+        for critic in self.net_lst:
+            res.append(torch.squeeze(critic(torch.cat([obs, act], dim=-1)), -1))
         return res

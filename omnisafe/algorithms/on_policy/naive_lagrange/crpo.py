@@ -14,12 +14,11 @@
 # ==============================================================================
 """Implementation of the on-policy CRPO algorithm."""
 
-from typing import NamedTuple
-
 import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
+from omnisafe.utils.config import Config
 
 
 @registry.register
@@ -32,58 +31,29 @@ class OnCRPO(PPO):
         - URL: `CRPO <https://arxiv.org/pdf/2011.05869.pdf>`_.
     """
 
-    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize CRPO.
+    def __init__(self, env_id: str, cfgs: Config) -> None:
+        super().__init__(env_id, cfgs)
+        self._rew_update = 0
+        self._cost_update = 0
 
-        Args:
-            env_id (str): The environment id.
-            cfgs (NamedTuple): The configuration of the algorithm.
-        """
-        PPO.__init__(
-            self,
-            env_id=env_id,
-            cfgs=cfgs,
-        )
-        self.rew_update = 0
-        self.cost_update = 0
+    def _init_log(self) -> None:
+        super()._init_log()
+        self._logger.register_key('Misc/RewUpdate')
+        self._logger.register_key('Misc/CostUpdate')
 
-    def _specific_init_logs(self):
-        super()._specific_init_logs()
-        self.logger.register_key('Misc/RewUpdate')
-        self.logger.register_key('Misc/CostUpdate')
-
-    def algorithm_specific_logs(self) -> None:
-        """Log the CRPO specific information.
-
-        .. list-table::
-
-            *  -   Things to log
-               -   Description
-            *  -   Metrics/LagrangeMultiplier
-               -   The Lagrange multiplier value in current epoch.
-        """
-        super().algorithm_specific_logs()
-        self.logger.store(
+    def _update(self) -> None:
+        super()._update()
+        self._logger.store(
             **{
-                'Misc/RewUpdate': self.rew_update,
-                'Misc/CostUpdate': self.cost_update,
+                'Misc/RewUpdate': self._rew_update,
+                'Misc/CostUpdate': self._cost_update,
             }
         )
 
-    def compute_surrogate(self, adv: torch.Tensor, cost_adv: torch.Tensor) -> torch.Tensor:
-        """Compute the surrogate loss of the policy.
-
-        In CRPO algorithm, we first judge whether the cost is within the limit.
-        If the cost is within the limit, we use the advantage of the policy.
-        Otherwise, we use the advantage of the cost.
-
-        Args:
-            adv (torch.Tensor): The advantage of the policy.
-            cost_adv (torch.Tensor): The advantage of the cost.
-        """
-        Jc = self.logger.get_stats('Metrics/EpCost')[0]
-        if Jc <= self.cfgs.cost_limit + self.cfgs.distance:
-            self.rew_update += 1
-            return adv
-        self.cost_update += 1
-        return -cost_adv
+    def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
+        Jc = self._logger.get_stats('Metrics/EpCost')[0]
+        if Jc <= self._cfgs.cost_limit + self._cfgs.distance:
+            self._rew_update += 1
+            return adv_r
+        self._cost_update += 1
+        return -adv_c

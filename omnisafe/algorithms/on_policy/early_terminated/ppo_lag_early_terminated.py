@@ -14,8 +14,8 @@
 # ==============================================================================
 """Implementation of the Lagrange version of the early terminated algorithm using PPOLag."""
 
-from typing import NamedTuple
 
+from omnisafe.adapter import EarlyTerminatedAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
 
@@ -30,11 +30,8 @@ class PPOLagEarlyTerminated(PPOLag):
         URL: `Safe Exploration by Solving Early Terminated MDP <https://arxiv.org/abs/2107.04200>`_
     """
 
-    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize PPO_Lag_Earyly_Terminated.
-
-        Args:
-            env_id (str): The environment id.
-            cfgs (NamedTuple): The configuration of the algorithm.
-        """
-        super().__init__(env_id=env_id, cfgs=cfgs)
+    def _init_env(self) -> None:
+        self._env = EarlyTerminatedAdapter(
+            self._env_id, self._cfgs.num_envs, self._seed, self._cfgs
+        )
+        self._steps_per_epoch = self._cfgs.steps_per_epoch
