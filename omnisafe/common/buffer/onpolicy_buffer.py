@@ -20,9 +20,8 @@ import torch
 
 from omnisafe.common.buffer.base import BaseBuffer
 from omnisafe.typing import AdvatageEstimator, OmnisafeSpace
-from omnisafe.utils import distributed_utils
-from omnisafe.utils.core import discount_cumsum_torch
-from omnisafe.utils.vtrace import calculate_v_trace
+from omnisafe.utils import distributed
+from omnisafe.utils.math import discount_cumsum
 
 
 class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attributes
@@ -95,14 +94,14 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
     ) -> None:
         """Finish the current path and calculate the advantages of state-action pairs."""
         path_slice = slice(self.path_start_idx, self.ptr)
-        last_value_r = last_value_r.to(self.device)
-        last_value_c = last_value_c.to(self.device)
+        last_value_r = last_value_r.to(self._device)
+        last_value_c = last_value_c.to(self._device)
         rewards = torch.cat([self.data['reward'][path_slice], last_value_r])
         values_r = torch.cat([self.data['value_r'][path_slice], last_value_r])
         costs = torch.cat([self.data['cost'][path_slice], last_value_c])
         values_c = torch.cat([self.data['value_c'][path_slice], last_value_c])
 
-        discountred_ret = discount_cumsum_torch(rewards, self._gamma)[:-1]
+        discountred_ret = discount_cumsum(rewards, self._gamma)[:-1]
         self.data['discounted_ret'][path_slice] = discountred_ret
         rewards -= self._penalty_coefficient * costs
 
@@ -122,7 +121,6 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
     def get(self) -> Dict[str, torch.Tensor]:
         """Get the data in the buffer."""
-        assert self.ptr == self.max_size, 'The buffer is not full!'
         self.ptr, self.path_start_idx = 0, 0
 
         data = {
@@ -136,11 +134,11 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             'target_value_c': self.data['target_value_c'],
         }
 
-        self.data['adv_r'] = torch.zeros_like(self.data['adv_r'])
-        self.data['adv_c'] = torch.zeros_like(self.data['adv_c'])
+        # self.data['adv_r'] = torch.zeros_like(self.data['adv_r'])
+        # self.data['adv_c'] = torch.zeros_like(self.data['adv_c'])
 
-        adv_mean, adv_std, *_ = distributed_utils.mpi_statistics_scalar(data['adv_r'])
-        cadv_mean, *_ = distributed_utils.mpi_statistics_scalar(data['adv_c'])
+        adv_mean, adv_std, *_ = distributed.dist_statistics_scalar(data['adv_r'])
+        cadv_mean, *_ = distributed.dist_statistics_scalar(data['adv_c'])
         if self._standardized_adv_r:
             data['adv_r'] = (data['adv_r'] - adv_mean) / (adv_std + 1e-8)
         if self._standardized_adv_c:
@@ -206,15 +204,15 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         if self._advantage_estimator == 'gae':
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
             deltas = rewards[:-1] + self._gamma * values[1:] - values[:-1]
-            adv = discount_cumsum_torch(deltas, self._gamma * lam)
+            adv = discount_cumsum(deltas, self._gamma * lam)
             target_value = adv + values[:-1]
 
         elif self._advantage_estimator == 'gae-rtg':
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
             deltas = rewards[:-1] + self._gamma * values[1:] - values[:-1]
-            adv = discount_cumsum_torch(deltas, self._gamma * lam)
+            adv = discount_cumsum(deltas, self._gamma * lam)
             # compute rewards-to-go, to be targets for the value function update
-            target_value = discount_cumsum_torch(rewards, self._gamma)[:-1]
+            target_value = discount_cumsum(rewards, self._gamma)[:-1]
 
         elif self._advantage_estimator == 'vtrace':
             #  v_s = V(x_s) + \sum^{T-1}_{t=s} \gamma^{t-s}
@@ -222,7 +220,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             #                 * \rho_t (r_t + \gamma V(x_{t+1}) - V(x_t))
             path_slice = slice(self.path_start_idx, self.ptr)
             action_probs = self.data['logp'][path_slice].exp()
-            target_value, adv, _ = calculate_v_trace(
+            target_value, adv, _ = self._calculate_v_trace(
                 policy_action_probs=action_probs,
                 values=values,
                 rewards=rewards,
@@ -235,9 +233,72 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         elif self._advantage_estimator == 'plain':
             # A(x, u) = Q(x, u) - V(x) = r(x, u) + gamma V(x+1) - V(x)
             adv = rewards[:-1] + self._gamma * values[1:] - values[:-1]
-            target_value = discount_cumsum_torch(rewards, self._gamma)[:-1]
+            target_value = discount_cumsum(rewards, self._gamma)[:-1]
 
         else:
             raise NotImplementedError
 
         return adv, target_value
+
+    @staticmethod
+    # pylint: disable-next=too-many-arguments,too-many-locals
+    def _calculate_v_trace(
+        policy_action_probs: torch.Tensor,
+        values: torch.Tensor,  # including bootstrap
+        rewards: torch.Tensor,  # including bootstrap
+        behavior_action_probs: torch.Tensor,
+        gamma: float = 0.99,
+        rho_bar: float = 1.0,
+        c_bar: float = 1.0,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor,]:
+        r"""This function is used to calculate V-trace targets.
+
+        .. math::
+            A_t = \sum_{k=0}^{n-1} (\lambda \gamma)^k \delta_{t+k} +
+            (\lambda \gamma)^n * \rho_{t+n} * (1 - d_{t+n}) * (V(x_{t+n}) - b_{t+n})
+
+        Calculate V-trace targets for off-policy actor-critic learning recursively.
+        For more details,
+        please refer to the paper: `Espeholt et al. 2018, IMPALA <https://arxiv.org/abs/1802.01561>`_.
+
+        Args:
+            policy_action_probs (torch.Tensor): action probabilities of policy network, shape=(sequence_length,)
+            values (torch.Tensor): state values, shape=(sequence_length+1,)
+            rewards (torch.Tensor): rewards, shape=(sequence_length+1,)
+            behavior_action_probs (torch.Tensor): action probabilities of behavior network, shape=(sequence_length,)
+            gamma (float): discount factor
+            rho_bar (float): clip rho
+            c_bar (float): clip c
+
+        Returns:
+            tuple: V-trace targets, shape=(batch_size, sequence_length)
+        """
+        assert values.ndim == 1, 'Please provide 1d-arrays'
+        assert rewards.ndim == 1
+        assert policy_action_probs.ndim == 1
+        assert behavior_action_probs.ndim == 1
+        assert c_bar <= rho_bar
+
+        sequence_length = policy_action_probs.shape[0]
+        # pylint: disable-next=assignment-from-no-return
+        rhos = torch.div(policy_action_probs, behavior_action_probs)
+        clip_rhos = torch.min(
+            rhos, torch.as_tensor(rho_bar)
+        )  # pylint: disable=assignment-from-no-return
+        clip_cs = torch.min(
+            rhos, torch.as_tensor(c_bar)
+        )  # pylint: disable=assignment-from-no-return
+        v_s = values[:-1].clone()  # copy all values except bootstrap value
+        last_v_s = values[-1]  # bootstrap from last state
+
+        # calculate v_s
+        for index in reversed(range(sequence_length)):
+            delta = clip_rhos[index] * (rewards[index] + gamma * values[index + 1] - values[index])
+            v_s[index] += delta + gamma * clip_cs[index] * (last_v_s - values[index + 1])
+            last_v_s = v_s[index]  # accumulate current v_s for next iteration
+
+        # calculate q_targets
+        v_s_plus_1 = torch.cat((v_s[1:], values[-1:]))
+        policy_advantage = clip_rhos * (rewards[:-1] + gamma * v_s_plus_1 - values[:-1])
+
+        return v_s, policy_advantage, clip_rhos

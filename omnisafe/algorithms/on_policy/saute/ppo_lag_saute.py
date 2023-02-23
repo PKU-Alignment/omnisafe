@@ -14,10 +14,10 @@
 # ==============================================================================
 """Implementation of the Lagrange version of the Saute algorithm using PPOLag."""
 
-from typing import NamedTuple
-
+from omnisafe.adapter import SauteAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
+from omnisafe.utils import distributed
 
 
 @registry.register
@@ -31,18 +31,15 @@ class PPOLagSaute(PPOLag):
         - URL: `Saute RL<https://arxiv.org/abs/2202.06558>`_
     """
 
-    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize PPOLagSaute.
+    def _init_env(self) -> None:
+        self._env = SauteAdapter(self._env_id, self._cfgs.num_envs, self._seed, self._cfgs)
+        assert self._cfgs.steps_per_epoch % (distributed.world_size() * self._cfgs.num_envs) == 0, (
+            'The number of steps per epoch is not divisible by the number of ' 'environments.'
+        )
+        self._steps_per_epoch = (
+            self._cfgs.steps_per_epoch // distributed.world_size() // self._cfgs.num_envs
+        )
 
-        PPOLagSaute is a combination of :class:`PPO` and :class:`Lagrange` model,
-        using :class:`Saute` as the environment wrapper.
-
-        Args:
-            env_id (str): The environment id.
-            cfgs (NamedTuple): The configuration of the algorithm.
-        """
-        super().__init__(env_id=env_id, cfgs=cfgs)
-
-    def _specific_init_logs(self):
-        super()._specific_init_logs()
-        self.logger.register_key('Metrics/EpBudget')
+    def _init_log(self) -> None:
+        super()._init_log()
+        self._logger.register_key('Metrics/EpBudget')

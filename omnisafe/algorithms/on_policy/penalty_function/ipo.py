@@ -14,8 +14,6 @@
 # ==============================================================================
 """Implementation of IPO algorithm."""
 
-from typing import NamedTuple
-
 import torch
 
 from omnisafe.algorithms import registry
@@ -32,31 +30,17 @@ class IPO(PPO):
         - URL: `IPO <https://arxiv.org/pdf/1910.09615.pdf>`_
     """
 
-    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize IPO."""
-        PPO.__init__(
-            self,
-            env_id=env_id,
-            cfgs=cfgs,
-        )
-        self.penalty = 0
+    def _init_log(self) -> None:
+        super()._init_log()
+        self._logger.register_key('Misc/Penalty')
 
-    def _specific_init_logs(self):
-        super()._specific_init_logs()
-        self.logger.register_key('Penalty')
-
-    def algorithm_specific_logs(self):
-        super().algorithm_specific_logs()
-        self.logger.store(
-            **{
-                'Penalty': self.penalty,
-            }
-        )
-
-    def compute_surrogate(self, adv: torch.Tensor, cost_adv: torch.Tensor) -> torch.Tensor:
+    def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
         """Compute surrogate loss."""
-        Jc = self.logger.get_stats('Metrics/EpCost')[0]
-        self.penalty = self.cfgs.kappa / (self.cfgs.cost_limit - Jc + 1e-8)
-        if self.penalty < 0 or self.penalty > self.cfgs.penalty_max:
-            self.penalty = self.cfgs.penalty_max
-        return (adv - self.penalty * cost_adv) / (1 + self.penalty)
+        Jc = self._logger.get_stats('Metrics/EpCost')[0]
+        penalty = self._cfgs.kappa / (self._cfgs.cost_limit - Jc + 1e-8)
+        if penalty < 0 or penalty > self._cfgs.penalty_max:
+            penalty = self._cfgs.penalty_max
+
+        self._logger.store(**{'Misc/Penalty': penalty})
+
+        return (adv_r - penalty * adv_c) / (1 + penalty)

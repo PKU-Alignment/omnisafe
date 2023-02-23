@@ -19,7 +19,7 @@ import torch.nn.functional as F
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
-from omnisafe.utils import distributed_utils
+from omnisafe.utils import distributed
 
 
 @registry.register
@@ -32,48 +32,32 @@ class P3O(PPO):
         - URL: `P3O <https://arxiv.org/pdf/2205.11814.pdf>`_
     """
 
-    def compute_loss_cost_performance(
+    def _init_log(self) -> None:
+        super()._init_log()
+        self._logger.register_key('Loss/Loss_pi_cost', delta=True)
+
+    def _loss_pi_cost(
         self,
         obs: torch.Tensor,
         act: torch.Tensor,
-        log_p: torch.Tensor,
-        cost_adv: torch.Tensor,
+        logp: torch.Tensor,
+        adv_c: torch.Tensor,
     ) -> torch.Tensor:
-        r"""Compute the loss of the cost performance.
+        self._actor_critic.actor(obs)
+        logp_ = self._actor_critic.actor.log_prob(act)
+        ratio = torch.exp(logp_ - logp)
+        surr_cadv = (ratio * adv_c).mean()
+        Jc = self._logger.get_stats('Metrics/EpCost')[0] - self._cfgs.cost_limit
+        loss_cost = self._cfgs.kappa * F.relu(surr_cadv + Jc)
+        return loss_cost.mean()
 
-        The loss is defined as:
-
-        .. math::
-
-            \mathcal{L}_{\pi_c} = \kappa \cdot \max
-            \left(0, \frac{\pi_c(a_t|s_t)}{\pi(a_t|s_t)} \cdot A_{c_t} + J_c - \bar{J}_c\right)
-
-        where :math:`\kappa` is the penalty coefficient, :math:`\pi_c` is the cost performance,
-        :math:`\pi` is the policy, :math:`A_{c_t}` is the cost advantage, :math:`J_c` is the cost
-        of the current episode, and :math:`\bar{J}_c` is the cost limit.
-
-        Args:
-            obs (torch.Tensor): The observation tensor.
-            act (torch.Tensor): The action tensor.
-            log_p (torch.Tensor): The log probability of the action.
-            cost_adv (torch.Tensor): The cost advantage.
-        """
-        _, _log_p = self.actor_critic.actor(obs, act)
-        ratio = torch.exp(_log_p - log_p)
-        ratio_clip = torch.clamp(ratio, 1 - self.cfgs.clip, 1 + self.cfgs.clip)
-        surr_cadv = (ratio_clip * cost_adv).mean()
-        Jc = self.logger.get_stats('Metrics/EpCost')[0]
-        loss_pi_c = self.cfgs.kappa * F.relu(surr_cadv + Jc)
-        return loss_pi_c.mean()
-
-    # pylint: disable-next=too-many-locals,too-many-arguments
-    def update_policy_net(
+    def _update_actor(
         self,
         obs: torch.Tensor,
         act: torch.Tensor,
-        log_p: torch.Tensor,
-        adv: torch.Tensor,
-        cost_adv: torch.Tensor,
+        logp: torch.Tensor,
+        adv_r: torch.Tensor,
+        adv_c: torch.Tensor,
     ) -> None:
         r"""Update policy network under a double for loop.
 
@@ -100,31 +84,26 @@ class P3O(PPO):
             adv (torch.Tensor): ``advantage`` stored in buffer.
             cost_adv (torch.Tensor): ``cost_advantage`` stored in buffer.
         """
-        # process the advantage function.
-        processed_adv = self.compute_surrogate(adv=adv, cost_adv=cost_adv)
-        # compute the loss of policy net.
-        loss_pi, pi_info = self.compute_loss_pi(obs=obs, act=act, log_p=log_p, adv=processed_adv)
-        # compute the cost performance of policy net.
-        loss_pi_c = self.compute_loss_cost_performance(
-            obs=obs, act=act, log_p=log_p, cost_adv=cost_adv
-        )
-        # log the loss of policy net.
-        self.loss_record.append(loss_pi=(loss_pi - loss_pi_c).mean().item())
-        # update the policy net.
-        self.actor_optimizer.zero_grad()
-        # backward the loss of policy net.
-        (loss_pi + loss_pi_c).backward()
-        # clip the gradient of policy net.
-        if self.cfgs.use_max_grad_norm:
+        loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
+        loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
+
+        loss = loss_reward - loss_cost
+
+        self._actor_critic.actor_optimizer.zero_grad()
+        loss.backward()
+        if self._cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self.actor_critic.actor.parameters(), self.cfgs.max_grad_norm
+                self._actor_critic.actor.parameters(), self._cfgs.max_grad_norm
             )
-        # average the gradient of policy net.
-        distributed_utils.mpi_avg_grads(self.actor_critic.actor)
-        self.actor_optimizer.step()
-        self.logger.store(
+        distributed.avg_grads(self._actor_critic.actor)
+        self._actor_critic.actor_optimizer.step()
+
+        self._logger.store(
             **{
-                'Train/Entropy': pi_info['ent'],
-                'Train/PolicyRatio': pi_info['ratio'],
+                'Train/Entropy': info['entrophy'],
+                'Train/PolicyRatio': info['ratio'],
+                'Train/PolicyStd': info['std'],
+                'Loss/Loss_pi': loss_reward.mean().item(),
+                'Loss/Loss_pi_cost': loss_cost.mean().item(),
             }
         )

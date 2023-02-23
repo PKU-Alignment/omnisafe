@@ -14,17 +14,15 @@
 # ==============================================================================
 """Implementation of the PID-Lagrange version of the CPPO algorithm."""
 
-from typing import Dict, NamedTuple, Tuple
-
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
+from omnisafe.algorithms.on_policy.base.ppo import PPO
 from omnisafe.common.pid_lagrange import PIDLagrangian
 
 
 @registry.register
-class CPPOPid(PolicyGradient, PIDLagrangian):
+class CPPOPid(PPO):
     r"""The PID-Lagrange version of the CPPO algorithm.
 
     Similar to :class:`PDO`, which is a simple combination of :class:`PolicyGradient` and :class:`Lagrange`,
@@ -41,127 +39,50 @@ class CPPOPid(PolicyGradient, PIDLagrangian):
         - URL: https://arxiv.org/abs/2007.03964
     """
 
-    def __init__(self, env_id: str, cfgs: NamedTuple) -> None:
-        """Initialize CPPOPid.
+    def _init(self) -> None:
+        super()._init()
+        self._pid_lag = PIDLagrangian(**self._cfgs.PID_cfgs)
 
-        CPPOPid is a simple combination of :class:`PolicyGradient` and :class:`PIDLagrangian`.
+    def _init_log(self) -> None:
+        super()._init_log()
+        self._logger.register_key('Metrics/LagrangeMultiplier')
+        self._logger.register_key('PID/pid_Kp')
+        self._logger.register_key('PID/pid_Ki')
+        self._logger.register_key('PID/pid_Kd')
 
-        Args:
-            env_id (str): The environment id.
-            cfgs (NamedTuple): The configuration of the algorithm.
-        """
-        PolicyGradient.__init__(
-            self,
-            env_id=env_id,
-            cfgs=cfgs,
-        )
-        PIDLagrangian.__init__(self, **self.cfgs.PID_cfgs)
+    def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
+        penalty = self._pid_lag.cost_penalty
+        return (adv_r - penalty * adv_c) / (1 + penalty)
 
-        self.clip = self.cfgs.clip
-
-    def _specific_init_logs(self):
-        super()._specific_init_logs()
-        self.logger.register_key('Metrics/LagrangeMultiplier')
-        self.logger.register_key('PID/pid_Kp')
-        self.logger.register_key('PID/pid_Ki')
-        self.logger.register_key('PID/pid_Kd')
-
-    def algorithm_specific_logs(self) -> None:
-        """Log the CPPOPid specific information.
-
-        .. list-table::
-
-            *   -   Things to log
-                -   Description
-            *   -   Metrics/LagrangeMultiplier
-                -   The Lagrange multiplier value in current epoch.
-            *   -   PID/pid_Kp
-                -   The Kp value in current epoch.
-            *   -   PID/pid_Ki
-                -   The Ki value in current epoch.
-            *   -   PID/pid_Kd
-                -   The Kd value in current epoch.
-        """
-        super().algorithm_specific_logs()
-        self.logger.store(
-            **{
-                'Metrics/LagrangeMultiplier': self.cost_penalty,
-                'PID/pid_Kp': self.pid_kp,
-                'PID/pid_Ki': self.pid_ki,
-                'PID/pid_Kd': self.pid_kd,
-            }
-        )
-
-    # pylint: disable-next=too-many-arguments,too-many-locals
-    def compute_loss_pi(
-        self,
-        obs: torch.Tensor,
-        act: torch.Tensor,
-        log_p: torch.Tensor,
-        adv: torch.Tensor,
-    ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
-        r"""
-        Computing pi/actor loss.
-        In CPPOPid, the loss is defined as:
-
-        .. math::
-            L^{CLIP} = \mathbb{E}_{s_t \sim \rho_{\pi}}
-            \left[ \min(r_t (A^{R}_t - \lambda A^{C}_t), \text{clip}(r_t, 1-\epsilon, 1+\epsilon) (A^{R}_t -
-            \lambda A^{C}_t)) \right]
-
-        where :math:`r_t = \frac{\pi_\theta(a_t|s_t)}{\pi_\theta^{old}(a_t|s_t)}`,
-        :math:`\epsilon` is the clip parameter, :math:`A^{R}_t` is the reward advantage,
-        :math:`A^{C}_t` is the cost advantage, and :math:`\lambda` is the Lagrange multiplier.
-
-        Args:
-            obs (torch.Tensor): ``observation`` stored in buffer.
-            act (torch.Tensor): ``action`` stored in buffer.
-            log_p (torch.Tensor): ``log probability`` of action stored in buffer.
-            adv (torch.Tensor): ``advantage`` stored in buffer.
-            cost_adv (torch.Tensor): ``cost advantage`` stored in buffer.
-        """
-        dist, _log_p = self.actor_critic.actor(obs, act)
-        ratio = torch.exp(_log_p - log_p)
-        ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
-
-        surr_adv = (torch.min(ratio * adv, ratio_clip * adv)).mean()
-
-        loss_pi = -surr_adv
-        loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
-
-        # useful extra info
-        approx_kl = 0.5 * (log_p - _log_p).mean().item()
-        ent = dist.entropy().mean().item()
-        pi_info = {'kl': approx_kl, 'ent': ent, 'ratio': ratio.mean().item()}
-
-        return loss_pi, pi_info
-
-    def compute_surrogate(
-        self,
-        adv: torch.Tensor,
-        cost_adv: torch.Tensor,
-    ) -> torch.Tensor:
-        """Compute surrogate loss.
-
-        CPPOPid uses the Lagrange method to combine the reward and cost.
-        The surrogate loss is defined as the difference between the reward
-        advantage and the cost advantage
-
-        Args:
-            adv (torch.Tensor): reward advantage
-            cost_adv (torch.Tensor): cost advantage
-        """
-        return (adv - self.cost_penalty * cost_adv) / (1 + self.cost_penalty)
-
-    def update(self) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
-        r"""Update actor, critic, running statistics as we used in the :class:`PPO` algorithm.
+    def _update(self) -> None:
+        r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
 
         Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.
+
+        .. note::
+            The :meth:`compute_loss_pi` is defined in the :class:`PolicyGradient` algorithm.
+            When a lagrange multiplier is used,
+            the :meth:`compute_loss_pi` method will return the loss of the policy as:
+
+            .. math::
+                L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[ \frac{\pi_\theta(a_t|s_t)}{\pi_\theta^{old}(a_t|s_t)}
+                [A^{R}(s_t, a_t) - \lambda A^{C}(s_t, a_t)] \right]
+
+            where :math:`\lambda` is the Lagrange multiplier parameter.
         """
-        # note that logger already uses MPI statistics across all processes.
-        Jc = self.logger.get_stats('Metrics/EpCost')[0]
-        # first update Lagrange multiplier parameter.
-        self.pid_update(Jc)
-        # then update the policy and value net.
-        PolicyGradient.update(self)
+        # note that logger already uses MPI statistics across all processes..
+        Jc = self._logger.get_stats('Metrics/EpCost')[0]
+        # first update Lagrange multiplier parameter
+        self._pid_lag.pid_update(Jc)
+        # then update the policy and value function
+        super()._update()
+
+        self._logger.store(
+            **{
+                'Metrics/LagrangeMultiplier': self._pid_lag.cost_penalty,
+                'PID/pid_Kp': self._pid_lag.pid_kp,
+                'PID/pid_Ki': self._pid_lag.pid_ki,
+                'PID/pid_Kd': self._pid_lag.pid_kd,
+            }
+        )

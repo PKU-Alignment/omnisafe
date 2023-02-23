@@ -17,7 +17,9 @@
 from omnisafe import algorithms
 from omnisafe.algorithms import ALGORITHMS
 from omnisafe.algorithms.algo_wrapper import AlgoWrapper as Agent
-from omnisafe.evaluator import Evaluator
 
 # from omnisafe.algorithms.env_wrapper import EnvWrapper as Env
 from omnisafe.version import __version__
+
+
+# from omnisafe.evaluator import Evaluator
