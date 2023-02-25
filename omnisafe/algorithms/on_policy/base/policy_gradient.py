@@ -94,9 +94,12 @@ class PolicyGradient(BaseAlgo):
             config=self._cfgs,
         )
 
+        obs_normalizer = self._env.save()['obs_normalizer']
         what_to_save = {
             'pi': self._actor_critic.actor,
+            'obs_normalizer': obs_normalizer,
         }
+
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
 

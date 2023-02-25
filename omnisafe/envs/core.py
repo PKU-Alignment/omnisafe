@@ -172,6 +172,13 @@ class CMDP(ABC):
             Any: the render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
         """
 
+    def save(self) -> Dict[str, torch.nn.Module]:
+        """Save the important components of the environment.
+        Returns:
+            Dict[str, torch.nn.Module]: the saved components.
+        """
+        return {}
+
     @abstractmethod
     def close(self) -> None:
         """Close the environment."""
@@ -229,6 +236,9 @@ class Wrapper(CMDP):
 
     def render(self) -> Any:
         return self._env.render()
+
+    def save(self) -> Dict[str, torch.nn.Module]:
+        return self._env.save()
 
     def close(self) -> None:
         self._env.close()

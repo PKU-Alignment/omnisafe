@@ -123,3 +123,11 @@ class OnlineAdapter:
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
         return self._env.reset()
+
+    def save(self) -> Dict[str, torch.nn.Module]:
+        """Save the environment.
+
+        Returns:
+            Dict[str, torch.nn.Module]: the saved environment.
+        """
+        return self._env.save()

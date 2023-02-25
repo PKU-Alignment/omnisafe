@@ -132,6 +132,11 @@ class ObsNormalize(Wrapper):
         obs = self._obs_normalizer.normalize(obs.unsqueeze(0)).squeeze(0)
         return obs, info
 
+    def save(self) -> Dict[str, torch.nn.Module]:
+        saved = super().save()
+        saved['obs_normalizer'] = self._obs_normalizer
+        return saved
+
 
 class RewardNormalize(Wrapper):
     """Normalize the reward.
@@ -166,6 +171,11 @@ class RewardNormalize(Wrapper):
         reward = self._reward_normalizer.normalize(reward)
         return obs, reward, cost, terminated, truncated, info
 
+    def save(self) -> Dict[str, torch.nn.Module]:
+        saved = super().save()
+        saved['reward_normalizer'] = self._reward_normalizer
+        return saved
+
 
 class CostNormalize(Wrapper):
     """Normalize the cost.
@@ -197,6 +207,11 @@ class CostNormalize(Wrapper):
         info['original_cost'] = cost
         cost = self._cost_normalizer.normalize(cost)
         return obs, reward, cost, terminated, truncated, info
+
+    def save(self) -> Dict[str, torch.nn.Module]:
+        saved = super().save()
+        saved['cost_normalizer'] = self._cost_normalizer
+        return saved
 
 
 class ActionScale(Wrapper):
