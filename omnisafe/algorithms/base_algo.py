@@ -15,6 +15,7 @@
 """Implementation of the Policy Gradient algorithm."""
 
 from abc import ABC, abstractmethod
+from typing import Tuple, Union
 
 import torch
 
@@ -63,5 +64,5 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
         """Initialize the logger."""
 
     @abstractmethod
-    def learn(self) -> None:
+    def learn(self) -> Tuple[Union[int, float], ...]:
         """Learn the policy."""
