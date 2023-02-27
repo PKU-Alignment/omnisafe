@@ -145,7 +145,7 @@ defaults:
     # Whether to use standardized cost
     normalized_cost: False
     # Whether to use standardized obs
-    normalized_obs: True
+    normalized_obs: False
     # The maximum length of record queue
     max_len: 100
     # The number of threads used to sample data
