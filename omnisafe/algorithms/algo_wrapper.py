@@ -96,10 +96,7 @@ class AlgoWrapper:
             env_id=self.env_id,
             cfgs=cfgs,
         )
-        agent.learn()
-        ep_ret = agent.logger.get_stats('Metrics/EpRet')
-        ep_len = agent.logger.get_stats('Metrics/EpLen')
-        ep_cost = agent.logger.get_stats('Metrics/EpCost')
+        ep_ret, ep_cost, ep_len = agent.learn()
         return ep_ret, ep_len, ep_cost
 
     # def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
