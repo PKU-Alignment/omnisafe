@@ -15,7 +15,7 @@
 """Implementation of the Policy Gradient algorithm."""
 
 import time
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -94,9 +94,12 @@ class PolicyGradient(BaseAlgo):
             config=self._cfgs,
         )
 
+        obs_normalizer = self._env.save()['obs_normalizer']
         what_to_save = {
             'pi': self._actor_critic.actor,
+            'obs_normalizer': obs_normalizer,
         }
+
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
 
@@ -134,7 +137,7 @@ class PolicyGradient(BaseAlgo):
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
-    def learn(self) -> None:
+    def learn(self) -> Tuple[Union[int, float], ...]:
         """This is main function for algorithm update, divided into the following steps:
 
         - :meth:`rollout`: collect interactive data from environment.
@@ -184,7 +187,12 @@ class PolicyGradient(BaseAlgo):
             if (epoch + 1) % self._cfgs.save_freq == 0:
                 self._logger.torch_save()
 
+        ep_ret = self._logger.get_stats('Metrics/EpRet')[0]
+        ep_cost = self._logger.get_stats('Metrics/EpCost')[0]
+        ep_len = self._logger.get_stats('Metrics/EpLen')[0]
         self._logger.close()
+
+        return ep_ret, ep_cost, ep_len
 
     def _update(self) -> None:
         data = self._buf.get()
