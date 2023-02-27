@@ -77,8 +77,6 @@ class AlgoWrapper:
         physical_cores = psutil.cpu_count(logical=False)
         use_number_of_threads = bool(self.parallel > physical_cores)
 
-        torch.set_num_threads(5)
-
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
         exp_name = os.path.join(self.env_id, self.algo)
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id})
