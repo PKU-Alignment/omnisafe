@@ -1,0 +1,80 @@
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+defaults:
+  exp_name: PPO:<SafetyPointGoal1-v0>-seed:0 # this don't need, the env-id and algo is top of learn framework
+  seed: <float>
+  env_cfgs:
+    wrapper_type: <CMDPWrapper or others>
+    max_ep_len: <int>
+    num_envs: <int>
+    async_env: <True or False>
+    # normalized_rew: True
+    # normalized_cost: True
+    # normalized_obs: True
+    max_len: 100 # ?
+    num_threads: <int> # ?
+  train_cfgs:
+    device: <cpu or gpu or gpu:0,1,2>
+    device_id: 0 # this can be delete
+    num_threads: <int>
+    parallel: <int>
+    epochs: <int>
+    steps_per_epoch: <int>
+    actor_iters: <int>
+    critic_iters: <int>
+    check_freq: <int>
+    num_mini_batches: <int> #?
+    batch_size: <int>
+  algo_cfgs:
+    entropy_coef: <float>
+    target_kl: <float>
+    reward_normalize: <True or False>
+    cost_normalize: <True or False>
+    obs_normalize: <True or False>
+    use_cost: <True or False>
+    penalty_param: <float>
+    kl_early_stopping: <True or False>
+    use_max_grad_norm: <True or False>
+    max_grad_norm: <int>
+    use_critic_norm: <True or False>
+    critic_norm_coeff: <float>
+  logger_cfgs:
+    save_freq: <int>
+    use_wandb: <True or False>
+    use_tensorboard: <True or False>
+    data_dir: <string for specific path>
+  model_cfgs:
+    exploration_noise_anneal: False
+    std: [0.5, 0.1]
+    weight_initialization_mode: "kaiming_uniform"
+    actor_type: gaussian_learning
+    linear_lr_decay: True
+    actor:
+      hidden_sizes: [64, 64]
+      activation: tanh
+      lr: <float>
+    critic_iters:
+      hidden_sizes: [64, 64]
+      activation: tanh
+      lr: <float>
+  buffer_cfgs:
+    cost_gamma: <float>
+    gamma: <float>
+    lam: <float>
+    lam_c: <float>
+    adv_estimation_method: gae
+    standardized_rew_adv: <True or False>
+    standardized_cost_adv: <True or False>
