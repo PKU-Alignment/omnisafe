@@ -85,6 +85,8 @@ class AlgoWrapper:
 
         # check_all_configs(cfgs, self.algo_type)
 
+        torch.set_num_threads(cfgs.num_threads)
+
         if distributed.fork(
             self.parallel, use_number_of_threads=use_number_of_threads, device=cfgs.device
         ):

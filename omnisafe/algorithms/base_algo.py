@@ -38,7 +38,6 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
         assert hasattr(cfgs, 'device'), 'Please specify the device in the config file.'
         self._device = torch.device(self._cfgs.device)
 
-        torch.set_num_threads(self._cfgs.num_threads)
         distributed.setup_distributed()
 
         self._init_env()
