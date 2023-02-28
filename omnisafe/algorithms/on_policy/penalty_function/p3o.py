@@ -60,8 +60,9 @@ class P3O(PPO):
         """
         _, _log_p = self.actor_critic.actor(obs, act)
         ratio = torch.exp(_log_p - log_p)
-        surr_cadv = (ratio * cost_adv).mean()
-        Jc = self.logger.get_stats('Metrics/EpCost')[0] - self.cfgs.cost_limit
+        ratio_clip = torch.clamp(ratio, 1 - self.cfgs.clip, 1 + self.cfgs.clip)
+        surr_cadv = (ratio_clip * cost_adv).mean()
+        Jc = self.logger.get_stats('Metrics/EpCost')[0]
         loss_pi_c = self.cfgs.kappa * F.relu(surr_cadv + Jc)
         return loss_pi_c.mean()
 
@@ -112,7 +113,7 @@ class P3O(PPO):
         # update the policy net.
         self.actor_optimizer.zero_grad()
         # backward the loss of policy net.
-        (loss_pi - loss_pi_c).backward()
+        (loss_pi + loss_pi_c).backward()
         # clip the gradient of policy net.
         if self.cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
