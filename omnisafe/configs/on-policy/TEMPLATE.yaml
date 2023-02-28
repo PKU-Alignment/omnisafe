@@ -14,67 +14,56 @@
 # ==============================================================================
 
 defaults:
-  exp_name: PPO:<SafetyPointGoal1-v0>-seed:0 # this don't need, the env-id and algo is top of learn framework
-  seed: <float>
-  env_cfgs:
-    wrapper_type: <CMDPWrapper or others>
-    max_ep_len: <int>
-    num_envs: <int>
-    async_env: <True or False>
-    # normalized_rew: True
-    # normalized_cost: True
-    # normalized_obs: True
-    max_len: 100 # ?
-    num_threads: <int> # ?
+  exp_name: PPO:<SafetyPointGoal1-v0>-seed:0 # just in logdir's config.yaml
+  seed: <int>
   train_cfgs:
-    device: <cpu or gpu or gpu:0,1,2>
-    device_id: 0 # this can be delete
-    num_threads: <int>
+    device: <cpu or cuda:0 or cuda:0,1,2>
+    torch_threads: <int>
+    vector_envs_nums: <int>
     parallel: <int>
-    epochs: <int>
-    steps_per_epoch: <int>
-    actor_iters: <int>
-    critic_iters: <int>
-    check_freq: <int>
-    num_mini_batches: <int> #?
-    batch_size: <int>
+    total_steps: <int>
   algo_cfgs:
-    entropy_coef: <float>
+    update_cycle: <int>
+    update_iters: <int>
+    batch_size: <int>
     target_kl: <float>
+    entropy_coef: <float>
     reward_normalize: <True or False>
     cost_normalize: <True or False>
     obs_normalize: <True or False>
-    use_cost: <True or False>
-    penalty_param: <float>
-    kl_early_stopping: <True or False>
+    kl_early_stop: <True or False>
     use_max_grad_norm: <True or False>
     max_grad_norm: <int>
     use_critic_norm: <True or False>
-    critic_norm_coeff: <float>
-  logger_cfgs:
-    save_freq: <int>
-    use_wandb: <True or False>
-    use_tensorboard: <True or False>
-    data_dir: <string for specific path>
-  model_cfgs:
-    exploration_noise_anneal: False
-    std: [0.5, 0.1]
-    weight_initialization_mode: "kaiming_uniform"
-    actor_type: gaussian_learning
-    linear_lr_decay: True
-    actor:
-      hidden_sizes: [64, 64]
-      activation: tanh
-      lr: <float>
-    critic_iters:
-      hidden_sizes: [64, 64]
-      activation: tanh
-      lr: <float>
-  buffer_cfgs:
-    cost_gamma: <float>
+    critic_norm_coef: <float>
     gamma: <float>
+    cost_gamma: <float>
     lam: <float>
     lam_c: <float>
     adv_estimation_method: gae
     standardized_rew_adv: <True or False>
     standardized_cost_adv: <True or False>
+  logger_cfgs:
+    use_wandb: <True or False>
+    wandb_project: <string>
+    wandb_exp_name: <string>
+    wandb_entity: <string>
+    use_tensorboard: <True or False>
+    save_model_freq: <int>
+    log_dir: <string for specific path>
+    window_lens: 100
+  model_cfgs:
+    weight_initialization_mode: "kaiming_uniform"
+    actor_type: gaussian_learning
+    linear_lr_decay: True
+    exploration_noise_anneal: False
+    std: [0.5, 0.1]
+    actor:
+      hidden_sizes: [64, 64]
+      activation: tanh
+      out_activation: tanh
+      lr: <float>
+    critic_iters:
+      hidden_sizes: [64, 64]
+      activation: tanh
+      lr: <float>
