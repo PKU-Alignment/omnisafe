@@ -18,6 +18,8 @@ defaults:
   ## -----------------------------Basic configurations for base class PG------------------------ ##
   # The random seed
   seed: 0
+  # The number of threads used per experiment
+  num_threads: 1
   # If use tensorboard
   use_tensorboard: True
   # if use wandb
