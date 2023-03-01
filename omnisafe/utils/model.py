@@ -137,7 +137,10 @@ class OUActionNoise:
         self.x_prev = torch.zeros(self.action_dim)
 
     def __call__(self):
-        x = self.x_prev + self.theta * (self.mu - self.x_prev) + \
-            self.sigma * torch.randn(self.action_dim)
+        x = (
+            self.x_prev
+            + self.theta * (self.mu - self.x_prev)
+            + self.sigma * torch.randn(self.action_dim)
+        )
         self.x_prev = x
         return x

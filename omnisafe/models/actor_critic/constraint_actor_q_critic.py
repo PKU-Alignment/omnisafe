@@ -93,7 +93,6 @@ class ConstraintActorQCritic(ActorQCritic):
             log_prob (torch.Tensor): Log probability of action.
         """
         with torch.no_grad():
-
             act = self.actor.predict(obs, deterministic=deterministic)
             log_prob = self.actor.log_prob(act)
 

@@ -17,9 +17,9 @@
 import itertools
 from types import MappingProxyType
 
-from omnisafe.algorithms import on_policy
-from omnisafe.algorithms import off_policy
+from omnisafe.algorithms import off_policy, on_policy
 from omnisafe.algorithms.base_algo import BaseAlgo
+from omnisafe.algorithms.off_policy import DDPG, TD3
 
 # On-Policy Safe
 from omnisafe.algorithms.on_policy import (  # PPOLagSimmerPid,; PPOLagSimmerQ,; PPOSimmerPid,; PPOSimmerQ,
@@ -44,10 +44,6 @@ from omnisafe.algorithms.on_policy import (  # PPOLagSimmerPid,; PPOLagSimmerQ,;
     TRPOPid,
 )
 
-from omnisafe.algorithms.off_policy import (
-    DDPG,
-    TD3,
-)
 
 # Model-based Safe
 # from omnisafe.algorithms.model_based import CAP, MBPPOLag, SafeLOOP

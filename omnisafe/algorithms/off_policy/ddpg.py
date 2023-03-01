@@ -15,11 +15,12 @@
 """Implementation of the Policy Gradient algorithm."""
 
 import time
+from copy import deepcopy
 from typing import Dict, Tuple, Union
 
 import torch
+from torch.nn import functional as F
 
-from copy import deepcopy
 from omnisafe.adapter import OffPolicyAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.base_algo import BaseAlgo
@@ -27,7 +28,6 @@ from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils import distributed
-from torch.nn import functional as F
 
 
 @registry.register
@@ -141,54 +141,54 @@ class DDPG(BaseAlgo):
         """
         self._logger.log('INFO: Start training')
         start_time = time.time()
-        step=0
+        step = 0
         while step < int(self._cfgs.total_steps):
-            roll_out_time=0
-            epoch_time=time.time()
-            samples_per_epoch = self._steps_per_epoch//self._steps_per_sample
+            roll_out_time = 0
+            epoch_time = time.time()
+            samples_per_epoch = self._steps_per_epoch // self._steps_per_sample
             # Collect data from environment
             for i in range(samples_per_epoch):
-                roll_out_start=time.time()
+                roll_out_start = time.time()
                 self._env.roll_out(
                     steps_per_sample=self._steps_per_sample,
                     agent=self._actor_critic,
                     buffer=self._buf,
                     logger=self._logger,
-                    epoch_end=i==samples_per_epoch-1,
-                    use_rand_action=step<=self._cfgs.random_steps,
+                    epoch_end=i == samples_per_epoch - 1,
+                    use_rand_action=step <= self._cfgs.random_steps,
                 )
-                roll_out_end=time.time()
-                roll_out_time+=roll_out_end-roll_out_start
-                step+=self._steps_per_sample
+                roll_out_end = time.time()
+                roll_out_time += roll_out_end - roll_out_start
+                step += self._steps_per_sample
 
                 # Update parameters
                 if i % self._cfgs.update_cycle == 0 and step > self._cfgs.start_learning_steps:
-                    update_counts=i//self._cfgs.update_cycle
+                    update_counts = i // self._cfgs.update_cycle
                     # In TD3, we update the actor and critic networks separately
-                    self._update(update_policy=update_counts%self._cfgs.policy_delay==0)
+                    self._update(update_policy=update_counts % self._cfgs.policy_delay == 0)
                 # If we haven't updated the network, log 0 for the loss
-                else: 
+                else:
                     self._logger.store(
                         **{
-                        'Loss/Loss_reward_critic': 0.0,
-                        'Loss/Loss_pi': 0.0,
-                        'Value/reward': 0.0,
+                            'Loss/Loss_reward_critic': 0.0,
+                            'Loss/Loss_pi': 0.0,
+                            'Value/reward': 0.0,
                         }
-                        )
+                    )
                     if self._cfgs.use_cost:
                         self._logger.store(
                             **{
-                            'Loss/Loss_cost_critic': 0.0,
-                            'Value/cost': 0.0,
+                                'Loss/Loss_cost_critic': 0.0,
+                                'Value/cost': 0.0,
                             }
-                            )
-            
-            # Count the number of epoch
-            epoch=step//self._steps_per_epoch
-            self._logger.store(**{'Time/Rollout': roll_out_time})
-            self._logger.store(**{'Time/Update': time.time()-roll_out_time-epoch_time})
+                        )
 
-            if step>self._cfgs.start_learning_steps: 
+            # Count the number of epoch
+            epoch = step // self._steps_per_epoch
+            self._logger.store(**{'Time/Rollout': roll_out_time})
+            self._logger.store(**{'Time/Update': time.time() - roll_out_time - epoch_time})
+
+            if step > self._cfgs.start_learning_steps:
                 self._actor_critic.actor_scheduler.step()
             if self._cfgs.exploration_noise_anneal:
                 self._actor_critic.annealing(epoch=epoch)
@@ -207,7 +207,7 @@ class DDPG(BaseAlgo):
             self._logger.dump_tabular()
 
             # save model to disk
-            if (step//self._steps_per_epoch + 1) % self._cfgs.save_freq == 0:
+            if (step // self._steps_per_epoch + 1) % self._cfgs.save_freq == 0:
                 self._logger.torch_save()
 
         ep_ret = self._logger.get_stats('Metrics/EpRet')[0]
@@ -235,13 +235,13 @@ class DDPG(BaseAlgo):
         self._polyak_update()
 
     def _update_rewrad_critic(
-            self, 
-            obs: torch.Tensor,
-            act: torch.Tensor,
-            reward: torch.Tensor,
-            done: torch.Tensor,
-            next_obs: torch.Tensor,
-            ) -> None:
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        reward: torch.Tensor,
+        done: torch.Tensor,
+        next_obs: torch.Tensor,
+    ) -> None:
         self._actor_critic.reward_critic_optimizer.zero_grad()
         with torch.no_grad():
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
@@ -255,10 +255,10 @@ class DDPG(BaseAlgo):
                 loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
         self._logger.store(
             **{
-            'Loss/Loss_reward_critic': loss.mean().item(),
-            'Value/reward': q_value.mean().item(),
+                'Loss/Loss_reward_critic': loss.mean().item(),
+                'Value/reward': q_value.mean().item(),
             }
-            )
+        )
         loss.backward()
 
         if self._cfgs.use_max_grad_norm:
@@ -270,13 +270,13 @@ class DDPG(BaseAlgo):
         print(q_value.mean().item())
 
     def _update_cost_critic(
-            self, 
-            obs: torch.Tensor,
-            act: torch.Tensor,
-            cost: torch.Tensor,
-            done: torch.Tensor,
-            next_obs: torch.Tensor,
-            ) -> None:
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        cost: torch.Tensor,
+        done: torch.Tensor,
+        next_obs: torch.Tensor,
+    ) -> None:
         self._actor_critic.cost_critic_optimizer.zero_grad()
         with torch.no_grad():
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
@@ -300,11 +300,10 @@ class DDPG(BaseAlgo):
 
         self._logger.store(
             **{
-            'Loss/Loss_reward_critic': loss.mean().item(),
-            'Value/cost': qc_value.mean().item(),
+                'Loss/Loss_reward_critic': loss.mean().item(),
+                'Value/cost': qc_value.mean().item(),
             }
-            )
-        
+        )
 
     def _update_actor(  # pylint: disable=too-many-arguments
         self,
@@ -328,11 +327,11 @@ class DDPG(BaseAlgo):
         self,
         obs: torch.Tensor,
     ) -> Tuple[torch.Tensor, Dict[str, float]]:
-        action=self._actor_critic.actor.predict(obs, deterministic=True)
-        loss=-self._actor_critic.reward_critic(obs, action)[0].mean()
+        action = self._actor_critic.actor.predict(obs, deterministic=True)
+        loss = -self._actor_critic.reward_critic(obs, action)[0].mean()
         info = {}
         return loss, info
-    
+
     def _polyak_update(self) -> None:
         for target_param, param in zip(
             self._target_actor_critic.parameters(),
