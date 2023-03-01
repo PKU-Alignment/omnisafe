@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Adapter for the environment and the algorithm."""
+"""Off-policy algorithms."""
 
-from omnisafe.adapter.early_terminated_adapter import EarlyTerminatedAdapter
-from omnisafe.adapter.online_adapter import OnlineAdapter
-from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
-from omnisafe.adapter.offpolicy_adapter import OffPolicyAdapter
-from omnisafe.adapter.saute_adapter import SauteAdapter
+from omnisafe.algorithms.off_policy.ddpg import DDPG
+from omnisafe.algorithms.off_policy.td3 import TD3
+
+__all__ = [
+    'DDPG',
+    'TD3',
+]

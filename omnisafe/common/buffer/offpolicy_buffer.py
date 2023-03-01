@@ -35,6 +35,7 @@ class OffPolicyBuffer(BaseBuffer):
         device: torch.device = torch.device('cpu'),
     ):
         super().__init__(obs_space, act_space, size, device)
+        self.data['logp'] = torch.zeros((size,), dtype=torch.float32, device=device)
         if isinstance(obs_space, Box):
             self.data['next_obs'] = torch.zeros(
                 (size, *obs_space.shape), dtype=torch.float32, device=device
@@ -68,3 +69,31 @@ class OffPolicyBuffer(BaseBuffer):
         """Sample a batch of data from the buffer."""
         idxs = torch.randint(0, self._size, (self._batch_size,))
         return {key: value[idxs] for key, value in self.data.items()}
+    
+    def sample_n_step_batch(self, n_step: int) -> Dict[str, torch.Tensor]:
+        """
+        Sample a batch of data from the buffer as n-step returns.
+
+        Args:
+            n_step (int): The number of steps for the n-step returns.
+
+        Returns:
+            A dictionary of tensors containing the sampled batch data.
+        """
+        num_segments = self._batch_size // n_step
+        indices = torch.randint(0, self._size - n_step + 1, (num_segments,))
+        indices = torch.sort(indices)[0]  # sort to make sure they are in ascending order
+        indices = indices.repeat_interleave(n_step)
+
+        batch = {}
+        for key in self.data.keys():
+            tensor = self.data[key]
+            n_dims = len(tensor.shape)
+            if n_dims == 1:
+                # Vector-like tensors
+                batch[key] = tensor[indices]
+            else:
+                # Array-like tensors
+                batch[key] = tensor[indices, ...]
+
+        return batch, indices

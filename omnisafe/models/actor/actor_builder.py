@@ -19,6 +19,7 @@ from typing import List
 
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
+from omnisafe.models.actor.direct_forward_actor import DirectForwardActor
 from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 
@@ -55,6 +56,14 @@ class ActorBuilder:
             )
         if actor_type == 'gaussian_sac':
             return GaussianSACActor(
+                self._obs_space,
+                self._act_space,
+                self._hidden_sizes,
+                activation=self._activation,
+                weight_initialization_mode=self._weight_initialization_mode,
+            )
+        if actor_type == 'direct_forward':
+            return DirectForwardActor(
                 self._obs_space,
                 self._act_space,
                 self._hidden_sizes,

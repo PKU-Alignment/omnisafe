@@ -37,8 +37,13 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
 
         assert hasattr(cfgs, 'device'), 'Please specify the device in the config file.'
         self._device = torch.device(self._cfgs.device)
-
+        torch.set_num_threads(self._cfgs.num_threads)
         distributed.setup_distributed()
+
+        try:
+            self._epochs = self._cfgs.total_steps//self._cfgs.steps_per_epoch
+        except AttributeError:
+            self._epochs = self._cfgs.epochs
 
         self._init_env()
         self._init_model()

@@ -36,6 +36,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         device: torch.device = torch.device('cpu'),
     ):
         self._num_envs = num_envs
+        logp_buf = torch.zeros((size,num_envs,), dtype=torch.float32, device=device)
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros(
                 (size, num_envs, *obs_space.shape), dtype=torch.float32, device=device
@@ -58,6 +59,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             'act': act_buf,
             'reward': torch.zeros((size, num_envs), dtype=torch.float32, device=device),
             'cost': torch.zeros((size, num_envs), dtype=torch.float32, device=device),
+            'logp': logp_buf,
             'done': torch.zeros((size, num_envs), dtype=torch.float32, device=device),
             'next_obs': next_obs_buf,
         }

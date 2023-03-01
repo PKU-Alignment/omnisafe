@@ -18,3 +18,4 @@ from omnisafe.models.actor.actor_builder import ActorBuilder
 from omnisafe.models.actor.gaussian_actor import GaussianActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
+from omnisafe.models.actor.direct_forward_actor import DirectForwardActor
