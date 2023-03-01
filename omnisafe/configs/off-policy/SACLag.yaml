@@ -74,7 +74,7 @@ defaults:
   cost_limit_decay: False
   # The initial value of cost limit
   init_cost_limit: 2.5
-  # The target value if cost limit
+  # The target value of cost limit
   target_cost_limit: 2.5
   # The end of cost limit decay epoch
   end_epoch: 100
