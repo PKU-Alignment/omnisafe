@@ -151,11 +151,11 @@ class PolicyGradient(BaseAlgo):
         start_time = time.time()
         self._logger.log('INFO: Start training')
 
+        # Notes: don't use actor_scheduler.step() in epoch:0
+        # warnings.warn("Detected call of `lr_scheduler.step()` before `optimizer.step()`. "
+        scheduler_flag = False
         for epoch in range(self._cfgs.train_cfgs.epochs):
             epoch_time = time.time()
-
-            # if self._cfgs.exploration_noise_anneal:
-            #     self._actor_critic.anneal_exploration(frac=epoch / self._cfgs.epochs)
 
             roll_out_time = time.time()
             self._env.roll_out(
@@ -170,9 +170,13 @@ class PolicyGradient(BaseAlgo):
             self._update()
             self._logger.store(**{'Time/Update': time.time() - update_time})
 
-            self._actor_critic.actor_scheduler.step()
             if self._cfgs.model_cfgs.exploration_noise_anneal:
                 self._actor_critic.annealing(epoch)
+
+            if scheduler_flag == True:
+                self._actor_critic.actor_scheduler.step()
+            else:
+                scheduler_flag = True
 
             self._logger.store(
                 **{

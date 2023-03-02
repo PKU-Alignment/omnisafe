@@ -84,7 +84,6 @@ class ActorCritic(nn.Module):
         self.reward_critic_optimizer = optim.Adam(
             self.reward_critic.parameters(), lr=model_cfgs.critic.lr
         )
-
         self.actor_scheduler: _LRScheduler
         if model_cfgs.linear_lr_decay:
             self.actor_scheduler = LinearLR(
