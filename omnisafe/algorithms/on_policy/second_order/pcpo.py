@@ -82,7 +82,7 @@ class PCPO(CPO):
         assert xHx.item() >= 0, 'xHx is negative'
         alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
 
-        # self._actor_critic.actor_optimizer.zero_grad()
+        self._actor_critic.zero_grad()
         loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
         loss_cost_before = distributed.dist_avg(loss_cost).item()
 
