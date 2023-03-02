@@ -26,6 +26,7 @@ from safety_gymnasium.utils.registration import safe_registry
 from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
 from omnisafe.utils import distributed
 from omnisafe.utils.config import get_default_kwargs_yaml
+from omnisafe.utils.tools import terminal_cfgs_to_dict
 
 
 class AlgoWrapper:
@@ -78,13 +79,18 @@ class AlgoWrapper:
         use_number_of_threads = bool(self.parallel > physical_cores)
 
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
-        exp_name = os.path.join(self.env_id, self.algo)
+
+        if self.custom_cfgs is not None:
+            for key, val in self.custom_cfgs.items():
+                custom_entity = terminal_cfgs_to_dict(key, val)
+                cfgs.recurisve_update(custom_entity)
+
+        # the exp_name format is PPO-<SafetyPointGoal1-v0>-
+        exp_name = f'{self.algo}-<{self.env_id}>'
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id})
         cfgs.train_cfgs.recurisve_update(
             {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle}
         )
-        if self.custom_cfgs is not None:
-            cfgs.recurisve_update(self.custom_cfgs)
 
         # check_all_configs(cfgs, self.algo_type)
         torch.set_num_threads(cfgs.train_cfgs.torch_threads)

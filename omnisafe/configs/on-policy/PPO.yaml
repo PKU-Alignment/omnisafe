@@ -18,13 +18,13 @@ defaults:
   train_cfgs:
     device: cpu
     torch_threads: 5
-    vector_envs_nums: 16
+    vector_env_nums: 16
     parallel: 1
     total_steps: 16384000
   algo_cfgs:
     update_cycle: 32768
     update_iters: 40
-    batch_size: 32
+    batch_size: 64
     target_kl: 0.02
     entropy_coef: 0.0
     reward_normalize: True
@@ -39,14 +39,15 @@ defaults:
     cost_gamma: 0.99
     lam: 0.95
     lam_c: 0.95
+    clip: 0.2
     adv_estimation_method: gae
     standardized_rew_adv: True
     standardized_cost_adv: True
+    penalty_coef: 0.0
+    use_cost: False
   logger_cfgs:
-    use_wandb: True
+    use_wandb: False
     wandb_project: omnisafe
-    wandb_exp_name: xxxx
-    wandb_entity: zmsn-1998
     use_tensorboard: True
     save_model_freq: 100
     log_dir: "./runs"

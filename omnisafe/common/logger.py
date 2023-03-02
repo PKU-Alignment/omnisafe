@@ -144,10 +144,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             self._tensorboard_writer = SummaryWriter(log_dir=os.path.join(self._log_dir, 'tb'))
 
         if self._use_wandb and self._maste_proc:
-            project: str = self._config.get('wandb_project', 'omnisafe')
-            name: str = self._config.get('wandb_name', f'{exp_name}/{relpath}')
-            entity: str = self._config.get('wandb_entity', None)
-            wandb.init(project=project, name=name, entity=entity, dir=self._log_dir, config=config)
+            project: str = self._config.logger_cfgs.get('wandb_project', 'omnisafe')
+            name: str = f'{exp_name}-{relpath}'
+            print('project', project, 'name', name)
+            wandb.init(project=project, name=name, dir=self._log_dir, config=config)
             if config is not None:
                 wandb.config.update(config)
             if models is not None:

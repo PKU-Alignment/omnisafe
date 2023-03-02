@@ -44,15 +44,15 @@ class PolicyGradient(BaseAlgo):
 
     def _init_env(self) -> None:
         self._env = OnPolicyAdapter(
-            self._env_id, self._cfgs.train_cfgs.vector_envs_nums, self._seed, self._cfgs
+            self._env_id, self._cfgs.train_cfgs.vector_env_nums, self._seed, self._cfgs
         )
         assert (self._cfgs.algo_cfgs.update_cycle) % (
-            distributed.world_size() * self._cfgs.train_cfgs.vector_envs_nums
+            distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         ) == 0, ('The number of steps per epoch is not divisible by the number of ' 'environments.')
         self._steps_per_epoch = (
             self._cfgs.algo_cfgs.update_cycle
             // distributed.world_size()
-            // self._cfgs.train_cfgs.vector_envs_nums
+            // self._cfgs.train_cfgs.vector_env_nums
         )
 
     def _init_model(self) -> None:
@@ -66,10 +66,10 @@ class PolicyGradient(BaseAlgo):
         if distributed.world_size() > 1:
             distributed.sync_params(self._actor_critic)
 
-        if self._cfgs.exploration_noise_anneal:
+        if self._cfgs.model_cfgs.exploration_noise_anneal:
             self._actor_critic.set_annealing(
-                epochs=[0, self._cfgs.epochs],
-                std=self._cfgs.std,
+                epochs=[0, self._cfgs.train_cfgs.epochs],
+                std=self._cfgs.model_cfgs.std,
             )
 
     def _init(self) -> None:
@@ -77,24 +77,24 @@ class PolicyGradient(BaseAlgo):
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
             size=self._steps_per_epoch,
-            gamma=self._cfgs.buffer_cfgs.gamma,
-            lam=self._cfgs.buffer_cfgs.lam,
-            lam_c=self._cfgs.buffer_cfgs.lam_c,
-            advantage_estimator=self._cfgs.buffer_cfgs.adv_estimation_method,
-            standardized_adv_r=self._cfgs.buffer_cfgs.standardized_rew_adv,
-            standardized_adv_c=self._cfgs.buffer_cfgs.standardized_cost_adv,
-            penalty_coefficient=self._cfgs.penalty_param,
-            num_envs=self._cfgs.num_envs,
+            gamma=self._cfgs.algo_cfgs.gamma,
+            lam=self._cfgs.algo_cfgs.lam,
+            lam_c=self._cfgs.algo_cfgs.lam_c,
+            advantage_estimator=self._cfgs.algo_cfgs.adv_estimation_method,
+            standardized_adv_r=self._cfgs.algo_cfgs.standardized_rew_adv,
+            standardized_adv_c=self._cfgs.algo_cfgs.standardized_cost_adv,
+            penalty_coefficient=self._cfgs.algo_cfgs.penalty_coef,
+            num_envs=self._cfgs.train_cfgs.vector_env_nums,
             device=self._device,
         )
 
     def _init_log(self) -> None:
         self._logger = Logger(
-            output_dir=self._cfgs.data_dir,
+            output_dir=self._cfgs.logger_cfgs.log_dir,
             exp_name=self._cfgs.exp_name,
             seed=self._cfgs.seed,
-            use_tensorboard=self._cfgs.use_tensorboard,
-            use_wandb=self._cfgs.use_wandb,
+            use_tensorboard=self._cfgs.logger_cfgs.use_tensorboard,
+            use_wandb=self._cfgs.logger_cfgs.use_wandb,
             config=self._cfgs,
         )
 
@@ -130,7 +130,7 @@ class PolicyGradient(BaseAlgo):
         self._logger.register_key('Loss/Loss_reward_critic', delta=True)
         self._logger.register_key('Value/reward')
 
-        if self._cfgs.use_cost:
+        if self._cfgs.algo_cfgs.use_cost:
             # log information about cost critic
             self._logger.register_key('Loss/Loss_cost_critic', delta=True)
             self._logger.register_key('Value/cost')
@@ -151,7 +151,7 @@ class PolicyGradient(BaseAlgo):
         start_time = time.time()
         self._logger.log('INFO: Start training')
 
-        for epoch in range(self._cfgs.epochs):
+        for epoch in range(self._cfgs.train_cfgs.epochs):
             epoch_time = time.time()
 
             # if self._cfgs.exploration_noise_anneal:
@@ -171,13 +171,13 @@ class PolicyGradient(BaseAlgo):
             self._logger.store(**{'Time/Update': time.time() - update_time})
 
             self._actor_critic.actor_scheduler.step()
-            if self._cfgs.exploration_noise_anneal:
+            if self._cfgs.model_cfgs.exploration_noise_anneal:
                 self._actor_critic.annealing(epoch)
 
             self._logger.store(
                 **{
-                    'TotalEnvSteps': (epoch + 1) * self._cfgs.steps_per_epoch,
-                    'Time/FPS': self._cfgs.steps_per_epoch / (time.time() - epoch_time),
+                    'TotalEnvSteps': (epoch + 1) * self._cfgs.algo_cfgs.update_cycle,
+                    'Time/FPS': self._cfgs.algo_cfgs.update_cycle / (time.time() - epoch_time),
                     'Time/Total': (time.time() - start_time),
                     'Time/Epoch': (time.time() - epoch_time),
                     'Train/Epoch': epoch,
@@ -188,7 +188,7 @@ class PolicyGradient(BaseAlgo):
             self._logger.dump_tabular()
 
             # save model to disk
-            if (epoch + 1) % self._cfgs.save_freq == 0:
+            if (epoch + 1) % self._cfgs.logger_cfgs.save_model_freq == 0:
                 self._logger.torch_save()
 
         ep_ret = self._logger.get_stats('Metrics/EpRet')[0]
@@ -215,11 +215,11 @@ class PolicyGradient(BaseAlgo):
 
         dataloader = DataLoader(
             dataset=TensorDataset(obs, act, logp, target_value_r, target_value_c, adv_r, adv_c),
-            batch_size=self._cfgs.num_mini_batches,
+            batch_size=self._cfgs.algo_cfgs.batch_size,
             shuffle=True,
         )
 
-        for i in range(self._cfgs.actor_iters):
+        for i in range(self._cfgs.algo_cfgs.update_iters):
             for (
                 obs,
                 act,
@@ -230,7 +230,7 @@ class PolicyGradient(BaseAlgo):
                 adv_c,
             ) in dataloader:
                 self._update_rewrad_critic(obs, target_value_r)
-                if self._cfgs.use_cost:
+                if self._cfgs.algo_cfgs.use_cost:
                     self._update_cost_critic(obs, target_value_c)
                 self._update_actor(obs, act, logp, adv_r, adv_c)
 
@@ -244,7 +244,7 @@ class PolicyGradient(BaseAlgo):
             )
             kl = distributed.dist_avg(kl)
 
-            if self._cfgs.kl_early_stopping and kl > self._cfgs.target_kl:
+            if self._cfgs.algo_cfgs.kl_early_stop and kl > self._cfgs.algo_cfgs.target_kl:
                 self._logger.log(f'Early stopping at iter {i} due to reaching max kl')
                 break
 
@@ -260,15 +260,15 @@ class PolicyGradient(BaseAlgo):
         self._actor_critic.reward_critic_optimizer.zero_grad()
         loss = nn.functional.mse_loss(self._actor_critic.reward_critic(obs)[0], target_value_r)
 
-        if self._cfgs.use_critic_norm:
+        if self._cfgs.algo_cfgs.use_critic_norm:
             for param in self._actor_critic.reward_critic.parameters():
-                loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
+                loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coef
 
         loss.backward()
 
-        if self._cfgs.use_max_grad_norm:
+        if self._cfgs.algo_cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.reward_critic.parameters(), self._cfgs.max_grad_norm
+                self._actor_critic.reward_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
             )
         distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
@@ -279,15 +279,15 @@ class PolicyGradient(BaseAlgo):
         self._actor_critic.cost_critic_optimizer.zero_grad()
         loss = nn.functional.mse_loss(self._actor_critic.cost_critic(obs)[0], target_value_c)
 
-        if self._cfgs.use_critic_norm:
+        if self._cfgs.algo_cfgs.use_critic_norm:
             for param in self._actor_critic.cost_critic.parameters():
-                loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
+                loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coef
 
         loss.backward()
 
-        if self._cfgs.use_max_grad_norm:
+        if self._cfgs.algo_cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.cost_critic.parameters(), self._cfgs.max_grad_norm
+                self._actor_critic.cost_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
             )
         distributed.avg_grads(self._actor_critic.cost_critic)
         self._actor_critic.cost_critic_optimizer.step()
@@ -306,9 +306,9 @@ class PolicyGradient(BaseAlgo):
         loss, info = self._loss_pi(obs, act, logp, adv)
         self._actor_critic.actor_optimizer.zero_grad()
         loss.backward()
-        if self._cfgs.use_max_grad_norm:
+        if self._cfgs.algo_cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.actor.parameters(), self._cfgs.max_grad_norm
+                self._actor_critic.actor.parameters(), self._cfgs.algo_cfgs.max_grad_norm
             )
         distributed.avg_grads(self._actor_critic.actor)
         self._actor_critic.actor_optimizer.step()
