@@ -80,6 +80,7 @@ class AlgoWrapper:
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
         exp_name = os.path.join(self.env_id, self.algo)
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id})
+        cfgs.train_cfgs.recurisve_update({'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle})
         if self.custom_cfgs is not None:
             cfgs.recurisve_update(self.custom_cfgs)
 

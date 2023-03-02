@@ -61,8 +61,8 @@ defaults:
       hidden_sizes: [64, 64]
       activation: tanh
       # out_activation: tanh
-      lr: <float>
-    critic_iters:
+      lr: 0.0003
+    critic:
       hidden_sizes: [64, 64]
       activation: tanh
-      lr: <float>
+      lr: 0.0003
