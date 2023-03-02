@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of OffPolicyBuffer."""
 
-from typing import Dict
+from typing import Any, Dict, Tuple
 
 import torch
 from gymnasium.spaces import Box
@@ -69,8 +69,8 @@ class OffPolicyBuffer(BaseBuffer):
         """Sample a batch of data from the buffer."""
         idxs = torch.randint(0, self._size, (self._batch_size,))
         return {key: value[idxs] for key, value in self.data.items()}
-    
-    def sample_n_step_batch(self, n_step: int) -> Dict[str, torch.Tensor]:
+
+    def sample_n_step_batch(self, n_step: int) -> Tuple[Dict[str, torch.Tensor], Any]:
         """
         Sample a batch of data from the buffer as n-step returns.
 
@@ -86,14 +86,13 @@ class OffPolicyBuffer(BaseBuffer):
         indices = indices.repeat_interleave(n_step)
 
         batch = {}
-        for key in self.data.keys():
-            tensor = self.data[key]
-            n_dims = len(tensor.shape)
+        for key, value in self.data.items():
+            n_dims = len(value.shape)
             if n_dims == 1:
                 # Vector-like tensors
-                batch[key] = tensor[indices]
+                batch[key] = value[indices]
             else:
                 # Array-like tensors
-                batch[key] = tensor[indices, ...]
+                batch[key] = value[indices, ...]
 
         return batch, indices

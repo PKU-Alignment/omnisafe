@@ -37,7 +37,7 @@ Activation = Literal['identity', 'relu', 'sigmoid', 'softplus', 'tanh']
 AdvatageEstimator = Literal['gae', 'gae-rtg', 'vtrace', 'plain']
 InitFunction = Literal['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal']
 CriticType = Literal['v', 'q']
-ActorType = Literal['gaussian_learning', 'gaussian_sac']
+ActorType = Literal['gaussian_learning', 'gaussian_sac', 'direct_forward']
 
 __all__ = [
     'Activation',

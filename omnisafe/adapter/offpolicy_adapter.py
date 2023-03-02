@@ -17,11 +17,12 @@
 from typing import Dict, Optional
 
 import torch
+from gymnasium import spaces
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
-from omnisafe.common.buffer import VectorOnPolicyBuffer
+from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
+from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils.config import Config
 
 
@@ -42,11 +43,11 @@ class OffPolicyAdapter(OnlineAdapter):
     def roll_out(  # pylint: disable=too-many-locals
         self,
         steps_per_sample: int,
-        agent: ConstraintActorCritic,
-        buffer: VectorOnPolicyBuffer,
+        agent: ConstraintActorQCritic,
+        buffer: VectorOffPolicyBuffer,
         logger: Logger,
         epoch_end: bool,
-        use_rand_action:bool,
+        use_rand_action: bool,
     ) -> None:
         """Roll out the environment and store the data in the buffer.
 
@@ -59,9 +60,9 @@ class OffPolicyAdapter(OnlineAdapter):
         for step in range(steps_per_sample):
             obs = self.current_obs
             if use_rand_action:
-                """use random action for the first 10 steps"""
-                act=torch.rand(size=(self._env.num_envs, self._env.action_space.shape[0]))
-                logp = torch.zeros(self._env.num_envs)
+                if isinstance(self._env.action_space, spaces.Box):
+                    act = torch.rand(size=(self._env.num_envs, self._env.action_space.shape[0]))
+                    logp = torch.zeros(self._env.num_envs)
             else:
                 act, logp = agent.step(obs, deterministic=False)
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
@@ -74,21 +75,20 @@ class OffPolicyAdapter(OnlineAdapter):
                 cost=cost,
                 done=terminated,
                 logp=logp,
-                next_obs=next_obs
+                next_obs=next_obs,
             )
 
             self.current_obs = next_obs
             dones = torch.logical_or(terminated, truncated)
-            epoch_end=epoch_end and step == steps_per_sample - 1
+            epoch_end = epoch_end and step == steps_per_sample - 1
             for idx, done in enumerate(dones):
-               if epoch_end or done:
+                if epoch_end or done:
                     self._log_metrics(logger, idx)
                     self._reset_log(idx)
                     self.current_obs, _ = self.reset()
                     self._ep_ret[idx] = 0.0
                     self._ep_cost[idx] = 0.0
                     self._ep_len[idx] = 0.0
-
 
     def _log_value(
         self,

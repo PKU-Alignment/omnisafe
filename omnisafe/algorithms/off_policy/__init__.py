@@ -17,6 +17,7 @@
 from omnisafe.algorithms.off_policy.ddpg import DDPG
 from omnisafe.algorithms.off_policy.td3 import TD3
 
+
 __all__ = [
     'DDPG',
     'TD3',

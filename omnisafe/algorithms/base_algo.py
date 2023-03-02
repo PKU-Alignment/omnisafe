@@ -41,7 +41,7 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
         distributed.setup_distributed()
 
         try:
-            self._epochs = self._cfgs.total_steps//self._cfgs.steps_per_epoch
+            self._epochs = self._cfgs.total_steps // self._cfgs.steps_per_epoch
         except AttributeError:
             self._epochs = self._cfgs.epochs
 

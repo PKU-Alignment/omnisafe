@@ -16,10 +16,11 @@
 
 
 import torch
-from omnisafe.algorithms import registry
-from omnisafe.utils import distributed
-from omnisafe.algorithms.off_policy.ddpg import DDPG
 from torch.nn import functional as F
+
+from omnisafe.algorithms import registry
+from omnisafe.algorithms.off_policy.ddpg import DDPG
+from omnisafe.utils import distributed
 
 
 @registry.register
@@ -34,24 +35,25 @@ class TD3(DDPG):
     """
 
     def _update_rewrad_critic(
-            self, 
-            obs: torch.Tensor,
-            act: torch.Tensor,
-            reward: torch.Tensor,
-            done: torch.Tensor,
-            next_obs: torch.Tensor,
-            ) -> None:
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        reward: torch.Tensor,
+        done: torch.Tensor,
+        next_obs: torch.Tensor,
+    ) -> None:
         self._actor_critic.reward_critic_optimizer.zero_grad()
         with torch.no_grad():
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=False)
             next_q_value = torch.min(
-                self._target_actor_critic.reward_critic(next_obs, next_action)[0], 
+                self._target_actor_critic.reward_critic(next_obs, next_action)[0],
                 self._target_actor_critic.reward_critic(next_obs, next_action)[1],
-                )
+            )
             target_q_value = reward + self._cfgs.gamma * (1 - done) * next_q_value
         q_values = self._actor_critic.reward_critic(obs, act)
-        loss = sum(F.mse_loss(q_value, target_q_value) for q_value in q_values)
-
+        loss_critic1 = F.mse_loss(q_values[0], target_q_value)
+        loss_critic2 = F.mse_loss(q_values[1], target_q_value)
+        loss = loss_critic1 + loss_critic2
         if self._cfgs.use_critic_norm:
             for param in self._actor_critic.reward_critic.parameters():
                 loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
@@ -66,7 +68,7 @@ class TD3(DDPG):
         self._actor_critic.reward_critic_optimizer.step()
         self._logger.store(
             **{
-            'Loss/Loss_reward_critic': loss.mean().item(),
-            'Value/reward': q_values[0].mean().item(),
+                'Loss/Loss_reward_critic': loss.mean().item(),
+                'Value/reward': q_values[0].mean().item(),
             }
-            )
+        )
