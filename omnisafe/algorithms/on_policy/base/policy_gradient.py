@@ -173,7 +173,7 @@ class PolicyGradient(BaseAlgo):
             if self._cfgs.model_cfgs.exploration_noise_anneal:
                 self._actor_critic.annealing(epoch)
 
-            if scheduler_flag == True:
+            if scheduler_flag is True:
                 self._actor_critic.actor_scheduler.step()
             else:
                 scheduler_flag = True
