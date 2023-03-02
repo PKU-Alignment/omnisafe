@@ -199,7 +199,7 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     """
 
     arg_constraints = {'loc': constraints.real, 'scale': constraints.positive}
-    support = constraints.positive
+    support = constraints.real
     has_rsample = True
 
     def __init__(self, loc, scale, validate_args=None):

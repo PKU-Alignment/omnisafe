@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of OffPolicyBuffer."""
 
-from typing import Any, Dict, Tuple
+from typing import Dict
 
 import torch
 from gymnasium.spaces import Box
@@ -72,30 +72,3 @@ class OffPolicyBuffer(BaseBuffer):
         """Sample a batch of data from the buffer."""
         idxs = torch.randint(0, self._size, (self._batch_size,))
         return {key: value[idxs] for key, value in self.data.items()}
-
-    def sample_n_step_batch(self, n_step: int) -> Tuple[Dict[str, torch.Tensor], Any]:
-        """
-        Sample a batch of data from the buffer as n-step returns.
-
-        Args:
-            n_step (int): The number of steps for the n-step returns.
-
-        Returns:
-            A dictionary of tensors containing the sampled batch data.
-        """
-        num_segments = self._batch_size // n_step
-        indices = torch.randint(0, self._size - n_step + 1, (num_segments,))
-        indices = torch.sort(indices)[0]  # sort to make sure they are in ascending order
-        indices = indices.repeat_interleave(n_step)
-
-        batch = {}
-        for key, value in self.data.items():
-            n_dims = len(value.shape)
-            if n_dims == 1:
-                # Vector-like tensors
-                batch[key] = value[indices]
-            else:
-                # Array-like tensors
-                batch[key] = value[indices, ...]
-
-        return batch, indices

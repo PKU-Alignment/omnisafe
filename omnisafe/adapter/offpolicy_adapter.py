@@ -40,19 +40,6 @@ class OffPolicyAdapter(OnlineAdapter):
         self._current_obs, _ = self.reset()
         self._reset_log()
 
-    def _exploration_noise(self, action: torch.Tensor, exploration_noise: float) -> torch.Tensor:
-        """Add noise to the action."""
-        if isinstance(self._env.action_space, spaces.Box):
-            act_low = torch.as_tensor(
-                self._env.action_space.low, dtype=torch.float32
-            ) * torch.ones_like(action)
-            act_high = torch.as_tensor(
-                self._env.action_space.high, dtype=torch.float32
-            ) * torch.ones_like(action)
-            action += torch.normal(0, torch.as_tensor(exploration_noise) * torch.ones_like(action))
-            return torch.clamp(action, act_low, act_high)
-        raise NotImplementedError
-
     def roll_out(  # pylint: disable=too-many-locals
         self,
         steps_per_sample: int,
@@ -61,7 +48,6 @@ class OffPolicyAdapter(OnlineAdapter):
         logger: Logger,
         epoch_end: bool,
         use_rand_action: bool,
-        exploration_noise: float = 0.1,
     ) -> None:
         """Roll out the environment and store the data in the buffer.
 
@@ -77,8 +63,7 @@ class OffPolicyAdapter(OnlineAdapter):
                 if isinstance(self._env.action_space, spaces.Box):
                     act = torch.rand(size=(self._env.num_envs, self._env.action_space.shape[0]))
             else:
-                act = agent.step(obs)
-                act = self._exploration_noise(act, exploration_noise)
+                act = agent.step(obs, deterministic=False)
 
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
             self._log_value(reward=reward, cost=cost, info=info)
@@ -87,7 +72,7 @@ class OffPolicyAdapter(OnlineAdapter):
                 act=act,
                 reward=reward,
                 cost=cost,
-                done=terminated,
+                done=torch.logical_or(terminated, truncated),
                 next_obs=next_obs,
             )
 

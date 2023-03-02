@@ -33,7 +33,7 @@ defaults:
   # Number of total steps
   total_steps: 1.0e+6
   # Number of steps per epoch
-  steps_per_epoch: 5000
+  steps_per_epoch: 2000
   # Number of steps per sample
   steps_per_sample: 1
   # Number of random steps
@@ -74,6 +74,8 @@ defaults:
   alpha: 0.2
   # Whether to use auto alpha
   auto_alpha: True
+  # The exploration noise
+  exploration_noise: 0.0
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##

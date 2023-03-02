@@ -16,7 +16,7 @@
 
 import time
 from copy import deepcopy
-from typing import Tuple, Union
+from typing import Any, Dict, Tuple, Union
 
 import torch
 from torch.nn import functional as F
@@ -48,8 +48,10 @@ class DDPG(BaseAlgo):
         assert self._cfgs.steps_per_epoch % (distributed.world_size() * self._cfgs.num_envs) == 0, (
             'The number of steps per epoch is not divisible by the number of ' 'environments.'
         )
-        self._total_steps = self._cfgs.total_steps
-        self._steps_per_epoch = self._cfgs.steps_per_epoch
+        self._epochs = int(self._cfgs.total_steps // self._cfgs.steps_per_epoch)
+        self._steps_per_epoch = self._cfgs.steps_per_epoch // (
+            distributed.world_size() * self._cfgs.num_envs
+        )
         self._steps_per_sample = self._cfgs.steps_per_sample
         assert self._steps_per_epoch % self._steps_per_sample == 0, (
             'The number of steps per epoch is not divisible by the number of ' 'steps per sample.'
@@ -65,6 +67,7 @@ class DDPG(BaseAlgo):
 
         if distributed.world_size() > 1:
             distributed.sync_params(self._actor_critic)
+        self._target_actor_critic = deepcopy(self._actor_critic)
 
     def _init(self) -> None:
         self._buf = VectorOffPolicyBuffer(
@@ -75,14 +78,6 @@ class DDPG(BaseAlgo):
             num_envs=self._cfgs.num_envs,
             device=self._device,
         )
-        self._target_actor_critic = deepcopy(self._actor_critic)
-        # freeze target networks with respect to optimizer (only update via polyak averaging)
-        for param in self._target_actor_critic.actor.parameters():
-            param.requires_grad = False
-        for param in self._target_actor_critic.reward_critic.parameters():
-            param.requires_grad = False
-        for param in self._target_actor_critic.cost_critic.parameters():
-            param.requires_grad = False
 
     def _init_log(self) -> None:
         self._logger = Logger(
@@ -93,14 +88,11 @@ class DDPG(BaseAlgo):
             use_wandb=self._cfgs.use_wandb,
             config=self._cfgs,
         )
+        what_to_save: Dict[str, Any] = {}
+        what_to_save['pi'] = self._actor_critic.actor
         if self._cfgs.obs_normalize:
             obs_normalizer = self._env.save()['obs_normalizer']
-            what_to_save = {
-                'pi': self._actor_critic.actor,
-                'obs_normalizer': obs_normalizer,
-            }
-        else:
-            what_to_save = {'pi': self._actor_critic.actor}
+            what_to_save['obs_normalizer'] = obs_normalizer
 
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
@@ -141,13 +133,15 @@ class DDPG(BaseAlgo):
         self._logger.log('INFO: Start training')
         start_time = time.time()
         step = 0
-        while step < int(self._total_steps):
+        for epoch in range(1, self._epochs + 1):
             roll_out_time = 0.0
             epoch_time = time.time()
             samples_per_epoch = self._steps_per_epoch // self._steps_per_sample
             # Collect data from environment
             for i in range(samples_per_epoch):
                 roll_out_start = time.time()
+                if self._cfgs.exploration_noise:
+                    self._actor_critic.actor.std = self._cfgs.exploration_noise
                 self._env.roll_out(
                     steps_per_sample=self._steps_per_sample,
                     agent=self._actor_critic,
@@ -171,8 +165,6 @@ class DDPG(BaseAlgo):
                 else:
                     self._log_zero()
 
-            # Count the number of epoch
-            epoch = step // self._steps_per_epoch
             self._logger.store(**{'Time/Rollout': roll_out_time})
             self._logger.store(**{'Time/Update': time.time() - roll_out_time - epoch_time})
 
@@ -230,10 +222,10 @@ class DDPG(BaseAlgo):
     ) -> None:
         with torch.no_grad():
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
-            next_q_value = self._target_actor_critic.reward_critic(next_obs, next_action)[0]
-            target_q_value = reward + self._cfgs.gamma * (1 - done) * next_q_value
-        q_value = self._actor_critic.reward_critic(obs, act)[0]
-        loss = F.mse_loss(q_value, target_q_value)
+            next_q_value_r = self._target_actor_critic.reward_critic(next_obs, next_action)[0]
+            target_q_value_r = reward + self._cfgs.gamma * (1 - done) * next_q_value_r
+        q_value_r = self._actor_critic.reward_critic(obs, act)[0]
+        loss = F.mse_loss(q_value_r, target_q_value_r)
 
         if self._cfgs.use_critic_norm:
             for param in self._actor_critic.reward_critic.parameters():
@@ -241,7 +233,7 @@ class DDPG(BaseAlgo):
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/reward_critic1': q_value.mean().item(),
+                'Value/reward_critic1': q_value_r.mean().item(),
             }
         )
         self._actor_critic.reward_critic_optimizer.zero_grad()
@@ -264,10 +256,10 @@ class DDPG(BaseAlgo):
     ) -> None:
         with torch.no_grad():
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
-            next_qc_value = self._target_actor_critic.cost_critic(next_obs, next_action)[0]
-            target_qc_value = cost + self._cfgs.gamma * (1 - done) * next_qc_value
-        qc_value = self._actor_critic.cost_critic(obs, act)[0]
-        loss = F.mse_loss(qc_value, target_qc_value)
+            next_q_value_c = self._target_actor_critic.cost_critic(next_obs, next_action)[0]
+            target_q_value_c = cost + self._cfgs.gamma * (1 - done) * next_q_value_c
+        q_value_c = self._actor_critic.cost_critic(obs, act)[0]
+        loss = F.mse_loss(q_value_c, target_q_value_c)
 
         if self._cfgs.use_critic_norm:
             for param in self._actor_critic.cost_critic.parameters():
@@ -286,7 +278,7 @@ class DDPG(BaseAlgo):
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/cost': qc_value.mean().item(),
+                'Value/cost': q_value_c.mean().item(),
             }
         )
 

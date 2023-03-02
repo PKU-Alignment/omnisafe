@@ -123,10 +123,11 @@ class SAC(DDPG):
         self,
         obs: torch.Tensor,
     ) -> torch.Tensor:
-        action = self._actor_critic.actor.predict(obs, deterministic=True)
+        action = self._actor_critic.actor.predict(obs, deterministic=False)
+        log_prob = self._actor_critic.actor.log_prob(action)
         loss_q1 = self._actor_critic.reward_critic(obs, action)[0].mean()
         loss_q2 = self._actor_critic.reward_critic(obs, action)[1].mean()
-        loss = self._alpha - torch.min(loss_q1, loss_q2)
+        loss = (self._alpha * log_prob - torch.min(loss_q1, loss_q2)).mean()
         return loss
 
     def _log_zero(self) -> None:

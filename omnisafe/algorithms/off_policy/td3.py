@@ -47,15 +47,16 @@ class TD3(DDPG):
         next_obs: torch.Tensor,
     ) -> None:
         with torch.no_grad():
+            self._target_actor_critic.actor.std = self._cfgs.policy_noise
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=False)
-            next_q_value = torch.min(
+            next_q_value_r = torch.min(
                 self._target_actor_critic.reward_critic(next_obs, next_action)[0],
                 self._target_actor_critic.reward_critic(next_obs, next_action)[1],
             )
-            target_q_value = reward + self._cfgs.gamma * (1 - done) * next_q_value
-        q_values = self._actor_critic.reward_critic(obs, act)
-        loss_critic1 = F.mse_loss(q_values[0], target_q_value)
-        loss_critic2 = F.mse_loss(q_values[1], target_q_value)
+            target_q_value_r = reward + self._cfgs.gamma * (1 - done) * next_q_value_r
+        q_value_r_list = self._actor_critic.reward_critic(obs, act)
+        loss_critic1 = F.mse_loss(q_value_r_list[0], target_q_value_r)
+        loss_critic2 = F.mse_loss(q_value_r_list[1], target_q_value_r)
         loss = loss_critic1 + loss_critic2
         if self._cfgs.use_critic_norm:
             for param in self._actor_critic.reward_critic.parameters():
@@ -73,8 +74,8 @@ class TD3(DDPG):
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/reward_critic1': q_values[0].mean().item(),
-                'Value/reward_critic2': q_values[1].mean().item(),
+                'Value/reward_critic1': q_value_r_list[0].mean().item(),
+                'Value/reward_critic2': q_value_r_list[1].mean().item(),
             }
         )
 
