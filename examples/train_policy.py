@@ -47,19 +47,19 @@ if __name__ == '__main__':
     keys = [k[2:] for k in unparsed_args[0::2]]
     values = list(unparsed_args[1::2])
     custom_cfgs = dict(zip(keys, values))
-    # custom_cfgs = {
-    #     'train_cfgs': {
-    #         'total_steps': 1000,
-    #         'vector_env_nums': 1,
-    #     },
-    #     'algo_cfgs': {
-    #         'update_cycle': 1000,
-    #         'update_iters': 1,
-    #     },
-    #     'logger_cfgs': {
-    #         'use_wandb': False,
-    #     },
-    # }
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 2000,
+            'vector_env_nums': 1,
+        },
+        'algo_cfgs': {
+            'update_cycle': 1000,
+            'update_iters': 2,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+        },
+    }
     agent = omnisafe.Agent(
         args.algo,
         args.env_id,

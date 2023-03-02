@@ -79,7 +79,7 @@ defaults:
     # penalty coefficient
     penalty_coef: 0.0
     # use cost
-    use_cost: False
+    use_cost: True
     # use kl early stop
     kl_early_stop: True
   # logger configurations
@@ -116,7 +116,7 @@ defaults:
       activation: tanh
       # out_activation: tanh
       # learning rate
-      lr: 0.001
+      lr: None
     critic:
       # hidden layer sizes
       hidden_sizes: [64, 64]
