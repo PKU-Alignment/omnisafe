@@ -26,7 +26,7 @@ if __name__ == '__main__':
         type=str,
         metavar='ALGO',
         default='PPOLag',
-        help='Algorithm to train',
+        help='algorithm to train',
         choices=omnisafe.ALGORITHMS['all'],
     )
     parser.add_argument(
@@ -34,36 +34,51 @@ if __name__ == '__main__':
         type=str,
         metavar='ENV',
         default='SafetyPointGoal1-v0',
-        help='The name of test environment',
+        help='the name of test environment',
     )
     parser.add_argument(
         '--parallel',
         default=1,
         type=int,
         metavar='N',
-        help='Number of paralleled progress for calculations.',
+        help='number of paralleled progress for calculations.',
+    )
+    parser.add_argument(
+        "--total-steps",
+        type=int,
+        default=1638400,
+        metavar='STEPS',
+        help="total number of steps to train for algorithm",
+    )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default='cpu',
+        metavar='DEVICES',
+        help="device to use for training",
+    )
+    parser.add_argument(
+        "--vector-env-nums",
+        type=int,
+        default=16,
+        metavar='VECTOR-ENV',
+        help="number of vector envs to use for training",
+    )
+    parser.add_argument(
+        "--torch-threads",
+        type=int,
+        default=16,
+        metavar='THREADS',
+        help="number of threads to use for torch",
     )
     args, unparsed_args = parser.parse_known_args()
     keys = [k[2:] for k in unparsed_args[0::2]]
     values = list(unparsed_args[1::2])
     custom_cfgs = dict(zip(keys, values))
-    custom_cfgs = {
-        'train_cfgs': {
-            'total_steps': 2000,
-            'vector_env_nums': 1,
-        },
-        'algo_cfgs': {
-            'update_cycle': 1000,
-            'update_iters': 2,
-        },
-        'logger_cfgs': {
-            'use_wandb': False,
-        },
-    }
     agent = omnisafe.Agent(
         args.algo,
         args.env_id,
-        parallel=args.parallel,
+        train_terminal_cfgs=vars(args),
         custom_cfgs=custom_cfgs,
     )
     agent.learn()
