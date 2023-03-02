@@ -35,8 +35,8 @@ class SAC(DDPG):
         - URL: `SAC <https://arxiv.org/abs/1801.01290>`_
     """
 
-    def _init(self) -> None:
-        super()._init()
+    def __init__(self, env_id: str, cfgs: dict) -> None:
+        super().__init__(env_id, cfgs)
         if self._cfgs.auto_alpha:
             self._target_entropy = -torch.prod(
                 torch.Tensor(self._env.action_space.shape).to(self._device)
