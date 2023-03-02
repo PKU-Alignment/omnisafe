@@ -58,10 +58,14 @@ class AlgoWrapper:
         if self.algo_type is None or self.algo_type == '':
             raise ValueError(f'{self.algo} is not supported!')
         if self.algo_type in ['off-policy', 'model-based']:
-            assert self.parallel == 1, 'off-policy or model-based only support parallel==1!'
+            assert (
+                self.train_terminal_cfgs.parallel == 1
+            ), 'off-policy or model-based only support parallel==1!'
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
+        # update the cfgs from custom configurations
         cfgs.recurisve_update(self.custom_cfgs)
+        # update the cfgs from custom terminal configurations
         cfgs.recurisve_update(self.train_terminal_cfgs)
 
         # the exp_name format is PPO-<SafetyPointGoal1-v0>-

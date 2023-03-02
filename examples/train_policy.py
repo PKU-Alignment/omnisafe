@@ -44,32 +44,32 @@ if __name__ == '__main__':
         help='number of paralleled progress for calculations.',
     )
     parser.add_argument(
-        "--total-steps",
+        '--total-steps',
         type=int,
         default=1638400,
         metavar='STEPS',
-        help="total number of steps to train for algorithm",
+        help='total number of steps to train for algorithm',
     )
     parser.add_argument(
-        "--device",
+        '--device',
         type=str,
         default='cpu',
         metavar='DEVICES',
-        help="device to use for training",
+        help='device to use for training',
     )
     parser.add_argument(
-        "--vector-env-nums",
+        '--vector-env-nums',
         type=int,
         default=16,
         metavar='VECTOR-ENV',
-        help="number of vector envs to use for training",
+        help='number of vector envs to use for training',
     )
     parser.add_argument(
-        "--torch-threads",
+        '--torch-threads',
         type=int,
         default=16,
         metavar='THREADS',
-        help="number of threads to use for torch",
+        help='number of threads to use for torch',
     )
     args, unparsed_args = parser.parse_known_args()
     keys = [k[2:] for k in unparsed_args[0::2]]
