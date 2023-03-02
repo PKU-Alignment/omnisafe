@@ -15,7 +15,6 @@
 """Implementation of the AlgoWrapper Class."""
 
 import difflib
-import os
 import sys
 from typing import Any, Dict, Optional
 

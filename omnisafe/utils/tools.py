@@ -146,23 +146,21 @@ def terminal_cfgs_to_dict(key_list, value):
         key_list (list): list of keys.
         value: value.
     """
-    if value == "True":
+    if value == 'True':
         value = True
-    elif value == "False":
+    elif value == 'False':
         value = False
     elif '.' in value:
         value = float(value)
     elif value.isdigit():
         value = int(value)
-    elif value.startswith("[") and value.endswith("]"):
+    elif value.startswith('[') and value.endswith(']'):
         value = value[1:-1]
-        value = value.split(",")
+        value = value.split(',')
     else:
         value = str(value)
-    keys_split = key_list.split(":")
-    return_dict = {
-        keys_split[-1]: value
-    }
+    keys_split = key_list.split(':')
+    return_dict = {keys_split[-1]: value}
 
     for key in reversed(keys_split[:-1]):
         return_dict = {key: return_dict}
@@ -170,11 +168,11 @@ def terminal_cfgs_to_dict(key_list, value):
     return return_dict
 
 
-if __name__ == "__main__":
-    print("This is a tool function package.")
-    print(terminal_cfgs_to_dict("train_cfgs:use_wandb", "True"))
-    print(terminal_cfgs_to_dict("train_cfgs:use_wandb", "False"))
-    print(terminal_cfgs_to_dict("train_cfgs:use_wandb", "0.1"))
-    print(terminal_cfgs_to_dict("train_cfgs:use_wandb", "1"))
-    print(terminal_cfgs_to_dict("train_cfgs:use_wandb", "test"))
-    print(terminal_cfgs_to_dict("train_cfgs:use_wandb", "[1,2,3]"))
+if __name__ == '__main__':
+    print('This is a tool function package.')
+    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', 'True'))
+    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', 'False'))
+    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', '0.1'))
+    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', '1'))
+    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', 'test'))
+    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', '[1,2,3]'))
