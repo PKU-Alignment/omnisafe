@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of ConstraintActorCritic."""
-
-from typing import Tuple
+"""Implementation of ConstraintActorQCritic."""
 
 import torch
 from torch import optim
@@ -79,7 +77,7 @@ class ConstraintActorQCritic(ActorQCritic):
             self.cost_critic.parameters(), lr=model_cfgs.critic.lr
         )
 
-    def step(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
+    def step(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
         """Choose action based on observation.
 
         Args:
@@ -94,11 +92,10 @@ class ConstraintActorQCritic(ActorQCritic):
         """
         with torch.no_grad():
             act = self.actor.predict(obs, deterministic=deterministic)
-            log_prob = self.actor.log_prob(act)
 
-        return act, log_prob
+        return act
 
-    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
+    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
         """Choose action based on observation.
 
         Args:

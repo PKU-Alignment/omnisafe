@@ -16,7 +16,7 @@
 from typing import Callable, Tuple
 
 import torch
-from torch.distributions import Normal, TanhTransform, TransformedDistribution
+from torch.distributions import Normal, TanhTransform, TransformedDistribution, constraints
 
 
 def get_transpose(tensor: torch.Tensor) -> torch.Tensor:
@@ -198,11 +198,8 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
         scale (float or Tensor): standard deviation of the underlying normal distribution
     """
 
-    arg_constraints = {
-        'loc': Normal.arg_constraints['loc'],
-        'scale': Normal.arg_constraints['scale'],
-    }
-    support = TransformedDistribution.support
+    arg_constraints = {'loc': constraints.real, 'scale': constraints.positive}
+    support = constraints.positive
     has_rsample = True
 
     def __init__(self, loc, scale, validate_args=None):
@@ -212,6 +209,16 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     def expand(self, batch_shape, _instance=None):
         new = self._get_checked_instance(TanhNormal, _instance)
         return super().expand(batch_shape, _instance=new)
+
+    @property
+    def loc(self):
+        """The loc of the tanh normal distribution."""
+        return self.base_dist.loc
+
+    @property
+    def scale(self):
+        """The scale of the tanh normal distribution."""
+        return self.base_dist.scale
 
     @property
     def mean(self):

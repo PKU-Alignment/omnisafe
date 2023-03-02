@@ -48,6 +48,9 @@ class DDPG(BaseAlgo):
         assert self._cfgs.steps_per_epoch % (distributed.world_size() * self._cfgs.num_envs) == 0, (
             'The number of steps per epoch is not divisible by the number of ' 'environments.'
         )
+        self._total_steps = (
+            self._cfgs.total_steps // distributed.world_size() // self._cfgs.num_envs
+        )
         self._steps_per_epoch = (
             self._cfgs.steps_per_epoch // distributed.world_size() // self._cfgs.num_envs
         )
@@ -142,7 +145,7 @@ class DDPG(BaseAlgo):
         self._logger.log('INFO: Start training')
         start_time = time.time()
         step = 0
-        while step < int(self._cfgs.total_steps):
+        while step < int(self._total_steps):
             roll_out_time = 0.0
             epoch_time = time.time()
             samples_per_epoch = self._steps_per_epoch // self._steps_per_sample

@@ -33,7 +33,7 @@ defaults:
   # Number of total steps
   total_steps: 1.0e+6
   # Number of steps per epoch
-  steps_per_epoch: 2000
+  steps_per_epoch: 5000
   # Number of steps per sample
   steps_per_sample: 1
   # Number of random steps
@@ -51,7 +51,7 @@ defaults:
   # The learning rate of Critic network
   critic_lr: 0.001
   # The number of parallel environments
-  num_envs: 2
+  num_envs: 5
   # Whether to use standardized reward
   reward_normalize: True
   # Whether to use standardized cost

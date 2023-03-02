@@ -55,7 +55,13 @@ class DirectForwardActor(Actor):
             weight_initialization_mode=weight_initialization_mode,
         )
 
-    def predict(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
+    def predict(
+        self,
+        obs: torch.Tensor,
+        deterministic: bool = True,
+        noise: float = 0.2,
+        noise_clip: float = 0.5,
+    ) -> torch.Tensor:
         """Predict the action given the observation.
 
         Args:
@@ -75,9 +81,10 @@ class DirectForwardActor(Actor):
             act_high = torch.as_tensor(self._act_space.high, dtype=torch.float32) * torch.ones_like(
                 action
             )
-        return torch.clamp(
-            action + torch.normal(0, 0.1 * torch.ones_like(action)), act_low, act_high
-        )
+            action_noise = torch.normal(0, noise * torch.ones_like(action))
+            cliped_action_noise = torch.clamp(action_noise, -noise_clip, noise_clip)
+            return torch.clamp(action + cliped_action_noise, act_low, act_high)
+        raise NotImplementedError
 
     def _distribution(self, obs: torch.Tensor) -> Distribution:
         return Normal(self.net(obs), 1)

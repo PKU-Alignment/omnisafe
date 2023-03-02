@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of ActorQCritic."""
 
-from typing import List, Tuple
+from typing import List
 
 import torch
 from torch import nn, optim
@@ -101,7 +101,7 @@ class ActorQCritic(nn.Module):
 
         self.std_schedule: Schedule
 
-    def step(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
+    def step(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
         """Choose the action based on the observation. used in rollout without gradient.
 
         Args:
@@ -113,10 +113,9 @@ class ActorQCritic(nn.Module):
         """
         with torch.no_grad():
             act = self.actor.predict(obs, deterministic=deterministic)
-            log_prob = self.actor.log_prob(act)
-        return act, log_prob
+        return act
 
-    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
+    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
         """Choose the action based on the observation. used in training with gradient.
 
         Args:

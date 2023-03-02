@@ -35,7 +35,6 @@ class OffPolicyBuffer(BaseBuffer):
         device: torch.device = torch.device('cpu'),
     ):
         super().__init__(obs_space, act_space, size, device)
-        self.data['logp'] = torch.zeros((size,), dtype=torch.float32, device=device)
         if isinstance(obs_space, Box):
             self.data['next_obs'] = torch.zeros(
                 (size, *obs_space.shape), dtype=torch.float32, device=device
@@ -47,6 +46,10 @@ class OffPolicyBuffer(BaseBuffer):
         self._size: int = 0
         self._max_size: int = size
         self._batch_size: int = batch_size
+
+        assert (
+            self._max_size > self._batch_size
+        ), 'The size of the buffer must be larger than the batch size.'
 
     @property
     def max_size(self) -> int:
