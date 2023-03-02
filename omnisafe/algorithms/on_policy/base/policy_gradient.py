@@ -170,7 +170,7 @@ class PolicyGradient(BaseAlgo):
             if self._cfgs.model_cfgs.exploration_noise_anneal:
                 self._actor_critic.annealing(epoch)
 
-            if self._cfgs.model_cfgs.actor.lr != "None":
+            if self._cfgs.model_cfgs.actor.lr != 'None':
                 self._actor_critic.actor_scheduler.step()
 
             self._logger.store(

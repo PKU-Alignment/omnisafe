@@ -14,14 +14,12 @@
 # ==============================================================================
 """On-policy algorithms."""
 
-from omnisafe.algorithms.on_policy import (  # simmer,
+from omnisafe.algorithms.on_policy import (  # simmer,; early_terminated,; saute,
     base,
-    # early_terminated,
     first_order,
     naive_lagrange,
     penalty_function,
     pid_lagrange,
-    # saute,
     second_order,
 )
 from omnisafe.algorithms.on_policy.base import PPO, TRPO, NaturalPG, PolicyGradient

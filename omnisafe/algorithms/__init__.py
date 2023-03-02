@@ -21,7 +21,7 @@ from omnisafe.algorithms import on_policy
 from omnisafe.algorithms.base_algo import BaseAlgo
 
 # On-Policy Safe
-from omnisafe.algorithms.on_policy import (  # PPOLagSimmerPid,; PPOLagSimmerQ,; PPOSimmerPid,; PPOSimmerQ,
+from omnisafe.algorithms.on_policy import (
     CPO,
     CUP,
     FOCOPS,
@@ -34,11 +34,7 @@ from omnisafe.algorithms.on_policy import (  # PPOLagSimmerPid,; PPOLagSimmerQ,;
     NaturalPG,
     OnCRPO,
     PolicyGradient,
-    # PPOEarlyTerminated,
     PPOLag,
-    # PPOLagEarlyTerminated,
-    # PPOLagSaute,
-    # PPOSaute,
     TRPOLag,
     TRPOPid,
 )
