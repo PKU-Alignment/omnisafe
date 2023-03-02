@@ -46,11 +46,24 @@ if __name__ == '__main__':
     args, unparsed_args = parser.parse_known_args()
     keys = [k[2:] for k in unparsed_args[0::2]]
     values = list(unparsed_args[1::2])
-    unparsed_dict = dict(zip(keys, values))
+    custom_cfgs = dict(zip(keys, values))
+    # custom_cfgs = {
+    #     'train_cfgs': {
+    #         'total_steps': 1000,
+    #         'vector_env_nums': 1,
+    #     },
+    #     'algo_cfgs': {
+    #         'update_cycle': 1000,
+    #         'update_iters': 1,
+    #     },
+    #     'logger_cfgs': {
+    #         'use_wandb': False,
+    #     },
+    # }
     agent = omnisafe.Agent(
         args.algo,
         args.env_id,
         parallel=args.parallel,
-        custom_cfgs=unparsed_dict,
+        custom_cfgs=custom_cfgs,
     )
     agent.learn()

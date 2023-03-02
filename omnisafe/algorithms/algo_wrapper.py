@@ -79,10 +79,12 @@ class AlgoWrapper:
 
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
-        if self.custom_cfgs is not None:
-            for key, val in self.custom_cfgs.items():
-                custom_entity = terminal_cfgs_to_dict(key, val)
-                cfgs.recurisve_update(custom_entity)
+        cfgs.recurisve_update(self.custom_cfgs)
+        # if self.custom_cfgs is not None:
+        #     for key, val in self.custom_cfgs.items():
+        #         print(key, val)
+        #         custom_entity = terminal_cfgs_to_dict(key, val)
+        #         cfgs.recurisve_update(custom_entity)
 
         # the exp_name format is PPO-<SafetyPointGoal1-v0>-
         exp_name = f'{self.algo}-<{self.env_id}>'
