@@ -23,7 +23,7 @@ defaults:
     total_steps: 16384000
   algo_cfgs:
     update_cycle: 32768
-    update_iters: 40
+    update_iters: 10
     batch_size: 64
     target_kl: 0.02
     entropy_coef: 0.0
