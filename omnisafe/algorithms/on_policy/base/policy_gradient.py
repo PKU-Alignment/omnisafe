@@ -43,12 +43,16 @@ class PolicyGradient(BaseAlgo):
     """
 
     def _init_env(self) -> None:
-        self._env = OnPolicyAdapter(self._env_id, self._cfgs.train_cfgs.vector_envs_nums, self._seed, self._cfgs)
-        assert (self._cfgs.algo_cfgs.update_cycle) % (distributed.world_size() * self._cfgs.train_cfgs.vector_envs_nums) == 0, (
-            'The number of steps per epoch is not divisible by the number of ' 'environments.'
+        self._env = OnPolicyAdapter(
+            self._env_id, self._cfgs.train_cfgs.vector_envs_nums, self._seed, self._cfgs
         )
+        assert (self._cfgs.algo_cfgs.update_cycle) % (
+            distributed.world_size() * self._cfgs.train_cfgs.vector_envs_nums
+        ) == 0, ('The number of steps per epoch is not divisible by the number of ' 'environments.')
         self._steps_per_epoch = (
-            self._cfgs.algo_cfgs.update_cycle // distributed.world_size() // self._cfgs.train_cfgs.vector_envs_nums
+            self._cfgs.algo_cfgs.update_cycle
+            // distributed.world_size()
+            // self._cfgs.train_cfgs.vector_envs_nums
         )
 
     def _init_model(self) -> None:

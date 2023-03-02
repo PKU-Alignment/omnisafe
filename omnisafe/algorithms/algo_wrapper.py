@@ -80,14 +80,18 @@ class AlgoWrapper:
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
         exp_name = os.path.join(self.env_id, self.algo)
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id})
-        cfgs.train_cfgs.recurisve_update({'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle})
+        cfgs.train_cfgs.recurisve_update(
+            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle}
+        )
         if self.custom_cfgs is not None:
             cfgs.recurisve_update(self.custom_cfgs)
 
         # check_all_configs(cfgs, self.algo_type)
         torch.set_num_threads(cfgs.train_cfgs.torch_threads)
         if distributed.fork(
-            self.parallel, use_number_of_threads=use_number_of_threads, device=cfgs.train_cfgs.device
+            self.parallel,
+            use_number_of_threads=use_number_of_threads,
+            device=cfgs.train_cfgs.device,
         ):
             # Re-launches the current script with workers linked by MPI
             sys.exit()
