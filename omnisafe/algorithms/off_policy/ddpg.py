@@ -120,7 +120,7 @@ class DDPG(BaseAlgo):
 
         # log information about critic
         self._logger.register_key('Loss/Loss_reward_critic', delta=True)
-        self._logger.register_key('Value/reward')
+        self._logger.register_key('Value/reward_critic1')
 
         if self._cfgs.use_cost:
             # log information about cost critic
@@ -162,26 +162,15 @@ class DDPG(BaseAlgo):
                 step += self._steps_per_sample
 
                 # Update parameters
-                if i % self._cfgs.update_cycle == 0 and step > self._cfgs.start_learning_steps:
-                    update_counts = i // self._cfgs.update_cycle
-                    # In TD3, we update the actor and critic networks separately
-                    self._update(update_policy=update_counts % self._cfgs.policy_delay == 0)
+                if step > self._cfgs.start_learning_steps:
+                    for j in range(self._steps_per_sample):
+                        if j % self._cfgs.update_cycle == 0:
+                            update_counts = i // self._cfgs.update_cycle
+                            # In TD3, we update the actor and critic networks separately
+                            self._update(update_policy=update_counts % self._cfgs.policy_delay == 0)
                 # If we haven't updated the network, log 0 for the loss
                 else:
-                    self._logger.store(
-                        **{
-                            'Loss/Loss_reward_critic': 0.0,
-                            'Loss/Loss_pi': 0.0,
-                            'Value/reward': 0.0,
-                        }
-                    )
-                    if self._cfgs.use_cost:
-                        self._logger.store(
-                            **{
-                                'Loss/Loss_cost_critic': 0.0,
-                                'Value/cost': 0.0,
-                            }
-                        )
+                    self._log_zero()
 
             # Count the number of epoch
             epoch = step // self._steps_per_epoch
@@ -240,7 +229,6 @@ class DDPG(BaseAlgo):
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
-        self._actor_critic.reward_critic_optimizer.zero_grad()
         with torch.no_grad():
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
             next_q_value = self._target_actor_critic.reward_critic(next_obs, next_action)[0]
@@ -254,9 +242,10 @@ class DDPG(BaseAlgo):
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/reward': q_value.mean().item(),
+                'Value/reward_critic1': q_value.mean().item(),
             }
         )
+        self._actor_critic.reward_critic_optimizer.zero_grad()
         loss.backward()
 
         if self._cfgs.use_max_grad_norm:
@@ -265,7 +254,6 @@ class DDPG(BaseAlgo):
             )
         distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
-        print(q_value.mean().item())
 
     def _update_cost_critic(
         self,
@@ -275,7 +263,6 @@ class DDPG(BaseAlgo):
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
-        self._actor_critic.cost_critic_optimizer.zero_grad()
         with torch.no_grad():
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
             next_qc_value = self._target_actor_critic.cost_critic(next_obs, next_action)[0]
@@ -287,6 +274,7 @@ class DDPG(BaseAlgo):
             for param in self._actor_critic.cost_critic.parameters():
                 loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
 
+        self._actor_critic.cost_critic_optimizer.zero_grad()
         loss.backward()
 
         if self._cfgs.use_max_grad_norm:
@@ -336,4 +324,20 @@ class DDPG(BaseAlgo):
         ):
             target_param.data.copy_(
                 target_param.data * (1.0 - self._cfgs.polyak) + param.data * self._cfgs.polyak
+            )
+
+    def _log_zero(self) -> None:
+        self._logger.store(
+            **{
+                'Loss/Loss_reward_critic': 0.0,
+                'Loss/Loss_pi': 0.0,
+                'Value/reward_critic1': 0.0,
+            }
+        )
+        if self._cfgs.use_cost:
+            self._logger.store(
+                **{
+                    'Loss/Loss_cost_critic': 0.0,
+                    'Value/cost': 0.0,
+                }
             )

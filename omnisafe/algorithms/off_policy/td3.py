@@ -34,6 +34,10 @@ class TD3(DDPG):
         - URL: `TD3 <https://arxiv.org/abs/1802.09477>`_
     """
 
+    def _init_log(self) -> None:
+        super()._init_log()
+        self._logger.register_key('Value/reward_critic2')
+
     def _update_rewrad_critic(
         self,
         obs: torch.Tensor,
@@ -42,7 +46,6 @@ class TD3(DDPG):
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
-        self._actor_critic.reward_critic_optimizer.zero_grad()
         with torch.no_grad():
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=False)
             next_q_value = torch.min(
@@ -58,6 +61,7 @@ class TD3(DDPG):
             for param in self._actor_critic.reward_critic.parameters():
                 loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
 
+        self._actor_critic.reward_critic_optimizer.zero_grad()
         loss.backward()
 
         if self._cfgs.use_max_grad_norm:
@@ -69,6 +73,15 @@ class TD3(DDPG):
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/reward': q_values[0].mean().item(),
+                'Value/reward_critic1': q_values[0].mean().item(),
+                'Value/reward_critic2': q_values[1].mean().item(),
+            }
+        )
+
+    def _log_zero(self) -> None:
+        super()._log_zero()
+        self._logger.store(
+            **{
+                'Value/reward_critic2': 0.0,
             }
         )

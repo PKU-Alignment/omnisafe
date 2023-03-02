@@ -21,7 +21,7 @@ from torch.distributions import Distribution, Normal
 
 from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, Box, InitFunction, OmnisafeSpace
-from omnisafe.utils.model import OUActionNoise, build_mlp_network
+from omnisafe.utils.model import build_mlp_network
 
 
 # pylint: disable-next=too-many-instance-attributes
@@ -34,7 +34,7 @@ class DirectForwardActor(Actor):
         act_space: OmnisafeSpace,
         hidden_sizes: List[int],
         activation: Activation = 'relu',
-        output_activation: Activation = 'tanh',
+        output_activation: Activation = 'identity',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
         """Initialize DirectForwardActor.
@@ -54,7 +54,6 @@ class DirectForwardActor(Actor):
             output_activation=output_activation,
             weight_initialization_mode=weight_initialization_mode,
         )
-        self.noise = OUActionNoise(action_dim=self._act_dim)
 
     def predict(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
         """Predict the action given the observation.
@@ -66,7 +65,7 @@ class DirectForwardActor(Actor):
         Returns:
             torch.Tensor: Predicted action.
         """
-        action = self.net(obs)
+        action = torch.tanh(self.net(obs))
         if deterministic:
             return action
         if isinstance(self._act_space, Box):
@@ -76,7 +75,9 @@ class DirectForwardActor(Actor):
             act_high = torch.as_tensor(self._act_space.high, dtype=torch.float32) * torch.ones_like(
                 action
             )
-        return torch.clamp(action + self.noise(), act_low, act_high)
+        return torch.clamp(
+            action + torch.normal(0, 0.1 * torch.ones_like(action)), act_low, act_high
+        )
 
     def _distribution(self, obs: torch.Tensor) -> Distribution:
         return Normal(self.net(obs), 1)
