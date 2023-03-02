@@ -16,12 +16,12 @@
 
 
 import torch
+from torch import optim
 from torch.nn import functional as F
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
 from omnisafe.utils import distributed
-from torch import optim
 
 
 @registry.register
@@ -38,14 +38,16 @@ class SAC(DDPG):
     def _init(self) -> None:
         super()._init()
         if self._cfgs.auto_alpha:
-            self._target_entropy = -torch.prod(torch.Tensor(self._env.action_space.shape).to(self._device)).item()
+            self._target_entropy = -torch.prod(
+                torch.Tensor(self._env.action_space.shape).to(self._device)
+            ).item()
             self._log_alpha = torch.zeros(1, requires_grad=True, device=self._device)
             self._alpha = self._log_alpha.exp().item()
-            self._alpha_optimizer = optim.Adam([self._log_alpha], lr=self._cfgs.model_cfgs.critic.lr)            
-            pass
+            self._alpha_optimizer = optim.Adam(
+                [self._log_alpha], lr=self._cfgs.model_cfgs.critic.lr
+            )
         else:
             self._alpha = self._cfgs.alpha
-    
 
     def _init_log(self) -> None:
         super()._init_log()
@@ -63,10 +65,13 @@ class SAC(DDPG):
         with torch.no_grad():
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=False)
             next_action_log_prob = self._target_actor_critic.actor.log_prob(next_action)
-            next_q_value = torch.min(
-                self._target_actor_critic.reward_critic(next_obs, next_action)[0],
-                self._target_actor_critic.reward_critic(next_obs, next_action)[1],
-            ) - self._alpha * next_action_log_prob
+            next_q_value = (
+                torch.min(
+                    self._target_actor_critic.reward_critic(next_obs, next_action)[0],
+                    self._target_actor_critic.reward_critic(next_obs, next_action)[1],
+                )
+                - self._alpha * next_action_log_prob
+            )
             target_q_value = reward + self._cfgs.gamma * (1 - done) * next_q_value
         q_values = self._actor_critic.reward_critic(obs, act)
         loss_critic1 = F.mse_loss(q_values[0], target_q_value)
@@ -120,7 +125,7 @@ class SAC(DDPG):
         action = self._actor_critic.actor.predict(obs, deterministic=True)
         loss_q1 = self._actor_critic.reward_critic(obs, action)[0].mean()
         loss_q2 = self._actor_critic.reward_critic(obs, action)[1].mean()
-        loss = self._alpha-torch.min(loss_q1, loss_q2)
+        loss = self._alpha - torch.min(loss_q1, loss_q2)
         return loss
 
     def _log_zero(self) -> None:
