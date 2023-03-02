@@ -84,11 +84,9 @@ class AlgoWrapper:
             cfgs.recurisve_update(self.custom_cfgs)
 
         # check_all_configs(cfgs, self.algo_type)
-
-        torch.set_num_threads(cfgs.num_threads)
-
+        torch.set_num_threads(cfgs.train_cfgs.torch_threads)
         if distributed.fork(
-            self.parallel, use_number_of_threads=use_number_of_threads, device=cfgs.device
+            self.parallel, use_number_of_threads=use_number_of_threads, device=cfgs.train_cfgs.device
         ):
             # Re-launches the current script with workers linked by MPI
             sys.exit()

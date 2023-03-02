@@ -47,7 +47,6 @@ if __name__ == '__main__':
     keys = [k[2:] for k in unparsed_args[0::2]]
     values = list(unparsed_args[1::2])
     unparsed_dict = dict(zip(keys, values))
-    # env = omnisafe.Env(args.env_id)
     agent = omnisafe.Agent(
         args.algo,
         args.env_id,
