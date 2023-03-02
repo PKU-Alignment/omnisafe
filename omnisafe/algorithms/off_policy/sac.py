@@ -22,6 +22,7 @@ from torch.nn import functional as F
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
 from omnisafe.utils import distributed
+from omnisafe.utils.config import Config
 
 
 @registry.register
@@ -35,7 +36,7 @@ class SAC(DDPG):
         - URL: `SAC <https://arxiv.org/abs/1801.01290>`_
     """
 
-    def __init__(self, env_id: str, cfgs: dict) -> None:
+    def __init__(self, env_id: str, cfgs: Config) -> None:
         super().__init__(env_id, cfgs)
         if self._cfgs.auto_alpha:
             self._target_entropy = -torch.prod(
