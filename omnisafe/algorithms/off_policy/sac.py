@@ -16,8 +16,7 @@
 
 
 import torch
-from torch import optim
-from torch.nn import functional as F
+from torch import nn, optim
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
@@ -38,46 +37,52 @@ class SAC(DDPG):
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
         super().__init__(env_id, cfgs)
+        self._log_alpha: torch.Tensor
+        self._alpha_optimizer: optim.Optimizer
+        self._target_entropy: float
+
+    def _init(self) -> None:
+        super()._init()
         if self._cfgs.auto_alpha:
-            self._target_entropy = -torch.prod(
-                torch.Tensor(self._env.action_space.shape).to(self._device)
-            ).item()
+            self._target_entropy = -torch.prod(torch.Tensor(self._env.action_space.shape)).item()
             self._log_alpha = torch.zeros(1, requires_grad=True, device=self._device)
-            self._alpha = self._log_alpha.exp().item()
             self._alpha_optimizer = optim.Adam(
                 [self._log_alpha], lr=self._cfgs.model_cfgs.critic.lr
             )
         else:
-            self._alpha = self._cfgs.alpha
+            self._log_alpha = torch.log(torch.tensor(self._cfgs.alpha, device=self._device))
 
     def _init_log(self) -> None:
         super()._init_log()
-        self._logger.register_key('Value/reward_critic_2')
         self._logger.register_key('Value/alpha')
+        self._logger.register_key('Loss/alpha_loss')
+
+    @property
+    def _alpha(self) -> float:
+        return self._log_alpha.exp().item()
 
     def _update_rewrad_critic(
         self,
         obs: torch.Tensor,
-        act: torch.Tensor,
+        action: torch.Tensor,
         reward: torch.Tensor,
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
         with torch.no_grad():
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=False)
-            next_action_log_prob = self._target_actor_critic.actor.log_prob(next_action)
-            next_q_value = (
-                torch.min(
-                    self._target_actor_critic.reward_critic(next_obs, next_action)[0],
-                    self._target_actor_critic.reward_critic(next_obs, next_action)[1],
-                )
-                - self._alpha * next_action_log_prob
+            next_logp = self._target_actor_critic.actor.log_prob(next_action)
+            next_q1_value_r, next_q2_value_r = self._target_actor_critic.reward_critic(
+                next_obs, next_action
             )
-            target_q_value = reward + self._cfgs.gamma * (1 - done) * next_q_value
-        q_values = self._actor_critic.reward_critic(obs, act)
-        loss_critic1 = F.mse_loss(q_values[0], target_q_value)
-        loss_critic2 = F.mse_loss(q_values[1], target_q_value)
-        loss = loss_critic1 + loss_critic2
+            next_q_value_r = torch.min(next_q1_value_r, next_q2_value_r) - next_logp * self._alpha
+            target_q_value_r = reward + self._cfgs.gamma * (1 - done) * next_q_value_r
+
+        q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
+        loss = nn.functional.mse_loss(q1_value_r, target_q_value_r) + nn.functional.mse_loss(
+            q2_value_r, target_q_value_r
+        )
+
         if self._cfgs.use_critic_norm:
             for param in self._actor_critic.reward_critic.parameters():
                 loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
@@ -94,25 +99,25 @@ class SAC(DDPG):
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/reward_critic_1': q_values[0].mean().item(),
-                'Value/reward_critic_2': q_values[1].mean().item(),
+                'Value/reward_critic': q1_value_r.mean().item(),
             }
         )
 
-    def _update_actor(  # pylint: disable=too-many-arguments
+    def _update_actor(
         self,
         obs: torch.Tensor,
     ) -> None:
         super()._update_actor(obs)
+
         if self._cfgs.auto_alpha:
             with torch.no_grad():
-                log_prob = self._actor_critic.actor.log_prob(self._actor_critic.actor.predict(obs))
-            alpha_loss = (-self._log_alpha * (log_prob + self._target_entropy)).mean()
+                action = self._actor_critic.actor.predict(obs, deterministic=False)
+                log_prob = self._actor_critic.actor.log_prob(action)
+            alpha_loss = -self._log_alpha * (log_prob + self._target_entropy).mean()
 
             self._alpha_optimizer.zero_grad()
             alpha_loss.backward()
             self._alpha_optimizer.step()
-            self._alpha = self._log_alpha.exp().item()
         self._logger.store(
             **{
                 'Value/alpha': self._alpha,
@@ -125,16 +130,14 @@ class SAC(DDPG):
     ) -> torch.Tensor:
         action = self._actor_critic.actor.predict(obs, deterministic=False)
         log_prob = self._actor_critic.actor.log_prob(action)
-        loss_q_1 = self._actor_critic.reward_critic(obs, action)[0].mean()
-        loss_q_2 = self._actor_critic.reward_critic(obs, action)[1].mean()
-        loss = (self._alpha * log_prob - torch.min(loss_q_1, loss_q_2)).mean()
+        q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
+        loss = (self._alpha * log_prob - torch.min(q1_value_r, q2_value_r)).mean()
         return loss
 
-    def _log_zero(self) -> None:
-        super()._log_zero()
+    def _log_when_not_update(self) -> None:
+        super()._log_when_not_update()
         self._logger.store(
             **{
-                'Value/reward_critic_2': 0.0,
                 'Value/alpha': self._alpha,
             }
         )

@@ -126,23 +126,3 @@ def set_optimizer(
     if isinstance(module, nn.Module):
         return optimizer(module.parameters(), lr=learning_rate)
     raise TypeError(f'Invalid module type: {type(module)}')
-
-
-class OUActionNoise:
-    """Action noise process."""
-
-    def __init__(self, action_dim, mean=0.0, theta=0.15, sigma=0.2):
-        self.action_dim = action_dim
-        self.mean = mean
-        self.theta = theta
-        self.sigma = sigma
-        self.x_prev = torch.zeros(self.action_dim)
-
-    def __call__(self):
-        x = (
-            self.x_prev
-            + self.theta * (self.mean - self.x_prev)
-            + self.sigma * torch.randn(self.action_dim)
-        )
-        self.x_prev = x
-        return x

@@ -14,6 +14,7 @@
 # ==============================================================================
 """OnPolicy Adapter for OmniSafe."""
 
+from functools import partial
 from typing import Dict, Optional
 
 import torch
@@ -42,11 +43,10 @@ class OffPolicyAdapter(OnlineAdapter):
 
     def roll_out(  # pylint: disable=too-many-locals
         self,
-        steps_per_sample: int,
+        roll_out_step: int,
         agent: ConstraintActorQCritic,
         buffer: VectorOffPolicyBuffer,
         logger: Logger,
-        epoch_end: bool,
         use_rand_action: bool,
     ) -> None:
         """Roll out the environment and store the data in the buffer.
@@ -57,36 +57,35 @@ class OffPolicyAdapter(OnlineAdapter):
             buf (VectorOnPolicyBuffer): Buffer.
             logger (Logger): Logger.
         """
-        for step in range(steps_per_sample):
-            obs = self._current_obs
-            if use_rand_action:
-                if isinstance(self._env.action_space, spaces.Box):
-                    act = torch.rand(size=(self._env.num_envs, self._env.action_space.shape[0]))
-            else:
-                act = agent.step(obs, deterministic=False)
+        if use_rand_action:
+            if isinstance(self._env.action_space, spaces.Box):
+                act_fn = partial(
+                    torch.rand, size=(self._env.num_envs, *self._env.action_space.shape)
+                )
+        else:
+            act_fn = partial(agent.step, self._current_obs, deterministic=False)
 
+        for _ in range(roll_out_step):
+            act = act_fn()
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
+            dones = torch.logical_or(terminated, truncated)
+
             self._log_value(reward=reward, cost=cost, info=info)
+
             buffer.store(
-                obs=obs,
+                obs=self._current_obs,
                 act=act,
                 reward=reward,
                 cost=cost,
-                done=torch.logical_or(terminated, truncated),
+                done=dones,
                 next_obs=next_obs,
             )
 
             self._current_obs = next_obs
-            dones = torch.logical_or(terminated, truncated)
-            epoch_end = epoch_end and step == steps_per_sample - 1
             for idx, done in enumerate(dones):
-                if epoch_end or done:
+                if done:
                     self._log_metrics(logger, idx)
                     self._reset_log(idx)
-                    self._current_obs, _ = self.reset()
-                    self._ep_ret[idx] = 0.0
-                    self._ep_cost[idx] = 0.0
-                    self._ep_len[idx] = 0.0
 
     def _log_value(
         self,
@@ -94,7 +93,7 @@ class OffPolicyAdapter(OnlineAdapter):
         cost: torch.Tensor,
         info: Dict,
         **kwargs,  # pylint: disable=unused-argument
-    ) -> None:  # pylint: disable=unused-argument
+    ) -> None:
         """Log value."""
         self._ep_ret += info.get('original_reward', reward)
         self._ep_cost += info.get('original_cost', cost)

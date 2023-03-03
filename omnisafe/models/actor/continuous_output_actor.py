@@ -17,15 +17,15 @@
 from typing import List
 
 import torch
-from torch.distributions import Distribution, Normal
+from torch.distributions import Distribution
 
 from omnisafe.models.base import Actor
-from omnisafe.typing import Activation, Box, InitFunction, OmnisafeSpace
+from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
 from omnisafe.utils.model import build_mlp_network
 
 
 # pylint: disable-next=too-many-instance-attributes
-class ContinuousOutputActor(Actor):
+class MLPActor(Actor):
     """Implementation of ContinuousOutputActor."""
 
     def __init__(
@@ -74,17 +74,10 @@ class ContinuousOutputActor(Actor):
         action = torch.tanh(self.net(obs))
         if deterministic:
             return action
-        if isinstance(self._act_space, Box):
-            act_low = torch.as_tensor(self._act_space.low, dtype=torch.float32) * torch.ones_like(
-                action
-            )
-            act_high = torch.as_tensor(self._act_space.high, dtype=torch.float32) * torch.ones_like(
-                action
-            )
-            action_noise = torch.normal(0, self._noise * torch.ones_like(action))
-            cliped_action_noise = torch.clamp(action_noise, -self._noise_clip, self._noise_clip)
-            return torch.clamp(action + cliped_action_noise, act_low, act_high)
-        raise NotImplementedError
+
+        noise = torch.normal(0, self._noise * torch.ones_like(action))
+        noise = torch.clamp(noise, -self._noise_clip, self._noise_clip)
+        return torch.clamp(action + noise, -1, 1)
 
     @property
     def noise(self) -> float:
@@ -93,6 +86,7 @@ class ContinuousOutputActor(Actor):
 
     @noise.setter
     def noise(self, noise: float) -> None:
+        assert noise >= 0, 'Noise should be non-negative.'
         self._noise = noise
 
     @property
@@ -102,15 +96,14 @@ class ContinuousOutputActor(Actor):
 
     @noise_clip.setter
     def noise_clip(self, noise_clip: float) -> None:
+        assert noise_clip >= 0, 'Noise clip should be non-negative.'
         self._noise_clip = noise_clip
 
     def _distribution(self, obs: torch.Tensor) -> Distribution:
-        return Normal(self.net(obs), 1)
+        raise NotImplementedError
 
     def forward(self, obs: torch.Tensor) -> Distribution:
-        action = self.net(obs)
-        self._after_inference = True
-        return action
+        raise NotImplementedError
 
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
-        return torch.zeros(act.shape[0], 1, device=act.device)
+        raise NotImplementedError

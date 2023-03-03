@@ -14,12 +14,14 @@
 # ==============================================================================
 """Implementation of the Twin Delayed DDPG algorithm."""
 
+from copy import deepcopy
 
 import torch
-from torch.nn import functional as F
+from torch import nn
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
+from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils import distributed
 
 
@@ -34,14 +36,23 @@ class TD3(DDPG):
         - URL: `TD3 <https://arxiv.org/abs/1802.09477>`_
     """
 
-    def _init_log(self) -> None:
-        super()._init_log()
-        self._logger.register_key('Value/reward_critic_2')
+    def _init_model(self) -> None:
+        self._cfgs.model_cfgs.critic['num_critic'] = 2
+        self._actor_critic = ConstraintActorQCritic(
+            obs_space=self._env.observation_space,
+            act_space=self._env.action_space,
+            model_cfgs=self._cfgs.model_cfgs,
+            epochs=self._epochs,
+        ).to(self._device)
+
+        if distributed.world_size() > 1:
+            distributed.sync_params(self._actor_critic)
+        self._target_actor_critic = deepcopy(self._actor_critic)
 
     def _update_rewrad_critic(
         self,
         obs: torch.Tensor,
-        act: torch.Tensor,
+        action: torch.Tensor,
         reward: torch.Tensor,
         done: torch.Tensor,
         next_obs: torch.Tensor,
@@ -62,17 +73,18 @@ class TD3(DDPG):
         with torch.no_grad():
             # Set the update noise and noise clip.
             self._actor_critic.actor.noise = self._cfgs.policy_noise
-            self._actor_critic.actor.noise_clip = self._cfgs.policy_noise_clip
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=False)
-            next_q_value_r = torch.min(
-                self._target_actor_critic.reward_critic(next_obs, next_action)[0],
-                self._target_actor_critic.reward_critic(next_obs, next_action)[1],
+            next_q1_value_r, next_q2_value_r = self._target_actor_critic.reward_critic(
+                next_obs, next_action
             )
+            next_q_value_r = torch.min(next_q1_value_r, next_q2_value_r)
             target_q_value_r = reward + self._cfgs.gamma * (1 - done) * next_q_value_r
-        q_value_r_list = self._actor_critic.reward_critic(obs, act)
-        loss_critic1 = F.mse_loss(q_value_r_list[0], target_q_value_r)
-        loss_critic2 = F.mse_loss(q_value_r_list[1], target_q_value_r)
-        loss = loss_critic1 + loss_critic2
+
+        q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
+        loss = nn.functional.mse_loss(q1_value_r, target_q_value_r) + nn.functional.mse_loss(
+            q2_value_r, target_q_value_r
+        )
+
         if self._cfgs.use_critic_norm:
             for param in self._actor_critic.reward_critic.parameters():
                 loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
@@ -89,15 +101,6 @@ class TD3(DDPG):
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/reward_critic_1': q_value_r_list[0].mean().item(),
-                'Value/reward_critic_2': q_value_r_list[1].mean().item(),
-            }
-        )
-
-    def _log_zero(self) -> None:
-        super()._log_zero()
-        self._logger.store(
-            **{
-                'Value/reward_critic_2': 0.0,
+                'Value/reward_critic': q1_value_r.mean().item(),
             }
         )
