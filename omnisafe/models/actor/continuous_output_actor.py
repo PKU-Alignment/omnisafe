@@ -54,8 +54,8 @@ class ContinuousOutputActor(Actor):
             output_activation=output_activation,
             weight_initialization_mode=weight_initialization_mode,
         )
-        self._noise=0.2
-        self._noise_clip=0.5
+        self._noise = 0.2
+        self._noise_clip = 0.5
 
     def predict(
         self,
@@ -86,20 +86,22 @@ class ContinuousOutputActor(Actor):
             return torch.clamp(action + cliped_action_noise, act_low, act_high)
         raise NotImplementedError
 
-    def set_noise(self, noise: float) -> None:
-        """Set the amount of noise to add to the output action.
+    @property
+    def noise(self) -> float:
+        """Get the action noise."""
+        return self._noise
 
-        Args:
-            noise (float): The amount of noise to add.
-        """
+    @noise.setter
+    def noise(self, noise: float) -> None:
         self._noise = noise
 
-    def set_noise_clip(self, noise_clip: float) -> None:
-        """Set the absolute value at which to clip the noisy action.
+    @property
+    def noise_clip(self) -> float:
+        """Get the action noise bound."""
+        return self._noise_clip
 
-        Args:
-            noise_clip (float): The absolute value at which to clip the noisy action.
-        """
+    @noise_clip.setter
+    def noise_clip(self, noise_clip: float) -> None:
         self._noise_clip = noise_clip
 
     def _distribution(self, obs: torch.Tensor) -> Distribution:

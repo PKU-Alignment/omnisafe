@@ -141,8 +141,8 @@ class DDPG(BaseAlgo):
             for i in range(samples_per_epoch):
                 roll_out_start = time.time()
                 if self._cfgs.use_exploration_noise:
-                    if hasattr(self._actor_critic.actor, 'set_noise'):
-                        self._actor_critic.actor.set_noise(noise=self._cfgs.exploration_noise)
+                    if hasattr(self._actor_critic.actor, 'noise'):
+                        self._actor_critic.actor.noise = self._cfgs.exploration_noise
                 self._env.roll_out(
                     steps_per_sample=self._steps_per_sample,
                     agent=self._actor_critic,

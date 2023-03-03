@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrangain version of Twin Delayed DDPG algorithm."""
+"""Implementation of the Lagrangian version of Twin Delayed DDPG algorithm."""
 
 
 import torch
@@ -23,17 +23,18 @@ from omnisafe.algorithms.off_policy.td3 import TD3
 from omnisafe.common.lagrange import Lagrange
 from omnisafe.utils import distributed
 
+
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
 class TD3Lag(TD3):
-    """The Lagrangain version of Twin Delayed DDPG (TD3) algorithm.
+    """The Lagrangian version of Twin Delayed DDPG (TD3) algorithm.
 
     References:
         - Title: Addressing Function Approximation Error in Actor-Critic Methods
         - Authors: Scott Fujimoto, Herke van Hoof, David Meger.
         - URL: `TD3 <https://arxiv.org/abs/1802.09477>`_
     """
-    
+
     def _init(self) -> None:
         super()._init()
         self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
@@ -48,8 +49,11 @@ class TD3Lag(TD3):
     ) -> torch.Tensor:
         action = self._actor_critic.actor.predict(obs, deterministic=True)
         loss_r = -self._actor_critic.reward_critic(obs, action)[0].mean()
-        loss_c = self._lagrange.lagrangian_multiplier * self._actor_critic.cost_critic(obs, action)[0].mean()
-        return loss_r+loss_c
+        loss_c = (
+            self._lagrange.lagrangian_multiplier
+            * self._actor_critic.cost_critic(obs, action)[0].mean()
+        )
+        return loss_r + loss_c
 
     def _update_cost_critic(
         self,
@@ -62,7 +66,7 @@ class TD3Lag(TD3):
         with torch.no_grad():
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
             next_q_value_c = self._target_actor_critic.cost_critic(next_obs, next_action)[0]
-            target_q_value_c = cost + self._cfgs.gamma*(1 - done) * next_q_value_c
+            target_q_value_c = cost + self._cfgs.gamma * (1 - done) * next_q_value_c
         q_value_c = self._actor_critic.cost_critic(obs, act)[0]
         loss = F.mse_loss(q_value_c, target_q_value_c)
 

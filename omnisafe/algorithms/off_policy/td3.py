@@ -61,8 +61,8 @@ class TD3(DDPG):
         """
         with torch.no_grad():
             # Set the update noise and noise clip.
-            self._target_actor_critic.actor.set_noise(self._cfgs.policy_noise)
-            self._target_actor_critic.actor.set_noise_clip(self._cfgs.policy_noise_clip)
+            self._actor_critic.actor.noise = self._cfgs.policy_noise
+            self._actor_critic.actor.noise_clip = self._cfgs.policy_noise_clip
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=False)
             next_q_value_r = torch.min(
                 self._target_actor_critic.reward_critic(next_obs, next_action)[0],
