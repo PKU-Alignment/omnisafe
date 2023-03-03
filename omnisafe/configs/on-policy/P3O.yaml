@@ -23,7 +23,7 @@ defaults:
   # If use tensorboard
   use_tensorboard: True
   # if use wandb
-  use_wandb: True
+  use_wandb: False
   # The torch device
   device: cpu
   # The torch device id
@@ -66,11 +66,11 @@ defaults:
   # The number of parallel environments
   num_envs: 32
   # Whether to use standardized reward
-  reward_normalize: True
+  reward_normalize: False
   # Whether to use standardized cost
-  cost_normalize: True
+  cost_normalize: False
   # Whether to use standardized obs
-  obs_normalize: True
+  obs_normalize: False
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##

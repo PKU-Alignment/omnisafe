@@ -17,7 +17,7 @@
 import difflib
 from typing import List
 
-from omnisafe.models.actor.direct_forward_actor import DirectForwardActor
+from omnisafe.models.actor.continuous_output_actor import ContinuousOutputActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
 from omnisafe.models.base import Actor
@@ -62,8 +62,8 @@ class ActorBuilder:
                 activation=self._activation,
                 weight_initialization_mode=self._weight_initialization_mode,
             )
-        if actor_type == 'direct_forward':
-            return DirectForwardActor(
+        if actor_type == 'continuous_output':
+            return ContinuousOutputActor(
                 self._obs_space,
                 self._act_space,
                 self._hidden_sizes,
@@ -73,5 +73,6 @@ class ActorBuilder:
 
         raise NotImplementedError(
             f'Actor type {actor_type} is not implemented! '
-            f'Did you mean {difflib.get_close_matches(actor_type, ["gaussian_learning", "gaussian_sac"])[0]}?'
+            f'Did you mean'
+            f'{difflib.get_close_matches(actor_type, ["gaussian_learning", "gaussian_sac","continuous_output"])[0]}?'
         )

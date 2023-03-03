@@ -111,12 +111,12 @@ class DDPG(BaseAlgo):
 
         # log information about critic
         self._logger.register_key('Loss/Loss_reward_critic', delta=True)
-        self._logger.register_key('Value/reward_critic1')
+        self._logger.register_key('Value/reward_critic_1')
 
         if self._cfgs.use_cost:
             # log information about cost critic
             self._logger.register_key('Loss/Loss_cost_critic', delta=True)
-            self._logger.register_key('Value/cost')
+            self._logger.register_key('Value/cost_critic')
         self._logger.register_key('Time/Total')
         self._logger.register_key('Time/Rollout')
         self._logger.register_key('Time/Update')
@@ -140,8 +140,9 @@ class DDPG(BaseAlgo):
             # Collect data from environment
             for i in range(samples_per_epoch):
                 roll_out_start = time.time()
-                if self._cfgs.exploration_noise:
-                    self._actor_critic.actor.std = self._cfgs.exploration_noise
+                if self._cfgs.use_exploration_noise:
+                    if hasattr(self._actor_critic.actor, 'set_noise'):
+                        self._actor_critic.actor.set_noise(noise=self._cfgs.exploration_noise)
                 self._env.roll_out(
                     steps_per_sample=self._steps_per_sample,
                     agent=self._actor_critic,
@@ -233,7 +234,7 @@ class DDPG(BaseAlgo):
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/reward_critic1': q_value_r.mean().item(),
+                'Value/reward_critic_1': q_value_r.mean().item(),
             }
         )
         self._actor_critic.reward_critic_optimizer.zero_grad()
@@ -322,7 +323,7 @@ class DDPG(BaseAlgo):
             **{
                 'Loss/Loss_reward_critic': 0.0,
                 'Loss/Loss_pi': 0.0,
-                'Value/reward_critic1': 0.0,
+                'Value/reward_critic_1': 0.0,
             }
         )
         if self._cfgs.use_cost:

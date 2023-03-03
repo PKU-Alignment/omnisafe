@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Policy Gradient algorithm."""
+"""Implementation of the Soft Actor-Critic algorithm."""
 
 
 import torch
@@ -52,7 +52,7 @@ class SAC(DDPG):
 
     def _init_log(self) -> None:
         super()._init_log()
-        self._logger.register_key('Value/reward_critic2')
+        self._logger.register_key('Value/reward_critic_2')
         self._logger.register_key('Value/alpha')
 
     def _update_rewrad_critic(
@@ -94,8 +94,8 @@ class SAC(DDPG):
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/reward_critic1': q_values[0].mean().item(),
-                'Value/reward_critic2': q_values[1].mean().item(),
+                'Value/reward_critic_1': q_values[0].mean().item(),
+                'Value/reward_critic_2': q_values[1].mean().item(),
             }
         )
 
@@ -113,11 +113,11 @@ class SAC(DDPG):
             alpha_loss.backward()
             self._alpha_optimizer.step()
             self._alpha = self._log_alpha.exp().item()
-            self._logger.store(
-                **{
-                    'Value/alpha': self._alpha,
-                }
-            )
+        self._logger.store(
+            **{
+                'Value/alpha': self._alpha,
+            }
+        )
 
     def _loss_pi(
         self,
@@ -125,16 +125,16 @@ class SAC(DDPG):
     ) -> torch.Tensor:
         action = self._actor_critic.actor.predict(obs, deterministic=False)
         log_prob = self._actor_critic.actor.log_prob(action)
-        loss_q1 = self._actor_critic.reward_critic(obs, action)[0].mean()
-        loss_q2 = self._actor_critic.reward_critic(obs, action)[1].mean()
-        loss = (self._alpha * log_prob - torch.min(loss_q1, loss_q2)).mean()
+        loss_q_1 = self._actor_critic.reward_critic(obs, action)[0].mean()
+        loss_q_2 = self._actor_critic.reward_critic(obs, action)[1].mean()
+        loss = (self._alpha * log_prob - torch.min(loss_q_1, loss_q_2)).mean()
         return loss
 
     def _log_zero(self) -> None:
         super()._log_zero()
         self._logger.store(
             **{
-                'Value/reward_critic2': 0.0,
+                'Value/reward_critic_2': 0.0,
                 'Value/alpha': self._alpha,
             }
         )

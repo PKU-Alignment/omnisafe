@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of GaussianStdNetActor."""
+"""Implementation of ContinuousOutputActorActor."""
 
 from typing import List
 
@@ -25,8 +25,8 @@ from omnisafe.utils.model import build_mlp_network
 
 
 # pylint: disable-next=too-many-instance-attributes
-class DirectForwardActor(Actor):
-    """Implementation of DirectForwardActor."""
+class ContinuousOutputActor(Actor):
+    """Implementation of ContinuousOutputActor."""
 
     def __init__(
         self,
@@ -37,7 +37,7 @@ class DirectForwardActor(Actor):
         output_activation: Activation = 'identity',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize DirectForwardActor.
+        """Initialize ContinuousOutputActor.
 
         Args:
             obs_space (OmnisafeSpace): Observation space.
@@ -54,13 +54,13 @@ class DirectForwardActor(Actor):
             output_activation=output_activation,
             weight_initialization_mode=weight_initialization_mode,
         )
+        self._noise=0.2
+        self._noise_clip=0.5
 
     def predict(
         self,
         obs: torch.Tensor,
         deterministic: bool = True,
-        noise: float = 0.2,
-        noise_clip: float = 0.5,
     ) -> torch.Tensor:
         """Predict the action given the observation.
 
@@ -81,10 +81,26 @@ class DirectForwardActor(Actor):
             act_high = torch.as_tensor(self._act_space.high, dtype=torch.float32) * torch.ones_like(
                 action
             )
-            action_noise = torch.normal(0, noise * torch.ones_like(action))
-            cliped_action_noise = torch.clamp(action_noise, -noise_clip, noise_clip)
+            action_noise = torch.normal(0, self._noise * torch.ones_like(action))
+            cliped_action_noise = torch.clamp(action_noise, -self._noise_clip, self._noise_clip)
             return torch.clamp(action + cliped_action_noise, act_low, act_high)
         raise NotImplementedError
+
+    def set_noise(self, noise: float) -> None:
+        """Set the amount of noise to add to the output action.
+
+        Args:
+            noise (float): The amount of noise to add.
+        """
+        self._noise = noise
+
+    def set_noise_clip(self, noise_clip: float) -> None:
+        """Set the absolute value at which to clip the noisy action.
+
+        Args:
+            noise_clip (float): The absolute value at which to clip the noisy action.
+        """
+        self._noise_clip = noise_clip
 
     def _distribution(self, obs: torch.Tensor) -> Distribution:
         return Normal(self.net(obs), 1)

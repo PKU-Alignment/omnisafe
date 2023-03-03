@@ -70,10 +70,14 @@ defaults:
   num_test_episodes: 10
   # The delay step of policy update
   policy_delay: 2
+  # Whether to use the exploration noise
+  use_exploration_noise: True
   # The exploration noise
   exploration_noise: 0.1
   # The policy noise
   policy_noise: 0.2
+  # policy_noise_clip
+  policy_noise_clip: 0.5
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
@@ -108,7 +112,7 @@ defaults:
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
     # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-    actor_type: gaussian_learning
+    actor_type: continuous_output
     # Whether to use linear decay of learning rate
     linear_lr_decay: True
     # Configuration of Actor network

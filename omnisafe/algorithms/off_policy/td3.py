@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Policy Gradient algorithm."""
+"""Implementation of the Twin Delayed DDPG algorithm."""
 
 
 import torch
@@ -36,7 +36,7 @@ class TD3(DDPG):
 
     def _init_log(self) -> None:
         super()._init_log()
-        self._logger.register_key('Value/reward_critic2')
+        self._logger.register_key('Value/reward_critic_2')
 
     def _update_rewrad_critic(
         self,
@@ -46,8 +46,23 @@ class TD3(DDPG):
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
+        """
+        Update reward critic using TD3 algorithm.
+
+        Args:
+            obs (torch.Tensor): current observation
+            act (torch.Tensor): current action
+            reward (torch.Tensor): current reward
+            done (torch.Tensor): current done signal
+            next_obs (torch.Tensor): next observation
+
+        Returns:
+            None
+        """
         with torch.no_grad():
-            self._target_actor_critic.actor.std = self._cfgs.policy_noise
+            # Set the update noise and noise clip.
+            self._target_actor_critic.actor.set_noise(self._cfgs.policy_noise)
+            self._target_actor_critic.actor.set_noise_clip(self._cfgs.policy_noise_clip)
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=False)
             next_q_value_r = torch.min(
                 self._target_actor_critic.reward_critic(next_obs, next_action)[0],
@@ -74,8 +89,8 @@ class TD3(DDPG):
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/reward_critic1': q_value_r_list[0].mean().item(),
-                'Value/reward_critic2': q_value_r_list[1].mean().item(),
+                'Value/reward_critic_1': q_value_r_list[0].mean().item(),
+                'Value/reward_critic_2': q_value_r_list[1].mean().item(),
             }
         )
 
@@ -83,6 +98,6 @@ class TD3(DDPG):
         super()._log_zero()
         self._logger.store(
             **{
-                'Value/reward_critic2': 0.0,
+                'Value/reward_critic_2': 0.0,
             }
         )

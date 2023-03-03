@@ -52,11 +52,14 @@ def train(
 
 
 if __name__ == '__main__':
-    eg = ExperimentGrid(exp_name='Safety_Gymnasium_Goal')
-    eg.add('algo', ['PPO', 'PPOLag'])
-    eg.add('env_id', ['SafetyPointGoal1-v0'])
-    eg.add('epochs', 1)
-    eg.add('actor_lr', [0.001, 0.003, 0.004], 'lr', True)
-    eg.add('actor_iters', [1, 2], 'ac_iters', True)
+    eg = ExperimentGrid(exp_name='PPO_TRPO_3_3')
+    eg.add('algo', ['PPO', 'TRPO'])
+    eg.add('use_wandb', [False])
+    eg.add('num_threads', 2)
+    eg.add('num_envs', 16)
+    eg.add(
+        'env_id',
+        ['SafetyPointGoal0-v0', 'SafetyPointGoal1-v0', 'SafetyCarGoal0-v0', 'SafetyCarGoal1-v0'],
+    )
     eg.add('seed', [0, 5, 10])
-    eg.run(train, num_pool=10)
+    eg.run(train, num_pool=8)
