@@ -54,8 +54,8 @@ class ContinuousOutputActor(Actor):
             output_activation=output_activation,
             weight_initialization_mode=weight_initialization_mode,
         )
-        self._noise=0.2
-        self._noise_clip=0.5
+        self._noise = 0.2
+        self._noise_clip = 0.5
 
     def predict(
         self,
