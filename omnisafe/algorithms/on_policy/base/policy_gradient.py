@@ -15,7 +15,7 @@
 """Implementation of the Policy Gradient algorithm."""
 
 import time
-from typing import Any, Dict, Tuple, Union
+from typing import Dict, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -94,11 +94,11 @@ class PolicyGradient(BaseAlgo):
             config=self._cfgs,
         )
 
-        what_to_save: Dict[str, Any] = {}
-        what_to_save['pi'] = self._actor_critic.actor
-        if self._cfgs.obs_normalize:
-            obs_normalizer = self._env.save()['obs_normalizer']
-            what_to_save['obs_normalizer'] = obs_normalizer
+        obs_normalizer = self._env.save()['obs_normalizer']
+        what_to_save = {
+            'pi': self._actor_critic.actor,
+            'obs_normalizer': obs_normalizer,
+        }
 
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()

@@ -23,7 +23,7 @@ defaults:
   # If use tensorboard
   use_tensorboard: True
   # if use wandb
-  use_wandb: False
+  use_wandb: True
   # The torch device
   device: cpu
   # The torch device id
