@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of ConstraintActorQCritic."""
 
-import torch
 from torch import optim
 
 from omnisafe.models.actor_critic.actor_q_critic import ActorQCritic
@@ -76,36 +75,3 @@ class ConstraintActorQCritic(ActorQCritic):
         self.cost_critic_optimizer = optim.Adam(
             self.cost_critic.parameters(), lr=model_cfgs.critic.lr
         )
-
-    def step(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
-        """Choose action based on observation.
-
-        Args:
-            obs (torch.Tensor): Observation.
-            deterministic (bool): Whether to use deterministic policy.
-
-        Returns:
-            action (torch.Tensor): Action.
-            value_r (torch.Tensor): Reward value.
-            value_c (torch.Tensor): Cost value.
-            log_prob (torch.Tensor): Log probability of action.
-        """
-        with torch.no_grad():
-            act = self.actor.predict(obs, deterministic=deterministic)
-
-        return act
-
-    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
-        """Choose action based on observation.
-
-        Args:
-            obs (torch.Tensor): Observation.
-            deterministic (bool): Whether to use deterministic policy.
-
-        Returns:
-            action (torch.Tensor): Action.
-            value_r (torch.Tensor): Reward value.
-            value_c (torch.Tensor): Cost value.
-            log_prob (torch.Tensor): Log probability of action.
-        """
-        return self.step(obs, deterministic=deterministic)

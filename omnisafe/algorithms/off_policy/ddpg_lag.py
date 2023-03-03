@@ -60,7 +60,7 @@ class DDPGLag(DDPG):
     def _update_cost_critic(
         self,
         obs: torch.Tensor,
-        act: torch.Tensor,
+        action: torch.Tensor,
         cost: torch.Tensor,
         done: torch.Tensor,
         next_obs: torch.Tensor,
@@ -70,7 +70,7 @@ class DDPGLag(DDPG):
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
             next_q_value_c = self._target_actor_critic.cost_critic(next_obs, next_action)[0]
             target_q_value_c = cost + self._cfgs.gamma * (1 - done) * next_q_value_c
-        q_value_c = self._actor_critic.cost_critic(obs, act)[0]
+        q_value_c = self._actor_critic.cost_critic(obs, action)[0]
         loss = F.mse_loss(q_value_c, target_q_value_c)
 
         if self._cfgs.use_critic_norm:
@@ -97,8 +97,8 @@ class DDPGLag(DDPG):
             }
         )
 
-    def _log_zero(self) -> None:
-        super()._log_zero()
+    def _log_when_not_update(self) -> None:
+        super()._log_when_not_update()
         self._logger.store(
             **{
                 'Loss/Loss_cost_critic': 0.0,

@@ -19,7 +19,7 @@ from copy import deepcopy
 from typing import Any, Dict, Tuple, Union
 
 import torch
-from torch.nn import functional as F
+from torch import nn
 
 from omnisafe.adapter import OffPolicyAdapter
 from omnisafe.algorithms import registry
@@ -48,6 +48,9 @@ class DDPG(BaseAlgo):
         assert self._cfgs.steps_per_epoch % (distributed.world_size() * self._cfgs.num_envs) == 0, (
             'The number of steps per epoch is not divisible by the number of ' 'environments.'
         )
+        assert self._cfgs.total_steps % self._cfgs.steps_per_epoch == 0, (
+            'The total number of steps is not divisible by the number of steps ' 'per epoch.'
+        )
         self._epochs = int(self._cfgs.total_steps // self._cfgs.steps_per_epoch)
         self._steps_per_epoch = self._cfgs.steps_per_epoch // (
             distributed.world_size() * self._cfgs.num_envs
@@ -56,8 +59,10 @@ class DDPG(BaseAlgo):
         assert self._steps_per_epoch % self._steps_per_sample == 0, (
             'The number of steps per epoch is not divisible by the number of ' 'steps per sample.'
         )
+        self._samples_per_epoch = self._steps_per_epoch // self._steps_per_sample
 
     def _init_model(self) -> None:
+        self._cfgs.model_cfgs.critic['num_critic'] = 1
         self._actor_critic = ConstraintActorQCritic(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
@@ -88,6 +93,7 @@ class DDPG(BaseAlgo):
             use_wandb=self._cfgs.use_wandb,
             config=self._cfgs,
         )
+
         what_to_save: Dict[str, Any] = {}
         what_to_save['pi'] = self._actor_critic.actor
         if self._cfgs.obs_normalize:
@@ -111,12 +117,13 @@ class DDPG(BaseAlgo):
 
         # log information about critic
         self._logger.register_key('Loss/Loss_reward_critic', delta=True)
-        self._logger.register_key('Value/reward_critic_1')
+        self._logger.register_key('Value/reward_critic')
 
         if self._cfgs.use_cost:
             # log information about cost critic
             self._logger.register_key('Loss/Loss_cost_critic', delta=True)
             self._logger.register_key('Value/cost_critic')
+
         self._logger.register_key('Time/Total')
         self._logger.register_key('Time/Rollout')
         self._logger.register_key('Time/Update')
@@ -132,42 +139,47 @@ class DDPG(BaseAlgo):
         """
         self._logger.log('INFO: Start training')
         start_time = time.time()
-        step = 0
-        for epoch in range(1, self._epochs + 1):
+        for epoch in range(self._epochs):
             roll_out_time = 0.0
             epoch_time = time.time()
-            samples_per_epoch = self._steps_per_epoch // self._steps_per_sample
-            # Collect data from environment
-            for i in range(samples_per_epoch):
+
+            for sample_step in range(
+                epoch * self._samples_per_epoch, (epoch + 1) * self._samples_per_epoch
+            ):
+                step = sample_step * self._steps_per_sample * self._cfgs.num_envs
+
                 roll_out_start = time.time()
+                # set noise for exploration
                 if self._cfgs.use_exploration_noise:
-                    if hasattr(self._actor_critic.actor, 'noise'):
-                        self._actor_critic.actor.noise = self._cfgs.exploration_noise
+                    self._actor_critic.actor.noise = self._cfgs.exploration_noise
+
+                # collect data from environment
                 self._env.roll_out(
-                    steps_per_sample=self._steps_per_sample,
+                    roll_out_step=self._steps_per_sample,
                     agent=self._actor_critic,
                     buffer=self._buf,
                     logger=self._logger,
-                    epoch_end=i == samples_per_epoch - 1,
-                    use_rand_action=step <= self._cfgs.random_steps,
+                    use_rand_action=(step <= self._cfgs.random_steps),
                 )
-                roll_out_end = time.time()
-                roll_out_time += roll_out_end - roll_out_start
-                step += self._steps_per_sample * self._cfgs.num_envs
+                roll_out_time += time.time() - roll_out_start
 
                 # Update parameters
+                update_time = 0.0
+                update_start = time.time()
                 if step > self._cfgs.start_learning_steps:
-                    for j in range(self._steps_per_sample):
-                        if j % self._cfgs.update_cycle == 0:
-                            update_counts = i // self._cfgs.update_cycle
-                            # In TD3, we update the actor and critic networks separately
-                            self._update(update_policy=update_counts % self._cfgs.policy_delay == 0)
+                    self._update()
+                    # for update_step in range(self._steps_per_sample):
+                    #     if update_step % self._cfgs.update_cycle == 0:
+                    #         update_counts = i // self._cfgs.update_cycle
+                    #         # In TD3, we update the actor and critic networks separately
+                    #         self._update(update_policy=update_counts % self._cfgs.policy_delay == 0)
                 # If we haven't updated the network, log 0 for the loss
                 else:
-                    self._log_zero()
+                    self._log_when_not_update()
+                update_time += time.time() - update_start
 
+            self._logger.store(**{'Time/Update': update_time})
             self._logger.store(**{'Time/Rollout': roll_out_time})
-            self._logger.store(**{'Time/Update': time.time() - roll_out_time - epoch_time})
 
             if step > self._cfgs.start_learning_steps:
                 self._actor_critic.actor_scheduler.step()
@@ -186,7 +198,7 @@ class DDPG(BaseAlgo):
             self._logger.dump_tabular()
 
             # save model to disk
-            if (step // self._steps_per_epoch + 1) % self._cfgs.save_freq == 0:
+            if (epoch + 1) % self._cfgs.save_freq == 0:
                 self._logger.torch_save()
 
         ep_ret = self._logger.get_stats('Metrics/EpRet')[0]
@@ -196,27 +208,31 @@ class DDPG(BaseAlgo):
 
         return ep_ret, ep_cost, ep_len
 
-    def _update(self, update_policy: bool) -> None:
-        data = self._buf.sample_batch()
-        obs, act, reward, cost, done, next_obs = (
-            data['obs'],
-            data['act'],
-            data['reward'],
-            data['cost'],
-            data['done'],
-            data['next_obs'],
-        )
-        self._update_rewrad_critic(obs, act, reward, done, next_obs)
-        if self._cfgs.use_cost:
-            self._update_cost_critic(obs, act, cost, done, next_obs)
-        if update_policy:
-            self._update_actor(obs)
-        self._polyak_update()
+    def _update(self) -> None:
+        for step in range(self._steps_per_sample // self._cfgs.update_cycle):
+            data = self._buf.sample_batch()
+            obs, act, reward, cost, done, next_obs = (
+                data['obs'],
+                data['act'],
+                data['reward'],
+                data['cost'],
+                data['done'],
+                data['next_obs'],
+            )
+
+            self._update_rewrad_critic(obs, act, reward, done, next_obs)
+            if self._cfgs.use_cost:
+                self._update_cost_critic(obs, act, cost, done, next_obs)
+
+            if step % self._cfgs.policy_delay == 0:
+                self._update_actor(obs)
+
+            self._polyak_update()
 
     def _update_rewrad_critic(
         self,
         obs: torch.Tensor,
-        act: torch.Tensor,
+        action: torch.Tensor,
         reward: torch.Tensor,
         done: torch.Tensor,
         next_obs: torch.Tensor,
@@ -225,8 +241,8 @@ class DDPG(BaseAlgo):
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
             next_q_value_r = self._target_actor_critic.reward_critic(next_obs, next_action)[0]
             target_q_value_r = reward + self._cfgs.gamma * (1 - done) * next_q_value_r
-        q_value_r = self._actor_critic.reward_critic(obs, act)[0]
-        loss = F.mse_loss(q_value_r, target_q_value_r)
+        q_value_r = self._actor_critic.reward_critic(obs, action)[0]
+        loss = nn.functional.mse_loss(q_value_r, target_q_value_r)
 
         if self._cfgs.use_critic_norm:
             for param in self._actor_critic.reward_critic.parameters():
@@ -250,7 +266,7 @@ class DDPG(BaseAlgo):
     def _update_cost_critic(
         self,
         obs: torch.Tensor,
-        act: torch.Tensor,
+        action: torch.Tensor,
         cost: torch.Tensor,
         done: torch.Tensor,
         next_obs: torch.Tensor,
@@ -259,8 +275,8 @@ class DDPG(BaseAlgo):
             next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
             next_q_value_c = self._target_actor_critic.cost_critic(next_obs, next_action)[0]
             target_q_value_c = cost + self._cfgs.gamma * (1 - done) * next_q_value_c
-        q_value_c = self._actor_critic.cost_critic(obs, act)[0]
-        loss = F.mse_loss(q_value_c, target_q_value_c)
+        q_value_c = self._actor_critic.cost_critic(obs, action)[0]
+        loss = nn.functional.mse_loss(q_value_c, target_q_value_c)
 
         if self._cfgs.use_critic_norm:
             for param in self._actor_critic.cost_critic.parameters():
@@ -318,7 +334,7 @@ class DDPG(BaseAlgo):
                 target_param.data * (1.0 - self._cfgs.polyak) + param.data * self._cfgs.polyak
             )
 
-    def _log_zero(self) -> None:
+    def _log_when_not_update(self) -> None:
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': 0.0,

@@ -14,18 +14,14 @@
 # ==============================================================================
 """Implementation of ActorQCritic."""
 
-from typing import List
-
 import torch
 from torch import nn, optim
 from torch.optim.lr_scheduler import ConstantLR, LinearLR, _LRScheduler
 
 from omnisafe.models.actor.actor_builder import ActorBuilder
-from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.critic.critic_builder import CriticBuilder
 from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils.config import ModelConfig
-from omnisafe.utils.schedule import PiecewiseSchedule, Schedule
 
 
 class ActorQCritic(nn.Module):
@@ -99,8 +95,6 @@ class ActorQCritic(nn.Module):
                 self.actor_optimizer, factor=1.0, total_iters=epochs, verbose=True
             )
 
-        self.std_schedule: Schedule
-
     def step(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
         """Choose the action based on the observation. used in rollout without gradient.
 
@@ -126,16 +120,3 @@ class ActorQCritic(nn.Module):
             The action, value_r, and log_prob.
         """
         return self.step(obs, deterministic=deterministic)
-
-    def set_annealing(self, epochs: List[float], std: List[float]) -> None:
-        """Set the annealing mode for the actor.
-
-        Args:
-            annealing: Whether to use annealing mode.
-        """
-        assert isinstance(
-            self.actor, GaussianLearningActor
-        ), 'Only GaussianLearningActor support annealing.'
-        self.std_schedule = PiecewiseSchedule(
-            endpoints=list(zip(epochs, std)), outside_value=std[-1]
-        )
