@@ -17,9 +17,9 @@
 import difflib
 from typing import List
 
-from omnisafe.models.actor.continuous_output_actor import MLPActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
+from omnisafe.models.actor.mlp_actor import MLPActor
 from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 

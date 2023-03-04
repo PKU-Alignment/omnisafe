@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of ActorQCritic."""
 
+from copy import deepcopy
+
 import torch
 from torch import nn, optim
 from torch.optim.lr_scheduler import ConstantLR, LinearLR, _LRScheduler
@@ -73,6 +75,7 @@ class ActorQCritic(nn.Module):
             num_critics=model_cfgs.critic.num_critics,
             use_obs_encoder=False,
         ).build_critic(critic_type='q')
+        self.target_reward_critic = deepcopy(self.reward_critic)
         self.add_module('actor', self.actor)
         self.add_module('reward_critic', self.reward_critic)
 
@@ -120,3 +123,14 @@ class ActorQCritic(nn.Module):
             The action, value_r, and log_prob.
         """
         return self.step(obs, deterministic=deterministic)
+
+    def polyak_update(self, tau: float) -> None:
+        """Update the target network with polyak averaging.
+
+        Args:
+            tau: The polyak averaging factor.
+        """
+        for param, target_param in zip(
+            self.reward_critic.parameters(), self.target_reward_critic.parameters()
+        ):
+            target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)

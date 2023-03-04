@@ -32,7 +32,7 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
         self._cfgs = cfgs
 
         assert hasattr(cfgs, 'seed'), 'Please specify the seed in the config file.'
-        self._seed = cfgs.seed + distributed.get_rank() * 1000
+        self._seed = int(cfgs.seed) + distributed.get_rank() * 1000
         seed_all(self._seed)
 
         assert hasattr(cfgs, 'device'), 'Please specify the device in the config file.'

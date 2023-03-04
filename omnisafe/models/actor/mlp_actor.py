@@ -77,7 +77,7 @@ class MLPActor(Actor):
 
         noise = torch.normal(0, self._noise * torch.ones_like(action))
         noise = torch.clamp(noise, -self._noise_clip, self._noise_clip)
-        return torch.clamp(action + noise, -1, 1)
+        return action + noise
 
     @property
     def noise(self) -> float:

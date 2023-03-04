@@ -70,9 +70,9 @@ class SAC(DDPG):
         next_obs: torch.Tensor,
     ) -> None:
         with torch.no_grad():
-            next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=False)
-            next_logp = self._target_actor_critic.actor.log_prob(next_action)
-            next_q1_value_r, next_q2_value_r = self._target_actor_critic.reward_critic(
+            next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
+            next_logp = self._actor_critic.actor.log_prob(next_action)
+            next_q1_value_r, next_q2_value_r = self._actor_critic.target_reward_critic(
                 next_obs, next_action
             )
             next_q_value_r = torch.min(next_q1_value_r, next_q2_value_r) - next_logp * self._alpha

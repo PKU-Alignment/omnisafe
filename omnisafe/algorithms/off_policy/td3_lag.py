@@ -16,12 +16,10 @@
 
 
 import torch
-from torch.nn import functional as F
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.td3 import TD3
 from omnisafe.common.lagrange import Lagrange
-from omnisafe.utils import distributed
 
 
 @registry.register
@@ -43,6 +41,16 @@ class TD3Lag(TD3):
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
 
+    def _update(self) -> None:
+        super()._update()
+        Jc = self._logger.get_stats('Metrics/EpCost')[0]
+        self._lagrange.update_lagrange_multiplier(Jc)
+        self._logger.store(
+            **{
+                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
+            }
+        )
+
     def _loss_pi(
         self,
         obs: torch.Tensor,
@@ -55,51 +63,10 @@ class TD3Lag(TD3):
         )
         return loss_r + loss_c
 
-    def _update_cost_critic(
-        self,
-        obs: torch.Tensor,
-        action: torch.Tensor,
-        cost: torch.Tensor,
-        done: torch.Tensor,
-        next_obs: torch.Tensor,
-    ) -> None:
-        with torch.no_grad():
-            next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
-            next_q_value_c = self._target_actor_critic.cost_critic(next_obs, next_action)[0]
-            target_q_value_c = cost + self._cfgs.gamma * (1 - done) * next_q_value_c
-        q_value_c = self._actor_critic.cost_critic(obs, action)[0]
-        loss = F.mse_loss(q_value_c, target_q_value_c)
-
-        if self._cfgs.use_critic_norm:
-            for param in self._actor_critic.cost_critic.parameters():
-                loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
-
-        self._actor_critic.cost_critic_optimizer.zero_grad()
-        loss.backward()
-
-        if self._cfgs.use_max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.cost_critic.parameters(), self._cfgs.max_grad_norm
-            )
-        distributed.avg_grads(self._actor_critic.cost_critic)
-        self._actor_critic.cost_critic_optimizer.step()
-
-        self._lagrange.update_lagrange_multiplier(q_value_c.mean().item())
-
-        self._logger.store(
-            **{
-                'Loss/Loss_cost_critic': loss.mean().item(),
-                'Value/cost_critic': q_value_c.mean().item(),
-                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
-            }
-        )
-
     def _log_when_not_update(self) -> None:
         super()._log_when_not_update()
         self._logger.store(
             **{
-                'Loss/Loss_cost_critic': 0.0,
-                'Value/cost_critic': 0.0,
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
             }
         )

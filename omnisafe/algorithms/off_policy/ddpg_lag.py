@@ -16,12 +16,10 @@
 
 
 import torch
-from torch.nn import functional as F
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
 from omnisafe.common.lagrange import Lagrange
-from omnisafe.utils import distributed
 
 
 @registry.register
@@ -57,52 +55,36 @@ class DDPGLag(DDPG):
         )
         return loss_r + loss_c
 
-    def _update_cost_critic(
-        self,
-        obs: torch.Tensor,
-        action: torch.Tensor,
-        cost: torch.Tensor,
-        done: torch.Tensor,
-        next_obs: torch.Tensor,
-    ) -> None:
-        # cost=torch.ones_like(cost)*torch.mean(cost)
-        with torch.no_grad():
-            next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
-            next_q_value_c = self._target_actor_critic.cost_critic(next_obs, next_action)[0]
-            target_q_value_c = cost + self._cfgs.gamma * (1 - done) * next_q_value_c
-        q_value_c = self._actor_critic.cost_critic(obs, action)[0]
-        loss = F.mse_loss(q_value_c, target_q_value_c)
-
-        if self._cfgs.use_critic_norm:
-            for param in self._actor_critic.cost_critic.parameters():
-                loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
-
-        self._actor_critic.cost_critic_optimizer.zero_grad()
-        loss.backward()
-
-        if self._cfgs.use_max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.cost_critic.parameters(), self._cfgs.max_grad_norm
+    def _update(self) -> None:
+        for step in range(self._steps_per_sample // self._cfgs.update_cycle):
+            data = self._buf.sample_batch()
+            obs, act, reward, cost, done, next_obs = (
+                data['obs'],
+                data['act'],
+                data['reward'],
+                data['cost'],
+                data['done'],
+                data['next_obs'],
             )
-        distributed.avg_grads(self._actor_critic.cost_critic)
-        self._actor_critic.cost_critic_optimizer.step()
+            Jc = self._logger.get_stats('Metrics/EpCost')[0]
+            self._lagrange.update_lagrange_multiplier(Jc)
+            self._update_rewrad_critic(obs, act, reward, done, next_obs)
+            if self._cfgs.use_cost:
+                self._update_cost_critic(obs, act, cost, done, next_obs)
 
-        self._lagrange.update_lagrange_multiplier(q_value_c.mean().item())
+            if step % self._cfgs.policy_delay == 0:
+                self._update_actor(obs)
 
-        self._logger.store(
-            **{
-                'Loss/Loss_cost_critic': loss.mean().item(),
-                'Value/cost_critic': q_value_c.mean().item(),
-                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
-            }
-        )
+            self._logger.store(
+                **{
+                    'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
+                }
+            )
 
     def _log_when_not_update(self) -> None:
         super()._log_when_not_update()
         self._logger.store(
             **{
-                'Loss/Loss_cost_critic': 0.0,
-                'Value/cost_critic': 0.0,
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
             }
         )

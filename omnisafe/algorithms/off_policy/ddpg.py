@@ -15,7 +15,6 @@
 """Implementation of the Policy Gradient algorithm."""
 
 import time
-from copy import deepcopy
 from typing import Any, Dict, Tuple, Union
 
 import torch
@@ -72,7 +71,6 @@ class DDPG(BaseAlgo):
 
         if distributed.world_size() > 1:
             distributed.sync_params(self._actor_critic)
-        self._target_actor_critic = deepcopy(self._actor_critic)
 
     def _init(self) -> None:
         self._buf = VectorOffPolicyBuffer(
@@ -227,7 +225,7 @@ class DDPG(BaseAlgo):
             if step % self._cfgs.policy_delay == 0:
                 self._update_actor(obs)
 
-            self._polyak_update()
+            self._actor_critic.polyak_update(self._cfgs.polyak)
 
     def _update_rewrad_critic(
         self,
@@ -238,8 +236,8 @@ class DDPG(BaseAlgo):
         next_obs: torch.Tensor,
     ) -> None:
         with torch.no_grad():
-            next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
-            next_q_value_r = self._target_actor_critic.reward_critic(next_obs, next_action)[0]
+            next_action = self._actor_critic.actor.predict(next_obs, deterministic=True)
+            next_q_value_r = self._actor_critic.target_reward_critic(next_obs, next_action)[0]
             target_q_value_r = reward + self._cfgs.gamma * (1 - done) * next_q_value_r
         q_value_r = self._actor_critic.reward_critic(obs, action)[0]
         loss = nn.functional.mse_loss(q_value_r, target_q_value_r)
@@ -250,7 +248,7 @@ class DDPG(BaseAlgo):
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/reward_critic_1': q_value_r.mean().item(),
+                'Value/reward_critic': q_value_r.mean().item(),
             }
         )
         self._actor_critic.reward_critic_optimizer.zero_grad()
@@ -272,8 +270,8 @@ class DDPG(BaseAlgo):
         next_obs: torch.Tensor,
     ) -> None:
         with torch.no_grad():
-            next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=True)
-            next_q_value_c = self._target_actor_critic.cost_critic(next_obs, next_action)[0]
+            next_action = self._actor_critic.actor.predict(next_obs, deterministic=True)
+            next_q_value_c = self._actor_critic.target_cost_critic(next_obs, next_action)[0]
             target_q_value_c = cost + self._cfgs.gamma * (1 - done) * next_q_value_c
         q_value_c = self._actor_critic.cost_critic(obs, action)[0]
         loss = nn.functional.mse_loss(q_value_c, target_q_value_c)
@@ -294,8 +292,8 @@ class DDPG(BaseAlgo):
 
         self._logger.store(
             **{
-                'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/cost': q_value_c.mean().item(),
+                'Loss/Loss_cost_critic': loss.mean().item(),
+                'Value/cost_critic': q_value_c.mean().item(),
             }
         )
 
@@ -325,27 +323,18 @@ class DDPG(BaseAlgo):
         loss = -self._actor_critic.reward_critic(obs, action)[0].mean()
         return loss
 
-    def _polyak_update(self) -> None:
-        for target_param, param in zip(
-            self._target_actor_critic.parameters(),
-            self._actor_critic.parameters(),
-        ):
-            target_param.data.copy_(
-                target_param.data * (1.0 - self._cfgs.polyak) + param.data * self._cfgs.polyak
-            )
-
     def _log_when_not_update(self) -> None:
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': 0.0,
                 'Loss/Loss_pi': 0.0,
-                'Value/reward_critic_1': 0.0,
+                'Value/reward_critic': 0.0,
             }
         )
         if self._cfgs.use_cost:
             self._logger.store(
                 **{
                     'Loss/Loss_cost_critic': 0.0,
-                    'Value/cost': 0.0,
+                    'Value/cost_critic': 0.0,
                 }
             )

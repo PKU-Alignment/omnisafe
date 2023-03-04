@@ -260,7 +260,8 @@ class ActionScale(Wrapper):
         action = self._old_min_action + (self._old_max_action - self._old_min_action) * (
             action - self._min_action
         ) / (self._max_action - self._min_action)
-        return super().step(action)
+        cliped_action = torch.clamp(action, self._old_min_action, self._old_max_action)
+        return super().step(cliped_action)
 
 
 class Unsqueeze(Wrapper):

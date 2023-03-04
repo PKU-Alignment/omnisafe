@@ -73,8 +73,8 @@ class TD3(DDPG):
         with torch.no_grad():
             # Set the update noise and noise clip.
             self._actor_critic.actor.noise = self._cfgs.policy_noise
-            next_action = self._target_actor_critic.actor.predict(next_obs, deterministic=False)
-            next_q1_value_r, next_q2_value_r = self._target_actor_critic.reward_critic(
+            next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
+            next_q1_value_r, next_q2_value_r = self._actor_critic.target_reward_critic(
                 next_obs, next_action
             )
             next_q_value_r = torch.min(next_q1_value_r, next_q2_value_r)
@@ -102,5 +102,61 @@ class TD3(DDPG):
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
                 'Value/reward_critic': q1_value_r.mean().item(),
+            }
+        )
+
+    def _update_cost_critic(
+        self,
+        obs: torch.Tensor,
+        action: torch.Tensor,
+        cost: torch.Tensor,
+        done: torch.Tensor,
+        next_obs: torch.Tensor,
+    ) -> None:
+        """
+        Update cost critic using TD3 algorithm.
+
+        Args:
+            obs (torch.Tensor): current observation
+            act (torch.Tensor): current action
+            cost (torch.Tensor): current cost
+            done (torch.Tensor): current done signal
+            next_obs (torch.Tensor): next observation
+
+        Returns:
+            None
+        """
+        with torch.no_grad():
+            # Set the update noise and noise clip.
+            self._actor_critic.actor.noise = self._cfgs.policy_noise
+            next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
+            next_q1_value_c, next_q2_value_c = self._actor_critic.target_cost_critic(
+                next_obs, next_action
+            )
+            next_q_value_c = torch.max(next_q1_value_c, next_q2_value_c)
+            target_q_value_c = cost + self._cfgs.gamma * (1 - done) * next_q_value_c
+
+        q1_value_c, q2_value_c = self._actor_critic.cost_critic(obs, action)
+        loss = nn.functional.mse_loss(q1_value_c, target_q_value_c) + nn.functional.mse_loss(
+            q2_value_c, target_q_value_c
+        )
+
+        if self._cfgs.use_critic_norm:
+            for param in self._actor_critic.cost_critic.parameters():
+                loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
+
+        self._actor_critic.cost_critic_optimizer.zero_grad()
+        loss.backward()
+
+        if self._cfgs.use_max_grad_norm:
+            torch.nn.utils.clip_grad_norm_(
+                self._actor_critic.cost_critic.parameters(), self._cfgs.max_grad_norm
+            )
+        distributed.avg_grads(self._actor_critic.cost_critic)
+        self._actor_critic.cost_critic_optimizer.step()
+        self._logger.store(
+            **{
+                'Loss/Loss_cost_critic': loss.mean().item(),
+                'Value/cost_critic': q1_value_c.mean().item(),
             }
         )

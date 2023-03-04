@@ -19,7 +19,7 @@ defaults:
   # The random seed
   seed: 0
   # The number of threads used per experiment
-  num_threads: 1
+  num_threads: 2
   # If use tensorboard
   use_tensorboard: True
   # if use wandb
@@ -112,7 +112,7 @@ defaults:
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
     # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-    actor_type: continuous_output
+    actor_type: mlp
     # Whether to use linear decay of learning rate
     linear_lr_decay: True
     # Configuration of Actor network
