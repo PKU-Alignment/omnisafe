@@ -148,7 +148,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             name: str = f'{exp_name}-{relpath}'
             print('project', project, 'name', name)
             wandb.init(project=project, name=name, dir=self._log_dir, config=config)
-
+        if self._use_wandb and self._maste_proc:
             if config is not None:
                 wandb.config.update(config)
             if models is not None:
