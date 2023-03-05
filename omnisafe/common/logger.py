@@ -144,6 +144,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         if self._use_tensorboard and self._maste_proc:
             self._tensorboard_writer = SummaryWriter(log_dir=os.path.join(self._log_dir, 'tb'))
+
         if self._use_wandb and self._maste_proc:
             project: str = self._config.logger_cfgs.get('wandb_project', 'omnisafe')
             name: str = f'{exp_name}-{relpath}'
