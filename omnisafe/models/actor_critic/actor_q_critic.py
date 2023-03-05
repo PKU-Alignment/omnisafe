@@ -74,7 +74,7 @@ class ActorQCritic(nn.Module):
             weight_initialization_mode=model_cfgs.weight_initialization_mode,
             num_critics=model_cfgs.critic.num_critics,
             use_obs_encoder=False,
-            ).build_critic(critic_type='q')
+        ).build_critic(critic_type='q')
         self.target_reward_critic = deepcopy(self.reward_critic)
         for param in self.target_reward_critic.parameters():
             param.requires_grad = False
@@ -139,7 +139,5 @@ class ActorQCritic(nn.Module):
             self.reward_critic.parameters(), self.target_reward_critic.parameters()
         ):
             target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
-        for param, target_param in zip(
-            self.actor.parameters(), self.target_actor.parameters()
-        ):
+        for param, target_param in zip(self.actor.parameters(), self.target_actor.parameters()):
             target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)

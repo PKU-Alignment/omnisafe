@@ -54,7 +54,7 @@ class SACLag(SAC):
         loss_q_c_2 = self._actor_critic.cost_critic(obs, action)[1].mean()
         loss_c = self._lagrange.lagrangian_multiplier * torch.max(loss_q_c_1, loss_q_c_2)
         return loss_r + loss_c
-    
+
     def _update_epoch(self) -> None:
         super()._update_epoch()
         Jc = self._logger.get_stats('Metrics/EpCost')[0]

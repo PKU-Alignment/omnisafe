@@ -78,10 +78,21 @@ class GaussianSACActor(Actor):
 
         if self._current_raw_action is not None:
             logp = self._current_dist.log_prob(self._current_raw_action).sum(axis=-1)
-            logp -= (2 * (self._log2 - self._current_raw_action - nn.functional.softplus(-2 * self._current_raw_action))).sum(axis=-1)
+            logp -= (
+                2
+                * (
+                    self._log2
+                    - self._current_raw_action
+                    - nn.functional.softplus(-2 * self._current_raw_action)
+                )
+            ).sum(axis=-1)
             self._current_raw_action = None
         else:
-            logp = TanhNormal(self._current_dist.mean, self._current_dist.stddev).log_prob(act).sum(axis=-1)
+            logp = (
+                TanhNormal(self._current_dist.mean, self._current_dist.stddev)
+                .log_prob(act)
+                .sum(axis=-1)
+            )
 
         return logp
 
