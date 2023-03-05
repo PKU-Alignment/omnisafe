@@ -37,9 +37,9 @@ class IPO(PPO):
     def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
         """Compute surrogate loss."""
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
-        penalty = self._cfgs.kappa / (self._cfgs.cost_limit - Jc + 1e-8)
-        if penalty < 0 or penalty > self._cfgs.penalty_max:
-            penalty = self._cfgs.penalty_max
+        penalty = self._cfgs.algo_cfgs.kappa / (self._cfgs.algo_cfgs.cost_limit - Jc + 1e-8)
+        if penalty < 0 or penalty > self._cfgs.algo_cfgs.penalty_max:
+            penalty = self._cfgs.algo_cfgs.penalty_max
 
         self._logger.store(**{'Misc/Penalty': penalty})
 

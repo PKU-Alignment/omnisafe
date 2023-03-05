@@ -110,7 +110,7 @@ class TRPO(NaturalPG):
                 self._logger.log('WARNING: loss_pi not finite')
             elif loss_improve < 0:
                 self._logger.log('INFO: did not improve improve <0')
-            elif kl > self._cfgs.target_kl * 1.5:
+            elif kl > self._cfgs.algo_cfgs.target_kl * 1.5:
                 self._logger.log('INFO: violated KL constraint.')
             else:
                 # step only if surrogate is improved and when within trust reg.
@@ -165,11 +165,11 @@ class TRPO(NaturalPG):
         distributed.avg_grads(self._actor_critic.actor)
 
         grad = -get_flat_gradients_from(self._actor_critic.actor)
-        x = conjugate_gradients(self._fvp, grad, self._cfgs.cg_iters)
+        x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
         xHx = torch.dot(x, self._fvp(x))
         assert xHx.item() >= 0, 'xHx is negative'
-        alpha = torch.sqrt(2 * self._cfgs.target_kl / (xHx + 1e-8))
+        alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
         step_direction = x * alpha
         assert torch.isfinite(step_direction).all(), 'step_direction is not finite'
 
