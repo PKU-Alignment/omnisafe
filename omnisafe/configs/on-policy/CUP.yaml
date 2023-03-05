@@ -23,7 +23,7 @@ defaults:
   # If use tensorboard
   use_tensorboard: True
   # if use wandb
-  use_wandb: True
+  use_wandb: False
   # The torch device
   device: cpu
   # The torch device id
@@ -55,7 +55,7 @@ defaults:
   # The Address for saving training process data
   data_dir: "./runs"
   # The number of parallel environments
-  num_envs: 32
+  num_envs: 16
   # Whether to use standardized reward
   reward_normalize: True
   # Whether to use standardized cost

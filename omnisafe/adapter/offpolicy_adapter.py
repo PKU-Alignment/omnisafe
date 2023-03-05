@@ -67,7 +67,7 @@ class OffPolicyAdapter(OnlineAdapter):
 
         for _ in range(roll_out_step):
             act = act_fn()
-            next_obs, reward, cost, terminated, _, info = self.step(act)
+            next_obs, reward, cost, terminated, truncated, info = self.step(act)
 
             self._log_value(reward=reward, cost=cost, info=info)
 
@@ -81,7 +81,7 @@ class OffPolicyAdapter(OnlineAdapter):
             )
 
             self._current_obs = next_obs
-            for idx, done in enumerate(terminated):
+            for idx, done in enumerate(torch.logical_or(terminated, truncated)):
                 if done:
                     self._log_metrics(logger, idx)
                     self._reset_log(idx)

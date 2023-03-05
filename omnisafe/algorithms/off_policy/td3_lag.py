@@ -41,8 +41,8 @@ class TD3Lag(TD3):
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
 
-    def _update(self) -> None:
-        super()._update()
+    def _update_epoch(self) -> None:
+        super()._update_epoch()
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         self._lagrange.update_lagrange_multiplier(Jc)
         self._logger.store(
@@ -62,11 +62,3 @@ class TD3Lag(TD3):
             * self._actor_critic.cost_critic(obs, action)[0].mean()
         )
         return loss_r + loss_c
-
-    def _log_when_not_update(self) -> None:
-        super()._log_when_not_update()
-        self._logger.store(
-            **{
-                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
-            }
-        )

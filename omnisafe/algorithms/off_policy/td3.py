@@ -72,8 +72,8 @@ class TD3(DDPG):
         """
         with torch.no_grad():
             # Set the update noise and noise clip.
-            self._actor_critic.actor.noise = self._cfgs.policy_noise
-            next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
+            self._actor_critic.target_actor.noise = self._cfgs.policy_noise
+            next_action = self._actor_critic.target_actor.predict(next_obs, deterministic=False)
             next_q1_value_r, next_q2_value_r = self._actor_critic.target_reward_critic(
                 next_obs, next_action
             )
@@ -128,8 +128,8 @@ class TD3(DDPG):
         """
         with torch.no_grad():
             # Set the update noise and noise clip.
-            self._actor_critic.actor.noise = self._cfgs.policy_noise
-            next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
+            self._actor_critic.target_actor.noise = self._cfgs.policy_noise
+            next_action = self._actor_critic.target_actor.predict(next_obs, deterministic=False)
             next_q1_value_c, next_q2_value_c = self._actor_critic.target_cost_critic(
                 next_obs, next_action
             )

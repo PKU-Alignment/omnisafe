@@ -53,11 +53,11 @@ defaults:
   # The number of parallel environments
   num_envs: 2
   # Whether to use standardized reward
-  reward_normalize: True
+  reward_normalize: False
   # Whether to use standardized cost
   cost_normalize: False
   # Whether to use standardized obs
-  obs_normalize: True
+  obs_normalize: False
   # The soft update coefficient
   polyak: 0.005
   # The discount factor of GAE
@@ -100,9 +100,9 @@ defaults:
   # Whether to use reward penalty
   reward_penalty: False
   # Whether to use max gradient norm
-  use_max_grad_norm: False
+  use_max_grad_norm: True
   # The thereshold of max gradient norm
-  max_grad_norm: 40
+  max_grad_norm: 4
   # Whether to use critic network norm
   use_critic_norm: False
   # The norm coefficient of critic network

@@ -128,6 +128,9 @@ class DDPG(BaseAlgo):
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
+    def _update_epoch(self) -> None:
+        """Update something per epoch"""
+
     def learn(self) -> Tuple[Union[int, float], ...]:
         """This is main function for algorithm update, divided into the following steps:
 
@@ -192,6 +195,9 @@ class DDPG(BaseAlgo):
                     'Train/LR': self._actor_critic.actor_scheduler.get_last_lr()[0],
                 }
             )
+
+            if epoch >= 50:
+                self._update_epoch()
 
             self._logger.dump_tabular()
 

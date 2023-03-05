@@ -55,7 +55,8 @@ class SAC(DDPG):
     def _init_log(self) -> None:
         super()._init_log()
         self._logger.register_key('Value/alpha')
-        self._logger.register_key('Loss/alpha_loss')
+        if self._cfgs.auto_alpha:
+            self._logger.register_key('Loss/alpha_loss')
 
     @property
     def _alpha(self) -> float:
@@ -196,3 +197,9 @@ class SAC(DDPG):
                 'Value/alpha': self._alpha,
             }
         )
+        if self._cfgs.auto_alpha:
+            self._logger.store(
+                **{
+                    'Loss/alpha_loss': 0.0,
+                }
+            )

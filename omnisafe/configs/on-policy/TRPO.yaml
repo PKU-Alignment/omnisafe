@@ -23,7 +23,7 @@ defaults:
   # If use tensorboard
   use_tensorboard: True
   # if use wandb
-  use_wandb: True
+  use_wandb: False
   # The torch device
   device: cpu
   # The torch device id
@@ -35,7 +35,7 @@ defaults:
   # Number of steps per epoch
   steps_per_epoch: 32768
   # Number of update iteration for Actor network
-  actor_iters: 10
+  actor_iters: 1
   # Number of update iteration for Critic network
   critic_iters: 40
   # Check if all models own the same parameter values every `check_freq` epoch
@@ -66,7 +66,7 @@ defaults:
   # Subsampled observation
   fvp_obs: None
   # The number of parallel environments
-  num_envs: 32
+  num_envs: 16
   # Whether to use standardized reward
   reward_normalize: True
   # Whether to use standardized cost
@@ -115,7 +115,7 @@ defaults:
       # Activation function
       activation: tanh
       # The learning rate of Actor network
-      lr: 0.0003
+      lr: 0.001
     # Configuration of Critic network
     critic:
       # Size of hidden layers
@@ -123,7 +123,7 @@ defaults:
       # Activation function
       activation: tanh
       # The learning rate of Critic network
-      lr: 0.0003
+      lr: 0.001
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   buffer_cfgs:
     # Reward discounted factor
