@@ -229,18 +229,12 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
             and configs.entropy_coef <= 1.0
         ), 'entropy_coef must be float, and it values must be [0.0, 1.0]'
         assert (
-            isinstance(configs.reward_normalize, bool)
-            and isinstance(configs.reward_normalize, bool)
-            and isinstance(configs.reward_normalize, bool)
+            configs.reward_normalize and configs.reward_normalize and configs.reward_normalize
         ), 'normalize must be bool'
         assert isinstance(configs.kl_early_stop, bool), 'kl_early_stop must be bool'
-        assert (
-            isinstance(configs.use_max_grad_norm, bool),
-            isinstance(configs.use_critic_norm, bool),
-        ), 'norm must be bool'
-        assert (
-            isinstance(configs.max_grad_norm, float),
-            isinstance(configs.critic_norm_coef, float),
+        assert configs.use_max_grad_norm and configs.use_critic_norm, 'norm must be bool'
+        assert isinstance(configs.max_grad_norm, float) and isinstance(
+            configs.critic_norm_coef, float
         ), 'norm must be bool'
         assert (
             isinstance(configs.gamma, float) and configs.gamma >= 0.0 and configs.gamma <= 1.0
@@ -266,8 +260,7 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
             'plain',
         ], "adv_estimation_method must be string, and it values must be ['gae','gae-rtg','vtrace','plain']"
         assert (
-            isinstance(configs.standardized_rew_adv, bool),
-            isinstance(configs.standardized_cost_adv, bool),
+            configs.standardized_rew_adv and configs.standardized_cost_adv
         ), 'standardized_<>_adv must be bool'
         assert (
             isinstance(configs.penalty_coef, float)
