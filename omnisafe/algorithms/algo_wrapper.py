@@ -24,7 +24,7 @@ from safety_gymnasium.utils.registration import safe_registry
 
 from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
 from omnisafe.utils import distributed
-from omnisafe.utils.config import get_default_kwargs_yaml
+from omnisafe.utils.config import get_default_kwargs_yaml, check_all_configs
 
 
 class AlgoWrapper:
@@ -99,7 +99,7 @@ class AlgoWrapper:
         physical_cores = psutil.cpu_count(logical=False)
         use_number_of_threads = bool(self.cfgs.train_cfgs.parallel > physical_cores)
 
-        # check_all_configs(cfgs, self.algo_type)
+        check_all_configs(self.cfgs, self.algo_type)
         torch.set_num_threads(self.cfgs.train_cfgs.torch_threads)
         if distributed.fork(
             self.cfgs.train_cfgs.parallel,
