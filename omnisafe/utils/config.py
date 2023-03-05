@@ -205,6 +205,7 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
 
     ## check algo configs
     __check_algo_configs(configs.algo_cfgs, algo_type)
+    __check_logger_configs(configs.logger_cfgs, algo_type)
 
 
 def __check_algo_configs(configs: Config, algo_type) -> None:
@@ -227,3 +228,63 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
             and configs.entropy_coef >= 0.0
             and configs.entropy_coef <= 1.0
         ), 'entropy_coef must be float, and it values must be [0.0, 1.0]'
+        assert (
+            isinstance(configs.reward_normalize, bool)
+            and isinstance(configs.reward_normalize, bool)
+            and isinstance(configs.reward_normalize, bool)
+        ), 'normalize must be bool'
+        assert isinstance(configs.kl_early_stop, bool), 'kl_early_stop must be bool'
+        assert (
+            isinstance(configs.use_max_grad_norm, bool),
+            isinstance(configs.use_critic_norm, bool),
+        ), 'norm must be bool'
+        assert (
+            isinstance(configs.max_grad_norm, float),
+            isinstance(configs.critic_norm_coef, float),
+        ), 'norm must be bool'
+        assert (
+            isinstance(configs.gamma, float) and configs.gamma >= 0.0 and configs.gamma <= 1.0
+        ), 'gamma must be float, and it values must be [0.0, 1.0]'
+        assert (
+            isinstance(configs.cost_gamma, float)
+            and configs.cost_gamma >= 0.0
+            and configs.cost_gamma <= 1.0
+        ), 'cost_gamma must be float, and it values must be [0.0, 1.0]'
+        assert (
+            isinstance(configs.lam, float) and configs.lam >= 0.0 and configs.lam <= 1.0
+        ), 'lam must be float, and it values must be [0.0, 1.0]'
+        assert (
+            isinstance(configs.lam_c, float) and configs.lam_c >= 0.0 and configs.lam_c <= 1.0
+        ), 'lam_c must be float, and it values must be [0.0, 1.0]'
+        assert (
+            isinstance(configs.clip, float) and configs.clip >= 0.0
+        ), 'clip must be float, and it values must be [0.0, infty]'
+        assert isinstance(configs.adv_estimation_method, str) and configs.adv_estimation_method in [
+            'gae',
+            'gae-rtg',
+            'vtrace',
+            'plain',
+        ], "adv_estimation_method must be string, and it values must be ['gae','gae-rtg','vtrace','plain']"
+        assert (
+            isinstance(configs.standardized_rew_adv, bool),
+            isinstance(configs.standardized_cost_adv, bool),
+        ), 'standardized_<>_adv must be bool'
+        assert (
+            isinstance(configs.penalty_coef, float)
+            and configs.penalty_coef >= 0.0
+            and configs.penalty_coef <= 1.0
+        ), 'penalty_coef must be float, and it values must be [0.0, 1.0]'
+        assert isinstance(configs.use_cost, bool), 'penalty_coef must be bool'
+
+
+def __check_logger_configs(configs: Config, algo_type) -> None:
+    """Check logger configs."""
+    if algo_type == 'onpolicy':
+        assert isinstance(configs.use_wandb, bool) and isinstance(
+            configs.wandb_project, str
+        ), 'use_wandb and wandb_project must be bool and string'
+        assert isinstance(configs.use_tensorboard, bool), 'use_tensorboard must be bool'
+        assert isinstance(configs.save_model_freq, int) and isinstance(
+            configs.window_lens, int
+        ), 'save_model_freq and window_lens must be int'
+        assert isinstance(configs.log_dir, str), 'log_dir must be string'

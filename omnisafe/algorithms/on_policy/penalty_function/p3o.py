@@ -87,7 +87,7 @@ class P3O(PPO):
         loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
         loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
 
-        loss = loss_reward - loss_cost
+        loss = loss_reward + loss_cost
 
         self._actor_critic.actor_optimizer.zero_grad()
         loss.backward()

@@ -14,7 +14,7 @@
 # ==============================================================================
 """On-policy algorithms."""
 
-from omnisafe.algorithms.on_policy import (  # simmer,; early_terminated,; saute,; pid_lagrange,
+from omnisafe.algorithms.on_policy import (
     base,
     first_order,
     naive_lagrange,
