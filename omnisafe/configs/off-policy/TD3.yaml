@@ -53,11 +53,11 @@ defaults:
   # The number of parallel environments
   num_envs: 2
   # Whether to use standardized reward
-  reward_normalize: True
+  reward_normalize: False
   # Whether to use standardized cost
   cost_normalize: False
   # Whether to use standardized obs
-  obs_normalize: True
+  obs_normalize: False
   # The soft update coefficient
   polyak: 0.005
   # The discount factor of GAE

@@ -19,7 +19,7 @@ defaults:
   # The random seed
   seed: 0
   # The number of threads used per experiment
-  num_threads: 1
+  num_threads: 2
   # If use tensorboard
   use_tensorboard: True
   # if use wandb
@@ -73,7 +73,7 @@ defaults:
   # The value of alpha
   alpha: 0.2
   # Whether to use auto alpha
-  auto_alpha: True
+  auto_alpha: False
   # Whether to use exploration noise
   use_exploration_noise: False
   # The exploration noise
@@ -132,7 +132,7 @@ defaults:
       # Activation function
       activation: relu
       # The learning rate of Critic network
-      lr: 0.001
+      lr: 0.0003
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   replay_buffer_cfgs:
     # The size of replay buffer

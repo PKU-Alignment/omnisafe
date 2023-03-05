@@ -76,6 +76,8 @@ class ActorQCritic(nn.Module):
             use_obs_encoder=False,
         ).build_critic(critic_type='q')
         self.target_reward_critic = deepcopy(self.reward_critic)
+        for param in self.target_reward_critic.parameters():
+            param.requires_grad = False
         self.add_module('actor', self.actor)
         self.add_module('reward_critic', self.reward_critic)
 

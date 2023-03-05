@@ -73,6 +73,8 @@ class ConstraintActorQCritic(ActorQCritic):
             use_obs_encoder=False,
         ).build_critic('q')
         self.target_cost_critic = deepcopy(self.cost_critic)
+        for param in self.target_cost_critic.parameters():
+            param.requires_grad = False
         self.add_module('cost_critic', self.cost_critic)
 
         self.cost_critic_optimizer = optim.Adam(

@@ -139,6 +139,7 @@ class DDPG(BaseAlgo):
         start_time = time.time()
         for epoch in range(self._epochs):
             roll_out_time = 0.0
+            update_time = 0.0
             epoch_time = time.time()
 
             for sample_step in range(
@@ -162,7 +163,6 @@ class DDPG(BaseAlgo):
                 roll_out_time += time.time() - roll_out_start
 
                 # Update parameters
-                update_time = 0.0
                 update_start = time.time()
                 if step > self._cfgs.start_learning_steps:
                     self._update()
