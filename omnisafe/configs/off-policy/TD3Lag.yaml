@@ -45,7 +45,7 @@ defaults:
   # The number of test episodes
   num_test_episodes: 10
   # The learning rate of Actor network
-  actor_lr: 0.0003
+  actor_lr: 0.001
   # The learning rate of Critic network
   critic_lr: 0.0003
   # The soft update coefficient

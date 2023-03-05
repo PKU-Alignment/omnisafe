@@ -88,8 +88,8 @@ class SAC(DDPG):
         q_value_list = self.actor_critic.critic(obs, act)
         # Bellman backup for Q function
         with torch.no_grad():
-            act_targ, _, logp_a_next = self.ac_targ.actor.predict(
-                obs, deterministic=False, need_log_prob=True
+            _, act_targ, logp_a_next = self.ac_targ.actor.predict(
+                next_obs, deterministic=False, need_log_prob=True
             )
             q_targ = torch.min(torch.vstack(self.ac_targ.critic(next_obs, act_targ)), dim=0).values
             backup = rew + self.cfgs.gamma * (1 - done) * (q_targ - self.alpha * logp_a_next)
@@ -118,7 +118,7 @@ class SAC(DDPG):
         Args:
             obs (torch.Tensor): ``observation`` saved in data.
         """
-        action, _, logp_a = self.actor_critic.actor.predict(
+        _, action, logp_a = self.actor_critic.actor.predict(
             obs, deterministic=False, need_log_prob=True
         )
         self.alpha_update(logp_a)

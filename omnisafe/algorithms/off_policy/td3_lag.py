@@ -88,7 +88,7 @@ class TD3Lag(TD3, Lagrange):
         Args:
             obs (:class:`torch.Tensor`): ``observation`` saved in data.
         """
-        action, _ = self.actor_critic.actor.predict(obs, deterministic=False, need_log_prob=False)
+        _, action = self.actor_critic.actor.predict(obs, deterministic=False, need_log_prob=False)
         loss_pi = torch.min(
             self.actor_critic.critic(obs, action)[0], self.actor_critic.critic(obs, action)[1]
         )

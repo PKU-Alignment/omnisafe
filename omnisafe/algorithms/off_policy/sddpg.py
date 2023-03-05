@@ -104,7 +104,7 @@ class SDDPG(DDPG):
             cost_adv (torch.Tensor): Cost advantage.
         """
         # compute loss
-        action, _ = self.actor_critic.actor.predict(obs, deterministic=False)
+        _, action = self.actor_critic.actor.predict(obs, deterministic=False)
         loss_pi = self.actor_critic.cost_critic(obs, action)[0]
         pi_info = {}
         return loss_pi.mean(), pi_info
@@ -135,7 +135,7 @@ class SDDPG(DDPG):
         loss_pi, _ = self.compute_loss_pi(obs)
         loss_pi.backward()
 
-        g_flat = get_flat_gradients_from(self.actor_critic.actor.net)
+        g_flat = get_flat_gradients_from(self.actor_critic.actor)
         g_flat *= -1
 
         g_inv_x = conjugate_gradients(self.Fvp, g_flat, self.cfgs.cg_iters)
