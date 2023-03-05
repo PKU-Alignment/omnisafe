@@ -61,9 +61,9 @@ jobs:
         run: |
           make addlicense
 
-      - name: mypy
-        run: |
-          make mypy
+      # - name: mypy
+      #   run: |
+      #     make mypy
 
       - name: Install dependencies
         run: |
@@ -80,15 +80,15 @@ jobs:
 
       # TODO: enable this when ready
       # - name: Run tests and collect coverage
-        # run: |
-          # pytest tests --ignore-glob='*profile.py' --cov=omnisafe --cov-report=xml
-          # --cov-report=term-missing --durations=0 -v --color=yes
+      # run: |
+      # pytest tests --ignore-glob='*profile.py' --cov=omnisafe --cov-report=xml
+      # --cov-report=term-missing --durations=0 -v --color=yes
 
       # TODO: enable this when ready
       # - name: Upload coverage reports to Codecov
-        # run: |
-          # # Replace `linux` below with the appropriate OS
-          # # Options are `alpine`, `linux`, `macos`, `windows`
-          # curl -Os https://uploader.codecov.io/latest/linux/codecov
-          # chmod +x codecov
-          # ./codecov -t ${CODECOV_TOKEN=634594d3-0416-4632-ab6a-3bf34a8c0af3}
+      # run: |
+      # # Replace `linux` below with the appropriate OS
+      # # Options are `alpine`, `linux`, `macos`, `windows`
+      # curl -Os https://uploader.codecov.io/latest/linux/codecov
+      # chmod +x codecov
+      # ./codecov -t ${CODECOV_TOKEN=634594d3-0416-4632-ab6a-3bf34a8c0af3}

@@ -53,10 +53,16 @@ def train(
 
 if __name__ == '__main__':
     eg = ExperimentGrid(exp_name='Safety_Gymnasium_Goal')
-    eg.add('algo', ['PPO', 'PPOLag'])
+    base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']
+    naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
+    first_order_policy = ['CUP', 'FOCOPS']
+    second_order_policy = ['CPO', 'PCPO']
+    eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
     eg.add('env_id', ['SafetyPointGoal1-v0'])
-    eg.add('epochs', 1)
-    eg.add('actor_lr', [0.001, 0.003, 0.004], 'lr', True)
-    eg.add('actor_iters', [1, 2], 'ac_iters', True)
-    eg.add('seed', [0, 5, 10])
-    eg.run(train, num_pool=10)
+    eg.add('logger_cfgs:use_wandb', [True])
+    eg.add('logger_cfgs:wandb_project', ['omnisafe_jiaming'])
+    # eg.add('train_cfgs:total_steps', 2000)
+    # eg.add('algo_cfgs:update_cycle', 1000)
+    # eg.add('train_cfgs:vector_env_nums', 1)
+    eg.add('seed', [0])
+    eg.run(train, num_pool=13)

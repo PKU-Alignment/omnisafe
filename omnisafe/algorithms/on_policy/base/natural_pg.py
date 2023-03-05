@@ -80,7 +80,7 @@ class NaturalPG(PolicyGradient):
 
         flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
         distributed.avg_tensor(flat_grad_grad_kl)
-        return flat_grad_grad_kl + params * self._cfgs.cg_damping
+        return flat_grad_grad_kl + params * self._cfgs.algo_cfgs.cg_damping
 
     def _update_actor(  # pylint: disable=too-many-arguments, too-many-locals
         self,
@@ -100,11 +100,11 @@ class NaturalPG(PolicyGradient):
         distributed.avg_grads(self._actor_critic.actor)
 
         grad = -get_flat_gradients_from(self._actor_critic.actor)
-        x = conjugate_gradients(self._fvp, grad, self._cfgs.cg_iters)
+        x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
         xHx = torch.dot(x, self._fvp(x))
         assert xHx.item() >= 0, 'xHx is negative'
-        alpha = torch.sqrt(2 * self._cfgs.target_kl / (xHx + 1e-8))
+        alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
         step_direction = x * alpha
         assert torch.isfinite(step_direction).all(), 'step_direction is not finite'
 
