@@ -17,6 +17,7 @@
 import argparse
 
 import omnisafe
+from omnisafe.utils.tools import custom_cfgs_to_dict, update_dic
 
 
 if __name__ == '__main__':
@@ -74,7 +75,12 @@ if __name__ == '__main__':
     args, unparsed_args = parser.parse_known_args()
     keys = [k[2:] for k in unparsed_args[0::2]]
     values = list(unparsed_args[1::2])
-    custom_cfgs = dict(zip(keys, values))
+    unparsed_args = dict(zip(keys, values))
+
+    custom_cfgs = {}
+    for k, v in unparsed_args.items():
+        update_dic(custom_cfgs, custom_cfgs_to_dict(k, v))
+
     agent = omnisafe.Agent(
         args.algo,
         args.env_id,

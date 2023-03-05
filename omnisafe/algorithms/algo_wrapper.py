@@ -64,9 +64,11 @@ class AlgoWrapper:
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations
-        cfgs.train_cfgs.recurisve_update(self.custom_cfgs) if self.custom_cfgs else None
+        if self.custom_cfgs:
+            cfgs.recurisve_update(self.custom_cfgs)
         # update the cfgs from custom terminal configurations
-        cfgs.recurisve_update(self.train_terminal_cfgs) if self.train_terminal_cfgs else None
+        if self.train_terminal_cfgs:
+            cfgs.train_cfgs.recurisve_update(self.train_terminal_cfgs)
 
         # the exp_name format is PPO-<SafetyPointGoal1-v0>-
         exp_name = f'{self.algo}-<{self.env_id}>'

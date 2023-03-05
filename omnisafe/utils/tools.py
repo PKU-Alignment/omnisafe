@@ -134,12 +134,12 @@ def seed_all(seed: int):
         pass
 
 
-def terminal_cfgs_to_dict(key_list, value):
-    """This function is used to convert the terminal configurations to dict.
+def custom_cfgs_to_dict(key_list, value):
+    """This function is used to convert the custom configurations to dict.
 
     .. note::
-        This function is used to convert the terminal configurations to dict.
-        For example, if the terminal configurations are ``train_cfgs:use_wandb`` and ``True``,
+        This function is used to convert the custom configurations to dict.
+        For example, if the custom configurations are ``train_cfgs:use_wandb`` and ``True``,
         then the output dict will be ``{'train_cfgs': {'use_wandb': True}}``.
 
     Args:
@@ -159,20 +159,35 @@ def terminal_cfgs_to_dict(key_list, value):
         value = value.split(',')
     else:
         value = str(value)
-    keys_split = key_list.split(':')
+    keys_split = key_list.replace('-', '_').split(':')
     return_dict = {keys_split[-1]: value}
 
     for key in reversed(keys_split[:-1]):
-        return_dict = {key: return_dict}
-
+        return_dict = {key.replace('-', '_'): return_dict}
     return return_dict
+
+
+def update_dic(total_dic, item_dic):
+    '''Updater of multi-level dictionary.'''
+    for idd in item_dic.keys():
+        total_value = total_dic.get(idd)
+        item_value = item_dic.get(idd)
+
+        if total_value is None:
+            total_dic.update({idd: item_value})
+        elif isinstance(item_value, dict):
+            update_dic(total_value, item_value)
+            total_dic.update({idd: total_value})
+        else:
+            total_value = item_value
+            total_dic.update({idd: total_value})
 
 
 if __name__ == '__main__':
     print('This is a tool function package.')
-    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', 'True'))
-    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', 'False'))
-    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', '0.1'))
-    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', '1'))
-    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', 'test'))
-    print(terminal_cfgs_to_dict('train_cfgs:use_wandb', '[1,2,3]'))
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', 'True'))
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', 'False'))
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', '0.1'))
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', '1'))
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', 'test'))
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', '[1,2,3]'))
