@@ -57,9 +57,11 @@ class PPO(PolicyGradient):
         logp_ = self._actor_critic.actor.log_prob(act)
         std = self._actor_critic.actor.std
         ratio = torch.exp(logp_ - logp)
-        ratio_cliped = torch.clamp(ratio, 1 - self._cfgs.clip, 1 + self._cfgs.clip)
+        ratio_cliped = torch.clamp(
+            ratio, 1 - self._cfgs.algo_cfgs.clip, 1 + self._cfgs.algo_cfgs.clip
+        )
         loss = -torch.min(ratio * adv, ratio_cliped * adv).mean()
-        loss += self._cfgs.entropy_coef * distribution.entropy().mean()
+        loss += self._cfgs.algo_cfgs.entropy_coef * distribution.entropy().mean()
         # useful extra info
         entrophy = distribution.entropy().mean().item()
         info = {'entrophy': entrophy, 'ratio': ratio.mean().item(), 'std': std}

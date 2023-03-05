@@ -80,26 +80,28 @@ class ActorCritic(nn.Module):
         self.add_module('actor', self.actor)
         self.add_module('reward_critic', self.reward_critic)
 
-        self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
-        self.reward_critic_optimizer = optim.Adam(
-            self.reward_critic.parameters(), lr=model_cfgs.critic.lr
-        )
-
-        self.actor_scheduler: _LRScheduler
-        if model_cfgs.linear_lr_decay:
-            self.actor_scheduler = LinearLR(
-                self.actor_optimizer,
-                start_factor=1.0,
-                end_factor=0.0,
-                total_iters=epochs,
-                verbose=True,
+        if model_cfgs.actor.lr != 'None':
+            self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
+        if model_cfgs.critic.lr != 'None':
+            self.reward_critic_optimizer = optim.Adam(
+                self.reward_critic.parameters(), lr=model_cfgs.critic.lr
             )
-        else:
-            self.actor_scheduler = ConstantLR(
-                self.actor_optimizer, factor=1.0, total_iters=epochs, verbose=True
-            )
+        if model_cfgs.actor.lr != 'None':
+            self.actor_scheduler: _LRScheduler
+            if model_cfgs.linear_lr_decay:
+                self.actor_scheduler = LinearLR(
+                    self.actor_optimizer,
+                    start_factor=1.0,
+                    end_factor=0.0,
+                    total_iters=epochs,
+                    verbose=True,
+                )
+            else:
+                self.actor_scheduler = ConstantLR(
+                    self.actor_optimizer, factor=1.0, total_iters=epochs, verbose=True
+                )
 
-        self.std_schedule: Schedule
+            self.std_schedule: Schedule
 
     def step(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in rollout without gradient.

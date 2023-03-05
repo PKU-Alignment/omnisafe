@@ -28,9 +28,23 @@ parser.add_argument(
     metavar='N',
     help='Number of paralleled progress for calculations.',
 )
-custom_dict = {'epochs': 1, 'data_dir': './runs'}
+custom_cfgs = {
+    'train_cfgs': {
+        'total_steps': 1000,
+    },
+    'algo_cfgs': {
+        'update_cycle': 1000,
+        'update_iters': 1,
+    },
+    'logger_cfgs': {
+        'use_wandb': False,
+    },
+    'env_cfgs': {
+        'vector_env_nums': 1,
+    },
+}
 args, _ = parser.parse_known_args()
-agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_dict, parallel=args.parallel)
+agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs, parallel=args.parallel)
 agent.learn()
 
 # obs = env.reset()

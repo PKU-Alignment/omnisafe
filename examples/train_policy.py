@@ -17,6 +17,7 @@
 import argparse
 
 import omnisafe
+from omnisafe.utils.tools import custom_cfgs_to_dict, update_dic
 
 
 if __name__ == '__main__':
@@ -26,7 +27,7 @@ if __name__ == '__main__':
         type=str,
         metavar='ALGO',
         default='PPOLag',
-        help='Algorithm to train',
+        help='algorithm to train',
         choices=omnisafe.ALGORITHMS['all'],
     )
     parser.add_argument(
@@ -34,24 +35,56 @@ if __name__ == '__main__':
         type=str,
         metavar='ENV',
         default='SafetyPointGoal1-v0',
-        help='The name of test environment',
+        help='the name of test environment',
     )
     parser.add_argument(
         '--parallel',
         default=1,
         type=int,
         metavar='N',
-        help='Number of paralleled progress for calculations.',
+        help='number of paralleled progress for calculations.',
+    )
+    parser.add_argument(
+        '--total-steps',
+        type=int,
+        default=1638400,
+        metavar='STEPS',
+        help='total number of steps to train for algorithm',
+    )
+    parser.add_argument(
+        '--device',
+        type=str,
+        default='cpu',
+        metavar='DEVICES',
+        help='device to use for training',
+    )
+    parser.add_argument(
+        '--vector-env-nums',
+        type=int,
+        default=16,
+        metavar='VECTOR-ENV',
+        help='number of vector envs to use for training',
+    )
+    parser.add_argument(
+        '--torch-threads',
+        type=int,
+        default=16,
+        metavar='THREADS',
+        help='number of threads to use for torch',
     )
     args, unparsed_args = parser.parse_known_args()
     keys = [k[2:] for k in unparsed_args[0::2]]
     values = list(unparsed_args[1::2])
-    unparsed_dict = dict(zip(keys, values))
-    # env = omnisafe.Env(args.env_id)
+    unparsed_args = dict(zip(keys, values))
+
+    custom_cfgs = {}
+    for k, v in unparsed_args.items():
+        update_dic(custom_cfgs, custom_cfgs_to_dict(k, v))
+
     agent = omnisafe.Agent(
         args.algo,
         args.env_id,
-        parallel=args.parallel,
-        custom_cfgs=unparsed_dict,
+        train_terminal_cfgs=vars(args),
+        custom_cfgs=custom_cfgs,
     )
     agent.learn()

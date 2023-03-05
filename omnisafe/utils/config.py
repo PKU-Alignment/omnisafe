@@ -202,73 +202,82 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
         configs (dict): configs to be checked.
         algo_type (str): algorithm type.
     """
-    __check_env_configs(configs)
-    if algo_type == 'on-policy':
-        __check_buffer_configs(configs.buffer_cfgs)
-        assert configs.actor_iters > 0, 'actor_iters must be greater than 0'
-        assert (
-            configs.actor_lr > 0 and configs.critic_lr > 0
-        ), 'actor_lr and critic_lr must be greater than 0'
-        assert (
-            configs.buffer_cfgs.gamma >= 0 and configs.buffer_cfgs.gamma < 1.0
-        ), 'gamma must be in [0, 1)'
-        assert (
-            configs.use_cost is False and configs.cost_gamma == 1.0
-        ) or configs.use_cost, 'if use_cost is False, cost_gamma must be 1.0'
-    elif algo_type == 'off-policy':
-        assert (
-            configs.actor_lr > 0 and configs.critic_lr > 0
-        ), 'actor_lr and critic_lr must be greater than 0'
-        assert (
-            configs.replay_buffer_cfgs.size > configs.replay_buffer_cfgs.batch_size
-        ), 'replay_buffer size must be greater than batch_size'
-        assert (
-            configs.update_every < configs.steps_per_epoch
-        ), 'update_every must be less than steps_per_epoch'
+
+    ## check algo configs
+    __check_algo_configs(configs.algo_cfgs, algo_type)
+    __check_logger_configs(configs.logger_cfgs, algo_type)
 
 
-def __check_env_configs(configs: Config) -> None:
-    """Check env configs."""
-    wrapper_type = configs.wrapper_type
-    env_configs = configs.env_cfgs
-    assert env_configs.max_len > 0, 'max_len must be greater than 0'
-    if wrapper_type == 'SafetyLayerWrapper':
-        assert hasattr(
-            env_configs, 'safety_layer_cfgs'
-        ), 'SafetyLayerWrapper must have safety_layer_cfgs'
-    elif wrapper_type == 'SauteWrapper':
+def __check_algo_configs(configs: Config, algo_type) -> None:
+    """Check algorithm configs."""
+    if algo_type == 'onpolicy':
         assert (
-            hasattr(env_configs, 'unsafe_reward')
-            and hasattr(env_configs, 'safety_budget')
-            and hasattr(env_configs, 'saute_gamma')
-            and hasattr(env_configs, 'scale_safety_budget')
-        ), 'SauteWrapper must have unsafe_reward, safety_budget, saute_gamma, scale_safety_budget'
-        assert env_configs.unsafe_reward <= 0, 'unsafe_reward must be less or equal than 0'
-        assert env_configs.safety_budget > 0, 'safety_budget must be greater than 0'
+            isinstance(configs.update_iters, int) and configs.update_iters > 0
+        ), 'update_iters must be int and greater than 0'
         assert (
-            env_configs.saute_gamma >= 0 and env_configs.saute_gamma < 1.0
-        ), 'saute_gamma must be in [0, 1)'
-    elif wrapper_type == 'SimmerWrapper':
+            isinstance(configs.update_cycle, int) and configs.update_cycle > 0
+        ), 'update_cycle must be int and greater than 0'
         assert (
-            hasattr(env_configs, 'unsafe_reward')
-            and hasattr(env_configs, 'lower_budget')
-            and hasattr(env_configs, 'simmer_gamma')
-            and hasattr(env_configs, 'scale_safety_budget')
-        ), 'SimmerWrapper must have unsafe_reward, safety_budget, simmer_gamma, scale_safety_budget'
-        assert env_configs.unsafe_reward <= 0, 'unsafe_reward must be less or equal than 0'
-        assert env_configs.lower_budget > 0, 'safety_budget must be greater than 0'
+            isinstance(configs.batch_size, int) and configs.batch_size > 0
+        ), 'batch_size must be int and greater than 0'
         assert (
-            env_configs.simmer_gamma >= 0 and env_configs.simmer_gamma < 1.0
-        ), 'simmer_gamma must be in [0, 1)'
+            isinstance(configs.target_kl, float) and configs.target_kl >= 0.0
+        ), 'target_kl must be float and greater than 0.0'
+        assert (
+            isinstance(configs.entropy_coef, float)
+            and configs.entropy_coef >= 0.0
+            and configs.entropy_coef <= 1.0
+        ), 'entropy_coef must be float, and it values must be [0.0, 1.0]'
+        assert (
+            configs.reward_normalize and configs.reward_normalize and configs.reward_normalize
+        ), 'normalize must be bool'
+        assert isinstance(configs.kl_early_stop, bool), 'kl_early_stop must be bool'
+        assert configs.use_max_grad_norm and configs.use_critic_norm, 'norm must be bool'
+        assert isinstance(configs.max_grad_norm, float) and isinstance(
+            configs.critic_norm_coef, float
+        ), 'norm must be bool'
+        assert (
+            isinstance(configs.gamma, float) and configs.gamma >= 0.0 and configs.gamma <= 1.0
+        ), 'gamma must be float, and it values must be [0.0, 1.0]'
+        assert (
+            isinstance(configs.cost_gamma, float)
+            and configs.cost_gamma >= 0.0
+            and configs.cost_gamma <= 1.0
+        ), 'cost_gamma must be float, and it values must be [0.0, 1.0]'
+        assert (
+            isinstance(configs.lam, float) and configs.lam >= 0.0 and configs.lam <= 1.0
+        ), 'lam must be float, and it values must be [0.0, 1.0]'
+        assert (
+            isinstance(configs.lam_c, float) and configs.lam_c >= 0.0 and configs.lam_c <= 1.0
+        ), 'lam_c must be float, and it values must be [0.0, 1.0]'
+        assert (
+            isinstance(configs.clip, float) and configs.clip >= 0.0
+        ), 'clip must be float, and it values must be [0.0, infty]'
+        assert isinstance(configs.adv_estimation_method, str) and configs.adv_estimation_method in [
+            'gae',
+            'gae-rtg',
+            'vtrace',
+            'plain',
+        ], "adv_estimation_method must be string, and it values must be ['gae','gae-rtg','vtrace','plain']"
+        assert (
+            configs.standardized_rew_adv and configs.standardized_cost_adv
+        ), 'standardized_<>_adv must be bool'
+        assert (
+            isinstance(configs.penalty_coef, float)
+            and configs.penalty_coef >= 0.0
+            and configs.penalty_coef <= 1.0
+        ), 'penalty_coef must be float, and it values must be [0.0, 1.0]'
+        assert isinstance(configs.use_cost, bool), 'penalty_coef must be bool'
 
 
-def __check_buffer_configs(configs: Config) -> None:
-    """Check buffer configs."""
-    assert (
-        configs.gamma >= 0 and configs.gamma < 1.0
-    ), f'gamma must be in [0, 1) but got {configs.gamma}'
-    assert configs.lam >= 0 and configs.lam < 1.0, f'lam must be in [0, 1) but got {configs.lam}'
-    assert (
-        configs.lam_c >= 0 and configs.lam_c < 1.0
-    ), f'gamma must be in [0, 1) but got {configs.lam_c}'
-    assert configs.adv_estimation_method in ['gae', 'gae-rtg', 'vtrace', 'plain']
+def __check_logger_configs(configs: Config, algo_type) -> None:
+    """Check logger configs."""
+    if algo_type == 'onpolicy':
+        assert isinstance(configs.use_wandb, bool) and isinstance(
+            configs.wandb_project, str
+        ), 'use_wandb and wandb_project must be bool and string'
+        assert isinstance(configs.use_tensorboard, bool), 'use_tensorboard must be bool'
+        assert isinstance(configs.save_model_freq, int) and isinstance(
+            configs.window_lens, int
+        ), 'save_model_freq and window_lens must be int'
+        assert isinstance(configs.log_dir, str), 'log_dir must be string'
