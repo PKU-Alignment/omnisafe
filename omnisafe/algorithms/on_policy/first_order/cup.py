@@ -91,8 +91,8 @@ class CUP(PPO):
 
         kl = torch.distributions.kl_divergence(distribution, self._p_dist).sum(-1, keepdim=True)
 
-        coef = (1 - self._cfgs.buffer_cfgs.gamma * self._cfgs.buffer_cfgs.lam) / (
-            1 - self._cfgs.buffer_cfgs.gamma
+        coef = (1 - self._cfgs.algo_cfgs.gamma * self._cfgs.algo_cfgs.lam) / (
+            1 - self._cfgs.algo_cfgs.gamma
         )
         loss = (self._lagrange.lagrangian_multiplier * coef * ratio * adv_c + kl).mean()
 
@@ -138,19 +138,19 @@ class CUP(PPO):
 
         dataloader = DataLoader(
             dataset=TensorDataset(obs, act, logp, adv_c, old_mean, old_std),
-            batch_size=self._cfgs.num_mini_batches,
+            batch_size=self._cfgs.algo_cfgs.batch_size,
             shuffle=True,
         )
 
-        for i in range(self._cfgs.actor_iters):
+        for i in range(self._cfgs.algo_cfgs.update_iters):
             for obs, act, logp, adv_c, old_mean, old_std in dataloader:
                 self._p_dist = Normal(old_mean, old_std)
                 loss_cost, info = self._loss_pi_cost(obs, act, logp, adv_c)
                 self._actor_critic.actor_optimizer.zero_grad()
                 loss_cost.backward()
-                if self._cfgs.max_grad_norm is not None:
+                if self._cfgs.algo_cfgs.max_grad_norm is not None:
                     torch.nn.utils.clip_grad_norm_(
-                        self._actor_critic.actor.parameters(), self._cfgs.max_grad_norm
+                        self._actor_critic.actor.parameters(), self._cfgs.algo_cfgs.max_grad_norm
                     )
                 distributed.avg_grads(self._actor_critic.actor)
                 self._actor_critic.actor_optimizer.step()
@@ -165,7 +165,7 @@ class CUP(PPO):
             )
             kl = distributed.dist_avg(kl)
 
-            if self._cfgs.kl_early_stopping and kl > self._cfgs.target_kl:
+            if self._cfgs.algo_cfgs.kl_early_stop and kl > self._cfgs.algo_cfgs.target_kl:
                 self._logger.log(f'Early stopping at iter {i} due to reaching max kl')
                 break
 

@@ -145,7 +145,7 @@ class CPO(TRPO):
             elif loss_cost_diff > max(-violation_c, 0):
                 self._logger.log(f'INFO: no improve {loss_cost_diff} > {max(-violation_c, 0)}')
             # check KL-distance to avoid too far gap
-            elif kl > self._cfgs.target_kl * 1.5:
+            elif kl > self._cfgs.algo_cfgs.target_kl * 1.5:
                 self._logger.log(f'INFO: violated KL constraint {kl} at step {step + 1}.')
             else:
                 # step only if surrogate is improved and we are
@@ -215,13 +215,13 @@ class CPO(TRPO):
         distributed.avg_grads(self._actor_critic.actor)
 
         grad = -get_flat_gradients_from(self._actor_critic.actor)
-        x = conjugate_gradients(self._fvp, grad, self._cfgs.cg_iters)
+        x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
         xHx = torch.dot(x, self._fvp(x))
         assert xHx.item() >= 0, 'xHx is negative'
-        alpha = torch.sqrt(2 * self._cfgs.target_kl / (xHx + 1e-8))
+        alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
 
-        self._actor_critic.actor_optimizer.zero_grad()
+        self._actor_critic.zero_grad()
         loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
         loss_cost_before = distributed.dist_avg(loss_cost).item()
 
@@ -229,10 +229,10 @@ class CPO(TRPO):
         distributed.avg_grads(self._actor_critic.actor)
 
         b_grad = get_flat_gradients_from(self._actor_critic.actor)
-        ep_costs = self._logger.get_stats('Metrics/EpCost')[0] - self._cfgs.cost_limit
+        ep_costs = self._logger.get_stats('Metrics/EpCost')[0] - self._cfgs.algo_cfgs.cost_limit
         cost = ep_costs / (self._logger.get_stats('Metrics/EpLen')[0] + 1e-8)
 
-        p = conjugate_gradients(self._fvp, b_grad, self._cfgs.cg_iters)
+        p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
         q = xHx
         r = torch.dot(grad, p)
         s = torch.dot(b_grad, p)
@@ -247,7 +247,7 @@ class CPO(TRPO):
             assert torch.isfinite(s).all(), 's is not finite'
 
             A = q - r**2 / s
-            B = 2 * self._cfgs.target_kl - cost**2 / s
+            B = 2 * self._cfgs.algo_cfgs.target_kl - cost**2 / s
 
             if cost < 0 and B < 0:
                 # point in trust region is feasible and safety boundary doesn't intersect
@@ -270,7 +270,7 @@ class CPO(TRPO):
 
         if optim_case in (3, 4):
             # under 3 and 4 cases directly use TRPO method
-            alpha = torch.sqrt(2 * self._cfgs.target_kl / (xHx + 1e-8))
+            alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
             nu_star = torch.zeros(1)
             lambda_star = 1 / alpha
             step_direction = alpha * x
@@ -285,7 +285,7 @@ class CPO(TRPO):
             #  λ=argmax(f_a(λ),f_b(λ)) = λa_star or λb_star
             #  computing formula shown in appendix, lambda_a and lambda_b
             lambda_a = torch.sqrt(A / B)
-            lambda_b = torch.sqrt(q / (2 * self._cfgs.target_kl))
+            lambda_b = torch.sqrt(q / (2 * self._cfgs.algo_cfgs.target_kl))
             # λa_star = Proj(lambda_a ,0 ~ r/c)  λb_star=Proj(lambda_b,r/c~ +inf)
             # where projection(str,b,c)=max(b,min(str,c))
             # may be regarded as a projection from effective region towards safety region
@@ -301,7 +301,7 @@ class CPO(TRPO):
                 return -0.5 * (A / (lam + 1e-8) + B * lam) - r * cost / (s + 1e-8)
 
             def f_b(lam):
-                return -0.5 * (q / (lam + 1e-8) + 2 * self._cfgs.target_kl * lam)
+                return -0.5 * (q / (lam + 1e-8) + 2 * self._cfgs.algo_cfgs.target_kl * lam)
 
             lambda_star = (
                 lambda_a_star if f_a(lambda_a_star) >= f_b(lambda_b_star) else lambda_b_star
@@ -317,7 +317,7 @@ class CPO(TRPO):
             # purely decrease costs
             # without further check
             lambda_star = torch.zeros(1)
-            nu_star = np.sqrt(2 * self._cfgs.target_kl / (s + 1e-8))
+            nu_star = np.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (s + 1e-8))
             step_direction = -nu_star * p
 
         step_direction, accept_step = self._cpo_search_step(

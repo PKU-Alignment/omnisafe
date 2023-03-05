@@ -38,6 +38,7 @@ dependencies = [
     "xmltodict >= 0.13.0",
     "moviepy >= 1.0.0",
     "typing-extensions >= 4.0.0",
+    "typer[all] >= 0.7.0",
 ]
 dynamic = ["version"]
 

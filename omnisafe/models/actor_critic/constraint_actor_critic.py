@@ -75,9 +75,10 @@ class ConstraintActorCritic(ActorCritic):
         ).build_critic('v')
         self.add_module('cost_critic', self.cost_critic)
 
-        self.cost_critic_optimizer = optim.Adam(
-            self.cost_critic.parameters(), lr=model_cfgs.critic.lr
-        )
+        if model_cfgs.critic.lr != 'None':
+            self.cost_critic_optimizer = optim.Adam(
+                self.cost_critic.parameters(), lr=model_cfgs.critic.lr
+            )
 
     def step(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
         """Choose action based on observation.

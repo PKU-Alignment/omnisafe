@@ -132,3 +132,62 @@ def seed_all(seed: int):
         torch.use_deterministic_algorithms(True)
     except AttributeError:
         pass
+
+
+def custom_cfgs_to_dict(key_list, value):
+    """This function is used to convert the custom configurations to dict.
+
+    .. note::
+        This function is used to convert the custom configurations to dict.
+        For example, if the custom configurations are ``train_cfgs:use_wandb`` and ``True``,
+        then the output dict will be ``{'train_cfgs': {'use_wandb': True}}``.
+
+    Args:
+        key_list (list): list of keys.
+        value: value.
+    """
+    if value == 'True':
+        value = True
+    elif value == 'False':
+        value = False
+    elif '.' in value:
+        value = float(value)
+    elif value.isdigit():
+        value = int(value)
+    elif value.startswith('[') and value.endswith(']'):
+        value = value[1:-1]
+        value = value.split(',')
+    else:
+        value = str(value)
+    keys_split = key_list.replace('-', '_').split(':')
+    return_dict = {keys_split[-1]: value}
+
+    for key in reversed(keys_split[:-1]):
+        return_dict = {key.replace('-', '_'): return_dict}
+    return return_dict
+
+
+def update_dic(total_dic, item_dic):
+    '''Updater of multi-level dictionary.'''
+    for idd in item_dic.keys():
+        total_value = total_dic.get(idd)
+        item_value = item_dic.get(idd)
+
+        if total_value is None:
+            total_dic.update({idd: item_value})
+        elif isinstance(item_value, dict):
+            update_dic(total_value, item_value)
+            total_dic.update({idd: total_value})
+        else:
+            total_value = item_value
+            total_dic.update({idd: total_value})
+
+
+if __name__ == '__main__':
+    print('This is a tool function package.')
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', 'True'))
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', 'False'))
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', '0.1'))
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', '1'))
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', 'test'))
+    print(custom_cfgs_to_dict('train_cfgs:use_wandb', '[1,2,3]'))
