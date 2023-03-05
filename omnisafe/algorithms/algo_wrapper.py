@@ -24,7 +24,7 @@ from safety_gymnasium.utils.registration import safe_registry
 
 from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
 from omnisafe.utils import distributed
-from omnisafe.utils.config import get_default_kwargs_yaml, check_all_configs
+from omnisafe.utils.config import check_all_configs, get_default_kwargs_yaml
 
 
 class AlgoWrapper:
