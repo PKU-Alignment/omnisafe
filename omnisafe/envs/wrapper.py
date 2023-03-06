@@ -260,7 +260,7 @@ class ActionScale(Wrapper):
         action = self._old_min_action + (self._old_max_action - self._old_min_action) * (
             action - self._min_action
         ) / (self._max_action - self._min_action)
-        return super().step(action)
+        return super().step(action.numpy())
 
 
 class Unsqueeze(Wrapper):
@@ -283,6 +283,7 @@ class Unsqueeze(Wrapper):
     def step(
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+        action = action.squeeze(0)
         obs, reward, cost, terminated, truncated, info = super().step(action)
         obs, reward, cost, terminated, truncated = map(
             lambda x: x.unsqueeze(0), (obs, reward, cost, terminated, truncated)
