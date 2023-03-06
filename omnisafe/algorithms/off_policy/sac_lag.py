@@ -59,13 +59,13 @@ class SACLag(SAC):
     ) -> torch.Tensor:
         action = self._actor_critic.actor.predict(obs, deterministic=False)
         log_prob = self._actor_critic.actor.log_prob(action)
-        loss_q_r_1 = self._actor_critic.reward_critic(obs, action)[0].mean()
-        loss_q_r_2 = self._actor_critic.reward_critic(obs, action)[1].mean()
-        loss_r = (self._alpha * log_prob - torch.min(loss_q_r_1, loss_q_r_2)).mean()
-        loss_q_c_1 = self._actor_critic.cost_critic(obs, action)[0].mean()
-        loss_q_c_2 = self._actor_critic.cost_critic(obs, action)[1].mean()
+        loss_q_r_1 = self._actor_critic.reward_critic(obs, action)[0]
+        loss_q_r_2 = self._actor_critic.reward_critic(obs, action)[1]
+        loss_r = self._alpha * log_prob - torch.min(loss_q_r_1, loss_q_r_2)
+        loss_q_c_1 = self._actor_critic.cost_critic(obs, action)[0]
+        loss_q_c_2 = self._actor_critic.cost_critic(obs, action)[1]
         loss_c = self._lagrange.lagrangian_multiplier * torch.max(loss_q_c_1, loss_q_c_2)
-        return (loss_r + loss_c) / (1 + self._lagrange.lagrangian_multiplier.item())
+        return (loss_r + loss_c).mean() / (1 + self._lagrange.lagrangian_multiplier.item())
 
     def _log_when_not_update(self) -> None:
         super()._log_when_not_update()

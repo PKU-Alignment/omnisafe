@@ -58,9 +58,9 @@ class TD3Lag(TD3):
         obs: torch.Tensor,
     ) -> torch.Tensor:
         action = self._actor_critic.actor.predict(obs, deterministic=True)
-        loss_r = -self._actor_critic.reward_critic(obs, action)[0].mean()
+        loss_r = -self._actor_critic.reward_critic(obs, action)[0]
         loss_c = (
             self._lagrange.lagrangian_multiplier.item()
-            * self._actor_critic.cost_critic(obs, action)[0].mean()
+            * self._actor_critic.cost_critic(obs, action)[0]
         )
-        return (loss_r + loss_c) / (1 + self._lagrange.lagrangian_multiplier.item())
+        return (loss_r + loss_c).mean() / (1 + self._lagrange.lagrangian_multiplier.item())
