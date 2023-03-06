@@ -15,6 +15,7 @@
 """Implementation of the Logger."""
 
 import atexit
+import csv
 import os
 import time
 from collections import deque
@@ -96,7 +97,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self,
         output_dir: str,
         exp_name: str,
-        output_fname: str = 'progress.txt',
+        output_fname: str = 'progress.csv',
         verbose: bool = True,
         seed: int = 0,
         use_tensorboard: bool = True,
@@ -123,6 +124,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             )
             atexit.register(self._output_file.close)
             self.log(f'Logging data to {self._output_file.name}', 'cyan', bold=True)
+            self._csv_writer = csv.writer(self._output_file)
 
         self._epoch: int = 0
         self._first_row: bool = True
@@ -144,10 +146,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             self._tensorboard_writer = SummaryWriter(log_dir=os.path.join(self._log_dir, 'tb'))
 
         if self._use_wandb and self._maste_proc:
-            project: str = self._config.get('wandb_project', 'omnisafe')
-            name: str = self._config.get('wandb_name', f'{exp_name}/{relpath}')
-            entity: str = self._config.get('wandb_entity', None)
-            wandb.init(project=project, name=name, entity=entity, dir=self._log_dir, config=config)
+            project: str = self._config.logger_cfgs.get('wandb_project', 'omnisafe')
+            name: str = f'{exp_name}-{relpath}'
+            print('project', project, 'name', name)
+            wandb.init(project=project, name=name, dir=self._log_dir, config=config)
             if config is not None:
                 wandb.config.update(config)
             if models is not None:
@@ -277,9 +279,9 @@ class Logger:  # pylint: disable=too-many-instance-attributes
                 self._proc_bar.update(1)
 
             if self._first_row:
-                self._output_file.write(' '.join(self._current_row.keys()) + '\n')
+                self._csv_writer.writerow(self._current_row.keys())
                 self._first_row = False
-            self._output_file.write(' '.join(map(str, self._current_row.values())) + '\n')
+            self._csv_writer.writerow(self._current_row.values())
             self._output_file.flush()
 
             if self._use_tensorboard:

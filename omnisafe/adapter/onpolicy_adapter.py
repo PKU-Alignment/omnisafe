@@ -62,7 +62,7 @@ class OnPolicyAdapter(OnlineAdapter):
 
             self._log_value(reward=reward, cost=cost, info=info)
 
-            if self._cfgs.use_cost:
+            if self._cfgs.algo_cfgs.use_cost:
                 logger.store(**{'Value/cost': value_c})
             logger.store(**{'Value/reward': value_r})
 
