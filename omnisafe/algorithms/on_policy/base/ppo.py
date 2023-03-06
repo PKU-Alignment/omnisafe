@@ -80,7 +80,7 @@ class PPO(PolicyGradient):
         ratio = torch.exp(_log_p - log_p)
         ratio_clip = torch.clamp(ratio, 1 - self.cfgs.clip, 1 + self.cfgs.clip)
         loss_pi = -(torch.min(ratio * adv, ratio_clip * adv))
-        loss_pi += self.cfgs.entropy_coef * dist.entropy().mean()
+        loss_pi -= self.cfgs.entropy_coef * dist.entropy().mean()
         # useful extra info
         approx_kl = (0.5 * (dist.mean - act) ** 2 / dist.stddev**2).mean().item()
         ent = dist.entropy().mean().item()
