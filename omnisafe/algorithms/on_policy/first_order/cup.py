@@ -103,8 +103,8 @@ class CUP(PPO):
             self._max_ratio = temp_max
         if temp_min < self._min_ratio:
             self._min_ratio = temp_min
-        entrophy = distribution.entropy().mean().item()
-        info = {'entrophy': entrophy, 'ratio': ratio.mean().item(), 'std': std}
+        entropy = distribution.entropy().mean().item()
+        info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
 
         self._logger.store(**{'Loss/Loss_pi_c': loss.item()})
 
@@ -175,7 +175,7 @@ class CUP(PPO):
                 'Train/MaxRatio': self._max_ratio,
                 'Train/MinRatio': self._min_ratio,
                 'Train/SecondStepStopIter': i + 1,
-                'Train/SecondStepEntropy': info['entrophy'],
+                'Train/SecondStepEntropy': info['entropy'],
                 'Train/SecondStepPolicyRatio': info['ratio'],
             }
         )

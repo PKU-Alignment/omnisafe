@@ -192,7 +192,7 @@ class TRPO(NaturalPG):
 
         self._logger.store(
             **{
-                'Train/Entropy': info['entrophy'],
+                'Train/Entropy': info['entropy'],
                 'Train/PolicyRatio': info['ratio'],
                 'Train/PolicyStd': info['std'],
                 'Loss/Loss_pi': loss.mean().item(),
