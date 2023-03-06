@@ -23,7 +23,7 @@ defaults:
   # If use tensorboard
   use_tensorboard: True
   # if use wandb
-  use_wandb: True
+  use_wandb: False
   # The torch device
   device: cpu
   # The torch device id
@@ -123,7 +123,7 @@ defaults:
       # Activation function
       activation: tanh
       # The learning rate of Critic network
-      lr: 0.0003
+      lr: 0.001
   ## --------------------------------------Configuration For Buffer----------------------------- ##
   buffer_cfgs:
     # Reward discounted factor

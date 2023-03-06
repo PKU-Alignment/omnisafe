@@ -158,12 +158,12 @@ defaults:
   ## --------------------------------------Configuration For Lagrange--------------------------- ##
   lagrange_cfgs:
     # Tolerance of constraint violation
-    cost_limit: 25.0
+    cost_limit: 25
     # Initial value of lagrangian multiplier
-    lagrangian_multiplier_init: 0.000
+    lagrangian_multiplier_init: 0.0001
     # Learning rate of lagrangian multiplier
     lambda_lr: 0.035
-    # The upper bound of lagrangian multiplier
-    lagrangian_upper_bound: 2.00
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
+    # The upper bound of lagrangian multiplier
+    #lagrangian_upper_bound: 3

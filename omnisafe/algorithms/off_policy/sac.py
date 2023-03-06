@@ -149,10 +149,11 @@ class SAC(DDPG):
         with torch.no_grad():
             # Set the update noise and noise clip.
             next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
+            next_logp = self._actor_critic.actor.log_prob(next_action)
             next_q1_value_c, next_q2_value_c = self._actor_critic.target_cost_critic(
                 next_obs, next_action
             )
-            next_q_value_c = torch.max(next_q1_value_c, next_q2_value_c)
+            next_q_value_c = torch.max(next_q1_value_c, next_q2_value_c) - next_logp * self._alpha
             target_q_value_c = cost + self._cfgs.gamma * (1 - done) * next_q_value_c
 
         q1_value_c, q2_value_c = self._actor_critic.cost_critic(obs, action)

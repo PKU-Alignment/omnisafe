@@ -27,6 +27,7 @@ from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils import distributed
+from omnisafe.utils.config import Config
 
 
 @registry.register
@@ -42,6 +43,10 @@ class DDPG(BaseAlgo):
         - URL: `DDPG <https://arxiv.org/abs/1509.02971>`_
     """
 
+    def __init__(self, env_id: str, cfgs: Config) -> None:
+        super().__init__(env_id, cfgs)
+        self._epoch: int
+
     def _init_env(self) -> None:
         self._env = OffPolicyAdapter(self._env_id, self._cfgs.num_envs, self._seed, self._cfgs)
         assert self._cfgs.steps_per_epoch % (distributed.world_size() * self._cfgs.num_envs) == 0, (
@@ -51,6 +56,7 @@ class DDPG(BaseAlgo):
             'The total number of steps is not divisible by the number of steps ' 'per epoch.'
         )
         self._epochs = int(self._cfgs.total_steps // self._cfgs.steps_per_epoch)
+        self._epoch = 0
         self._steps_per_epoch = self._cfgs.steps_per_epoch // (
             distributed.world_size() * self._cfgs.num_envs
         )
@@ -196,8 +202,8 @@ class DDPG(BaseAlgo):
                 }
             )
 
-            if epoch >= 50:
-                self._update_epoch()
+            self._update_epoch()
+            self._epoch = epoch
 
             self._logger.dump_tabular()
 

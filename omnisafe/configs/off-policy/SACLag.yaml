@@ -53,11 +53,11 @@ defaults:
   # The number of parallel environments
   num_envs: 2
   # Whether to use standardized reward
-  reward_normalize: True
+  reward_normalize: False
   # Whether to use standardized cost
-  cost_normalize: True
+  cost_normalize: False
   # Whether to use standardized obs
-  obs_normalize: True
+  obs_normalize: False
   # The soft update coefficient
   polyak: 0.005
   # The discount factor of GAE
@@ -77,7 +77,7 @@ defaults:
   # The value of alpha
   alpha: 0.2
   # Whether to use auto alpha
-  auto_alpha: True
+  auto_alpha: False
 
   # ---------------------------------------Optional Configuration-------------------------------- #
   ## -----------------------------------Configuration For Cost Critic--------------------------- ##
@@ -112,7 +112,7 @@ defaults:
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
     # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-    actor_type: sac
+    actor_type: gaussian_sac
     # Whether to use linear decay of learning rate
     linear_lr_decay: True
     # Configuration of Actor network
@@ -122,7 +122,7 @@ defaults:
       # Activation function
       activation: relu
       # The learning rate of Actor network
-      lr: 0.0001
+      lr: 0.0003
     # Configuration of Critic network
     critic:
       # The number of critic networks
@@ -162,6 +162,6 @@ defaults:
     # Initial value of lagrangian multiplier
     lagrangian_multiplier_init: 0.000
     # Learning rate of lagrangian multiplier
-    lambda_lr: 0.035
+    lambda_lr: 0.07
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
