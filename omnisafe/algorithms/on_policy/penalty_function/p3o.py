@@ -95,3 +95,15 @@ class P3O(PPO):
             torch.nn.utils.clip_grad_norm_(
                 self._actor_critic.actor.parameters(), self._cfgs.algo_cfgs.max_grad_norm
             )
+        distributed.avg_grads(self._actor_critic.actor)
+        self._actor_critic.actor_optimizer.step()
+
+        self._logger.store(
+            **{
+                'Train/Entropy': info['entropy'],
+                'Train/PolicyRatio': info['ratio'],
+                'Train/PolicyStd': info['std'],
+                'Loss/Loss_pi': loss_reward.mean().item(),
+                'Loss/Loss_pi_cost': loss_cost.mean().item(),
+            }
+        )

@@ -64,8 +64,8 @@ class FOCOPS(PolicyGradient):
         loss = loss.mean()
         loss -= self._cfgs.algo_cfgs.entropy_coef * distribution.entropy().mean()
 
-        entrophy = distribution.entropy().mean().item()
-        info = {'entrophy': entrophy, 'ratio': ratio.mean().item(), 'std': std}
+        entropy = distribution.entropy().mean().item()
+        info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
         return loss, info
 
     def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
