@@ -14,147 +14,117 @@
 # ==============================================================================
 
 defaults:
-  # --------------------------------------Basic Configurations----------------------------------- #
-  ## -----------------------------Basic configurations for base class PG------------------------ ##
-  # The random seed
+  # seed for random number generator
   seed: 0
-  # The number of threads used per experiment
-  num_threads: 1
-  # If use tensorboard
-  use_tensorboard: True
-  # if use wandb
-  use_wandb: False
-  # The torch device
-  device: cpu
-  # The torch device id
-  device_id: 0
-  # The environment wrapper type
-  wrapper_type: CMDPWrapper
-  # Number of epochs
-  epochs: 500
-  # Number of steps per epoch
-  steps_per_epoch: 32768
-  # Number of update iteration for Actor network
-  actor_iters: 10
-  # Number of update iteration for Critic network
-  critic_iters: 40
-  # Check if all models own the same parameter values every `check_freq` epoch
-  check_freq: 25
-  # Save model to disk every `check_freq` epochs
-  save_freq: 100
-  # Entropy coefficient for PPO loss
-  entropy_coef: 0.0
-  # The max length of per epoch
-  max_ep_len: 1000
-  # The size of mini batch
-  num_mini_batches: 16384
-  # The learning rate of Actor network
-  actor_lr: 0.001
-  # The learning rate of Critic network
-  critic_lr: 0.001
-  # The Address for saving training process data
-  data_dir: "./runs"
-  ## --------------------------Basic configurations for derived class NaturalPG----------------- ##
-  # The thereshold for KL early stopping
-  target_kl: 0.01
-  # Tolerance of constraint violation
-  cost_limit: 25
-  # Damping value for conjugate gradient
-  cg_damping: 0.1
-  # Number of conjugate gradient iterations
-  cg_iters: 10
-  # Subsampled observation
-  fvp_obs: None
-  # The number of parallel environments
-  num_envs: 16
-  # Whether to use standardized reward
-  reward_normalize: True
-  # Whether to use standardized cost
-  cost_normalize: True
-  # Whether to use standardized obs
-  obs_normalize: True
-
-  # ---------------------------------------Optional Configuration-------------------------------- #
-  ## -----------------------------------Configuration For Cost Critic--------------------------- ##
-  # Whether to use cost critic
-  use_cost: True
-  # Cost discounted factor
-  cost_gamma: 1.0
-  # Whether to use linear decay of learning rate
-  linear_lr_decay: False
-  # Whether to use exploration noise anneal
-  exploration_noise_anneal: False
-  # std
-  std: [0.5, 0.1]
-  # The coefficient of reward penalty
-  penalty_param: 0.0
-  # Whether to use KL early stopping
-  kl_early_stopping: True
-  # Whether to use max gradient norm
-  use_max_grad_norm: True
-  # The thereshold of max gradient norm
-  max_grad_norm: 40
-  # Whether to use standardized observation
-  standardized_obs: True
-  # Whether to use critic network norm
-  use_critic_norm: True
-  # The norm coefficient of critic network
-  critic_norm_coeff: 0.001
-  ## ---------------------------------------Configuration For Model----------------------------- ##
-  model_cfgs:
-    # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
-    weight_initialization_mode: "kaiming_uniform"
-    # Type of Actor, choosing from "gaussian_annealing", "gaussian_std_net_actor", "gaussian_learning_actor", "categorical_actor"
-    actor_type: gaussian_learning
-    # Whether to use linear decay of learning rate
-    linear_lr_decay: True
-    # Configuration of Actor network
-    actor:
-      # Size of hidden layers
-      hidden_sizes: [64, 64]
-      # Activation function
-      activation: tanh
-      # The learning rate of Actor network
-      lr: 0.0003
-    # Configuration of Critic network
-    critic:
-      # Size of hidden layers
-      hidden_sizes: [64, 64]
-      # Activation function
-      activation: tanh
-      # The learning rate of Critic network
-      lr: 0.0003
-  ## --------------------------------------Configuration For Buffer----------------------------- ##
-  buffer_cfgs:
-    # Reward discounted factor
+  # training configurations
+  train_cfgs:
+    # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
+    device: cpu
+    # number of threads for torch
+    torch_threads: 16
+    # number of vectorized environments
+    vector_env_nums: 16
+    # number of parallel agent, similar to a3c
+    parallel: 1
+    # total number of steps to train
+    total_steps: 16384000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    update_cycle: 32768
+    # number of iterations to update the policy
+    update_iters: 40
+    # batch size for each iteration
+    batch_size: 16384
+    # target kl divergence
+    target_kl: 0.02
+    # entropy coefficient
+    entropy_coef: 0.0
+    # normalize reward
+    reward_normalize: True
+    # normalize cost
+    cost_normalize: True
+    # normalize observation
+    obs_normalize: True
+    # early stop when kl divergence is bigger than target kl
+    kl_early_stop: True
+    # use max gradient norm
+    use_max_grad_norm: True
+    # max gradient norm
+    max_grad_norm: 40
+    # use critic norm
+    use_critic_norm: True
+    # critic norm coefficient
+    critic_norm_coef: 0.001
+    # reward discount factor
     gamma: 0.99
-    # Parameters used to estimate future rewards in GAE
+    # cost discount factor
+    cost_gamma: 0.99
+    # lambda for gae
     lam: 0.95
-    # Parameters used to estimate future costs in GAE
+    # lambda for cost gae
     lam_c: 0.95
-    # Method to estimate the advantage reward/cost, choosing from "gae", "plain", "vtrace"
+    # clip ratio
+    clip: 0.2
+    # advantage estimation method, options: gae, retrace
     adv_estimation_method: gae
-    # Whether to use reward standardized advantage estimation
+    # standardize reward advantage
     standardized_rew_adv: True
-    # Whether to use cost standardized advantage estimation
+    # standardize cost advantage
     standardized_cost_adv: True
-  ## --------------------------------------Configuration For Environment------------------------ ##
-  env_cfgs:
-    # The number of parallel environments
-    num_envs: 8
-    # Whether to use async environment
-    async_env: True
-    # Whether to use standardized reward
-    normalized_rew: False
-    # Whether to use standardized cost
-    normalized_cost: False
-    # Whether to use standardized obs
-    normalized_obs: True
-    # The maximum length of record queue
-    max_len: 100
-    # The number of threads used to sample data
-    num_threads: 20
-  ## --------------------------------------Configuration For Lagrange--------------------------- ##
+    # penalty coefficient
+    penalty_coef: 0.0
+    # use cost
+    use_cost: True
+    # damping value for conjugate gradient
+    cg_damping: 0.1
+    # number of conjugate gradient iterations
+    cg_iters: 10
+    # subsampled observation
+    fvp_obs: None
+  # logger configurations
+  logger_cfgs:
+    # use wandb for logging
+    use_wandb: False
+    # wandb project name
+    wandb_project: omnisafe
+    # use tensorboard for logging
+    use_tensorboard: True
+    # save model frequency
+    save_model_freq: 100
+    # save logger path
+    log_dir: "./runs"
+    # save model path
+    window_lens: 100
+  # model configurations
+  model_cfgs:
+    # weight initialization mode
+    weight_initialization_mode: "kaiming_uniform"
+    # actor type, options: gaussian, gaussian_learning
+    actor_type: gaussian_learning
+    # linear learning rate decay
+    linear_lr_decay: True
+    # exploration noise anneal
+    exploration_noise_anneal: False
+    # std upper bound, and lower bound
+    std_range: [0.5, 0.1]
+    # actor network configurations
+    actor:
+      # hidden layer sizes
+      hidden_sizes: [64, 64]
+      # activation function
+      activation: tanh
+      # out_activation: tanh
+      # learning rate
+      lr: None
+    critic:
+      # hidden layer sizes
+      hidden_sizes: [64, 64]
+      # activation function
+      activation: tanh
+      # learning rate
+      lr: 0.0003
+  # lagrangian configurations
   lagrange_cfgs:
     # Tolerance of constraint violation
     cost_limit: 25.0

@@ -52,14 +52,17 @@ def train(
 
 
 if __name__ == '__main__':
-    eg = ExperimentGrid(exp_name='PPO_TRPO_3_3')
-    eg.add('algo', ['PPO', 'TRPO'])
-    eg.add('use_wandb', [False])
-    eg.add('num_threads', 2)
-    eg.add('num_envs', 16)
-    eg.add(
-        'env_id',
-        ['SafetyPointGoal0-v0', 'SafetyPointGoal1-v0', 'SafetyCarGoal0-v0', 'SafetyCarGoal1-v0'],
-    )
-    eg.add('seed', [0, 5, 10])
-    eg.run(train, num_pool=8)
+    eg = ExperimentGrid(exp_name='Safety_Gymnasium_Goal')
+    base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']
+    naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
+    first_order_policy = ['CUP', 'FOCOPS']
+    second_order_policy = ['CPO', 'PCPO']
+    eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
+    eg.add('env_id', ['SafetyPointGoal1-v0'])
+    eg.add('logger_cfgs:use_wandb', [True])
+    eg.add('logger_cfgs:wandb_project', ['omnisafe_jiaming'])
+    # eg.add('train_cfgs:total_steps', 2000)
+    # eg.add('algo_cfgs:update_cycle', 1000)
+    # eg.add('train_cfgs:vector_env_nums', 1)
+    eg.add('seed', [0])
+    eg.run(train, num_pool=13)

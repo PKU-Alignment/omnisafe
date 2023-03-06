@@ -47,9 +47,9 @@ class OnlineAdapter:
         self._env_id = env_id
         self._env = make(env_id, num_envs=num_envs)
         self._wrapper(
-            obs_normalize=cfgs.obs_normalize,
-            reward_normalize=cfgs.reward_normalize,
-            cost_normalize=cfgs.cost_normalize,
+            obs_normalize=cfgs.algo_cfgs.obs_normalize,
+            reward_normalize=cfgs.algo_cfgs.reward_normalize,
+            cost_normalize=cfgs.algo_cfgs.cost_normalize,
         )
         self._env.set_seed(seed)
 

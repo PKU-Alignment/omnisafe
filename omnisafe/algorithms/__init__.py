@@ -22,7 +22,7 @@ from omnisafe.algorithms.base_algo import BaseAlgo
 from omnisafe.algorithms.off_policy import DDPG, SAC, TD3, DDPGLag, SACLag, TD3Lag
 
 # On-Policy Safe
-from omnisafe.algorithms.on_policy import (  # PPOLagSimmerPid,; PPOLagSimmerQ,; PPOSimmerPid,; PPOSimmerQ,
+from omnisafe.algorithms.on_policy import (
     CPO,
     CUP,
     FOCOPS,
@@ -31,17 +31,11 @@ from omnisafe.algorithms.on_policy import (  # PPOLagSimmerPid,; PPOLagSimmerQ,;
     PPO,
     RCPO,
     TRPO,
-    CPPOPid,
     NaturalPG,
     OnCRPO,
     PolicyGradient,
-    PPOEarlyTerminated,
     PPOLag,
-    PPOLagEarlyTerminated,
-    PPOLagSaute,
-    PPOSaute,
     TRPOLag,
-    TRPOPid,
 )
 
 

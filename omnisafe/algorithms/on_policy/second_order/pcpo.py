@@ -75,14 +75,14 @@ class PCPO(CPO):
         distributed.avg_grads(self._actor_critic.actor)
 
         grad = -get_flat_gradients_from(self._actor_critic.actor)
-        x = conjugate_gradients(self._fvp, grad, self._cfgs.cg_iters)
+        x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
         xHx = torch.dot(x, self._fvp(x))
         H_inv_g = self._fvp(x)
         assert xHx.item() >= 0, 'xHx is negative'
-        alpha = torch.sqrt(2 * self._cfgs.target_kl / (xHx + 1e-8))
+        alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
 
-        self._actor_critic.actor_optimizer.zero_grad()
+        self._actor_critic.zero_grad()
         loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
         loss_cost_before = distributed.dist_avg(loss_cost).item()
 
@@ -90,21 +90,21 @@ class PCPO(CPO):
         distributed.avg_grads(self._actor_critic.actor)
 
         b_grad = get_flat_gradients_from(self._actor_critic.actor)
-        ep_costs = self._logger.get_stats('Metrics/EpCost')[0] - self._cfgs.cost_limit
+        ep_costs = self._logger.get_stats('Metrics/EpCost')[0] - self._cfgs.algo_cfgs.cost_limit
         cost = ep_costs / (self._logger.get_stats('Metrics/EpLen')[0] + 1e-8)
 
         self._logger.log(f'c = {cost}')
         self._logger.log(f'b^T b = {b_grad.dot(b_grad).item()}')
 
-        p = conjugate_gradients(self._fvp, b_grad, self._cfgs.cg_iters)
+        p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
         q = xHx
         r = torch.dot(grad, p)
         s = torch.dot(b_grad, p)
 
         step_direction = (
-            torch.sqrt(2 * self._cfgs.target_kl / (q + 1e-8)) * H_inv_g
+            torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (q + 1e-8)) * H_inv_g
             - torch.clamp_min(
-                (torch.sqrt(2 * self._cfgs.target_kl / q) * r + cost) / s,
+                (torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / q) * r + cost) / s,
                 torch.tensor(0.0, device=self._device),
             )
             * p
