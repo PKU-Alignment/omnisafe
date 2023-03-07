@@ -1,315 +1,193 @@
-# # Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
-# #
-# # Licensed under the Apache License, Version 2.0 (the "License");
-# # you may not use this file except in compliance with the License.
-# # You may obtain a copy of the License at
-# #
-# #     http://www.apache.org/licenses/LICENSE-2.0
-# #
-# # Unless required by applicable law or agreed to in writing, software
-# # distributed under the License is distributed on an "AS IS" BASIS,
-# # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# # See the License for the specific language governing permissions and
-# # limitations under the License.
-# # ==============================================================================
-# """Test models"""
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Test models"""
 
-# from typing import Optional
+import pytest
+import torch
+from gymnasium.spaces import Box, Discrete
 
-# import numpy as np
-# import torch
-# import torch.nn as nn
-# from gymnasium.spaces import Box, Discrete
-
-# import helpers
-# from omnisafe.models import ActorBuilder, CriticBuilder
-# from omnisafe.models.actor_critic import ActorCritic
-# from omnisafe.models.actor_q_critic import ActorQCritic
-# from omnisafe.typing import Activation, InitFunction
-# from omnisafe.utils.config import Config
+import helpers
+from omnisafe.models import ActorBuilder, CriticBuilder
+from omnisafe.models.actor_critic import ActorCritic, ConstraintActorCritic
+from omnisafe.typing import Activation
+from omnisafe.utils.config import Config
 
 
-# @helpers.parametrize(
-#     obs_dim=[10],
-#     act_dim=[5],
-#     shared=[None],
-#     hidden_sizes=[64],
-#     activation=['tanh', 'relu'],
-#     use_obs_encoder=[True, False],
-# )
-# def test_critic(
-#     obs_dim: int,
-#     act_dim,
-#     shared,
-#     hidden_sizes: int,
-#     activation: str,
-#     use_obs_encoder: bool,
-# ) -> None:
-#     """Test critic."""
-#     builder = CriticBuilder(
-#         obs_dim=obs_dim,
-#         act_dim=act_dim,
-#         hidden_sizes=[hidden_sizes, hidden_sizes],
-#         activation=activation,
-#         shared=shared,
-#     )
-#     obs = torch.randn(obs_dim, dtype=torch.float32)
-#     act = torch.randn(act_dim, dtype=torch.float32)
-#     q_critic = builder.build_critic(critic_type='q', use_obs_encoder=use_obs_encoder)
-#     v_critic = builder.build_critic(critic_type='v')
-#     out1 = q_critic(obs, act)[0]
-#     out2 = v_critic(obs)
-#     assert out1.shape == torch.Size([]), f'q_critic output shape is {out1.shape}'
-#     assert out2.shape == torch.Size([]), f'v_critic output shape is {out2.shape}'
+@helpers.parametrize(
+    obs_dim=[10],
+    act_dim=[5],
+    hidden_sizes=[64],
+    activation=['tanh', 'relu'],
+    use_obs_encoder=[True, False],
+    num_critics=[1, 2],
+)
+def test_critic(
+    obs_dim: int,
+    act_dim: int,
+    num_critics: int,
+    hidden_sizes: int,
+    activation: Activation,
+    use_obs_encoder: bool,
+) -> None:
+    """Test critic."""
+    obs_sapce = Box(low=-1.0, high=1.0, shape=(obs_dim,))
+    act_space = Box(low=-1.0, high=1.0, shape=(act_dim,))
+
+    builder = CriticBuilder(
+        obs_space=obs_sapce,
+        act_space=act_space,
+        hidden_sizes=[hidden_sizes, hidden_sizes],
+        activation=activation,
+        num_critics=num_critics,
+        use_obs_encoder=use_obs_encoder,
+    )
+    obs = torch.randn(obs_dim, dtype=torch.float32)
+    act = torch.randn(act_dim, dtype=torch.float32)
+    q_critic = builder.build_critic(critic_type='q')
+    v_critic = builder.build_critic(critic_type='v')
+    with pytest.raises(NotImplementedError):
+        builder.build_critic(critic_type='invalid')  # type: ignore
+
+    out1 = q_critic(obs, act)[0]
+    out2 = v_critic(obs)[0]
+    assert out1.shape == torch.Size([]), f'q_critic output shape is {out1.shape}'
+    assert out2.shape == torch.Size([]), f'v_critic output shape is {out2.shape}'
 
 
-# @helpers.parametrize(
-#     actor_type=['gaussian', 'gaussian_stdnet'],
-#     obs_dim=[10],
-#     act_dim=[5],
-#     hidden_sizes=[64],
-#     activation=['tanh'],
-#     output_activation=['tanh'],
-#     weight_initialization_mode=['kaiming_uniform'],
-#     shared=[None],
-#     std_learning=[True],
-#     std_init=[1.0],
-#     scale_action=[True],
-#     clip_action=[True],
-# )
-# def test_gaussian_actor(
-#     actor_type: str,
-#     obs_dim: int,
-#     act_dim: int,
-#     hidden_sizes: list,
-#     activation: Activation,
-#     weight_initialization_mode: InitFunction,
-#     shared: nn.Module,
-#     scale_action: bool,
-#     clip_action: bool,
-#     output_activation: Optional[Activation],
-#     std_learning: bool,
-#     std_init: float,
-# ) -> None:
-#     """Test the MLP Gaussian Actor class."""
-#     builder = ActorBuilder(
-#         obs_dim=obs_dim,
-#         act_dim=act_dim,
-#         hidden_sizes=[hidden_sizes, hidden_sizes],
-#         activation=activation,
-#         weight_initialization_mode=weight_initialization_mode,
-#         shared=shared,
-#         scale_action=scale_action,
-#         clip_action=clip_action,
-#         output_activation=output_activation,
-#         std_learning=std_learning,
-#         std_init=std_init,
-#     )
-#     kwargs = {
-#         'act_min': torch.full((act_dim,), -1.0),
-#         'act_max': torch.full((act_dim,), 1.0),
-#     }
+@helpers.parametrize(
+    obs_dim=[10],
+    act_dim=[5],
+    hidden_sizes=[64],
+    activation=['tanh', 'relu'],
+    deterministic=[True, False],
+)
+def test_actor(
+    obs_dim: int,
+    act_dim: int,
+    hidden_sizes: int,
+    activation: Activation,
+    deterministic: bool,
+) -> None:
+    """Test actor."""
+    obs_sapce = Box(low=-1.0, high=1.0, shape=(obs_dim,))
+    act_space = Box(low=-1.0, high=1.0, shape=(act_dim,))
 
-#     actor = builder.build_actor(actor_type=actor_type, **kwargs)
+    builder = ActorBuilder(
+        obs_space=obs_sapce,
+        act_space=act_space,
+        hidden_sizes=[hidden_sizes, hidden_sizes],
+        activation=activation,
+    )
+    obs = torch.randn(obs_dim, dtype=torch.float32)
+    actor_learning = builder.build_actor(actor_type='gaussian_learning')
+    actor_sac = builder.build_actor(actor_type='gaussian_sac')
+    with pytest.raises(NotImplementedError):
+        builder.build_actor(actor_type='invalid')  # type: ignore
 
-#     obs = torch.randn((1, obs_dim), dtype=torch.float32)
-#     dist = actor(obs)
-#     assert isinstance(dist, torch.distributions.Normal), 'Actor output is not a Normal distribution'
+    dist = actor_learning(obs)
+    action = actor_learning.predict(obs, deterministic)
+    assert action.shape == torch.Size([act_dim]), f'actor output shape is {action.shape}'
+    lopp = actor_learning.log_prob(action)
+    assert lopp.shape == torch.Size([]), f'actor log_prob shape is {lopp.shape}'
+    actor_learning.std = 0.9  # type: ignore
+    assert (actor_learning.std - 0.9) < 1e-4, f'actor std is {actor_learning.std}'  # type: ignore
 
-#     raw_act, act = actor.predict(obs)
-#     assert act.shape == torch.Size([1, act_dim]), f'Actor predict output shape is {act.shape}'
-#     assert raw_act.shape == torch.Size(
-#         [1, act_dim]
-#     ), f'Actor predict output shape is {raw_act.shape}'
-
-#     raw_act, act = actor.predict(obs, deterministic=True)
-#     assert act.shape == torch.Size([1, act_dim]), f'Actor predict output shape is {act.shape}'
-#     assert raw_act.shape == torch.Size(
-#         [1, act_dim]
-#     ), f'Actor predict output shape is {raw_act.shape}'
-#     raw_act, act, logp = actor.predict(obs, deterministic=True, need_log_prob=True)
-
-#     assert raw_act.shape == torch.Size(
-#         [1, act_dim]
-#     ), f'Actor predict output shape is {raw_act.shape}'
-#     assert act.shape == torch.Size([1, act_dim]), f'Actor predict output shape is {act.shape}'
-#     assert logp.shape == torch.Size([1]), f'Actor logp output shape is {logp.shape}'
+    dist = actor_sac(obs)
+    action = actor_sac.predict(obs, deterministic)
+    assert action.shape == torch.Size([act_dim]), f'actor output shape is {action.shape}'
+    lopp = actor_sac.log_prob(action)
+    assert lopp.shape == torch.Size([]), f'actor log_prob shape is {lopp.shape}'
+    with pytest.raises(NotImplementedError):
+        actor_sac.std = 0.9  # type: ignore
+    assert isinstance(actor_sac.std, float), f'actor std is {actor_sac.std}'  # type: ignore
 
 
-# @helpers.parametrize(
-#     obs_dim=[10],
-#     act_dim=[5],
-#     space_type=[Box, Discrete],
-#     shared_weights=[False, True],  # shared weights not implemented yet in discrete case.
-#     hidden_sizes=[64],
-#     activation=['tanh'],
-#     weight_initialization_mode=[
-#         'kaiming_uniform',
-#         'xavier_normal',
-#         'glorot',
-#         'xavier_uniform',
-#         'orthogonal',
-#     ],
-#     actor_type=['gaussian', 'gaussian_stdnet'],
-# )
-# def test_actor_critic(
-#     obs_dim: int,
-#     act_dim: int,
-#     space_type,
-#     shared_weights: bool,
-#     hidden_sizes: int,
-#     activation: str,
-#     weight_initialization_mode: str,
-#     actor_type: str,
-# ) -> None:
-#     """Test the Actor Critic class."""
+@helpers.parametrize(
+    linear_lr_decay=[True, False],
+    lr=['None', 1e-3],
+)
+def test_actor_critic(
+    linear_lr_decay: bool,
+    lr,
+):
+    """Test actor critic."""
+    obs_dim = 10
+    act_dim = 5
+    obs_sapce = Box(low=-1.0, high=1.0, shape=(obs_dim,))
+    act_space = Box(low=-1.0, high=1.0, shape=(act_dim,))
 
-#     ac_kwargs = {
-#         'pi': {
-#             'hidden_sizes': [hidden_sizes, hidden_sizes],
-#             'activation': activation,
-#         },
-#         'val': {
-#             'hidden_sizes': [hidden_sizes, hidden_sizes],
-#             'activation': activation,
-#         },
-#     }
-#     observation_space = Box(low=-1, high=1, shape=(obs_dim,))
+    model_cfgs = Config(
+        weight_initialization_mode='kaiming_uniform',
+        actor_type='gaussian_learning',
+        linear_lr_decay=linear_lr_decay,
+        exploration_noise_anneal=False,
+        std_range=[0.5, 0.1],
+        actor=Config(hidden_sizes=[64, 64], activation='tanh', lr=lr),
+        critic=Config(hidden_sizes=[64, 64], activation='tanh', lr=lr),
+    )
 
-#     model_cfgs = Config(
-#         **{
-#             'actor_type': actor_type,
-#             'ac_kwargs': ac_kwargs,
-#             'weight_initialization_mode': weight_initialization_mode,
-#             'shared_weights': shared_weights,
-#         }
-#     )
+    ac = ActorCritic(
+        obs_space=obs_sapce, act_space=act_space, model_cfgs=model_cfgs, epochs=10  # type: ignore
+    )
+    obs = torch.randn(obs_dim, dtype=torch.float32)
+    act, value, logp = ac(obs)
+    assert act.shape == torch.Size([act_dim]), f'actor output shape is {act.shape}'
+    assert value.shape == torch.Size([]), f'critic output shape is {value.shape}'
+    assert logp.shape == torch.Size([]), f'actor log_prob shape is {logp.shape}'
+    ac.set_annealing(epochs=[1, 10], std=[0.5, 0.1])
+    ac.annealing(5)
 
-#     if space_type == Discrete:
-#         action_space = space_type(act_dim)
-#     else:
-#         action_space = space_type(low=-1, high=1, shape=(act_dim,))
-
-#     actor_critic = ActorCritic(
-#         observation_space=observation_space,
-#         action_space=action_space,
-#         model_cfgs=model_cfgs,
-#     )
-
-#     obs = torch.randn((1, obs_dim), dtype=torch.float32)
-
-#     raw_act, act, val, logpro = actor_critic(obs)
-#     assert (
-#         isinstance(raw_act, torch.Tensor)
-#         and isinstance(act, torch.Tensor)
-#         and isinstance(val, torch.Tensor)
-#         and isinstance(logpro, torch.Tensor)
-#     ), 'Failed!'
-
-#     raw_act, act, val, logpro = actor_critic.step(obs)
-#     assert (
-#         isinstance(raw_act, torch.Tensor)
-#         and isinstance(act, torch.Tensor)
-#         and isinstance(val, torch.Tensor)
-#         and isinstance(logpro, torch.Tensor)
-#     ), 'Failed!'
-
-#     raw_act, act, val, logpro = actor_critic.step(obs, deterministic=True)
-#     assert (
-#         isinstance(raw_act, torch.Tensor)
-#         and isinstance(act, torch.Tensor)
-#         and isinstance(val, torch.Tensor)
-#         and isinstance(logpro, torch.Tensor)
-#     ), 'Failed!'
-
-#     actor_critic.anneal_exploration(0.5)
+    cac = ConstraintActorCritic(
+        obs_space=obs_sapce, act_space=act_space, model_cfgs=model_cfgs, epochs=10  # type: ignore
+    )
+    obs = torch.randn(obs_dim, dtype=torch.float32)
+    act, value_r, value_c, logp = cac(obs)
+    assert act.shape == torch.Size([act_dim]), f'actor output shape is {act.shape}'
+    assert value_r.shape == torch.Size([]), f'critic output shape is {value_r.shape}'
+    assert value_c.shape == torch.Size([]), f'critic output shape is {value_c.shape}'
+    assert logp.shape == torch.Size([]), f'actor log_prob shape is {logp.shape}'
+    cac.set_annealing(epochs=[1, 10], std=[0.5, 0.1])
+    cac.annealing(5)
 
 
-# @helpers.parametrize(
-#     obs_dim=[10],
-#     act_dim=[5],
-#     space_type=[Box, Discrete],
-#     shared_weights=[False],  # shared weights not implemented yet in discrete case.
-#     hidden_sizes=[64],
-#     activation=['tanh'],
-#     weight_initialization_mode=[
-#         'kaiming_uniform',
-#         'xavier_normal',
-#         'glorot',
-#         'xavier_uniform',
-#         'orthogonal',
-#     ],
-#     actor_type=['gaussian', 'gaussian_stdnet'],
-# )
-# def test_actor_q_critic(
-#     obs_dim: int,
-#     act_dim: int,
-#     space_type,
-#     shared_weights: bool,
-#     hidden_sizes: int,
-#     activation: str,
-#     weight_initialization_mode: str,
-#     actor_type: str,
-# ) -> None:
-#     """Test the Actor Critic class."""
+@helpers.parametrize(obs_act_type=[('discrete', 'continuous'), ('continuous', 'discrete')])
+def test_raise_error(obs_act_type):
+    obs_type, act_type = obs_act_type
 
-#     ac_kwargs = {
-#         'pi': {
-#             'hidden_sizes': [hidden_sizes, hidden_sizes],
-#             'activation': activation,
-#         },
-#         'val': {
-#             'hidden_sizes': [hidden_sizes, hidden_sizes],
-#             'activation': activation,
-#             'num_critics': 1,
-#         },
-#     }
-#     observation_space = Box(low=-1, high=1, shape=(obs_dim,))
+    if obs_type == 'discrete':
+        obs_sapce = Discrete(10)
+    else:
+        obs_sapce = Box(low=-1.0, high=1.0, shape=(10,))  # type: ignore
 
-#     model_cfgs = Config(
-#         **{
-#             'actor_type': actor_type,
-#             'ac_kwargs': ac_kwargs,
-#             'weight_initialization_mode': weight_initialization_mode,
-#             'shared_weights': shared_weights,
-#         }
-#     )
+    if act_type == 'discrete':
+        act_space = Discrete(5)
+    else:
+        act_space = Box(low=-1.0, high=1.0, shape=(5,))  # type: ignore
 
-#     if space_type == Discrete:
-#         action_space = space_type(act_dim)
-#     else:
-#         action_space = space_type(low=-1, high=1, shape=(act_dim,))
+    builder = ActorBuilder(
+        obs_space=obs_sapce,
+        act_space=act_space,
+        hidden_sizes=[3, 3],
+    )
+    with pytest.raises(NotImplementedError):
+        builder.build_actor(actor_type='gaussian_learning')
 
-#     actor_critic = ActorQCritic(
-#         observation_space=observation_space,
-#         action_space=action_space,
-#         model_cfgs=model_cfgs,
-#     )
-
-#     obs = torch.randn((1, obs_dim), dtype=torch.float32)
-
-#     raw_act, act, val, logpro = actor_critic(obs)
-#     assert (
-#         isinstance(raw_act, torch.Tensor)
-#         and isinstance(act, torch.Tensor)
-#         and isinstance(val, torch.Tensor)
-#         and isinstance(logpro, torch.Tensor)
-#     ), 'Failed!'
-
-#     raw_act, act, val, logpro = actor_critic.step(obs)
-#     assert (
-#         isinstance(raw_act, torch.Tensor)
-#         and isinstance(act, torch.Tensor)
-#         and isinstance(val, torch.Tensor)
-#         and isinstance(logpro, torch.Tensor)
-#     ), 'Failed!'
-
-#     raw_act, act, val, logpro = actor_critic.step(obs, deterministic=True)
-#     assert (
-#         isinstance(raw_act, torch.Tensor)
-#         and isinstance(act, torch.Tensor)
-#         and isinstance(val, torch.Tensor)
-#         and isinstance(logpro, torch.Tensor)
-#     ), 'Failed!'
-
-#     actor_critic.anneal_exploration(0.5)
+    builder = CriticBuilder(
+        obs_space=obs_sapce,
+        act_space=act_space,
+        hidden_sizes=[3, 3],
+    )
+    with pytest.raises(NotImplementedError):
+        builder.build_critic(critic_type='q')
