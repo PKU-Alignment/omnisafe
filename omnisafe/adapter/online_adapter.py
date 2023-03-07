@@ -14,6 +14,7 @@
 # ==============================================================================
 """Online Adapter for OmniSafe."""
 
+import warnings
 from typing import Dict, Tuple
 
 import torch
@@ -98,9 +99,10 @@ class OnlineAdapter:
         """
         try:
             fps = self._env.metadata['render_fps']
-        except:
+        except KeyError:
             fps = 30
-            Warning('No fps information, set to 30')
+            warnings.warn('The fps is not found, use 30 as default.')
+
         return fps
 
     @property

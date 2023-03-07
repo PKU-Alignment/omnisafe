@@ -138,6 +138,7 @@ class ObsNormalize(Wrapper):
         return saved
 
     def load(self, obs_normalizer_dict: dict) -> None:
+        """Load the normalizer."""
         self._obs_normalizer.load_state_dict(obs_normalizer_dict)
 
 
