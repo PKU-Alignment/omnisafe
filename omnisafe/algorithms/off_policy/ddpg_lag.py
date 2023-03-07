@@ -48,38 +48,11 @@ class DDPGLag(DDPG):
         obs: torch.Tensor,
     ) -> torch.Tensor:
         action = self._actor_critic.actor.predict(obs, deterministic=True)
-        loss_r = -self._actor_critic.reward_critic(obs, action)[0].mean()
+        loss_r = -self._actor_critic.reward_critic(obs, action)[0]
         loss_c = (
-            self._lagrange.lagrangian_multiplier
-            * self._actor_critic.cost_critic(obs, action)[0].mean()
+            self._lagrange.lagrangian_multiplier * self._actor_critic.cost_critic(obs, action)[0]
         )
-        return loss_r + loss_c
-
-    def _update(self) -> None:
-        for step in range(self._steps_per_sample // self._cfgs.update_cycle):
-            data = self._buf.sample_batch()
-            obs, act, reward, cost, done, next_obs = (
-                data['obs'],
-                data['act'],
-                data['reward'],
-                data['cost'],
-                data['done'],
-                data['next_obs'],
-            )
-            Jc = self._logger.get_stats('Metrics/EpCost')[0]
-            self._lagrange.update_lagrange_multiplier(Jc)
-            self._update_rewrad_critic(obs, act, reward, done, next_obs)
-            if self._cfgs.use_cost:
-                self._update_cost_critic(obs, act, cost, done, next_obs)
-
-            if step % self._cfgs.policy_delay == 0:
-                self._update_actor(obs)
-
-            self._logger.store(
-                **{
-                    'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
-                }
-            )
+        return (loss_r + loss_c).mean()
 
     def _log_when_not_update(self) -> None:
         super()._log_when_not_update()

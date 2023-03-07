@@ -43,19 +43,21 @@ class SAC(DDPG):
 
     def _init(self) -> None:
         super()._init()
-        if self._cfgs.auto_alpha:
+        if self._cfgs.algo_cfgs.auto_alpha:
             self._target_entropy = -torch.prod(torch.Tensor(self._env.action_space.shape)).item()
             self._log_alpha = torch.zeros(1, requires_grad=True, device=self._device)
             self._alpha_optimizer = optim.Adam(
                 [self._log_alpha], lr=self._cfgs.model_cfgs.critic.lr
             )
         else:
-            self._log_alpha = torch.log(torch.tensor(self._cfgs.alpha, device=self._device))
+            self._log_alpha = torch.log(
+                torch.tensor(self._cfgs.algo_cfgs.alpha, device=self._device)
+            )
 
     def _init_log(self) -> None:
         super()._init_log()
         self._logger.register_key('Value/alpha')
-        if self._cfgs.auto_alpha:
+        if self._cfgs.algo_cfgs.auto_alpha:
             self._logger.register_key('Loss/alpha_loss')
 
     @property
@@ -77,23 +79,23 @@ class SAC(DDPG):
                 next_obs, next_action
             )
             next_q_value_r = torch.min(next_q1_value_r, next_q2_value_r) - next_logp * self._alpha
-            target_q_value_r = reward + self._cfgs.gamma * (1 - done) * next_q_value_r
+            target_q_value_r = reward + self._cfgs.algo_cfgs.gamma * (1 - done) * next_q_value_r
 
         q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
         loss = nn.functional.mse_loss(q1_value_r, target_q_value_r) + nn.functional.mse_loss(
             q2_value_r, target_q_value_r
         )
 
-        if self._cfgs.use_critic_norm:
+        if self._cfgs.algo_cfgs.use_critic_norm:
             for param in self._actor_critic.reward_critic.parameters():
-                loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
+                loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coeff
 
         self._actor_critic.reward_critic_optimizer.zero_grad()
         loss.backward()
 
-        if self._cfgs.use_max_grad_norm:
+        if self._cfgs.algo_cfgs.max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.reward_critic.parameters(), self._cfgs.max_grad_norm
+                self._actor_critic.reward_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
             )
         distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
@@ -110,7 +112,7 @@ class SAC(DDPG):
     ) -> None:
         super()._update_actor(obs)
 
-        if self._cfgs.auto_alpha:
+        if self._cfgs.algo_cfgs.auto_alpha:
             with torch.no_grad():
                 action = self._actor_critic.actor.predict(obs, deterministic=False)
                 log_prob = self._actor_critic.actor.log_prob(action)
@@ -154,23 +156,23 @@ class SAC(DDPG):
                 next_obs, next_action
             )
             next_q_value_c = torch.min(next_q1_value_c, next_q2_value_c) - next_logp * self._alpha
-            target_q_value_c = cost + self._cfgs.gamma * (1 - done) * next_q_value_c
+            target_q_value_c = cost + self._cfgs.algo_cfgs.gamma * (1 - done) * next_q_value_c
 
         q1_value_c, q2_value_c = self._actor_critic.cost_critic(obs, action)
         loss = nn.functional.mse_loss(q1_value_c, target_q_value_c) + nn.functional.mse_loss(
             q2_value_c, target_q_value_c
         )
 
-        if self._cfgs.use_critic_norm:
+        if self._cfgs.algo_cfgs.use_critic_norm:
             for param in self._actor_critic.cost_critic.parameters():
-                loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
+                loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coeff
 
         self._actor_critic.cost_critic_optimizer.zero_grad()
         loss.backward()
 
-        if self._cfgs.use_max_grad_norm:
+        if self._cfgs.algo_cfgs.max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.cost_critic.parameters(), self._cfgs.max_grad_norm
+                self._actor_critic.cost_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
             )
         distributed.avg_grads(self._actor_critic.cost_critic)
         self._actor_critic.cost_critic_optimizer.step()
@@ -198,7 +200,7 @@ class SAC(DDPG):
                 'Value/alpha': self._alpha,
             }
         )
-        if self._cfgs.auto_alpha:
+        if self._cfgs.algo_cfgs.auto_alpha:
             self._logger.store(
                 **{
                     'Loss/alpha_loss': 0.0,

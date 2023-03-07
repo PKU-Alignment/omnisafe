@@ -72,29 +72,29 @@ class TD3(DDPG):
         """
         with torch.no_grad():
             # Set the update noise and noise clip.
-            self._actor_critic.target_actor.noise = self._cfgs.policy_noise
+            self._actor_critic.target_actor.noise = self._cfgs.algo_cfgs.policy_noise
             next_action = self._actor_critic.target_actor.predict(next_obs, deterministic=False)
             next_q1_value_r, next_q2_value_r = self._actor_critic.target_reward_critic(
                 next_obs, next_action
             )
             next_q_value_r = torch.min(next_q1_value_r, next_q2_value_r)
-            target_q_value_r = reward + self._cfgs.gamma * (1 - done) * next_q_value_r
+            target_q_value_r = reward + self._cfgs.algo_cfgs.gamma * (1 - done) * next_q_value_r
 
         q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
         loss = nn.functional.mse_loss(q1_value_r, target_q_value_r) + nn.functional.mse_loss(
             q2_value_r, target_q_value_r
         )
 
-        if self._cfgs.use_critic_norm:
+        if self._cfgs.algo_cfgs.use_critic_norm:
             for param in self._actor_critic.reward_critic.parameters():
-                loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
+                loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coeff
 
         self._actor_critic.reward_critic_optimizer.zero_grad()
         loss.backward()
 
-        if self._cfgs.use_max_grad_norm:
+        if self._cfgs.algo_cfgs.max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.reward_critic.parameters(), self._cfgs.max_grad_norm
+                self._actor_critic.reward_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
             )
         distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
@@ -128,29 +128,29 @@ class TD3(DDPG):
         """
         with torch.no_grad():
             # Set the update noise and noise clip.
-            self._actor_critic.target_actor.noise = self._cfgs.policy_noise
+            self._actor_critic.target_actor.noise = self._cfgs.algo_cfgs.policy_noise
             next_action = self._actor_critic.target_actor.predict(next_obs, deterministic=False)
             next_q1_value_c, next_q2_value_c = self._actor_critic.target_cost_critic(
                 next_obs, next_action
             )
             next_q_value_c = torch.max(next_q1_value_c, next_q2_value_c)
-            target_q_value_c = cost + self._cfgs.gamma * (1 - done) * next_q_value_c
+            target_q_value_c = cost + self._cfgs.algo_cfgs.gamma * (1 - done) * next_q_value_c
 
         q1_value_c, q2_value_c = self._actor_critic.cost_critic(obs, action)
         loss = nn.functional.mse_loss(q1_value_c, target_q_value_c) + nn.functional.mse_loss(
             q2_value_c, target_q_value_c
         )
 
-        if self._cfgs.use_critic_norm:
+        if self._cfgs.algo_cfgs.use_critic_norm:
             for param in self._actor_critic.cost_critic.parameters():
-                loss += param.pow(2).sum() * self._cfgs.critic_norm_coeff
+                loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coeff
 
         self._actor_critic.cost_critic_optimizer.zero_grad()
         loss.backward()
 
-        if self._cfgs.use_max_grad_norm:
+        if self._cfgs.algo_cfgs.max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.cost_critic.parameters(), self._cfgs.max_grad_norm
+                self._actor_critic.cost_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
             )
         distributed.avg_grads(self._actor_critic.cost_critic)
         self._actor_critic.cost_critic_optimizer.step()
