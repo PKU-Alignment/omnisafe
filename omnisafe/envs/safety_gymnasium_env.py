@@ -100,10 +100,6 @@ class SafetyGymnasiumEnv(CMDP):
         obs, info = self._env.reset(seed=seed)
         return torch.as_tensor(obs, dtype=torch.float32), info
 
-    def single_reset(self, idx: int, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
-        obs, info = self.reset(seed=seed)
-        return obs[idx], info
-
     def set_seed(self, seed: int) -> None:
         self.reset(seed=seed)
 
