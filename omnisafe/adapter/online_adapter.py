@@ -41,11 +41,12 @@ class OnlineAdapter:
         num_envs: int,
         seed: int,
         cfgs: Config,
+        **env_kwargs: Dict,
     ) -> None:
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id
-        self._env = make(env_id, num_envs=num_envs)
+        self._env = make(env_id, num_envs=num_envs, **env_kwargs)
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
@@ -74,6 +75,33 @@ class OnlineAdapter:
         self._env = ActionScale(self._env, low=-1.0, high=1.0)
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env)
+
+    def load(self, obs_normlizer_dict):  # pylint: disable=unused-argument
+        """Load the environment.
+
+        Args:
+            obs_normlizer_dict (Dict): the dict of the observation normalizer.
+        """
+        assert self._cfgs.algo_cfgs.obs_normalize, 'The observation normalizer is not loaded.'
+        self._env.load(obs_normlizer_dict)
+
+    def render(self) -> None:
+        """Render the environment."""
+        return self._env.render()
+
+    @property
+    def fps(self) -> int:
+        """The fps of the environment.
+
+        Returns:
+            int: the fps.
+        """
+        try:
+            fps = self._env.metadata['render_fps']
+        except:
+            fps = 30
+            Warning('No fps information, set to 30')
+        return fps
 
     @property
     def action_space(self) -> OmnisafeSpace:

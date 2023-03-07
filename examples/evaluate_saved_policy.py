@@ -28,4 +28,5 @@ if __name__ == '__main__':
     for item in os.scandir(os.path.join(LOG_DIR, 'torch_save')):
         if item.is_file() and item.name.split('.')[-1] == 'pt':
             evaluator.load_saved_model(save_dir=LOG_DIR, model_name=item.name)
-            evaluator.render(num_episode=10, camera_name='track', width=256, height=256)
+            evaluator.render(num_episodes=10, camera_name='track', width=256, height=256)
+            evaluator.evaluate(num_episodes=10)
