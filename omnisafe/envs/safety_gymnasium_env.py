@@ -75,6 +75,7 @@ class SafetyGymnasiumEnv(CMDP):
     need_time_limit_wrapper = False
 
     def __init__(self, env_id: str, num_envs: int = 1, **kwargs) -> None:
+        super().__init__(env_id)
         if num_envs > 1:
             self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
             self._action_space = self._env.single_action_space
@@ -104,7 +105,7 @@ class SafetyGymnasiumEnv(CMDP):
         self.reset(seed=seed)
 
     def sample_action(self) -> torch.Tensor:
-        return torch.as_tensor(self._env.action_space.sample(), torch.float32)
+        return torch.as_tensor(self._env.action_space.sample(), dtype=torch.float32)
 
     def render(self) -> Any:
         return self._env.render()

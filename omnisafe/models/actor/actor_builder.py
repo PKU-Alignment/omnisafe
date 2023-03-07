@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of ActorBuilder."""
 
-import difflib
 from typing import List
 
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
@@ -64,5 +63,5 @@ class ActorBuilder:
 
         raise NotImplementedError(
             f'Actor type {actor_type} is not implemented! '
-            f'Did you mean {difflib.get_close_matches(actor_type, ["gaussian_learning", "gaussian_sac"])[0]}?'
+            'Available actor types are: gaussian_learning, gaussian_sac.'
         )
