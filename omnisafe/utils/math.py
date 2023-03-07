@@ -73,7 +73,7 @@ def gaussian_kl(
             \mu_q) - k + log(\frac{det(\Sigma_p)}{det(\Sigma_q)}))
 
         where :math:`\mu_p` and :math:`\mu_q` are the mean of :math:`p` and :math:`q`, respectively.
-        :math:`\Sigma_p` and :math:`\Sigma_q` are the covariance of :math:`p` and :math:`q`, respectively.
+        :math:`\Sigma_p` and :math:`\Sigma_q` are the co-variance of :math:`p` and :math:`q`, respectively.
         :math:`k` is the dimension of the distribution.
 
     For more details,
@@ -83,8 +83,8 @@ def gaussian_kl(
     Args:
         mean_p (torch.Tensor): mean of the first distribution, shape (B, n)
         mean_q (torch.Tensor): mean of the second distribution, shape (B, n)
-        var_p (torch.Tensor): covariance of the first distribution, shape (B, n, n)
-        var_q (torch.Tensor): covariance of the second distribution, shape (B, n, n)
+        var_p (torch.Tensor): co-variance of the first distribution, shape (B, n, n)
+        var_q (torch.Tensor): co-variance of the second distribution, shape (B, n, n)
     """
     len_q = var_q.size(-1)
     mean_p = mean_p.unsqueeze(-1)  # (B, n, 1)

@@ -347,7 +347,7 @@ class CPO(TRPO):
         self._logger.store(
             **{
                 'Loss/Loss_pi': loss.item(),
-                'Train/Entropy': info['entrophy'],
+                'Train/Entropy': info['entropy'],
                 'Train/PolicyRatio': info['ratio'],
                 'Train/PolicyStd': info['std'],
                 'Misc/AcceptanceStep': accept_step,
