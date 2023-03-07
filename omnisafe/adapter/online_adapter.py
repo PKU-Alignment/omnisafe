@@ -14,7 +14,6 @@
 # ==============================================================================
 """Online Adapter for OmniSafe."""
 
-import warnings
 from typing import Dict, Tuple
 
 import torch
@@ -89,21 +88,6 @@ class OnlineAdapter:
     def render(self) -> None:
         """Render the environment."""
         return self._env.render()
-
-    @property
-    def fps(self) -> int:
-        """The fps of the environment.
-
-        Returns:
-            int: the fps.
-        """
-        try:
-            fps = self._env.metadata['render_fps']
-        except KeyError:
-            fps = 30
-            warnings.warn('The fps is not found, use 30 as default.')
-
-        return fps
 
     @property
     def action_space(self) -> OmnisafeSpace:

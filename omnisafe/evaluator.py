@@ -16,13 +16,17 @@
 
 import json
 import os
+import warnings
+from typing import Optional
 
 import numpy as np
 import torch
 from gymnasium.spaces import Discrete
 from gymnasium.utils.save_video import save_video
 
-from omnisafe.adapter.online_adapter import OnlineAdapter as EnvWrapper
+from omnisafe.common import Normalizer
+from omnisafe.envs.core import make
+from omnisafe.envs.wrapper import ActionScale, ObsNormalize, TimeLimit, Unsqueeze
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.utils.config import Config
 
@@ -81,7 +85,15 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             self.render_mode = None
 
     # pylint: disable-next=too-many-locals
-    def load_saved_model(self, save_dir: str, model_name: str):
+    def load_saved_model(
+        self,
+        save_dir: str,
+        model_name: str,
+        camera_name: Optional[str] = None,
+        camera_id: Optional[int] = None,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
+    ):
         """Load a saved model.
 
         Args:
@@ -109,9 +121,28 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             raise FileNotFoundError('The model is not found in the save directory.') from error
 
         self.algo_name = self.cfgs['exp_name'].split('-')[0]
-        # make the environment
-        env_id = self.cfgs['env_id']
-        self.env = self._make_env(env_id, render_mode=self.render_mode)
+
+        width = self.env.width if width is None else width
+        height = self.env.height if height is None else height
+        env_kwargs = {
+            'env_id': self.cfgs['env_id'],
+            'num_envs': self.cfgs['train_cfgs']['vector_env_nums'],
+            'render_mode': self.render_mode,
+            'camera_id': camera_id,
+            'camera_name': camera_name,
+            'width': width,
+            'height': height,
+        }
+        self.env = make(**env_kwargs)
+        if self.cfgs['algo_cfgs']['obs_normalize']:
+            obs_normalizer = Normalizer(shape=self.env.observation_space.shape, clip=5)
+            obs_normalizer.load_state_dict(self.model_params['obs_normalizer'])
+            self.env = ObsNormalize(self.env, obs_normalizer)
+        if self.env.need_time_limit_wrapper:
+            self.env = TimeLimit(self.env, time_limit=1000)
+        self.env = ActionScale(self.env, low=-1.0, high=1.0)
+        if self.env.num_envs == 1:
+            self.env = Unsqueeze(self.env)
 
         # make the actor
         observation_space = self.env.observation_space
@@ -191,15 +222,25 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             episode_costs,
         )
 
+    @property
+    def fps(self) -> int:
+        """The fps of the environment.
+
+        Returns:
+            int: the fps.
+        """
+        try:
+            fps = self.env.metadata['render_fps']
+        except AttributeError:
+            fps = 30
+            warnings.warn('The fps is not found, use 30 as default.')
+
+        return fps
+
     def render(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         self,
         num_episodes: int = 0,
-        play=True,
-        save_replay_path: str = None,
-        camera_name: str = None,
-        camera_id: str = None,
-        width: int = None,
-        height: int = None,
+        save_replay_path: Optional[str] = None,
     ):
         """Render the environment for one episode.
 
@@ -211,26 +252,6 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         if save_replay_path is None:
             save_replay_path = os.path.join(self.save_dir, 'video', self.model_name.split('.')[0])
 
-        # remake the environment if the render mode can not support needed play or save_replay
-        if self.env is None or self.actor is None:
-            raise ValueError(
-                'The environment and the policy must be provided or created before evaluating the agent.'
-            )
-        self.set_render_mode(play, save_replay_path is not None)
-        print(f'Render mode: {self.render_mode}')
-        width = self.env.width if width is None else width
-        height = self.env.height if height is None else height
-        env_kwargs = {
-            'env_id': self.cfgs['env_id'],
-            'render_mode': self.render_mode,
-            'camera_id': camera_id,
-            'camera_name': camera_name,
-            'width': width,
-            'height': height,
-        }
-        self.env = self._make_env(**env_kwargs)
-        if self.cfgs['algo_cfgs']['obs_normalize']:
-            self.env.load(self.model_params['obs_normalizer'])
         horizon = 1000
         frames = []
         obs, _ = self.env.reset()
@@ -254,7 +275,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 save_video(
                     frames,
                     save_replay_path,
-                    fps=self.env.fps,
+                    fps=self.fps,
                     episode_trigger=lambda x: True,
                     video_length=horizon,
                     episode_index=episode_idx,
@@ -262,10 +283,3 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 )
             self.env.reset()
             frames = []
-
-    def _make_env(self, env_id, **env_kwargs):
-        """Make wrapped environment."""
-
-        return EnvWrapper(
-            env_id, self.cfgs.train_cfgs.vector_env_nums, self.cfgs.seed, self.cfgs, **env_kwargs
-        )
