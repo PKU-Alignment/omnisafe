@@ -17,17 +17,18 @@
 import json
 import os
 import warnings
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
-from gymnasium.spaces import Discrete
+from gymnasium.spaces import Box
 from gymnasium.utils.save_video import save_video
 
 from omnisafe.common import Normalizer
-from omnisafe.envs.core import make
-from omnisafe.envs.wrapper import ActionScale, ObsNormalize, TimeLimit, Unsqueeze
+from omnisafe.envs.core import CMDP, make
+from omnisafe.envs.wrapper import ActionScale, ObsNormalize, TimeLimit
 from omnisafe.models.actor import ActorBuilder
+from omnisafe.models.base import Actor
 from omnisafe.utils.config import Config
 
 
@@ -37,11 +38,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        env=None,
-        actor=None,
-        obs_normalize=None,
-        play=True,
-        save_replay=True,
+        play: bool = True,
+        save_replay: bool = True,
     ):
         """Initialize the evaluator.
 
@@ -51,24 +49,20 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             obs_normalize (omnisafe.algos.models.obs_normalize): the observation Normalize.
         """
         # set the attributes
-        self.env = env
-        self.actor = actor
-        self.obs_normalizer = obs_normalize if obs_normalize is not None else lambda x: x
-        self.env_wrapper_class = type(env) if env is not None else None
+        self._env: CMDP
+        self._actor: Actor
 
         # used when load model from saved file.
-        self.cfgs = None
-        self.save_dir = None
-        self.model_name = None
-        self.algo_name = None
-        self.model_params = None
+        self._cfgs: Config
+        self._save_dir: str
+        self._model_name: str
 
         # set the render mode
-        self.play = play
-        self.save_replay = save_replay
-        self.set_render_mode(play, save_replay)
+        self._play = play
+        self._save_replay = save_replay
+        self.__set_render_mode(play, save_replay)
 
-    def set_render_mode(self, play: bool = True, save_replay: bool = True):
+    def __set_render_mode(self, play: bool = True, save_replay: bool = True):
         """Set the render mode.
 
         Args:
@@ -76,16 +70,76 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """
         # set the render mode
         if play and save_replay:
-            self.render_mode = 'rgb_array'
+            self._render_mode = 'rgb_array'
         elif play and not save_replay:
-            self.render_mode = 'human'
+            self._render_mode = 'human'
         elif not play and save_replay:
-            self.render_mode = 'rgb_array_list'
+            self._render_mode = 'rgb_array_list'
         else:
-            self.render_mode = None
+            raise NotImplementedError('The render mode is not implemented.')
+
+    def __load_cfgs(self, save_dir: str):
+        """Load the config from the save directory.
+
+        Args:
+            save_dir (str): directory where the model is saved.
+        """
+        cfg_path = os.path.join(save_dir, 'config.json')
+        try:
+            with open(cfg_path, encoding='utf-8') as file:
+                kwargs = json.load(file)
+        except FileNotFoundError as error:
+            raise FileNotFoundError(
+                'The config file is not found in the save directory.'
+            ) from error
+        self._cfgs = Config.dict2config(kwargs)
+
+    def __load_model_and_env(self, save_dir: str, model_name: str, env_kwargs: Dict[str, Any]):
+        """Load the model from the save directory.
+
+        Args:
+            save_dir (str): directory where the model is saved.
+            model_name (str): name of the model.
+        """
+        # load the saved model
+        model_path = os.path.join(save_dir, 'torch_save', model_name)
+        try:
+            model_params = torch.load(model_path)
+        except FileNotFoundError as error:
+            raise FileNotFoundError('The model is not found in the save directory.') from error
+
+        # load the environment
+        self._env = make(**env_kwargs)
+
+        observation_space = self._env.observation_space
+        action_space = self._env.action_space
+
+        assert isinstance(observation_space, Box), 'The observation space must be Box.'
+        assert isinstance(action_space, Box), 'The action space must be Box.'
+
+        if self._cfgs['algo_cfgs']['obs_normalize']:
+            obs_normalizer = Normalizer(shape=observation_space.shape, clip=5)
+            obs_normalizer.load_state_dict(model_params['obs_normalizer'])
+            self._env = ObsNormalize(self._env, obs_normalizer)
+        if self._env.need_time_limit_wrapper:
+            self._env = TimeLimit(self._env, time_limit=1000)
+        self._env = ActionScale(self._env, low=-1.0, high=1.0)
+
+        actor_type = self._cfgs['model_cfgs']['actor_type']
+        pi_cfg = self._cfgs['model_cfgs']['actor']
+        weight_initialization_mode = self._cfgs['model_cfgs']['weight_initialization_mode']
+        actor_builder = ActorBuilder(
+            obs_space=observation_space,
+            act_space=action_space,
+            hidden_sizes=pi_cfg['hidden_sizes'],
+            activation=pi_cfg['activation'],
+            weight_initialization_mode=weight_initialization_mode,
+        )
+        self._actor = actor_builder.build_actor(actor_type)
+        self._actor.load_state_dict(model_params['pi'])
 
     # pylint: disable-next=too-many-locals
-    def load_saved_model(
+    def load_saved(
         self,
         save_dir: str,
         model_name: str,
@@ -101,72 +155,23 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             model_name (str): name of the model.
         """
         # load the config
-        self.save_dir = save_dir
-        self.model_name = model_name
-        cfg_path = os.path.join(save_dir, 'config.json')
-        try:
-            with open(cfg_path, encoding='utf-8') as file:
-                kwargs = json.load(file)
-        except FileNotFoundError as error:
-            raise FileNotFoundError(
-                'The config file is not found in the save directory.'
-            ) from error
-        self.cfgs = Config.dict2config(kwargs)
+        self._save_dir = save_dir
+        self._model_name = model_name
 
-        # load the saved model
-        model_path = os.path.join(save_dir, 'torch_save', model_name)
-        try:
-            self.model_params = torch.load(model_path)
-        except FileNotFoundError as error:
-            raise FileNotFoundError('The model is not found in the save directory.') from error
+        self.__load_cfgs(save_dir)
 
-        self.algo_name = self.cfgs['exp_name'].split('-')[0]
-
-        width = self.env.width if width is None else width
-        height = self.env.height if height is None else height
         env_kwargs = {
-            'env_id': self.cfgs['env_id'],
-            'num_envs': self.cfgs['train_cfgs']['vector_env_nums'],
-            'render_mode': self.render_mode,
+            'env_id': self._cfgs['env_id'],
+            'num_envs': 1,
+            'render_mode': self._render_mode,
             'camera_id': camera_id,
             'camera_name': camera_name,
             'width': width,
             'height': height,
         }
-        self.env = make(**env_kwargs)
-        if self.cfgs['algo_cfgs']['obs_normalize']:
-            obs_normalizer = Normalizer(shape=self.env.observation_space.shape, clip=5)
-            obs_normalizer.load_state_dict(self.model_params['obs_normalizer'])
-            self.env = ObsNormalize(self.env, obs_normalizer)
-        if self.env.need_time_limit_wrapper:
-            self.env = TimeLimit(self.env, time_limit=1000)
-        self.env = ActionScale(self.env, low=-1.0, high=1.0)
-        if self.env.num_envs == 1:
-            self.env = Unsqueeze(self.env)
 
-        # make the actor
-        observation_space = self.env.observation_space
-        action_space = self.env.action_space
+        self.__load_model_and_env(save_dir, model_name, env_kwargs)
 
-        act_space_type = 'discrete' if isinstance(action_space, Discrete) else 'continuous'
-        actor_type = self.cfgs['model_cfgs']['actor_type']
-
-        pi_cfg = self.cfgs['model_cfgs']['actor']
-        weight_initialization_mode = self.cfgs['model_cfgs']['weight_initialization_mode']
-        actor_builder = ActorBuilder(
-            obs_space=observation_space,
-            act_space=action_space,
-            hidden_sizes=pi_cfg['hidden_sizes'],
-            activation=pi_cfg['activation'],
-            weight_initialization_mode=weight_initialization_mode,
-        )
-        if act_space_type == 'discrete':
-            self.actor = actor_builder.build_actor('categorical')
-        else:
-            self.actor = actor_builder.build_actor(actor_type)
-        self.actor.load_state_dict(self.model_params['pi'])
-
-    # pylint: disable-next=too-many-locals
     def evaluate(
         self,
         num_episodes: int = 10,
@@ -183,36 +188,44 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             episode_costs (list): list of episode costs.
             episode_lengths (list): list of episode lengths.
         """
-        if self.env is None or self.actor is None:
+        if self._env is None or self._actor is None:
             raise ValueError(
                 'The environment and the policy must be provided or created before evaluating the agent.'
             )
 
-        episode_rewards = []
-        episode_costs = []
-        episode_lengths = []
-        horizon = 1000
+        episode_rewards: List[float] = []
+        episode_costs: List[float] = []
+        episode_lengths: List[float] = []
 
         for episode in range(num_episodes):
-            obs, _ = self.env.reset()
-            ep_ret, ep_cost = 0.0, 0.0
+            obs, _ = self._env.reset()
+            ep_ret, ep_cost, length = 0.0, 0.0, 0.0
 
-            for step in range(horizon):
+            done = False
+            while not done:
                 with torch.no_grad():
-                    act = self.actor.predict(
+                    act = self._actor.predict(
                         torch.as_tensor(obs, dtype=torch.float32),
-                        deterministic=True,
+                        deterministic=False,
                     )
-                obs, rew, cost, _, _, _ = self.env.step(act)
-                ep_ret += rew
-                ep_cost += (cost_criteria**step) * cost
-            episode_costs.append(ep_cost.numpy().mean())
-            episode_rewards.append(ep_ret.numpy().mean())
-            episode_lengths.append(step)
+                obs, rew, cost, terminated, truncated, _ = self._env.step(act)
+
+                ep_ret += rew.item()
+                ep_cost += (cost_criteria**length) * cost.item()
+                length += 1
+
+                done = bool(terminated or truncated)
+
+            episode_rewards.append(ep_ret)
+            episode_costs.append(ep_cost)
+            episode_lengths.append(length)
+
             print(f'Episode {episode+1} results:')
-            print(f'Episode reward: {ep_ret.numpy().mean()}')
-            print(f'Episode cost: {ep_cost.numpy().mean()}')
-            print(f'Episode length: {step+1}')
+            print(f'Episode reward: {ep_ret}')
+            print(f'Episode cost: {ep_cost}')
+            print(f'Episode length: {length}')
+
+        print('#' * 50)
         print('Evaluation results:')
         print(f'Average episode reward: {np.mean(episode_rewards)}')
         print(f'Average episode cost: {np.mean(episode_costs)}')
@@ -230,7 +243,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             int: the fps.
         """
         try:
-            fps = self.env.metadata['render_fps']
+            fps = self._env.metadata['render_fps']
         except AttributeError:
             fps = 30
             warnings.warn('The fps is not found, use 30 as default.')
@@ -250,27 +263,32 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """
 
         if save_replay_path is None:
-            save_replay_path = os.path.join(self.save_dir, 'video', self.model_name.split('.')[0])
+            save_replay_path = os.path.join(self._save_dir, 'video', self._model_name.split('.')[0])
 
         horizon = 1000
         frames = []
-        obs, _ = self.env.reset()
-        if self.render_mode == 'human':
-            self.env.render()
-        elif self.render_mode == 'rgb_array':
-            frames.append(self.env.render())
-        for episode_idx in range(num_episodes):
-            for _ in range(horizon):
-                with torch.no_grad():
-                    act = self.actor.predict(obs, deterministic=True)
-                obs, _, _, done, truncated, _ = self.env.step(act.cpu().squeeze())
-                if done[0] or truncated[0]:
-                    break
-                if self.render_mode == 'rgb_array':
-                    frames.append(self.env.render())
+        obs, _ = self._env.reset()
+        if self._render_mode == 'human':
+            self._env.render()
+        elif self._render_mode == 'rgb_array':
+            frames.append(self._env.render())
 
-            if self.render_mode == 'rgb_array_list':
-                frames = self.env.render()
+        for episode_idx in range(num_episodes):
+            step = 0
+            done = False
+            while not done and step <= 2000:  # a big number to make sure the episode will end
+                with torch.no_grad():
+                    act = self._actor.predict(obs, deterministic=False)
+                obs, _, _, terminated, truncated, _ = self._env.step(act)
+                step += 1
+                done = bool(terminated or truncated)
+
+                if self._render_mode == 'rgb_array':
+                    frames.append(self._env.render())
+
+            if self._render_mode == 'rgb_array_list':
+                frames = self._env.render()
+
             if save_replay_path is not None:
                 save_video(
                     frames,
@@ -281,5 +299,5 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     episode_index=episode_idx,
                     name_prefix='eval',
                 )
-            self.env.reset()
+            self._env.reset()
             frames = []
