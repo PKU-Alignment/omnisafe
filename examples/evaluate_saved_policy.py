@@ -20,14 +20,15 @@ import omnisafe
 
 
 # Just fill your experiment's log directory in here.
-# Such as: ~/omnisafe/runs/SafetyPointGoal1-v0/CPO/seed-000-2022-12-25_14-45-05
+# Such as: ~/omnisafe/examples/runs/PPOLag-<SafetyPointGoal1-v0>/seed-000-2023-03-07-20-25-48
 LOG_DIR = ''
-
+play = True
+save_replay = True
 if __name__ == '__main__':
-    evaluator = omnisafe.Evaluator()
+    evaluator = omnisafe.Evaluator(play=play, save_replay=save_replay)
     for item in os.scandir(os.path.join(LOG_DIR, 'torch_save')):
         if item.is_file() and item.name.split('.')[-1] == 'pt':
-            evaluator.load_saved_model(
+            evaluator.load_saved(
                 save_dir=LOG_DIR, model_name=item.name, camera_name='track', width=256, height=256
             )
             evaluator.render(num_episodes=1)

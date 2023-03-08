@@ -60,6 +60,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         # set the render mode
         self._play = play
         self._save_replay = save_replay
+
+        self._dividing_line = '\n' + '#' * 50 + '\n'
+
         self.__set_render_mode(play, save_replay)
 
     def __set_render_mode(self, play: bool = True, save_replay: bool = True):
@@ -225,7 +228,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             print(f'Episode cost: {ep_cost}')
             print(f'Episode length: {length}')
 
-        print('#' * 50)
+        print(self._dividing_line)
         print('Evaluation results:')
         print(f'Average episode reward: {np.mean(episode_rewards)}')
         print(f'Average episode cost: {np.mean(episode_costs)}')
@@ -254,6 +257,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         num_episodes: int = 0,
         save_replay_path: Optional[str] = None,
+        max_render_steps: int = 2000,
     ):
         """Render the environment for one episode.
 
@@ -276,7 +280,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         for episode_idx in range(num_episodes):
             step = 0
             done = False
-            while not done and step <= 2000:  # a big number to make sure the episode will end
+            while (
+                not done and step <= max_render_steps
+            ):  # a big number to make sure the episode will end
                 with torch.no_grad():
                     act = self._actor.predict(obs, deterministic=False)
                 obs, _, _, terminated, truncated, _ = self._env.step(act)
