@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of Vector Buffer."""
 
-from typing import Tuple
+from typing import Any, Mapping, Tuple
 
 import torch
 import torch.nn as nn
@@ -108,3 +108,7 @@ class Normalizer(nn.Module):
         self._var = self._sumsq / (self._count - 1)
         self._std = torch.sqrt(self._var)
         self._std = torch.max(self._std, 1e-2 * torch.ones_like(self._std))
+
+    def load_state_dict(self, state_dict: Mapping[str, Any], strict: bool = True):
+        self._first = False
+        return super().load_state_dict(state_dict, strict)

@@ -42,6 +42,7 @@ class CMDP(ABC):
     _support_envs: List[str]
     _action_space: OmnisafeSpace
     _observation_space: OmnisafeSpace
+    _metadata: Dict[str, Any]
 
     _num_envs: int
     _time_limit: Optional[int] = None
@@ -85,6 +86,15 @@ class CMDP(ABC):
             OmnisafeSpace: the observation space.
         """
         return self._observation_space
+
+    @property
+    def metadata(self) -> Dict[str, Any]:
+        """The metadata of the environment.
+
+        Returns:
+            Dict[str, Any]: the metadata.
+        """
+        return self._metadata
 
     @property
     def num_envs(self) -> int:
