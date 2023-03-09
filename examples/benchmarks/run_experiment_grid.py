@@ -25,7 +25,7 @@ from omnisafe.typing import NamedTuple, Tuple
 
 
 def train(
-    exp_id: str, algo: str, env_id: str, custom_cfgs: NamedTuple, num_threads: int = 6
+    exp_id: str, algo: str, env_id: str, custom_cfgs: NamedTuple
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
 
@@ -36,16 +36,19 @@ def train(
         custom_cfgs (NamedTuple): Custom configurations.
         num_threads (int, optional): Number of threads. Defaults to 6.
     """
-    torch.set_num_threads(num_threads)
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
     print(f'exp-x: {exp_id} is training...')
     USE_REDIRECTION = True
     if USE_REDIRECTION:
-        if not os.path.exists(custom_cfgs['data_dir']):
-            os.makedirs(custom_cfgs['data_dir'])
-        sys.stdout = open(f'{custom_cfgs["data_dir"]}terminal.log', 'w', encoding='utf-8')
-        sys.stderr = open(f'{custom_cfgs["data_dir"]}error.log', 'w', encoding='utf-8')
+        if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
+            os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
+        sys.stdout = open(
+            f'{custom_cfgs["logger_cfgs"]["log_dir"]}terminal.log', 'w', encoding='utf-8'
+        )
+        sys.stderr = open(
+            f'{custom_cfgs["logger_cfgs"]["log_dir"]}error.log', 'w', encoding='utf-8'
+        )
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     reward, cost, ep_len = agent.learn()
     return reward, cost, ep_len
@@ -58,9 +61,11 @@ if __name__ == '__main__':
     first_order_policy = ['CUP', 'FOCOPS']
     second_order_policy = ['CPO', 'PCPO']
     eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
-    eg.add('env_id', ['SafetyPointGoal1-v0'])
-    eg.add('logger_cfgs:use_wandb', [True])
-    eg.add('logger_cfgs:wandb_project', ['omnisafe_jiaming'])
+    eg.add('env_id', ['SafetyAntVelocity-v4'])
+    eg.add('logger_cfgs:use_wandb', [False])
+    eg.add('num_envs', [16])
+    eg.add('num_threads', [1])
+    # eg.add('logger_cfgs:wandb_project', ['omnisafe_jiaming'])
     # eg.add('train_cfgs:total_steps', 2000)
     # eg.add('algo_cfgs:update_cycle', 1000)
     # eg.add('train_cfgs:vector_env_nums', 1)
