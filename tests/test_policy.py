@@ -14,44 +14,73 @@
 # ==============================================================================
 """Test policy algorithms"""
 
-import os
-
 import helpers
 import omnisafe
+import simple_env
+from omnisafe.utils.distributed import fork
 
 
 base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']
 naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
 first_order_policy = ['CUP', 'FOCOPS']
 second_order_policy = ['CPO', 'PCPO']
+penalty_policy = ['P3O', 'IPO']
 # pid_lagrange_policy = ['CPPOPid', 'TRPOPid']
 # early_terminated_policy = ['PPOEarlyTerminated', 'PPOLagEarlyTerminated']
 # saute_policy = ['PPOSaute', 'PPOLagSaute']
 # simmer_policy = ['PPOSimmerQ', 'PPOLagSimmerQ', 'PPOSimmerPid', 'PPOLagSimmerPid']
-# penalty_policy = ['P3O', 'IPO']
 # model_based_policy = ['MBPPOLag', 'SafeLOOP', 'CAP']
 
 
 @helpers.parametrize(
-    algo=base_policy + naive_lagrange_policy + first_order_policy + second_order_policy
+    algo=base_policy
+    + naive_lagrange_policy
+    + first_order_policy
+    + second_order_policy
+    + penalty_policy
 )
-def test_base_policy(algo):
+def test_on_policy(algo):
     """Test base algorithms."""
-    env_id = 'SafetyPointGoal1-v0'
+    env_id = 'Simple-v0'
     custom_cfgs = {
         'train_cfgs': {
-            'total_steps': 2000,
+            'total_steps': 2048,
             'vector_env_nums': 1,
         },
         'algo_cfgs': {
-            'update_cycle': 1000,
+            'update_cycle': 1024,
             'update_iters': 2,
         },
         'logger_cfgs': {
             'use_wandb': False,
+            'save_model_freq': 1,
         },
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
+
+
+def test_std_anealing():
+    """Test std_anealing."""
+    env_id = 'Simple-v0'
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 2048,
+            'vector_env_nums': 1,
+        },
+        'algo_cfgs': {
+            'update_cycle': 1024,
+            'update_iters': 2,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+        'model_cfgs': {
+            'exploration_noise_anneal': True,
+        },
+    }
+    agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
 
 
