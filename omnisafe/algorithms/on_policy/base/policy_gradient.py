@@ -15,7 +15,7 @@
 """Implementation of the Policy Gradient algorithm."""
 
 import time
-from typing import Dict, Tuple, Union
+from typing import Any, Dict, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -98,12 +98,11 @@ class PolicyGradient(BaseAlgo):
             config=self._cfgs,
         )
 
-        obs_normalizer = self._env.save()['obs_normalizer']
-        what_to_save = {
-            'pi': self._actor_critic.actor,
-            'obs_normalizer': obs_normalizer,
-        }
-
+        what_to_save: Dict[str, Any] = {}
+        what_to_save['pi'] = self._actor_critic.actor
+        if self._cfgs.algo_cfgs.obs_normalize:
+            obs_normalizer = self._env.save()['obs_normalizer']
+            what_to_save['obs_normalizer'] = obs_normalizer
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
 
@@ -315,7 +314,7 @@ class PolicyGradient(BaseAlgo):
         self._actor_critic.actor_optimizer.step()
         self._logger.store(
             **{
-                'Train/Entropy': info['entrophy'],
+                'Train/Entropy': info['entropy'],
                 'Train/PolicyRatio': info['ratio'],
                 'Train/PolicyStd': info['std'],
                 'Loss/Loss_pi': loss.mean().item(),
@@ -339,6 +338,6 @@ class PolicyGradient(BaseAlgo):
         std = self._actor_critic.actor.std
         ratio = torch.exp(logp_ - logp)
         loss = -(ratio * adv).mean()
-        entrophy = distribution.entropy().mean().item()
-        info = {'entrophy': entrophy, 'ratio': ratio.mean().item(), 'std': std}
+        entropy = distribution.entropy().mean().item()
+        info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
         return loss, info
