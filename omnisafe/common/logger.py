@@ -124,7 +124,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             )
             atexit.register(self._output_file.close)
             self.log(f'Logging data to {self._output_file.name}', 'cyan', bold=True)
-            self._csv_writer = csv.writer(self._output_file)
+            self._csv_writer = csv.writer(self._output_file, delimiter=',', lineterminator="\n")
 
         self._epoch: int = 0
         self._first_row: bool = True
@@ -277,11 +277,11 @@ class Logger:  # pylint: disable=too-many-instance-attributes
                 print('-' * n_slashes)
             else:
                 self._proc_bar.update(1)
-
+            rounded_row = {key: round(value, 4) if isinstance(value, float) else value for key, value in self._current_row.items()}
             if self._first_row:
-                self._csv_writer.writerow(self._current_row.keys())
+                self._csv_writer.writerow(rounded_row.keys())
                 self._first_row = False
-            self._csv_writer.writerow(self._current_row.values())
+            self._csv_writer.writerow(rounded_row.values())
             self._output_file.flush()
 
             if self._use_tensorboard:

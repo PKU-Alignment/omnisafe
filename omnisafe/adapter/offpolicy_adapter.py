@@ -39,6 +39,7 @@ class OffPolicyAdapter(OnlineAdapter):
         self._ep_cost: torch.Tensor
         self._ep_len: torch.Tensor
         self._current_obs, _ = self.reset()
+        self._max_ep_len = 1000
         self._reset_log()
 
     def roll_out(  # pylint: disable=too-many-locals
@@ -82,7 +83,8 @@ class OffPolicyAdapter(OnlineAdapter):
 
             self._current_obs = next_obs
             for idx, done in enumerate(torch.logical_or(terminated, truncated)):
-                if done:
+                if done or self._ep_len[idx] >= self._max_ep_len:
+                    #self.reset()
                     self._log_metrics(logger, idx)
                     self._reset_log(idx)
 

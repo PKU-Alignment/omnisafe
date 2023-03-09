@@ -72,6 +72,8 @@ class Lagrange:
         Args:
             mean_ep_cost (float): mean episode cost.
         """
+        print('lagrange update')
+        print(mean_ep_cost, self.cost_limit)
         return -self.lagrangian_multiplier * (mean_ep_cost - self.cost_limit)
 
     def update_lagrange_multiplier(self, Jc: float) -> None:
