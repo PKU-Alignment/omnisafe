@@ -41,7 +41,7 @@ class Config(dict):
     num_mini_batches: int
     actor_lr: float
     critic_lr: float
-    data_dir: str
+    log_dir: str
     target_kl: float
     batch_size: int
     use_cost: bool
