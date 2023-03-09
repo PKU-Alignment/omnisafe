@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : 
+# : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : :
 
 defaults:
   # seed for random number generator
@@ -132,4 +132,3 @@ defaults:
       activation: relu
       # The learning rate of Critic network
       lr: 0.0003
-

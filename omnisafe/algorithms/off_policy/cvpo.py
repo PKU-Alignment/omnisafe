@@ -17,17 +17,16 @@
 import numpy as np
 import torch
 import torch.nn as nn
-
 from scipy.optimize import minimize
 from torch.distributions import MultivariateNormal
 from torch.nn.utils import clip_grad_norm_
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
+from omnisafe.utils import distributed
+from omnisafe.utils.config import Config
 from omnisafe.utils.math import gaussian_kl
 from omnisafe.utils.tools import to_ndarray
-from omnisafe.utils.config import Config
-from omnisafe.utils import distributed
 
 
 @registry.register
@@ -45,10 +44,10 @@ class CVPO(DDPG):
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
         super().__init__(env_id, cfgs)
-        self._eta : float
-        self._lam : float
-        self._alpha_mean : float
-        self._alpha_var : float
+        self._eta: float
+        self._lam: float
+        self._alpha_mean: float
+        self._alpha_var: float
 
     def _init(self) -> None:
         super()._init()
@@ -236,7 +235,7 @@ class CVPO(DDPG):
                 'Value/cost_critic': q1_value_c.mean().item(),
             }
         )
-    
+
     def _log_when_not_update(self) -> None:
         super()._log_when_not_update()
         self._logger.store(
