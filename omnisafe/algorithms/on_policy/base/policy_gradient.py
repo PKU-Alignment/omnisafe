@@ -314,7 +314,7 @@ class PolicyGradient(BaseAlgo):
         self._actor_critic.actor_optimizer.step()
         self._logger.store(
             **{
-                'Train/Entropy': info['entrophy'],
+                'Train/Entropy': info['entropy'],
                 'Train/PolicyRatio': info['ratio'],
                 'Train/PolicyStd': info['std'],
                 'Loss/Loss_pi': loss.mean().item(),
@@ -338,6 +338,6 @@ class PolicyGradient(BaseAlgo):
         std = self._actor_critic.actor.std
         ratio = torch.exp(logp_ - logp)
         loss = -(ratio * adv).mean()
-        entrophy = distribution.entropy().mean().item()
-        info = {'entrophy': entrophy, 'ratio': ratio.mean().item(), 'std': std}
+        entropy = distribution.entropy().mean().item()
+        info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
         return loss, info
