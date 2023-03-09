@@ -16,7 +16,6 @@
 
 import os
 import random
-from typing import Any
 
 import numpy as np
 import torch
@@ -182,70 +181,3 @@ def update_dic(total_dic, item_dic):
         else:
             total_value = item_value
             total_dic.update({idd: total_value})
-
-
-def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
-    r"""
-    Overview:
-        Change `torch.Tensor`, sequence of scalars to ndarray, and keep other data types unchanged.
-    Arguments:
-        - item (:obj:`object`): the item to be changed
-        - dtype (:obj:`type`): the type of wanted ndarray
-    Returns:
-        - item (:obj:`object`): the changed ndarray
-    .. note:
-
-        Now supports item type: :obj:`torch.Tensor`,  :obj:`dict`, :obj:`list`, :obj:`tuple` and :obj:`None`
-    """
-
-    def transform(d):
-        if dtype is None:
-            return np.array(d)
-        else:
-            return np.array(d, dtype=dtype)
-
-    if isinstance(item, dict):
-        new_data = {}
-        for k, v in item.items():
-            new_data[k] = to_ndarray(v, dtype)
-        return new_data
-    elif isinstance(item, list) or isinstance(item, tuple):
-        if len(item) == 0:
-            return None
-        elif hasattr(item, '_fields'):  # namedtuple
-            return type(item)(*[to_ndarray(t, dtype) for t in item])
-        else:
-            new_data = []
-            for t in item:
-                new_data.append(to_ndarray(t, dtype))
-            return new_data
-    elif isinstance(item, torch.Tensor):
-        if item.device != 'cpu':
-            item = item.detach().cpu()
-        if dtype is None:
-            return item.numpy()
-        else:
-            return item.numpy().astype(dtype)
-    elif isinstance(item, np.ndarray):
-        if dtype is None:
-            return item
-        else:
-            return item.astype(dtype)
-    elif isinstance(item, bool) or isinstance(item, str):
-        return item
-    elif np.isscalar(item):
-        return np.array(item)
-    elif item is None:
-        return None
-    else:
-        raise TypeError(f'not support item type: {type(item)}')
-
-
-if __name__ == '__main__':
-    print('This is a tool function package.')
-    print(custom_cfgs_to_dict('train_cfgs:use_wandb', 'True'))
-    print(custom_cfgs_to_dict('train_cfgs:use_wandb', 'False'))
-    print(custom_cfgs_to_dict('train_cfgs:use_wandb', '0.1'))
-    print(custom_cfgs_to_dict('train_cfgs:use_wandb', '1'))
-    print(custom_cfgs_to_dict('train_cfgs:use_wandb', 'test'))
-    print(custom_cfgs_to_dict('train_cfgs:use_wandb', '[1,2,3]'))
