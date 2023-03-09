@@ -16,8 +16,8 @@
 
 import os
 import random
-
 from typing import Any
+
 import numpy as np
 import torch
 
@@ -183,6 +183,7 @@ def update_dic(total_dic, item_dic):
             total_value = item_value
             total_dic.update({idd: total_value})
 
+
 def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
     r"""
     Overview:
@@ -196,6 +197,7 @@ def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
 
         Now supports item type: :obj:`torch.Tensor`,  :obj:`dict`, :obj:`list`, :obj:`tuple` and :obj:`None`
     """
+
     def transform(d):
         if dtype is None:
             return np.array(d)
@@ -236,7 +238,8 @@ def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
     elif item is None:
         return None
     else:
-        raise TypeError("not support item type: {}".format(type(item)))
+        raise TypeError(f'not support item type: {type(item)}')
+
 
 if __name__ == '__main__':
     print('This is a tool function package.')

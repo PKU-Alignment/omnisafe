@@ -14,16 +14,17 @@
 # ==============================================================================
 """Implementation of CholeskyActor."""
 
-from typing import Tuple, Union, List
+from typing import List, Tuple, Union
 
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torch.distributions import MultivariateNormal, Distribution
-from omnisafe.models.base import Actor
+from torch.distributions import Distribution, MultivariateNormal
 
-from omnisafe.utils.model import Activation, InitFunction, build_mlp_network
+from omnisafe.models.base import Actor
 from omnisafe.typing import OmnisafeSpace
+from omnisafe.utils.model import Activation, InitFunction, build_mlp_network
+
 
 # pylint: disable-next=too-many-instance-attributes
 class CholeskyActor(Actor):
@@ -51,11 +52,11 @@ class CholeskyActor(Actor):
         hidden_sizes: List[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
-        cov_min: float=1e-4,
-        mean_clamp_min: float=-5,
-        mean_clamp_max: float=5,
-        cov_clamp_min: float=-5,
-        cov_clamp_max: float=20,
+        cov_min: float = 1e-4,
+        mean_clamp_min: float = -5,
+        mean_clamp_max: float = 5,
+        cov_clamp_min: float = -5,
+        cov_clamp_max: float = 20,
     ) -> None:
         """Initialize MLPCholeskyActor.
 
@@ -90,13 +91,16 @@ class CholeskyActor(Actor):
         mean, cholesky_vector = self.net(obs).chunk(2, dim=-1)
         mean = torch.clamp(mean, min=self.mean_clamp_min, max=self.mean_clamp_max)
         mean = torch.sigmoid(mean)
-        cholesky_vector = torch.clamp(cholesky_vector, min=self.cov_clamp_min, max=self.cov_clamp_max)
+        cholesky_vector = torch.clamp(
+            cholesky_vector, min=self.cov_clamp_min, max=self.cov_clamp_max
+        )
         cholesky_diag_index = torch.arange(act_dim, dtype=torch.long) + 1
-        cholesky_diag_index = torch.div(
-            cholesky_diag_index *
-            (cholesky_diag_index + 1), 2, rounding_mode='floor') - 1
-        cholesky_vector[:, cholesky_diag_index] = F.softplus(
-            cholesky_vector[:, cholesky_diag_index]) + self.cov_min
+        cholesky_diag_index = (
+            torch.div(cholesky_diag_index * (cholesky_diag_index + 1), 2, rounding_mode='floor') - 1
+        )
+        cholesky_vector[:, cholesky_diag_index] = (
+            F.softplus(cholesky_vector[:, cholesky_diag_index]) + self.cov_min
+        )
         tril_indices = torch.tril_indices(row=act_dim, col=act_dim, offset=0)
         cholesky = torch.zeros(size=(obs.size(0), act_dim, act_dim), dtype=torch.float32)
         cholesky[:, tril_indices[0], tril_indices[1]] = cholesky_vector

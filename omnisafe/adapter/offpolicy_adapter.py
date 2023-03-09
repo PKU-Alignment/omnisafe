@@ -84,7 +84,7 @@ class OffPolicyAdapter(OnlineAdapter):
             self._current_obs = next_obs
             for idx, done in enumerate(torch.logical_or(terminated, truncated)):
                 if done or self._ep_len[idx] >= self._max_ep_len:
-                    #self.reset()
+                    # self.reset()
                     self._log_metrics(logger, idx)
                     self._reset_log(idx)
 

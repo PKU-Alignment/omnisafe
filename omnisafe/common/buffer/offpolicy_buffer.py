@@ -73,9 +73,11 @@ class OffPolicyBuffer(BaseBuffer):
         idxs = torch.randint(0, self._size, (self._batch_size,))
         return {key: value[idxs] for key, value in self.data.items()}, idxs
 
-import torch
-import numpy as np
+
 import gymnasium
+import numpy as np
+import torch
+
 
 # Create an OffPolicyBuffer instance
 obs_space = gymnasium.spaces.Box(low=-1, high=1, shape=(4,))
@@ -94,20 +96,22 @@ for i in range(buffer_size):
     done = torch.tensor([0], device=device)
     buffer.store(obs=obs, act=act, next_obs=next_obs, reward=reward, done=done)
 
-batch, idxs=buffer.sample_batch()
-r=torch.ones_like(batch['reward'])
-d=batch['done']
-d[::8]=1
-d[0]=0
-d[-1]=1
-gamma=0.99
-target_q=torch.ones_like(batch['reward'])
-n_step=4
-G=torch.zeros_like(batch['reward'])
+batch, idxs = buffer.sample_batch()
+r = torch.ones_like(batch['reward'])
+d = batch['done']
+d[::8] = 1
+d[0] = 0
+d[-1] = 1
+gamma = 0.99
+target_q = torch.ones_like(batch['reward'])
+n_step = 4
+G = torch.zeros_like(batch['reward'])
 for t, idx in enumerate(idxs):
     for i in range(n_step):
-        end_idx=min(n_step+t, len(idxs)-1)
-        G[t]+=gamma**(i-t)*(1-d[i])*r[i]+gamma**(n_step)*(1-d[end_idx])*target_q[end_idx]
+        end_idx = min(n_step + t, len(idxs) - 1)
+        G[t] += (
+            gamma ** (i - t) * (1 - d[i]) * r[i]
+            + gamma ** (n_step) * (1 - d[end_idx]) * target_q[end_idx]
+        )
 
 print(G)
-
