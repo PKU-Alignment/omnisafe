@@ -115,4 +115,5 @@ max-line-length = 500
 filterwarnings = [
     "error",
     "ignore: distutils Version classes are deprecated. Use packaging.version instead.",
+    "ignore::DeprecationWarning"
 ]

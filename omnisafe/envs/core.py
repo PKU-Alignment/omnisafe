@@ -136,19 +136,6 @@ class CMDP(ABC):
         """
 
     @abstractmethod
-    def single_reset(self, idx: int, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
-        """For parallel env, reset one of the env and returns an initial observation,
-            if env not support parallel, should be same as reset.
-
-        Args:
-            seed (Optional[int]): seed for the environment.
-
-        Returns:
-            observation (torch.Tensor): the initial observation of the space.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
-        """
-
-    @abstractmethod
     def set_seed(self, seed: int) -> None:
         """Sets the seed for this env's random number generator(s).
 
@@ -224,9 +211,6 @@ class Wrapper(CMDP):
 
     def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
         return self._env.reset(seed)
-
-    def single_reset(self, idx: int, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
-        return self._env.single_reset(idx, seed)
 
     def set_seed(self, seed: int) -> None:
         self._env.set_seed(seed)

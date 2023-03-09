@@ -162,6 +162,7 @@ def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:
     """
     path = os.path.dirname(os.path.abspath(__file__))
     cfg_path = os.path.join(path, '..', 'configs', algo_type, f'{algo}.yaml')
+    print(f'Loading {algo}.yaml from {cfg_path}')
     with open(cfg_path, encoding='utf-8') as file:
         try:
             kwargs = yaml.load(file, Loader=yaml.FullLoader)
@@ -210,7 +211,7 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
 
 def __check_algo_configs(configs: Config, algo_type) -> None:
     """Check algorithm configs."""
-    if algo_type == 'onpolicy':
+    if algo_type == 'on-policy':
         assert (
             isinstance(configs.update_iters, int) and configs.update_iters > 0
         ), 'update_iters must be int and greater than 0'
@@ -228,11 +229,12 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
             and configs.entropy_coef >= 0.0
             and configs.entropy_coef <= 1.0
         ), 'entropy_coef must be float, and it values must be [0.0, 1.0]'
-        assert (
-            configs.reward_normalize and configs.reward_normalize and configs.reward_normalize
-        ), 'normalize must be bool'
+        assert isinstance(configs.reward_normalize, bool), 'reward_normalize must be bool'
+        assert isinstance(configs.cost_normalize, bool), 'cost_normalize must be bool'
+        assert isinstance(configs.obs_normalize, bool), 'obs_normalize must be bool'
         assert isinstance(configs.kl_early_stop, bool), 'kl_early_stop must be bool'
-        assert configs.use_max_grad_norm and configs.use_critic_norm, 'norm must be bool'
+        assert isinstance(configs.use_max_grad_norm, bool), 'use_max_grad_norm must be bool'
+        assert isinstance(configs.use_critic_norm, bool), 'use_critic_norm must be bool'
         assert isinstance(configs.max_grad_norm, float) and isinstance(
             configs.critic_norm_coef, float
         ), 'norm must be bool'
@@ -250,9 +252,10 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
         assert (
             isinstance(configs.lam_c, float) and configs.lam_c >= 0.0 and configs.lam_c <= 1.0
         ), 'lam_c must be float, and it values must be [0.0, 1.0]'
-        assert (
-            isinstance(configs.clip, float) and configs.clip >= 0.0
-        ), 'clip must be float, and it values must be [0.0, infty]'
+        if hasattr(configs, 'clip'):
+            assert (
+                isinstance(configs.clip, float) and configs.clip >= 0.0
+            ), 'clip must be float, and it values must be [0.0, infty]'
         assert isinstance(configs.adv_estimation_method, str) and configs.adv_estimation_method in [
             'gae',
             'gae-rtg',
@@ -272,7 +275,7 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
 
 def __check_logger_configs(configs: Config, algo_type) -> None:
     """Check logger configs."""
-    if algo_type == 'onpolicy':
+    if algo_type == 'on-policy':
         assert isinstance(configs.use_wandb, bool) and isinstance(
             configs.wandb_project, str
         ), 'use_wandb and wandb_project must be bool and string'
