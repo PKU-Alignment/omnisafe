@@ -44,7 +44,7 @@ class PiecewiseSchedule(Schedule):
 
     def __init__(
         self,
-        endpoints: List[Tuple[Union[int, float], Union[int, float]]],
+        endpoints: List[Tuple[int, float]],
         outside_value=Optional[Union[int, float]],
     ) -> None:
         """From OpenAI baselines"""

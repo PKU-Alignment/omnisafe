@@ -55,7 +55,7 @@ defaults:
     # use max gradient norm
     use_max_grad_norm: True
     # max gradient norm
-    max_grad_norm: 40
+    max_grad_norm: 40.0
     # use critic norm
     use_critic_norm: True
     # critic norm coefficient
