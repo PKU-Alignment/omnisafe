@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of CriticBuilder."""
 
-import difflib
 from typing import List
 
 from omnisafe.models.base import Critic
@@ -101,5 +100,5 @@ class CriticBuilder:
 
         raise NotImplementedError(
             f'critic_type "{critic_type}" is not implemented.'
-            f'Did you mean one of {difflib.get_close_matches(critic_type, ["q", "v"])[0]}?'
+            'Available critic types are: "q", "v".'
         )

@@ -40,21 +40,15 @@ class TimeLimit(Wrapper):
             time_limit (int): The time limit for each episode.
         """
         super().__init__(env)
+
+        assert self.num_envs == 1, 'TimeLimit only supports single environment'
+
         self._time_limit: int = time_limit
-        self._time: Union[int, np.ndarray] = (
-            0 if self.num_envs == 1 else np.array([0] * self.num_envs)
-        )
+        self._time: int = 0
 
     def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
-        self._time = 0 if self.num_envs == 1 else np.array([0] * self.num_envs)
+        self._time = 0
         return super().reset(seed)
-
-    def single_reset(self, idx: int, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
-        if isinstance(self._time, np.ndarray):
-            self._time[idx] = 0
-        else:
-            self._time = 0
-        return super().single_reset(idx, seed)
 
     def step(
         self, action: torch.Tensor
@@ -75,19 +69,19 @@ class AutoReset(Wrapper):
 
     """
 
+    def __init__(self, env: CMDP) -> None:
+        super().__init__(env)
+
+        assert self.num_envs == 1, 'AutoReset only supports single environment'
+
     def step(
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         obs, reward, cost, terminated, truncated, info = super().step(action)
 
-        if self.num_envs == 1:
-            if terminated or truncated:
-                obs, _ = self.reset()
-        else:
-            dones = terminated | truncated
-            for idx, done in enumerate(dones):
-                if done:
-                    obs[idx], _ = self.single_reset(idx)
+        if terminated or truncated:
+            info['last_episode_obs'], _ = self.reset()
+            obs, _ = self.reset()
 
         return obs, reward, cost, terminated, truncated, info
 
@@ -124,12 +118,6 @@ class ObsNormalize(Wrapper):
         obs, info = super().reset(seed)
         info['original_obs'] = obs
         obs = self._obs_normalizer.normalize(obs)
-        return obs, info
-
-    def single_reset(self, idx: int, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
-        obs, info = super().single_reset(idx, seed)
-        info['original_obs'] = obs
-        obs = self._obs_normalizer.normalize(obs.unsqueeze(0)).squeeze(0)
         return obs, info
 
     def save(self) -> Dict[str, torch.nn.Module]:
