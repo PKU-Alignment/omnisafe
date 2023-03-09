@@ -528,7 +528,7 @@ Quick start
 
                 env = omnisafe.Env('SafetyPointGoal1-v0')
 
-                custom_dict = {'epochs': 1, 'data_dir': './runs'}
+                custom_dict = {'epochs': 1, 'log_dir': './runs'}
                 agent = omnisafe.Agent('TRPO', env, custom_cfgs=custom_dict)
                 agent.learn()
 
