@@ -69,7 +69,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """Set the render mode.
 
         Args:
-            render_mode (str): render mode.
+            play (bool): whether to play the video.
+            save_replay (bool): whether to save the video.
         """
         # set the render mode
         if play and save_replay:
@@ -187,9 +188,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             cost_criteria (float): the cost criteria for the evaluation.
 
         Returns:
-            episode_rewards (list): list of episode rewards.
-            episode_costs (list): list of episode costs.
-            episode_lengths (list): list of episode lengths.
+            (float, float, float): the average return, the average cost, and the average length of the episodes.
         """
         if self._env is None or self._actor is None:
             raise ValueError(
