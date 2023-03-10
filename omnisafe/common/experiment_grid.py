@@ -292,7 +292,7 @@ class ExperimentGrid:
         return new_variants
 
     # pylint: disable-next=too-many-locals
-    def run(self, thunk, num_pool=1, log_dir=None, is_test=False):
+    def run(self, thunk, num_pool=1, parent_dir=None, is_test=False):
         r"""Run each variant in the grid with function 'thunk'.
 
         Note: 'thunk' must be either a callable function, or a string. If it is
@@ -362,8 +362,10 @@ class ExperimentGrid:
             print('current_config', var)
             exp_name = '_'.join([k + '_' + str(v) for k, v in var.items()])
             exp_names.append(exp_name)
-            if log_dir is None:
+            if parent_dir is None:
                 log_dir = os.path.join('./', 'exp-x', self.name, exp_name, '')
+            else:
+                log_dir = os.path.join(dir, self.name, exp_name, '')
             var['logger_cfgs'] = {'log_dir': log_dir}
             results.append(pool.submit(thunk, idx, var['algo'], var['env_id'], var))
         pool.shutdown()
