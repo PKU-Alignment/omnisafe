@@ -365,7 +365,7 @@ class ExperimentGrid:
             if parent_dir is None:
                 log_dir = os.path.join('./', 'exp-x', self.name, exp_name, '')
             else:
-                log_dir = os.path.join(dir, self.name, exp_name, '')
+                log_dir = os.path.join(parent_dir, self.name, exp_name, '')
             var['logger_cfgs'] = {'log_dir': log_dir}
             results.append(pool.submit(thunk, idx, var['algo'], var['env_id'], var))
         pool.shutdown()
