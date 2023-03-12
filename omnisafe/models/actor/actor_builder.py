@@ -72,5 +72,5 @@ class ActorBuilder:
         raise NotImplementedError(
             f'Actor type {actor_type} is not implemented! '
             f'Did you mean'
-            f'{difflib.get_close_matches(actor_type, ["gaussian_learning", "gaussian_sac","mlp"])[0]}?'
+            f'"gaussian_learning", "gaussian_sac","mlp"?'
         )
