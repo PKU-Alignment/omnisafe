@@ -55,7 +55,7 @@ class MLPActor(Actor):
             weight_initialization_mode=weight_initialization_mode,
         )
         self._noise = 0.2
-        self._noise_clip = 0.5
+        self._noise_clip = 100
 
     def predict(
         self,
@@ -77,7 +77,9 @@ class MLPActor(Actor):
 
         noise = torch.normal(0, self._noise * torch.ones_like(action))
         noise = torch.clamp(noise, -self._noise_clip, self._noise_clip)
-        return action + noise
+        act_low = torch.tensor(self._act_space.low, dtype=torch.float32)
+        act_high = torch.tensor(self._act_space.high, dtype=torch.float32)
+        return torch.clamp(action + noise, act_low, act_high)
 
     @property
     def noise(self) -> float:

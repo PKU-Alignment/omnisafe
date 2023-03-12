@@ -21,7 +21,7 @@ defaults:
     # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
     device: cpu
     # number of threads for torch
-    torch_threads: 2
+    torch_threads: 16
     # number of vectorized environments
     vector_env_nums: 2
     # number of parallel agent, similar to a3c
@@ -114,3 +114,9 @@ defaults:
       activation: relu
       # The learning rate of Critic network
       lr: 0.0003
+
+SafetySwimmerVelocity-v4:
+  # algorithm configurations
+  algo_cfgs:
+    # normalize observation
+    reward_normalize: True

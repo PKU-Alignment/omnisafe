@@ -37,7 +37,7 @@ class TD3(DDPG):
     """
 
     def _init_model(self) -> None:
-        self._cfgs.model_cfgs.critic['num_critic'] = 2
+        self._cfgs.model_cfgs.critic['num_critics'] = 2
         self._actor_critic = ConstraintActorQCritic(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
