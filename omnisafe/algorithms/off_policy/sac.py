@@ -20,6 +20,7 @@ from torch import nn, optim
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
+from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils import distributed
 from omnisafe.utils.config import Config
 
@@ -40,6 +41,18 @@ class SAC(DDPG):
         self._log_alpha: torch.Tensor
         self._alpha_optimizer: optim.Optimizer
         self._target_entropy: float
+
+    def _init_model(self) -> None:
+        self._cfgs.model_cfgs.critic['num_critics'] = 2
+        self._actor_critic = ConstraintActorQCritic(
+            obs_space=self._env.observation_space,
+            act_space=self._env.action_space,
+            model_cfgs=self._cfgs.model_cfgs,
+            epochs=self._epochs,
+        ).to(self._device)
+
+        if distributed.world_size() > 1:
+            distributed.sync_params(self._actor_critic)
 
     def _init(self) -> None:
         super()._init()
@@ -121,6 +134,11 @@ class SAC(DDPG):
             self._alpha_optimizer.zero_grad()
             alpha_loss.backward()
             self._alpha_optimizer.step()
+            self._logger.store(
+                **{
+                    'Loss/alpha_loss': alpha_loss.mean().item(),
+                }
+            )
         self._logger.store(
             **{
                 'Value/alpha': self._alpha,

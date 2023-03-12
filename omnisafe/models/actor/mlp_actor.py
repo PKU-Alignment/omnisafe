@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of ContinuousOutputActorActor."""
+"""Implementation of MLPActorActor."""
 
 from typing import List
 
@@ -26,7 +26,7 @@ from omnisafe.utils.model import build_mlp_network
 
 # pylint: disable-next=too-many-instance-attributes
 class MLPActor(Actor):
-    """Implementation of ContinuousOutputActor."""
+    """Implementation of MLPActor."""
 
     def __init__(
         self,
@@ -37,7 +37,7 @@ class MLPActor(Actor):
         output_activation: Activation = 'identity',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize ContinuousOutputActor.
+        """Initialize MLPActor.
 
         Args:
             obs_space (OmnisafeSpace): Observation space.

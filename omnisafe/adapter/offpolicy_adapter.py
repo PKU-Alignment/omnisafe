@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""OnPolicy Adapter for OmniSafe."""
+"""OffPolicy Adapter for OmniSafe."""
 
 from functools import partial
 from typing import Dict, Optional
@@ -53,10 +53,11 @@ class OffPolicyAdapter(OnlineAdapter):
         """Roll out the environment and store the data in the buffer.
 
         Args:
-            steps_per_sample (int): Number of steps per epoch.
+            roll_out_step (int): Number of steps to roll out.
             agent (ConstraintActorCritic): Agent.
             buf (VectorOnPolicyBuffer): Buffer.
             logger (Logger): Logger.
+            use_rand_action (bool): Whether to use random action.
         """
         if use_rand_action:
             if isinstance(self._env.action_space, spaces.Box):
@@ -102,7 +103,6 @@ class OffPolicyAdapter(OnlineAdapter):
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
         """Log metrics."""
-
         logger.store(
             **{
                 'Metrics/EpRet': self._ep_ret[idx],

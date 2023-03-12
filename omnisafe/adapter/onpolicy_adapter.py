@@ -94,6 +94,7 @@ class OnPolicyAdapter(OnlineAdapter):
 
                         self._log_metrics(logger, idx)
                         self._reset_log(idx)
+
                         self._ep_ret[idx] = 0.0
                         self._ep_cost[idx] = 0.0
                         self._ep_len[idx] = 0.0

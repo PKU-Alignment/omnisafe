@@ -71,4 +71,4 @@ class OffPolicyBuffer(BaseBuffer):
     def sample_batch(self) -> Dict[str, torch.Tensor]:
         """Sample a batch of data from the buffer."""
         idxs = torch.randint(0, self._size, (self._batch_size,))
-        return {key: value[idxs] for key, value in self.data.items()}, idxs
+        return {key: value[idxs] for key, value in self.data.items()}

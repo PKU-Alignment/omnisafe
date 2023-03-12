@@ -14,8 +14,6 @@
 # ==============================================================================
 """Implementation of the Twin Delayed DDPG algorithm."""
 
-from copy import deepcopy
-
 import torch
 from torch import nn
 
@@ -47,7 +45,6 @@ class TD3(DDPG):
 
         if distributed.world_size() > 1:
             distributed.sync_params(self._actor_critic)
-        self._target_actor_critic = deepcopy(self._actor_critic)
 
     def _update_rewrad_critic(
         self,

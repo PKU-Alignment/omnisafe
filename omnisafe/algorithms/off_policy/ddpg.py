@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Policy Gradient algorithm."""
+"""Implementation of the Deep Deterministic Policy Gradient algorithm."""
 
 import time
 from typing import Any, Dict, Tuple, Union
@@ -27,7 +27,6 @@ from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils import distributed
-from omnisafe.utils.config import Config
 
 
 @registry.register
@@ -42,10 +41,6 @@ class DDPG(BaseAlgo):
         Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
         - URL: `DDPG <https://arxiv.org/abs/1509.02971>`_
     """
-
-    def __init__(self, env_id: str, cfgs: Config) -> None:
-        super().__init__(env_id, cfgs)
-        self._epoch: int
 
     def _init_env(self) -> None:
         self._env = OffPolicyAdapter(
@@ -70,7 +65,7 @@ class DDPG(BaseAlgo):
         self._samples_per_epoch = self._update_cycle // self._steps_per_sample
 
     def _init_model(self) -> None:
-        self._cfgs.model_cfgs.critic['num_critic'] = 1
+        self._cfgs.model_cfgs.critic['num_critics'] = 1
         self._actor_critic = ConstraintActorQCritic(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
@@ -139,6 +134,7 @@ class DDPG(BaseAlgo):
 
     def _update_epoch(self) -> None:
         """Update something per epoch"""
+        self._actor_critic.actor_scheduler.step()
 
     def learn(self) -> Tuple[Union[int, float], ...]:
         """This is main function for algorithm update, divided into the following steps:
@@ -187,7 +183,9 @@ class DDPG(BaseAlgo):
             self._logger.store(**{'Time/Rollout': roll_out_time})
 
             if step > self._cfgs.algo_cfgs.start_learning_steps:
-                self._actor_critic.actor_scheduler.step()
+                # update something per epoch
+                # e.g. update lagrange multiplier
+                self._update_epoch()
 
             self._logger.store(
                 **{
@@ -199,9 +197,6 @@ class DDPG(BaseAlgo):
                     'Train/LR': self._actor_critic.actor_scheduler.get_last_lr()[0],
                 }
             )
-
-            self._update_epoch()
-            self._epoch = epoch
 
             self._logger.dump_tabular()
 
