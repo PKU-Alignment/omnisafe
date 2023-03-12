@@ -69,7 +69,7 @@ class PolicyGradient(BaseAlgo):
         if self._cfgs.model_cfgs.exploration_noise_anneal:
             self._actor_critic.set_annealing(
                 epochs=[0, self._cfgs.train_cfgs.epochs],
-                std=self._cfgs.model_cfgs.std,
+                std=self._cfgs.model_cfgs.std_range,
             )
 
     def _init(self) -> None:

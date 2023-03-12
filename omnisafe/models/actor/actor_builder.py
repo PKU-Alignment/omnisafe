@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of ActorBuilder."""
 
-import difflib
 from typing import List
 
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor

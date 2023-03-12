@@ -125,5 +125,9 @@ class QCritic(Critic):
         """
         res = []
         for critic in self.net_lst:
-            res.append(torch.squeeze(critic(torch.cat([obs, act], dim=-1)), -1))
+            if self._use_obs_encoder:
+                obs_encode = critic[0](obs)  # type: ignore
+                res.append(torch.squeeze(critic[1](torch.cat([obs_encode, act], dim=-1)), -1))  # type: ignore
+            else:
+                res.append(torch.squeeze(critic(torch.cat([obs, act], dim=-1)), -1))
         return res

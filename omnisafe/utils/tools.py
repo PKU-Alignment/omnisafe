@@ -87,36 +87,6 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
     assert i == len(vals), f'Lengths do not match: {i} vs. {len(vals)}'
 
 
-def expand_dims(*args):
-    """This function is used to expand the dimensions of the input data.
-
-    .. note::
-        This function is used to expand the dimensions of the input data.
-        For example, if the input data is a scalar, then the output data will be a 1-dim ndarray.
-
-    Args:
-        *args: input data to be expanded.
-    """
-    if len(args) == 1:
-        return np.expand_dims(args[0], axis=0)
-    return [np.expand_dims(item, axis=0) for item in args]
-
-
-def as_tensor(*args, device: torch.device = torch.device('cpu')):
-    """This function is used to convert the input data to tensor.
-
-    .. note::
-        This function is used to convert the input data to tensor.
-        For example, if the input data is a scalar, then the output data will be a 0-dim tensor.
-
-    Args:
-        *args: input data to be converted.
-    """
-    if len(args) == 1:
-        return torch.as_tensor(args[0], dtype=torch.float32)
-    return [torch.as_tensor(item, dtype=torch.float32, device=device) for item in args]
-
-
 def seed_all(seed: int):
     """This function is used to set the random seed for all the packages."""
 
