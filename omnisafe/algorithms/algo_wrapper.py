@@ -20,9 +20,9 @@ from typing import Any, Dict, Optional
 
 import psutil
 import torch
-from safety_gymnasium.utils.registration import safe_registry
 
 from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
+from omnisafe.envs import support_envs
 from omnisafe.utils import distributed
 from omnisafe.utils.config import check_all_configs, get_default_kwargs_yaml
 
@@ -86,9 +86,9 @@ class AlgoWrapper:
         assert (
             isinstance(self.custom_cfgs, dict) or self.custom_cfgs is None
         ), 'custom_cfgs must be a dict!'
-        assert self.env_id in safe_registry, (
+        assert self.env_id in support_envs(), (
             f"{self.env_id} doesn't exist. "
-            f'Did you mean {difflib.get_close_matches(self.env_id, safe_registry, n=1)[0]}?'
+            f'Did you mean {difflib.get_close_matches(self.env_id, support_envs(), n=1)[0]}?'
         )
 
     def learn(self):

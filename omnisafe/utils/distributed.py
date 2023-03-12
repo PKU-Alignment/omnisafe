@@ -17,7 +17,7 @@
 import os
 import subprocess
 import sys
-from typing import Any, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -73,6 +73,7 @@ def fork(
     bind_to_core: bool = False,
     use_number_of_threads: bool = False,
     device: str = 'cpu',
+    manual_args: Optional[List[str]] = None,
 ) -> bool:
     """The entrance of multi-processing.
 
@@ -113,8 +114,12 @@ def fork(
             args += ['-bind-to', 'core']
         if use_number_of_threads:
             args += ['--use-hwthread-cpus']
-        args += sys.argv
-        print(sys.argv)
+        if manual_args is not None:
+            args += manual_args
+            print(manual_args)
+        else:
+            args += sys.argv
+            print(sys.argv)
         # this is the parent process, spawn sub-processes..
         subprocess.check_call(args, env=env)
         is_parent = True
