@@ -105,7 +105,7 @@ class OnPolicyAdapter(OnlineAdapter):
         reward: torch.Tensor,
         cost: torch.Tensor,
         info: Dict,
-        **kwargs, # pylint: disable=unused-argument
+        **kwargs,  # pylint: disable=unused-argument
     ) -> None:
         """Log value."""
         self._ep_ret += info.get('original_reward', reward)
