@@ -40,7 +40,7 @@ class OnPolicyAdapter(OnlineAdapter):
 
     def roll_out(  # pylint: disable=too-many-locals
         self,
-        roll_out_step: int,
+        steps_per_epoch: int,
         agent: ConstraintActorCritic,
         buffer: VectorOnPolicyBuffer,
         logger: Logger,
@@ -56,7 +56,7 @@ class OnPolicyAdapter(OnlineAdapter):
         self._reset_log()
 
         obs, _ = self.reset()
-        for step in range(roll_out_step):
+        for step in range(steps_per_epoch):
             act, value_r, value_c, logp = agent.step(obs)
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
 
@@ -78,7 +78,7 @@ class OnPolicyAdapter(OnlineAdapter):
 
             obs = next_obs
             dones = torch.logical_or(terminated, truncated)
-            epoch_end = step >= roll_out_step - 1
+            epoch_end = step >= steps_per_epoch - 1
             for idx, done in enumerate(dones):
                 if epoch_end or done:
                     if epoch_end and not done:
@@ -94,6 +94,9 @@ class OnPolicyAdapter(OnlineAdapter):
 
                         self._log_metrics(logger, idx)
                         self._reset_log(idx)
+                        self._ep_ret[idx] = 0.0
+                        self._ep_cost[idx] = 0.0
+                        self._ep_len[idx] = 0.0
 
                     buffer.finish_path(last_value_r, last_value_c, idx)
 

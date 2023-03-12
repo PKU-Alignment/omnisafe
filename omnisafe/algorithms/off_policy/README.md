@@ -29,7 +29,7 @@ You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
     eg.add('logger_cfgs:use_wandb', [True]) # You can use wandb to monitor the experiment.
     eg.add('logger_cfgs:use_tensorboard', [True]) # You can use tensorboard to monitor the experiment.
     eg.add('env_id', [
-        'SafetyHopperVelocity-v4', 
+        'SafetyHopperVelocity-v4',
         'SafetyWalker2dVelocity-v4',
         'SafetySwimmerVelocity-v4',
         'SafetyAntVelocity-v4',
@@ -92,7 +92,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
 
 <center>
     <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
     src="./benchmarks/Ant.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
@@ -103,7 +103,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
 
 <center>
     <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
     src="./benchmarks/HalfCheetah.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
@@ -114,7 +114,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
 
 <center>
     <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
     src="./benchmarks/Hopper.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
@@ -125,7 +125,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
 
 <center>
     <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
     src="./benchmarks/Humanoid.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
@@ -136,7 +136,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
 
 <center>
     <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
     src="./benchmarks/Walker2d.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
@@ -147,7 +147,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
 
 <center>
     <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
     src="./benchmarks/Swimmer.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
@@ -216,7 +216,7 @@ If you find that other hyperparameters perform better, please feel free to open 
 |     Ant     | **1243.15±619.17** | **289.80±161.52** |
 | HalfCheetah | **9496.25±999.36** | **882.63±75.43** |
 |    Hopper   | **2369.89±932.39** | **673.36±278.33** |
-|   Walker2d  | **1648.96±578.43** | **298.20±110.75** | 
+|   Walker2d  | **1648.96±578.43** | **298.20±110.75** |
 |   Swimmer   | **101.63±57.55** | **507.16±152.13** |
 |   Humanoid  | **3254.83±297.52** | **0.00±0.00** |
 
@@ -242,7 +242,7 @@ Please note that the ``cost_normlize`` make no sense for TD3, but work for TD3-L
 |     Ant     | **5107.66±619.95** | **978.33±4.41** |
 | HalfCheetah | **8844.27±1812.2** | **981.43±1.08** |
 |    Hopper   | **3567.15±109.79** | **977.43±19.14** |
-|   Walker2d  | **3962.93±355.76** | **904.83±21.69** | 
+|   Walker2d  | **3962.93±355.76** | **904.83±21.69** |
 |   Swimmer   | **81.98±31.23** | **678.66±240.35** |
 |   Humanoid  | **5245.66±674.81** | **0.00±0.00** |
 
@@ -266,7 +266,7 @@ Please note that the ``cost_normlize`` make no sense for TD3, but work for TD3-L
 |     Ant     | **6061.45±129.37** | **929.53±7.10** |
 | HalfCheetah | **10075.95±423.83** | **981.23±1.06** |
 |    Hopper   | **3386.41±89.95** | **992.76±0.16** |
-|   Walker2d  | **4613.00±340.90** | **914.56±14.91** | 
+|   Walker2d  | **4613.00±340.90** | **914.56±14.91** |
 |   Swimmer   | **44.80±3.65** | **376.50±152.89** |
 |   Humanoid  | **5618.22±337.33** | **0.00±0.00** |
 

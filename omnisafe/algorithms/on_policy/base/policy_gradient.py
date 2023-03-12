@@ -155,7 +155,7 @@ class PolicyGradient(BaseAlgo):
 
             roll_out_time = time.time()
             self._env.roll_out(
-                roll_out_step=self._steps_per_epoch,
+                steps_per_epoch=self._steps_per_epoch,
                 agent=self._actor_critic,
                 buffer=self._buf,
                 logger=self._logger,
