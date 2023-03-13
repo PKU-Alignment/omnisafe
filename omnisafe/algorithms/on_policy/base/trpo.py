@@ -18,7 +18,6 @@ from typing import Tuple
 
 import torch
 from torch.distributions import Distribution
-from torch.utils.data import DataLoader, TensorDataset
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
