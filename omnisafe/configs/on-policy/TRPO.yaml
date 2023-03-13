@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,33 +21,33 @@ defaults:
     # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
     device: cpu
     # number of threads for torch
-    torch_threads: 16
+    torch_threads: 8
     # number of vectorized environments
-    vector_env_nums: 16
+    vector_env_nums: 2
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
-    total_steps: 16384000
+    total_steps: 1024000
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    update_cycle: 32768
+    update_cycle: 2048
     # number of iterations to update the policy
     update_iters: 10
     # batch size for each iteration
-    batch_size: 16384
+    batch_size: 128
     # target kl divergence
-    target_kl: 0.02
+    target_kl: 0.01
     # entropy coefficient
     entropy_coef: 0.0
     # normalize reward
-    reward_normalize: True
+    reward_normalize: False
     # normalize cost
-    cost_normalize: True
+    cost_normalize: False
     # normalize observation
     obs_normalize: True
     # early stop when kl divergence is bigger than target kl
-    kl_early_stop: True
+    kl_early_stop: False
     # use max gradient norm
     use_max_grad_norm: True
     # max gradient norm
@@ -64,8 +64,6 @@ defaults:
     lam: 0.95
     # lambda for cost gae
     lam_c: 0.95
-    # clip ratio
-    clip: 0.2
     # advantage estimation method, options: gae, retrace
     adv_estimation_method: gae
     # standardize reward advantage
@@ -79,9 +77,11 @@ defaults:
     # Damping value for conjugate gradient
     cg_damping: 0.1
     # Number of conjugate gradient iterations
-    cg_iters: 10
+    cg_iters: 15
     # Subsampled observation
     fvp_obs: None
+    # The sub-sampling rate of the observation
+    fvp_sample_freq: 1
   # logger configurations
   logger_cfgs:
     # use wandb for logging
@@ -124,3 +124,43 @@ defaults:
       activation: tanh
       # learning rate
       lr: 0.001
+
+SafetyAntVelocity-v4:
+  # algorithm configurations
+  algo_cfgs:
+    # normalize reward
+    reward_normalize: True
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: True
+
+SafetyHalfCheetahVelocity-v4:
+  # algorithm configurations
+  algo_cfgs:
+    # normalize reward
+    reward_normalize: True
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: False
+
+SafetyHumanoidVelocity-v4:
+  # algorithm configurations
+  algo_cfgs:
+    # normalize reward
+    reward_normalize: True
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: True
+
+SafetySwimmerVelocity-v4:
+  # algorithm configurations
+  algo_cfgs:
+    # normalize reward
+    reward_normalize: True
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: True
