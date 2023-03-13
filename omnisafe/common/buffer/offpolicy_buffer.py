@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,6 +46,10 @@ class OffPolicyBuffer(BaseBuffer):
         self._size: int = 0
         self._max_size: int = size
         self._batch_size: int = batch_size
+
+        assert (
+            self._max_size > self._batch_size
+        ), 'The size of the buffer must be larger than the batch size.'
 
     @property
     def max_size(self) -> int:

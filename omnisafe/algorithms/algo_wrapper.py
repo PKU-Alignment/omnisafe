@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ class AlgoWrapper:
             raise ValueError(f'{self.algo} is not supported!')
         if self.algo_type in ['off-policy', 'model-based']:
             assert (
-                self.train_terminal_cfgs.parallel == 1
+                self.train_terminal_cfgs['parallel'] == 1
             ), 'off-policy or model-based only support parallel==1!'
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
