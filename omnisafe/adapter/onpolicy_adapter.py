@@ -77,14 +77,14 @@ class OnPolicyAdapter(OnlineAdapter):
             )
 
             obs = next_obs
-            dones = torch.logical_or(terminated, truncated)
             epoch_end = step >= steps_per_epoch - 1
-            for idx, done in enumerate(dones):
-                if epoch_end or done:
-                    if epoch_end and not done:
-                        logger.log(
-                            f'Warning: trajectory cut off when rollout by epoch at {self._ep_len[idx]} steps.'
-                        )
+            for idx, (done, time_out) in enumerate(zip(terminated, truncated)):
+                if epoch_end or done or time_out:
+                    if (epoch_end or time_out) and not done:
+                        if epoch_end:
+                            logger.log(
+                                f'Warning: trajectory cut off when rollout by epoch at {self._ep_len[idx]} steps.'
+                            )
                         _, last_value_r, last_value_c, _ = agent.step(obs[idx])
                         last_value_r = last_value_r.unsqueeze(0)
                         last_value_c = last_value_c.unsqueeze(0)
@@ -92,6 +92,7 @@ class OnPolicyAdapter(OnlineAdapter):
                         last_value_r = torch.zeros(1)
                         last_value_c = torch.zeros(1)
 
+                    if done or time_out:
                         self._log_metrics(logger, idx)
                         self._reset_log(idx)
 
