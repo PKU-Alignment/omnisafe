@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ class PCPO(CPO):
             cost_adv (torch.Tensor): The cost advantage tensor.
         """
         # pylint: disable=invalid-name
-        self._fvp_obs = obs[::4]
+        self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
         loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
@@ -77,7 +77,7 @@ class PCPO(CPO):
         grad = -get_flat_gradients_from(self._actor_critic.actor)
         x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
-        xHx = torch.dot(x, self._fvp(x))
+        xHx = x.dot(self._fvp(x))
         H_inv_g = self._fvp(x)
         assert xHx.item() >= 0, 'xHx is negative'
         alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
@@ -98,8 +98,8 @@ class PCPO(CPO):
 
         p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
         q = xHx
-        r = torch.dot(grad, p)
-        s = torch.dot(b_grad, p)
+        r = grad.dot(p)
+        s = b_grad.dot(p)
 
         step_direction = (
             torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (q + 1e-8)) * H_inv_g
