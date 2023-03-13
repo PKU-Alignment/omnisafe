@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ class CPO(TRPO):
         # get and flatten parameters from pi-net
         theta_old = get_flat_params_from(self._actor_critic.actor)
         # reward improvement, g-flat as gradient of reward
-        expected_reward_improve = torch.dot(grad, step_direction)
+        expected_reward_improve = grad.dot(step_direction)
 
         # while not within_trust_region and not finish all steps:
         for step in range(total_steps):
@@ -145,7 +145,7 @@ class CPO(TRPO):
             elif loss_cost_diff > max(-violation_c, 0):
                 self._logger.log(f'INFO: no improve {loss_cost_diff} > {max(-violation_c, 0)}')
             # check KL-distance to avoid too far gap
-            elif kl > self._cfgs.algo_cfgs.target_kl * 1.5:
+            elif kl > self._cfgs.algo_cfgs.target_kl:
                 self._logger.log(f'INFO: violated KL constraint {kl} at step {step + 1}.')
             else:
                 # step only if surrogate is improved and we are
@@ -204,7 +204,7 @@ class CPO(TRPO):
         adv_r: torch.Tensor,
         adv_c: torch.Tensor,
     ) -> None:
-        self._fvp_obs = obs[::4]
+        self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
         loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
@@ -217,7 +217,7 @@ class CPO(TRPO):
         grad = -get_flat_gradients_from(self._actor_critic.actor)
         x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
-        xHx = torch.dot(x, self._fvp(x))
+        xHx = x.dot(self._fvp(x))
         assert xHx.item() >= 0, 'xHx is negative'
         alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
 
@@ -234,10 +234,10 @@ class CPO(TRPO):
 
         p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
         q = xHx
-        r = torch.dot(grad, p)
-        s = torch.dot(b_grad, p)
+        r = grad.dot(p)
+        s = b_grad.dot(p)
 
-        if torch.dot(b_grad, b_grad) <= 1e-6 and cost < 0:
+        if b_grad.dot(b_grad) <= 1e-6 and cost < 0:
             # feasible step and cost grad is zero: use plain TRPO update...
             A = torch.zeros(1)
             B = torch.zeros(1)
@@ -246,8 +246,8 @@ class CPO(TRPO):
             assert torch.isfinite(r).all(), 'r is not finite'
             assert torch.isfinite(s).all(), 's is not finite'
 
-            A = q - r**2 / s
-            B = 2 * self._cfgs.algo_cfgs.target_kl - cost**2 / s
+            A = q - r**2 / (s + 1e-8)
+            B = 2 * self._cfgs.algo_cfgs.target_kl - cost**2 / (s + 1e-8)
 
             if cost < 0 and B < 0:
                 # point in trust region is feasible and safety boundary doesn't intersect
@@ -272,7 +272,7 @@ class CPO(TRPO):
             # under 3 and 4 cases directly use TRPO method
             alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
             nu_star = torch.zeros(1)
-            lambda_star = 1 / alpha
+            lambda_star = 1 / (alpha + 1e-8)
             step_direction = alpha * x
 
         elif optim_case in (1, 2):
@@ -290,12 +290,13 @@ class CPO(TRPO):
             # where projection(str,b,c)=max(b,min(str,c))
             # may be regarded as a projection from effective region towards safety region
             r_num = r.item()
+            eps_cost = cost + 1e-8
             if cost < 0:
-                lambda_a_star = project(lambda_a, 0.0, r_num / cost)
-                lambda_b_star = project(lambda_b, r_num / cost, np.inf)
+                lambda_a_star = project(lambda_a, 0.0, r_num / eps_cost)
+                lambda_b_star = project(lambda_b, r_num / eps_cost, np.inf)
             else:
-                lambda_a_star = project(lambda_a, r_num / cost, np.inf)
-                lambda_b_star = project(lambda_b, 0.0, r_num / cost)
+                lambda_a_star = project(lambda_a, r_num / eps_cost, np.inf)
+                lambda_b_star = project(lambda_b, 0.0, r_num / eps_cost)
 
             def f_a(lam):
                 return -0.5 * (A / (lam + 1e-8) + B * lam) - r * cost / (s + 1e-8)

@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ from typing import Tuple
 
 import torch
 from torch.distributions import Distribution
+from torch.utils.data import DataLoader, TensorDataset
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.natural_pg import NaturalPG
@@ -85,7 +86,6 @@ class TRPO(NaturalPG):
         theta_old = get_flat_params_from(self._actor_critic.actor)
         # Change expected objective function gradient = expected_imrpove best this moment
         expected_improve = grad.dot(step_direction)
-        expected_improve = torch.dot(grad, step_direction)
 
         # While not within_trust_region and not out of total_steps:
         for step in range(total_steps):
@@ -110,7 +110,7 @@ class TRPO(NaturalPG):
                 self._logger.log('WARNING: loss_pi not finite')
             elif loss_improve < 0:
                 self._logger.log('INFO: did not improve improve <0')
-            elif kl > self._cfgs.algo_cfgs.target_kl * 1.5:
+            elif kl > self._cfgs.algo_cfgs.target_kl:
                 self._logger.log('INFO: violated KL constraint.')
             else:
                 # step only if surrogate is improved and when within trust reg.
@@ -153,7 +153,7 @@ class TRPO(NaturalPG):
             adv_r (torch.Tensor): The advantage tensor.
             adv_c (torch.Tensor): The cost advantage tensor.
         """
-        self._fvp_obs = obs[::4]
+        self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
         adv = self._compute_adv_surrogate(adv_r, adv_c)
@@ -202,5 +202,46 @@ class TRPO(NaturalPG):
                 'Misc/gradient_norm': torch.norm(grad).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
                 'Misc/AcceptanceStep': accept_step,
+            }
+        )
+
+    def _update(self) -> None:
+        data = self._buf.get()
+        obs, act, logp, target_value_r, target_value_c, adv_r, adv_c = (
+            data['obs'],
+            data['act'],
+            data['logp'],
+            data['target_value_r'],
+            data['target_value_c'],
+            data['adv_r'],
+            data['adv_c'],
+        )
+        self._update_actor(obs, act, logp, adv_r, adv_c)
+
+        dataloader = DataLoader(
+            dataset=TensorDataset(obs, act, logp, target_value_r, target_value_c, adv_r, adv_c),
+            batch_size=self._cfgs.algo_cfgs.batch_size,
+            shuffle=True,
+        )
+
+        for i in range(self._cfgs.algo_cfgs.update_iters):
+            for (
+                obs,
+                act,
+                logp,
+                target_value_r,
+                target_value_c,
+                adv_r,
+                adv_c,
+            ) in dataloader:
+                self._update_rewrad_critic(obs, target_value_r)
+                if self._cfgs.algo_cfgs.use_cost:
+                    self._update_cost_critic(obs, target_value_c)
+
+        self._logger.store(
+            **{
+                'Train/StopIter': i + 1,
+                'Value/Adv': adv_r.mean().item(),
+                'Train/KL': 0.0,
             }
         )

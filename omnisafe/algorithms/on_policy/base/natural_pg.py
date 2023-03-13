@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 """Implementation of the Natural Policy Gradient algorithm."""
 
 import torch
+from torch.utils.data import DataLoader, TensorDataset
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
@@ -90,7 +91,7 @@ class NaturalPG(PolicyGradient):
         adv_r: torch.Tensor,
         adv_c: torch.Tensor,
     ) -> None:
-        self._fvp_obs = obs[::4]
+        self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
         adv = self._compute_adv_surrogate(adv_r, adv_c)
@@ -125,5 +126,46 @@ class NaturalPG(PolicyGradient):
                 'Misc/xHx': xHx.item(),
                 'Misc/gradient_norm': torch.norm(grad).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
+            }
+        )
+
+    def _update(self) -> None:
+        data = self._buf.get()
+        obs, act, logp, target_value_r, target_value_c, adv_r, adv_c = (
+            data['obs'],
+            data['act'],
+            data['logp'],
+            data['target_value_r'],
+            data['target_value_c'],
+            data['adv_r'],
+            data['adv_c'],
+        )
+        self._update_actor(obs, act, logp, adv_r, adv_c)
+
+        dataloader = DataLoader(
+            dataset=TensorDataset(obs, act, logp, target_value_r, target_value_c, adv_r, adv_c),
+            batch_size=self._cfgs.algo_cfgs.batch_size,
+            shuffle=True,
+        )
+
+        for i in range(self._cfgs.algo_cfgs.update_iters):
+            for (
+                obs,
+                act,
+                logp,
+                target_value_r,
+                target_value_c,
+                adv_r,
+                adv_c,
+            ) in dataloader:
+                self._update_rewrad_critic(obs, target_value_r)
+                if self._cfgs.algo_cfgs.use_cost:
+                    self._update_cost_critic(obs, target_value_c)
+
+        self._logger.store(
+            **{
+                'Train/StopIter': i + 1,
+                'Value/Adv': adv_r.mean().item(),
+                'Train/KL': 0.0,
             }
         )
