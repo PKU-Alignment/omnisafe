@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
         self._cfgs = cfgs
 
         assert hasattr(cfgs, 'seed'), 'Please specify the seed in the config file.'
-        self._seed = cfgs.seed + distributed.get_rank() * 1000
+        self._seed = int(cfgs.seed) + distributed.get_rank() * 1000
         seed_all(self._seed)
 
         assert hasattr(cfgs.train_cfgs, 'device'), 'Please specify the device in the config file.'

@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,11 @@
 # ==============================================================================
 """Implementation of GaussianStdNetActor."""
 
-from typing import List
+from typing import List, Optional
 
 import torch
-from torch.distributions import Distribution
+from torch import nn
+from torch.distributions import Distribution, Normal
 
 from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
@@ -43,28 +44,57 @@ class GaussianSACActor(Actor):
             weight_initialization_mode=weight_initialization_mode,
         )
 
+        self._current_raw_action: Optional[torch.Tensor] = None
+        self.register_buffer('_log2', torch.log(torch.tensor(2.0)))
+        self._log2: torch.Tensor
+
     def _distribution(self, obs: torch.Tensor) -> Distribution:
         mean, log_std = self.net(obs).chunk(2, dim=-1)
         log_std = torch.clamp(log_std, min=-20, max=2)
         std = log_std.exp()
-        return TanhNormal(mean, std)
+        return Normal(mean, std)
 
     def predict(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
         self._current_dist = self._distribution(obs)
         self._after_inference = True
+
         if deterministic:
-            return self._current_dist.mean
-        return self._current_dist.rsample()
+            action = self._current_dist.mean
+        else:
+            action = self._current_dist.rsample()
+
+        self._current_raw_action = action
+
+        return torch.tanh(action)
 
     def forward(self, obs: torch.Tensor) -> Distribution:
         self._current_dist = self._distribution(obs)
         self._after_inference = True
-        return self._current_dist
+        return TanhNormal(self._current_dist.mean, self._current_dist.stddev)
 
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
         assert self._after_inference, 'log_prob() should be called after predict() or forward()'
         self._after_inference = False
-        return self._current_dist.log_prob(act).sum(axis=-1)
+
+        if self._current_raw_action is not None:
+            logp = self._current_dist.log_prob(self._current_raw_action).sum(axis=-1)
+            logp -= (
+                2
+                * (
+                    self._log2
+                    - self._current_raw_action
+                    - nn.functional.softplus(-2 * self._current_raw_action)
+                )
+            ).sum(axis=-1)
+            self._current_raw_action = None
+        else:
+            logp = (
+                TanhNormal(self._current_dist.mean, self._current_dist.stddev)
+                .log_prob(act)
+                .sum(axis=-1)
+            )
+
+        return logp
 
     @property
     def std(self) -> float:
