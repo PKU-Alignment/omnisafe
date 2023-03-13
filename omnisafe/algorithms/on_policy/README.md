@@ -30,20 +30,20 @@ You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
 if __name__ == '__main__':
     eg = ExperimentGrid(exp_name='Safety_Gymnasium_Goal')
 
-    # set up the algorithms
+    # set up the algorithms.
     base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']
     naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
     first_order_policy = ['CUP', 'FOCOPS']
     second_order_policy = ['CPO', 'PCPO']
-    
+
     eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
 
-     # You can use wandb to monitor the experiment.
+    # you can use wandb to monitor the experiment.
     eg.add('logger_cfgs:use_wandb', [True])
     # you can use tensorboard to monitor the experiment.
-    eg.add('logger_cfgs:use_tensorboard', [True]) 
+    eg.add('logger_cfgs:use_tensorboard', [True])
 
-    # set up the environment
+    # set up the environment.
     eg.add('env_id', [
         'SafetyHopperVelocity-v4',
         'SafetyWalker2dVelocity-v4',

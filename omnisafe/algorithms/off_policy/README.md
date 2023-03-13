@@ -25,16 +25,16 @@ You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
 ```python
     eg = ExperimentGrid(exp_name='Off-Policy-Velocity')
 
-    # set up the algorithms
+    # set up the algorithms.
     off_policy = ['DDPG', 'SAC', 'TD3']
     eg.add('algo', off_policy)
 
-     # You can use wandb to monitor the experiment.
+    # you can use wandb to monitor the experiment.
     eg.add('logger_cfgs:use_wandb', [True])
     # you can use tensorboard to monitor the experiment.
-    eg.add('logger_cfgs:use_tensorboard', [True]) 
+    eg.add('logger_cfgs:use_tensorboard', [True])
 
-    # set up the environment
+    # set up the environment.
     eg.add('env_id', [
         'SafetyHopperVelocity-v4',
         'SafetyWalker2dVelocity-v4',
