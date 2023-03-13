@@ -248,6 +248,5 @@ class TRPO(NaturalPG):
             **{
                 'Train/StopIter': i + 1,
                 'Value/Adv': adv_r.mean().item(),
-                'Train/KL': 0.0,
             }
         )
