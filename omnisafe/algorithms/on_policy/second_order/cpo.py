@@ -159,6 +159,12 @@ class CPO(TRPO):
             step_direction = torch.zeros_like(step_direction)
             acceptance_step = 0
 
+        self._logger.store(
+            **{
+                'Train/KL': kl,
+            }
+        )
+
         set_param_values_to_model(self._actor_critic.actor, theta_old)
         return step_frac * step_direction, acceptance_step
 

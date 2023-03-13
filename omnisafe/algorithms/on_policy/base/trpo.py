@@ -125,6 +125,12 @@ class TRPO(NaturalPG):
 
         set_param_values_to_model(self._actor_critic.actor, theta_old)
 
+        self._logger.store(
+            **{
+                'Train/KL': kl,
+            }
+        )
+
         return step_frac * step_direction, acceptance_step
 
     def _update_actor(  # pylint: disable=too-many-arguments,too-many-locals

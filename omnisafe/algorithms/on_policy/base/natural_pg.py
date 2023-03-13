@@ -81,6 +81,12 @@ class NaturalPG(PolicyGradient):
 
         flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
         distributed.avg_tensor(flat_grad_grad_kl)
+
+        self._logger.store(
+            **{
+                'Train/KL': kl.item(),
+            }
+        )
         return flat_grad_grad_kl + params * self._cfgs.algo_cfgs.cg_damping
 
     def _update_actor(  # pylint: disable=too-many-arguments, too-many-locals
