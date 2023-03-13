@@ -23,11 +23,18 @@ pip install safety_gymnasium
 You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
 
 ```python
-    eg = ExperimentGrid(exp_name='Off-Policy-Velocity)
+    eg = ExperimentGrid(exp_name='Off-Policy-Velocity')
+
+    # set up the algorithms
     off_policy = ['DDPG', 'SAC', 'TD3']
-    eg.add('algo', base_policy)
-    eg.add('logger_cfgs:use_wandb', [True]) # You can use wandb to monitor the experiment.
-    eg.add('logger_cfgs:use_tensorboard', [True]) # You can use tensorboard to monitor the experiment.
+    eg.add('algo', off_policy)
+
+     # You can use wandb to monitor the experiment.
+    eg.add('logger_cfgs:use_wandb', [True])
+    # you can use tensorboard to monitor the experiment.
+    eg.add('logger_cfgs:use_tensorboard', [True]) 
+
+    # set up the environment
     eg.add('env_id', [
         'SafetyHopperVelocity-v4',
         'SafetyWalker2dVelocity-v4',
@@ -36,8 +43,8 @@ You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
         'SafetyHalfCheetahVelocity-v4',
         'SafetyHumanoidVelocity-v4'
         ])
-    eg.add('seed', [0, 5, 10])
-    eg.run(train, num_pool=9)
+    eg.add('seed', [0, 5, 10, 15, 20])
+    eg.run(train, num_pool=5)
 ```
 
 After that, you can run the following command to run the benchmark:

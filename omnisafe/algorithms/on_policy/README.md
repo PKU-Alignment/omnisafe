@@ -30,35 +30,30 @@ You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
 if __name__ == '__main__':
     eg = ExperimentGrid(exp_name='Safety_Gymnasium_Goal')
 
-    # Set up the algorithms
+    # set up the algorithms
     base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']
     naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
     first_order_policy = ['CUP', 'FOCOPS']
     second_order_policy = ['CPO', 'PCPO']
+    
     eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
 
-    # Set up the environments
-    mujoco_envs = [
-        'SafetyAntVelocity-v4',
-        'SafetyHopperVelocity-v4',
-        'SafetyHumanoidVelocity-v4',
-        'SafetyWalker2dVelocity-v4',
-        'SafetyHalfCheetahVelocity-v4',
-        'SafetySwimmerVelocity-v4'
-        ]
-    eg.add('env_id', mujoco_envs)
-
-    # Set up the logger
+     # You can use wandb to monitor the experiment.
     eg.add('logger_cfgs:use_wandb', [True])
-    eg.add('logger_cfgs:use_tensorboard', [True])
+    # you can use tensorboard to monitor the experiment.
+    eg.add('logger_cfgs:use_tensorboard', [True]) 
 
-    # Set up the hyperparameters
-    eg.add('num_envs', [16])
-    eg.add('num_threads', [1])
-    eg.add('seed', [0])
-
-    # Start the experiment
-    eg.run(train, num_pool=13)
+    # set up the environment
+    eg.add('env_id', [
+        'SafetyHopperVelocity-v4',
+        'SafetyWalker2dVelocity-v4',
+        'SafetySwimmerVelocity-v4',
+        'SafetyAntVelocity-v4',
+        'SafetyHalfCheetahVelocity-v4',
+        'SafetyHumanoidVelocity-v4'
+        ])
+    eg.add('seed', [0, 5, 10, 15, 20])
+    eg.run(train, num_pool=5)
 ```
 
 After that, you can run the following command to run the benchmark:
