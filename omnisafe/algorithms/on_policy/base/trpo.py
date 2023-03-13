@@ -210,4 +210,3 @@ class TRPO(NaturalPG):
                 'Misc/AcceptanceStep': accept_step,
             }
         )
-
