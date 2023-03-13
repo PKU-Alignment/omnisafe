@@ -39,7 +39,7 @@ if __name__ == '__main__':
     eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
 
     # you can use wandb to monitor the experiment.
-    eg.add('logger_cfgs:use_wandb', [True])
+    eg.add('logger_cfgs:use_wandb', [False])
     # you can use tensorboard to monitor the experiment.
     eg.add('logger_cfgs:use_tensorboard', [True])
 

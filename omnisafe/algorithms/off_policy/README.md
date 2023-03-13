@@ -30,7 +30,7 @@ You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
     eg.add('algo', off_policy)
 
     # you can use wandb to monitor the experiment.
-    eg.add('logger_cfgs:use_wandb', [True])
+    eg.add('logger_cfgs:use_wandb', [False])
     # you can use tensorboard to monitor the experiment.
     eg.add('logger_cfgs:use_tensorboard', [True])
 
