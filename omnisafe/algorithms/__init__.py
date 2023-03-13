@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@
 import itertools
 from types import MappingProxyType
 
-from omnisafe.algorithms import on_policy
+from omnisafe.algorithms import off_policy, on_policy
 from omnisafe.algorithms.base_algo import BaseAlgo
+from omnisafe.algorithms.off_policy import DDPG, SAC, TD3
 
 # On-Policy Safe
 from omnisafe.algorithms.on_policy import (
@@ -46,8 +47,8 @@ from omnisafe.algorithms.on_policy import (
 
 
 ALGORITHMS = {
-    # 'off-policy': tuple(off_policy.__all__),
     'on-policy': tuple(on_policy.__all__),
+    'off-policy': tuple(off_policy.__all__),
     # 'model-based': tuple(model_based.__all__),
 }
 

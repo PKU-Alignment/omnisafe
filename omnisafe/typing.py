@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ Activation = Literal['identity', 'relu', 'sigmoid', 'softplus', 'tanh']
 AdvatageEstimator = Literal['gae', 'gae-rtg', 'vtrace', 'plain']
 InitFunction = Literal['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal']
 CriticType = Literal['v', 'q']
-ActorType = Literal['gaussian_learning', 'gaussian_sac']
+ActorType = Literal['gaussian_learning', 'gaussian_sac', 'mlp']
 
 __all__ = [
     'Activation',

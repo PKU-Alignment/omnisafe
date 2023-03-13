@@ -12,21 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""OnPolicy Adapter for OmniSafe."""
+"""OffPolicy Adapter for OmniSafe."""
 
+from functools import partial
 from typing import Dict, Optional
 
 import torch
+from gymnasium import spaces
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
-from omnisafe.common.buffer import VectorOnPolicyBuffer
+from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
+from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils.config import Config
 
 
-class OnPolicyAdapter(OnlineAdapter):
-    """OnPolicy Adapter for OmniSafe."""
+class OffPolicyAdapter(OnlineAdapter):
+    """OffPolicy Adapter for OmniSafe."""
 
     def __init__(  # pylint: disable=too-many-arguments
         self, env_id: str, num_envs: int, seed: int, cfgs: Config
@@ -36,70 +38,56 @@ class OnPolicyAdapter(OnlineAdapter):
         self._ep_ret: torch.Tensor
         self._ep_cost: torch.Tensor
         self._ep_len: torch.Tensor
+        self._current_obs, _ = self.reset()
+        self._max_ep_len = 1000
         self._reset_log()
 
     def roll_out(  # pylint: disable=too-many-locals
         self,
-        steps_per_epoch: int,
-        agent: ConstraintActorCritic,
-        buffer: VectorOnPolicyBuffer,
+        roll_out_step: int,
+        agent: ConstraintActorQCritic,
+        buffer: VectorOffPolicyBuffer,
         logger: Logger,
+        use_rand_action: bool,
     ) -> None:
         """Roll out the environment and store the data in the buffer.
 
         Args:
-            steps_per_epoch (int): Number of steps per epoch.
+            roll_out_step (int): Number of steps to roll out.
             agent (ConstraintActorCritic): Agent.
             buf (VectorOnPolicyBuffer): Buffer.
             logger (Logger): Logger.
+            use_rand_action (bool): Whether to use random action.
         """
-        self._reset_log()
+        if use_rand_action:
+            if isinstance(self._env.action_space, spaces.Box):
+                act_fn = partial(
+                    torch.rand, size=(self._env.num_envs, *self._env.action_space.shape)
+                )
+        else:
+            act_fn = partial(agent.step, self._current_obs, deterministic=False)
 
-        obs, _ = self.reset()
-        for step in range(steps_per_epoch):
-            act, value_r, value_c, logp = agent.step(obs)
+        for _ in range(roll_out_step):
+            act = act_fn()
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
 
             self._log_value(reward=reward, cost=cost, info=info)
 
-            if self._cfgs.algo_cfgs.use_cost:
-                logger.store(**{'Value/cost': value_c})
-            logger.store(**{'Value/reward': value_r})
-
             buffer.store(
-                obs=obs,
+                obs=self._current_obs,
                 act=act,
                 reward=reward,
                 cost=cost,
-                value_r=value_r,
-                value_c=value_c,
-                logp=logp,
+                done=terminated,
+                next_obs=next_obs,
             )
 
-            obs = next_obs
-            dones = torch.logical_or(terminated, truncated)
-            epoch_end = step >= steps_per_epoch - 1
-            for idx, done in enumerate(dones):
-                if epoch_end or done:
-                    if epoch_end and not done:
-                        logger.log(
-                            f'Warning: trajectory cut off when rollout by epoch at {self._ep_len[idx]} steps.'
-                        )
-                        _, last_value_r, last_value_c, _ = agent.step(obs[idx])
-                        last_value_r = last_value_r.unsqueeze(0)
-                        last_value_c = last_value_c.unsqueeze(0)
-                    elif done:
-                        last_value_r = torch.zeros(1)
-                        last_value_c = torch.zeros(1)
-
-                        self._log_metrics(logger, idx)
-                        self._reset_log(idx)
-
-                        self._ep_ret[idx] = 0.0
-                        self._ep_cost[idx] = 0.0
-                        self._ep_len[idx] = 0.0
-
-                    buffer.finish_path(last_value_r, last_value_c, idx)
+            self._current_obs = next_obs
+            for idx, done in enumerate(torch.logical_or(terminated, truncated)):
+                if done or self._ep_len[idx] >= self._max_ep_len:
+                    # self.reset()
+                    self._log_metrics(logger, idx)
+                    self._reset_log(idx)
 
     def _log_value(
         self,
@@ -115,7 +103,6 @@ class OnPolicyAdapter(OnlineAdapter):
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
         """Log metrics."""
-
         logger.store(
             **{
                 'Metrics/EpRet': self._ep_ret[idx],
