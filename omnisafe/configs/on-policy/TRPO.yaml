@@ -34,7 +34,7 @@ defaults:
     update_cycle: 2048
     # number of iterations to update the policy
     update_iters: 10
-    # batch size/home/jiayi/omnisafe_zjy/examples/benchmarks/runs for each iteration
+    # batch size for each iteration
     batch_size: 128
     # target kl divergence
     target_kl: 0.01
@@ -46,8 +46,6 @@ defaults:
     cost_normalize: False
     # normalize observation
     obs_normalize: True
-    # standardize reward
-    reward_standardize: False
     # early stop when kl divergence is bigger than target kl
     kl_early_stop: False
     # use max gradient norm
