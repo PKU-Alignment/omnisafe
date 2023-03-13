@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -85,7 +85,6 @@ class TRPO(NaturalPG):
         theta_old = get_flat_params_from(self._actor_critic.actor)
         # Change expected objective function gradient = expected_imrpove best this moment
         expected_improve = grad.dot(step_direction)
-        expected_improve = torch.dot(grad, step_direction)
 
         # While not within_trust_region and not out of total_steps:
         for step in range(total_steps):
@@ -110,7 +109,7 @@ class TRPO(NaturalPG):
                 self._logger.log('WARNING: loss_pi not finite')
             elif loss_improve < 0:
                 self._logger.log('INFO: did not improve improve <0')
-            elif kl > self._cfgs.algo_cfgs.target_kl * 1.5:
+            elif kl > self._cfgs.algo_cfgs.target_kl:
                 self._logger.log('INFO: violated KL constraint.')
             else:
                 # step only if surrogate is improved and when within trust reg.
@@ -124,6 +123,12 @@ class TRPO(NaturalPG):
             acceptance_step = 0
 
         set_param_values_to_model(self._actor_critic.actor, theta_old)
+
+        self._logger.store(
+            **{
+                'Train/KL': kl,
+            }
+        )
 
         return step_frac * step_direction, acceptance_step
 
@@ -153,7 +158,7 @@ class TRPO(NaturalPG):
             adv_r (torch.Tensor): The advantage tensor.
             adv_c (torch.Tensor): The cost advantage tensor.
         """
-        self._fvp_obs = obs[::4]
+        self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
         adv = self._compute_adv_surrogate(adv_r, adv_c)
