@@ -70,7 +70,7 @@ class AlgoWrapper:
         if self.train_terminal_cfgs:
             cfgs.train_cfgs.recurisve_update(self.train_terminal_cfgs)
 
-        # the exp_name format is PPO-<SafetyPointGoal1-v0>-
+        # the exp_name format is PPO-(SafetyPointGoal1-v0)-
         exp_name = f'{self.algo}-({self.env_id})'
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id})
         cfgs.train_cfgs.recurisve_update(
