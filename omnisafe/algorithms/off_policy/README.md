@@ -32,7 +32,7 @@ You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
      # You can use wandb to monitor the experiment.
     eg.add('logger_cfgs:use_wandb', [True])
     # you can use tensorboard to monitor the experiment.
-    eg.add('logger_cfgs:use_tensorboard', [True]) 
+    eg.add('logger_cfgs:use_tensorboard', [True])
 
     # set up the environment
     eg.add('env_id', [

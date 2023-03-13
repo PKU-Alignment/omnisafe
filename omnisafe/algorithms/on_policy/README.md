@@ -35,13 +35,13 @@ if __name__ == '__main__':
     naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
     first_order_policy = ['CUP', 'FOCOPS']
     second_order_policy = ['CPO', 'PCPO']
-    
+
     eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
 
      # You can use wandb to monitor the experiment.
     eg.add('logger_cfgs:use_wandb', [True])
     # you can use tensorboard to monitor the experiment.
-    eg.add('logger_cfgs:use_tensorboard', [True]) 
+    eg.add('logger_cfgs:use_tensorboard', [True])
 
     # set up the environment
     eg.add('env_id', [
