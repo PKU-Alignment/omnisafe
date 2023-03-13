@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -167,7 +167,7 @@ class SAC(DDPG):
             None
         """
         with torch.no_grad():
-            # Set the update noise and noise clip.
+            # set the update noise and noise clip.
             next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
             next_logp = self._actor_critic.actor.log_prob(next_action)
             next_q1_value_c, next_q2_value_c = self._actor_critic.target_cost_critic(

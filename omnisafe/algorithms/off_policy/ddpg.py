@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -170,11 +170,11 @@ class DDPG(BaseAlgo):
                 )
                 roll_out_time += time.time() - roll_out_start
 
-                # Update parameters
+                # update parameters
                 update_start = time.time()
                 if step > self._cfgs.algo_cfgs.start_learning_steps:
                     self._update()
-                # If we haven't updated the network, log 0 for the loss
+                # if we haven't updated the network, log 0 for the loss
                 else:
                     self._log_when_not_update()
                 update_time += time.time() - update_start

@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ class TD3(DDPG):
             None
         """
         with torch.no_grad():
-            # Set the update noise and noise clip.
+            # set the update noise and noise clip.
             self._actor_critic.target_actor.noise = self._cfgs.algo_cfgs.policy_noise
             next_action = self._actor_critic.target_actor.predict(next_obs, deterministic=False)
             next_q1_value_r, next_q2_value_r = self._actor_critic.target_reward_critic(
