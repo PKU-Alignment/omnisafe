@@ -21,7 +21,7 @@ from omnisafe.utils.tools import custom_cfgs_to_dict, update_dic
 
 
 parser = argparse.ArgumentParser()
-env_id = 'SafetyHumanoidVelocity-v4'
+env_id = 'SafetyPointGoal1-v0'
 parser.add_argument(
     '--parallel',
     default=1,
