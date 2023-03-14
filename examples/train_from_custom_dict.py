@@ -14,44 +14,24 @@
 # ==============================================================================
 """Example of training a policy from custom dict with OmniSafe."""
 
-import argparse
-
 import omnisafe
 
 
-parser = argparse.ArgumentParser()
-env_id = 'SafetyHumanoidVelocity-v4'
-parser.add_argument(
-    '--parallel',
-    default=1,
-    type=int,
-    metavar='N',
-    help='Number of paralleled progress for calculations.',
-)
+env_id = 'SafetyPointGoal1-v0'
 custom_cfgs = {
     'train_cfgs': {
-        'total_steps': 1000,
+        'total_steps': 1024000,
+        'vector_env_nums': 1,
+        '--parallel': 1,
     },
     'algo_cfgs': {
-        'update_cycle': 1000,
+        'update_cycle': 2048,
         'update_iters': 1,
     },
     'logger_cfgs': {
         'use_wandb': False,
     },
-    'env_cfgs': {
-        'vector_env_nums': 1,
-    },
 }
-args, _ = parser.parse_known_args()
-agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs, parallel=args.parallel)
-agent.learn()
 
-# obs = env.reset()
-# for i in range(1000):
-#     action, _states = agent.predict(obs, deterministic=True)
-#     obs, reward, done, info = env.step(action)
-#     env.render()
-#     if done:
-#         obs = env.reset()
-# env.close()
+agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs)
+agent.learn()
