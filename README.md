@@ -128,8 +128,11 @@ OmniSafe requires Python 3.8+ and PyTorch 1.10+.
 ### Install from source
 
 ```bash
+# Clone the repo
 git clone https://github.com/PKU-MARL/omnisafe
 cd omnisafe
+
+# Create a conda environment
 conda create -n omnisafe python=3.8
 conda activate omnisafe
 
@@ -141,7 +144,7 @@ pip install -e .
 
 ```bash
 cd examples
-python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1
+python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 ```
 
 **algo:**
@@ -208,29 +211,36 @@ More information about environments, please refer to [Safety Gymnasium](https://
 ```python
 import omnisafe
 
-env = 'SafetyPointGoal1-v0'
 
-agent = omnisafe.Agent('PPOLag', env)
-agent.learn()
-```
+env_id = 'SafetyPointGoal1-v0'
+custom_cfgs = {
+    'train_cfgs': {
+        'total_steps': 1024000,
+        'vector_env_nums': 1,
+        '--parallel': 1,
+    },
+    'algo_cfgs': {
+        'update_cycle': 2048,
+        'update_iters': 1,
+    },
+    'logger_cfgs': {
+        'use_wandb': False,
+    },
+}
 
-### 2. Run Agent from custom config dict
-
-```python
-import omnisafe
-
-env = 'SafetyPointGoal1-v0'
-
-custom_dict = {'epochs': 1, 'log_dir': './runs'}
-agent = omnisafe.Agent('PPOLag', env, custom_cfgs=custom_dict)
+agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs)
 agent.learn()
 ```
 
 ### 3. Run Agent from custom terminal config
 
+You can also run agent from custom terminal config. You can set any config in corresponding yaml file.
+
+For example, you can run `PPOLag` agent on `SafetyPointGoal1-v0` environment with `total_steps=1024000`, `vector_env_nums=1` and `parallel=1` by:
+
 ```bash
 cd examples
-python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1
+python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 ```
 
 ### 4. Evalutate Saved Policy
