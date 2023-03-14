@@ -17,6 +17,7 @@
 import argparse
 
 import omnisafe
+from omnisafe.utils.tools import custom_cfgs_to_dict, update_dic
 
 
 parser = argparse.ArgumentParser()
@@ -30,7 +31,8 @@ parser.add_argument(
 )
 custom_cfgs = {
     'train_cfgs': {
-        'total_steps': 1000,
+        'total_steps': 1000000,
+        'vector_env_nums': 1,
     },
     'algo_cfgs': {
         'update_cycle': 1000,
@@ -39,19 +41,15 @@ custom_cfgs = {
     'logger_cfgs': {
         'use_wandb': False,
     },
-    'env_cfgs': {
-        'vector_env_nums': 1,
-    },
 }
-args, _ = parser.parse_known_args()
-agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs, parallel=args.parallel)
-agent.learn()
 
-# obs = env.reset()
-# for i in range(1000):
-#     action, _states = agent.predict(obs, deterministic=True)
-#     obs, reward, done, info = env.step(action)
-#     env.render()
-#     if done:
-#         obs = env.reset()
-# env.close()
+args, unparsed_args = parser.parse_known_args()
+keys = [k[2:] for k in unparsed_args[0::2]]
+values = list(unparsed_args[1::2])
+unparsed_args = dict(zip(keys, values))
+
+for k, v in unparsed_args.items():
+    update_dic(custom_cfgs, custom_cfgs_to_dict(k, v))
+
+agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs)
+agent.learn()

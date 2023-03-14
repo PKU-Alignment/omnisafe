@@ -128,8 +128,11 @@ OmniSafe requires Python 3.8+ and PyTorch 1.10+.
 ### Install from source
 
 ```bash
+# Clone the repo
 git clone https://github.com/PKU-MARL/omnisafe
 cd omnisafe
+
+# Create a conda environment
 conda create -n omnisafe python=3.8
 conda activate omnisafe
 
@@ -141,7 +144,7 @@ pip install -e .
 
 ```bash
 cd examples
-python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1
+python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1000000 --device cpu --vector-env-nums 1 --torch-threads 1
 ```
 
 **algo:**
@@ -208,29 +211,65 @@ More information about environments, please refer to [Safety Gymnasium](https://
 ```python
 import omnisafe
 
-env = 'SafetyPointGoal1-v0'
+env_id = 'SafetyPointGoal1-v0'
 
-agent = omnisafe.Agent('PPOLag', env)
+agent = omnisafe.Agent('PPOLag', env_id)
 agent.learn()
 ```
 
 ### 2. Run Agent from custom config dict
 
 ```python
+import argparse
+
 import omnisafe
+from omnisafe.utils.tools import custom_cfgs_to_dict, update_dic
 
-env = 'SafetyPointGoal1-v0'
 
-custom_dict = {'epochs': 1, 'log_dir': './runs'}
-agent = omnisafe.Agent('PPOLag', env, custom_cfgs=custom_dict)
+parser = argparse.ArgumentParser()
+env_id = 'SafetyPointGoal1-v0'
+parser.add_argument(
+    '--parallel',
+    default=1,
+    type=int,
+    metavar='N',
+    help='Number of paralleled progress for calculations.',
+)
+custom_cfgs = {
+    'train_cfgs': {
+        'total_steps': 1000000,
+        'vector_env_nums': 1,
+    },
+    'algo_cfgs': {
+        'update_cycle': 1000,
+        'update_iters': 1,
+    },
+    'logger_cfgs': {
+        'use_wandb': False,
+    },
+}
+
+args, unparsed_args = parser.parse_known_args()
+keys = [k[2:] for k in unparsed_args[0::2]]
+values = list(unparsed_args[1::2])
+unparsed_args = dict(zip(keys, values))
+
+for k, v in unparsed_args.items():
+    update_dic(custom_cfgs, custom_cfgs_to_dict(k, v))
+
+agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs)
 agent.learn()
 ```
 
 ### 3. Run Agent from custom terminal config
 
+You can also run agent from custom terminal config. You can set any config in corresponding yaml file.
+
+For example, you can run `PPOLag` agent on `SafetyPointGoal1-v0` environment with `total_steps=1000000`, `vector_env_nums=1` and `parallel=1` by:
+
 ```bash
 cd examples
-python train_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 1
+python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1000000 --device cpu --vector-env-nums 1 --torch-threads 1
 ```
 
 ### 4. Evalutate Saved Policy
