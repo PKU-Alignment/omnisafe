@@ -215,12 +215,12 @@ import omnisafe
 env_id = 'SafetyPointGoal1-v0'
 custom_cfgs = {
     'train_cfgs': {
-        'total_steps': 1000000,
+        'total_steps': 1024000,
         'vector_env_nums': 1,
         '--parallel': 1,
     },
     'algo_cfgs': {
-        'update_cycle': 1000,
+        'update_cycle': 2048,
         'update_iters': 1,
     },
     'logger_cfgs': {
@@ -236,7 +236,7 @@ agent.learn()
 
 You can also run agent from custom terminal config. You can set any config in corresponding yaml file.
 
-For example, you can run `PPOLag` agent on `SafetyPointGoal1-v0` environment with `total_steps=1000000`, `vector_env_nums=1` and `parallel=1` by:
+For example, you can run `PPOLag` agent on `SafetyPointGoal1-v0` environment with `total_steps=1024000`, `vector_env_nums=1` and `parallel=1` by:
 
 ```bash
 cd examples

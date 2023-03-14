@@ -20,12 +20,12 @@ import omnisafe
 env_id = 'SafetyPointGoal1-v0'
 custom_cfgs = {
     'train_cfgs': {
-        'total_steps': 1000000,
+        'total_steps': 1024000,
         'vector_env_nums': 1,
         '--parallel': 1,
     },
     'algo_cfgs': {
-        'update_cycle': 1000,
+        'update_cycle': 2048,
         'update_iters': 1,
     },
     'logger_cfgs': {
