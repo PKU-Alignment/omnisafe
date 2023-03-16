@@ -138,7 +138,7 @@ def benchmark(
     eg.run(train_grid, num_pool=num_pool, parent_dir=log_dir)
 
 
-@app.command("eval")
+@app.command('eval')
 def evaluate(
     result_dir: str = typer.Argument(
         ...,
