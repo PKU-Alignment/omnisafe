@@ -17,8 +17,6 @@
 import os
 import sys
 
-import torch
-
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.typing import NamedTuple, Tuple
@@ -58,16 +56,14 @@ if __name__ == '__main__':
     eg = ExperimentGrid(exp_name='Safety_Gymnasium_Goal')
     base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']
     naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
-    first_order_policy = ['CUP', 'FOCOPS']
+    first_order_policy = ['CUP', 'FOCOPS', 'P3O']
     second_order_policy = ['CPO', 'PCPO']
     eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
     eg.add('env_id', ['SafetyAntVelocity-v4'])
     eg.add('logger_cfgs:use_wandb', [False])
-    eg.add('num_envs', [16])
-    eg.add('num_threads', [1])
-    # eg.add('logger_cfgs:wandb_project', ['omnisafe_jiaming'])
-    # eg.add('train_cfgs:total_steps', 2000)
-    # eg.add('algo_cfgs:update_cycle', 1000)
-    # eg.add('train_cfgs:vector_env_nums', 1)
+    eg.add('train_cfgs:vector_env_nums', [4])
+    eg.add('train_cfgs:torch_threads', [1])
     eg.add('seed', [0])
-    eg.run(train, num_pool=13)
+    # total experiment num must can be divided by num_pool
+    # meanwhile, users should decide this value according to their machine
+    eg.run(train, num_pool=14)

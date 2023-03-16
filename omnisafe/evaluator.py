@@ -38,8 +38,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        play: bool = True,
-        save_replay: bool = True,
+        render_mode: str = None,
     ):
         """Initialize the evaluator.
 
@@ -57,15 +56,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self._save_dir: str
         self._model_name: str
 
-        # set the render mode
-        self._play = play
-        self._save_replay = save_replay
-
         self._dividing_line = '\n' + '#' * 50 + '\n'
 
-        self.__set_render_mode(play, save_replay)
+        if render_mode:
+            self.__set_render_mode(render_mode)
 
-    def __set_render_mode(self, play: bool = True, save_replay: bool = True):
+    def __set_render_mode(self, render_mode: str):
         """Set the render mode.
 
         Args:
@@ -73,12 +69,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             save_replay (bool): whether to save the video.
         """
         # set the render mode
-        if play and save_replay:
-            self._render_mode = 'rgb_array'
-        elif play and not save_replay:
-            self._render_mode = 'human'
-        elif not play and save_replay:
-            self._render_mode = 'rgb_array_list'
+        if render_mode in ['human', 'rgb_array', 'rgb_array_list']:
+            self._render_mode = render_mode
         else:
             raise NotImplementedError('The render mode is not implemented.')
 
@@ -231,7 +223,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         print('Evaluation results:')
         print(f'Average episode reward: {np.mean(episode_rewards)}')
         print(f'Average episode cost: {np.mean(episode_costs)}')
-        print(f'Average episode length: {np.mean(episode_lengths)+1}')
+        print(f'Average episode length: {np.mean(episode_lengths)}')
         return (
             episode_rewards,
             episode_costs,
@@ -257,6 +249,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         num_episodes: int = 0,
         save_replay_path: Optional[str] = None,
         max_render_steps: int = 2000,
+        cost_criteria: float = 1.0,
     ):
         """Render the environment for one episode.
 
@@ -267,6 +260,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         if save_replay_path is None:
             save_replay_path = os.path.join(self._save_dir, 'video', self._model_name.split('.')[0])
+        result_path = os.path.join(save_replay_path, 'result.txt')
+        print(self._dividing_line)
+        print(f'Saving the replay video to {save_replay_path}, and the result to {result_path}.')
+        print(self._dividing_line)
 
         horizon = 1000
         frames = []
@@ -276,17 +273,25 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         elif self._render_mode == 'rgb_array':
             frames.append(self._env.render())
 
+        episode_rewards: List[float] = []
+        episode_costs: List[float] = []
+        episode_lengths: List[float] = []
+
         for episode_idx in range(num_episodes):
             step = 0
             done = False
+            ep_ret, ep_cost, length = 0.0, 0.0, 0.0
             while (
                 not done and step <= max_render_steps
             ):  # a big number to make sure the episode will end
                 with torch.no_grad():
                     act = self._actor.predict(obs, deterministic=False)
-                obs, _, _, terminated, truncated, _ = self._env.step(act)
+                obs, rew, cost, terminated, truncated, _ = self._env.step(act)
                 step += 1
                 done = bool(terminated or truncated)
+                ep_ret += rew.item()
+                ep_cost += (cost_criteria**length) * cost.item()
+                length += 1
 
                 if self._render_mode == 'rgb_array':
                     frames.append(self._env.render())
@@ -306,3 +311,17 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 )
             self._env.reset()
             frames = []
+            episode_rewards.append(ep_ret)
+            episode_costs.append(ep_cost)
+            episode_lengths.append(length)
+            with open(result_path, 'a+', encoding='utf-8') as f:
+                print(f'Episode {episode_idx+1} results:', file=f)
+                print(f'Episode reward: {ep_ret}', file=f)
+                print(f'Episode cost: {ep_cost}', file=f)
+                print(f'Episode length: {length}', file=f)
+        with open(result_path, 'a+', encoding='utf-8') as f:
+            print(self._dividing_line)
+            print('Evaluation results:', file=f)
+            print(f'Average episode reward: {np.mean(episode_rewards)}', file=f)
+            print(f'Average episode cost: {np.mean(episode_costs)}', file=f)
+            print(f'Average episode length: {np.mean(episode_lengths)}', file=f)

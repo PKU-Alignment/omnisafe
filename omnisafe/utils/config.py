@@ -21,6 +21,7 @@ from typing import Any, Dict, List
 import yaml
 
 from omnisafe.typing import Activation, ActorType, AdvatageEstimator, InitFunction
+from omnisafe.utils.tools import load_yaml
 
 
 class Config(dict):
@@ -163,11 +164,7 @@ def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:
     path = os.path.dirname(os.path.abspath(__file__))
     cfg_path = os.path.join(path, '..', 'configs', algo_type, f'{algo}.yaml')
     print(f'Loading {algo}.yaml from {cfg_path}')
-    with open(cfg_path, encoding='utf-8') as file:
-        try:
-            kwargs = yaml.load(file, Loader=yaml.FullLoader)
-        except yaml.YAMLError as exc:
-            assert False, f'{algo}.yaml error: {exc}'
+    kwargs = load_yaml(cfg_path)
     default_kwargs = kwargs['defaults']
     env_spec_kwargs = kwargs[env_id] if env_id in kwargs.keys() else None
 
