@@ -175,7 +175,7 @@ class CUP(PPO):
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.item(),
                 'Train/MaxRatio': self._max_ratio,
                 'Train/MinRatio': self._min_ratio,
-                'Train/SecondStepStopIter': i + 1,
+                'Train/SecondStepStopIter': i + 1,  # pylint: disable=undefined-loop-variable
                 'Train/SecondStepEntropy': info['entropy'],
                 'Train/SecondStepPolicyRatio': info['ratio'],
             }

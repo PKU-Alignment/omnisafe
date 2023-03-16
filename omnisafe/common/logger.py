@@ -19,7 +19,7 @@ import csv
 import os
 import time
 from collections import deque
-from typing import Any, Deque, Dict, List, Literal, Optional, TextIO, Tuple, Union
+from typing import Any, Deque, Dict, List, Optional, TextIO, Tuple, Union
 
 import numpy as np
 import torch

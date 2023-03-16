@@ -18,8 +18,6 @@ import json
 import os
 from typing import Any, Dict, List
 
-import yaml
-
 from omnisafe.typing import Activation, ActorType, AdvatageEstimator, InitFunction
 from omnisafe.utils.tools import load_yaml
 

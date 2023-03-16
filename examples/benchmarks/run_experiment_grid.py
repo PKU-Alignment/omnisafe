@@ -37,16 +37,10 @@ def train(
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
     print(f'exp-x: {exp_id} is training...')
-    USE_REDIRECTION = True
-    if USE_REDIRECTION:
-        if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
-            os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
-        sys.stdout = open(
-            f'{custom_cfgs["logger_cfgs"]["log_dir"]}terminal.log', 'w', encoding='utf-8'
-        )
-        sys.stderr = open(
-            f'{custom_cfgs["logger_cfgs"]["log_dir"]}error.log', 'w', encoding='utf-8'
-        )
+    if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
+        os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
+    sys.stdout = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}terminal.log', 'w', encoding='utf-8')
+    sys.stderr = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}error.log', 'w', encoding='utf-8')
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     reward, cost, ep_len = agent.learn()
     return reward, cost, ep_len

@@ -32,7 +32,7 @@ app = typer.Typer()
 
 
 @app.command()
-def train(
+def train(  # pylint: disable=too-many-arguments
     algo: str = typer.Option(
         'PPOLag', help=f"algorithm to train{omnisafe.ALGORITHMS['all']}", case_sensitive=False
     ),
@@ -59,7 +59,7 @@ def train(
         'vector_env_nums': vector_env_nums,
         'torch_threads': torch_threads,
     }
-    keys = [k for k in custom_cfgs[0::2]]
+    keys = custom_cfgs[0::2]
     values = list(custom_cfgs[1::2])
     custom_cfgs = dict(zip(keys, values))
     custom_cfgs.update({'logger_cfgs:log_dir': os.path.join(log_dir, 'train')})
@@ -92,16 +92,12 @@ def train_grid(
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
     print(f'exp-x: {exp_id} is training...')
-    USE_REDIRECTION = True
-    if USE_REDIRECTION:
-        if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
-            os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
-        sys.stdout = open(
-            f'{custom_cfgs["logger_cfgs"]["log_dir"]}terminal.log', 'w', encoding='utf-8'
-        )
-        sys.stderr = open(
-            f'{custom_cfgs["logger_cfgs"]["log_dir"]}error.log', 'w', encoding='utf-8'
-        )
+    if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
+        os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
+    # pylint: disable=consider-using-with
+    sys.stdout = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}terminal.log', 'w', encoding='utf-8')
+    # pylint: disable=consider-using-with
+    sys.stderr = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}error.log', 'w', encoding='utf-8')
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     reward, cost, ep_len = agent.learn()
     return reward, cost, ep_len
