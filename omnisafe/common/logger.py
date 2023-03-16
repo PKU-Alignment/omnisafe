@@ -275,6 +275,26 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             if self._headers_windwos[key] is None:
                 self._data[key] = []
 
+    def _update_current_row(self) -> None:
+        for key in self._data:
+            if self._headers_minmax[key]:
+                old_data = self._current_row[f'{key}/Mean']
+                mean, min_val, max_val, std = self.get_stats(key, True)
+                self._current_row[f'{key}/Mean'] = mean
+                self._current_row[f'{key}/Min'] = min_val
+                self._current_row[f'{key}/Max'] = max_val
+                self._current_row[f'{key}/Std'] = std
+            else:
+                old_data = self._current_row[key]
+                mean = self.get_stats(key, False)[0]
+                self._current_row[key] = mean
+
+            if self._headers_delta[key]:
+                self._current_row[f'{key}/Delta'] = mean - old_data
+
+            if self._headers_windwos[key] is None:
+                self._data[key] = []
+
     def get_stats(self, key, min_and_max: bool = False) -> Tuple[Union[int, float], ...]:
         """Get the statistics of the key."""
         assert key in self._current_row, f'Key {key} has not been registered'

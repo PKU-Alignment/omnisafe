@@ -262,7 +262,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             save_replay_path = os.path.join(self._save_dir, 'video', self._model_name.split('.')[0])
         result_path = os.path.join(save_replay_path, 'result.txt')
         print(self._dividing_line)
-        print(f'Saving the replay video to {save_replay_path}, and the result to {result_path}.')
+        print(f'Saving the replay video to {save_replay_path},\n and the result to {result_path}.')
         print(self._dividing_line)
 
         horizon = 1000
