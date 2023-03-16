@@ -47,7 +47,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--total-steps',
         type=int,
-        default=1638400,
+        default=1024000,
         metavar='STEPS',
         help='total number of steps to train for algorithm',
     )
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--vector-env-nums',
         type=int,
-        default=16,
+        default=2,
         metavar='VECTOR-ENV',
         help='number of vector envs to use for training',
     )
