@@ -229,7 +229,8 @@ More information about environments, please refer to [Safety Gymnasium](https://
 --------------------------------------------------------------------------------
 
 ## Getting Started
-
+#### Important Hints
+- `train_cfgs:torch_threads`is especialy important for trainning speed, and is varying with users' machine, this value shouldn't be too small or too large.
 ### 1. Run Agent from preset yaml file
 
 ```python
