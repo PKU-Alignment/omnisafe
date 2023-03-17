@@ -127,7 +127,7 @@ def benchmark(
     assert (
         np.prod([len(v) if isinstance(v, list) else 1 for v in configs.values()]) % num_pool == 0
     ), 'total number of experiments must can be divided by num_pool'
-    configs.update({'logger_cfgs:log_dir': os.path.join(log_dir, 'benchmark')})
+    log_dir = os.path.join(log_dir, 'benchmark')
     eg = ExperimentGrid(exp_name=exp_name)
     for k, v in configs.items():
         eg.add(key=k, vals=v)
