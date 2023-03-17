@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,15 +23,15 @@ defaults:
     # number of threads for torch
     torch_threads: 16
     # number of vectorized environments
-    vector_env_nums: 16
+    vector_env_nums: 2
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
-    total_steps: 16384000
+    total_steps: 1024000
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    update_cycle: 32768
+    update_cycle: 2048
     # number of iterations to update the policy
     update_iters: 40
     # batch size for each iteration
