@@ -66,7 +66,7 @@ jobs:
 
   test:
     name: Test for Python ${{ matrix.python-version }} on ${{ matrix.os }}
-    needs: [test-py37]
+    needs: [test-py38]
     runs-on: ${{ matrix.os }}
     if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')
     strategy:
