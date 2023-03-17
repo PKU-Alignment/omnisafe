@@ -1,4 +1,4 @@
-name: ci
+name: Lint
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8 - 3.10"
+          python-version: "3.8"
           update-environment: true
 
       - name: Upgrade pip
@@ -78,15 +78,3 @@ jobs:
       - name: spelling
         run: |
           make spelling
-
-      # TODO: enable this when ready
-      - name: Run tests and collect coverage
-        run: |
-          make test
-
-      # TODO: enable this when ready
-      - name: Upload coverage reports to Codecov
-        run: |
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
-          ./codecov -t ${CODECOV_TOKEN=634594d3-0416-4632-ab6a-3bf34a8c0af3}
