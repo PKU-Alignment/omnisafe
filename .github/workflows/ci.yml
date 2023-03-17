@@ -82,7 +82,7 @@ jobs:
       # TODO: enable this when ready
       - name: Run tests and collect coverage
         run: |
-          pytest tests --ignore-glob='*profile.py' --cov=omnisafe --cov-report=xml --cov-report=term-missing --durations=0 -v --color=yes
+          make test
 
       # TODO: enable this when ready
       - name: Upload coverage reports to Codecov
