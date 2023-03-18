@@ -36,7 +36,7 @@ from omnisafe.utils.distributed import dist_statistics_scalar, get_rank
 # submodule in the distutils module.
 
 try:
-    # pylint: disable-next=wrong-import-order,unused-import
+    # pylint: disable-next=wrong-import-order,unused-import,deprecated-module
     import distutils.version  # isort:skip  # noqa: F401
 except ImportError:
     pass
