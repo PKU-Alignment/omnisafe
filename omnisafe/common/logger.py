@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,12 +19,15 @@ import csv
 import os
 import time
 from collections import deque
-from typing import Any, Deque, Dict, List, Literal, Optional, TextIO, Tuple, Union
+from typing import Any, Deque, Dict, List, Optional, TextIO, Tuple, Union
 
 import numpy as np
 import torch
 import tqdm
 import wandb
+from rich import print  # pylint: disable=redefined-builtin
+from rich.console import Console
+from rich.table import Table
 
 from omnisafe.utils.config import Config
 from omnisafe.utils.distributed import dist_statistics_scalar, get_rank
@@ -43,46 +46,6 @@ except ImportError:
 
 # pylint: disable-next=wrong-import-order
 from torch.utils.tensorboard import SummaryWriter  # isort:skip
-
-
-ColorType = Literal['gray', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'crimson']
-
-
-class WordColor:  # pylint: disable=too-few-public-methods
-    """Implementation of the WordColor."""
-
-    GRAY: int = 30
-    RED: int = 31
-    GREEN: int = 32
-    YELLOW: int = 33
-    BLUE: int = 34
-    MAGENTA: int = 35
-    CYAN: int = 36
-    WHITE: int = 37
-    CRIMSON: int = 38
-
-    @staticmethod
-    def colorize(msg: str, color: str, bold: bool = False, highlight: bool = False) -> str:
-        """Colorize a message.
-
-        Args:
-            msg (str): message to be colorized.
-            color (str): color of the message.
-            bold (bool): whether to use bold font.
-            highlight (bool): whether to use highlight.
-
-        Returns:
-            str: colorized message.
-        """
-        assert color.upper() in WordColor.__dict__, f'Invalid color: {color}'
-        color_code = WordColor.__dict__[color.upper()]
-        attr = []
-        if highlight:
-            color_code += 10
-        attr.append(str(color_code))
-        if bold:
-            attr.append('1')
-        return f'\x1b[{";".join(attr)}m{msg}\x1b[0m'
 
 
 class Logger:  # pylint: disable=too-many-instance-attributes
@@ -115,6 +78,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self._log_dir = os.path.join(output_dir, exp_name, relpath)
         self._verbose = verbose
         self._maste_proc = get_rank() == 0
+        self._console = Console()
 
         self._output_file: TextIO
         if self._maste_proc:
@@ -162,9 +126,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             ), 'epochs must be specified in the config file when verbose is False'
             self._proc_bar = tqdm.tqdm(total=self._config['epochs'], desc='Epochs')
 
-    def log(
-        self, msg: str, color: ColorType = 'green', bold: bool = False, highlight: bool = False
-    ) -> None:
+    def log(self, msg: str, color: str = 'green', bold: bool = False) -> None:
         """Log the message to the console and the file.
 
         Args:
@@ -172,7 +134,8 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             color (int): The color of the message.
         """
         if self._verbose and self._maste_proc:
-            print(WordColor.colorize(msg, color, bold, highlight))
+            style = ' '.join([color, 'bold' if bold else ''])
+            self._console.print(msg, style=style)
 
     def save_config(self, config: Config) -> None:
         """Save the configuration to the log directory.
@@ -265,16 +228,15 @@ class Logger:  # pylint: disable=too-many-instance-attributes
     def dump_tabular(self) -> None:
         """Dump the tabular data to the console and the file."""
         self._update_current_row()
+        table = Table('Metrics', 'Value')
         if self._maste_proc:
             self._epoch += 1
             if self._verbose:
                 key_lens = list(map(len, self._current_row.keys()))
                 max_key_len = max(15, *key_lens)
-                n_slashes = 22 + max_key_len
-                print('-' * n_slashes)
                 for key, val in self._current_row.items():
-                    print(f'| {key:<{max_key_len}} | {val:15.6g} |')
-                print('-' * n_slashes)
+                    table.add_row(key[:max_key_len], str(val)[:max_key_len])
+
             else:
                 self._proc_bar.update(1)
 
@@ -291,6 +253,27 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
             if self._use_wandb:
                 wandb.log(self._current_row, step=self._epoch)
+        self._console.print(table)
+
+    def _update_current_row(self) -> None:
+        for key in self._data:
+            if self._headers_minmax[key]:
+                old_data = self._current_row[f'{key}/Mean']
+                mean, min_val, max_val, std = self.get_stats(key, True)
+                self._current_row[f'{key}/Mean'] = mean
+                self._current_row[f'{key}/Min'] = min_val
+                self._current_row[f'{key}/Max'] = max_val
+                self._current_row[f'{key}/Std'] = std
+            else:
+                old_data = self._current_row[key]
+                mean = self.get_stats(key, False)[0]
+                self._current_row[key] = mean
+
+            if self._headers_delta[key]:
+                self._current_row[f'{key}/Delta'] = mean - old_data
+
+            if self._headers_windwos[key] is None:
+                self._data[key] = []
 
     def _update_current_row(self) -> None:
         for key in self._data:
@@ -329,6 +312,11 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             torch.tensor(vals)
         )
         return (mean.item(),)
+
+    @property
+    def current_epoch(self) -> int:
+        """Return the current epoch."""
+        return self._epoch
 
     def close(self) -> None:
         """Close the logger."""

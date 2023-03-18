@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 import os
 import sys
-
-import torch
 
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
@@ -39,16 +37,10 @@ def train(
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
     print(f'exp-x: {exp_id} is training...')
-    USE_REDIRECTION = True
-    if USE_REDIRECTION:
-        if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
-            os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
-        sys.stdout = open(
-            f'{custom_cfgs["logger_cfgs"]["log_dir"]}terminal.log', 'w', encoding='utf-8'
-        )
-        sys.stderr = open(
-            f'{custom_cfgs["logger_cfgs"]["log_dir"]}error.log', 'w', encoding='utf-8'
-        )
+    if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
+        os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
+    sys.stdout = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}terminal.log', 'w', encoding='utf-8')
+    sys.stderr = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}error.log', 'w', encoding='utf-8')
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     reward, cost, ep_len = agent.learn()
     return reward, cost, ep_len
@@ -58,16 +50,14 @@ if __name__ == '__main__':
     eg = ExperimentGrid(exp_name='Safety_Gymnasium_Goal')
     base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']
     naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
-    first_order_policy = ['CUP', 'FOCOPS']
+    first_order_policy = ['CUP', 'FOCOPS', 'P3O']
     second_order_policy = ['CPO', 'PCPO']
     eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
     eg.add('env_id', ['SafetyAntVelocity-v4'])
     eg.add('logger_cfgs:use_wandb', [False])
-    eg.add('num_envs', [16])
-    eg.add('num_threads', [1])
-    # eg.add('logger_cfgs:wandb_project', ['omnisafe_jiaming'])
-    # eg.add('train_cfgs:total_steps', 2000)
-    # eg.add('algo_cfgs:update_cycle', 1000)
-    # eg.add('train_cfgs:vector_env_nums', 1)
+    eg.add('train_cfgs:vector_env_nums', [4])
+    eg.add('train_cfgs:torch_threads', [1])
     eg.add('seed', [0])
-    eg.run(train, num_pool=13)
+    # total experiment num must can be divided by num_pool
+    # meanwhile, users should decide this value according to their machine
+    eg.run(train, num_pool=14)
