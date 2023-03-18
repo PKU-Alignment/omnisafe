@@ -17,6 +17,7 @@
 from typing import Dict, Optional
 
 import torch
+from rich.progress import track
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
 from omnisafe.common.buffer import VectorOnPolicyBuffer
@@ -56,7 +57,10 @@ class OnPolicyAdapter(OnlineAdapter):
         self._reset_log()
 
         obs, _ = self.reset()
-        for step in range(steps_per_epoch):
+        for step in track(
+            range(steps_per_epoch),
+            description=f'Processing rollout for epoch: {logger.current_epoch}...',
+        ):
             act, value_r, value_c, logp = agent.step(obs)
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
 

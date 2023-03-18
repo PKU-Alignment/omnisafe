@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ from typing import Any, Dict, Tuple, Union
 
 import torch
 import torch.nn as nn
+from rich.progress import track
 from torch.utils.data import DataLoader, TensorDataset
 
 from omnisafe.adapter import OnPolicyAdapter
@@ -219,7 +220,7 @@ class PolicyGradient(BaseAlgo):
             shuffle=True,
         )
 
-        for i in range(self._cfgs.algo_cfgs.update_iters):
+        for i in track(range(self._cfgs.algo_cfgs.update_iters), description='Updating...'):
             for (
                 obs,
                 act,
@@ -245,12 +246,12 @@ class PolicyGradient(BaseAlgo):
             kl = distributed.dist_avg(kl)
 
             if self._cfgs.algo_cfgs.kl_early_stop and kl > self._cfgs.algo_cfgs.target_kl:
-                self._logger.log(f'Early stopping at iter {i} due to reaching max kl')
+                self._logger.log(f'Early stopping at iter {i + 1} due to reaching max kl')
                 break
 
         self._logger.store(
             **{
-                'Train/StopIter': i + 1,
+                'Train/StopIter': i + 1,  # pylint: disable=undefined-loop-variable
                 'Value/Adv': adv_r.mean().item(),
                 'Train/KL': kl,
             }

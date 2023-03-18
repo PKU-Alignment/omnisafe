@@ -25,6 +25,7 @@ from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
 from omnisafe.envs import support_envs
 from omnisafe.utils import distributed
 from omnisafe.utils.config import check_all_configs, get_default_kwargs_yaml
+from omnisafe.utils.tools import recursive_check_config
 
 
 class AlgoWrapper:
@@ -66,13 +67,17 @@ class AlgoWrapper:
 
         # update the cfgs from custom configurations
         if self.custom_cfgs:
+            recursive_check_config(self.custom_cfgs, cfgs, exclude_keys=('algo', 'env_id'))
             cfgs.recurisve_update(self.custom_cfgs)
         # update the cfgs from custom terminal configurations
         if self.train_terminal_cfgs:
+            recursive_check_config(
+                self.train_terminal_cfgs, cfgs.train_cfgs, exclude_keys=('algo', 'env_id')
+            )
             cfgs.train_cfgs.recurisve_update(self.train_terminal_cfgs)
 
-        # the exp_name format is PPO-(SafetyPointGoal1-v0)-
-        exp_name = f'{self.algo}-({self.env_id})'
+        # the exp_name format is PPO-{SafetyPointGoal1-v0}-
+        exp_name = f'{self.algo}-{{{self.env_id}}}'
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id})
         cfgs.train_cfgs.recurisve_update(
             {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle}

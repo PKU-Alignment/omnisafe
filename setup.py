@@ -36,6 +36,7 @@ try:
     setup(
         name='omnisafe',
         version=version.__version__,
+        entry_points={'console_scripts': ['omnisafe=omnisafe.utils.command_app:app']},
     )
 finally:
     if VERSION_CONTENT is not None:
