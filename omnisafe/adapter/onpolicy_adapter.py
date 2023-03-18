@@ -110,8 +110,8 @@ class OnPolicyAdapter(OnlineAdapter):
         **kwargs,  # pylint: disable=unused-argument
     ) -> None:
         """Log value."""
-        self._ep_ret += info.get('original_reward', reward)
-        self._ep_cost += info.get('original_cost', cost)
+        self._ep_ret += info.get('original_reward', reward).cpu()
+        self._ep_cost += info.get('original_cost', cost).cpu()
         self._ep_len += 1
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:

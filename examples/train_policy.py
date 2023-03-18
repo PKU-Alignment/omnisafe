@@ -54,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--device',
         type=str,
-        default='cpu',
+        default='cuda',
         metavar='DEVICES',
         help='device to use for training',
     )
