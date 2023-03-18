@@ -19,6 +19,7 @@ import random
 
 import numpy as np
 import torch
+import yaml
 
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
@@ -151,3 +152,35 @@ def update_dic(total_dic, item_dic):
         else:
             total_value = item_value
             total_dic.update({idd: total_value})
+
+
+def load_yaml(path) -> dict:
+    """Get the default kwargs from ``yaml`` file.
+
+    .. note::
+        This function search the ``yaml`` file by the algorithm name and environment name.
+        Make sure your new implemented algorithm or environment has the same name as the yaml file.
+
+    Args:
+        path (str): path of the ``yaml`` file.
+    """
+    with open(path, encoding='utf-8') as file:
+        try:
+            kwargs = yaml.load(file, Loader=yaml.FullLoader)
+        except yaml.YAMLError as exc:
+            assert False, f'{path} error: {exc}'
+
+    return kwargs
+
+
+def recursive_check_config(config, default_config, exclude_keys=()):
+    '''Check whether config is valid in default_config.'''
+    for key in config.keys():
+        if key not in default_config.keys() and key not in exclude_keys:
+            raise KeyError(f'Invalid key: {key}')
+        if isinstance(config[key], dict):
+            recursive_check_config(config[key], default_config[key])
+        elif isinstance(config[key], list):
+            for item in config[key]:
+                if isinstance(item, dict):
+                    recursive_check_config(item, default_config[key][0])
