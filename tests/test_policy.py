@@ -111,9 +111,7 @@ def test_std_anealing():
     agent.learn()
 
 
-@helpers.parametrize(
-    algo=['PPOLag']
-)
+@helpers.parametrize(algo=['PPOLag'])
 def test_cuda(algo):
     """Test std_anealing."""
     env_id = 'Simple-v0'
@@ -135,6 +133,7 @@ def test_cuda(algo):
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
+
 
 # @helpers.parametrize(off_policy_algo=omnisafe.ALGORITHMS['off-policy'])
 # def test_off_policy(off_policy_algo):
