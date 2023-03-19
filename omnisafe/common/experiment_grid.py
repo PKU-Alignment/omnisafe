@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,10 +24,12 @@ from textwrap import dedent
 from typing import Any, Dict, List
 
 import numpy as np
+from rich.console import Console
 from tqdm import trange
 
-from omnisafe.common.logger import WordColor
+from omnisafe.algorithms import ALGORITHM2TYPE
 from omnisafe.utils.exp_grid_tools import all_bools, valid_str
+from omnisafe.utils.tools import load_yaml, recursive_check_config
 
 
 # pylint: disable-next=too-many-instance-attributes
@@ -42,6 +44,8 @@ class ExperimentGrid:
         self.div_line_width = 80
         assert isinstance(exp_name, str), 'Name has to be a string.'
         self.name = exp_name
+        self._console = Console()
+        self.log_dir: str
 
         # Whether GridSearch provides automatically-generated default shorthands
         self.default_shorthand = True
@@ -65,12 +69,12 @@ class ExperimentGrid:
             msg = base_msg % name_insert
         else:
             msg = base_msg % (name_insert + '\n')
-        print(WordColor.colorize(msg, color='green', bold=True))
+        self._console.print(msg, style='green bold')
 
         # List off parameters, shorthands, and possible values.
         for key, value, shorthand in zip(self.keys, self.vals, self.shs):
-            color_k = WordColor.colorize(key.ljust(40), color='cyan', bold=True)
-            print('', color_k, '[' + shorthand + ']' if shorthand is not None else '', '\n')
+            self._console.print('', key.ljust(40), style='cyan bold', end='')
+            print('[' + shorthand + ']' if shorthand is not None else '', '\n')
             for _, val in enumerate(value):
                 print('\t' + json.dumps(val, indent=4, sort_keys=True))
             print()
@@ -317,31 +321,27 @@ class ExperimentGrid:
         var_names = {self.variant_name(var) for var in variants}
         var_names = sorted(list(var_names))
         line = '=' * self.div_line_width
-        preparing = WordColor.colorize(
-            'Preparing to run the following experiments...', color='green', bold=True
-        )
+
+        self._console.print('\nPreparing to run the following experiments...', style='bold green')
         joined_var_names = '\n'.join(var_names)
-        announcement = f'\n{preparing}\n\n{joined_var_names}\n\n{line}'
+        announcement = f'\n{joined_var_names}\n\n{line}'
         print(announcement)
 
         if self.wait_defore_launch > 0:
-            delay_msg = (
-                WordColor.colorize(
-                    dedent(
-                        """
+            self._console.print(
+                dedent(
+                    """
             Launch delayed to give you a few seconds to review your experiments.
 
             To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
             spinup/user_config.py.
 
             """
-                    ),
-                    color='cyan',
-                    bold=True,
-                )
-                + line
+                ),
+                style='cyan, bold',
+                end='',
             )
-            print(delay_msg)
+            print(line)
             wait, steps = self.wait_defore_launch, 100
             prog_bar = trange(
                 steps,
@@ -358,7 +358,9 @@ class ExperimentGrid:
         # run the variants.
         results = []
         exp_names = []
+
         for idx, var in enumerate(variants):
+            self.check_variant_vaild(var)
             print('current_config', var)
             if gpu_id is not None:
                 device_id = gpu_id[idx % len(gpu_id)]
@@ -367,10 +369,10 @@ class ExperimentGrid:
             exp_name = '_'.join([k + '_' + str(v) for k, v in var.items()])
             exp_names.append(exp_name)
             if parent_dir is None:
-                log_dir = os.path.join('./', 'exp-x', self.name, exp_name, '')
+                self.log_dir = os.path.join('./', 'exp-x', self.name, exp_name, '')
             else:
-                log_dir = os.path.join(parent_dir, self.name, exp_name, '')
-            var['logger_cfgs'] = {'log_dir': log_dir}
+                self.log_dir = os.path.join(parent_dir, self.name, exp_name, '')
+            var['logger_cfgs'] = {'log_dir': self.log_dir}
             results.append(pool.submit(thunk, idx, var['algo'], var['env_id'], var))
         pool.shutdown()
 
@@ -379,7 +381,7 @@ class ExperimentGrid:
 
     def save_results(self, exp_names, variants, results):
         """Save results to a file."""
-        path = os.path.join('./', 'exp-x', self.name, 'exp-x-results.txt')
+        path = os.path.join(self.log_dir, '..', 'exp-x-results.txt')
         str_len = max(len(exp_name) for exp_name in exp_names)
         exp_names = [exp_name.ljust(str_len) for exp_name in exp_names]
         with open(path, 'a+', encoding='utf-8') as f:
@@ -390,3 +392,11 @@ class ExperimentGrid:
                 f.write('cost:' + str(round(cost, 2)) + ',')
                 f.write('ep_len:' + str(ep_len))
                 f.write('\n')
+
+    def check_variant_vaild(self, variant):
+        """Check if the variant is valid."""
+        path = os.path.dirname(os.path.abspath(__file__))
+        algo_type = ALGORITHM2TYPE.get(variant['algo'], '')
+        cfg_path = os.path.join(path, '..', 'configs', algo_type, f"{variant['algo']}.yaml")
+        default_config = load_yaml(cfg_path)['defaults']
+        recursive_check_config(variant, default_config, exclude_keys=('algo', 'env_id'))
