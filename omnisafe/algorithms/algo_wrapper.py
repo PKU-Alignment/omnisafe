@@ -101,7 +101,12 @@ class AlgoWrapper:
         use_number_of_threads = bool(self.cfgs.train_cfgs.parallel > physical_cores)
 
         check_all_configs(self.cfgs, self.algo_type)
-        torch.set_num_threads(self.cfgs.train_cfgs.torch_threads)
+        device = self.cfgs.train_cfgs.device
+        if device == 'cpu':
+            torch.set_num_threads(self.cfgs.train_cfgs.torch_threads)
+        else:
+            torch.set_num_threads(1)
+            torch.cuda.set_device(self.cfgs.train_cfgs.device)
         if distributed.fork(
             self.cfgs.train_cfgs.parallel,
             use_number_of_threads=use_number_of_threads,

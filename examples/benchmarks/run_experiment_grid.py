@@ -18,6 +18,7 @@ import os
 import sys
 
 import torch
+import warnings
 
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
@@ -53,15 +54,34 @@ def train(
     reward, cost, ep_len = agent.learn()
     return reward, cost, ep_len
 
-
 if __name__ == '__main__':
     eg = ExperimentGrid(exp_name='Safety_Gymnasium_Goal')
+
+    # Set the algorithms.
     base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']
     naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
     first_order_policy = ['CUP', 'FOCOPS']
     second_order_policy = ['CPO', 'PCPO']
+
+    # Set the environments.
+    mujoco_envs=[
+            'SafetyAntVelocity-v4', 
+            'SafetyHopperVelocity-v4', 
+            'SafetyHumanoidVelocity-v4',
+            'SafetyWalker2dVelocity-v4', 
+            'SafetyHalfCheetahVelocity-v4', 
+            'SafetySwimmerVelocity-v4'
+            ]
+    eg.add('env_id', mujoco_envs)
+
+    # Set the device.
+    avaliable_gpus = [num for num in range(torch.cuda.device_count())]
+    gpu_id = [0, 1, 2, 3]
+    if set(gpu_id) > set(avaliable_gpus):
+        warnings.warn('The GPU ID is not available, use CPU instead.')
+        gpu_id = None
+    
     eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
-    eg.add('env_id', ['SafetyAntVelocity-v4'])
     eg.add('logger_cfgs:use_wandb', [False])
     eg.add('num_envs', [16])
     eg.add('num_threads', [1])
@@ -70,4 +90,4 @@ if __name__ == '__main__':
     # eg.add('algo_cfgs:update_cycle', 1000)
     # eg.add('train_cfgs:vector_env_nums', 1)
     eg.add('seed', [0])
-    eg.run(train, num_pool=13)
+    eg.run(train, num_pool=12, gpu_id=gpu_id)

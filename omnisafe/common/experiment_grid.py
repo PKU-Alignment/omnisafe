@@ -292,7 +292,7 @@ class ExperimentGrid:
         return new_variants
 
     # pylint: disable-next=too-many-locals
-    def run(self, thunk, num_pool=1, parent_dir=None, is_test=False):
+    def run(self, thunk, num_pool=1, parent_dir=None, is_test=False, gpu_id=None):
         r"""Run each variant in the grid with function 'thunk'.
 
         Note: 'thunk' must be either a callable function, or a string. If it is
@@ -360,6 +360,10 @@ class ExperimentGrid:
         exp_names = []
         for idx, var in enumerate(variants):
             print('current_config', var)
+            if gpu_id is not None:
+                device_id = gpu_id[idx % len(gpu_id)]
+                device = f'cuda:{device_id}'
+                var['train_cfgs'] = {'device': device}
             exp_name = '_'.join([k + '_' + str(v) for k, v in var.items()])
             exp_names.append(exp_name)
             if parent_dir is None:
