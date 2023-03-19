@@ -110,6 +110,9 @@ class ObsNormalize(Wrapper):
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         obs, reward, cost, terminated, truncated, info = super().step(action)
+        if 'final_observation' in info:
+            info['origin_final_observation'] = info['final_observation']
+            info['final_observation'] = self._obs_normalizer.normalize(info['final_observation'])
         info['original_obs'] = obs
         obs = self._obs_normalizer.normalize(obs)
         return obs, reward, cost, terminated, truncated, info
