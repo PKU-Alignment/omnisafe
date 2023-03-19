@@ -119,7 +119,7 @@ def train(
     USE_REDIRECTION = True
     if USE_REDIRECTION:
         if not os.path.exists(custom_cfgs['data_dir']):
-            os.makedirs(custom_cfgs['data_dir'])
+            os.makedirs(custom_cfgs['data_dir'], exist_ok=True)
         sys.stdout = open(f'{custom_cfgs["data_dir"]}terminal.log', 'w', encoding='utf-8')
         sys.stderr = open(f'{custom_cfgs["data_dir"]}error.log', 'w', encoding='utf-8')
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
@@ -128,20 +128,18 @@ def train(
 
 
 def test_train(
-    exp_name='Safety_Gymnasium_Goal',
+    exp_name='make_test_exp_grid',
     algo='CPO',
     env_id='SafetyHalfCheetahVelocity-v4',
-    epochs=1,
-    steps_per_epoch=1000,
-    num_envs=1,
 ):
     """Test train."""
     eg = ExperimentGrid(exp_name=exp_name)
     eg.add('algo', [algo])
     eg.add('env_id', [env_id])
-    eg.add('epochs', [epochs])
-    eg.add('steps_per_epoch', [steps_per_epoch])
-    eg.add('env_cfgs', [{'num_envs': num_envs}])
+    eg.add('logger_cfgs:use_wandb', [False])
+    eg.add('algo_cfgs:update_cycle', [512])
+    eg.add('train_cfgs:total_steps', [1024, 2048])
+    eg.add('train_cfgs:vector_env_nums', [1])
     eg.run(train, num_pool=1, is_test=True)
 
 
