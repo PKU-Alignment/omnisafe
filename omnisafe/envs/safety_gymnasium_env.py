@@ -17,9 +17,9 @@
 
 from typing import Any, Dict, Optional, Tuple
 
+import numpy as np
 import safety_gymnasium
 import torch
-import numpy as np
 
 from omnisafe.envs.core import CMDP, env_register
 
@@ -98,8 +98,15 @@ class SafetyGymnasiumEnv(CMDP):
             (obs, reward, cost, terminated, truncated),
         )
         if 'final_observation' in info:
-            info['final_observation'] = np.array([array if array is not None else np.zeros(obs.shape[-1]) for array in info['final_observation']])
-            info['final_observation'] = torch.as_tensor(info['final_observation'], dtype=torch.float32)
+            info['final_observation'] = np.array(
+                [
+                    array if array is not None else np.zeros(obs.shape[-1])
+                    for array in info['final_observation']
+                ]
+            )
+            info['final_observation'] = torch.as_tensor(
+                info['final_observation'], dtype=torch.float32
+            )
 
         return obs, reward, cost, terminated, truncated, info
 
