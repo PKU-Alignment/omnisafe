@@ -17,7 +17,7 @@ import os
 
 from typer.testing import CliRunner
 
-from omnisafe .utils .command app import app
+from omnisafe.utils.command_app import app
 
 
 runner = CliRunner()
