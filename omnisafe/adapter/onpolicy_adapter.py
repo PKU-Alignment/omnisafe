@@ -91,9 +91,7 @@ class OnPolicyAdapter(OnlineAdapter):
                             )
                             _, last_value_r, last_value_c, _ = agent.step(obs[idx])
                         if time_out:
-                            _, last_value_r, last_value_c, _ = agent.step(
-                                info[idx]['final observation']
-                            )
+                            _, last_value_r, last_value_c, _ = agent.step(info['final_observation'][idx])
                         last_value_r = last_value_r.unsqueeze(0)
                         last_value_c = last_value_c.unsqueeze(0)
                     else:
