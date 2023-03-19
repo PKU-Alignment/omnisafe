@@ -16,9 +16,9 @@
 
 import os
 import sys
+import warnings
 
 import torch
-import warnings
 
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
@@ -48,6 +48,7 @@ def train(
     reward, cost, ep_len = agent.learn()
     return reward, cost, ep_len
 
+
 if __name__ == '__main__':
     eg = ExperimentGrid(exp_name='Safety_Gymnasium_Goal')
 
@@ -58,14 +59,14 @@ if __name__ == '__main__':
     second_order_policy = ['CPO', 'PCPO']
 
     # Set the environments.
-    mujoco_envs=[
-            'SafetyAntVelocity-v4', 
-            'SafetyHopperVelocity-v4', 
-            'SafetyHumanoidVelocity-v4',
-            'SafetyWalker2dVelocity-v4', 
-            'SafetyHalfCheetahVelocity-v4', 
-            'SafetySwimmerVelocity-v4'
-            ]
+    mujoco_envs = [
+        'SafetyAntVelocity-v4',
+        'SafetyHopperVelocity-v4',
+        'SafetyHumanoidVelocity-v4',
+        'SafetyWalker2dVelocity-v4',
+        'SafetyHalfCheetahVelocity-v4',
+        'SafetySwimmerVelocity-v4',
+    ]
     eg.add('env_id', mujoco_envs)
 
     # Set the device.
@@ -74,7 +75,7 @@ if __name__ == '__main__':
     if set(gpu_id) > set(avaliable_gpus):
         warnings.warn('The GPU ID is not available, use CPU instead.')
         gpu_id = None
-    
+
     eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
     eg.add('logger_cfgs:use_wandb', [False])
     eg.add('train_cfgs:vector_env_nums', [4])
