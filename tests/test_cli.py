@@ -17,7 +17,7 @@ import os
 
 from typer.testing import CliRunner
 
-from omnisafe import app
+from omnisafe.utils.command_app import app
 
 
 runner = CliRunner()
@@ -76,6 +76,7 @@ def test_eval():
             '1',
             '--height',
             '1',
+            '--no-render',
         ],
     )
     assert result.exit_code == 0

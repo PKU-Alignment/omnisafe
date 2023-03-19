@@ -45,7 +45,7 @@ def test_off_policy(algo):
         },
         'algo_cfgs': {
             'update_cycle': 1024,
-            'step_per_sample': 1024,
+            'steps_per_sample': 1024,
             'update_iters': 1,
             'start_learning_steps': 0,
         },
