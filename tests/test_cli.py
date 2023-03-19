@@ -76,6 +76,7 @@ def test_eval():
             '1',
             '--height',
             '1',
+            '--no-render',
         ],
     )
     assert result.exit_code == 0
