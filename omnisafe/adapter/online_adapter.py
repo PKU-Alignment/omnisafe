@@ -113,9 +113,11 @@ class OnlineAdapter:
         """
         obs, reward, cost, terminated, truncated, info = self._env.step(action)
         obs, reward, cost, terminated, truncated = map(
-            lambda x: torch.as_tensor(x, dtype=torch.float32, device=self._device),
+            lambda x: x.to(self._device),
             (obs, reward, cost, terminated, truncated),
         )
+        if info.get('final_observation') is not None:
+            info['final_observation'] = info['final_observation'].to(self._device)
         return obs, reward, cost, terminated, truncated, info
 
     def reset(self) -> Tuple[torch.Tensor, Dict]:
