@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,10 +22,8 @@ import omnisafe
 # Just fill your experiment's log directory in here.
 # Such as: ~/omnisafe/examples/runs/PPOLag-<SafetyPointGoal1-v0>/seed-000-2023-03-07-20-25-48
 LOG_DIR = ''
-play = True
-save_replay = True
 if __name__ == '__main__':
-    evaluator = omnisafe.Evaluator(play=play, save_replay=save_replay)
+    evaluator = omnisafe.Evaluator(render_mode='rgb_array')
     for item in os.scandir(os.path.join(LOG_DIR, 'torch_save')):
         if item.is_file() and item.name.split('.')[-1] == 'pt':
             evaluator.load_saved(

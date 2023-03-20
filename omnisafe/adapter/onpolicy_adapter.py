@@ -17,6 +17,7 @@
 from typing import Dict, Optional
 
 import torch
+from rich.progress import track
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
 from omnisafe.common.buffer import VectorOnPolicyBuffer
@@ -56,7 +57,10 @@ class OnPolicyAdapter(OnlineAdapter):
         self._reset_log()
 
         obs, _ = self.reset()
-        for step in range(steps_per_epoch):
+        for step in track(
+            range(steps_per_epoch),
+            description=f'Processing rollout for epoch: {logger.current_epoch}...',
+        ):
             act, value_r, value_c, logp = agent.step(obs)
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
 
@@ -80,15 +84,19 @@ class OnPolicyAdapter(OnlineAdapter):
             epoch_end = step >= steps_per_epoch - 1
             for idx, (done, time_out) in enumerate(zip(terminated, truncated)):
                 if epoch_end or done or time_out:
-                    if (epoch_end or time_out) and not done:
+                    if not done:
                         if epoch_end:
                             logger.log(
                                 f'Warning: trajectory cut off when rollout by epoch at {self._ep_len[idx]} steps.'
                             )
-                        _, last_value_r, last_value_c, _ = agent.step(obs[idx])
+                            _, last_value_r, last_value_c, _ = agent.step(obs[idx])
+                        if time_out:
+                            _, last_value_r, last_value_c, _ = agent.step(
+                                info['final_observation'][idx]
+                            )
                         last_value_r = last_value_r.unsqueeze(0)
                         last_value_c = last_value_c.unsqueeze(0)
-                    elif done:
+                    else:
                         last_value_r = torch.zeros(1)
                         last_value_c = torch.zeros(1)
 
@@ -110,8 +118,8 @@ class OnPolicyAdapter(OnlineAdapter):
         **kwargs,  # pylint: disable=unused-argument
     ) -> None:
         """Log value."""
-        self._ep_ret += info.get('original_reward', reward)
-        self._ep_cost += info.get('original_cost', cost)
+        self._ep_ret += info.get('original_reward', reward).cpu()
+        self._ep_cost += info.get('original_cost', cost).cpu()
         self._ep_len += 1
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:

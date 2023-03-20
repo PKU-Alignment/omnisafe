@@ -25,11 +25,37 @@ naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
 first_order_policy = ['CUP', 'FOCOPS']
 second_order_policy = ['CPO', 'PCPO']
 penalty_policy = ['P3O', 'IPO']
+off_policy = ['DDPG', 'TD3', 'SAC']
 # pid_lagrange_policy = ['CPPOPid', 'TRPOPid']
 # early_terminated_policy = ['PPOEarlyTerminated', 'PPOLagEarlyTerminated']
 # saute_policy = ['PPOSaute', 'PPOLagSaute']
 # simmer_policy = ['PPOSimmerQ', 'PPOLagSimmerQ', 'PPOSimmerPid', 'PPOLagSimmerPid']
 # model_based_policy = ['MBPPOLag', 'SafeLOOP', 'CAP']
+
+
+@helpers.parametrize(algo=off_policy)
+def test_off_policy(algo):
+    """Test base algorithms."""
+    env_id = 'Simple-v0'
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 2048,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'update_cycle': 1024,
+            'steps_per_sample': 1024,
+            'update_iters': 1,
+            'start_learning_steps': 0,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+    }
+    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
 
 
 @helpers.parametrize(
@@ -46,6 +72,7 @@ def test_on_policy(algo):
         'train_cfgs': {
             'total_steps': 2048,
             'vector_env_nums': 1,
+            'torch_threads': 4,
         },
         'algo_cfgs': {
             'update_cycle': 1024,
@@ -82,6 +109,30 @@ def test_std_anealing():
     }
     agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
+
+
+# @helpers.parametrize(algo=['PPOLag'])
+# def test_cuda(algo):
+#    """Test std_anealing."""
+#    env_id = 'Simple-v0'
+#    custom_cfgs = {
+#        'train_cfgs': {
+#            'total_steps': 2048,
+#            'vector_env_nums': 1,
+#            'torch_threads': 4,
+#            'device': 'cuda:0',
+#        },
+#        'algo_cfgs': {
+#            'update_cycle': 1024,
+#            'update_iters': 2,
+#        },
+#        'logger_cfgs': {
+#            'use_wandb': False,
+#            'save_model_freq': 1,
+#        },
+#    }
+#    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+#    agent.learn()
 
 
 # @helpers.parametrize(off_policy_algo=omnisafe.ALGORITHMS['off-policy'])

@@ -25,6 +25,7 @@ from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
 from omnisafe.envs import support_envs
 from omnisafe.utils import distributed
 from omnisafe.utils.config import check_all_configs, get_default_kwargs_yaml
+from omnisafe.utils.tools import recursive_check_config
 
 
 class AlgoWrapper:
@@ -58,20 +59,25 @@ class AlgoWrapper:
         if self.algo_type is None or self.algo_type == '':
             raise ValueError(f'{self.algo} is not supported!')
         if self.algo_type in ['off-policy', 'model-based']:
-            assert (
-                self.train_terminal_cfgs['parallel'] == 1
-            ), 'off-policy or model-based only support parallel==1!'
+            if self.train_terminal_cfgs is not None:
+                assert (
+                    self.train_terminal_cfgs['parallel'] == 1
+                ), 'off-policy or model-based only support parallel==1!'
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations
         if self.custom_cfgs:
+            recursive_check_config(self.custom_cfgs, cfgs, exclude_keys=('algo', 'env_id'))
             cfgs.recurisve_update(self.custom_cfgs)
         # update the cfgs from custom terminal configurations
         if self.train_terminal_cfgs:
+            recursive_check_config(
+                self.train_terminal_cfgs, cfgs.train_cfgs, exclude_keys=('algo', 'env_id')
+            )
             cfgs.train_cfgs.recurisve_update(self.train_terminal_cfgs)
 
-        # the exp_name format is PPO-(SafetyPointGoal1-v0)-
-        exp_name = f'{self.algo}-({self.env_id})'
+        # the exp_name format is PPO-{SafetyPointGoal1-v0}-
+        exp_name = f'{self.algo}-{{{self.env_id}}}'
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id})
         cfgs.train_cfgs.recurisve_update(
             {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle}
@@ -100,7 +106,12 @@ class AlgoWrapper:
         use_number_of_threads = bool(self.cfgs.train_cfgs.parallel > physical_cores)
 
         check_all_configs(self.cfgs, self.algo_type)
-        torch.set_num_threads(self.cfgs.train_cfgs.torch_threads)
+        device = self.cfgs.train_cfgs.device
+        if device == 'cpu':
+            torch.set_num_threads(self.cfgs.train_cfgs.torch_threads)
+        else:
+            torch.set_num_threads(1)
+            torch.cuda.set_device(self.cfgs.train_cfgs.device)
         if distributed.fork(
             self.cfgs.train_cfgs.parallel,
             use_number_of_threads=use_number_of_threads,

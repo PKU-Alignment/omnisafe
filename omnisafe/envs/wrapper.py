@@ -110,6 +110,15 @@ class ObsNormalize(Wrapper):
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         obs, reward, cost, terminated, truncated, info = super().step(action)
+        if 'final_observation' in info:
+            if self.num_envs > 1:
+                final_obs_slice = info['_final_observation']
+            else:
+                final_obs_slice = slice(None)
+            info['original_final_observation'] = info['final_observation']
+            info['final_observation'][final_obs_slice] = self._obs_normalizer.normalize(
+                info['final_observation'][final_obs_slice]
+            )
         info['original_obs'] = obs
         obs = self._obs_normalizer.normalize(obs)
         return obs, reward, cost, terminated, truncated, info
@@ -246,7 +255,7 @@ class ActionScale(Wrapper):
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         action = self._old_min_action + (self._old_max_action - self._old_min_action) * (
-            action - self._min_action
+            action.cpu() - self._min_action
         ) / (self._max_action - self._min_action)
         return super().step(action.numpy())
 

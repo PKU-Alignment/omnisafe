@@ -12,26 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Example of training a policy from custom dict with OmniSafe."""
 
-import omnisafe
-
-
-env_id = 'SafetyPointGoal1-v0'
-custom_cfgs = {
-    'train_cfgs': {
-        'total_steps': 1024000,
-        'vector_env_nums': 1,
-        'parallel': 1,
-    },
-    'algo_cfgs': {
-        'update_cycle': 2048,
-        'update_iters': 1,
-    },
-    'logger_cfgs': {
-        'use_wandb': False,
-    },
-}
-
-agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs)
-agent.learn()
+algo:
+  PPOLag
+env_id:
+  SafetyAntVelocity-v4
+train_cfgs:
+  total_steps:
+    1024
+  vector_env_nums: 1
+algo_cfgs:
+  update_cycle:
+    1024
