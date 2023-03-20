@@ -51,7 +51,7 @@ def test_train():
             '--custom-cfgs',
             'algo_cfgs:update_cycle',
             '--custom-cfgs',
-            '512',
+            '1024',
         ],
     )
     assert result.exit_code == 0
