@@ -54,6 +54,7 @@ class OnlineAdapter:
         self._env.set_seed(seed)
 
         self._cfgs = cfgs
+        self._device = cfgs.train_cfgs.device
 
     def _wrapper(
         self,
@@ -110,7 +111,12 @@ class OnlineAdapter:
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
-        return self._env.step(action)
+        obs, reward, cost, terminated, truncated, info = self._env.step(action)
+        obs, reward, cost, terminated, truncated = map(
+            lambda x: torch.as_tensor(x, dtype=torch.float32, device=self._device),
+            (obs, reward, cost, terminated, truncated),
+        )
+        return obs, reward, cost, terminated, truncated, info
 
     def reset(self) -> Tuple[torch.Tensor, Dict]:
         """Resets the environment and returns an initial observation.
@@ -122,7 +128,8 @@ class OnlineAdapter:
             observation (torch.Tensor): the initial observation of the space.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
-        return self._env.reset()
+        obs, info = self._env.reset()
+        return obs.to(self._device), info
 
     def save(self) -> Dict[str, torch.nn.Module]:
         """Save the environment.
