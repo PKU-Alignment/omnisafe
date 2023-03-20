@@ -23,4 +23,4 @@ train_cfgs:
   vector_env_nums: 1
 algo_cfgs:
   update_cycle:
-    512
+    1024
