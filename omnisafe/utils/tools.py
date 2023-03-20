@@ -101,6 +101,11 @@ def seed_all(seed: int):
     torch.cuda.manual_seed_all(seed)
     try:
         torch.use_deterministic_algorithms(True)
+        torch.backends.cudnn.enabled = False
+        torch.backends.cudnn.benchmark = False
+        if float(torch.version.cuda) >= 10.2:
+            os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+            os.environ['PYTHONHASHSEED'] = str(seed)
     except AttributeError:
         pass
 

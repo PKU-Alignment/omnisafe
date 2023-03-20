@@ -111,6 +111,30 @@ def test_std_anealing():
     agent.learn()
 
 
+# @helpers.parametrize(algo=['PPOLag'])
+# def test_cuda(algo):
+#    """Test std_anealing."""
+#    env_id = 'Simple-v0'
+#    custom_cfgs = {
+#        'train_cfgs': {
+#            'total_steps': 2048,
+#            'vector_env_nums': 1,
+#            'torch_threads': 4,
+#            'device': 'cuda:0',
+#        },
+#        'algo_cfgs': {
+#            'update_cycle': 1024,
+#            'update_iters': 2,
+#        },
+#        'logger_cfgs': {
+#            'use_wandb': False,
+#            'save_model_freq': 1,
+#        },
+#    }
+#    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+#    agent.learn()
+
+
 # @helpers.parametrize(off_policy_algo=omnisafe.ALGORITHMS['off-policy'])
 # def test_off_policy(off_policy_algo):
 #     """Test off policy algorithms."""
