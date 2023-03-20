@@ -81,4 +81,6 @@ if __name__ == '__main__':
     eg.add('train_cfgs:vector_env_nums', [4])
     eg.add('train_cfgs:torch_threads', [1])
     eg.add('seed', [0])
+    # total experiment num must can be divided by num_pool
+    # meanwhile, users should decide this value according to their machine
     eg.run(train, num_pool=12, gpu_id=gpu_id)
