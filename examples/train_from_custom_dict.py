@@ -22,7 +22,7 @@ custom_cfgs = {
     'train_cfgs': {
         'total_steps': 1024000,
         'vector_env_nums': 1,
-        '--parallel': 1,
+        'parallel': 1,
     },
     'algo_cfgs': {
         'update_cycle': 2048,
