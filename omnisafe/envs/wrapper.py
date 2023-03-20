@@ -112,7 +112,7 @@ class ObsNormalize(Wrapper):
         obs, reward, cost, terminated, truncated, info = super().step(action)
         if 'final_observation' in info:
             info['original_final_observation'] = info['final_observation']
-            info['final_observation'] = self._obs_normalizer.normalize(info['final_observation'])
+            info['final_observation'][info['_final_observation']] = self._obs_normalizer.normalize(info['final_observation'][info['_final_observation']])
         info['original_obs'] = obs
         obs = self._obs_normalizer.normalize(obs)
         return obs, reward, cost, terminated, truncated, info
