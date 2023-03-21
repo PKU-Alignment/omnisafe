@@ -5,17 +5,14 @@ Quick Facts
 -----------
 
 .. card::
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-body: sd-font-weight-bold
 
-    #. Lagrangian Method can be applied to almost :bdg-success-line:`any` RL algorithm.
-    #. Lagrangian Method turns :bdg-danger-line:`unsafe` algorithm to a :bdg-success-line:`safe` one.
-    #. The OmniSafe implementation of Lagrangian Methods covers up to 6 kinds of :bdg-success-line:`on policy` and :bdg-success-line:`off policy` algorithm.
+    #. Lagrangian Method can be applied to almost :bdg-info-line:`any` RL algorithm.
+    #. Lagrangian Method turns :bdg-danger-line:`unsafe` algorithm to a :bdg-info-line:`safe` one.
+    #. The OmniSafe implementation of Lagrangian Methods covers up to 6 kinds of :bdg-info-line:`on policy` and :bdg-info-line:`off policy` algorithm.
 
-------
 
-.. contents:: Table of Contents
-    :depth: 3
 
 Lagrangian Methods Theorem
 --------------------------
@@ -26,7 +23,7 @@ Background
 In the previous introduction of algorithms,
 we know that SafeRL mainly solves the constraint optimization problem of CMDP.
 
-.. note::
+.. hint::
 
     Constrained optimization problems tend to be more challenging than unconstrained optimization problems.
 
@@ -50,7 +47,7 @@ you will soon understand how it works.
 
         .. card::
             :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-primary  sd-rounded-3 sd-font-weight-bold
 
             Advantages of Lagrangian Methods
             ^^^
@@ -67,7 +64,7 @@ you will soon understand how it works.
 
         .. card::
             :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-warning  sd-rounded-3 sd-font-weight-bold
 
             Problems of Lagrangian Methods
             ^^^
@@ -134,7 +131,7 @@ thus making infeasible solutions sub-optimal.
 
 .. card::
     :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-footer: sd-font-weight-bold
     :link: lagrange_theorem
     :link-type: ref
@@ -157,7 +154,7 @@ thus making infeasible solutions sub-optimal.
     +++
     The theorem base of :bdg-info:`Theorem 1` can be found in :bdg-info-line:`Lagrange Duality`, click this card to jump to view.
 
-.. note::
+.. hint::
 
         The Lagrangian method is a **two-step** process.
 
@@ -199,7 +196,7 @@ Policy update
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Surrogate function update
@@ -226,7 +223,7 @@ Policy update
 
         .. card::
             :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Lagrange multiplier update
@@ -283,7 +280,7 @@ Quick start
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
     Run PPOLag in Omnisafe
@@ -380,7 +377,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         env.roll_out()
@@ -389,7 +386,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         PPOLag.update()
@@ -398,7 +395,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         PPOLag.buf.get()
@@ -407,7 +404,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         PPOLag.update_policy_net()
@@ -416,7 +413,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         PPOLag.update_value_net()
@@ -425,7 +422,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         PPOLag.update_cost_net()
@@ -434,7 +431,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         PPOLag.log()
@@ -452,7 +449,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             PPOLag.compute_loss_pi(data: dict)
@@ -485,7 +482,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Lagrange.update_lagrange_multiplier(ep_costs: float)
@@ -519,7 +516,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
@@ -533,7 +530,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Basic parameters
@@ -587,7 +584,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Optional parameters
@@ -604,7 +601,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Buffer parameters

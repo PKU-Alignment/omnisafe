@@ -2,8 +2,6 @@ Basic Mathematical Theory
 =========================
 
 
-.. contents:: Table of Contents
-    :depth: 3
 
 Introduction
 ------------
@@ -53,7 +51,7 @@ Norms
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Introduction of Vector Norm
@@ -102,7 +100,7 @@ Norms
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Introduction of Matrix Norm
@@ -190,7 +188,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Lemma 1
@@ -204,7 +202,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Lemma 2
@@ -226,7 +224,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 1
@@ -245,7 +243,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
       .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 2
@@ -290,7 +288,7 @@ problem, named as :math:`g^*`, satisfies:
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
 
             Lemma3
             ^^^
@@ -301,7 +299,7 @@ problem, named as :math:`g^*`, satisfies:
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
 
             Proof of Lemma 3
             ^^^
@@ -331,7 +329,7 @@ We will discuss the weak and strong duality to show you the connection between t
 
         .. card::
             :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-3
 
             Introduction to Weak Duality
             ^^^
@@ -362,7 +360,7 @@ We will discuss the weak and strong duality to show you the connection between t
 
         .. card::
             :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-3
 
             Introduction to Strong Duality
             ^^^

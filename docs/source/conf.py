@@ -64,5 +64,15 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'press'
+html_theme = 'furo'
 html_static_path = ['_static']
+
+html_theme_options = {
+    'light_css_variables': {
+        'color-brand-primary': '#409BFC',
+        'color-brand-content': '#1E90FF',
+        'sd-color-success': '#66CDAA',
+        'sd-color-info': '#4EB0F1',
+        'sd-color-warning': '#DEB887',
+    },
+}

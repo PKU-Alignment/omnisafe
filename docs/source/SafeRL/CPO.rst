@@ -5,18 +5,13 @@ Quick Facts
 -----------
 
 .. card::
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-body: sd-font-weight-bold
 
-    #. CPO is an :bdg-success-line:`on-policy` algorithm.
-    #. CPO can be used for environments with both :bdg-success-line:`discrete` and :bdg-success-line:`continuous` action spaces.
-    #. CPO can be thought of as being :bdg-success-line:`TRPO in SafeRL areas` .
-    #. The OmniSafe implementation of CPO support :bdg-success-line:`parallelization`.
-
-------
-
-.. contents:: Table of Contents
-    :depth: 3
+    #. CPO is an :bdg-info-line:`on-policy` algorithm.
+    #. CPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
+    #. CPO can be thought of as being :bdg-info-line:`TRPO in SafeRL areas` .
+    #. The OmniSafe implementation of CPO support :bdg-info-line:`parallelization`.
 
 CPO Theorem
 -----------
@@ -30,7 +25,7 @@ Motivated by TRPO( :doc:`../BaseRL/TRPO`).
 CPO develops surrogate functions to be good local approximations for objectives and constraints and easy to estimate using samples from current policy.
 Moreover, it provides tighter bounds for policy search using trust regions.
 
-.. note::
+.. hint::
 
     CPO is the **first general-purpose policy search algorithm** for safe reinforcement learning with guarantees for near-constraint satisfaction at each iteration.
 
@@ -39,7 +34,7 @@ CPO aims to provide an approach for policy search in continuous CMDP.
 It uses the result from TRPO and NPG to derive a policy improvement step that guarantees both an increase in reward and satisfaction of constraints.
 Although CPO is slightly inferior in performance, it provides a solid theoretical foundation for solving constrained optimization problems in the field of safe reinforcement learning.
 
-.. note::
+.. hint::
 
     CPO is very complex in terms of implementation, but omnisafe provides a highly readable code implementation to help you get up to speed quickly.
 
@@ -71,7 +66,7 @@ In local policy search, we additionally require policy iterates to be feasible f
     \end{eqnarray}
 
 
-.. note::
+.. hint::
 
     This update is difficult to implement because it requires evaluating the constraint functions to determine whether a proposed policy :math:`\pi` is feasible.
 
@@ -92,7 +87,7 @@ The following :bdg-info-line:`Theorem 1` connects the difference in returns (or 
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-footer: sd-font-weight-bold
     :link: cards-clickable
     :link-type: ref
@@ -132,7 +127,7 @@ By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Corollary 1
@@ -145,7 +140,7 @@ By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Corollary 2
@@ -161,7 +156,7 @@ By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Corollary 3
@@ -212,7 +207,7 @@ it approximates optimizing the lower bound on policy performance given in :bdg-i
         &&\bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta
     \end{eqnarray}
 
-.. note::
+.. hint::
     In a word, CPO proposes the final optimization problem, which uses a trust region instead of penalties on policy divergence to enable larger step sizes.
 
 ------
@@ -228,7 +223,7 @@ Here we will introduce the propositions proposed by the CPO, one describes the w
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Trust Region Update Performance
@@ -248,7 +243,7 @@ Here we will introduce the propositions proposed by the CPO, one describes the w
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             CPO Update Worst-Case Constraint Violation
@@ -285,7 +280,7 @@ Practical Implementation
         :class-item: sd-font-weight-bold
         :columns: 12 4 4 6
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+        :class-card: sd-outline-success  sd-rounded-3
 
         Overview
         ^^^
@@ -296,7 +291,7 @@ Practical Implementation
         :class-item: sd-font-weight-bold sd-fs-6
         :columns: 12 8 8 6
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+        :class-card: sd-outline-success  sd-rounded-3
 
         Navigation
         ^^^
@@ -411,7 +406,7 @@ Quick start
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
     Run CPO in Omnisafe
@@ -513,7 +508,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         env.roll_out()
@@ -522,7 +517,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         cpo.update()
@@ -531,7 +526,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         cpo.buf.get()
@@ -540,7 +535,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         cpo.update_value_net()
@@ -549,7 +544,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         cpo.update_cost_net()
@@ -558,7 +553,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         cpo.log()
@@ -574,7 +569,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             cpo.update_policy_net()
@@ -643,7 +638,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             cpo.search_step_size()
@@ -714,7 +709,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
@@ -728,7 +723,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Basic parameters
@@ -782,7 +777,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Optional parameters
@@ -799,7 +794,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Buffer parameters
@@ -909,7 +904,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Lemma 1
@@ -925,7 +920,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Lemma 2
@@ -951,7 +946,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Lemma 3
@@ -972,7 +967,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Corollary 4
@@ -1005,7 +1000,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Corollary 5
@@ -1022,7 +1017,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Proof
@@ -1056,7 +1051,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
 
             .. math:: (1-\gamma) \mathbb{E}_{s \sim \mu}[f(s)]+\mathbb{E}_{\tau \sim \pi}\left[\gamma f\left(s^{\prime}\right)\right]-\mathbb{E}_{s \sim d_\pi}[f(s)] = 0
 
-            .. note::
+            .. hint::
 
                 **Supplementary details**
 
@@ -1071,7 +1066,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Proof
@@ -1104,7 +1099,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
                     &\mathbb{E}_{\tau \sim \pi'}\left[\delta_f\left(s, a, s'\right)\right] \geq \langle d_\pi, \bar{\delta}_f^{\pi'}\rangle-\Vert d_{\pi'}-d_\pi \Vert_p \Vert \bar{\delta}_f^{\pi'}\Vert_q
                 \end{aligned}
 
-            .. note::
+            .. hint::
 
                 **Hölder's inequality**:
 
@@ -1152,7 +1147,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Proof
@@ -1186,7 +1181,7 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
                         &=&\sum_s \left\{ P\left(s^{\prime} \mid s, a\right)\left[\pi^{\prime}(a \mid s)-\pi(a \mid s)\right] \right\} d_{\pi}(s)
                     \end{eqnarray}
 
-            .. note::
+            .. hint::
 
                 **Total variation distance of probability measures**
 
@@ -1207,7 +1202,7 @@ Proof of Analytical Solution to LQCLP
 
 .. card::
     :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-footer: sd-font-weight-bold
 
     Theorem 2 (Optimizing Linear Objective with Linear, Quadratic Constraints)
@@ -1266,7 +1261,7 @@ Proof of Analytical Solution to LQCLP
 
 .. dropdown:: Proof for Theorem 2 (Click here)
     :color: info
-    :class-body: sd-border-{3}
+    :class-body: sd-outline-info
 
     This is a convex optimization problem. When there is at least one strictly feasible point, strong duality holds by Slater's theorem.
     We exploit strong duality to solve the problem analytically.

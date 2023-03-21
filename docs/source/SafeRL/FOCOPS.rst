@@ -5,18 +5,15 @@ Quick Facts
 -----------
 
 .. card::
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-body: sd-font-weight-bold
 
-    #. FOCOPS is an :bdg-success-line:`on-policy` algorithm.
-    #. FOCOPS can be used for environments with both :bdg-success-line:`discrete` and :bdg-success-line:`continuous` action spaces.
-    #. FOCOPS is an algorithm using :bdg-success-line:`first-order method`.
-    #. The OmniSafe implementation of FOCOPS support :bdg-success-line:`parallelization`.
+    #. FOCOPS is an :bdg-info-line:`on-policy` algorithm.
+    #. FOCOPS can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
+    #. FOCOPS is an algorithm using :bdg-info-line:`first-order method`.
+    #. The OmniSafe implementation of FOCOPS support :bdg-info-line:`parallelization`.
 
-------
 
-.. contents:: Table of Contents
-    :depth: 3
 
 FOCOPS Theorem
 --------------
@@ -33,7 +30,7 @@ Background
 
         .. card::
             :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-warning  sd-rounded-3 sd-font-weight-bold
 
             Problems of CPO
             ^^^
@@ -48,7 +45,7 @@ Background
 
         .. card::
             :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-primary  sd-rounded-3 sd-font-weight-bold
 
             Advantage of FOCOPS
             ^^^
@@ -97,7 +94,7 @@ For you to have a clearer understanding, we hope that you will read the next sec
 
 .. card::
     :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-primary  sd-rounded-3 sd-font-weight-bold
 
     Questions
     ^^^
@@ -116,7 +113,7 @@ Instead of solving the Problem :ref:`(1) <focops-eq-1>` ~ :ref:`(3) <focops-eq-1
 
 .. card::
     :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-primary  sd-rounded-3 sd-font-weight-bold
 
     Two-stage Policy Update
     ^^^
@@ -149,7 +146,7 @@ Then FOCOPS provides a solution as follows:
 
 .. card::
     :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-footer: sd-font-weight-bold
     :link: focops-appendix
     :link-type: ref
@@ -186,7 +183,7 @@ That is, the :bdg-info-line:`Theorem 1` is a viable solution.
 .. grid:: 2
 
     .. grid-item::
-        :columns: 12 6 6 4
+        :columns: 12 6 6 5
 
         .. tab-set::
 
@@ -195,7 +192,7 @@ That is, the :bdg-info-line:`Theorem 1` is a viable solution.
 
                 .. card::
                     :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+                    :class-card:  sd-outline-success  sd-rounded-3 sd-font-weight-bold
 
                     Question
                     ^^^
@@ -206,14 +203,14 @@ That is, the :bdg-info-line:`Theorem 1` is a viable solution.
 
                 .. card::
                     :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+                    :class-card:  sd-outline-success  sd-rounded-3 sd-font-weight-bold
 
                     Question
                     ^^^
                     Can FOCOPS solve the multi-constraint problem and how?
 
     .. grid-item::
-      :columns: 12 6 6 8
+      :columns: 12 6 6 7
 
       .. tab-set::
 
@@ -222,7 +219,7 @@ That is, the :bdg-info-line:`Theorem 1` is a viable solution.
 
                 .. card::
                     :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+                    :class-card:  sd-outline-primary  sd-rounded-3 sd-font-weight-bold
 
                     Answer
                     ^^^
@@ -238,7 +235,7 @@ That is, the :bdg-info-line:`Theorem 1` is a viable solution.
 
                 .. card::
                     :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+                    :class-card:  sd-outline-primary  sd-rounded-3 sd-font-weight-bold
 
                     Answer
                     ^^^
@@ -260,7 +257,7 @@ The first-order methods are also used to minimize this loss function:
 
 .. card::
     :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-footer: sd-font-weight-bold
     :link: focops-appendix
     :link-type: ref
@@ -313,7 +310,7 @@ By applying gradient descent w.r.t :math:`\nu` to minimize :math:`L(\pi^*,\lambd
 
 .. card::
     :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-footer: sd-font-weight-bold
     :link: focops-appendix
     :link-type: ref
@@ -373,7 +370,7 @@ In this section, we will explain the meaning of parameters :math:`\lambda` and :
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Analysis of :math:`\lambda`
@@ -388,7 +385,7 @@ In this section, we will explain the meaning of parameters :math:`\lambda` and :
 
         .. card::
             :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Analysis of :math:`\nu`
@@ -411,7 +408,7 @@ Quick start
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
     Run FOCOPS in Omnisafe
@@ -507,7 +504,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         env.roll_out()
@@ -516,7 +513,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         focops.update()
@@ -525,7 +522,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         focops.buf.get()
@@ -534,7 +531,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         focops.update_policy_net()
@@ -543,7 +540,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         focops.update_value_net()
@@ -552,7 +549,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         focops.update_cost_net()
@@ -561,7 +558,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         focops.log()
@@ -579,7 +576,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             focops.compute_loss_pi(data: dict)
@@ -613,7 +610,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             focops.update_lagrange_multiplier(ep_costs: float)
@@ -640,7 +637,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
@@ -654,7 +651,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Basic parameters
@@ -708,7 +705,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Optional parameters
@@ -725,7 +722,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Buffer parameters
@@ -770,7 +767,7 @@ Proof for Theorem 1
 
 .. card::
    :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-   :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+   :class-card: sd-outline-info  sd-rounded-3
 
    Lemma 1
    ^^^
@@ -781,7 +778,7 @@ Proof for Theorem 1
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
 
     Proof of Lemma 1
     ^^^
@@ -892,7 +889,7 @@ Proof of Corollary
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-3
 
             Proof of Corollary 1
             ^^^
@@ -943,7 +940,7 @@ Proof of Corollary
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-3
 
             Proof of Corollary 2
             ^^^

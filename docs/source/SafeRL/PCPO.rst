@@ -5,18 +5,14 @@ Quick Facts
 -----------
 
 .. card::
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-body: sd-font-weight-bold
 
-    #. PCPO is an :bdg-success-line:`on-policy` algorithm.
-    #. PCPO can be used for environments with both :bdg-success-line:`discrete` and :bdg-success-line:`continuous` action spaces.
-    #. PCPO is an improvement work done on the basis of :bdg-success-line:`CPO` .
+    #. PCPO is an :bdg-info-line:`on-policy` algorithm.
+    #. PCPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
+    #. PCPO is an improvement work done on the basis of :bdg-info-line:`CPO` .
     #. The OmniSafe implementation of PCPO support :bdg-success-line:`parallelization`.
 
-------
-
-.. contents:: Table of Contents
-   :depth: 3
 
 PCPO Theorem
 ------------
@@ -33,7 +29,7 @@ PCPO further characterizes the convergence of PCPO based on two different metric
 
 In a word, PCPO is a CPO-based algorithm dedicated to solving problem of learning control policies that optimize a reward function, while satisfying constraints due to considerations of safety, fairness, or other costs.
 
-.. note::
+.. hint::
 
     If you have not previously learned the CPO type of algorithm, in order to facilitate your complete understanding of the PCPO algorithm ideas introduced in this section, we strongly recommend that you read this article after reading the CPO tutorial (:doc:`./CPO`) we wrote.
 
@@ -60,7 +56,7 @@ In order for you to have a clearer understanding, we hope that you will read the
 
 .. card::
     :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-primary  sd-rounded-3 sd-font-weight-bold
 
     Questions
     ^^^
@@ -89,7 +85,7 @@ Next, we will describe how PCPO completes the two-stage update.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Reward Improvement Stage
@@ -112,7 +108,7 @@ Next, we will describe how PCPO completes the two-stage update.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Projection Stage
@@ -147,7 +143,7 @@ For the two cases where the agent satisfies the constraint and does not satisfy 
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
             :link: cards-clickable
             :link-type: ref
@@ -173,7 +169,7 @@ For the two cases where the agent satisfies the constraint and does not satisfy 
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
             :link: pcpo-performance-bound-proof
             :link-type: ref
@@ -212,7 +208,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
 
         .. card::
             :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-success  sd-rounded-3
             :class-footer: sd-font-weight-bold
             :link: pcpo-code-with-omnisafe
             :link-type: ref
@@ -242,7 +238,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
 
         .. card::
             :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-success  sd-rounded-3
             :class-footer: sd-font-weight-bold
             :link: pcpo-code-with-omnisafe
             :link-type: ref
@@ -297,7 +293,7 @@ For each policy update:
 
                 .. card::
                     :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+                    :class-card:  sd-outline-success  sd-rounded-3 sd-font-weight-bold
 
                     Question
                     ^^^
@@ -308,7 +304,7 @@ For each policy update:
 
                 .. card::
                     :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+                    :class-card:  sd-outline-success  sd-rounded-3 sd-font-weight-bold
 
                     Question
                     ^^^
@@ -324,7 +320,7 @@ For each policy update:
 
                 .. card::
                     :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+                    :class-card:  sd-outline-primary  sd-rounded-3 sd-font-weight-bold
 
                     Answer
                     ^^^
@@ -335,7 +331,7 @@ For each policy update:
 
                 .. card::
                     :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+                    :class-card:  sd-outline-primary  sd-rounded-3 sd-font-weight-bold
 
                     Answer
                     ^^^
@@ -356,7 +352,7 @@ The function :math:`f` is :math:`L`-smooth and twice continuously differentiable
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-footer: sd-font-weight-bold
     :link: pcpo-theorem3-proof
     :link-type: ref
@@ -399,7 +395,7 @@ Quick start
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
     Run PCPO in Omnisafe
@@ -501,7 +497,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         env.roll_out()
@@ -510,7 +506,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         pcpo.update()
@@ -519,7 +515,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         pcpo.buf.get()
@@ -528,7 +524,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         pcpo.update_policy_net()
@@ -537,7 +533,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         pcpo.update_value_net()
@@ -546,7 +542,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         pcpo.update_cost_net()
@@ -555,7 +551,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         pcpo.log()
@@ -573,7 +569,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             pcpo.update_policy_net()
@@ -640,7 +636,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             pcpo.adjust_cpo_step_direction()
@@ -710,7 +706,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
@@ -724,7 +720,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Basic parameters
@@ -778,7 +774,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Optional parameters
@@ -795,7 +791,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Buffer parameters
@@ -852,7 +848,7 @@ We then prove the main theorem for the worst-case performance degradation.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Lemma 1
@@ -867,7 +863,7 @@ We then prove the main theorem for the worst-case performance degradation.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Lemma 2
@@ -888,7 +884,7 @@ We then prove the main theorem for the worst-case performance degradation.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 1
@@ -922,7 +918,7 @@ We then prove the main theorem for the worst-case performance degradation.
 
       .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 2
@@ -986,7 +982,7 @@ Proof of Analytical Solution to PCPO
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
 
     Analytical Solution to PCPO
     ^^^
@@ -1124,7 +1120,7 @@ We have the following :bdg-info-line:`Lemma 3` to characterize the projection an
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
 
     Lemma 3
     ^^^
@@ -1180,7 +1176,7 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
 
     Theorem 3 (Stationary Points of PCPO with the KL divergence and :math:`L2` Norm Projections)
     ^^^
@@ -1199,7 +1195,7 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
 
     .. dropdown:: Proof of Theorem 3 (Click here)
         :color: info
-        :class-body: sd-border-{3}
+        :class-body: sd-outline-info
 
         The proof of the theorem is based on working in a Hilbert space and the non-expansive property of the projection.
         We first prove stationary points for PCPO with the KL divergence and :math:`L2` norm projections, and then prove the change of the objective value.
@@ -1284,7 +1280,7 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
 
         then every singular value :math:`\sigma_i(\boldsymbol{H})` of :math:`\boldsymbol{H}` needs to be smaller than :math:`1`, and hence :math:`\sigma_\mathrm{max}(\boldsymbol{H})\leq1`, which justifies the assumption we use to prove the bound.
 
-        .. note::
+        .. hint::
 
             To make the objective value for PCPO with the KL divergence projection improves, the right hand side of :ref:`(25) <pcpo-eq-25>` needs to be negative.
             Hence we have :math:`\frac{L\eta}{2}\boldsymbol{I}\prec\boldsymbol{H}`, implying that :math:`\sigma_\mathrm{min}(\boldsymbol{H})>\frac{L\eta}{2}`.

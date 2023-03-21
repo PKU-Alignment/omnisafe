@@ -5,19 +5,17 @@ Quick Facts
 -----------
 
 .. card::
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-body: sd-font-weight-bold
 
-    #. TRPO is an :bdg-success-line:`on-policy` algorithm.
-    #. TRPO can be used for environments with both :bdg-success-line:`discrete` and :bdg-success-line:`continuous` action spaces.
-    #. TRPO is an improvement work done on the basis of :bdg-success-line:`NPG` .
-    #. TRPO is an important theoretical basis for :bdg-success-line:`CPO` .
-    #. The OmniSafe implementation of TRPO supports :bdg-success-line:`parallelization`.
+    #. TRPO is an :bdg-info-line:`on-policy` algorithm.
+    #. TRPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
+    #. TRPO is an improvement work done on the basis of :bdg-info-line:`NPG` .
+    #. TRPO is an important theoretical basis for :bdg-info-line:`CPO` .
+    #. The OmniSafe implementation of TRPO supports :bdg-info-line:`parallelization`.
 
 ------
 
-.. contents:: Table of Contents
-    :depth: 3
 
 TRPO Theorem
 ------------
@@ -43,7 +41,7 @@ And it also performs line search to keep policy updating within the fixed KL div
 
         .. card::
             :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-warning  sd-rounded-3 sd-font-weight-bold
 
             Problems of NPG
             ^^^
@@ -58,7 +56,7 @@ And it also performs line search to keep policy updating within the fixed KL div
 
         .. card::
             :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-primary  sd-rounded-3 sd-font-weight-bold
 
             Advantage of TRPO
             ^^^
@@ -92,7 +90,7 @@ As shown in **NPG**, the difference in performance between two policies :math:`\
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-footer: sd-font-weight-bold
     :link: appendix-theorem1
     :link-type: ref
@@ -176,7 +174,7 @@ It has been proved that if the two policy :math:`\pi'` and :math:`\pi` are close
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-footer: sd-font-weight-bold
     :link: appendix-corollary1
     :link-type: ref
@@ -267,7 +265,7 @@ And the new bound is derived by introducing the :math:`\alpha`-coupling method.
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
     :class-footer: sd-font-weight-bold
     :link: appendix-theorem2
     :link-type: ref
@@ -382,7 +380,7 @@ The method TRPO describes involves two steps:
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
 
     Two Steps For TRPO Update
     ^^^
@@ -396,8 +394,8 @@ The method TRPO describes involves two steps:
       :columns: 12 6 6 6
 
       .. card::
-         :class-header: sd-bg-danger sd-text-white sd-font-weight-bold
-         :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+         :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
+         :class-card: sd-outline-warning  sd-rounded-3 sd-font-weight-bold
 
          Problems
          ^^^
@@ -411,7 +409,7 @@ The method TRPO describes involves two steps:
 
       .. card::
          :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-         :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+         :class-card: sd-outline-primary  sd-rounded-3 sd-font-weight-bold
 
          Solutions
          ^^^
@@ -427,7 +425,7 @@ The method TRPO describes involves two steps:
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-success  sd-rounded-3
             :class-footer: sd-font-weight-bold
             :link: conjugate
             :link-type: ref
@@ -448,7 +446,7 @@ The method TRPO describes involves two steps:
 
         .. card::
             :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-success  sd-rounded-3
             :class-footer: sd-font-weight-bold
             :link: conjugate
             :link-type: ref
@@ -484,7 +482,7 @@ Quick start
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
     Run TRPO in Omnisafe
@@ -586,7 +584,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         env.roll_out()
@@ -595,7 +593,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         trpo.update()
@@ -604,7 +602,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         trpo.buf.get()
@@ -613,7 +611,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         trpo.update_policy_net()
@@ -622,7 +620,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         trpo.update_value_net()
@@ -631,7 +629,7 @@ Documentation of basic functions
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         trpo.log()
@@ -649,7 +647,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             trpo.Fvp()
@@ -692,7 +690,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             conjugate_gradients()
@@ -737,7 +735,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             trpo.search_step_size()
@@ -807,7 +805,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
@@ -821,7 +819,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Basic parameters
@@ -875,7 +873,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Optional parameters
@@ -892,7 +890,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Buffer parameters
@@ -939,7 +937,7 @@ Proof of Theorem 1 (Difference between two arbitrarily policies)
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
 
     Proof of Theorem 1
     ^^^
@@ -968,7 +966,7 @@ Proof of Corollary 1
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
 
     Proof of Corollary 1
     ^^^
@@ -1088,7 +1086,7 @@ so that they define a joint distribution over pairs of actions.
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-3
 
     Definition 1
     ^^^
@@ -1108,7 +1106,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Lemma 1
@@ -1132,7 +1130,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Lemma 2
@@ -1157,7 +1155,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 1
@@ -1190,7 +1188,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-3
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 2

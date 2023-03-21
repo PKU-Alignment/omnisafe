@@ -41,10 +41,10 @@ class PPO(PolicyGradient):
 
         .. math::
             L^{CLIP} = \mathbb{E}_{s_t \sim \rho_{\theta}}
-            \left[ \min(r_t A^{R}_t, \text{clip}(r_t, 1-\epsilon, 1+\epsilon) A^{R}_t) \right]
+            \left[ \min(r_t  A^{R}(s_t, a_t) , \text{clip}(r_t, 1-\epsilon, 1+\epsilon)  A^{R}(s_t, a_t)  \right]
 
-        where :math:`r_t = \frac{\pi_\theta(a_t|s_t)}{\pi_\theta^{old}(a_t|s_t)}`,
-        :math:`\epsilon` is the clip parameter, :math:`A^{R}_t` is the advantage.
+        where :math:`r_t = \frac{\pi_\theta ^{'}(a_t|s_t)}{\pi_\theta(a_t|s_t)}`,
+        :math:`\epsilon` is the clip parameter, :math:`A^{R}(s_t, a_t)` is the advantage.
 
         Args:
             obs (torch.Tensor): ``observation`` stored in buffer.
