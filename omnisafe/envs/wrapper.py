@@ -255,7 +255,7 @@ class ActionScale(Wrapper):
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         action = self._old_min_action + (self._old_max_action - self._old_min_action) * (
-            action - self._min_action
+            action.cpu() - self._min_action
         ) / (self._max_action - self._min_action)
         return super().step(action.numpy())
 
