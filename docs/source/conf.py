@@ -69,10 +69,10 @@ html_static_path = ['_static']
 
 html_theme_options = {
     'light_css_variables': {
-        'color-brand-primary': '#409BFC',
-        'color-brand-content': '#1E90FF',
-        'sd-color-success': '#66CDAA',
-        'sd-color-info': '#4EB0F1',
-        'sd-color-warning': '#DEB887',
+        'color-brand-primary': '#4E98C8',
+        'color-brand-content': '#67A4BA',
+        'sd-color-success': '#5EA69C',
+        'sd-color-info': '#76A2DB',
+        'sd-color-warning': '#AD677E',
     },
 }

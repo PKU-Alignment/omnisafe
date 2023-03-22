@@ -39,7 +39,7 @@ class CPO(TRPO):
     References:
         - Title: Constrained Policy Optimization
         - Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
-        - URL: `CPO <https://arxiv.org/abs/1705.10528>_`
+        - URL:`CPO <https://arxiv.org/abs/1705.10528>_`
     """
 
     def _init_log(self) -> None:
