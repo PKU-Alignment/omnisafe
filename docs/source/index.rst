@@ -9,7 +9,6 @@
 Introduction
 ============
 
-
 Welcome To OmniSafe Tutorial
 ----------------------------
 
