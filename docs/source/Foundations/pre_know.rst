@@ -167,7 +167,7 @@ Consider a general optimization problem (called as the primal problem):
     \underset{x}{\text{min}} & f(x) \\
     \text { s.t. } & h_i(x) \leq 0, i=1, \cdots, m \\
     & \ell_j(x)=0, j=1, \cdots, r
-    
+
 
 We define its Lagrangian as:
 
@@ -210,11 +210,11 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
             satisfies:
 
             .. math::
-                
 
-                
+
+
                 f^*=\underset{x}{\text{min}}\quad \theta_p(x)=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max} \quad L(x, u, v)
-                
+
 
 .. tab-set::
 
