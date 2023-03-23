@@ -17,7 +17,7 @@ Welcome To OmniSafe Tutorial
     :scale: 45%
 
 Welcome to `OmniSafe <https://jmlr.org/papers/v16/garcia15a.html>`__ in Safe RL!
-OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learning, encompassing more than 20 different classes of algorithms covering a multitude of SafeRL domains, and delivering a new suite of testing environments.
+OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learning, encompassing more than 20 different kinds of algorithms covering a multitude of SafeRL domains, and delivering a new suite of testing environments.
 
 .. hint::
 
