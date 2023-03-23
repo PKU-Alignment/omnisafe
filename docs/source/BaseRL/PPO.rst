@@ -14,7 +14,7 @@ Quick Facts
     #. The OmniSafe implementation of PPO support :bdg-info-line:`parallelization`.
 
 PPO Theorem
-------------
+-----------
 
 Background
 ~~~~~~~~~~

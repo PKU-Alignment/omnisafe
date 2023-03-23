@@ -486,8 +486,8 @@ class PolicyGradient(BaseAlgo):
             obs (torch.Tensor): ``observation`` stored in buffer.
             act (torch.Tensor): ``action`` stored in buffer.
             log_p (torch.Tensor): ``log_p`` stored in buffer.
-            adv (torch.Tensor): ``advantage`` stored in buffer.
-            cost_adv (torch.Tensor): ``cost_advantage`` stored in buffer.
+            adv_r (torch.Tensor): ``advantage`` stored in buffer.
+            adv_c (torch.Tensor): ``cost_advantage`` stored in buffer.
         """
         adv = self._compute_adv_surrogate(adv_r, adv_c)
         loss, info = self._loss_pi(obs, act, logp, adv)
@@ -516,8 +516,8 @@ class PolicyGradient(BaseAlgo):
         Policy Gradient only use reward advantage.
 
         Args:
-            adv (torch.Tensor): reward advantage
-            cost_adv (torch.Tensor): cost advantage
+            adv_r (torch.Tensor): reward advantage
+            adv_c (torch.Tensor): cost advantage
         """
         return adv_r
 
@@ -536,11 +536,11 @@ class PolicyGradient(BaseAlgo):
 
             L = -\mathbb{E}_{s_t \sim \rho_\theta} [
                 \sum_{t=0}^T ( \frac{\pi_\theta ^{'}(a_t|s_t)}{\pi_\theta(a_t|s_t)} )
-                 A^{R}(s_t, a_t)
+                 A^{R}_{\pi_{\theta}}(s_t, a_t)
             ]
 
         where :math:`\pi_\theta` is the policy network, :math:`\pi_\theta ^{'}`
-        is the new policy network, :math:`A(s_t, a_t)` is the advantage.
+        is the new policy network, :math:`A^{R}_{\pi_{\theta}}(s_t, a_t)` is the advantage.
 
         Args:
             obs (torch.Tensor): ``observation`` stored in buffer.

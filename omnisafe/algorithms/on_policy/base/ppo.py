@@ -41,17 +41,17 @@ class PPO(PolicyGradient):
 
         .. math::
             L^{CLIP} = \mathbb{E}_{s_t \sim \rho_{\theta}}
-            \left[ \min(r_t  A^{R}(s_t, a_t) , \text{clip}(r_t, 1-\epsilon, 1+\epsilon)  A^{R}(s_t, a_t)  \right]
+            \left[ \min(r_t  A^{R}_{\pi_{\theta}}(s_t, a_t) ,
+            \text{clip}(r_t, 1-\epsilon, 1+\epsilon)  A^{R}_{\pi_{\theta}}(s_t, a_t)  \right]
 
         where :math:`r_t = \frac{\pi_\theta ^{'}(a_t|s_t)}{\pi_\theta(a_t|s_t)}`,
-        :math:`\epsilon` is the clip parameter, :math:`A^{R}(s_t, a_t)` is the advantage.
+        :math:`\epsilon` is the clip parameter, :math:`A^{R}_{\pi_{\theta}}(s_t, a_t)` is the advantage.
 
         Args:
             obs (torch.Tensor): ``observation`` stored in buffer.
             act (torch.Tensor): ``action`` stored in buffer.
             log_p (torch.Tensor): ``log probability`` of action stored in buffer.
             adv (torch.Tensor): ``advantage`` stored in buffer.
-            cost_adv (torch.Tensor): ``cost advantage`` stored in buffer.
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)

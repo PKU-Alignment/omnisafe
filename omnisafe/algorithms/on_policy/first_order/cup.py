@@ -138,11 +138,11 @@ class CUP(PPO):
         In CUP, the Lagrange multiplier is updated as the naive lagrange multiplier update:
 
         .. math::
-            \lambda_{k+1} = \lambda_k + \eta (J_c - C)
+            \lambda_{k+1} = \lambda_k + \eta (J^{C}_{\pi_\theta} - C)
 
         where :math:`\lambda_k` is the Lagrange multiplier at iteration :math:`k`,
         :math:`\eta` is the Lagrange multiplier learning rate,
-        :math:`J_c` is the cost of the current policy,
+        :math:`J^{C}_{\pi_theta}` is the cost of the current policy,
         and :math:`C` is the cost limit.
 
         Then in each iteration of the policy update, CUP calculates current policy's

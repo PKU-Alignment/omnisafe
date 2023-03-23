@@ -24,7 +24,7 @@ from omnisafe.utils import distributed
 
 @registry.register
 class P3O(PPO):
-    """The Implementation of the IPO algorithm.
+    """The Implementation of the P3O algorithm.
 
     References:
         - Title: Penalized Proximal Policy Optimization for Safe Reinforcement Learning
@@ -33,7 +33,7 @@ class P3O(PPO):
     """
 
     def _init_log(self) -> None:
-        r"""Log the IPO specific information.
+        r"""Log the P3O specific information.
 
         .. list-table::
 
@@ -57,9 +57,9 @@ class P3O(PPO):
         Detailedly, we compute the loss of cost of policy cost from real cost.
 
         .. math::
-            L = \mathbb{E}_{\pi} \left[ \frac{\pi^{'}(a|s)}{\pi(a|s)} A^C(s, a) \right]
+            L = \mathbb{E}_{\pi} \left[ \frac{\pi^{'}(a|s)}{\pi(a|s)} A^{C}_{\pi_\theta}(s, a) \right]
 
-        where :math:`A^C(s, a)` is the cost advantage,
+        where :math:`A^{C}_{\pi_\theta}(s, a)` is the cost advantage,
         :math:`\pi(a|s)` is the old policy,
         :math:`\pi^{'}(a|s)` is the current policy.
 
@@ -111,7 +111,7 @@ class P3O(PPO):
             act (torch.Tensor): ``action`` stored in buffer.
             log_p (torch.Tensor): ``log_p`` stored in buffer.
             adv (torch.Tensor): ``advantage`` stored in buffer.
-            cost_adv (torch.Tensor): ``cost_advantage`` stored in buffer.
+            adv_c (torch.Tensor): ``cost_advantage`` stored in buffer.
         """
         loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
         loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
