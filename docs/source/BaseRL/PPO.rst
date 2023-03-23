@@ -5,7 +5,7 @@ Quick Facts
 -----------
 
 .. card::
-    :class-card: sd-outline-info  sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-body: sd-font-weight-bold
 
     #. PPO is an :bdg-info-line:`on-policy` algorithm.
@@ -35,7 +35,7 @@ There are two primary variants of PPO: :bdg-ref-info-line:`PPO-Penalty<PPO-Penal
 
         .. card::
             :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-warning  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-warning  sd-rounded-1 sd-font-weight-bold
 
             Problems of TRPO
             ^^^
@@ -50,7 +50,7 @@ There are two primary variants of PPO: :bdg-ref-info-line:`PPO-Penalty<PPO-Penal
 
         .. card::
             :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-primary  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-primary  sd-rounded-1 sd-font-weight-bold
 
             Advantage of PPO
             ^^^
@@ -72,27 +72,25 @@ In the previous chapters, we introduced that TRPO solves the following optimizat
 .. _ppo-eq-1:
 
 .. math::
-    :nowrap:
+    :label: ppo-eq-1
 
-    \begin{eqnarray}
-        &&\pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
-        \text{s.t.}\quad&&D(\pi,\pi_k)\le\delta\tag{1}
-    \end{eqnarray}
+    &\pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
+    \text{s.t.}\quad&D(\pi,\pi_k)\le\delta
+
 
 where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of parameterized policies with parameters :math:`\boldsymbol{\theta}`, and :math:`D` is some distance measure.
 The problem that TRPO needs to solve is how to find a suitable update direction and update step,
 so that updating the actor can improve the performance without being too different from the original actor.
-Finally, TRPO rewrites Problem :ref:`(1) <ppo-eq-1>` as:
+Finally, TRPO rewrites Problem :eq:`ppo-eq-1` as:
 
 .. _ppo-eq-2:
 
 .. math::
-    :nowrap:
+    :label: ppo-eq-2
 
-    \begin{eqnarray}
-    &\underset{\theta}{\max} L_{\theta_{old}}(\theta) \tag{2} \\
+    &\underset{\theta}{\max} L_{\theta_{old}}(\theta)  \\
     &\text{s.t. } \quad \bar{D}_{\mathrm{KL}}(\theta_{old}, \theta) \le \delta
-    \end{eqnarray}
+
 
 where :math:`L_{\theta_{old}}(\theta)= \frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)`,
 and :math:`\hat{A}_{\pi}(s,a)` is an estimator of the advantage function given :math:`s` and  :math:`a`.
@@ -114,17 +112,16 @@ TRPO actually suggests using a penalty instead of a constraint to solve the unco
 .. _ppo-eq-3:
 
 .. math::
-    :nowrap:
+    :label: ppo-eq-3
 
-    \begin{eqnarray}
-    \max _\theta \mathbb{E}[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)-\beta D_{K L}[\pi_{\theta_{old}}(* \mid s), \pi_\theta(* \mid s)]]\tag{3}
-    \end{eqnarray}
+    \max _\theta \mathbb{E}[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)-\beta D_{K L}[\pi_{\theta_{old}}(* \mid s), \pi_\theta(* \mid s)]]
 
-However, experiments show that it is not sufficient to simply choose a fixed penalty coefficient :math:`\beta` and optimize the penalized objective Equation :ref:`(3) <ppo-eq-3>` with SGD(stochastic gradient descent),
+
+However, experiments show that it is not sufficient to simply choose a fixed penalty coefficient :math:`\beta` and optimize the penalized objective Equation :eq:`ppo-eq-3` with SGD(stochastic gradient descent),
 so finally TRPO abandoned this method.
 
 PPO-Penalty use an approach named Adaptive KL Penalty Coefficient to solve above problem,
-thus making :ref:`(3) <ppo-eq-3>` perform well in experiment.
+thus making :eq:`ppo-eq-3` perform well in experiment.
 In the simplest implementation of this algorithm,
 PPO-Penalty perform the following steps in each policy update:
 
@@ -136,19 +133,18 @@ PPO-Penalty perform the following steps in each policy update:
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-info  sd-rounded-1 sd-font-weight-bold
 
             Step I
             ^^^
-            Using several epochs of mini-batch SGD, optimize the KL-penalized objective shown as :ref:`(3) <ppo-eq-3>`,
+            Using several epochs of mini-batch SGD, optimize the KL-penalized objective shown as :eq:`ppo-eq-3`,
 
             .. math::
-                :nowrap:
+                :label: ppo-eq-4
 
-                \begin{eqnarray}
-                L^{\mathrm{KLPEN}}(\theta)&=&\hat{\mathbb{E}}[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)\tag{4}\\
+                L^{\mathrm{KLPEN}}(\theta)&=&\hat{\mathbb{E}}[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)\\
                 &-&\beta D_{K L}[\pi_{\theta_{old}}(* \mid s), \pi_\theta(* \mid s)]]
-                \end{eqnarray}
+
 
 
     .. grid-item::
@@ -156,7 +152,7 @@ PPO-Penalty perform the following steps in each policy update:
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-info  sd-rounded-1 sd-font-weight-bold
 
             Step II
             ^^^
@@ -181,11 +177,10 @@ PPO-Clip rewrite the surrogate objective as:
 .. _ppo-eq-5:
 
 .. math::
-    :nowrap:
+    :label: ppo-eq-5
 
-    \begin{eqnarray}
-    L^{\mathrm{CLIP}}(\pi)=\mathbb{E}[\text{min} (r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a))]\tag{5}
-    \end{eqnarray}
+    L^{\mathrm{CLIP}}(\pi)=\mathbb{E}[\text{min} (r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a))]
+
 
 in which :math:`\varepsilon` is a (small) hyperparameter which roughly says how far away the new policy is allowed to go from the old.
 This is a very complex formula,
@@ -197,7 +192,7 @@ we'll simplify the formula in two cases:
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info  sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-info  sd-rounded-1 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
     PPO Clip
@@ -205,13 +200,19 @@ we'll simplify the formula in two cases:
 
     #. When Advantage is positive, we can rewrite :math:`L(s, a, \theta)` as:
 
-       .. math:: L(s, a, \theta)=\max (r(\theta),(1-\varepsilon)) \hat{A}_{\pi}(s, a)
+       .. math::
+        :label: ppo-eq-6
+
+        L(s, a, \theta)=\max (r(\theta),(1-\varepsilon)) \hat{A}_{\pi}(s, a)
 
     #. When Advantage is negative, we can rewrite :math:`L(s, a, \theta)` as:
 
-       .. math:: L(s, a, \theta)=\max (r(\theta),(1+\varepsilon)) \hat{A}_{\pi}(s, a)
+       .. math::
+        :label: ppo-eq-7
 
-With above clipped surrogate function and :ref:`(5) <ppo-eq-5>`,
+        L(s, a, \theta)=\max (r(\theta),(1+\varepsilon)) \hat{A}_{\pi}(s, a)
+
+With above clipped surrogate function and :eq:`ppo-eq-5`,
 PPO-Clip can guarantee the new policy would not update so far away from the old.
 In experiment, PPO-Clip perform better that PPO-Penalty.
 
@@ -232,12 +233,13 @@ Define :math:`\delta^V=r_t+\gamma V(s_{t+1})-V(s)` as the TD residual of :math:`
 Next, let us consider taking the sum of :math:`k` of these :math:`\delta` terms, which we will denote by :math:`\hat{A}_{\pi}^{(k)}`.
 
 .. math::
+    :label: ppo-eq-8
 
     \begin{array}{ll}
-    \hat{A}_{\pi}^{(1)}:=\delta_t^V & =-V(s_t)+r_t+\gamma V(s_{t+1}) \\
-    \hat{A}_{\pi}^{(2)}:=\delta_t^V+\gamma \delta_{t+1}^V & =-V(s_t)+r_t+\gamma r_{t+1}+\gamma^2 V(s_{t+2}) \\
-    \hat{A}_{\pi}^{(3)}:=\delta_t^V+\gamma \delta_{t+1}^V+\gamma^2 \delta_{t+2}^V & =-V(s_t)+r_t+\gamma r_{t+1}+\gamma^2 r_{t+2}+\gamma^3 V(s_{t+3}) \\
-    \hat{A}_{\pi}^{(k)}:=\sum_{l=0}^{k-1} \gamma^l \delta_{t+l}^V & =-V(s_t)+r_t+\gamma r_{t+1}+\cdots+\gamma^{k-1} r_{t+k-1}+\gamma^k V(s_{t+k})
+    \hat{A}_{\pi}^{(1)}:=\delta_t^V =-V(s_t)+r_t+\gamma V(s_{t+1}) \\
+    \hat{A}_{\pi}^{(2)}:=\delta_t^V+\gamma \delta_{t+1}^V =-V(s_t)+r_t+\gamma r_{t+1}+\gamma^2 V(s_{t+2}) \\
+    \hat{A}_{\pi}^{(3)}:=\delta_t^V+\gamma \delta_{t+1}^V+\gamma^2 \delta_{t+2}^V =-V(s_t)+r_t+\gamma r_{t+1}+\gamma^2 r_{t+2}+\gamma^3 V(s_{t+3}) \\
+    \hat{A}_{\pi}^{(k)}:=\sum_{l=0}^{k-1} \gamma^l \delta_{t+l}^V =-V(s_t)+r_t+\gamma r_{t+1}+\cdots+\gamma^{k-1} r_{t+k-1}+\gamma^k V(s_{t+k})
     \end{array}
 
 We can consider :math:`\hat{A}_{\pi}^{(k)}` to be an estimator of the advantage function.
@@ -248,11 +250,10 @@ We can consider :math:`\hat{A}_{\pi}^{(k)}` to be an estimator of the advantage 
     Taking :math:`k \rightarrow +\infty`, we get:
 
     .. math::
-        :nowrap:
+        :label: ppo-eq-9
 
-        \begin{eqnarray}
-            \hat{A}_{\pi}^{(\infty)}=\sum_{l=0}^{\infty} \gamma^l \delta_{t+l}^V=-V(s_t)+\sum_{l=0}^{\infty} \gamma^l r_{t+l}
-        \end{eqnarray}
+        \hat{A}_{\pi}^{(\infty)}=\sum_{l=0}^{\infty} \gamma^l \delta_{t+l}^V=-V(s_t)+\sum_{l=0}^{\infty} \gamma^l r_{t+l}
+
 
     which is simply the empirical returns minus the value function baseline.
 
@@ -261,25 +262,23 @@ The generalized advantage estimator :math:`\text{GAE}(\gamma,\lambda)` is define
 .. _ppo-eq-6:
 
 .. math::
-    :nowrap:
+    :label: ppo-eq-10
 
-    \begin{eqnarray}
-    \hat{A}_{\pi}:&= & (1-\lambda)(\hat{A}_{\pi}^{(1)}+\lambda \hat{A}_{\pi}^{(2)}+\lambda^2 \hat{A}_{\pi}^{(3)}+\ldots) \\
-    &= & (1-\lambda)(\delta_t^V+\lambda(\delta_t^V+\gamma \delta_{t+1}^V)+\lambda^2(\delta_t^V+\gamma \delta_{t+1}^V+\gamma^2 \delta_{t+2}^V)+\ldots) \\
-    &= & (1-\lambda)(\delta_t^V(1+\lambda+\lambda^2+\ldots)+\gamma \delta_{t+1}^V(\lambda+\lambda^2+\lambda^3+\ldots) .+\gamma^2 \delta_{t+2}^V(\lambda^2+\lambda^3+\lambda^4+\ldots)+\ldots) \\
-    &= & (1-\lambda)(\delta_t^V(\frac{1}{1-\lambda})+\gamma \delta_{t+1}^V(\frac{\lambda}{1-\lambda})+\gamma^2 \delta_{t+2}^V(\frac{\lambda^2}{1-\lambda})+\ldots) \\
-    &= & \sum_{l=0}^{\infty}(\gamma \lambda)^l \delta_{t+l}^V\tag{6}
-    \end{eqnarray}
+    \hat{A}_{\pi}:&= (1-\lambda)(\hat{A}_{\pi}^{(1)}+\lambda \hat{A}_{\pi}^{(2)}+\lambda^2 \hat{A}_{\pi}^{(3)}+\ldots) \\
+    &= (1-\lambda)(\delta_t^V+\lambda(\delta_t^V+\gamma \delta_{t+1}^V)+\lambda^2(\delta_t^V+\gamma \delta_{t+1}^V+\gamma^2 \delta_{t+2}^V)+\ldots) \\
+    &= (1-\lambda)(\delta_t^V(1+\lambda+\lambda^2+\ldots)+\gamma \delta_{t+1}^V(\lambda+\lambda^2+\lambda^3+\ldots) .+\gamma^2 \delta_{t+2}^V(\lambda^2+\lambda^3+\lambda^4+\ldots)+\ldots) \\
+    &= (1-\lambda)(\delta_t^V(\frac{1}{1-\lambda})+\gamma \delta_{t+1}^V(\frac{\lambda}{1-\lambda})+\gamma^2 \delta_{t+2}^V(\frac{\lambda^2}{1-\lambda})+\ldots) \\
+    &= \sum_{l=0}^{\infty}(\gamma \lambda)^l \delta_{t+l}^V
+
 
 There are two notable special cases of this formula, obtained by setting :math:`\lambda =0` and :math:`\lambda =1`.
 
 .. math::
-    :nowrap:
+    :label: ppo-eq-11
 
-    \begin{eqnarray}
-    \text{GAE}(\gamma, 0):\quad && \hat{A}_{\pi}:=\delta_t  =r_t+\gamma V(s_{t+1})-V(s_t) \\
-    \text{GAE}(\gamma, 1):\quad && \hat{A}_{\pi}:=\sum_{l=0}^{\infty} \gamma^l \delta_{t+l}  =\sum_{l=0}^{\infty} \gamma^l r_{t+l}-V(s_t)
-    \end{eqnarray}
+    \text{GAE}(\gamma, 0):\quad & \hat{A}_{\pi}:=\delta_t  =r_t+\gamma V(s_{t+1})-V(s_t) \\
+    \text{GAE}(\gamma, 1):\quad & \hat{A}_{\pi}:=\sum_{l=0}^{\infty} \gamma^l \delta_{t+l}  =\sum_{l=0}^{\infty} \gamma^l r_{t+l}-V(s_t)
+
 
 .. hint::
     :math:`\text{GAE}(\gamma,1)` is the traditional MC-based method to estimate the advantage function,
@@ -298,7 +297,7 @@ Quick start
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
     Run PPO in Omnisafe
@@ -318,19 +317,11 @@ Quick start
 
                 import omnisafe
 
-                env = omnisafe.Env('SafetyPointGoal1-v0')
 
-                agent = omnisafe.Agent('PPO', env)
+                env_id = 'SafetyPointGoal1-v0'
+
+                agent = omnisafe.Agent('PPO', env_id)
                 agent.learn()
-
-                obs = env.reset()
-                for i in range(1000):
-                    action, _states = agent.predict(obs, deterministic=True)
-                    obs, reward, cost, done, info = env.step(action)
-                    env.render()
-                    if done:
-                        obs = env.reset()
-                env.close()
 
         .. tab-item:: Config dict style
 
@@ -339,20 +330,26 @@ Quick start
 
                 import omnisafe
 
-                env = omnisafe.Env('SafetyPointGoal1-v0')
 
-                custom_dict = {'epochs': 1, 'log_dir': './runs'}
-                agent = omnisafe.Agent('PPO', env, custom_cfgs=custom_dict)
+                env_id = 'SafetyPointGoal1-v0'
+                custom_cfgs = {
+                    'train_cfgs': {
+                        'total_steps': 1024000,
+                        'vector_env_nums': 1,
+                        'parallel': 1,
+                    },
+                    'algo_cfgs': {
+                        'update_cycle': 2048,
+                        'update_iters': 1,
+                    },
+                    'logger_cfgs': {
+                        'use_wandb': False,
+                    },
+                }
+
+                agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
                 agent.learn()
 
-                obs = env.reset()
-                for i in range(1000):
-                    action, _states = agent.predict(obs, deterministic=True)
-                    obs, reward, done, info = env.step(action)
-                    env.render()
-                    if done:
-                        obs = env.reset()
-                env.close()
 
         .. tab-item:: Terminal config style
 
@@ -362,9 +359,8 @@ Quick start
             .. code-block:: bash
                 :linenos:
 
-                cd omnisafe/examples
-                python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo PPO --parallel 5 --epochs 1
-
+                cd examples
+                python train_policy.py --algo PPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 
 ------
 
@@ -387,56 +383,6 @@ Architecture of functions
 
 ------
 
-Documentation of basic functions
-""""""""""""""""""""""""""""""""
-
-.. card-carousel:: 3
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        env.roll_out()
-        ^^^
-        Collect data and store to experience buffer.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        ppo.update()
-        ^^^
-        Update actor, critic, running statistics
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        ppo.buf.get()
-        ^^^
-        Call this at the end of an epoch to get all of the data from the buffer
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        ppo.update_value_net()
-        ^^^
-        Update Critic network for estimating reward.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        ppo.log()
-        ^^^
-        Get the training log and show the performance of the algorithm
-
 Documentation of new functions
 """"""""""""""""""""""""""""""
 
@@ -446,7 +392,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             ppo.compute_loss_pi()
@@ -495,7 +441,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
@@ -509,7 +455,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Basic parameters
@@ -563,7 +509,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Optional parameters
@@ -580,7 +526,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Buffer parameters

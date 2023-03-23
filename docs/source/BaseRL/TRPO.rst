@@ -5,7 +5,7 @@ Quick Facts
 -----------
 
 .. card::
-    :class-card: sd-outline-info  sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-body: sd-font-weight-bold
 
     #. TRPO is an :bdg-info-line:`on-policy` algorithm.
@@ -41,7 +41,7 @@ And it also performs line search to keep policy updating within the fixed KL div
 
         .. card::
             :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-warning  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-warning  sd-rounded-1 sd-font-weight-bold
 
             Problems of NPG
             ^^^
@@ -56,7 +56,7 @@ And it also performs line search to keep policy updating within the fixed KL div
 
         .. card::
             :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-primary  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-primary  sd-rounded-1 sd-font-weight-bold
 
             Advantage of TRPO
             ^^^
@@ -75,12 +75,10 @@ In policy optimization, we want to make every update that guarantees the expecte
 It is intuitive to construct the equation of expected return in the following form:
 
 .. math::
-    :nowrap:
     :label: trpo-eq-1
 
-    \begin{eqnarray}
-    J^R(\pi') = J^R(\pi) + \{J^R(\pi') - J^R(\pi)\}\tag{1}
-    \end{eqnarray}
+    J^R(\pi') = J^R(\pi) + \{J^R(\pi') - J^R(\pi)\}
+
 
 To achieve monotonic improvements, we only need to consider :math:`\Delta = J^R(\pi') - J^R(\pi)` to be non-negative.
 
@@ -90,7 +88,7 @@ As shown in **NPG**, the difference in performance between two policies :math:`\
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info  sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-footer: sd-font-weight-bold
     :link: appendix-theorem1
     :link-type: ref
@@ -101,12 +99,10 @@ As shown in **NPG**, the difference in performance between two policies :math:`\
     .. _`trpo-eq-2`:
 
     .. math::
-        :nowrap:
         :label: trpo-eq-2
 
-        \begin{eqnarray}
-                J^R(\pi') = J^R(\pi) + \mathbb{E}_{\tau \sim \pi'}[\sum_{t=0}^{\infty} \gamma^t A^R_{\pi}(s_t,a_t)]\tag{2}
-        \end{eqnarray}
+            J^R(\pi') = J^R(\pi) + \mathbb{E}_{\tau \sim \pi'}[\sum_{t=0}^{\infty} \gamma^t A^R_{\pi}(s_t,a_t)]
+
 
     where this expectation is taken over trajectories :math:`\tau=(s_0, a_0, s_1,\\ a_1, \cdots)`,
     and the notation :math:`\mathbb{E}_{\tau \sim \pi'}[\cdots]` indicates that actions are sampled from :math:`\pi'` to generate :math:`\tau`.
@@ -127,15 +123,13 @@ which is of our interest.
     .. _`trpo-eq-3`:
 
     .. math::
-        :nowrap:
         :label: trpo-eq-3
 
-        \begin{eqnarray}
-            \label{equation: performance in discount visit density}
-            J^R(\pi') &=&J^R(\pi)+\sum_{t=0}^{\infty} \sum_s P\left(s_t=s \mid \pi'\right) \sum_a \pi' (a \mid s) \gamma^t A^R_{\pi}(s, a) \nonumber\\
-            &=&J^R(\pi)+\sum_s \sum_{t=0}^{\infty} \gamma^t P\left(s_t=s \mid \pi' \right) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)\nonumber \\
-            &=&J^R(\pi)+\sum_s d_{\pi'}(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)\tag{3}
-        \end{eqnarray}
+        \label{equation: performance in discount visit density}
+        J^R(\pi') &=J^R(\pi)+\sum_{t=0}^{\infty} \sum_s P\left(s_t=s \mid \pi'\right) \sum_a \pi' (a \mid s) \gamma^t A^R_{\pi}(s, a) \nonumber\\
+        &=J^R(\pi)+\sum_s \sum_{t=0}^{\infty} \gamma^t P\left(s_t=s \mid \pi' \right) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)\nonumber \\
+        &=J^R(\pi)+\sum_s d_{\pi'}(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)
+
 
 This equation implies for any policy :math:`\pi'`, if it has a nonnegative expected advantage at every state :math:`s`, i.e.,
 :math:`\sum_a \pi'(a \mid s) A^R_{\pi}(s, a) \geq 0`,
@@ -151,20 +145,18 @@ that there will be some states :math:`s` for which the expected advantage is neg
 Surrogate function for the objective
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Equation :ref:`(3) <trpo-eq-3>` requires knowledge about future state distribution under :math:`\pi'`,
+Equation :eq:`trpo-eq-3` requires knowledge about future state distribution under :math:`\pi'`,
 which is usually unknown and difficult to estimate.
-The complex dependency of :math:`d_{\pi'}(s)` on :math:`\pi'` makes Equation :ref:`(3) <trpo-eq-3>` difficult to optimize directly.
+The complex dependency of :math:`d_{\pi'}(s)` on :math:`\pi'` makes Equation :eq:`trpo-eq-3` difficult to optimize directly.
 Instead, we introduce the following local approximation to :math:`J`:
 
 .. _`trpo-eq-4`:
 
 .. math::
-    :nowrap:
     :label: trpo-eq-4
 
-    \begin{eqnarray}
-        L_\pi(\pi')=J^R(\pi)+\sum_s d_\pi(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)\tag{4}
-    \end{eqnarray}
+    L_\pi(\pi')=J^R(\pi)+\sum_s d_\pi(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)
+
 
 Here we only replace :math:`d_{\pi'}` with :math:`d_\pi`.
 It has been proved that if the two policy :math:`\pi'` and :math:`\pi` are close enough,
@@ -174,7 +166,7 @@ It has been proved that if the two policy :math:`\pi'` and :math:`\pi` are close
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info  sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-footer: sd-font-weight-bold
     :link: appendix-corollary1
     :link-type: ref
@@ -187,26 +179,22 @@ It has been proved that if the two policy :math:`\pi'` and :math:`\pi` are close
     That is, for any parameter value :math:`\theta_0`,
 
     .. math::
-        :nowrap:
         :label: trpo-eq-5
 
-        \begin{eqnarray}
-            L_{\pi_{\theta_0}}\left(\pi_{\theta_0}\right)&=&J^R\left(\pi_{\theta_0}\right)\tag{5}
-        \end{eqnarray}
+        L_{\pi_{\theta_0}}\left(\pi_{\theta_0}\right)=J^R\left(\pi_{\theta_0}\right)
+
 
     .. _`trpo-eq-6`:
 
     .. math::
-        :nowrap:
         :label: trpo-eq-6
 
-        \begin{eqnarray}
-            \nabla_\theta L_{\pi_{\theta_0}}\left(\pi_\theta\right)|_{\theta=\theta_0}&=&\left.\nabla_\theta J^R\left(\pi_\theta\right)\right|_{\theta=\theta_0}\tag{6}
-        \end{eqnarray}
+        \nabla_\theta L_{\pi_{\theta_0}}\left(\pi_\theta\right)|_{\theta=\theta_0}=\left.\nabla_\theta J^R\left(\pi_\theta\right)\right|_{\theta=\theta_0}
+
     +++
     The proof of the :bdg-info-line:`Corollary 1` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-Equation :ref:`(6) <trpo-eq-6>` implies that a sufficiently small step :math:`\pi_{\theta_0} \rightarrow \pi'` that improves :math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J`,
+Equation :eq:`trpo-eq-6` implies that a sufficiently small step :math:`\pi_{\theta_0} \rightarrow \pi'` that improves :math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J`,
 but does not give us any guidance on how big of a step to take.
 
 To address this issue, **NPG** proposed a policy updating scheme called **conservative policy iteration(CPI)**,
@@ -216,35 +204,30 @@ and let :math:`\pi^{*}=\arg \max _{\pi^{*}} L_{\pi_{\text {old }}}\left(\pi^{*}\
 The new policy :math:`\pi_{\text {new }}` was defined to be the following mixture:
 
 .. math::
-    :nowrap:
     :label: trpo-eq-7
 
-    \begin{eqnarray}
-        \pi_{\text {new }}(a \mid s)=(1-\alpha) \pi_{\text {old }}(a \mid s)+\alpha \pi^{*}(a \mid s)\tag{7}
-    \end{eqnarray}
+    \pi_{\text {new }}(a \mid s)=(1-\alpha) \pi_{\text {old }}(a \mid s)+\alpha \pi^{*}(a \mid s)
+
 
 Kakade and Langford derived the following lower bound:
 
 .. _`trpo-eq-8`:
 
 .. math::
-    :nowrap:
     :label: trpo-eq-8
 
-    \begin{eqnarray}
-    \label{equation: CPI bound}
-    &&J\left(\pi_{\text {new }}\right)  \geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{2 \epsilon \gamma}{(1-\gamma)^2} \alpha^2\tag{8}  \\
-    \text { where } &&\epsilon=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right| \nonumber
-    \end{eqnarray}
+    &J\left(\pi_{\text {new }}\right)  \geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{2 \epsilon \gamma}{(1-\gamma)^2} \alpha^2  \\
+    \text { where } &\epsilon=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right| \nonumber
 
-However, the lower bound in Equation :ref:`(8) <trpo-eq-8>` only applies to mixture policies, so it needs to be extended to general policy cases.
+
+However, the lower bound in Equation :eq:`trpo-eq-8` only applies to mixture policies, so it needs to be extended to general policy cases.
 
 ------
 
 Monotonic Improvement Guarantee for General Stochastic Policies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Based on the theoretical guarantee :ref:`(15) <trpo-eq-15>` in mixture policies case,
+Based on the theoretical guarantee :eq:`trpo-eq-16` in mixture policies case,
 TRPO extends the lower bound to general policies by replacing :math:`\alpha` with a distance measure between :math:`\pi` and :math:`\pi'`,
 and changing the constant :math:`\epsilon` appropriately.
 The chosen distance measurement is the total variation divergence (TV divergence),
@@ -252,12 +235,10 @@ which is defined by :math:`D_{TV}(p \| q)=\frac{1}{2} \sum_i \left|p_i-q_i\right
 Define :math:`D_{\mathrm{TV}}^{\max }(\pi, \pi')` as
 
 .. math::
-    :nowrap:
     :label: trpo-eq-9
 
-    \begin{eqnarray}
-        D_{\mathrm{TV}}^{\max}(\pi, \pi')=\max_s D_{\mathrm{TV}}\left(\pi\left(\cdot \mid s\right) \| \pi'\left(\cdot \mid s\right)\right)\tag{9}
-    \end{eqnarray}
+    D_{\mathrm{TV}}^{\max}(\pi, \pi')=\max_s D_{\mathrm{TV}}\left(\pi\left(\cdot \mid s\right) \| \pi'\left(\cdot \mid s\right)\right)
+
 
 And the new bound is derived by introducing the :math:`\alpha`-coupling method.
 
@@ -265,7 +246,7 @@ And the new bound is derived by introducing the :math:`\alpha`-coupling method.
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info  sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-footer: sd-font-weight-bold
     :link: appendix-theorem2
     :link-type: ref
@@ -277,13 +258,11 @@ And the new bound is derived by introducing the :math:`\alpha`-coupling method.
     Then the following bound holds:
 
     .. math::
-        :nowrap:
         :label: trpo-eq-10
 
-        \begin{eqnarray}
-                &&J\left(\pi_{\text {new }}\right)  \geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{4 \epsilon \gamma}{(1-\gamma)^2} \alpha^2\tag{10} \\
-                \text { where } &&\epsilon=\max _{s, a}\left|A^R_{\pi}(s, a)\right|
-        \end{eqnarray}
+        &J\left(\pi_{\text {new }}\right)  \geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{4 \epsilon \gamma}{(1-\gamma)^2} \alpha^2 \\
+        \text { where } &\epsilon=\max _{s, a}\left|A^R_{\pi}(s, a)\right|
+
     +++
     The proof of the :bdg-info-line:`Theorem 2` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
@@ -299,30 +278,26 @@ The following bound then follows directly from :bdg-info-line:`Theorem 2` :
 .. _`trpo-eq-11`:
 
 .. math::
-    :nowrap:
     :label: trpo-eq-11
 
-        \begin{eqnarray}
-            & J^R(\pi') \geq L_\pi(\pi')-C D_{\mathrm{KL}}^{\max }(\pi, \pi')\tag{11} \\
-            & \quad \text { where } C=\frac{4 \epsilon \gamma}{(1-\gamma)^2}
-        \end{eqnarray}
+    & J^R(\pi') \geq L_\pi(\pi')-C D_{\mathrm{KL}}^{\max }(\pi, \pi') \\
+    & \quad \text { where } C=\frac{4 \epsilon \gamma}{(1-\gamma)^2}
 
-TRPO describes an approximate policy iteration scheme based on the policy improvement bound in Equation :ref:`(11) <trpo-eq-11>`.
+
+TRPO describes an approximate policy iteration scheme based on the policy improvement bound in Equation :eq:`trpo-eq-11`.
 Note that for now, we assume exact evaluation of the advantage values :math:`A^R_{\pi}`.
 
-It follows from Equation :ref:`(11) <trpo-eq-11>` that TRPO is guaranteed to generate a monotonically improving sequence of policies :math:`J\left(\pi_0\right) \leq J\left(\pi_1\right) \leq J\left(\pi_2\right) \leq \cdots`.
+It follows from Equation :eq:`trpo-eq-11` that TRPO is guaranteed to generate a monotonically improving sequence of policies :math:`J\left(\pi_0\right) \leq J\left(\pi_1\right) \leq J\left(\pi_2\right) \leq \cdots`.
 To see this, let :math:`M_i(\pi)=L_{\pi_i}(\pi)-C D_{\mathrm{KL}}^{\max }\left(\pi_i, \pi\right)`.
 Then
 
 .. math::
-    :nowrap:
     :label: trpo-eq-12
 
-    \begin{eqnarray}
-        J\left(\pi_{i+1}\right) &\geq& M_i\left(\pi_{i+1}\right) \\
-        J\left(\pi_i\right)&=&M_i\left(\pi_i\right), \text { therefore, } \\
-        J\left(\pi_{i+1}\right)-\eta\left(\pi_i\right)& \geq& M_i\left(\pi_{i+1}\right)-M\left(\pi_i\right)\tag{12}
-    \end{eqnarray}
+    J\left(\pi_{i+1}\right) &\geq M_i\left(\pi_{i+1}\right) \\
+    J\left(\pi_i\right)&=M_i\left(\pi_i\right), \text { therefore, } \\
+    J\left(\pi_{i+1}\right)-\eta\left(\pi_i\right)&\geq M_i\left(\pi_{i+1}\right)-M\left(\pi_i\right)
+
 
 Thus, by maximizing :math:`M_i` at each iteration, we guarantee that the true objective :math:`J` is non-decreasing.
 
@@ -341,12 +316,10 @@ However, in practice, when we consider policies in parameterized space :math:`\p
 the algorithm cannot work well. By plugging in the notation :math:`\theta`, our update step becomes
 
 .. math::
-    :nowrap:
     :label: trpo-eq-13
 
-    \begin{eqnarray}
-    && L_{\theta_{old}}(\theta)-C D_{\mathrm{KL}}^{\max }(\theta_{old}, \theta)\tag{13} \\
-    \end{eqnarray}
+    & L_{\theta_{old}}(\theta)-C D_{\mathrm{KL}}^{\max }(\theta_{old}, \theta) \\
+
 
 where :math:`C=\frac{4 \epsilon \gamma}{(1-\gamma)^2}`, and :math:`\theta_{old}, \theta` are short for :math:`\pi_{\theta_{old}}, \pi_{\theta}`.
 In practice, the penalty coefficient :math:`C` for KL divergence would produce very small step size and the improvement would be too conservative.
@@ -354,12 +327,11 @@ To allow larger step size, instead of penalty term on KL divergence,
 TRPO uses fixed KL divergence constraint to bound the distance between :math:`\pi_{\theta_{old}}` and :math:`\pi_{\theta}`:
 
 .. math::
-    :nowrap:
+    :label: trpo-eq-14
 
-    \begin{eqnarray}
     &\underset{\theta}{\max} L_{\theta_{old}}(\theta) \\
     &\text{s.t. } \quad D_{\mathrm{KL}}^{\max }(\theta_{old}, \theta) \le \delta
-    \end{eqnarray}
+
 
 This problem imposes a constraint that the KL divergence is bounded at every point in the state space.
 While it is motivated by the theory,
@@ -367,20 +339,18 @@ this problem is impractical to solve due to the large number of constraints.
 Instead, TRPO uses a heuristic approximation which considers the average KL divergence:
 
 .. math::
-    :nowrap:
-    :label: trpo-eq-14
+    :label: trpo-eq-15
 
-    \begin{eqnarray}
-    &\underset{\theta}{\max} L_{\theta_{old}}(\theta) \label{eq:maxklconst}\tag{14} \\
+    &\underset{\theta}{\max} L_{\theta_{old}}(\theta) \label{eq:maxklconst} \\
     &\text{s.t. } \quad \bar{D}_{\mathrm{KL}}(\theta_{old}, \theta) \le \delta
-    \end{eqnarray}
+
 
 where :math:`\bar{D}_{\mathrm{KL}}:=\mathbb{E}_{s \sim \rho}\left[D_{\mathrm{KL}}\left(\pi_{\theta_1}(\cdot \mid s) \| \pi_{\theta_2}(\cdot \mid s)\right)\right]`
 The method TRPO describes involves two steps:
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
 
     Two Steps For TRPO Update
     ^^^
@@ -395,7 +365,7 @@ The method TRPO describes involves two steps:
 
       .. card::
          :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
-         :class-card: sd-outline-warning  sd-rounded-3 sd-font-weight-bold
+         :class-card: sd-outline-warning  sd-rounded-1 sd-font-weight-bold
 
          Problems
          ^^^
@@ -409,7 +379,7 @@ The method TRPO describes involves two steps:
 
       .. card::
          :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-         :class-card: sd-outline-primary  sd-rounded-3 sd-font-weight-bold
+         :class-card: sd-outline-primary  sd-rounded-1 sd-font-weight-bold
 
          Solutions
          ^^^
@@ -425,7 +395,7 @@ The method TRPO describes involves two steps:
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3
+            :class-card: sd-outline-success  sd-rounded-1
             :class-footer: sd-font-weight-bold
             :link: conjugate
             :link-type: ref
@@ -446,7 +416,7 @@ The method TRPO describes involves two steps:
 
         .. card::
             :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-success  sd-rounded-3
+            :class-card:  sd-outline-success  sd-rounded-1
             :class-footer: sd-font-weight-bold
             :link: conjugate
             :link-type: ref
@@ -482,7 +452,7 @@ Quick start
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
     Run TRPO in Omnisafe
@@ -503,19 +473,11 @@ Quick start
 
                 import omnisafe
 
-                env = omnisafe.Env('SafetyPointGoal1-v0')
 
-                agent = omnisafe.Agent('TRPO', env)
+                env_id = 'SafetyPointGoal1-v0'
+
+                agent = omnisafe.Agent('TRPO', env_id)
                 agent.learn()
-
-                obs = env.reset()
-                for i in range(1000):
-                    action, _states = agent.predict(obs, deterministic=True)
-                    obs, reward, cost, done, info = env.step(action)
-                    env.render()
-                    if done:
-                        obs = env.reset()
-                env.close()
 
         .. tab-item:: Config dict style
 
@@ -524,34 +486,37 @@ Quick start
 
                 import omnisafe
 
-                env = omnisafe.Env('SafetyPointGoal1-v0')
 
-                custom_dict = {'epochs': 1, 'log_dir': './runs'}
-                agent = omnisafe.Agent('TRPO', env, custom_cfgs=custom_dict)
+                env_id = 'SafetyPointGoal1-v0'
+                custom_cfgs = {
+                    'train_cfgs': {
+                        'total_steps': 1024000,
+                        'vector_env_nums': 1,
+                        'parallel': 1,
+                    },
+                    'algo_cfgs': {
+                        'update_cycle': 2048,
+                        'update_iters': 1,
+                    },
+                    'logger_cfgs': {
+                        'use_wandb': False,
+                    },
+                }
+
+                agent = omnisafe.Agent('TRPO', env_id, custom_cfgs=custom_cfgs)
                 agent.learn()
 
-                obs = env.reset()
-                for i in range(1000):
-                    action, _states = agent.predict(obs, deterministic=True)
-                    obs, reward, done, info = env.step(action)
-                    env.render()
-                    if done:
-                        obs = env.reset()
-                env.close()
 
         .. tab-item:: Terminal config style
 
-                We use ``train_on_policy.py`` as the entrance file. You can train the agent with
-                TRPO simply using ``train_on_policy.py``, with arguments about TRPO and environments
-                does the training. For example, to run TRPO in SafetyPointGoal1-v0 , with
-                5 cpu cores and seed 0, you can use the following command:
+            We use ``train_on_policy.py`` as the entrance file. You can train the agent with TRPO simply using ``train_on_policy.py``, with arguments about TRPO and environments does the training.
+            For example, to run TRPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
 
-                .. code-block:: bash
-                    :linenos:
+            .. code-block:: bash
+                :linenos:
 
-                    cd omnisafe/examples
-                    python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo TRPO --parallel 5 --epochs 1
-
+                cd examples
+                python train_policy.py --algo TRPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 
 ------
 
@@ -576,66 +541,6 @@ Architecture of functions
 
 ------
 
-
-Documentation of basic functions
-""""""""""""""""""""""""""""""""
-
-.. card-carousel:: 3
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        env.roll_out()
-        ^^^
-        Collect data and store to experience buffer.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        trpo.update()
-        ^^^
-        Update actor, critic, running statistics.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        trpo.buf.get()
-        ^^^
-        Call this at the end of an epoch to get all of the data from the buffer.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        trpo.update_policy_net()
-        ^^^
-        Update policy network in 5 kinds of optimization case.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        trpo.update_value_net()
-        ^^^
-        Update Critic network for estimating reward.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        trpo.log()
-        ^^^
-        Get the training log and show the performance of the algorithm.
-
 .. _conjugate:
 
 Documentation of new functions
@@ -647,7 +552,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             trpo.Fvp()
@@ -690,7 +595,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             conjugate_gradients()
@@ -735,7 +640,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             trpo.search_step_size()
@@ -805,7 +710,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
@@ -819,7 +724,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Basic parameters
@@ -873,7 +778,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Optional parameters
@@ -890,7 +795,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Buffer parameters
@@ -937,7 +842,7 @@ Proof of Theorem 1 (Difference between two arbitrarily policies)
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info  sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
 
     Proof of Theorem 1
     ^^^
@@ -947,15 +852,13 @@ Proof of Theorem 1 (Difference between two arbitrarily policies)
     .. _`trpo-eq-15`:
 
     .. math::
-        :nowrap:
-        :label: trpo-eq-15
+        :label: trpo-eq-16
 
-        \begin{eqnarray}
-            \mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t A^R_{\pi}\left(s_t, a_t\right)\right] &=&\mathbb{E}_{\tau \sim \pi'}\left[\sum _ { t = 0 } ^ { \infty } \gamma ^ { t } \left(r\left(s_t\right)+\gamma V_{\pi}\left(s_{t+1}\right)-V_{\pi}\left(s_{t} \right)\right) \right] \\
-            &=&\mathbb{E}_{\tau \sim \pi'}\left[-V^R_{\pi}\left(s_0\right)+\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right] \\
-            &=&-\mathbb{E}_{s_0}\left[V^R_{\pi}\left(s_0\right)\right]+\mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right] \\
-            &=&-J^R(\pi)+J^R(\pi')\tag{15}
-        \end{eqnarray}
+        \mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t A^R_{\pi}\left(s_t, a_t\right)\right] &=\mathbb{E}_{\tau \sim \pi'}\left[\sum _ { t = 0 } ^ { \infty } \gamma ^ { t } \left(r\left(s_t\right)+\gamma V_{\pi}\left(s_{t+1}\right)-V_{\pi}\left(s_{t} \right)\right) \right] \\
+        &=\mathbb{E}_{\tau \sim \pi'}\left[-V^R_{\pi}\left(s_0\right)+\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right] \\
+        &=-\mathbb{E}_{s_0}\left[V^R_{\pi}\left(s_0\right)\right]+\mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right] \\
+        &=-J^R(\pi)+J^R(\pi')
+
 
 
 
@@ -966,45 +869,38 @@ Proof of Corollary 1
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info  sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
 
     Proof of Corollary 1
     ^^^
-    From Equation :ref:`(2) <trpo-eq-2>` and :ref:`(4) <trpo-eq-4>` , we can easily know that
+    From Equation :eq:`trpo-eq-2` and :eq:`trpo-eq-4` , we can easily know that
 
     .. math::
-        :nowrap:
-        :label: trpo-eq-16
-
-        \begin{eqnarray}
-                && L_{\pi_{\theta_0}}\left(\pi_{\theta_0}\right)=J\left(\pi_{\theta_0}\right)\quad \tag{16}\\
-                \text{since}~~ &&\sum_s \rho_\pi(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)=0.
-
-        \end{eqnarray}
-
-    Now Equation :ref:`(4) <trpo-eq-4>` can be written as follows:
-
-    .. math::
-        :nowrap:
         :label: trpo-eq-17
 
-        \begin{eqnarray}
-                J\left(\pi^{'}_{\theta}\right) = J(\pi_{\theta_0}) + \sum_s d_{\pi^{'}_{\theta}}(s) \sum_a \pi^{'}_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)\tag{17}
-        \end{eqnarray}
+        & L_{\pi_{\theta_0}}\left(\pi_{\theta_0}\right)=J\left(\pi_{\theta_0}\right)\quad \\
+        \text{since}~~ &\sum_s \rho_\pi(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)=0.
+
+
+
+    Now Equation :eq:`trpo-eq-4` can be written as follows:
+
+    .. math::
+        :label: trpo-eq-18
+
+        J\left(\pi^{'}_{\theta}\right) = J(\pi_{\theta_0}) + \sum_s d_{\pi^{'}_{\theta}}(s) \sum_a \pi^{'}_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)
+
 
     So,
 
     .. _`trpo-eq-18`:
 
     .. math::
-        :nowrap:
-        :label: trpo-eq-18
+        :label: trpo-eq-19
 
-        \begin{eqnarray}
-            \label{trpo_equ: first_older_J}
-                \nabla_{\theta} J(\pi_{\theta})|_{\theta = \theta_0} &=& J(\pi_{\theta_0}) + \sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)+\sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a) \\
-                &=& J(\pi_{\theta_0}) + \sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)\tag{18}
-        \end{eqnarray}
+        \nabla_{\theta} J(\pi_{\theta})|_{\theta = \theta_0} &= J(\pi_{\theta_0}) + \sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)+\sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a) \\
+        &= J(\pi_{\theta_0}) + \sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)
+
 
     .. note::
         :math:`\sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)=0`
@@ -1014,34 +910,27 @@ Proof of Corollary 1
     .. _`trpo-eq-19`:
 
     .. math::
-        :nowrap:
-        :label: trpo-eq-19
+        :label: trpo-eq-20
 
-        \begin{eqnarray}
-                L_{\pi_{\theta_0}}(\pi_{\theta})=J(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)\tag{19}
-        \end{eqnarray}
+        L_{\pi_{\theta_0}}(\pi_{\theta})=J(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)
+
 
     So,
 
     .. math::
-        :nowrap:
-        :label: trpo-eq-20
-
-        \begin{eqnarray}
-            \label{trpo_equ: first_older_L}
-                \nabla L_{\pi_{\theta_0}}(\pi_{\theta}) | _{\theta = \theta_0}=J(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \nabla \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)\tag{20}
-        \end{eqnarray}
-
-    Combine :ref:`(18) <trpo-eq-18>`  and
-    :ref:`(19) <trpo-eq-19>`, we have
-
-    .. math::
-        :nowrap:
         :label: trpo-eq-21
 
-        \begin{eqnarray}
-            \left.\nabla_\theta L_{\pi_{\theta_0}}\left(\pi_\theta\right)\right|_{\theta=\theta_0}&=\left.\nabla_\theta J\left(\pi_\theta\right)\right|_{\theta=\theta_0}\tag{21}
-        \end{eqnarray}
+        \nabla L_{\pi_{\theta_0}}(\pi_{\theta}) | _{\theta = \theta_0}=J(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \nabla \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)
+
+
+    Combine :eq:`trpo-eq-19`  and
+    :eq:`trpo-eq-20`, we have
+
+    .. math::
+        :label: trpo-eq-22
+
+        \left.\nabla_\theta L_{\pi_{\theta_0}}\left(\pi_\theta\right)\right|_{\theta=\theta_0}=\left.\nabla_\theta J\left(\pi_\theta\right)\right|_{\theta=\theta_0}
+
 
 .. _appendix-theorem2:
 
@@ -1051,32 +940,26 @@ Proof of Theorem 2 (Difference between two arbitrarily policies)
 Define :math:`\bar{A}^R(s)` to be the expected advantage of :math:`\pi'` over :math:`\pi` at :math:`s`,
 
 .. math::
-    :nowrap:
-    :label: trpo-eq-22
+    :label: trpo-eq-23
 
-    \begin{eqnarray}
-        \bar{A}^R(s)=\mathbb{E}_{a \sim \pi^{'}(\cdot \mid s)}\left[A^R_{\pi}(s, a)\right]\tag{22}
-    \end{eqnarray}
+    \bar{A}^R(s)=\mathbb{E}_{a \sim \pi^{'}(\cdot \mid s)}\left[A^R_{\pi}(s, a)\right]
+
 
 :bdg-info-line:`Theorem 1` can be written as follows:
 
 .. math::
-    :nowrap:
-    :label: trpo-eq-23
+    :label: trpo-eq-24
 
-    \begin{eqnarray}
-        J^R(\pi')=J^R(\pi)+\mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t \bar{A}^R\left(s_t\right)\right]\tag{23}
-    \end{eqnarray}
+    J^R(\pi')=J^R(\pi)+\mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t \bar{A}^R\left(s_t\right)\right]
+
 
 Note that :math:`L_\pi` can be written as
 
 .. math::
-    :nowrap:
-    :label: trpo-eq-24
+    :label: trpo-eq-25
 
-    \begin{eqnarray}
-        L_\pi(\pi')=J^R(\pi)+\mathbb{E}_{\tau \sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t \bar{A}^R\left(s_t\right)\right]\tag{24}
-    \end{eqnarray}
+    L_\pi(\pi')=J^R(\pi)+\mathbb{E}_{\tau \sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t \bar{A}^R\left(s_t\right)\right]
+
 
 To bound the difference between :math:`J^R(\pi')` and :math:`L_\pi(\pi')`,
 we will bound the difference arising from each timestep.
@@ -1086,7 +969,7 @@ so that they define a joint distribution over pairs of actions.
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info  sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
 
     Definition 1
     ^^^
@@ -1106,7 +989,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Lemma 1
@@ -1117,12 +1000,10 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             .. _`trpo-eq-25`:
 
             .. math::
-                :nowrap:
-                :label: trpo-eq-25
+                :label: trpo-eq-26
 
-                \begin{eqnarray}
-                    |\bar{A}^R(s)| \leq 2 \alpha \max _{s, a}\left|A^R_{\pi}(s, a)\right|\tag{25}
-                \end{eqnarray}
+                |\bar{A}^R(s)| \leq 2 \alpha \max _{s, a}\left|A^R_{\pi}(s, a)\right|
+
 
 
     .. tab-item:: Lemma 2
@@ -1130,7 +1011,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Lemma 2
@@ -1139,14 +1020,11 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             Then
 
             .. math::
-                :nowrap:
-                :label: trpo-eq-28
+                :label: trpo-eq-27
 
-                \begin{eqnarray}
-                \label{lemma: abs performance bound}
-                    \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right|&\leq& 2 \alpha \max _s \bar{A}^R(s) \\
-                    &\leq& 4 \alpha\left(1-(1-\alpha)^t\right) \max _s\left|A^R_{\pi}(s, a)\right|\tag{28}
-                \end{eqnarray}
+                \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right|&\leq& 2 \alpha \max _s \bar{A}^R(s) \\
+                &\leq& 4 \alpha\left(1-(1-\alpha)^t\right) \max _s\left|A^R_{\pi}(s, a)\right|
+
 
 .. tab-set::
 
@@ -1155,7 +1033,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 1
@@ -1164,31 +1042,27 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             .. _`trpo-eq-26`:
 
             .. math::
-                :nowrap:
-                :label: trpo-eq-26
+                :label: trpo-eq-28
 
-                \begin{eqnarray}
-                    \bar{A}^R(s) &=& \mathbb{E}_{\tilde{a} \sim \tilde{\pi}}\left[A^R_{\pi}(s, \tilde{a})\right] - \mathbb{E}_{a \sim \pi}\left[A^R_{\pi}(s, a)\right] \\
-                    &=&\mathbb{E}_{(a, \tilde{a}) \sim(\pi, \tilde{\pi})}\left[A^R_{\pi}(s, \tilde{a})-A^R_{\pi}(s, a)\right]\\
-                    &=& P(a \neq \tilde{a} \mid s) \mathbb{E}_{(a, \tilde{a}) \sim(\pi, \tilde{\pi}) \mid a \neq \tilde{a}}\left[A^R_{\pi}(s, \tilde{a})-A^R_{\pi}(s, a)\right]\tag{26}
-                \end{eqnarray}
+                \bar{A}^R(s) &= \mathbb{E}_{\tilde{a} \sim \tilde{\pi}}\left[A^R_{\pi}(s, \tilde{a})\right] - \mathbb{E}_{a \sim \pi}\left[A^R_{\pi}(s, a)\right] \\
+                &=\mathbb{E}_{(a, \tilde{a}) \sim(\pi, \tilde{\pi})}\left[A^R_{\pi}(s, \tilde{a})-A^R_{\pi}(s, a)\right]\\
+                &= P(a \neq \tilde{a} \mid s) \mathbb{E}_{(a, \tilde{a}) \sim(\pi, \tilde{\pi}) \mid a \neq \tilde{a}}\left[A^R_{\pi}(s, \tilde{a})-A^R_{\pi}(s, a)\right]
+
 
             So,
 
             .. math::
-                :nowrap:
-                :label: trpo-eq-27
+                :label: trpo-eq-29
 
-                \begin{eqnarray}
-                    |\bar{A}^R(s)| & \leq \alpha \cdot 2 \max _{s, a}\left|A^R_{\pi}(s, a)\right|\tag{27}
-                \end{eqnarray}
+                |\bar{A}^R(s)|  \leq \alpha \cdot 2 \max _{s, a}\left|A^R_{\pi}(s, a)\right|
+
 
     .. tab-item:: Proof of Lemma 2
         :sync: key2
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 2
@@ -1206,51 +1080,43 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             i.e., the number of times that :math:`\pi` and :math:`\pi'` disagree before timestep :math:`t`.
 
             .. math::
-                :nowrap:
-                :label: trpo-eq-29
+                :label: trpo-eq-30
 
-                \begin{eqnarray}
-                    \mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]&=P\left(n_t=0\right) \mathbb{E}_{s_t \sim \pi' \mid n_t=0}\left[\bar{A}^R\left(s_t\right)\right]\\
-                    &+P\left(n_t>0\right) \mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\tag{29}
-                \end{eqnarray}
+                \mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]&=P\left(n_t=0\right) \mathbb{E}_{s_t \sim \pi' \mid n_t=0}\left[\bar{A}^R\left(s_t\right)\right]\\
+                &+P\left(n_t>0\right) \mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]
+
 
             The expectation decomposes similarly for actions are sampled using
             :math:`\pi` :
 
             .. math::
-                :nowrap:
-                :label: trpo-eq-30
+                :label: trpo-eq-31
 
-                \begin{eqnarray}
-                    \mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]&=P\left(n_t=0\right) \mathbb{E}_{s_t \sim \pi \mid n_t=0}\left[\bar{A}^R\left(s_t\right)\right]\\
-                    &+P\left(n_t>0\right) \mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\tag{30}
-                \end{eqnarray}
+                \mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]&=P\left(n_t=0\right) \mathbb{E}_{s_t \sim \pi \mid n_t=0}\left[\bar{A}^R\left(s_t\right)\right]\\
+                &+P\left(n_t>0\right) \mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]
+
 
             Note that the :math:`n_t=0` terms are equal:
 
             .. math::
-                :nowrap:
-                :label: trpo-eq-31
+                :label: trpo-eq-32
 
-                \begin{eqnarray}
-                \mathbb{E}_{s_t \sim \pi' \mid n_t=0}\left[\bar{A}^R\left(s_t\right)\right]=\mathbb{E}_{s_t \sim \pi \mid n_t=0}\left[\bar{A}^R\left(s_t\right)\right]\tag{31}
-                \end{eqnarray}
+                \mathbb{E}_{s_t \sim \pi' \mid n_t=0}\left[\bar{A}^R\left(s_t\right)\right]=\mathbb{E}_{s_t \sim \pi \mid n_t=0}\left[\bar{A}^R\left(s_t\right)\right]
+
 
             because :math:`n_t=0` indicates that :math:`\pi` and :math:`\pi'` agreed on all timesteps less than :math:`t`.
-            Subtracting Equations :ref:`(25) <trpo-eq-25>` and :ref:`(26) <trpo-eq-26>`, we get
+            Subtracting Equations :eq:`trpo-eq-26` and :eq:`trpo-eq-27`, we get
 
             .. _`trpo-eq-32`:
 
             .. math::
-                :nowrap:
-                :label: trpo-eq-32
+                :label: trpo-eq-33
 
-                \begin{eqnarray}
-                    &&\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]
-                    \\
-                    =&&P\left(n_t>0\right)\left(\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right)\tag{32}
-                    \label{equation: sub for unfold}
-                \end{eqnarray}
+                &\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]
+                \\
+                =&P\left(n_t>0\right)\left(\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right)
+                \label{equation: sub for unfold}
+
 
             By definition of :math:`\alpha, P(\pi, \pi'` agree at timestep :math:`i) \geq 1-\alpha`,
             so :math:`P\left(n_t=0\right) \geq(1-\alpha)^t`, and
@@ -1258,57 +1124,49 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             .. _`trpo-eq-33`:
 
             .. math::
-                :nowrap:
-                :label: trpo-eq-33
+                :label: trpo-eq-34
 
-                \begin{eqnarray}
-                    P\left(n_t>0\right) \leq 1-(1-\alpha)^t\tag{33}
-                    \label{equation: probability with a couple policy}
-                \end{eqnarray}
+                P\left(n_t>0\right) \leq 1-(1-\alpha)^t
+                \label{equation: probability with a couple policy}
+
 
             Next, note that
 
             .. _`trpo-eq-34`:
 
             .. math::
-                :nowrap:
-                :label: trpo-eq-34
-
-                \begin{eqnarray}
-                &&\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
-                & \leq&\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right|+\left|\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
-                & \leq& 4 \alpha \max _{s, a}\left|A^R_{\pi}(s, a)\right|\tag{34}
-                \label{equation: abs performance bound nt geq 0}
-                \end{eqnarray}
-
-            Where the second inequality follows from Lemma 2.
-            Plugging Equation :ref:`(33) <trpo-eq-33>` and Equation :ref:`(34) <trpo-eq-34>` into Equation :ref:`(32) <trpo-eq-32>`, we get
-
-            .. math::
-                :nowrap:
                 :label: trpo-eq-35
 
-                \begin{eqnarray}
-                    \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right| \leq 4 \alpha\left(1-(1-\alpha)^t\right) \max _{s, a}\left|A^R_{\pi}(s, a)\right|\tag{35}
-                \end{eqnarray}
+                &\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
+                & \leq&\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right|+\left|\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
+                & \leq& 4 \alpha \max _{s, a}\left|A^R_{\pi}(s, a)\right|
+                \label{equation: abs performance bound nt geq 0}
+
+
+            Where the second inequality follows from Lemma 2.
+            Plugging Equation :eq:`trpo-eq-34` and Equation :eq:`trpo-eq-35` into Equation :eq:`trpo-eq-33`, we get
+
+            .. math::
+                :label: trpo-eq-36
+
+                \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right| \leq 4 \alpha\left(1-(1-\alpha)^t\right) \max _{s, a}\left|A^R_{\pi}(s, a)\right|
+
 
 The preceding Lemma bounds the difference in expected advantage at each timestep :math:`t`.
-We can sum over time to bound the difference between :math:`J^R(\pi')` and :math:`L_\pi(\pi')`. Subtracting Equation :math:`(23)` and Equation :math:`(24)`,
+We can sum over time to bound the difference between :math:`J^R(\pi')` and :math:`L_\pi(\pi')`. Subtracting Equation :eq:`trpo-eq-24` and Equation :eq:`trpo-eq-25`,
 and defining :math:`\epsilon=\max _{s, a}\left|A^R_{\pi}(s, a)\right|`, we have
 
 .. _`trpo-eq-36`:
 
 .. math::
-    :nowrap:
-    :label: trpo-eq-36
+    :label: trpo-eq-37
 
-    \begin{eqnarray}
-    \left|J^R(\pi')-L_\pi(\pi')\right| &=&\sum_{t=0}^{\infty} \gamma^t\left|\mathbb{E}_{\tau \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{\tau \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right| \nonumber \\
+    \left|J^R(\pi')-L_\pi(\pi')\right| &=\sum_{t=0}^{\infty} \gamma^t\left|\mathbb{E}_{\tau \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{\tau \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right| \nonumber \\
     & \leq& \sum_{t=0}^{\infty} \gamma^t \cdot 4 \epsilon \alpha\left(1-(1-\alpha)^t\right) \nonumber \\
-    &=&4 \epsilon \alpha\left(\frac{1}{1-\gamma}-\frac{1}{1-\gamma(1-\alpha)}\right) \nonumber \\
-    &=&\frac{4 \alpha^2 \gamma \epsilon}{(1-\gamma)(1-\gamma(1-\alpha))} \nonumber \\
-    & \leq& \frac{4 \alpha^2 \gamma \epsilon}{(1-\gamma)^2} \label{TRPO: difference between L and J}\tag{36}
-    \end{eqnarray}
+    &=4 \epsilon \alpha\left(\frac{1}{1-\gamma}-\frac{1}{1-\gamma(1-\alpha)}\right) \nonumber \\
+    &=\frac{4 \alpha^2 \gamma \epsilon}{(1-\gamma)(1-\gamma(1-\alpha))} \nonumber \\
+    & \leq& \frac{4 \alpha^2 \gamma \epsilon}{(1-\gamma)^2} \label{TRPO: difference between L and J}
+
 
 Last, to replace :math:`\alpha` by the total variation divergence,
 we need to use the correspondence between TV divergence and coupled random variables:
@@ -1325,8 +1183,11 @@ we need to use the correspondence between TV divergence and coupled random varia
 It follows that if we have two policies :math:`\pi` and :math:`\pi'`
 such that
 
-.. math:: \max_s D_{\mathrm{TV}}(\pi(\cdot|s) \| \pi'(\cdot|s)) \leq \alpha\tag{37}
+.. math::
+    :label: trpo-eq-38
+
+    \max_s D_{\mathrm{TV}}(\pi(\cdot|s) \| \pi'(\cdot|s)) \leq \alpha
 
 then we can define an :math:`\alpha`-coupled policy pair :math:`(\pi, \pi')` with appropriate marginals.
-Taking :math:`\alpha=\max _s D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right) \leq \alpha` in Equation :ref:`(36) <trpo-eq-36>`,
+Taking :math:`\alpha=\max _s D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right) \leq \alpha` in Equation :eq:`trpo-eq-37`,
 :bdg-info-line:`Theorem 2` follows.

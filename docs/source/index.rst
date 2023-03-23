@@ -9,6 +9,7 @@
 Introduction
 ============
 
+
 Welcome To OmniSafe Tutorial
 ----------------------------
 
@@ -31,7 +32,7 @@ OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learni
     .. grid-item-card::
         :class-item: sd-font-weight-bold
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3
+        :class-card: sd-outline-success  sd-rounded-1
         :columns: 12 6 6 4
 
         For Beginners
@@ -41,7 +42,7 @@ OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learni
     .. grid-item-card::
         :class-item: sd-font-weight-bold
         :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-info  sd-rounded-3
+        :class-card: sd-outline-info  sd-rounded-1
         :columns: 12 6 6 4
 
         For Average Users
@@ -52,7 +53,7 @@ OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learni
     .. grid-item-card::
         :class-item: sd-font-weight-bold
         :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-primary  sd-rounded-3
+        :class-card: sd-outline-primary  sd-rounded-1
         :columns: 12 6 6 4
 
         For Master
@@ -84,7 +85,7 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
         .. card::
             :class-header: sd-bg-warning  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-warning  sd-rounded-3
+            :class-card: sd-outline-warning  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Puzzling Math
@@ -97,7 +98,7 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
         .. card::
             :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-warning  sd-rounded-3
+            :class-card: sd-outline-warning  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Hard-to-find Codes
@@ -111,7 +112,7 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3
+            :class-card: sd-outline-success  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Friendly Math
@@ -123,7 +124,7 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3
+            :class-card: sd-outline-success  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Robust Code
@@ -145,7 +146,7 @@ Code Design Principles
     .. grid-item-card::
         :class-item: sd-font-weight-bold
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3
+        :class-card: sd-outline-success  sd-rounded-1
         :columns: 12 5 5 4
 
         Consistent and Inherited
@@ -156,7 +157,7 @@ Code Design Principles
     .. grid-item-card::
         :class-item: sd-font-weight-bold
         :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-info  sd-rounded-3
+        :class-card: sd-outline-info  sd-rounded-1
         :columns: 12 5 5 4
 
         Robust and Readable
@@ -169,7 +170,7 @@ Code Design Principles
     .. grid-item-card::
         :class-item: sd-font-weight-bold
         :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-primary  sd-rounded-3
+        :class-card: sd-outline-primary  sd-rounded-1
         :columns: 12 5 5 4
 
         Long-lived
@@ -191,7 +192,7 @@ We give an example below:
 
     .. card::
         :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3
+        :class-card: sd-outline-success  sd-rounded-1
         :class-footer: sd-font-weight-bold
         :link: cards-clickable
         :link-type: ref
@@ -219,7 +220,7 @@ We give an example below:
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+        :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
         Run CPO in Omnisafe
@@ -301,14 +302,14 @@ this project, don't hesitate to ask your question in `the GitHub issue page <htt
 
 .. toctree::
     :hidden:
-    :maxdepth: 2
+    :maxdepth: 3
     :caption: Documentation
 
     Documentation/Installation
 
 .. toctree::
     :hidden:
-    :maxdepth: 2
+    :maxdepth: 3
     :caption: Foundations
 
     Foundations/notations
@@ -316,7 +317,7 @@ this project, don't hesitate to ask your question in `the GitHub issue page <htt
 
 .. toctree::
     :hidden:
-    :maxdepth: 1
+    :maxdepth: 3
     :caption: Base RL Algorithm
 
     BaseRL/TRPO
@@ -324,7 +325,7 @@ this project, don't hesitate to ask your question in `the GitHub issue page <htt
 
 .. toctree::
     :hidden:
-    :maxdepth: 1
+    :maxdepth: 3
     :caption: Safe RL Algorithm
 
     SafeRL/CPO
@@ -334,13 +335,14 @@ this project, don't hesitate to ask your question in `the GitHub issue page <htt
 
 .. toctree::
     :hidden:
-    :maxdepth: 2
+    :maxdepth: 3
     :caption: OmniSafe
 
     OmniSafe/on_policy
     OmniSafe/first_order
     OmniSafe/second_order
-
+    OmniSafe/lagrange
+    OmniSafe/penalty_function
 
 Indices and tables
 ==================

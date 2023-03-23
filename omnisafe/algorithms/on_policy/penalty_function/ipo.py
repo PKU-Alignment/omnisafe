@@ -31,11 +31,37 @@ class IPO(PPO):
     """
 
     def _init_log(self) -> None:
+        r"""Log the IPO specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   ``Misc/Penalty``
+                -   The penalty coefficient.
+        """
         super()._init_log()
         self._logger.register_key('Misc/Penalty')
 
     def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
-        """Compute surrogate loss."""
+        r"""Compute surrogate loss.
+
+        IPO uses the following surrogate loss:
+
+        .. math::
+
+            \mathcal{L}(\theta) = \mathbb{E}_{s_t \sim \pi_\theta} \left[
+                \frac{\pi_\theta(a_t|s_t)}{\pi_\theta^{old}(a_t|s_t)} A(s_t, a_t)
+                - \kappa \frac{J^C(s_t, a_t)}{J^C - J^C(s_t, a_t) + \epsilon}
+            \right]
+
+        Where :math:`\kappa` is the penalty coefficient, :math:`J^C` is the cost limit,
+        :math:`\epsilon` is a small number to avoid division by zero.
+
+        Args:
+            adv (torch.Tensor): reward advantage
+            cost_adv (torch.Tensor): cost advantage
+        """
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         penalty = self._cfgs.algo_cfgs.kappa / (self._cfgs.algo_cfgs.cost_limit - Jc + 1e-8)
         if penalty < 0 or penalty > self._cfgs.algo_cfgs.penalty_max:

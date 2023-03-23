@@ -39,6 +39,10 @@ class FOCOPS(PolicyGradient):
     """
 
     def _init(self) -> None:
+        """Initialize the FOCOPS specific model.
+
+        The FOCOPS algorithm uses a Lagrange multiplier to balance the cost and reward.
+        """
         super()._init()
         self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
@@ -110,7 +114,7 @@ class FOCOPS(PolicyGradient):
         FOCOPS uses the following surrogate loss:
 
         .. math::
-            Loss = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
+            L = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
             - \lambda A^C_{\pi_{\theta}}(s, a)]
 
         Args:
@@ -127,11 +131,11 @@ class FOCOPS(PolicyGradient):
         In FOCOPS, the Lagrange multiplier is updated as the naive lagrange multiplier update:
 
         .. math::
-            \lambda_{k+1} = \lambda_k + \eta (J_c - C)
+            \lambda_{k+1} = \lambda_k + \eta (J^C - C)
 
         where :math:`\lambda_k` is the Lagrange multiplier at iteration :math:`k`,
         :math:`\eta` is the Lagrange multiplier learning rate,
-        :math:`J_c` is the cost of the current policy,
+        :math:`J^C` is the cost of the current policy,
         and :math:`C` is the cost limit.
 
         Then in each iteration of the policy update, FOCOPS calculates current policy's

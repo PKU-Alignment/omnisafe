@@ -33,6 +33,15 @@ class P3O(PPO):
     """
 
     def _init_log(self) -> None:
+        r"""Log the IPO specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -  ``Loss/Loss_pi_cost``
+                -   The loss of the cost performance.
+        """
         super()._init_log()
         self._logger.register_key('Loss/Loss_pi_cost', delta=True)
 
@@ -43,6 +52,26 @@ class P3O(PPO):
         logp: torch.Tensor,
         adv_c: torch.Tensor,
     ) -> torch.Tensor:
+        r"""Compute the performance of cost on this moment.
+
+        Detailedly, we compute the loss of cost of policy cost from real cost.
+
+        .. math::
+            L = \mathbb{E}_{\pi} \left[ \frac{\pi^{'}(a|s)}{\pi(a|s)} A^C(s, a) \right]
+
+        where :math:`A^C(s, a)` is the cost advantage,
+        :math:`\pi(a|s)` is the old policy,
+        :math:`\pi^{'}(a|s)` is the current policy.
+
+        Args:
+            obs (torch.Tensor): Observation.
+            act (torch.Tensor): Action.
+            logp (torch.Tensor): Log probability of action.
+            adv_c (torch.Tensor): Cost advantage.
+
+        Returns:
+            torch.Tensor: The loss of cost of policy cost from real cost.
+        """
         self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
         ratio = torch.exp(logp_ - logp)

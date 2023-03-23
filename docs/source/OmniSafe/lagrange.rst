@@ -1,17 +1,15 @@
-Base on-policy Algorithms
-=========================
+The Lagrange Algorithms
+=======================
 
 .. currentmodule:: omnisafe.algorithms.on_policy
 
 .. autosummary::
 
-    PolicyGradient
-    NaturalPG
-    TRPO
-    PPO
+    PPOLag
+    TRPOLag
 
-Policy Gradient
----------------
+PPOLag
+------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -20,14 +18,14 @@ Policy Gradient
     Documentation
     ^^^
 
-    .. autoclass:: PolicyGradient
+    .. autoclass:: PPOLag
         :members:
         :private-members:
 
         .. automethod:: __init__
 
-Natural Policy Gradient
------------------------
+TRPOLag
+-------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -36,14 +34,14 @@ Natural Policy Gradient
     Documentation
     ^^^
 
-    .. autoclass:: NaturalPG
+    .. autoclass:: TRPOLag
         :members:
         :private-members:
 
         .. automethod:: __init__
 
-Trust Region Policy Optimization
---------------------------------
+CRPO
+----
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -52,23 +50,7 @@ Trust Region Policy Optimization
     Documentation
     ^^^
 
-    .. autoclass:: TRPO
-        :members:
-        :private-members:
-
-        .. automethod:: __init__
-
-Proximal Policy Optimization
-----------------------------
-
-.. card::
-    :class-header: sd-bg-success sd-text-white
-    :class-card: sd-outline-success  sd-rounded-1
-
-    Documentation
-    ^^^
-
-    .. autoclass:: PPO
+    .. autoclass:: OnCRPO
         :members:
         :private-members:
 

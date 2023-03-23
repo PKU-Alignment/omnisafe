@@ -32,14 +32,14 @@ from omnisafe.utils import distributed
 
 
 @registry.register
-# pylint: disable-next=too-many-instance-attributes, too-few-public-methods
+# pylint: disable-next=too-many-instance-attributes, too-few-public-methods, line-too-long
 class PolicyGradient(BaseAlgo):
     """The Policy Gradient algorithm.
 
     References:
         - Title: Policy Gradient Methods for Reinforcement Learning with Function Approximation
         - Authors: Richard S. Sutton, David McAllester, Satinder Singh, Yishay Mansour.
-        - URL: `Policy Gradient <https://proceedings.neurips.cc/paper/1999/file/64d828b85b0bed98e80ade0a5c43b0f-Paper.pdf>`_ # pylint: disable=line-too-long
+        - URL: `PG <https://proceedings.neurips.cc/paper/1999/file64d828b85b0bed98e80ade0a5c43b0f-Paper.pdf>`_
     """
 
     def _init_env(self) -> None:

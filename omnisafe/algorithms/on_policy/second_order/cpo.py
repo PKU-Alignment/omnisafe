@@ -39,7 +39,7 @@ class CPO(TRPO):
     References:
         - Title: Constrained Policy Optimization
         - Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
-        - URL:`CPO <https://arxiv.org/abs/1705.10528>_`
+        - URL: `CPO <https://arxiv.org/abs/1705.10528>`_
     """
 
     def _init_log(self) -> None:
@@ -180,11 +180,11 @@ class CPO(TRPO):
         Detailedly, we compute the loss of cost of policy cost from real cost.
 
         .. math::
-            L = \mathbb{E}_{\pi} \left[ \frac{\pi(a|s)}{\pi_{old}(a|s)} A^C(s, a) \right]
+            L = \mathbb{E}_{\pi} \left[ \frac{\pi^{'}(a|s)}{\pi(a|s)} A^C(s, a) \right]
 
         where :math:`A^C(s, a)` is the cost advantage,
-        :math:`\pi_{old}(a|s)` is the old policy,
-        :math:`\pi(a|s)` is the current policy.
+        :math:`\pi(a|s)` is the old policy,
+        :math:`\pi^{'}(a|s)` is the current policy.
 
         Args:
             obs (torch.Tensor): Observation.

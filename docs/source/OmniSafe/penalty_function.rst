@@ -1,15 +1,15 @@
-First Order Algorithms
-======================
+Penalty Function Algorithms
+===========================
 
 .. currentmodule:: omnisafe.algorithms.on_policy
 
 .. autosummary::
 
-    FOCOPS
-    CUP
+    P3O
+    IPO
 
-FOCOPS
-------
+Penalized Proximal Policy Optimization
+--------------------------------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -18,14 +18,14 @@ FOCOPS
     Documentation
     ^^^
 
-    .. autoclass:: FOCOPS
+    .. autoclass:: P3O
         :members:
         :private-members:
 
         .. automethod:: __init__
 
-CUP
----
+Interior-point Policy Optimization
+----------------------------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -34,7 +34,7 @@ CUP
     Documentation
     ^^^
 
-    .. autoclass:: CUP
+    .. autoclass:: IPO
         :members:
         :private-members:
 

@@ -1,5 +1,5 @@
-The Second Order Algorithms
-===========================
+Second Order Algorithms
+=======================
 
 .. currentmodule:: omnisafe.algorithms.on_policy
 
@@ -13,7 +13,7 @@ Constraint Policy Optimization
 
 .. card::
     :class-header: sd-bg-success sd-text-white
-    :class-card: sd-outline-success  sd-rounded-3
+    :class-card: sd-outline-success  sd-rounded-1
 
     Documentation
     ^^^
@@ -29,7 +29,7 @@ Projection Based Constraint Policy Optimization
 
 .. card::
     :class-header: sd-bg-success sd-text-white
-    :class-card: sd-outline-success  sd-rounded-3
+    :class-card: sd-outline-success  sd-rounded-1
 
     Documentation
     ^^^

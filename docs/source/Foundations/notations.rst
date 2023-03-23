@@ -19,7 +19,7 @@ Linear Algebra
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
 
             Vector
             ^^^
@@ -48,7 +48,7 @@ Linear Algebra
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
 
             Matrix
             ^^^
@@ -73,7 +73,7 @@ It is a tuple :math:`\mathcal{M}=\{\mathcal{S}, \mathcal{A}, \mathbb{P}, r, \mu,
 
 .. card::
    :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-   :class-card: sd-outline-info  sd-rounded-3
+   :class-card: sd-outline-info  sd-rounded-1
    :class-footer: sd-font-weight-bold
 
    Key Notations
@@ -104,7 +104,7 @@ we use :math:`\boldsymbol{\theta}` to represent :math:`\pi_{\theta}`.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Markov Decision Processes
@@ -155,7 +155,7 @@ we use :math:`\boldsymbol{\theta}` to represent :math:`\pi_{\theta}`.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info  sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Constrained Markov Decision Processes

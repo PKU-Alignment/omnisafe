@@ -5,7 +5,7 @@ Quick Facts
 -----------
 
 .. card::
-    :class-card: sd-outline-info  sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-body: sd-font-weight-bold
 
     #. Lagrangian Method can be applied to almost :bdg-info-line:`any` RL algorithm.
@@ -47,7 +47,7 @@ you will soon understand how it works.
 
         .. card::
             :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-primary  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-primary  sd-rounded-1 sd-font-weight-bold
 
             Advantages of Lagrangian Methods
             ^^^
@@ -64,7 +64,7 @@ you will soon understand how it works.
 
         .. card::
             :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-warning  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-warning  sd-rounded-1 sd-font-weight-bold
 
             Problems of Lagrangian Methods
             ^^^
@@ -86,12 +86,10 @@ As we mentioned in the previous chapters, the optimization problem of CMDPs can 
 .. _`lag-eq-1`:
 
 .. math::
-    :nowrap:
 
-    \begin{eqnarray}
-        \max_{\pi \in \Pi_\theta} &&J^R(\pi) \\
-        \text {s.t.}~~&& J^{\mathcal{C}}(\pi) \leq d\tag{1}
-    \end{eqnarray}
+    \max_{\pi \in \Pi_\theta} &J^R(\pi) \\
+    \text {s.t.}~~& J^{\mathcal{C}}(\pi) \leq d
+
 
 where :math:`\Pi_\theta \subseteq \Pi` denotes the set of parametrized policies with parameters :math:`\theta`.
 In local policy search for CMDPs,
@@ -106,13 +104,11 @@ The final optimization goals are as follows:
 .. _`lag-eq-2`:
 
 .. math::
-    :nowrap:
 
-    \begin{eqnarray}
-        &&\pi_{k+1}=\arg \max _{\pi \in \Pi_\theta} J^R(\pi) \\
-        \text { s.t. } ~~ &&J^{\mathcal{C}}(\pi) \leq d \tag{2}\\
-        &&D\left(\pi, \pi_k\right) \leq \delta\nonumber
-    \end{eqnarray}
+    &\pi_{k+1}=\arg \max _{\pi \in \Pi_\theta} J^R(\pi) \\
+    \text { s.t. } ~~ &J^{\mathcal{C}}(\pi) \leq d \\
+    &D\left(\pi, \pi_k\right) \leq \delta
+
 
 where :math:`D` is some distance measure and :math:`\delta` is the step size.
 
@@ -131,7 +127,7 @@ thus making infeasible solutions sub-optimal.
 
 .. card::
     :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info  sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-footer: sd-font-weight-bold
     :link: lagrange_theorem
     :link-type: ref
@@ -143,11 +139,9 @@ thus making infeasible solutions sub-optimal.
     .. _`lag-eq-3`:
 
     .. math::
-        :nowrap:
 
-        \begin{eqnarray}
-            \min _{\lambda \geq 0} \max _\theta G(\lambda, \theta)=\min _{\lambda \geq 0} \max _\theta [J^R(\pi)-\lambda J^C(\pi)]\tag{3}
-        \end{eqnarray}
+        \min _{\lambda \geq 0} \max _\theta G(\lambda, \theta)=\min _{\lambda \geq 0} \max _\theta [J^R(\pi)-\lambda J^C(\pi)]
+
 
     where :math:`G` is the Lagrangian and :math:`\lambda \geq 0` is the Lagrange multiplier (a penalty coefficient).
     Notice, as :math:`\lambda` increases, the solution to the Problem :ref:`(1)<lag-eq-1>` converges to that of the Problem :ref:`(3)<lag-eq-3>`.
@@ -196,7 +190,7 @@ Policy update
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Surrogate function update
@@ -208,12 +202,10 @@ Policy update
             we need to make a change to the original surrogate function, as it is shown below:
 
             .. math::
-                :nowrap:
 
-                \begin{eqnarray}
-                    \max _{\pi \in \prod_\theta}[J^R(\pi)-\lambda J^C(\pi)] \\
-                    \text { s.t. } D\left(\pi, \pi_k\right) \leq \delta\nonumber
-                \end{eqnarray}
+                \max _{\pi \in \prod_\theta}[J^R(\pi)-\lambda J^C(\pi)] \\
+                \text { s.t. } D\left(\pi, \pi_k\right) \leq \delta
+
 
             In a word, we only need to punish the agent with its reward by
             :math:`\lambda` with each step of updates. In fact, this is just a minor
@@ -223,7 +215,7 @@ Policy update
 
         .. card::
             :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info  sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Lagrange multiplier update
@@ -232,22 +224,18 @@ Policy update
             perform an update on the Lagrange multiplier that is:
 
             .. math::
-                :nowrap:
 
-                \begin{eqnarray}
-                    \min _\lambda(1-\lambda) [J^R(\pi)-\lambda J^C(\pi)] \\
-                    \text { s.t. } \lambda \geq 0
-                \end{eqnarray}
+                \min _\lambda(1-\lambda) [J^R(\pi)-\lambda J^C(\pi)] \\
+                \text { s.t. } \lambda \geq 0
+
 
             Specifically, on the :math:`k^{t h}` update, the above align is often
             written as below in the actual calculation process:
 
             .. math::
-                :nowrap:
 
-                \begin{eqnarray}
-                    \lambda_{k+1}=\max \left(\lambda_k+ \eta_\lambda\left(J^C(\pi)-d\right), 0\right)
-                \end{eqnarray}
+                \lambda_{k+1}=\max \left(\lambda_k+ \eta_\lambda\left(J^C(\pi)-d\right), 0\right)
+
 
             where :math:`\eta_\lambda` is the learning rate of :math:`\lambda`.
 
@@ -280,7 +268,7 @@ Quick start
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
     Run PPOLag in Omnisafe
@@ -300,19 +288,11 @@ Quick start
 
                 import omnisafe
 
-                env = omnisafe.Env('SafetyPointGoal1-v0')
 
-                agent = omnisafe.Agent('PPOLag', env)
+                env_id = 'SafetyPointGoal1-v0'
+
+                agent = omnisafe.Agent('PPOLag', env_id)
                 agent.learn()
-
-                obs = env.reset()
-                for i in range(1000):
-                    action, _states = agent.predict(obs, deterministic=True)
-                    obs, reward, cost, done, info = env.step(action)
-                    env.render()
-                    if done:
-                        obs = env.reset()
-                env.close()
 
         .. tab-item:: Config dict style
 
@@ -321,33 +301,37 @@ Quick start
 
                 import omnisafe
 
-                env = omnisafe.Env('SafetyPointGoal1-v0')
 
-                custom_dict = {'epochs': 1, 'log_dir': './runs'}
-                agent = omnisafe.Agent('PPOLag', env, custom_cfgs=custom_dict)
+                env_id = 'SafetyPointGoal1-v0'
+                custom_cfgs = {
+                    'train_cfgs': {
+                        'total_steps': 1024000,
+                        'vector_env_nums': 1,
+                        'parallel': 1,
+                    },
+                    'algo_cfgs': {
+                        'update_cycle': 2048,
+                        'update_iters': 1,
+                    },
+                    'logger_cfgs': {
+                        'use_wandb': False,
+                    },
+                }
+
+                agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs)
                 agent.learn()
 
-                obs = env.reset()
-                for i in range(1000):
-                    action, _states = agent.predict(obs, deterministic=True)
-                    obs, reward, done, info = env.step(action)
-                    env.render()
-                    if done:
-                        obs = env.reset()
-                env.close()
 
         .. tab-item:: Terminal config style
 
-                We use ``train_on_policy.py`` as the entrance file. You can train the agent with PPOLag simply using ``train_on_policy.py``, with arguments about PPOLag and environments does the training.
-                For example, to run PPOLag in SafetyPointGoal1-v0, with 4 cpu cores and seed 0, you can use the following command:
+            We use ``train_on_policy.py`` as the entrance file. You can train the agent with PPOLag simply using ``train_on_policy.py``, with arguments about PPOLag and environments does the training.
+            For example, to run PPOLag in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
 
-                .. code-block:: bash
-                    :linenos:
+            .. code-block:: bash
+                :linenos:
 
-                    cd omnisafe/examples
-                    python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo PPOLag --parallel 5 --epochs 1
-
-
+                cd examples
+                python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 ------
 
 Architecture of functions
@@ -370,76 +354,6 @@ Architecture of functions
 
 ------
 
-Documentation of basic functions
-""""""""""""""""""""""""""""""""
-
-.. card-carousel:: 3
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        env.roll_out()
-        ^^^
-        Collect data and store to experience buffer.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        PPOLag.update()
-        ^^^
-        Update actor, critic, running statistics
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        PPOLag.buf.get()
-        ^^^
-        Call this at the end of an epoch to get all of the data from the buffer
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        PPOLag.update_policy_net()
-        ^^^
-        Update policy network in 5 kinds of optimization case
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        PPOLag.update_value_net()
-        ^^^
-        Update Critic network for estimating reward.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        PPOLag.update_cost_net()
-        ^^^
-        Update Critic network for estimating cost.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        PPOLag.log()
-        ^^^
-        Get the training log and show the performance of the algorithm
-
-------
-
 Documentation of new functions
 """"""""""""""""""""""""""""""
 
@@ -449,7 +363,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             PPOLag.compute_loss_pi(data: dict)
@@ -482,7 +396,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Lagrange.update_lagrange_multiplier(ep_costs: float)
@@ -516,7 +430,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
@@ -530,7 +444,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Basic parameters
@@ -584,7 +498,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Optional parameters
@@ -601,7 +515,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Buffer parameters

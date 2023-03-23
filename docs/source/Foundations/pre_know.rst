@@ -51,7 +51,7 @@ Norms
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Introduction of Vector Norm
@@ -100,7 +100,7 @@ Norms
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info  sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Introduction of Matrix Norm
@@ -162,24 +162,23 @@ Consider a general optimization problem (called as the primal problem):
 .. _preknow-eq-1:
 
 .. math::
-    :nowrap:
+    :label: preknow-eq-1
 
-    \begin{eqnarray}
-        \underset{x}{\text{min}} && f(x)\tag{1} \\
-        \text { s.t. } && h_i(x) \leq 0, i=1, \cdots, m \\
-        && \ell_j(x)=0, j=1, \cdots, r
-    \end{eqnarray}
+    \underset{x}{\text{min}} & f(x) \\
+    \text { s.t. } & h_i(x) \leq 0, i=1, \cdots, m \\
+    & \ell_j(x)=0, j=1, \cdots, r
+    
 
 We define its Lagrangian as:
 
-.. math:: L(x, u, v)=f(x)+\sum_{i=1}^m u_i h_i(x)+\sum_{j=1}^r v_j \ell_j(x)\tag{2}
+.. math:: L(x, u, v)=f(x)+\sum_{i=1}^m u_i h_i(x)+\sum_{j=1}^r v_j \ell_j(x)
 
 Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
 .. note::
 
     This expression may be so complex that you won't immediately understand
-    what it means. Don't worry; we'll explain how it can be used to solve the constrained optimization problem in Problem :ref:`(1) <preknow-eq-1>`.
+    what it means. Don't worry; we'll explain how it can be used to solve the constrained optimization problem in Problem :eq:`preknow-eq-1`.
 
 .. tab-set::
 
@@ -188,7 +187,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Lemma 1
@@ -202,7 +201,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Lemma 2
@@ -211,11 +210,11 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
             satisfies:
 
             .. math::
-                :nowrap:
+                
 
-                \begin{eqnarray}
+                
                 f^*=\underset{x}{\text{min}}\quad \theta_p(x)=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max} \quad L(x, u, v)
-                \end{eqnarray}
+                
 
 .. tab-set::
 
@@ -224,14 +223,14 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 1
             ^^^
             Define :math:`\theta_p(x)=\underset{u \geq 0, v}{\max} L(x, u, v)`.
             If :math:`x` is feasible, that means the conditions in Problem
-            :ref:`(1) <preknow-eq-1>` are satisfied. Then we have
+            :eq:`preknow-eq-1` are satisfied. Then we have
             :math:`h_i(x)\le0` and :math:`\ell_j(x)=0`, thus
             :math:`L(x, u, v)=f(x)+\sum_{i=1}^m u_i h_i(x)+\sum_{j=1}^r v_j \ell_j(x)\le f(x)`.
             The last inequality becomes equality iff :math:`u_ih_i(x)=0, i=1,...,m`.
@@ -243,7 +242,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
       .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Proof of Lemma 2
@@ -267,7 +266,7 @@ where the subscription :math:`d` denotes the dual problem. It is worth
 mentioning that the infimum here does not require :math:`x` to be taken
 in the feasible set.
 
-Given the primal problem :ref:`(1) <preknow-eq-1>`, we
+Given the primal problem :eq:`preknow-eq-1`, we
 define its Lagrange dual problem as:
 
 .. math::
@@ -288,7 +287,7 @@ problem, named as :math:`g^*`, satisfies:
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
 
             Lemma3
             ^^^
@@ -299,7 +298,7 @@ problem, named as :math:`g^*`, satisfies:
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
 
             Proof of Lemma 3
             ^^^
@@ -329,7 +328,7 @@ We will discuss the weak and strong duality to show you the connection between t
 
         .. card::
             :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info  sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-1
 
             Introduction to Weak Duality
             ^^^
@@ -351,7 +350,7 @@ We will discuss the weak and strong duality to show you the connection between t
 
             The weak duality is intuitive because it simply takes a small step based
             on the definition. However, it make little sense for us to solve Problem
-            :ref:`(1) <preknow-eq-1>`, because :math:`f^*\neq g^*`.
+            :eq:`preknow-eq-1`, because :math:`f^*\neq g^*`.
             So we will introduce strong duality and luckily, with that we can obtain
             :math:`f^*=g^*`.
 
@@ -360,7 +359,7 @@ We will discuss the weak and strong duality to show you the connection between t
 
         .. card::
             :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info  sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-1
 
             Introduction to Strong Duality
             ^^^
