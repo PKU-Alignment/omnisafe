@@ -21,13 +21,13 @@ defaults:
     # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
     device: cpu
     # number of threads for torch
-    torch_threads: 16
+    torch_threads: 6
     # number of vectorized environments
-    vector_env_nums: 2
+    vector_env_nums: 1
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
-    total_steps: 1.0e+6
+    total_steps: 1000000
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
@@ -37,7 +37,7 @@ defaults:
     # number of iterations to update the policy
     update_iters: 1
     # The size of replay buffer
-    size: 100000
+    size: 1000000
     # The size of batch
     batch_size: 256
     # normalize reward
@@ -59,7 +59,7 @@ defaults:
     # Actor perdorm random action before `start_learning_steps` steps
     start_learning_steps: 25000
     # The delay step of policy update
-    policy_delay: 2
+    policy_delay: 1
     # Whether to use the exploration noise
     use_exploration_noise: True
     # The exploration noise
@@ -79,7 +79,7 @@ defaults:
     # save logger path
     log_dir: "./runs"
     # save model path
-    window_lens: 100
+    window_lens: 10
   # model configurations
   model_cfgs:
     # weight initialization mode
@@ -87,7 +87,7 @@ defaults:
     # actor type
     actor_type: mlp
     # linear learning rate decay
-    linear_lr_decay: True
+    linear_lr_decay: False
     # Configuration of Actor network
     actor:
       # Size of hidden layers
@@ -116,13 +116,3 @@ defaults:
     lambda_lr: 0.035
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
-
-
-
-SafetyHumanoidVelocity-v4:
-  # algorithm configurations
-  algo_cfgs:
-    # normalize reward
-    reward_normalize: True
-    # normalize observation
-    obs_normalize: True

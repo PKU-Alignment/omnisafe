@@ -46,12 +46,15 @@ class OnlineAdapter:
 
         self._env_id = env_id
         self._env = make(env_id, num_envs=num_envs)
+        self._test_env = make(env_id, num_envs=1)
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
             cost_normalize=cfgs.algo_cfgs.cost_normalize,
         )
+
         self._env.set_seed(seed)
+        self._test_env.set_seed(seed)
 
         self._cfgs = cfgs
         self._device = cfgs.train_cfgs.device
@@ -64,17 +67,22 @@ class OnlineAdapter:
     ):
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, time_limit=1000)
+            self._test_env = TimeLimit(self._test_env, time_limit=1000)
         if self._env.need_auto_reset_wrapper:
             self._env = AutoReset(self._env)
+            self._test_env = AutoReset(self._test_env)
         if obs_normalize:
             self._env = ObsNormalize(self._env)
+            self._test_env = ObsNormalize(self._test_env)
         if reward_normalize:
             self._env = RewardNormalize(self._env)
         if cost_normalize:
             self._env = CostNormalize(self._env)
         self._env = ActionScale(self._env, low=-1.0, high=1.0)
+        self._test_env = ActionScale(self._test_env, low=-1.0, high=1.0)
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env)
+        self._test_env = Unsqueeze(self._test_env)
 
     @property
     def action_space(self) -> OmnisafeSpace:
@@ -113,11 +121,9 @@ class OnlineAdapter:
         """
         obs, reward, cost, terminated, truncated, info = self._env.step(action)
         obs, reward, cost, terminated, truncated = map(
-            lambda x: x.to(self._device),
+            lambda x: torch.as_tensor(x, dtype=torch.float32, device=self._device),
             (obs, reward, cost, terminated, truncated),
         )
-        if info.get('final_observation') is not None:
-            info['final_observation'] = info['final_observation'].to(self._device)
         return obs, reward, cost, terminated, truncated, info
 
     def reset(self) -> Tuple[torch.Tensor, Dict]:

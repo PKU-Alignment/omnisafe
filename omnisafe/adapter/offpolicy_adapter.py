@@ -14,11 +14,9 @@
 # ==============================================================================
 """OffPolicy Adapter for OmniSafe."""
 
-from functools import partial
 from typing import Dict, Optional
 
 import torch
-from gymnasium import spaces
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
 from omnisafe.common.buffer import VectorOffPolicyBuffer
@@ -43,6 +41,48 @@ class OffPolicyAdapter(OnlineAdapter):
         self._device = cfgs.train_cfgs.device
         self._reset_log()
 
+    def eval_policy(  # pylint: disable=too-many-locals
+        self,
+        episode: int,
+        agent: ConstraintActorQCritic,
+        logger: Logger,
+    ) -> None:
+        """Roll out the environment and store the data in the buffer.
+
+        Args:
+            roll_out_step (int): Number of steps to roll out.
+            agent (ConstraintActorCritic): Agent.
+            buf (VectorOnPolicyBuffer): Buffer.
+            logger (Logger): Logger.
+            use_rand_action (bool): Whether to use random action.
+        """
+        for _ in range(episode):
+            ep_ret = 0
+            ep_cost = 0
+            ep_len = 0
+            done = False
+            obs, _ = self._test_env.reset()
+            obs = obs.to(self._device)
+            while not done:
+                act = agent.step(obs, deterministic=True)
+                obs, reward, cost, terminated, truncated, info = self._test_env.step(act)
+                obs, reward, cost, terminated, truncated = map(
+                    lambda x: torch.as_tensor(x, dtype=torch.float32, device=self._device),
+                    (obs, reward, cost, terminated, truncated),
+                )
+                ep_ret += info.get('original_reward', reward).cpu()
+                ep_cost += info.get('original_cost', cost).cpu()
+                ep_len += 1
+                done = terminated or truncated
+                if done:
+                    logger.store(
+                        **{
+                            'Metrics/TestEpRet': ep_ret,
+                            'Metrics/TestEpCost': ep_cost,
+                            'Metrics/TestEpLen': ep_len,
+                        }
+                    )
+
     def roll_out(  # pylint: disable=too-many-locals
         self,
         roll_out_step: int,
@@ -60,35 +100,34 @@ class OffPolicyAdapter(OnlineAdapter):
             logger (Logger): Logger.
             use_rand_action (bool): Whether to use random action.
         """
-        if use_rand_action:
-            if isinstance(self._env.action_space, spaces.Box):
-                act_fn = partial(
-                    torch.rand, size=(self._env.num_envs, *self._env.action_space.shape)
-                )
-        else:
-            act_fn = partial(agent.step, self._current_obs, deterministic=False)
-
         for _ in range(roll_out_step):
-            act = act_fn()
+            if use_rand_action:
+                act = torch.as_tensor(self._env.sample_action(), dtype=torch.float32).to(
+                    self._device
+                )
+            else:
+                act = agent.step(self._current_obs, deterministic=False)
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
 
             self._log_value(reward=reward, cost=cost, info=info)
+            real_next_obs = next_obs.clone()
+            for idx, done in enumerate(torch.logical_or(terminated, truncated)):
+                if done:
+                    # self._current_obs, _ = self.reset()
+                    real_next_obs[idx] = info['final_observation'][idx]
+                    self._log_metrics(logger, idx)
+                    self._reset_log(idx)
 
             buffer.store(
                 obs=self._current_obs,
                 act=act,
                 reward=reward,
                 cost=cost,
-                done=terminated,
-                next_obs=next_obs,
+                done=torch.logical_and(terminated, torch.logical_xor(terminated, truncated)),
+                next_obs=real_next_obs,
             )
 
             self._current_obs = next_obs
-            for idx, done in enumerate(torch.logical_or(terminated, truncated)):
-                if done or self._ep_len[idx] >= self._max_ep_len:
-                    # self.reset()
-                    self._log_metrics(logger, idx)
-                    self._reset_log(idx)
 
     def _log_value(
         self,

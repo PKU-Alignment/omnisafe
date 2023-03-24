@@ -34,7 +34,7 @@ class MLPActor(Actor):
         act_space: OmnisafeSpace,
         hidden_sizes: List[int],
         activation: Activation = 'relu',
-        output_activation: Activation = 'identity',
+        output_activation: Activation = 'tanh',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
         """Initialize MLPActor.
@@ -54,10 +54,13 @@ class MLPActor(Actor):
             output_activation=output_activation,
             weight_initialization_mode=weight_initialization_mode,
         )
-        self._noise = 0.2
-        self._noise_clip = 100
-        self.register_buffer('_act_min', torch.tensor(self._act_space.low, dtype=torch.float32))
-        self.register_buffer('_act_max', torch.tensor(self._act_space.high, dtype=torch.float32))
+        self._noise = 0.1
+        self.register_buffer(
+            '_act_min', torch.tensor(self._act_space.low, dtype=torch.float32, requires_grad=False)
+        )
+        self.register_buffer(
+            '_act_max', torch.tensor(self._act_space.high, dtype=torch.float32, requires_grad=False)
+        )
 
     def predict(
         self,
@@ -73,13 +76,22 @@ class MLPActor(Actor):
         Returns:
             torch.Tensor: Predicted action.
         """
-        action = torch.tanh(self.net(obs))
+        action = self.net(obs)
         if deterministic:
             return action
+        with torch.no_grad():
+            noise = torch.normal(0, self._noise * torch.ones_like(action))
+            return torch.clamp(action + noise, -1, 1)
 
-        noise = torch.normal(0, self._noise * torch.ones_like(action))
-        noise = torch.clamp(noise, -self._noise_clip, self._noise_clip)
-        return torch.clamp(action + noise, self._act_min, self._act_max)
+    @property
+    def act_min(self) -> torch.Tensor:
+        """Get the action noise."""
+        return self._act_min
+
+    @property
+    def act_max(self) -> torch.Tensor:
+        """Get the action noise."""
+        return self._act_max
 
     @property
     def noise(self) -> float:
@@ -90,16 +102,6 @@ class MLPActor(Actor):
     def noise(self, noise: float) -> None:
         assert noise >= 0, 'Noise should be non-negative.'
         self._noise = noise
-
-    @property
-    def noise_clip(self) -> float:
-        """Get the action noise bound."""
-        return self._noise_clip
-
-    @noise_clip.setter
-    def noise_clip(self, noise_clip: float) -> None:
-        assert noise_clip >= 0, 'Noise clip should be non-negative.'
-        self._noise_clip = noise_clip
 
     def _distribution(self, obs: torch.Tensor) -> Distribution:
         raise NotImplementedError
