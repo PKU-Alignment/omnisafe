@@ -60,7 +60,7 @@ class TRPO(NaturalPG):
     ) -> Tuple[torch.Tensor, int]:
         """TRPO performs `line-search <https://en.wikipedia.org/wiki/Line_search>`_ until constraint satisfaction.
 
-        .. note::
+        .. hint::
 
             TRPO search around for a satisfied step of policy update to improve loss and reward performance.
             The search is done by line-search, which is a way to find a step size that satisfies the constraint.
@@ -72,7 +72,7 @@ class TRPO(NaturalPG):
             p_dist (torch.distributions.Distribution): The old policy distribution.
             obs (torch.Tensor): The observation.
             act (torch.Tensor): The action.
-            log_p (torch.Tensor): The log probability of the action.
+            logp (torch.Tensor): The log probability of the action.
             adv (torch.Tensor): The advantage.
             cost_adv (torch.Tensor): The cost advantage.
             loss_pi_before (float): The loss of the policy before the update.

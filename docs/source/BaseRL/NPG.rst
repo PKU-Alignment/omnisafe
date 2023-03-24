@@ -1,2 +1,0 @@
-Natural Policy Gradient
-=======================

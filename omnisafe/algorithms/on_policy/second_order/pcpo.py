@@ -32,9 +32,9 @@ class PCPO(CPO):
     """The Projection-Based Constrained Policy Optimization (PCPO) algorithm.
 
     References:
-        Title: Projection-Based Constrained Policy Optimization
-        Authors: Tsung-Yen Yang, Justinian Rosca, Karthik Narasimhan, Peter J. Ramadge.
-        URL:`PCPO <https://arxiv.org/abs/2010.03152>_`
+        - Title: Projection-Based Constrained Policy Optimization
+        - Authors: Tsung-Yen Yang, Justinian Rosca, Karthik Narasimhan, Peter J. Ramadge.
+        - URL: `PCPO <https://arxiv.org/abs/2010.03152>`_
     """
 
     # pylint: disable-next=too-many-locals,too-many-arguments
