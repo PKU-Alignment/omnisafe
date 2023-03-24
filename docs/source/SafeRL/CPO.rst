@@ -5,18 +5,13 @@ Quick Facts
 -----------
 
 .. card::
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-body: sd-font-weight-bold
 
-    #. CPO is an :bdg-success-line:`on-policy` algorithm.
-    #. CPO can be used for environments with both :bdg-success-line:`discrete` and :bdg-success-line:`continuous` action spaces.
-    #. CPO can be thought of as being :bdg-success-line:`TRPO in SafeRL areas` .
-    #. The OmniSafe implementation of CPO support :bdg-success-line:`parallelization`.
-
-------
-
-.. contents:: Table of Contents
-    :depth: 3
+    #. CPO is an :bdg-info-line:`on-policy` algorithm.
+    #. CPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
+    #. CPO can be thought of as being :bdg-info-line:`TRPO in SafeRL areas` .
+    #. The OmniSafe implementation of CPO support :bdg-info-line:`parallelization`.
 
 CPO Theorem
 -----------
@@ -30,7 +25,7 @@ Motivated by TRPO( :doc:`../BaseRL/TRPO`).
 CPO develops surrogate functions to be good local approximations for objectives and constraints and easy to estimate using samples from current policy.
 Moreover, it provides tighter bounds for policy search using trust regions.
 
-.. note::
+.. hint::
 
     CPO is the **first general-purpose policy search algorithm** for safe reinforcement learning with guarantees for near-constraint satisfaction at each iteration.
 
@@ -39,7 +34,7 @@ CPO aims to provide an approach for policy search in continuous CMDP.
 It uses the result from TRPO and NPG to derive a policy improvement step that guarantees both an increase in reward and satisfaction of constraints.
 Although CPO is slightly inferior in performance, it provides a solid theoretical foundation for solving constrained optimization problems in the field of safe reinforcement learning.
 
-.. note::
+.. hint::
 
     CPO is very complex in terms of implementation, but omnisafe provides a highly readable code implementation to help you get up to speed quickly.
 
@@ -51,27 +46,25 @@ Optimization Objective
 In the previous chapters, we introduced that TRPO solves the following optimization problems:
 
 .. math::
-    :nowrap:
+    :label: cpo-eq-1
 
-    \begin{eqnarray}
-        &&\pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
-        \text{s.t.}\quad&&D(\pi,\pi_k)\le\delta\tag{1}
-    \end{eqnarray}
+    &\pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
+    \text{s.t.}\quad &D(\pi,\pi_k)\le\delta
+
 
 where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of parametrized policies with parameters :math:`\boldsymbol{\theta}`, and :math:`D` is some distance measure.
 In local policy search, we additionally require policy iterates to be feasible for the CMDP, so instead of optimizing over :math:`\Pi_{\boldsymbol{\theta}}`, CPO optimizes over :math:`\Pi_{\boldsymbol{\theta}} \cap \Pi_{C}`.
 
 .. math::
-    :nowrap:
+    :label: cpo-eq-2
 
-    \begin{eqnarray}
-        &&\pi_{k+1} = \arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
-        \text{s.t.}\quad&&D(\pi,\pi_k)\le\delta\tag{2}\\
-        &&J^{C_i}(\pi)\le d_i\quad i=1,...m
-    \end{eqnarray}
+    & \pi_{k+1} = \arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
+    \text{s.t.} \quad & D(\pi,\pi_k)\le\delta\\
+    & J^{C_i}(\pi)\le d_i\quad i=1,...m
 
 
-.. note::
+
+.. hint::
 
     This update is difficult to implement because it requires evaluating the constraint functions to determine whether a proposed policy :math:`\pi` is feasible.
 
@@ -86,13 +79,11 @@ Policy Performance Bounds
 CPO presents the theoretical foundation for its approach, a new bound on the difference in returns between two arbitrary policies.
 The following :bdg-info-line:`Theorem 1` connects the difference in returns (or constraint costs) between two arbitrary policies to an average divergence between them.
 
-.. _cpo-eq-3:
-
 .. _Theorem 1:
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-footer: sd-font-weight-bold
     :link: cards-clickable
     :link-type: ref
@@ -102,19 +93,20 @@ The following :bdg-info-line:`Theorem 1` connects the difference in returns (or 
     **For any function** :math:`f : S \rightarrow \mathbb{R}` and any policies :math:`\pi` and :math:`\pi'`, define :math:`\delta_f(s,a,s') \doteq R(s,a,s') + \gamma f(s')-f(s)`,
 
     .. math::
-        :nowrap:
-        :label: cpo-eq-3 cpo-eq-4 cpo-eq-5
+        :label: cpo-eq-3
 
-        \begin{eqnarray}
-            \epsilon_f^{\pi'} &\doteq& \max_s \left|\mathbb{E}_{a\sim\pi'~,s'\sim P }\left[\delta_f(s,a,s')\right] \right|\tag{3}\\
-            L_{\pi, f}\left(\pi'\right) &\doteq& \mathbb{E}_{\tau \sim \pi}\left[\left(\frac{\pi'(a | s)}{\pi(a|s)}-1\right)\delta_f\left(s, a, s'\right)\right]\tag{4} \\
-            D_{\pi, f}^{\pm}\left(\pi^{\prime}\right) &\doteq& \frac{L_{\pi, f}\left(\pi' \right)}{1-\gamma} \pm \frac{2 \gamma \epsilon_f^{\pi'}}{(1-\gamma)^2} \mathbb{E}_{s \sim d^\pi}\left[D_{T V}\left(\pi^{\prime} \| \pi\right)[s]\right]\tag{5}
-        \end{eqnarray}
+        \epsilon_f^{\pi'} &\doteq \max_s \left|\mathbb{E}_{a\sim\pi'~,s'\sim P }\left[\delta_f(s,a,s')\right] \right|\\
+        L_{\pi, f}\left(\pi'\right) &\doteq \mathbb{E}_{\tau \sim \pi}\left[\left(\frac{\pi'(a | s)}{\pi(a|s)}-1\right)\delta_f\left(s, a, s'\right)\right] \\
+        D_{\pi, f}^{\pm}\left(\pi^{\prime}\right) &\doteq \frac{L_{\pi, f}\left(\pi' \right)}{1-\gamma} \pm \frac{2 \gamma \epsilon_f^{\pi'}}{(1-\gamma)^2} \mathbb{E}_{s \sim d^\pi}\left[D_{T V}\left(\pi^{\prime} \| \pi\right)[s]\right]
+
 
     where :math:`D_{T V}\left(\pi'|| \pi\right)[s]=\frac{1}{2} \sum_a\left|\pi'(a|s)-\pi(a|s)\right|` is the total variational divergence between action distributions at :math:`s`.
-    The conclusion is as follows: :ref:`(11) <cpo-eq-3>`
+    The conclusion is as follows:
 
-    .. math:: D_{\pi, f}^{+}\left(\pi'\right) \geq J\left(\pi'\right)-J(\pi) \geq D_{\pi, f}^{-}\left(\pi'\right)\tag{6}
+    .. math::
+        :label: cpo-eq-4
+
+        D_{\pi, f}^{+}\left(\pi'\right) \geq J\left(\pi'\right)-J(\pi) \geq D_{\pi, f}^{-}\left(\pi'\right)
 
     Furthermore, the bounds are tight (when :math:`\pi=\pi^{\prime}`, all three expressions are identically zero).
     +++
@@ -132,20 +124,23 @@ By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Corollary 1
             ^^^
             For any policies :math:`\pi'`, :math:`\pi`, with :math:`\epsilon_{\pi'}=\max _s|\mathbb{E}_{a \sim \pi'}[A_\pi(s, a)]|`, the following bound holds:
 
-            .. math:: J^R\left(\pi^{\prime}\right)-J^R(\pi) \geq \frac{1}{1-\gamma} \mathbb{E}_{s \sim d^\pi\,a \sim \pi'}\left[A^R_\pi(s, a)-\frac{2 \gamma \epsilon_{\pi'}}{1-\gamma} D_{T V}\left(\pi' \| \pi\right)[s]\right]\tag{7}
+            .. math::
+                :label: cpo-eq-5
+
+                J^R\left(\pi^{\prime}\right)-J^R(\pi) \geq \frac{1}{1-\gamma} \mathbb{E}_{s \sim d^\pi\,a \sim \pi'}\left[A^R_\pi(s, a)-\frac{2 \gamma \epsilon_{\pi'}}{1-\gamma} D_{T V}\left(\pi' \| \pi\right)[s]\right]
 
     .. tab-item:: Corollary 2
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Corollary 2
@@ -155,26 +150,35 @@ By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-
 
             the following bound holds:
 
-            .. math:: J^{C_i}\left(\pi^{\prime}\right)-J^{C_i}(\pi) \geq \frac{1}{1-\gamma} \mathbb{E}_{s \sim d^\pi a \sim \pi'}\left[A^{C_i}_\pi(s, a)-\frac{2 \gamma \epsilon^{C_i}_{\pi'}}{1-\gamma} D_{T V}\left(\pi' \| \pi\right)[s]\right]\tag{8}
+            .. math::
+                :label: cpo-eq-6
+
+                J^{C_i}\left(\pi^{\prime}\right)-J^{C_i}(\pi) \geq \frac{1}{1-\gamma} \mathbb{E}_{s \sim d^\pi a \sim \pi'}\left[A^{C_i}_\pi(s, a)-\frac{2 \gamma \epsilon^{C_i}_{\pi'}}{1-\gamma} D_{T V}\left(\pi' \| \pi\right)[s]\right]
 
     .. tab-item:: Corollary 3
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Corollary 3
             ^^^
             Trust region methods prefer to constrain the KL-divergence between policies, so CPO use Pinsker's inequality to connect the :math:`D_{TV}` with :math:`D_{KL}`
 
-            .. math:: D_{TV}(p \| q) \leq \sqrt{D_{KL}(p \| q) / 2}\tag{9}
+            .. math::
+                :label: cpo-eq-7
+
+                D_{TV}(p \| q) \leq \sqrt{D_{KL}(p \| q) / 2}
 
             Combining this with Jensen's inequality, we obtain our final :bdg-info-line:`Corollary 3` :
             In bound :bdg-ref-info-line:`Theorem 1<Theorem 1>` , :bdg-ref-info-line:`Corollary 1<Corollary 1>`, :bdg-ref-info-line:`Corollary 2<Corollary 2>`,
             make the substitution:
 
-            .. math:: \mathbb{E}_{s \sim d^\pi}\left[D_{T V}\left(\pi'|| \pi\right)[s]\right] \rightarrow \sqrt{\frac{1}{2} \mathbb{E}_{s \sim d^\pi}\left[D_{K L}\left(\pi^{\prime} \| \pi\right)[s]\right]}\tag{10}
+            .. math::
+                :label: cpo-eq-8
+
+                \mathbb{E}_{s \sim d^\pi}\left[D_{T V}\left(\pi'|| \pi\right)[s]\right] \rightarrow \sqrt{\frac{1}{2} \mathbb{E}_{s \sim d^\pi}\left[D_{K L}\left(\pi^{\prime} \| \pi\right)[s]\right]}
 
 
 ------
@@ -187,13 +191,11 @@ For parameterized stationary policy, trust region algorithms for reinforcement l
 .. _cpo-eq-11:
 
 .. math::
-    :nowrap:
-    :label: cpo-eq-11
+    :label: cpo-eq-9
 
-    \begin{eqnarray}
-        &&\boldsymbol{\theta}_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\boldsymbol{\theta}_k}(s, a)]\\
-        \text{s.t.}\quad &&\bar{D}_{K L}\left(\pi \| \pi_k\right) \le \delta\tag{11}
-    \end{eqnarray}
+    &\boldsymbol{\theta}_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\boldsymbol{\theta}_k}(s, a)]\\
+    \text{s.t.}\quad &\bar{D}_{K L}\left(\pi \| \pi_k\right) \le \delta
+
 
 
 where :math:`\bar{D}_{K L}(\pi \| \pi_k)=\mathbb{E}_{s \sim \pi_k}[D_{K L}(\pi \| \pi_k)[s]]` and :math:`\delta \ge 0` is the step size.
@@ -204,15 +206,14 @@ it approximates optimizing the lower bound on policy performance given in :bdg-i
 .. _cpo-eq-12:
 
 .. math::
-    :nowrap:
+    :label: cpo-eq-10
 
-    \begin{eqnarray}
-        &&\pi_{k+1}=\arg \max _{\pi \in \Pi_{\boldsymbol{\theta}}} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\\
-        \text{s.t.} \quad &&J^{C_i}\left(\pi_k\right) \leq d_i-\frac{1}{1-\gamma} \mathbb{E}_{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C_i}_{\pi_k}(s, a)\right] \quad \forall i \tag{12} \\
-        &&\bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta
-    \end{eqnarray}
+    &\pi_{k+1}=\arg \max _{\pi \in \Pi_{\boldsymbol{\theta}}} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\\
+    \text{s.t.} \quad &J^{C_i}\left(\pi_k\right) \leq d_i-\frac{1}{1-\gamma} \mathbb{E}_{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C_i}_{\pi_k}(s, a)\right] \quad \forall i  \\
+    &\bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta
 
-.. note::
+
+.. hint::
     In a word, CPO proposes the final optimization problem, which uses a trust region instead of penalties on policy divergence to enable larger step sizes.
 
 ------
@@ -228,19 +229,18 @@ Here we will introduce the propositions proposed by the CPO, one describes the w
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Trust Region Update Performance
             ^^^
-            Suppose :math:`\pi_k, \pi_{k+1}` are related by :ref:`(11) <cpo-eq-11>`, and that :math:`\pi_k \in \Pi_{\boldsymbol{\theta}}`.
+            Suppose :math:`\pi_k, \pi_{k+1}` are related by :eq:`cpo-eq-9`, and that :math:`\pi_k \in \Pi_{\boldsymbol{\theta}}`.
             A lower bound on the policy performance difference between :math:`\pi_k` and :math:`\pi_{k+1}` is:
 
             .. math::
+                :label: cpo-eq-11
 
-                \begin{aligned}
-                    J^{R}\left(\pi_{k+1}\right)-J^{R}(\pi_{k}) \geq \frac{-\sqrt{2 \delta} \gamma \epsilon^R_{\pi_{k+1}}}{(1-\gamma)^2}
-                \end{aligned}
+                J^{R}\left(\pi_{k+1}\right)-J^{R}(\pi_{k}) \geq \frac{-\sqrt{2 \delta} \gamma \epsilon^R_{\pi_{k+1}}}{(1-\gamma)^2}
 
             where :math:`\epsilon^R_{\pi_{k+1}}=\max_s\left|\mathbb{E}_{a \sim \pi_{k+1}}\left[A^R_{\pi_k}(s, a)\right]\right|`.
 
@@ -248,19 +248,18 @@ Here we will introduce the propositions proposed by the CPO, one describes the w
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             CPO Update Worst-Case Constraint Violation
             ^^^
-            Suppose :math:`\pi_k, \pi_{k+1}` are related by :ref:`(11) <cpo-eq-11>`, and that :math:`\pi_k \in \Pi_{\boldsymbol{\theta}}`.
+            Suppose :math:`\pi_k, \pi_{k+1}` are related by :eq:`cpo-eq-9`, and that :math:`\pi_k \in \Pi_{\boldsymbol{\theta}}`.
             An upper bound on the :math:`C_i`-return of :math:`\pi_{k+1}` is:
 
             .. math::
+                :label: cpo-eq-12
 
-                \begin{aligned}
                     J^{C_i}\left(\pi_{k+1}\right) \leq d_i+\frac{\sqrt{2 \delta} \gamma \epsilon^{C_i}_{\pi_{k+1}}}{(1-\gamma)^2}
-                \end{aligned}
 
             where :math:`\epsilon^{C_i}_{\pi_{k+1}}=\max _s\left|\mathbb{E}_{a \sim \pi_{k+1}}\left[A^{C_i}_{\pi_k}(s, a)\right]\right|`
 
@@ -285,18 +284,18 @@ Practical Implementation
         :class-item: sd-font-weight-bold
         :columns: 12 4 4 6
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+        :class-card: sd-outline-success  sd-rounded-1
 
         Overview
         ^^^
-        In this section, we show how CPO implements an approximation to the update :ref:`(12) <cpo-eq-12>` that can be efficiently computed, even when optimizing policies with thousands of parameters.
+        In this section, we show how CPO implements an approximation to the update :eq:`cpo-eq-10` that can be efficiently computed, even when optimizing policies with thousands of parameters.
         To address the issue of approximation and sampling errors that arise in practice and the potential violations described by Proposition 2, CPO proposes to tighten the constraints by constraining the upper bounds of the extra costs instead of the extra costs themselves.
 
     .. grid-item-card::
         :class-item: sd-font-weight-bold sd-fs-6
         :columns: 12 8 8 6
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+        :class-card: sd-outline-success  sd-rounded-1
 
         Navigation
         ^^^
@@ -325,44 +324,45 @@ Practical Implementation
 Approximately Solving the CPO Update
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For policies with high-dimensional parameter spaces like neural networks, :ref:`(12) <cpo-eq-12>` can be impractical to solve directly because of the computational cost.
+For policies with high-dimensional parameter spaces like neural networks, :eq:`cpo-eq-10` can be impractical to solve directly because of the computational cost.
 
 .. hint::
     However, for small step sizes :math:`\delta`, the objective and cost constraints are well-approximated by linearizing around :math:`\pi_k`, and the KL-Divergence constraint is well-approximated by second-order expansion.
 
-Denoting the gradient of the objective as :math:`g`, the gradient of constraint :math:`i` as :math:`b_i`, the Hessian of the KL-divergence as :math:`H`, and defining :math:`c_i=J^{C_i}\left(\pi_k\right)-d_i`, the approximation to :ref:`(12) <cpo-eq-12>` is:
+Denoting the gradient of the objective as :math:`g`, the gradient of constraint :math:`i` as :math:`b_i`, the Hessian of the KL-divergence as :math:`H`, and defining :math:`c_i=J^{C_i}\left(\pi_k\right)-d_i`, the approximation to :eq:`cpo-eq-10` is:
 
 .. _cpo-eq-13:
 
 .. math::
-    :nowrap:
+    :label: cpo-eq-13
 
-    \begin{eqnarray}
-        &&\boldsymbol{\theta}_{k+1}=\arg \max _{\boldsymbol{\theta}} g^T\left(\boldsymbol{\theta}-\boldsymbol{\theta}_k\right)\\
-        \text{s.t.}\quad  &&c_i+b_i^T\left(\boldsymbol{\theta}-\boldsymbol{\theta}_k\right) \leq 0 ~~~ i=1, \ldots m \tag{13}\\
-        &&\frac{1}{2}\left(\boldsymbol{\theta}-\boldsymbol{\theta}_k\right)^T H\left(\boldsymbol{\theta}-\boldsymbol{\theta}_k\right) \leq \delta
-    \end{eqnarray}
+    &\boldsymbol{\theta}_{k+1}=\arg \max _{\boldsymbol{\theta}} g^T\left(\boldsymbol{\theta}-\boldsymbol{\theta}_k\right)\\
+    \text{s.t.}\quad  &c_i+b_i^T\left(\boldsymbol{\theta}-\boldsymbol{\theta}_k\right) \leq 0 ~~~ i=1, \ldots m \\
+    &\frac{1}{2}\left(\boldsymbol{\theta}-\boldsymbol{\theta}_k\right)^T H\left(\boldsymbol{\theta}-\boldsymbol{\theta}_k\right) \leq \delta
 
-With :math:`B=\left[b_1, \ldots, b_m\right]` and :math:`c=\left[c_1, \ldots, c_m\right]^T`, a dual to :ref:`(13) <cpo-eq-13>` can be express as:
 
-.. math:: \max_{\lambda \geq 0, \nu \geq 0} \frac{-1}{2 \lambda}\left(g^T H^{-1} g-2 r^T v+v^T S v\right)+v^T c-\frac{\lambda \delta}{2}
+With :math:`B=\left[b_1, \ldots, b_m\right]` and :math:`c=\left[c_1, \ldots, c_m\right]^T`, a dual to :eq:`cpo-eq-13` can be express as:
+
+.. math::
+    :label: cpo-eq-14
+
+    \max_{\lambda \geq 0, \nu \geq 0} \frac{-1}{2 \lambda}\left(g^T H^{-1} g-2 r^T v+v^T S v\right)+v^T c-\frac{\lambda \delta}{2}
 
 where :math:`r=g^T H^{-1} B, S=B^T H^{-1} B`. If :math:`\lambda^*, v^*` are a solution to the dual, the solution to the primal is
 
 .. _cpo-eq-14:
 
 .. math::
-    :nowrap:
+    :label: cpo-eq-15
 
-    \begin{eqnarray}
-        {\boldsymbol{\theta}}^*={\boldsymbol{\theta}}_k+\frac{1}{\lambda^*} H^{-1}\left(g-B v^*\right)\tag{14}
-    \end{eqnarray}
+    {\boldsymbol{\theta}}^*={\boldsymbol{\theta}}_k+\frac{1}{\lambda^*} H^{-1}\left(g-B v^*\right)
 
-In a word, CPO solves the dual for :math:`\lambda^*, \nu^*` and uses it to propose the policy update :ref:`(14) <cpo-eq-14>`, thus solving :ref:`(12) <cpo-eq-12>` in a particular way.
+
+In a word, CPO solves the dual for :math:`\lambda^*, \nu^*` and uses it to propose the policy update :eq:`cpo-eq-15`, thus solving :eq:`cpo-eq-10` in a particular way.
 In the experiment, CPO also uses two tricks to promise the update's performance.
 
 .. warning::
-    Because of the approximation error, the proposed update may not satisfy the constraints in :ref:`(12) <cpo-eq-12>`; a backtracking line search is used to ensure surrogate constraint satisfaction.
+    Because of the approximation error, the proposed update may not satisfy the constraints in :eq:`cpo-eq-10`; a backtracking line search is used to ensure surrogate constraint satisfaction.
 
 For high-dimensional policies, it is impractically expensive to invert the FIM.
 This poses a challenge for computing :math:`\mathrm{H}^{-1} \mathrm{~g}` and :math:`H^{-1} b`, which appear in the dual.
@@ -378,7 +378,10 @@ Feasibility
 Due to approximation errors, CPO may take a bad step and produce an infeasible iterate :math:`\pi_k`.
 CPO recovers the update from an infeasible case by proposing an update to decrease the constraint value purely:
 
-.. math:: \boldsymbol{\theta}^*=\boldsymbol{\theta}_k-\sqrt{\frac{2 \delta}{b^T H^{-1} b}} H^{-1} b\tag{15}
+.. math::
+    :label: cpo-eq-16
+
+    \boldsymbol{\theta}^*=\boldsymbol{\theta}_k-\sqrt{\frac{2 \delta}{b^T H^{-1} b}} H^{-1} b
 
 As before, this is followed by a line search. This approach is principled, because it uses the limiting search direction as the intersection of the trust region and the constraint region shrinks to zero.
 
@@ -392,7 +395,10 @@ Tightening Constraints via Cost Shaping
 To build a factor of safety into the algorithm to minimize the chance of constraint violations, CPO chooses to constrain upper bounds on the original constraints,
 :math:`C_i^{+}`, instead of the original constraints themselves. CPO does this by cost shaping:
 
-.. math:: C_i^{+}\left(s, a, s^{\prime}\right)=C_i\left(s, a, s^{\prime}\right)+\triangle_i\left(s, a, s^{\prime}\right)\tag{16}
+.. math::
+    :label: cpo-eq-17
+
+    C_i^{+}\left(s, a, s^{\prime}\right)=C_i\left(s, a, s^{\prime}\right)+\triangle_i\left(s, a, s^{\prime}\right)
 
 where :math:`\delta_i: S \times A \times S \rightarrow R_{+}`\  correlates in some useful way with :math:`C_i`.
 Because CPO has only one constraint, it partitions states into safe and unsafe states, and the agent suffers a safety cost of 1 for being in an unsafe state.
@@ -411,7 +417,7 @@ Quick start
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
     Run CPO in Omnisafe
@@ -431,19 +437,11 @@ Quick start
 
                 import omnisafe
 
-                env = omnisafe.Env('SafetyPointGoal1-v0')
 
-                agent = omnisafe.Agent('CPO', env)
+                env_id = 'SafetyPointGoal1-v0'
+
+                agent = omnisafe.Agent('CPO', env_id)
                 agent.learn()
-
-                obs = env.reset()
-                for i in range(1000):
-                    action, _states = agent.predict(obs, deterministic=True)
-                    obs, reward, cost, done, info = env.step(action)
-                    env.render()
-                    if done:
-                        obs = env.reset()
-                env.close()
 
         .. tab-item:: Config dict style
 
@@ -452,20 +450,26 @@ Quick start
 
                 import omnisafe
 
-                env = omnisafe.Env('SafetyPointGoal1-v0')
 
-                custom_dict = {'epochs': 1, 'log_dir': './runs'}
-                agent = omnisafe.Agent('CPO', env, custom_cfgs=custom_dict)
+                env_id = 'SafetyPointGoal1-v0'
+                custom_cfgs = {
+                    'train_cfgs': {
+                        'total_steps': 1024000,
+                        'vector_env_nums': 1,
+                        'parallel': 1,
+                    },
+                    'algo_cfgs': {
+                        'update_cycle': 2048,
+                        'update_iters': 1,
+                    },
+                    'logger_cfgs': {
+                        'use_wandb': False,
+                    },
+                }
+
+                agent = omnisafe.Agent('CPO', env_id, custom_cfgs=custom_cfgs)
                 agent.learn()
 
-                obs = env.reset()
-                for i in range(1000):
-                    action, _states = agent.predict(obs, deterministic=True)
-                    obs, reward, done, info = env.step(action)
-                    env.render()
-                    if done:
-                        obs = env.reset()
-                env.close()
 
         .. tab-item:: Terminal config style
 
@@ -475,9 +479,8 @@ Quick start
             .. code-block:: bash
                 :linenos:
 
-                cd omnisafe/examples
-                python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo CPO --parallel 5 --epochs 1
-
+                cd examples
+                python train_policy.py --algo CPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 
 ------
 
@@ -506,65 +509,6 @@ Architecture of functions
 
 ------
 
-Documentation of basic functions
-""""""""""""""""""""""""""""""""
-
-.. card-carousel:: 3
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        env.roll_out()
-        ^^^
-        Collect data and store to experience buffer.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        cpo.update()
-        ^^^
-        Update actor, critic, running statistics
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        cpo.buf.get()
-        ^^^
-        Call this at the end of an epoch to get all of the data from the buffer
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        cpo.update_value_net()
-        ^^^
-        Update Critic network for estimating reward.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        cpo.update_cost_net()
-        ^^^
-        Update Critic network for estimating cost.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        cpo.log()
-        ^^^
-        Get the training log and show the performance of the algorithm
-
 Documentation of new functions
 """"""""""""""""""""""""""""""
 
@@ -574,7 +518,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             cpo.update_policy_net()
@@ -643,7 +587,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             cpo.search_step_size()
@@ -714,7 +658,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
@@ -728,7 +672,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Basic parameters
@@ -782,7 +726,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Optional parameters
@@ -799,7 +743,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Buffer parameters
@@ -848,13 +792,16 @@ Proof of theorem 1 (Difference between two arbitrarily policies)
 
 Our analysis will begin with the discounted future future state distribution, :math:`d_\pi`, which is defined as:
 
-.. math:: d_\pi(s)=(1-\gamma) \sum_{t=0}^{\infty} \gamma^t P\left(s_t=s|\pi\right)
+.. math::
+    :label: cpo-eq-18
+
+    d_\pi(s)=(1-\gamma) \sum_{t=0}^{\infty} \gamma^t P\left(s_t=s|\pi\right)
 
 Let :math:`p_\pi^t \in R^{|S|}` denote the vector with components :math:`p_\pi^t(s)=P\left(s_t=s \mid \pi\right)`, and let :math:`P_\pi \in R^{|S| \times|S|}` denote the transition matrix with components :math:`P_\pi\left(s^{\prime} \mid s\right)=\int d a P\left(s^{\prime} \mid s, a\right) \pi(a \mid s)`, which shown as below:
 
 .. math::
+    :label: cpo-eq-19
 
-    \begin{aligned}
     &\left[\begin{array}{c}
     p_\pi^t\left(s_1\right) \\
     p_\pi^t\left(s_2\right) \\
@@ -872,14 +819,13 @@ Let :math:`p_\pi^t \in R^{|S|}` denote the vector with components :math:`p_\pi^t
     \vdots \\
     p_\pi^{t-1}\left(s_n\right)
     \end{array}\right]
-    \end{aligned}
 
 then :math:`p_\pi^t=P_\pi p_\pi^{t-1}=P_\pi^2 p_\pi^{t-2}=\ldots=P_\pi^t \mu`, where :math:`\mu` represents the state distribution of the system at the moment.
 That is, the initial state distribution, then :math:`d_\pi` can then be rewritten as:
 
 .. math::
+    :label: cpo-eq-20
 
-    \begin{aligned}
     d_\pi&=\left[\begin{array}{c}
     d_\pi\left(s_1\right) \\
     d_\pi\left(s_2\right) \\
@@ -892,16 +838,14 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
     \vdots \\
     \gamma^0 p_\pi^0\left(s_3\right)+\gamma^1 p_\pi^1\left(s_3\right)+\gamma^2 p_\pi^2\left(s_3\right)+\ldots
     \end{array}\right]
-    \end{aligned}
 
 .. _cpo-eq-17:
 
 .. math::
-    :nowrap:
+    :label: cpo-eq-21
 
-    \begin{eqnarray}
-        d_\pi=(1-\gamma) \sum_{t=0}^{\infty} \gamma^t p_\pi^t=(1-\gamma)\left(1-\gamma P_\pi\right)^{-1} \mu\tag{17}
-    \end{eqnarray}
+    d_\pi=(1-\gamma) \sum_{t=0}^{\infty} \gamma^t p_\pi^t=(1-\gamma)\left(1-\gamma P_\pi\right)^{-1} \mu
+
 
 .. tab-set::
 
@@ -909,14 +853,17 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Lemma 1
             ^^^
             For any function :math:`f: S \rightarrow \mathbb{R}` and any policy :math:`\pi` :
 
-            .. math:: (1-\gamma) E_{s \sim \mu}[f(s)]+E_{\tau \sim \pi}\left[\gamma f\left(s'\right)\right]-E_{s \sim d_\pi}[f(s)]=0
+            .. math::
+                :label: cpo-eq-22
+
+                (1-\gamma) E_{s \sim \mu}[f(s)]+E_{\tau \sim \pi}\left[\gamma f\left(s'\right)\right]-E_{s \sim d_\pi}[f(s)]=0
 
             where :math:`\tau \sim \pi` denotes :math:`s \sim d_\pi, a \sim \pi` and :math:`s^{\prime} \sim P`.
 
@@ -925,7 +872,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Lemma 2
@@ -933,17 +880,20 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
             For any function :math:`f: S \rightarrow \mathbb{R}` and any policies
             :math:`\pi` and :math:`\pi'`, define
 
-            .. math:: L_{\pi, f}\left(\pi'\right)\doteq \mathbb{E}_{\tau \sim \pi}\left[\left(\frac{\pi^{\prime}(a \mid s)}{\pi(a \mid s)}-1\right)\left(R\left(s, a, s^{\prime}\right)+\gamma f\left(s^{\prime}\right)-f(s)\right)\right]
+            .. math::
+                :label: cpo-eq-23
+
+                L_{\pi, f}\left(\pi'\right)\doteq \mathbb{E}_{\tau \sim \pi}\left[\left(\frac{\pi^{\prime}(a \mid s)}{\pi(a \mid s)}-1\right)\left(R\left(s, a, s^{\prime}\right)+\gamma f\left(s^{\prime}\right)-f(s)\right)\right]
 
             and :math:`\epsilon_f^{\pi^{\prime}}\doteq \max_s \left|\mathbb{E}_{\substack{a \sim \pi , s'\sim P}} \left[R\left(s, a, s^{\prime}\right)+\gamma f\left(s^{\prime}\right)-f(s)\right]\right|`.
             Then the following bounds hold:
 
             .. math::
+                :label: cpo-eq-24
 
-               \begin{aligned}
                &J\left(\pi'\right)-J(\pi) \geq \frac{1}{1-\gamma}\left(L_{\pi, f}\left(\pi'\right)-2 \epsilon_f^{\pi'} D_{T V}\left(d_\pi \| d_{\pi^{\prime}}\right)\right) \\
                &J\left(\pi^{\prime}\right)-J(\pi) \leq \frac{1}{1-\gamma}\left(L_{\pi, f}\left(\pi'\right)+2 \epsilon_f^{\pi'} D_{T V}\left(d_\pi \| d_{\pi'}\right)\right)
-               \end{aligned}
+
 
             where :math:`D_{T V}` is the total variational divergence. Furthermore, the bounds are tight when :math:`\pi^{\prime}=\pi`, and the LHS and RHS are identically zero.
 
@@ -951,7 +901,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Lemma 3
@@ -961,10 +911,10 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
             average divergence of the policies :math:`\pi` and :math:`\pi` :
 
             .. math::
+                :label: cpo-eq-25
 
-               \begin{aligned}
-                   \Vert d_{\pi'}-d_\pi\Vert_1 \leq \frac{2 \gamma}{1-\gamma} \mathbb{E}_{s \sim d_\pi}\left[D_{T V}\left(\pi^{\prime} \| \pi\right)[s]\right]
-               \end{aligned}
+                \Vert d_{\pi'}-d_\pi\Vert_1 \leq \frac{2 \gamma}{1-\gamma} \mathbb{E}_{s \sim d_\pi}\left[D_{T V}\left(\pi^{\prime} \| \pi\right)[s]\right]
+
 
             where :math:`D_{\mathrm{TV}}(\pi' \| \pi)[s] = \frac{1}{2}\sum_a \Vert\pi'(a|s) - \pi(a|s)\Vert`
 
@@ -972,7 +922,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Corollary 4
@@ -982,35 +932,36 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
             and :math:`\Delta=P_{\pi^{\prime}}-P_\pi`. Then:
 
             .. math::
+                :label: cpo-eq-26
 
-               \begin{aligned}
                G^{-1}-\bar{G}^{-1} &=\left(I-\gamma P_\pi\right)-\left(I-\gamma P_{\pi^{\prime}}\right) \\
                G^{-1}-\bar{G}^{-1} &=\gamma \Delta \\
                \bar{G}\left(G^{-1}-\bar{G}^{-1}\right) G &=\gamma \bar{G} \Delta G \\
                \bar{G}-G &=\gamma \bar{G} \Delta G
-               \end{aligned}
 
-            Thus, with :ref:`(17) <cpo-eq-17>`
+            Thus, with :eq:`cpo-eq-21`
 
             .. math::
-              :nowrap:
+                :label: cpo-eq-27
 
-              \begin{eqnarray}
-                   d^{\pi^{\prime}}-d^\pi &=&(1-\gamma)(\bar{G}-G) \mu \\
-                   &=&\gamma(1-\gamma) \bar{G} \Delta G \mu\tag{19}\\
-                   &=&\gamma \bar{G} \Delta d^\pi
-              \end{eqnarray}
+                d^{\pi^{\prime}}-d^\pi &=(1-\gamma)(\bar{G}-G) \mu \\
+                &=\gamma(1-\gamma) \bar{G} \Delta G \mu\\
+                &=\gamma \bar{G} \Delta d^\pi
+
 
     .. tab-item:: Corollary 5
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Corollary 5
             ^^^
-            .. math:: \left\|P_{\pi^{\prime}}\right\|_1=\max _{s \in \mathcal{S}}\left\{\sum_{s^{\prime} \in \mathcal{S}} P_\pi\left(s^{\prime} \mid s\right)\right\}=1
+            .. math::
+                :label: cpo-eq-28
+
+                \left\|P_{\pi^{\prime}}\right\|_1=\max _{s \in \mathcal{S}}\left\{\sum_{s^{\prime} \in \mathcal{S}} P_\pi\left(s^{\prime} \mid s\right)\right\}=1
 
 Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by :bdg-info-line:`Lemma 3`, :bdg-info-line:`Theorem 1` can be finally proved.
 
@@ -1022,56 +973,62 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Proof
             ^^^
-            Multiply both sides of :ref:`(17) <cpo-eq-17>` by :math:`\left(I-\gamma P_\pi\right)`, we get:
+            Multiply both sides of :eq:`cpo-eq-21` by :math:`\left(I-\gamma P_\pi\right)`, we get:
 
-            .. math:: \left(I-\gamma P_\pi\right) d_\pi=(1-\gamma) \mu
+            .. math::
+                :label: cpo-eq-29
+
+                \left(I-\gamma P_\pi\right) d_\pi=(1-\gamma) \mu
 
             Then take the inner product with the vector :math:`f \in \mathbb{R}^{|S|}` and notice that the vector :math:`f`
             can be arbitrarily picked.
 
-            .. math:: <f,\left(I-\gamma P_\pi\right) d_\pi>=<f,(1-\gamma) \mu>
+            .. math::
+                :label: cpo-eq-30
+
+                <f,\left(I-\gamma P_\pi\right) d_\pi>=<f,(1-\gamma) \mu>
 
             Both sides of the above equation can be rewritten separately by:
 
             .. math::
+                :label: cpo-eq-31
 
-                begin{aligned}
-                    &<f,\left(I-\gamma P_\pi\right) d_\pi>=\left[\sum_s f(s) d_\pi(s)\right]-\\
-                    &\left[\sum_{s^{\prime}} f\left(s^{\prime}\right) \gamma \sum_s \sum_a \pi(a \mid s) P\left(s^{\prime} \mid s, a\right) d_\pi(s)\right] \\
-                    &=\mathbb{E}_{s \sim d_\pi}[f(s)]-\mathbb{E}_{\tau \sim \pi}\left[\gamma f\left(s^{\prime}\right)\right]
-                end{aligned}
+                &<f,\left(I-\gamma P_\pi\right) d_\pi>=\left[\sum_s f(s) d_\pi(s)\right]-\\
+                &\left[\sum_{s^{\prime}} f\left(s^{\prime}\right) \gamma \sum_s \sum_a \pi(a \mid s) P\left(s^{\prime} \mid s, a\right) d_\pi(s)\right] \\
+                &=\mathbb{E}_{s \sim d_\pi}[f(s)]-\mathbb{E}_{\tau \sim \pi}\left[\gamma f\left(s^{\prime}\right)\right]
 
             .. math::
+                :label: cpo-eq-32
 
-                \begin{aligned}
-                    <f,(1-\gamma) \mu>=\sum_s f(s)(1-\gamma) \mu(s)=(1-\gamma) \mathbb{E}_{s \sim \mu}[f(s)]
-                \end{aligned}
+                <f,(1-\gamma) \mu>=\sum_s f(s)(1-\gamma) \mu(s)=(1-\gamma) \mathbb{E}_{s \sim \mu}[f(s)]
 
             Finally, we obtain:
 
-            .. math:: (1-\gamma) \mathbb{E}_{s \sim \mu}[f(s)]+\mathbb{E}_{\tau \sim \pi}\left[\gamma f\left(s^{\prime}\right)\right]-\mathbb{E}_{s \sim d_\pi}[f(s)] = 0
+            .. math::
+                :label: cpo-eq-33
 
-            .. note::
+                (1-\gamma) \mathbb{E}_{s \sim \mu}[f(s)]+\mathbb{E}_{\tau \sim \pi}\left[\gamma f\left(s^{\prime}\right)\right]-\mathbb{E}_{s \sim d_\pi}[f(s)] = 0
+
+            .. hint::
 
                 **Supplementary details**
 
                 .. math::
+                    :label: cpo-eq-34
 
-                    \begin{aligned}
-                        d^\pi &=(1-\gamma)\left(I-\gamma P_\pi\right)^{-1} \mu \\\left(I-\gamma P_\pi\right) d^\pi &=(1-\gamma)  \mu \\ \int_{s \in \mathcal{S}}\left(I-\gamma P_\pi\right) d^\pi f(s) d s &=\int_{s \in \mathcal{S}} (1-\gamma) \mu f(s) d s \\ \int_{s \in \mathcal{S}} d^\pi f(s) d s-\int_{s \in \mathcal{S}} \gamma P_\pi  d^\pi f(s) d s &=\int_{s \in \mathcal{S}}(1-\gamma) \mu f(s) d s \\ \mathbb{E}_{s \sim d^\pi}[f(s)] -\mathbb{E}_{s \sim d^\pi, a \sim \pi, s^{\prime} \sim P}\left[\gamma f\left(s^{\prime}\right)\right] &= (1-\gamma) \mathbb{E}_{s \sim \mu}[f(s)]
-                    \end{aligned}
+                    d^\pi &=(1-\gamma)\left(I-\gamma P_\pi\right)^{-1} \mu \\\left(I-\gamma P_\pi\right) d^\pi &=(1-\gamma)  \mu \\ \int_{s \in \mathcal{S}}\left(I-\gamma P_\pi\right) d^\pi f(s) d s &=\int_{s \in \mathcal{S}} (1-\gamma) \mu f(s) d s \\ \int_{s \in \mathcal{S}} d^\pi f(s) d s-\int_{s \in \mathcal{S}} \gamma P_\pi  d^\pi f(s) d s &=\int_{s \in \mathcal{S}}(1-\gamma) \mu f(s) d s \\ \mathbb{E}_{s \sim d^\pi}[f(s)] -\mathbb{E}_{s \sim d^\pi, a \sim \pi, s^{\prime} \sim P}\left[\gamma f\left(s^{\prime}\right)\right] &= (1-\gamma) \mathbb{E}_{s \sim \mu}[f(s)]
 
 
     .. tab-item:: Proof of Lemma 2
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Proof
@@ -1079,32 +1036,36 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
             note that the objective function can be represented as:
 
             .. math::
-                :nowrap:
+                :label: cpo-eq-35
 
-                \begin{eqnarray}
-                    J(\pi)&=&\frac{1}{1-\gamma} \mathbb{E}_{\tau \sim \pi}\left[R\left(s, a, s^{\prime}\right)\right]\tag{18}  \\
-                    &=&\mathbb{E}_{s \sim \mu}[f(s)]+\frac{1}{1-\gamma} \mathbb{E}_{\tau \sim \pi}\left[R\left(s, a, s^{\prime}\right)+\gamma f\left(s^{\prime}\right)-f(s)\right]
-                \end{eqnarray}
+                J(\pi)&=\frac{1}{1-\gamma} \mathbb{E}_{\tau \sim \pi}[R(s, a, s^{\prime})]  \\
+                &=\mathbb{E}_{s \sim \mu}[f(s)]+\frac{1}{1-\gamma} \mathbb{E}_{\tau \sim \pi}[R(s, a, s^{\prime})+\gamma f(s^{\prime})-f(s)]
 
-            Let :math:`\delta_f\left(s, a, s^{\prime}\right)\doteq R\left(s, a, s^{\prime}\right)+\gamma f\left(s^{\prime}\right)-f(s)`, then by :ref:`(18) <cpo-eq-18>`, we easily obtain that:
 
-            .. math:: J\left(\pi'\right)-J(\pi)=\frac{1}{1-\gamma}\left\{\mathbb{E}_{\tau \sim \pi^{\prime}}\left[\delta_f\left(s, a, s^{\prime}\right)\right]-\mathbb{E}_{\tau \sim \pi}\left[\delta_f\left(s, a, s^{\prime}\right]\right\}\right.
+            Let :math:`\delta_f(s, a, s^{\prime})\doteq R(s, a, s^{\prime})+\gamma f(s^{\prime})-f(s)`, then by :eq:`cpo-eq-29`, we easily obtain that:
+
+            .. math::
+                :label: cpo-eq-36
+
+                J\left(\pi'\right)-J(\pi)=\frac{1}{1-\gamma}\left\{\mathbb{E}_{\tau \sim \pi^{\prime}}\left[\delta_f\left(s, a, s^{\prime}\right)\right]-\mathbb{E}_{\tau \sim \pi}\left[\delta_f\left(s, a, s^{\prime}\right]\right\}\right.
 
             For the first term of the equation, let :math:`\bar{\delta}_f^{\pi'} \in \mathbb{R}^{|S|}` denote the vector of components :math:`\bar{\delta}_f^{\pi'}(s)=\mathbb{E}_{a \sim \pi', s' \sim P}\left[\delta_f\left(s, a, s'|s\right)\right]`, then
 
-            .. math:: \mathbb{E}_{\tau \sim \pi'}\left[d_f\left(s, a, s'\right)\right]=<d_{\pi'}, \bar{\delta}^f_{\pi'}>=<d_\pi,\bar{\delta}^f_{\pi'}>+<d_{\pi'}-d_\pi, \hat{d}^f_{\pi'}>
+            .. math::
+                :label: cpo-eq-37
+
+                \mathbb{E}_{\tau \sim \pi'}\left[d_f\left(s, a, s'\right)\right]=<d_{\pi'}, \bar{\delta}^f_{\pi'}>=<d_\pi,\bar{\delta}^f_{\pi'}>+<d_{\pi'}-d_\pi, \hat{d}^f_{\pi'}>
 
             By using Holder's inequality, for any :math:`p, q \in[1, \infty]`, such that :math:`\frac{1}{p}+\frac{1}{q}=1`.
             We have
 
             .. math::
+                :label: cpo-eq-38
 
-                \begin{aligned}
-                    & \mathbb{E}_{\tau \sim \pi^{\prime}}\left[\delta_f\left(s, a, s^{\prime}\right)\right] \leq \langle d_\pi, \bar{\delta}_f^{\pi^{\prime}} \rangle+\Vert d_{\pi'}-d_\pi \Vert_p \Vert \bar{\delta}_f^{\pi'}\Vert_q  \\
-                    &\mathbb{E}_{\tau \sim \pi'}\left[\delta_f\left(s, a, s'\right)\right] \geq \langle d_\pi, \bar{\delta}_f^{\pi'}\rangle-\Vert d_{\pi'}-d_\pi \Vert_p \Vert \bar{\delta}_f^{\pi'}\Vert_q
-                \end{aligned}
+                & \mathbb{E}_{\tau \sim \pi^{\prime}}\left[\delta_f\left(s, a, s^{\prime}\right)\right] \leq \langle d_\pi, \bar{\delta}_f^{\pi^{\prime}} \rangle+\Vert d_{\pi'}-d_\pi \Vert_p \Vert \bar{\delta}_f^{\pi'}\Vert_q  \\
+                &\mathbb{E}_{\tau \sim \pi'}\left[\delta_f\left(s, a, s'\right)\right] \geq \langle d_\pi, \bar{\delta}_f^{\pi'}\rangle-\Vert d_{\pi'}-d_\pi \Vert_p \Vert \bar{\delta}_f^{\pi'}\Vert_q
 
-            .. note::
+            .. hint::
 
                 **Hölder's inequality**:
 
@@ -1116,43 +1077,39 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
             The last step is to observe that, by the importance of sampling identity,
 
             .. math::
+                :label: cpo-eq-39
 
-                \begin{aligned}
                 \left\langle d^\pi, \bar{\delta}_f^{\pi^{\prime}}\right\rangle &=\underset{s \sim d^\pi, a \sim \pi^{\prime}, s^{\prime} \sim P}{\mathbb{E}}\left[\delta_f\left(s, a, s^{\prime}\right)\right] \\
                 &=\underset{s \sim d^\pi, a \sim \pi, s^{\prime} \sim P}{\mathbb{E}}\left[\left(\frac{\pi^{\prime}(a \mid s)}{\pi(a \mid s)}\right) \delta_f\left(s, a, s^{\prime}\right)\right]
-                \end{aligned}
 
             After grouping terms, the bounds are obtained.
 
             .. math::
+                :label: cpo-eq-40
 
-                \begin{aligned}
                 &\left\langle d^\pi, \bar{\delta}_f^{\pi^{\prime}}\right\rangle \pm\Vert d^{\pi^{\prime}}-d^\pi\Vert_p\Vert\bar{\delta}_f^{\pi^{\prime}}\Vert_q\\
                 &=\mathbb{E}_{\substack{s \sim d^\pi\\ a \sim \pi\\ s^{\prime} \sim P}}\left[\left(\frac{\pi'(a|s)}{\pi(a|s)}\right) \delta_f\left(s, a, s^{\prime}\right)\right] \pm 2 \epsilon_f^{\pi^{\prime}} D_{T V}\left(d_{\pi'} \| d_\pi\right)
-                \end{aligned}
 
             .. math::
+                :label: cpo-eq-41
 
-                \begin{aligned}
-                    &J(\pi')-J(\pi)\\
-                    &\leq \frac{1}{1-\gamma}\mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}[(\frac{\pi^{\prime}(a|s)}{\pi(a|s)}) \delta_f(s, a, s^{\prime})]+2 \epsilon_f^{\pi^{\prime}} D_{T V}(d^{\pi^{\prime}} \| d^\pi)-\mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}[\delta_f(s, a, s^{\prime})]\\
-                    &=\frac{1}{1-\gamma}(\mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}[(\frac{\pi^{\prime}(a|s)}{\pi(a|s)}) \delta_f(s, a, s^{\prime})]-\mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}[\delta_f(s, a, s^{\prime})]+2 \epsilon_f^{\pi^{\prime}} D_{T V}(d^{\pi^{\prime}} \| d^\pi))\\
-                    &=\frac{1}{1-\gamma}(\mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}[(\frac{\pi^{\prime}(a \mid s)}{\pi(a \mid s)}-1) \delta_f(s, a, s^{\prime})]+2 \epsilon_f^{\pi^{\prime}} D_{T V}(d^{\pi^{\prime}} \| d^\pi))
-                \end{aligned}
+                &J(\pi')-J(\pi)\\
+                &\leq \frac{1}{1-\gamma}\mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}[(\frac{\pi^{\prime}(a|s)}{\pi(a|s)}) \delta_f(s, a, s^{\prime})]+2 \epsilon_f^{\pi^{\prime}} D_{T V}(d^{\pi^{\prime}} \| d^\pi)-\mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}[\delta_f(s, a, s^{\prime})]\\
+                &=\frac{1}{1-\gamma}(\mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}[(\frac{\pi^{\prime}(a|s)}{\pi(a|s)}) \delta_f(s, a, s^{\prime})]-\mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}[\delta_f(s, a, s^{\prime})]+2 \epsilon_f^{\pi^{\prime}} D_{T V}(d^{\pi^{\prime}} \| d^\pi))\\
+                &=\frac{1}{1-\gamma}(\mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}[(\frac{\pi^{\prime}(a \mid s)}{\pi(a \mid s)}-1) \delta_f(s, a, s^{\prime})]+2 \epsilon_f^{\pi^{\prime}} D_{T V}(d^{\pi^{\prime}} \| d^\pi))
 
             The lower bound is the same.
 
             .. math::
+                :label: cpo-eq-42
 
-                \begin{aligned}
                 J\left(\pi^{\prime}\right)-J(\pi) \geq \mathbb{E}_{\substack{s \sim d^\pi \\ a \sim \pi \\ s' \sim P}}\left[\left(\frac{\pi^{\prime}(a|s)}{\pi(a|s)}-1\right) \delta_f\left(s, a, s^{\prime}\right)\right]-2 \epsilon_f^{\pi^{\prime}} D_{T V}\left(d^{\pi^{\prime}} \| d^\pi\right)
-                \end{aligned}
 
     .. tab-item:: Proof of Lemma 3
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Proof
@@ -1160,33 +1117,30 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
             First, using Corollary 4, we obtain
 
             .. math::
+                :label: cpo-eq-43
 
-                \begin{aligned}
-                    \left\|d^{\pi^{\prime}}-d^\pi\right\|_1 &=\gamma\left\|\bar{G} \Delta d^\pi\right\|_1 \\
-                    & \leq \gamma\|\bar{G}\|_1\left\|\Delta d^\pi\right\|_1
-                \end{aligned}
+                \left\|d^{\pi^{\prime}}-d^\pi\right\|_1 &=\gamma\left\|\bar{G} \Delta d^\pi\right\|_1 \\
+                & \leq \gamma\|\bar{G}\|_1\left\|\Delta d^\pi\right\|_1
 
             Meanwhile,
 
             .. math::
+                :label: cpo-eq-44
 
-                \begin{aligned}
-                    \|\bar{G}\|_1 &=\left\|\left(I-\gamma P_{\pi^{\prime}}\right)^{-1}\right\|_1 \\ &=\left\|\sum_{t=0}^{\infty} \gamma^t P_{\pi^{\prime}}^t\right\|_1 \\ & \leq \sum_{t=0}^{\infty} \gamma^t\left\|P_{\pi^{\prime}}\right\|_1^t \\ &=\left(1-\gamma\left\|P_{\pi^{\prime}}\right\|_1\right)^{-1} \\ &=(1-\gamma)^{-1}
-                \end{aligned}
+                \|\bar{G}\|_1 &=\left\|\left(I-\gamma P_{\pi^{\prime}}\right)^{-1}\right\|_1 \\ &=\left\|\sum_{t=0}^{\infty} \gamma^t P_{\pi^{\prime}}^t\right\|_1 \\ & \leq \sum_{t=0}^{\infty} \gamma^t\left\|P_{\pi^{\prime}}\right\|_1^t \\ &=\left(1-\gamma\left\|P_{\pi^{\prime}}\right\|_1\right)^{-1} \\ &=(1-\gamma)^{-1}
 
             And, using Corollary 5, we have,
 
             .. math::
-                :nowrap:
+                :label: cpo-eq-45
 
-                    \begin{eqnarray}
-                        \Delta d^\pi\left[s^{\prime}\right] &=& \sum_s \Delta\left(s^{\prime} \mid s\right) d^\pi(s) \\
-                        &=&\sum_s \left\{ P_{\pi^{\prime}}\left(s^{\prime} \mid s\right)-P_\pi\left(s^{\prime} \mid s\right)  \right\} d_{\pi}(s)\tag{20} \\
-                        &=&\sum_s \left\{ P\left(s^{\prime} \mid s, a\right) \pi^{\prime}(a \mid s)-P\left(s^{\prime} \mid s, a\right) \pi(a \mid s)  \right\} d_{\pi}(s)\\
-                        &=&\sum_s \left\{ P\left(s^{\prime} \mid s, a\right)\left[\pi^{\prime}(a \mid s)-\pi(a \mid s)\right] \right\} d_{\pi}(s)
-                    \end{eqnarray}
+                \Delta d^\pi\left[s^{\prime}\right] &= \sum_s \Delta\left(s^{\prime} \mid s\right) d^\pi(s) \\
+                &=\sum_s \left\{ P_{\pi^{\prime}}\left(s^{\prime} \mid s\right)-P_\pi\left(s^{\prime} \mid s\right)  \right\} d_{\pi}(s) \\
+                &=\sum_s \left\{ P\left(s^{\prime} \mid s, a\right) \pi^{\prime}(a \mid s)-P\left(s^{\prime} \mid s, a\right) \pi(a \mid s)  \right\} d_{\pi}(s)\\
+                &=\sum_s \left\{ P\left(s^{\prime} \mid s, a\right)\left[\pi^{\prime}(a \mid s)-\pi(a \mid s)\right] \right\} d_{\pi}(s)
 
-            .. note::
+
+            .. hint::
 
                 **Total variation distance of probability measures**
 
@@ -1195,10 +1149,10 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
             Finally, using :ref:`(20) <cpo-eq-18>`, we obtain,
 
             .. math::
+                :label: cpo-eq-46
 
-                \begin{aligned}
                 \left\|\Delta d^\pi\right\|_1 &=\sum_{s^{\prime}}\left|\sum_s \Delta\left(s^{\prime} \mid s\right) d^\pi(s)\right| \\ & \leq \sum_{s, s^{\prime}}\left|\Delta\left(s^{\prime} \mid s\right)\right| d^\pi(s) \\ &=\sum_{s, s^{\prime}}\left|\sum_a P\left(s^{\prime} \mid s, a\right)\left(\pi^{\prime}(a \mid s)-\pi(a \mid s)\right)\right| d^\pi(s) \\ & \leq \sum_{s, a, s^{\prime}} P\left(s^{\prime} \mid s, a\right)\left|\pi^{\prime}(a \mid s)-\pi(a \mid s)\right| d^\pi(s) \\ &=\sum_{s^{\prime}} P\left(s^{\prime} \mid s, a\right) \sum_{s, a}\left|\pi^{\prime}(a \mid s)-\pi(a \mid s)\right| d^\pi(s) \\ &=\sum_{s, a}\left|\pi^{\prime}(a \mid s)-\pi(a \mid s)\right| d^\pi(s) \\ &=\sum_a \underset{s \sim d^\pi}{ } \mathbb{E}^{\prime}|(a \mid s)-\pi(a \mid s)| \\ &=2 \underset{s \sim d^\pi}{\mathbb{E}}\left[D_{T V}\left(\pi^{\prime}|| \pi\right)[s]\right]
-                \end{aligned}
+
 
 ------
 
@@ -1207,7 +1161,7 @@ Proof of Analytical Solution to LQCLP
 
 .. card::
     :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-footer: sd-font-weight-bold
 
     Theorem 2 (Optimizing Linear Objective with Linear, Quadratic Constraints)
@@ -1215,13 +1169,12 @@ Proof of Analytical Solution to LQCLP
     Consider the problem
 
     .. math::
-        :nowrap:
+        :label: cpo-eq-47
 
-        \begin{eqnarray}
-            p^*&=&\min_x g^T x \\
-            \text { s.t. } b^T x+c &\leq& 0 \\
-            x^T H x &\leq& \delta
-        \end{eqnarray}
+        p^*&=\min_x g^T x \\
+        \text { s.t. }\quad & b^T x+c \leq 0 \\
+        & x^T H x \leq \delta
+
 
     where
     :math:`g, b, x \in \mathbb{R}^n, c, \delta \in \mathbb{R}, \delta>0, H \in \mathbb{S}^n`,
@@ -1229,20 +1182,20 @@ Proof of Analytical Solution to LQCLP
     point, the optimal point :math:`x^*` satisfies
 
     .. math::
+        :label: cpo-eq-48
 
-        \begin{aligned}
         x^*=-\frac{1}{\lambda^*} H^{-1}\left(g+\nu^* b\right)
-        \end{aligned}
+
 
     where :math:`\lambda^*` and :math:`\nu^*` are defined by
 
     .. math::
+        :label: cpo-eq-49
 
-        \begin{aligned}
         &\nu^*=\left(\frac{\lambda^* c-r}{s}\right)_{+}, \\
         &\lambda^*=\arg \max _{\lambda \geq 0} \begin{cases}f_a(\lambda) \doteq \frac{1}{2 \lambda}\left(\frac{r^2}{s}-q\right)+\frac{\lambda}{2}\left(\frac{c^2}{s}-\delta\right)-\frac{r c}{s} & \text { if } \lambda c-r>0 \\
         f_b(\lambda) \doteq-\frac{1}{2}\left(\frac{q}{\lambda}+\lambda \delta\right) & \text { otherwise }\end{cases}
-        \end{aligned}
+
 
     with :math:`q=g^T H^{-1} g, r=g^T H^{-1} b`, and
     :math:`s=b^T H^{-1} b`.
@@ -1253,7 +1206,10 @@ Proof of Analytical Solution to LQCLP
     :math:`\Lambda_b \doteq\{\lambda \mid \lambda c-r \leq 0, \lambda \geq 0\}`.
     The value of :math:`\lambda^*` satisfies
 
-    .. math:: \lambda^* \in\left\{\lambda_a^* \doteq \operatorname{Proj}\left(\sqrt{\frac{q-r^2 / s}{\delta-c^2 / s}}, \Lambda_a\right), \lambda_b^* \doteq \operatorname{Proj}\left(\sqrt{\frac{q}{\delta}}, \Lambda_b\right)\right\}
+    .. math::
+        :label: cpo-eq-50
+
+        \lambda^* \in\left\{\lambda_a^* \doteq \operatorname{Proj}\left(\sqrt{\frac{q-r^2 / s}{\delta-c^2 / s}}, \Lambda_a\right), \lambda_b^* \doteq \operatorname{Proj}\left(\sqrt{\frac{q}{\delta}}, \Lambda_b\right)\right\}
 
     with :math:`\lambda^*=\lambda_a^*` if
     :math:`f_a\left(\lambda_a^*\right)>f_b\left(\lambda_b^*\right)` and
@@ -1266,58 +1222,64 @@ Proof of Analytical Solution to LQCLP
 
 .. dropdown:: Proof for Theorem 2 (Click here)
     :color: info
-    :class-body: sd-border-{3}
+    :class-body: sd-outline-info
 
     This is a convex optimization problem. When there is at least one strictly feasible point, strong duality holds by Slater's theorem.
     We exploit strong duality to solve the problem analytically.
     First using the method of Lagrange multipliers, :math:`\exists \lambda, \mu \geq 0`
 
-    .. math:: \mathcal{L}(x, \lambda, \nu)=g^T x+\frac{\lambda}{2}\left(x^T H x-\delta\right)+\nu\left(b^T x+c\right)
+    .. math::
+        :label: cpo-eq-51
+
+        \mathcal{L}(x, \lambda, \nu)=g^T x+\frac{\lambda}{2}\left(x^T H x-\delta\right)+\nu\left(b^T x+c\right)
 
     Because of strong duality,
 
     :math:`p^*=\min_x\max_{\lambda \geq 0, \nu \geq 0} \mathcal{L}(x, \lambda, \nu)`
 
-    .. math:: \nabla_x \mathcal{L}(x, \lambda, \nu)=\lambda H x+(g+\nu b)
+    .. math::
+        :label: cpo-eq-52
+
+        \nabla_x \mathcal{L}(x, \lambda, \nu)=\lambda H x+(g+\nu b)
 
     Plug in :math:`x^*`,
 
     :math:`H \in \mathbb{S}^n \Rightarrow H^T=H \Rightarrow\left(H^{-1}\right)^T=H^{-1}`
 
     .. math::
+        :label: cpo-eq-53
 
-        \begin{aligned}
         x^T H x
         &=\left(-\frac{1}{\lambda} H^{-1}(g+\nu b)\right)^T H\left(-\frac{1}{\lambda} H^{-1}(g+\nu b)\right)\\
         &=\frac{1}{\lambda^2}(g+\nu b)^T H^{-1}(g+\nu b) -\frac{1}{2 \lambda}(g+\nu b)^T H^{-1}(g+\nu b)\\
         &=-\frac{1}{2 \lambda}\left(g^T H^{-1} g+\nu g^T H^{-1} b+\nu b^T H^{-1} g+\nu^2 b^T H^{-1} b\right)\\
         &=-\frac{1}{2 \lambda}\left(q+2 \nu r+\nu^2 s\right)
-        \end{aligned}
+
 
     .. math::
+        :label: cpo-eq-54
 
-        \begin{aligned}
-            p^*
-            &=\min_x \underset{\begin{subarray}{c} \lambda \geq 0 \\ \nu \geq 0\end{subarray}}{\max}
-            \; g^T x + \frac{\lambda}{2} \left( x^T H x - \delta \right) + \nu \left(b^Tx +c \right) \\
-            &\xlongequal[duality]{strong} \underset{\begin{subarray}{c} \lambda \geq 0 \\ \nu \geq 0\end{subarray}}{\max} \min_x  \; \frac{\lambda}{2} x^T H x + \left(g + \nu b\right)^T x + \left( \nu c - \frac{1}{2} \lambda \delta \right)\\
-            & \;\;\; \implies x^* = -\frac{1}{\lambda} H^{-1} \left(g + \nu b \right) ~~~ \nabla_x \mathcal L(x,\lambda, \nu) =0\\
-            &\xlongequal{\text{Plug in } x^*} \underset{\begin{subarray}{c} \lambda \geq 0 \\ \nu \geq 0\end{subarray}}{\max}  \; -\frac{1}{2\lambda} \left(g + \nu b \right)^T H^{-1} \left(g + \nu b \right) + \left( \nu c - \frac{1}{2} \lambda \delta \right)\\
-            &\xlongequal[s \doteq b^T H^{-1} b]{
-                q \doteq g^T H^{-1} g,
-                r \doteq g^T H^{-1} b
-            } \underset{\begin{subarray}{c} \lambda \geq 0 \\ \nu \geq 0\end{subarray}}{\max}  \; -\frac{1}{2\lambda} \left(q + 2 \nu r + \nu^2 s\right) + \left( \nu c - \frac{1}{2} \lambda \delta \right)\\
-            & \;\;\; \implies \frac {\partial\mathcal L}{\partial\nu} = -\frac{1}{2\lambda}\left( 2r + 2 \nu s \right) + c \\
-            &~~ \text{Optimizing single-variable convex quadratic function over } \mathbb R_+ \\
-            & \;\;\; \implies \nu = \left(\frac{\lambda c - r}{s} \right)_+ \\
-            &= \max_{\lambda \geq 0} \;  \left\{ \begin{array}{ll}
-            \frac{1}{2\lambda} \left(\frac{r^2}{s} -q\right) + \frac{\lambda}{2}\left(\frac{c^2}{s} - \delta\right) - \frac{rc}{s}  & \text{if } \lambda \in \Lambda_a  \\
-            -\frac{1}{2} \left(\frac{q}{\lambda}  + \lambda \delta\right) & \text{if } \lambda \in \Lambda_b
-            \end{array}\right.\\
-            &~~~~ \text{where} \begin{array}{ll}
-            \Lambda_a \doteq \{\lambda | \lambda c - r  > 0, \;\; \lambda \geq 0\}, \\ \Lambda_b \doteq \{\lambda | \lambda c - r \leq 0, \;\; \lambda \geq 0\}
-            \end{array}
-        \end{aligned}
+        p^*
+        &=\min_x \underset{\begin{subarray}{c} \lambda \geq 0 \\ \nu \geq 0\end{subarray}}{\max}
+        \; g^T x + \frac{\lambda}{2} \left( x^T H x - \delta \right) + \nu \left(b^Tx +c \right) \\
+        &\xlongequal[duality]{strong} \underset{\begin{subarray}{c} \lambda \geq 0 \\ \nu \geq 0\end{subarray}}{\max} \min_x  \; \frac{\lambda}{2} x^T H x + \left(g + \nu b\right)^T x + \left( \nu c - \frac{1}{2} \lambda \delta \right)\\
+        & \;\;\; \implies x^* = -\frac{1}{\lambda} H^{-1} \left(g + \nu b \right) ~~~ \nabla_x \mathcal L(x,\lambda, \nu) =0\\
+        &\xlongequal{\text{Plug in } x^*} \underset{\begin{subarray}{c} \lambda \geq 0 \\ \nu \geq 0\end{subarray}}{\max}  \; -\frac{1}{2\lambda} \left(g + \nu b \right)^T H^{-1} \left(g + \nu b \right) + \left( \nu c - \frac{1}{2} \lambda \delta \right)\\
+        &\xlongequal[s \doteq b^T H^{-1} b]{
+            q \doteq g^T H^{-1} g,
+            r \doteq g^T H^{-1} b
+        } \underset{\begin{subarray}{c} \lambda \geq 0 \\ \nu \geq 0\end{subarray}}{\max}  \; -\frac{1}{2\lambda} \left(q + 2 \nu r + \nu^2 s\right) + \left( \nu c - \frac{1}{2} \lambda \delta \right)\\
+        & \;\;\; \implies \frac {\partial\mathcal L}{\partial\nu} = -\frac{1}{2\lambda}\left( 2r + 2 \nu s \right) + c \\
+        &~~ \text{Optimizing single-variable convex quadratic function over } \mathbb R_+ \\
+        & \;\;\; \implies \nu = \left(\frac{\lambda c - r}{s} \right)_+ \\
+        &= \max_{\lambda \geq 0} \;  \left\{ \begin{array}{ll}
+        \frac{1}{2\lambda} \left(\frac{r^2}{s} -q\right) + \frac{\lambda}{2}\left(\frac{c^2}{s} - \delta\right) - \frac{rc}{s}  & \text{if } \lambda \in \Lambda_a  \\
+        -\frac{1}{2} \left(\frac{q}{\lambda}  + \lambda \delta\right) & \text{if } \lambda \in \Lambda_b
+        \end{array}\right.\\
+        &~~~~ \text{where} \begin{array}{ll}
+        \Lambda_a \doteq \{\lambda | \lambda c - r  > 0, \;\; \lambda \geq 0\}, \\ \Lambda_b \doteq \{\lambda | \lambda c - r \leq 0, \;\; \lambda \geq 0\}
+        \end{array}
+
 
     :math:`\lambda \in \Lambda_a \Rightarrow \nu>0`, then plug in
     :math:`\nu=\frac{\lambda c-r}{s} ; \lambda \in \Lambda_a \Rightarrow \nu \leq 0`,
