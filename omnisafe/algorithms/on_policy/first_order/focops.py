@@ -39,10 +39,23 @@ class FOCOPS(PolicyGradient):
     """
 
     def _init(self) -> None:
+        """Initialize the FOCOPS specific model.
+
+        The FOCOPS algorithm uses a Lagrange multiplier to balance the cost and reward.
+        """
         super()._init()
         self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
+        r"""Log the FOCOPS specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   ``Metrics/LagrangeMultiplier``
+                -   The Lagrange multiplier.
+        """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
 
@@ -53,6 +66,32 @@ class FOCOPS(PolicyGradient):
     def _loss_pi(
         self, obs: torch.Tensor, act: torch.Tensor, logp: torch.Tensor, adv: torch.Tensor
     ) -> Tuple[torch.Tensor, Dict[str, float]]:
+        r"""Compute pi/actor loss.
+
+        In FOCOPS, the loss is defined as:
+
+        .. math::
+            :nowrap:
+
+            \begin{eqnarray}
+            L = \nabla_\theta D_{K L}\left(\pi_\theta^{'} \| \pi_{\theta}\right)[s]
+            -\frac{1}{\eta} \underset{a \sim \pi_{\theta}}
+            {\mathbb{E}}\left[\frac{\nabla_\theta \pi_\theta(a \mid s)}
+            {\pi_{\theta}(a \mid s)}\left(A^{R}_{\pi_{\theta}}(s, a)
+            -\lambda A^C_{\pi_{\theta}}(s, a)\right)\right]
+            \end{eqnarray}
+
+        where :math:`\eta` is a hyperparameter, :math:`\lambda` is the Lagrange multiplier,
+        :math:`A_{\pi_{\theta_k}}(s, a)` is the advantage function,
+        :math:`A^C_{\pi_{\theta_k}}(s, a)` is the cost advantage function,
+        :math:`\pi^*` is the optimal policy, and :math:`\pi_{\theta}` is the current policy.
+
+        Args:
+            obs (torch.Tensor): ``observation`` stored in buffer.
+            act (torch.Tensor): ``action`` stored in buffer.
+            logp (torch.Tensor): ``log probability`` of action stored in buffer.
+            adv (torch.Tensor): ``advantage`` stored in buffer.
+        """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
         std = self._actor_critic.actor.std
@@ -70,15 +109,40 @@ class FOCOPS(PolicyGradient):
         return loss, info
 
     def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
+        r"""Compute surrogate loss.
+
+        FOCOPS uses the following surrogate loss:
+
+        .. math::
+            L = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
+            - \lambda A^C_{\pi_{\theta}}(s, a)]
+
+        Args:
+            adv (torch.Tensor): reward advantage
+            cost_adv (torch.Tensor): cost advantage
+        """
         return (adv_r - self._lagrange.lagrangian_multiplier * adv_c) / (
             1 + self._lagrange.lagrangian_multiplier
         )
 
     def _update(self) -> None:
-        """Update actor, critic, running statistics as we used in the :class:`PolicyGradient`.
+        r"""Update actor, critic, and Lagrange multiplier parameters.
 
-        In addition, we also update the Lagrange multiplier parameter,
-        by calling the :meth:`update_lagrange_multiplier` function.
+        In FOCOPS, the Lagrange multiplier is updated as the naive lagrange multiplier update:
+
+        .. math::
+            \lambda_{k+1} = \lambda_k + \eta (J^{C}_{\pi_\theta} - C)
+
+        where :math:`\lambda_k` is the Lagrange multiplier at iteration :math:`k`,
+        :math:`\eta` is the Lagrange multiplier learning rate,
+        :math:`J^{C}_{\pi_\theta}` is the cost of the current policy,
+        and :math:`C` is the cost limit.
+
+        Then in each iteration of the policy update, FOCOPS calculates current policy's
+        distribution, which used to calculate the policy loss.
+
+        Args:
+            self (object): object of the class.
         """
         # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
@@ -121,7 +185,7 @@ class FOCOPS(PolicyGradient):
                 old_mean,
                 old_std,
             ) in dataloader:
-                self._update_rewrad_critic(obs, target_value_r)
+                self._update_reward_critic(obs, target_value_r)
                 if self._cfgs.algo_cfgs.use_cost:
                     self._update_cost_critic(obs, target_value_c)
 

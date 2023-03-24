@@ -32,18 +32,27 @@ from omnisafe.utils import distributed
 
 
 @registry.register
-# pylint: disable-next=too-many-instance-attributes, too-few-public-methods
+# pylint: disable-next=too-many-instance-attributes, too-few-public-methods, line-too-long
 class PolicyGradient(BaseAlgo):
     """The Policy Gradient algorithm.
 
     References:
         - Title: Policy Gradient Methods for Reinforcement Learning with Function Approximation
         - Authors: Richard S. Sutton, David McAllester, Satinder Singh, Yishay Mansour.
-        - URL: `Policy Gradient <https://proceedings.neurips.cc/paper
-        /1999/file/64d828b85b0bed98e80ade0a5c43b0f-Paper.pdf>`_
+        - URL: `PG <https://proceedings.neurips.cc/paper/1999/file64d828b85b0bed98e80ade0a5c43b0f-Paper.pdf>`_
     """
 
     def _init_env(self) -> None:
+        """Initialize the environment.
+
+        Omnisafe use :class:`omnisafe.adapter.OnPolicyAdapter` to adapt the environment to the algorithm.
+
+        User can customize the environment by inheriting this function.
+
+        Example:
+            >>> def _init_env(self) -> None:
+            >>>    self._env = CustomAdapter()
+        """
         self._env = OnPolicyAdapter(
             self._env_id, self._cfgs.train_cfgs.vector_env_nums, self._seed, self._cfgs
         )
@@ -57,6 +66,17 @@ class PolicyGradient(BaseAlgo):
         )
 
     def _init_model(self) -> None:
+        """Initialize the model.
+
+        Omnisafe use :class:`omnisafe.models.actor_critic.constraint_actor_critic.
+        ConstraintActorCritic` as the default model.
+
+        User can customize the model by inheriting this function.
+
+        Example:
+            >>> def _init_model(self) -> None:
+            >>>    self._actor_critic = CustomActorCritic()
+        """
         self._actor_critic = ConstraintActorCritic(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
@@ -74,6 +94,16 @@ class PolicyGradient(BaseAlgo):
             )
 
     def _init(self) -> None:
+        """The initialization of the algorithm.
+
+        User can define the initialization of the algorithm by inheriting this function.
+
+        Example:
+            >>> def _init(self) -> None:
+            >>>    super()._init()
+            >>>    self._buffer = CustomBuffer()
+            >>>    self._model = CustomModel()
+        """
         self._buf = VectorOnPolicyBuffer(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
@@ -90,6 +120,62 @@ class PolicyGradient(BaseAlgo):
         )
 
     def _init_log(self) -> None:
+        """Log info about epoch.
+
+            .. list-table::
+
+                *   -   Things to log
+                    -   Description
+                *   -   Train/Epoch
+                    -   Current epoch.
+                *   -   Metrics/EpCost
+                    -   Average cost of the epoch.
+                *   -   Metrics/EpCost
+                    -   Average cost of the epoch.
+                *   -   Metrics/EpRet
+                    -   Average return of the epoch.
+                *   -   Metrics/EpLen
+                    -   Average length of the epoch.
+                *   -   Values/reward
+                    -   Average value in :meth:`roll_out()` (from critic network) of the epoch.
+                *   -   Values/cost
+                    -   Average cost in :meth:`roll_out()` (from critic network) of the epoch.
+                *   -   Values/Adv
+                    -   Average advantage in :meth:`roll_out()` of the epoch.
+                *   -   Loss/Loss_pi
+                    -   Loss of the policy network.
+                *   -   Loss/Delta_loss_pi
+                    -   Delta loss of the policy network.
+                *   -   Loss/Loss_reward_critic
+                    -   Loss of the value network.
+                *   -   Loss/Delta_loss_reward_critic
+                    -   Delta loss of the value network.
+                *   -   Loss/Loss_cost_critic
+                    -   Loss of the cost network.
+                *   -   Loss/Delta_loss_cost_critic
+                    -   Delta loss of the cost network.
+                *   -   Train/Entropy
+                    -   Entropy of the policy network.
+                *   -   Train/KL
+                    -   KL divergence of the policy network.
+                *   -   Train/StopIters
+                    -   Number of iterations of the policy network.
+                *   -   Train/PolicyRatio
+                    -   Ratio of the policy network.
+                *   -   Train/LR
+                    -   Learning rate of the policy network.
+                *   -   Misc/Seed
+                    -   Seed of the experiment.
+                *   -   Misc/TotalEnvSteps
+                    -   Total steps of the experiment.
+                *   -   Time
+                    -   Total time.
+                *   -   FPS
+                    -   Frames per second of the epoch.
+
+        Args:
+            epoch (int): current epoch.
+        """
         self._logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,
             exp_name=self._cfgs.exp_name,
@@ -142,11 +228,14 @@ class PolicyGradient(BaseAlgo):
         self._logger.register_key('Time/FPS')
 
     def learn(self) -> Tuple[Union[int, float], ...]:
-        """This is main function for algorithm update, divided into the following steps:
+        r"""This is main function for algorithm update, divided into the following steps,
 
         - :meth:`rollout`: collect interactive data from environment.
         - :meth:`update`: perform actor/critic updates.
         - :meth:`log`: epoch/update information for visualization and terminal log print.
+
+        Args:
+            self (object): object of the class.
         """
         start_time = time.time()
         self._logger.log('INFO: Start training')
@@ -200,6 +289,45 @@ class PolicyGradient(BaseAlgo):
         return ep_ret, ep_cost, ep_len
 
     def _update(self) -> None:
+        r"""Update actor, critic, following next steps:
+
+        -  Get the ``data`` from buffer
+
+        .. hint::
+
+            .. list-table::
+
+                *   -   obs
+                    -   ``observaion`` stored in buffer.
+                *   -   act
+                    -   ``action`` stored in buffer.
+                *   -   target_value_r
+                    -   ``target value`` stored in buffer.
+                *   -   target_value_c
+                    -   ``target cost`` stored in buffer.
+                *   -   logp
+                    -   ``log probability`` stored in buffer.
+                *   -   adv
+                    -   ``estimated advantage`` (e.g. **GAE**) stored in buffer.
+                *   -   cost_adv
+                    -   ``estimated cost advantage`` (e.g. **GAE**) stored in buffer.
+
+        -  Update value net by :meth:`_update_reward_critic()`.
+        -  Update cost net by :meth:`_update_cost_critic()`.
+        -  Update policy net by :meth:`_update_actor()`.
+
+        The basic process of each update is as follows:
+
+        #. Get the data from buffer.
+        #. Shuffle the data and split it into mini-batch data.
+        #. Get the loss of network.
+        #. Update the network by loss.
+        #. Repeat steps 2, 3 until the number of mini-batch data is used up.
+        #. Repeat steps 2, 3, 4 until the KL divergence violates the limit.
+
+        Args:
+            self (object): object of the class.
+        """
         data = self._buf.get()
         obs, act, logp, target_value_r, target_value_c, adv_r, adv_c = (
             data['obs'],
@@ -230,7 +358,7 @@ class PolicyGradient(BaseAlgo):
                 adv_r,
                 adv_c,
             ) in dataloader:
-                self._update_rewrad_critic(obs, target_value_r)
+                self._update_reward_critic(obs, target_value_r)
                 if self._cfgs.algo_cfgs.use_cost:
                     self._update_cost_critic(obs, target_value_c)
                 self._update_actor(obs, act, logp, adv_r, adv_c)
@@ -257,7 +385,26 @@ class PolicyGradient(BaseAlgo):
             }
         )
 
-    def _update_rewrad_critic(self, obs: torch.Tensor, target_value_r: torch.Tensor) -> None:
+    def _update_reward_critic(self, obs: torch.Tensor, target_value_r: torch.Tensor) -> None:
+        r"""Update value network under a double for loop.
+
+        The loss function is ``MSE loss``, which is defined in ``torch.nn.MSELoss``.
+        Specifically, the loss function is defined as:
+
+        .. math::
+            L = \frac{1}{N} \sum_{i=1}^N (\hat{V} - V)^2
+
+        where :math:`\hat{V}` is the predicted cost and :math:`V` is the target cost.
+
+        #. Compute the loss function.
+        #. Add the ``critic norm`` to the loss function if ``use_critic_norm`` is ``True``.
+        #. Clip the gradient if ``use_max_grad_norm`` is ``True``.
+        #. Update the network by loss function.
+
+        Args:
+            obs (torch.Tensor): ``observation`` stored in buffer.
+            target_value_r (torch.Tensor): ``target_value_r`` stored in buffer.
+        """
         self._actor_critic.reward_critic_optimizer.zero_grad()
         loss = nn.functional.mse_loss(self._actor_critic.reward_critic(obs)[0], target_value_r)
 
@@ -277,6 +424,25 @@ class PolicyGradient(BaseAlgo):
         self._logger.store(**{'Loss/Loss_reward_critic': loss.mean().item()})
 
     def _update_cost_critic(self, obs: torch.Tensor, target_value_c: torch.Tensor) -> None:
+        r"""Update value network under a double for loop.
+
+        The loss function is ``MSE loss``, which is defined in ``torch.nn.MSELoss``.
+        Specifically, the loss function is defined as:
+
+        .. math::
+            L = \frac{1}{N} \sum_{i=1}^N (\hat{V} - V)^2
+
+        where :math:`\hat{V}` is the predicted cost and :math:`V` is the target cost.
+
+        #. Compute the loss function.
+        #. Add the ``critic norm`` to the loss function if ``use_critic_norm`` is ``True``.
+        #. Clip the gradient if ``use_max_grad_norm`` is ``True``.
+        #. Update the network by loss function.
+
+        Args:
+            obs (torch.Tensor): ``observation`` stored in buffer.
+            target_value_c (torch.Tensor): ``target_value_c`` stored in buffer.
+        """
         self._actor_critic.cost_critic_optimizer.zero_grad()
         loss = nn.functional.mse_loss(self._actor_critic.cost_critic(obs)[0], target_value_c)
 
@@ -303,6 +469,26 @@ class PolicyGradient(BaseAlgo):
         adv_r: torch.Tensor,
         adv_c: torch.Tensor,
     ) -> None:
+        r"""Update policy network under a double for loop.
+
+            #. Compute the loss function.
+            #. Clip the gradient if ``use_max_grad_norm`` is ``True``.
+            #. Update the network by loss function.
+
+            .. warning::
+
+                For some ``KL divergence`` based algorithms (e.g. TRPO, CPO, etc.),
+                the ``KL divergence`` between the old policy and the new policy is calculated.
+                And the ``KL divergence`` is used to determine whether the update is successful.
+                If the ``KL divergence`` is too large, the update will be terminated.
+
+        Args:
+            obs (torch.Tensor): ``observation`` stored in buffer.
+            act (torch.Tensor): ``action`` stored in buffer.
+            log_p (torch.Tensor): ``log_p`` stored in buffer.
+            adv_r (torch.Tensor): ``advantage`` stored in buffer.
+            adv_c (torch.Tensor): ``cost_advantage`` stored in buffer.
+        """
         adv = self._compute_adv_surrogate(adv_r, adv_c)
         loss, info = self._loss_pi(obs, act, logp, adv)
         self._actor_critic.actor_optimizer.zero_grad()
@@ -325,6 +511,14 @@ class PolicyGradient(BaseAlgo):
     def _compute_adv_surrogate(  # pylint: disable=unused-argument
         self, adv_r: torch.Tensor, adv_c: torch.Tensor
     ) -> torch.Tensor:
+        """Compute surrogate loss.
+
+        Policy Gradient only use reward advantage.
+
+        Args:
+            adv_r (torch.Tensor): reward advantage
+            adv_c (torch.Tensor): cost advantage
+        """
         return adv_r
 
     def _loss_pi(
@@ -334,6 +528,26 @@ class PolicyGradient(BaseAlgo):
         logp: torch.Tensor,
         adv: torch.Tensor,
     ) -> Tuple[torch.Tensor, Dict[str, float]]:
+        r"""Computing pi/actor loss.
+
+        In Policy Gradient, the loss is defined as:
+
+        .. math::
+
+            L = -\mathbb{E}_{s_t \sim \rho_\theta} [
+                \sum_{t=0}^T ( \frac{\pi_\theta ^{'}(a_t|s_t)}{\pi_\theta(a_t|s_t)} )
+                 A^{R}_{\pi_{\theta}}(s_t, a_t)
+            ]
+
+        where :math:`\pi_\theta` is the policy network, :math:`\pi_\theta ^{'}`
+        is the new policy network, :math:`A^{R}_{\pi_{\theta}}(s_t, a_t)` is the advantage.
+
+        Args:
+            obs (torch.Tensor): ``observation`` stored in buffer.
+            act (torch.Tensor): ``action`` stored in buffer.
+            logp (torch.Tensor): ``log probability`` of action stored in buffer.
+            adv (torch.Tensor): ``advantage`` stored in buffer.
+        """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
         std = self._actor_critic.actor.std

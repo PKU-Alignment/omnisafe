@@ -5,18 +5,13 @@ Quick Facts
 -----------
 
 .. card::
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-body: sd-font-weight-bold
 
-    #. FOCOPS is an :bdg-success-line:`on-policy` algorithm.
-    #. FOCOPS can be used for environments with both :bdg-success-line:`discrete` and :bdg-success-line:`continuous` action spaces.
-    #. FOCOPS is an algorithm using :bdg-success-line:`first-order method`.
-    #. The OmniSafe implementation of FOCOPS support :bdg-success-line:`parallelization`.
-
-------
-
-.. contents:: Table of Contents
-    :depth: 3
+    #. FOCOPS is an :bdg-info-line:`on-policy` algorithm.
+    #. FOCOPS can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
+    #. FOCOPS is an algorithm using :bdg-info-line:`first-order method`.
+    #. The OmniSafe implementation of FOCOPS support :bdg-info-line:`parallelization`.
 
 FOCOPS Theorem
 --------------
@@ -33,7 +28,7 @@ Background
 
         .. card::
             :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-warning  sd-rounded-1 sd-font-weight-bold
 
             Problems of CPO
             ^^^
@@ -48,7 +43,7 @@ Background
 
         .. card::
             :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-primary  sd-rounded-1 sd-font-weight-bold
 
             Advantage of FOCOPS
             ^^^
@@ -81,13 +76,12 @@ In the previous chapters, you learned that CPO solves the following optimization
 .. _`focops-eq-1`:
 
 .. math::
-    :nowrap:
+    :label: focops-eq-1
 
-    \begin{eqnarray}
-        &&\pi_{k+1}=\arg \max _{\pi \in \Pi_{\boldsymbol{\theta}}} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\tag{1}\\
-        \text{s.t.} \quad &&J^{C_i}\left(\pi_k\right) \leq d_i-\frac{1}{1-\gamma} \mathbb{E}_{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C_i}_{\pi_k}(s, a)\right] \quad \forall i \tag{2} \\
-        &&\bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta\tag{3}
-    \end{eqnarray}
+    &\pi_{k+1}=\arg \max _{\pi \in \Pi_{\boldsymbol{\theta}}} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\\
+    \text{s.t.} \quad &J^{C_i}\left(\pi_k\right) \leq d_i-\frac{1}{1-\gamma} \mathbb{E}_{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C_i}_{\pi_k}(s, a)\right] \quad \forall i  \\
+    &\bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta
+
 
 
 where :math:`\prod_{\theta}\subseteq\prod` denotes the set of parametrized policies with parameters :math:`\theta`, and :math:`\bar{D}_{K L}` is the KL divergence of two policy.
@@ -97,7 +91,7 @@ For you to have a clearer understanding, we hope that you will read the next sec
 
 .. card::
     :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-primary  sd-rounded-1 sd-font-weight-bold
 
     Questions
     ^^^
@@ -112,15 +106,15 @@ For you to have a clearer understanding, we hope that you will read the next sec
 Two-stage Policy Update
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Instead of solving the Problem :ref:`(1) <focops-eq-1>` ~ :ref:`(3) <focops-eq-1>` directly, FOCOPS uses a **two-stage** approach summarized below:
+Instead of solving the Problem :eq:`focops-eq-1`  directly, FOCOPS uses a **two-stage** approach summarized below:
 
 .. card::
     :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-primary  sd-rounded-1 sd-font-weight-bold
 
     Two-stage Policy Update
     ^^^
-    -  Given policy :math:`\pi_{\theta_k}`, find an optimal update policy :math:`\pi^*` by solving the optimization problem from Problem :ref:`(1) <focops-eq-1>` in the non-parameterized policy space.
+    -  Given policy :math:`\pi_{\theta_k}`, find an optimal update policy :math:`\pi^*` by solving the optimization problem from Problem :eq:`focops-eq-1` in the non-parameterized policy space.
 
     -  Project the Policy found in the previous step back into the parameterized policy space :math:`\Pi_{\theta}` by solving for the closest policy :math:`\pi_{\theta}\in\Pi_{\theta}` to :math:`\pi^*`, in order to obtain :math:`\pi_{\theta_{k+1}}`.
 
@@ -129,27 +123,26 @@ Instead of solving the Problem :ref:`(1) <focops-eq-1>` ~ :ref:`(3) <focops-eq-1
 Finding the Optimal Update Policy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the first stage, FOCOPS rewrites Problem :ref:`(1) <focops-eq-1>` ~ :ref:`(3) <focops-eq-1>` as below:
+In the first stage, FOCOPS rewrites Problem :eq:`focops-eq-1`  as below:
 
 .. _`focops-eq-4`:
 
 .. math::
-    :nowrap:
+    :label: focops-eq-2
 
-    \begin{eqnarray}
-        &&\pi^*=\arg \max _{\pi \in \Pi} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\tag{4}\\
-        \text{s.t.} \quad && J^{C}\left(\pi_k\right) \leq d-\frac{1}{1-\gamma} \mathbb{E}{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C}_{\pi_k}(s, a)\right] \quad \tag{5} \\
-        && \bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta\tag{6}
-    \end{eqnarray}
+    &\pi^*=\arg \max _{\pi \in \Pi} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\\
+    \text{s.t.} \quad & J^{C}\left(\pi_k\right) \leq d-\frac{1}{1-\gamma} \mathbb{E}{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C}_{\pi_k}(s, a)\right] \quad  \\
+    & \bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta
 
-These problems are only slightly different from Problem :ref:`(1) <focops-eq-1>` ~ :ref:`(3) <focops-eq-1>`, that is, the parameter of interest is now the non-parameterized Policy :math:`\pi` and not the policy parameter :math:`\theta`.
+
+These problems are only slightly different from Problem :eq:`focops-eq-1` , that is, the parameter of interest is now the non-parameterized Policy :math:`\pi` and not the policy parameter :math:`\theta`.
 Then FOCOPS provides a solution as follows:
 
 .. _focops-theorem-1:
 
 .. card::
     :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-footer: sd-font-weight-bold
     :link: focops-appendix
     :link-type: ref
@@ -157,92 +150,91 @@ Then FOCOPS provides a solution as follows:
     Theorem 1
     ^^^
     Let :math:`\tilde{b}=(1-\gamma)\left(b-\tilde{J}^C\left(\pi_{\theta_k}\right)\right)`.
-    If :math:`\pi_{\theta_k}` is a feasible solution, the optimal policy for Problem :ref:`(4) <focops-eq-4>` ~ :ref:`(6) <focops-eq-4>` takes the form
+    If :math:`\pi_{\theta_k}` is a feasible solution, the optimal policy for Problem :eq:`focops-eq-2` takes the form
 
     .. _`focops-eq-7`:
 
-    .. math:: \pi^*(a \mid s)=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)\tag{7}
+    .. math::
+        :label: focops-eq-3
 
-    where :math:`Z_{\lambda,\nu}(s)` is the partition function which ensures Problem :ref:`(7) <focops-eq-7>` is a valid probability distribution, :math:`\lambda` and :math:`\nu` are solutions to the optimization problem:
+        \pi^*(a \mid s)=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)
+
+    where :math:`Z_{\lambda,\nu}(s)` is the partition function which ensures Problem :eq:`focops-eq-3` is a valid probability distribution, :math:`\lambda` and :math:`\nu` are solutions to the optimization problem:
 
     .. _`focops-eq-8`:
 
     .. math::
-        :nowrap:
+        :label: focops-eq-4
 
-        \begin{eqnarray}
-            \min _{\lambda, \nu \geq 0} \lambda \delta+\nu \tilde{b}+\lambda \underset{\substack{s \sim d^{\pi_{\theta_k}} \\ a \sim \pi^*}}{\mathbb{E}}[\log Z_{\lambda, \nu}(s)]\tag{8}
-        \end{eqnarray}
+        \min _{\lambda, \nu \geq 0} \lambda \delta+\nu \tilde{b}+\lambda \underset{\substack{s \sim d^{\pi_{\theta_k}} \\ a \sim \pi^*}}{\mathbb{E}}[\log Z_{\lambda, \nu}(s)]
+
     +++
     The proof of the :bdg-info-line:`Theorem 1` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
 The form of the optimal Policy is intuitive.
 It gives high probability mass to areas of the state-action space with high return, offset by a penalty term times the cost advantage.
-We will refer to the optimal solution to Problem :ref:`(4) <focops-eq-4>` ~ :ref:`(6) <focops-eq-4>` as the *optimal update policy*.
+We will refer to the optimal solution to Problem :eq:`focops-eq-2`  as the *optimal update policy*.
 Suppose you need help understanding the meaning of the above Equation.
-In that case, you can first think that FOCOPS finally solves Problem :ref:`(4) <focops-eq-4>` ~ :ref:`(6) <focops-eq-4>` by solving Problem :ref:`(7) <focops-eq-7>` and Problem :ref:`(8) <focops-eq-8>`.
+In that case, you can first think that FOCOPS finally solves Problem :eq:`focops-eq-2`  by solving Problem :eq:`focops-eq-3` and Problem :eq:`focops-eq-4`.
 That is, the :bdg-info-line:`Theorem 1` is a viable solution.
 
-.. grid:: 2
 
-    .. grid-item::
-        :columns: 12 6 6 4
+.. tab-set::
 
-        .. tab-set::
+    .. tab-item:: Question I
+        :sync: key1
 
-            .. tab-item:: Question I
-                :sync: key1
+        .. card::
+            :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
+            :class-card:  sd-outline-success  sd-rounded-1 sd-font-weight-bold
 
-                .. card::
-                    :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            Question
+            ^^^
+            What is the bound for FOCOPS worst-case guarantee for cost constraint?
 
-                    Question
-                    ^^^
-                    What is the bound for FOCOPS worst-case guarantee for cost constraint?
+    .. tab-item:: Question II
+        :sync: key2
 
-            .. tab-item:: Question II
-                :sync: key2
+        .. card::
+            :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
+            :class-card:  sd-outline-success  sd-rounded-1 sd-font-weight-bold
 
-                .. card::
-                    :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-
-                    Question
-                    ^^^
-                    Can FOCOPS solve the multi-constraint problem and how?
-
-    .. grid-item::
-      :columns: 12 6 6 8
-
-      .. tab-set::
-
-            .. tab-item:: Answer I
-                :sync: key1
-
-                .. card::
-                    :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-
-                    Answer
-                    ^^^
-                    FOCOPS purposes that the optimal update policy :math:`\pi^*` satisfies the following bound for the worst-case guarantee for cost constraint in CPO:
-
-                    .. math:: J^C\left(\pi^*\right) \leq d+\frac{\sqrt{2 \delta} \gamma \epsilon_C^{\pi^*}}{(1-\gamma)^2}
-
-                    where :math:`\epsilon^C_{\pi^*}=\max _s\left|\mathbb{E}_{a \sim \pi}\left[A^C_{\pi_{\theta_k}}(s, a)\right]\right|`.
+            Question
+            ^^^
+            Can FOCOPS solve the multi-constraint problem and how?
 
 
-            .. tab-item:: Answer II
-                :sync: key2
+.. tab-set::
 
-                .. card::
-                    :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
-                    :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    .. tab-item:: Answer I
+        :sync: key1
 
-                    Answer
-                    ^^^
-                    By introducing Lagrange multipliers :math:`\nu_1,\nu_2,...,\nu_m\ge0`, one for each cost constraint and applying a similar duality argument, FOCOPS extends its results to accommodate for multiple constraints.
+        .. card::
+            :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
+            :class-card:  sd-outline-primary  sd-rounded-1 sd-font-weight-bold
+
+            Answer
+            ^^^
+            FOCOPS purposes that the optimal update policy :math:`\pi^*` satisfies the following bound for the worst-case guarantee for cost constraint in CPO:
+
+            .. math::
+                :label: focops-eq-5
+
+                J^C\left(\pi^*\right) \leq d+\frac{\sqrt{2 \delta} \gamma \epsilon_C^{\pi^*}}{(1-\gamma)^2}
+
+            where :math:`\epsilon^C_{\pi^*}=\max _s\left|\mathbb{E}_{a \sim \pi}\left[A^C_{\pi_{\theta_k}}(s, a)\right]\right|`.
+
+
+    .. tab-item:: Answer II
+        :sync: key2
+
+        .. card::
+            :class-header: sd-bg-primary  sd-text-white sd-font-weight-bold
+            :class-card:  sd-outline-primary  sd-rounded-1 sd-font-weight-bold
+
+            Answer
+            ^^^
+            By introducing Lagrange multipliers :math:`\nu_1,\nu_2,...,\nu_m\ge0`, one for each cost constraint and applying a similar duality argument, FOCOPS extends its results to accommodate for multiple constraints.
 
 ------
 
@@ -253,14 +245,17 @@ The optimal update policy :math:`\pi^*` is obtained in the previous section.
 However, it is not a parameterized policy.
 In this section, we will show you how FOCOPS projects the optimal update policy back into the parameterized policy space by minimizing the loss function:
 
-.. math:: \mathcal{L}(\theta)=\underset{s \sim d^{\pi_{\theta_k}}}{\mathbb{E}}\left[D_{\mathrm{KL}}\left(\pi_\theta \| \pi^*\right)[s]\right]\tag{9}
+.. math::
+    :label: focops-eq-6
+
+    \mathcal{L}(\theta)=\underset{s \sim d^{\pi_{\theta_k}}}{\mathbb{E}}\left[D_{\mathrm{KL}}\left(\pi_\theta \| \pi^*\right)[s]\right]
 
 Here :math:`\pi_{\theta}\in \Pi_{\theta}` is some projected policy that FOCOPS will use to approximate the optimal update policy.
 The first-order methods are also used to minimize this loss function:
 
 .. card::
     :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-footer: sd-font-weight-bold
     :link: focops-appendix
     :link-type: ref
@@ -271,28 +266,30 @@ The first-order methods are also used to minimize this loss function:
 
     .. _`focops-eq-10`:
 
-    .. math:: \nabla_\theta \mathcal{L}(\theta)=\underset{s \sim d^{\pi_\theta}}{\mathbb{E}}\left[\nabla_\theta D_{K L}\left(\pi_\theta \| \pi^*\right)[s]\right]\tag{10}
+    .. math::
+        :label: focops-eq-7
+
+        \nabla_\theta \mathcal{L}(\theta)=\underset{s \sim d^{\pi_\theta}}{\mathbb{E}}\left[\nabla_\theta D_{K L}\left(\pi_\theta \| \pi^*\right)[s]\right]
 
     where
 
     .. math::
-        :nowrap:
+        :label: focops-eq-8
 
-        \begin{eqnarray}
-        \nabla_\theta D_{K L}\left(\pi_\theta \| \pi^*\right)[s]=\nabla_\theta D_{K L}\left(\pi_\theta \| \pi_{\theta_k}\right)[s]
-        -\frac{1}{\lambda} \underset{a \sim \pi_{\theta_k}}{\mathbb{E}}\left[\frac{\nabla_\theta \pi_\theta(a \mid s)}{\pi_{\theta_k}(a \mid s)}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]\tag{11}
-        \end{eqnarray}
+        \nabla_\theta D_{K L}\left(\pi_\theta \| \pi^*\right)[s] &=\nabla_\theta D_{K L}\left(\pi_\theta \| \pi_{\theta_k}\right)[s] \\
+        & -\frac{1}{\lambda} \underset{a \sim \pi_{\theta_k}}{\mathbb{E}}\left[\frac{\nabla_\theta \pi_\theta(a \mid s)}{\pi_{\theta_k}(a \mid s)}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]
+
     +++
     The proof of the :bdg-info-line:`Corollary 1` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-Note that Equation :ref:`(10) <focops-eq-10>` can be estimated by sampling from the trajectories generated by Policy :math:`\pi_{\theta_k}` so Policy can be trained using stochastic gradients.
+Note that Equation :eq:`focops-eq-7` can be estimated by sampling from the trajectories generated by Policy :math:`\pi_{\theta_k}` so Policy can be trained using stochastic gradients.
 
 :bdg-info-line:`Corollary 1` outlines the FOCOPS algorithm:
 
 At every iteration, we begin with a policy :math:`\pi_{\theta_k}`, which we use to run trajectories and gather data.
-We use that data and Equation :ref:`(8) <focops-eq-8>` first to estimate :math:`\lambda` and :math:`\nu`.
+We use that data and Equation :eq:`focops-eq-4` first to estimate :math:`\lambda` and :math:`\nu`.
 We then draw a mini-batch from the data to estimate :math:`\nabla_\theta \mathcal{L}(\theta)` given in :bdg-info-line:`Corollary 1`.
-After taking a gradient step using Equation:ref:`(10) <focops-eq-10>`, we draw another mini-batch and repeat the process.
+After taking a gradient step using Equation:eq:`focops-eq-7`, we draw another mini-batch and repeat the process.
 
 ------
 
@@ -301,19 +298,19 @@ Practical Implementation
 
 .. hint::
 
-    Solving Problem :ref:`(8) <focops-eq-8>` is computationally impractical for large state or action spaces as it requires calculating the partition function :math:`Z_{\lambda,\nu}(s)`, which often involves evaluating a high-dimensional integral or sum.
+    Solving Problem :eq:`focops-eq-4` is computationally impractical for large state or action spaces as it requires calculating the partition function :math:`Z_{\lambda,\nu}(s)`, which often involves evaluating a high-dimensional integral or sum.
     Furthermore, :math:`\lambda` and :math:`\nu` depend on :math:`k` and should be adapted at every iteration.
 
 So in this section, we will introduce you to how FOCOPS practically implements its algorithm purpose.
 In practice, through hyperparameter sweeps, FOCOPS found that a fixed :math:`\lambda` provides good results, which means the value of :math:`\lambda` does not have to be updated.
 However, :math:`\nu` needs to be continuously adapted during training so as to ensure cost-constraint satisfaction.
 FOCOPS appeals to an intuitive heuristic for determining :math:`\nu` based on primal-dual gradient methods.
-With strong duality, the optimal :math:`\lambda^*` and :math:`\nu^*` minimizes the dual function :ref:`(8) <focops-eq-8>` which then be denoted as :math:`L(\pi^*,\lambda,\nu)`.
+With strong duality, the optimal :math:`\lambda^*` and :math:`\nu^*` minimizes the dual function :eq:`focops-eq-4` which then be denoted as :math:`L(\pi^*,\lambda,\nu)`.
 By applying gradient descent w.r.t :math:`\nu` to minimize :math:`L(\pi^*,\lambda,\nu)`, we obtain:
 
 .. card::
     :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
     :class-footer: sd-font-weight-bold
     :link: focops-appendix
     :link-type: ref
@@ -325,34 +322,32 @@ By applying gradient descent w.r.t :math:`\nu` to minimize :math:`L(\pi^*,\lambd
     .. _`focops-eq-12`:
 
     .. math::
-        :nowrap:
+        :label: focops-eq-9
 
-        \begin{eqnarray}
-        \frac{\partial L\left(\pi^*, \lambda, \nu\right)}{\partial \nu}=\tilde{b}-\underset{\substack{s \sim d^{\pi^*} \\ a \sim \pi^*}}{\mathbb{E}}\left[A_{\pi_{\theta_k}}(s, a)\right]\tag{12}
-        \end{eqnarray}
+        \frac{\partial L\left(\pi^*, \lambda, \nu\right)}{\partial \nu}=\tilde{b}-\underset{\substack{s \sim d^{\pi^*} \\ a \sim \pi^*}}{\mathbb{E}}\left[A_{\pi_{\theta_k}}(s, a)\right]
+
     +++
     The proof of the :bdg-success-line:`Corollary 2` can be seen in the :bdg-success:`Appendix`, click on this :bdg-success-line:`card` to jump to view.
 
-The last term in the gradient expression in Equation :ref:`(12) <focops-eq-12>` cannot be evaluated since we do not have access to :math:`\pi^*`.
+The last term in the gradient expression in Equation :eq:`focops-eq-9` cannot be evaluated since we do not have access to :math:`\pi^*`.
 Since :math:`\pi_{\theta_k}` and :math:`\pi^*` are 'close', it is reasonable to assume that :math:`E_{s \sim d^{\pi_k}, a \sim \pi^*}\left[A_{\pi_{\theta_k}}(s, a)\right] \approx E_{s \sim d^{\pi_k}, a \sim \pi_{\theta_k}}\left[A_{\pi_{\theta_k}}(s, a)\right]=0`.
 In practice, this term can be set to zero, which gives the updated term:
 
 .. _`focops-eq-13`:
 
 .. math::
-    :nowrap:
+    :label: focops-eq-10
 
-    \begin{eqnarray}
-    \nu \leftarrow \underset{\nu}{\operatorname{proj}}\left[\nu-\alpha\left(d-J^C\left(\pi_{\theta_k}\right)\right)\right]\tag{13}
-    \end{eqnarray}
+    \nu \leftarrow \underset{\nu}{\operatorname{proj}}\left[\nu-\alpha\left(d-J^C\left(\pi_{\theta_k}\right)\right)\right]
+
 
 where :math:`\alpha` is the step size.
 Note that we have incorporated the discount term :math:`(1-\gamma)` into :math:`\tilde{b}` into the step size.
 The projection operator :math:`proj_{\nu}` projects :math:`\nu` back into the interval :math:`[0,\nu_{max}]`, where :math:`\nu_{max}` is chosen so that :math:`\nu` does not become too large.
 In fact. FOCOPS purposed that even setting :math:`\nu_{max}=+\infty` does not appear to reduce performance greatly.
 Practically, :math:`J^C(\pi_{\theta_k})` can be estimated via Monte Carlo methods using trajectories collected from :math:`\pi_{\theta_k}`.
-Using the update rule :ref:`(13) <focops-eq-13>`, FOCOPS performs one update step on :math:`\nu` before updating the Policy parameters :math:`\theta`.
-A per-state acceptance indicator function :math:`I\left(s_j\right)^n:=\mathbf{1}_{D_{\mathrm{KL}}\left(\pi_\theta \| \pi_{\theta_k}\right)\left[s_j\right] \leq \delta}` is added to :ref:`(10) <focops-eq-10>`, in order better to enforce the accuracy for the first-order purposed method.
+Using the update rule :eq:`focops-eq-10`, FOCOPS performs one update step on :math:`\nu` before updating the Policy parameters :math:`\theta`.
+A per-state acceptance indicator function :math:`I\left(s_j\right)^n:=\mathbf{1}_{D_{\mathrm{KL}}\left(\pi_\theta \| \pi_{\theta_k}\right)\left[s_j\right] \leq \delta}` is added to :eq:`focops-eq-7`, in order better to enforce the accuracy for the first-order purposed method.
 
 .. hint::
 
@@ -373,12 +368,12 @@ In this section, we will explain the meaning of parameters :math:`\lambda` and :
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card: sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Analysis of :math:`\lambda`
             ^^^
-            In Equation :ref:`(7) <focops-eq-7>`, note that as :math:`\lambda \rightarrow 0`, :math:`\pi^*` approaches a greedy policy;
+            In Equation :eq:`focops-eq-3`, note that as :math:`\lambda \rightarrow 0`, :math:`\pi^*` approaches a greedy policy;
             as :math:`\lambda` increases, the Policy becomes more exploratory.
             Therefore :math:`\lambda` is similar to the temperature term used in maximum entropy reinforcement learning,
             which has been shown to produce good results when fixed during training.
@@ -388,14 +383,14 @@ In this section, we will explain the meaning of parameters :math:`\lambda` and :
 
         .. card::
             :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Analysis of :math:`\nu`
             ^^^
-            We recall that in Equation :ref:`(7) <focops-eq-7>`,
+            We recall that in Equation :eq:`focops-eq-3`,
             :math:`\nu` acts as a cost penalty term where increasing :math:`\nu` makes it less likely for state-action pairs with higher costs to be sampled by :math:`\pi^*`.
-            Hence in this regard, the update rule in :ref:`(13) <focops-eq-13>` is intuitive,
+            Hence in this regard, the update rule in :eq:`focops-eq-10` is intuitive,
             because it increases :math:`\nu` if :math:`J^C(\pi_{\theta_k})>d`
             (which means the agent violate the cost constraints) and decreases :math:`\nu` otherwise.
 
@@ -411,7 +406,7 @@ Quick start
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+    :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
     Run FOCOPS in Omnisafe
@@ -431,19 +426,11 @@ Quick start
 
                 import omnisafe
 
-                env = omnisafe.Env('SafetyPointGoal1-v0')
 
-                agent = omnisafe.Agent('FOCOPS', env)
+                env_id = 'SafetyPointGoal1-v0'
+
+                agent = omnisafe.Agent('FOCOPS', env_id)
                 agent.learn()
-
-                obs = env.reset()
-                for i in range(1000):
-                    action, _states = agent.predict(obs, deterministic=True)
-                    obs, reward, cost, done, info = env.step(action)
-                    env.render()
-                    if done:
-                        obs = env.reset()
-                env.close()
 
         .. tab-item:: Config dict style
 
@@ -452,32 +439,37 @@ Quick start
 
                 import omnisafe
 
-                env = omnisafe.Env('SafetyPointGoal1-v0')
 
-                custom_dict = {'epochs': 1, 'log_dir': './runs'}
-                agent = omnisafe.Agent('FOCOPS', env, custom_cfgs=custom_dict)
+                env_id = 'SafetyPointGoal1-v0'
+                custom_cfgs = {
+                    'train_cfgs': {
+                        'total_steps': 1024000,
+                        'vector_env_nums': 1,
+                        'parallel': 1,
+                    },
+                    'algo_cfgs': {
+                        'update_cycle': 2048,
+                        'update_iters': 1,
+                    },
+                    'logger_cfgs': {
+                        'use_wandb': False,
+                    },
+                }
+
+                agent = omnisafe.Agent('FOCOPS', env_id, custom_cfgs=custom_cfgs)
                 agent.learn()
 
-                obs = env.reset()
-                for i in range(1000):
-                    action, _states = agent.predict(obs, deterministic=True)
-                    obs, reward, done, info = env.step(action)
-                    env.render()
-                    if done:
-                        obs = env.reset()
-                env.close()
 
         .. tab-item:: Terminal config style
 
-                We use ``train_on_policy.py`` as the entrance file. You can train the agent with FOCOPS simply using ``train_on_policy.py``, with arguments about FOCOPS and environments does the training.
-                For example, to run FOCOPS in SafetyPointGoal1-v0, with 4 cpu cores and seed 0, you can use the following command:
+            We use ``train_on_policy.py`` as the entrance file. You can train the agent with FOCOPS simply using ``train_on_policy.py``, with arguments about FOCOPS and environments does the training.
+            For example, to run FOCOPS in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
 
-                .. code-block:: guess
-                    :linenos:
+            .. code-block:: bash
+                :linenos:
 
-                    cd omnisafe/examples
-                    python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo FOCOPS --parallel 5 --epochs 1
-
+                cd examples
+                python train_policy.py --algo FOCOPS --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 
 ------
 
@@ -500,89 +492,20 @@ Architecture of functions
 
 ------
 
-Documentation of basic functions
-""""""""""""""""""""""""""""""""
-
-.. card-carousel:: 3
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        env.roll_out()
-        ^^^
-        Collect data and store to experience buffer.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        focops.update()
-        ^^^
-        Update actor, critic, running statistics
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        focops.buf.get()
-        ^^^
-        Call this at the end of an epoch to get all of the data from the buffer
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        focops.update_policy_net()
-        ^^^
-        Update policy network in 5 kinds of optimization case
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        focops.update_value_net()
-        ^^^
-        Update Critic network for estimating reward.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        focops.update_cost_net()
-        ^^^
-        Update Critic network for estimating cost.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        focops.log()
-        ^^^
-        Get the training log and show the performance of the algorithm
-
-------
 
 Documentation of new functions
 """"""""""""""""""""""""""""""
 
 .. tab-set::
 
-    .. tab-item:: focops.compute_loss_pi(data: dict)
+    .. tab-item:: _loss_pi(data: dict)
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            focops.compute_loss_pi(data: dict)
+            focops._loss_pi(data: dict)
             ^^^
             Compute the loss of policy network, flowing the next steps:
 
@@ -613,7 +536,7 @@ Documentation of new functions
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             focops.update_lagrange_multiplier(ep_costs: float)
@@ -640,7 +563,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Specific Parameters
@@ -654,7 +577,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Basic parameters
@@ -708,7 +631,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Optional parameters
@@ -725,7 +648,7 @@ Parameters
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3 sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
             Buffer parameters
@@ -770,71 +693,75 @@ Proof for Theorem 1
 
 .. card::
    :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-   :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+   :class-card: sd-outline-info  sd-rounded-1
 
    Lemma 1
    ^^^
    Problem
-   :ref:`(4) <focops-eq-4>` ~ :ref:`(6) <focops-eq-4>`
+   :eq:`focops-eq-2`
    is convex w.r.t
    :math:`\pi={\pi(a|s):s\in \mathrm{S},a\in\mathrm{A}}`.
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-    :class-card: sd-outline-success sd-border-{3} sd-shadow-sm sd-rounded-3
+    :class-card: sd-outline-info  sd-rounded-1
 
     Proof of Lemma 1
     ^^^
     First, note that the objective function is linear w.r.t :math:`\pi`.
-    Since :math:`J^{C}(\pi_{\theta_k})` is a constant w.r.t :math:`\pi`, constraint :ref:`(5) <focops-eq-4>` is linear.
-    Constraint :ref:`(6) <focops-eq-4>` can be rewritten as :math:`\sum_s d^{\pi_{\theta_k}}(s) D_{\mathrm{KL}}\left(\pi \| \pi_{\theta_k}\right)[s] \leq \delta`.
+    Since :math:`J^{C}(\pi_{\theta_k})` is a constant w.r.t :math:`\pi`, constraint :eq:`focops-eq-2` is linear.
+    Constraint :eq:`focops-eq-2` can be rewritten as :math:`\sum_s d^{\pi_{\theta_k}}(s) D_{\mathrm{KL}}\left(\pi \| \pi_{\theta_k}\right)[s] \leq \delta`.
     The KL divergence is convex w.r.t its first argument.
-    Hence Constraint :ref:`(5) <focops-eq-4>`, a linear combination of convex functions, is also convex.
-    Since :math:`\pi_{\theta_k}` satisfies Constraint :ref:`(6) <focops-eq-4>` also satisfies Constraint :ref:`(5) <focops-eq-4>`, therefore Slater's constraint qualification holds, and strong duality holds.
+    Hence Constraint :eq:`focops-eq-2`, a linear combination of convex functions, is also convex.
+    Since :math:`\pi_{\theta_k}` satisfies Constraint :eq:`focops-eq-2` also satisfies Constraint :eq:`focops-eq-2`, therefore Slater's constraint qualification holds, and strong duality holds.
 
 .. dropdown:: Proof of Theorem 1 (Click here)
     :color: info
     :class-body: sd-border-{3}
 
-    Based on :bdg-info-line:`Lemma 1` the optimal value of the Problem :ref:`(4) <focops-eq-4>` ~ :ref:`(6) <focops-eq-4>` :math:`p^*` can be solved by solving the corresponding dual problem.
+    Based on :bdg-info-line:`Lemma 1` the optimal value of the Problem :eq:`focops-eq-2`  :math:`p^*` can be solved by solving the corresponding dual problem.
     Let
 
-    .. math:: L(\pi, \lambda, \nu)=\lambda \delta+\nu \tilde{b}+\underset{s \sim d^{\pi_{\theta_k}}}{\mathbb{E}}\left[A^{lag}-\lambda D_{\mathrm{KL}}\left(\pi \| \pi_{\theta_k}\right)[s]\right]\nonumber
+    .. math::
+        :label: focops-eq-11
+
+        L(\pi, \lambda, \nu)=\lambda \delta+\nu \tilde{b}+\underset{s \sim d^{\pi_{\theta_k}}}{\mathbb{E}}\left[A^{lag}-\lambda D_{\mathrm{KL}}\left(\pi \| \pi_{\theta_k}\right)[s]\right]\nonumber
 
     where :math:`A^{lag}=\underset{a \sim \pi(\cdot \mid s)}{\mathbb{E}}\left[A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right]`.
     Therefore.
 
     .. _`focops-eq-15`:
 
-    .. math:: p^*=\max _{\pi \in \Pi} \min _{\lambda, \nu \geq 0} L(\pi, \lambda, \nu)=\min _{\lambda, \nu \geq 0} \max _{\pi \in \Pi} L(\pi, \lambda, \nu)\tag{15}
+    .. math::
+        :label: focops-eq-12
 
-    Note that if :math:`\pi^*`, :math:`\lambda^*`, :math:`\nu^*` are optimal for Problem\ :ref:`(15) <focops-eq-15>`, :math:`\pi^*` is also optimal for Problem :ref:`(4) <focops-eq-4>` ~ :ref:`(6) <focops-eq-4>` because of the strong duality.
+        p^*=\max _{\pi \in \Pi} \min _{\lambda, \nu \geq 0} L(\pi, \lambda, \nu)=\min _{\lambda, \nu \geq 0} \max _{\pi \in \Pi} L(\pi, \lambda, \nu)
 
-    Consider the inner maximization problem in Problem :ref:`(15) <focops-eq-15>`.
+    Note that if :math:`\pi^*`, :math:`\lambda^*`, :math:`\nu^*` are optimal for Problem :eq:`focops-eq-12`, :math:`\pi^*` is also optimal for Problem :eq:`focops-eq-2`  because of the strong duality.
+
+    Consider the inner maximization problem in Problem :eq:`focops-eq-12`.
     We separate it from the original problem and try to solve it first:
 
     .. _`focops-eq-16`:
 
     .. math::
-        :nowrap:
+        :label: focops-eq-13
 
-        \begin{eqnarray}
-        &&\underset{\pi}{\operatorname{max}}  A^{lag}-\underset{a \sim \pi(\cdot \mid s)}{\mathbb{E}}\left[\lambda\left(\log \pi(a \mid s)+\log \pi_{\theta_k}(a \mid s)\right)\right]\tag{16} \\
-        \text { s.t. } && \sum_a \pi(a \mid s)=1 \\
-        && \pi(a \mid s) \geq 0 \quad \forall a \in \mathcal{A}
-        \end{eqnarray}
+        &\underset{\pi}{\operatorname{max}}  A^{lag}-\underset{a \sim \pi(\cdot \mid s)}{\mathbb{E}}\left[\lambda\left(\log \pi(a \mid s)+\log \pi_{\theta_k}(a \mid s)\right)\right] \\
+        \text { s.t. } & \sum_a \pi(a \mid s)=1 \\
+        & \pi(a \mid s) \geq 0 \quad \forall a \in \mathcal{A}
 
-    Which is equivalent to the inner maximization problem in :ref:`(15) <focops-eq-15>`.
+
+    Which is equivalent to the inner maximization problem in :eq:`focops-eq-12`.
     We can solve this convex optimization problem using a simple Lagrangian argument.
     We can write the Lagrangian of it as:
 
     .. math::
-        :nowrap:
+        :label: focops-eq-14
 
-        \begin{eqnarray}
         G(\pi)=\sum_a \pi(a \mid s)[A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)
-        -\lambda(\log \pi(a \mid s)-\log \pi_{\theta_k}(a \mid s))+\zeta]-1\tag{17}
-        \end{eqnarray}
+        -\lambda(\log \pi(a \mid s)-\log \pi_{\theta_k}(a \mid s))+\zeta]-1
+
 
     where :math:`\zeta > 0` is the Lagrange multiplier associated with the constraint :math:`\sum_a \pi(a \mid s)=1`.
     Different :math:`G(\pi)` w.r.t. :math:`\pi(a \mid s)` for some :math:`a`:
@@ -842,39 +769,44 @@ Proof for Theorem 1
     .. _`focops-eq-18`:
 
     .. math::
-        :nowrap:
+        :label: focops-eq-15
 
-        \begin{eqnarray}
-        \frac{\partial G}{\partial \pi(a \mid s)}=A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi(a \mid s)+1-\log \pi_{\theta_k}(a \mid s)\right)+\zeta\tag{18}
-        \end{eqnarray}
+        \frac{\partial G}{\partial \pi(a \mid s)}=A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi(a \mid s)+1-\log \pi_{\theta_k}(a \mid s)\right)+\zeta
 
-    Setting Equation :ref:`(18) <focops-eq-18>` to zero and rearranging the term, we obtain:
 
-    .. math:: \pi(a \mid s)=\pi_{\theta_k}(a \mid s) \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)+\frac{\zeta}{\lambda}+1\right)\tag{19}
+    Setting Equation :eq:`focops-eq-15` to zero and rearranging the term, we obtain:
+
+    .. math::
+        :label: focops-eq-16
+
+        \pi(a \mid s)=\pi_{\theta_k}(a \mid s) \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)+\frac{\zeta}{\lambda}+1\right)
 
     We chose :math:`\zeta` so that :math:`\sum_a \pi(a \mid s)=1` and rewrite :math:`\zeta / \lambda+1` as :math:`Z_{\lambda, \nu}(s)`.
-    We find that the optimal solution :math:`\pi^*` to Equation :ref:`(16) <focops-eq-16>` takes the form
+    We find that the optimal solution :math:`\pi^*` to Equation :eq:`focops-eq-13` takes the form
 
-    .. math:: \pi^*(a \mid s)=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)
+    .. math::
+        :label: focops-eq-17
+
+        \pi^*(a \mid s)=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)
 
     Then we obtain:
 
     .. math::
-        :nowrap:
+        :label: focops-eq-18
 
-        \begin{eqnarray}
-        &&\underset{\substack{s \sim d^{\theta_{\theta_k}} \\
+        &\underset{\substack{s \sim d^{\theta_{\theta_k}} \\
         a \sim \pi^*}}{\mathbb{E}}\left[A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi^*(a \mid s)-\log \pi_{\theta_k}(a \mid s)\right)\right] \\
-        = &&\underset{\substack{s \sim d^{\pi_{\theta_k}} \\
+        = &\underset{\substack{s \sim d^{\pi_{\theta_k}} \\
         a \sim \pi^*}}{\mathbb{E}}\left[A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi_{\theta_k}(a \mid s)-\log Z_{\lambda, \nu}(s)\right.\right. \\
-        &&\left.\left. + \frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)-\log \pi_{\theta_k}(a \mid s)\right)\right]\\
-        = &&\lambda\underset{\substack{s \sim d^{\theta_{\theta_k}} \\
+        &\left.\left. + \frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)-\log \pi_{\theta_k}(a \mid s)\right)\right]\\
+        = &\lambda\underset{\substack{s \sim d^{\theta_{\theta_k}} \\
         a \sim \pi^*}}{\mathbb{E}}[logZ_{\lambda,\nu}(s)]\nonumber
-        \end{eqnarray}
 
-    Plugging the result back to Equation :ref:`(15) <focops-eq-15>`, we obtain:
+
+    Plugging the result back to Equation :eq:`focops-eq-12`, we obtain:
 
     .. math::
+        :label: focops-eq-19
 
         p^*=\underset{\lambda,\nu\ge0}{min}\lambda\delta+\nu\tilde{b}+\lambda\underset{\substack{s \sim d^{\theta_{\theta_k}} \\
         a \sim \pi^*}}{\mathbb{E}}[logZ_{\lambda,\nu}(s)]
@@ -892,133 +824,128 @@ Proof of Corollary
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-1
 
             Proof of Corollary 1
             ^^^
             We only need to calculate the gradient of the loss function for a single sampled s. We first note that,
 
             .. math::
-                :nowrap:
+                :label: focops-eq-20
 
-                \begin{eqnarray}
-                &&D_{\mathrm{KL}}\left(\pi_\theta \| \pi^*\right)[s]\\
-                =&&-\sum_a \pi_\theta(a \mid s) \log \pi^*(a \mid s)+\sum_a \pi_\theta(a \mid s) \log \pi_\theta(a \mid s)\tag{20} \\
-                =&&H\left(\pi_\theta, \pi^*\right)[s]-H\left(\pi_\theta\right)[s]
-                \end{eqnarray}
+                &D_{\mathrm{KL}}\left(\pi_\theta \| \pi^*\right)[s]\\
+                =&-\sum_a \pi_\theta(a \mid s) \log \pi^*(a \mid s)+\sum_a \pi_\theta(a \mid s) \log \pi_\theta(a \mid s) \\
+                =&H\left(\pi_\theta, \pi^*\right)[s]-H\left(\pi_\theta\right)[s]
+
 
             where :math:`H\left(\pi_\theta\right)[s]` is the entropy and :math:`H\left(\pi_\theta, \pi^*\right)[s]` is the cross-entropy under state :math: 's`.
             The above Equation is the basic mathematical knowledge in information theory, which you can get in any information theory textbook.
             We expand the cross entropy term, which gives us the following:
 
             .. math::
-                :nowrap:
+                :label: focops-eq-21
 
-                \begin{eqnarray}
-                H\left(\pi_\theta, \pi^*\right)[s] &=&-\sum_a \pi_\theta(a \mid s) \log \pi^*(a \mid s) \\
-                &=&-\sum_a \pi_\theta(a \mid s) \log \left(\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left[\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]\right) \\
-                &=&-\sum_a \pi_\theta(a \mid s) \log \pi_{\theta_k}(a \mid s)+\log Z_{\lambda, \nu}(s)-\frac{1}{\lambda} \sum_a \pi_\theta(a \mid s)\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)
-                \end{eqnarray}
+                &H\left(\pi_\theta, \pi^*\right)[s]\\
+                &=-\sum_a \pi_\theta(a \mid s) \log \pi^*(a \mid s) \\
+                &=-\sum_a \pi_\theta(a \mid s) \log \left(\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left[\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]\right) \\
+                &=-\sum_a \pi_\theta(a \mid s) \log \pi_{\theta_k}(a \mid s)+\log Z_{\lambda, \nu}(s)-\frac{1}{\lambda} \sum_a \pi_\theta(a \mid s)\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)
+
 
             We then subtract the entropy term to recover the KL divergence:
 
             .. math::
-                :nowrap:
+                :label: focops-eq-22
 
-                \begin{eqnarray}
                 &D_{\mathrm{KL}}\left(\pi_\theta \| \pi^*\right)[s]=D_{\mathrm{KL}}\left(\pi_\theta \| \pi_{\theta_k}\right)[s]+\log Z_{\lambda, \nu}(s)-\\&\frac{1}{\lambda} \underset{a \sim \pi_{\theta_k}(\cdot \mid s)}{\mathbb{E}}\left[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_k}(a \mid s)}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]\nonumber
-                \end{eqnarray}
+
 
             In the last equality, we applied importance sampling to rewrite the expectation w.r.t. :math:`\pi_{\theta_k}`.
             Finally, taking the gradient on both sides gives us the following:
 
             .. math::
-                :nowrap:
+                :label: focops-eq-23
 
-                \begin{eqnarray}
                 &\nabla_\theta D_{\mathrm{KL}}\left(\pi_\theta \| \pi^*\right)[s]=\nabla_\theta D_{\mathrm{KL}}\left(\pi_\theta \| \pi_{\theta_k}\right)[s]\\&-\frac{1}{\lambda} \underset{a \sim \pi_{\theta_k}(\cdot \mid s)}{\mathbb{E}}\left[\frac{\nabla_\theta \pi_\theta(a \mid s)}{\pi_{\theta_k}(a \mid s)}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]\nonumber
-                \end{eqnarray}
+
 
    .. tab-item:: Proof of Corollary 2
 
         .. card::
             :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info sd-border-{3} sd-shadow-sm sd-rounded-3
+            :class-card:  sd-outline-info  sd-rounded-1
 
             Proof of Corollary 2
             ^^^
             From :bdg-ref-info-line:`Theorem 1<focops-theorem-1>`, we have:
 
             .. math::
-                :nowrap:
+                :label: focops-eq-24
 
-                \begin{eqnarray}
-                L\left(\pi^*, \lambda, \nu\right)=\lambda \delta+\nu \tilde{b}+\lambda \underset{\substack{s \sim d^{\pi^*} \\ a \sim \pi^*}}{\mathbb{E}}\left[\log Z_{\lambda, \nu}(s)\right]\tag{21}
-                \end{eqnarray}
+                L\left(\pi^*, \lambda, \nu\right)=\lambda \delta+\nu \tilde{b}+\lambda \underset{\substack{s \sim d^{\pi^*} \\ a \sim \pi^*}}{\mathbb{E}}\left[\log Z_{\lambda, \nu}(s)\right]
+
 
             The first two terms are an affine function w.r.t. :math:`\nu`.
             Therefore, its derivative is :math:`\tilde{b}`. We will then focus on the expectation in the last term.
             To simplify our derivation, we will first calculate the derivative of :math:`\pi^*` w.r.t. :math:`\nu`,
 
             .. math::
-                :nowrap:
+                :label: focops-eq-25
 
-                \begin{eqnarray}
-                \frac{\partial \pi^*(a \mid s)}{\partial \nu} &=&\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}^2(s)}\left[Z_{\lambda, \nu}(s) \frac{\partial}{\partial \nu} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)\right.\\
-                &&\left.-\exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu}\right] \\
-                &=&-\frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \pi^*(a \mid s)-\pi^*(a \mid s) \frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}\nonumber
-                \end{eqnarray}
+                \frac{\partial \pi^*(a \mid s)}{\partial \nu} &=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}^2(s)}\left[Z_{\lambda, \nu}(s) \frac{\partial}{\partial \nu} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)\right.\\
+                &\left.-\exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu}\right] \\
+                &=-\frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \pi^*(a \mid s)-\pi^*(a \mid s) \frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}\nonumber
+
 
             Therefore the derivative of the expectation in the last term of :math:`L(\pi^*,\lambda,\nu)` can be written as:
 
             .. _`focops-eq-22`:
 
             .. math::
-                :nowrap:
+                :label: focops-eq-26
 
-                \begin{eqnarray}\label{FOCOPS:proof_C2_1}
                 \frac{\partial}{\partial \nu} \underset{\substack{s \sim d^\pi \theta_k \\
                 a \sim \pi^*}}{\mathbb{E}}\left[\log Z_{\lambda, \nu}(s)\right]
-                &=& \underset{\substack{s \sim d^{\pi_\theta} \\
+                &= \underset{\substack{s \sim d^{\pi_\theta} \\
                 a \sim \pi_{\theta_k}}}{\mathbb{E}}\left[\frac{\partial}{\partial \nu}\left(\frac{\pi^*(a \mid s)}{\pi_{\theta_k}(a \mid s)} \log Z_{\lambda, \nu}(s)\right)\right] \\
-                &=& \underset{\substack{s \sim d^{\pi_\theta} \\
+                &= \underset{\substack{s \sim d^{\pi_\theta} \\
                 a \sim \pi_{\theta_k}}}{\mathbb{E}}\left[\frac{1}{\pi_{\theta_k}(a \mid s)}\left(\frac{\partial \pi^*(a \mid s)}{\partial \nu} \log Z_{\lambda, \nu}(s)+\pi^*(a \mid s) \frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}\right)\right] \\
-                &=& \underset{\substack{s \sim d^{\pi_\theta} \\
-                a \sim \pi^*}}{\mathbb{E}}\left[-(\frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda}+\frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}) \log Z_{\lambda, \nu}(s)+\frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}\right]\tag{22}
-                \end{eqnarray}
+                &= \underset{\substack{s \sim d^{\pi_\theta} \\
+                a \sim \pi^*}}{\mathbb{E}}\left[-(\frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda}+\frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}) \log Z_{\lambda, \nu}(s)+\frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}\right]
+
 
             Also:
 
             .. math::
-                :nowrap:
+                :label: focops-eq-27
 
-                \begin{eqnarray}\label{FOCOPS:proof_C2_2}
-                \frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu} &=&\frac{\partial}{\partial \nu} \sum_a \pi_{\theta_k}(a \mid s) \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \\
-                &=&\sum_a-\pi_{\theta_k}(a \mid s) \frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \\
-                &=&\sum_a-\frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) Z_{\lambda, \nu}(s) \\
-                &=&-\frac{Z_{\lambda, \nu}(s)}{\lambda} \underset{a \sim \pi^*(\cdot \mid s)}{\mathbb{E}}\left[A^C_{\pi_{\theta_k}}(s, a)\right]\tag{23}
-                \end{eqnarray}
+                \frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu} &=\frac{\partial}{\partial \nu} \sum_a \pi_{\theta_k}(a \mid s) \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \\
+                &=\sum_a-\pi_{\theta_k}(a \mid s) \frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \\
+                &=\sum_a-\frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) Z_{\lambda, \nu}(s) \\
+                &=-\frac{Z_{\lambda, \nu}(s)}{\lambda} \underset{a \sim \pi^*(\cdot \mid s)}{\mathbb{E}}\left[A^C_{\pi_{\theta_k}}(s, a)\right]
+
 
             Therefore:
 
             .. _`focops-eq-24`:
 
-            .. math:: \frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}=\frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu} \frac{1}{Z_{\lambda, \nu}(s)}=-\frac{1}{\lambda} \underset{a \sim \pi^*(\cdot \mid s)}{\mathbb{E}}\left[A^C_{\pi_{\theta_k}}(s, a)\right]\tag{24}
+            .. math::
+                :label: focops-eq-28
 
-            Plugging :ref:`(24) <focops-eq-24>`  into the last equality in :ref:`(22) <focops-eq-22>`  gives us:
+                \frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}=\frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu} \frac{1}{Z_{\lambda, \nu}(s)}=-\frac{1}{\lambda} \underset{a \sim \pi^*(\cdot \mid s)}{\mathbb{E}}\left[A^C_{\pi_{\theta_k}}(s, a)\right]
+
+            Plugging :eq:`focops-eq-28`  into the last equality in :eq:`focops-eq-26`  gives us:
 
             .. _`focops-eq-25`:
 
             .. math::
-                :nowrap:
+                :label: focops-eq-29
 
-                \begin{eqnarray}
                 \frac{\partial}{\partial \nu} \underset{\substack{s \sim d^{\pi_\theta} \\
                 a \sim \pi^*}}{\mathbb{E}}\left[\log Z_{\lambda, \nu}(s)\right]
-                &=&\underset{\substack{s \sim d^{\pi^*} \\
+                &=\underset{\substack{s \sim d^{\pi^*} \\
                 a \sim \pi^*}}{\mathbb{E}}\left[-\frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \log Z_{\lambda, \nu}(s)+\frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \log Z_{\lambda, \nu}(s)-\frac{1}{\lambda} A^C_{\pi_{\theta_k}}(s, a)\right] \\
-                &=&-\frac{1}{\lambda} \underset{\substack{s \sim d^{\pi_{\theta_k}} \\
-                a \sim \pi^*}}{\mathbb{E}}\left[A^C_{\pi_{\theta_k}}(s, a)\right]\tag{25}
-                \end{eqnarray}
+                &=-\frac{1}{\lambda} \underset{\substack{s \sim d^{\pi_{\theta_k}} \\
+                a \sim \pi^*}}{\mathbb{E}}\left[A^C_{\pi_{\theta_k}}(s, a)\right]
 
-            Combining :ref:`(25) <focops-eq-25>`  with the derivatives of the affine term give us the final desired result.
+
+            Combining :eq:`focops-eq-29`  with the derivatives of the affine term give us the final desired result.

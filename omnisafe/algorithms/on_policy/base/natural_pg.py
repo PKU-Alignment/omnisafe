@@ -49,6 +49,30 @@ class NaturalPG(PolicyGradient):
         self._fvp_obs: torch.Tensor
 
     def _init_log(self) -> None:
+        r"""Log the Natural Policy Gradient specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   ``Misc/AcceptanceStep``
+                -   The acceptance step size.
+            *   -   ``Misc/Alpha``
+                -   :math:`\frac{\delta_{KL}}{xHx}` in original paper.
+                    where :math:`x` is the step direction, :math:`H` is the Hessian matrix,
+                    and :math:`\delta_{KL}` is the target KL divergence.
+            *   -   ``Misc/FinalStepNorm``
+                -   The final step norm.
+            *   -   ``Misc/gradient_norm``
+                -   The gradient norm.
+            *   -   ``Misc/xHx``
+                -   :math:`xHx` in original paper.
+            *   -   ``Misc/H_inv_g``
+                -   :math:`H^{-1}g` in original paper.
+
+        Args:
+            epoch (int): current epoch.
+        """
         super()._init_log()
 
         self._logger.register_key('Misc/Alpha')
@@ -60,8 +84,10 @@ class NaturalPG(PolicyGradient):
     def _fvp(self, params: torch.Tensor) -> torch.Tensor:
         """Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_
         based on an approximation of the KL-divergence.
+
         The Hessian-vector product is approximated by the Fisher information matrix,
         which is the second-order derivative of the KL-divergence.
+
         For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf
 
         Args:
@@ -97,6 +123,22 @@ class NaturalPG(PolicyGradient):
         adv_r: torch.Tensor,
         adv_c: torch.Tensor,
     ) -> None:
+        """Update policy network.
+
+        Natural Policy Gradient (NPG) update policy network using the conjugate gradient algorithm,
+        following the steps:
+
+        - Calculate the gradient of the policy network,
+        - Use the conjugate gradient algorithm to calculate the step direction.
+        - Update the policy network by taking a step in the step direction.
+
+        Args:
+            obs (torch.Tensor): The observation tensor.
+            act (torch.Tensor): The action tensor.
+            log_p (torch.Tensor): The log probability of the action.
+            adv (torch.Tensor): The advantage tensor.
+            cost_adv (torch.Tensor): The cost advantage tensor.
+        """
         self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
@@ -136,6 +178,24 @@ class NaturalPG(PolicyGradient):
         )
 
     def _update(self) -> None:
+        r"""Update actor, critic.
+
+        .. hint::
+
+            Here are some differences between NPG and Policy Gradient (PG):
+            In PG, the actor network and the critic network are updated together.
+            When the KL divergence between the old policy,
+            and the new policy is larger than a threshold, the update is rejected together.
+
+            In NPG, the actor network and the critic network are updated separately.
+            When the KL divergence between the old policy,
+            and the new policy is larger than a threshold,
+            the update of the actor network is rejected,
+            but the update of the critic network is still accepted.
+
+        Args:
+            self (object): object of the class.
+        """
         data = self._buf.get()
         obs, act, logp, target_value_r, target_value_c, adv_r, adv_c = (
             data['obs'],
@@ -164,7 +224,7 @@ class NaturalPG(PolicyGradient):
                 adv_r,
                 adv_c,
             ) in dataloader:
-                self._update_rewrad_critic(obs, target_value_r)
+                self._update_reward_critic(obs, target_value_r)
                 if self._cfgs.algo_cfgs.use_cost:
                     self._update_cost_critic(obs, target_value_c)
 

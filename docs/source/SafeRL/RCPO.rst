@@ -1,2 +1,0 @@
-Reward Constrained Policy Optimization
-======================================

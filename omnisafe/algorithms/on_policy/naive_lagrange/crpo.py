@@ -37,20 +37,32 @@ class OnCRPO(PPO):
         self._cost_update = 0
 
     def _init_log(self) -> None:
+        r"""Log the CRPO specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -  ``Misc/RewUpdate``
+                -   The number of times the reward is updated.
+            *   -  ``Misc/CostUpdate``
+                -   The number of times the cost is updated.
+        """
         super()._init_log()
         self._logger.register_key('Misc/RewUpdate')
         self._logger.register_key('Misc/CostUpdate')
 
-    def _update(self) -> None:
-        super()._update()
-        self._logger.store(
-            **{
-                'Misc/RewUpdate': self._rew_update,
-                'Misc/CostUpdate': self._cost_update,
-            }
-        )
-
     def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
+        """Compute the advantage surrogate.
+
+        In CRPO algorithm, we first judge whether the cost is within the limit.
+        If the cost is within the limit, we use the advantage of the policy.
+        Otherwise, we use the advantage of the cost.
+
+        Args:
+            adv_r (torch.Tensor): The advantage of the policy.
+            adv_c (torch.Tensor): The advantage of the cost.
+        """
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         if Jc <= self._cfgs.algo_cfgs.cost_limit + self._cfgs.algo_cfgs.distance:
             self._rew_update += 1
