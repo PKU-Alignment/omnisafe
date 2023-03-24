@@ -257,8 +257,8 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
             'vtrace',
             'plain',
         ], "adv_estimation_method must be string, and it values must be ['gae','gae-rtg','vtrace','plain']"
-        assert (
-            configs.standardized_rew_adv and configs.standardized_cost_adv
+        assert isinstance(configs.standardized_rew_adv, bool) and isinstance(
+            configs.standardized_cost_adv, bool
         ), 'standardized_<>_adv must be bool'
         assert (
             isinstance(configs.penalty_coef, float)
