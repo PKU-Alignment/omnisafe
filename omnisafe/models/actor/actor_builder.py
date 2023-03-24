@@ -16,6 +16,7 @@
 
 from typing import List
 
+from omnisafe.models.actor.cholesky_actor import CholeskyActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
 from omnisafe.models.actor.mlp_actor import MLPActor
@@ -63,6 +64,14 @@ class ActorBuilder:
             )
         if actor_type == 'mlp':
             return MLPActor(
+                self._obs_space,
+                self._act_space,
+                self._hidden_sizes,
+                activation=self._activation,
+                weight_initialization_mode=self._weight_initialization_mode,
+            )
+        if actor_type == 'cholesky':
+            return CholeskyActor(
                 self._obs_space,
                 self._act_space,
                 self._hidden_sizes,

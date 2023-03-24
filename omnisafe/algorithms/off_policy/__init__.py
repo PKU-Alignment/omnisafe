@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
 # ==============================================================================
 """Off-policy algorithms."""
 
+from omnisafe.algorithms.off_policy.cvpo import CVPO
 from omnisafe.algorithms.off_policy.ddpg import DDPG
-from omnisafe.algorithms.off_policy.sac import SAC
-from omnisafe.algorithms.off_policy.td3 import TD3
 from omnisafe.algorithms.off_policy.ddpg_lag import DDPGLag
-from omnisafe.algorithms.off_policy.td3_lag import TD3Lag
+from omnisafe.algorithms.off_policy.sac import SAC
 from omnisafe.algorithms.off_policy.sac_lag import SACLag
+from omnisafe.algorithms.off_policy.td3 import TD3
+from omnisafe.algorithms.off_policy.td3_lag import TD3Lag
 
 
 __all__ = [
@@ -28,5 +29,6 @@ __all__ = [
     'SAC',
     'DDPGLag',
     'TD3Lag',
-    'SACLag'
+    'SACLag',
+    'CVPO',
 ]

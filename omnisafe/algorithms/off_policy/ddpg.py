@@ -50,9 +50,9 @@ class DDPG(BaseAlgo):
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         ) == 0, ('The number of steps per epoch is not divisible by the number of ' 'environments.')
 
-        assert int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.update_cycle == 0, (
-            'The total number of steps is not divisible by the number of steps ' 'per epoch.'
-        )
+        assert (
+            int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.update_cycle == 0
+        ), f'The total number of steps {int(self._cfgs.train_cfgs.total_steps)} is not divisible by the number of {self._cfgs.algo_cfgs.update_cycle}.'
         self._epochs = int(self._cfgs.train_cfgs.total_steps // self._cfgs.algo_cfgs.update_cycle)
         self._epoch = 0
         self._update_cycle = self._cfgs.algo_cfgs.update_cycle // (
@@ -63,6 +63,7 @@ class DDPG(BaseAlgo):
             'The number of steps per epoch is not divisible by the number of ' 'steps per sample.'
         )
         self._samples_per_epoch = self._update_cycle // self._steps_per_sample
+        self._update_count = 0
 
     def _init_model(self) -> None:
         self._cfgs.model_cfgs.critic['num_critics'] = 1
@@ -105,9 +106,13 @@ class DDPG(BaseAlgo):
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
 
-        self._logger.register_key('Metrics/EpRet', window_length=50)
-        self._logger.register_key('Metrics/EpCost', window_length=50)
-        self._logger.register_key('Metrics/EpLen', window_length=50)
+        self._logger.register_key('Metrics/EpRet', window_length=10)
+        self._logger.register_key('Metrics/EpCost', window_length=10)
+        self._logger.register_key('Metrics/EpLen', window_length=10)
+
+        self._logger.register_key('Metrics/TestEpRet', window_length=10)
+        self._logger.register_key('Metrics/TestEpCost', window_length=10)
+        self._logger.register_key('Metrics/TestEpLen', window_length=10)
 
         self._logger.register_key('Train/Epoch')
         self._logger.register_key('Train/LR')
@@ -179,6 +184,12 @@ class DDPG(BaseAlgo):
                     self._log_when_not_update()
                 update_time += time.time() - update_start
 
+            self._env.eval_policy(
+                episode=2,
+                agent=self._actor_critic,
+                logger=self._logger,
+            )
+
             self._logger.store(**{'Time/Update': update_time})
             self._logger.store(**{'Time/Rollout': roll_out_time})
 
@@ -214,6 +225,7 @@ class DDPG(BaseAlgo):
     def _update(self) -> None:
         for step in range(self._steps_per_sample // self._cfgs.algo_cfgs.update_iters):
             data = self._buf.sample_batch()
+            self._update_count += 1
             obs, act, reward, cost, done, next_obs = (
                 data['obs'],
                 data['act'],
@@ -223,16 +235,15 @@ class DDPG(BaseAlgo):
                 data['next_obs'],
             )
 
-            self._update_rewrad_critic(obs, act, reward, done, next_obs)
+            self._update_reward_critic(obs, act, reward, done, next_obs)
             if self._cfgs.algo_cfgs.use_cost:
                 self._update_cost_critic(obs, act, cost, done, next_obs)
 
-            if step % self._cfgs.algo_cfgs.policy_delay == 0:
+            if self._update_count % self._cfgs.algo_cfgs.policy_delay == 0:
                 self._update_actor(obs)
+                self._actor_critic.polyak_update(self._cfgs.algo_cfgs.polyak)
 
-            self._actor_critic.polyak_update(self._cfgs.algo_cfgs.polyak)
-
-    def _update_rewrad_critic(
+    def _update_reward_critic(
         self,
         obs: torch.Tensor,
         action: torch.Tensor,

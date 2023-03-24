@@ -46,7 +46,7 @@ class TD3(DDPG):
         if distributed.world_size() > 1:
             distributed.sync_params(self._actor_critic)
 
-    def _update_rewrad_critic(
+    def _update_reward_critic(
         self,
         obs: torch.Tensor,
         action: torch.Tensor,
@@ -69,8 +69,13 @@ class TD3(DDPG):
         """
         with torch.no_grad():
             # set the update noise and noise clip.
-            self._actor_critic.target_actor.noise = self._cfgs.algo_cfgs.policy_noise
-            next_action = self._actor_critic.target_actor.predict(next_obs, deterministic=False)
+            next_action = self._actor_critic.target_actor.predict(next_obs, deterministic=True)
+            policy_noise = self._cfgs.algo_cfgs.policy_noise
+            policy_noise_clip = self._cfgs.algo_cfgs.policy_noise_clip
+            noise = (torch.randn_like(next_action) * policy_noise).clamp(
+                -policy_noise_clip, policy_noise_clip
+            )
+            next_action = (next_action + noise).clamp(-1.0, 1.0)
             next_q1_value_r, next_q2_value_r = self._actor_critic.target_reward_critic(
                 next_obs, next_action
             )
@@ -125,8 +130,13 @@ class TD3(DDPG):
         """
         with torch.no_grad():
             # Set the update noise and noise clip.
-            self._actor_critic.target_actor.noise = self._cfgs.algo_cfgs.policy_noise
-            next_action = self._actor_critic.target_actor.predict(next_obs, deterministic=False)
+            next_action = self._actor_critic.target_actor.predict(next_obs, deterministic=True)
+            policy_noise = self._cfgs.algo_cfgs.policy_noise
+            policy_noise_clip = self._cfgs.algo_cfgs.policy_noise_clip
+            noise = (torch.randn_like(next_action) * policy_noise).clamp(
+                -policy_noise_clip, policy_noise_clip
+            )
+            next_action = (next_action + noise).clamp(-1.0, 1.0)
             next_q1_value_c, next_q2_value_c = self._actor_critic.target_cost_critic(
                 next_obs, next_action
             )

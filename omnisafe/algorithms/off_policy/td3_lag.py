@@ -43,7 +43,7 @@ class TD3Lag(TD3):
 
     def _update_epoch(self) -> None:
         super()._update_epoch()
-        Jc = self._logger.get_stats('Metrics/EpCost')[0]
+        Jc = self._logger.get_stats('Metrics/TestEpCost')[0]
         self._lagrange.update_lagrange_multiplier(Jc)
         self._logger.store(
             **{
