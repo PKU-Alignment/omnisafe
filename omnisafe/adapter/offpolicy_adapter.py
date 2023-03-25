@@ -14,11 +14,9 @@
 # ==============================================================================
 """OffPolicy Adapter for OmniSafe."""
 
-from functools import partial
 from typing import Dict, Optional
 
 import torch
-from gymnasium import spaces
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
 from omnisafe.common.buffer import VectorOffPolicyBuffer
@@ -61,15 +59,11 @@ class OffPolicyAdapter(OnlineAdapter):
             use_rand_action (bool): Whether to use random action.
         """
         if use_rand_action:
-            if isinstance(self._env.action_space, spaces.Box):
-                act_fn = partial(
-                    torch.rand, size=(self._env.num_envs, *self._env.action_space.shape)
-                )
+            act = torch.as_tensor(self._env.sample_action(), dtype=torch.float32).to(self._device)
         else:
-            act_fn = partial(agent.step, self._current_obs, deterministic=False)
+            act = agent.step(self._current_obs, deterministic=False)
 
         for _ in range(roll_out_step):
-            act = act_fn()
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
 
             self._log_value(reward=reward, cost=cost, info=info)

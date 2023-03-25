@@ -32,14 +32,14 @@ class TimeLimit(Wrapper):
         >>> env = TimeLimit(env, time_limit=100)
     """
 
-    def __init__(self, env: CMDP, time_limit: int) -> None:
+    def __init__(self, env: CMDP, time_limit: int, device: torch.device) -> None:
         """Initialize the time limit wrapper.
 
         Args:
             env (CMDP): The environment to wrap.
             time_limit (int): The time limit for each episode.
         """
-        super().__init__(env)
+        super().__init__(env=env, device=device)
 
         assert self.num_envs == 1, 'TimeLimit only supports single environment'
 
@@ -56,7 +56,9 @@ class TimeLimit(Wrapper):
         obs, reward, cost, terminated, truncated, info = super().step(action)
 
         self._time += 1
-        truncated = torch.tensor(self._time >= self._time_limit, dtype=torch.bool)
+        truncated = torch.tensor(
+            self._time >= self._time_limit, dtype=torch.bool, device=self._device
+        )
 
         return obs, reward, cost, terminated, truncated, info
 
@@ -69,8 +71,8 @@ class AutoReset(Wrapper):
 
     """
 
-    def __init__(self, env: CMDP) -> None:
-        super().__init__(env)
+    def __init__(self, env: CMDP, device: torch.device) -> None:
+        super().__init__(env=env, device=device)
 
         assert self.num_envs == 1, 'AutoReset only supports single environment'
 
@@ -80,7 +82,7 @@ class AutoReset(Wrapper):
         obs, reward, cost, terminated, truncated, info = super().step(action)
 
         if terminated or truncated:
-            info['last_episode_obs'], _ = self.reset()
+            info['final_observation'] = obs
             obs, _ = self.reset()
 
         return obs, reward, cost, terminated, truncated, info
@@ -97,14 +99,14 @@ class ObsNormalize(Wrapper):
 
     """
 
-    def __init__(self, env: CMDP, norm: Optional[Normalizer] = None) -> None:
-        super().__init__(env)
+    def __init__(self, env: CMDP, device: torch.device, norm: Optional[Normalizer] = None) -> None:
+        super().__init__(env=env, device=device)
         assert isinstance(self.observation_space, spaces.Box), 'Observation space must be Box'
 
         if norm is not None:
-            self._obs_normalizer = norm
+            self._obs_normalizer = norm.to(self._device)
         else:
-            self._obs_normalizer = Normalizer(self.observation_space.shape, clip=5)
+            self._obs_normalizer = Normalizer(self.observation_space.shape, clip=5).to(self._device)
 
     def step(
         self, action: torch.Tensor
@@ -115,6 +117,7 @@ class ObsNormalize(Wrapper):
                 final_obs_slice = info['_final_observation']
             else:
                 final_obs_slice = slice(None)
+            info['final_observation'] = info['final_observation'].to(self._device)
             info['original_final_observation'] = info['final_observation']
             info['final_observation'][final_obs_slice] = self._obs_normalizer.normalize(
                 info['final_observation'][final_obs_slice]
@@ -146,7 +149,7 @@ class RewardNormalize(Wrapper):
 
     """
 
-    def __init__(self, env: CMDP, norm: Optional[Normalizer] = None) -> None:
+    def __init__(self, env: CMDP, device: torch.device, norm: Optional[Normalizer] = None) -> None:
         """Initialize the reward normalizer.
 
         Args:
@@ -154,11 +157,11 @@ class RewardNormalize(Wrapper):
             norm (Optional[Normalizer], optional): The normalizer to use. Defaults to None.
 
         """
-        super().__init__(env)
+        super().__init__(env=env, device=device)
         if norm is not None:
-            self._reward_normalizer = norm
+            self._reward_normalizer = norm.to(self._device)
         else:
-            self._reward_normalizer = Normalizer((), clip=5)
+            self._reward_normalizer = Normalizer((), clip=5).to(self._device)
 
     def step(
         self, action: torch.Tensor
@@ -184,18 +187,18 @@ class CostNormalize(Wrapper):
         >>> env = CostNormalize(env, norm)
     """
 
-    def __init__(self, env: CMDP, norm: Optional[Normalizer] = None) -> None:
+    def __init__(self, env: CMDP, device: torch.device, norm: Optional[Normalizer] = None) -> None:
         """Initialize the cost normalizer.
 
         Args:
             env (CMDP): The environment to wrap.
             norm (Normalizer, optional): The normalizer to use. Defaults to None.
         """
-        super().__init__(env)
+        super().__init__(env=env, device=device)
         if norm is not None:
-            self._obs_normalizer = norm
+            self._obs_normalizer = norm.to(self._device)
         else:
-            self._cost_normalizer = Normalizer((), clip=5)
+            self._cost_normalizer = Normalizer((), clip=5).to(self._device)
 
     def step(
         self, action: torch.Tensor
@@ -223,6 +226,7 @@ class ActionScale(Wrapper):
     def __init__(
         self,
         env: CMDP,
+        device: torch.device,
         low: Union[int, float],
         high: Union[int, float],
     ) -> None:
@@ -233,11 +237,15 @@ class ActionScale(Wrapper):
             low: The lower bound of the action space.
             high: The upper bound of the action space.
         """
-        super().__init__(env)
+        super().__init__(env=env, device=device)
         assert isinstance(self.action_space, spaces.Box), 'Action space must be Box'
 
-        self._old_min_action = torch.tensor(self.action_space.low, dtype=torch.float32)
-        self._old_max_action = torch.tensor(self.action_space.high, dtype=torch.float32)
+        self._old_min_action = torch.tensor(
+            self.action_space.low, dtype=torch.float32, device=self._device
+        )
+        self._old_max_action = torch.tensor(
+            self.action_space.high, dtype=torch.float32, device=self._device
+        )
 
         min_action = np.zeros(self.action_space.shape, dtype=self.action_space.dtype) + low
         max_action = np.zeros(self.action_space.shape, dtype=self.action_space.dtype) + high
@@ -248,16 +256,16 @@ class ActionScale(Wrapper):
             dtype=self.action_space.dtype,  # type: ignore
         )
 
-        self._min_action = torch.tensor(min_action, dtype=torch.float32)
-        self._max_action = torch.tensor(max_action, dtype=torch.float32)
+        self._min_action = torch.tensor(min_action, dtype=torch.float32, device=self._device)
+        self._max_action = torch.tensor(max_action, dtype=torch.float32, device=self._device)
 
     def step(
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         action = self._old_min_action + (self._old_max_action - self._old_min_action) * (
-            action.cpu() - self._min_action
+            action - self._min_action
         ) / (self._max_action - self._min_action)
-        return super().step(action.numpy())
+        return super().step(action)
 
 
 class Unsqueeze(Wrapper):
@@ -267,13 +275,13 @@ class Unsqueeze(Wrapper):
         >>> env = Unsqueeze(env)
     """
 
-    def __init__(self, env: CMDP) -> None:
+    def __init__(self, env: CMDP, device: torch.device) -> None:
         """Initialize the wrapper.
 
         Args:
             env: The environment to wrap.
         """
-        super().__init__(env)
+        super().__init__(env=env, device=device)
         assert self.num_envs == 1, 'Unsqueeze only works with single environment'
         assert isinstance(self.observation_space, spaces.Box), 'Observation space must be Box'
 

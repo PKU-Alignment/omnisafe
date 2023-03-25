@@ -193,13 +193,14 @@ class Wrapper(CMDP):
 
     """
 
-    def __init__(self, env: CMDP) -> None:
+    def __init__(self, env: CMDP, device: torch.device) -> None:
         """Initialize the wrapper.
 
         Args:
             env (CMDP): the environment.
         """
         self._env = env
+        self._device = device
 
     def __getattr__(self, name: str) -> Any:
         """Get the attribute of the environment.
@@ -217,16 +218,25 @@ class Wrapper(CMDP):
     def step(
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
-        return self._env.step(action)
+        obs, reward, cost, terminated, truncated, info = self._env.step(action)
+        return (
+            obs.to(self._device),
+            reward.to(self._device),
+            cost.to(self._device),
+            terminated.to(self._device),
+            truncated.to(self._device),
+            info,
+        )
 
     def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
-        return self._env.reset(seed)
+        obs, info = self._env.reset(seed)
+        return obs.to(self._device), info
 
     def set_seed(self, seed: int) -> None:
         self._env.set_seed(seed)
 
     def sample_action(self) -> torch.Tensor:
-        return self._env.sample_action()
+        return self._env.sample_action().to(self._device)
 
     def render(self) -> Any:
         return self._env.render()

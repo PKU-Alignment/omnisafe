@@ -92,7 +92,7 @@ class SafetyGymnasiumEnv(CMDP):
     def step(
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
-        obs, reward, cost, terminated, truncated, info = self._env.step(action)
+        obs, reward, cost, terminated, truncated, info = self._env.step(action.cpu().numpy())
         obs, reward, cost, terminated, truncated = map(
             lambda x: torch.as_tensor(x, dtype=torch.float32),
             (obs, reward, cost, terminated, truncated),
