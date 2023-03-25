@@ -80,7 +80,7 @@ class AutoReset(Wrapper):
         obs, reward, cost, terminated, truncated, info = super().step(action)
 
         if terminated or truncated:
-            new_obs, new_info = self.env.reset()
+            new_obs, new_info = self.reset()
             assert (
                 'final_observation' not in new_info
             ), 'info dict cannot contain key "final_observation" '
