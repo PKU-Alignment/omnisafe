@@ -64,12 +64,12 @@ class OfflineDataset(Dataset):
                     print(f'Dataset {dataset_name} already exists and is valid.')
                 else:
                     print(
-                        f'Dataset {dataset_name} already exists but is invalid. Downloading again.'
+                        f'Dataset {dataset_name} already exists but is invalid. Downloading again...'
                     )
                     gdown.download(url, file_path, quiet=False, fuzzy=True)
 
             else:
-                print(f'Dataset {dataset_name} does not exist. Downloading.')
+                print(f'Dataset {dataset_name} does not exist. Downloading...')
                 gdown.download(url, file_path, quiet=False, fuzzy=True)
 
             # Load data from downloaded .npz file
@@ -93,13 +93,13 @@ class OfflineDataset(Dataset):
 
         self._batch_size = batch_size
         self._gpu_threshold = gpu_threshold
-        self._use_gpu = False
+        self._pre_transfer = False
 
         # Determine whether to use GPU or not
-        if total_size_bytes > gpu_threshold:
-            self._use_gpu = True
+        if total_size_bytes <= gpu_threshold:
+            self._pre_transfer = True
 
-        if self._use_gpu:
+        if self._pre_transfer:
             self.obs = torch.from_numpy(data['obs']).to(device=device)
             self.action = torch.from_numpy(data['action']).to(device=device)
             self.reward = torch.from_numpy(data['reward']).to(device=device)
@@ -123,7 +123,7 @@ class OfflineDataset(Dataset):
     def __getitem__(
         self, idx
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-        if self._use_gpu:
+        if self._pre_transfer:
             return (
                 self.obs[idx],
                 self.action[idx],
@@ -155,7 +155,7 @@ class OfflineDataset(Dataset):
         batch_next_obs = self.next_obs[indices]
         batch_done = self.done[indices]
 
-        if self._use_gpu:
+        if self._pre_transfer:
             return (batch_obs, batch_action, batch_reward, batch_cost, batch_next_obs, batch_done)
 
         return (
