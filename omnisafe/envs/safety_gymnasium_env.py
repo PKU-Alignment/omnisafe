@@ -76,7 +76,7 @@ class SafetyGymnasiumEnv(CMDP):
     need_time_limit_wrapper = False
 
     def __init__(
-        self, env_id: str, num_envs: int = 1, device: torch.device = 'cpu', **kwargs
+        self, env_id: str, num_envs: int = 1, device: torch.device = torch.device('cpu'), **kwargs
     ) -> None:
         super().__init__(env_id)
         if num_envs > 1:
