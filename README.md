@@ -30,16 +30,16 @@
 
 **This library is currently under heavy development - if you have suggestions on the API or use-cases you'd like to be covered, please open an github issue or reach out. We'd love to hear about how you're using the library.**
 
-OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learning, covering a multitude of SafeRL domains and delivering a new suite of testing environments.
+OmniSafe is an infrastructural framework designed to accelerate safe reinforcement learning (RL) research by providing a comprehensive and reliable benchmark for safe RL algorithms. The field of RL has great potential to benefit society, but safety concerns are a significant issue, and RL algorithms have raised concerns about unintended harm or unsafe behavior. The intention of safe RL is to develop algorithms that minimize the risk of unintended harm or unsafe behavior, but there is currently a lack of commonly recognized safe RL algorithm benchmarks.
 
-The simulation environment around OmniSafe and a series of reliable algorithm implementations will help the SafeRL research community easier to replicate and improve the excellent work already done while also helping to facilitate the validation of new ideas and new algorithms.
+OmniSafe addresses these issues by providing more than 40 experimentally validated algorithms and a sound and efficient simulation environment. Researchers can use OmniSafe to conduct experiments and verify their ideas, ensuring consistency and enabling more efficient development of safe RL algorithms. By using OmniSafe as a benchmark, researchers can evaluate the performance of their own safe RL algorithms and contribute to the advancement of safe RL research.
 
 --------------------------------------------------------------------------------
 
 ### Table of Contents  <!-- omit in toc --> <!-- markdownlint-disable heading-increment -->
 
 - [Implemented Algorithms](#implemented-algorithms)
-  - [Newly Published in 2022](#newly-published-in-2022)
+  - [Latest SafeRL Papers](#latest-saferl-papers)
   - [List of Algorithms](#list-of-algorithms)
     - [On-Policy Safe](#on-policy-safe)
     - [Off-Policy Safe](#off-policy-safe)
@@ -48,13 +48,17 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
     - [Others](#others)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
-  - [Install from source](#install-from-source)
+    - [Install from source](#install-from-source)
+    - [Install from PyPI](#install-from-pypi)
   - [Examples](#examples)
+    - [Try with CLI](#try-with-cli)
 - [Getting Started](#getting-started)
+    - [Important Hints](#important-hints)
   - [1. Run Agent from preset yaml file](#1-run-agent-from-preset-yaml-file)
-  - [2. Run Agent from custom config dict](#2-run-agent-from-custom-config-dict)
+  - [2. Run agent with custom cfg](#2-run-agent-with-custom-cfg)
   - [3. Run Agent from custom terminal config](#3-run-agent-from-custom-terminal-config)
   - [4. Evalutate Saved Policy](#4-evalutate-saved-policy)
+- [Changelog](#changelog)
 - [The OmniSafe Team](#the-omnisafe-team)
 - [License](#license)
 
@@ -64,17 +68,17 @@ The simulation environment around OmniSafe and a series of reliable algorithm im
 
 The supported interface algorithms currently include:
 
-### Newly Published in 2022
+### Latest SafeRL Papers
 
-- [X] **[AAAI 2023]** Augmented Proximal Policy Optimization for Safe Reinforcement Learning (APPO) **The original author of the paper contributed code**
-- [X] **[NeurIPS 2022]** [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089) **The original author of the paper contributed code**
-- [X] **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration (Simmer)](https://arxiv.org/abs/2206.02675)
-- [X] **[NeurIPS 2022]** [Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
-- [X] **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
-- [ ] **[ICML 2022]** [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
-- [X] **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning](https://arxiv.org/abs/2205.11814) **The original author of the paper contributed code**
-- [ ] **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LA-MBDA)](https://arxiv.org/abs/2201.09802)
-- [ ] **[AAAI 2022]** [Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
+- **[AAAI 2023]** Augmented Proximal Policy Optimization for Safe Reinforcement Learning (APPO)
+- **[NeurIPS 2022]** [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089)
+- **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration (Simmer)](https://arxiv.org/abs/2206.02675)
+- **[NeurIPS 2022]** [Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
+- **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
+- **[ICML 2022]** [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
+- **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning](https://arxiv.org/abs/2205.11814)
+- **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LA-MBDA)](https://arxiv.org/abs/2201.09802)
+- **[AAAI 2022]** [Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
 
 ### List of Algorithms
 
@@ -131,7 +135,7 @@ The supported interface algorithms currently include:
 
 OmniSafe requires Python 3.8+ and PyTorch 1.10+.
 
-### Install from source
+#### Install from source
 
 ```bash
 # Clone the repo
@@ -145,6 +149,13 @@ conda activate omnisafe
 # Install omnisafe
 pip install -e .
 ```
+
+#### Install from PyPI
+OmniSafe is hosted in [![PyPI](https://img.shields.io/pypi/v/omnisafe?label=pypi&logo=pypi)](https://pypi.org/project/torchopt) / ![Status](https://img.shields.io/pypi/status/omnisafe?label=status).
+```bash
+pip install omnisafe
+```
+
 
 ### Examples
 
@@ -177,18 +188,18 @@ omnisafe train-config "./saved_source/train_config.yaml"
 ```
 
 **algo:**
-Type           | Name
----------------| ----------------------------------------------
-`Base-On-Policy`    | `PolicyGradient, PPO`<br> `NaturalPG, TRPO`
-`Base-Off-Policy`   | `DDPG, TD3, SAC`
-`Naive Lagrange`    | `RCPO, PPOLag, TRPOLag`<br> `DDPGLag, TD3Lag, SACLag`
-`PID Lagrange`      | `CPPOPid, TRPOPid`
-`First Order`       | `FOCOPS, CUP`
-`Second Order`      | `SDDPG, CPO, PCPO`
-`Saute RL`          | `PPOSaute, PPOLagSaute`
-`Simmer RL`         | `PPOSimmerQ, PPOSimmerPid` <br> `PPOLagSimmerQ, PPOLagSimmerPid`
-`EarlyTerminated`   | `PPOEarlyTerminated` <br> `PPOLagEarlyTerminated`
-`Model-Based`       | `CAP, MBPPOLag, SafeLOOP`
+| Type              | Name                                                             |
+| ----------------- | ---------------------------------------------------------------- |
+| `Base-On-Policy`  | `PolicyGradient, PPO`<br> `NaturalPG, TRPO`                      |
+| `Base-Off-Policy` | `DDPG, TD3, SAC`                                                 |
+| `Naive Lagrange`  | `RCPO, PPOLag, TRPOLag`<br> `DDPGLag, TD3Lag, SACLag`            |
+| `PID Lagrange`    | `CPPOPid, TRPOPid`                                               |
+| `First Order`     | `FOCOPS, CUP`                                                    |
+| `Second Order`    | `SDDPG, CPO, PCPO`                                               |
+| `Saute RL`        | `PPOSaute, PPOLagSaute`                                          |
+| `Simmer RL`       | `PPOSimmerQ, PPOSimmerPid` <br> `PPOLagSimmerQ, PPOLagSimmerPid` |
+| `EarlyTerminated` | `PPOEarlyTerminated` <br> `PPOLagEarlyTerminated`                |
+| `Model-Based`     | `CAP, MBPPOLag, SafeLOOP`                                        |
 
 
 **env-id:** Environment id in [Safety Gymnasium](https://www.safety-gymnasium.com/), here a list of envs that safety-gymnasium supports.
@@ -235,19 +246,27 @@ More information about environments, please refer to [Safety Gymnasium](https://
 
 ## Getting Started
 #### Important Hints
-- `train_cfgs:torch_threads`is especialy important for trainning speed, and is varying with users' machine, this value shouldn't be too small or too large.
+- `train_cfgs:torch_threads` is especialy important for trainning speed, and is varying with users' machine, this value shouldn't be too small or too large.
 ### 1. Run Agent from preset yaml file
 
 ```python
 import omnisafe
 
+env_id = 'SafetyPointGoal1-v0'
+agent = omnisafe.Agent('PPOLag', env_id)
+agent.learn()
+```
+
+### 2. Run agent with custom cfg
+```python
+import omnisafe
 
 env_id = 'SafetyPointGoal1-v0'
 custom_cfgs = {
     'train_cfgs': {
         'total_steps': 1024000,
         'vector_env_nums': 1,
-        '--parallel': 1,
+        'parallel': 1,
     },
     'algo_cfgs': {
         'update_cycle': 2048,
@@ -257,7 +276,6 @@ custom_cfgs = {
         'use_wandb': False,
     },
 }
-
 agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs)
 agent.learn()
 ```
@@ -294,9 +312,12 @@ for item in os.scandir(os.path.join(LOG_DIR, 'torch_save')):
 
 --------------------------------------------------------------------------------
 
+## Changelog
+See [CHANGELOG.md](https://github.com/PKU-MARL/omnisafe/blob/main/CHANGELOG.md).
+
 ## The OmniSafe Team
 
-OmniSafe is currently maintained by Borong Zhang, [Jiayi Zhou](https://github.com/Gaiejj), [JTao Dai](https://github.com/calico-1226), [Weidong Huang](https://github.com/hdadong), [Ruiyang Sun](https://github.com/rockmagma02) ,[Xuehai Pan](https://github.com/XuehaiPan), [Jiamg Ji](https://github.com/zmsn-2077) and under the instruction of Prof. [Yaodong Yang](https://github.com/orgs/PKU-MARL/people/PKU-YYang). If you have any question in the process of using omnisafe, don't hesitate to ask your question in [the GitHub issue page](https://github.com/PKU-MARL/omnisafe/issues/new/choose), we will reply you in 2-3 working days.
+OmniSafe is mainly developed by the SafeRL research team directed by Prof. [Yaodong Yang](https://github.com/orgs/PKU-MARL/people/PKU-YYang). Our SafeRL research team members include: [Borong Zhang](https://github.com/muchvo), [Jiayi Zhou](https://github.com/Gaiejj), [JTao Dai](https://github.com/calico-1226), [Weidong Huang](https://github.com/hdadong), [Ruiyang Sun](https://github.com/rockmagma02) ,[Xuehai Pan](https://github.com/XuehaiPan), [Jiaming Ji](https://github.com/zmsn-2077). If you have any question in the process of using omnisafe, don't hesitate to ask your question in [the GitHub issue page](https://github.com/PKU-MARL/omnisafe/issues/new/choose), we will reply you in 2-3 working days.
 
 ## License
 
