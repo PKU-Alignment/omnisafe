@@ -227,7 +227,6 @@ class DDPG(BaseAlgo):
             if self._cfgs.algo_cfgs.use_cost:
                 self._update_cost_critic(obs, act, cost, done, next_obs)
 
-
             for param in self._actor_critic.reward_critic.parameters():
                 param.requires_grad = False
             if self._cfgs.algo_cfgs.use_cost:
