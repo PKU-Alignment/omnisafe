@@ -46,7 +46,7 @@ def train(
     sys.stderr = sys.__stderr__
     print(f'exp-x: {exp_id} is training...')
     if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
-        os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
+        os.makedirs(custom_cfgs['logger_cfgs']['log_dir'], exist_ok=True)
     # pylint: disable-next=consider-using-with
     sys.stdout = open(
         os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', terminal_log_name),
@@ -98,6 +98,8 @@ if __name__ == '__main__':
     eg.add('logger_cfgs:use_wandb', [False])
     eg.add('train_cfgs:vector_env_nums', [4])
     eg.add('train_cfgs:torch_threads', [1])
+    eg.add('algo_cfgs:update_cycle', [2048])
+    eg.add('train_cfgs:total_steps', [1024000])
     eg.add('seed', [0])
     # total experiment num must can be divided by num_pool
     # meanwhile, users should decide this value according to their machine

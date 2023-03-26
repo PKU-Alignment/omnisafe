@@ -14,6 +14,7 @@
 # ==============================================================================
 """tool_function_packages"""
 
+import hashlib
 import json
 import os
 import random
@@ -216,3 +217,16 @@ def recursive_dict2json(dict_obj):
     flat_dict_str = json.dumps(flat_dict, sort_keys=True).replace('"', "'")
 
     return flat_dict_str
+
+
+def hash_string(string):
+    """This function is used to generate the folder name."""
+    # salt
+    salt = b'\xf8\x99/\xe4\xe6J\xd8d\x1a\x9b\x8b\x98\xa2\x1d\xff3*^\\\xb1\xc1:e\x11M=PW\x03\xa5\\h'
+    # convert string to bytes and add salt
+    salted_string = salt + string.encode('utf-8')
+    # use sha256 to hash
+    hash_object = hashlib.sha256(salted_string)
+    # get the hex digest
+    folder_name = hash_object.hexdigest()
+    return folder_name

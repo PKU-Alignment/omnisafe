@@ -232,6 +232,7 @@ class Plotter:
         xaxis=None,
         values=None,
         count=False,
+        cost_limit=None,
         smooth=1,
         select=None,
         exclude=None,
@@ -308,6 +309,8 @@ class Plotter:
                 smooth=smooth,
                 estimator=estimator,
             )
+            if cost_limit:
+                axes[1].axhline(y=cost_limit, ls='--', c='black', linewidth=2)
         plt.show()
         if save_name is None:
             save_name = all_logdirs[0].split('/')[-1]

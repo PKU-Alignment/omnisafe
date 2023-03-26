@@ -31,6 +31,7 @@ from omnisafe.algorithms import ALGORITHM2TYPE
 from omnisafe.utils.exp_grid_tools import all_bools, valid_str
 from omnisafe.utils.tools import (
     assert_with_exit,
+    hash_string,
     load_yaml,
     recursive_check_config,
     recursive_dict2json,
@@ -322,7 +323,7 @@ class ExperimentGrid:
         assert_with_exit(
             not os.path.exists(self.log_dir),
             (
-                f'log_dir {self.log_dir} already exists!,'
+                f'log_dir {self.log_dir} already exists!'
                 'please make sure that you are not overwriting an existing experiment,'
                 'it is important to analyze the results of the experiment.'
             ),
@@ -386,12 +387,11 @@ class ExperimentGrid:
             no_seed_var = deepcopy(var)
             no_seed_var.pop('seed', None)
             exp_name = recursive_dict2json(no_seed_var)
-            exp_names.append(exp_name)
-            if parent_dir is None:
-                exp_log_dir = os.path.join(self.log_dir, exp_name, '')
-            else:
-                exp_log_dir = os.path.join(self.log_dir, exp_name, '')
+            hashed_exp_name = var['env_id'][:30] + ':::' + hash_string(exp_name)
+            exp_names.append(':'.join((hashed_exp_name[:5], exp_name)))
+            exp_log_dir = os.path.join(self.log_dir, hashed_exp_name, '')
             var['logger_cfgs'] = {'log_dir': exp_log_dir}
+            self.save_same_exps_config(exp_log_dir, var)
             results.append(pool.submit(thunk, idx, var['algo'], var['env_id'], var))
         pool.shutdown()
 
@@ -411,6 +411,14 @@ class ExperimentGrid:
                 f.write('cost:' + str(round(cost, 2)) + ',')
                 f.write('ep_len:' + str(ep_len))
                 f.write('\n')
+
+    def save_same_exps_config(self, exps_log_dir, variant):
+        """Save experiment grid configurations as json."""
+        os.makedirs(exps_log_dir, exist_ok=True)
+        path = os.path.join(exps_log_dir, 'exps_config.json')
+        json_config = json.dumps(variant, indent=4)
+        with open(path, encoding='utf-8', mode='a+') as f:
+            f.write('\n' + json_config)
 
     def save_grid_config(self):
         """Save experiment grid configurations as json."""
