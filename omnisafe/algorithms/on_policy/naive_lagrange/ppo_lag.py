@@ -29,10 +29,23 @@ class PPOLag(PPO):
     """
 
     def _init(self) -> None:
+        """Initialize the PPOLag specific model.
+
+        The PPOLag algorithm uses a Lagrange multiplier to balance the cost and reward.
+        """
         super()._init()
         self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
+        r"""Log the PPOLag specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   ``Metrics/LagrangeMultiplier``
+                -   The Lagrange multiplier.
+        """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
 
@@ -40,18 +53,21 @@ class PPOLag(PPO):
         r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
 
         Additionally, we update the Lagrange multiplier parameter,
-        by calling the :meth:`update_lagrange_multiplier` method.
+        by calling the :meth:`update_lagrange_multiplier()` method.
 
         .. note::
-            The :meth:`compute_loss_pi` is defined in the :class:`PolicyGradient` algorithm.
+            The :meth:`_loss_pi()` is defined in the :class:`PolicyGradient` algorithm.
             When a lagrange multiplier is used,
-            the :meth:`compute_loss_pi` method will return the loss of the policy as:
+            the :meth:`_loss_pi()` method will return the loss of the policy as:
 
             .. math::
                 L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[ \frac{\pi_\theta(a_t|s_t)}{\pi_\theta^{old}(a_t|s_t)}
-                [A^{R}(s_t, a_t) - \lambda A^{C}(s_t, a_t)] \right]
+                [A^{R}_{\pi_{\theta}}(s_t, a_t) - \lambda A^{C}_{\pi_{\theta}}(s_t, a_t)] \right]
 
             where :math:`\lambda` is the Lagrange multiplier parameter.
+
+        Args:
+            self (object): object of the class.
         """
         # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
@@ -63,5 +79,17 @@ class PPOLag(PPO):
         self._logger.store(**{'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier})
 
     def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
+        r"""Compute surrogate loss.
+
+        PPOLag uses the following surrogate loss:
+
+        .. math::
+            L = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
+            - \lambda A^C_{\pi_{\theta}}(s, a)]
+
+        Args:
+            adv (torch.Tensor): reward advantage
+            cost_adv (torch.Tensor): cost advantage
+        """
         penalty = self._lagrange.lagrangian_multiplier.item()
         return (adv_r - penalty * adv_c) / (1 + penalty)

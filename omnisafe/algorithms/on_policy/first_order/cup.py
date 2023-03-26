@@ -42,6 +42,27 @@ class CUP(PPO):
         self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
+        r"""Log the CUP specific information.
+
+        .. list-table::
+
+            *   -   Things to log
+                -   Description
+            *   -   ``Metrics/LagrangeMultiplier``
+                -   The Lagrange multiplier.
+            *   -   ``Train/MaxRatio``
+                -   The maximum ratio between the current policy and the old policy.
+            *   -   ``Train/MinRatio``
+                -   The minimum ratio between the current policy and the old policy.
+            *   -   ``Loss/Loss_pi_c``
+                -   The loss of the cost performance.
+            *   -   ``Train/SecondStepStopIter``
+                -   The number of iterations to stop the second step.
+            *   -   ``Train/SecondStepEntropy``
+                -   The entropy of the current policy.
+            *   -   ``Train/SecondStepPolicyRatio``
+                -   The ratio between the current policy and the old policy.
+        """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
         self._logger.register_key('Train/MaxRatio')
@@ -67,16 +88,16 @@ class CUP(PPO):
         The loss of the cost performance is defined as:
 
         .. math::
-            L = \underset{a \sim \pi_{\theta^{old}}}{\mathbb{E}}[\lambda \frac{1 - \gamma \nu}{1 - \gamma}
-            \frac{\pi_\theta(a|s)}{\pi_\theta^{old}(a|s)} A^{C}_{\pi_{\theta}^{old}}
-            + KL(\pi_\theta(a|s)||\pi_\theta^{old}(a|s))]
+            L = \underset{a \sim \pi_{\theta}}{\mathbb{E}}[\lambda \frac{1 - \gamma \nu}{1 - \gamma}
+            \frac{\pi_\theta^{'}(a|s)}{\pi_\theta(a|s)} A^{C}_{\pi_{\theta}}
+            + KL(\pi_\theta^{'}(a|s)||\pi_\theta(a|s))]
 
         where :math:`\lambda` is the Lagrange multiplier,
         :math:`\frac{1 - \gamma \nu}{1 - \gamma}` is the coefficient value,
-        :math:`\pi_\theta(a_t|s_t)` is the current policy,
-        :math:`\pi_\theta^{old}(a_t|s_t)` is the old policy,
-        :math:`A^{C}_{\pi_{\theta}^{old}}` is the cost advantage,
-        :math:`KL(\pi_\theta(a_t|s_t)||\pi_\theta^{old}(a_t|s_t))` is the KL divergence between the
+        :math:`\pi_\theta^{'}(a_t|s_t)` is the current policy,
+        :math:`\pi_\theta(a_t|s_t)` is the old policy,
+        :math:`A^{C}_{\pi_{\theta}}` is the cost advantage,
+        :math:`KL(\pi_\theta^{'}(a_t|s_t)||\pi_\theta(a_t|s_t))` is the KL divergence between the
         current policy and the old policy.
 
         Args:
@@ -112,10 +133,23 @@ class CUP(PPO):
         return loss, info
 
     def _update(self) -> None:
-        """Update actor, critic, running statistics as we used in the :class:`PolicyGradient`.
+        r"""Update actor, critic, and Lagrange multiplier parameters.
 
-        In addition, we also update the Lagrange multiplier parameter,
-        by calling the :meth:`update_lagrange_multiplier` function.
+        In CUP, the Lagrange multiplier is updated as the naive lagrange multiplier update:
+
+        .. math::
+            \lambda_{k+1} = \lambda_k + \eta (J^{C}_{\pi_\theta} - C)
+
+        where :math:`\lambda_k` is the Lagrange multiplier at iteration :math:`k`,
+        :math:`\eta` is the Lagrange multiplier learning rate,
+        :math:`J^{C}_{\pi_theta}` is the cost of the current policy,
+        and :math:`C` is the cost limit.
+
+        Then in each iteration of the policy update, CUP calculates current policy's
+        distribution, which used to calculate the policy loss.
+
+        Args:
+            self (object): object of the class.
         """
         # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]

@@ -6,16 +6,17 @@ build:
   os: ubuntu-20.04
   tools:
     python: "3.9"
+  jobs:
+    post_install:
+      - python -m pip install --upgrade pip setuptools
+      - python -m pip install --no-build-isolation --editable .
+      - python -m pip install -r docs/requirements.txt
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   configuration: docs/source/conf.py
+  fail_on_warning: true
 
 # If using Sphinx, optionally build your docs in additional formats such as PDF
 # formats:
-#   - pdf
-
-# Optionally declare the Python requirements required to build your docs
-python:
-  install:
-    - requirements: docs/requirements.txt
+  # - pdf

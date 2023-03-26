@@ -7,3 +7,4 @@ recommonmark
 sphinx-autoapi
 sphinx-autobuild
 sphinx_autodoc_typehints
+furo
