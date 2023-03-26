@@ -16,6 +16,7 @@
 
 import os
 import sys
+import warnings
 from typing import List
 
 import numpy as np
@@ -139,10 +140,11 @@ def benchmark(
             assert False, f'load file error: {exc}'
     assert_with_exit('algo' in configs, '`algo` must be specified in config file')
     assert_with_exit('env_id' in configs, '`env_id` must be specified in config file')
-    assert_with_exit(
-        (np.prod([len(v) if isinstance(v, list) else 1 for v in configs.values()]) % num_pool == 0),
-        'total number of experiments must can be divided by num_pool',
-    )
+    if np.prod([len(v) if isinstance(v, list) else 1 for v in configs.values()]) % num_pool != 0:
+        warnings.warn(
+            'In order to maximize the use of computational resources, '
+            'total number of experiments should be evenly divided by `num_pool`'
+        )
     log_dir = os.path.join(log_dir, 'benchmark')
     eg = ExperimentGrid(exp_name=exp_name)
     for k, v in configs.items():
