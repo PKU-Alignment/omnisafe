@@ -75,7 +75,9 @@ class SafetyGymnasiumEnv(CMDP):
     need_auto_reset_wrapper = False
     need_time_limit_wrapper = False
 
-    def __init__(self, env_id: str, num_envs: int = 1, **kwargs) -> None:
+    def __init__(
+        self, env_id: str, num_envs: int = 1, device: torch.device = torch.device('cpu'), **kwargs
+    ) -> None:
         super().__init__(env_id)
         if num_envs > 1:
             self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
@@ -88,13 +90,16 @@ class SafetyGymnasiumEnv(CMDP):
 
         self._num_envs = num_envs
         self._metadata = self._env.metadata
+        self._device = device
 
     def step(
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
-        obs, reward, cost, terminated, truncated, info = self._env.step(action)
+        obs, reward, cost, terminated, truncated, info = self._env.step(
+            action.detach().cpu().numpy()
+        )
         obs, reward, cost, terminated, truncated = map(
-            lambda x: torch.as_tensor(x, dtype=torch.float32),
+            lambda x: torch.as_tensor(x, dtype=torch.float32, device=self._device),
             (obs, reward, cost, terminated, truncated),
         )
         if 'final_observation' in info:
@@ -105,20 +110,22 @@ class SafetyGymnasiumEnv(CMDP):
                 ]
             )
             info['final_observation'] = torch.as_tensor(
-                info['final_observation'], dtype=torch.float32
+                info['final_observation'], dtype=torch.float32, device=self._device
             )
 
         return obs, reward, cost, terminated, truncated, info
 
     def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
         obs, info = self._env.reset(seed=seed)
-        return torch.as_tensor(obs, dtype=torch.float32), info
+        return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
 
     def set_seed(self, seed: int) -> None:
         self.reset(seed=seed)
 
     def sample_action(self) -> torch.Tensor:
-        return torch.as_tensor(self._env.action_space.sample(), dtype=torch.float32)
+        return torch.as_tensor(
+            self._env.action_space.sample(), dtype=torch.float32, device=self._device
+        )
 
     def render(self) -> Any:
         return self._env.render()

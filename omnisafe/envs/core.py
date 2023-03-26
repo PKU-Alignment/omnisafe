@@ -193,13 +193,14 @@ class Wrapper(CMDP):
 
     """
 
-    def __init__(self, env: CMDP) -> None:
+    def __init__(self, env: CMDP, device: torch.device) -> None:
         """Initialize the wrapper.
 
         Args:
             env (CMDP): the environment.
         """
         self._env = env
+        self._device = device
 
     def __getattr__(self, name: str) -> Any:
         """Get the attribute of the environment.

@@ -45,16 +45,15 @@ class OnlineAdapter:
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id
-        self._env = make(env_id, num_envs=num_envs)
+        self._env = make(env_id, num_envs=num_envs, device=cfgs.train_cfgs.device)
+        self._cfgs = cfgs
+        self._device = cfgs.train_cfgs.device
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
             cost_normalize=cfgs.algo_cfgs.cost_normalize,
         )
         self._env.set_seed(seed)
-
-        self._cfgs = cfgs
-        self._device = cfgs.train_cfgs.device
 
     def _wrapper(
         self,
@@ -63,18 +62,18 @@ class OnlineAdapter:
         cost_normalize: bool = True,
     ):
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, time_limit=1000)
+            self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
         if self._env.need_auto_reset_wrapper:
-            self._env = AutoReset(self._env)
+            self._env = AutoReset(self._env, device=self._device)
         if obs_normalize:
-            self._env = ObsNormalize(self._env)
+            self._env = ObsNormalize(self._env, device=self._device)
         if reward_normalize:
-            self._env = RewardNormalize(self._env)
+            self._env = RewardNormalize(self._env, device=self._device)
         if cost_normalize:
-            self._env = CostNormalize(self._env)
-        self._env = ActionScale(self._env, low=-1.0, high=1.0)
+            self._env = CostNormalize(self._env, device=self._device)
+        self._env = ActionScale(self._env, device=self._device, low=-1.0, high=1.0)
         if self._env.num_envs == 1:
-            self._env = Unsqueeze(self._env)
+            self._env = Unsqueeze(self._env, device=self._device)
 
     @property
     def action_space(self) -> OmnisafeSpace:
@@ -111,14 +110,7 @@ class OnlineAdapter:
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
-        obs, reward, cost, terminated, truncated, info = self._env.step(action)
-        obs, reward, cost, terminated, truncated = map(
-            lambda x: x.to(self._device),
-            (obs, reward, cost, terminated, truncated),
-        )
-        if info.get('final_observation') is not None:
-            info['final_observation'] = info['final_observation'].to(self._device)
-        return obs, reward, cost, terminated, truncated, info
+        return self._env.step(action)
 
     def reset(self) -> Tuple[torch.Tensor, Dict]:
         """Resets the environment and returns an initial observation.
@@ -130,8 +122,7 @@ class OnlineAdapter:
             observation (torch.Tensor): the initial observation of the space.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
-        obs, info = self._env.reset()
-        return obs.to(self._device), info
+        return self._env.reset()
 
     def save(self) -> Dict[str, torch.nn.Module]:
         """Save the environment.
