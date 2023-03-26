@@ -227,8 +227,21 @@ class DDPG(BaseAlgo):
             if self._cfgs.algo_cfgs.use_cost:
                 self._update_cost_critic(obs, act, cost, done, next_obs)
 
+
+            for param in self._actor_critic.reward_critic.parameters():
+                param.requires_grad = False
+            if self._cfgs.algo_cfgs.use_cost:
+                for param in self._actor_critic.cost_critic.parameters():
+                    param.requires_grad = False
+
             if step % self._cfgs.algo_cfgs.policy_delay == 0:
                 self._update_actor(obs)
+
+            for param in self._actor_critic.reward_critic.parameters():
+                param.requires_grad = True
+            if self._cfgs.algo_cfgs.use_cost:
+                for param in self._actor_critic.cost_critic.parameters():
+                    param.requires_grad = True
 
             self._actor_critic.polyak_update(self._cfgs.algo_cfgs.polyak)
 

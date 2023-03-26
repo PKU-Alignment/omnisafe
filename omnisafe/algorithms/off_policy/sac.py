@@ -123,7 +123,14 @@ class SAC(DDPG):
         self,
         obs: torch.Tensor,
     ) -> None:
-        super()._update_actor(obs)
+        loss = self._loss_pi(obs)
+        self._actor_critic.actor_optimizer.zero_grad()
+        loss.backward()
+        if self._cfgs.algo_cfgs.max_grad_norm:
+            torch.nn.utils.clip_grad_norm_(
+                self._actor_critic.actor.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+            )
+        self._actor_critic.actor_optimizer.step()
 
         if self._cfgs.algo_cfgs.auto_alpha:
             with torch.no_grad():
