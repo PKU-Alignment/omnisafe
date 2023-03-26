@@ -45,7 +45,7 @@ class OnlineAdapter:
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id
-        self._env = make(env_id, num_envs=num_envs)
+        self._env = make(env_id, num_envs=num_envs, device=cfgs.train_cfgs.device)
         self._cfgs = cfgs
         self._device = cfgs.train_cfgs.device
         self._wrapper(

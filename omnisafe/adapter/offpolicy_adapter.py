@@ -58,12 +58,13 @@ class OffPolicyAdapter(OnlineAdapter):
             logger (Logger): Logger.
             use_rand_action (bool): Whether to use random action.
         """
-        if use_rand_action:
-            act = torch.as_tensor(self._env.sample_action(), dtype=torch.float32).to(self._device)
-        else:
-            act = agent.step(self._current_obs, deterministic=False)
-
         for _ in range(roll_out_step):
+            
+            if use_rand_action:
+                act = torch.as_tensor(self._env.sample_action(), dtype=torch.float32).to(self._device)
+            else:
+                act = agent.step(self._current_obs, deterministic=False)
+
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
 
             self._log_value(reward=reward, cost=cost, info=info)
