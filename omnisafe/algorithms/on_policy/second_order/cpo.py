@@ -16,7 +16,6 @@
 
 from typing import Tuple
 
-import numpy as np
 import torch
 
 from omnisafe.algorithms import registry
@@ -116,8 +115,12 @@ class CPO(TRPO):
             acceptance_step = step + 1
 
             with torch.no_grad():
-                # loss of policy reward from target/expected reward
-                loss_reward, _ = self._loss_pi(obs=obs, act=act, logp=logp, adv=adv_r)
+                try:
+                    # loss of policy reward from target/expected reward
+                    loss_reward, _ = self._loss_pi(obs=obs, act=act, logp=logp, adv=adv_r)
+                except ValueError:
+                    step_frac *= decay
+                    continue
                 # loss of cost of policy cost from real/expected reward
                 loss_cost = self._loss_pi_cost(obs=obs, act=act, logp=logp, adv_c=adv_c)
                 # compute KL distance between new and old policy
@@ -139,7 +142,10 @@ class CPO(TRPO):
             # check whether there are nan.
             if not torch.isfinite(loss_reward) and not torch.isfinite(loss_cost):
                 self._logger.log('WARNING: loss_pi not finite')
-            elif loss_reward_improve < 0 if optim_case > 1 else False:
+            if not torch.isfinite(kl):
+                self._logger.log('WARNING: KL not finite')
+                continue
+            if loss_reward_improve < 0 if optim_case > 1 else False:
                 self._logger.log('INFO: did not improve improve <0')
             # change of cost's range
             elif loss_cost_diff > max(-violation_c, 0):
@@ -236,14 +242,13 @@ class CPO(TRPO):
 
         b_grad = get_flat_gradients_from(self._actor_critic.actor)
         ep_costs = self._logger.get_stats('Metrics/EpCost')[0] - self._cfgs.algo_cfgs.cost_limit
-        cost = ep_costs / (self._logger.get_stats('Metrics/EpLen')[0] + 1e-8)
 
         p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
         q = xHx
         r = grad.dot(p)
         s = b_grad.dot(p)
 
-        if b_grad.dot(b_grad) <= 1e-6 and cost < 0:
+        if b_grad.dot(b_grad) <= 1e-6 and ep_costs < 0:
             # feasible step and cost grad is zero: use plain TRPO update...
             A = torch.zeros(1)
             B = torch.zeros(1)
@@ -253,17 +258,17 @@ class CPO(TRPO):
             assert torch.isfinite(s).all(), 's is not finite'
 
             A = q - r**2 / (s + 1e-8)
-            B = 2 * self._cfgs.algo_cfgs.target_kl - cost**2 / (s + 1e-8)
+            B = 2 * self._cfgs.algo_cfgs.target_kl - ep_costs**2 / (s + 1e-8)
 
-            if cost < 0 and B < 0:
+            if ep_costs < 0 and B < 0:
                 # point in trust region is feasible and safety boundary doesn't intersect
                 # ==> entire trust region is feasible
                 optim_case = 3
-            elif cost < 0 <= B:
+            elif ep_costs < 0 <= B:
                 # point in trust region is feasible but safety boundary intersects
                 # ==> only part of trust region is feasible
                 optim_case = 2
-            elif cost >= 0 and B >= 0:
+            elif ep_costs >= 0 and B >= 0:
                 # point in trust region is infeasible and cost boundary doesn't intersect
                 # ==> entire trust region is infeasible
                 optim_case = 1
@@ -296,16 +301,16 @@ class CPO(TRPO):
             # where projection(str,b,c)=max(b,min(str,c))
             # may be regarded as a projection from effective region towards safety region
             r_num = r.item()
-            eps_cost = cost + 1e-8
-            if cost < 0:
+            eps_cost = ep_costs + 1e-8
+            if ep_costs < 0:
                 lambda_a_star = project(lambda_a, 0.0, r_num / eps_cost)
-                lambda_b_star = project(lambda_b, r_num / eps_cost, np.inf)
+                lambda_b_star = project(lambda_b, r_num / eps_cost, torch.inf)
             else:
-                lambda_a_star = project(lambda_a, r_num / eps_cost, np.inf)
+                lambda_a_star = project(lambda_a, r_num / eps_cost, torch.inf)
                 lambda_b_star = project(lambda_b, 0.0, r_num / eps_cost)
 
             def f_a(lam):
-                return -0.5 * (A / (lam + 1e-8) + B * lam) - r * cost / (s + 1e-8)
+                return -0.5 * (A / (lam + 1e-8) + B * lam) - r * ep_costs / (s + 1e-8)
 
             def f_b(lam):
                 return -0.5 * (q / (lam + 1e-8) + 2 * self._cfgs.algo_cfgs.target_kl * lam)
@@ -316,7 +321,7 @@ class CPO(TRPO):
 
             # discard all negative values with torch.clamp(x, min=0)
             # Nu_star = (lambda_star * - r)/s
-            nu_star = torch.clamp(lambda_star * cost - r, min=0) / (s + 1e-8)
+            nu_star = torch.clamp(lambda_star * ep_costs - r, min=0) / (s + 1e-8)
             # final x_star as final direction played as policy's loss to backward and update
             step_direction = 1.0 / (lambda_star + 1e-8) * (x - nu_star * p)
 
@@ -324,7 +329,7 @@ class CPO(TRPO):
             # purely decrease costs
             # without further check
             lambda_star = torch.zeros(1)
-            nu_star = np.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (s + 1e-8))
+            nu_star = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (s + 1e-8))
             step_direction = -nu_star * p
 
         step_direction, accept_step = self._cpo_search_step(
@@ -339,7 +344,7 @@ class CPO(TRPO):
             loss_reward_before=loss_reward_before,
             loss_cost_before=loss_cost_before,
             total_steps=20,
-            violation_c=cost,
+            violation_c=ep_costs,
             optim_case=optim_case,
         )
 
