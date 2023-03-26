@@ -16,6 +16,7 @@
 
 from omnisafe.common.statistics_tools import StatisticsTools
 
+
 def test_statistics_tools():
     # just fill in the path in which experiment grid runs.
     path = './saved_source/test_statistics_tools'
