@@ -59,9 +59,10 @@ class OffPolicyAdapter(OnlineAdapter):
             use_rand_action (bool): Whether to use random action.
         """
         for _ in range(roll_out_step):
-            
             if use_rand_action:
-                act = torch.as_tensor(self._env.sample_action(), dtype=torch.float32).to(self._device)
+                act = torch.as_tensor(self._env.sample_action(), dtype=torch.float32).to(
+                    self._device
+                )
             else:
                 act = agent.step(self._current_obs, deterministic=False)
 

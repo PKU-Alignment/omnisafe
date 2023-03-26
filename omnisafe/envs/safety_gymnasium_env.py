@@ -75,7 +75,9 @@ class SafetyGymnasiumEnv(CMDP):
     need_auto_reset_wrapper = False
     need_time_limit_wrapper = False
 
-    def __init__(self, env_id: str, num_envs: int = 1, device: torch.device='cpu', **kwargs) -> None:
+    def __init__(
+        self, env_id: str, num_envs: int = 1, device: torch.device = 'cpu', **kwargs
+    ) -> None:
         super().__init__(env_id)
         if num_envs > 1:
             self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
@@ -93,7 +95,9 @@ class SafetyGymnasiumEnv(CMDP):
     def step(
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
-        obs, reward, cost, terminated, truncated, info = self._env.step(action.detach().cpu().numpy())
+        obs, reward, cost, terminated, truncated, info = self._env.step(
+            action.detach().cpu().numpy()
+        )
         obs, reward, cost, terminated, truncated = map(
             lambda x: torch.as_tensor(x, dtype=torch.float32, device=self._device),
             (obs, reward, cost, terminated, truncated),
@@ -119,7 +123,9 @@ class SafetyGymnasiumEnv(CMDP):
         self.reset(seed=seed)
 
     def sample_action(self) -> torch.Tensor:
-        return torch.as_tensor(self._env.action_space.sample(), dtype=torch.float32, device=self._device)
+        return torch.as_tensor(
+            self._env.action_space.sample(), dtype=torch.float32, device=self._device
+        )
 
     def render(self) -> Any:
         return self._env.render()
