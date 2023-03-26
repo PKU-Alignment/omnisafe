@@ -18,14 +18,14 @@ from typing import List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-from gymnasium import spaces
-from torch.distributions.normal import Normal
+from torch.distributions import Distribution, Normal
 
+from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
 from omnisafe.utils.model import build_mlp_network
 
 
-class VAE(nn.Module):
+class VAE(Actor):
     """Class for VAE."""
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -33,7 +33,6 @@ class VAE(nn.Module):
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
         hidden_sizes: List[int],
-        latent_dim: Optional[int] = None,
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ):
@@ -48,25 +47,11 @@ class VAE(nn.Module):
             weight_initialization_mode (InitFunction): Weight initialization mode.
         """
 
-        nn.Module.__init__(self)
-
-        if isinstance(obs_space, spaces.Box) and len(obs_space.shape) == 1:
-            self._obs_dim = obs_space.shape[0]
-        else:
-            raise NotImplementedError
-
-        if isinstance(act_space, spaces.Box) and len(act_space.shape) == 1:
-            self._act_dim = act_space.shape[0]
-        else:
-            raise NotImplementedError
-
-        if not latent_dim:
-            latent_dim = self._act_dim * 2
-
-        self._latent_dim = latent_dim
+        super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
+        self._latent_dim = self._act_dim * 2
 
         self._encoder = build_mlp_network(
-            sizes=[self._obs_dim + self._act_dim] + hidden_sizes + [self._latent_dim],
+            sizes=[self._obs_dim + self._act_dim] + hidden_sizes + [self._latent_dim * 2],
             activation=activation,
             weight_initialization_mode=weight_initialization_mode,
         )
@@ -75,6 +60,8 @@ class VAE(nn.Module):
             activation=activation,
             weight_initialization_mode=weight_initialization_mode,
         )
+        self.add_module('encoder', self._encoder)
+        self.add_module('decoder', self._decoder)
 
     def encode(self, obs: torch.Tensor, act: torch.Tensor) -> Normal:
         """Encode observation to latent space."""
@@ -86,7 +73,7 @@ class VAE(nn.Module):
     def decode(self, obs: torch.Tensor, latent: Optional[torch.Tensor] = None) -> torch.Tensor:
         """Decode latent space to action."""
         if latent is None:
-            latent = Normal(0, 1).sample([obs.shape[0], self.latent_dim]).to(obs.device)
+            latent = Normal(0, 1).sample([obs.shape[0], self._latent_dim]).to(obs.device)
 
         return self._decoder(torch.cat([obs, latent], dim=-1))
 
@@ -99,11 +86,17 @@ class VAE(nn.Module):
         kl_loss = torch.distributions.kl.kl_divergence(dist, Normal(0, 1)).mean()
         return recon_loss, kl_loss
 
-    def forward(
-        self, obs: torch.Tensor, act: torch.Tensor
-    ) -> Tuple[torch.Tensor, Normal, torch.Tensor]:
-        """Forward function for VAE."""
-        dist = self.encode(obs, act)
-        latent = dist.rsample()
-        pred_act = self.decode(obs, latent)
-        return pred_act, dist, latent
+    def _distribution(self, obs: torch.Tensor) -> Distribution:
+        raise NotImplementedError
+
+    def forward(self, obs: torch.Tensor) -> Distribution:
+        raise NotImplementedError
+
+    def predict(  # pylint: disable=unused-argument
+        self, obs: torch.Tensor, deterministic: bool = False
+    ) -> torch.Tensor:
+        """Predict action from observation."""
+        return self.decode(obs)
+
+    def log_prob(self, act: torch.Tensor) -> torch.Tensor:
+        raise NotImplementedError
