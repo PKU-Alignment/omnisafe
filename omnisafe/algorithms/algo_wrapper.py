@@ -95,6 +95,12 @@ class AlgoWrapper:
             assert (
                 self.train_terminal_cfgs['vector_env_nums'] == 1
             ), 'model-based only support vector_env_nums==1!'
+        if self.algo_type is None or self.algo_type == '':
+            raise ValueError(f'{self.algo} is not supported!')
+        if self.algo_type in ['off-policy', 'model-based', 'offline'] and self.train_terminal_cfgs is not None:
+            assert (
+                self.train_terminal_cfgs['parallel'] == 1
+            ), 'off-policy or model-based only support parallel==1!'
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations
@@ -117,6 +123,13 @@ class AlgoWrapper:
                 self.train_terminal_cfgs.pop('env_id')
             if 'algo' in self.train_terminal_cfgs:
                 self.train_terminal_cfgs.pop('algo')
+
+            if self.algo_type == 'offline':
+                if 'parallel' in self.train_terminal_cfgs:
+                    self.train_terminal_cfgs.pop('parallel')
+                if 'vector_env_nums' in self.train_terminal_cfgs:
+                    self.train_terminal_cfgs.pop('vector_env_nums')
+
             # validate the keys of train_terminal_cfgs configuration
             recursive_check_config(self.train_terminal_cfgs, cfgs.train_cfgs)
             # update the cfgs.train_cfgs from train_terminal configurations
@@ -130,6 +143,10 @@ class AlgoWrapper:
         cfgs.train_cfgs.recurisve_update(
             {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.steps_per_epoch},
         )
+        if self.algo_type != 'offline':
+            cfgs.train_cfgs.recurisve_update(
+                {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle},
+            )
         return cfgs
 
     def _init_checks(self) -> None:

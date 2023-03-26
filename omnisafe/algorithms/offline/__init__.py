@@ -13,3 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Offline algorithms."""
+
+from omnisafe.algorithms.offline.vae_bc import VAEBC
+
+
+__all__ = ['VAEBC']

@@ -20,9 +20,11 @@ from typing import Tuple, Union
 
 import torch
 
+from omnisafe.adapter import OfflineAdapter
 from omnisafe.algorithms.base_algo import BaseAlgo
 from omnisafe.common.logger import Logger
 from omnisafe.common.offline.dataset import OfflineDataset
+from omnisafe.models.base import Actor
 from omnisafe.utils.config import Config
 
 
@@ -30,10 +32,41 @@ class BaseOffline(BaseAlgo):
     """Base class for offline algorithms."""
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
-        self._logger: Logger
-        self._dataset: OfflineDataset
-
         super().__init__(env_id, cfgs)
+
+        self._actor: Actor
+
+    def _init(self) -> None:
+        self._dataset = OfflineDataset(
+            self._cfgs.train_cfgs.dataset,
+            batch_size=self._cfgs.algo_cfgs.batch_size,
+            device=self._device,
+        )
+
+    def _init_env(self) -> None:
+        self._env = OfflineAdapter(self._env_id, self._seed, self._cfgs)
+
+    def _init_log(self) -> None:
+        self._logger = Logger(
+            output_dir=self._cfgs.logger_cfgs.log_dir,
+            exp_name=self._cfgs.exp_name + f'-{self._cfgs.train_cfgs.dataset}',
+            seed=self._cfgs.seed,
+            use_tensorboard=self._cfgs.logger_cfgs.use_tensorboard,
+            use_wandb=self._cfgs.logger_cfgs.use_wandb,
+            config=self._cfgs,
+        )
+
+        self._logger.register_key('Metrics/EpRet')
+        self._logger.register_key('Metrics/EpCost')
+        self._logger.register_key('Metrics/EpLen')
+
+        self._logger.register_key('Time/Total')
+        self._logger.register_key('Time/Epoch')
+        self._logger.register_key('Time/Update')
+        self._logger.register_key('Time/Evaluate')
+
+        self._logger.register_key('Train/Epoch')
+        self._logger.register_key('TotalSteps')
 
     def learn(self) -> Tuple[Union[int, float], ...]:
         self._logger.log('Start training ...')
@@ -41,12 +74,12 @@ class BaseOffline(BaseAlgo):
         start_time = time.time()
         epoch_time = time.time()
 
-        for step in range(self._cfgs.train_cfgs.num_steps):
+        for step in range(self._cfgs.train_cfgs.total_steps):
             batch = self._dataset.sample()
             self._train(batch)
 
-            if (step + 1) % self._cfgs.steps_per_epoch == 0:
-                epoch = (step + 1) // self._cfgs.steps_per_epoch
+            if (step + 1) % self._cfgs.algo_cfgs.steps_per_epoch == 0:
+                epoch = (step + 1) // self._cfgs.algo_cfgs.steps_per_epoch
                 self._logger.store(**{'Time/Update': time.time() - epoch_time})
                 evla_time = time.time()
                 self._evaluate()
@@ -86,5 +119,8 @@ class BaseOffline(BaseAlgo):
 
     def _evaluate(self) -> None:
         """Evaluate the model."""
-        self._logger.log('Start evaluation ...')
-        self._logger.log('Evaluation finished.')
+        self._env.evaluate(
+            evaluate_epoisodes=self._cfgs.train_cfgs.evaluate_epoisodes,
+            logger=self._logger,
+            agent=self._actor,
+        )
