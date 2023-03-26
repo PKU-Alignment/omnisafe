@@ -166,12 +166,16 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
 
 #### Try with CLI
 
+**A video example**
+
+![Segmentfault](./images/CLI_example.svg)
+
 ```bash
 pip install omnisafe
 
 omnisafe --help # Ask for help
 
-omnisafe [command] --help # Ask for command specific help
+omnisafe benchmark --help # The benchmark also can be replaced with 'eval', 'train', 'train-config'
 
 # Quick benchmarking for your research, just specify: 1.exp_name, 2.num_pool(how much processes are concurrent), 3.path of the config file(refer to omnisafe/examples/benchmarks for format)
 omnisafe benchmark test_benchmark 2 "./saved_source/benchmark_config.yaml"
