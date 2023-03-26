@@ -16,9 +16,6 @@
 
 import os
 import sys
-import warnings
-
-import torch
 
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
@@ -37,13 +34,28 @@ def train(
         custom_cfgs (NamedTuple): Custom configurations.
         num_threads (int, optional): Number of threads. Defaults to 6.
     """
+    terminal_log_name = 'terminal.log'
+    error_log_name = 'error.log'
+    if 'seed' in custom_cfgs:
+        terminal_log_name = f'seed{custom_cfgs["seed"]}_{terminal_log_name}'
+        error_log_name = f'seed{custom_cfgs["seed"]}_{error_log_name}'
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
     print(f'exp-x: {exp_id} is training...')
     if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
         os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
-    sys.stdout = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}terminal.log', 'w', encoding='utf-8')
-    sys.stderr = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}error.log', 'w', encoding='utf-8')
+    # pylint: disable-next=consider-using-with
+    sys.stdout = open(
+        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', terminal_log_name),
+        'w',
+        encoding='utf-8',
+    )
+    # pylint: disable-next=consider-using-with
+    sys.stderr = open(
+        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', error_log_name),
+        'w',
+        encoding='utf-8',
+    )
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     reward, cost, ep_len = agent.learn()
     return reward, cost, ep_len

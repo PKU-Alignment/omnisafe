@@ -163,17 +163,17 @@ omnisafe --help # Ask for help
 omnisafe [command] --help # Ask for command specific help
 
 # Quick benchmarking for your research, just specify: 1.exp_name, 2.num_pool(how much processes are concurrent), 3.path of the config file(refer to omnisafe/examples/benchmarks for format)
-omnisafe benchmark test_benchmark 2 "./saved_source/benchmark_config.yaml"
+omnisafe benchmark test_benchmark 2 ./saved_source/benchmark_config.yaml
 
 # Quick evaluating and rendering your trained policy, just specify: 1.path of algorithm which you trained
-omnisafe eval ./saved_source/PPO-{SafetyPointGoal1-v0} "--num-episode" "1"
+omnisafe eval ./saved_source/PPO-{SafetyPointGoal1-v0} --num-episode 1
 
 # Quick training some algorithms to validate your thoughts
 # Note: use `key1:key2`, your can select key of hyperparameters which are recursively contained, and use `--custom-cfgs`, you can add custom cfgs via CLI
 omnisafe train --algo PPO --total-steps 1024 --vector-env-nums 1 --custom-cfgs algo_cfgs:update_cycle --custom-cfgs 512
 
 # Quick training some algorithms via a saved config file, the format is as same as default format
-omnisafe train-config "./saved_source/train_config.yaml"
+omnisafe train-config ./saved_source/train_config.yaml
 ```
 
 **algo:**

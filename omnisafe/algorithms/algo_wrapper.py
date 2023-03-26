@@ -67,18 +67,34 @@ class AlgoWrapper:
 
         # update the cfgs from custom configurations
         if self.custom_cfgs:
-            recursive_check_config(self.custom_cfgs, cfgs, exclude_keys=('algo', 'env_id'))
+            # avoid repeatedly record the env_id and algo
+            if 'env_id' in self.custom_cfgs:
+                self.custom_cfgs.pop('env_id')
+            if 'algo' in self.custom_cfgs:
+                self.custom_cfgs.pop('algo')
+            # validate the keys of custom configuration
+            recursive_check_config(self.custom_cfgs, cfgs)
+            # update the cfgs from custom configurations
             cfgs.recurisve_update(self.custom_cfgs)
+            # save configurations specified in current experiment
+            cfgs.update({'exp_increment_cfgs': self.custom_cfgs})
         # update the cfgs from custom terminal configurations
         if self.train_terminal_cfgs:
-            recursive_check_config(
-                self.train_terminal_cfgs, cfgs.train_cfgs, exclude_keys=('algo', 'env_id')
-            )
+            # avoid repeatedly record the env_id and algo
+            if 'env_id' in self.train_terminal_cfgs:
+                self.train_terminal_cfgs.pop('env_id')
+            if 'algo' in self.train_terminal_cfgs:
+                self.train_terminal_cfgs.pop('algo')
+            # validate the keys of train_terminal_cfgs configuration
+            recursive_check_config(self.train_terminal_cfgs, cfgs.train_cfgs)
+            # update the cfgs.train_cfgs from train_terminal configurations
             cfgs.train_cfgs.recurisve_update(self.train_terminal_cfgs)
+            # save configurations specified in current experiment
+            cfgs.update({'exp_increment_cfgs': {'train_cfgs': self.train_terminal_cfgs}})
 
         # the exp_name format is PPO-{SafetyPointGoal1-v0}-
         exp_name = f'{self.algo}-{{{self.env_id}}}'
-        cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id})
+        cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id, 'algo': self.algo})
         cfgs.train_cfgs.recurisve_update(
             {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle}
         )
@@ -106,12 +122,7 @@ class AlgoWrapper:
         use_number_of_threads = bool(self.cfgs.train_cfgs.parallel > physical_cores)
 
         check_all_configs(self.cfgs, self.algo_type)
-        device = self.cfgs.train_cfgs.device
-        if device == 'cpu':
-            torch.set_num_threads(self.cfgs.train_cfgs.torch_threads)
-        else:
-            torch.set_num_threads(1)
-            torch.cuda.set_device(self.cfgs.train_cfgs.device)
+        torch.set_num_threads(self.cfgs.train_cfgs.torch_threads)
         if distributed.fork(
             self.cfgs.train_cfgs.parallel,
             use_number_of_threads=use_number_of_threads,
