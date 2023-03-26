@@ -26,7 +26,7 @@
   <a href="https://github.com/PKU-MARL/omnisafe#license">License</a>
 </p>
 
-# OmniSafe
+--------------------------------------------------------------------------------
 
 **This library is currently under heavy development - if you have suggestions on the API or use-cases you'd like to be covered, please open an github issue or reach out. We'd love to hear about how you're using the library.**
 
