@@ -27,6 +27,7 @@ from omnisafe.utils import distributed
 from omnisafe.utils.config import Config
 from omnisafe.utils.math import gaussian_kl
 from omnisafe.utils.tools import to_ndarray
+from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 
 
 @registry.register
@@ -56,15 +57,27 @@ class CVPO(DDPG):
         self._alpha_mean = 0.0
         self._alpha_var = 0.0
 
+    def _init_model(self) -> None:
+        self._cfgs.model_cfgs.critic['num_critics'] = 2
+        self._actor_critic = ConstraintActorQCritic(
+            obs_space=self._env.observation_space,
+            act_space=self._env.action_space,
+            model_cfgs=self._cfgs.model_cfgs,
+            epochs=self._epochs,
+        ).to(self._device)
+
+        if distributed.world_size() > 1:
+            distributed.sync_params(self._actor_critic)
+
     # pylint: disable-next=too-many-locals
     def _update_actor(
         self,
         obs: torch.Tensor,
     ) -> None:
-        num_action = self._cfgs.sample_action_num
+        num_action = self._cfgs.algo_cfgs.sample_action_num
         num_obs = obs.shape[0]
-        act_dim = self.actor_critic.act_dim
-        obs_dim = self.actor_critic.obs_shape[0]
+        act_dim = self._env.action_space.shape[0]
+        obs_dim = self._env.observation_space.shape[0]
 
         with torch.no_grad():
             # sample N actions per state
@@ -94,8 +107,8 @@ class CVPO(DDPG):
             target_q_np_comb = target_q_r_np - lam * target_q_c_np
             max_q = np.max(target_q_np_comb, 1)
             return (
-                beta * self.cfgs.dual_constraint
-                + lam * self.cfgs.algo_cfgs.cost_limit
+                beta * self._cfgs.algo_cfgs.dual_constraint
+                + lam * self._cfgs.algo_cfgs.cost_limit
                 + np.mean(max_q)
                 + beta
                 * np.mean(
@@ -118,10 +131,10 @@ class CVPO(DDPG):
         raw_loss = torch.softmax((target_q_r - self._lam * target_q_c) / self._eta, dim=0)
 
         # M-Step of Policy Improvement
-        for _ in range(self.cfgs.mstep_iteration_num):
-            mean, _, var = self.actor_critic.actor.predict(
-                obs, deterministic=True, need_log_prob=True
-            )
+        for _ in range(self._cfgs.algo_cfgs.mstep_iteration_num):
+            dist = self._actor_critic.actor(obs)
+            mean = dist.loc
+            var = dist.scale_tril
 
             actor = MultivariateNormal(loc=mean, scale_tril=b_var)
             actor_ = MultivariateNormal(loc=b_mean, scale_tril=var)
@@ -144,24 +157,24 @@ class CVPO(DDPG):
 
             # update lagrange multipliers by gradient descent
             self._alpha_mean -= (
-                self.cfgs.alpha_mean_scale * (self.cfgs.kl_mean_constraint - kl_mu).detach().item()
+                self._cfgs.algo_cfgs.alpha_mean_scale * (self._cfgs.algo_cfgs.kl_mean_constraint - kl_mu).detach().item()
             )
             self._alpha_var -= (
-                self.cfgs.alpha_var_scale * (self.cfgs.kl_var_constraint - kl_sigma).detach().item()
+                self._cfgs.algo_cfgs.alpha_var_scale * (self._cfgs.algo_cfgs.kl_var_constraint - kl_sigma).detach().item()
             )
 
-            self._alpha_mean = np.clip(self._alpha_mean, 0.0, self.cfgs.alpha_mean_max)
-            self._alpha_var = np.clip(self._alpha_var, 0.0, self.cfgs.alpha_var_max)
-            self.actor_optimizer.zero_grad()
+            self._alpha_mean = np.clip(self._alpha_mean, 0.0, self._cfgs.algo_cfgs.alpha_mean_max)
+            self._alpha_var = np.clip(self._alpha_var, 0.0, self._cfgs.algo_cfgs.alpha_var_max)
+            self._actor_critic.actor_optimizer.zero_grad()
             loss_l = -(
                 loss_p
-                + self._alpha_mean * (self.cfgs.kl_mean_constraint - kl_mu)
-                + self._alpha_var * (self.cfgs.kl_var_constraint - kl_sigma)
+                + self._alpha_mean * (self._cfgs.algo_cfgs.kl_mean_constraint - kl_mu)
+                + self._alpha_var * (self._cfgs.algo_cfgs.kl_var_constraint - kl_sigma)
             )
             loss_l.backward()
-            clip_grad_norm_(self.actor_critic.actor.parameters(), 0.01)
-            self.actor_optimizer.step()
-            self.logger.store(
+            clip_grad_norm_(self._actor_critic.actor.parameters(), 0.01)
+            self._actor_critic.actor_optimizer.step()
+            self._logger.store(
                 **{
                     'Loss/Loss_pi': loss_p.mean().item(),
                     'Loss/Loss_l': loss_l.mean().item(),
@@ -203,12 +216,11 @@ class CVPO(DDPG):
         """
         with torch.no_grad():
             # Set the update noise and noise clip.
-            self._actor_critic.target_actor.noise = self._cfgs.algo_cfgs.policy_noise
             next_action = self._actor_critic.target_actor.predict(next_obs, deterministic=False)
             next_q1_value_c, next_q2_value_c = self._actor_critic.target_cost_critic(
                 next_obs, next_action
             )
-            next_q_value_c = torch.min(next_q1_value_c, next_q2_value_c)
+            next_q_value_c = torch.max(next_q1_value_c, next_q2_value_c)
             target_q_value_c = cost + self._cfgs.algo_cfgs.gamma * (1 - done) * next_q_value_c
 
         q1_value_c, q2_value_c = self._actor_critic.cost_critic(obs, action)

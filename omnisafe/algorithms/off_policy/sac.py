@@ -172,7 +172,7 @@ class SAC(DDPG):
             next_q1_value_c, next_q2_value_c = self._actor_critic.target_cost_critic(
                 next_obs, next_action
             )
-            next_q_value_c = torch.max(next_q1_value_c, next_q2_value_c)
+            next_q_value_c = torch.min(next_q1_value_c, next_q2_value_c)
             target_q_value_c = cost + self._cfgs.algo_cfgs.gamma * (1 - done) * next_q_value_c
 
         q1_value_c, q2_value_c = self._actor_critic.cost_critic(obs, action)

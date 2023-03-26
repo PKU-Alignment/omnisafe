@@ -55,12 +55,6 @@ class MLPActor(Actor):
             weight_initialization_mode=weight_initialization_mode,
         )
         self._noise = 0.1
-        self.register_buffer(
-            '_act_min', torch.tensor(self._act_space.low, dtype=torch.float32, requires_grad=False)
-        )
-        self.register_buffer(
-            '_act_max', torch.tensor(self._act_space.high, dtype=torch.float32, requires_grad=False)
-        )
 
     def predict(
         self,
@@ -82,16 +76,6 @@ class MLPActor(Actor):
         with torch.no_grad():
             noise = torch.normal(0, self._noise * torch.ones_like(action))
             return torch.clamp(action + noise, -1, 1)
-
-    @property
-    def act_min(self) -> torch.Tensor:
-        """Get the action noise."""
-        return self._act_min
-
-    @property
-    def act_max(self) -> torch.Tensor:
-        """Get the action noise."""
-        return self._act_max
 
     @property
     def noise(self) -> float:
