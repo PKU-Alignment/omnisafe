@@ -90,7 +90,7 @@ class AlgoWrapper:
             # update the cfgs.train_cfgs from train_terminal configurations
             cfgs.train_cfgs.recurisve_update(self.train_terminal_cfgs)
             # save configurations specified in current experiment
-            cfgs.update({'exp_increment_cfgs': {'train_cfgs': self.train_terminal_cfgs}})
+            cfgs.recurisve_update({'exp_increment_cfgs': {'train_cfgs': self.train_terminal_cfgs}})
 
         # the exp_name format is PPO-{SafetyPointGoal1-v0}-
         exp_name = f'{self.algo}-{{{self.env_id}}}'
@@ -122,7 +122,12 @@ class AlgoWrapper:
         use_number_of_threads = bool(self.cfgs.train_cfgs.parallel > physical_cores)
 
         check_all_configs(self.cfgs, self.algo_type)
-        torch.set_num_threads(self.cfgs.train_cfgs.torch_threads)
+        device = self.cfgs.train_cfgs.device
+        if device == 'cpu':
+            torch.set_num_threads(self.cfgs.train_cfgs.torch_threads)
+        else:
+            torch.set_num_threads(1)
+            torch.cuda.set_device(self.cfgs.train_cfgs.device)
         if distributed.fork(
             self.cfgs.train_cfgs.parallel,
             use_number_of_threads=use_number_of_threads,

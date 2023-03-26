@@ -325,7 +325,7 @@ class ExperimentGrid:
             (
                 f'log_dir {self.log_dir} already exists!'
                 'please make sure that you are not overwriting an existing experiment,'
-                'it is important to analyze the results of the experiment.'
+                'it is important for analyzing the results of the experiment.'
             ),
         )
         self.save_grid_config()
