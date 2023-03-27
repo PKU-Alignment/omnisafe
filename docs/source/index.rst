@@ -311,7 +311,7 @@ this project, don't hesitate to ask your question in `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: foundations
+    :caption: mathematical theory
 
     foundations/notations
     foundations/vector

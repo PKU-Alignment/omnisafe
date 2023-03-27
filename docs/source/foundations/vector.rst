@@ -1,5 +1,5 @@
-Basic Mathematical Theory
-=========================
+Vector and Martrix
+==================
 
 Introduction
 ------------
