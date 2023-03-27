@@ -85,9 +85,6 @@ html_context['slug'] = 'omnisafe'
 html_static_path = ['_static']
 html_css_files = []
 
-html_theme = 'furo'
-html_static_path = ['_static']
-
 html_theme_options = {
     'light_css_variables': {
         'color-brand-primary': '#4E98C8',
