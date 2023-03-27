@@ -125,7 +125,7 @@ class StatisticsTools:
                 param[:10]  # pylint: disable=undefined-loop-variable
                 + '---'
                 + decompressed_img_name_cfgs['env_id'][:30]
-                + ':::'
+                + '---'
                 + hash_string(recursive_dict2json(decompressed_img_name_cfgs))
             )
             try:

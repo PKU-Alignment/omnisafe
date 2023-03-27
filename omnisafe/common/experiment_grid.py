@@ -387,7 +387,7 @@ class ExperimentGrid:
             no_seed_var = deepcopy(var)
             no_seed_var.pop('seed', None)
             exp_name = recursive_dict2json(no_seed_var)
-            hashed_exp_name = var['env_id'][:30] + ':::' + hash_string(exp_name)
+            hashed_exp_name = var['env_id'][:30] + '---' + hash_string(exp_name)
             exp_names.append(':'.join((hashed_exp_name[:5], exp_name)))
             exp_log_dir = os.path.join(self.log_dir, hashed_exp_name, '')
             var['logger_cfgs'] = {'log_dir': exp_log_dir}
