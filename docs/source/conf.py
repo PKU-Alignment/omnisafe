@@ -32,7 +32,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.mathjax',
-    #'sphinx.ext.imgmath',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
@@ -79,7 +78,7 @@ html_context['conf_py_path'] = '/docs/'
 html_context['display_github'] = False
 html_context['github_user'] = 'PKU-MARL'
 html_context['github_repo'] = 'OmniSafe'
-html_context['github_version'] = 'dev'
+html_context['github_version'] = 'main'
 html_context['slug'] = 'omnisafe'
 
 html_static_path = ['_static']
