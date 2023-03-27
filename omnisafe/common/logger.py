@@ -54,6 +54,20 @@ class Logger:  # pylint: disable=too-many-instance-attributes
     A logger to record the training process.
     It can record the training process to a file and print it to the console.
     It can also record the training process to tensorboard.
+
+    The logger can record the following data:
+
+    .. code-block:: bash
+
+        ----------------------------------------------
+        |       Name      |            Value         |
+        ----------------------------------------------
+        |    Train/Epoch  |             25           |
+        |  Metrics/EpCost |            24.56         | 
+        |  Metrics/EpLen  |            1000          |
+        |  Metrics/EpRet  |            13.24         |
+        |  Metrics/EpStd  |            0.12          |
+        ----------------------------------------------
     """
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals
@@ -68,6 +82,19 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         config: Optional[Config] = None,
         models: Optional[List[torch.nn.Module]] = None,
     ) -> None:
+        """Initialize the logger.
+
+        Args:
+            output_dir: The directory to save the log file.
+            exp_name: The name of the experiment.
+            output_fname: The name of the log file.
+            verbose: Whether to print the log to the console.
+            seed: The random seed.
+            use_tensorboard: Whether to use tensorboard.
+            use_wandb: Whether to use wandb.
+            config: The config of the experiment.
+            models: The models to be saved.
+        """
         hms_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
         relpath = hms_time
 
@@ -132,6 +159,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         Args:
             msg (str): The message to be logged.
             color (int): The color of the message.
+            bold (bool): Whether to use bold font.
         """
         if self._verbose and self._maste_proc:
             style = ' '.join([color, 'bold' if bold else ''])
@@ -141,7 +169,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         """Save the configuration to the log directory.
 
         Args:
-            config (dict): The configuration to be saved.
+            config (Config): The configuration to be saved.
         """
         if self._maste_proc:
             self.log('Save with config in config.json', 'yellow', bold=True)
@@ -177,11 +205,26 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         delta: bool = False,
     ) -> None:
         """Register a key to the logger.
+                
+        The logger can record the following data:
+
+        .. code-block:: bash
+
+            ----------------------------------------------------
+            |       Name            |            Value         |
+            ----------------------------------------------------
+            |    Train/Epoch        |             25           |
+            |  Metrics/EpCost/Min   |            22.38         | 
+            |  Metrics/EpCost/Max   |            25.48         |
+            |  Metrics/EpCost/Mean  |            23.93         |
+            ----------------------------------------------------
 
         Args:
             key (str): The key to be registered.
             window_length (int): The window length for the key, \
                 if window_length is None, the key will be averaged in epoch.
+            min_and_max (bool): Whether to record the min and max value of the key.
+            delta (bool): Whether to record the delta value of the key.
         """
         assert (key and f'{key}/Mean') not in self._current_row, f'Key {key} has been registered'
         if min_and_max:
@@ -226,7 +269,18 @@ class Logger:  # pylint: disable=too-many-instance-attributes
                 raise ValueError(f'Unsupported type {type(val)}')
 
     def dump_tabular(self) -> None:
-        """Dump the tabular data to the console and the file."""
+        """Dump the tabular data to the console and the file.
+        
+        The dumped data will be separated by the following steps:
+
+        .. hint::
+
+            - If the key is registered with window_length, the data will be averaged in the window.
+            - Write the data to the csv file.
+            - Write the data to the tensorboard.
+            - Update the progress logger.
+        
+        """
         self._update_current_row()
         table = Table('Metrics', 'Value')
         if self._maste_proc:
@@ -256,26 +310,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self._console.print(table)
 
     def _update_current_row(self) -> None:
-        for key in self._data:
-            if self._headers_minmax[key]:
-                old_data = self._current_row[f'{key}/Mean']
-                mean, min_val, max_val, std = self.get_stats(key, True)
-                self._current_row[f'{key}/Mean'] = mean
-                self._current_row[f'{key}/Min'] = min_val
-                self._current_row[f'{key}/Max'] = max_val
-                self._current_row[f'{key}/Std'] = std
-            else:
-                old_data = self._current_row[key]
-                mean = self.get_stats(key, False)[0]
-                self._current_row[key] = mean
-
-            if self._headers_delta[key]:
-                self._current_row[f'{key}/Delta'] = mean - old_data
-
-            if self._headers_windwos[key] is None:
-                self._data[key] = []
-
-    def _update_current_row(self) -> None:
+        """Update the current row.
+        
+        Update the current row with the data stored in the logger.
+        """
         for key in self._data:
             if self._headers_minmax[key]:
                 old_data = self._current_row[f'{key}/Mean']
@@ -296,7 +334,12 @@ class Logger:  # pylint: disable=too-many-instance-attributes
                 self._data[key] = []
 
     def get_stats(self, key, min_and_max: bool = False) -> Tuple[Union[int, float], ...]:
-        """Get the statistics of the key."""
+        """Get the statistics of the key.
+        
+        Args:
+            key (str): The key to be registered.
+            min_and_max (bool): Whether to record the min and max value of the key.
+        """
         assert key in self._current_row, f'Key {key} has not been registered'
         vals = self._data[key]
         if isinstance(vals, deque):

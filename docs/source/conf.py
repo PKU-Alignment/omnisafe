@@ -8,6 +8,7 @@
 import os
 import pathlib
 import sys
+from typing import Any, Dict
 
 
 # -- Project information -----------------------------------------------------
@@ -22,17 +23,6 @@ release = 'v1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-
-"""
-Run before:
-conda activate safe
-pip install recommonmark
-pip install sphinx_markdown_tables
-pip install sphinx_design
-pip install sphinx_copybutton
-pip install sphinx-press-theme
-pip install sphinx
-"""
 
 extensions = [
     'sphinx.ext.napoleon',
@@ -64,6 +54,36 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+# Napoleon settings
+napoleon_use_ivar = True
+napoleon_use_admonition_for_references = True
+# See https://github.com/sphinx-doc/sphinx/issues/9119
+napoleon_custom_sections = [('Returns', 'params_style')]
+
+# Autodoc
+autoclass_content = 'both'
+autodoc_preserve_defaults = True
+
+# -- Options for HTML output -------------------------------------------------
+
+# The theme to use for HTML and HTML Help pages.  See the documentation for
+# a list of builtin themes.
+#
+html_theme = 'furo'
+html_title = 'OmniSafe Documentation'
+html_copy_source = False
+# html_favicon = '_static/images/favicon.png'
+html_context: Dict[str, Any] = {}
+html_context['conf_py_path'] = '/docs/'
+html_context['display_github'] = False
+html_context['github_user'] = 'PKU-MARL'
+html_context['github_repo'] = 'OmniSafe'
+html_context['github_version'] = 'dev'
+html_context['slug'] = 'omnisafe'
+
+html_static_path = ['_static']
+html_css_files = []
+
 html_theme = 'furo'
 html_static_path = ['_static']
 
@@ -76,6 +96,9 @@ html_theme_options = {
         'sd-color-warning': '#AD677E',
     },
 }
+
+# Dark mode
+pygments_dark_style = "monokai"
 
 math_number_all = True  # Set this option to True if you want all displayed math to be numbered. The default is False.
 math_eqref_format = 'Eq.{number}'  # gets rendered as, for example, Eq.10.

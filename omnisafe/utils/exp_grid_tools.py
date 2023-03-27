@@ -19,7 +19,11 @@ from typing import List, Union
 
 
 def all_bools(vals: list) -> bool:
-    """Check if all values are bools"""
+    """Check if all values are bools
+    
+    Args:
+        vals: Values to check.
+    """
     return all(isinstance(v, bool) for v in vals)
 
 
@@ -30,6 +34,8 @@ def valid_str(vals: Union[List, str]) -> str:
 
     .. _`this gist`: https://gist.github.com/seanh/93666
 
+    Args:
+        vals: Value or values to convert to a string.
     """
     if hasattr(vals, '__name__'):
         return valid_str(vals.__name__)

@@ -43,6 +43,11 @@ class ExperimentGrid:
     """Tool for running many experiments given hyper-parameters ranges."""
 
     def __init__(self, exp_name='') -> None:
+        """Initialize the ExperimentGrid.
+
+        Args:
+            exp_name (str): Name of the experiment grid.
+        """
         self.keys: List[str] = []
         self.vals: List[Any] = []
         self.shs: List[str] = []
@@ -63,7 +68,24 @@ class ExperimentGrid:
         self.foce_datastamp = False
 
     def print(self) -> None:
-        """Print a helpful report about the experiment grid."""
+        """Print a helpful report about the experiment grid.
+        
+        This function prints a helpful report about the experiment grid, including
+        the name of the experiment grid, the parameters being varied, and the
+        possible values for each parameter.
+
+        In Command Line:
+
+        .. code-block:: bash
+
+            ===================== ExperimentGrid [test] runs over parameters: =====================
+            env_name                                [env]
+            ['CartPole-v0', 'MountainCar-v0', 'Acrobot-v1']
+            algo_name                               [algo]
+            ['DQN', 'DDPG', 'TD3']
+            seed                                    [seed]
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        """
         print('=' * self.div_line_width)
 
         # Prepare announcement at top of printing. If the ExperimentGrid has a
@@ -106,6 +128,13 @@ class ExperimentGrid:
         three letters of each colon-separated part.
         But if the first three letters contains something which isn't
         alphanumeric, shear that off.
+
+        Example:
+            >>> _default_shorthand('env_name:CartPole-v0')
+            'env'
+
+        Args:
+            key (string): Name of parameter.
         """
 
         valid_chars = f'{string.ascii_letters}{string.digits}'
@@ -121,8 +150,16 @@ class ExperimentGrid:
 
         By default, if a shorthand isn't given, one is automatically generated
         from the key using the first three letters of each colon-separated
-        term. To disable this behavior, change ``DEFAULT_SHORTHAND`` in the
-        ``spinup/user_config.py`` file to ``False``.
+        term.
+
+        .. hint:: 
+
+            This function is called in ``omnisafe/examples/benchmarks/run_experiment_grid.py``.
+
+        Example:
+            >>> add('env_name:CartPole-v0', ['CartPole-v0', 'MountainCar-v0', 'Acrobot-v1'])
+            >>> add('algo_name:DDPG', ['DQN', 'DDPG', 'TD3'])
+            >>> add('seed', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
         Args:
             key (string): Name of parameter.
@@ -154,7 +191,15 @@ class ExperimentGrid:
         one), plus param names (or shorthands if available) and values
         separated by underscores.
 
-        Note: if ``seed`` is a parameter, it is not included in the name.
+        ..warning:: 
+            if ``seed`` is a parameter, it is not included in the name.
+
+        Example:
+            >>> variant_name({'env_name': 'CartPole-v0', 'algo_name': 'DQN', 'seed': 0})
+            exp_name = 'CartPole-v0_DQN_0'
+        
+        Args:
+            variant (dict): Variant dictionary.
         """
 
         def get_val(value, key):
@@ -200,7 +245,15 @@ class ExperimentGrid:
         return var_name.lstrip('_')
 
     def update_dic(self, total_dic, item_dic):
-        '''Updater of multi-level dictionary.'''
+        """Updater of multi-level dictionary.
+
+        This function is used to update the total dictionary with the item
+        dictionary.
+        
+        Args:
+            total_dic (dict): Total dictionary.
+            item_dic (dict): Item dictionary.
+        """
         for idd in item_dic.keys():
             total_value = total_dic.get(idd)
             item_value = item_dic.get(idd)
@@ -215,7 +268,12 @@ class ExperimentGrid:
                 total_dic.update({idd: total_value})
 
     def _variants(self, keys, vals):
-        """Recursively builds list of valid variants."""
+        """Recursively builds list of valid variants.
+        
+        Args:
+            keys (list): List of keys.
+            vals (list): List of values.
+        """
         if len(keys) == 1:
             pre_variants: List[Dict] = [{}]
         else:
@@ -239,32 +297,40 @@ class ExperimentGrid:
         r"""Makes a list of dict, where each dict is a valid config in the grid.
 
         There is special handling for variant parameters whose names take
-        the form
-
-            ``'full:param:name'``.
+        the form ``'full:param:name'``.
 
         The colons are taken to indicate that these parameters should
         have a nested dict structure. eg, if there are two params,
+
+        .. hint::
 
             ====================  ===
             Key                   Val
             ====================  ===
             ``'base:param:a'``    1
             ``'base:param:b'``    2
+            ``'base:param:c'``    3
+            ``'special:d'``       4
+            ``'special:e'``       5
             ====================  ===
 
         the variant dict will have the structure
 
         .. parsed-literal::
 
-            variant = {
-                base: {
-                    param : {
-                        a : 1,
-                        b : 2
-                        }
+            {
+                'base': {
+                    'param': {
+                        'a': 1,
+                        'b': 2,
+                        'c': 3
                     }
+                },
+                'special': {
+                    'd': 4,
+                    'e': 5
                 }
+            }
         """
         flat_variants = self._variants(self.keys, self.vals)
 

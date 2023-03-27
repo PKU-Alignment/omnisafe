@@ -76,6 +76,17 @@ def build_mlp_network(
 ) -> nn.Module:
     """Build the MLP network.
 
+    Example:
+        >>> build_mlp_network([64, 64, 64], 'relu', 'tanh')
+        Sequential(
+            (0): Linear(in_features=64, out_features=64, bias=True)
+            (1): ReLU()
+            (2): Linear(in_features=64, out_features=64, bias=True)
+            (3): ReLU()
+            (4): Linear(in_features=64, out_features=64, bias=True)
+            (5): Tanh()
+        )
+
     Args:
         sizes (List[int]): The sizes of the layers.
         activation (Activation): The activation function.

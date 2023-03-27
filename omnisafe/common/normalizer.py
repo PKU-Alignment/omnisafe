@@ -23,9 +23,10 @@ import torch.nn as nn
 class Normalizer(nn.Module):
     """Calculate normalized raw_data from running mean and std
 
-    See  Chan, Tony F.; Golub, Gene H.; LeVeque, Randall J. (1979), "Updating Formulae and
-    a Pairwise Algorithm for Computing Sample Variances." (PDF), Technical Report STAN-CS-79-773,
-    Department of Computer Science, Stanford University.
+    References:
+        - Title: Updating Formulae and a Pairwise Algorithm for Computing Sample Variances
+        - Author: Tony F. Chan, Gene H. Golub, Randall J. LeVeque
+        - URL: http://i.stanford.edu/pub/cstr/reports/cs/tr/79/773/CS-TR-79-773.pdf
     """
 
     def __init__(self, shape: Tuple[int, ...], clip: float = 1e6) -> None:
@@ -76,7 +77,17 @@ class Normalizer(nn.Module):
         return self.normalize(data)
 
     def normalize(self, data: torch.Tensor) -> torch.Tensor:
-        """Normalize the _data."""
+        """Normalize the data.
+
+        .. hint::
+
+            - If the data is the first data, the data will be used to initialize the mean and std.
+            - If the data is not the first data, the data will be normalized by the mean and std.
+            - Update the mean and std by the data.
+            
+        Args:
+            data: raw data to be normalized
+        """
         data = data.to(self._mean.device)
         self._push(data)
         if self._count <= 1:
@@ -85,6 +96,11 @@ class Normalizer(nn.Module):
         return torch.clamp(output, -self._clip, self._clip)
 
     def _push(self, raw_data: torch.Tensor) -> None:
+        """Update the mean and std by the raw_data.
+
+        Args:
+            raw_data: raw data to be normalized
+        """
         if raw_data.shape == self._shape:
             raw_data = raw_data.unsqueeze(0)
         assert raw_data.shape[1:] == self._shape, 'data shape must be equal to (batch_size, *shape)'

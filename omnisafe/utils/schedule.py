@@ -59,9 +59,6 @@ class PiecewiseSchedule(Schedule):
 
         Args:
             t (float): Time.
-
-        Returns:
-            float: Value at time t.
         """
         # pylint: disable=invalid-name
         for (l_t, l), (r_t, r) in zip(self._endpoints[:-1], self._endpoints[1:]):
@@ -78,12 +75,7 @@ class ConstantSchedule(Schedule):
     """Constant schedule for a value"""
 
     def __init__(self, value):
-        """Value remains constant over time.
-        Parameters
-        ----------
-        value: float
-            Constant value of the schedule
-        """
+        """Value remains constant over time."""
         self._v = value
 
     def value(

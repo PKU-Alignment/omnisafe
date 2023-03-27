@@ -335,14 +335,45 @@ this project, don't hesitate to ask your question in `the GitHub issue page <htt
 
 .. toctree::
     :hidden:
-    :maxdepth: 3
-    :caption: OmniSafe
+    :maxdepth: 2
+    :caption: algorithms
 
-    OmniSafe/on_policy
-    OmniSafe/first_order
-    OmniSafe/second_order
-    OmniSafe/lagrange
-    OmniSafe/penalty_function
+    algorithms/on_policy
+    algorithms/first_order
+    algorithms/second_order
+    algorithms/lagrange
+    algorithms/penalty_function
+
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: common
+
+    common/buffer
+    common/exp_grid
+    common/lagrange
+    common/normalizer
+    common/logger
+
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: Utils
+
+    utils/config
+    utils/app
+    utils/distributed
+    utils/math
+    utils/model
+    utils/tools
+
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: Models
+
+    model/actor
+    model/critic
 
 Indices and tables
 ==================

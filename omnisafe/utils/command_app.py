@@ -52,7 +52,25 @@ def train(  # pylint: disable=too-many-arguments
     ),
     custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
 ):
-    """Train a single policy in OmniSafe via command line."""
+    """Train a single policy in OmniSafe via command line.
+
+    Example:
+
+    .. code-block:: bash
+
+        python -m omnisafe train --algo PPOLag --env_id SafetyPointGoal1-v0 --parallel 1 --total_steps 1000000 --device cpu --vector_env_nums 1
+    
+    Args:
+        algo: algorithm to train
+        env_id: the name of test environment
+        parallel: number of paralleled progress for calculations.
+        total_steps: total number of steps to train for algorithm
+        device: device to use for training
+        vector_env_nums: number of vector envs to use for training
+        torch_threads: number of threads to use for torch
+        log_dir: directory to save logs, default is current directory
+        custom_cfgs: custom configuration for training
+    """
     args = {
         'algo': algo,
         'env_id': env_id,
@@ -84,6 +102,12 @@ def train_grid(
     exp_id: str, algo: str, env_id: str, custom_cfgs: NamedTuple
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
+
+    Example:
+
+    .. code-block:: bash
+
+        python -m omnisafe train_grid --exp_id exp-1 --algo PPOLag --env_id SafetyPointGoal1-v0 --parallel 1 --total_steps 1000000 --device cpu --vector_env_nums 1
 
     Args:
         exp_id (str): Experiment ID.
@@ -130,6 +154,20 @@ def benchmark(
         os.path.join(os.getcwd()), help='directory to save logs, default is current directory'
     ),
 ):
+    """Benchmark algorithms configured by .yaml file in OmniSafe via command line.
+
+    Example:
+
+    .. code-block:: bash
+
+        python -m omnisafe benchmark --exp_name exp-1 --num_pool 1 --config_path ./configs/on-policy/PPOLag.yaml--log_dir ./runs
+    
+    Args:
+        exp_name: experiment name
+        num_pool: number of paralleled experiments.
+        config_path: path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml
+        log_dir: directory to save logs, default is current directory
+    """
     """Benchmark algorithms configured by .yaml file in OmniSafe via command line."""
     assert_with_exit(config_path.endswith('.yaml'), 'config file must be yaml file')
     with open(config_path, encoding='utf-8') as file:
@@ -168,7 +206,23 @@ def evaluate(
     width: int = typer.Option(256, help='width of rendered image'),
     height: int = typer.Option(256, help='height of rendered image'),
 ):
-    """Evaluate a policy which trained by OmniSafe via command line."""
+    """Evaluate a policy which trained by OmniSafe via command line.
+
+    Example:
+
+    .. code-block:: bash
+
+        python -m omnisafe eval --result_dir ./runs/PPOLag-{SafetyPointGoal1-v0} --num_episode 10 --render True --render_mode rgb_array --camera_name track --width 256 --height 256
+    
+    Args:
+        result_dir (str): Directory of experiment results to evaluate.
+        num_episode (int, optional): Number of episodes to render. Defaults to 10.
+        render (bool, optional): Whether to render. Defaults to True.
+        render_mode (str, optional): Render mode('human', 'rgb_array', 'rgb_array_list', 'depth_array', 'depth_array_list'). Defaults to 'rgb_array'.
+        camera_name (str, optional): Camera name to render. Defaults to 'track'.
+        width (int, optional): Width of rendered image. Defaults to 256.
+        height (int, optional): Height of rendered image. Defaults to 256.
+    """
     evaluator = omnisafe.Evaluator(render_mode=render_mode)
     assert_with_exit(os.path.exists(result_dir), f'path{result_dir}, no torch_save directory')
     for seed_dir in os.scandir(result_dir):
@@ -198,6 +252,18 @@ def train_config(
         os.path.join(os.getcwd()), help='directory to save logs, default is current directory'
     ),
 ):
+    """Train a policy configured by .yaml file in OmniSafe via command line.
+
+    Example:
+
+    .. code-block:: bash
+
+        python -m omnisafe train_config --config_path ./configs/on-policy/PPOLag.yaml --log_dir ./runs
+    
+    Args:
+        config_path (str): path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml
+        log_dir (str, optional): directory to save logs, default is current directory. Defaults to os.path.join(os.getcwd()).
+    """
     """Train a policy configured by .yaml file in OmniSafe via command line."""
     assert_with_exit(config_path.endswith('.yaml'), 'config file must be yaml file')
     with open(config_path, encoding='utf-8') as file:

@@ -44,8 +44,8 @@ class MLPActor(Actor):
             act_space (OmnisafeSpace): Action space.
             hidden_sizes (list): List of hidden layer sizes.
             activation (Activation): Activation function.
+            output_activation (Activation): Output activation function.
             weight_initialization_mode (InitFunction): Weight initialization mode.
-            shared (nn.Module): Shared module.
         """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
         self.net = build_mlp_network(
@@ -64,14 +64,16 @@ class MLPActor(Actor):
         obs: torch.Tensor,
         deterministic: bool = True,
     ) -> torch.Tensor:
-        """Predict the action given the observation.
+        """Predict the action given observation.
+
+        The predicted action depends on the ``deterministic`` flag.
+
+        - If ``deterministic`` is ``True``, the predicted action is the mean of the distribution.
+        - If ``deterministic`` is ``False``, the predicted action is sampled from the distribution.
 
         Args:
             obs (torch.Tensor): Observation.
             deterministic (bool): Whether to use deterministic policy.
-
-        Returns:
-            torch.Tensor: Predicted action.
         """
         action = torch.tanh(self.net(obs))
         if deterministic:
@@ -88,6 +90,7 @@ class MLPActor(Actor):
 
     @noise.setter
     def noise(self, noise: float) -> None:
+        """Set the action noise."""
         assert noise >= 0, 'Noise should be non-negative.'
         self._noise = noise
 

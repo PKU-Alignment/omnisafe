@@ -34,6 +34,32 @@ class OffPolicyBuffer(BaseBuffer):
         batch_size: int,
         device: torch.device = torch.device('cpu'),
     ):
+        """Initialize the off policy buffer.
+
+        .. warning::
+            The buffer only supports Box spaces.
+
+        Compared to the base buffer, the off-policy buffer stores extra data:
+
+        .. list-table::
+
+            *   -   Name
+                -   Shape
+                -   Dtype
+                -   Description
+            *   -   next_obs
+                -   (batch_size, obs_space.shape)
+                -   torch.float32
+                -   The next observation.
+
+        Args:
+            obs_space (OmnisafeSpace): The observation space.
+            act_space (OmnisafeSpace): The action space.
+            size (int): The size of the buffer.
+            batch_size (int): The batch size of the buffer.
+            device (torch.device, optional): The device of the buffer. Defaults to
+                torch.device('cpu').
+        """
         super().__init__(obs_space, act_space, size, device)
         if isinstance(obs_space, Box):
             self.data['next_obs'] = torch.zeros(
@@ -62,7 +88,14 @@ class OffPolicyBuffer(BaseBuffer):
         return self._batch_size
 
     def store(self, **data: torch.Tensor):
-        """Store data into the buffer."""
+        """Store data into the buffer.
+
+        .. hint::
+            The ReplayBuffer is a circular buffer. When the buffer is full, the
+            oldest data will be overwritten.
+        
+        Args:
+            data (torch.Tensor): The data to be stored."""
         for key, value in data.items():
             self.data[key][self._ptr] = value
         self._ptr = (self._ptr + 1) % self._max_size
