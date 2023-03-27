@@ -294,7 +294,7 @@ You may not yet understand the above theory and the specific meaning of the code
 Long-Term Support and Support History
 -------------------------------------
 
-**OmniSafe** is currently maintained by Borong Zhang , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_, `Weidong Huang <https://github.com/hdadong>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiamg Ji <https://github.com/zmsn-2077>`_.
+**OmniSafe** is currently maintained by `Borong Zhang <https://github.com/muchvo>` , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiamg Ji <https://github.com/zmsn-2077>`_.
 If you have any question in the process of using OmniSafe, of if you are willing to make a contribution to
 this project, don't hesitate to ask your question in `the GitHub issue page <https://github.com/PKU-MARL/omnisafe/issues/new/choose>`_, we will reply you in 2-3 working days.
 
@@ -303,9 +303,10 @@ this project, don't hesitate to ask your question in `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: Documentation
+    :caption: Start
 
-    Documentation/Installation
+    Start/Installation
+    Start/usage
 
 .. toctree::
     :hidden:
