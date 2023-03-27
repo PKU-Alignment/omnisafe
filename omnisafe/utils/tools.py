@@ -208,7 +208,12 @@ def load_yaml(path) -> dict:
 
 
 def recursive_check_config(config, default_config, exclude_keys=()):
-    """Check whether config is valid in default_config."""
+    """Check whether config is valid in default_config.
+    
+    Args:
+        config (dict): config to be checked.
+        default_config (dict): default config.
+    """
     for key in config.keys():
         if key not in default_config.keys() and key not in exclude_keys:
             raise KeyError(f'Invalid key: {key}')
@@ -216,8 +221,13 @@ def recursive_check_config(config, default_config, exclude_keys=()):
             recursive_check_config(config[key], default_config[key])
 
 
-def assert_with_exit(condition, msg):
-    '''Assert with message.'''
+def assert_with_exit(condition, msg) -> None:
+    """Assert with message.
+    
+    Args:
+        condition (bool): condition to be checked.
+        msg (str): message to be printed.
+    """
     try:
         assert condition
     except AssertionError:
@@ -226,8 +236,12 @@ def assert_with_exit(condition, msg):
         sys.exit(1)
 
 
-def recursive_dict2json(dict_obj):
-    """This function is used to recursively convert the dict to json."""
+def recursive_dict2json(dict_obj) -> str:
+    """This function is used to recursively convert the dict to json.
+    
+    Args:
+        dict_obj (dict): dict to be converted.
+    """
     assert isinstance(dict_obj, dict), 'Input must be a dict.'
     flat_dict = {}
 
@@ -244,9 +258,12 @@ def recursive_dict2json(dict_obj):
     return flat_dict_str
 
 
-def hash_string(string):
-    """This function is used to generate the folder name."""
-    # salt
+def hash_string(string) -> str:
+    """This function is used to generate the folder name.
+    
+    Args:
+        string (str): string to be hashed.
+    """
     salt = b'\xf8\x99/\xe4\xe6J\xd8d\x1a\x9b\x8b\x98\xa2\x1d\xff3*^\\\xb1\xc1:e\x11M=PW\x03\xa5\\h'
     # convert string to bytes and add salt
     salted_string = salt + string.encode('utf-8')
