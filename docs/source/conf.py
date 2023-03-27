@@ -44,7 +44,7 @@ extensions = [
 ]
 
 if not os.getenv('READTHEDOCS', None):
-    #extensions.append('sphinxcontrib.spelling')
+    # extensions.append('sphinxcontrib.spelling')
     pass
 
 source_suffix = {'.rst': 'restructuredtext', '.md': 'markdown'}
