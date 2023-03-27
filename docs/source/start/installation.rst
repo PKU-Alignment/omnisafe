@@ -1,8 +1,8 @@
 Installation
 ============
 
-Installation Code
------------------
+Installation Guide
+------------------
 
 You can install OmniSafe from the Python Package Index (PyPI) using pip:
 

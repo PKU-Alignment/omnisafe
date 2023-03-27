@@ -36,15 +36,21 @@ console = Console()
 
 @app.command()
 def train(  # pylint: disable=too-many-arguments
-    algo: str = 'PPOLag',
-    env_id: str = 'SafetyHumanoidVelocity-v4',
-    parallel: int = 1,
-    total_steps: int =  1638400, 
-    device: str = 'cpu',
-    vector_env_nums: int = 16,
-    torch_threads: int = 16,
-    log_dir: str = os.path.join(os.getcwd()),
-    custom_cfgs: List[str] = [],
+    algo: str = typer.Option(
+        'PPOLag', help=f"algorithm to train{omnisafe.ALGORITHMS['all']}", case_sensitive=False
+    ),
+    env_id: str = typer.Option(
+        'SafetyHumanoidVelocity-v4', help='the name of test environment', case_sensitive=False
+    ),
+    parallel: int = typer.Option(1, help='number of paralleled progress for calculations.'),
+    total_steps: int = typer.Option(1638400, help='total number of steps to train for algorithm'),
+    device: str = typer.Option('cpu', help='device to use for training'),
+    vector_env_nums: int = typer.Option(16, help='number of vector envs to use for training'),
+    torch_threads: int = typer.Option(16, help='number of threads to use for torch'),
+    log_dir: str = typer.Option(
+        os.path.join(os.getcwd()), help='directory to save logs, default is current directory'
+    ),
+    custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
 ):
     """Train a single policy in OmniSafe via command line.
 

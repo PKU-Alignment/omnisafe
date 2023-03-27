@@ -289,7 +289,7 @@ We give an example below:
                         cd omnisafe/examples
                         python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo CPO --parallel 5 --epochs 1
 
-You may not yet understand the above theory and the specific meaning of the code, but do not worry, we will make a detailed introduction later in the :doc:`../SafeRL/CPO` tutorial.
+You may not yet understand the above theory and the specific meaning of the code, but do not worry, we will make a detailed introduction later in the :doc:`../saferl/cpo` tutorial.
 
 Long-Term Support and Support History
 -------------------------------------
@@ -303,47 +303,54 @@ this project, don't hesitate to ask your question in `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: Start
+    :caption: Get Start
 
-    Start/Installation
-    Start/usage
+    start/installation
+    start/usage
 
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: Foundations
+    :caption: foundations
 
-    Foundations/notations
-    Foundations/pre_know
+    foundations/notations
+    foundations/vector
+    foundations/lagrange
 
 .. toctree::
     :hidden:
     :maxdepth: 3
     :caption: Base RL Algorithm
 
-    BaseRL/TRPO
-    BaseRL/PPO
+    baserl/trpo
+    baserl/ppo
 
 .. toctree::
     :hidden:
     :maxdepth: 3
     :caption: Safe RL Algorithm
 
-    SafeRL/CPO
-    SafeRL/PCPO
-    SafeRL/FOCOPS
-    SafeRL/Lag
+    saferl/cpo
+    saferl/pcpo
+    saferl/focops
+    saferl/lag
 
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: algorithms
+    :caption: baserl api
 
-    algorithms/on_policy
-    algorithms/first_order
-    algorithms/second_order
-    algorithms/lagrange
-    algorithms/penalty_function
+    baserlapi/on_policy
+
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: saferl api
+
+    saferlapi/first_order
+    saferlapi/second_order
+    saferlapi/lagrange
+    saferlapi/penalty_function
 
 .. toctree::
     :hidden:
@@ -362,7 +369,6 @@ this project, don't hesitate to ask your question in `the GitHub issue page <htt
     :caption: Utils
 
     utils/config
-    utils/app
     utils/distributed
     utils/math
     utils/model

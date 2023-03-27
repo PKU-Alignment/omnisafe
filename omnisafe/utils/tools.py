@@ -209,7 +209,7 @@ def load_yaml(path) -> dict:
 
 def recursive_check_config(config, default_config, exclude_keys=()):
     """Check whether config is valid in default_config.
-    
+
     Args:
         config (dict): config to be checked.
         default_config (dict): default config.
@@ -223,7 +223,7 @@ def recursive_check_config(config, default_config, exclude_keys=()):
 
 def assert_with_exit(condition, msg) -> None:
     """Assert with message.
-    
+
     Args:
         condition (bool): condition to be checked.
         msg (str): message to be printed.
@@ -238,7 +238,7 @@ def assert_with_exit(condition, msg) -> None:
 
 def recursive_dict2json(dict_obj) -> str:
     """This function is used to recursively convert the dict to json.
-    
+
     Args:
         dict_obj (dict): dict to be converted.
     """
@@ -260,7 +260,7 @@ def recursive_dict2json(dict_obj) -> str:
 
 def hash_string(string) -> str:
     """This function is used to generate the folder name.
-    
+
     Args:
         string (str): string to be hashed.
     """

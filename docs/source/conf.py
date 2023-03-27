@@ -44,7 +44,7 @@ extensions = [
 ]
 
 if not os.getenv('READTHEDOCS', None):
-    #extensions.append('sphinxcontrib.spelling')
+    # extensions.append('sphinxcontrib.spelling')
     pass
 
 source_suffix = {'.rst': 'restructuredtext', '.md': 'markdown'}
@@ -70,7 +70,8 @@ autodoc_preserve_defaults = True
 # a list of builtin themes.
 #
 html_theme = 'furo'
-html_title = 'OmniSafe Documentation'
+html_logo = 'image/logo.png'
+html_title = ' '
 html_copy_source = False
 # html_favicon = '_static/images/favicon.png'
 html_context: Dict[str, Any] = {}

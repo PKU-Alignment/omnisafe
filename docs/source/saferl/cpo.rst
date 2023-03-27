@@ -21,7 +21,7 @@ Background
 
 **Constrained policy optimization (CPO)** is a policy search algorithm for constrained reinforcement learning with
 guarantees for near-constraint satisfaction at each iteration.
-Motivated by TRPO( :doc:`../BaseRL/TRPO`).
+Motivated by TRPO( :doc:`../baserl/trpo`).
 CPO develops surrogate functions to be good local approximations for objectives and constraints and easy to estimate using samples from current policy.
 Moreover, it provides tighter bounds for policy search using trust regions.
 

@@ -19,7 +19,7 @@ PPO Theorem
 Background
 ~~~~~~~~~~
 
-**Proximal Policy Optimization(PPO)** is a RL algorithm inheriting some of the benefits of :doc:`TRPO<TRPO>`,
+**Proximal Policy Optimization(PPO)** is a RL algorithm inheriting some of the benefits of :doc:`trpo<trpo>`,
 but are much simpler to implement.
 PPO share the same target with TRPO:
 how can we take a as big as improvement step on a policy update using the data we already have,

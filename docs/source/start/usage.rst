@@ -1,4 +1,4 @@
-Basic Usage
+Usage Video
 ===========
 
 Quick Facts
@@ -16,7 +16,7 @@ Quick Facts
 
 
 Train policy
---------------
+------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -29,9 +29,9 @@ Train policy
 
     .. code-block:: bash
 
-        omnisafe train 
-        --algo PPO --total-steps 1024 
-        --vector-env-nums 1 
+        omnisafe train
+        --algo PPO --total-steps 1024
+        --vector-env-nums 1
         --custom-cfgs algo_cfgs:update_cycle 512
 
     Here we provide a video example:
@@ -131,15 +131,15 @@ Get Help
     .. code-block:: bash
 
         omnisafe --help
-    
+
     Then you will see:
 
     .. raw:: html
 
         <script async id="asciicast-xQZ6RBafyXonZEqbVQ3htLPJT" src="https://asciinema.org/a/xQZ6RBafyXonZEqbVQ3htLPJT.js"></script>
-    
+
 .. hint::
-    The above command will show the help information of OmniSafe, 
-    which may help you to some degree. 
+    The above command will show the help information of OmniSafe,
+    which may help you to some degree.
     If you still have any questions,
     just feel free to open an issue.

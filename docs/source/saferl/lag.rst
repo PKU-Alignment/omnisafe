@@ -37,7 +37,7 @@ In the :bdg-info-line:`section`, we will briefly introduce Lagrangian methods,
 and give corresponding implementations in **TRPO** and **PPO**.
 TRPO and PPO are the algorithms we introduced earlier,
 if you lack understanding of it, it doesn't matter.
-Please read the :doc:`TRPO tutorial<../BaseRL/TRPO>` and :doc:`PPO tutorial<../BaseRL/PPO>` we wrote,
+Please read the :doc:`TRPO tutorial<../baserl/trpo>` and :doc:`PPO tutorial<../baserl/ppo>` we wrote,
 you will soon understand how it works.
 
 .. grid:: 2
@@ -98,7 +98,7 @@ so instead of optimizing over :math:`\Pi_\theta`,
 algorithm should optimize over :math:`\Pi_\theta \cap \Pi_C`.
 Specifically, for the TRPO and PPO algorithms,
 constraints on the differences between old and new policies should also be added.
-To solve this constrained problem, please read the :doc:`TRPO tutorial<../BaseRL/TRPO>`.
+To solve this constrained problem, please read the :doc:`TRPO tutorial<../baserl/trpo>`.
 The final optimization goals are as follows:
 
 .. _`lag-eq-2`:
