@@ -66,16 +66,16 @@ class SauteAdapter(OnPolicyAdapter):
         cost_normalize: bool = False,
     ):
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, time_limit=1000)
+            self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
         if self._env.need_auto_reset_wrapper:
-            self._env = AutoReset(self._env)
+            self._env = AutoReset(self._env, device=self._device)
         if obs_normalize:
-            self._env = ObsNormalize(self._env)
+            self._env = ObsNormalize(self._env, device=self._device)
         assert reward_normalize is False, 'Reward normalization is not supported'
         assert cost_normalize is False, 'Cost normalization is not supported'
-        self._env = ActionScale(self._env, low=-1.0, high=1.0)
+        self._env = ActionScale(self._env, device=self._device, low=-1.0, high=1.0)
         if self._env.num_envs == 1:
-            self._env = Unsqueeze(self._env)
+            self._env = Unsqueeze(self._env, device=self._device)
 
     def reset(self) -> Tuple[torch.Tensor, Dict]:
         obs, info = self._env.reset()
