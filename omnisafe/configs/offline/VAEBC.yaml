@@ -52,8 +52,6 @@ defaults:
     weight_initialization_mode: "kaiming_uniform"
     # Size of hidden layers
     hidden_sizes: [750, 750]
-    # size of latent dim
-    latent_dim: 4
     # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
     activation: relu
     # Learning rate of model
