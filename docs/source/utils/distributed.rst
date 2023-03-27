@@ -62,7 +62,7 @@ Distributed Operations
 
     Documentation
     ^^^
-    
+
     .. autofunction:: dist_avg
     .. autofunction:: dist_sum
     .. autofunction:: dist_max

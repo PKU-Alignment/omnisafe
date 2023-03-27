@@ -84,7 +84,7 @@ class Normalizer(nn.Module):
             - If the data is the first data, the data will be used to initialize the mean and std.
             - If the data is not the first data, the data will be normalized by the mean and std.
             - Update the mean and std by the data.
-            
+
         Args:
             data: raw data to be normalized
         """

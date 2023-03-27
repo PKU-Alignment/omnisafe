@@ -36,7 +36,7 @@ class ActorBuilder:
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
         """Initialize ActorBuilder.
-        
+
         Args:
             obs_space (OmnisafeSpace): Observation space.
             act_space (OmnisafeSpace): Action space.
@@ -53,7 +53,7 @@ class ActorBuilder:
     # pylint: disable-next=too-many-return-statements
     def build_actor(self, actor_type: ActorType) -> Actor:
         """Build actor network.
-        
+
         Currently, we support the following actor types:
             - ``gaussian_learning``: Gaussian actor with learnable standard deviation parameters.
             - ``gaussian_sac``: Gaussian actor with learnable standard deviation network.

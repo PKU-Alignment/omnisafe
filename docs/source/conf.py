@@ -98,7 +98,7 @@ html_theme_options = {
 }
 
 # Dark mode
-pygments_dark_style = "monokai"
+pygments_dark_style = 'monokai'
 
 math_number_all = True  # Set this option to True if you want all displayed math to be numbered. The default is False.
 math_eqref_format = 'Eq.{number}'  # gets rendered as, for example, Eq.10.

@@ -93,7 +93,7 @@ class OffPolicyBuffer(BaseBuffer):
         .. hint::
             The ReplayBuffer is a circular buffer. When the buffer is full, the
             oldest data will be overwritten.
-        
+
         Args:
             data (torch.Tensor): The data to be stored."""
         for key, value in data.items():

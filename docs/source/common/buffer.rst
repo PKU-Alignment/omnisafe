@@ -25,7 +25,7 @@ Base Buffer
     .. autoclass:: BaseBuffer
         :members:
         :private-members:
-        
+
         .. automethod:: __init__
 
 On Policy Buffer
@@ -91,4 +91,3 @@ Vector Off Policy Buffer
         :private-members:
 
         .. automethod:: __init__
-

@@ -24,8 +24,8 @@ from omnisafe.utils.tools import load_yaml
 
 class Config(dict):
     """Config class for storing hyperparameters.
-    
-    OmniSafe uses a Config class to store all hyperparameters. 
+
+    OmniSafe uses a Config class to store all hyperparameters.
     OmniSafe store hyperparameters in a yaml file and load them into a Config object.
     Then the Config class will check the hyperparameters are valid,
     then pass them to the algorithm class.
@@ -112,7 +112,7 @@ class Config(dict):
     @staticmethod
     def dict2config(config_dict: dict) -> 'Config':
         """Convert dictionary to Config.
-        
+
         Args:
             config_dict (dict): dictionary to be converted.
         """
@@ -126,7 +126,7 @@ class Config(dict):
 
     def recurisve_update(self, update_args: Dict[str, Any]) -> None:
         """Recursively update args.
-        
+
         Args:
             update_args (Dict[str, Any]): args to be updated.
         """
@@ -204,9 +204,9 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
 
 
 def __check_algo_configs(configs: Config, algo_type) -> None:
-    """Check algorithm configs.
-    
-    
+    r"""Check algorithm configs.
+
+
     This function is used to check the algorithm configs.
 
     .. note::
@@ -229,14 +229,14 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
         - ``use_max_grad_norm`` must be bool.
         - ``use_cost`` must be bool.
         - ``max_grad_norm`` must be greater than 0 and must be float.
-        - ``adv_estimation_method`` must be in ['gae', 'v-trace', 'gae-rtg', 'plain'].
+        - ``adv_estimation_method`` must be in [``gae``, ``v-trace``, ``gae-rtg``, ``plain``].
         - ``standardized_rew_adv`` must be bool.
         - ``standardized_cost_adv`` must be bool.
 
     Args:
         configs (Config): configs to be checked.
         algo_type (str): algorithm type.
-        """
+    """
     if algo_type == 'on-policy':
         assert (
             isinstance(configs.update_iters, int) and configs.update_iters > 0

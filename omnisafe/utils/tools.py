@@ -109,13 +109,15 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
 
 def seed_all(seed: int):
     """This function is used to set the random seed for all the packages.
-    
+
     .. hint::
         To reproduce the results, you need to set the random seed for all the packages.
         Including ``numpy``, ``random``, ``torch``, ``torch.cuda``, ``torch.backends.cudnn``.
-    
+
     .. warning::
-        If you want to use the ``torch.backends.cudnn.benchmark`` or ``torch.backends.cudnn.deterministic`` and your ``cuda`` version is over 10.2, you need to set the ``CUBLAS_WORKSPACE_CONFIG`` and ``PYTHONHASHSEED`` environment variables.
+        If you want to use the ``torch.backends.cudnn.benchmark`` or ``torch.backends.cudnn.
+        deterministic`` and your ``cuda`` version is over 10.2, you need to set the
+        ``CUBLAS_WORKSPACE_CONFIG`` and ``PYTHONHASHSEED`` environment variables.
     """
 
     os.environ['PYTHONHASHSEED'] = str(seed)

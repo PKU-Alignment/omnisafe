@@ -64,7 +64,7 @@ Other configurations are similar to ``train_cfgs``. You can refer to the ``omnis
     .. autoclass:: Config
         :members:
         :private-members:
-        
+
         .. automethod:: __init__
 
 Model Config
@@ -80,7 +80,7 @@ Model Config
     .. autoclass:: ModelConfig
         :members:
         :private-members:
-        
+
         .. automethod:: __init__
 
 Common Method

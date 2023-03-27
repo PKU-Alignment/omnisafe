@@ -144,7 +144,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
         .. warning::
             The total size of the data must be less than the buffer size.
-        
+
         Args:
             data (torch.Tensor): The data to store.
         """
@@ -165,14 +165,16 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         state-action pairs and stores them in the buffer, following the steps:
 
         .. hint::
-        
+
             #. Calculate the discounted return.
             #. Calculate the advantages of the reward.
             #. Calculate the advantages of the cost.
-        
+
         Args:
-            last_value_r (torch.Tensor, optional): The value of the last state of the current path. Defaults to torch.zeros(1).
-            last_value_c (torch.Tensor, optional): The value of the last state of the current path. Defaults to torch.zeros(1).
+            last_value_r (torch.Tensor, optional): The value of the last state of the current path.
+            Defaults to torch.zeros(1).
+            last_value_c (torch.Tensor, optional): The value of the last state of the current path.
+            Defaults to torch.zeros(1).
         """
         path_slice = slice(self.path_start_idx, self.ptr)
         last_value_r = last_value_r.to(self._device)
@@ -202,7 +204,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
     def get(self) -> Dict[str, torch.Tensor]:
         """Get the data in the buffer.
-        
+
         .. hint::
 
             We provide a trick to standardize the advantages of state-action pairs.

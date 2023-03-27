@@ -4,7 +4,7 @@ OmniSafe Logger
 .. currentmodule:: omnisafe.common.logger
 
 .. autosummary::
-    
+
     Logger
 
 Logger
@@ -20,5 +20,5 @@ Logger
     .. autoclass:: Logger
         :members:
         :private-members:
-        
+
         .. automethod:: __init__

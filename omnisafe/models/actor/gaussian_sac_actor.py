@@ -40,7 +40,7 @@ class GaussianSACActor(Actor):
         """Initialize GaussianSACActor.
 
         GaussianSACActor is a Gaussian actor with a learnable standard deviation network.
-        Tt is used in ``SAC``, and other off-line or model-based algorithms related to ``SAC``.
+        It is used in ``SAC``, and other off-line or model-based algorithms related to ``SAC``.
 
         Args:
             obs_space (OmnisafeSpace): Observation space.
@@ -65,7 +65,7 @@ class GaussianSACActor(Actor):
         """Get the distribution of the actor.
 
         .. warning::
-        
+
             This method is not supposed to be called by users.
             You should call :meth:`forward` instead.
 
@@ -105,7 +105,7 @@ class GaussianSACActor(Actor):
 
     def forward(self, obs: torch.Tensor) -> Distribution:
         """Forward method.
-        
+
         Args:
             obs (torch.Tensor): Observation.
         """
@@ -119,14 +119,14 @@ class GaussianSACActor(Actor):
         .. warning::
             You must call :meth:`forward` or :meth:`predict` before calling this method.
 
-        .. note:: 
+        .. note::
 
             In this method, we will regularize the log probability of the action.
             The regularization is as follows:
 
             .. math::
 
-                \log \pi(a|s) = \log \pi(a|s) - \sum_{i=1}^n \left(2 \log 2 - a_i - \log \left(1 + e^{-2 a_i}\right)\right)
+                \log \pi(a|s) = \log \pi(a|s) - \sum_{i=1}^n (2 \log 2 - a_i - \log (1 + e^{-2 a_i}))
 
             where :math:`a` is the action, :math:`s` is the observation, and :math:`n` is the dimension of the action.
 

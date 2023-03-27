@@ -49,7 +49,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
 
         .. warning::
             The buffer only supports Box spaces.
-        
+
         Args:
             obs_space (OmnisafeSpace): Observation space.
             act_space (OmnisafeSpace): Action space.
@@ -91,7 +91,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
 
     def store(self, **data: torch.Tensor) -> None:
         """Store data into the buffer.
-        
+
         .. hint::
             The data should be a list of tensors, each of which corresponds to one environment.
             Then the data will be stored into the corresponding buffer.
@@ -109,7 +109,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         """Get the data in the buffer.
 
         In vector-on-policy buffer, we get the data from each buffer and then concatenate them.
-        
+
         .. hint::
 
             We provide a trick to standardize the advantages of state-action pairs.

@@ -53,7 +53,7 @@ class PIDLagrangian(abc.ABC):
         cost_limit: int,
     ) -> None:
         """Initialize PIDLagrangian.
-        
+
         Args:
             pid_kp: The proportional gain of the PID controller.
             pid_ki: The integral gain of the PID controller.

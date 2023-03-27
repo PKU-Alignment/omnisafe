@@ -24,7 +24,7 @@ class Lagrange:
 
     ..  note::
 
-        Any traditional policy gradient algorithm can be converted to a Lagrangian-based algorithm 
+        Any traditional policy gradient algorithm can be converted to a Lagrangian-based algorithm
         by inheriting from this class and implementing the :meth:`_loss_pi` method.
 
     Example:
@@ -43,7 +43,7 @@ class Lagrange:
         >>>         # initialize your own algorithm here
         >>>         super().__init__()
         >>>         # initialize the Lagrange multiplier
-        >>>         self.lagrange = Lagrange(cost_limit=25.0, lagrangian_multiplier_init=0.0, lambda_lr=1e-3, lambda_optimizer='Adam')
+        >>>         self.lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
     """
 
     # pylint: disable-next=too-many-arguments

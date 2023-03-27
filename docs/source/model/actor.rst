@@ -16,7 +16,7 @@ Base Actor
     .. autoclass:: Actor
         :members:
         :private-members:
-        
+
         .. automethod:: __init__
 
 .. currentmodule:: omnisafe.models.actor
@@ -40,7 +40,7 @@ Actor Builder
     .. autoclass:: ActorBuilder
         :members:
         :private-members:
-        
+
         .. automethod:: __init__
 
 Gaussian Actor
@@ -56,7 +56,7 @@ Gaussian Actor
     .. autoclass:: GaussianActor
         :members:
         :private-members:
-        
+
         .. automethod:: __init__
 
 Gaussian Learning Actor
@@ -72,7 +72,7 @@ Gaussian Learning Actor
     .. autoclass:: GaussianLearningActor
         :members:
         :private-members:
-        
+
         .. automethod:: __init__
 
 Gaussian SAC Actor
@@ -88,5 +88,5 @@ Gaussian SAC Actor
     .. autoclass:: GaussianSACActor
         :members:
         :private-members:
-        
+
         .. automethod:: __init__

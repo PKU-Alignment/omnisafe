@@ -16,7 +16,7 @@ Base Critic
     .. autoclass:: Critic
         :members:
         :private-members:
-        
+
 .. currentmodule:: omnisafe.models.critic
 
 .. autosummary::
@@ -63,4 +63,3 @@ V Critic
     .. autoclass:: VCritic
         :members:
         :private-members:
-        

@@ -40,7 +40,7 @@ def get_diagonal(tensor: torch.Tensor) -> torch.Tensor:
         >>> tensor = torch.rand(2, 3, 4)
         >>> get_diagonal(tensor).shape
         torch.Size([2, 3])
-    
+
     Args:
         tensor: torch.Tensor
     """
@@ -133,8 +133,8 @@ def discount_cumsum(x_vector: torch.Tensor, discount: float) -> torch.Tensor:
         tensor([1, 2, 3, 4])
         >>> discount_cumsum(x_vector, 0.9)
         tensor([4.00, 3.90, 3.00, 1.00])
-    
-    Args: 
+
+    Args:
         x_vector (torch.Tensor): shape (B, T)
         discount (float): discount factor
     """
@@ -198,7 +198,7 @@ def conjugate_gradients(
 
 class SafeTanhTransformer(TanhTransform):
     """Safe Tanh Transformer.
-    
+
     This transformer is used to avoid the error caused by the input of tanh function
     being too large or too small.
     """
@@ -248,7 +248,7 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     def expand(self, batch_shape, instance=None):
         """Expand the distribution."""
         new = self._get_checked_instance(TanhNormal, instance)
-        return super().expand(batch_shape, instance=new)
+        return super().expand(batch_shape, new)
 
     @property
     def loc(self):

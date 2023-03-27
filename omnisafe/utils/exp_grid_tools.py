@@ -20,7 +20,7 @@ from typing import List, Union
 
 def all_bools(vals: list) -> bool:
     """Check if all values are bools
-    
+
     Args:
         vals: Values to check.
     """

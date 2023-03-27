@@ -20,5 +20,5 @@ Experiment Grid
     .. autoclass:: ExperimentGrid
         :members:
         :private-members:
-        
+
         .. automethod:: __init__

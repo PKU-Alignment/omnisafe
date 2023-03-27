@@ -58,8 +58,9 @@ def train(  # pylint: disable=too-many-arguments
 
     .. code-block:: bash
 
-        python -m omnisafe train --algo PPOLag --env_id SafetyPointGoal1-v0 --parallel 1 --total_steps 1000000 --device cpu --vector_env_nums 1
-    
+        python -m omnisafe train --algo PPOLag --env_id SafetyPointGoal1-v0 --parallel 1
+        --total_steps 1000000 --device cpu --vector_env_nums 1
+
     Args:
         algo: algorithm to train
         env_id: the name of test environment
@@ -107,7 +108,8 @@ def train_grid(
 
     .. code-block:: bash
 
-        python -m omnisafe train_grid --exp_id exp-1 --algo PPOLag --env_id SafetyPointGoal1-v0 --parallel 1 --total_steps 1000000 --device cpu --vector_env_nums 1
+        python -m omnisafe train_grid --exp_id exp-1 --algo PPOLag --env_id SafetyPointGoal1-v0
+        --parallel 1 --total_steps 1000000 --device cpu --vector_env_nums 1
 
     Args:
         exp_id (str): Experiment ID.
@@ -160,15 +162,15 @@ def benchmark(
 
     .. code-block:: bash
 
-        python -m omnisafe benchmark --exp_name exp-1 --num_pool 1 --config_path ./configs/on-policy/PPOLag.yaml--log_dir ./runs
-    
+        python -m omnisafe benchmark --exp_name exp-1 --num_pool 1 --config_path ./configs/
+        on-policy/PPOLag.yaml--log_dir ./runs
+
     Args:
         exp_name: experiment name
         num_pool: number of paralleled experiments.
-        config_path: path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml
+        config_path: path to config file, it is supposed to be yaml file
         log_dir: directory to save logs, default is current directory
     """
-    """Benchmark algorithms configured by .yaml file in OmniSafe via command line."""
     assert_with_exit(config_path.endswith('.yaml'), 'config file must be yaml file')
     with open(config_path, encoding='utf-8') as file:
         try:
@@ -212,13 +214,15 @@ def evaluate(
 
     .. code-block:: bash
 
-        python -m omnisafe eval --result_dir ./runs/PPOLag-{SafetyPointGoal1-v0} --num_episode 10 --render True --render_mode rgb_array --camera_name track --width 256 --height 256
-    
+        python -m omnisafe eval --result_dir ./runs/PPOLag-{SafetyPointGoal1-v0} --num_episode 10
+        --render True --render_mode rgb_array --camera_name track --width 256 --height 256
+
     Args:
         result_dir (str): Directory of experiment results to evaluate.
         num_episode (int, optional): Number of episodes to render. Defaults to 10.
         render (bool, optional): Whether to render. Defaults to True.
-        render_mode (str, optional): Render mode('human', 'rgb_array', 'rgb_array_list', 'depth_array', 'depth_array_list'). Defaults to 'rgb_array'.
+        render_mode (str, optional): Render mode('human', 'rgb_array', 'rgb_array_list',
+        'depth_array', 'depth_array_list'). Defaults to 'rgb_array'.
         camera_name (str, optional): Camera name to render. Defaults to 'track'.
         width (int, optional): Width of rendered image. Defaults to 256.
         height (int, optional): Height of rendered image. Defaults to 256.
@@ -258,13 +262,14 @@ def train_config(
 
     .. code-block:: bash
 
-        python -m omnisafe train_config --config_path ./configs/on-policy/PPOLag.yaml --log_dir ./runs
-    
+        python -m omnisafe train_config --config_path ./configs/on-policy/PPOLag.yaml --log_dir ./
+        runs
+
     Args:
-        config_path (str): path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml
-        log_dir (str, optional): directory to save logs, default is current directory. Defaults to os.path.join(os.getcwd()).
+        config_path (str): path to config file, it is supposed to be yaml file.
+        log_dir (str, optional): directory to save logs, default is current directory.
+        Defaults to os.path.join(os.getcwd()).
     """
-    """Train a policy configured by .yaml file in OmniSafe via command line."""
     assert_with_exit(config_path.endswith('.yaml'), 'config file must be yaml file')
     with open(config_path, encoding='utf-8') as file:
         try:

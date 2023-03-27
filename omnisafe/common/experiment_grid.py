@@ -69,7 +69,7 @@ class ExperimentGrid:
 
     def print(self) -> None:
         """Print a helpful report about the experiment grid.
-        
+
         This function prints a helpful report about the experiment grid, including
         the name of the experiment grid, the parameters being varied, and the
         possible values for each parameter.
@@ -80,9 +80,9 @@ class ExperimentGrid:
 
             ===================== ExperimentGrid [test] runs over parameters: =====================
             env_name                                [env]
-            ['CartPole-v0', 'MountainCar-v0', 'Acrobot-v1']
-            algo_name                               [algo]
-            ['DQN', 'DDPG', 'TD3']
+            ['SafetyPointGoal1-v0', 'MountainCar-v0', 'Acrobot-v1']
+            algo                               [algo]
+            ['SAC', 'DDPG', 'TD3']
             seed                                    [seed]
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         """
@@ -130,7 +130,7 @@ class ExperimentGrid:
         alphanumeric, shear that off.
 
         Example:
-            >>> _default_shorthand('env_name:CartPole-v0')
+            >>> _default_shorthand('env_name:SafetyPointGoal1-v0')
             'env'
 
         Args:
@@ -152,13 +152,13 @@ class ExperimentGrid:
         from the key using the first three letters of each colon-separated
         term.
 
-        .. hint:: 
+        .. hint::
 
             This function is called in ``omnisafe/examples/benchmarks/run_experiment_grid.py``.
 
         Example:
-            >>> add('env_name:CartPole-v0', ['CartPole-v0', 'MountainCar-v0', 'Acrobot-v1'])
-            >>> add('algo_name:DDPG', ['DQN', 'DDPG', 'TD3'])
+            >>> add('env_id', ['SafetyPointGoal1-v0', 'MountainCar-v0', 'Acrobot-v1'])
+            >>> add('algo', ['SAC', 'DDPG', 'TD3'])
             >>> add('seed', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
         Args:
@@ -191,13 +191,13 @@ class ExperimentGrid:
         one), plus param names (or shorthands if available) and values
         separated by underscores.
 
-        ..warning:: 
+        ..warning::
             if ``seed`` is a parameter, it is not included in the name.
 
         Example:
-            >>> variant_name({'env_name': 'CartPole-v0', 'algo_name': 'DQN', 'seed': 0})
-            exp_name = 'CartPole-v0_DQN_0'
-        
+            >>> variant_name({'env_id': 'SafetyPointGoal1-v0', 'algo': 'SAC', 'seed': 0})
+            exp_name = 'SafetyPointGoal1-v0_SAC_0'
+
         Args:
             variant (dict): Variant dictionary.
         """
@@ -249,7 +249,7 @@ class ExperimentGrid:
 
         This function is used to update the total dictionary with the item
         dictionary.
-        
+
         Args:
             total_dic (dict): Total dictionary.
             item_dic (dict): Item dictionary.
@@ -269,7 +269,7 @@ class ExperimentGrid:
 
     def _variants(self, keys, vals):
         """Recursively builds list of valid variants.
-        
+
         Args:
             keys (list): List of keys.
             vals (list): List of values.

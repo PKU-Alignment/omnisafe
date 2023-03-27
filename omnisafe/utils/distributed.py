@@ -43,7 +43,7 @@ def setup_distributed() -> None:
 
 def get_rank() -> int:
     """Get rank of calling process.
-    
+
     Example:
         >>> # In process 0
         >>> get_rank()
@@ -165,7 +165,7 @@ def avg_grads(module: torch.nn.Module) -> None:
     .. note::
 
         This function only works when the training is multi-processing.
-    
+
     Example:
         >>> # In process 0
         >>> x = torch.tensor(1.0, requires_grad=True)
@@ -257,7 +257,7 @@ def dist_avg(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor
     """Average a tensor over distributed processes.
 
     Example:
-    
+
     >>> # In process 0
     >>> x = torch.tensor(1.0)
     >>> # In process 1
@@ -271,7 +271,7 @@ def dist_avg(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor
 
 def dist_max(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor:
     """Determine global maximum of tensor over distributed processes.
-    
+
     Example:
         >>> # In process 0
         >>> x = torch.tensor(1.0)
@@ -286,7 +286,7 @@ def dist_max(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor
 
 def dist_min(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor:
     """Determine global minimum of tensor over distributed processes.
-    
+
     Example:
         >>> # In process 0
         >>> x = torch.tensor(1.0)
@@ -301,7 +301,7 @@ def dist_min(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor
 
 def dist_sum(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor:
     """Sum a tensor over distributed processes.
-    
+
     Example:
         >>> # In process 0
         >>> x = torch.tensor(1.0)

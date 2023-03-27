@@ -63,7 +63,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         |       Name      |            Value         |
         ----------------------------------------------
         |    Train/Epoch  |             25           |
-        |  Metrics/EpCost |            24.56         | 
+        |  Metrics/EpCost |            24.56         |
         |  Metrics/EpLen  |            1000          |
         |  Metrics/EpRet  |            13.24         |
         |  Metrics/EpStd  |            0.12          |
@@ -205,7 +205,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         delta: bool = False,
     ) -> None:
         """Register a key to the logger.
-                
+
         The logger can record the following data:
 
         .. code-block:: bash
@@ -214,7 +214,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             |       Name            |            Value         |
             ----------------------------------------------------
             |    Train/Epoch        |             25           |
-            |  Metrics/EpCost/Min   |            22.38         | 
+            |  Metrics/EpCost/Min   |            22.38         |
             |  Metrics/EpCost/Max   |            25.48         |
             |  Metrics/EpCost/Mean  |            23.93         |
             ----------------------------------------------------
@@ -270,7 +270,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
     def dump_tabular(self) -> None:
         """Dump the tabular data to the console and the file.
-        
+
         The dumped data will be separated by the following steps:
 
         .. hint::
@@ -279,7 +279,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             - Write the data to the csv file.
             - Write the data to the tensorboard.
             - Update the progress logger.
-        
+
         """
         self._update_current_row()
         table = Table('Metrics', 'Value')
@@ -311,7 +311,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
     def _update_current_row(self) -> None:
         """Update the current row.
-        
+
         Update the current row with the data stored in the logger.
         """
         for key in self._data:
@@ -335,7 +335,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
     def get_stats(self, key, min_and_max: bool = False) -> Tuple[Union[int, float], ...]:
         """Get the statistics of the key.
-        
+
         Args:
             key (str): The key to be registered.
             min_and_max (bool): Whether to record the min and max value of the key.

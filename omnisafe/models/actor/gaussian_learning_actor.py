@@ -92,7 +92,7 @@ class GaussianLearningActor(GaussianActor):
 
     def forward(self, obs: torch.Tensor) -> Distribution:
         """Forward method.
-        
+
         Args:
             obs (torch.Tensor): Observation.
         """
@@ -121,10 +121,10 @@ class GaussianLearningActor(GaussianActor):
     @std.setter
     def std(self, std: float) -> None:
         """Set the standard deviation of the distribution.
-        
-        .. hint:: 
+
+        .. hint::
             This method is only used for annealing the standard deviation.
-            It can be called 
+            It can be called
 
         Args:
             std (float): Standard deviation.

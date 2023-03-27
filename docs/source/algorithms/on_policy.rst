@@ -9,7 +9,7 @@ Base on-policy Algorithms
     NaturalPG
     TRPO
     PPO
-    
+
 
 Policy Gradient
 ---------------
@@ -19,7 +19,7 @@ Policy Gradient
     :class-card: sd-outline-success  sd-rounded-1
 
     Documentation
-    ^^^ 
+    ^^^
 
     .. autoclass:: PolicyGradient
         :members:

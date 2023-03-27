@@ -34,7 +34,7 @@ class BaseBuffer(ABC):
         device: torch.device = torch.device('cpu'),
     ):
         """Initialize the buffer.
-        
+
         .. warning::
             The buffer only supports Box spaces.
 
@@ -59,7 +59,7 @@ class BaseBuffer(ABC):
                 -   torch.float32
                 -   Single step reward.
             *   -   cost
-                -   (size, )    
+                -   (size, )
                 -   torch.float32
                 -   Single step cost.
             *   -   done
@@ -67,7 +67,7 @@ class BaseBuffer(ABC):
                 -   torch.float32
                 -   Whether the episode is done.
 
-        Args:   
+        Args:
             obs_space (OmnisafeSpace): The observation space.
             act_space (OmnisafeSpace): The action space.
             size (int): The size of the buffer.
@@ -132,7 +132,7 @@ class BaseBuffer(ABC):
         Example:
             >>> buffer = BaseBuffer(...)
             >>> buffer.store(obs=obs, act=act, reward=reward, cost=cost, done=done)
-        
+
         Args:
             data (torch.Tensor): The data to store.
         """

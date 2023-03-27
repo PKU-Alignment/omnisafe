@@ -20,7 +20,7 @@ Lagrange Multiplier
     .. autoclass:: Lagrange
         :members:
         :private-members:
-        
+
         .. automethod:: __init__
 
 
@@ -43,5 +43,5 @@ PIDLagrange
     .. autoclass:: PIDLagrangian
         :members:
         :private-members:
-        
+
         .. automethod:: __init__
