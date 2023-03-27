@@ -16,19 +16,22 @@
 
 import os
 import sys
+import warnings
 from typing import List
 
 import numpy as np
 import typer
 import yaml
+from rich.console import Console
 
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.typing import NamedTuple, Tuple
-from omnisafe.utils.tools import custom_cfgs_to_dict, update_dic
+from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dic
 
 
 app = typer.Typer()
+console = Console()
 
 
 @app.command()
@@ -89,15 +92,28 @@ def train_grid(
         custom_cfgs (NamedTuple): Custom configurations.
         num_threads (int, optional): Number of threads. Defaults to 6.
     """
+    terminal_log_name = 'terminal.log'
+    error_log_name = 'error.log'
+    if 'seed' in custom_cfgs:
+        terminal_log_name = f'seed{custom_cfgs["seed"]}_{terminal_log_name}'
+        error_log_name = f'seed{custom_cfgs["seed"]}_{error_log_name}'
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
     print(f'exp-x: {exp_id} is training...')
     if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
         os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
-    # pylint: disable=consider-using-with
-    sys.stdout = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}terminal.log', 'w', encoding='utf-8')
-    # pylint: disable=consider-using-with
-    sys.stderr = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}error.log', 'w', encoding='utf-8')
+    # pylint: disable-next=consider-using-with
+    sys.stdout = open(
+        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', terminal_log_name),
+        'w',
+        encoding='utf-8',
+    )
+    # pylint: disable-next=consider-using-with
+    sys.stderr = open(
+        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', error_log_name),
+        'w',
+        encoding='utf-8',
+    )
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     reward, cost, ep_len = agent.learn()
     return reward, cost, ep_len
@@ -115,18 +131,20 @@ def benchmark(
     ),
 ):
     """Benchmark algorithms configured by .yaml file in OmniSafe via command line."""
-    assert config_path.endswith('.yaml'), 'config file must be yaml file'
+    assert_with_exit(config_path.endswith('.yaml'), 'config file must be yaml file')
     with open(config_path, encoding='utf-8') as file:
         try:
             configs = yaml.load(file, Loader=yaml.FullLoader)
             assert configs is not None, 'load file error'
         except yaml.YAMLError as exc:
             assert False, f'load file error: {exc}'
-    assert 'algo' in configs, 'algo must be specified in config file'
-    assert 'env_id' in configs, 'env_id must be specified in config file'
-    assert (
-        np.prod([len(v) if isinstance(v, list) else 1 for v in configs.values()]) % num_pool == 0
-    ), 'total number of experiments must can be divided by num_pool'
+    assert_with_exit('algo' in configs, '`algo` must be specified in config file')
+    assert_with_exit('env_id' in configs, '`env_id` must be specified in config file')
+    if np.prod([len(v) if isinstance(v, list) else 1 for v in configs.values()]) % num_pool != 0:
+        warnings.warn(
+            'In order to maximize the use of computational resources, '
+            'total number of experiments should be evenly divided by `num_pool`'
+        )
     log_dir = os.path.join(log_dir, 'benchmark')
     eg = ExperimentGrid(exp_name=exp_name)
     for k, v in configs.items():
@@ -152,7 +170,7 @@ def evaluate(
 ):
     """Evaluate a policy which trained by OmniSafe via command line."""
     evaluator = omnisafe.Evaluator(render_mode=render_mode)
-    assert os.path.exists(result_dir), f'path{result_dir}, no torch_save directory'
+    assert_with_exit(os.path.exists(result_dir), f'path{result_dir}, no torch_save directory')
     for seed_dir in os.scandir(result_dir):
         if seed_dir.is_dir():
             models_dir = os.path.join(seed_dir.path, 'torch_save')
@@ -167,7 +185,8 @@ def evaluate(
                     )
                     if render:
                         evaluator.render(num_episodes=num_episode)
-                    evaluator.evaluate(num_episodes=num_episode)
+                    else:
+                        evaluator.evaluate(num_episodes=num_episode)
 
 
 @app.command()
@@ -180,15 +199,15 @@ def train_config(
     ),
 ):
     """Train a policy configured by .yaml file in OmniSafe via command line."""
-    assert config_path.endswith('.yaml'), 'config file must be yaml file'
+    assert_with_exit(config_path.endswith('.yaml'), 'config file must be yaml file')
     with open(config_path, encoding='utf-8') as file:
         try:
             args = yaml.load(file, Loader=yaml.FullLoader)
             assert args is not None, 'load file error'
         except yaml.YAMLError as exc:
             assert False, f'load file error: {exc}'
-    assert 'algo' in args, 'algo must be specified in config file'
-    assert 'env_id' in args, 'env_id must be specified in config file'
+    assert_with_exit('algo' in args, '`algo` must be specified in config file')
+    assert_with_exit('env_id' in args, '`env_id` must be specified in config file')
 
     args.update({'logger_cfgs': {'log_dir': os.path.join(log_dir, 'train_dict')}})
     agent = omnisafe.Agent(algo=args['algo'], env_id=args['env_id'], custom_cfgs=args)
