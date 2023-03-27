@@ -74,7 +74,7 @@ class OfflineDataCollector:
         self._obs_space = self._env.observation_space
         self._action_space = self._env.action_space
 
-        self._env = ActionScale(self._env, -1, 1)
+        self._env = ActionScale(self._env, device=torch.device('cpu'), high=1.0, low=-1.0)
 
         if not isinstance(self._obs_space, Box):
             raise NotImplementedError('Only support Box observation space for now.')

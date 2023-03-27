@@ -20,7 +20,7 @@ import torch
 
 from omnisafe.common.logger import Logger
 from omnisafe.envs.core import make, support_envs
-from omnisafe.envs.wrapper import TimeLimit
+from omnisafe.envs.wrapper import ActionScale, TimeLimit
 from omnisafe.models.base import Actor
 from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils.config import Config
@@ -39,14 +39,14 @@ class OfflineAdapter:
 
         self._env_id = env_id
         self._env = make(env_id, num_envs=1)
-
-        if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, 1000)
-
-        self._env.set_seed(seed)
-
         self._cfgs = cfgs
         self._device = cfgs.train_cfgs.device
+
+        if self._env.need_time_limit_wrapper:
+            self._env = TimeLimit(self._env, 1000, device=self._device)
+        self._env = ActionScale(self._env, device=self._device, high=1.0, low=-1.0)
+
+        self._env.set_seed(seed)
 
     @property
     def action_space(self) -> OmnisafeSpace:
