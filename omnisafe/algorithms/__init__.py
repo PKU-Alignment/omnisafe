@@ -24,7 +24,7 @@ from omnisafe.algorithms.base_algo import BaseAlgo
 from omnisafe.algorithms.off_policy import DDPG, SAC, TD3, DDPGLag, SACLag, TD3Lag
 
 # Offline Safe
-from omnisafe.algorithms.offline import VAEBC
+from omnisafe.algorithms.offline import BCQ, VAEBC
 
 # On-Policy Safe
 from omnisafe.algorithms.on_policy import (

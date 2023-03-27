@@ -14,7 +14,8 @@
 # ==============================================================================
 """Offline algorithms."""
 
+from omnisafe.algorithms.offline.bcq import BCQ
 from omnisafe.algorithms.offline.vae_bc import VAEBC
 
 
-__all__ = ['VAEBC']
+__all__ = ['BCQ', 'VAEBC']

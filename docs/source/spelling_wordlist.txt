@@ -454,4 +454,5 @@ ReLU
 Softplus
 npz
 VAE
+vae
 BCQ
