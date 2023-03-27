@@ -67,7 +67,7 @@ Customize Configuration
         <script async id="asciicast-qCptIXhxYB2MWEytijrriVhUm" src="https://asciinema.org/a/qCptIXhxYB2MWEytijrriVhUm.js"></script>
 
 .. hint::
-    The above command will generate a configuration file ``train_config.yaml`` in the ``saved_source`` directory. We have provided an example showingthe file layer of the configuration file. You can customize the configuration of the algorithm in this file.
+    The above command will generate a configuration file ``train_config.yaml`` in the ``saved_source`` directory. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the algorithm in this file.
 
 Run Benchmark
 -------------
