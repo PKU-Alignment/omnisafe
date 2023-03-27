@@ -42,7 +42,7 @@
         "wandb_project": "omnisafe",
         "use_tensorboard": true,
         "save_model_freq": 100,
-        "log_dir": "/home/borong/code/pr_typer_3_16/omnisafe/benchmark/test_statistics_tools/SafetyAntVelocity-v4:::763a242578801da3979d68673a8eb89474ab4570fe6d3fa9a686117f63020872/",
+        "log_dir": "",
         "window_lens": 100
     },
     "model_cfgs": {
@@ -82,7 +82,7 @@
             "vector_env_nums": 2
         },
         "logger_cfgs": {
-            "log_dir": "/home/borong/code/pr_typer_3_16/omnisafe/benchmark/test_statistics_tools/SafetyAntVelocity-v4:::763a242578801da3979d68673a8eb89474ab4570fe6d3fa9a686117f63020872/"
+            "log_dir": ""
         }
     },
     "exp_name": "NaturalPG-{SafetyAntVelocity-v4}",
