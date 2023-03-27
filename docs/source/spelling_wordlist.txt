@@ -382,3 +382,9 @@ PolicyRatio
 StopIters
 Eq
 eq
+dataframe
+plt
+logdir
+logdirs
+xaxis
+autocompletes

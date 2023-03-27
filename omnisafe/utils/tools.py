@@ -14,12 +14,16 @@
 # ==============================================================================
 """tool_function_packages"""
 
+import hashlib
+import json
 import os
 import random
+import sys
 
 import numpy as np
 import torch
 import yaml
+from rich.console import Console
 
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
@@ -185,7 +189,44 @@ def recursive_check_config(config, default_config, exclude_keys=()):
             raise KeyError(f'Invalid key: {key}')
         if isinstance(config[key], dict):
             recursive_check_config(config[key], default_config[key])
-        elif isinstance(config[key], list):
-            for item in config[key]:
-                if isinstance(item, dict):
-                    recursive_check_config(item, default_config[key][0])
+
+
+def assert_with_exit(condition, msg):
+    '''Assert with message.'''
+    try:
+        assert condition
+    except AssertionError:
+        console = Console()
+        console.print('ERROR: ' + msg, style='bold red')
+        sys.exit(1)
+
+
+def recursive_dict2json(dict_obj):
+    """This function is used to recursively convert the dict to json."""
+    assert isinstance(dict_obj, dict), 'Input must be a dict.'
+    flat_dict = {}
+
+    def _flatten_dict(dict_obj, path=''):
+        if isinstance(dict_obj, dict):
+            for key, value in dict_obj.items():
+                _flatten_dict(value, path + key + ':')
+        else:
+            flat_dict[path[:-1]] = dict_obj
+
+    _flatten_dict(dict_obj)
+    flat_dict_str = json.dumps(flat_dict, sort_keys=True).replace('"', "'")
+
+    return flat_dict_str
+
+
+def hash_string(string):
+    """This function is used to generate the folder name."""
+    # salt
+    salt = b'\xf8\x99/\xe4\xe6J\xd8d\x1a\x9b\x8b\x98\xa2\x1d\xff3*^\\\xb1\xc1:e\x11M=PW\x03\xa5\\h'
+    # convert string to bytes and add salt
+    salted_string = salt + string.encode('utf-8')
+    # use sha256 to hash
+    hash_object = hashlib.sha256(salted_string)
+    # get the hex digest
+    folder_name = hash_object.hexdigest()
+    return folder_name

@@ -28,9 +28,9 @@
 
 --------------------------------------------------------------------------------
 
-**This library is currently under heavy development - if you have suggestions on the API or use-cases you'd like to be covered, please open an github issue or reach out. We'd love to hear about how you're using the library.**
+**This library is currently under heavy development - if you have suggestions on the API or use-cases you'd like to be covered, please open a GitHub issue or reach out. We'd love to hear about how you're using the library.**
 
-OmniSafe is an infrastructural framework designed to accelerate safe reinforcement learning (RL) research by providing a comprehensive and reliable benchmark for safe RL algorithms. The field of RL has great potential to benefit society, but safety concerns are a significant issue, and RL algorithms have raised concerns about unintended harm or unsafe behavior. The intention of safe RL is to develop algorithms that minimize the risk of unintended harm or unsafe behavior, but there is currently a lack of commonly recognized safe RL algorithm benchmarks.
+OmniSafe is an infrastructural framework designed to accelerate safe reinforcement learning (RL) research by providing a comprehensive and reliable benchmark for safe RL algorithms. The field of RL has great potential to benefit society, but safety concerns are a significant issue, and RL algorithms have raised concerns about unintended harm or unsafe behavior. Safe RL intends to develop algorithms that minimize the risk of unintended harm or unsafe behavior, but there is currently a lack of commonly recognized safe RL algorithm benchmarks.
 
 OmniSafe addresses these issues by providing more than 40 experimentally validated algorithms and a sound and efficient simulation environment. Researchers can use OmniSafe to conduct experiments and verify their ideas, ensuring consistency and enabling more efficient development of safe RL algorithms. By using OmniSafe as a benchmark, researchers can evaluate the performance of their own safe RL algorithms and contribute to the advancement of safe RL research.
 
@@ -151,7 +151,7 @@ pip install -e .
 ```
 
 #### Install from PyPI
-OmniSafe is hosted in [![PyPI](https://img.shields.io/pypi/v/omnisafe?label=pypi&logo=pypi)](https://pypi.org/project/torchopt) / ![Status](https://img.shields.io/pypi/status/omnisafe?label=status).
+OmniSafe is hosted in [![PyPI](https://img.shields.io/pypi/v/omnisafe?label=pypi&logo=pypi)](https://pypi.org/project/omnisafe) / ![Status](https://img.shields.io/pypi/status/omnisafe?label=status).
 ```bash
 pip install omnisafe
 ```
@@ -164,32 +164,6 @@ cd examples
 python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 ```
 
-#### Try with CLI
-
-**A video example**
-
-![Segmentfault](./images/CLI_example.svg)
-
-```bash
-pip install omnisafe
-
-omnisafe --help # Ask for help
-
-omnisafe benchmark --help # The benchmark also can be replaced with 'eval', 'train', 'train-config'
-
-# Quick benchmarking for your research, just specify: 1.exp_name, 2.num_pool(how much processes are concurrent), 3.path of the config file(refer to omnisafe/examples/benchmarks for format)
-omnisafe benchmark test_benchmark 2 "./saved_source/benchmark_config.yaml"
-
-# Quick evaluating and rendering your trained policy, just specify: 1.path of algorithm which you trained
-omnisafe eval ./saved_source/PPO-{SafetyPointGoal1-v0} "--num-episode" "1"
-
-# Quick training some algorithms to validate your thoughts
-# Note: use `key1:key2`, your can select key of hyperparameters which are recursively contained, and use `--custom-cfgs`, you can add custom cfgs via CLI
-omnisafe train --algo PPO --total-steps 1024 --vector-env-nums 1 --custom-cfgs algo_cfgs:update_cycle --custom-cfgs 512
-
-# Quick training some algorithms via a saved config file, the format is as same as default format
-omnisafe train-config "./saved_source/train_config.yaml"
-```
 
 **algo:**
 | Type              | Name                                                             |
@@ -246,11 +220,40 @@ More information about environments, please refer to [Safety Gymnasium](https://
 
 **parallel:** `Number of parallels`
 
+
+#### Try with CLI
+
+**A video example**
+
+![Segmentfault](./images/CLI_example.svg)
+
+```bash
+pip install omnisafe
+
+omnisafe --help # Ask for help
+
+omnisafe benchmark --help # The benchmark also can be replaced with 'eval', 'train', 'train-config'
+
+# Quick benchmarking for your research, just specify: 1.exp_name, 2.num_pool(how much processes are concurrent), 3.path of the config file(refer to omnisafe/examples/benchmarks for format)
+omnisafe benchmark test_benchmark 2 ./saved_source/benchmark_config.yaml
+
+# Quick evaluating and rendering your trained policy, just specify: 1.path of algorithm which you trained
+omnisafe eval ./saved_source/PPO-{SafetyPointGoal1-v0} --num-episode 1
+
+# Quick training some algorithms to validate your thoughts
+# Note: use `key1:key2`, your can select key of hyperparameters which are recursively contained, and use `--custom-cfgs`, you can add custom cfgs via CLI
+omnisafe train --algo PPO --total-steps 1024 --vector-env-nums 1 --custom-cfgs algo_cfgs:update_cycle --custom-cfgs 512
+
+# Quick training some algorithms via a saved config file, the format is as same as default format
+omnisafe train-config ./saved_source/train_config.yaml
+```
+
+
 --------------------------------------------------------------------------------
 
 ## Getting Started
 #### Important Hints
-- `train_cfgs:torch_threads` is especialy important for trainning speed, and is varying with users' machine, this value shouldn't be too small or too large.
+- `train_cfgs:torch_threads` is especially important for training speed, and is varying with users' machine, this value shouldn't be too small or too large.
 ### 1. Run Agent from preset yaml file
 
 ```python
@@ -286,7 +289,7 @@ agent.learn()
 
 ### 3. Run Agent from custom terminal config
 
-You can also run agent from custom terminal config. You can set any config in corresponding yaml file.
+You can also run agent from a custom terminal config. You can set any config in a corresponding yaml file.
 
 For example, you can run `PPOLag` agent on `SafetyPointGoal1-v0` environment with `total_steps=1024000`, `vector_env_nums=1` and `parallel=1` by:
 
@@ -321,7 +324,7 @@ See [CHANGELOG.md](https://github.com/PKU-MARL/omnisafe/blob/main/CHANGELOG.md).
 
 ## The OmniSafe Team
 
-OmniSafe is mainly developed by the SafeRL research team directed by Prof. [Yaodong Yang](https://github.com/orgs/PKU-MARL/people/PKU-YYang). Our SafeRL research team members include: [Borong Zhang](https://github.com/muchvo), [Jiayi Zhou](https://github.com/Gaiejj), [JTao Dai](https://github.com/calico-1226), [Weidong Huang](https://github.com/hdadong), [Ruiyang Sun](https://github.com/rockmagma02) ,[Xuehai Pan](https://github.com/XuehaiPan), [Jiaming Ji](https://github.com/zmsn-2077). If you have any question in the process of using omnisafe, don't hesitate to ask your question in [the GitHub issue page](https://github.com/PKU-MARL/omnisafe/issues/new/choose), we will reply you in 2-3 working days.
+OmniSafe is mainly developed by the SafeRL research team directed by Prof. [Yaodong Yang](https://github.com/orgs/PKU-MARL/people/PKU-YYang). Our SafeRL research team members include [Borong Zhang](https://github.com/muchvo), [Jiayi Zhou](https://github.com/Gaiejj), [JTao Dai](https://github.com/calico-1226), [Weidong Huang](https://github.com/hdadong), [Ruiyang Sun](https://github.com/rockmagma02), [Xuehai Pan](https://github.com/XuehaiPan) and [Jiaming Ji](https://github.com/zmsn-2077). If you have any questions in the process of using omnisafe, don't hesitate to ask your questions on [the GitHub issue page](https://github.com/PKU-MARL/omnisafe/issues/new/choose), we will reply to you in 2-3 working days.
 
 ## License
 

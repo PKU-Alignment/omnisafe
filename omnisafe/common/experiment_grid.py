@@ -29,7 +29,13 @@ from tqdm import trange
 
 from omnisafe.algorithms import ALGORITHM2TYPE
 from omnisafe.utils.exp_grid_tools import all_bools, valid_str
-from omnisafe.utils.tools import load_yaml, recursive_check_config
+from omnisafe.utils.tools import (
+    assert_with_exit,
+    hash_string,
+    load_yaml,
+    recursive_check_config,
+    recursive_dict2json,
+)
 
 
 # pylint: disable-next=too-many-instance-attributes
@@ -310,7 +316,19 @@ class ExperimentGrid:
         to the args for call_experiment. However, ``seed`` is omitted because
         we presume the user may add it as a parameter in the grid.
         """
-
+        if parent_dir is None:
+            self.log_dir = os.path.join('./', 'exp-x', self.name)
+        else:
+            self.log_dir = os.path.join(parent_dir, self.name)
+        assert_with_exit(
+            not os.path.exists(self.log_dir),
+            (
+                f'log_dir {self.log_dir} already exists!'
+                'please make sure that you are not overwriting an existing experiment,'
+                'it is important for analyzing the results of the experiment.'
+            ),
+        )
+        self.save_grid_config()
         # print info about self.
         self.print()
 
@@ -366,13 +384,14 @@ class ExperimentGrid:
                 device_id = gpu_id[idx % len(gpu_id)]
                 device = f'cuda:{device_id}'
                 var['train_cfgs'] = {'device': device}
-            exp_name = '_'.join([k + '_' + str(v) for k, v in var.items()])
-            exp_names.append(exp_name)
-            if parent_dir is None:
-                self.log_dir = os.path.join('./', 'exp-x', self.name, exp_name, '')
-            else:
-                self.log_dir = os.path.join(parent_dir, self.name, exp_name, '')
-            var['logger_cfgs'] = {'log_dir': self.log_dir}
+            no_seed_var = deepcopy(var)
+            no_seed_var.pop('seed', None)
+            exp_name = recursive_dict2json(no_seed_var)
+            hashed_exp_name = var['env_id'][:30] + '---' + hash_string(exp_name)
+            exp_names.append(':'.join((hashed_exp_name[:5], exp_name)))
+            exp_log_dir = os.path.join(self.log_dir, hashed_exp_name, '')
+            var['logger_cfgs'] = {'log_dir': exp_log_dir}
+            self.save_same_exps_config(exp_log_dir, var)
             results.append(pool.submit(thunk, idx, var['algo'], var['env_id'], var))
         pool.shutdown()
 
@@ -381,7 +400,7 @@ class ExperimentGrid:
 
     def save_results(self, exp_names, variants, results):
         """Save results to a file."""
-        path = os.path.join(self.log_dir, '..', 'exp-x-results.txt')
+        path = os.path.join(self.log_dir, 'exp-x-results.txt')
         str_len = max(len(exp_name) for exp_name in exp_names)
         exp_names = [exp_name.ljust(str_len) for exp_name in exp_names]
         with open(path, 'a+', encoding='utf-8') as f:
@@ -392,6 +411,25 @@ class ExperimentGrid:
                 f.write('cost:' + str(round(cost, 2)) + ',')
                 f.write('ep_len:' + str(ep_len))
                 f.write('\n')
+
+    def save_same_exps_config(self, exps_log_dir, variant):
+        """Save experiment grid configurations as json."""
+        os.makedirs(exps_log_dir, exist_ok=True)
+        path = os.path.join(exps_log_dir, 'exps_config.json')
+        json_config = json.dumps(variant, indent=4)
+        with open(path, encoding='utf-8', mode='a+') as f:
+            f.write('\n' + json_config)
+
+    def save_grid_config(self):
+        """Save experiment grid configurations as json."""
+        os.makedirs(self.log_dir, exist_ok=True)
+        path = os.path.join(self.log_dir, 'grid_config.json')
+        self._console.print(
+            'Save with config of experiment grid in grid_config.json', style='yellow bold'
+        )
+        json_config = json.dumps(dict(zip(self.keys, self.vals)), indent=4)
+        with open(path, encoding='utf-8', mode='w') as f:
+            f.write(json_config)
 
     def check_variant_vaild(self, variant):
         """Check if the variant is valid."""
