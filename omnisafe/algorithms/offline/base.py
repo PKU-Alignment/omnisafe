@@ -35,6 +35,7 @@ class BaseOffline(BaseAlgo):
         super().__init__(env_id, cfgs)
 
         self._actor: Actor
+        self.epoch: int = 0
 
     def _init(self) -> None:
         self._dataset = OfflineDataset(
@@ -79,7 +80,7 @@ class BaseOffline(BaseAlgo):
             self._train(batch)
 
             if (step + 1) % self._cfgs.algo_cfgs.steps_per_epoch == 0:
-                epoch = (step + 1) // self._cfgs.algo_cfgs.steps_per_epoch
+                self.epoch = (step + 1) // self._cfgs.algo_cfgs.steps_per_epoch
                 self._logger.store(**{'Time/Update': time.time() - epoch_time})
                 evla_time = time.time()
                 self._evaluate()
@@ -89,7 +90,7 @@ class BaseOffline(BaseAlgo):
                         'Time/Evaluate': time.time() - evla_time,
                         'Time/Epoch': time.time() - epoch_time,
                         'Time/Total': time.time() - start_time,
-                        'Train/Epoch': epoch,
+                        'Train/Epoch': self.epoch,
                         'TotalSteps': step + 1,
                     }
                 )
@@ -98,7 +99,7 @@ class BaseOffline(BaseAlgo):
                 self._logger.dump_tabular()
 
                 # save model to disk
-                if (epoch + 1) % self._cfgs.logger_cfgs.save_model_freq == 0:
+                if self.epoch % self._cfgs.logger_cfgs.save_model_freq == 0:
                     self._logger.torch_save()
 
         ep_ret = self._logger.get_stats('Metrics/EpRet')[0]
