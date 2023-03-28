@@ -47,10 +47,11 @@ class QCritic(Critic):
 
         The Q critic network has two modes:
 
-        -  ``use_obs_encoder`` = ``False`` :
-            The input of the network is the concatenation of the observation and action.
-        -  ``use_obs_encoder`` = ``True`` :
-            The input of the network is the concatenation of the output of the observation encoder and action.
+        .. hint::
+            -  ``use_obs_encoder`` = ``False`` :
+                The input of the network is the concatenation of the observation and action.
+            -  ``use_obs_encoder`` = ``True`` :
+                The input of the network is the concatenation of the output of the observation encoder and action.
 
         For example, in :class:`DDPG`,
         the action is not directly concatenated with the observation,

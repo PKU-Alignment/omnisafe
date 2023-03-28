@@ -23,7 +23,13 @@ from omnisafe.utils.tools import load_yaml
 
 
 class Config(dict):
-    """Config class for storing hyperparameters."""
+    """Config class for storing hyperparameters.
+
+    OmniSafe uses a Config class to store all hyperparameters.
+    OmniSafe store hyperparameters in a yaml file and load them into a Config object.
+    Then the Config class will check the hyperparameters are valid,
+    then pass them to the algorithm class.
+    """
 
     seed: int
     device: str
@@ -105,7 +111,11 @@ class Config(dict):
 
     @staticmethod
     def dict2config(config_dict: dict) -> 'Config':
-        """Convert dictionary to Config."""
+        """Convert dictionary to Config.
+
+        Args:
+            config_dict (dict): dictionary to be converted.
+        """
         config = Config()
         for key, value in config_dict.items():
             if isinstance(value, dict):
@@ -115,7 +125,11 @@ class Config(dict):
         return config
 
     def recurisve_update(self, update_args: Dict[str, Any]) -> None:
-        """Recursively update args."""
+        """Recursively update args.
+
+        Args:
+            update_args (Dict[str, Any]): args to be updated.
+        """
         for key, value in self.items():
             if key in update_args:
                 if isinstance(update_args[key], dict):
@@ -179,21 +193,6 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
 
     This function is used to check the configs.
 
-    .. note::
-
-        For on-policy algorithms.
-
-        - pi_iters and critic_iters must be greater than 0.
-        - actor_lr and critic_lr must be greater than 0.
-        - gamma must be in [0, 1).
-        - if use_cost is False, cost_gamma must be 1.0.
-
-        For off-policy algorithms.
-
-        - actor_lr and critic_lr must be greater than 0.
-        - replay_buffer size must be greater than batch_size.
-        - update_every must be less than steps_per_epoch.
-
     Args:
         configs (dict): configs to be checked.
         algo_type (str): algorithm type.
@@ -205,7 +204,39 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
 
 
 def __check_algo_configs(configs: Config, algo_type) -> None:
-    """Check algorithm configs."""
+    r"""Check algorithm configs.
+
+
+    This function is used to check the algorithm configs.
+
+    .. note::
+
+        - ``update_iters`` must be greater than 0 and must be int.
+        - ``update_cycle`` must be greater than 0 and must be int.
+        - ``batch_size`` must be greater than 0 and must be int.
+        - ``target_kl`` must be greater than 0 and must be float.
+        - ``entropy_coeff`` must be in [0, 1] and must be float.
+        - ``gamma`` must be in [0, 1] and must be float.
+        - ``cost_gamma`` must be in [0, 1] and must be float.
+        - ``lam`` must be in [0, 1] and must be float.
+        - ``lam_c`` must be in [0, 1] and must be float.
+        - ``clip`` must be greater than 0 and must be float.
+        - ``penalty_coeff`` must be greater than 0 and must be float.
+        - ``reward_normalize`` must be bool.
+        - ``cost_normalize`` must be bool.
+        - ``obs_normalize`` must be bool.
+        - ``kl_early_stop`` must be bool.
+        - ``use_max_grad_norm`` must be bool.
+        - ``use_cost`` must be bool.
+        - ``max_grad_norm`` must be greater than 0 and must be float.
+        - ``adv_estimation_method`` must be in [``gae``, ``v-trace``, ``gae-rtg``, ``plain``].
+        - ``standardized_rew_adv`` must be bool.
+        - ``standardized_cost_adv`` must be bool.
+
+    Args:
+        configs (Config): configs to be checked.
+        algo_type (str): algorithm type.
+    """
     if algo_type == 'on-policy':
         assert (
             isinstance(configs.update_iters, int) and configs.update_iters > 0

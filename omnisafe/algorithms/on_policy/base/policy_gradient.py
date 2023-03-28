@@ -535,11 +535,11 @@ class PolicyGradient(BaseAlgo):
         .. math::
 
             L = -\mathbb{E}_{s_t \sim \rho_\theta} [
-                \sum_{t=0}^T ( \frac{\pi_\theta ^{'}(a_t|s_t)}{\pi_\theta(a_t|s_t)} )
+                \sum_{t=0}^T ( \frac{\pi^{'}_\theta(a_t|s_t)}{\pi_\theta(a_t|s_t)} )
                  A^{R}_{\pi_{\theta}}(s_t, a_t)
             ]
 
-        where :math:`\pi_\theta` is the policy network, :math:`\pi_\theta ^{'}`
+        where :math:`\pi_\theta` is the policy network, :math:`\pi^{'}_\theta`
         is the new policy network, :math:`A^{R}_{\pi_{\theta}}(s_t, a_t)` is the advantage.
 
         Args:

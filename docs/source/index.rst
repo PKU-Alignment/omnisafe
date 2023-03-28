@@ -240,19 +240,9 @@ We give an example below:
 
                     import omnisafe
 
-                    env = omnisafe.Env('SafetyPointGoal1-v0')
-
-                    agent = omnisafe.Agent('CPO', env)
+                    env_id = 'SafetyPointGoal1-v0'
+                    agent = omnisafe.Agent('CPO', env_id)
                     agent.learn()
-
-                    obs = env.reset()
-                    for i in range(1000):
-                        action, _states = agent.predict(obs, deterministic=True)
-                        obs, reward, cost, done, info = env.step(action)
-                        env.render()
-                        if done:
-                            obs = env.reset()
-                    env.close()
 
             .. tab-item:: Config dict style
 
@@ -261,41 +251,45 @@ We give an example below:
 
                     import omnisafe
 
-                    env = omnisafe.Env('SafetyPointGoal1-v0')
-
-                    custom_dict = {'epochs': 1, 'log_dir': './runs'}
-                    agent = omnisafe.Agent('CPO', env, custom_cfgs=custom_dict)
+                    env_id = 'SafetyPointGoal1-v0'
+                    custom_cfgs = {
+                        'train_cfgs': {
+                            'total_steps': 1024000,
+                            'vector_env_nums': 1,
+                            'parallel': 1,
+                        },
+                        'algo_cfgs': {
+                            'update_cycle': 2048,
+                            'update_iters': 1,
+                        },
+                        'logger_cfgs': {
+                            'use_wandb': False,
+                        },
+                    }
+                    agent = omnisafe.Agent('CPO', env_id, custom_cfgs=custom_cfgs)
                     agent.learn()
-
-                    obs = env.reset()
-                    for i in range(1000):
-                        action, _states = agent.predict(obs, deterministic=True)
-                        obs, reward, done, info = env.step(action)
-                        env.render()
-                        if done:
-                            obs = env.reset()
-                    env.close()
 
             .. tab-item:: Terminal config style
 
-                    We use ``train_on_policy.py`` as the entrance file. You can train the agent with
-                    CPO simply using ``train_on_policy.py``, with arguments about CPO and environments
+                    We use ``train_policy.py`` as the entrance file. You can train the agent with
+                    CPO simply using ``train_policy.py``, with arguments about CPO and environments
                     does the training. For example, to run CPO in SafetyPointGoal1-v0 , with
                     4 cpu cores and seed 0, you can use the following command:
 
-                    .. code-block:: guess
+                    .. code-block:: bash
                         :linenos:
 
-                        cd omnisafe/examples
-                        python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo CPO --parallel 5 --epochs 1
+                        cd examples
+                        python train_policy.py --algo CPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 
-You may not yet understand the above theory and the specific meaning of the code, but do not worry, we will make a detailed introduction later in the :doc:`../SafeRL/CPO` tutorial.
+You may not yet understand the above theory and the specific meaning of the code, but do not worry, we will make a detailed introduction later in the :doc:`../saferl/cpo` tutorial.
 
 Long-Term Support and Support History
 -------------------------------------
 
-**OmniSafe** is currently maintained by Borong Zhang , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_, `Weidong Huang <https://github.com/hdadong>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiamg Ji <https://github.com/zmsn-2077>`_.
-If you have any question in the process of using OmniSafe, of if you are willing to make a contribution to
+**OmniSafe** is mainly developed by the SafeRL research team directed by `Prof. Yaodong Yang <https://github.com/orgs/PKU-MARL/people/PKU-YYang>`_,
+Our SafeRL research team members include `Borong Zhang <https://github.com/muchvo>`_ , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiamg Ji <https://github.com/zmsn-2077>`_.
+If you have any question in the process of using OmniSafe, or if you are willing to make a contribution to
 this project, don't hesitate to ask your question in `the GitHub issue page <https://github.com/PKU-MARL/omnisafe/issues/new/choose>`_, we will reply you in 2-3 working days.
 
 ------
@@ -303,46 +297,84 @@ this project, don't hesitate to ask your question in `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: Documentation
+    :caption: Get Start
 
-    Documentation/Installation
+    start/installation
+    start/usage
 
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: Foundations
+    :caption: mathematical theory
 
-    Foundations/notations
-    Foundations/pre_know
+    foundations/notations
+    foundations/vector
+    foundations/lagrange
 
 .. toctree::
     :hidden:
     :maxdepth: 3
     :caption: Base RL Algorithm
 
-    BaseRL/TRPO
-    BaseRL/PPO
+    baserl/trpo
+    baserl/ppo
 
 .. toctree::
     :hidden:
     :maxdepth: 3
     :caption: Safe RL Algorithm
 
-    SafeRL/CPO
-    SafeRL/PCPO
-    SafeRL/FOCOPS
-    SafeRL/Lag
+    saferl/cpo
+    saferl/pcpo
+    saferl/focops
+    saferl/lag
 
 .. toctree::
     :hidden:
-    :maxdepth: 3
-    :caption: OmniSafe
+    :maxdepth: 2
+    :caption: baserl api
 
-    OmniSafe/on_policy
-    OmniSafe/first_order
-    OmniSafe/second_order
-    OmniSafe/lagrange
-    OmniSafe/penalty_function
+    baserlapi/on_policy
+
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: saferl api
+
+    saferlapi/first_order
+    saferlapi/second_order
+    saferlapi/lagrange
+    saferlapi/penalty_function
+
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: common
+
+    common/buffer
+    common/exp_grid
+    common/lagrange
+    common/normalizer
+    common/logger
+
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: Utils
+
+    utils/config
+    utils/distributed
+    utils/math
+    utils/model
+    utils/tools
+
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: Models
+
+    model/actor
+    model/critic
 
 Indices and tables
 ==================

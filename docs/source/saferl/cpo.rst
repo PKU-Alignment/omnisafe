@@ -21,7 +21,7 @@ Background
 
 **Constrained policy optimization (CPO)** is a policy search algorithm for constrained reinforcement learning with
 guarantees for near-constraint satisfaction at each iteration.
-Motivated by TRPO( :doc:`../BaseRL/TRPO`).
+Motivated by TRPO( :doc:`../baserl/trpo`).
 CPO develops surrogate functions to be good local approximations for objectives and constraints and easy to estimate using samples from current policy.
 Moreover, it provides tighter bounds for policy search using trust regions.
 
@@ -473,7 +473,7 @@ Quick start
 
         .. tab-item:: Terminal config style
 
-            We use ``train_on_policy.py`` as the entrance file. You can train the agent with CPO simply using ``train_on_policy.py``, with arguments about CPO and environments does the training.
+            We use ``train_policy.py`` as the entrance file. You can train the agent with CPO simply using ``train_policy.py``, with arguments about CPO and environments does the training.
             For example, to run CPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
 
             .. code-block:: bash

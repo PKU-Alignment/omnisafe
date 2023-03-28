@@ -1,17 +1,19 @@
-Base on-policy Algorithms
-=========================
+OmniSafe Buffer
+===============
 
-.. currentmodule:: omnisafe.algorithms.on_policy
+.. currentmodule:: omnisafe.common.buffer
 
 .. autosummary::
 
-    PolicyGradient
-    NaturalPG
-    TRPO
-    PPO
+    BaseBuffer
+    OnPolicyBuffer
+    OffPolicyBuffer
+    VectorOffPolicyBuffer
+    VectorOnPolicyBuffer
 
-Policy Gradient
----------------
+
+Base Buffer
+-----------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -20,13 +22,45 @@ Policy Gradient
     Documentation
     ^^^
 
-    .. autoclass:: PolicyGradient
+    .. autoclass:: BaseBuffer
         :members:
         :private-members:
 
         .. automethod:: __init__
 
-Natural Policy Gradient
+On Policy Buffer
+----------------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: OnPolicyBuffer
+        :members:
+        :private-members:
+
+        .. automethod:: __init__
+
+Off Policy buffer
+-----------------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: OffPolicyBuffer
+        :members:
+        :private-members:
+
+        .. automethod:: __init__
+
+Vector On Policy Buffer
 -----------------------
 
 .. card::
@@ -36,14 +70,14 @@ Natural Policy Gradient
     Documentation
     ^^^
 
-    .. autoclass:: NaturalPG
+    .. autoclass:: VectorOnPolicyBuffer
         :members:
         :private-members:
 
         .. automethod:: __init__
 
-Trust Region Policy Optimization
---------------------------------
+Vector Off Policy Buffer
+------------------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -52,23 +86,7 @@ Trust Region Policy Optimization
     Documentation
     ^^^
 
-    .. autoclass:: TRPO
-        :members:
-        :private-members:
-
-        .. automethod:: __init__
-
-Proximal Policy Optimization
-----------------------------
-
-.. card::
-    :class-header: sd-bg-success sd-text-white
-    :class-card: sd-outline-success  sd-rounded-1
-
-    Documentation
-    ^^^
-
-    .. autoclass:: PPO
+    .. autoclass:: VectorOffPolicyBuffer
         :members:
         :private-members:
 

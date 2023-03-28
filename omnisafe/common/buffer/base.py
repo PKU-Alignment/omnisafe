@@ -33,7 +33,46 @@ class BaseBuffer(ABC):
         size: int,
         device: torch.device = torch.device('cpu'),
     ):
-        """Initialize the buffer."""
+        """Initialize the buffer.
+
+        .. warning::
+            The buffer only supports Box spaces.
+
+        In  base buffer, we store the following data:
+
+        .. list-table::
+
+            *   -   Name
+                -   Shape
+                -   Dtype
+                -   Description
+            *   -   obs
+                -   (size, obs_space.shape)
+                -   torch.float32
+                -   The observation.
+            *   -   act
+                -   (size, act_space.shape)
+                -   torch.float32
+                -   The action.
+            *   -   reward
+                -   (size, )
+                -   torch.float32
+                -   Single step reward.
+            *   -   cost
+                -   (size, )
+                -   torch.float32
+                -   Single step cost.
+            *   -   done
+                -   (size, )
+                -   torch.float32
+                -   Whether the episode is done.
+
+        Args:
+            obs_space (OmnisafeSpace): The observation space.
+            act_space (OmnisafeSpace): The action space.
+            size (int): The size of the buffer.
+            device (torch.device): The device of the buffer.
+        """
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros((size, *obs_space.shape), dtype=torch.float32, device=device)
         else:
@@ -68,9 +107,32 @@ class BaseBuffer(ABC):
         return self._size
 
     def add_field(self, name: str, shape: tuple, dtype: torch.dtype):
-        """Add a field to the buffer."""
+        """Add a field to the buffer.
+
+        Example:
+            >>> buffer = BaseBuffer(...)
+            >>> buffer.add_field('new_field', (2, 3), torch.float32)
+            >>> buffer.data['new_field'].shape
+            >>> (buffer.size, 2, 3)
+
+        Args:
+            name (str): The name of the field.
+            shape (tuple): The shape of the field.
+            dtype (torch.dtype): The dtype of the field.
+        """
         self.data[name] = torch.zeros((self._size, *shape), dtype=dtype, device=self._device)
 
     @abstractmethod
     def store(self, **data: torch.Tensor):
-        """Store a transition in the buffer."""
+        """Store a transition in the buffer.
+
+        .. warning::
+            This is an abstract method.
+
+        Example:
+            >>> buffer = BaseBuffer(...)
+            >>> buffer.store(obs=obs, act=act, reward=reward, cost=cost, done=done)
+
+        Args:
+            data (torch.Tensor): The data to store.
+        """

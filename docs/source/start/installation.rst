@@ -1,8 +1,8 @@
 Installation
 ============
 
-Install OmniSafe
-----------------
+Installation Guide
+------------------
 
 You can install OmniSafe from the Python Package Index (PyPI) using pip:
 
@@ -21,6 +21,9 @@ You can also install OmniSafe from source:
     $ conda create -n omnisafe python=3.8
     $ conda activate omnisafe
     $ pip install -e .
+
+Installation Video
+------------------
 
 Here we provide a video tutorial for installing OmniSafe on Ubuntu.
 
