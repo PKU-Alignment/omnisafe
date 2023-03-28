@@ -361,6 +361,11 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         """Return the current epoch."""
         return self._epoch
 
+    @property
+    def log_dir(self) -> str:
+        """Return the log directory."""
+        return self._log_dir
+
     def close(self) -> None:
         """Close the logger."""
         if self._maste_proc:

@@ -204,7 +204,7 @@ class StatisticsTools:
             paths = {}
             for path_dict in graph:
                 exp_name = (
-                    path_dict['env_id'][:30] + ':::' + hash_string(recursive_dict2json(path_dict))
+                    path_dict['env_id'][:30] + '---' + hash_string(recursive_dict2json(path_dict))
                 )
                 path = os.path.join(self.exp_dir, exp_name)
                 self.path_map_img_name[path] = img_name_cfgs

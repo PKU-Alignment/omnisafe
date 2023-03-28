@@ -87,6 +87,33 @@ def test_on_policy(algo):
     agent.learn()
 
 
+@helpers.parametrize(algo=['PPO', 'SAC', 'PPOLag'])
+def test_workflow_for_training(algo):
+    """Test base algorithms."""
+    env_id = 'Simple-v0'
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 2048,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'update_cycle': 1024,
+            'update_iters': 2,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+    }
+    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
+
+    agent.plot(smooth=1)
+    agent.render(num_episodes=1, render_mode='rgb_array', width=1, height=1)
+    agent.evaluate(num_episodes=1)
+
+
 def test_std_anealing():
     """Test std_anealing."""
     env_id = 'Simple-v0'

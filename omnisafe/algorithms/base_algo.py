@@ -47,6 +47,18 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
 
         self._init_log()
 
+    @property
+    def logger(self):
+        """Get the logger."""
+        return self._logger  # pylint: disable=no-member
+
+    @property
+    def cost_limit(self):
+        """Get the cost limit."""
+        if hasattr(self._cfgs.algo_cfgs, '_cost_limit'):
+            return self._cfgs.algo_cfgs._cost_limit  # pylint: disable=protected-access
+        return None
+
     @abstractmethod
     def _init(self) -> None:
         """Initialize the algorithm."""
