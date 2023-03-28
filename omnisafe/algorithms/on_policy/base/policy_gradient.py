@@ -56,7 +56,10 @@ class PolicyGradient(BaseAlgo):
             >>>    self._env = CustomAdapter()
         """
         self._env = OnPolicyAdapter(
-            self._env_id, self._cfgs.train_cfgs.vector_env_nums, self._seed, self._cfgs
+            self._env_id,
+            self._cfgs.train_cfgs.vector_env_nums,
+            self._seed,
+            self._cfgs,
         )
         assert (self._cfgs.algo_cfgs.update_cycle) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
@@ -274,7 +277,7 @@ class PolicyGradient(BaseAlgo):
                     'Train/LR': 0.0
                     if self._cfgs.model_cfgs.actor.lr == 'None'
                     else self._actor_critic.actor_scheduler.get_last_lr()[0],
-                }
+                },
             )
 
             self._logger.dump_tabular()
@@ -384,7 +387,7 @@ class PolicyGradient(BaseAlgo):
                 'Train/StopIter': i + 1,  # pylint: disable=undefined-loop-variable
                 'Value/Adv': adv_r.mean().item(),
                 'Train/KL': kl,
-            }
+            },
         )
 
     def _update_reward_critic(self, obs: torch.Tensor, target_value_r: torch.Tensor) -> None:
@@ -418,7 +421,8 @@ class PolicyGradient(BaseAlgo):
 
         if self._cfgs.algo_cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.reward_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.reward_critic.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
@@ -456,7 +460,8 @@ class PolicyGradient(BaseAlgo):
 
         if self._cfgs.algo_cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.cost_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.cost_critic.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         distributed.avg_grads(self._actor_critic.cost_critic)
         self._actor_critic.cost_critic_optimizer.step()
@@ -497,7 +502,8 @@ class PolicyGradient(BaseAlgo):
         loss.backward()
         if self._cfgs.algo_cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.actor.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.actor.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         distributed.avg_grads(self._actor_critic.actor)
         self._actor_critic.actor_optimizer.step()
@@ -507,11 +513,13 @@ class PolicyGradient(BaseAlgo):
                 'Train/PolicyRatio': info['ratio'],
                 'Train/PolicyStd': info['std'],
                 'Loss/Loss_pi': loss.mean().item(),
-            }
+            },
         )
 
     def _compute_adv_surrogate(  # pylint: disable=unused-argument
-        self, adv_r: torch.Tensor, adv_c: torch.Tensor
+        self,
+        adv_r: torch.Tensor,
+        adv_c: torch.Tensor,
     ) -> torch.Tensor:
         """Compute surrogate loss.
 

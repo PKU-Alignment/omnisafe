@@ -88,7 +88,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 kwargs = json.load(file)
         except FileNotFoundError as error:
             raise FileNotFoundError(
-                'The config file is not found in the save directory.'
+                'The config file is not found in the save directory.',
             ) from error
         self._cfgs = Config.dict2config(kwargs)
 
@@ -186,7 +186,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """
         if self._env is None or self._actor is None:
             raise ValueError(
-                'The environment and the policy must be provided or created before evaluating the agent.'
+                'The environment and the policy must be provided or created before evaluating the agent.',
             )
 
         episode_rewards: list[float] = []

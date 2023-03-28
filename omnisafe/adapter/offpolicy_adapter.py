@@ -29,7 +29,11 @@ class OffPolicyAdapter(OnlineAdapter):
     """OffPolicy Adapter for OmniSafe."""
 
     def __init__(  # pylint: disable=too-many-arguments
-        self, env_id: str, num_envs: int, seed: int, cfgs: Config
+        self,
+        env_id: str,
+        num_envs: int,
+        seed: int,
+        cfgs: Config,
     ) -> None:
         super().__init__(env_id, num_envs, seed, cfgs)
 
@@ -61,7 +65,7 @@ class OffPolicyAdapter(OnlineAdapter):
         for _ in range(roll_out_step):
             if use_rand_action:
                 act = torch.as_tensor(self._env.sample_action(), dtype=torch.float32).to(
-                    self._device
+                    self._device,
                 )
             else:
                 act = agent.step(self._current_obs, deterministic=False)
@@ -105,7 +109,7 @@ class OffPolicyAdapter(OnlineAdapter):
                 'Metrics/EpRet': self._ep_ret[idx],
                 'Metrics/EpCost': self._ep_cost[idx],
                 'Metrics/EpLen': self._ep_len[idx],
-            }
+            },
         )
 
     def _reset_log(self, idx: int | None = None) -> None:

@@ -139,7 +139,10 @@ def test_actor_critic(
     )
 
     ac = ActorCritic(
-        obs_space=obs_sapce, act_space=act_space, model_cfgs=model_cfgs, epochs=10  # type: ignore
+        obs_space=obs_sapce,
+        act_space=act_space,
+        model_cfgs=model_cfgs,
+        epochs=10,
     )
     obs = torch.randn(obs_dim, dtype=torch.float32)
     act, value, logp = ac(obs)
@@ -150,7 +153,10 @@ def test_actor_critic(
     ac.annealing(5)
 
     cac = ConstraintActorCritic(
-        obs_space=obs_sapce, act_space=act_space, model_cfgs=model_cfgs, epochs=10  # type: ignore
+        obs_space=obs_sapce,
+        act_space=act_space,
+        model_cfgs=model_cfgs,
+        epochs=10,
     )
     obs = torch.randn(obs_dim, dtype=torch.float32)
     act, value_r, value_c, logp = cac(obs)

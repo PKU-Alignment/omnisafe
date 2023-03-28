@@ -111,7 +111,7 @@ class NaturalPG(PolicyGradient):
         self._logger.store(
             **{
                 'Train/KL': kl.item(),
-            }
+            },
         )
         return flat_grad_grad_kl + params * self._cfgs.algo_cfgs.cg_damping
 
@@ -174,7 +174,7 @@ class NaturalPG(PolicyGradient):
                 'Misc/xHx': xHx.item(),
                 'Misc/gradient_norm': torch.norm(grad).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
-            }
+            },
         )
 
     def _update(self) -> None:
@@ -232,5 +232,5 @@ class NaturalPG(PolicyGradient):
             **{
                 'Train/StopIter': i + 1,
                 'Value/Adv': adv_r.mean().item(),
-            }
+            },
         )

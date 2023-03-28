@@ -50,13 +50,16 @@ class TimeLimit(Wrapper):
         return super().reset(seed)
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         obs, reward, cost, terminated, truncated, info = super().step(action)
 
         self._time += 1
         truncated = torch.tensor(
-            self._time >= self._time_limit, dtype=torch.bool, device=self._device
+            self._time >= self._time_limit,
+            dtype=torch.bool,
+            device=self._device,
         )
 
         return obs, reward, cost, terminated, truncated, info
@@ -76,7 +79,8 @@ class AutoReset(Wrapper):
         assert self.num_envs == 1, 'AutoReset only supports single environment'
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         obs, reward, cost, terminated, truncated, info = super().step(action)
 
@@ -117,7 +121,8 @@ class ObsNormalize(Wrapper):
             self._obs_normalizer = Normalizer(self.observation_space.shape, clip=5).to(self._device)
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         obs, reward, cost, terminated, truncated, info = super().step(action)
         if 'final_observation' in info:
@@ -125,7 +130,7 @@ class ObsNormalize(Wrapper):
             info['final_observation'] = info['final_observation'].to(self._device)
             info['original_final_observation'] = info['final_observation']
             info['final_observation'][final_obs_slice] = self._obs_normalizer.normalize(
-                info['final_observation'][final_obs_slice]
+                info['final_observation'][final_obs_slice],
             )
         info['original_obs'] = obs
         obs = self._obs_normalizer.normalize(obs)
@@ -169,7 +174,8 @@ class RewardNormalize(Wrapper):
             self._reward_normalizer = Normalizer((), clip=5).to(self._device)
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         obs, reward, cost, terminated, truncated, info = super().step(action)
         info['original_reward'] = reward
@@ -206,7 +212,8 @@ class CostNormalize(Wrapper):
             self._cost_normalizer = Normalizer((), clip=5).to(self._device)
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         obs, reward, cost, terminated, truncated, info = super().step(action)
         info['original_cost'] = cost
@@ -246,10 +253,14 @@ class ActionScale(Wrapper):
         assert isinstance(self.action_space, spaces.Box), 'Action space must be Box'
 
         self._old_min_action = torch.tensor(
-            self.action_space.low, dtype=torch.float32, device=self._device
+            self.action_space.low,
+            dtype=torch.float32,
+            device=self._device,
         )
         self._old_max_action = torch.tensor(
-            self.action_space.high, dtype=torch.float32, device=self._device
+            self.action_space.high,
+            dtype=torch.float32,
+            device=self._device,
         )
 
         min_action = np.zeros(self.action_space.shape, dtype=self.action_space.dtype) + low
@@ -265,7 +276,8 @@ class ActionScale(Wrapper):
         self._max_action = torch.tensor(max_action, dtype=torch.float32, device=self._device)
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         action = self._old_min_action + (self._old_max_action - self._old_min_action) * (
             action - self._min_action
@@ -291,12 +303,14 @@ class Unsqueeze(Wrapper):
         assert isinstance(self.observation_space, spaces.Box), 'Observation space must be Box'
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         action = action.squeeze(0)
         obs, reward, cost, terminated, truncated, info = super().step(action)
         obs, reward, cost, terminated, truncated = map(
-            lambda x: x.unsqueeze(0), (obs, reward, cost, terminated, truncated)
+            lambda x: x.unsqueeze(0),
+            (obs, reward, cost, terminated, truncated),
         )
         for k, v in info.items():
             if isinstance(v, torch.Tensor):

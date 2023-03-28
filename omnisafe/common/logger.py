@@ -113,7 +113,9 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         if self._maste_proc:
             os.makedirs(self._log_dir, exist_ok=True)
             self._output_file = open(  # pylint: disable=consider-using-with
-                os.path.join(self._log_dir, output_fname), encoding='utf-8', mode='w'
+                os.path.join(self._log_dir, output_fname),
+                encoding='utf-8',
+                mode='w',
             )
             atexit.register(self._output_file.close)
             self.log(f'Logging data to {self._output_file.name}', 'cyan', bold=True)
@@ -349,12 +351,13 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         if min_and_max:
             mean, std, min_val, max_val = dist_statistics_scalar(
-                torch.tensor(vals), with_min_and_max=True
+                torch.tensor(vals),
+                with_min_and_max=True,
             )
             return mean.item(), min_val.item(), max_val.item(), std.item()
 
         mean, std = dist_statistics_scalar(  # pylint: disable=unbalanced-tuple-unpacking
-            torch.tensor(vals)
+            torch.tensor(vals),
         )
         return (mean.item(),)
 

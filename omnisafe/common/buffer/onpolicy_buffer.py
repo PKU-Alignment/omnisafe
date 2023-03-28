@@ -189,10 +189,14 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         rewards -= self._penalty_coefficient * costs
 
         adv_r, target_value_r = self._calculate_adv_and_value_targets(
-            values_r, rewards, lam=self._lam
+            values_r,
+            rewards,
+            lam=self._lam,
         )
         adv_c, target_value_c = self._calculate_adv_and_value_targets(
-            values_c, costs, lam=self._lam_c
+            values_c,
+            costs,
+            lam=self._lam_c,
         )
 
         self.data['adv_r'][path_slice] = adv_r
@@ -376,10 +380,12 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         # pylint: disable-next=assignment-from-no-return
         rhos = torch.div(policy_action_probs, behavior_action_probs)
         clip_rhos = torch.min(
-            rhos, torch.as_tensor(rho_bar)
+            rhos,
+            torch.as_tensor(rho_bar),
         )  # pylint: disable=assignment-from-no-return
         clip_cs = torch.min(
-            rhos, torch.as_tensor(c_bar)
+            rhos,
+            torch.as_tensor(c_bar),
         )  # pylint: disable=assignment-from-no-return
         v_s = values[:-1].clone()  # copy all values except bootstrap value
         last_v_s = values[-1]  # bootstrap from last state

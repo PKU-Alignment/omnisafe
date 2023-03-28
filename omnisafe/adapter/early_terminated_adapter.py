@@ -34,7 +34,8 @@ class EarlyTerminatedAdapter(OnPolicyAdapter):
         self._cost_logger = torch.zeros(self._env.num_envs)
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         next_obs, reward, cost, terminated, truncated, info = super().step(action)
 

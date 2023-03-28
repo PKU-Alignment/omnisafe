@@ -58,11 +58,13 @@ def test_off_policy(algo):
 
 
 @helpers.parametrize(
-    algo=base_policy
-    + naive_lagrange_policy
-    + first_order_policy
-    + second_order_policy
-    + penalty_policy
+    algo=(
+        base_policy
+        + naive_lagrange_policy
+        + first_order_policy
+        + second_order_policy
+        + penalty_policy
+    ),
 )
 def test_on_policy(algo):
     """Test base algorithms."""

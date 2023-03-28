@@ -102,7 +102,11 @@ def test_math():
 
 
 def train(
-    exp_id: str, algo: str, env_id: str, custom_cfgs: Config, num_threads: int = 6
+    exp_id: str,
+    algo: str,
+    env_id: str,
+    custom_cfgs: Config,
+    num_threads: int = 6,
 ) -> tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
     Args:
@@ -144,7 +148,7 @@ def test_train(
 
 
 @helpers.parametrize(
-    init_function=['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal']
+    init_function=['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal'],
 )
 def test_initalize(init_function: InitFunction):
     """Test initialize."""

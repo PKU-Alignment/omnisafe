@@ -152,5 +152,5 @@ class PCPO(CPO):
                 'Misc/q': q.item(),
                 'Misc/r': r.item(),
                 'Misc/s': s.item(),
-            }
+            },
         )

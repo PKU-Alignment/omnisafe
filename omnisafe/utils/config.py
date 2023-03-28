@@ -264,7 +264,8 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
         assert isinstance(configs.use_max_grad_norm, bool), 'use_max_grad_norm must be bool'
         assert isinstance(configs.use_critic_norm, bool), 'use_critic_norm must be bool'
         assert isinstance(configs.max_grad_norm, float) and isinstance(
-            configs.critic_norm_coef, float
+            configs.critic_norm_coef,
+            float,
         ), 'norm must be bool'
         assert (
             isinstance(configs.gamma, float) and configs.gamma >= 0.0 and configs.gamma <= 1.0
@@ -291,7 +292,8 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
             'plain',
         ], "adv_estimation_method must be string, and it values must be ['gae','gae-rtg','vtrace','plain']"
         assert isinstance(configs.standardized_rew_adv, bool) and isinstance(
-            configs.standardized_cost_adv, bool
+            configs.standardized_cost_adv,
+            bool,
         ), 'standardized_<>_adv must be bool'
         assert (
             isinstance(configs.penalty_coef, float)
@@ -305,10 +307,12 @@ def __check_logger_configs(configs: Config, algo_type) -> None:
     """Check logger configs."""
     if algo_type == 'on-policy':
         assert isinstance(configs.use_wandb, bool) and isinstance(
-            configs.wandb_project, str
+            configs.wandb_project,
+            str,
         ), 'use_wandb and wandb_project must be bool and string'
         assert isinstance(configs.use_tensorboard, bool), 'use_tensorboard must be bool'
         assert isinstance(configs.save_model_freq, int) and isinstance(
-            configs.window_lens, int
+            configs.window_lens,
+            int,
         ), 'save_model_freq and window_lens must be int'
         assert isinstance(configs.log_dir, str), 'log_dir must be string'

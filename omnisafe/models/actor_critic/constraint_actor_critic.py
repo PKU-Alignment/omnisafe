@@ -77,7 +77,8 @@ class ConstraintActorCritic(ActorCritic):
 
         if model_cfgs.critic.lr != 'None':
             self.cost_critic_optimizer = optim.Adam(
-                self.cost_critic.parameters(), lr=model_cfgs.critic.lr
+                self.cost_critic.parameters(),
+                lr=model_cfgs.critic.lr,
             )
 
     def step(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:

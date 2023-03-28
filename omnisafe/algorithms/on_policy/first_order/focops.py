@@ -64,7 +64,11 @@ class FOCOPS(PolicyGradient):
         self._p_dist: Normal
 
     def _loss_pi(
-        self, obs: torch.Tensor, act: torch.Tensor, logp: torch.Tensor, adv: torch.Tensor
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        logp: torch.Tensor,
+        adv: torch.Tensor,
     ) -> tuple[torch.Tensor, dict[str, float]]:
         r"""Compute pi/actor loss.
 
@@ -167,7 +171,15 @@ class FOCOPS(PolicyGradient):
 
         dataloader = DataLoader(
             dataset=TensorDataset(
-                obs, act, logp, target_value_r, target_value_c, adv_r, adv_c, old_mean, old_std
+                obs,
+                act,
+                logp,
+                target_value_r,
+                target_value_c,
+                adv_r,
+                adv_c,
+                old_mean,
+                old_std,
             ),
             batch_size=self._cfgs.algo_cfgs.batch_size,
             shuffle=True,
@@ -212,5 +224,5 @@ class FOCOPS(PolicyGradient):
                 'Value/Adv': adv_r.mean().item(),
                 'Train/KL': kl,
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier,
-            }
+            },
         )

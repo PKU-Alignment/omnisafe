@@ -64,7 +64,8 @@ class StatisticsTools:
             'cannot find directory which is initialized by experiment grid via grid_config.json',
         )
         assert_with_exit(
-            len(grid_config_dirs) == 1, 'there should be only one experiment grid directory'
+            len(grid_config_dirs) == 1,
+            'there should be only one experiment grid directory',
         )
 
         # load the config file of experiment grid
@@ -73,11 +74,15 @@ class StatisticsTools:
                 self.grid_config = json.load(file)
         except FileNotFoundError as error:
             raise FileNotFoundError(
-                'The config file is not found in the save directory.'
+                'The config file is not found in the save directory.',
             ) from error
 
     def draw_graph(
-        self, parameter: str, values: list = None, compare_num: int = None, cost_limit: float = None
+        self,
+        parameter: str,
+        values: list = None,
+        compare_num: int = None,
+        cost_limit: float = None,
     ):
         """Draw graph.
 
@@ -92,7 +97,8 @@ class StatisticsTools:
         """
         # check whether operation is valid
         assert_with_exit(
-            not (values and compare_num), 'values and compare_num cannot be set at the same time'
+            not (values and compare_num),
+            'values and compare_num cannot be set at the same time',
         )
         assert_with_exit(hasattr(self, 'grid_config'), 'please load source first')
         assert_with_exit(
@@ -145,7 +151,7 @@ class StatisticsTools:
                 )
             except RuntimeError:
                 print(
-                    f'Cannot generate graph for {save_name[:5] + str(decompressed_img_name_cfgs)}'
+                    f'Cannot generate graph for {save_name[:5] + str(decompressed_img_name_cfgs)}',
                 )
 
     def make_config_groups(self, parameter, parameter_values: list, values: list, compare_num: int):
@@ -197,7 +203,7 @@ class StatisticsTools:
                     (
                         img_name_cfgs,
                         self.variants(list(group_config.keys()), list(group_config.values())),
-                    )
+                    ),
                 )
 
         graph_paths = []
@@ -313,7 +319,8 @@ class StatisticsTools:
                     splits = key.split(':')
                     k_0 = splits[0]
                     assert k_0 not in new_var or isinstance(
-                        new_var[k_0], dict
+                        new_var[k_0],
+                        dict,
                     ), "You can't assign multiple values to the same key."
 
                     if k_0 not in new_var:

@@ -105,7 +105,9 @@ def build_mlp_network(
 
 
 def set_optimizer(
-    opt: str, module: nn.Module | list[nn.Parameter], learning_rate: float
+    opt: str,
+    module: nn.Module | list[nn.Parameter],
+    learning_rate: float,
 ) -> torch.optim.Optimizer:
     """Returns an initialized optimizer from PyTorch.
 

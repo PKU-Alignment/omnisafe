@@ -86,7 +86,8 @@ class ActorQCritic(nn.Module):
 
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
         self.reward_critic_optimizer = optim.Adam(
-            self.reward_critic.parameters(), lr=model_cfgs.critic.lr
+            self.reward_critic.parameters(),
+            lr=model_cfgs.critic.lr,
         )
 
         self.actor_scheduler: _LRScheduler
@@ -100,7 +101,10 @@ class ActorQCritic(nn.Module):
             )
         else:
             self.actor_scheduler = ConstantLR(
-                self.actor_optimizer, factor=1.0, total_iters=epochs, verbose=True
+                self.actor_optimizer,
+                factor=1.0,
+                total_iters=epochs,
+                verbose=True,
             )
 
     def step(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
@@ -136,7 +140,8 @@ class ActorQCritic(nn.Module):
             tau: The polyak averaging factor.
         """
         for param, target_param in zip(
-            self.reward_critic.parameters(), self.target_reward_critic.parameters()
+            self.reward_critic.parameters(),
+            self.target_reward_critic.parameters(),
         ):
             target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
         for param, target_param in zip(self.actor.parameters(), self.target_actor.parameters()):

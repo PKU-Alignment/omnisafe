@@ -79,7 +79,10 @@ def safe_inverse(var_q: torch.Tensor, det: torch.Tensor) -> torch.Tensor:
 
 
 def gaussian_kl(
-    mean_p: torch.Tensor, mean_q: torch.Tensor, var_p: torch.Tensor, var_q: torch.Tensor
+    mean_p: torch.Tensor,
+    mean_q: torch.Tensor,
+    var_p: torch.Tensor,
+    var_q: torch.Tensor,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     r"""Decoupled KL between two gaussian distribution.
 

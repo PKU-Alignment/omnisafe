@@ -26,7 +26,10 @@ from omnisafe.typing import NamedTuple, Tuple
 
 
 def train(
-    exp_id: str, algo: str, env_id: str, custom_cfgs: NamedTuple
+    exp_id: str,
+    algo: str,
+    env_id: str,
+    custom_cfgs: NamedTuple,
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
 

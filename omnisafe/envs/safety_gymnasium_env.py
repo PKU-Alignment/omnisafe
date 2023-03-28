@@ -77,7 +77,11 @@ class SafetyGymnasiumEnv(CMDP):
     need_time_limit_wrapper = False
 
     def __init__(
-        self, env_id: str, num_envs: int = 1, device: torch.device = torch.device('cpu'), **kwargs
+        self,
+        env_id: str,
+        num_envs: int = 1,
+        device: torch.device = torch.device('cpu'),
+        **kwargs,
     ) -> None:
         super().__init__(env_id)
         if num_envs > 1:
@@ -94,10 +98,11 @@ class SafetyGymnasiumEnv(CMDP):
         self._device = device
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         obs, reward, cost, terminated, truncated, info = self._env.step(
-            action.detach().cpu().numpy()
+            action.detach().cpu().numpy(),
         )
         obs, reward, cost, terminated, truncated = map(
             lambda x: torch.as_tensor(x, dtype=torch.float32, device=self._device),
@@ -108,10 +113,12 @@ class SafetyGymnasiumEnv(CMDP):
                 [
                     array if array is not None else np.zeros(obs.shape[-1])
                     for array in info['final_observation']
-                ]
+                ],
             )
             info['final_observation'] = torch.as_tensor(
-                info['final_observation'], dtype=torch.float32, device=self._device
+                info['final_observation'],
+                dtype=torch.float32,
+                device=self._device,
             )
 
         return obs, reward, cost, terminated, truncated, info
@@ -125,7 +132,9 @@ class SafetyGymnasiumEnv(CMDP):
 
     def sample_action(self) -> torch.Tensor:
         return torch.as_tensor(
-            self._env.action_space.sample(), dtype=torch.float32, device=self._device
+            self._env.action_space.sample(),
+            dtype=torch.float32,
+            device=self._device,
         )
 
     def render(self) -> Any:

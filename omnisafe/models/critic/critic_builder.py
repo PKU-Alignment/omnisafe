@@ -100,5 +100,5 @@ class CriticBuilder:
 
         raise NotImplementedError(
             f'critic_type "{critic_type}" is not implemented.'
-            'Available critic types are: "q", "v".'
+            'Available critic types are: "q", "v".',
         )

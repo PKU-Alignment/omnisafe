@@ -97,7 +97,7 @@ class AlgoWrapper:
         exp_name = f'{self.algo}-{{{self.env_id}}}'
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id, 'algo': self.algo})
         cfgs.train_cfgs.recurisve_update(
-            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle}
+            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle},
         )
         return cfgs
 

@@ -84,7 +84,8 @@ class ActorCritic(nn.Module):
             self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
         if model_cfgs.critic.lr != 'None':
             self.reward_critic_optimizer = optim.Adam(
-                self.reward_critic.parameters(), lr=model_cfgs.critic.lr
+                self.reward_critic.parameters(),
+                lr=model_cfgs.critic.lr,
             )
         if model_cfgs.actor.lr != 'None':
             self.actor_scheduler: _LRScheduler
@@ -98,7 +99,10 @@ class ActorCritic(nn.Module):
                 )
             else:
                 self.actor_scheduler = ConstantLR(
-                    self.actor_optimizer, factor=1.0, total_iters=epochs, verbose=True
+                    self.actor_optimizer,
+                    factor=1.0,
+                    total_iters=epochs,
+                    verbose=True,
                 )
 
             self.std_schedule: Schedule
@@ -138,10 +142,12 @@ class ActorCritic(nn.Module):
             annealing: Whether to use annealing mode.
         """
         assert isinstance(
-            self.actor, GaussianLearningActor
+            self.actor,
+            GaussianLearningActor,
         ), 'Only GaussianLearningActor support annealing.'
         self.std_schedule = PiecewiseSchedule(
-            endpoints=list(zip(epochs, std)), outside_value=std[-1]
+            endpoints=list(zip(epochs, std)),
+            outside_value=std[-1],
         )
 
     def annealing(self, epoch: int) -> None:
@@ -151,6 +157,7 @@ class ActorCritic(nn.Module):
             epoch: The current epoch.
         """
         assert isinstance(
-            self.actor, GaussianLearningActor
+            self.actor,
+            GaussianLearningActor,
         ), 'Only GaussianLearningActor support annealing.'
         self.actor.std = self.std_schedule.value(epoch)

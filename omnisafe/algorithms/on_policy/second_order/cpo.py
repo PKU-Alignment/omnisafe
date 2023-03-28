@@ -137,7 +137,7 @@ class CPO(TRPO):
             loss_reward_improve = distributed.dist_avg(loss_reward_improve)
             loss_cost_diff = distributed.dist_avg(loss_cost_diff)
             self._logger.log(
-                f'Expected Improvement: {expected_reward_improve} Actual: {loss_reward_improve}'
+                f'Expected Improvement: {expected_reward_improve} Actual: {loss_reward_improve}',
             )
             # check whether there are nan.
             if not torch.isfinite(loss_reward) and not torch.isfinite(loss_cost):
@@ -168,7 +168,7 @@ class CPO(TRPO):
         self._logger.store(
             **{
                 'Train/KL': kl,
-            }
+            },
         )
 
         set_param_values_to_model(self._actor_critic.actor, theta_old)
@@ -377,5 +377,5 @@ class CPO(TRPO):
                 'Misc/q': q.item(),
                 'Misc/r': r.item(),
                 'Misc/s': s.item(),
-            }
+            },
         )

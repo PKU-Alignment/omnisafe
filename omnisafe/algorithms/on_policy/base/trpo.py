@@ -127,7 +127,7 @@ class TRPO(NaturalPG):
         self._logger.store(
             **{
                 'Train/KL': kl,
-            }
+            },
         )
 
         return step_frac * step_direction, acceptance_step
@@ -207,5 +207,5 @@ class TRPO(NaturalPG):
                 'Misc/gradient_norm': torch.norm(grad).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
                 'Misc/AcceptanceStep': accept_step,
-            }
+            },
         )

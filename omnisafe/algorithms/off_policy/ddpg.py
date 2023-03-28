@@ -46,7 +46,10 @@ class DDPG(BaseAlgo):
 
     def _init_env(self) -> None:
         self._env = OffPolicyAdapter(
-            self._env_id, self._cfgs.train_cfgs.vector_env_nums, self._seed, self._cfgs
+            self._env_id,
+            self._cfgs.train_cfgs.vector_env_nums,
+            self._seed,
+            self._cfgs,
         )
         assert (self._cfgs.algo_cfgs.update_cycle) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
@@ -153,7 +156,8 @@ class DDPG(BaseAlgo):
             epoch_time = time.time()
 
             for sample_step in range(
-                epoch * self._samples_per_epoch, (epoch + 1) * self._samples_per_epoch
+                epoch * self._samples_per_epoch,
+                (epoch + 1) * self._samples_per_epoch,
             ):
                 step = sample_step * self._steps_per_sample * self._cfgs.train_cfgs.vector_env_nums
 
@@ -197,7 +201,7 @@ class DDPG(BaseAlgo):
                     'Time/Epoch': (time.time() - epoch_time),
                     'Train/Epoch': epoch,
                     'Train/LR': self._actor_critic.actor_scheduler.get_last_lr()[0],
-                }
+                },
             )
 
             self._logger.dump_tabular()
@@ -256,14 +260,15 @@ class DDPG(BaseAlgo):
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
                 'Value/reward_critic': q_value_r.mean().item(),
-            }
+            },
         )
         self._actor_critic.reward_critic_optimizer.zero_grad()
         loss.backward()
 
         if self._cfgs.algo_cfgs.max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.reward_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.reward_critic.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
@@ -292,7 +297,8 @@ class DDPG(BaseAlgo):
 
         if self._cfgs.algo_cfgs.max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.cost_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.cost_critic.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         distributed.avg_grads(self._actor_critic.cost_critic)
         self._actor_critic.cost_critic_optimizer.step()
@@ -301,7 +307,7 @@ class DDPG(BaseAlgo):
             **{
                 'Loss/Loss_cost_critic': loss.mean().item(),
                 'Value/cost_critic': q_value_c.mean().item(),
-            }
+            },
         )
 
     def _update_actor(  # pylint: disable=too-many-arguments
@@ -313,13 +319,14 @@ class DDPG(BaseAlgo):
         loss.backward()
         if self._cfgs.algo_cfgs.max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.actor.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.actor.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         self._actor_critic.actor_optimizer.step()
         self._logger.store(
             **{
                 'Loss/Loss_pi': loss.mean().item(),
-            }
+            },
         )
 
     def _loss_pi(
@@ -336,12 +343,12 @@ class DDPG(BaseAlgo):
                 'Loss/Loss_reward_critic': 0.0,
                 'Loss/Loss_pi': 0.0,
                 'Value/reward_critic': 0.0,
-            }
+            },
         )
         if self._cfgs.algo_cfgs.use_cost:
             self._logger.store(
                 **{
                     'Loss/Loss_cost_critic': 0.0,
                     'Value/cost_critic': 0.0,
-                }
+                },
             )

@@ -38,10 +38,14 @@ console = Console()
 @app.command()
 def train(  # pylint: disable=too-many-arguments
     algo: str = typer.Option(
-        'PPOLag', help=f"algorithm to train{omnisafe.ALGORITHMS['all']}", case_sensitive=False
+        'PPOLag',
+        help=f"algorithm to train{omnisafe.ALGORITHMS['all']}",
+        case_sensitive=False,
     ),
     env_id: str = typer.Option(
-        'SafetyHumanoidVelocity-v4', help='the name of test environment', case_sensitive=False
+        'SafetyHumanoidVelocity-v4',
+        help='the name of test environment',
+        case_sensitive=False,
     ),
     parallel: int = typer.Option(1, help='number of paralleled progress for calculations.'),
     total_steps: int = typer.Option(1638400, help='total number of steps to train for algorithm'),
@@ -49,7 +53,8 @@ def train(  # pylint: disable=too-many-arguments
     vector_env_nums: int = typer.Option(16, help='number of vector envs to use for training'),
     torch_threads: int = typer.Option(16, help='number of threads to use for torch'),
     log_dir: str = typer.Option(
-        os.path.join(os.getcwd()), help='directory to save logs, default is current directory'
+        os.path.join(os.getcwd()),
+        help='directory to save logs, default is current directory',
     ),
     custom_cfgs: list[str] = typer.Option([], help='custom configuration for training'),
 ):
@@ -101,7 +106,10 @@ def train(  # pylint: disable=too-many-arguments
 
 
 def train_grid(
-    exp_id: str, algo: str, env_id: str, custom_cfgs: NamedTuple
+    exp_id: str,
+    algo: str,
+    env_id: str,
+    custom_cfgs: NamedTuple,
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
 
@@ -151,10 +159,12 @@ def benchmark(
     exp_name: str = typer.Argument(..., help='experiment name'),
     num_pool: int = typer.Argument(..., help='number of paralleled experiments.'),
     config_path: str = typer.Argument(
-        ..., help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml'
+        ...,
+        help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml',
     ),
     log_dir: str = typer.Option(
-        os.path.join(os.getcwd()), help='directory to save logs, default is current directory'
+        os.path.join(os.getcwd()),
+        help='directory to save logs, default is current directory',
     ),
 ):
     """Benchmark algorithms configured by .yaml file in OmniSafe via command line.
@@ -184,7 +194,7 @@ def benchmark(
     if np.prod([len(v) if isinstance(v, list) else 1 for v in configs.values()]) % num_pool != 0:
         warnings.warn(
             'In order to maximize the use of computational resources, '
-            'total number of experiments should be evenly divided by `num_pool`'
+            'total number of experiments should be evenly divided by `num_pool`',
         )
     log_dir = os.path.join(log_dir, 'benchmark')
     eg = ExperimentGrid(exp_name=exp_name)
@@ -251,10 +261,12 @@ def evaluate(
 @app.command()
 def train_config(
     config_path: str = typer.Argument(
-        ..., help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml'
+        ...,
+        help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml',
     ),
     log_dir: str = typer.Option(
-        os.path.join(os.getcwd()), help='directory to save logs, default is current directory'
+        os.path.join(os.getcwd()),
+        help='directory to save logs, default is current directory',
     ),
 ):
     """Train a policy configured by .yaml file in OmniSafe via command line.

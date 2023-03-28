@@ -39,7 +39,8 @@ class SimpleEnv(CMDP):
         self._action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,))
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         obs = torch.as_tensor(self._observation_space.sample())
         reward = torch.as_tensor(random.random())

@@ -30,7 +30,11 @@ class OnPolicyAdapter(OnlineAdapter):
     """OnPolicy Adapter for OmniSafe."""
 
     def __init__(  # pylint: disable=too-many-arguments
-        self, env_id: str, num_envs: int, seed: int, cfgs: Config
+        self,
+        env_id: str,
+        num_envs: int,
+        seed: int,
+        cfgs: Config,
     ) -> None:
         super().__init__(env_id, num_envs, seed, cfgs)
 
@@ -87,12 +91,12 @@ class OnPolicyAdapter(OnlineAdapter):
                     if not done:
                         if epoch_end:
                             logger.log(
-                                f'Warning: trajectory cut off when rollout by epoch at {self._ep_len[idx]} steps.'
+                                f'Warning: trajectory cut off when rollout by epoch at {self._ep_len[idx]} steps.',
                             )
                             _, last_value_r, last_value_c, _ = agent.step(obs[idx])
                         if time_out:
                             _, last_value_r, last_value_c, _ = agent.step(
-                                info['final_observation'][idx]
+                                info['final_observation'][idx],
                             )
                         last_value_r = last_value_r.unsqueeze(0)
                         last_value_c = last_value_c.unsqueeze(0)
@@ -130,7 +134,7 @@ class OnPolicyAdapter(OnlineAdapter):
                 'Metrics/EpRet': self._ep_ret[idx],
                 'Metrics/EpCost': self._ep_cost[idx],
                 'Metrics/EpLen': self._ep_len[idx],
-            }
+            },
         )
 
     def _reset_log(self, idx: int | None = None) -> None:

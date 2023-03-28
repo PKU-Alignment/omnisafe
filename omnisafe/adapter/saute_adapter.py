@@ -84,7 +84,8 @@ class SauteAdapter(OnPolicyAdapter):
         return obs, info
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         next_obs, reward, cost, terminated, truncated, info = self._env.step(action)
 

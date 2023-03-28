@@ -171,7 +171,9 @@ class Plotter:
                 exp_data.insert(len(exp_data.columns), 'Rewards', exp_data[performance])
                 exp_data.insert(len(exp_data.columns), 'Costs', exp_data[cost_performance])
                 exp_data.insert(
-                    len(exp_data.columns), 'Steps', exp_data['Train/Epoch'] * update_cycle
+                    len(exp_data.columns),
+                    'Steps',
+                    exp_data['Train/Epoch'] * update_cycle,
                 )
 
                 datasets.append(exp_data)

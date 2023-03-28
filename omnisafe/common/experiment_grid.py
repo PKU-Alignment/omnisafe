@@ -346,7 +346,8 @@ class ExperimentGrid:
                     splits = key.split(':')
                     k_0 = splits[0]
                     assert k_0 not in new_var or isinstance(
-                        new_var[k_0], dict
+                        new_var[k_0],
+                        dict,
                     ), "You can't assign multiple values to the same key."
 
                     if k_0 not in new_var:
@@ -417,12 +418,12 @@ class ExperimentGrid:
             self._console.print(
                 dedent(
                     """
-            Launch delayed to give you a few seconds to review your experiments.
+                    Launch delayed to give you a few seconds to review your experiments.
 
-            To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
-            spinup/user_config.py.
+                    To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
+                    spinup/user_config.py.
 
-            """
+                    """,
                 ),
                 style='cyan, bold',
                 end='',
@@ -493,7 +494,8 @@ class ExperimentGrid:
         os.makedirs(self.log_dir, exist_ok=True)
         path = os.path.join(self.log_dir, 'grid_config.json')
         self._console.print(
-            'Save with config of experiment grid in grid_config.json', style='yellow bold'
+            'Save with config of experiment grid in grid_config.json',
+            style='yellow bold',
         )
         json_config = json.dumps(dict(zip(self.keys, self.vals)), indent=4)
         with open(path, encoding='utf-8', mode='w') as f:

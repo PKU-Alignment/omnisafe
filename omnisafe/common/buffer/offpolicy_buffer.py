@@ -63,7 +63,9 @@ class OffPolicyBuffer(BaseBuffer):
         super().__init__(obs_space, act_space, size, device)
         if isinstance(obs_space, Box):
             self.data['next_obs'] = torch.zeros(
-                (size, *obs_space.shape), dtype=torch.float32, device=device
+                (size, *obs_space.shape),
+                dtype=torch.float32,
+                device=device,
             )
         else:
             raise NotImplementedError
