@@ -240,19 +240,9 @@ We give an example below:
 
                     import omnisafe
 
-                    env = omnisafe.Env('SafetyPointGoal1-v0')
-
-                    agent = omnisafe.Agent('CPO', env)
+                    env_id = 'SafetyPointGoal1-v0'
+                    agent = omnisafe.Agent('CPO', env_id)
                     agent.learn()
-
-                    obs = env.reset()
-                    for i in range(1000):
-                        action, _states = agent.predict(obs, deterministic=True)
-                        obs, reward, cost, done, info = env.step(action)
-                        env.render()
-                        if done:
-                            obs = env.reset()
-                    env.close()
 
             .. tab-item:: Config dict style
 
@@ -261,33 +251,36 @@ We give an example below:
 
                     import omnisafe
 
-                    env = omnisafe.Env('SafetyPointGoal1-v0')
-
-                    custom_dict = {'epochs': 1, 'log_dir': './runs'}
-                    agent = omnisafe.Agent('CPO', env, custom_cfgs=custom_dict)
+                    env_id = 'SafetyPointGoal1-v0'
+                    custom_cfgs = {
+                        'train_cfgs': {
+                            'total_steps': 1024000,
+                            'vector_env_nums': 1,
+                            'parallel': 1,
+                        },
+                        'algo_cfgs': {
+                            'update_cycle': 2048,
+                            'update_iters': 1,
+                        },
+                        'logger_cfgs': {
+                            'use_wandb': False,
+                        },
+                    }
+                    agent = omnisafe.Agent('CPO', env_id, custom_cfgs=custom_cfgs)
                     agent.learn()
-
-                    obs = env.reset()
-                    for i in range(1000):
-                        action, _states = agent.predict(obs, deterministic=True)
-                        obs, reward, done, info = env.step(action)
-                        env.render()
-                        if done:
-                            obs = env.reset()
-                    env.close()
 
             .. tab-item:: Terminal config style
 
-                    We use ``train_on_policy.py`` as the entrance file. You can train the agent with
-                    CPO simply using ``train_on_policy.py``, with arguments about CPO and environments
+                    We use ``train_policy.py`` as the entrance file. You can train the agent with
+                    CPO simply using ``train_policy.py``, with arguments about CPO and environments
                     does the training. For example, to run CPO in SafetyPointGoal1-v0 , with
                     4 cpu cores and seed 0, you can use the following command:
 
-                    .. code-block:: guess
+                    .. code-block:: bash
                         :linenos:
 
-                        cd omnisafe/examples
-                        python train_on_policy.py --env-id SafetyPointGoal1-v0 --algo CPO --parallel 5 --epochs 1
+                        cd examples
+                        python train_policy.py --algo CPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 
 You may not yet understand the above theory and the specific meaning of the code, but do not worry, we will make a detailed introduction later in the :doc:`../saferl/cpo` tutorial.
 
