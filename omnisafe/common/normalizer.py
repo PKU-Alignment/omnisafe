@@ -86,7 +86,7 @@ class Normalizer(nn.Module):
             - Update the mean and std by the data.
 
         Args:
-            data: raw data to be normalized
+            data: raw data to be normalized.
         """
         data = data.to(self._mean.device)
         self._push(data)
@@ -99,7 +99,7 @@ class Normalizer(nn.Module):
         """Update the mean and std by the raw_data.
 
         Args:
-            raw_data: raw data to be normalized
+            raw_data: raw data to be normalized.
         """
         if raw_data.shape == self._shape:
             raw_data = raw_data.unsqueeze(0)

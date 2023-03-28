@@ -124,7 +124,7 @@ class GaussianLearningActor(GaussianActor):
 
         .. hint::
             This method is only used for annealing the standard deviation.
-            It can be called
+            It can be called.
 
         Args:
             std (float): Standard deviation.

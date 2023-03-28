@@ -62,15 +62,15 @@ def train(  # pylint: disable=too-many-arguments
         --total_steps 1000000 --device cpu --vector_env_nums 1
 
     Args:
-        algo: algorithm to train
-        env_id: the name of test environment
+        algo: algorithm to train.
+        env_id: the name of test environment.
         parallel: number of paralleled progress for calculations.
         total_steps: total number of steps to train for algorithm
-        device: device to use for training
+        device: device to use for training.
         vector_env_nums: number of vector envs to use for training
-        torch_threads: number of threads to use for torch
+        torch_threads: number of threads to use for torch.
         log_dir: directory to save logs, default is current directory
-        custom_cfgs: custom configuration for training
+        custom_cfgs: custom configuration for training.
     """
     args = {
         'algo': algo,

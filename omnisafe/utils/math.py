@@ -135,8 +135,8 @@ def discount_cumsum(x_vector: torch.Tensor, discount: float) -> torch.Tensor:
         tensor([4.00, 3.90, 3.00, 1.00])
 
     Args:
-        x_vector (torch.Tensor): shape (B, T)
-        discount (float): discount factor
+        x_vector (torch.Tensor): shape (B, T).
+        discount (float): discount factor.
     """
     length = x_vector.shape[0]
     x_vector = x_vector.type(torch.float64)

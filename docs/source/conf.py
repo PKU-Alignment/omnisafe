@@ -44,8 +44,7 @@ extensions = [
 ]
 
 if not os.getenv('READTHEDOCS', None):
-    # extensions.append('sphinxcontrib.spelling')
-    pass
+    extensions.append('sphinxcontrib.spelling')
 
 source_suffix = {'.rst': 'restructuredtext', '.md': 'markdown'}
 templates_path = ['_templates']
@@ -68,12 +67,11 @@ autodoc_preserve_defaults = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
+
 html_theme = 'furo'
 html_logo = 'image/logo.png'
 html_title = ' '
 html_copy_source = False
-# html_favicon = '_static/images/favicon.png'
 html_context: Dict[str, Any] = {}
 html_context['conf_py_path'] = '/docs/'
 html_context['display_github'] = False

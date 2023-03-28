@@ -95,7 +95,8 @@ class OffPolicyBuffer(BaseBuffer):
             oldest data will be overwritten.
 
         Args:
-            data (torch.Tensor): The data to be stored."""
+            data (torch.Tensor): The data to be stored.
+        """
         for key, value in data.items():
             self.data[key][self._ptr] = value
         self._ptr = (self._ptr + 1) % self._max_size
