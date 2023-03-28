@@ -34,7 +34,7 @@ from omnisafe.utils import distributed
 
 
 @registry.register
-# pylint: disable-next=too-many-instance-attributes, too-few-public-methods, line-too-long
+# pylint: disable-next=too-many-instance-attributes,too-few-public-methods,line-too-long
 class PolicyGradient(BaseAlgo):
     """The Policy Gradient algorithm.
 

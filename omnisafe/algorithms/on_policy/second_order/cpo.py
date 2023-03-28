@@ -206,7 +206,7 @@ class CPO(TRPO):
         ratio = torch.exp(logp_ - logp)
         return (ratio * adv_c).mean()
 
-    # pylint: disable=invalid-name, too-many-arguments, too-many-locals
+    # pylint: disable=invalid-name,too-many-arguments,too-many-locals
     def _update_actor(
         self,
         obs: torch.Tensor,

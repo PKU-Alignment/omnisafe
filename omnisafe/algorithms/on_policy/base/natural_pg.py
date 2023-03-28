@@ -115,7 +115,7 @@ class NaturalPG(PolicyGradient):
         )
         return flat_grad_grad_kl + params * self._cfgs.algo_cfgs.cg_damping
 
-    def _update_actor(  # pylint: disable=too-many-arguments, too-many-locals
+    def _update_actor(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         obs: torch.Tensor,
         act: torch.Tensor,

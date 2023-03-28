@@ -24,7 +24,7 @@ from omnisafe.utils import distributed
 
 
 @registry.register
-# pylint: disable-next=too-many-instance-attributes, too-few-public-methods
+# pylint: disable-next=too-many-instance-attributes,too-few-public-methods
 class TD3(DDPG):
     """The Twin Delayed DDPG (TD3) algorithm.
 

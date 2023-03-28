@@ -32,7 +32,7 @@ from omnisafe.utils import distributed
 
 
 @registry.register
-# pylint: disable-next=too-many-instance-attributes, too-few-public-methods
+# pylint: disable-next=too-many-instance-attributes,too-few-public-methods
 class DDPG(BaseAlgo):
     """The Deep Deterministic Policy Gradient (DDPG) algorithm.
 

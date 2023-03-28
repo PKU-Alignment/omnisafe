@@ -26,7 +26,7 @@ from omnisafe.utils.config import Config
 
 
 @registry.register
-# pylint: disable-next=too-many-instance-attributes, too-few-public-methods
+# pylint: disable-next=too-many-instance-attributes,too-few-public-methods
 class SAC(DDPG):
     """The Soft Actor-Critic (SAC) algorithm.
 
