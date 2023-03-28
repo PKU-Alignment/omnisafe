@@ -403,7 +403,7 @@ class ExperimentGrid:
 
         # print variant names for the user.
         var_names = {self.variant_name(var) for var in variants}
-        var_names = sorted(list(var_names))
+        var_names = sorted(var_names)
         line = '=' * self.div_line_width
 
         self._console.print('\nPreparing to run the following experiments...', style='bold green')

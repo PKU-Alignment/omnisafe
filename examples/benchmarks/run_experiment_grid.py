@@ -88,7 +88,7 @@ if __name__ == '__main__':
     eg.add('env_id', mujoco_envs)
 
     # Set the device.
-    avaliable_gpus = [num for num in range(torch.cuda.device_count())]
+    avaliable_gpus = list(range(torch.cuda.device_count()))
     gpu_id = [0, 1, 2, 3]
     # if you want to use CPU, please set gpu_id = None
     # gpu_id = None

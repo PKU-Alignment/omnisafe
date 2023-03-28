@@ -308,9 +308,8 @@ class Unsqueeze(Wrapper):
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         action = action.squeeze(0)
         obs, reward, cost, terminated, truncated, info = super().step(action)
-        obs, reward, cost, terminated, truncated = map(
-            lambda x: x.unsqueeze(0),
-            (obs, reward, cost, terminated, truncated),
+        obs, reward, cost, terminated, truncated = (
+            x.unsqueeze(0) for x in (obs, reward, cost, terminated, truncated)
         )
         for k, v in info.items():
             if isinstance(v, torch.Tensor):

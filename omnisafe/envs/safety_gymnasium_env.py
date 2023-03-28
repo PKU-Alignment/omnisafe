@@ -104,9 +104,9 @@ class SafetyGymnasiumEnv(CMDP):
         obs, reward, cost, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy(),
         )
-        obs, reward, cost, terminated, truncated = map(
-            lambda x: torch.as_tensor(x, dtype=torch.float32, device=self._device),
-            (obs, reward, cost, terminated, truncated),
+        obs, reward, cost, terminated, truncated = (
+            torch.as_tensor(x, dtype=torch.float32, device=self._device)
+            for x in (obs, reward, cost, terminated, truncated)
         )
         if 'final_observation' in info:
             info['final_observation'] = np.array(
