@@ -59,7 +59,8 @@ def test_train():
 
 def test_train_config():
     result = runner.invoke(
-        app, ['train-config', os.path.join(base_path, './saved_source/train_config.yaml')]
+        app,
+        ['train-config', os.path.join(base_path, './saved_source/train_config.yaml')],
     )
     assert result.exit_code == 0
 
