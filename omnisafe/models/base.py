@@ -14,8 +14,9 @@
 # ==============================================================================
 """This module contains some base abstract classes for the models."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import List
 
 import torch
 import torch.nn as nn
@@ -41,7 +42,7 @@ class Actor(ABC, nn.Module):
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
@@ -177,7 +178,7 @@ class Critic(ABC, nn.Module):
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
         num_critics: int = 1,

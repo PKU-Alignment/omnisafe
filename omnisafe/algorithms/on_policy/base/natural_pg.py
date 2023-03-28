@@ -111,11 +111,11 @@ class NaturalPG(PolicyGradient):
         self._logger.store(
             **{
                 'Train/KL': kl.item(),
-            }
+            },
         )
         return flat_grad_grad_kl + params * self._cfgs.algo_cfgs.cg_damping
 
-    def _update_actor(  # pylint: disable=too-many-arguments, too-many-locals
+    def _update_actor(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         obs: torch.Tensor,
         act: torch.Tensor,
@@ -174,7 +174,7 @@ class NaturalPG(PolicyGradient):
                 'Misc/xHx': xHx.item(),
                 'Misc/gradient_norm': torch.norm(grad).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
-            }
+            },
         )
 
     def _update(self) -> None:
@@ -214,15 +214,15 @@ class NaturalPG(PolicyGradient):
             shuffle=True,
         )
 
-        for i in range(self._cfgs.algo_cfgs.update_iters):
+        for _i in range(self._cfgs.algo_cfgs.update_iters):
             for (
                 obs,
-                act,
-                logp,
+                _act,
+                _logp,
                 target_value_r,
                 target_value_c,
-                adv_r,
-                adv_c,
+                _adv_r,
+                _adv_c,
             ) in dataloader:
                 self._update_reward_critic(obs, target_value_r)
                 if self._cfgs.algo_cfgs.use_cost:
@@ -230,7 +230,7 @@ class NaturalPG(PolicyGradient):
 
         self._logger.store(
             **{
-                'Train/StopIter': i + 1,
+                'Train/StopIter': _i + 1,
                 'Value/Adv': adv_r.mean().item(),
-            }
+            },
         )

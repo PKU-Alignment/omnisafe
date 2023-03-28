@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of GaussianStdNetActor."""
 
-from typing import List, Optional
+from __future__ import annotations
 
 import torch
 from torch import nn
@@ -33,7 +33,7 @@ class GaussianSACActor(Actor):
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
@@ -57,7 +57,7 @@ class GaussianSACActor(Actor):
             weight_initialization_mode=weight_initialization_mode,
         )
 
-        self._current_raw_action: Optional[torch.Tensor] = None
+        self._current_raw_action: torch.Tensor | None = None
         self.register_buffer('_log2', torch.log(torch.tensor(2.0)))
         self._log2: torch.Tensor
 
@@ -94,10 +94,7 @@ class GaussianSACActor(Actor):
         self._current_dist = self._distribution(obs)
         self._after_inference = True
 
-        if deterministic:
-            action = self._current_dist.mean
-        else:
-            action = self._current_dist.rsample()
+        action = self._current_dist.mean if deterministic else self._current_dist.rsample()
 
         self._current_raw_action = action
 

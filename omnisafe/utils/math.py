@@ -13,7 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the algo utils."""
-from typing import Callable, Tuple
+
+from __future__ import annotations
+
+from typing import Callable
 
 import torch
 from torch.distributions import Normal, TanhTransform, TransformedDistribution, constraints
@@ -76,8 +79,11 @@ def safe_inverse(var_q: torch.Tensor, det: torch.Tensor) -> torch.Tensor:
 
 
 def gaussian_kl(
-    mean_p: torch.Tensor, mean_q: torch.Tensor, var_p: torch.Tensor, var_q: torch.Tensor
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    mean_p: torch.Tensor,
+    mean_q: torch.Tensor,
+    var_p: torch.Tensor,
+    var_q: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     r"""Decoupled KL between two gaussian distribution.
 
     .. note::
@@ -140,11 +146,9 @@ def discount_cumsum(x_vector: torch.Tensor, discount: float) -> torch.Tensor:
     """
     length = x_vector.shape[0]
     x_vector = x_vector.type(torch.float64)
-    for idx in reversed(range(length)):
-        if idx == length - 1:
-            cumsum = x_vector[idx]
-        else:
-            cumsum = x_vector[idx] + discount * cumsum
+    cumsum = x_vector[-1]
+    for idx in reversed(range(length - 1)):
+        cumsum = x_vector[idx] + discount * cumsum
         x_vector[idx] = cumsum
     return x_vector
 
@@ -212,8 +216,7 @@ class SafeTanhTransformer(TanhTransform):
         else:
             raise ValueError('Expected floating point type')
         y = y.clamp(min=-1 + eps, max=1 - eps)
-        x = super()._inverse(y)
-        return x
+        return super()._inverse(y)
 
 
 class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
@@ -241,7 +244,7 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     support = constraints.real
     has_rsample = True
 
-    def __init__(self, loc, scale, validate_args=None):
+    def __init__(self, loc, scale, validate_args=None) -> None:
         base_dist = Normal(loc, scale, validate_args=validate_args)
         super().__init__(base_dist, SafeTanhTransformer(), validate_args=validate_args)
 

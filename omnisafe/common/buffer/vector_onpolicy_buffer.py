@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of VectorOnPolicyBuffer."""
 
-from typing import Dict
+from __future__ import annotations
 
 import torch
 
@@ -39,8 +39,8 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         standardized_adv_r: bool,
         standardized_adv_c: bool,
         num_envs: int = 1,
-        device: torch.device = torch.device('cpu'),
-    ):
+        device: torch.device = 'cpu',
+    ) -> None:
         """Initialize the vector-on-policy buffer.
 
         The vector-on-policy buffer is used to store the data from vector environments.
@@ -102,8 +102,8 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
 
     def finish_path(
         self,
-        last_value_r: torch.Tensor = torch.zeros(1),
-        last_value_c: torch.Tensor = torch.zeros(1),
+        last_value_r: torch.Tensor | None = None,
+        last_value_c: torch.Tensor | None = None,
         idx: int = 0,
     ) -> None:
         """Get the data in the buffer.
@@ -121,7 +121,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         """
         self.buffers[idx].finish_path(last_value_r, last_value_c)
 
-    def get(self) -> Dict[str, torch.Tensor]:
+    def get(self) -> dict[str, torch.Tensor]:
         """Get the data from the buffer."""
         data_pre = {k: [v] for k, v in self.buffers[0].get().items()}
         for buffer in self.buffers[1:]:

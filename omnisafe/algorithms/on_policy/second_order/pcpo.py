@@ -107,7 +107,7 @@ class PCPO(CPO):
                 torch.tensor(0.0, device=self._device),
             )
             * p
-        )  # pylint: disable = invalid-name
+        )  # pylint: disable=invalid-name
 
         step_direction, accept_step = self._cpo_search_step(
             step_direction=step_direction,
@@ -152,5 +152,5 @@ class PCPO(CPO):
                 'Misc/q': q.item(),
                 'Misc/r': r.item(),
                 'Misc/s': s.item(),
-            }
+            },
         )

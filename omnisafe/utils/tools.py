@@ -173,8 +173,8 @@ def custom_cfgs_to_dict(key_list, value):
 
 
 def update_dic(total_dic, item_dic):
-    '''Updater of multi-level dictionary.'''
-    for idd in item_dic.keys():
+    """Updater of multi-level dictionary."""
+    for idd in item_dic:
         total_value = total_dic.get(idd)
         item_value = item_dic.get(idd)
 
@@ -200,9 +200,9 @@ def load_yaml(path) -> dict:
     """
     with open(path, encoding='utf-8') as file:
         try:
-            kwargs = yaml.load(file, Loader=yaml.FullLoader)
+            kwargs = yaml.load(file, Loader=yaml.FullLoader)  # noqa: S506
         except yaml.YAMLError as exc:
-            assert False, f'{path} error: {exc}'
+            raise AssertionError(f'{path} error: {exc}') from exc
 
     return kwargs
 
@@ -214,7 +214,7 @@ def recursive_check_config(config, default_config, exclude_keys=()):
         config (dict): config to be checked.
         default_config (dict): default config.
     """
-    for key in config.keys():
+    for key in config:
         if key not in default_config.keys() and key not in exclude_keys:
             raise KeyError(f'Invalid key: {key}')
         if isinstance(config[key], dict):
@@ -253,9 +253,7 @@ def recursive_dict2json(dict_obj) -> str:
             flat_dict[path[:-1]] = dict_obj
 
     _flatten_dict(dict_obj)
-    flat_dict_str = json.dumps(flat_dict, sort_keys=True).replace('"', "'")
-
-    return flat_dict_str
+    return json.dumps(flat_dict, sort_keys=True).replace('"', "'")
 
 
 def hash_string(string) -> str:
@@ -270,5 +268,4 @@ def hash_string(string) -> str:
     # use sha256 to hash
     hash_object = hashlib.sha256(salted_string)
     # get the hex digest
-    folder_name = hash_object.hexdigest()
-    return folder_name
+    return hash_object.hexdigest()

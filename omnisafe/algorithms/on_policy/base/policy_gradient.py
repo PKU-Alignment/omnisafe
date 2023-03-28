@@ -14,8 +14,10 @@
 # ==============================================================================
 """Implementation of the Policy Gradient algorithm."""
 
+from __future__ import annotations
+
 import time
-from typing import Any, Dict, Tuple, Union
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -32,7 +34,7 @@ from omnisafe.utils import distributed
 
 
 @registry.register
-# pylint: disable-next=too-many-instance-attributes, too-few-public-methods, line-too-long
+# pylint: disable-next=too-many-instance-attributes,too-few-public-methods,line-too-long
 class PolicyGradient(BaseAlgo):
     """The Policy Gradient algorithm.
 
@@ -54,11 +56,14 @@ class PolicyGradient(BaseAlgo):
             >>>    self._env = CustomAdapter()
         """
         self._env = OnPolicyAdapter(
-            self._env_id, self._cfgs.train_cfgs.vector_env_nums, self._seed, self._cfgs
+            self._env_id,
+            self._cfgs.train_cfgs.vector_env_nums,
+            self._seed,
+            self._cfgs,
         )
         assert (self._cfgs.algo_cfgs.update_cycle) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
-        ) == 0, ('The number of steps per epoch is not divisible by the number of ' 'environments.')
+        ) == 0, 'The number of steps per epoch is not divisible by the number of environments.'
         self._steps_per_epoch = (
             self._cfgs.algo_cfgs.update_cycle
             // distributed.world_size()
@@ -185,7 +190,7 @@ class PolicyGradient(BaseAlgo):
             config=self._cfgs,
         )
 
-        what_to_save: Dict[str, Any] = {}
+        what_to_save: dict[str, Any] = {}
         what_to_save['pi'] = self._actor_critic.actor
         if self._cfgs.algo_cfgs.obs_normalize:
             obs_normalizer = self._env.save()['obs_normalizer']
@@ -227,7 +232,7 @@ class PolicyGradient(BaseAlgo):
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
-    def learn(self) -> Tuple[Union[int, float], ...]:
+    def learn(self) -> tuple[int | float, ...]:
         r"""This is main function for algorithm update, divided into the following steps,
 
         - :meth:`rollout`: collect interactive data from environment.
@@ -272,7 +277,7 @@ class PolicyGradient(BaseAlgo):
                     'Train/LR': 0.0
                     if self._cfgs.model_cfgs.actor.lr == 'None'
                     else self._actor_critic.actor_scheduler.get_last_lr()[0],
-                }
+                },
             )
 
             self._logger.dump_tabular()
@@ -382,7 +387,7 @@ class PolicyGradient(BaseAlgo):
                 'Train/StopIter': i + 1,  # pylint: disable=undefined-loop-variable
                 'Value/Adv': adv_r.mean().item(),
                 'Train/KL': kl,
-            }
+            },
         )
 
     def _update_reward_critic(self, obs: torch.Tensor, target_value_r: torch.Tensor) -> None:
@@ -416,7 +421,8 @@ class PolicyGradient(BaseAlgo):
 
         if self._cfgs.algo_cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.reward_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.reward_critic.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
@@ -454,7 +460,8 @@ class PolicyGradient(BaseAlgo):
 
         if self._cfgs.algo_cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.cost_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.cost_critic.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         distributed.avg_grads(self._actor_critic.cost_critic)
         self._actor_critic.cost_critic_optimizer.step()
@@ -495,7 +502,8 @@ class PolicyGradient(BaseAlgo):
         loss.backward()
         if self._cfgs.algo_cfgs.use_max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.actor.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.actor.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         distributed.avg_grads(self._actor_critic.actor)
         self._actor_critic.actor_optimizer.step()
@@ -505,11 +513,13 @@ class PolicyGradient(BaseAlgo):
                 'Train/PolicyRatio': info['ratio'],
                 'Train/PolicyStd': info['std'],
                 'Loss/Loss_pi': loss.mean().item(),
-            }
+            },
         )
 
     def _compute_adv_surrogate(  # pylint: disable=unused-argument
-        self, adv_r: torch.Tensor, adv_c: torch.Tensor
+        self,
+        adv_r: torch.Tensor,
+        adv_c: torch.Tensor,
     ) -> torch.Tensor:
         """Compute surrogate loss.
 
@@ -527,7 +537,7 @@ class PolicyGradient(BaseAlgo):
         act: torch.Tensor,
         logp: torch.Tensor,
         adv: torch.Tensor,
-    ) -> Tuple[torch.Tensor, Dict[str, float]]:
+    ) -> tuple[torch.Tensor, dict[str, float]]:
         r"""Computing pi/actor loss.
 
         In Policy Gradient, the loss is defined as:

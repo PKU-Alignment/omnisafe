@@ -14,7 +14,9 @@
 # ==============================================================================
 """Implementation of Normalizer."""
 
-from typing import Any, Mapping, Tuple
+from __future__ import annotations
+
+from typing import Any, Mapping
 
 import torch
 import torch.nn as nn
@@ -29,7 +31,7 @@ class Normalizer(nn.Module):
         - URL: http://i.stanford.edu/pub/cstr/reports/cs/tr/79/773/CS-TR-79-773.pdf
     """
 
-    def __init__(self, shape: Tuple[int, ...], clip: float = 1e6) -> None:
+    def __init__(self, shape: tuple[int, ...], clip: float = 1e6) -> None:
         """Initialize the normalize."""
         super().__init__()
         if shape == ():
@@ -58,7 +60,7 @@ class Normalizer(nn.Module):
         self._first = True
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         """Return the shape of the normalize."""
         return self._shape
 
@@ -109,7 +111,9 @@ class Normalizer(nn.Module):
             self._mean = torch.mean(raw_data, dim=0)
             self._sumsq = torch.sum((raw_data - self._mean) ** 2, dim=0)
             self._count = torch.tensor(
-                raw_data.shape[0], dtype=self._count.dtype, device=self._count.device
+                raw_data.shape[0],
+                dtype=self._count.dtype,
+                device=self._count.device,
             )
             self._first = False
         else:

@@ -24,11 +24,11 @@ class Registry:
         name (str): Registry name.
     """
 
-    def __init__(self, name):
+    def __init__(self, name) -> None:
         self._name = name
         self._module_dict = {}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f'{self.__class__.__name__ }(name={self._name}, items={list(self._module_dict.keys())})'
         )
