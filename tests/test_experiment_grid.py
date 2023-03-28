@@ -83,5 +83,5 @@ def test_experiment_grid():
     eg.run(train, num_pool=1)
 
     eg.analyze('algo')
-    eg.render(num_episodes=1, render_mode='rgb_array', width=256, height=256)
+    # eg.render(num_episodes=1, render_mode='rgb_array', width=256, height=256)
     eg.evaluate(num_episodes=1)

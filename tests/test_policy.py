@@ -110,7 +110,7 @@ def test_workflow_for_training(algo):
     agent.learn()
 
     agent.plot(smooth=1)
-    agent.render(num_episodes=1, render_mode='rgb_array', width=1, height=1)
+    # agent.render(num_episodes=1, render_mode='rgb_array', width=1, height=1)
     agent.evaluate(num_episodes=1)
 
 
