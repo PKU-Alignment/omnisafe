@@ -188,7 +188,7 @@ def benchmark(
             configs = yaml.load(file, Loader=yaml.FullLoader)
             assert configs is not None, 'load file error'
         except yaml.YAMLError as exc:
-            assert False, f'load file error: {exc}'
+            raise AssertionError(f'load file error: {exc}') from exc
     assert_with_exit('algo' in configs, '`algo` must be specified in config file')
     assert_with_exit('env_id' in configs, '`env_id` must be specified in config file')
     if np.prod([len(v) if isinstance(v, list) else 1 for v in configs.values()]) % num_pool != 0:
@@ -289,7 +289,7 @@ def train_config(
             args = yaml.load(file, Loader=yaml.FullLoader)
             assert args is not None, 'load file error'
         except yaml.YAMLError as exc:
-            assert False, f'load file error: {exc}'
+            raise AssertionError(f'load file error: {exc}') from exc
     assert_with_exit('algo' in args, '`algo` must be specified in config file')
     assert_with_exit('env_id' in args, '`env_id` must be specified in config file')
 

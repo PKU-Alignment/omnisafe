@@ -44,7 +44,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         standardized_adv_r: bool = False,
         standardized_adv_c: bool = False,
         device: torch.device = torch.device('cpu'),
-    ):
+    ) -> None:
         """Initialize the on-policy buffer.
 
         .. warning::

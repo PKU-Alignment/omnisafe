@@ -202,7 +202,7 @@ def load_yaml(path) -> dict:
         try:
             kwargs = yaml.load(file, Loader=yaml.FullLoader)
         except yaml.YAMLError as exc:
-            assert False, f'{path} error: {exc}'
+            raise AssertionError(f'{path} error: {exc}') from exc
 
     return kwargs
 

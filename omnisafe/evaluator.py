@@ -41,7 +41,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
         render_mode: str = None,
-    ):
+    ) -> None:
         """Initialize the evaluator.
 
         Args:

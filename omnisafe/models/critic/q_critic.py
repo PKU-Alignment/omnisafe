@@ -100,7 +100,7 @@ class QCritic(Critic):
                 critic = nn.Sequential(obs_encoder, net)
             else:
                 net = build_mlp_network(
-                    [self._obs_dim + self._act_dim] + hidden_sizes + [1],
+                    [self._obs_dim + self._act_dim, *hidden_sizes] + [1],
                     activation=activation,
                     weight_initialization_mode=weight_initialization_mode,
                 )

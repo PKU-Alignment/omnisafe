@@ -349,7 +349,7 @@ class StatisticsTools:
         else:
             for i, item in enumerate(sequence):
                 for nxt in self.combine(sequence[i + 1 :], num_choosen - 1):
-                    yield (item,) + nxt
+                    yield (item, *nxt)
 
     def dict_permutations(self, input_dict):
         """Generate all possible combinations of the values in a dictionary.

@@ -244,7 +244,7 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     support = constraints.real
     has_rsample = True
 
-    def __init__(self, loc, scale, validate_args=None):
+    def __init__(self, loc, scale, validate_args=None) -> None:
         base_dist = Normal(loc, scale, validate_args=validate_args)
         super().__init__(base_dist, SafeTanhTransformer(), validate_args=validate_args)
 

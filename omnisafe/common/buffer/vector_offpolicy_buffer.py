@@ -34,7 +34,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         batch_size: int,
         num_envs: int,
         device: torch.device = torch.device('cpu'),
-    ):
+    ) -> None:
         """Initialize the off policy buffer.
 
         The vector-off-policy buffer is a vectorized version of the off-policy buffer.

@@ -33,7 +33,7 @@ class OffPolicyBuffer(BaseBuffer):
         size: int,
         batch_size: int,
         device: torch.device = torch.device('cpu'),
-    ):
+    ) -> None:
         """Initialize the off policy buffer.
 
         .. warning::

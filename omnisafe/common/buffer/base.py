@@ -33,7 +33,7 @@ class BaseBuffer(ABC):
         act_space: OmnisafeSpace,
         size: int,
         device: torch.device = torch.device('cpu'),
-    ):
+    ) -> None:
         """Initialize the buffer.
 
         .. warning::

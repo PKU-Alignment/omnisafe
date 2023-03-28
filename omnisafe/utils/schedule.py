@@ -76,7 +76,7 @@ class PiecewiseSchedule(Schedule):
 class ConstantSchedule(Schedule):
     """Constant schedule for a value"""
 
-    def __init__(self, value):
+    def __init__(self, value) -> None:
         """Value remains constant over time."""
         self._v = value
 

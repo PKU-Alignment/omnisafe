@@ -24,7 +24,7 @@ class Registry:
         name (str): Registry name.
     """
 
-    def __init__(self, name):
+    def __init__(self, name) -> None:
         self._name = name
         self._module_dict = {}
 

@@ -40,7 +40,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         standardized_adv_c: bool,
         num_envs: int = 1,
         device: torch.device = torch.device('cpu'),
-    ):
+    ) -> None:
         """Initialize the vector-on-policy buffer.
 
         The vector-on-policy buffer is used to store the data from vector environments.

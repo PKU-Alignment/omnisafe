@@ -39,7 +39,7 @@ class AlgoWrapper:
         env_id: str,
         train_terminal_cfgs: dict[str, Any] | None = None,
         custom_cfgs: dict[str, Any] | None = None,
-    ):
+    ) -> None:
         self.algo = algo
         self.env_id = env_id
         # algo_type will set in _init_checks()
