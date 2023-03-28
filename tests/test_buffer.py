@@ -37,7 +37,7 @@ from omnisafe.common.buffer import (
     standardized_adv_c=[True],
     lam_c=[0.9],
     penalty_coefficient=[0.0],
-    device=['cpu'],
+    device=[torch.device('cpu')],
     num_envs=[2],
 )
 def test_vector_onpolicy_buffer(
@@ -165,7 +165,7 @@ def test_vector_onpolicy_buffer(
     standardized_adv_c=[True],
     lam_c=[0.9],
     penalty_coefficient=[0.0],
-    device=['cpu'],
+    device=[torch.device('cpu')],
 )
 def test_onpolicy_buffer(
     obs_space: Box,
@@ -282,7 +282,7 @@ def test_onpolicy_buffer(
     act_space=[Box(low=-1, high=1, shape=(1,))],
     size=[10],
     batch_size=[5],
-    device=['cpu'],
+    device=[torch.device('cpu')],
     num_envs=[2],
 )
 def test_vector_offpolicy_buffer(
@@ -354,7 +354,7 @@ def test_vector_offpolicy_buffer(
     act_space=[Box(low=-1, high=1, shape=(1,))],
     size=[10],
     batch_size=[5],
-    device=['cpu'],
+    device=[torch.device('cpu')],
 )
 def test_offpolicy_buffer(
     obs_space: Box,
