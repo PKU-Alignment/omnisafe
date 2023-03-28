@@ -14,11 +14,11 @@
 # ==============================================================================
 """Test utils"""
 
+from __future__ import annotations
+
 import os
 import sys
-from typing import Tuple
 
-import numpy as np
 import pytest
 import torch
 from torch import nn
@@ -59,10 +59,11 @@ def get_answer(gamma: float):
     """Input gamma and return the answer."""
     if gamma == 0.9:
         return torch.tensor([11.4265, 11.5850, 10.6500, 8.5000, 5.0000], dtype=torch.float64)
-    elif gamma == 0.99:
+    if gamma == 0.99:
         return torch.tensor([14.6045, 13.7419, 11.8605, 8.9500, 5.0000], dtype=torch.float64)
-    elif gamma == 0.999:
+    if gamma == 0.999:
         return torch.tensor([14.9600, 13.9740, 11.9860, 8.9950, 5.0000], dtype=torch.float64)
+    return None
 
 
 @helpers.parametrize(
@@ -102,8 +103,12 @@ def test_math():
 
 
 def train(
-    exp_id: str, algo: str, env_id: str, custom_cfgs: Config, num_threads: int = 6
-) -> Tuple[float, float, float]:
+    exp_id: str,
+    algo: str,
+    env_id: str,
+    custom_cfgs: Config,
+    num_threads: int = 6,
+) -> tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
     Args:
         exp_id (str): Experiment ID.
@@ -120,8 +125,16 @@ def train(
     if USE_REDIRECTION:
         if not os.path.exists(custom_cfgs['data_dir']):
             os.makedirs(custom_cfgs['data_dir'], exist_ok=True)
-        sys.stdout = open(f'{custom_cfgs["data_dir"]}terminal.log', 'w', encoding='utf-8')
-        sys.stderr = open(f'{custom_cfgs["data_dir"]}error.log', 'w', encoding='utf-8')
+        sys.stdout = open(  # noqa: SIM115
+            f'{custom_cfgs["data_dir"]}terminal.log',
+            'w',
+            encoding='utf-8',
+        )
+        sys.stderr = open(  # noqa: SIM115
+            f'{custom_cfgs["data_dir"]}error.log',
+            'w',
+            encoding='utf-8',
+        )
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     reward, cost, ep_len = agent.learn()
     return reward, cost, ep_len
@@ -144,7 +157,7 @@ def test_train(
 
 
 @helpers.parametrize(
-    init_function=['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal']
+    init_function=['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal'],
 )
 def test_initalize(init_function: InitFunction):
     """Test initialize."""

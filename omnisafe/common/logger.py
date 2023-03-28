@@ -14,12 +14,14 @@
 # ==============================================================================
 """Implementation of the Logger."""
 
+from __future__ import annotations
+
 import atexit
 import csv
 import os
 import time
 from collections import deque
-from typing import Any, Deque, Dict, List, Optional, TextIO, Tuple, Union
+from typing import Any, Deque, TextIO
 
 import numpy as np
 import torch
@@ -38,7 +40,7 @@ from omnisafe.utils.distributed import dist_statistics_scalar, get_rank
 # importing distutils.version.  We can workaround this by prepopulating the distutils.version
 # submodule in the distutils module.
 
-try:
+try:  # noqa: SIM105
     # pylint: disable-next=wrong-import-order,unused-import,deprecated-module
     import distutils.version  # isort:skip  # noqa: F401
 except ImportError:
@@ -79,8 +81,8 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         seed: int = 0,
         use_tensorboard: bool = True,
         use_wandb: bool = False,
-        config: Optional[Config] = None,
-        models: Optional[List[torch.nn.Module]] = None,
+        config: Config | None = None,
+        models: list[torch.nn.Module] | None = None,
     ) -> None:
         """Initialize the logger.
 
@@ -110,8 +112,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self._output_file: TextIO
         if self._maste_proc:
             os.makedirs(self._log_dir, exist_ok=True)
-            self._output_file = open(  # pylint: disable=consider-using-with
-                os.path.join(self._log_dir, output_fname), encoding='utf-8', mode='w'
+            self._output_file = open(  # noqa: SIM115 # pylint: disable=consider-using-with
+                os.path.join(self._log_dir, output_fname),
+                encoding='utf-8',
+                mode='w',
             )
             atexit.register(self._output_file.close)
             self.log(f'Logging data to {self._output_file.name}', 'cyan', bold=True)
@@ -119,12 +123,12 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         self._epoch: int = 0
         self._first_row: bool = True
-        self._what_to_save: Optional[Dict[str, Any]] = None
-        self._data: Dict[str, Union[Deque[Union[int, float]], List[Union[int, float]]]] = {}
-        self._headers_windwos: Dict[str, Optional[int]] = {}
-        self._headers_minmax: Dict[str, bool] = {}
-        self._headers_delta: Dict[str, bool] = {}
-        self._current_row: Dict[str, Union[int, float]] = {}
+        self._what_to_save: dict[str, Any] | None = None
+        self._data: dict[str, Deque[int | float] | list[int | float]] = {}
+        self._headers_windwos: dict[str, int | None] = {}
+        self._headers_minmax: dict[str, bool] = {}
+        self._headers_delta: dict[str, bool] = {}
+        self._current_row: dict[str, int | float] = {}
 
         if config is not None:
             self.save_config(config)
@@ -176,7 +180,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             with open(os.path.join(self._log_dir, 'config.json'), encoding='utf-8', mode='w') as f:
                 f.write(config.tojson())
 
-    def setup_torch_saver(self, what_to_save: Dict[str, Any]) -> None:
+    def setup_torch_saver(self, what_to_save: dict[str, Any]) -> None:
         """Setup the torch saver.
 
         Args:
@@ -200,7 +204,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
     def register_key(
         self,
         key: str,
-        window_length: Optional[int] = None,
+        window_length: int | None = None,
         min_and_max: bool = False,
         delta: bool = False,
     ) -> None:
@@ -251,7 +255,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             self._data[key] = []
             self._headers_windwos[key] = None
 
-    def store(self, **kwargs: Union[int, float, np.ndarray, torch.Tensor]) -> None:
+    def store(self, **kwargs: int | float | np.ndarray | torch.Tensor) -> None:
         """Store the data to the logger.
 
         Args:
@@ -333,7 +337,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             if self._headers_windwos[key] is None:
                 self._data[key] = []
 
-    def get_stats(self, key, min_and_max: bool = False) -> Tuple[Union[int, float], ...]:
+    def get_stats(self, key, min_and_max: bool = False) -> tuple[int | float, ...]:
         """Get the statistics of the key.
 
         Args:
@@ -347,12 +351,13 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         if min_and_max:
             mean, std, min_val, max_val = dist_statistics_scalar(
-                torch.tensor(vals), with_min_and_max=True
+                torch.tensor(vals),
+                with_min_and_max=True,
             )
             return mean.item(), min_val.item(), max_val.item(), std.item()
 
         mean, std = dist_statistics_scalar(  # pylint: disable=unbalanced-tuple-unpacking
-            torch.tensor(vals)
+            torch.tensor(vals),
         )
         return (mean.item(),)
 

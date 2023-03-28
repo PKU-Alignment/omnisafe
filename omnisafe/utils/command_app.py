@@ -37,10 +37,14 @@ console = Console()
 @app.command()
 def train(  # pylint: disable=too-many-arguments
     algo: str = typer.Option(
-        'PPOLag', help=f"algorithm to train{omnisafe.ALGORITHMS['all']}", case_sensitive=False
+        'PPOLag',
+        help=f"algorithm to train{omnisafe.ALGORITHMS['all']}",
+        case_sensitive=False,
     ),
     env_id: str = typer.Option(
-        'SafetyHumanoidVelocity-v4', help='the name of test environment', case_sensitive=False
+        'SafetyHumanoidVelocity-v4',
+        help='the name of test environment',
+        case_sensitive=False,
     ),
     parallel: int = typer.Option(1, help='number of paralleled progress for calculations.'),
     total_steps: int = typer.Option(1638400, help='total number of steps to train for algorithm'),
@@ -48,7 +52,8 @@ def train(  # pylint: disable=too-many-arguments
     vector_env_nums: int = typer.Option(16, help='number of vector envs to use for training'),
     torch_threads: int = typer.Option(16, help='number of threads to use for torch'),
     log_dir: str = typer.Option(
-        os.path.join(os.getcwd()), help='directory to save logs, default is current directory'
+        os.path.abspath('.'),
+        help='directory to save logs, default is current directory',
     ),
     custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
 ):
@@ -100,7 +105,10 @@ def train(  # pylint: disable=too-many-arguments
 
 
 def train_grid(
-    exp_id: str, algo: str, env_id: str, custom_cfgs: NamedTuple
+    exp_id: str,
+    algo: str,
+    env_id: str,
+    custom_cfgs: NamedTuple,
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
 
@@ -129,13 +137,13 @@ def train_grid(
     if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
         os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
     # pylint: disable-next=consider-using-with
-    sys.stdout = open(
+    sys.stdout = open(  # noqa: SIM115
         os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', terminal_log_name),
         'w',
         encoding='utf-8',
     )
     # pylint: disable-next=consider-using-with
-    sys.stderr = open(
+    sys.stderr = open(  # noqa: SIM115
         os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', error_log_name),
         'w',
         encoding='utf-8',
@@ -150,10 +158,12 @@ def benchmark(
     exp_name: str = typer.Argument(..., help='experiment name'),
     num_pool: int = typer.Argument(..., help='number of paralleled experiments.'),
     config_path: str = typer.Argument(
-        ..., help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml'
+        ...,
+        help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml',
     ),
     log_dir: str = typer.Option(
-        os.path.join(os.getcwd()), help='directory to save logs, default is current directory'
+        os.path.abspath('.'),
+        help='directory to save logs, default is current directory',
     ),
 ):
     """Benchmark algorithms configured by .yaml file in OmniSafe via command line.
@@ -174,16 +184,17 @@ def benchmark(
     assert_with_exit(config_path.endswith('.yaml'), 'config file must be yaml file')
     with open(config_path, encoding='utf-8') as file:
         try:
-            configs = yaml.load(file, Loader=yaml.FullLoader)
+            configs = yaml.load(file, Loader=yaml.FullLoader)  # noqa: S506
             assert configs is not None, 'load file error'
         except yaml.YAMLError as exc:
-            assert False, f'load file error: {exc}'
+            raise AssertionError(f'load file error: {exc}') from exc
     assert_with_exit('algo' in configs, '`algo` must be specified in config file')
     assert_with_exit('env_id' in configs, '`env_id` must be specified in config file')
     if np.prod([len(v) if isinstance(v, list) else 1 for v in configs.values()]) % num_pool != 0:
         warnings.warn(
             'In order to maximize the use of computational resources, '
-            'total number of experiments should be evenly divided by `num_pool`'
+            'total number of experiments should be evenly divided by `num_pool`',
+            stacklevel=2,
         )
     log_dir = os.path.join(log_dir, 'benchmark')
     eg = ExperimentGrid(exp_name=exp_name)
@@ -250,10 +261,12 @@ def evaluate(
 @app.command()
 def train_config(
     config_path: str = typer.Argument(
-        ..., help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml'
+        ...,
+        help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml',
     ),
     log_dir: str = typer.Option(
-        os.path.join(os.getcwd()), help='directory to save logs, default is current directory'
+        os.path.abspath('.'),
+        help='directory to save logs, default is current directory',
     ),
 ):
     """Train a policy configured by .yaml file in OmniSafe via command line.
@@ -273,10 +286,10 @@ def train_config(
     assert_with_exit(config_path.endswith('.yaml'), 'config file must be yaml file')
     with open(config_path, encoding='utf-8') as file:
         try:
-            args = yaml.load(file, Loader=yaml.FullLoader)
+            args = yaml.load(file, Loader=yaml.FullLoader)  # noqa: S506
             assert args is not None, 'load file error'
         except yaml.YAMLError as exc:
-            assert False, f'load file error: {exc}'
+            raise AssertionError(f'load file error: {exc}') from exc
     assert_with_exit('algo' in args, '`algo` must be specified in config file')
     assert_with_exit('env_id' in args, '`env_id` must be specified in config file')
 

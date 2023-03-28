@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of the CPO algorithm."""
 
-from typing import Tuple
+from __future__ import annotations
 
 import torch
 
@@ -70,7 +70,7 @@ class CPO(TRPO):
         decay: float = 0.8,
         violation_c: int = 0,
         optim_case: int = 0,
-    ) -> Tuple[torch.Tensor, int]:
+    ) -> tuple[torch.Tensor, int]:
         r"""Use line-search to find the step size that satisfies the constraint.
 
         CPO uses line-search to find the step size that satisfies the constraint.
@@ -137,7 +137,7 @@ class CPO(TRPO):
             loss_reward_improve = distributed.dist_avg(loss_reward_improve)
             loss_cost_diff = distributed.dist_avg(loss_cost_diff)
             self._logger.log(
-                f'Expected Improvement: {expected_reward_improve} Actual: {loss_reward_improve}'
+                f'Expected Improvement: {expected_reward_improve} Actual: {loss_reward_improve}',
             )
             # check whether there are nan.
             if not torch.isfinite(loss_reward) and not torch.isfinite(loss_cost):
@@ -168,7 +168,7 @@ class CPO(TRPO):
         self._logger.store(
             **{
                 'Train/KL': kl,
-            }
+            },
         )
 
         set_param_values_to_model(self._actor_critic.actor, theta_old)
@@ -204,10 +204,9 @@ class CPO(TRPO):
         self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
         ratio = torch.exp(logp_ - logp)
-        cost_loss = (ratio * adv_c).mean()
-        return cost_loss
+        return (ratio * adv_c).mean()
 
-    # pylint: disable=invalid-name, too-many-arguments, too-many-locals
+    # pylint: disable=invalid-name,too-many-arguments,too-many-locals
     def _update_actor(
         self,
         obs: torch.Tensor,
@@ -377,5 +376,5 @@ class CPO(TRPO):
                 'Misc/q': q.item(),
                 'Misc/r': r.item(),
                 'Misc/s': s.item(),
-            }
+            },
         )
