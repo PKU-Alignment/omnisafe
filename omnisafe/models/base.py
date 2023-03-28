@@ -109,9 +109,6 @@ class Actor(ABC, nn.Module):
 
         Args:
             obs (torch.Tensor): observation.
-
-        Returns:
-            Distribution: the distribution of action.
         """
 
     @abstractmethod
@@ -150,7 +147,7 @@ class Actor(ABC, nn.Module):
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
         r"""Return the log probability of action under the distribution.
 
-        log_prob only can be called after calling ``predict`` or ``forward``.
+        ``log_prob`` only can be called after calling ``predict`` or ``forward``.
 
         Args:
             obs (torch.Tensor): observation.

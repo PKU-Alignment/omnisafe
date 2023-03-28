@@ -34,6 +34,12 @@ def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
         such as the :class:`TRPO` and :class:`CPO` algorithm.
         In these algorithms, the parameters are flattened and then used to calculate the loss.
 
+    Example:
+        >>> model = torch.nn.Linear(2, 2)
+        >>> model.weight.data = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
+        >>> get_flat_params_from(model)
+        tensor([1., 2., 3., 4.])
+
     Args:
         model (torch.nn.Module): model to be flattened.
     """
@@ -74,6 +80,15 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
         Some algorithms (e.g. TRPO, CPO, etc.) need to set the parameters to the model,
         instead of using the ``optimizer.step()``.
 
+    Example:
+        >>> model = torch.nn.Linear(2, 2)
+        >>> model.weight.data = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
+        >>> vals = torch.tensor([1.0, 2.0, 3.0, 4.0])
+        >>> set_param_values_to_model(model, vals)
+        >>> model.weight.data
+        tensor([[1., 2.],
+                [3., 4.]])
+
     Args:
         model (torch.nn.Module): model to be set.
         vals (torch.Tensor): parameters to be set.
@@ -93,7 +108,17 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
 
 
 def seed_all(seed: int):
-    """This function is used to set the random seed for all the packages."""
+    """This function is used to set the random seed for all the packages.
+
+    .. hint::
+        To reproduce the results, you need to set the random seed for all the packages.
+        Including ``numpy``, ``random``, ``torch``, ``torch.cuda``, ``torch.backends.cudnn``.
+
+    .. warning::
+        If you want to use the ``torch.backends.cudnn.benchmark`` or ``torch.backends.cudnn.
+        deterministic`` and your ``cuda`` version is over 10.2, you need to set the
+        ``CUBLAS_WORKSPACE_CONFIG`` and ``PYTHONHASHSEED`` environment variables.
+    """
 
     os.environ['PYTHONHASHSEED'] = str(seed)
 
@@ -183,7 +208,12 @@ def load_yaml(path) -> dict:
 
 
 def recursive_check_config(config, default_config, exclude_keys=()):
-    '''Check whether config is valid in default_config.'''
+    """Check whether config is valid in default_config.
+
+    Args:
+        config (dict): config to be checked.
+        default_config (dict): default config.
+    """
     for key in config.keys():
         if key not in default_config.keys() and key not in exclude_keys:
             raise KeyError(f'Invalid key: {key}')
@@ -191,8 +221,13 @@ def recursive_check_config(config, default_config, exclude_keys=()):
             recursive_check_config(config[key], default_config[key])
 
 
-def assert_with_exit(condition, msg):
-    '''Assert with message.'''
+def assert_with_exit(condition, msg) -> None:
+    """Assert with message.
+
+    Args:
+        condition (bool): condition to be checked.
+        msg (str): message to be printed.
+    """
     try:
         assert condition
     except AssertionError:
@@ -201,8 +236,12 @@ def assert_with_exit(condition, msg):
         sys.exit(1)
 
 
-def recursive_dict2json(dict_obj):
-    """This function is used to recursively convert the dict to json."""
+def recursive_dict2json(dict_obj) -> str:
+    """This function is used to recursively convert the dict to json.
+
+    Args:
+        dict_obj (dict): dict to be converted.
+    """
     assert isinstance(dict_obj, dict), 'Input must be a dict.'
     flat_dict = {}
 
@@ -219,9 +258,12 @@ def recursive_dict2json(dict_obj):
     return flat_dict_str
 
 
-def hash_string(string):
-    """This function is used to generate the folder name."""
-    # salt
+def hash_string(string) -> str:
+    """This function is used to generate the folder name.
+
+    Args:
+        string (str): string to be hashed.
+    """
     salt = b'\xf8\x99/\xe4\xe6J\xd8d\x1a\x9b\x8b\x98\xa2\x1d\xff3*^\\\xb1\xc1:e\x11M=PW\x03\xa5\\h'
     # convert string to bytes and add salt
     salted_string = salt + string.encode('utf-8')

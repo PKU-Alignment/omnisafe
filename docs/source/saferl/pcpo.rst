@@ -22,7 +22,7 @@ Background
 
 **Projection-Based Constrained Policy Optimization (PCPO)** is an iterative method for optimizing policy in a **two-stage process**: the first stage performs a local reward improvement update, while the second stage reconciles any constraint violation by projecting the policy back onto the constraint set.
 
-PCPO is an improvement work done on the basis of **CPO** (:doc:`../SafeRL/CPO`).
+PCPO is an improvement work done on the basis of **CPO** (:doc:`../saferl/cpo`).
 It provides a lower bound on reward improvement,
 and an upper bound on constraint violation, for each policy update just like CPO does.
 PCPO further characterizes the convergence of PCPO based on two different metrics: :math:`L2` norm and KL divergence.
@@ -31,7 +31,7 @@ In a word, PCPO is a CPO-based algorithm dedicated to solving problem of learnin
 
 .. hint::
 
-    If you have not previously learned the CPO type of algorithm, in order to facilitate your complete understanding of the PCPO algorithm ideas introduced in this section, we strongly recommend that you read this article after reading the CPO tutorial (:doc:`./CPO`) we wrote.
+    If you have not previously learned the CPO type of algorithm, in order to facilitate your complete understanding of the PCPO algorithm ideas introduced in this section, we strongly recommend that you read this article after reading the CPO tutorial (:doc:`./cpo`) we wrote.
 
 ------
 
@@ -99,7 +99,7 @@ Next, we will describe how PCPO completes the two-stage update.
                 \text{s.t.}\quad &\underset{s\sim d^{\pi_k}}{\mathbb{E}}[D_{KL}(\pi||\pi_k)[s]]\le\delta\nonumber
 
 
-            This update rule with the trust region is called **TRPO** (sees in :doc:`../BaseRL/TRPO`).
+            This update rule with the trust region is called **TRPO** (sees in :doc:`../baserl/trpo`).
             It constraints the policy changes to a divergence neighborhood and guarantees reward improvement.
 
     .. tab-item:: Stage 2
@@ -339,7 +339,7 @@ Analysis
 
 The update rule in :eq:`pcpo-eq-5` shows that the difference between PCPO with KL divergence and :math:`L2` norm projections is **the cost update direction**, leading to a difference in reward improvement.
 These two projections converge to different stationary points with different convergence rates related to the smallest and largest singular values of the Fisher information matrix shown in :bdg-info-line:`Theorem 3`.
-PCPO assumes that: PCPO minimizes the negative reward objective function :math:`f: R^n \rightarrow R` .
+PCPO assumes that: PCPO minimizes the negative reward objective function :math:`f: \mathbb{R}^n \rightarrow \mathbb{R}` .
 The function :math:`f` is :math:`L`-smooth and twice continuously differentiable over the closed and convex constraint set :math:`\mathcal{C}`.
 
 .. _Theorem 3:
@@ -451,7 +451,7 @@ Quick start
 
         .. tab-item:: Terminal config style
 
-            We use ``train_on_policy.py`` as the entrance file. You can train the agent with PCPO simply using ``train_on_policy.py``, with arguments about PCPO and environments does the training.
+            We use ``train_policy.py`` as the entrance file. You can train the agent with PCPO simply using ``train_policy.py``, with arguments about PCPO and environments does the training.
             For example, to run PCPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
 
             .. code-block:: bash

@@ -189,7 +189,7 @@ we use :math:`\boldsymbol{\theta}` to represent :math:`\pi_{\theta}`.
 
                \begin{aligned}
                   \label{def:problem-setting}
-                  \pi^{*}=\arg\max_{\pi_{\theta}\in\Pi_{C}} J(\pi_{\theta}).
+                  \pi^{*}=\arg\max_{\pi_\theta \in\Pi_{C}} J(\pi_{\theta}).
                \end{aligned}
 
             Respectively we have:

@@ -19,7 +19,7 @@ PPO Theorem
 Background
 ~~~~~~~~~~
 
-**Proximal Policy Optimization(PPO)** is a RL algorithm inheriting some of the benefits of :doc:`TRPO<TRPO>`,
+**Proximal Policy Optimization(PPO)** is a RL algorithm inheriting some of the benefits of :doc:`trpo<trpo>`,
 but are much simpler to implement.
 PPO share the same target with TRPO:
 how can we take a as big as improvement step on a policy update using the data we already have,
@@ -353,7 +353,7 @@ Quick start
 
         .. tab-item:: Terminal config style
 
-            We use ``train_on_policy.py`` as the entrance file. You can train the agent with PPO simply using ``train_on_policy.py``, with arguments about PPO and environments does the training.
+            We use ``train_policy.py`` as the entrance file. You can train the agent with PPO simply using ``train_policy.py``, with arguments about PPO and environments does the training.
             For example, to run PPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
 
             .. code-block:: bash

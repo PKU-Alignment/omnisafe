@@ -35,6 +35,24 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         num_envs: int,
         device: torch.device = torch.device('cpu'),
     ):
+        """Initialize the off policy buffer.
+
+        The vector-off-policy buffer is a vectorized version of the off-policy buffer.
+        It stores the data in a single tensor, and the data of each environment is
+        stored in a separate column.
+
+        .. warning::
+            The buffer only supports Box spaces.
+
+        Args:
+            obs_space (OmnisafeSpace): The observation space.
+            act_space (OmnisafeSpace): The action space.
+            size (int): The size of the buffer.
+            batch_size (int): The batch size of the buffer.
+            num_envs (int): The number of environments.
+            device (torch.device, optional): The device of the buffer. Defaults to
+                torch.device('cpu').
+        """
         self._num_envs = num_envs
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros(
@@ -74,6 +92,19 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         return self._num_envs
 
     def add_field(self, name: str, shape: tuple, dtype: torch.dtype):
+        """Add a field to the buffer.
+
+        Example:
+            >>> buffer = BaseBuffer(...)
+            >>> buffer.add_field('new_field', (2, 3), torch.float32)
+            >>> buffer.data['new_field'].shape
+            >>> (buffer.size, 2, 3)
+
+        Args:
+            name (str): The name of the field.
+            shape (tuple): The shape of the field.
+            dtype (torch.dtype): The dtype of the field.
+        """
         self.data[name] = torch.zeros(
             (self._max_size, self._num_envs, *shape), dtype=dtype, device=self._device
         )
