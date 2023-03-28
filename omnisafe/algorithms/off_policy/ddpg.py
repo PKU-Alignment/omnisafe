@@ -50,11 +50,11 @@ class DDPG(BaseAlgo):
         )
         assert (self._cfgs.algo_cfgs.update_cycle) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
-        ) == 0, ('The number of steps per epoch is not divisible by the number of ' 'environments.')
+        ) == 0, 'The number of steps per epoch is not divisible by the number of environments.'
 
-        assert int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.update_cycle == 0, (
-            'The total number of steps is not divisible by the number of steps ' 'per epoch.'
-        )
+        assert (
+            int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.update_cycle == 0
+        ), 'The total number of steps is not divisible by the number of steps per epoch.'
         self._epochs = int(self._cfgs.train_cfgs.total_steps // self._cfgs.algo_cfgs.update_cycle)
         self._epoch = 0
         self._update_cycle = self._cfgs.algo_cfgs.update_cycle // (

@@ -60,7 +60,7 @@ class PolicyGradient(BaseAlgo):
         )
         assert (self._cfgs.algo_cfgs.update_cycle) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
-        ) == 0, ('The number of steps per epoch is not divisible by the number of ' 'environments.')
+        ) == 0, 'The number of steps per epoch is not divisible by the number of environments.'
         self._steps_per_epoch = (
             self._cfgs.algo_cfgs.update_cycle
             // distributed.world_size()
