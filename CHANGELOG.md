@@ -83,7 +83,7 @@ PR [#97](https://github.com/PKU-MARL/omnisafe/pull/97).
 ### 2023-01-23 ~ 2023-01-29
 #### Features
 - Refactor(objects): change object type into free_geom by [@Borong Zhang](https://github.com/muchvo) in PR [#89](https://github.com/PKU-MARL/omnisafe/pull/89).
-- Chore: update algorithms configration by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#88](https://github.com/PKU-MARL/omnisafe/pull/88).
+- Chore: update algorithms configuration by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#88](https://github.com/PKU-MARL/omnisafe/pull/88).
 - Feat: support cuda by [@Jiayi Zhou](https://github.com/Gaiejj in PR [#86](https://github.com/PKU-MARL/omnisafe/pull/86).
 - Feat(render): add keyboard debug mode for some agents in all tasks by [@Borong Zhang](https://github.com/muchvo) in PR [#83](https://github.com/PKU-MARL/omnisafe/pull/83).
 - Feat: add experiment grid by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#84](https://github.com/PKU-MARL/omnisafe/pull/84).
