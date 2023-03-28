@@ -96,7 +96,7 @@ def test_actor(
     with pytest.raises(NotImplementedError):
         builder.build_actor(actor_type='invalid')  # type: ignore
 
-    dist = actor_learning(obs)
+    _ = actor_learning(obs)
     action = actor_learning.predict(obs, deterministic)
     assert action.shape == torch.Size([act_dim]), f'actor output shape is {action.shape}'
     lopp = actor_learning.log_prob(action)
@@ -104,7 +104,7 @@ def test_actor(
     actor_learning.std = 0.9  # type: ignore
     assert (actor_learning.std - 0.9) < 1e-4, f'actor std is {actor_learning.std}'  # type: ignore
 
-    dist = actor_sac(obs)
+    _ = actor_sac(obs)
     action = actor_sac.predict(obs, deterministic)
     assert action.shape == torch.Size([act_dim]), f'actor output shape is {action.shape}'
     lopp = actor_sac.log_prob(action)

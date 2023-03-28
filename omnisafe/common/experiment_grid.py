@@ -354,7 +354,7 @@ class ExperimentGrid:
                     new_var[k_0][sub_k] = value
                     unflatten_set.add(k_0)
                 else:
-                    assert not (key in new_var), "You can't assign multiple values to the same key."
+                    assert key not in new_var, "You can't assign multiple values to the same key."
                     new_var[key] = value
 
             # make sure to fill out the nested dict.

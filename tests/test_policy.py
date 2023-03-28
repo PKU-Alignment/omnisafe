@@ -16,8 +16,7 @@
 
 import helpers
 import omnisafe
-import simple_env
-from omnisafe.utils.distributed import fork
+import simple_env  # noqa: F401
 
 
 base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']

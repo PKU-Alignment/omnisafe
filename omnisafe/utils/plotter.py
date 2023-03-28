@@ -190,11 +190,9 @@ class Plotter:
                 logdirs += [logdir]
             else:
                 basedir = osp.dirname(logdir)
-                # pylint: disable=cell-var-from-loop, unnecessary-lambda-assignment
-                fulldir = lambda x: osp.join(basedir, x)
                 prefix = logdir.split(os.sep)[-1]
                 listdir = os.listdir(basedir)
-                logdirs += sorted([fulldir(x) for x in listdir if prefix in x])
+                logdirs += sorted([osp.join(basedir, x) for x in listdir if prefix in x])
 
         # Enforce selection rules, which check logdirs for certain sub strings.
         # Makes it easier to look at graphs from particular ablations, if you
@@ -202,7 +200,7 @@ class Plotter:
         if select is not None:
             logdirs = [log for log in logdirs if all(x in log for x in select)]
         if exclude is not None:
-            logdirs = [log for log in logdirs if all(not (x in log) for x in exclude)]
+            logdirs = [log for log in logdirs if all(x not in log for x in exclude)]
 
         # verify logdirs
         print('Plotting from...\n' + '=' * self.div_line_width + '\n')
