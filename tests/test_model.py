@@ -172,15 +172,8 @@ def test_actor_critic(
 def test_raise_error(obs_act_type):
     obs_type, act_type = obs_act_type
 
-    if obs_type == 'discrete':
-        obs_sapce = Discrete(10)
-    else:
-        obs_sapce = Box(low=-1.0, high=1.0, shape=(10,))  # type: ignore
-
-    if act_type == 'discrete':
-        act_space = Discrete(5)
-    else:
-        act_space = Box(low=-1.0, high=1.0, shape=(5,))  # type: ignore
+    obs_sapce = Discrete(10) if obs_type == 'discrete' else Box(low=-1.0, high=1.0, shape=(10,))
+    act_space = Discrete(5) if act_type == 'discrete' else Box(low=-1.0, high=1.0, shape=(5,))
 
     builder = ActorBuilder(
         obs_space=obs_sapce,

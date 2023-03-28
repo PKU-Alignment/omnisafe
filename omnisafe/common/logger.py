@@ -40,7 +40,7 @@ from omnisafe.utils.distributed import dist_statistics_scalar, get_rank
 # importing distutils.version.  We can workaround this by prepopulating the distutils.version
 # submodule in the distutils module.
 
-try:
+try:  # noqa: SIM105
     # pylint: disable-next=wrong-import-order,unused-import,deprecated-module
     import distutils.version  # isort:skip  # noqa: F401
 except ImportError:
@@ -112,7 +112,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self._output_file: TextIO
         if self._maste_proc:
             os.makedirs(self._log_dir, exist_ok=True)
-            self._output_file = open(  # pylint: disable=consider-using-with
+            self._output_file = open(  # noqa: SIM115 # pylint: disable=consider-using-with
                 os.path.join(self._log_dir, output_fname),
                 encoding='utf-8',
                 mode='w',

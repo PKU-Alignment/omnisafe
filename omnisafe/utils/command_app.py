@@ -138,13 +138,13 @@ def train_grid(
     if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
         os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
     # pylint: disable-next=consider-using-with
-    sys.stdout = open(
+    sys.stdout = open(  # noqa: SIM115
         os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', terminal_log_name),
         'w',
         encoding='utf-8',
     )
     # pylint: disable-next=consider-using-with
-    sys.stderr = open(
+    sys.stderr = open(  # noqa: SIM115
         os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', error_log_name),
         'w',
         encoding='utf-8',
