@@ -200,7 +200,7 @@ def load_yaml(path) -> dict:
     """
     with open(path, encoding='utf-8') as file:
         try:
-            kwargs = yaml.load(file, Loader=yaml.FullLoader)
+            kwargs = yaml.load(file, Loader=yaml.FullLoader)  # noqa: S506
         except yaml.YAMLError as exc:
             raise AssertionError(f'{path} error: {exc}') from exc
 

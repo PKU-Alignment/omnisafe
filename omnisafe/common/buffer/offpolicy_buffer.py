@@ -32,7 +32,7 @@ class OffPolicyBuffer(BaseBuffer):
         act_space: OmnisafeSpace,
         size: int,
         batch_size: int,
-        device: torch.device = torch.device('cpu'),
+        device: torch.device = 'cpu',
     ) -> None:
         """Initialize the off policy buffer.
 
@@ -60,6 +60,7 @@ class OffPolicyBuffer(BaseBuffer):
             device (torch.device, optional): The device of the buffer. Defaults to
                 torch.device('cpu').
         """
+        device = torch.device(device)
         super().__init__(obs_space, act_space, size, device)
         if isinstance(obs_space, Box):
             self.data['next_obs'] = torch.zeros(

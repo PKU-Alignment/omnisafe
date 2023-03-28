@@ -121,7 +121,7 @@ class StatisticsTools:
         for graph_dict in graph_paths:
             legend = []
             log_dirs = []
-            for (param, value), path in graph_dict.items():
+            for (param, value), path in graph_dict.items():  # noqa: B007
                 legend += [f'{value}']
                 log_dirs += [path]
                 img_name_cfgs = self.path_map_img_name[path]

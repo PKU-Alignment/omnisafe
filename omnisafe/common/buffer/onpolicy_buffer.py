@@ -43,7 +43,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         penalty_coefficient: float = 0,
         standardized_adv_r: bool = False,
         standardized_adv_c: bool = False,
-        device: torch.device = torch.device('cpu'),
+        device: torch.device = 'cpu',
     ) -> None:
         """Initialize the on-policy buffer.
 
@@ -104,6 +104,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             standardized_adv_c (bool, optional): Whether to standardize the advantages of the critic. Defaults to False.
             device (torch.device, optional): The device to store the data. Defaults to torch.device('cpu').
         """
+        device = torch.device(device)
         super().__init__(obs_space, act_space, size, device)
         self._standardized_adv_r = standardized_adv_r
         self._standardized_adv_c = standardized_adv_c
@@ -155,8 +156,8 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
     def finish_path(
         self,
-        last_value_r: torch.Tensor = torch.zeros(1),
-        last_value_c: torch.Tensor = torch.zeros(1),
+        last_value_r: torch.Tensor | None = None,
+        last_value_c: torch.Tensor | None = None,
     ) -> None:
         """Finish the current path and calculate the advantages of state-action pairs.
 
@@ -176,6 +177,11 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             last_value_c (torch.Tensor, optional): The value of the last state of the current path.
             Defaults to torch.zeros(1).
         """
+        if last_value_r is None:
+            last_value_r = torch.zeros(1, device=self._device)
+        if last_value_c is None:
+            last_value_c = torch.zeros(1, device=self._device)
+
         path_slice = slice(self.path_start_idx, self.ptr)
         last_value_r = last_value_r.to(self._device)
         last_value_c = last_value_c.to(self._device)

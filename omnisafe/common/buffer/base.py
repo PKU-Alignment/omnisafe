@@ -32,7 +32,7 @@ class BaseBuffer(ABC):
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
         size: int,
-        device: torch.device = torch.device('cpu'),
+        device: torch.device = 'cpu',
     ) -> None:
         """Initialize the buffer.
 
@@ -74,6 +74,7 @@ class BaseBuffer(ABC):
             size (int): The size of the buffer.
             device (torch.device): The device of the buffer.
         """
+        device = torch.device(device)
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros((size, *obs_space.shape), dtype=torch.float32, device=device)
         else:
@@ -103,7 +104,7 @@ class BaseBuffer(ABC):
         """Return the size of the buffer."""
         return self._size
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return the length of the buffer."""
         return self._size
 

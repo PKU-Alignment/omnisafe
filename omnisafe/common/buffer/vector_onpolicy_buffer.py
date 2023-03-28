@@ -39,7 +39,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         standardized_adv_r: bool,
         standardized_adv_c: bool,
         num_envs: int = 1,
-        device: torch.device = torch.device('cpu'),
+        device: torch.device = 'cpu',
     ) -> None:
         """Initialize the vector-on-policy buffer.
 
@@ -102,8 +102,8 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
 
     def finish_path(
         self,
-        last_value_r: torch.Tensor = torch.zeros(1),
-        last_value_c: torch.Tensor = torch.zeros(1),
+        last_value_r: torch.Tensor | None = None,
+        last_value_c: torch.Tensor | None = None,
         idx: int = 0,
     ) -> None:
         """Get the data in the buffer.

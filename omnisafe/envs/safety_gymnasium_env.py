@@ -80,7 +80,7 @@ class SafetyGymnasiumEnv(CMDP):
         self,
         env_id: str,
         num_envs: int = 1,
-        device: torch.device = torch.device('cpu'),
+        device: torch.device = 'cpu',
         **kwargs,
     ) -> None:
         super().__init__(env_id)
@@ -95,7 +95,7 @@ class SafetyGymnasiumEnv(CMDP):
 
         self._num_envs = num_envs
         self._metadata = self._env.metadata
-        self._device = device
+        self._device = torch.device(device)
 
     def step(
         self,

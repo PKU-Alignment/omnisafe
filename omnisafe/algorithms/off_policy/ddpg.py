@@ -64,9 +64,9 @@ class DDPG(BaseAlgo):
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         )
         self._steps_per_sample = self._cfgs.algo_cfgs.steps_per_sample
-        assert self._update_cycle % self._steps_per_sample == 0, (
-            'The number of steps per epoch is not divisible by the number of ' 'steps per sample.'
-        )
+        assert (
+            self._update_cycle % self._steps_per_sample == 0
+        ), 'The number of steps per epoch is not divisible by the number of steps per sample.'
         self._samples_per_epoch = self._update_cycle // self._steps_per_sample
 
     def _init_model(self) -> None:

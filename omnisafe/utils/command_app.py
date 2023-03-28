@@ -53,7 +53,7 @@ def train(  # pylint: disable=too-many-arguments
     vector_env_nums: int = typer.Option(16, help='number of vector envs to use for training'),
     torch_threads: int = typer.Option(16, help='number of threads to use for torch'),
     log_dir: str = typer.Option(
-        os.path.join(os.getcwd()),
+        os.path.abspath('.'),
         help='directory to save logs, default is current directory',
     ),
     custom_cfgs: list[str] = typer.Option([], help='custom configuration for training'),
@@ -163,7 +163,7 @@ def benchmark(
         help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml',
     ),
     log_dir: str = typer.Option(
-        os.path.join(os.getcwd()),
+        os.path.abspath('.'),
         help='directory to save logs, default is current directory',
     ),
 ):
@@ -185,7 +185,7 @@ def benchmark(
     assert_with_exit(config_path.endswith('.yaml'), 'config file must be yaml file')
     with open(config_path, encoding='utf-8') as file:
         try:
-            configs = yaml.load(file, Loader=yaml.FullLoader)
+            configs = yaml.load(file, Loader=yaml.FullLoader)  # noqa: S506
             assert configs is not None, 'load file error'
         except yaml.YAMLError as exc:
             raise AssertionError(f'load file error: {exc}') from exc
@@ -265,7 +265,7 @@ def train_config(
         help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml',
     ),
     log_dir: str = typer.Option(
-        os.path.join(os.getcwd()),
+        os.path.abspath('.'),
         help='directory to save logs, default is current directory',
     ),
 ):
@@ -286,7 +286,7 @@ def train_config(
     assert_with_exit(config_path.endswith('.yaml'), 'config file must be yaml file')
     with open(config_path, encoding='utf-8') as file:
         try:
-            args = yaml.load(file, Loader=yaml.FullLoader)
+            args = yaml.load(file, Loader=yaml.FullLoader)  # noqa: S506
             assert args is not None, 'load file error'
         except yaml.YAMLError as exc:
             raise AssertionError(f'load file error: {exc}') from exc

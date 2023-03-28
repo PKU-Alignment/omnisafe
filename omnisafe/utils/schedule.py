@@ -21,8 +21,8 @@ from abc import ABC, abstractmethod
 from typing import Optional, Union
 
 
-def _linear_interpolation(l, r, alpha):  # pylint: disable=invalid-name
-    return l + alpha * (r - l)
+def _linear_interpolation(left, right, alpha):
+    return left + alpha * (right - left)
 
 
 class Schedule(ABC):
@@ -62,11 +62,10 @@ class PiecewiseSchedule(Schedule):
         Args:
             t (float): Time.
         """
-        # pylint: disable=invalid-name
-        for (l_t, l), (r_t, r) in zip(self._endpoints[:-1], self._endpoints[1:]):
-            if l_t <= time < r_t:
-                alpha = float(time - l_t) / (r_t - l_t)
-                return self._interpolation(l, r, alpha)
+        for (left_t, left), (right_t, right) in zip(self._endpoints[:-1], self._endpoints[1:]):
+            if left_t <= time < right_t:
+                alpha = float(time - left_t) / (right_t - left_t)
+                return self._interpolation(left, right, alpha)
 
         # t does not belong to any of the pieces, so doom.
         assert self._outside_value is not None
