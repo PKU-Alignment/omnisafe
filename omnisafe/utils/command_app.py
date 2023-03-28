@@ -195,6 +195,7 @@ def benchmark(
         warnings.warn(
             'In order to maximize the use of computational resources, '
             'total number of experiments should be evenly divided by `num_pool`',
+            stacklevel=2,
         )
     log_dir = os.path.join(log_dir, 'benchmark')
     eg = ExperimentGrid(exp_name=exp_name)

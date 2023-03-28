@@ -94,7 +94,7 @@ if __name__ == '__main__':
     # gpu_id = None
 
     if set(gpu_id) > set(avaliable_gpus):
-        warnings.warn('The GPU ID is not available, use CPU instead.')
+        warnings.warn('The GPU ID is not available, use CPU instead.', stacklevel=1)
         gpu_id = None
 
     eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)

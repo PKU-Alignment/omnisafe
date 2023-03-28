@@ -242,7 +242,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             fps = self._env.metadata['render_fps']
         except AttributeError:
             fps = 30
-            warnings.warn('The fps is not found, use 30 as default.')
+            warnings.warn('The fps is not found, use 30 as default.', stacklevel=2)
 
         return fps
 

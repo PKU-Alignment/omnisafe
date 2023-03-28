@@ -115,6 +115,9 @@ convention = "google"
 [tool.doc8]
 max-line-length = 500
 
+[tool.codespell]
+ignore-words = "docs/source/spelling_wordlist.txt"
+
 [tool.ruff]
 # Sync with requires-python
 target-version = "py38"
@@ -149,7 +152,7 @@ ignore = [
     "E501",
     "W505",
     # TODO: Remove this four ignores
-    # ANN001: missing type annotation for function arugment
+    # ANN001: missing type annotation for function argument
     # ANN003: missing type annotation for `**kwargs`
     # ANN201: missing return type annotation for public function
     # ANN202: missing return type annotation for private function

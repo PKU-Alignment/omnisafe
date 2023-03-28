@@ -42,6 +42,15 @@ repos:
     hooks:
       - id: pyupgrade
         args: [--py38-plus]
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.4
+    hooks:
+    - id: codespell
+      additional_dependencies: [".[toml]"]
+      exclude: |
+          (?x)(
+            ^docs/source/spelling_wordlist.txt$
+          )
   - repo: local
     hooks:
       - id: pylint
