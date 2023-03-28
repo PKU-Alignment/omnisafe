@@ -106,8 +106,7 @@ class SauteAdapter(OnPolicyAdapter):
 
     def _safety_reward(self, reward: torch.Tensor) -> torch.Tensor:
         safe = torch.as_tensor(self._safety_obs > 0, dtype=reward.dtype).squeeze(-1)
-        reward = safe * reward + (1 - safe) * self._cfgs.env_cfgs.unsafe_reward
-        return reward
+        return safe * reward + (1 - safe) * self._cfgs.env_cfgs.unsafe_reward
 
     def _augment_obs(self, obs: torch.Tensor) -> torch.Tensor:
         return torch.cat([obs, self._safety_obs], dim=-1)

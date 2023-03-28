@@ -59,10 +59,11 @@ def get_answer(gamma: float):
     """Input gamma and return the answer."""
     if gamma == 0.9:
         return torch.tensor([11.4265, 11.5850, 10.6500, 8.5000, 5.0000], dtype=torch.float64)
-    elif gamma == 0.99:
+    if gamma == 0.99:
         return torch.tensor([14.6045, 13.7419, 11.8605, 8.9500, 5.0000], dtype=torch.float64)
-    elif gamma == 0.999:
+    if gamma == 0.999:
         return torch.tensor([14.9600, 13.9740, 11.9860, 8.9950, 5.0000], dtype=torch.float64)
+    return None
 
 
 @helpers.parametrize(

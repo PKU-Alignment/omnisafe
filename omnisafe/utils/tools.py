@@ -253,9 +253,7 @@ def recursive_dict2json(dict_obj) -> str:
             flat_dict[path[:-1]] = dict_obj
 
     _flatten_dict(dict_obj)
-    flat_dict_str = json.dumps(flat_dict, sort_keys=True).replace('"', "'")
-
-    return flat_dict_str
+    return json.dumps(flat_dict, sort_keys=True).replace('"', "'")
 
 
 def hash_string(string) -> str:
@@ -270,5 +268,4 @@ def hash_string(string) -> str:
     # use sha256 to hash
     hash_object = hashlib.sha256(salted_string)
     # get the hex digest
-    folder_name = hash_object.hexdigest()
-    return folder_name
+    return hash_object.hexdigest()

@@ -118,8 +118,7 @@ class ActorQCritic(nn.Module):
             The action, value_r, and log_prob.
         """
         with torch.no_grad():
-            act = self.actor.predict(obs, deterministic=deterministic)
-        return act
+            return self.actor.predict(obs, deterministic=deterministic)
 
     def forward(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
         """Choose the action based on the observation. used in training with gradient.

@@ -339,9 +339,7 @@ class StatisticsTools:
 
             return new_var
 
-        new_variants = [unflatten_var(var) for var in flat_variants]
-
-        return new_variants
+        return [unflatten_var(var) for var in flat_variants]
 
     def combine(self, sequence, num_choosen):
         """Combine elements in sequence to n elements."""

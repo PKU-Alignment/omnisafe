@@ -334,8 +334,7 @@ class DDPG(BaseAlgo):
         obs: torch.Tensor,
     ) -> torch.Tensor:
         action = self._actor_critic.actor.predict(obs, deterministic=True)
-        loss = -self._actor_critic.reward_critic(obs, action)[0].mean()
-        return loss
+        return -self._actor_critic.reward_critic(obs, action)[0].mean()
 
     def _log_when_not_update(self) -> None:
         self._logger.store(

@@ -100,7 +100,6 @@ def fork(
         bind_to_core (bool, optional): Defaults to False.
         use_number_of_threads (bool, optional): Defaults to False.
     """
-    is_parent: bool = False
     backend = 'gloo' if device == 'cpu' else 'nccl'
     if os.getenv('MASTER_ADDR') is not None and os.getenv('IN_DIST') is None:
         dist.init_process_group(backend=backend)
@@ -131,8 +130,8 @@ def fork(
             print(sys.argv)
         # this is the parent process, spawn sub-processes..
         subprocess.check_call(args, env=env)
-        is_parent = True
-    return is_parent
+        return True
+    return False
 
 
 def avg_tensor(value: torch.Tensor) -> None:

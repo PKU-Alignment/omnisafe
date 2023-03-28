@@ -215,8 +215,7 @@ class SAC(DDPG):
         action = self._actor_critic.actor.predict(obs, deterministic=False)
         log_prob = self._actor_critic.actor.log_prob(action)
         q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
-        loss = (self._alpha * log_prob - torch.min(q1_value_r, q2_value_r)).mean()
-        return loss
+        return (self._alpha * log_prob - torch.min(q1_value_r, q2_value_r)).mean()
 
     def _log_when_not_update(self) -> None:
         super()._log_when_not_update()

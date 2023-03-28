@@ -216,8 +216,7 @@ class SafeTanhTransformer(TanhTransform):
         else:
             raise ValueError('Expected floating point type')
         y = y.clamp(min=-1 + eps, max=1 - eps)
-        x = super()._inverse(y)
-        return x
+        return super()._inverse(y)
 
 
 class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method

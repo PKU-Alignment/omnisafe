@@ -48,5 +48,4 @@ def valid_str(vals: list | str) -> str:
     # with '-'.
     str_v = str(vals).lower()
     valid_chars = f'-_{string.ascii_letters}{string.digits}'
-    str_v = ''.join(c if c in valid_chars else '-' for c in str_v)
-    return str_v
+    return ''.join(c if c in valid_chars else '-' for c in str_v)

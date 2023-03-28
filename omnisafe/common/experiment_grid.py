@@ -144,8 +144,7 @@ class ExperimentGrid:
         def shear(value):
             return ''.join(z for z in value[:3] if z in valid_chars)
 
-        shorthand = '-'.join([shear(x) for x in key.split(':')])
-        return shorthand
+        return '-'.join([shear(x) for x in key.split(':')])
 
     def add(self, key, vals, shorthand=None, in_name=False):
         r"""Add a parameter (key) to the grid config, with potential values (vals).
@@ -366,9 +365,7 @@ class ExperimentGrid:
 
             return new_var
 
-        new_variants = [unflatten_var(var) for var in flat_variants]
-
-        return new_variants
+        return [unflatten_var(var) for var in flat_variants]
 
     # pylint: disable-next=too-many-locals
     def run(self, thunk, num_pool=1, parent_dir=None, is_test=False, gpu_id=None):

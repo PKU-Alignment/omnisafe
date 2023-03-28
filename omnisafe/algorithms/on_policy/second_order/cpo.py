@@ -204,8 +204,7 @@ class CPO(TRPO):
         self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
         ratio = torch.exp(logp_ - logp)
-        cost_loss = (ratio * adv_c).mean()
-        return cost_loss
+        return (ratio * adv_c).mean()
 
     # pylint: disable=invalid-name, too-many-arguments, too-many-locals
     def _update_actor(

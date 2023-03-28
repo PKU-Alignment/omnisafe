@@ -126,5 +126,4 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             device=self._device,
         )
         env_idx = torch.arange(self._num_envs, device=self._device).repeat(self._batch_size)
-        batch = {key: value[idx, env_idx] for key, value in self.data.items()}
-        return batch
+        return {key: value[idx, env_idx] for key, value in self.data.items()}
