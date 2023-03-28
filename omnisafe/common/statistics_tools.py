@@ -255,8 +255,8 @@ class StatisticsTools:
         return variants
 
     def update_dic(self, total_dic, item_dic):
-        '''Updater of multi-level dictionary.'''
-        for idd in item_dic.keys():
+        """Updater of multi-level dictionary."""
+        for idd in item_dic:
             total_value = total_dic.get(idd)
             item_value = item_dic.get(idd)
 

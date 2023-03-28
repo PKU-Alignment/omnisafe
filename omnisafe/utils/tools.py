@@ -173,8 +173,8 @@ def custom_cfgs_to_dict(key_list, value):
 
 
 def update_dic(total_dic, item_dic):
-    '''Updater of multi-level dictionary.'''
-    for idd in item_dic.keys():
+    """Updater of multi-level dictionary."""
+    for idd in item_dic:
         total_value = total_dic.get(idd)
         item_value = item_dic.get(idd)
 
@@ -214,7 +214,7 @@ def recursive_check_config(config, default_config, exclude_keys=()):
         config (dict): config to be checked.
         default_config (dict): default config.
     """
-    for key in config.keys():
+    for key in config:
         if key not in default_config.keys() and key not in exclude_keys:
             raise KeyError(f'Invalid key: {key}')
         if isinstance(config[key], dict):

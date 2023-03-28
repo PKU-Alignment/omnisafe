@@ -140,11 +140,9 @@ def discount_cumsum(x_vector: torch.Tensor, discount: float) -> torch.Tensor:
     """
     length = x_vector.shape[0]
     x_vector = x_vector.type(torch.float64)
-    for idx in reversed(range(length)):
-        if idx == length - 1:
-            cumsum = x_vector[idx]
-        else:
-            cumsum = x_vector[idx] + discount * cumsum
+    cumsum = x_vector[-1]
+    for idx in reversed(range(length - 1)):
+        cumsum = x_vector[idx] + discount * cumsum
         x_vector[idx] = cumsum
     return x_vector
 

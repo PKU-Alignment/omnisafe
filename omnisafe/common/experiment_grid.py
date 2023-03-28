@@ -254,7 +254,7 @@ class ExperimentGrid:
             total_dic (dict): Total dictionary.
             item_dic (dict): Item dictionary.
         """
-        for idd in item_dic.keys():
+        for idd in item_dic:
             total_value = total_dic.get(idd)
             item_value = item_dic.get(idd)
 

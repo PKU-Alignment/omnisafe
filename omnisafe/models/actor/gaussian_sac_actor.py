@@ -94,10 +94,7 @@ class GaussianSACActor(Actor):
         self._current_dist = self._distribution(obs)
         self._after_inference = True
 
-        if deterministic:
-            action = self._current_dist.mean
-        else:
-            action = self._current_dist.rsample()
+        action = self._current_dist.mean if deterministic else self._current_dist.rsample()
 
         self._current_raw_action = action
 
