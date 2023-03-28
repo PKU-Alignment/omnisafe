@@ -14,9 +14,10 @@
 # ==============================================================================
 """Test utils"""
 
+from __future__ import annotations
+
 import os
 import sys
-from typing import Tuple
 
 import pytest
 import torch
@@ -102,7 +103,7 @@ def test_math():
 
 def train(
     exp_id: str, algo: str, env_id: str, custom_cfgs: Config, num_threads: int = 6
-) -> Tuple[float, float, float]:
+) -> tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
     Args:
         exp_id (str): Experiment ID.

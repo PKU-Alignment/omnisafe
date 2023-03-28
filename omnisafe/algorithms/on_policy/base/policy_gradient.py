@@ -14,8 +14,10 @@
 # ==============================================================================
 """Implementation of the Policy Gradient algorithm."""
 
+from __future__ import annotations
+
 import time
-from typing import Any, Dict, Tuple, Union
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -185,7 +187,7 @@ class PolicyGradient(BaseAlgo):
             config=self._cfgs,
         )
 
-        what_to_save: Dict[str, Any] = {}
+        what_to_save: dict[str, Any] = {}
         what_to_save['pi'] = self._actor_critic.actor
         if self._cfgs.algo_cfgs.obs_normalize:
             obs_normalizer = self._env.save()['obs_normalizer']
@@ -227,7 +229,7 @@ class PolicyGradient(BaseAlgo):
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
-    def learn(self) -> Tuple[Union[int, float], ...]:
+    def learn(self) -> tuple[int | float, ...]:
         r"""This is main function for algorithm update, divided into the following steps,
 
         - :meth:`rollout`: collect interactive data from environment.
@@ -527,7 +529,7 @@ class PolicyGradient(BaseAlgo):
         act: torch.Tensor,
         logp: torch.Tensor,
         adv: torch.Tensor,
-    ) -> Tuple[torch.Tensor, Dict[str, float]]:
+    ) -> tuple[torch.Tensor, dict[str, float]]:
         r"""Computing pi/actor loss.
 
         In Policy Gradient, the loss is defined as:

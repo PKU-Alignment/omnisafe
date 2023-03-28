@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of ActorBuilder."""
 
-from typing import List
+from __future__ import annotations
 
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
@@ -31,7 +31,7 @@ class ActorBuilder:
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:

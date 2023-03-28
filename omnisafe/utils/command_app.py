@@ -14,10 +14,11 @@
 # ==============================================================================
 """Implementation of the command interfaces."""
 
+from __future__ import annotations
+
 import os
 import sys
 import warnings
-from typing import List
 
 import numpy as np
 import typer
@@ -50,7 +51,7 @@ def train(  # pylint: disable=too-many-arguments
     log_dir: str = typer.Option(
         os.path.join(os.getcwd()), help='directory to save logs, default is current directory'
     ),
-    custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
+    custom_cfgs: list[str] = typer.Option([], help='custom configuration for training'),
 ):
     """Train a single policy in OmniSafe via command line.
 

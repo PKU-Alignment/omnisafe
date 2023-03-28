@@ -14,8 +14,9 @@
 # ==============================================================================
 """Abstract base class for buffer."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Dict
 
 import torch
 from gymnasium.spaces import Box
@@ -82,7 +83,7 @@ class BaseBuffer(ABC):
         else:
             raise NotImplementedError
 
-        self.data: Dict[str, torch.Tensor] = {
+        self.data: dict[str, torch.Tensor] = {
             'obs': obs_buf,
             'act': act_buf,
             'reward': torch.zeros(size, dtype=torch.float32, device=device),

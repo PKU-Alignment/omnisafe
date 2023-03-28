@@ -15,8 +15,10 @@
 # ==============================================================================
 """helper class to generate scheduling params"""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 
 def _linear_interpolation(l, r, alpha):  # pylint: disable=invalid-name
@@ -27,7 +29,7 @@ class Schedule(ABC):
     """Schedule for a value based on the step"""
 
     @abstractmethod
-    def value(self, time: Union[int, float]) -> Union[int, float]:
+    def value(self, time: int | float) -> int | float:
         """Value at time t.
 
         Args:
@@ -44,7 +46,7 @@ class PiecewiseSchedule(Schedule):
 
     def __init__(
         self,
-        endpoints: List[Tuple[int, float]],
+        endpoints: list[tuple[int, float]],
         outside_value=Optional[Union[int, float]],
     ) -> None:
         """From OpenAI baselines"""
@@ -54,7 +56,7 @@ class PiecewiseSchedule(Schedule):
         self._outside_value = outside_value
         self._endpoints = endpoints
 
-    def value(self, time: Union[int, float]) -> Union[int, float]:
+    def value(self, time: int | float) -> int | float:
         """Value at time t.
 
         Args:
@@ -78,8 +80,6 @@ class ConstantSchedule(Schedule):
         """Value remains constant over time."""
         self._v = value
 
-    def value(
-        self, time: Union[int, float]
-    ) -> Union[int, float]:  # pylint: disable=unused-argument
+    def value(self, time: int | float) -> int | float:  # pylint: disable=unused-argument
         """See Schedule.value"""
         return self._v

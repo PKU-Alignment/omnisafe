@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of MLPActorActor."""
 
-from typing import List
+from __future__ import annotations
 
 import torch
 from torch.distributions import Distribution
@@ -32,7 +32,7 @@ class MLPActor(Actor):
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         output_activation: Activation = 'identity',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',

@@ -14,8 +14,10 @@
 # ==============================================================================
 """Simplest environment for testing."""
 
+from __future__ import annotations
+
 import random
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import torch
 from gymnasium import spaces
@@ -38,7 +40,7 @@ class SimpleEnv(CMDP):
 
     def step(
         self, action: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         obs = torch.as_tensor(self._observation_space.sample())
         reward = torch.as_tensor(random.random())
         cost = torch.as_tensor(random.random())
@@ -46,7 +48,7 @@ class SimpleEnv(CMDP):
         truncated = torch.as_tensor(random.random() > 0.5)
         return obs, reward, cost, termiated, truncated, {}
 
-    def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
+    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
         if seed is not None:
             self.set_seed(seed)
         obs = torch.as_tensor(self._observation_space.sample())

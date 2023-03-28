@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of GaussianStdNetActor."""
 
-from typing import List
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
@@ -33,7 +33,7 @@ class GaussianLearningActor(GaussianActor):
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:

@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of VectorOffPolicyBuffer."""
 
-from typing import Dict
+from __future__ import annotations
 
 import torch
 from gymnasium.spaces import Box
@@ -109,7 +109,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             (self._max_size, self._num_envs, *shape), dtype=dtype, device=self._device
         )
 
-    def sample_batch(self) -> Dict[str, torch.Tensor]:
+    def sample_batch(self) -> dict[str, torch.Tensor]:
         """Sample a batch from the buffer."""
         idx = torch.randint(
             0, self._size, (self._batch_size * self._num_envs,), device=self._device

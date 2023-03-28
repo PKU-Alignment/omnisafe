@@ -14,7 +14,7 @@
 # ==============================================================================
 """This module contains the helper functions for the model."""
 
-from typing import List, Type, Union
+from __future__ import annotations
 
 import numpy as np
 import torch
@@ -48,7 +48,7 @@ def initialize_layer(init_function: InitFunction, layer: nn.Linear) -> None:
 
 def get_activation(
     activation: Activation,
-) -> Union[Type[nn.Identity], Type[nn.ReLU], Type[nn.Sigmoid], Type[nn.Softplus], Type[nn.Tanh]]:
+) -> type[nn.Identity] | type[nn.ReLU] | type[nn.Sigmoid] | type[nn.Softplus] | type[nn.Tanh]:
     """Get the activation function.
 
     The ``activation`` can be chosen from:
@@ -69,7 +69,7 @@ def get_activation(
 
 
 def build_mlp_network(
-    sizes: List[int],
+    sizes: list[int],
     activation: Activation,
     output_activation: Activation = 'identity',
     weight_initialization_mode: InitFunction = 'kaiming_uniform',
@@ -105,7 +105,7 @@ def build_mlp_network(
 
 
 def set_optimizer(
-    opt: str, module: Union[nn.Module, List[nn.Parameter]], learning_rate: float
+    opt: str, module: nn.Module | list[nn.Parameter], learning_rate: float
 ) -> torch.optim.Optimizer:
     """Returns an initialized optimizer from PyTorch.
 

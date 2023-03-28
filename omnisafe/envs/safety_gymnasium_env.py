@@ -14,8 +14,9 @@
 # ==============================================================================
 """Environments in the Safety Gymnasium."""
 
+from __future__ import annotations
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import safety_gymnasium
@@ -94,7 +95,7 @@ class SafetyGymnasiumEnv(CMDP):
 
     def step(
         self, action: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         obs, reward, cost, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy()
         )
@@ -115,7 +116,7 @@ class SafetyGymnasiumEnv(CMDP):
 
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
+    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
         obs, info = self._env.reset(seed=seed)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
 

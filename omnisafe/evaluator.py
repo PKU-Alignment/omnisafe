@@ -14,10 +14,12 @@
 # ==============================================================================
 """Implementation of Evaluator."""
 
+from __future__ import annotations
+
 import json
 import os
 import warnings
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -90,7 +92,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             ) from error
         self._cfgs = Config.dict2config(kwargs)
 
-    def __load_model_and_env(self, save_dir: str, model_name: str, env_kwargs: Dict[str, Any]):
+    def __load_model_and_env(self, save_dir: str, model_name: str, env_kwargs: dict[str, Any]):
         """Load the model from the save directory.
 
         Args:
@@ -139,10 +141,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         save_dir: str,
         model_name: str,
-        camera_name: Optional[str] = None,
-        camera_id: Optional[int] = None,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
+        camera_name: str | None = None,
+        camera_id: int | None = None,
+        width: int | None = None,
+        height: int | None = None,
     ):
         """Load a saved model.
 
@@ -187,9 +189,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 'The environment and the policy must be provided or created before evaluating the agent.'
             )
 
-        episode_rewards: List[float] = []
-        episode_costs: List[float] = []
-        episode_lengths: List[float] = []
+        episode_rewards: list[float] = []
+        episode_costs: list[float] = []
+        episode_lengths: list[float] = []
 
         for episode in range(num_episodes):
             obs, _ = self._env.reset()
@@ -247,7 +249,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     def render(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         self,
         num_episodes: int = 0,
-        save_replay_path: Optional[str] = None,
+        save_replay_path: str | None = None,
         max_render_steps: int = 2000,
         cost_criteria: float = 1.0,
     ):
@@ -273,9 +275,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         elif self._render_mode == 'rgb_array':
             frames.append(self._env.render())
 
-        episode_rewards: List[float] = []
-        episode_costs: List[float] = []
-        episode_lengths: List[float] = []
+        episode_rewards: list[float] = []
+        episode_costs: list[float] = []
+        episode_lengths: list[float] = []
 
         for episode_idx in range(num_episodes):
             step = 0

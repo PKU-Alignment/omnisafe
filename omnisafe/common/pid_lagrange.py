@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of PID Lagrange."""
 
+from __future__ import annotations
+
 import abc
 from collections import deque
 from typing import Deque

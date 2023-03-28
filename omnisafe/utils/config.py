@@ -14,9 +14,11 @@
 # ==============================================================================
 """Implementation of Config."""
 
+from __future__ import annotations
+
 import json
 import os
-from typing import Any, Dict, List
+from typing import Any
 
 from omnisafe.typing import Activation, ActorType, AdvatageEstimator, InitFunction
 from omnisafe.utils.tools import load_yaml
@@ -59,15 +61,15 @@ class Config(dict):
     max_grad_norm: float
     use_critic_norm: bool
     critic_norm_coeff: bool
-    model_cfgs: 'ModelConfig'
-    buffer_cfgs: 'Config'
+    model_cfgs: ModelConfig
+    buffer_cfgs: Config
     gamma: float
     lam: float
     lam_c: float
     adv_eastimator: AdvatageEstimator
     standardized_rew_adv: bool
     standardized_cost_adv: bool
-    env_cfgs: 'Config'
+    env_cfgs: Config
     num_envs: int
     async_env: bool
     normalized_rew: bool
@@ -110,7 +112,7 @@ class Config(dict):
         return json.dumps(self.todict(), indent=4)
 
     @staticmethod
-    def dict2config(config_dict: dict) -> 'Config':
+    def dict2config(config_dict: dict) -> Config:
         """Convert dictionary to Config.
 
         Args:
@@ -124,7 +126,7 @@ class Config(dict):
                 config[key] = value
         return config
 
-    def recurisve_update(self, update_args: Dict[str, Any]) -> None:
+    def recurisve_update(self, update_args: dict[str, Any]) -> None:
         """Recursively update args.
 
         Args:
@@ -153,11 +155,11 @@ class ModelConfig(Config):
 
     weight_initialization_mode: InitFunction
     actor_type: ActorType
-    actor: 'ModelConfig'
-    critic: 'ModelConfig'
-    hidden_sizes: List[int]
+    actor: ModelConfig
+    critic: ModelConfig
+    hidden_sizes: list[int]
     activation: Activation
-    std: List[float]
+    std: list[float]
     use_obs_encoder: bool
     lr: float
 

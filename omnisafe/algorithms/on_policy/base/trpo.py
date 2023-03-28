@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of the TRPO algorithm."""
 
-from typing import Tuple
+from __future__ import annotations
 
 import torch
 from torch.distributions import Distribution
@@ -57,7 +57,7 @@ class TRPO(NaturalPG):
         loss_before: float,
         total_steps: int = 15,
         decay: float = 0.8,
-    ) -> Tuple[torch.Tensor, int]:
+    ) -> tuple[torch.Tensor, int]:
         """TRPO performs `line-search <https://en.wikipedia.org/wiki/Line_search>`_ until constraint satisfaction.
 
         .. hint::

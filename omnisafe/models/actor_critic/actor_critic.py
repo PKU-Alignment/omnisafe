@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of ActorCritic."""
 
-from typing import List, Tuple
+from __future__ import annotations
 
 import torch
 from torch import nn, optim
@@ -103,7 +103,7 @@ class ActorCritic(nn.Module):
 
             self.std_schedule: Schedule
 
-    def step(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
+    def step(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in rollout without gradient.
 
         Args:
@@ -119,7 +119,7 @@ class ActorCritic(nn.Module):
             log_prob = self.actor.log_prob(act)
         return act, value_r[0], log_prob
 
-    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
+    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in training with gradient.
 
         Args:
@@ -131,7 +131,7 @@ class ActorCritic(nn.Module):
         """
         return self.step(obs, deterministic=deterministic)
 
-    def set_annealing(self, epochs: List[float], std: List[float]) -> None:
+    def set_annealing(self, epochs: list[float], std: list[float]) -> None:
         """Set the annealing mode for the actor.
 
         Args:

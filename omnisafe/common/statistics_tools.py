@@ -14,11 +14,12 @@
 # ==============================================================================
 """Implementation of the statistics tools."""
 
+from __future__ import annotations
+
 import itertools
 import json
 import os
 from copy import deepcopy
-from typing import Dict, List
 
 from omnisafe.utils.plotter import Plotter
 from omnisafe.utils.tools import assert_with_exit, hash_string, recursive_dict2json, update_dic
@@ -160,7 +161,7 @@ class StatisticsTools:
                 if it is specified, will combine any potential combination to compare.
         """
         self.path_map_img_name = {}
-        graph_groups: List[List] = []
+        graph_groups: list[list] = []
         if values:
             assert_with_exit(
                 all(v in parameter_values for v in values),
@@ -236,7 +237,7 @@ class StatisticsTools:
     def _variants(self, keys, vals):
         """Recursively builds list of valid variants."""
         if len(keys) == 1:
-            pre_variants: List[Dict] = [{}]
+            pre_variants: list[dict] = [{}]
         else:
             pre_variants = self._variants(keys[1:], vals[1:])
 
@@ -304,7 +305,7 @@ class StatisticsTools:
 
         def unflatten_var(var):
             """Build the full nested dict version of var, based on key names."""
-            new_var: Dict = {}
+            new_var: dict = {}
             unflatten_set = set()
 
             for key, value in var.items():

@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of the CPO algorithm."""
 
-from typing import Tuple
+from __future__ import annotations
 
 import torch
 
@@ -70,7 +70,7 @@ class CPO(TRPO):
         decay: float = 0.8,
         violation_c: int = 0,
         optim_case: int = 0,
-    ) -> Tuple[torch.Tensor, int]:
+    ) -> tuple[torch.Tensor, int]:
         r"""Use line-search to find the step size that satisfies the constraint.
 
         CPO uses line-search to find the step size that satisfies the constraint.

@@ -14,9 +14,11 @@
 # ==============================================================================
 """Implementation of the AlgoWrapper Class."""
 
+from __future__ import annotations
+
 import difflib
 import sys
-from typing import Any, Dict, Optional
+from typing import Any
 
 import psutil
 import torch
@@ -35,8 +37,8 @@ class AlgoWrapper:
         self,
         algo: str,
         env_id: str,
-        train_terminal_cfgs: Optional[Dict[str, Any]] = None,
-        custom_cfgs: Optional[Dict[str, Any]] = None,
+        train_terminal_cfgs: dict[str, Any] | None = None,
+        custom_cfgs: dict[str, Any] | None = None,
     ):
         self.algo = algo
         self.env_id = env_id

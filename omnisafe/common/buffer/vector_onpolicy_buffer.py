@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of VectorOnPolicyBuffer."""
 
-from typing import Dict
+from __future__ import annotations
 
 import torch
 
@@ -121,7 +121,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         """
         self.buffers[idx].finish_path(last_value_r, last_value_c)
 
-    def get(self) -> Dict[str, torch.Tensor]:
+    def get(self) -> dict[str, torch.Tensor]:
         """Get the data from the buffer."""
         data_pre = {k: [v] for k, v in self.buffers[0].get().items()}
         for buffer in self.buffers[1:]:

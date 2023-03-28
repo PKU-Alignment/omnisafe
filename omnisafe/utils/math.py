@@ -13,7 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the algo utils."""
-from typing import Callable, Tuple
+
+from __future__ import annotations
+
+from typing import Callable
 
 import torch
 from torch.distributions import Normal, TanhTransform, TransformedDistribution, constraints
@@ -77,7 +80,7 @@ def safe_inverse(var_q: torch.Tensor, det: torch.Tensor) -> torch.Tensor:
 
 def gaussian_kl(
     mean_p: torch.Tensor, mean_q: torch.Tensor, var_p: torch.Tensor, var_q: torch.Tensor
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     r"""Decoupled KL between two gaussian distribution.
 
     .. note::

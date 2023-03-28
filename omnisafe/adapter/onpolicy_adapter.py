@@ -14,7 +14,7 @@
 # ==============================================================================
 """OnPolicy Adapter for OmniSafe."""
 
-from typing import Dict, Optional
+from __future__ import annotations
 
 import torch
 from rich.progress import track
@@ -114,7 +114,7 @@ class OnPolicyAdapter(OnlineAdapter):
         self,
         reward: torch.Tensor,
         cost: torch.Tensor,
-        info: Dict,
+        info: dict,
         **kwargs,  # pylint: disable=unused-argument
     ) -> None:
         """Log value."""
@@ -133,7 +133,7 @@ class OnPolicyAdapter(OnlineAdapter):
             }
         )
 
-    def _reset_log(self, idx: Optional[int] = None) -> None:
+    def _reset_log(self, idx: int | None = None) -> None:
         """Reset log."""
         if idx is None:
             self._ep_ret = torch.zeros(self._env.num_envs)

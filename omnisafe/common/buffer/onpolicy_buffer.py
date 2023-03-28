@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of OnPolicyBuffer."""
 
-from typing import Dict, Tuple
+from __future__ import annotations
 
 import torch
 
@@ -202,7 +202,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
         self.path_start_idx = self.ptr
 
-    def get(self) -> Dict[str, torch.Tensor]:
+    def get(self) -> dict[str, torch.Tensor]:
         """Get the data in the buffer.
 
         .. hint::
@@ -244,7 +244,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         values: torch.Tensor,
         rewards: torch.Tensor,
         lam: float,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         r"""Compute the estimated advantage.
 
         Three methods are supported:
@@ -343,7 +343,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         gamma: float = 0.99,
         rho_bar: float = 1.0,
         c_bar: float = 1.0,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor,]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         r"""This function is used to calculate V-trace targets.
 
         .. math::

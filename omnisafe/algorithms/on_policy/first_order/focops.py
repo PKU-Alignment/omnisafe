@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of the FOCOPS algorithm."""
 
-from typing import Dict, Tuple
+from __future__ import annotations
 
 import torch
 from rich.progress import track
@@ -65,7 +65,7 @@ class FOCOPS(PolicyGradient):
 
     def _loss_pi(
         self, obs: torch.Tensor, act: torch.Tensor, logp: torch.Tensor, adv: torch.Tensor
-    ) -> Tuple[torch.Tensor, Dict[str, float]]:
+    ) -> tuple[torch.Tensor, dict[str, float]]:
         r"""Compute pi/actor loss.
 
         In FOCOPS, the loss is defined as:

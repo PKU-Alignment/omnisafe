@@ -14,10 +14,12 @@
 # ==============================================================================
 """torch.distributed for multi-processing"""
 
+from __future__ import annotations
+
 import os
 import subprocess
 import sys
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 import torch
@@ -80,7 +82,7 @@ def fork(
     bind_to_core: bool = False,
     use_number_of_threads: bool = False,
     device: str = 'cpu',
-    manual_args: Optional[List[str]] = None,
+    manual_args: list[str] | None = None,
 ) -> bool:
     """The entrance of multi-processing.
 
@@ -253,7 +255,7 @@ def avg_params(module: torch.nn.Module) -> None:
             param_tensor[:] = avg_param_tensor[:]
 
 
-def dist_avg(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor:
+def dist_avg(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     """Average a tensor over distributed processes.
 
     Example:
@@ -269,7 +271,7 @@ def dist_avg(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor
     return dist_sum(value) / world_size()
 
 
-def dist_max(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor:
+def dist_max(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     """Determine global maximum of tensor over distributed processes.
 
     Example:
@@ -284,7 +286,7 @@ def dist_max(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor
     return dist_op(value, ReduceOp.MAX)
 
 
-def dist_min(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor:
+def dist_min(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     """Determine global minimum of tensor over distributed processes.
 
     Example:
@@ -299,7 +301,7 @@ def dist_min(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor
     return dist_op(value, ReduceOp.MIN)
 
 
-def dist_sum(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor:
+def dist_sum(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     """Sum a tensor over distributed processes.
 
     Example:
@@ -314,7 +316,7 @@ def dist_sum(value: Union[np.ndarray, torch.Tensor, int, float]) -> torch.Tensor
     return dist_op(value, ReduceOp.SUM)
 
 
-def dist_op(value: Union[np.ndarray, torch.Tensor, int, float], operation: Any) -> torch.Tensor:
+def dist_op(value: np.ndarray | torch.Tensor | int | float, operation: Any) -> torch.Tensor:
     """Multi-processing operation.
 
     .. note::
@@ -336,7 +338,7 @@ def dist_op(value: Union[np.ndarray, torch.Tensor, int, float], operation: Any) 
 
 def dist_statistics_scalar(
     value: torch.Tensor, with_min_and_max: bool = False
-) -> Tuple[torch.Tensor, ...]:
+) -> tuple[torch.Tensor, ...]:
     """Get mean/std and optional min/max of scalar x across MPI processes.
 
     Example:

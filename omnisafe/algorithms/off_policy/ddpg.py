@@ -14,8 +14,10 @@
 # ==============================================================================
 """Implementation of the Deep Deterministic Policy Gradient algorithm."""
 
+from __future__ import annotations
+
 import time
-from typing import Any, Dict, Tuple, Union
+from typing import Any
 
 import torch
 from torch import nn
@@ -96,7 +98,7 @@ class DDPG(BaseAlgo):
             config=self._cfgs,
         )
 
-        what_to_save: Dict[str, Any] = {}
+        what_to_save: dict[str, Any] = {}
         what_to_save['pi'] = self._actor_critic.actor
         if self._cfgs.algo_cfgs.obs_normalize:
             obs_normalizer = self._env.save()['obs_normalizer']
@@ -136,7 +138,7 @@ class DDPG(BaseAlgo):
         """Update something per epoch"""
         self._actor_critic.actor_scheduler.step()
 
-    def learn(self) -> Tuple[Union[int, float], ...]:
+    def learn(self) -> tuple[int | float, ...]:
         """This is main function for algorithm update, divided into the following steps:
 
         - :meth:`rollout`: collect interactive data from environment.

@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of CriticBuilder."""
 
-from typing import List
+from __future__ import annotations
 
 from omnisafe.models.base import Critic
 from omnisafe.models.critic.q_critic import QCritic
@@ -41,7 +41,7 @@ class CriticBuilder:
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
         num_critics: int = 1,
