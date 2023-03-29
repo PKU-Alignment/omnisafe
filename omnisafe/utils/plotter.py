@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 """Plotter class for plotting data from experiments."""
+
+from __future__ import annotations
+
 import json
 import os
 import os.path as osp
@@ -142,7 +145,7 @@ class Plotter:
                         config = json.load(f)
                         if 'exp_name' in config:
                             exp_name = config['algo']
-                            update_cycle = int(config['algo_cfgs']['update_cycle'])
+                            update_cycle = config['algo_cfgs']['update_cycle']
                 except FileNotFoundError as error:
                     config_path = os.path.join(root, 'config.json')
                     raise FileNotFoundError(f'Could not read from {config_path}') from error
@@ -170,12 +173,15 @@ class Plotter:
                 exp_data.insert(len(exp_data.columns), 'Condition2', condition2)
                 exp_data.insert(len(exp_data.columns), 'Rewards', exp_data[performance])
                 exp_data.insert(len(exp_data.columns), 'Costs', exp_data[cost_performance])
-                exp_data.insert(
-                    len(exp_data.columns),
-                    'Steps',
-                    int(exp_data['Train/Epoch']) * update_cycle, 
-                )
-
+                epoch = exp_data.get('Train/Epoch')
+                if epoch is None or update_cycle is None:
+                    raise ValueError('No Train/Epoch column in progress.csv')
+                else:
+                    exp_data.insert(
+                        len(exp_data.columns),
+                        'Steps',
+                        epoch * update_cycle, 
+                    )
                 datasets.append(exp_data)
         return datasets
 
@@ -228,9 +234,9 @@ class Plotter:
     def make_plots(
         self,
         all_logdirs,
-        legend=None,
-        xaxis=None,
-        values=None,
+        legend: str | None = None,
+        xaxis: str | None = None,
+        values: list[str] = [],
         count=False,
         cost_limit=None,
         smooth=1,
@@ -288,6 +294,7 @@ class Plotter:
                 curves from logdirs that do not contain these sub strings.
 
         """
+        assert xaxis is not None, 'Must specify xaxis'
         data = self.get_all_datasets(all_logdirs, legend, select, exclude)
         values = values if isinstance(values, list) else [values]
         condition = 'Condition2' if count else 'Condition1'
@@ -311,14 +318,14 @@ class Plotter:
             )
             if cost_limit:
                 axes[1].axhline(y=cost_limit, ls='--', c='black', linewidth=2)
-        plt.show()
-        if save_name is None:
-            save_name = all_logdirs[0].split('/')[-1]
-        fig.savefig(
-            os.path.join(save_dir, f'{save_name}.{save_format}'),
-            bbox_inches='tight',
-            pad_inches=0.0,
-        )
+            plt.show()
+            if save_name is None:
+                save_name = all_logdirs[0].split('/')[-1]
+            fig.savefig(
+                os.path.join(save_dir, f'{save_name}.{save_format}'),
+                bbox_inches='tight',
+                pad_inches=0.0,
+            )
 
 
 if __name__ == '__main__':

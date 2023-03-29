@@ -33,7 +33,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         size: int,
         batch_size: int,
         num_envs: int,
-        device: torch.device = 'cpu',
+        device: torch.device = torch.device('cpu'),
     ) -> None:
         """Initialize the off policy buffer.
 
@@ -53,7 +53,6 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             device (torch.device, optional): The device of the buffer. Defaults to
                 torch.device('cpu').
         """
-        device = torch.device(device)
         self._num_envs = num_envs
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros(

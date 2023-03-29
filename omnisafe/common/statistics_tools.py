@@ -80,9 +80,9 @@ class StatisticsTools:
     def draw_graph(
         self,
         parameter: str,
-        values: list = None,
-        compare_num: int = None,
-        cost_limit: float = None,
+        values: list | None = None,
+        compare_num: int | None = None,
+        cost_limit: float | None = None,
     ):
         """Draw graph.
 

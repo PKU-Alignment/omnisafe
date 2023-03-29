@@ -80,9 +80,9 @@ class ActorCritic(nn.Module):
         self.add_module('actor', self.actor)
         self.add_module('reward_critic', self.reward_critic)
 
-        if model_cfgs.actor.lr != 'None':
+        if model_cfgs.actor.lr is not None:
             self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
-        if model_cfgs.critic.lr != 'None':
+        if model_cfgs.critic.lr is not None:
             self.reward_critic_optimizer = optim.Adam(
                 self.reward_critic.parameters(),
                 lr=model_cfgs.critic.lr,

@@ -19,7 +19,7 @@ from __future__ import annotations
 import torch
 
 from omnisafe.common.buffer.base import BaseBuffer
-from omnisafe.typing import AdvatageEstimator, OmnisafeSpace
+from omnisafe.typing import AdvatageEstimator, OmnisafeSpace, Device
 from omnisafe.utils import distributed
 from omnisafe.utils.math import discount_cumsum
 
@@ -43,7 +43,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         penalty_coefficient: float = 0,
         standardized_adv_r: bool = False,
         standardized_adv_c: bool = False,
-        device: str = 'cpu',
+        device: torch.device = torch.device('cpu'),
     ) -> None:
         """Initialize the on-policy buffer.
 

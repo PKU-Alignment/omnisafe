@@ -29,7 +29,7 @@ def train(
     exp_id: str,
     algo: str,
     env_id: str,
-    custom_cfgs: NamedTuple,
+    custom_cfgs: dict
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
 

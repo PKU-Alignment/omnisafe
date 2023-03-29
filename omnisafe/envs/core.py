@@ -195,7 +195,7 @@ class Wrapper(CMDP):
 
     """
 
-    def __init__(self, env: CMDP, device: torch.device) -> None:
+    def __init__(self, env: CMDP, device: torch.device = torch.device('cpu')) -> None:
         """Initialize the wrapper.
 
         Args:

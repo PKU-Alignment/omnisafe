@@ -55,7 +55,7 @@ def train(  # pylint: disable=too-many-arguments
         os.path.abspath('.'),
         help='directory to save logs, default is current directory',
     ),
-    custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
+    custom_cfgs: dict = typer.Option({}, help='custom configuration for training'),
 ):
     """Train a single policy in OmniSafe via command line.
 
@@ -108,7 +108,7 @@ def train_grid(
     exp_id: str,
     algo: str,
     env_id: str,
-    custom_cfgs: NamedTuple,
+    custom_cfgs: dict,
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
 
@@ -246,7 +246,7 @@ def evaluate(
             for item in os.scandir(models_dir):
                 if item.is_file() and item.name.split('.')[-1] == 'pt':
                     evaluator.load_saved(
-                        save_dir=seed_dir,
+                        save_dir=seed_dir.path,
                         model_name=item.name,
                         camera_name=camera_name,
                         width=width,

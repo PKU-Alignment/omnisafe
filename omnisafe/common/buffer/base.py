@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 import torch
 from gymnasium.spaces import Box
 
-from omnisafe.typing import OmnisafeSpace
+from omnisafe.typing import OmnisafeSpace, Device
 
 
 class BaseBuffer(ABC):
@@ -32,7 +32,7 @@ class BaseBuffer(ABC):
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
         size: int,
-        device: str = 'cpu',
+        device: torch.device = torch.device('cpu'),
     ) -> None:
         """Initialize the buffer.
 
@@ -74,7 +74,7 @@ class BaseBuffer(ABC):
             size (int): The size of the buffer.
             device (torch.device): The device of the buffer.
         """
-        self._device = torch.device(device)
+        self._device = device
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros((size, *obs_space.shape), dtype=torch.float32, device=device)
         else:
