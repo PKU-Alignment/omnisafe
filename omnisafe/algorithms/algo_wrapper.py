@@ -136,12 +136,13 @@ class AlgoWrapper:
         ):
             # Re-launches the current script with workers linked by MPI
             sys.exit()
+        
         agent = registry.get(self.algo)(
             env_id=self.env_id,
             cfgs=self.cfgs,
         )
-        print(self._cfgs)
-        exit()
+        if agent is None:
+            raise ValueError(f'{self.algo} is not supported!')
         ep_ret, ep_cost, ep_len = agent.learn()
         return ep_ret, ep_len, ep_cost
 

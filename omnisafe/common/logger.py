@@ -47,7 +47,7 @@ except ImportError:
     pass
 
 # pylint: disable-next=wrong-import-order
-from torch.utils.tensorboard import SummaryWriter  # isort:skip
+from torch.utils.tensorboard.writer import SummaryWriter  # isort:skip
 
 
 class Logger:  # pylint: disable=too-many-instance-attributes

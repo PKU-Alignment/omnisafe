@@ -21,6 +21,7 @@ from typing import Any
 
 import torch
 from torch import nn
+from torch.nn.utils.clip_grad import clip_grad_norm_
 
 from omnisafe.adapter import OffPolicyAdapter
 from omnisafe.algorithms import registry
@@ -188,14 +189,14 @@ class DDPG(BaseAlgo):
             self._logger.store(**{'Time/Update': update_time})
             self._logger.store(**{'Time/Rollout': roll_out_time})
 
-            if step > self._cfgs.algo_cfgs.start_learning_steps:
+            if epoch*self._cfgs.algo_cfgs.update_cycle > self._cfgs.algo_cfgs.start_learning_steps:
                 # update something per epoch
                 # e.g. update lagrange multiplier
                 self._update_epoch()
 
             self._logger.store(
                 **{
-                    'TotalEnvSteps': step,
+                    'TotalEnvSteps': epoch*self._cfgs.algo_cfgs.update_cycle,
                     'Time/FPS': self._cfgs.algo_cfgs.update_cycle / (time.time() - epoch_time),
                     'Time/Total': (time.time() - start_time),
                     'Time/Epoch': (time.time() - epoch_time),
@@ -266,7 +267,7 @@ class DDPG(BaseAlgo):
         loss.backward()
 
         if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.reward_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
@@ -296,7 +297,7 @@ class DDPG(BaseAlgo):
         loss.backward()
 
         if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.cost_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
@@ -318,7 +319,7 @@ class DDPG(BaseAlgo):
         self._actor_critic.actor_optimizer.zero_grad()
         loss.backward()
         if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.actor.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )

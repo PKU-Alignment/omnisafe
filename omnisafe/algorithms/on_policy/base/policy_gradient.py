@@ -265,7 +265,7 @@ class PolicyGradient(BaseAlgo):
             if self._cfgs.model_cfgs.exploration_noise_anneal:
                 self._actor_critic.annealing(epoch)
 
-            if self._cfgs.model_cfgs.actor.lr != 'None':
+            if self._cfgs.model_cfgs.actor.lr is not None:
                 self._actor_critic.actor_scheduler.step()
 
             self._logger.store(
@@ -276,7 +276,7 @@ class PolicyGradient(BaseAlgo):
                     'Time/Epoch': (time.time() - epoch_time),
                     'Train/Epoch': epoch,
                     'Train/LR': 0.0
-                    if self._cfgs.model_cfgs.actor.lr == 'None'
+                    if self._cfgs.model_cfgs.actor.lr is None
                     else self._actor_critic.actor_scheduler.get_last_lr()[0],
                 },
             )

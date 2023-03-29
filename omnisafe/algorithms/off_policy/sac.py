@@ -17,6 +17,7 @@
 
 import torch
 from torch import nn, optim
+from torch.nn.utils.clip_grad import clip_grad_norm_
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
@@ -59,6 +60,8 @@ class SAC(DDPG):
         if self._cfgs.algo_cfgs.auto_alpha:
             self._target_entropy = -torch.prod(torch.Tensor(self._env.action_space.shape)).item()
             self._log_alpha = torch.zeros(1, requires_grad=True, device=self._device)
+
+            assert self._cfgs.model_cfgs.critic.lr is not None
             self._alpha_optimizer = optim.Adam(
                 [self._log_alpha],
                 lr=self._cfgs.model_cfgs.critic.lr,
@@ -110,7 +113,7 @@ class SAC(DDPG):
         loss.backward()
 
         if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.reward_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
@@ -195,7 +198,7 @@ class SAC(DDPG):
         loss.backward()
 
         if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.cost_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )

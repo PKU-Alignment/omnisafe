@@ -87,8 +87,8 @@ class ActorCritic(nn.Module):
                 self.reward_critic.parameters(),
                 lr=model_cfgs.critic.lr,
             )
-        if model_cfgs.actor.lr != 'None':
-            self.actor_scheduler: _LRScheduler
+        if model_cfgs.actor.lr is not None:
+            self.actor_scheduler: LinearLR | ConstantLR
             if model_cfgs.linear_lr_decay:
                 self.actor_scheduler = LinearLR(
                     self.actor_optimizer,
@@ -135,7 +135,7 @@ class ActorCritic(nn.Module):
         """
         return self.step(obs, deterministic=deterministic)
 
-    def set_annealing(self, epochs: list[float], std: list[float]) -> None:
+    def set_annealing(self, epochs: list[int], std: list[float]) -> None:
         """Set the annealing mode for the actor.
 
         Args:
