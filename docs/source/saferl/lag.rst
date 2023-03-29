@@ -120,7 +120,7 @@ Lagrangian Method Theorem
 Lagrangian methods
 ~~~~~~~~~~~~~~~~~~
 
-Constrained MDP's are often solved using the Lagrange methods.
+Constrained MDPs are often solved using the Lagrange methods.
 In Lagrange methods, the CMDP is converted into an equivalent unconstrained problem.
 In addition to the objective, a penalty term is added for infeasibility,
 thus making infeasible solutions sub-optimal.
@@ -369,7 +369,7 @@ Documentation of new functions
 
             PPOLag.compute_loss_pi(data: dict)
             ^^^
-            Compute the loss of policy network, flowing the next steps:
+            Compute the loss of the policy network, flowing the next steps:
 
             (1) Compute the clip surrogate function.
 
@@ -535,7 +535,7 @@ Parameters
 
             -  gamma (float): The gamma for GAE.
             -  lam (float): The lambda for reward GAE.
-            -  adv_estimation_method (float):Roughly what KL divergence we think is
+            -  adv_estimation_method (float): Roughly what KL divergence we think is
                appropriate between new and old policies after an update. This will
                get used for early stopping. (Usually small, 0.01 or 0.05.)
             -  standardized_reward (int):  Use standardized reward or not.

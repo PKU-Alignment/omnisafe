@@ -19,14 +19,14 @@ PPO Theorem
 Background
 ~~~~~~~~~~
 
-**Proximal Policy Optimization(PPO)** is a RL algorithm inheriting some of the benefits of :doc:`trpo<trpo>`,
-but are much simpler to implement.
-PPO share the same target with TRPO:
-how can we take a as big as improvement step on a policy update using the data we already have,
+**Proximal Policy Optimization(PPO)** is an RL algorithm inheriting some of the benefits of :doc:`trpo<trpo>`,
+However, it is much simpler to implement.
+PPO shares the same target as TRPO:
+How can we take as big as an improvement step on a policy update using the data we already have,
 without stepping so far that we accidentally cause performance collapse?
 Instead of solving this problem with a complex second-order method as TRPO do,
 PPO use a few other tricks to keep new policies close to old.
-There are two primary variants of PPO: :bdg-ref-info-line:`PPO-Penalty<PPO-Penalty>` and :bdg-ref-info-line:`PPO-Clip<PPO-Clip>`.
+There are two primary PPO variants :bdg-ref-info-line:`PPO-Penalty<PPO-Penalty>` and bdg-ref-info-line:`PPO-Clip<PPO-Clip>`.
 
 .. grid:: 2
 
@@ -39,11 +39,11 @@ There are two primary variants of PPO: :bdg-ref-info-line:`PPO-Penalty<PPO-Penal
 
             Problems of TRPO
             ^^^
-            -  The calculation of KL divergence in TRPO is too complicated.
+            - The calculation of KL divergence in TRPO is too complicated.
 
-            -  Only the raw data sampled by the Monte Carlo method is used.
+            - Only the raw data sampled by the Monte Carlo method is used.
 
-            -  Using second-order optimization methods.
+            - Using second-order optimization methods.
 
     .. grid-item::
         :columns: 12 6 6 6
@@ -54,13 +54,13 @@ There are two primary variants of PPO: :bdg-ref-info-line:`PPO-Penalty<PPO-Penal
 
             Advantage of PPO
             ^^^
-            -  Using ``clip`` method to makes the difference between the two strategies less significant.
+            - Using ``clip`` method to make the difference between the two strategies less significant.
 
-            -  Using the :math:`\text{GAE}` method to process data.
+            - Using the :math:`\text{GAE}` method to process data.
 
-            -  Simple to implement.
+            - Simple to implement.
 
-            -  Using first-order optimization methods.
+            - Using first-order optimization methods.
 
 ------
 
@@ -93,11 +93,11 @@ Finally, TRPO rewrites Problem :eq:`ppo-eq-1` as:
 
 
 where :math:`L_{\theta_{old}}(\theta)= \frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)`,
-and :math:`\hat{A}_{\pi}(s,a)` is an estimator of the advantage function given :math:`s` and  :math:`a`.
+Moreover,:math:`\hat{A}_{\pi}(s, a)` is an estimator of the advantage function given :math:`s` and  :math:`a`.
 
 You may still have a question: Why are we using :math:`\hat{A}` instead of :math:`A`.
-Actually this is a trick named **generalized advantage estimator** (:math:`\text{GAE}`).
-Almost all advanced reinforcement learning algorithms use :math:`\text{GAE}` technique to make more efficient estimates of :math:`A`.
+This is a trick named **generalized advantage estimator** (:math:`\text{GAE}`).
+Almost all advanced reinforcement learning algorithms use :math:`\text{GAE}` technique to estimate more efficiently:math:`A`.
 :math:`\hat{A}` is the :math:`\text{GAE}` version of :math:`A`.
 
 ------
@@ -107,7 +107,7 @@ Almost all advanced reinforcement learning algorithms use :math:`\text{GAE}` tec
 PPO-Penalty
 ~~~~~~~~~~~
 
-TRPO actually suggests using a penalty instead of a constraint to solve the unconstrained optimization problem:
+TRPO suggests using a penalty instead of a constraint to solve the unconstrained optimization problem:
 
 .. _ppo-eq-3:
 
@@ -117,13 +117,13 @@ TRPO actually suggests using a penalty instead of a constraint to solve the unco
     \max _\theta \mathbb{E}[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)-\beta D_{K L}[\pi_{\theta_{old}}(* \mid s), \pi_\theta(* \mid s)]]
 
 
-However, experiments show that it is not sufficient to simply choose a fixed penalty coefficient :math:`\beta` and optimize the penalized objective Equation :eq:`ppo-eq-3` with SGD(stochastic gradient descent),
+However, experiments show that it is not sufficient to simply choose a fixed penalty coefficient :math:`\beta` and optimize the penalized objective :eq:`ppo-eq-3` with SGD(stochastic gradient descent),
 so finally TRPO abandoned this method.
 
-PPO-Penalty use an approach named Adaptive KL Penalty Coefficient to solve above problem,
-thus making :eq:`ppo-eq-3` perform well in experiment.
+PPO-Penalty uses an approach named Adaptive KL Penalty Coefficient to solve the above problem,
+thus making :eq:`ppo-eq-3` perform well in the experiment.
 In the simplest implementation of this algorithm,
-PPO-Penalty perform the following steps in each policy update:
+PPO-Penalty performs the following steps in each policy update:
 
 
 .. grid:: 2
@@ -137,7 +137,7 @@ PPO-Penalty perform the following steps in each policy update:
 
             Step I
             ^^^
-            Using several epochs of mini-batch SGD, optimize the KL-penalized objective shown as :eq:`ppo-eq-3`,
+            Using several epochs of mini-batch SGD, optimize the KL-penalized objective shown as eq:`ppo-eq-3`,
 
             .. math::
                 :label: ppo-eq-4
@@ -212,9 +212,9 @@ we'll simplify the formula in two cases:
 
         L(s, a, \theta)=\max (r(\theta),(1+\varepsilon)) \hat{A}_{\pi}(s, a)
 
-With above clipped surrogate function and :eq:`ppo-eq-5`,
+With the above clipped surrogate function and :eq:`ppo-eq-5`,
 PPO-Clip can guarantee the new policy would not update so far away from the old.
-In experiment, PPO-Clip perform better that PPO-Penalty.
+In the experiment, PPO-Clip performs better than PPO-Penalty.
 
 ------
 
@@ -282,9 +282,9 @@ There are two notable special cases of this formula, obtained by setting :math:`
 
 .. hint::
     :math:`\text{GAE}(\gamma,1)` is the traditional MC-based method to estimate the advantage function,
-    but it has high variance due to the sum of terms.
+    but it has a high variance due to the sum of terms.
     :math:`\text{GAE}(\gamma,0)` is TD-based method with low variance,
-    but is suffers from bias.
+    but it suffers from bias.
 
 The generalized advantage estimator for :math:`0\le\lambda\le1` makes a compromise between bias and variance,
 controlled by parameter :math:`\lambda`.
@@ -364,7 +364,7 @@ Quick start
 
 ------
 
-Here are the documentation of PPO in PyTorch version.
+Here is the documentation of PPO in PyTorch version.
 
 
 Architecture of functions
@@ -388,25 +388,26 @@ Documentation of new functions
 
 .. tab-set::
 
-    .. tab-item:: ppo.compute_loss_pi()
+    .. tab-item:: ppo._loss_pi()
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            ppo.compute_loss_pi()
+            ppo._loss_pi()
             ^^^
-            Compute the loss of Actor ``pi``, flowing the next steps:
+            Compute the loss of Actor ``actor``, flowing the next steps:
 
             (1) Get the policy importance sampling ratio.
 
             .. code-block:: python
                 :linenos:
 
-                dist, _log_p = self.ac.pi(data['obs'], data['act'])
-                # Importance ratio
-                ratio = torch.exp(_log_p - data['log_p'])
+                distribution = self._actor_critic.actor(obs)
+                logp_ = self._actor_critic.actor.log_prob(act)
+                std = self._actor_critic.actor.std
+                ratio = torch.exp(logp_ - logp)
 
 
             (2) Get the clipped surrogate function.
@@ -414,9 +415,11 @@ Documentation of new functions
             .. code-block:: python
                 :linenos:
 
-                ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
-                loss_pi = -(torch.min(ratio * data['adv'], ratio_clip * data['adv'])).mean()
-                loss_pi -= self.entropy_coef * dist.entropy().mean()
+                ratio_cliped = torch.clamp(
+                    ratio, 1 - self._cfgs.algo_cfgs.clip, 1 + self._cfgs.algo_cfgs.clip
+                )
+                loss = -torch.min(ratio * adv, ratio_cliped * adv).mean()
+                loss -= self._cfgs.algo_cfgs.entropy_coef * distribution.entropy().mean()
 
 
             (3) Log useful information.
@@ -424,137 +427,125 @@ Documentation of new functions
             .. code-block:: python
                 :linenos:
 
-                approx_kl = (0.5 * (dist.mean - data['act']) ** 2 / dist.stddev**2).mean().item()
-                ent = dist.entropy().mean().item()
-                pi_info = dict(kl=approx_kl, ent=ent, ratio=ratio_clip.mean().item())
+                entropy = distribution.entropy().mean().item()
+                info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
+                return loss, info
 
-            (4) Return the loss of Actor ``pi`` and useful information.
+            (4) Return the loss of Actor ``actor`` and useful information.
 
 ------
 
-Parameters
+Configs
 """"""""""
 
 .. tab-set::
 
-    .. tab-item:: Specific Parameters
+    .. tab-item:: Train
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Specific Parameters
+            Train Configs
             ^^^
-            -  target_kl(float): Constraint for KL-distance to avoid too far gap
-            -  cg_damping(float): parameter plays a role in building Hessian-vector
-            -  cg_iters(int): Number of iterations of conjugate gradient to perform.
-            -  cost_limit(float): Constraint for agent to avoid too much cost
+            
+            - device (str): Device to use for training, options: ``cpu``, ``cuda``, ``cuda:0``, ``cuda:0``, etc.
+            - torch_threads (int): Number of threads to use for PyTorch.
+            - total_steps (int): Total number of steps to train the agent.
+            - parallel (int): Number of parallel agents, similar to A3C.
+            - vector_env_nums (int): Number of the vector environments.
 
-    .. tab-item:: Basic parameters
+    .. tab-item:: Algorithm
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Basic parameters
+            Algorithms Configs
             ^^^
-            -  algo (string): The name of algorithm corresponding to current class,
-               it does not actually affect any things which happen in the following.
-            -  actor (string): The type of network in actor, discrete or continuous.
-            -  model_cfgs (dictionary) : Actor and critic's net work configuration,
-               it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
-               -  shared_weights (bool) : Use shared weights between actor and critic network or not.
+            - update_cycle (int): Number of steps to update the policy network.
+            - update_iters (int): Number of iterations to update the policy network.
+            - batch_size (int): Batch size for each iteration.
+            - target_kl (float): Target KL divergence.
+            - entropy_coef (float): Coefficient of entropy.
+            - reward_normalize (bool): Whether to normalize the reward.
+            - cost_normalize (bool): Whether to normalize the cost.
+            - obs_normalize (bool): Whether to normalize the observation.
+            - kl_early_stop (bool): Whether to stop the training when KL divergence is too large.
+            - max_grad_norm (float): Maximum gradient norm.
+            - use_max_grad_norm (bool): Whether to use maximum gradient norm.
+            - use_critic_norm (bool): Whether to use critic norm.
+            - critic_norm_coef (float): Coefficient of critic norm.
+            - gamma (float): Discount factor.
+            - cost_gamma (float): Cost discount factor.
+            - lam (float): Lambda for GAE-Lambda.
+            - lam_c (float): Lambda for cost GAE-Lambda.
+            - clip (float): Clipping parameter for PPO.
+            - adv_estimation_method (str): The method to estimate the advantage.
+            - standardized_rew_adv (bool): Whether to use standardized reward advantage.
+            - standardized_cost_adv (bool): Whether to use standardized cost advantage.
+            - penalty_coef (float): Penalty coefficient for cost.
+            - use_cost (bool): Whether to use cost.
 
-               -  weight_initialization_mode (string) : The type of weight initialization method.
 
-                  -  pi (dictionary) : parameters for actor network ``pi``
-
-                     -  hidden_sizes:
-
-                        -  64
-                        -  64
-
-                     -  activations: tanh
-
-                  -  val (dictionary) parameters for critic network ``v``
-
-                     -  hidden_sizes:
-
-                        -  64
-                        -  64
-
-                        .. hint::
-
-                            ======== ================  ========================================================================
-                            Name        Type              Description
-                            ======== ================  ========================================================================
-                            ``v``    ``nn.Module``     Gives the current estimate of **V** for states in ``s``.
-                            ``pi``   ``nn.Module``     Deterministically or continuously computes an action from the agent,
-                                                       conditioned on states in ``s``.
-                            ======== ================  ========================================================================
-
-                  -  activations: tanh
-                  -  env_id (string): The name of environment we want to roll out.
-                  -  seed (int): Define the seed of experiments.
-                  -  parallel (int): Define the seed of experiments.
-                  -  epochs (int): The number of epochs we want to roll out.
-                  -  steps_per_epoch (int):The number of time steps per epoch.
-                  -  pi_iters (int): The number of iteration when we update actor network per mini batch.
-                  -  critic_iters (int): The number of iteration when we update critic network per mini batch.
-
-    .. tab-item:: Optional parameters
+    .. tab-item:: Model
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Optional parameters
+            Model Configs
             ^^^
-            -  use_cost_critic (bool): Use cost value function or not.
-            -  linear_lr_decay (bool): Use linear learning rate decay or not.
-            -  exploration_noise_anneal (bool): Use exploration noise anneal or not.
-            -  reward_penalty (bool): Use cost to penalize reward or not.
-            -  kl_early_stopping (bool): Use KL early stopping or not.
-            -  max_grad_norm (float): Use maximum gradient normalization or not.
-            -  scale_rewards (bool): Use reward scaling or not.
 
-    .. tab-item:: Buffer parameters
+            - weight_initialization_mode (str): The type of weight initialization method.
+            - actor_type (str): The type of actor, default to ``gaussian_learning``.
+            - linear_lr_decay (bool): Whether to use linear learning rate decay.
+            - exploration_noise_anneal (bool): Whether to use exploration noise anneal.
+            - std_range (list): The range of standard deviation.
+
+            .. hint:: 
+
+                actor (dictionary): parameters for actor network ``actor``
+
+                - activations: tanh
+                - hidden_sizes:
+                - 64
+                - 64
+
+            .. hint:: 
+
+                critic (dictionary): parameters for critic network ``critic``
+
+                - activations: tanh
+                - hidden_sizes:
+                - 64
+                - 64
+
+    .. tab-item:: Logger
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Buffer parameters
+            Logger Configs
             ^^^
-            .. hint::
-                  ============= =============================================================================
-                     Name                    Description
-                  ============= =============================================================================
-                  ``Buffer``      A buffer for storing trajectories experienced by an agent interacting
-                                  with the environment, and using **Generalized Advantage Estimation (GAE)**
-                                  for calculating the advantages of state-action pairs.
-                  ============= =============================================================================
 
-            .. warning::
-                Buffer collects only raw data received from environment.
-
-            -  gamma (float): The gamma for GAE.
-            -  lam (float): The lambda for reward GAE.
-            -  adv_estimation_method (float):Roughly what KL divergence we think is
-               appropriate between new and old policies after an update. This will
-               get used for early stopping. (Usually small, 0.01 or 0.05.)
-            -  standardized_reward (int):  Use standardized reward or not.
-            -  standardized_cost (bool): Use standardized cost or not.
+            - use_wandb (bool): Whether to use wandb to log the training process.
+            - wandb_project (str): The name of wandb project.
+            - use_tensorboard (bool): Whether to use tensorboard to log the training process.
+            - log_dir (str): The directory to save the log files.
+            - window_lens (int): The length of the window to calculate the average reward.
+            - save_model_freq (int): The frequency to save the model.
 
 ------
 
 References
 ----------
 
--  `Trust Region Policy Optimization <https://arxiv.org/abs/1502.05477>`__
--  `Proximal Policy Optimization Algorithms <https://arxiv.org/pdf/1707.06347.pdf>`__
+- `Trust Region Policy Optimization <https://arxiv.org/abs/1502.05477>`__
+- `Proximal Policy Optimization Algorithms <https://arxiv.org/pdf/1707.06347.pdf>`__

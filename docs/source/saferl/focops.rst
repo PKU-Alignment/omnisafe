@@ -19,7 +19,7 @@ FOCOPS Theorem
 Background
 ~~~~~~~~~~
 
-**First Order Constrained Optimization (FOCOPS)** in Policy Space is a new CPO-based method which maximizes an agent's overall reward while ensuring the agent satisfies a set of cost constraints. FOCOPS purposes that CPO has disadvantages below:
+**First Order Constrained Optimization (FOCOPS)** in Policy Space is a new CPO-based method that maximizes an agent's overall reward while ensuring the agent satisfies a set of cost constraints. FOCOPS purposes that CPO has disadvantages below:
 
 .. grid:: 2
 
@@ -47,13 +47,13 @@ Background
 
             Advantage of FOCOPS
             ^^^
-            -  Extremely simple to implement since it only utilizes first order approximations.
+            -  Extremely simple to implement since it only utilizes first-order approximations.
 
             -  Simple first-order method avoids the last two sources of error caused by Taylor method and the conjugate method.
 
-            -  Outperform than CPO in experiment.
+            -  Outperform CPO in the experiment.
 
-            -  No recovery steps required
+            -  No recovery steps are required
 
 
 FOCOPS mainly includes the following contributions:
@@ -106,7 +106,7 @@ For you to have a clearer understanding, we hope that you will read the next sec
 Two-stage Policy Update
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Instead of solving the Problem :eq:`focops-eq-1`  directly, FOCOPS uses a **two-stage** approach summarized below:
+Instead of solving the :eq:`focops-eq-1`  directly, FOCOPS uses a **two-stage** approach summarized below:
 
 .. card::
     :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
@@ -114,16 +114,16 @@ Instead of solving the Problem :eq:`focops-eq-1`  directly, FOCOPS uses a **two-
 
     Two-stage Policy Update
     ^^^
-    -  Given policy :math:`\pi_{\theta_k}`, find an optimal update policy :math:`\pi^*` by solving the optimization problem from Problem :eq:`focops-eq-1` in the non-parameterized policy space.
+    -  Given policy :math:`\pi_{\theta_k}`, find an optimal update policy :math:`\pi^*` by solving the optimization problem from :eq:`focops-eq-1` in the non-parameterized policy space.
 
-    -  Project the Policy found in the previous step back into the parameterized policy space :math:`\Pi_{\theta}` by solving for the closest policy :math:`\pi_{\theta}\in\Pi_{\theta}` to :math:`\pi^*`, in order to obtain :math:`\pi_{\theta_{k+1}}`.
+    -  Project the Policy found in the previous step back into the parameterized policy space :math:`\Pi_{\theta}` by solving for the closest policy :math:`\pi_{\theta}\in\Pi_{\theta}` to :math:`\pi^*`, to obtain :math:`\pi_{\theta_{k+1}}`.
 
 ------
 
 Finding the Optimal Update Policy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the first stage, FOCOPS rewrites Problem :eq:`focops-eq-1`  as below:
+In the first stage, FOCOPS rewrites :eq:`focops-eq-1`  as below:
 
 .. _`focops-eq-4`:
 
@@ -135,7 +135,7 @@ In the first stage, FOCOPS rewrites Problem :eq:`focops-eq-1`  as below:
     & \bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta
 
 
-These problems are only slightly different from Problem :eq:`focops-eq-1` , that is, the parameter of interest is now the non-parameterized Policy :math:`\pi` and not the policy parameter :math:`\theta`.
+These problems are only slightly different from :eq:`focops-eq-1` , that is, the parameter of interest is now the non-parameterized Policy :math:`\pi` and not the policy parameter :math:`\theta`.
 Then FOCOPS provides a solution as follows:
 
 .. _focops-theorem-1:
@@ -150,7 +150,7 @@ Then FOCOPS provides a solution as follows:
     Theorem 1
     ^^^
     Let :math:`\tilde{b}=(1-\gamma)\left(b-\tilde{J}^C\left(\pi_{\theta_k}\right)\right)`.
-    If :math:`\pi_{\theta_k}` is a feasible solution, the optimal policy for Problem :eq:`focops-eq-2` takes the form
+    If :math:`\pi_{\theta_k}` is a feasible solution, the optimal policy for :eq:`focops-eq-2` takes the form
 
     .. _`focops-eq-7`:
 
@@ -159,7 +159,7 @@ Then FOCOPS provides a solution as follows:
 
         \pi^*(a \mid s)=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)
 
-    where :math:`Z_{\lambda,\nu}(s)` is the partition function which ensures Problem :eq:`focops-eq-3` is a valid probability distribution, :math:`\lambda` and :math:`\nu` are solutions to the optimization problem:
+    where :math:`Z_{\lambda,\nu}(s)` is the partition function which ensures :eq:`focops-eq-3` is a valid probability distribution, :math:`\lambda` and :math:`\nu` are solutions to the optimization problem:
 
     .. _`focops-eq-8`:
 
@@ -171,11 +171,11 @@ Then FOCOPS provides a solution as follows:
     +++
     The proof of the :bdg-info-line:`Theorem 1` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-The form of the optimal Policy is intuitive.
+The form of the optimal policy is intuitive.
 It gives high probability mass to areas of the state-action space with high return, offset by a penalty term times the cost advantage.
-We will refer to the optimal solution to Problem :eq:`focops-eq-2`  as the *optimal update policy*.
+We will refer to the optimal solution to :eq:`focops-eq-2`  as the *optimal update policy*.
 Suppose you need help understanding the meaning of the above Equation.
-In that case, you can first think that FOCOPS finally solves Problem :eq:`focops-eq-2`  by solving Problem :eq:`focops-eq-3` and Problem :eq:`focops-eq-4`.
+In that case, you can first think that FOCOPS finally solves :eq:`focops-eq-2`  by solving :eq:`focops-eq-3` and :eq:`focops-eq-4`.
 That is, the :bdg-info-line:`Theorem 1` is a viable solution.
 
 
@@ -282,12 +282,12 @@ The first-order methods are also used to minimize this loss function:
     +++
     The proof of the :bdg-info-line:`Corollary 1` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-Note that Equation :eq:`focops-eq-7` can be estimated by sampling from the trajectories generated by Policy :math:`\pi_{\theta_k}` so Policy can be trained using stochastic gradients.
+Note that :eq:`focops-eq-7` can be estimated by sampling from the trajectories generated by Policy :math:`\pi_{\theta_k}` so Policy can be trained using stochastic gradients.
 
 :bdg-info-line:`Corollary 1` outlines the FOCOPS algorithm:
 
 At every iteration, we begin with a policy :math:`\pi_{\theta_k}`, which we use to run trajectories and gather data.
-We use that data and Equation :eq:`focops-eq-4` first to estimate :math:`\lambda` and :math:`\nu`.
+We use that data and :eq:`focops-eq-4` first to estimate :math:`\lambda` and :math:`\nu`.
 We then draw a mini-batch from the data to estimate :math:`\nabla_\theta \mathcal{L}(\theta)` given in :bdg-info-line:`Corollary 1`.
 After taking a gradient step using Equation:eq:`focops-eq-7`, we draw another mini-batch and repeat the process.
 
@@ -298,12 +298,12 @@ Practical Implementation
 
 .. hint::
 
-    Solving Problem :eq:`focops-eq-4` is computationally impractical for large state or action spaces as it requires calculating the partition function :math:`Z_{\lambda,\nu}(s)`, which often involves evaluating a high-dimensional integral or sum.
+    Solving :eq:`focops-eq-4` is computationally impractical for large state or action spaces as it requires calculating the partition function :math:`Z_{\lambda,\nu}(s)`, which often involves evaluating a high-dimensional integral or sum.
     Furthermore, :math:`\lambda` and :math:`\nu` depend on :math:`k` and should be adapted at every iteration.
 
 So in this section, we will introduce you to how FOCOPS practically implements its algorithm purpose.
-In practice, through hyperparameter sweeps, FOCOPS found that a fixed :math:`\lambda` provides good results, which means the value of :math:`\lambda` does not have to be updated.
-However, :math:`\nu` needs to be continuously adapted during training so as to ensure cost-constraint satisfaction.
+In practice, though hyperparameter sweeps, FOCOPS found that a fixed :math:`\lambda` provides good results, which means the value of :math:`\lambda` does not have to be updated.
+However, :math:`\nu` needs to be continuously adapted during training to ensure cost-constraint satisfaction.
 FOCOPS appeals to an intuitive heuristic for determining :math:`\nu` based on primal-dual gradient methods.
 With strong duality, the optimal :math:`\lambda^*` and :math:`\nu^*` minimizes the dual function :eq:`focops-eq-4` which then be denoted as :math:`L(\pi^*,\lambda,\nu)`.
 By applying gradient descent w.r.t :math:`\nu` to minimize :math:`L(\pi^*,\lambda,\nu)`, we obtain:
@@ -329,7 +329,7 @@ By applying gradient descent w.r.t :math:`\nu` to minimize :math:`L(\pi^*,\lambd
     +++
     The proof of the :bdg-success-line:`Corollary 2` can be seen in the :bdg-success:`Appendix`, click on this :bdg-success-line:`card` to jump to view.
 
-The last term in the gradient expression in Equation :eq:`focops-eq-9` cannot be evaluated since we do not have access to :math:`\pi^*`.
+The last term in the gradient expression in :eq:`focops-eq-9` cannot be evaluated since we do not have access to :math:`\pi^*`.
 Since :math:`\pi_{\theta_k}` and :math:`\pi^*` are 'close', it is reasonable to assume that :math:`E_{s \sim d^{\pi_k}, a \sim \pi^*}\left[A_{\pi_{\theta_k}}(s, a)\right] \approx E_{s \sim d^{\pi_k}, a \sim \pi_{\theta_k}}\left[A_{\pi_{\theta_k}}(s, a)\right]=0`.
 In practice, this term can be set to zero, which gives the updated term:
 
@@ -373,7 +373,7 @@ In this section, we will explain the meaning of parameters :math:`\lambda` and :
 
             Analysis of :math:`\lambda`
             ^^^
-            In Equation :eq:`focops-eq-3`, note that as :math:`\lambda \rightarrow 0`, :math:`\pi^*` approaches a greedy policy;
+            In :eq:`focops-eq-3`, note that as :math:`\lambda \rightarrow 0`, :math:`\pi^*` approaches a greedy policy;
             as :math:`\lambda` increases, the Policy becomes more exploratory.
             Therefore :math:`\lambda` is similar to the temperature term used in maximum entropy reinforcement learning,
             which has been shown to produce good results when fixed during training.
@@ -388,11 +388,11 @@ In this section, we will explain the meaning of parameters :math:`\lambda` and :
 
             Analysis of :math:`\nu`
             ^^^
-            We recall that in Equation :eq:`focops-eq-3`,
+            We recall that in :eq:`focops-eq-3`,
             :math:`\nu` acts as a cost penalty term where increasing :math:`\nu` makes it less likely for state-action pairs with higher costs to be sampled by :math:`\pi^*`.
             Hence in this regard, the update rule in :eq:`focops-eq-10` is intuitive,
             because it increases :math:`\nu` if :math:`J^C(\pi_{\theta_k})>d`
-            (which means the agent violate the cost constraints) and decreases :math:`\nu` otherwise.
+            (which means the agent violates the cost constraints) and decreases :math:`\nu` otherwise.
 
 ------
 
@@ -663,7 +663,7 @@ Parameters
                   ============= =============================================================================
 
             .. warning::
-                Buffer collects only raw data received from environment.
+                Buffer collects only raw data received from the environment.
 
             -  gamma (float): The gamma for GAE.
             -  lam (float): The lambda for reward GAE.
@@ -719,7 +719,7 @@ Proof for Theorem 1
     :color: info
     :class-body: sd-border-{3}
 
-    Based on :bdg-info-line:`Lemma 1` the optimal value of the Problem :eq:`focops-eq-2`  :math:`p^*` can be solved by solving the corresponding dual problem.
+    Based on :bdg-info-line:`Lemma 1` the optimal value of the :eq:`focops-eq-2`  :math:`p^*` can be solved by solving the corresponding dual problem.
     Let
 
     .. math::
@@ -737,9 +737,9 @@ Proof for Theorem 1
 
         p^*=\max _{\pi \in \Pi} \min _{\lambda, \nu \geq 0} L(\pi, \lambda, \nu)=\min _{\lambda, \nu \geq 0} \max _{\pi \in \Pi} L(\pi, \lambda, \nu)
 
-    Note that if :math:`\pi^*`, :math:`\lambda^*`, :math:`\nu^*` are optimal for Problem :eq:`focops-eq-12`, :math:`\pi^*` is also optimal for Problem :eq:`focops-eq-2`  because of the strong duality.
+    Note that if :math:`\pi^*`, :math:`\lambda^*`, :math:`\nu^*` are optimal for :eq:`focops-eq-12`, :math:`\pi^*` is also optimal for :eq:`focops-eq-2`  because of the strong duality.
 
-    Consider the inner maximization problem in Problem :eq:`focops-eq-12`.
+    Consider the inner maximization problem in :eq:`focops-eq-12`.
     We separate it from the original problem and try to solve it first:
 
     .. _`focops-eq-16`:
@@ -774,7 +774,7 @@ Proof for Theorem 1
         \frac{\partial G}{\partial \pi(a \mid s)}=A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi(a \mid s)+1-\log \pi_{\theta_k}(a \mid s)\right)+\zeta
 
 
-    Setting Equation :eq:`focops-eq-15` to zero and rearranging the term, we obtain:
+    Setting :eq:`focops-eq-15` to zero and rearranging the term, we obtain:
 
     .. math::
         :label: focops-eq-16
@@ -782,7 +782,7 @@ Proof for Theorem 1
         \pi(a \mid s)=\pi_{\theta_k}(a \mid s) \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)+\frac{\zeta}{\lambda}+1\right)
 
     We chose :math:`\zeta` so that :math:`\sum_a \pi(a \mid s)=1` and rewrite :math:`\zeta / \lambda+1` as :math:`Z_{\lambda, \nu}(s)`.
-    We find that the optimal solution :math:`\pi^*` to Equation :eq:`focops-eq-13` takes the form
+    We find that the optimal solution :math:`\pi^*` to :eq:`focops-eq-13` takes the form
 
     .. math::
         :label: focops-eq-17
@@ -803,7 +803,7 @@ Proof for Theorem 1
         a \sim \pi^*}}{\mathbb{E}}[logZ_{\lambda,\nu}(s)]\nonumber
 
 
-    Plugging the result back to Equation :eq:`focops-eq-12`, we obtain:
+    Plugging the result back to :eq:`focops-eq-12`, we obtain:
 
     .. math::
         :label: focops-eq-19
@@ -839,7 +839,7 @@ Proof of Corollary
 
 
             where :math:`H\left(\pi_\theta\right)[s]` is the entropy and :math:`H\left(\pi_\theta, \pi^*\right)[s]` is the cross-entropy under state :math: 's`.
-            The above Equation is the basic mathematical knowledge in information theory, which you can get in any information theory textbook.
+            The above is the basic mathematical knowledge in information theory, which you can get in any information theory textbook.
             We expand the cross entropy term, which gives us the following:
 
             .. math::
