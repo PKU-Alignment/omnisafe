@@ -56,9 +56,7 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
     @property
     def cost_limit(self):
         """Get the cost limit."""
-        if hasattr(self._cfgs.algo_cfgs, '_cost_limit'):
-            return self._cfgs.algo_cfgs._cost_limit  # pylint: disable=protected-access
-        return None
+        return getattr(self._cfgs.algo_cfgs, '_cost_limit', None)
 
     @abstractmethod
     def _init(self) -> None:
