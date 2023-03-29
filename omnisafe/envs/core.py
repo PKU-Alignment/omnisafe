@@ -38,6 +38,8 @@ class CMDP(ABC):
         _observation_space (OmnisafeSpace): the observation space of the environment.
         _num_envs (int): the parallel environments, for env that not support parallel, num_envs should be 1
         _time_limit (Optional[int]): the time limit of the environment, if None, the environment is infinite.
+        need_time_limit_wrapper (bool): whether the environment need time limit wrapper.
+        need_auto_reset_wrapper (bool): whether the environment need auto reset wrapper.
     """
 
     _support_envs: list[str]
@@ -200,6 +202,10 @@ class Wrapper(CMDP):
 
         Args:
             env (CMDP): the environment.
+        
+        Attributes:
+            _env (CMDP): the environment.
+            _device (torch.device): the device of the environment.
         """
         self._env = env
         self._device = device
@@ -221,24 +227,68 @@ class Wrapper(CMDP):
         self,
         action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+        """Run one timestep of the environment's dynamics using the agent actions.
+        
+        Args:
+            action (torch.Tensor): action.
+            
+        Returns:
+            observation (torch.Tensor): agent's observation of the current environment.
+            reward (torch.Tensor): amount of reward returned after previous action.
+            cost (torch.Tensor): amount of cost returned after previous action.
+            terminated (torch.Tensor): whether the episode has ended, in which case further step()
+            calls will return undefined results.
+            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
+            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+        """
         return self._env.step(action)
 
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
+        """Resets the environment and returns an initial observation.
+
+        Args:
+            seed (Optional[int]): seed for the environment.
+
+        Returns:
+            observation (torch.Tensor): the initial observation of the space.
+            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+        """
         return self._env.reset(seed)
 
     def set_seed(self, seed: int) -> None:
+        """Sets the seed for this env's random number generator(s).
+
+        Args:
+            seed (int): the seed to use.
+        """
         self._env.set_seed(seed)
 
     def sample_action(self) -> torch.Tensor:
+        """Sample an action from the action space.
+
+        Returns:
+            torch.Tensor: the sampled action.
+        """
         return self._env.sample_action()
 
     def render(self) -> Any:
+        """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
+
+        Returns:
+            Any: the render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
+        """
         return self._env.render()
 
     def save(self) -> dict[str, torch.nn.Module]:
+        """Save the important components of the environment.
+
+        Returns:
+            Dict[str, torch.nn.Module]: the saved components.
+        """
         return self._env.save()
 
     def close(self) -> None:
+        """Close the environment."""
         self._env.close()
 
 
@@ -248,6 +298,15 @@ class EnvRegister:
     The EnvRegister is used to register the environment class. It provides the
     method to get the environment class by the environment id.
 
+    Example:
+        >>> from omnisafe.envs.core import env_register
+        >>> from cunstom_env import CustomEnv
+        >>> @env_register
+        >>> class CustomEnv():
+
+    Attributes:
+        _class (Dict[str, Type[CMDP]]): the registered environment class.
+        _support_envs (Dict[str, List[str]]): the environment ids supported by the environment class.
     """
 
     def __init__(self) -> None:

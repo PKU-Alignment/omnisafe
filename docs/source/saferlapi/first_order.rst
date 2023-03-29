@@ -8,6 +8,10 @@ First Order Algorithms
     FOCOPS
     CUP
 
+
+.. _focopsapi:
+
+
 FOCOPS
 ------
 
@@ -21,8 +25,6 @@ FOCOPS
     .. autoclass:: FOCOPS
         :members:
         :private-members:
-
-        .. automethod:: __init__
 
 CUP
 ---
@@ -38,4 +40,4 @@ CUP
         :members:
         :private-members:
 
-        .. automethod:: __init__
+

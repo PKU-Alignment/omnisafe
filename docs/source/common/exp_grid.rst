@@ -21,4 +21,4 @@ Experiment Grid
         :members:
         :private-members:
 
-        .. automethod:: __init__
+

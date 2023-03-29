@@ -1,10 +1,10 @@
-OmniSafe Actor
-==============
+OmniSafe Actor Critic
+=====================
 
-.. currentmodule:: omnisafe.models.base
+.. currentmodule:: omnisafe.models.actor_critic
 
-Base Actor
------------
+Actor Critic
+------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -13,37 +13,11 @@ Base Actor
     Documentation
     ^^^
 
-    .. autoclass:: Actor
+    .. autoclass:: ActorCritic
         :members:
         :private-members:
 
-
-
-.. currentmodule:: omnisafe.models.actor
-
-.. autosummary::
-
-    ActorBuilder
-    GaussianActor
-    GaussianLearningActor
-    GaussianSACActor
-
-Actor Builder
--------------
-.. card::
-    :class-header: sd-bg-success sd-text-white
-    :class-card: sd-outline-success  sd-rounded-1
-
-    Documentation
-    ^^^
-
-    .. autoclass:: ActorBuilder
-        :members:
-        :private-members:
-
-
-
-Gaussian Actor
+Actor Q Critic
 --------------
 
 .. card::
@@ -53,13 +27,11 @@ Gaussian Actor
     Documentation
     ^^^
 
-    .. autoclass:: GaussianActor
+    .. autoclass:: ActorQCritic
         :members:
         :private-members:
 
-
-
-Gaussian Learning Actor
+Constraint Actor Critic
 -----------------------
 
 .. card::
@@ -69,14 +41,12 @@ Gaussian Learning Actor
     Documentation
     ^^^
 
-    .. autoclass:: GaussianLearningActor
+    .. autoclass:: ConstraintActorCritic
         :members:
         :private-members:
 
-
-
-Gaussian SAC Actor
------------------------
+Constraint Actor Q Critic
+-------------------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -85,8 +55,7 @@ Gaussian SAC Actor
     Documentation
     ^^^
 
-    .. autoclass:: GaussianSACActor
+    .. autoclass:: ConstraintActorQCritic
         :members:
         :private-members:
-
 

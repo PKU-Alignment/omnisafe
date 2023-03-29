@@ -8,6 +8,10 @@ Second Order Algorithms
     CPO
     PCPO
 
+
+.. _cpoapi:
+
+
 Constraint Policy Optimization
 ------------------------------
 
@@ -22,7 +26,11 @@ Constraint Policy Optimization
         :members:
         :private-members:
 
-        .. automethod:: __init__
+
+
+
+.. _pcpoapi:
+
 
 Projection Based Constraint Policy Optimization
 -----------------------------------------------
@@ -38,4 +46,4 @@ Projection Based Constraint Policy Optimization
         :members:
         :private-members:
 
-        .. automethod:: __init__
+

@@ -12,6 +12,7 @@ Quick Facts
     #. PPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
     #. PPO can be thought of as being a simple implementation of :bdg-info-line:`TRPO` .
     #. The OmniSafe implementation of PPO support :bdg-info-line:`parallelization`.
+    #. An :bdg-ref-info-line:`API Documentation <ppoapi>` is available for PPO.
 
 PPO Theorem
 -----------
@@ -354,7 +355,7 @@ Quick start
         .. tab-item:: Terminal config style
 
             We use ``train_policy.py`` as the entrance file. You can train the agent with PPO simply using ``train_policy.py``, with arguments about PPO and environments does the training.
-            For example, to run PPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
+            For example, to run PPO in SafetyPointGoal1-v0 , with 1 torch thread and seed 0, you can use the following command:
 
             .. code-block:: bash
                 :linenos:
@@ -370,21 +371,20 @@ Here is the documentation of PPO in PyTorch version.
 Architecture of functions
 """""""""""""""""""""""""
 
-- ``ppo.learn()``
+-  ``PPO.learn()``
 
-  - ``env.roll_out()``
-  - ``ppo.update()``
+   - ``PPO._env.roll_out()``
+   - ``PPO._update()``
 
-    - ``ppo.buf.get()``
-    - ``ppo.update_policy_net()``
-    - ``ppo.update_value_net()``
-
-- ``ppo.log()``
+     - ``PPO._buf.get()``
+     - ``PPO.update_lagrange_multiplier(ep_costs)``
+     - ``PPO._update_actor``
+     - ``PPO._update_reward_critic``
 
 ------
 
-Documentation of new functions
-""""""""""""""""""""""""""""""
+Documentation of algorithm specific functions
+"""""""""""""""""""""""""""""""""""""""""""""
 
 .. tab-set::
 
@@ -450,7 +450,7 @@ Configs
             Train Configs
             ^^^
             
-            - device (str): Device to use for training, options: ``cpu``, ``cuda``, ``cuda:0``, ``cuda:0``, etc.
+            - device (str): Device to use for training, options: ``cpu``, ``cuda``,``cuda:0``, etc.
             - torch_threads (int): Number of threads to use for PyTorch.
             - total_steps (int): Total number of steps to train the agent.
             - parallel (int): Number of parallel agents, similar to A3C.
@@ -465,6 +465,12 @@ Configs
 
             Algorithms Configs
             ^^^
+
+            .. note::
+
+                The following configs are specific to PPO algorithm.
+                
+                - clip (float): Clipping parameter for PPO.
 
             - update_cycle (int): Number of steps to update the policy network.
             - update_iters (int): Number of iterations to update the policy network.
@@ -483,7 +489,6 @@ Configs
             - cost_gamma (float): Cost discount factor.
             - lam (float): Lambda for GAE-Lambda.
             - lam_c (float): Lambda for cost GAE-Lambda.
-            - clip (float): Clipping parameter for PPO.
             - adv_estimation_method (str): The method to estimate the advantage.
             - standardized_rew_adv (bool): Whether to use standardized reward advantage.
             - standardized_cost_adv (bool): Whether to use standardized cost advantage.

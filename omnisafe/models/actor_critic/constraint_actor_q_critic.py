@@ -52,6 +52,17 @@ class ConstraintActorQCritic(ActorQCritic):
                 Choose the critic from the following options:
                 :class:`QCritic`, :class:`VCritic`.
             -   Estimate the cost value of the observation.
+
+        Attributes:
+            actor (Actor): The actor network.
+            target_actor (Actor): The target actor network.
+            reward_critic (Critic): The critic network.
+            target_reward_critic (Critic): The target critic network.
+            cost_critic (Critic): The critic network.
+            target_cost_critic (Critic): The target critic network.
+            actor_optimizer (Optimizer): The optimizer for the actor network.
+            reward_critic_optimizer (Optimizer): The optimizer for the critic network.
+            std_schedule (Schedule): The schedule for the standard deviation of the Gaussian distribution.
     """
 
     def __init__(

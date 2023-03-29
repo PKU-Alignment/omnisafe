@@ -12,6 +12,7 @@ Quick Facts
     #. PCPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
     #. PCPO is an improvement work done based on:bdg-info-line:`CPO` .
     #. The OmniSafe implementation of PCPO support :bdg-success-line:`parallelization`.
+    #. An :bdg-ref-info-line:`API Documentation <pcpoapi>` is available for PCPO.
 
 
 PCPO Theorem
@@ -51,7 +52,7 @@ In the previous chapters, you learned that CPO solves the following optimization
 where :math:`\Pi_{\theta}\subseteq\Pi` denotes the set of parametrized policies with parameters :math:`\theta`, and :math:`D` is some distance measure.
 In local policy search for CMDPs, we additionally require policy iterates to be feasible for the CMDP, so instead of optimizing over :math:`\Pi_{\theta}`, PCPO optimizes over :math:`\Pi_{\theta}\cap\Pi_{C}`.
 Next, we will introduce you to how PCPO solves the above optimization problems.
-In order for you to have a clearer understanding, we hope that you will read the next section with the following questions:
+For you to have a clearer understanding, we hope that you will read the next section with the following questions:
 
 .. card::
     :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
@@ -256,7 +257,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
             +++
             The Omnisafe code of the :bdg-success-line:`Implementation of Stage II` can be seen in the :bdg-success:`Code with Omnisafe`, click on this :bdg-success-line:`card` to jump to view.
 
-PCPO solves Problem :eq:`cpo-eq-4` and Problem :eq:`pcpo-eq-5` using :bdg-success-line:`convex programming`, see detailed in :bdg-ref-success:`Appendix<convex-programming>`.
+PCPO solves :eq:`cpo-eq-4` and :eq:`pcpo-eq-5` using :bdg-success-line:`convex programming`, see detailed in :bdg-ref-success:`Appendix<convex-programming>`.
 
 For each policy update:
 
@@ -452,7 +453,7 @@ Quick start
         .. tab-item:: Terminal config style
 
             We use ``train_policy.py`` as the entrance file. You can train the agent with PCPO simply using ``train_policy.py``, with arguments about PCPO and environments does the training.
-            For example, to run PCPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
+            For example, to run PCPO in SafetyPointGoal1-v0 , with 1 torch thread and seed 0, you can use the following command:
 
             .. code-block:: bash
                 :linenos:
@@ -465,23 +466,20 @@ Quick start
 Architecture of functions
 """""""""""""""""""""""""
 
--  ``pcpo.learn()``
+- ``PCPO.learn()``
 
-   -  ``env.roll_out()``
-   -  ``pcpo.update()``
+  - ``PCPO._env.roll_out()``
+  - ``PCPO._update()``
 
-      -  ``pcpo.buf.get()``
-      -  ``pcpo.update_policy_net()``
+    - ``PCPO._buf.get()``
+    - ``PCPO._update_actor()``
 
-         -  ``Fvp()``
-         -  ``conjugate_gradients()``
-         -  ``search_step_size()``
+      - ``PCPO._fvp()``
+      - ``conjugate_gradients()``
+      - ``PCPO._cpo_search_step()``
 
-
-      -  ``pcpo.update_cost_net()``
-      -  ``pcpo.update_value_net()``
-
--  ``pcpo.log()``
+    - ``PCPO._update_cost_critic()``
+    - ``PCPO._update_reward_critic()``
 
 ------
 
@@ -522,7 +520,7 @@ Documentation of basic functions
         :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
-        pcpo.update_policy_net()
+        pcpo._update_actor
         ^^^
         Update policy network in 5 kinds of optimization case
 
@@ -531,7 +529,7 @@ Documentation of basic functions
         :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
-        pcpo.update_value_net()
+        pcpo._update_reward_critic
         ^^^
         Update Critic network for estimating reward.
 
@@ -540,7 +538,7 @@ Documentation of basic functions
         :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
-        pcpo.update_cost_net()
+        pcpo._update_cost_critic
         ^^^
         Update Critic network for estimating cost.
 
@@ -555,19 +553,19 @@ Documentation of basic functions
 
 ------
 
-Documentation of new functions
-""""""""""""""""""""""""""""""
+Documentation of algorithm specific functions
+"""""""""""""""""""""""""""""""""""""""""""""
 
 .. tab-set::
 
-    .. tab-item:: pcpo.update_policy_net()
+    .. tab-item:: pcpo._update_actor()
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            pcpo.update_policy_net()
+            pcpo._update_actor()
             ^^^
             Update the policy network, flowing the next steps:
 
@@ -576,22 +574,25 @@ Documentation of new functions
             .. code-block:: python
                 :linenos:
 
-                self.pi_optimizer.zero_grad()
-                loss_pi, pi_info = self.compute_loss_pi(data=data)
-                loss_pi.backward()
-                g_flat = get_flat_gradients_from(self.ac.pi.net)
-                g_flat *= -1
-
+                theta_old = get_flat_params_from(self._actor_critic.actor)
+                self._actor_critic.actor.zero_grad()
+                loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
+                loss_reward_before = distributed.dist_avg(loss_reward).item()
+                p_dist = self._actor_critic.actor(obs)
 
             (2) Get the policy cost performance gradient b (flat as vector)
 
             .. code-block:: python
                 :linenos:
 
-                self.pi_optimizer.zero_grad()
-                loss_cost, _ = self.compute_loss_cost_performance(data=data)
+                self._actor_critic.zero_grad()
+                loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
+                loss_cost_before = distributed.dist_avg(loss_cost).item()
+
                 loss_cost.backward()
-                b_flat = get_flat_gradients_from(self.ac.pi.net)
+                distributed.avg_grads(self._actor_critic.actor)
+
+                b_grad = get_flat_gradients_from(self._actor_critic.actor)
 
 
             (3) Build the Hessian-vector product based on an approximation of the KL-divergence, using ``conjugate_gradients``
@@ -599,24 +600,29 @@ Documentation of new functions
             .. code-block:: python
                 :linenos:
 
-                p = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
+                p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
                 q = xHx
-                r = g_flat.dot(p)  # g^T H^{-1} b
-                s = b_flat.dot(p)  # b^T H^{-1} b
+                r = grad.dot(p)
+                s = b_grad.dot(p)
 
             (4) Determine step direction and apply SGD step after grads where set (By ``adjust_cpo_step_direction()``)
 
             .. code-block:: python
                 :linenos:
 
-                final_step_dir, accept_step = self.adjust_cpo_step_direction(
-                step_dir,
-                g_flat,
-                c=c,
-                optim_case=2,
-                p_dist=p_dist,
-                data=data,
-                total_steps=20,
+                step_direction, accept_step = self._cpo_search_step(
+                    step_direction=step_direction,
+                    grad=grad,
+                    p_dist=p_dist,
+                    obs=obs,
+                    act=act,
+                    logp=logp,
+                    adv_r=adv_r,
+                    adv_c=adv_c,
+                    loss_reward_before=loss_reward_before,
+                    loss_cost_before=loss_cost_before,
+                    total_steps=200,
+                    violation_c=ep_costs,
                 )
 
             (5) Update actor network parameters
@@ -624,192 +630,124 @@ Documentation of new functions
             .. code-block:: python
                 :linenos:
 
-                new_theta = theta_old + final_step_dir
-                set_param_values_to_model(self.ac.pi.net, new_theta)
-
-    .. tab-item:: pcpo.adjust_cpo_step_direction()
-
-        .. card::
-            :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-            :class-footer: sd-font-weight-bold
-
-            pcpo.adjust_cpo_step_direction()
-            ^^^
-            PCPO algorithm performs line-search to ensure constraint satisfaction for rewards and costs, flowing the next steps:
-
-            (1) Calculate the expected reward improvement.
-
-            .. code-block:: python
-                :linenos:
-
-                expected_rew_improve = g_flat.dot(step_dir)
-
-            (2) Performs line-search to find a step improve the surrogate while not violating trust region.
-
-            - Search acceptance step ranging from 0 to total step
-
-            .. code-block:: python
-                :linenos:
-
-                for j in range(total_steps):
-                new_theta = _theta_old + step_frac * step_dir
-                set_param_values_to_model(self.ac.pi.net, new_theta)
-                acceptance_step = j + 1
-
-            - In each step of for loop, calculate the policy performance and KL divergence.
-
-            .. code-block:: python
-                :linenos:
-
-                with torch.no_grad():
-                    loss_pi_rew, _ = self.compute_loss_pi(data=data)
-                    loss_pi_cost, _ = self.compute_loss_cost_performance(data=data)
-                    q_dist = self.ac.pi.dist(data['obs'])
-                    torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-                loss_rew_improve = self.loss_pi_before - loss_pi_rew.item()
-                cost_diff = loss_pi_cost.item() - self.loss_pi_cost_before
-
-            - Step only if surrogate is improved and within the trust region.
-
-            .. code-block:: python
-                :linenos:
-
-                if not torch.isfinite(loss_pi_rew) and not torch.isfinite(loss_pi_cost):
-                    self.logger.log('WARNING: loss_pi not finite')
-                elif loss_rew_improve < 0 if optim_case > 1 else False:
-                    self.logger.log('INFO: did not improve improve <0')
-
-                elif cost_diff > max(-c, 0):
-                    self.logger.log(f'INFO: no improve {cost_diff} > {max(-c, 0)}')
-                elif torch_kl > self.target_kl * 1.5:
-                    self.logger.log(f'INFO: violated KL constraint {torch_kl} at step {j + 1}.')
-                else:
-                    self.logger.log(f'Accept step at i={j + 1}')
-                    break
-
-            (3) Return appropriate step direction and acceptance step.
+                theta_new = theta_old + step_direction
+                set_param_values_to_model(self._actor_critic.actor, theta_new)
 
 ------
 
-Parameters
+Configs
 """"""""""
 
 .. tab-set::
 
-    .. tab-item:: Specific Parameters
+    .. tab-item:: Train
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Specific Parameters
+            Train Configs
             ^^^
-            -  target_kl(float): Constraint for KL-distance to avoid too far gap
-            -  cg_damping(float): parameter plays a role in building Hessian-vector
-            -  cg_iters(int): Number of iterations of conjugate gradient to perform.
-            -  cost_limit(float): Constraint for agent to avoid too much cost
+            
+            - device (str): Device to use for training, options: ``cpu``, ``cuda``,``cuda:0``, etc.
+            - torch_threads (int): Number of threads to use for PyTorch.
+            - total_steps (int): Total number of steps to train the agent.
+            - parallel (int): Number of parallel agents, similar to A3C.
+            - vector_env_nums (int): Number of the vector environments.
 
-    .. tab-item:: Basic parameters
+    .. tab-item:: Algorithm
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Basic parameters
+            Algorithms Configs
             ^^^
-            -  algo (string): The name of algorithm corresponding to current class,
-               it does not actually affect any things which happen in the following.
-            -  actor (string): The type of network in actor, discrete or continuous.
-            -  model_cfgs (dictionary) : Actor and critic's net work configuration,
-               it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
-               -  shared_weights (bool) : Use shared weights between actor and critic network or not.
+            .. note::
 
-               -  weight_initialization_mode (string) : The type of weight initialization method.
+                The following configs are specific to PCPO algorithm.
+                
+                - cg_damping (float): Damping coefficient for conjugate gradient.
+                - cg_iters (int): Number of iterations for conjugate gradient.
+                - fvp_sample_freq (int): Frequency of sampling for Fisher vector product.
 
-                  -  pi (dictionary) : parameters for actor network ``pi``
+            - update_cycle (int): Number of steps to update the policy network.
+            - update_iters (int): Number of iterations to update the policy network.
+            - batch_size (int): Batch size for each iteration.
+            - target_kl (float): Target KL divergence.
+            - entropy_coef (float): Coefficient of entropy.
+            - reward_normalize (bool): Whether to normalize the reward.
+            - cost_normalize (bool): Whether to normalize the cost.
+            - obs_normalize (bool): Whether to normalize the observation.
+            - kl_early_stop (bool): Whether to stop the training when KL divergence is too large.
+            - max_grad_norm (float): Maximum gradient norm.
+            - use_max_grad_norm (bool): Whether to use maximum gradient norm.
+            - use_critic_norm (bool): Whether to use critic norm.
+            - critic_norm_coef (float): Coefficient of critic norm.
+            - gamma (float): Discount factor.
+            - cost_gamma (float): Cost discount factor.
+            - lam (float): Lambda for GAE-Lambda.
+            - lam_c (float): Lambda for cost GAE-Lambda.
+            - adv_estimation_method (str): The method to estimate the advantage.
+            - standardized_rew_adv (bool): Whether to use standardized reward advantage.
+            - standardized_cost_adv (bool): Whether to use standardized cost advantage.
+            - penalty_coef (float): Penalty coefficient for cost.
+            - use_cost (bool): Whether to use cost.
 
-                     -  hidden_sizes:
 
-                        -  64
-                        -  64
-
-                     -  activations: tanh
-
-                  -  val (dictionary) parameters for critic network ``v``
-
-                     -  hidden_sizes:
-
-                        -  64
-                        -  64
-
-                        .. hint::
-
-                            ======== ================  ========================================================================
-                            Name        Type              Description
-                            ======== ================  ========================================================================
-                            ``v``    ``nn.Module``     Gives the current estimate of **V** for states in ``s``.
-                            ``pi``   ``nn.Module``     Deterministically or continuously computes an action from the agent,
-                                                       conditioned on states in ``s``.
-                            ======== ================  ========================================================================
-
-                  -  activations: tanh
-                  -  env_id (string): The name of environment we want to roll out.
-                  -  seed (int): Define the seed of experiments.
-                  -  parallel (int): Define the seed of experiments.
-                  -  epochs (int): The number of epochs we want to roll out.
-                  -  steps_per_epoch (int):The number of time steps per epoch.
-                  -  pi_iters (int): The number of iteration when we update actor network per mini batch.
-                  -  critic_iters (int): The number of iteration when we update critic network per mini batch.
-
-    .. tab-item:: Optional parameters
+    .. tab-item:: Model
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Optional parameters
+            Model Configs
             ^^^
-            -  use_cost_critic (bool): Use cost value function or not.
-            -  linear_lr_decay (bool): Use linear learning rate decay or not.
-            -  exploration_noise_anneal (bool): Use exploration noise anneal or not.
-            -  reward_penalty (bool): Use cost to penalize reward or not.
-            -  kl_early_stopping (bool): Use KL early stopping or not.
-            -  max_grad_norm (float): Use maximum gradient normalization or not.
-            -  scale_rewards (bool): Use reward scaling or not.
 
-    .. tab-item:: Buffer parameters
+            - weight_initialization_mode (str): The type of weight initialization method.
+            - actor_type (str): The type of actor, default to ``gaussian_learning``.
+            - linear_lr_decay (bool): Whether to use linear learning rate decay.
+            - exploration_noise_anneal (bool): Whether to use exploration noise anneal.
+            - std_range (list): The range of standard deviation.
+
+            .. hint:: 
+
+                actor (dictionary): parameters for actor network ``actor``
+
+                - activations: tanh
+                - hidden_sizes:
+                - 64
+                - 64
+
+            .. hint:: 
+
+                critic (dictionary): parameters for critic network ``critic``
+
+                - activations: tanh
+                - hidden_sizes:
+                - 64
+                - 64
+
+    .. tab-item:: Logger
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Buffer parameters
+            Logger Configs
             ^^^
-            .. hint::
-                  ============= =============================================================================
-                     Name                    Description
-                  ============= =============================================================================
-                  ``Buffer``      A buffer for storing trajectories experienced by an agent interacting
-                                  with the environment, and using **Generalized Advantage Estimation (GAE)**
-                                  for calculating the advantages of state-action pairs.
-                  ============= =============================================================================
 
-            .. warning::
-                Buffer collects only raw data received from environment.
-
-            -  gamma (float): The gamma for GAE.
-            -  lam (float): The lambda for reward GAE.
-            -  adv_estimation_method (float):Roughly what KL divergence we think is
-               appropriate between new and old policies after an update. This will
-               get used for early stopping. (Usually small, 0.01 or 0.05.)
-            -  standardized_reward (int):  Use standardized reward or not.
-            -  standardized_cost (bool): Use standardized cost or not.
+            - use_wandb (bool): Whether to use wandb to log the training process.
+            - wandb_project (str): The name of wandb project.
+            - use_tensorboard (bool): Whether to use tensorboard to log the training process.
+            - log_dir (str): The directory to save the log files.
+            - window_lens (int): The length of the window to calculate the average reward.
+            - save_model_freq (int): The frequency to save the model.
 
 ------
 

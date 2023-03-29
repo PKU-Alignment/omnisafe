@@ -279,7 +279,7 @@ We give an example below:
                     We use ``train_policy.py`` as the entrance file. You can train the agent with
                     CPO simply using ``train_policy.py``, with arguments about CPO and environments
                     does the training. For example, to run CPO in SafetyPointGoal1-v0 , with
-                    4 cpu cores and seed 0, you can use the following command:
+                    1 torch thread and seed 0, you can use the following command:
 
                     .. code-block:: bash
                         :linenos:
@@ -319,7 +319,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: Base RL Algorithm
+    :caption: base rl algorithm
 
     baserl/trpo
     baserl/ppo
@@ -327,7 +327,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: Safe RL Algorithm
+    :caption: safe rl algorithm
 
     saferl/cpo
     saferl/pcpo
@@ -337,14 +337,14 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: baserl api
+    :caption: base rl api
 
     baserlapi/on_policy
 
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: saferl api
+    :caption: safe rl api
 
     saferlapi/first_order
     saferlapi/second_order
@@ -365,7 +365,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: Utils
+    :caption: utils
 
     utils/config
     utils/distributed
@@ -376,10 +376,21 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: Models
+    :caption: models
 
     model/actor
     model/critic
+    model/actor_critic
+
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: envs
+
+    envs/core
+    envs/wrapper
+    envs/safety_gymnasium
+
 
 Indices and tables
 ==================

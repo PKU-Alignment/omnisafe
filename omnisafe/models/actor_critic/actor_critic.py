@@ -41,14 +41,19 @@ class ActorCritic(nn.Module):
         *   -   Actor
             -   The policy network, input is observation, output is action.
                 Choose the actor from the following options:
-                :class:`MLPActor`, :class:`CategoricalActor`, :class:`GaussianAnnealingActor`,
-                :class:`GaussianLearningActor`, :class:`GaussianStdNetActor`, :class:`MLPCholeskyActor`.
+                :class:`MLPActor`, :class:`GaussianSACActor`,
+                :class:`GaussianLearningActor`.
             -   Choose the action based on the observation.
         *   -   Value Critic
             -   The value network, input is observation, output is reward value.
                 Choose the critic from the following options:
                 :class:`QCritic`, :class:`VCritic`.
             -   Estimate the reward value of the observation.
+    
+    Attributes:
+        actor (Actor): The actor network.
+        reward_critic (Critic): The critic network.
+        std_schedule (Schedule): The schedule for the standard deviation of the Gaussian distribution.
     """
 
     # pylint: disable-next=too-many-arguments

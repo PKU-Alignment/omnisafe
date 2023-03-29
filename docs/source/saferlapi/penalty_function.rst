@@ -22,7 +22,7 @@ Penalized Proximal Policy Optimization
         :members:
         :private-members:
 
-        .. automethod:: __init__
+
 
 Interior-point Policy Optimization
 ----------------------------------
@@ -38,4 +38,4 @@ Interior-point Policy Optimization
         :members:
         :private-members:
 
-        .. automethod:: __init__
+

@@ -19,4 +19,4 @@ Normalizer
         :members:
         :private-members:
 
-        .. automethod:: __init__
+
