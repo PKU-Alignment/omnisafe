@@ -27,7 +27,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 .. note::
 
     This expression may be so complex that you won't immediately understand
-    what it means. Don't worry; we'll explain how it can be used to solve the constrained optimization problem in :eq:`preknow-eq-1`.
+    what it means. Don't worry; we'll explain how it can be used to solve the constrained optimization problem in Problem :eq:`preknow-eq-1`.
 
 .. tab-set::
 
@@ -59,6 +59,8 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
             satisfies:
 
             .. math::
+
+
 
                 f^*=\underset{x}{\text{min}}\quad \theta_p(x)=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max} \quad L(x, u, v)
 
@@ -123,7 +125,7 @@ define its Lagrange dual problem as:
    \text { s.t. } & u \geq 0
    \end{array}\nonumber
 
-From the definitions, we easily obtain the optimal value of the dual
+From the definitions we easily obtain that the optimal value of the dual
 problem, named as :math:`g^*`, satisfies:
 :math:`g^*=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}}\quad L(x,u,v)`.
 
@@ -180,7 +182,7 @@ We will discuss the weak and strong duality to show you the connection between t
             Introduction to Weak Duality
             ^^^
             The Lagrangian dual problem yields a lower bound for the primal problem.
-            It always holds that :math:`f^*\ge g^*`. We define that as weak
+            It always holds true that :math:`f^*\ge g^*`. We define that as weak
             duality. *Proof.* We have the definitions that:
 
             .. math:: f^*=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max} \quad L(x, u, v) \quad g^*=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}}\quad L(x,u,v)
@@ -210,10 +212,10 @@ We will discuss the weak and strong duality to show you the connection between t
 
             Introduction to Strong Duality
             ^^^
-            In some problems, we have :math:`f^*=g^*`, which is called
+            In some problems, we actually have :math:`f^*=g^*`, which is called
             strong duality. In fact, for convex optimization problems, we nearly
             always have strong duality, only in addition to some slight conditions.
-            The most common condition is Slater's condition.
+            A most common condition is the Slater's condition.
 
             If the primal is a convex problem, and there exists at least one
             strictly feasible :math:`\tilde{x}\in \mathbb{R}^n`, satisfying the
@@ -221,12 +223,12 @@ We will discuss the weak and strong duality to show you the connection between t
 
             .. math:: \exists \tilde{x}, h_i(\tilde{x})<0, i=1, \ldots, m, \ell_j(\tilde{x})=0, j=1, \ldots r
 
-            The strong duality holds.
+            Then strong duality holds.
 
 Summary
 -------
 
-In this section, we introduce you to the Lagrange method, which converts
+In this section we introduce you to the Lagrange method, which converts
 the solution of a constrained optimization problem into a solution to an
 unconstrained optimization problem. We also introduce that under certain
 conditions, the solution of a complex primal problem can also be

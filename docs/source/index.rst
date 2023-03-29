@@ -244,8 +244,9 @@ We give an example below:
 
                     import omnisafe
 
-                    env_id = 'SafetyPointGoal1-v0'
-                    agent = omnisafe.Agent('PPOLag', env_id)
+                    env = omnisafe.Env('SafetyPointGoal1-v0')
+
+                    agent = omnisafe.Agent('CPO', env)
                     agent.learn()
 
             .. tab-item:: Config dict style
@@ -275,8 +276,8 @@ We give an example below:
 
             .. tab-item:: Terminal config style
 
-                    We use ``train_on_policy.py`` as the entrance file. You can train the agent with
-                    CPO simply using ``train_on_policy.py``, with arguments about CPO and environments
+                    We use ``train_policy.py`` as the entrance file. You can train the agent with
+                    CPO simply using ``train_policy.py``, with arguments about CPO and environments
                     does the training. For example, to run CPO in SafetyPointGoal1-v0 , with
                     4 cpu cores and seed 0, you can use the following command:
 
@@ -284,9 +285,9 @@ We give an example below:
                         :linenos:
 
                         cd examples
-                        python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
+                        python train_policy.py --algo CPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 
-You may not yet understand the above theory and the specific meaning of the code but do not worry, we will make a detailed introduction later in the :doc:`../saferl/cpo` tutorial.
+You may not yet understand the above theory and the specific meaning of the code, but do not worry, we will make a detailed introduction later in the :doc:`../saferl/cpo` tutorial.
 
 Long-Term Support and Support History
 -------------------------------------

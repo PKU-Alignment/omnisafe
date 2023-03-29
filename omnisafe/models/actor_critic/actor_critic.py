@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of ActorCritic."""
 
-from typing import List, Tuple
+from __future__ import annotations
 
 import torch
 from torch import nn, optim
@@ -84,7 +84,8 @@ class ActorCritic(nn.Module):
             self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
         if model_cfgs.critic.lr != 'None':
             self.reward_critic_optimizer = optim.Adam(
-                self.reward_critic.parameters(), lr=model_cfgs.critic.lr
+                self.reward_critic.parameters(),
+                lr=model_cfgs.critic.lr,
             )
         if model_cfgs.actor.lr != 'None':
             self.actor_scheduler: _LRScheduler
@@ -98,12 +99,15 @@ class ActorCritic(nn.Module):
                 )
             else:
                 self.actor_scheduler = ConstantLR(
-                    self.actor_optimizer, factor=1.0, total_iters=epochs, verbose=True
+                    self.actor_optimizer,
+                    factor=1.0,
+                    total_iters=epochs,
+                    verbose=True,
                 )
 
             self.std_schedule: Schedule
 
-    def step(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
+    def step(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in rollout without gradient.
 
         Args:
@@ -119,7 +123,7 @@ class ActorCritic(nn.Module):
             log_prob = self.actor.log_prob(act)
         return act, value_r[0], log_prob
 
-    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
+    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in training with gradient.
 
         Args:
@@ -131,17 +135,19 @@ class ActorCritic(nn.Module):
         """
         return self.step(obs, deterministic=deterministic)
 
-    def set_annealing(self, epochs: List[float], std: List[float]) -> None:
+    def set_annealing(self, epochs: list[float], std: list[float]) -> None:
         """Set the annealing mode for the actor.
 
         Args:
             annealing: Whether to use annealing mode.
         """
         assert isinstance(
-            self.actor, GaussianLearningActor
+            self.actor,
+            GaussianLearningActor,
         ), 'Only GaussianLearningActor support annealing.'
         self.std_schedule = PiecewiseSchedule(
-            endpoints=list(zip(epochs, std)), outside_value=std[-1]
+            endpoints=list(zip(epochs, std)),
+            outside_value=std[-1],
         )
 
     def annealing(self, epoch: int) -> None:
@@ -151,6 +157,7 @@ class ActorCritic(nn.Module):
             epoch: The current epoch.
         """
         assert isinstance(
-            self.actor, GaussianLearningActor
+            self.actor,
+            GaussianLearningActor,
         ), 'Only GaussianLearningActor support annealing.'
         self.actor.std = self.std_schedule.value(epoch)

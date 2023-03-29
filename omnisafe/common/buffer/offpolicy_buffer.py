@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of OffPolicyBuffer."""
 
-from typing import Dict
+from __future__ import annotations
 
 import torch
 from gymnasium.spaces import Box
@@ -32,8 +32,8 @@ class OffPolicyBuffer(BaseBuffer):
         act_space: OmnisafeSpace,
         size: int,
         batch_size: int,
-        device: torch.device = torch.device('cpu'),
-    ):
+        device: torch.device = 'cpu',
+    ) -> None:
         """Initialize the off policy buffer.
 
         .. warning::
@@ -60,10 +60,13 @@ class OffPolicyBuffer(BaseBuffer):
             device (torch.device, optional): The device of the buffer. Defaults to
                 torch.device('cpu').
         """
+        device = torch.device(device)
         super().__init__(obs_space, act_space, size, device)
         if isinstance(obs_space, Box):
             self.data['next_obs'] = torch.zeros(
-                (size, *obs_space.shape), dtype=torch.float32, device=device
+                (size, *obs_space.shape),
+                dtype=torch.float32,
+                device=device,
             )
         else:
             raise NotImplementedError
@@ -102,7 +105,7 @@ class OffPolicyBuffer(BaseBuffer):
         self._ptr = (self._ptr + 1) % self._max_size
         self._size = min(self._size + 1, self._max_size)
 
-    def sample_batch(self) -> Dict[str, torch.Tensor]:
+    def sample_batch(self) -> dict[str, torch.Tensor]:
         """Sample a batch of data from the buffer."""
         idxs = torch.randint(0, self._size, (self._batch_size,))
         return {key: value[idxs] for key, value in self.data.items()}

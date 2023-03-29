@@ -14,7 +14,7 @@
 # ==============================================================================
 """OnPolicy Adapter for OmniSafe."""
 
-from typing import Dict, Tuple
+from __future__ import annotations
 
 import torch
 
@@ -34,8 +34,9 @@ class EarlyTerminatedAdapter(OnPolicyAdapter):
         self._cost_logger = torch.zeros(self._env.num_envs)
 
     def step(
-        self, action: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+        self,
+        action: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         next_obs, reward, cost, terminated, truncated, info = super().step(action)
 
         self._cost_logger += info.get('original_cost', cost)

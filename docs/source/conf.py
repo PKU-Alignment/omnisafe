@@ -72,13 +72,14 @@ html_theme = 'furo'
 html_logo = 'image/logo.png'
 html_title = ' '
 html_copy_source = False
-html_context: Dict[str, Any] = {}
-html_context['conf_py_path'] = '/docs/'
-html_context['display_github'] = False
-html_context['github_user'] = 'PKU-MARL'
-html_context['github_repo'] = 'OmniSafe'
-html_context['github_version'] = 'main'
-html_context['slug'] = 'omnisafe'
+html_context = {
+    'conf_py_path': '/docs/',
+    'display_github': False,
+    'github_user': 'PKU-MARL',
+    'github_repo': 'OmniSafe',
+    'github_version': 'main',
+    'slug': 'omnisafe',
+}
 
 html_static_path = ['_static']
 html_css_files = []

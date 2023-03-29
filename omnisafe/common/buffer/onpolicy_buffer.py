@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of OnPolicyBuffer."""
 
-from typing import Dict, Tuple
+from __future__ import annotations
 
 import torch
 
@@ -43,8 +43,8 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         penalty_coefficient: float = 0,
         standardized_adv_r: bool = False,
         standardized_adv_c: bool = False,
-        device: torch.device = torch.device('cpu'),
-    ):
+        device: torch.device = 'cpu',
+    ) -> None:
         """Initialize the on-policy buffer.
 
         .. warning::
@@ -104,6 +104,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             standardized_adv_c (bool, optional): Whether to standardize the advantages of the critic. Defaults to False.
             device (torch.device, optional): The device to store the data. Defaults to torch.device('cpu').
         """
+        device = torch.device(device)
         super().__init__(obs_space, act_space, size, device)
         self._standardized_adv_r = standardized_adv_r
         self._standardized_adv_c = standardized_adv_c
@@ -155,8 +156,8 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
     def finish_path(
         self,
-        last_value_r: torch.Tensor = torch.zeros(1),
-        last_value_c: torch.Tensor = torch.zeros(1),
+        last_value_r: torch.Tensor | None = None,
+        last_value_c: torch.Tensor | None = None,
     ) -> None:
         """Finish the current path and calculate the advantages of state-action pairs.
 
@@ -176,6 +177,11 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             last_value_c (torch.Tensor, optional): The value of the last state of the current path.
             Defaults to torch.zeros(1).
         """
+        if last_value_r is None:
+            last_value_r = torch.zeros(1, device=self._device)
+        if last_value_c is None:
+            last_value_c = torch.zeros(1, device=self._device)
+
         path_slice = slice(self.path_start_idx, self.ptr)
         last_value_r = last_value_r.to(self._device)
         last_value_c = last_value_c.to(self._device)
@@ -189,10 +195,14 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         rewards -= self._penalty_coefficient * costs
 
         adv_r, target_value_r = self._calculate_adv_and_value_targets(
-            values_r, rewards, lam=self._lam
+            values_r,
+            rewards,
+            lam=self._lam,
         )
         adv_c, target_value_c = self._calculate_adv_and_value_targets(
-            values_c, costs, lam=self._lam_c
+            values_c,
+            costs,
+            lam=self._lam_c,
         )
 
         self.data['adv_r'][path_slice] = adv_r
@@ -202,7 +212,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
         self.path_start_idx = self.ptr
 
-    def get(self) -> Dict[str, torch.Tensor]:
+    def get(self) -> dict[str, torch.Tensor]:
         """Get the data in the buffer.
 
         .. hint::
@@ -244,7 +254,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         values: torch.Tensor,
         rewards: torch.Tensor,
         lam: float,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         r"""Compute the estimated advantage.
 
         Three methods are supported:
@@ -343,7 +353,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         gamma: float = 0.99,
         rho_bar: float = 1.0,
         c_bar: float = 1.0,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor,]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         r"""This function is used to calculate V-trace targets.
 
         .. math::
@@ -376,10 +386,12 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         # pylint: disable-next=assignment-from-no-return
         rhos = torch.div(policy_action_probs, behavior_action_probs)
         clip_rhos = torch.min(
-            rhos, torch.as_tensor(rho_bar)
+            rhos,
+            torch.as_tensor(rho_bar),
         )  # pylint: disable=assignment-from-no-return
         clip_cs = torch.min(
-            rhos, torch.as_tensor(c_bar)
+            rhos,
+            torch.as_tensor(c_bar),
         )  # pylint: disable=assignment-from-no-return
         v_s = values[:-1].clone()  # copy all values except bootstrap value
         last_v_s = values[-1]  # bootstrap from last state
