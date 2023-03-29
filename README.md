@@ -225,7 +225,7 @@ More information about environments, please refer to [Safety Gymnasium](https://
 
 **A video example**
 
-![Segmentfault](./images/CLI_example.svg)
+![Segmentfault](https://github.com/PKU-MARL/omnisafe/blob/main/images/CLI_example.svg)
 
 ```bash
 pip install omnisafe
