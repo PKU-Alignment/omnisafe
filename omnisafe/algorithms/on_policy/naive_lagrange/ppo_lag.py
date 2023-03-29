@@ -14,12 +14,12 @@
 # ==============================================================================
 """Implementation of the Lagrange version of the PPO algorithm."""
 
+import numpy as np
 import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
 from omnisafe.common.lagrange import Lagrange
-import numpy as np
 
 
 @registry.register
