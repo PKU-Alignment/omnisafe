@@ -242,7 +242,7 @@ omnisafe eval ./saved_source/PPO-{SafetyPointGoal1-v0} --num-episode 1
 
 # Quick training some algorithms to validate your thoughts
 # Note: use `key1:key2`, your can select key of hyperparameters which are recursively contained, and use `--custom-cfgs`, you can add custom cfgs via CLI
-omnisafe train --algo PPO --total-steps 1024 --vector-env-nums 1 --custom-cfgs algo_cfgs:update_cycle --custom-cfgs 512
+omnisafe train --algo PPO --total-steps 2048 --vector-env-nums 1 --custom-cfgs algo_cfgs:update_cycle --custom-cfgs 1024
 
 # Quick training some algorithms via a saved config file, the format is as same as default format
 omnisafe train-config ./saved_source/train_config.yaml

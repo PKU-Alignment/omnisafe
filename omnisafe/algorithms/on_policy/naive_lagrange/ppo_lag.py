@@ -19,6 +19,7 @@ import torch
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
 from omnisafe.common.lagrange import Lagrange
+import numpy as np
 
 
 @registry.register
@@ -71,6 +72,7 @@ class PPOLag(PPO):
         """
         # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
+        assert not np.isnan(Jc), 'cost for updating lagrange multiplier is nan'
         # first update Lagrange multiplier parameter
         self._lagrange.update_lagrange_multiplier(Jc)
         # then update the policy and value function
