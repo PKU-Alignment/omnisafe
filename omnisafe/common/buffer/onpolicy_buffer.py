@@ -43,7 +43,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         penalty_coefficient: float = 0,
         standardized_adv_r: bool = False,
         standardized_adv_c: bool = False,
-        device: torch.device = 'cpu',
+        device: str = 'cpu',
     ) -> None:
         """Initialize the on-policy buffer.
 
@@ -104,7 +104,6 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             standardized_adv_c (bool, optional): Whether to standardize the advantages of the critic. Defaults to False.
             device (torch.device, optional): The device to store the data. Defaults to torch.device('cpu').
         """
-        device = torch.device(device)
         super().__init__(obs_space, act_space, size, device)
         self._standardized_adv_r = standardized_adv_r
         self._standardized_adv_c = standardized_adv_c

@@ -26,7 +26,7 @@ class Registry:
 
     def __init__(self, name) -> None:
         self._name = name
-        self._module_dict = {}
+        self._module_dict: dict = {}
 
     def __repr__(self) -> str:
         return (

@@ -52,9 +52,9 @@ class Plotter:
     """
 
     def __init__(self) -> None:
-        self.div_line_width = 50
-        self.exp_idx = 0
-        self.units = {}
+        self.div_line_width: int = 50
+        self.exp_idx: int = 0
+        self.units: dict= {}
 
     def plot_data(
         self,
@@ -142,7 +142,7 @@ class Plotter:
                         config = json.load(f)
                         if 'exp_name' in config:
                             exp_name = config['algo']
-                            update_cycle = config['algo_cfgs']['update_cycle']
+                            update_cycle = int(config['algo_cfgs']['update_cycle'])
                 except FileNotFoundError as error:
                     config_path = os.path.join(root, 'config.json')
                     raise FileNotFoundError(f'Could not read from {config_path}') from error
@@ -173,7 +173,7 @@ class Plotter:
                 exp_data.insert(
                     len(exp_data.columns),
                     'Steps',
-                    exp_data['Train/Epoch'] * update_cycle,
+                    int(exp_data['Train/Epoch']) * update_cycle, 
                 )
 
                 datasets.append(exp_data)

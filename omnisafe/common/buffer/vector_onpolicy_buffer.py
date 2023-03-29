@@ -39,7 +39,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         standardized_adv_r: bool,
         standardized_adv_c: bool,
         num_envs: int = 1,
-        device: torch.device = 'cpu',
+        device: str = 'cpu',
     ) -> None:
         """Initialize the vector-on-policy buffer.
 

@@ -209,20 +209,16 @@ class NaturalPG(PolicyGradient):
         self._update_actor(obs, act, logp, adv_r, adv_c)
 
         dataloader = DataLoader(
-            dataset=TensorDataset(obs, act, logp, target_value_r, target_value_c, adv_r, adv_c),
+            dataset=TensorDataset(obs, target_value_r, target_value_c),
             batch_size=self._cfgs.algo_cfgs.batch_size,
             shuffle=True,
         )
 
-        for _i in range(self._cfgs.algo_cfgs.update_iters):
+        for _ in range(self._cfgs.algo_cfgs.update_iters):
             for (
                 obs,
-                _act,
-                _logp,
                 target_value_r,
                 target_value_c,
-                _adv_r,
-                _adv_c,
             ) in dataloader:
                 self._update_reward_critic(obs, target_value_r)
                 if self._cfgs.algo_cfgs.use_cost:
@@ -230,7 +226,7 @@ class NaturalPG(PolicyGradient):
 
         self._logger.store(
             **{
-                'Train/StopIter': _i + 1,
+                'Train/StopIter': self._cfgs.algo_cfgs.update_iters,
                 'Value/Adv': adv_r.mean().item(),
             },
         )
