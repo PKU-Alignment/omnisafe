@@ -500,8 +500,44 @@ class ActionScale(Wrapper):
         action = self._old_min_action + (self._old_max_action - self._old_min_action) * (
             action - self._min_action
         ) / (self._max_action - self._min_action)
-        return super().step(action)
+        return super().step(action.cpu().numpy())
 
+class ActionRepeat(Wrapper):
+    """Repeat ab action given times.
+
+    Example:
+        >>> env = ActionRepeat(env, times=3)
+    """
+
+    def __init__(
+        self,
+        env: CMDP,
+        times: int
+    ) -> None:
+        """Initialize the wrapper.
+
+        Args:
+            env: The environment to wrap.
+            low: The lower bound of the action space.
+            high: The upper bound of the action space.
+        """
+        super().__init__(env)
+        self._times = times
+
+    def step(
+        self, action: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+        step = 0
+        rewards, costs = 0.0, 0.0
+        for _ in range(self._times):
+            obs, reward, cost, terminated, truncated, info = super().step(action)
+            step += 1
+            rewards += reward
+            costs += cost
+            if terminated or truncated:
+                break
+        info['num_step'] = step
+        return obs, rewards, costs, terminated, truncated, info
 
 class Unsqueeze(Wrapper):
     """Unsqueeze the observation, reward, cost, terminated, truncated and info.

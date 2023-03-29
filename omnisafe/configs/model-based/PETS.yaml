@@ -1,0 +1,111 @@
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+defaults:
+  # seed for random number generator
+  seed: 0
+  # training configurations
+  train_cfgs:
+    # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
+    device: cuda:2
+    # number of threads for torch
+    torch_threads: 16
+    # total number of steps to train
+    total_steps: 1000000
+    # number of vectorized environments
+    vector_env_nums: 1
+    # number of parallel agent, similar to a3c
+    parallel: 1
+  # dynamics configurations
+  dynamics_cfgs:
+    # Number of network for ensemble model
+    num_ensemble: 5
+    # output size for ensemble model
+    elite_size: 5
+    # Size of hidden layers
+    hidden_size: 200
+    # Whether use decay loss
+    use_decay: True
+    # Whether predict reward
+    predict_rewawrd: True
+    # Whether predict reward
+    predict_cost: False
+    # Training batch size of dynamics
+    batch_size: 256
+    # Training max epoch of dynamics
+    max_epoch: 5
+  # algorithm configurations
+  algo_cfgs:
+    action_repeat: 5
+    plan_horizon: 7
+    num_iterations: 5
+    num_particles: 5
+    num_samples: 512
+    num_elites: 64
+    momentum: 0.1
+    # number of steps to update the dynamics
+    update_dynamics_cycle: 2048
+    # batch size for each iteration
+    dynamics_batch_size: 128
+    dynamics_max_epochs: 5
+    # Actor perdorm random action before `start_learning_steps` steps
+    start_learning_steps: 25000
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: False
+    # reward discount factor
+    gamma: 0.99
+    # cost discount factor
+    cost_gamma: 0.99
+
+  # logger configurations
+  logger_cfgs:
+    # log cycle:
+    log_cycle: 20000
+    # use wandb for logging
+    use_wandb: False
+    # wandb project name
+    wandb_project: omnisafe
+    # use tensorboard for logging
+    use_tensorboard: True
+    # save model frequency
+    save_model_freq: 100
+    # save logger path
+    log_dir: "./runs"
+    # save model path
+    window_lens: 100
+
+SafetyHopperVelocity-v4:
+  # algorithm configurations
+  algo_cfgs:
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: True
+    # normalize observation
+    obs_normalize: True
+
+SafetyWalker2dVelocity-v4:
+  # algorithm configurations
+  algo_cfgs:
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: True
+    # normalize observation
+    obs_normalize: True
