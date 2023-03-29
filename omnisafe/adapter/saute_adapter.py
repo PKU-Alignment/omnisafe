@@ -14,7 +14,7 @@
 # ==============================================================================
 """OnPolicy Adapter for OmniSafe."""
 
-from typing import Dict, Optional, Tuple
+from __future__ import annotations
 
 import numpy as np
 import torch
@@ -77,15 +77,16 @@ class SauteAdapter(OnPolicyAdapter):
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
 
-    def reset(self) -> Tuple[torch.Tensor, Dict]:
+    def reset(self) -> tuple[torch.Tensor, dict]:
         obs, info = self._env.reset()
         self._safety_obs = torch.ones(self._env.num_envs, 1)
         obs = self._augment_obs(obs)
         return obs, info
 
     def step(
-        self, action: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+        self,
+        action: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         next_obs, reward, cost, terminated, truncated, info = self._env.step(action)
 
         self._safety_step(cost)
@@ -105,17 +106,16 @@ class SauteAdapter(OnPolicyAdapter):
 
     def _safety_reward(self, reward: torch.Tensor) -> torch.Tensor:
         safe = torch.as_tensor(self._safety_obs > 0, dtype=reward.dtype).squeeze(-1)
-        reward = safe * reward + (1 - safe) * self._cfgs.env_cfgs.unsafe_reward
-        return reward
+        return safe * reward + (1 - safe) * self._cfgs.env_cfgs.unsafe_reward
 
     def _augment_obs(self, obs: torch.Tensor) -> torch.Tensor:
         return torch.cat([obs, self._safety_obs], dim=-1)
 
-    def _log_value(self, reward: torch.Tensor, cost: torch.Tensor, info: Dict, **kwargs) -> None:
+    def _log_value(self, reward: torch.Tensor, cost: torch.Tensor, info: dict, **kwargs) -> None:
         super()._log_value(reward, cost, info, **kwargs)
         self._ep_budget += self._safety_obs.squeeze(-1)
 
-    def _reset_log(self, idx: Optional[int] = None) -> None:
+    def _reset_log(self, idx: int | None = None) -> None:
         super()._reset_log(idx)
         if idx is None:
             self._ep_budget = torch.zeros(self._env.num_envs)

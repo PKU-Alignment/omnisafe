@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of VectorOffPolicyBuffer."""
 
-from typing import Dict
+from __future__ import annotations
 
 import torch
 from gymnasium.spaces import Box
@@ -33,8 +33,8 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         size: int,
         batch_size: int,
         num_envs: int,
-        device: torch.device = torch.device('cpu'),
-    ):
+        device: torch.device = 'cpu',
+    ) -> None:
         """Initialize the off policy buffer.
 
         The vector-off-policy buffer is a vectorized version of the off-policy buffer.
@@ -53,20 +53,27 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             device (torch.device, optional): The device of the buffer. Defaults to
                 torch.device('cpu').
         """
+        device = torch.device(device)
         self._num_envs = num_envs
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros(
-                (size, num_envs, *obs_space.shape), dtype=torch.float32, device=device
+                (size, num_envs, *obs_space.shape),
+                dtype=torch.float32,
+                device=device,
             )
             next_obs_buf = torch.zeros(
-                (size, num_envs, *obs_space.shape), dtype=torch.float32, device=device
+                (size, num_envs, *obs_space.shape),
+                dtype=torch.float32,
+                device=device,
             )
         else:
             raise NotImplementedError
 
         if isinstance(act_space, Box):
             act_buf = torch.zeros(
-                (size, num_envs, *act_space.shape), dtype=torch.float32, device=device
+                (size, num_envs, *act_space.shape),
+                dtype=torch.float32,
+                device=device,
             )
         else:
             raise NotImplementedError
@@ -106,14 +113,18 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             dtype (torch.dtype): The dtype of the field.
         """
         self.data[name] = torch.zeros(
-            (self._max_size, self._num_envs, *shape), dtype=dtype, device=self._device
+            (self._max_size, self._num_envs, *shape),
+            dtype=dtype,
+            device=self._device,
         )
 
-    def sample_batch(self) -> Dict[str, torch.Tensor]:
+    def sample_batch(self) -> dict[str, torch.Tensor]:
         """Sample a batch from the buffer."""
         idx = torch.randint(
-            0, self._size, (self._batch_size * self._num_envs,), device=self._device
+            0,
+            self._size,
+            (self._batch_size * self._num_envs,),
+            device=self._device,
         )
         env_idx = torch.arange(self._num_envs, device=self._device).repeat(self._batch_size)
-        batch = {key: value[idx, env_idx] for key, value in self.data.items()}
-        return batch
+        return {key: value[idx, env_idx] for key, value in self.data.items()}

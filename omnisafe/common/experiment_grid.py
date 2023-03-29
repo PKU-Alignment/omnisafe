@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the Experiment Grid."""
 
+from __future__ import annotations
+
 import json
 import os
 import string
@@ -21,7 +23,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor as Pool
 from copy import deepcopy
 from textwrap import dedent
-from typing import Any, Dict, List
+from typing import Any
 
 import numpy as np
 from rich.console import Console
@@ -50,10 +52,10 @@ class ExperimentGrid:
         Args:
             exp_name (str): Name of the experiment grid.
         """
-        self.keys: List[str] = []
-        self.vals: List[Any] = []
-        self.shs: List[str] = []
-        self.in_names: List[str] = []
+        self.keys: list[str] = []
+        self.vals: list[Any] = []
+        self.shs: list[str] = []
+        self.in_names: list[str] = []
         self.div_line_width = 80
         assert isinstance(exp_name, str), 'Name has to be a string.'
         self.name = exp_name
@@ -147,8 +149,7 @@ class ExperimentGrid:
         def shear(value):
             return ''.join(z for z in value[:3] if z in valid_chars)
 
-        shorthand = '-'.join([shear(x) for x in key.split(':')])
-        return shorthand
+        return '-'.join([shear(x) for x in key.split(':')])
 
     def add(self, key, vals, shorthand=None, in_name=False):
         r"""Add a parameter (key) to the grid config, with potential values (vals).
@@ -259,7 +260,7 @@ class ExperimentGrid:
             total_dic (dict): Total dictionary.
             item_dic (dict): Item dictionary.
         """
-        for idd in item_dic.keys():
+        for idd in item_dic:
             total_value = total_dic.get(idd)
             item_value = item_dic.get(idd)
 
@@ -280,7 +281,7 @@ class ExperimentGrid:
             vals (list): List of values.
         """
         if len(keys) == 1:
-            pre_variants: List[Dict] = [{}]
+            pre_variants: list[dict] = [{}]
         else:
             pre_variants = self._variants(keys[1:], vals[1:])
 
@@ -341,7 +342,7 @@ class ExperimentGrid:
 
         def unflatten_var(var):
             """Build the full nested dict version of var, based on key names."""
-            new_var: Dict = {}
+            new_var: dict = {}
             unflatten_set = set()
 
             for key, value in var.items():
@@ -349,7 +350,8 @@ class ExperimentGrid:
                     splits = key.split(':')
                     k_0 = splits[0]
                     assert k_0 not in new_var or isinstance(
-                        new_var[k_0], dict
+                        new_var[k_0],
+                        dict,
                     ), "You can't assign multiple values to the same key."
 
                     if k_0 not in new_var:
@@ -359,7 +361,7 @@ class ExperimentGrid:
                     new_var[k_0][sub_k] = value
                     unflatten_set.add(k_0)
                 else:
-                    assert not (key in new_var), "You can't assign multiple values to the same key."
+                    assert key not in new_var, "You can't assign multiple values to the same key."
                     new_var[key] = value
 
             # make sure to fill out the nested dict.
@@ -368,9 +370,7 @@ class ExperimentGrid:
 
             return new_var
 
-        new_variants = [unflatten_var(var) for var in flat_variants]
-
-        return new_variants
+        return [unflatten_var(var) for var in flat_variants]
 
     # pylint: disable-next=too-many-locals
     def run(self, thunk, num_pool=1, parent_dir=None, is_test=False, gpu_id=None):
@@ -408,7 +408,7 @@ class ExperimentGrid:
 
         # print variant names for the user.
         var_names = {self.variant_name(var) for var in variants}
-        var_names = sorted(list(var_names))
+        var_names = sorted(var_names)
         line = '=' * self.div_line_width
 
         self._console.print('\nPreparing to run the following experiments...', style='bold green')
@@ -420,12 +420,12 @@ class ExperimentGrid:
             self._console.print(
                 dedent(
                     """
-            Launch delayed to give you a few seconds to review your experiments.
+                    Launch delayed to give you a few seconds to review your experiments.
 
-            To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
-            spinup/user_config.py.
+                    To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
+                    spinup/user_config.py.
 
-            """
+                    """,
                 ),
                 style='cyan, bold',
                 end='',
@@ -497,7 +497,8 @@ class ExperimentGrid:
         os.makedirs(self.log_dir, exist_ok=True)
         path = os.path.join(self.log_dir, 'grid_config.json')
         self._console.print(
-            'Save with config of experiment grid in grid_config.json', style='yellow bold'
+            'Save with config of experiment grid in grid_config.json',
+            style='yellow bold',
         )
         json_config = json.dumps(dict(zip(self.keys, self.vals)), indent=4)
         with open(path, encoding='utf-8', mode='w') as f:
@@ -517,7 +518,11 @@ class ExperimentGrid:
         self._evaluator = Evaluator()
 
     def analyze(
-        self, parameter: str, values: list = None, compare_num: int = None, cost_limit: float = None
+        self,
+        parameter: str,
+        values: list = None,
+        compare_num: int = None,
+        cost_limit: float = None,
     ):
         """Analyze the experiment results."""
         assert self._statistical_tools is not None, 'Please run run() first!'
@@ -536,10 +541,12 @@ class ExperimentGrid:
                             for model in os.scandir(os.path.join(single_seed, 'torch_save')):
                                 if model.is_file() and model.name.split('.')[-1] == 'pt':
                                     self._evaluator.load_saved(
-                                        save_dir=single_seed, model_name=model.name
+                                        save_dir=single_seed,
+                                        model_name=model.name,
                                     )
                                     self._evaluator.evaluate(
-                                        num_episodes=num_episodes, cost_criteria=cost_criteria
+                                        num_episodes=num_episodes,
+                                        cost_criteria=cost_criteria,
                                     )
 
     # pylint: disable-next=too-many-arguments

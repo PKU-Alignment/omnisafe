@@ -16,8 +16,7 @@
 
 import helpers
 import omnisafe
-import simple_env
-from omnisafe.utils.distributed import fork
+import simple_env  # noqa: F401
 
 
 base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']
@@ -59,11 +58,13 @@ def test_off_policy(algo):
 
 
 @helpers.parametrize(
-    algo=base_policy
-    + naive_lagrange_policy
-    + first_order_policy
-    + second_order_policy
-    + penalty_policy
+    algo=(
+        base_policy
+        + naive_lagrange_policy
+        + first_order_policy
+        + second_order_policy
+        + penalty_policy
+    ),
 )
 def test_on_policy(algo):
     """Test base algorithms."""
