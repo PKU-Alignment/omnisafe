@@ -15,7 +15,7 @@
 """Example of training a policy with OmniSafe."""
 
 import omnisafe
-import simple_env
+import simple_env  # noqa: F401
 
 
 if __name__ == '__main__':

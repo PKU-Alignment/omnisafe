@@ -57,7 +57,7 @@ OmniSafe addresses these issues by providing more than 40 experimentally validat
   - [1. Run Agent from preset yaml file](#1-run-agent-from-preset-yaml-file)
   - [2. Run agent with custom cfg](#2-run-agent-with-custom-cfg)
   - [3. Run Agent from custom terminal config](#3-run-agent-from-custom-terminal-config)
-  - [4. Evalutate Saved Policy](#4-evalutate-saved-policy)
+  - [4. Evaluate Saved Policy](#4-evaluate-saved-policy)
 - [Changelog](#changelog)
 - [The OmniSafe Team](#the-omnisafe-team)
 - [License](#license)
@@ -298,7 +298,7 @@ cd examples
 python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 ```
 
-### 4. Evalutate Saved Policy
+### 4. Evaluate Saved Policy
 
 ```python
 import os

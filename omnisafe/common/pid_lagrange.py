@@ -14,13 +14,15 @@
 # ==============================================================================
 """Implementation of PID Lagrange."""
 
+from __future__ import annotations
+
 import abc
 from collections import deque
 from typing import Deque
 
 
 # pylint: disable-next=too-few-public-methods,too-many-instance-attributes
-class PIDLagrangian(abc.ABC):
+class PIDLagrangian(abc.ABC):  # noqa: B024
     """Abstract base class for Lagrangian-base Algorithms.
 
     Similar to the :class:`Lagrange` module, this module implements the PID version of the lagrangian method.

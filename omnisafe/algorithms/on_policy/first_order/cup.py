@@ -185,7 +185,8 @@ class CUP(PPO):
                 loss_cost.backward()
                 if self._cfgs.algo_cfgs.max_grad_norm is not None:
                     torch.nn.utils.clip_grad_norm_(
-                        self._actor_critic.actor.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                        self._actor_critic.actor.parameters(),
+                        self._cfgs.algo_cfgs.max_grad_norm,
                     )
                 distributed.avg_grads(self._actor_critic.actor)
                 self._actor_critic.actor_optimizer.step()
@@ -212,5 +213,5 @@ class CUP(PPO):
                 'Train/SecondStepStopIter': i + 1,  # pylint: disable=undefined-loop-variable
                 'Train/SecondStepEntropy': info['entropy'],
                 'Train/SecondStepPolicyRatio': info['ratio'],
-            }
+            },
         )

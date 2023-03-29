@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of ConstraintActorCritic."""
 
-from typing import Tuple
+from __future__ import annotations
 
 import torch
 from torch import optim
@@ -77,10 +77,11 @@ class ConstraintActorCritic(ActorCritic):
 
         if model_cfgs.critic.lr != 'None':
             self.cost_critic_optimizer = optim.Adam(
-                self.cost_critic.parameters(), lr=model_cfgs.critic.lr
+                self.cost_critic.parameters(),
+                lr=model_cfgs.critic.lr,
             )
 
-    def step(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
+    def step(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
         """Choose action based on observation.
 
         Args:
@@ -102,7 +103,7 @@ class ConstraintActorCritic(ActorCritic):
 
         return action, value_r[0], value_c[0], log_prob
 
-    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, ...]:
+    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
         """Choose action based on observation.
 
         Args:

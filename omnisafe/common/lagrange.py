@@ -62,12 +62,14 @@ class Lagrange:
 
         init_value = max(lagrangian_multiplier_init, 1e-5)
         self.lagrangian_multiplier = torch.nn.Parameter(
-            torch.as_tensor(init_value), requires_grad=True
+            torch.as_tensor(init_value),
+            requires_grad=True,
         )
         self.lambda_range_projection = torch.nn.ReLU()
         # fetch optimizer from PyTorch optimizer package
         assert hasattr(
-            torch.optim, lambda_optimizer
+            torch.optim,
+            lambda_optimizer,
         ), f'Optimizer={lambda_optimizer} not found in torch.'
         torch_opt = getattr(torch.optim, lambda_optimizer)
         self.lambda_optimizer = torch_opt(
@@ -111,5 +113,6 @@ class Lagrange:
         lambda_loss.backward()
         self.lambda_optimizer.step()
         self.lagrangian_multiplier.data.clamp_(
-            0.0, self.lagrangian_upper_bound
+            0.0,
+            self.lagrangian_upper_bound,
         )  # enforce: lambda in [0, inf]

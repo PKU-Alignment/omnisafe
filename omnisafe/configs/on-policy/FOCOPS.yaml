@@ -48,7 +48,7 @@ defaults:
     obs_normalize: True
     # early stop when kl divergence is bigger than target kl
     kl_early_stop: True
-    # The thereshold for KL divergence in each policy update
+    # The threshold for KL divergence in each policy update
     focops_eta: 0.02
     # The hyperparameters related to the greediness of the algorithm
     focops_lam: 1.5

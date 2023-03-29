@@ -23,7 +23,10 @@ from omnisafe.typing import NamedTuple, Tuple
 
 
 def train(
-    exp_id: str, algo: str, env_id: str, custom_cfgs: NamedTuple
+    exp_id: str,
+    algo: str,
+    env_id: str,
+    custom_cfgs: NamedTuple,
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
 
@@ -45,13 +48,13 @@ def train(
     if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
         os.makedirs(custom_cfgs['logger_cfgs']['log_dir'], exist_ok=True)
     # pylint: disable-next=consider-using-with
-    sys.stdout = open(
+    sys.stdout = open(  # noqa: SIM115
         os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', terminal_log_name),
         'w',
         encoding='utf-8',
     )
     # pylint: disable-next=consider-using-with
-    sys.stderr = open(
+    sys.stderr = open(  # noqa: SIM115
         os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', error_log_name),
         'w',
         encoding='utf-8',

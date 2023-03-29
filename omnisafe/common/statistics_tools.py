@@ -14,11 +14,12 @@
 # ==============================================================================
 """Implementation of the statistics tools."""
 
+from __future__ import annotations
+
 import itertools
 import json
 import os
 from copy import deepcopy
-from typing import Dict, List
 
 from omnisafe.utils.plotter import Plotter
 from omnisafe.utils.tools import assert_with_exit, hash_string, recursive_dict2json, update_dic
@@ -63,7 +64,8 @@ class StatisticsTools:
             'cannot find directory which is initialized by experiment grid via grid_config.json',
         )
         assert_with_exit(
-            len(grid_config_dirs) == 1, 'there should be only one experiment grid directory'
+            len(grid_config_dirs) == 1,
+            'there should be only one experiment grid directory',
         )
 
         # load the config file of experiment grid
@@ -72,11 +74,15 @@ class StatisticsTools:
                 self.grid_config = json.load(file)
         except FileNotFoundError as error:
             raise FileNotFoundError(
-                'The config file is not found in the save directory.'
+                'The config file is not found in the save directory.',
             ) from error
 
     def draw_graph(
-        self, parameter: str, values: list = None, compare_num: int = None, cost_limit: float = None
+        self,
+        parameter: str,
+        values: list = None,
+        compare_num: int = None,
+        cost_limit: float = None,
     ):
         """Draw graph.
 
@@ -91,7 +97,8 @@ class StatisticsTools:
         """
         # check whether operation is valid
         assert_with_exit(
-            not (values and compare_num), 'values and compare_num cannot be set at the same time'
+            not (values and compare_num),
+            'values and compare_num cannot be set at the same time',
         )
         assert_with_exit(hasattr(self, 'grid_config'), 'please load source first')
         assert_with_exit(
@@ -114,7 +121,7 @@ class StatisticsTools:
         for graph_dict in graph_paths:
             legend = []
             log_dirs = []
-            for (param, value), path in graph_dict.items():
+            for (param, value), path in graph_dict.items():  # noqa: B007
                 legend += [f'{value}']
                 log_dirs += [path]
                 img_name_cfgs = self.path_map_img_name[path]
@@ -144,7 +151,7 @@ class StatisticsTools:
                 )
             except RuntimeError:
                 print(
-                    f'Cannot generate graph for {save_name[:5] + str(decompressed_img_name_cfgs)}'
+                    f'Cannot generate graph for {save_name[:5] + str(decompressed_img_name_cfgs)}',
                 )
 
     def make_config_groups(self, parameter, parameter_values: list, values: list, compare_num: int):
@@ -160,7 +167,7 @@ class StatisticsTools:
                 if it is specified, will combine any potential combination to compare.
         """
         self.path_map_img_name = {}
-        graph_groups: List[List] = []
+        graph_groups: list[list] = []
         if values:
             assert_with_exit(
                 all(v in parameter_values for v in values),
@@ -196,7 +203,7 @@ class StatisticsTools:
                     (
                         img_name_cfgs,
                         self.variants(list(group_config.keys()), list(group_config.values())),
-                    )
+                    ),
                 )
 
         graph_paths = []
@@ -236,7 +243,7 @@ class StatisticsTools:
     def _variants(self, keys, vals):
         """Recursively builds list of valid variants."""
         if len(keys) == 1:
-            pre_variants: List[Dict] = [{}]
+            pre_variants: list[dict] = [{}]
         else:
             pre_variants = self._variants(keys[1:], vals[1:])
 
@@ -255,8 +262,8 @@ class StatisticsTools:
         return variants
 
     def update_dic(self, total_dic, item_dic):
-        '''Updater of multi-level dictionary.'''
-        for idd in item_dic.keys():
+        """Updater of multi-level dictionary."""
+        for idd in item_dic:
             total_value = total_dic.get(idd)
             item_value = item_dic.get(idd)
 
@@ -304,7 +311,7 @@ class StatisticsTools:
 
         def unflatten_var(var):
             """Build the full nested dict version of var, based on key names."""
-            new_var: Dict = {}
+            new_var: dict = {}
             unflatten_set = set()
 
             for key, value in var.items():
@@ -312,7 +319,8 @@ class StatisticsTools:
                     splits = key.split(':')
                     k_0 = splits[0]
                     assert k_0 not in new_var or isinstance(
-                        new_var[k_0], dict
+                        new_var[k_0],
+                        dict,
                     ), "You can't assign multiple values to the same key."
 
                     if k_0 not in new_var:
@@ -322,7 +330,7 @@ class StatisticsTools:
                     new_var[k_0][sub_k] = value
                     unflatten_set.add(k_0)
                 else:
-                    assert not (key in new_var), "You can't assign multiple values to the same key."
+                    assert key not in new_var, "You can't assign multiple values to the same key."
                     new_var[key] = value
 
             # make sure to fill out the nested dict.
@@ -331,9 +339,7 @@ class StatisticsTools:
 
             return new_var
 
-        new_variants = [unflatten_var(var) for var in flat_variants]
-
-        return new_variants
+        return [unflatten_var(var) for var in flat_variants]
 
     def combine(self, sequence, num_choosen):
         """Combine elements in sequence to n elements."""
@@ -343,7 +349,7 @@ class StatisticsTools:
         else:
             for i, item in enumerate(sequence):
                 for nxt in self.combine(sequence[i + 1 :], num_choosen - 1):
-                    yield (item,) + nxt
+                    yield (item, *nxt)
 
     def dict_permutations(self, input_dict):
         """Generate all possible combinations of the values in a dictionary.
