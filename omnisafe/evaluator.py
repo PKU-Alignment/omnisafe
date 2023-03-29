@@ -40,9 +40,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        env: CMDP = None,
-        actor: Actor = None,
-        render_mode: str = None,
+        env: CMDP | None = None,
+        actor: Actor | None = None,
+        render_mode: str | None = None,
     ) -> None:
         """Initialize the evaluator.
 
