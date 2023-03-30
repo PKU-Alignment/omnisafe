@@ -144,7 +144,6 @@ class DDPG(BaseAlgo):
 
     def _update_epoch(self) -> None:
         """Update something per epoch"""
-        self._actor_critic.actor_scheduler.step()
 
     def learn(self) -> tuple[int | float, ...]:
         """This is main function for algorithm update, divided into the following steps:
@@ -229,7 +228,7 @@ class DDPG(BaseAlgo):
         return ep_ret, ep_cost, ep_len
 
     def _update(self) -> None:
-        for step in range(self._cfgs.algo_cfgs.update_iters):
+        for _ in range(self._cfgs.algo_cfgs.update_iters):
             self._update_epoch()
             data = self._buf.sample_batch()
             self._update_count += 1

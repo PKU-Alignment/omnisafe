@@ -117,6 +117,6 @@ defaults:
     # Initial value of lagrangian multiplier
     lagrangian_multiplier_init: 0.001
     # Learning rate of lagrangian multiplier
-    lambda_lr: 0.035
+    lambda_lr: 0.001
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"

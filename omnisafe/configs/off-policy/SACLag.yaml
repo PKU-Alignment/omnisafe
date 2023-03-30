@@ -69,9 +69,9 @@ defaults:
     # policy_noise_clip
     policy_noise_clip: 0.5
     # The value of alpha
-    alpha: 0.2
+    alpha: 0.05
     # Whether to use auto alpha
-    auto_alpha: False
+    auto_alpha: True
     # use cost
     use_cost: True
   # logger configurations
@@ -121,6 +121,6 @@ defaults:
     # Initial value of lagrangian multiplier
     lagrangian_multiplier_init: 0.001
     # Learning rate of lagrangian multiplier
-    lambda_lr: 0.035
+    lambda_lr: 0.001
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
