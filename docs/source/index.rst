@@ -302,7 +302,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: Get Start
+    :caption: get started
 
     start/installation
     start/usage
