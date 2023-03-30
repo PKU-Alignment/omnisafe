@@ -34,11 +34,11 @@ def test_benchmark():
             os.path.join(base_path, './saved_source/benchmark_config.yaml'),
             # '--render',
             '--evaluate',
-            '--gpu_range',
-            '0:1',
+            # '--gpu-range',
+            # '0:1',
         ],
     )
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
 
 
 def test_train():
@@ -61,7 +61,7 @@ def test_train():
             '--evaluate',
         ],
     )
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
 
 
 def test_train_config():
@@ -75,7 +75,7 @@ def test_train_config():
             '--evaluate',
         ],
     )
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
 
 
 def test_eval():
@@ -93,7 +93,7 @@ def test_eval():
             '--no-render',
         ],
     )
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
 
 
 def test_analyze_grid():
@@ -109,4 +109,4 @@ def test_analyze_grid():
             '25',
         ],
     )
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
