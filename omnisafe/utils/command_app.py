@@ -59,10 +59,12 @@ def train(  # pylint: disable=too-many-arguments
     ),
     plot: bool = typer.Option(False, help='whether to plot the training curve after training'),
     render: bool = typer.Option(
-        False, help='whether to render the trajectory of models saved during training'
+        False,
+        help='whether to render the trajectory of models saved during training',
     ),
     evaluate: bool = typer.Option(
-        False, help='whether to evaluate the trajectory of models saved during training'
+        False,
+        help='whether to evaluate the trajectory of models saved during training',
     ),
     custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
 ):
@@ -115,17 +117,17 @@ def train(  # pylint: disable=too-many-arguments
     if plot:
         try:
             agent.plot(smooth=1)
-        except:
+        except RuntimeError:
             console.print('failed to plot data', style='red bold')
     if render:
         try:
             agent.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
-        except:
+        except RuntimeError:
             console.print('failed to render model', style='red bold')
     if evaluate:
         try:
             agent.evaluate(num_episodes=10)
-        except:
+        except RuntimeError:
             console.print('failed to evaluate model', style='red bold')
 
 
@@ -188,17 +190,20 @@ def benchmark(
     ),
     gpu_range: str = typer.Option(
         None,
-        help='range of gpu to use, the format is as same as range in python, for example, use 2==range(2), 0:2==range(0,2), 0:2:1==range(0,2,1) to select gpu',
+        help='range of gpu to use, the format is as same as range in python,'
+        'for example, use 2==range(2), 0:2==range(0,2), 0:2:1==range(0,2,1) to select gpu',
     ),
     log_dir: str = typer.Option(
         os.path.abspath('.'),
         help='directory to save logs, default is current directory',
     ),
     render: bool = typer.Option(
-        False, help='whether to render the trajectory of models saved during training'
+        False,
+        help='whether to render the trajectory of models saved during training',
     ),
     evaluate: bool = typer.Option(
-        False, help='whether to evaluate the trajectory of models saved during training'
+        False,
+        help='whether to evaluate the trajectory of models saved during training',
     ),
 ):
     """Benchmark algorithms configured by .yaml file in OmniSafe via command line.
@@ -255,17 +260,17 @@ def benchmark(
     if render:
         try:
             eg.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
-        except:
+        except RuntimeError:
             console.print('failed to render model', style='red bold')
     if evaluate:
         try:
             eg.evaluate(num_episodes=10)
-        except:
+        except RuntimeError:
             console.print('failed to evaluate model', style='red bold')
 
 
 @app.command('eval')
-def evaluate(
+def evaluate_model(
     result_dir: str = typer.Argument(
         ...,
         help='directory of experiment results to evaluate, e.g. ./runs/PPO-{SafetyPointGoal1-v0}',
@@ -331,10 +336,12 @@ def train_config(
     ),
     plot: bool = typer.Option(False, help='whether to plot the training curve after training'),
     render: bool = typer.Option(
-        False, help='whether to render the trajectory of models saved during training'
+        False,
+        help='whether to render the trajectory of models saved during training',
     ),
     evaluate: bool = typer.Option(
-        False, help='whether to evaluate the trajectory of models saved during training'
+        False,
+        help='whether to evaluate the trajectory of models saved during training',
     ),
 ):
     """Train a policy configured by .yaml file in OmniSafe via command line.
@@ -368,17 +375,17 @@ def train_config(
     if plot:
         try:
             agent.plot(smooth=1)
-        except:
+        except RuntimeError:
             console.print('failed to plot data', style='red bold')
     if render:
         try:
             agent.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
-        except:
+        except RuntimeError:
             console.print('failed to render model', style='red bold')
     if evaluate:
         try:
             agent.evaluate(num_episodes=10)
-        except:
+        except RuntimeError:
             console.print('failed to evaluate model', style='red bold')
 
 
@@ -408,10 +415,15 @@ def analyze_grid(
     and the function will automatically generate all possible combinations of the graph.
     """
 
-    st = StatisticsTools()
-    st.load_source(path)
+    tools = StatisticsTools()
+    tools.load_source(path)
 
-    st.draw_graph(parameter=parameter, values=None, compare_num=compare_num, cost_limit=cost_limit)
+    tools.draw_graph(
+        parameter=parameter,
+        values=None,
+        compare_num=compare_num,
+        cost_limit=cost_limit,
+    )
 
 
 if __name__ == '__main__':
