@@ -59,10 +59,12 @@ def train(  # pylint: disable=too-many-arguments
     ),
     plot: bool = typer.Option(False, help='whether to plot the training curve after training'),
     render: bool = typer.Option(
-        False, help='whether to render the trajectory of models saved during training'
+        False,
+        help='whether to render the trajectory of models saved during training',
     ),
     evaluate: bool = typer.Option(
-        False, help='whether to evaluate the trajectory of models saved during training'
+        False,
+        help='whether to evaluate the trajectory of models saved during training',
     ),
     custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
 ):
@@ -195,10 +197,12 @@ def benchmark(
         help='directory to save logs, default is current directory',
     ),
     render: bool = typer.Option(
-        False, help='whether to render the trajectory of models saved during training'
+        False,
+        help='whether to render the trajectory of models saved during training',
     ),
     evaluate: bool = typer.Option(
-        False, help='whether to evaluate the trajectory of models saved during training'
+        False,
+        help='whether to evaluate the trajectory of models saved during training',
     ),
 ):
     """Benchmark algorithms configured by .yaml file in OmniSafe via command line.
@@ -331,10 +335,12 @@ def train_config(
     ),
     plot: bool = typer.Option(False, help='whether to plot the training curve after training'),
     render: bool = typer.Option(
-        False, help='whether to render the trajectory of models saved during training'
+        False,
+        help='whether to render the trajectory of models saved during training',
     ),
     evaluate: bool = typer.Option(
-        False, help='whether to evaluate the trajectory of models saved during training'
+        False,
+        help='whether to evaluate the trajectory of models saved during training',
     ),
 ):
     """Train a policy configured by .yaml file in OmniSafe via command line.
