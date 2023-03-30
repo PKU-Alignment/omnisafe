@@ -26,4 +26,4 @@ st.load_source(path)
 # or you can just specify how many values you want to compare in single graph at most,
 # and the function will automatically generate all possible combinations of the graph.
 # but the two mode can not be used at the same time.
-st.draw_graph('', None, 2)
+st.draw_graph(parameter='', values=None, compare_num=2, cost_limit=None)
