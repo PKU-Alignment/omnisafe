@@ -20,16 +20,17 @@ import warnings
 from typing import List
 
 import numpy as np
+import torch
 import typer
 import yaml
 from rich.console import Console
-import torch
 
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
+from omnisafe.common.statistics_tools import StatisticsTools
 from omnisafe.typing import NamedTuple, Tuple
 from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dic
-from omnisafe.common.statistics_tools import StatisticsTools
+
 
 app = typer.Typer()
 console = Console()
@@ -57,8 +58,12 @@ def train(  # pylint: disable=too-many-arguments
         help='directory to save logs, default is current directory',
     ),
     plot: bool = typer.Option(False, help='whether to plot the training curve after training'),
-    render: bool = typer.Option(False, help='whether to render the trajectory of models saved during training'),
-    evaluate: bool = typer.Option(False, help='whether to evaluate the trajectory of models saved during training'),
+    render: bool = typer.Option(
+        False, help='whether to render the trajectory of models saved during training'
+    ),
+    evaluate: bool = typer.Option(
+        False, help='whether to evaluate the trajectory of models saved during training'
+    ),
     custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
 ):
     """Train a single policy in OmniSafe via command line.
@@ -111,17 +116,17 @@ def train(  # pylint: disable=too-many-arguments
         try:
             agent.plot(smooth=1)
         except:
-            console.print("failed to plot data", style='red bold')
+            console.print('failed to plot data', style='red bold')
     if render:
         try:
             agent.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
         except:
-            console.print("failed to render model", style='red bold')
+            console.print('failed to render model', style='red bold')
     if evaluate:
         try:
             agent.evaluate(num_episodes=10)
         except:
-            console.print("failed to evaluate model", style='red bold')
+            console.print('failed to evaluate model', style='red bold')
 
 
 def train_grid(
@@ -189,8 +194,12 @@ def benchmark(
         os.path.abspath('.'),
         help='directory to save logs, default is current directory',
     ),
-    render: bool = typer.Option(False, help='whether to render the trajectory of models saved during training'),
-    evaluate: bool = typer.Option(False, help='whether to evaluate the trajectory of models saved during training'),
+    render: bool = typer.Option(
+        False, help='whether to render the trajectory of models saved during training'
+    ),
+    evaluate: bool = typer.Option(
+        False, help='whether to evaluate the trajectory of models saved during training'
+    ),
 ):
     """Benchmark algorithms configured by .yaml file in OmniSafe via command line.
 
@@ -247,12 +256,12 @@ def benchmark(
         try:
             eg.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
         except:
-            console.print("failed to render model", style='red bold')
+            console.print('failed to render model', style='red bold')
     if evaluate:
         try:
             eg.evaluate(num_episodes=10)
         except:
-            console.print("failed to evaluate model", style='red bold')
+            console.print('failed to evaluate model', style='red bold')
 
 
 @app.command('eval')
@@ -321,8 +330,12 @@ def train_config(
         help='directory to save logs, default is current directory',
     ),
     plot: bool = typer.Option(False, help='whether to plot the training curve after training'),
-    render: bool = typer.Option(False, help='whether to render the trajectory of models saved during training'),
-    evaluate: bool = typer.Option(False, help='whether to evaluate the trajectory of models saved during training'),
+    render: bool = typer.Option(
+        False, help='whether to render the trajectory of models saved during training'
+    ),
+    evaluate: bool = typer.Option(
+        False, help='whether to evaluate the trajectory of models saved during training'
+    ),
 ):
     """Train a policy configured by .yaml file in OmniSafe via command line.
 
@@ -356,17 +369,17 @@ def train_config(
         try:
             agent.plot(smooth=1)
         except:
-            console.print("failed to plot data", style='red bold')
+            console.print('failed to plot data', style='red bold')
     if render:
         try:
             agent.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
         except:
-            console.print("failed to render model", style='red bold')
+            console.print('failed to render model', style='red bold')
     if evaluate:
         try:
             agent.evaluate(num_episodes=10)
         except:
-            console.print("failed to evaluate model", style='red bold')
+            console.print('failed to evaluate model', style='red bold')
 
 
 @app.command()
