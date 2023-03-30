@@ -34,7 +34,7 @@ from omnisafe.utils.config import Config
 
 class OnlineAdapter:
     """Online Adapter for OmniSafe.
-    
+
     Online Adapter is used to adapt the environment to the online training.
 
     Args:
@@ -42,7 +42,7 @@ class OnlineAdapter:
         num_envs (int): The number of environments.
         seed (int): The random seed.
         cfgs (Config): The configuration.
-    
+
     Attributes:
         _env_id (str): The environment id.
         _env (CMDP): The environment.
@@ -59,7 +59,7 @@ class OnlineAdapter:
         cfgs: Config,
     ) -> None:
         """Initialize the online adapter.
-        
+
         Args:
             env_id (str): The environment id.
             num_envs (int): The number of environments.
@@ -89,7 +89,7 @@ class OnlineAdapter:
         """Wrapper the environment.
 
         .. hint::
-        
+
             OmniSafe supports the following wrappers:
 
             .. list-table::
@@ -115,7 +115,7 @@ class OnlineAdapter:
             obs_normalize (bool): Whether to normalize the observation.
             reward_normalize (bool): Whether to normalize the reward.
             cost_normalize (bool): Whether to normalize the cost.
-        
+
         """
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, device=self._device, time_limit=1000)

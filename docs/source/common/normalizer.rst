@@ -18,5 +18,3 @@ Normalizer
     .. autoclass:: Normalizer
         :members:
         :private-members:
-
-

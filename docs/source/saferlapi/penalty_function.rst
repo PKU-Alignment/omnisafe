@@ -37,5 +37,3 @@ Interior-point Policy Optimization
     .. autoclass:: IPO
         :members:
         :private-members:
-
-

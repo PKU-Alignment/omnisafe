@@ -20,5 +20,3 @@ Logger
     .. autoclass:: Logger
         :members:
         :private-members:
-
-

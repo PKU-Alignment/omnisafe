@@ -49,7 +49,7 @@ class ActorCritic(nn.Module):
                 Choose the critic from the following options:
                 :class:`QCritic`, :class:`VCritic`.
             -   Estimate the reward value of the observation.
-    
+
     Attributes:
         actor (Actor): The actor network.
         reward_critic (Critic): The critic network.

@@ -26,14 +26,14 @@ from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 # pylint: disable-next=too-few-public-methods
 class ActorBuilder:
     """Class for building actor networks.
-    
+
     Attributes:
         _obs_space (OmnisafeSpace): Observation space.
         _act_space (OmnisafeSpace): Action space.
         _weight_initialization_mode (InitFunction): Weight initialization mode.
         _activation (Activation): Activation function.
         _hidden_sizes (list[int]): List of hidden layer sizes.
-        
+
     """
 
     def __init__(

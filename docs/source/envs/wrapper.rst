@@ -84,7 +84,7 @@ Cost Normalization Wrapper
         :members:
         :private-members:
 
-Action Scale 
+Action Scale
 ------------
 
 .. card::
@@ -112,5 +112,3 @@ Unsqueeze Wrapper
     .. autoclass:: Unsqueeze
         :members:
         :private-members:
-
-

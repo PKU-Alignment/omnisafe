@@ -35,7 +35,7 @@ class Actor(ABC, nn.Module):
 
     .. note::
         You can use this class to implement your own actor by inheriting it.
-    
+
     Attributes:
         _obs_space (OmnisafeSpace): observation space.
         _act_space (OmnisafeSpace): action space.

@@ -41,5 +41,3 @@ PIDLagrange
     .. autoclass:: PIDLagrangian
         :members:
         :private-members:
-
-

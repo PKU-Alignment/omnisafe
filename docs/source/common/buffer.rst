@@ -89,5 +89,3 @@ Vector Off Policy Buffer
     .. autoclass:: VectorOffPolicyBuffer
         :members:
         :private-members:
-
-

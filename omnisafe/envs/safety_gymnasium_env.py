@@ -28,7 +28,7 @@ from omnisafe.envs.core import CMDP, env_register
 @env_register
 class SafetyGymnasiumEnv(CMDP):
     """Safety Gymnasium Environment.
-    
+
     Attributes:
         _support_envs (list[str]): List of supported environments.
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
@@ -119,7 +119,8 @@ class SafetyGymnasiumEnv(CMDP):
 
         .. note::
 
-            OmniSafe use auto reset wrapper to reset the environment when the episode is terminated. So the ``obs`` will be the first observation of the next episode.
+            OmniSafe use auto reset wrapper to reset the environment when the episode is
+            terminated. So the ``obs`` will be the first observation of the next episode.
             And the true ``final_observation`` in ``info`` will be stored in the ``final_observation`` key of ``info``.
 
         Args:
@@ -160,7 +161,7 @@ class SafetyGymnasiumEnv(CMDP):
 
         Args:
             seed (int, optional): Seed to reset the environment. Defaults to None.
-        
+
         Returns:
             observation (torch.Tensor): agent's observation of the current environment.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).

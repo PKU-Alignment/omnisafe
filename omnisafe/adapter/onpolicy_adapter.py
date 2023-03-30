@@ -31,7 +31,7 @@ class OnPolicyAdapter(OnlineAdapter):
 
     :class:`OnPolicyAdapter` is used to adapt the environment to the on-policy training.
 
-    
+
     Args:
         env_id (str): The environment id.
         num_envs (int): The number of environments.
@@ -74,7 +74,7 @@ class OnPolicyAdapter(OnlineAdapter):
 
         .. warning::
 
-            As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically, 
+            As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,
             so the final observation will be stored in ``info['final_observation']``.
 
         Args:
@@ -149,9 +149,9 @@ class OnPolicyAdapter(OnlineAdapter):
         """Log value.
 
         .. note::
-            OmniSafe uses :class:`RewardNormalizer` wrapper, so the original reward and cost will 
+            OmniSafe uses :class:`RewardNormalizer` wrapper, so the original reward and cost will
             be stored in ``info['original_reward']`` and ``info['original_cost']``.
-        
+
         Args:
             reward (torch.Tensor): The reward.
             cost (torch.Tensor): The cost.
@@ -163,7 +163,7 @@ class OnPolicyAdapter(OnlineAdapter):
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
         """Log metrics.
-        
+
         Args:
             logger (Logger): Logger.
             idx (int): The index of the environment.
@@ -178,7 +178,7 @@ class OnPolicyAdapter(OnlineAdapter):
 
     def _reset_log(self, idx: int | None = None) -> None:
         """Reset log.
-        
+
         Args:
             idx (int | None): The index of the environment.
         """

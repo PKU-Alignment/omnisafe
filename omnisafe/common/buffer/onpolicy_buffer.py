@@ -103,7 +103,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             standardized_adv_r (bool, optional): Whether to standardize the advantages of the actor. Defaults to False.
             standardized_adv_c (bool, optional): Whether to standardize the advantages of the critic. Defaults to False.
             device (torch.device, optional): The device to store the data. Defaults to torch.device('cpu').
-        
+
         Attributes:
             _standardized_adv_r (bool): Whether to standardize the advantages of the actor.
             _standardized_adv_c (bool): Whether to standardize the advantages of the critic.

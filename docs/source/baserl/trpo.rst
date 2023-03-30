@@ -217,7 +217,7 @@ Kakade and Langford derived the following lower bound:
     :label: trpo-eq-8
 
     &J\left(\pi_{\text {new }}\right)  \geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{2 \epsilon \gamma}{(1-\gamma)^2} \alpha^2  \\
-    \text { where } &\epsilon=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right| 
+    \text { where } &\epsilon=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right|
 
 
 However, the lower bound in :eq:`trpo-eq-8` only applies to mixture policies, so it needs to be extended to general policy cases.
@@ -732,7 +732,7 @@ Configs
 
             Train Configs
             ^^^
-            
+
             - device (str): Device to use for training, options: ``cpu``, ``cuda``,``cuda:0``, etc.
             - torch_threads (int): Number of threads to use for PyTorch.
             - total_steps (int): Total number of steps to train the agent.
@@ -752,7 +752,7 @@ Configs
             .. note::
 
                 The following configs are specific to TRPO algorithm.
-                
+
                 - cg_damping (float): Damping coefficient for conjugate gradient.
                 - cg_iters (int): Number of iterations for conjugate gradient.
                 - fvp_sample_freq (int): Frequency of sampling for Fisher vector product.
@@ -797,7 +797,7 @@ Configs
             - exploration_noise_anneal (bool): Whether to use exploration noise anneal.
             - std_range (list): The range of standard deviation.
 
-            .. hint:: 
+            .. hint::
 
                 actor (dictionary): parameters for actor network ``actor``
 
@@ -806,7 +806,7 @@ Configs
                 - 64
                 - 64
 
-            .. hint:: 
+            .. hint::
 
                 critic (dictionary): parameters for critic network ``critic``
 

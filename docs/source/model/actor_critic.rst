@@ -65,4 +65,3 @@ Constraint Actor Q Critic
     .. autoclass:: ConstraintActorQCritic
         :members:
         :private-members:
-

@@ -39,5 +39,3 @@ CUP
     .. autoclass:: CUP
         :members:
         :private-members:
-
-

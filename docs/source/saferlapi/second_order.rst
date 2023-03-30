@@ -45,5 +45,3 @@ Projection Based Constraint Policy Optimization
     .. autoclass:: PCPO
         :members:
         :private-members:
-
-

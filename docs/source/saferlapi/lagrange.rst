@@ -59,5 +59,3 @@ CRPO
     .. autoclass:: OnCRPO
         :members:
         :private-members:
-
-

@@ -29,7 +29,7 @@ class TimeLimit(Wrapper):
 
     Example:
         >>> env = TimeLimit(env, time_limit=100)
-    
+
     Attributes:
         _time_limit (int): The time limit for each episode.
         _time (int): The current time step.
@@ -55,12 +55,12 @@ class TimeLimit(Wrapper):
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
         """Reset the environment.
 
-        .. note:: 
-            Additionaly, the time step will be reset to 0.
+        .. note::
+            Additionally, the time step will be reset to 0.
 
         Args:
             seed (int, optional): The seed for the environment. Defaults to None.
-        
+
         Returns:
             observation (torch.Tensor): the initial observation of the space.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
@@ -75,7 +75,7 @@ class TimeLimit(Wrapper):
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
-            Additionaly, the time step will be increased by 1.
+            Additionally, the time step will be increased by 1.
 
         Args:
             action (torch.Tensor): action.
@@ -265,7 +265,7 @@ class RewardNormalize(Wrapper):
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
-        
+
         .. note::
             The reward will be normalized for agent training.
             Then the original reward will be stored in ``info['original_reward']`` for logging.
@@ -288,7 +288,7 @@ class RewardNormalize(Wrapper):
 
     def save(self) -> dict[str, torch.nn.Module]:
         """Save the normalizer.
-        
+
         Returns:
             dict[str, torch.nn.Module]: The saved normalizer.
         """
@@ -408,10 +408,10 @@ class ActionScale(Wrapper):
 
         .. note::
             The action will be scaled to the original range for agent training.
-        
+
         Args:
             action (torch.Tensor): action.
-        
+
         Returns:
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.

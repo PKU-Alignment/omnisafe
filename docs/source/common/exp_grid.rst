@@ -20,5 +20,3 @@ Experiment Grid
     .. autoclass:: ExperimentGrid
         :members:
         :private-members:
-
-

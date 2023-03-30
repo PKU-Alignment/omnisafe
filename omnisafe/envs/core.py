@@ -201,7 +201,7 @@ class Wrapper(CMDP):
 
         Args:
             env (CMDP): the environment.
-        
+
         Attributes:
             _env (CMDP): the environment.
             _device (torch.device): the device of the environment.
@@ -227,10 +227,10 @@ class Wrapper(CMDP):
         action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         """Run one timestep of the environment's dynamics using the agent actions.
-        
+
         Args:
             action (torch.Tensor): action.
-            
+
         Returns:
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.

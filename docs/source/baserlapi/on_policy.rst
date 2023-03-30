@@ -80,5 +80,3 @@ Proximal Policy Optimization
     .. autoclass:: PPO
         :members:
         :private-members:
-
-

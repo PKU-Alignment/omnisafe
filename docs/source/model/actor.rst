@@ -87,5 +87,3 @@ Gaussian SAC Actor
     .. autoclass:: GaussianSACActor
         :members:
         :private-members:
-
-

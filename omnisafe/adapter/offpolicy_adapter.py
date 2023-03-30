@@ -27,22 +27,22 @@ from omnisafe.utils.config import Config
 
 class OffPolicyAdapter(OnlineAdapter):
     """OffPolicy Adapter for OmniSafe.
-    
+
     :class:`OffPolicyAdapter` is used to adapt the environment to the off-policy training.
 
     .. note::
-    
-        Off-policy training need to update the policy before finish the episode, 
+
+        Off-policy training need to update the policy before finish the episode,
         so the :class:`OffPolicyAdapter` will store the current observation in ``_current_obs``.
         After update the policy, the agent will *remember* the current observation and
         use it to interact with the environment.
-    
+
     Args:
         env_id (str): The environment id.
         num_envs (int): The number of environments.
         seed (int): The random seed.
         cfgs (Config): The configuration.
-        
+
     Attributes:
         _env_id (str): The environment id.
         _env (CMDP): The environment.
@@ -84,7 +84,7 @@ class OffPolicyAdapter(OnlineAdapter):
 
         .. warning::
 
-            As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically, 
+            As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,
             so the final observation will be stored in ``info['final_observation']``.
 
         Args:
@@ -131,9 +131,9 @@ class OffPolicyAdapter(OnlineAdapter):
         """Log value.
 
         .. note::
-            OmniSafe uses :class:`RewardNormalizer` wrapper, so the original reward and cost will 
+            OmniSafe uses :class:`RewardNormalizer` wrapper, so the original reward and cost will
             be stored in ``info['original_reward']`` and ``info['original_cost']``.
-        
+
         Args:
             reward (torch.Tensor): The reward.
             cost (torch.Tensor): The cost.
@@ -145,7 +145,7 @@ class OffPolicyAdapter(OnlineAdapter):
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
         """Log metrics.
-        
+
         Args:
             logger (Logger): Logger.
             idx (int): The index of the environment.
@@ -160,7 +160,7 @@ class OffPolicyAdapter(OnlineAdapter):
 
     def _reset_log(self, idx: int | None = None) -> None:
         """Reset log.
-        
+
         Args:
             idx (int | None): The index of the environment.
         """
