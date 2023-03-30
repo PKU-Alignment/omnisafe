@@ -524,13 +524,30 @@ class ExperimentGrid:
         compare_num: int = None,
         cost_limit: float = None,
     ):
-        """Analyze the experiment results."""
+        """Analyze the experiment results.
+        
+        Args:
+            parameter (str): name of parameter to analyze.
+            values (list): specific values of attribute,
+                if it is specified, will only compare values in it.
+            compare_num (int): number of values to compare,
+                if it is specified, will combine any potential combination to compare.
+            cost_limit (float): value for one line showed on graph to indicate cost.
+
+        .. Note::
+            `values` and `compare_num` cannot be set at the same time.
+        """
         assert self._statistical_tools is not None, 'Please run run() first!'
         self._statistical_tools.load_source(self.log_dir)
         self._statistical_tools.draw_graph(parameter, values, compare_num, cost_limit)
 
     def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
-        """Agent Evaluation."""
+        """Agent Evaluation.
+        
+        Args:
+            num_episodes (int): number of episodes to evaluate.
+            cost_criteria (float): cost criteria for evaluation.
+        """
         assert self._evaluator is not None, 'Please run run() first!'
         # pylint: disable-next=too-many-nested-blocks
         for set_of_params in os.scandir(self.log_dir):
@@ -558,7 +575,16 @@ class ExperimentGrid:
         width: int = 256,
         height: int = 256,
     ):
-        """Render the environment."""
+        """Evaluate and render some episodes.
+        
+        Args:
+            num_episodes (int): number of episodes to render.
+            render_mode (str): render mode, can be 'rgb_array', 'depth_array' or 'human'.
+            camera_name (str): camera name, specify the camera which you use to capture
+                images.
+            width (int): width of the rendered image.
+            height (int): height of the rendered image.
+        """
         assert self._evaluator is not None, 'Please run run() first!'
         # pylint: disable-next=too-many-nested-blocks
         for set_of_params in os.scandir(self.log_dir):

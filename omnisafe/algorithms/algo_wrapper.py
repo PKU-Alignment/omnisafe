@@ -158,8 +158,12 @@ class AlgoWrapper:
         self._plotter = Plotter()
 
     def plot(self, smooth=1):
-        """Plot the training curve."""
-        assert self._evaluator is not None, 'Please run learn() first!'
+        """Plot the training curve.
+        
+        Args:
+            smooth (int): window size, for smoothing the curve.
+        """
+        assert self._plotter is not None, 'Please run learn() first!'
         self._plotter.make_plots(
             [self.agent.logger.log_dir],
             None,
@@ -175,7 +179,12 @@ class AlgoWrapper:
         )
 
     def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
-        """Agent Evaluation."""
+        """Agent Evaluation.
+        
+        Args:
+            num_episodes (int): number of episodes to evaluate.
+            cost_criteria (float): the cost criteria to evaluate.
+        """
         assert self._evaluator is not None, 'Please run learn() first!'
         for item in os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save')):
             if item.is_file() and item.name.split('.')[-1] == 'pt':
@@ -191,7 +200,16 @@ class AlgoWrapper:
         width: int = 256,
         height: int = 256,
     ):
-        """Render the environment."""
+        """Evaluate and render some episodes.
+        
+        Args:
+            num_episodes (int): number of episodes to render.
+            render_mode (str): render mode, can be 'rgb_array', 'depth_array' or 'human'.
+            camera_name (str): camera name, specify the camera which you use to capture
+                images.
+            width (int): width of the rendered image.
+            height (int): height of the rendered image.
+        """
         assert self._evaluator is not None, 'Please run learn() first!'
         for item in os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save')):
             if item.is_file() and item.name.split('.')[-1] == 'pt':
