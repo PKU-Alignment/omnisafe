@@ -92,6 +92,7 @@ class StatisticsTools:
                 if it is specified, will only compare values in it.
             compare_num (int): number of values to compare,
                 if it is specified, will combine any potential combination to compare.
+            cost_limit (float) the cost limit to show in graphs by a single line.
         .. Note::
             `values` and `compare_num` cannot be set at the same time.
         """
