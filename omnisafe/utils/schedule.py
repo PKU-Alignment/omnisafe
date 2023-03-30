@@ -15,19 +15,21 @@
 # ==============================================================================
 """helper class to generate scheduling params"""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 
-def _linear_interpolation(l, r, alpha):  # pylint: disable=invalid-name
-    return l + alpha * (r - l)
+def _linear_interpolation(left, right, alpha):
+    return left + alpha * (right - left)
 
 
 class Schedule(ABC):
     """Schedule for a value based on the step"""
 
     @abstractmethod
-    def value(self, time: Union[int, float]) -> Union[int, float]:
+    def value(self, time: int | float) -> int | float:
         """Value at time t.
 
         Args:
@@ -44,7 +46,7 @@ class PiecewiseSchedule(Schedule):
 
     def __init__(
         self,
-        endpoints: List[Tuple[int, float]],
+        endpoints: list[tuple[int, float]],
         outside_value=Optional[Union[int, float]],
     ) -> None:
         """From OpenAI baselines"""
@@ -54,20 +56,16 @@ class PiecewiseSchedule(Schedule):
         self._outside_value = outside_value
         self._endpoints = endpoints
 
-    def value(self, time: Union[int, float]) -> Union[int, float]:
+    def value(self, time: int | float) -> int | float:
         """Value at time t.
 
         Args:
             t (float): Time.
-
-        Returns:
-            float: Value at time t.
         """
-        # pylint: disable=invalid-name
-        for (l_t, l), (r_t, r) in zip(self._endpoints[:-1], self._endpoints[1:]):
-            if l_t <= time < r_t:
-                alpha = float(time - l_t) / (r_t - l_t)
-                return self._interpolation(l, r, alpha)
+        for (left_t, left), (right_t, right) in zip(self._endpoints[:-1], self._endpoints[1:]):
+            if left_t <= time < right_t:
+                alpha = float(time - left_t) / (right_t - left_t)
+                return self._interpolation(left, right, alpha)
 
         # t does not belong to any of the pieces, so doom.
         assert self._outside_value is not None
@@ -77,17 +75,10 @@ class PiecewiseSchedule(Schedule):
 class ConstantSchedule(Schedule):
     """Constant schedule for a value"""
 
-    def __init__(self, value):
-        """Value remains constant over time.
-        Parameters
-        ----------
-        value: float
-            Constant value of the schedule
-        """
+    def __init__(self, value) -> None:
+        """Value remains constant over time."""
         self._v = value
 
-    def value(
-        self, time: Union[int, float]
-    ) -> Union[int, float]:  # pylint: disable=unused-argument
+    def value(self, time: int | float) -> int | float:  # pylint: disable=unused-argument
         """See Schedule.value"""
         return self._v

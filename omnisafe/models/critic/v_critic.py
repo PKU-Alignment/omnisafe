@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of VCritic."""
 
-from typing import List
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
@@ -36,7 +36,7 @@ class VCritic(Critic):
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
         num_critics: int = 1,
@@ -60,7 +60,7 @@ class VCritic(Critic):
             num_critics,
             use_obs_encoder=False,
         )
-        self.net_lst: List[nn.Module] = []
+        self.net_lst: list[nn.Module] = []
         for idx in range(self._num_critics):
             net = build_mlp_network(
                 sizes=[self._obs_dim, *self._hidden_sizes, 1],
@@ -73,7 +73,7 @@ class VCritic(Critic):
     def forward(
         self,
         obs: torch.Tensor,
-    ) -> List[torch.Tensor]:
+    ) -> list[torch.Tensor]:
         """Forward function.
 
         Specifically, V function approximator maps observations to V-values.

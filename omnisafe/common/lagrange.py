@@ -18,16 +18,32 @@ import torch
 
 
 class Lagrange:
-    r"""Abstract base class for Lagrangian-base Algorithms.
+    r"""Base class for Lagrangian-base Algorithms.
 
     This class implements the Lagrange multiplier update and the Lagrange loss.
 
     ..  note::
 
-        Any traditional policy gradient algorithm can be converted to a Lagrangian-based algorithm by
-        inheriting from this class and implementing the :meth:`compute_loss_pi` method.
-        You can also inherit this class to implement your own Lagrangian-based algorithm,
-        with any policy gradient method you like in ``omnisafe``.
+        Any traditional policy gradient algorithm can be converted to a Lagrangian-based algorithm
+        by inheriting from this class and implementing the :meth:`_loss_pi` method.
+
+    Example:
+        >>> from omnisafe.common.lagrange import Lagrange
+        >>> def loss_pi(self, data):
+        >>>     # implement your own loss function here
+        >>>     return loss
+
+    You can also inherit this class to implement your own Lagrangian-based algorithm,
+    with any policy gradient method you like in ``omnisafe``.
+
+    Example:
+        >>> from omnisafe.common.lagrange import Lagrange
+        >>> class CustomAlgo:
+        >>>     def __init(self) -> None:
+        >>>         # initialize your own algorithm here
+        >>>         super().__init__()
+        >>>         # initialize the Lagrange multiplier
+        >>>         self.lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
     """
 
     # pylint: disable-next=too-many-arguments
@@ -46,12 +62,14 @@ class Lagrange:
 
         init_value = max(lagrangian_multiplier_init, 1e-5)
         self.lagrangian_multiplier = torch.nn.Parameter(
-            torch.as_tensor(init_value), requires_grad=True
+            torch.as_tensor(init_value),
+            requires_grad=True,
         )
         self.lambda_range_projection = torch.nn.ReLU()
         # fetch optimizer from PyTorch optimizer package
         assert hasattr(
-            torch.optim, lambda_optimizer
+            torch.optim,
+            lambda_optimizer,
         ), f'Optimizer={lambda_optimizer} not found in torch.'
         torch_opt = getattr(torch.optim, lambda_optimizer)
         self.lambda_optimizer = torch_opt(
@@ -66,7 +84,7 @@ class Lagrange:
 
         .. note::
 
-            mean_ep_cost obtained from: ``self.logger.get_stats('EpCosts')[0]``, which
+            ``mean_ep_cost`` obtained from: ``self.logger.get_stats('EpCosts')[0]``, which
             are already averaged across MPI processes.
 
         Args:
@@ -95,5 +113,6 @@ class Lagrange:
         lambda_loss.backward()
         self.lambda_optimizer.step()
         self.lagrangian_multiplier.data.clamp_(
-            0.0, self.lagrangian_upper_bound
+            0.0,
+            self.lagrangian_upper_bound,
         )  # enforce: lambda in [0, inf]

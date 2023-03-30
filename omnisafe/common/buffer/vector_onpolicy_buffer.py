@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of VectorOnPolicyBuffer."""
 
-from typing import Dict
+from __future__ import annotations
 
 import torch
 
@@ -39,8 +39,31 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         standardized_adv_r: bool,
         standardized_adv_c: bool,
         num_envs: int = 1,
-        device: torch.device = torch.device('cpu'),
-    ):
+        device: torch.device = 'cpu',
+    ) -> None:
+        """Initialize the vector-on-policy buffer.
+
+        The vector-on-policy buffer is used to store the data from vector environments.
+        The data is stored in a list of on-policy buffers, each of which corresponds to
+        one environment.
+
+        .. warning::
+            The buffer only supports Box spaces.
+
+        Args:
+            obs_space (OmnisafeSpace): Observation space.
+            act_space (OmnisafeSpace): Action space.
+            size (int): Size of the buffer.
+            gamma (float): Discount factor.
+            lam (float): Lambda for GAE.
+            lam_c (float): Lambda for GAE for cost.
+            advantage_estimator (AdvatageEstimator): Advantage estimator.
+            penalty_coefficient (float): Penalty coefficient.
+            standardized_adv_r (bool): Whether to standardize the advantage for reward.
+            standardized_adv_c (bool): Whether to standardize the advantage for cost.
+            num_envs (int, optional): Number of environments. Defaults to 1.
+            device (torch.device, optional): Device to store the data. Defaults to torch.device('cpu').
+        """
         self._num_buffers = num_envs
         self._standardized_adv_r = standardized_adv_r
         self._standardized_adv_c = standardized_adv_c
@@ -67,20 +90,38 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         return self._num_buffers
 
     def store(self, **data: torch.Tensor) -> None:
-        """Store data into the buffer."""
+        """Store data into the buffer.
+
+        .. hint::
+            The data should be a list of tensors, each of which corresponds to one environment.
+            Then the data will be stored into the corresponding buffer.
+
+        """
         for i, buffer in enumerate(self.buffers):
             buffer.store(**{k: v[i] for k, v in data.items()})
 
     def finish_path(
         self,
-        last_value_r: torch.Tensor = torch.zeros(1),
-        last_value_c: torch.Tensor = torch.zeros(1),
+        last_value_r: torch.Tensor | None = None,
+        last_value_c: torch.Tensor | None = None,
         idx: int = 0,
     ) -> None:
-        """Finish the path."""
+        """Get the data in the buffer.
+
+        In vector-on-policy buffer, we get the data from each buffer and then concatenate them.
+
+        .. hint::
+
+            We provide a trick to standardize the advantages of state-action pairs.
+            We calculate the mean and standard deviation of the advantages of state-action pairs
+            and then standardize the advantages of state-action pairs.
+            You can turn on this trick by setting the ``standardized_adv_r`` to ``True``.
+            The same trick is applied to the advantages of the cost.
+
+        """
         self.buffers[idx].finish_path(last_value_r, last_value_c)
 
-    def get(self) -> Dict[str, torch.Tensor]:
+    def get(self) -> dict[str, torch.Tensor]:
         """Get the data from the buffer."""
         data_pre = {k: [v] for k, v in self.buffers[0].get().items()}
         for buffer in self.buffers[1:]:

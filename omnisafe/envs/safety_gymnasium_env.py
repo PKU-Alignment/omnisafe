@@ -14,8 +14,9 @@
 # ==============================================================================
 """Environments in the Safety Gymnasium."""
 
+from __future__ import annotations
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import safety_gymnasium
@@ -75,7 +76,13 @@ class SafetyGymnasiumEnv(CMDP):
     need_auto_reset_wrapper = False
     need_time_limit_wrapper = False
 
-    def __init__(self, env_id: str, num_envs: int = 1, **kwargs) -> None:
+    def __init__(
+        self,
+        env_id: str,
+        num_envs: int = 1,
+        device: torch.device = 'cpu',
+        **kwargs,
+    ) -> None:
         super().__init__(env_id)
         if num_envs > 1:
             self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
@@ -88,37 +95,47 @@ class SafetyGymnasiumEnv(CMDP):
 
         self._num_envs = num_envs
         self._metadata = self._env.metadata
+        self._device = torch.device(device)
 
     def step(
-        self, action: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
-        obs, reward, cost, terminated, truncated, info = self._env.step(action)
-        obs, reward, cost, terminated, truncated = map(
-            lambda x: torch.as_tensor(x, dtype=torch.float32),
-            (obs, reward, cost, terminated, truncated),
+        self,
+        action: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+        obs, reward, cost, terminated, truncated, info = self._env.step(
+            action.detach().cpu().numpy(),
+        )
+        obs, reward, cost, terminated, truncated = (
+            torch.as_tensor(x, dtype=torch.float32, device=self._device)
+            for x in (obs, reward, cost, terminated, truncated)
         )
         if 'final_observation' in info:
             info['final_observation'] = np.array(
                 [
                     array if array is not None else np.zeros(obs.shape[-1])
                     for array in info['final_observation']
-                ]
+                ],
             )
             info['final_observation'] = torch.as_tensor(
-                info['final_observation'], dtype=torch.float32
+                info['final_observation'],
+                dtype=torch.float32,
+                device=self._device,
             )
 
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
+    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
         obs, info = self._env.reset(seed=seed)
-        return torch.as_tensor(obs, dtype=torch.float32), info
+        return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
 
     def set_seed(self, seed: int) -> None:
         self.reset(seed=seed)
 
     def sample_action(self) -> torch.Tensor:
-        return torch.as_tensor(self._env.action_space.sample(), dtype=torch.float32)
+        return torch.as_tensor(
+            self._env.action_space.sample(),
+            dtype=torch.float32,
+            device=self._device,
+        )
 
     def render(self) -> Any:
         return self._env.render()

@@ -14,12 +14,14 @@
 # ==============================================================================
 """Implementation of the Logger."""
 
+from __future__ import annotations
+
 import atexit
 import csv
 import os
 import time
 from collections import deque
-from typing import Any, Deque, Dict, List, Optional, TextIO, Tuple, Union
+from typing import Any, Deque, TextIO
 
 import numpy as np
 import torch
@@ -38,7 +40,7 @@ from omnisafe.utils.distributed import dist_statistics_scalar, get_rank
 # importing distutils.version.  We can workaround this by prepopulating the distutils.version
 # submodule in the distutils module.
 
-try:
+try:  # noqa: SIM105
     # pylint: disable-next=wrong-import-order,unused-import,deprecated-module
     import distutils.version  # isort:skip  # noqa: F401
 except ImportError:
@@ -54,6 +56,20 @@ class Logger:  # pylint: disable=too-many-instance-attributes
     A logger to record the training process.
     It can record the training process to a file and print it to the console.
     It can also record the training process to tensorboard.
+
+    The logger can record the following data:
+
+    .. code-block:: bash
+
+        ----------------------------------------------
+        |       Name      |            Value         |
+        ----------------------------------------------
+        |    Train/Epoch  |             25           |
+        |  Metrics/EpCost |            24.56         |
+        |  Metrics/EpLen  |            1000          |
+        |  Metrics/EpRet  |            13.24         |
+        |  Metrics/EpStd  |            0.12          |
+        ----------------------------------------------
     """
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals
@@ -65,9 +81,22 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         seed: int = 0,
         use_tensorboard: bool = True,
         use_wandb: bool = False,
-        config: Optional[Config] = None,
-        models: Optional[List[torch.nn.Module]] = None,
+        config: Config | None = None,
+        models: list[torch.nn.Module] | None = None,
     ) -> None:
+        """Initialize the logger.
+
+        Args:
+            output_dir: The directory to save the log file.
+            exp_name: The name of the experiment.
+            output_fname: The name of the log file.
+            verbose: Whether to print the log to the console.
+            seed: The random seed.
+            use_tensorboard: Whether to use tensorboard.
+            use_wandb: Whether to use wandb.
+            config: The config of the experiment.
+            models: The models to be saved.
+        """
         hms_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
         relpath = hms_time
 
@@ -83,8 +112,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self._output_file: TextIO
         if self._maste_proc:
             os.makedirs(self._log_dir, exist_ok=True)
-            self._output_file = open(  # pylint: disable=consider-using-with
-                os.path.join(self._log_dir, output_fname), encoding='utf-8', mode='w'
+            self._output_file = open(  # noqa: SIM115 # pylint: disable=consider-using-with
+                os.path.join(self._log_dir, output_fname),
+                encoding='utf-8',
+                mode='w',
             )
             atexit.register(self._output_file.close)
             self.log(f'Logging data to {self._output_file.name}', 'cyan', bold=True)
@@ -92,12 +123,12 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         self._epoch: int = 0
         self._first_row: bool = True
-        self._what_to_save: Optional[Dict[str, Any]] = None
-        self._data: Dict[str, Union[Deque[Union[int, float]], List[Union[int, float]]]] = {}
-        self._headers_windwos: Dict[str, Optional[int]] = {}
-        self._headers_minmax: Dict[str, bool] = {}
-        self._headers_delta: Dict[str, bool] = {}
-        self._current_row: Dict[str, Union[int, float]] = {}
+        self._what_to_save: dict[str, Any] | None = None
+        self._data: dict[str, Deque[int | float] | list[int | float]] = {}
+        self._headers_windwos: dict[str, int | None] = {}
+        self._headers_minmax: dict[str, bool] = {}
+        self._headers_delta: dict[str, bool] = {}
+        self._current_row: dict[str, int | float] = {}
 
         if config is not None:
             self.save_config(config)
@@ -132,6 +163,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         Args:
             msg (str): The message to be logged.
             color (int): The color of the message.
+            bold (bool): Whether to use bold font.
         """
         if self._verbose and self._maste_proc:
             style = ' '.join([color, 'bold' if bold else ''])
@@ -141,14 +173,14 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         """Save the configuration to the log directory.
 
         Args:
-            config (dict): The configuration to be saved.
+            config (Config): The configuration to be saved.
         """
         if self._maste_proc:
             self.log('Save with config in config.json', 'yellow', bold=True)
             with open(os.path.join(self._log_dir, 'config.json'), encoding='utf-8', mode='w') as f:
                 f.write(config.tojson())
 
-    def setup_torch_saver(self, what_to_save: Dict[str, Any]) -> None:
+    def setup_torch_saver(self, what_to_save: dict[str, Any]) -> None:
         """Setup the torch saver.
 
         Args:
@@ -172,16 +204,31 @@ class Logger:  # pylint: disable=too-many-instance-attributes
     def register_key(
         self,
         key: str,
-        window_length: Optional[int] = None,
+        window_length: int | None = None,
         min_and_max: bool = False,
         delta: bool = False,
     ) -> None:
         """Register a key to the logger.
 
+        The logger can record the following data:
+
+        .. code-block:: bash
+
+            ----------------------------------------------------
+            |       Name            |            Value         |
+            ----------------------------------------------------
+            |    Train/Epoch        |             25           |
+            |  Metrics/EpCost/Min   |            22.38         |
+            |  Metrics/EpCost/Max   |            25.48         |
+            |  Metrics/EpCost/Mean  |            23.93         |
+            ----------------------------------------------------
+
         Args:
             key (str): The key to be registered.
             window_length (int): The window length for the key, \
                 if window_length is None, the key will be averaged in epoch.
+            min_and_max (bool): Whether to record the min and max value of the key.
+            delta (bool): Whether to record the delta value of the key.
         """
         assert (key and f'{key}/Mean') not in self._current_row, f'Key {key} has been registered'
         if min_and_max:
@@ -208,7 +255,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             self._data[key] = []
             self._headers_windwos[key] = None
 
-    def store(self, **kwargs: Union[int, float, np.ndarray, torch.Tensor]) -> None:
+    def store(self, **kwargs: int | float | np.ndarray | torch.Tensor) -> None:
         """Store the data to the logger.
 
         Args:
@@ -226,7 +273,18 @@ class Logger:  # pylint: disable=too-many-instance-attributes
                 raise ValueError(f'Unsupported type {type(val)}')
 
     def dump_tabular(self) -> None:
-        """Dump the tabular data to the console and the file."""
+        """Dump the tabular data to the console and the file.
+
+        The dumped data will be separated by the following steps:
+
+        .. hint::
+
+            - If the key is registered with window_length, the data will be averaged in the window.
+            - Write the data to the csv file.
+            - Write the data to the tensorboard.
+            - Update the progress logger.
+
+        """
         self._update_current_row()
         table = Table('Metrics', 'Value')
         if self._maste_proc:
@@ -256,6 +314,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self._console.print(table)
 
     def _update_current_row(self) -> None:
+        """Update the current row.
+
+        Update the current row with the data stored in the logger.
+        """
         for key in self._data:
             if self._headers_minmax[key]:
                 old_data = self._current_row[f'{key}/Mean']
@@ -275,28 +337,13 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             if self._headers_windwos[key] is None:
                 self._data[key] = []
 
-    def _update_current_row(self) -> None:
-        for key in self._data:
-            if self._headers_minmax[key]:
-                old_data = self._current_row[f'{key}/Mean']
-                mean, min_val, max_val, std = self.get_stats(key, True)
-                self._current_row[f'{key}/Mean'] = mean
-                self._current_row[f'{key}/Min'] = min_val
-                self._current_row[f'{key}/Max'] = max_val
-                self._current_row[f'{key}/Std'] = std
-            else:
-                old_data = self._current_row[key]
-                mean = self.get_stats(key, False)[0]
-                self._current_row[key] = mean
+    def get_stats(self, key, min_and_max: bool = False) -> tuple[int | float, ...]:
+        """Get the statistics of the key.
 
-            if self._headers_delta[key]:
-                self._current_row[f'{key}/Delta'] = mean - old_data
-
-            if self._headers_windwos[key] is None:
-                self._data[key] = []
-
-    def get_stats(self, key, min_and_max: bool = False) -> Tuple[Union[int, float], ...]:
-        """Get the statistics of the key."""
+        Args:
+            key (str): The key to be registered.
+            min_and_max (bool): Whether to record the min and max value of the key.
+        """
         assert key in self._current_row, f'Key {key} has not been registered'
         vals = self._data[key]
         if isinstance(vals, deque):
@@ -304,12 +351,13 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         if min_and_max:
             mean, std, min_val, max_val = dist_statistics_scalar(
-                torch.tensor(vals), with_min_and_max=True
+                torch.tensor(vals),
+                with_min_and_max=True,
             )
             return mean.item(), min_val.item(), max_val.item(), std.item()
 
         mean, std = dist_statistics_scalar(  # pylint: disable=unbalanced-tuple-unpacking
-            torch.tensor(vals)
+            torch.tensor(vals),
         )
         return (mean.item(),)
 

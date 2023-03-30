@@ -26,7 +26,7 @@ classifiers = [
 ]
 dependencies = [
     "safety-gymnasium >= 0.1.0",
-    "torch >= 1.10.0",
+    "torch >= 1.10.0, < 2.0.0a0",
     "numpy >= 1.20.0",
     "tensorboard >= 2.8.0",
     "wandb >= 0.13.0",
@@ -39,8 +39,11 @@ dependencies = [
     "moviepy >= 1.0.0",
     "typing-extensions >= 4.0.0",
     "typer[all] >= 0.7.0",
+    "seaborn >= 0.12.2",
+    "pandas >=  1.5.3",
+    "matplotlib >= 3.7.1",
 ]
-dynamic = ["version"]
+dynamic = ["version", "entry-points"]
 
 [project.urls]
 Homepage = "https://github.com/PKU-MARL/omnisafe"
@@ -56,7 +59,8 @@ lint = [
     "mypy >= 0.990",
     "flake8",
     "flake8-bugbear",
-    "doc8 < 1.0.0a0",
+    "ruff",
+    "doc8",
     "pydocstyle",
     "pyenchant",
     "pre-commit",
@@ -110,6 +114,87 @@ convention = "google"
 
 [tool.doc8]
 max-line-length = 500
+
+[tool.codespell]
+ignore-words = "docs/source/spelling_wordlist.txt"
+
+[tool.ruff]
+# Sync with requires-python
+target-version = "py38"
+line-length = 100
+show-source = true
+src = ["omnisafe", "tests", "examples"]
+select = [
+    "E", "W",  # pycodestyle
+    "F",       # pyflakes
+    "UP",      # pyupgrade
+    "ANN",     # flake8-annotations
+    "S",       # flake8-bandit
+    "BLE",     # flake8-blind-except
+    "B",       # flake8-bugbear
+    "COM",     # flake8-commas
+    "C4",      # flake8-comprehensions
+    "EXE",     # flake8-executable
+    "ISC",     # flake8-implicit-str-concat
+    "PIE",     # flake8-pie
+    "PYI",     # flake8-pyi
+    "Q",       # flake8-quotes
+    "RSE",     # flake8-raise
+    "RET",     # flake8-return
+    "SIM",     # flake8-simplify
+    "TID",     # flake8-tidy-imports
+    "RUF",     # ruff
+]
+ignore = [
+    # E501: line too long
+    # W505: doc line too long
+    # too long docstring due to long example blocks
+    "E501",
+    "W505",
+    # TODO: Remove this four ignores
+    # ANN001: missing type annotation for function argument
+    # ANN003: missing type annotation for `**kwargs`
+    # ANN201: missing return type annotation for public function
+    # ANN202: missing return type annotation for private function
+    "ANN001","ANN003","ANN201","ANN202",
+    # ANN101: missing type annotation for `self` in method
+    # ANN102: missing type annotation for `cls` in classmethod
+    "ANN101",
+    "ANN102",
+    # ANN401: dynamically typed expressions (typing.Any) are disallowed
+    "ANN401",
+    # S101: use of `assert` detected
+    # internal use and may never raise at runtime
+    "S101",
+    # PLR0402: use from {module} import {name} in lieu of alias
+    # use alias for import convention (e.g., `import torch.nn as nn`)
+    "PLR0402",
+]
+typing-modules = ["omnisafe.typing"]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = [
+    "F401",  # unused-import
+]
+"omnisafe/utils/command_app.py" = [
+    "B008",  # function-call-argument-default
+]
+"tests/**/*.py" = [
+    "ANN",   # flake8-annotations
+    "S",     # flake8-bandit
+    "BLE",   # flake8-blind-except
+]
+
+[tool.ruff.flake8-annotations]
+allow-star-arg-any = true
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+multiline-quotes = "double"
+inline-quotes = "single"
+
+[tool.ruff.flake8-tidy-imports]
+ban-relative-imports = "all"
 
 [tool.pytest.ini_options]
 filterwarnings = [

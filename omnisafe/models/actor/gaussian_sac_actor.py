@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of GaussianStdNetActor."""
 
-from typing import List, Optional
+from __future__ import annotations
 
 import torch
 from torch import nn
@@ -33,10 +33,23 @@ class GaussianSACActor(Actor):
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
+        """Initialize GaussianSACActor.
+
+        GaussianSACActor is a Gaussian actor with a learnable standard deviation network.
+        It is used in ``SAC``, and other off-line or model-based algorithms related to ``SAC``.
+
+        Args:
+            obs_space (OmnisafeSpace): Observation space.
+            act_space (OmnisafeSpace): Action space.
+            hidden_sizes (list): List of hidden layer sizes.
+            activation (Activation): Activation function.
+            weight_initialization_mode (InitFunction): Weight initialization mode.
+            shared (nn.Module): Shared module.
+        """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
         self.net = build_mlp_network(
             sizes=[self._obs_dim, *self._hidden_sizes, self._act_dim * 2],
@@ -44,35 +57,79 @@ class GaussianSACActor(Actor):
             weight_initialization_mode=weight_initialization_mode,
         )
 
-        self._current_raw_action: Optional[torch.Tensor] = None
+        self._current_raw_action: torch.Tensor | None = None
         self.register_buffer('_log2', torch.log(torch.tensor(2.0)))
         self._log2: torch.Tensor
 
     def _distribution(self, obs: torch.Tensor) -> Distribution:
+        """Get the distribution of the actor.
+
+        .. warning::
+
+            This method is not supposed to be called by users.
+            You should call :meth:`forward` instead.
+
+        **Specifically, this method will clip the standard deviation to a range of [-20, 2].**
+
+        Args:
+            obs (torch.Tensor): Observation.
+        """
         mean, log_std = self.net(obs).chunk(2, dim=-1)
         log_std = torch.clamp(log_std, min=-20, max=2)
         std = log_std.exp()
         return Normal(mean, std)
 
     def predict(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
+        """Predict the action given observation.
+
+        The predicted action depends on the ``deterministic`` flag.
+
+        - If ``deterministic`` is ``True``, the predicted action is the mean of the distribution.
+        - If ``deterministic`` is ``False``, the predicted action is sampled from the distribution.
+
+        Args:
+            obs (torch.Tensor): Observation.
+            deterministic (bool): Whether to use deterministic policy.
+        """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
 
-        if deterministic:
-            action = self._current_dist.mean
-        else:
-            action = self._current_dist.rsample()
+        action = self._current_dist.mean if deterministic else self._current_dist.rsample()
 
         self._current_raw_action = action
 
         return torch.tanh(action)
 
     def forward(self, obs: torch.Tensor) -> Distribution:
+        """Forward method.
+
+        Args:
+            obs (torch.Tensor): Observation.
+        """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
         return TanhNormal(self._current_dist.mean, self._current_dist.stddev)
 
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
+        r"""Compute the log probability of the action given the current distribution.
+
+        .. warning::
+            You must call :meth:`forward` or :meth:`predict` before calling this method.
+
+        .. note::
+
+            In this method, we will regularize the log probability of the action.
+            The regularization is as follows:
+
+            .. math::
+
+                \log \pi(a|s) = \log \pi(a|s) - \sum_{i=1}^n (2 \log 2 - a_i - \log (1 + e^{-2 a_i}))
+
+            where :math:`a` is the action, :math:`s` is the observation, and :math:`n` is the dimension of the action.
+
+        Args:
+            act (torch.Tensor): Action.
+        """
         assert self._after_inference, 'log_prob() should be called after predict() or forward()'
         self._after_inference = False
 

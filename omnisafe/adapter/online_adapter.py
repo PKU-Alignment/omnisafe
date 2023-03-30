@@ -14,7 +14,7 @@
 # ==============================================================================
 """Online Adapter for OmniSafe."""
 
-from typing import Dict, Tuple
+from __future__ import annotations
 
 import torch
 
@@ -47,6 +47,8 @@ class OnlineAdapter:
         self._env_id = env_id
         self._env = make(env_id, num_envs=num_envs)
         self._test_env = make(env_id, num_envs=1)
+        self._cfgs = cfgs
+        self._device = cfgs.train_cfgs.device
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
@@ -55,9 +57,6 @@ class OnlineAdapter:
 
         self._env.set_seed(seed)
         self._test_env.set_seed(seed)
-
-        self._cfgs = cfgs
-        self._device = cfgs.train_cfgs.device
 
     def _wrapper(
         self,
@@ -75,7 +74,7 @@ class OnlineAdapter:
             self._env = ObsNormalize(self._env)
             self._test_env = ObsNormalize(self._test_env)
         if reward_normalize:
-            self._env = RewardNormalize(self._env)
+            self._env = RewardNormalize(self._env, device=self._device)
         if cost_normalize:
             self._env = CostNormalize(self._env)
         self._env = ActionScale(self._env, low=-1.0, high=1.0)
@@ -103,8 +102,9 @@ class OnlineAdapter:
         return self._env.observation_space
 
     def step(
-        self, action: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+        self,
+        action: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
@@ -126,7 +126,7 @@ class OnlineAdapter:
         )
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self) -> Tuple[torch.Tensor, Dict]:
+    def reset(self) -> tuple[torch.Tensor, dict]:
         """Resets the environment and returns an initial observation.
 
         Args:
@@ -139,7 +139,7 @@ class OnlineAdapter:
         obs, info = self._env.reset()
         return obs.to(self._device), info
 
-    def save(self) -> Dict[str, torch.nn.Module]:
+    def save(self) -> dict[str, torch.nn.Module]:
         """Save the environment.
 
         Returns:

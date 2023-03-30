@@ -14,22 +14,29 @@
 # ==============================================================================
 """Tools for Experiment Grid."""
 
+from __future__ import annotations
+
 import string
-from typing import List, Union
 
 
 def all_bools(vals: list) -> bool:
-    """Check if all values are bools"""
+    """Check if all values are bools
+
+    Args:
+        vals: Values to check.
+    """
     return all(isinstance(v, bool) for v in vals)
 
 
-def valid_str(vals: Union[List, str]) -> str:
+def valid_str(vals: list | str) -> str:
     r"""Convert a value or values to a string which could go in a path of file.
 
     Partly based on `this gist`_.
 
     .. _`this gist`: https://gist.github.com/seanh/93666
 
+    Args:
+        vals: Value or values to convert to a string.
     """
     if hasattr(vals, '__name__'):
         return valid_str(vals.__name__)
@@ -41,5 +48,4 @@ def valid_str(vals: Union[List, str]) -> str:
     # with '-'.
     str_v = str(vals).lower()
     valid_chars = f'-_{string.ascii_letters}{string.digits}'
-    str_v = ''.join(c if c in valid_chars else '-' for c in str_v)
-    return str_v
+    return ''.join(c if c in valid_chars else '-' for c in str_v)

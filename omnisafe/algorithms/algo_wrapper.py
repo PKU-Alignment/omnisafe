@@ -14,9 +14,11 @@
 # ==============================================================================
 """Implementation of the AlgoWrapper Class."""
 
+from __future__ import annotations
+
 import difflib
 import sys
-from typing import Any, Dict, Optional
+from typing import Any
 
 import psutil
 import torch
@@ -35,9 +37,9 @@ class AlgoWrapper:
         self,
         algo: str,
         env_id: str,
-        train_terminal_cfgs: Optional[Dict[str, Any]] = None,
-        custom_cfgs: Optional[Dict[str, Any]] = None,
-    ):
+        train_terminal_cfgs: dict[str, Any] | None = None,
+        custom_cfgs: dict[str, Any] | None = None,
+    ) -> None:
         self.algo = algo
         self.env_id = env_id
         # algo_type will set in _init_checks()
@@ -58,29 +60,44 @@ class AlgoWrapper:
         self.algo_type = ALGORITHM2TYPE.get(self.algo, '')
         if self.algo_type is None or self.algo_type == '':
             raise ValueError(f'{self.algo} is not supported!')
-        if self.algo_type in ['off-policy', 'model-based']:
-            if self.train_terminal_cfgs is not None:
-                assert (
-                    self.train_terminal_cfgs['parallel'] == 1
-                ), 'off-policy or model-based only support parallel==1!'
+        if self.algo_type in {'off-policy', 'model-based'} and self.train_terminal_cfgs is not None:
+            assert (
+                self.train_terminal_cfgs['parallel'] == 1
+            ), 'off-policy or model-based only support parallel==1!'
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations
         if self.custom_cfgs:
-            recursive_check_config(self.custom_cfgs, cfgs, exclude_keys=('algo', 'env_id'))
+            # avoid repeatedly record the env_id and algo
+            if 'env_id' in self.custom_cfgs:
+                self.custom_cfgs.pop('env_id')
+            if 'algo' in self.custom_cfgs:
+                self.custom_cfgs.pop('algo')
+            # validate the keys of custom configuration
+            recursive_check_config(self.custom_cfgs, cfgs)
+            # update the cfgs from custom configurations
             cfgs.recurisve_update(self.custom_cfgs)
+            # save configurations specified in current experiment
+            cfgs.update({'exp_increment_cfgs': self.custom_cfgs})
         # update the cfgs from custom terminal configurations
         if self.train_terminal_cfgs:
-            recursive_check_config(
-                self.train_terminal_cfgs, cfgs.train_cfgs, exclude_keys=('algo', 'env_id')
-            )
+            # avoid repeatedly record the env_id and algo
+            if 'env_id' in self.train_terminal_cfgs:
+                self.train_terminal_cfgs.pop('env_id')
+            if 'algo' in self.train_terminal_cfgs:
+                self.train_terminal_cfgs.pop('algo')
+            # validate the keys of train_terminal_cfgs configuration
+            recursive_check_config(self.train_terminal_cfgs, cfgs.train_cfgs)
+            # update the cfgs.train_cfgs from train_terminal configurations
             cfgs.train_cfgs.recurisve_update(self.train_terminal_cfgs)
+            # save configurations specified in current experiment
+            cfgs.recurisve_update({'exp_increment_cfgs': {'train_cfgs': self.train_terminal_cfgs}})
 
         # the exp_name format is PPO-{SafetyPointGoal1-v0}-
         exp_name = f'{self.algo}-{{{self.env_id}}}'
-        cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id})
+        cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id, 'algo': self.algo})
         cfgs.train_cfgs.recurisve_update(
-            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle}
+            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle},
         )
         return cfgs
 

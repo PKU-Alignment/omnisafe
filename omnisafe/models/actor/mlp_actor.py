@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of MLPActorActor."""
 
-from typing import List
+from __future__ import annotations
 
 import torch
 from torch.distributions import Distribution
@@ -32,7 +32,7 @@ class MLPActor(Actor):
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         output_activation: Activation = 'tanh',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
@@ -44,8 +44,8 @@ class MLPActor(Actor):
             act_space (OmnisafeSpace): Action space.
             hidden_sizes (list): List of hidden layer sizes.
             activation (Activation): Activation function.
+            output_activation (Activation): Output activation function.
             weight_initialization_mode (InitFunction): Weight initialization mode.
-            shared (nn.Module): Shared module.
         """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
         self.net = build_mlp_network(
@@ -54,28 +54,34 @@ class MLPActor(Actor):
             output_activation=output_activation,
             weight_initialization_mode=weight_initialization_mode,
         )
-        self._noise = 0.1
+        self._noise = 0.2
+        self._noise_clip = 100
+        self.register_buffer('_act_min', torch.tensor(self._act_space.low, dtype=torch.float32))
+        self.register_buffer('_act_max', torch.tensor(self._act_space.high, dtype=torch.float32))
 
     def predict(
         self,
         obs: torch.Tensor,
         deterministic: bool = True,
     ) -> torch.Tensor:
-        """Predict the action given the observation.
+        """Predict the action given observation.
+
+        The predicted action depends on the ``deterministic`` flag.
+
+        - If ``deterministic`` is ``True``, the predicted action is the mean of the distribution.
+        - If ``deterministic`` is ``False``, the predicted action is sampled from the distribution.
 
         Args:
             obs (torch.Tensor): Observation.
             deterministic (bool): Whether to use deterministic policy.
-
-        Returns:
-            torch.Tensor: Predicted action.
         """
         action = self.net(obs)
         if deterministic:
             return action
-        with torch.no_grad():
-            noise = torch.normal(0, self._noise * torch.ones_like(action))
-            return torch.clamp(action + noise, -1, 1)
+
+        noise = torch.normal(0, self._noise * torch.ones_like(action))
+        noise = torch.clamp(noise, -self._noise_clip, self._noise_clip)
+        return torch.clamp(action + noise, self._act_min, self._act_max)
 
     @property
     def noise(self) -> float:
@@ -84,6 +90,7 @@ class MLPActor(Actor):
 
     @noise.setter
     def noise(self, noise: float) -> None:
+        """Set the action noise."""
         assert noise >= 0, 'Noise should be non-negative.'
         self._noise = noise
 

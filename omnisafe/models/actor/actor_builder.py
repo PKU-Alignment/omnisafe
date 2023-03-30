@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of ActorBuilder."""
 
-from typing import List
+from __future__ import annotations
 
 from omnisafe.models.actor.cholesky_actor import CholeskyActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
@@ -32,11 +32,19 @@ class ActorBuilder:
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize ActorBuilder."""
+        """Initialize ActorBuilder.
+
+        Args:
+            obs_space (OmnisafeSpace): Observation space.
+            act_space (OmnisafeSpace): Action space.
+            hidden_sizes (list): List of hidden layer sizes.
+            activation (Activation): Activation function.
+            weight_initialization_mode (InitFunction): Weight initialization mode.
+        """
         self._obs_space = obs_space
         self._act_space = act_space
         self._weight_initialization_mode = weight_initialization_mode
@@ -45,7 +53,16 @@ class ActorBuilder:
 
     # pylint: disable-next=too-many-return-statements
     def build_actor(self, actor_type: ActorType) -> Actor:
-        """Build actor network."""
+        """Build actor network.
+
+        Currently, we support the following actor types:
+            - ``gaussian_learning``: Gaussian actor with learnable standard deviation parameters.
+            - ``gaussian_sac``: Gaussian actor with learnable standard deviation network.
+            - ``mlp``: Multi-layer perceptron actor, used in ``DDPG`` and ``TD3``.
+
+        Args:
+            actor_type (ActorType): Actor type.
+        """
         if actor_type == 'gaussian_learning':
             return GaussianLearningActor(
                 self._obs_space,
@@ -80,5 +97,5 @@ class ActorBuilder:
             )
         raise NotImplementedError(
             f'Actor type {actor_type} is not implemented! '
-            f'Available actor types are: gaussian_learning, gaussian_sac, mlp.'
+            f'Available actor types are: gaussian_learning, gaussian_sac, mlp.',
         )

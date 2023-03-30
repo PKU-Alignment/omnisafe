@@ -13,7 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the algo utils."""
-from typing import Callable, Tuple
+
+from __future__ import annotations
+
+from typing import Callable
 
 import torch
 from torch.distributions import Normal, TanhTransform, TransformedDistribution, constraints
@@ -22,11 +25,13 @@ from torch.distributions import Normal, TanhTransform, TransformedDistribution, 
 def get_transpose(tensor: torch.Tensor) -> torch.Tensor:
     """Transpose the last two dimensions of a tensor.
 
+    Example:
+        >>> tensor = torch.rand(2, 3, 4)
+        >>> get_transpose(tensor).shape
+        torch.Size([2, 4, 3])
+
     Args:
         tensor: torch.Tensor
-
-    Returns:
-        torch.Tensor
     """
     return tensor.transpose(dim0=-2, dim1=-1)
 
@@ -34,11 +39,13 @@ def get_transpose(tensor: torch.Tensor) -> torch.Tensor:
 def get_diagonal(tensor: torch.Tensor) -> torch.Tensor:
     """Get the diagonal of the last two dimensions of a tensor.
 
+    Example:
+        >>> tensor = torch.rand(2, 3, 4)
+        >>> get_diagonal(tensor).shape
+        torch.Size([2, 3])
+
     Args:
         tensor: torch.Tensor
-
-    Returns:
-        torch.Tensor
     """
     return tensor.diagonal(dim1=-2, dim2=-1).sum(-1)
 
@@ -46,12 +53,23 @@ def get_diagonal(tensor: torch.Tensor) -> torch.Tensor:
 def safe_inverse(var_q: torch.Tensor, det: torch.Tensor) -> torch.Tensor:
     """Inverse of a matrix with a safe guard for singular matrix.
 
+    Example:
+        >>> var_q = torch.rand(3, 3)
+        >>> var_q
+        tensor([[1.00, 0.00, 0.00],
+                [0.00, 2.00, 0.00],
+                [0.00, 0.00, 3.00]])
+        >>> det = torch.det(var_q)
+        >>> det
+        tensor(6.00)
+        >>> safe_inverse(var_q, det)
+        tensor([[1.00, 0.00, 0.00],
+                [0.00, 0.50, 0.00],
+                [0.00, 0.00, 0.33]])
+
     Args:
         var_q: torch.Tensor
         det: torch.Tensor
-
-    Returns:
-        torch.Tensor
     """
     indices = torch.where(det <= 1e-6)
     # pseudo inverse
@@ -61,14 +79,18 @@ def safe_inverse(var_q: torch.Tensor, det: torch.Tensor) -> torch.Tensor:
 
 
 def gaussian_kl(
-    mean_p: torch.Tensor, mean_q: torch.Tensor, var_p: torch.Tensor, var_q: torch.Tensor
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-    r"""Decoupled KL between two mean_qltivariate gaussian distribution.
+    mean_p: torch.Tensor,
+    mean_q: torch.Tensor,
+    var_p: torch.Tensor,
+    var_q: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    r"""Decoupled KL between two gaussian distribution.
 
     .. note::
         Detailedly,
 
         .. math::
+
             KL(q||p) = 0.5 * (tr(\Sigma_p^{-1} \Sigma_q) + (\mu_p - \mu_q)^T \Sigma_p^{-1} (\mu_p -
             \mu_q) - k + log(\frac{det(\Sigma_p)}{det(\Sigma_q)}))
 
@@ -109,14 +131,24 @@ def gaussian_kl(
 
 
 def discount_cumsum(x_vector: torch.Tensor, discount: float) -> torch.Tensor:
-    """Compute the discounted cumulative sum of vectors."""
+    """Compute the discounted cumulative sum of vectors.
+
+    Example:
+        >>> x_vector = torch.arange(1, 5)
+        >>> x_vector
+        tensor([1, 2, 3, 4])
+        >>> discount_cumsum(x_vector, 0.9)
+        tensor([4.00, 3.90, 3.00, 1.00])
+
+    Args:
+        x_vector (torch.Tensor): shape (B, T).
+        discount (float): discount factor.
+    """
     length = x_vector.shape[0]
     x_vector = x_vector.type(torch.float64)
-    for idx in reversed(range(length)):
-        if idx == length - 1:
-            cumsum = x_vector[idx]
-        else:
-            cumsum = x_vector[idx] + discount * cumsum
+    cumsum = x_vector[-1]
+    for idx in reversed(range(length - 1)):
+        cumsum = x_vector[idx] + discount * cumsum
         x_vector[idx] = cumsum
     return x_vector
 
@@ -142,7 +174,11 @@ def conjugate_gradients(
         Also probably don't play with this hyperparameter.
 
     Args:
-        num_steps (int): Number of iterations of conjugate gradient to perform.
+        Avp (Callable[[torch.Tensor], torch.Tensor]):  Fisher information matrix vector product.
+        b_vector (torch.Tensor): The vector :math:`b` in the equation :math:`Ax = b`.
+        num_steps (int): The number of steps to run the algorithm for.
+        residual_tol (float): The tolerance for the residual.
+        eps (float): A small number to avoid dividing by zero.
     """
 
     x = torch.zeros_like(b_vector)
@@ -165,7 +201,11 @@ def conjugate_gradients(
 
 
 class SafeTanhTransformer(TanhTransform):
-    """Safe Tanh Transformer."""
+    """Safe Tanh Transformer.
+
+    This transformer is used to avoid the error caused by the input of tanh function
+    being too large or too small.
+    """
 
     def _call(self, x: torch.Tensor) -> torch.Tensor:
         return torch.clamp(torch.tanh(x), min=-0.999999, max=0.999999)
@@ -176,16 +216,18 @@ class SafeTanhTransformer(TanhTransform):
         else:
             raise ValueError('Expected floating point type')
         y = y.clamp(min=-1 + eps, max=1 - eps)
-        x = super()._inverse(y)
-        return x
+        return super()._inverse(y)
 
 
 class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     r"""
     Creates a tanh-normal distribution.
 
-        X ~ Normal(loc, scale)
-        Y = tanh(X) ~ TanhNormal(loc, scale)
+    .. math::
+
+        X \sim Normal(loc, scale)
+
+        Y = tanh(X) \sim TanhNormal(loc, scale)
 
     Example::
 
@@ -202,13 +244,14 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     support = constraints.real
     has_rsample = True
 
-    def __init__(self, loc, scale, validate_args=None):
+    def __init__(self, loc, scale, validate_args=None) -> None:
         base_dist = Normal(loc, scale, validate_args=validate_args)
         super().__init__(base_dist, SafeTanhTransformer(), validate_args=validate_args)
 
-    def expand(self, batch_shape, _instance=None):
-        new = self._get_checked_instance(TanhNormal, _instance)
-        return super().expand(batch_shape, _instance=new)
+    def expand(self, batch_shape, instance=None):
+        """Expand the distribution."""
+        new = self._get_checked_instance(TanhNormal, instance)
+        return super().expand(batch_shape, new)
 
     @property
     def loc(self):
@@ -222,15 +265,19 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
 
     @property
     def mean(self):
+        """The mean of the tanh normal distribution."""
         return SafeTanhTransformer()(self.base_dist.mean)
 
     @property
     def stddev(self):
+        """The stddev of the tanh normal distribution."""
         return self.base_dist.stddev
 
     def entropy(self):
+        """The entropy of the tanh normal distribution."""
         return self.base_dist.entropy()
 
     @property
     def variance(self):
+        """The variance of the tanh normal distribution."""
         return self.base_dist.variance

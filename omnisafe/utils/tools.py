@@ -14,13 +14,16 @@
 # ==============================================================================
 """tool_function_packages"""
 
-from typing import Any
+import hashlib
+import json
 import os
 import random
+import sys
 
 import numpy as np
 import torch
 import yaml
+from rich.console import Console
 
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
@@ -30,6 +33,12 @@ def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
         Some algorithms need to get the flattened parameters from the model,
         such as the :class:`TRPO` and :class:`CPO` algorithm.
         In these algorithms, the parameters are flattened and then used to calculate the loss.
+
+    Example:
+        >>> model = torch.nn.Linear(2, 2)
+        >>> model.weight.data = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
+        >>> get_flat_params_from(model)
+        tensor([1., 2., 3., 4.])
 
     Args:
         model (torch.nn.Module): model to be flattened.
@@ -71,6 +80,15 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
         Some algorithms (e.g. TRPO, CPO, etc.) need to set the parameters to the model,
         instead of using the ``optimizer.step()``.
 
+    Example:
+        >>> model = torch.nn.Linear(2, 2)
+        >>> model.weight.data = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
+        >>> vals = torch.tensor([1.0, 2.0, 3.0, 4.0])
+        >>> set_param_values_to_model(model, vals)
+        >>> model.weight.data
+        tensor([[1., 2.],
+                [3., 4.]])
+
     Args:
         model (torch.nn.Module): model to be set.
         vals (torch.Tensor): parameters to be set.
@@ -90,7 +108,17 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
 
 
 def seed_all(seed: int):
-    """This function is used to set the random seed for all the packages."""
+    """This function is used to set the random seed for all the packages.
+
+    .. hint::
+        To reproduce the results, you need to set the random seed for all the packages.
+        Including ``numpy``, ``random``, ``torch``, ``torch.cuda``, ``torch.backends.cudnn``.
+
+    .. warning::
+        If you want to use the ``torch.backends.cudnn.benchmark`` or ``torch.backends.cudnn.
+        deterministic`` and your ``cuda`` version is over 10.2, you need to set the
+        ``CUBLAS_WORKSPACE_CONFIG`` and ``PYTHONHASHSEED`` environment variables.
+    """
 
     os.environ['PYTHONHASHSEED'] = str(seed)
 
@@ -145,8 +173,8 @@ def custom_cfgs_to_dict(key_list, value):
 
 
 def update_dic(total_dic, item_dic):
-    '''Updater of multi-level dictionary.'''
-    for idd in item_dic.keys():
+    """Updater of multi-level dictionary."""
+    for idd in item_dic:
         total_value = total_dic.get(idd)
         item_value = item_dic.get(idd)
 
@@ -172,77 +200,72 @@ def load_yaml(path) -> dict:
     """
     with open(path, encoding='utf-8') as file:
         try:
-            kwargs = yaml.load(file, Loader=yaml.FullLoader)
+            kwargs = yaml.load(file, Loader=yaml.FullLoader)  # noqa: S506
         except yaml.YAMLError as exc:
-            assert False, f'{path} error: {exc}'
+            raise AssertionError(f'{path} error: {exc}') from exc
 
     return kwargs
 
 
 def recursive_check_config(config, default_config, exclude_keys=()):
-    '''Check whether config is valid in default_config.'''
-    for key in config.keys():
+    """Check whether config is valid in default_config.
+
+    Args:
+        config (dict): config to be checked.
+        default_config (dict): default config.
+    """
+    for key in config:
         if key not in default_config.keys() and key not in exclude_keys:
             raise KeyError(f'Invalid key: {key}')
         if isinstance(config[key], dict):
             recursive_check_config(config[key], default_config[key])
-        elif isinstance(config[key], list):
-            for item in config[key]:
-                if isinstance(item, dict):
-                    recursive_check_config(item, default_config[key][0])
 
-def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
-    r"""
-    Overview:
-        Change `torch.Tensor`, sequence of scalars to ndarray, and keep other data types unchanged.
-    Arguments:
-        - item (:obj:`object`): the item to be changed
-        - dtype (:obj:`type`): the type of wanted ndarray
-    Returns:
-        - item (:obj:`object`): the changed ndarray
-    .. note:
 
-        Now supports item type: :obj:`torch.Tensor`,  :obj:`dict`, :obj:`list`, :obj:`tuple` and :obj:`None`
+def assert_with_exit(condition, msg) -> None:
+    """Assert with message.
+
+    Args:
+        condition (bool): condition to be checked.
+        msg (str): message to be printed.
     """
+    try:
+        assert condition
+    except AssertionError:
+        console = Console()
+        console.print('ERROR: ' + msg, style='bold red')
+        sys.exit(1)
 
-    def transform(d):
-        if dtype is None:
-            return np.array(d)
-        else:
-            return np.array(d, dtype=dtype)
 
-    if isinstance(item, dict):
-        new_data = {}
-        for k, v in item.items():
-            new_data[k] = to_ndarray(v, dtype)
-        return new_data
-    elif isinstance(item, list) or isinstance(item, tuple):
-        if len(item) == 0:
-            return None
-        elif hasattr(item, '_fields'):  # namedtuple
-            return type(item)(*[to_ndarray(t, dtype) for t in item])
+def recursive_dict2json(dict_obj) -> str:
+    """This function is used to recursively convert the dict to json.
+
+    Args:
+        dict_obj (dict): dict to be converted.
+    """
+    assert isinstance(dict_obj, dict), 'Input must be a dict.'
+    flat_dict = {}
+
+    def _flatten_dict(dict_obj, path=''):
+        if isinstance(dict_obj, dict):
+            for key, value in dict_obj.items():
+                _flatten_dict(value, path + key + ':')
         else:
-            new_data = []
-            for t in item:
-                new_data.append(to_ndarray(t, dtype))
-            return new_data
-    elif isinstance(item, torch.Tensor):
-        if item.device != 'cpu':
-            item = item.detach().cpu()
-        if dtype is None:
-            return item.numpy()
-        else:
-            return item.numpy().astype(dtype)
-    elif isinstance(item, np.ndarray):
-        if dtype is None:
-            return item
-        else:
-            return item.astype(dtype)
-    elif isinstance(item, bool) or isinstance(item, str):
-        return item
-    elif np.isscalar(item):
-        return np.array(item)
-    elif item is None:
-        return None
-    else:
-        raise TypeError(f'not support item type: {type(item)}')
+            flat_dict[path[:-1]] = dict_obj
+
+    _flatten_dict(dict_obj)
+    return json.dumps(flat_dict, sort_keys=True).replace('"', "'")
+
+
+def hash_string(string) -> str:
+    """This function is used to generate the folder name.
+
+    Args:
+        string (str): string to be hashed.
+    """
+    salt = b'\xf8\x99/\xe4\xe6J\xd8d\x1a\x9b\x8b\x98\xa2\x1d\xff3*^\\\xb1\xc1:e\x11M=PW\x03\xa5\\h'
+    # convert string to bytes and add salt
+    salted_string = salt + string.encode('utf-8')
+    # use sha256 to hash
+    hash_object = hashlib.sha256(salted_string)
+    # get the hex digest
+    return hash_object.hexdigest()

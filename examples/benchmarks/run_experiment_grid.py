@@ -26,7 +26,10 @@ from omnisafe.typing import NamedTuple, Tuple
 
 
 def train(
-    exp_id: str, algo: str, env_id: str, custom_cfgs: NamedTuple
+    exp_id: str,
+    algo: str,
+    env_id: str,
+    custom_cfgs: NamedTuple,
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
 
@@ -37,20 +40,35 @@ def train(
         custom_cfgs (NamedTuple): Custom configurations.
         num_threads (int, optional): Number of threads. Defaults to 6.
     """
+    terminal_log_name = 'terminal.log'
+    error_log_name = 'error.log'
+    if 'seed' in custom_cfgs:
+        terminal_log_name = f'seed{custom_cfgs["seed"]}_{terminal_log_name}'
+        error_log_name = f'seed{custom_cfgs["seed"]}_{error_log_name}'
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
     print(f'exp-x: {exp_id} is training...')
     if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
-        os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
-    sys.stdout = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}terminal.log', 'w', encoding='utf-8')
-    sys.stderr = open(f'{custom_cfgs["logger_cfgs"]["log_dir"]}error.log', 'w', encoding='utf-8')
+        os.makedirs(custom_cfgs['logger_cfgs']['log_dir'], exist_ok=True)
+    # pylint: disable-next=consider-using-with
+    sys.stdout = open(  # noqa: SIM115
+        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', terminal_log_name),
+        'w',
+        encoding='utf-8',
+    )
+    # pylint: disable-next=consider-using-with
+    sys.stderr = open(  # noqa: SIM115
+        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', error_log_name),
+        'w',
+        encoding='utf-8',
+    )
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     reward, cost, ep_len = agent.learn()
     return reward, cost, ep_len
 
 
 if __name__ == '__main__':
-    eg = ExperimentGrid(exp_name='CVPO_3_25_N')
+    eg = ExperimentGrid(exp_name='Safety_Gymnasium_Goal')
 
     # Set the algorithms.
     base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']
@@ -67,21 +85,25 @@ if __name__ == '__main__':
         'SafetyHalfCheetahVelocity-v4',
         'SafetySwimmerVelocity-v4',
     ]
-    eg.add('env_id', 'SafetyPointGoal1-v0')
+    eg.add('env_id', mujoco_envs)
 
     # Set the device.
-    avaliable_gpus = [num for num in range(torch.cuda.device_count())]
+    avaliable_gpus = list(range(torch.cuda.device_count()))
     gpu_id = [0, 1, 2, 3]
     # if you want to use CPU, please set gpu_id = None
     # gpu_id = None
 
     if set(gpu_id) > set(avaliable_gpus):
-        warnings.warn('The GPU ID is not available, use CPU instead.')
+        warnings.warn('The GPU ID is not available, use CPU instead.', stacklevel=1)
         gpu_id = None
 
-    eg.add('algo', ['CVPO'])
+    eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
     eg.add('logger_cfgs:use_wandb', [False])
-    eg.add('seed', [0, 5, 10])
+    eg.add('train_cfgs:vector_env_nums', [4])
+    eg.add('train_cfgs:torch_threads', [1])
+    eg.add('algo_cfgs:update_cycle', [2048])
+    eg.add('train_cfgs:total_steps', [1024000])
+    eg.add('seed', [0])
     # total experiment num must can be divided by num_pool
     # meanwhile, users should decide this value according to their machine
-    eg.run(train, num_pool=6, gpu_id=None)
+    eg.run(train, num_pool=12, gpu_id=gpu_id)

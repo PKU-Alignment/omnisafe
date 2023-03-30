@@ -14,16 +14,24 @@
 # ==============================================================================
 """Implementation of Config."""
 
+from __future__ import annotations
+
 import json
 import os
-from typing import Any, Dict, List
+from typing import Any
 
 from omnisafe.typing import Activation, ActorType, AdvatageEstimator, InitFunction
 from omnisafe.utils.tools import load_yaml
 
 
 class Config(dict):
-    """Config class for storing hyperparameters."""
+    """Config class for storing hyperparameters.
+
+    OmniSafe uses a Config class to store all hyperparameters.
+    OmniSafe store hyperparameters in a yaml file and load them into a Config object.
+    Then the Config class will check the hyperparameters are valid,
+    then pass them to the algorithm class.
+    """
 
     seed: int
     device: str
@@ -53,15 +61,15 @@ class Config(dict):
     max_grad_norm: float
     use_critic_norm: bool
     critic_norm_coeff: bool
-    model_cfgs: 'ModelConfig'
-    buffer_cfgs: 'Config'
+    model_cfgs: ModelConfig
+    buffer_cfgs: Config
     gamma: float
     lam: float
     lam_c: float
     adv_eastimator: AdvatageEstimator
     standardized_rew_adv: bool
     standardized_cost_adv: bool
-    env_cfgs: 'Config'
+    env_cfgs: Config
     num_envs: int
     async_env: bool
     normalized_rew: bool
@@ -104,8 +112,12 @@ class Config(dict):
         return json.dumps(self.todict(), indent=4)
 
     @staticmethod
-    def dict2config(config_dict: dict) -> 'Config':
-        """Convert dictionary to Config."""
+    def dict2config(config_dict: dict) -> Config:
+        """Convert dictionary to Config.
+
+        Args:
+            config_dict (dict): dictionary to be converted.
+        """
         config = Config()
         for key, value in config_dict.items():
             if isinstance(value, dict):
@@ -114,8 +126,12 @@ class Config(dict):
                 config[key] = value
         return config
 
-    def recurisve_update(self, update_args: Dict[str, Any]) -> None:
-        """Recursively update args."""
+    def recurisve_update(self, update_args: dict[str, Any]) -> None:
+        """Recursively update args.
+
+        Args:
+            update_args (Dict[str, Any]): args to be updated.
+        """
         for key, value in self.items():
             if key in update_args:
                 if isinstance(update_args[key], dict):
@@ -139,11 +155,11 @@ class ModelConfig(Config):
 
     weight_initialization_mode: InitFunction
     actor_type: ActorType
-    actor: 'ModelConfig'
-    critic: 'ModelConfig'
-    hidden_sizes: List[int]
+    actor: ModelConfig
+    critic: ModelConfig
+    hidden_sizes: list[int]
     activation: Activation
-    std: List[float]
+    std: list[float]
     use_obs_encoder: bool
     lr: float
 
@@ -164,7 +180,7 @@ def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:
     print(f'Loading {algo}.yaml from {cfg_path}')
     kwargs = load_yaml(cfg_path)
     default_kwargs = kwargs['defaults']
-    env_spec_kwargs = kwargs[env_id] if env_id in kwargs.keys() else None
+    env_spec_kwargs = kwargs[env_id] if env_id in kwargs else None
 
     default_kwargs = Config.dict2config(default_kwargs)
 
@@ -179,21 +195,6 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
 
     This function is used to check the configs.
 
-    .. note::
-
-        For on-policy algorithms.
-
-        - pi_iters and critic_iters must be greater than 0.
-        - actor_lr and critic_lr must be greater than 0.
-        - gamma must be in [0, 1).
-        - if use_cost is False, cost_gamma must be 1.0.
-
-        For off-policy algorithms.
-
-        - actor_lr and critic_lr must be greater than 0.
-        - replay_buffer size must be greater than batch_size.
-        - update_every must be less than steps_per_epoch.
-
     Args:
         configs (dict): configs to be checked.
         algo_type (str): algorithm type.
@@ -205,7 +206,39 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
 
 
 def __check_algo_configs(configs: Config, algo_type) -> None:
-    """Check algorithm configs."""
+    r"""Check algorithm configs.
+
+
+    This function is used to check the algorithm configs.
+
+    .. note::
+
+        - ``update_iters`` must be greater than 0 and must be int.
+        - ``update_cycle`` must be greater than 0 and must be int.
+        - ``batch_size`` must be greater than 0 and must be int.
+        - ``target_kl`` must be greater than 0 and must be float.
+        - ``entropy_coeff`` must be in [0, 1] and must be float.
+        - ``gamma`` must be in [0, 1] and must be float.
+        - ``cost_gamma`` must be in [0, 1] and must be float.
+        - ``lam`` must be in [0, 1] and must be float.
+        - ``lam_c`` must be in [0, 1] and must be float.
+        - ``clip`` must be greater than 0 and must be float.
+        - ``penalty_coeff`` must be greater than 0 and must be float.
+        - ``reward_normalize`` must be bool.
+        - ``cost_normalize`` must be bool.
+        - ``obs_normalize`` must be bool.
+        - ``kl_early_stop`` must be bool.
+        - ``use_max_grad_norm`` must be bool.
+        - ``use_cost`` must be bool.
+        - ``max_grad_norm`` must be greater than 0 and must be float.
+        - ``adv_estimation_method`` must be in [``gae``, ``v-trace``, ``gae-rtg``, ``plain``].
+        - ``standardized_rew_adv`` must be bool.
+        - ``standardized_cost_adv`` must be bool.
+
+    Args:
+        configs (Config): configs to be checked.
+        algo_type (str): algorithm type.
+    """
     if algo_type == 'on-policy':
         assert (
             isinstance(configs.update_iters, int) and configs.update_iters > 0
@@ -231,7 +264,8 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
         assert isinstance(configs.use_max_grad_norm, bool), 'use_max_grad_norm must be bool'
         assert isinstance(configs.use_critic_norm, bool), 'use_critic_norm must be bool'
         assert isinstance(configs.max_grad_norm, float) and isinstance(
-            configs.critic_norm_coef, float
+            configs.critic_norm_coef,
+            float,
         ), 'norm must be bool'
         assert (
             isinstance(configs.gamma, float) and configs.gamma >= 0.0 and configs.gamma <= 1.0
@@ -258,7 +292,8 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
             'plain',
         ], "adv_estimation_method must be string, and it values must be ['gae','gae-rtg','vtrace','plain']"
         assert isinstance(configs.standardized_rew_adv, bool) and isinstance(
-            configs.standardized_cost_adv, bool
+            configs.standardized_cost_adv,
+            bool,
         ), 'standardized_<>_adv must be bool'
         assert (
             isinstance(configs.penalty_coef, float)
@@ -272,10 +307,12 @@ def __check_logger_configs(configs: Config, algo_type) -> None:
     """Check logger configs."""
     if algo_type == 'on-policy':
         assert isinstance(configs.use_wandb, bool) and isinstance(
-            configs.wandb_project, str
+            configs.wandb_project,
+            str,
         ), 'use_wandb and wandb_project must be bool and string'
         assert isinstance(configs.use_tensorboard, bool), 'use_tensorboard must be bool'
         assert isinstance(configs.save_model_freq, int) and isinstance(
-            configs.window_lens, int
+            configs.window_lens,
+            int,
         ), 'save_model_freq and window_lens must be int'
         assert isinstance(configs.log_dir, str), 'log_dir must be string'

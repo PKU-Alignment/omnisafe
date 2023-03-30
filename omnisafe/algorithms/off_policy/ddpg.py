@@ -14,8 +14,10 @@
 # ==============================================================================
 """Implementation of the Deep Deterministic Policy Gradient algorithm."""
 
+from __future__ import annotations
+
 import time
-from typing import Any, Dict, Tuple, Union
+from typing import Any
 
 import torch
 from torch import nn
@@ -30,7 +32,7 @@ from omnisafe.utils import distributed
 
 
 @registry.register
-# pylint: disable-next=too-many-instance-attributes, too-few-public-methods
+# pylint: disable-next=too-many-instance-attributes,too-few-public-methods
 class DDPG(BaseAlgo):
     """The Deep Deterministic Policy Gradient (DDPG) algorithm.
 
@@ -44,24 +46,27 @@ class DDPG(BaseAlgo):
 
     def _init_env(self) -> None:
         self._env = OffPolicyAdapter(
-            self._env_id, self._cfgs.train_cfgs.vector_env_nums, self._seed, self._cfgs
+            self._env_id,
+            self._cfgs.train_cfgs.vector_env_nums,
+            self._seed,
+            self._cfgs,
         )
         assert (self._cfgs.algo_cfgs.update_cycle) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
-        ) == 0, ('The number of steps per epoch is not divisible by the number of ' 'environments.')
+        ) == 0, 'The number of steps per epoch is not divisible by the number of environments.'
 
         assert (
             int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.update_cycle == 0
-        ), f'The total number of steps {int(self._cfgs.train_cfgs.total_steps)} is not divisible by the number of {self._cfgs.algo_cfgs.update_cycle}.'
+        ), 'The total number of steps is not divisible by the number of steps per epoch.'
         self._epochs = int(self._cfgs.train_cfgs.total_steps // self._cfgs.algo_cfgs.update_cycle)
         self._epoch = 0
         self._update_cycle = self._cfgs.algo_cfgs.update_cycle // (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         )
         self._steps_per_sample = self._cfgs.algo_cfgs.steps_per_sample
-        assert self._update_cycle % self._steps_per_sample == 0, (
-            'The number of steps per epoch is not divisible by the number of ' 'steps per sample.'
-        )
+        assert (
+            self._update_cycle % self._steps_per_sample == 0
+        ), 'The number of steps per epoch is not divisible by the number of steps per sample.'
         self._samples_per_epoch = self._update_cycle // self._steps_per_sample
         self._update_count = 0
 
@@ -97,7 +102,7 @@ class DDPG(BaseAlgo):
             config=self._cfgs,
         )
 
-        what_to_save: Dict[str, Any] = {}
+        what_to_save: dict[str, Any] = {}
         what_to_save['pi'] = self._actor_critic.actor
         if self._cfgs.algo_cfgs.obs_normalize:
             obs_normalizer = self._env.save()['obs_normalizer']
@@ -141,7 +146,7 @@ class DDPG(BaseAlgo):
         """Update something per epoch"""
         self._actor_critic.actor_scheduler.step()
 
-    def learn(self) -> Tuple[Union[int, float], ...]:
+    def learn(self) -> tuple[int | float, ...]:
         """This is main function for algorithm update, divided into the following steps:
 
         - :meth:`rollout`: collect interactive data from environment.
@@ -156,7 +161,8 @@ class DDPG(BaseAlgo):
             epoch_time = time.time()
 
             for sample_step in range(
-                epoch * self._samples_per_epoch, (epoch + 1) * self._samples_per_epoch
+                epoch * self._samples_per_epoch,
+                (epoch + 1) * self._samples_per_epoch,
             ):
                 step = sample_step * self._steps_per_sample * self._cfgs.train_cfgs.vector_env_nums
 
@@ -206,7 +212,7 @@ class DDPG(BaseAlgo):
                     'Time/Epoch': (time.time() - epoch_time),
                     'Train/Epoch': epoch,
                     'Train/LR': self._actor_critic.actor_scheduler.get_last_lr()[0],
-                }
+                },
             )
 
             self._logger.dump_tabular()
@@ -265,14 +271,15 @@ class DDPG(BaseAlgo):
             **{
                 'Loss/Loss_reward_critic': loss.mean().item(),
                 'Value/reward_critic': q_value_r.mean().item(),
-            }
+            },
         )
         self._actor_critic.reward_critic_optimizer.zero_grad()
         loss.backward()
 
         if self._cfgs.algo_cfgs.max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.reward_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.reward_critic.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
@@ -301,7 +308,8 @@ class DDPG(BaseAlgo):
 
         if self._cfgs.algo_cfgs.max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.cost_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.cost_critic.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         distributed.avg_grads(self._actor_critic.cost_critic)
         self._actor_critic.cost_critic_optimizer.step()
@@ -310,7 +318,7 @@ class DDPG(BaseAlgo):
             **{
                 'Loss/Loss_cost_critic': loss.mean().item(),
                 'Value/cost_critic': q_value_c.mean().item(),
-            }
+            },
         )
 
     def _update_actor(  # pylint: disable=too-many-arguments
@@ -322,13 +330,14 @@ class DDPG(BaseAlgo):
         loss.backward()
         if self._cfgs.algo_cfgs.max_grad_norm:
             torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.actor.parameters(), self._cfgs.algo_cfgs.max_grad_norm
+                self._actor_critic.actor.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
             )
         self._actor_critic.actor_optimizer.step()
         self._logger.store(
             **{
                 'Loss/Loss_pi': loss.mean().item(),
-            }
+            },
         )
 
     def _loss_pi(
@@ -336,8 +345,7 @@ class DDPG(BaseAlgo):
         obs: torch.Tensor,
     ) -> torch.Tensor:
         action = self._actor_critic.actor.predict(obs, deterministic=True)
-        loss = -self._actor_critic.reward_critic(obs, action)[0].mean()
-        return loss
+        return -self._actor_critic.reward_critic(obs, action)[0].mean()
 
     def _log_when_not_update(self) -> None:
         self._logger.store(
@@ -345,12 +353,12 @@ class DDPG(BaseAlgo):
                 'Loss/Loss_reward_critic': 0.0,
                 'Loss/Loss_pi': 0.0,
                 'Value/reward_critic': 0.0,
-            }
+            },
         )
         if self._cfgs.algo_cfgs.use_cost:
             self._logger.store(
                 **{
                     'Loss/Loss_cost_critic': 0.0,
                     'Value/cost_critic': 0.0,
-                }
+                },
             )

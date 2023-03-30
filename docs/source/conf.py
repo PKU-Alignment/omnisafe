@@ -23,17 +23,6 @@ release = 'v1'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-"""
-Run before:
-conda activate safe
-pip install recommonmark
-pip install sphinx_markdown_tables
-pip install sphinx_design
-pip install sphinx_copybutton
-pip install sphinx-press-theme
-pip install sphinx
-"""
-
 extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.autodoc',
@@ -64,8 +53,36 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+# Napoleon settings
+napoleon_use_ivar = True
+napoleon_use_admonition_for_references = True
+# See https://github.com/sphinx-doc/sphinx/issues/9119
+napoleon_custom_sections = [('Returns', 'params_style')]
+
+# Autodoc
+autoclass_content = 'both'
+autodoc_preserve_defaults = True
+
+# -- Options for HTML output -------------------------------------------------
+
+# The theme to use for HTML and HTML Help pages.  See the documentation for
+# a list of builtin themes.
+
 html_theme = 'furo'
+html_logo = 'image/logo.png'
+html_title = ' '
+html_copy_source = False
+html_context = {
+    'conf_py_path': '/docs/',
+    'display_github': False,
+    'github_user': 'PKU-MARL',
+    'github_repo': 'OmniSafe',
+    'github_version': 'main',
+    'slug': 'omnisafe',
+}
+
 html_static_path = ['_static']
+html_css_files = []
 
 html_theme_options = {
     'light_css_variables': {
@@ -76,6 +93,9 @@ html_theme_options = {
         'sd-color-warning': '#AD677E',
     },
 }
+
+# Dark mode
+pygments_dark_style = 'monokai'
 
 math_number_all = True  # Set this option to True if you want all displayed math to be numbered. The default is False.
 math_eqref_format = 'Eq.{number}'  # gets rendered as, for example, Eq.10.

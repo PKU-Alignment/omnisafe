@@ -91,9 +91,8 @@ class PCPO(CPO):
 
         b_grad = get_flat_gradients_from(self._actor_critic.actor)
         ep_costs = self._logger.get_stats('Metrics/EpCost')[0] - self._cfgs.algo_cfgs.cost_limit
-        cost = ep_costs / (self._logger.get_stats('Metrics/EpLen')[0] + 1e-8)
 
-        self._logger.log(f'c = {cost}')
+        self._logger.log(f'c = {ep_costs}')
         self._logger.log(f'b^T b = {b_grad.dot(b_grad).item()}')
 
         p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
@@ -104,11 +103,11 @@ class PCPO(CPO):
         step_direction = (
             torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (q + 1e-8)) * H_inv_g
             - torch.clamp_min(
-                (torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / q) * r + cost) / s,
+                (torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / q) * r + ep_costs) / s,
                 torch.tensor(0.0, device=self._device),
             )
             * p
-        )  # pylint: disable = invalid-name
+        )  # pylint: disable=invalid-name
 
         step_direction, accept_step = self._cpo_search_step(
             step_direction=step_direction,
@@ -121,8 +120,8 @@ class PCPO(CPO):
             adv_c=adv_c,
             loss_reward_before=loss_reward_before,
             loss_cost_before=loss_cost_before,
-            total_steps=20,
-            violation_c=cost,
+            total_steps=200,
+            violation_c=ep_costs,
         )
         theta_new = theta_old + step_direction
         set_param_values_to_model(self._actor_critic.actor, theta_new)
@@ -153,5 +152,5 @@ class PCPO(CPO):
                 'Misc/q': q.item(),
                 'Misc/r': r.item(),
                 'Misc/s': s.item(),
-            }
+            },
         )

@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of QCritic."""
 
-from typing import List
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
@@ -37,7 +37,7 @@ class QCritic(Critic):
         self,
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
-        hidden_sizes: List[int],
+        hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
         num_critics: int = 1,
@@ -47,10 +47,11 @@ class QCritic(Critic):
 
         The Q critic network has two modes:
 
-        -  ``use_obs_encoder`` = ``False`` :
-            The input of the network is the concatenation of the observation and action.
-        -  ``use_obs_encoder`` = ``True`` :
-            The input of the network is the concatenation of the output of the observation encoder and action.
+        .. hint::
+            -  ``use_obs_encoder`` = ``False`` :
+                The input of the network is the concatenation of the observation and action.
+            -  ``use_obs_encoder`` = ``True`` :
+                The input of the network is the concatenation of the output of the observation encoder and action.
 
         For example, in :class:`DDPG`,
         the action is not directly concatenated with the observation,
@@ -82,7 +83,7 @@ class QCritic(Critic):
             num_critics,
             use_obs_encoder,
         )
-        self.net_lst: List[nn.Module] = []
+        self.net_lst: list[nn.Module] = []
         for idx in range(self._num_critics):
             if self._use_obs_encoder:
                 obs_encoder = build_mlp_network(
@@ -99,7 +100,7 @@ class QCritic(Critic):
                 critic = nn.Sequential(obs_encoder, net)
             else:
                 net = build_mlp_network(
-                    [self._obs_dim + self._act_dim] + hidden_sizes + [1],
+                    [self._obs_dim + self._act_dim, *hidden_sizes] + [1],
                     activation=activation,
                     weight_initialization_mode=weight_initialization_mode,
                 )
@@ -111,7 +112,7 @@ class QCritic(Critic):
         self,
         obs: torch.Tensor,
         act: torch.Tensor,
-    ) -> List[torch.Tensor]:
+    ) -> list[torch.Tensor]:
         """Forward function.
 
         As a multi-critic network, the output of the network is a list of Q-values.

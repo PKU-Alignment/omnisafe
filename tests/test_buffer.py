@@ -37,7 +37,7 @@ from omnisafe.common.buffer import (
     standardized_adv_c=[True],
     lam_c=[0.9],
     penalty_coefficient=[0.0],
-    device=['cpu'],
+    device=[torch.device('cpu')],
     num_envs=[2],
 )
 def test_vector_onpolicy_buffer(
@@ -94,29 +94,42 @@ def test_vector_onpolicy_buffer(
         logp = torch.rand((num_envs, 1), dtype=torch.float32, device=device)
 
         vector_buffer.store(
-            obs=obs, act=act, reward=reward, cost=cost, value_r=value_r, value_c=value_c, logp=logp
+            obs=obs,
+            act=act,
+            reward=reward,
+            cost=cost,
+            value_r=value_r,
+            value_c=value_c,
+            logp=logp,
         )
         for idx, buffer in enumerate(vector_buffer.buffers):
             assert torch.allclose(
-                buffer.data['obs'][buffer.ptr - 1], obs[idx]
+                buffer.data['obs'][buffer.ptr - 1],
+                obs[idx],
             ), f'buffer.data[obs][buffer.ptr - 1] is {buffer.data["obs"][buffer.ptr - 1]}'
             assert torch.allclose(
-                buffer.data['act'][buffer.ptr - 1], act[idx]
+                buffer.data['act'][buffer.ptr - 1],
+                act[idx],
             ), f'buffer.data[act][buffer.ptr - 1] is {buffer.data["act"][buffer.ptr - 1]}'
             assert torch.allclose(
-                buffer.data['reward'][buffer.ptr - 1], reward[idx]
+                buffer.data['reward'][buffer.ptr - 1],
+                reward[idx],
             ), f'buffer.data[reward][buffer.ptr - 1] is {buffer.data["reward"][buffer.ptr - 1]}'
             assert torch.allclose(
-                buffer.data['cost'][buffer.ptr - 1], cost[idx]
+                buffer.data['cost'][buffer.ptr - 1],
+                cost[idx],
             ), f'buffer.data[cost][buffer.ptr - 1] is {buffer.data["cost"][buffer.ptr - 1]}'
             assert torch.allclose(
-                buffer.data['value_r'][buffer.ptr - 1], value_r[idx]
+                buffer.data['value_r'][buffer.ptr - 1],
+                value_r[idx],
             ), f'buffer.data[value_r][buffer.ptr - 1] is {buffer.data["value_r"][buffer.ptr - 1]}'
             assert torch.allclose(
-                buffer.data['value_c'][buffer.ptr - 1], value_c[idx]
+                buffer.data['value_c'][buffer.ptr - 1],
+                value_c[idx],
             ), f'buffer.data[value_c][buffer.ptr - 1] is {buffer.data["value_c"][buffer.ptr - 1]}'
             assert torch.allclose(
-                buffer.data['logp'][buffer.ptr - 1], logp[idx]
+                buffer.data['logp'][buffer.ptr - 1],
+                logp[idx],
             ), f'buffer.data[logp][buffer.ptr - 1] is {buffer.data["logp"][buffer.ptr - 1]}'
 
     # checking the finish_path function
@@ -152,7 +165,7 @@ def test_vector_onpolicy_buffer(
     standardized_adv_c=[True],
     lam_c=[0.9],
     penalty_coefficient=[0.0],
-    device=['cpu'],
+    device=[torch.device('cpu')],
 )
 def test_onpolicy_buffer(
     obs_space: Box,
@@ -219,25 +232,32 @@ def test_onpolicy_buffer(
             value_c=value_c,
         )
         assert torch.allclose(
-            buffer.data['obs'][buffer.ptr - 1], obs
+            buffer.data['obs'][buffer.ptr - 1],
+            obs,
         ), f'buffer.data[obs][buffer.ptr-1] is {buffer.data["obs"][buffer.ptr-1]}'
         assert torch.allclose(
-            buffer.data['act'][buffer.ptr - 1], act
+            buffer.data['act'][buffer.ptr - 1],
+            act,
         ), f'buffer.data[act][buffer.ptr-1] is {buffer.data["act"][buffer.ptr-1]}'
         assert torch.allclose(
-            buffer.data['reward'][buffer.ptr - 1], reward
+            buffer.data['reward'][buffer.ptr - 1],
+            reward,
         ), f'buffer.data[reward][buffer.ptr-1] is {buffer.data["reward"][buffer.ptr-1]}'
         assert torch.allclose(
-            buffer.data['value_r'][buffer.ptr - 1], value_r
+            buffer.data['value_r'][buffer.ptr - 1],
+            value_r,
         ), f'buffer.data[value_r][buffer.ptr-1] is {buffer.data["value_r"][buffer.ptr-1]}'
         assert torch.allclose(
-            buffer.data['logp'][buffer.ptr - 1], logp
+            buffer.data['logp'][buffer.ptr - 1],
+            logp,
         ), f'buffer.data[logp][buffer.ptr-1] is {buffer.data["logp"][buffer.ptr-1]}'
         assert torch.allclose(
-            buffer.data['cost'][buffer.ptr - 1], cost
+            buffer.data['cost'][buffer.ptr - 1],
+            cost,
         ), f'buffer.data[cost][buffer.ptr-1] is {buffer.data["cost"][buffer.ptr-1]}'
         assert torch.allclose(
-            buffer.data['value_c'][buffer.ptr - 1], value_c
+            buffer.data['value_c'][buffer.ptr - 1],
+            value_c,
         ), f'buffer.data[value_c][buffer.ptr-1] is {buffer.data["value_c"][buffer.ptr-1]}'
 
     assert buffer.ptr == size, f'buffer.ptr is {buffer.ptr}'
@@ -262,7 +282,7 @@ def test_onpolicy_buffer(
     act_space=[Box(low=-1, high=1, shape=(1,))],
     size=[10],
     batch_size=[5],
-    device=['cpu'],
+    device=[torch.device('cpu')],
     num_envs=[2],
 )
 def test_vector_offpolicy_buffer(
@@ -296,7 +316,9 @@ def test_vector_offpolicy_buffer(
         'cost': torch.randn((size, num_envs), dtype=torch.float32, device=device),
         'done': torch.randn((size, num_envs), dtype=torch.float32, device=device),
         'next_obs': torch.randn(
-            (size, num_envs, *obs_space.shape), dtype=torch.float32, device=device
+            (size, num_envs, *obs_space.shape),
+            dtype=torch.float32,
+            device=device,
         ),
     }
     # check the store function
@@ -332,7 +354,7 @@ def test_vector_offpolicy_buffer(
     act_space=[Box(low=-1, high=1, shape=(1,))],
     size=[10],
     batch_size=[5],
-    device=['cpu'],
+    device=[torch.device('cpu')],
 )
 def test_offpolicy_buffer(
     obs_space: Box,

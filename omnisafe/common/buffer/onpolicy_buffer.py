@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of OnPolicyBuffer."""
 
-from typing import Dict, Tuple
+from __future__ import annotations
 
 import torch
 
@@ -28,7 +28,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
     """A buffer for storing trajectories experienced by an agent interacting with the environment.
 
     Besides, The buffer also provides the functionality of calculating the advantages of state-action pairs,
-    ranging from ``GAE`` ,``V-trace`` to ``Plain`` method.
+    ranging from ``GAE``, ``GAE-RTG`` ,``V-trace`` to ``Plain`` method.
     """
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -43,8 +43,68 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         penalty_coefficient: float = 0,
         standardized_adv_r: bool = False,
         standardized_adv_c: bool = False,
-        device: torch.device = torch.device('cpu'),
-    ):
+        device: torch.device = 'cpu',
+    ) -> None:
+        """Initialize the on-policy buffer.
+
+        .. warning::
+            The buffer only supports Box spaces.
+
+        Compared to the base buffer, the on-policy buffer stores extra data:
+
+        .. list-table::
+
+            *   -   Name
+                -   Shape
+                -   Dtype
+                -   Description
+            *   -   discounted_ret
+                -   (size, )
+                -   torch.float32
+                -   The discounted return.
+            *   -   target_value_r
+                -   (size, )
+                -   torch.float32
+                -   The target value of the reward critic.
+            *   -   adv_r
+                -   (size, )
+                -   torch.float32
+                -   The advantage of the reward.
+            *   -   value_r
+                -   (size, )
+                -   torch.float32
+                -   The value estimated by reward critic.
+            *   -   target_value_c
+                -   (size, )
+                -   torch.float32
+                -   The target value of the cost critic.
+            *   -   adv_c
+                -   (size, )
+                -   torch.float32
+                -   The advantage of the critic.
+            *   -   value_c
+                -   (size, )
+                -   torch.float32
+                -   The value estimated by cost critic.
+            *   -   logp
+                -   (size, )
+                -   torch.float32
+                -   The log probability of the action.
+
+        Args:
+            obs_space (OmnisafeSpace): The observation space.
+            act_space (OmnisafeSpace): The action space.
+            size (int): The size of the buffer.
+            gamma (float): The discount factor.
+            lam (float): The lambda factor for calculating the advantages.
+            lam_c (float): The lambda factor for calculating the advantages of the critic.
+            advantage_estimator (AdvatageEstimator): The advantage estimator.
+            penalty_coefficient (float, optional): The penalty coefficient. Defaults to 0.
+            standardized_adv_r (bool, optional): Whether to standardize the advantages of the actor. Defaults to False.
+            standardized_adv_c (bool, optional): Whether to standardize the advantages of the critic. Defaults to False.
+            device (torch.device, optional): The device to store the data. Defaults to torch.device('cpu').
+        """
+        device = torch.device(device)
         super().__init__(obs_space, act_space, size, device)
         self._standardized_adv_r = standardized_adv_r
         self._standardized_adv_c = standardized_adv_c
@@ -81,7 +141,14 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         return self._standardized_adv_c
 
     def store(self, **data: torch.Tensor) -> None:
-        """Store data into the buffer."""
+        """Store data into the buffer.
+
+        .. warning::
+            The total size of the data must be less than the buffer size.
+
+        Args:
+            data (torch.Tensor): The data to store.
+        """
         assert self.ptr < self.max_size, 'No more space in the buffer!'
         for key, value in data.items():
             self.data[key][self.ptr] = value
@@ -89,10 +156,32 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
     def finish_path(
         self,
-        last_value_r: torch.Tensor = torch.zeros(1),
-        last_value_c: torch.Tensor = torch.zeros(1),
+        last_value_r: torch.Tensor | None = None,
+        last_value_c: torch.Tensor | None = None,
     ) -> None:
-        """Finish the current path and calculate the advantages of state-action pairs."""
+        """Finish the current path and calculate the advantages of state-action pairs.
+
+        On-policy algorithms need to calculate the advantages of state-action pairs
+        after the path is finished. This function calculates the advantages of
+        state-action pairs and stores them in the buffer, following the steps:
+
+        .. hint::
+
+            #. Calculate the discounted return.
+            #. Calculate the advantages of the reward.
+            #. Calculate the advantages of the cost.
+
+        Args:
+            last_value_r (torch.Tensor, optional): The value of the last state of the current path.
+            Defaults to torch.zeros(1).
+            last_value_c (torch.Tensor, optional): The value of the last state of the current path.
+            Defaults to torch.zeros(1).
+        """
+        if last_value_r is None:
+            last_value_r = torch.zeros(1, device=self._device)
+        if last_value_c is None:
+            last_value_c = torch.zeros(1, device=self._device)
+
         path_slice = slice(self.path_start_idx, self.ptr)
         last_value_r = last_value_r.to(self._device)
         last_value_c = last_value_c.to(self._device)
@@ -106,10 +195,14 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         rewards -= self._penalty_coefficient * costs
 
         adv_r, target_value_r = self._calculate_adv_and_value_targets(
-            values_r, rewards, lam=self._lam
+            values_r,
+            rewards,
+            lam=self._lam,
         )
         adv_c, target_value_c = self._calculate_adv_and_value_targets(
-            values_c, costs, lam=self._lam_c
+            values_c,
+            costs,
+            lam=self._lam_c,
         )
 
         self.data['adv_r'][path_slice] = adv_r
@@ -119,8 +212,18 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
         self.path_start_idx = self.ptr
 
-    def get(self) -> Dict[str, torch.Tensor]:
-        """Get the data in the buffer."""
+    def get(self) -> dict[str, torch.Tensor]:
+        """Get the data in the buffer.
+
+        .. hint::
+
+            We provide a trick to standardize the advantages of state-action pairs.
+            We calculate the mean and standard deviation of the advantages of state-action pairs
+            and then standardize the advantages of state-action pairs.
+            You can turn on this trick by setting the ``standardized_adv_r`` to ``True``.
+            The same trick is applied to the advantages of the cost.
+
+        """
         self.ptr, self.path_start_idx = 0, 0
 
         data = {
@@ -151,7 +254,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         values: torch.Tensor,
         rewards: torch.Tensor,
         lam: float,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         r"""Compute the estimated advantage.
 
         Three methods are supported:
@@ -250,7 +353,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         gamma: float = 0.99,
         rho_bar: float = 1.0,
         c_bar: float = 1.0,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor,]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         r"""This function is used to calculate V-trace targets.
 
         .. math::
@@ -283,10 +386,12 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         # pylint: disable-next=assignment-from-no-return
         rhos = torch.div(policy_action_probs, behavior_action_probs)
         clip_rhos = torch.min(
-            rhos, torch.as_tensor(rho_bar)
+            rhos,
+            torch.as_tensor(rho_bar),
         )  # pylint: disable=assignment-from-no-return
         clip_cs = torch.min(
-            rhos, torch.as_tensor(c_bar)
+            rhos,
+            torch.as_tensor(c_bar),
         )  # pylint: disable=assignment-from-no-return
         v_s = values[:-1].clone()  # copy all values except bootstrap value
         last_v_s = values[-1]  # bootstrap from last state

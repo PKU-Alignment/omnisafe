@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the Experiment Grid."""
 
+from __future__ import annotations
+
 import json
 import os
 import string
@@ -21,7 +23,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor as Pool
 from copy import deepcopy
 from textwrap import dedent
-from typing import Any, Dict, List
+from typing import Any
 
 import numpy as np
 from rich.console import Console
@@ -29,7 +31,13 @@ from tqdm import trange
 
 from omnisafe.algorithms import ALGORITHM2TYPE
 from omnisafe.utils.exp_grid_tools import all_bools, valid_str
-from omnisafe.utils.tools import load_yaml, recursive_check_config
+from omnisafe.utils.tools import (
+    assert_with_exit,
+    hash_string,
+    load_yaml,
+    recursive_check_config,
+    recursive_dict2json,
+)
 
 
 # pylint: disable-next=too-many-instance-attributes
@@ -37,10 +45,15 @@ class ExperimentGrid:
     """Tool for running many experiments given hyper-parameters ranges."""
 
     def __init__(self, exp_name='') -> None:
-        self.keys: List[str] = []
-        self.vals: List[Any] = []
-        self.shs: List[str] = []
-        self.in_names: List[str] = []
+        """Initialize the ExperimentGrid.
+
+        Args:
+            exp_name (str): Name of the experiment grid.
+        """
+        self.keys: list[str] = []
+        self.vals: list[Any] = []
+        self.shs: list[str] = []
+        self.in_names: list[str] = []
         self.div_line_width = 80
         assert isinstance(exp_name, str), 'Name has to be a string.'
         self.name = exp_name
@@ -57,7 +70,24 @@ class ExperimentGrid:
         self.foce_datastamp = False
 
     def print(self) -> None:
-        """Print a helpful report about the experiment grid."""
+        """Print a helpful report about the experiment grid.
+
+        This function prints a helpful report about the experiment grid, including
+        the name of the experiment grid, the parameters being varied, and the
+        possible values for each parameter.
+
+        In Command Line:
+
+        .. code-block:: bash
+
+            ===================== ExperimentGrid [test] runs over parameters: =====================
+            env_name                                [env]
+            ['SafetyPointGoal1-v0', 'MountainCar-v0', 'Acrobot-v1']
+            algo                               [algo]
+            ['SAC', 'DDPG', 'TD3']
+            seed                                    [seed]
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        """
         print('=' * self.div_line_width)
 
         # Prepare announcement at top of printing. If the ExperimentGrid has a
@@ -100,6 +130,13 @@ class ExperimentGrid:
         three letters of each colon-separated part.
         But if the first three letters contains something which isn't
         alphanumeric, shear that off.
+
+        Example:
+            >>> _default_shorthand('env_name:SafetyPointGoal1-v0')
+            'env'
+
+        Args:
+            key (string): Name of parameter.
         """
 
         valid_chars = f'{string.ascii_letters}{string.digits}'
@@ -107,16 +144,23 @@ class ExperimentGrid:
         def shear(value):
             return ''.join(z for z in value[:3] if z in valid_chars)
 
-        shorthand = '-'.join([shear(x) for x in key.split(':')])
-        return shorthand
+        return '-'.join([shear(x) for x in key.split(':')])
 
     def add(self, key, vals, shorthand=None, in_name=False):
         r"""Add a parameter (key) to the grid config, with potential values (vals).
 
         By default, if a shorthand isn't given, one is automatically generated
         from the key using the first three letters of each colon-separated
-        term. To disable this behavior, change ``DEFAULT_SHORTHAND`` in the
-        ``spinup/user_config.py`` file to ``False``.
+        term.
+
+        .. hint::
+
+            This function is called in ``omnisafe/examples/benchmarks/run_experiment_grid.py``.
+
+        Example:
+            >>> add('env_id', ['SafetyPointGoal1-v0', 'MountainCar-v0', 'Acrobot-v1'])
+            >>> add('algo', ['SAC', 'DDPG', 'TD3'])
+            >>> add('seed', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
         Args:
             key (string): Name of parameter.
@@ -148,7 +192,15 @@ class ExperimentGrid:
         one), plus param names (or shorthands if available) and values
         separated by underscores.
 
-        Note: if ``seed`` is a parameter, it is not included in the name.
+        ..warning::
+            if ``seed`` is a parameter, it is not included in the name.
+
+        Example:
+            >>> variant_name({'env_id': 'SafetyPointGoal1-v0', 'algo': 'SAC', 'seed': 0})
+            exp_name = 'SafetyPointGoal1-v0_SAC_0'
+
+        Args:
+            variant (dict): Variant dictionary.
         """
 
         def get_val(value, key):
@@ -194,8 +246,16 @@ class ExperimentGrid:
         return var_name.lstrip('_')
 
     def update_dic(self, total_dic, item_dic):
-        '''Updater of multi-level dictionary.'''
-        for idd in item_dic.keys():
+        """Updater of multi-level dictionary.
+
+        This function is used to update the total dictionary with the item
+        dictionary.
+
+        Args:
+            total_dic (dict): Total dictionary.
+            item_dic (dict): Item dictionary.
+        """
+        for idd in item_dic:
             total_value = total_dic.get(idd)
             item_value = item_dic.get(idd)
 
@@ -209,9 +269,14 @@ class ExperimentGrid:
                 total_dic.update({idd: total_value})
 
     def _variants(self, keys, vals):
-        """Recursively builds list of valid variants."""
+        """Recursively builds list of valid variants.
+
+        Args:
+            keys (list): List of keys.
+            vals (list): List of values.
+        """
         if len(keys) == 1:
-            pre_variants: List[Dict] = [{}]
+            pre_variants: list[dict] = [{}]
         else:
             pre_variants = self._variants(keys[1:], vals[1:])
 
@@ -233,38 +298,46 @@ class ExperimentGrid:
         r"""Makes a list of dict, where each dict is a valid config in the grid.
 
         There is special handling for variant parameters whose names take
-        the form
-
-            ``'full:param:name'``.
+        the form ``'full:param:name'``.
 
         The colons are taken to indicate that these parameters should
         have a nested dict structure. eg, if there are two params,
+
+        .. hint::
 
             ====================  ===
             Key                   Val
             ====================  ===
             ``'base:param:a'``    1
             ``'base:param:b'``    2
+            ``'base:param:c'``    3
+            ``'special:d'``       4
+            ``'special:e'``       5
             ====================  ===
 
         the variant dict will have the structure
 
         .. parsed-literal::
 
-            variant = {
-                base: {
-                    param : {
-                        a : 1,
-                        b : 2
-                        }
+            {
+                'base': {
+                    'param': {
+                        'a': 1,
+                        'b': 2,
+                        'c': 3
                     }
+                },
+                'special': {
+                    'd': 4,
+                    'e': 5
                 }
+            }
         """
         flat_variants = self._variants(self.keys, self.vals)
 
         def unflatten_var(var):
             """Build the full nested dict version of var, based on key names."""
-            new_var: Dict = {}
+            new_var: dict = {}
             unflatten_set = set()
 
             for key, value in var.items():
@@ -272,7 +345,8 @@ class ExperimentGrid:
                     splits = key.split(':')
                     k_0 = splits[0]
                     assert k_0 not in new_var or isinstance(
-                        new_var[k_0], dict
+                        new_var[k_0],
+                        dict,
                     ), "You can't assign multiple values to the same key."
 
                     if k_0 not in new_var:
@@ -282,7 +356,7 @@ class ExperimentGrid:
                     new_var[k_0][sub_k] = value
                     unflatten_set.add(k_0)
                 else:
-                    assert not (key in new_var), "You can't assign multiple values to the same key."
+                    assert key not in new_var, "You can't assign multiple values to the same key."
                     new_var[key] = value
 
             # make sure to fill out the nested dict.
@@ -291,9 +365,7 @@ class ExperimentGrid:
 
             return new_var
 
-        new_variants = [unflatten_var(var) for var in flat_variants]
-
-        return new_variants
+        return [unflatten_var(var) for var in flat_variants]
 
     # pylint: disable-next=too-many-locals
     def run(self, thunk, num_pool=1, parent_dir=None, is_test=False, gpu_id=None):
@@ -310,7 +382,19 @@ class ExperimentGrid:
         to the args for call_experiment. However, ``seed`` is omitted because
         we presume the user may add it as a parameter in the grid.
         """
-
+        if parent_dir is None:
+            self.log_dir = os.path.join('./', 'exp-x', self.name)
+        else:
+            self.log_dir = os.path.join(parent_dir, self.name)
+        assert_with_exit(
+            not os.path.exists(self.log_dir),
+            (
+                f'log_dir {self.log_dir} already exists!'
+                'please make sure that you are not overwriting an existing experiment,'
+                'it is important for analyzing the results of the experiment.'
+            ),
+        )
+        self.save_grid_config()
         # print info about self.
         self.print()
 
@@ -319,7 +403,7 @@ class ExperimentGrid:
 
         # print variant names for the user.
         var_names = {self.variant_name(var) for var in variants}
-        var_names = sorted(list(var_names))
+        var_names = sorted(var_names)
         line = '=' * self.div_line_width
 
         self._console.print('\nPreparing to run the following experiments...', style='bold green')
@@ -331,12 +415,12 @@ class ExperimentGrid:
             self._console.print(
                 dedent(
                     """
-            Launch delayed to give you a few seconds to review your experiments.
+                    Launch delayed to give you a few seconds to review your experiments.
 
-            To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
-            spinup/user_config.py.
+                    To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
+                    spinup/user_config.py.
 
-            """
+                    """,
                 ),
                 style='cyan, bold',
                 end='',
@@ -366,13 +450,14 @@ class ExperimentGrid:
                 device_id = gpu_id[idx % len(gpu_id)]
                 device = f'cuda:{device_id}'
                 var['train_cfgs'] = {'device': device}
-            exp_name = '_'.join([k + '_' + str(v) for k, v in var.items()])
-            exp_names.append(exp_name)
-            if parent_dir is None:
-                self.log_dir = os.path.join('./', 'exp-x', self.name, exp_name, '')
-            else:
-                self.log_dir = os.path.join(parent_dir, self.name, exp_name, '')
-            var['logger_cfgs'] = {'log_dir': self.log_dir}
+            no_seed_var = deepcopy(var)
+            no_seed_var.pop('seed', None)
+            exp_name = recursive_dict2json(no_seed_var)
+            hashed_exp_name = var['env_id'][:30] + '---' + hash_string(exp_name)
+            exp_names.append(':'.join((hashed_exp_name[:5], exp_name)))
+            exp_log_dir = os.path.join(self.log_dir, hashed_exp_name, '')
+            var['logger_cfgs'] = {'log_dir': exp_log_dir}
+            self.save_same_exps_config(exp_log_dir, var)
             results.append(pool.submit(thunk, idx, var['algo'], var['env_id'], var))
         pool.shutdown()
 
@@ -381,7 +466,7 @@ class ExperimentGrid:
 
     def save_results(self, exp_names, variants, results):
         """Save results to a file."""
-        path = os.path.join(self.log_dir, '..', 'exp-x-results.txt')
+        path = os.path.join(self.log_dir, 'exp-x-results.txt')
         str_len = max(len(exp_name) for exp_name in exp_names)
         exp_names = [exp_name.ljust(str_len) for exp_name in exp_names]
         with open(path, 'a+', encoding='utf-8') as f:
@@ -392,6 +477,26 @@ class ExperimentGrid:
                 f.write('cost:' + str(round(cost, 2)) + ',')
                 f.write('ep_len:' + str(ep_len))
                 f.write('\n')
+
+    def save_same_exps_config(self, exps_log_dir, variant):
+        """Save experiment grid configurations as json."""
+        os.makedirs(exps_log_dir, exist_ok=True)
+        path = os.path.join(exps_log_dir, 'exps_config.json')
+        json_config = json.dumps(variant, indent=4)
+        with open(path, encoding='utf-8', mode='a+') as f:
+            f.write('\n' + json_config)
+
+    def save_grid_config(self):
+        """Save experiment grid configurations as json."""
+        os.makedirs(self.log_dir, exist_ok=True)
+        path = os.path.join(self.log_dir, 'grid_config.json')
+        self._console.print(
+            'Save with config of experiment grid in grid_config.json',
+            style='yellow bold',
+        )
+        json_config = json.dumps(dict(zip(self.keys, self.vals)), indent=4)
+        with open(path, encoding='utf-8', mode='w') as f:
+            f.write(json_config)
 
     def check_variant_vaild(self, variant):
         """Check if the variant is valid."""
