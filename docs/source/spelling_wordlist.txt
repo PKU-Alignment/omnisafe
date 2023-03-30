@@ -418,3 +418,8 @@ unsqueezed
 OnPolicyBuffer
 ptr
 rgb
+fvp
+coef
+nums
+bdg
+num

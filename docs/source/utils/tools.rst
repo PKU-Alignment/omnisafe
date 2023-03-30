@@ -9,7 +9,7 @@ OmniSafe Tools
     get_flat_gradients_from
     set_param_values_to_model
     custom_cfgs_to_dict
-    update_dic
+    update_dict
     load_yaml
     recursive_check_config
     seed_all
@@ -38,7 +38,7 @@ Config Tools
     Documentation
     ^^^
     .. autofunction:: custom_cfgs_to_dict
-    .. autofunction:: update_dic
+    .. autofunction:: update_dict
     .. autofunction:: load_yaml
     .. autofunction:: recursive_check_config
 

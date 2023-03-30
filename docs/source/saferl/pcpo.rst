@@ -243,7 +243,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
             ^^^
             PCPO provides a selection reference for distance measures: if the projection is defined in the parameter space, :math:`L2` norm projection is selected, while if the projection is defined in the probability space, KL divergence projection is better.
             This can be approximated through the second-order expansion.
-            Again, PCPO linearizes the cost constraint at :math:`\pi_{k}`.
+            Again, PCPO linearize the cost constraint at :math:`\pi_{k}`.
             This gives the following update for the projection step:
 
             .. math::

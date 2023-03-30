@@ -250,7 +250,7 @@ class ExperimentGrid:
 
         return var_name.lstrip('_')
 
-    def update_dic(self, total_dic, item_dic):
+    def update_dict(self, total_dic, item_dic):
         """Updater of multi-level dictionary.
 
         This function is used to update the total dictionary with the item
@@ -267,7 +267,7 @@ class ExperimentGrid:
             if total_value is None:
                 total_dic.update({idd: item_value})
             elif isinstance(item_value, dict):
-                self.update_dic(total_value, item_value)
+                self.update_dict(total_value, item_value)
                 total_dic.update({idd: total_value})
             else:
                 total_value = item_value
@@ -294,7 +294,7 @@ class ExperimentGrid:
                 v_temp[key_list[-1]] = val
                 for key in reversed(key_list[:-1]):
                     v_temp = {key: v_temp}
-                self.update_dic(current_variants, v_temp)
+                self.update_dict(current_variants, v_temp)
                 variants.append(current_variants)
 
         return variants
