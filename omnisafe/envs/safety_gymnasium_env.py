@@ -28,7 +28,13 @@ from omnisafe.typing import Box
 
 @env_register
 class SafetyGymnasiumEnv(CMDP):
-    """Safety Gymnasium environment."""
+    """Safety Gymnasium Environment.
+
+    Attributes:
+        _support_envs (list[str]): List of supported environments.
+        need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
+        need_time_limit_wrapper (bool): Whether to use time limit wrapper.
+    """
 
     _support_envs = [
         'SafetyPointGoal0-v0',
@@ -84,6 +90,14 @@ class SafetyGymnasiumEnv(CMDP):
         device: torch.device = torch.device('cpu'),
         **kwargs,
     ) -> None:
+        """Initialize the environment.
+
+        Args:
+            env_id (str): Environment id.
+            num_envs (int, optional): Number of environments. Defaults to 1.
+            device (torch.device, optional): Device to store the data. Defaults to 'cpu'.
+            **kwargs: Other arguments.
+        """
         super().__init__(env_id)
         if num_envs > 1:
             self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
@@ -106,6 +120,25 @@ class SafetyGymnasiumEnv(CMDP):
         self,
         action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+        """Step the environment.
+
+        .. note::
+
+            OmniSafe use auto reset wrapper to reset the environment when the episode is
+            terminated. So the ``obs`` will be the first observation of the next episode.
+            And the true ``final_observation`` in ``info`` will be stored in the ``final_observation`` key of ``info``.
+
+        Args:
+            action (torch.Tensor): Action to take.
+
+        Returns:
+            observation (torch.Tensor): agent's observation of the current environment.
+            reward (torch.Tensor): amount of reward returned after previous action.
+            cost (torch.Tensor): amount of cost returned after previous action.
+            terminated (torch.Tensor): whether the episode has ended.
+            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
+            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+        """
         obs, reward, cost, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy(),
         )
@@ -129,13 +162,32 @@ class SafetyGymnasiumEnv(CMDP):
         return obs, reward, cost, terminated, truncated, info
 
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
+        """Reset the environment.
+
+        Args:
+            seed (int, optional): Seed to reset the environment. Defaults to None.
+
+        Returns:
+            observation (torch.Tensor): agent's observation of the current environment.
+            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+        """
         obs, info = self._env.reset(seed=seed)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
 
     def set_seed(self, seed: int) -> None:
+        """Set the seed for the environment.
+
+        Args:
+            seed (int): Seed to set.
+        """
         self.reset(seed=seed)
 
     def sample_action(self) -> torch.Tensor:
+        """Sample a random action.
+
+        Returns:
+            torch.Tensor: A random action.
+        """
         return torch.as_tensor(
             self._env.action_space.sample(),
             dtype=torch.float32,
@@ -143,7 +195,13 @@ class SafetyGymnasiumEnv(CMDP):
         )
 
     def render(self) -> Any:
+        """Render the environment.
+
+        Returns:
+            Any: Rendered environment.
+        """
         return self._env.render()
 
     def close(self) -> None:
+        """Close the environment."""
         self._env.close()

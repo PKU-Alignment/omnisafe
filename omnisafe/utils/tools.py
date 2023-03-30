@@ -175,20 +175,20 @@ def custom_cfgs_to_dict(key_list, value):
     return return_dict
 
 
-def update_dic(total_dic, item_dic):
+def update_dict(total_dict, item_dict):
     """Updater of multi-level dictionary."""
-    for idd in item_dic:
-        total_value = total_dic.get(idd)
-        item_value = item_dic.get(idd)
+    for idd in item_dict:
+        total_value = total_dict.get(idd)
+        item_value = item_dict.get(idd)
 
         if total_value is None:
-            total_dic.update({idd: item_value})
+            total_dict.update({idd: item_value})
         elif isinstance(item_value, dict):
-            update_dic(total_value, item_value)
-            total_dic.update({idd: total_value})
+            update_dict(total_value, item_value)
+            total_dict.update({idd: total_value})
         else:
             total_value = item_value
-            total_dic.update({idd: total_value})
+            total_dict.update({idd: total_value})
 
 
 def load_yaml(path) -> dict:

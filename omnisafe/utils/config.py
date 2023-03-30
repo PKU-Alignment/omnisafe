@@ -31,6 +31,54 @@ class Config(dict):
     OmniSafe store hyperparameters in a yaml file and load them into a Config object.
     Then the Config class will check the hyperparameters are valid,
     then pass them to the algorithm class.
+
+    Attributes:
+        seed (int): Random seed.
+        device (str): Device to use for training.
+        device_id (int): Device id to use for training.
+        wrapper_type (str): Wrapper type.
+        epochs (int): Number of epochs.
+        steps_per_epoch (int): Number of steps per epoch.
+        actor_iters (int): Number of actor iterations.
+        critic_iters (int): Number of critic iterations.
+        check_freq (int): Frequency of checking.
+        save_freq (int): Frequency of saving.
+        entropy_coef (float): Entropy coefficient.
+        max_ep_len (int): Maximum episode length.
+        num_mini_batches (int): Number of mini batches.
+        actor_lr (float): Actor learning rate.
+        critic_lr (float): Critic learning rate.
+        log_dir (str): Log directory.
+        target_kl (float): Target KL divergence.
+        batch_size (int): Batch size.
+        use_cost (bool): Whether to use cost.
+        cost_gamma (float): Cost gamma.
+        linear_lr_decay (bool): Whether to use linear learning rate decay.
+        exploration_noise_anneal (bool): Whether to use exploration noise anneal.
+        penalty_param (float): Penalty parameter.
+        kl_early_stop (bool): Whether to use KL early stop.
+        use_max_grad_norm (bool): Whether to use max gradient norm.
+        max_grad_norm (float): Max gradient norm.
+        use_critic_norm (bool): Whether to use critic norm.
+        critic_norm_coeff (bool): Critic norm coefficient.
+        model_cfgs (ModelConfig): Model config.
+        buffer_cfgs (Config): Buffer config.
+        gamma (float): Discount factor.
+        lam (float): Lambda.
+        lam_c (float): Lambda for cost.
+        adv_eastimator (AdvatageEstimator): Advantage estimator.
+        standardized_rew_adv (bool): Whether to use standardized reward advantage.
+        standardized_cost_adv (bool): Whether to use standardized cost advantage.
+        env_cfgs (Config): Environment config.
+        num_envs (int): Number of environments.
+        async_env (bool): Whether to use asynchronous environments.
+        env_name (str): Environment name.
+        env_kwargs (dict): Environment keyword arguments.
+        normalize_obs (bool): Whether to normalize observation.
+        normalize_rew (bool): Whether to normalize reward.
+        normalize_cost (bool): Whether to normalize cost.
+        max_len (int): Maximum length.
+        num_threads (int): Number of threads.
     """
 
     seed: int

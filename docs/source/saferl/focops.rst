@@ -11,7 +11,7 @@ Quick Facts
     #. FOCOPS is an :bdg-info-line:`on-policy` algorithm.
     #. FOCOPS can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
     #. FOCOPS is an algorithm using :bdg-info-line:`first-order method`.
-    #. The OmniSafe implementation of FOCOPS support :bdg-info-line:`parallelization`.
+    #. An :bdg-ref-info-line:`API Documentation <focopsapi>` is available for FOCOPS.
 
 FOCOPS Theorem
 --------------
@@ -19,7 +19,7 @@ FOCOPS Theorem
 Background
 ~~~~~~~~~~
 
-**First Order Constrained Optimization (FOCOPS)** in Policy Space is a new CPO-based method which maximizes an agent's overall reward while ensuring the agent satisfies a set of cost constraints. FOCOPS purposes that CPO has disadvantages below:
+**First Order Constrained Optimization (FOCOPS)** in Policy Space is a new CPO-based method that maximizes an agent's overall reward while ensuring the agent satisfies a set of cost constraints. FOCOPS purposes that CPO has disadvantages below:
 
 .. grid:: 2
 
@@ -47,13 +47,13 @@ Background
 
             Advantage of FOCOPS
             ^^^
-            -  Extremely simple to implement since it only utilizes first order approximations.
+            -  Extremely simple to implement since it only utilizes first-order approximations.
 
             -  Simple first-order method avoids the last two sources of error caused by Taylor method and the conjugate method.
 
-            -  Outperform than CPO in experiment.
+            -  Outperform CPO in the experiment.
 
-            -  No recovery steps required
+            -  No recovery steps are required
 
 
 FOCOPS mainly includes the following contributions:
@@ -106,7 +106,7 @@ For you to have a clearer understanding, we hope that you will read the next sec
 Two-stage Policy Update
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Instead of solving the Problem :eq:`focops-eq-1`  directly, FOCOPS uses a **two-stage** approach summarized below:
+Instead of solving the :eq:`focops-eq-1`  directly, FOCOPS uses a **two-stage** approach summarized below:
 
 .. card::
     :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
@@ -114,16 +114,16 @@ Instead of solving the Problem :eq:`focops-eq-1`  directly, FOCOPS uses a **two-
 
     Two-stage Policy Update
     ^^^
-    -  Given policy :math:`\pi_{\theta_k}`, find an optimal update policy :math:`\pi^*` by solving the optimization problem from Problem :eq:`focops-eq-1` in the non-parameterized policy space.
+    -  Given policy :math:`\pi_{\theta_k}`, find an optimal update policy :math:`\pi^*` by solving the optimization problem from :eq:`focops-eq-1` in the non-parameterized policy space.
 
-    -  Project the Policy found in the previous step back into the parameterized policy space :math:`\Pi_{\theta}` by solving for the closest policy :math:`\pi_{\theta}\in\Pi_{\theta}` to :math:`\pi^*`, in order to obtain :math:`\pi_{\theta_{k+1}}`.
+    -  Project the Policy found in the previous step back into the parameterized policy space :math:`\Pi_{\theta}` by solving for the closest policy :math:`\pi_{\theta}\in\Pi_{\theta}` to :math:`\pi^*`, to obtain :math:`\pi_{\theta_{k+1}}`.
 
 ------
 
 Finding the Optimal Update Policy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the first stage, FOCOPS rewrites Problem :eq:`focops-eq-1`  as below:
+In the first stage, FOCOPS rewrites :eq:`focops-eq-1`  as below:
 
 .. _`focops-eq-4`:
 
@@ -135,7 +135,7 @@ In the first stage, FOCOPS rewrites Problem :eq:`focops-eq-1`  as below:
     & \bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta
 
 
-These problems are only slightly different from Problem :eq:`focops-eq-1` , that is, the parameter of interest is now the non-parameterized Policy :math:`\pi` and not the policy parameter :math:`\theta`.
+These problems are only slightly different from :eq:`focops-eq-1` , that is, the parameter of interest is now the non-parameterized Policy :math:`\pi` and not the policy parameter :math:`\theta`.
 Then FOCOPS provides a solution as follows:
 
 .. _focops-theorem-1:
@@ -150,7 +150,7 @@ Then FOCOPS provides a solution as follows:
     Theorem 1
     ^^^
     Let :math:`\tilde{b}=(1-\gamma)\left(b-\tilde{J}^C\left(\pi_{\theta_k}\right)\right)`.
-    If :math:`\pi_{\theta_k}` is a feasible solution, the optimal policy for Problem :eq:`focops-eq-2` takes the form
+    If :math:`\pi_{\theta_k}` is a feasible solution, the optimal policy for :eq:`focops-eq-2` takes the form
 
     .. _`focops-eq-7`:
 
@@ -159,7 +159,7 @@ Then FOCOPS provides a solution as follows:
 
         \pi^*(a \mid s)=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)
 
-    where :math:`Z_{\lambda,\nu}(s)` is the partition function which ensures Problem :eq:`focops-eq-3` is a valid probability distribution, :math:`\lambda` and :math:`\nu` are solutions to the optimization problem:
+    where :math:`Z_{\lambda,\nu}(s)` is the partition function which ensures :eq:`focops-eq-3` is a valid probability distribution, :math:`\lambda` and :math:`\nu` are solutions to the optimization problem:
 
     .. _`focops-eq-8`:
 
@@ -171,11 +171,11 @@ Then FOCOPS provides a solution as follows:
     +++
     The proof of the :bdg-info-line:`Theorem 1` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-The form of the optimal Policy is intuitive.
+The form of the optimal policy is intuitive.
 It gives high probability mass to areas of the state-action space with high return, offset by a penalty term times the cost advantage.
-We will refer to the optimal solution to Problem :eq:`focops-eq-2`  as the *optimal update policy*.
+We will refer to the optimal solution to :eq:`focops-eq-2`  as the *optimal update policy*.
 Suppose you need help understanding the meaning of the above Equation.
-In that case, you can first think that FOCOPS finally solves Problem :eq:`focops-eq-2`  by solving Problem :eq:`focops-eq-3` and Problem :eq:`focops-eq-4`.
+In that case, you can first think that FOCOPS finally solves :eq:`focops-eq-2`  by solving :eq:`focops-eq-3` and :eq:`focops-eq-4`.
 That is, the :bdg-info-line:`Theorem 1` is a viable solution.
 
 
@@ -282,12 +282,12 @@ The first-order methods are also used to minimize this loss function:
     +++
     The proof of the :bdg-info-line:`Corollary 1` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-Note that Equation :eq:`focops-eq-7` can be estimated by sampling from the trajectories generated by Policy :math:`\pi_{\theta_k}` so Policy can be trained using stochastic gradients.
+Note that :eq:`focops-eq-7` can be estimated by sampling from the trajectories generated by Policy :math:`\pi_{\theta_k}` so Policy can be trained using stochastic gradients.
 
 :bdg-info-line:`Corollary 1` outlines the FOCOPS algorithm:
 
 At every iteration, we begin with a policy :math:`\pi_{\theta_k}`, which we use to run trajectories and gather data.
-We use that data and Equation :eq:`focops-eq-4` first to estimate :math:`\lambda` and :math:`\nu`.
+We use that data and :eq:`focops-eq-4` first to estimate :math:`\lambda` and :math:`\nu`.
 We then draw a mini-batch from the data to estimate :math:`\nabla_\theta \mathcal{L}(\theta)` given in :bdg-info-line:`Corollary 1`.
 After taking a gradient step using Equation:eq:`focops-eq-7`, we draw another mini-batch and repeat the process.
 
@@ -298,12 +298,12 @@ Practical Implementation
 
 .. hint::
 
-    Solving Problem :eq:`focops-eq-4` is computationally impractical for large state or action spaces as it requires calculating the partition function :math:`Z_{\lambda,\nu}(s)`, which often involves evaluating a high-dimensional integral or sum.
+    Solving :eq:`focops-eq-4` is computationally impractical for large state or action spaces as it requires calculating the partition function :math:`Z_{\lambda,\nu}(s)`, which often involves evaluating a high-dimensional integral or sum.
     Furthermore, :math:`\lambda` and :math:`\nu` depend on :math:`k` and should be adapted at every iteration.
 
 So in this section, we will introduce you to how FOCOPS practically implements its algorithm purpose.
-In practice, through hyperparameter sweeps, FOCOPS found that a fixed :math:`\lambda` provides good results, which means the value of :math:`\lambda` does not have to be updated.
-However, :math:`\nu` needs to be continuously adapted during training so as to ensure cost-constraint satisfaction.
+In practice, though hyperparameter sweeps, FOCOPS found that a fixed :math:`\lambda` provides good results, which means the value of :math:`\lambda` does not have to be updated.
+However, :math:`\nu` needs to be continuously adapted during training to ensure cost-constraint satisfaction.
 FOCOPS appeals to an intuitive heuristic for determining :math:`\nu` based on primal-dual gradient methods.
 With strong duality, the optimal :math:`\lambda^*` and :math:`\nu^*` minimizes the dual function :eq:`focops-eq-4` which then be denoted as :math:`L(\pi^*,\lambda,\nu)`.
 By applying gradient descent w.r.t :math:`\nu` to minimize :math:`L(\pi^*,\lambda,\nu)`, we obtain:
@@ -329,7 +329,7 @@ By applying gradient descent w.r.t :math:`\nu` to minimize :math:`L(\pi^*,\lambd
     +++
     The proof of the :bdg-success-line:`Corollary 2` can be seen in the :bdg-success:`Appendix`, click on this :bdg-success-line:`card` to jump to view.
 
-The last term in the gradient expression in Equation :eq:`focops-eq-9` cannot be evaluated since we do not have access to :math:`\pi^*`.
+The last term in the gradient expression in :eq:`focops-eq-9` cannot be evaluated since we do not have access to :math:`\pi^*`.
 Since :math:`\pi_{\theta_k}` and :math:`\pi^*` are 'close', it is reasonable to assume that :math:`E_{s \sim d^{\pi_k}, a \sim \pi^*}\left[A_{\pi_{\theta_k}}(s, a)\right] \approx E_{s \sim d^{\pi_k}, a \sim \pi_{\theta_k}}\left[A_{\pi_{\theta_k}}(s, a)\right]=0`.
 In practice, this term can be set to zero, which gives the updated term:
 
@@ -373,7 +373,7 @@ In this section, we will explain the meaning of parameters :math:`\lambda` and :
 
             Analysis of :math:`\lambda`
             ^^^
-            In Equation :eq:`focops-eq-3`, note that as :math:`\lambda \rightarrow 0`, :math:`\pi^*` approaches a greedy policy;
+            In :eq:`focops-eq-3`, note that as :math:`\lambda \rightarrow 0`, :math:`\pi^*` approaches a greedy policy;
             as :math:`\lambda` increases, the Policy becomes more exploratory.
             Therefore :math:`\lambda` is similar to the temperature term used in maximum entropy reinforcement learning,
             which has been shown to produce good results when fixed during training.
@@ -388,11 +388,11 @@ In this section, we will explain the meaning of parameters :math:`\lambda` and :
 
             Analysis of :math:`\nu`
             ^^^
-            We recall that in Equation :eq:`focops-eq-3`,
+            We recall that in :eq:`focops-eq-3`,
             :math:`\nu` acts as a cost penalty term where increasing :math:`\nu` makes it less likely for state-action pairs with higher costs to be sampled by :math:`\pi^*`.
             Hence in this regard, the update rule in :eq:`focops-eq-10` is intuitive,
             because it increases :math:`\nu` if :math:`J^C(\pi_{\theta_k})>d`
-            (which means the agent violate the cost constraints) and decreases :math:`\nu` otherwise.
+            (which means the agent violates the cost constraints) and decreases :math:`\nu` otherwise.
 
 ------
 
@@ -463,7 +463,7 @@ Quick start
         .. tab-item:: Terminal config style
 
             We use ``train_policy.py`` as the entrance file. You can train the agent with FOCOPS simply using ``train_policy.py``, with arguments about FOCOPS and environments does the training.
-            For example, to run FOCOPS in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
+            For example, to run FOCOPS in SafetyPointGoal1-v0 , with 1 torch thread and seed 0, you can use the following command:
 
             .. code-block:: bash
                 :linenos:
@@ -476,202 +476,216 @@ Quick start
 Architecture of functions
 """""""""""""""""""""""""
 
--  ``focops.learn()``
+-  ``FOCOPS.learn()``
 
-   - ``env.roll_out()``
-   - ``focops.update()``
+   - ``FOCOPS._env.roll_out()``
+   - ``FOCOPS._update()``
 
-     - ``focops.buf.get()``
-     - ``focops.pre_process_data(raw_data)``
-     - ``focops.update_policy_net()``
-     - ``focops.update_cost_net()``
-     - ``focops.update_value_net()``
-
-
-- ``focops.log()``
+     - ``FOCOPS._buf.get()``
+     - ``FOCOPS._update_lagrange()``
+     - ``FOCOPS._update_actor()``
+     - ``FOCOPS._update_cost_critic()``
+     - ``FOCOPS._update_reward_critic()``
 
 ------
 
 
-Documentation of new functions
-""""""""""""""""""""""""""""""
+Documentation of algorithm specific functions
+"""""""""""""""""""""""""""""""""""""""""""""
 
 .. tab-set::
 
-    .. tab-item:: _loss_pi(data: dict)
+    .. tab-item:: _compute_adv_surrogate()
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            focops._loss_pi(data: dict)
+            FOCOPS._compute_adv_surrogate()
             ^^^
-            Compute the loss of policy network, flowing the next steps:
-
-            (1) Calculate the KL divergence between the new policy and the old policy
+            Compute the surrogate advantage function.
 
             .. code-block:: python
                 :linenos:
 
-                dist, _log_p = self.ac.pi(data['obs'], data['act'])
-                ratio = torch.exp(_log_p - data['log_p'])
-                kl_new_old = torch.distributions.kl.kl_divergence(dist, self.p_dist).sum(-1, keepdim=True)
+                return (adv_r - self._lagrange.lagrangian_multiplier * adv_c) / (
+                    1 + self._lagrange.lagrangian_multiplier
+                )
 
-
-            (2) Compute the loss of policy network based on FOCOPS method, where ``self.lagrangian_multiplier`` is :math:`\nu``
-                and ``self.lam`` is :math:`\lambda` in FOCOPS paper.
-
-            .. code-block:: python
-                :linenos:
-
-                loss_pi = (
-                    kl_new_old
-                    - (1 / self.lam) * ratio * (data['adv'] - self.lagrangian_multiplier * data['cost_adv'])
-                ) * (kl_new_old.detach() <= self.eta).type(torch.float32)
-                loss_pi = loss_pi.mean()
-                loss_pi -= self.entropy_coef * dist.entropy().mean()
-
-    .. tab-item:: focops.update_lagrange_multiplier(ep_costs: float)
+    .. tab-item:: FOCOPS._loss_pi()
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            focops.update_lagrange_multiplier(ep_costs: float)
+            FOCOPS._loss_pi()
             ^^^
-            FOCOPS algorithm updates ``self.lagrangian_multiplier`` which is :math:`\nu` in FOCOPS paper by projection.
+            Compute the loss of policy network.
+
+            In FOCOPS, the loss is defined as:
+
+            .. math::
+
+                L = \nabla_\theta D_{K L}\left(\pi_\theta^{'} \| \pi_{\theta}\right)[s]
+                -\frac{1}{\eta} \underset{a \sim \pi_{\theta}}
+                {\mathbb{E}}\left[\frac{\nabla_\theta \pi_\theta(a \mid s)}
+                {\pi_{\theta}(a \mid s)}\left(A^{R}_{\pi_{\theta}}(s, a)
+                -\lambda A^C_{\pi_{\theta}}(s, a)\right)\right]
+
+            In code implementation, we use the following code to compute the loss:
 
             .. code-block:: python
                 :linenos:
 
-                self.lagrangian_multiplier += self.lambda_lr * (ep_costs - self.cost_limit)
-                if self.lagrangian_multiplier < 0.0:
-                    self.lagrangian_multiplier = 0.0
-                elif self.lagrangian_multiplier > 2.0:
-                    self.lagrangian_multiplier = 2.0
+                distribution = self._actor_critic.actor(obs)
+                logp_ = self._actor_critic.actor.log_prob(act)
+                std = self._actor_critic.actor.std
+                ratio = torch.exp(logp_ - logp)
+
+                kl = torch.distributions.kl_divergence(distribution, self._p_dist).sum(-1, keepdim=True)
+                loss = (kl - (1 / self._cfgs.algo_cfgs.focops_lam) * ratio * adv) * (
+                    kl.detach() <= self._cfgs.algo_cfgs.focops_eta
+                ).type(torch.float32)
+                loss = loss.mean()
+                loss -= self._cfgs.algo_cfgs.entropy_coef * distribution.entropy().mean()
 
 ------
 
-Parameters
+Configs
 """"""""""
 
 .. tab-set::
 
-    .. tab-item:: Specific Parameters
+    .. tab-item:: Train
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Specific Parameters
+            Train Configs
             ^^^
-            -  target_kl(float): Constraint for KL-distance to avoid too far gap
-            -  cg_damping(float): parameter plays a role in building Hessian-vector
-            -  cg_iters(int): Number of iterations of conjugate gradient to perform.
-            -  cost_limit(float): Constraint for agent to avoid too much cost
 
-    .. tab-item:: Basic parameters
+            - device (str): Device to use for training, options: ``cpu``, ``cuda``,``cuda:0``, etc.
+            - torch_threads (int): Number of threads to use for PyTorch.
+            - total_steps (int): Total number of steps to train the agent.
+            - parallel (int): Number of parallel agents, similar to A3C.
+            - vector_env_nums (int): Number of the vector environments.
+
+    .. tab-item:: Algorithm
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Basic parameters
+            Algorithms Configs
             ^^^
-            -  algo (string): The name of algorithm corresponding to current class,
-               it does not actually affect any things which happen in the following.
-            -  actor (string): The type of network in actor, discrete or continuous.
-            -  model_cfgs (dictionary) : Actor and critic's net work configuration,
-               it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
-               -  shared_weights (bool) : Use shared weights between actor and critic network or not.
+            .. note::
 
-               -  weight_initialization_mode (string) : The type of weight initialization method.
+                The following configs are specific to FOCOPS algorithm.
 
-                  -  pi (dictionary) : parameters for actor network ``pi``
+                - clip (float): Clipping parameter for FOCOPS.
 
-                     -  hidden_sizes:
+            - update_cycle (int): Number of steps to update the policy network.
+            - update_iters (int): Number of iterations to update the policy network.
+            - batch_size (int): Batch size for each iteration.
+            - target_kl (float): Target KL divergence.
+            - entropy_coef (float): Coefficient of entropy.
+            - reward_normalize (bool): Whether to normalize the reward.
+            - cost_normalize (bool): Whether to normalize the cost.
+            - obs_normalize (bool): Whether to normalize the observation.
+            - kl_early_stop (bool): Whether to stop the training when KL divergence is too large.
+            - max_grad_norm (float): Maximum gradient norm.
+            - use_max_grad_norm (bool): Whether to use maximum gradient norm.
+            - use_critic_norm (bool): Whether to use critic norm.
+            - critic_norm_coef (float): Coefficient of critic norm.
+            - gamma (float): Discount factor.
+            - cost_gamma (float): Cost discount factor.
+            - lam (float): Lambda for GAE-Lambda.
+            - lam_c (float): Lambda for cost GAE-Lambda.
+            - adv_estimation_method (str): The method to estimate the advantage.
+            - standardized_rew_adv (bool): Whether to use standardized reward advantage.
+            - standardized_cost_adv (bool): Whether to use standardized cost advantage.
+            - penalty_coef (float): Penalty coefficient for cost.
+            - use_cost (bool): Whether to use cost.
 
-                        -  64
-                        -  64
 
-                     -  activations: tanh
-
-                  -  val (dictionary) parameters for critic network ``v``
-
-                     -  hidden_sizes:
-
-                        -  64
-                        -  64
-
-                        .. hint::
-
-                            ======== ================  ========================================================================
-                            Name        Type              Description
-                            ======== ================  ========================================================================
-                            ``v``    ``nn.Module``     Gives the current estimate of **V** for states in ``s``.
-                            ``pi``   ``nn.Module``     Deterministically or continuously computes an action from the agent,
-                                                       conditioned on states in ``s``.
-                            ======== ================  ========================================================================
-
-                  -  activations: tanh
-                  -  env_id (string): The name of environment we want to roll out.
-                  -  seed (int): Define the seed of experiments.
-                  -  parallel (int): Define the seed of experiments.
-                  -  epochs (int): The number of epochs we want to roll out.
-                  -  steps_per_epoch (int):The number of time steps per epoch.
-                  -  pi_iters (int): The number of iteration when we update actor network per mini batch.
-                  -  critic_iters (int): The number of iteration when we update critic network per mini batch.
-
-    .. tab-item:: Optional parameters
+    .. tab-item:: Model
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Optional parameters
+            Model Configs
             ^^^
-            -  use_cost_critic (bool): Use cost value function or not.
-            -  linear_lr_decay (bool): Use linear learning rate decay or not.
-            -  exploration_noise_anneal (bool): Use exploration noise anneal or not.
-            -  reward_penalty (bool): Use cost to penalize reward or not.
-            -  kl_early_stopping (bool): Use KL early stopping or not.
-            -  max_grad_norm (float): Use maximum gradient normalization or not.
-            -  scale_rewards (bool): Use reward scaling or not.
 
-    .. tab-item:: Buffer parameters
+            - weight_initialization_mode (str): The type of weight initialization method.
+            - actor_type (str): The type of actor, default to ``gaussian_learning``.
+            - linear_lr_decay (bool): Whether to use linear learning rate decay.
+            - exploration_noise_anneal (bool): Whether to use exploration noise anneal.
+            - std_range (list): The range of standard deviation.
 
-        .. card::
-            :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-            :class-footer: sd-font-weight-bold
-
-            Buffer parameters
-            ^^^
             .. hint::
-                  ============= =============================================================================
-                     Name                    Description
-                  ============= =============================================================================
-                  ``Buffer``      A buffer for storing trajectories experienced by an agent interacting
-                                  with the environment, and using **Generalized Advantage Estimation (GAE)**
-                                  for calculating the advantages of state-action pairs.
-                  ============= =============================================================================
 
-            .. warning::
-                Buffer collects only raw data received from environment.
+                actor (dictionary): parameters for actor network ``actor``
 
-            -  gamma (float): The gamma for GAE.
-            -  lam (float): The lambda for reward GAE.
-            -  adv_estimation_method (float):Roughly what KL divergence we think is
-               appropriate between new and old policies after an update. This will
-               get used for early stopping. (Usually small, 0.01 or 0.05.)
-            -  standardized_reward (int):  Use standardized reward or not.
-            -  standardized_cost (bool): Use standardized cost or not.
+                - activations: tanh
+                - hidden_sizes:
+                - 64
+                - 64
+
+            .. hint::
+
+                critic (dictionary): parameters for critic network ``critic``
+
+                - activations: tanh
+                - hidden_sizes:
+                - 64
+                - 64
+
+    .. tab-item:: Logger
+
+        .. card::
+            :class-header: sd-bg-success sd-text-white sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
+            :class-footer: sd-font-weight-bold
+
+            Logger Configs
+            ^^^
+
+            - use_wandb (bool): Whether to use wandb to log the training process.
+            - wandb_project (str): The name of wandb project.
+            - use_tensorboard (bool): Whether to use tensorboard to log the training process.
+            - log_dir (str): The directory to save the log files.
+            - window_lens (int): The length of the window to calculate the average reward.
+            - save_model_freq (int): The frequency to save the model.
+
+    .. tab-item:: Lagrange
+
+        .. card::
+            :class-header: sd-bg-success sd-text-white sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
+            :class-footer: sd-font-weight-bold
+
+            Lagrange Configs
+            ^^^
+
+            .. note::
+
+                The following configs are specific to FOCOPS algorithm.
+
+                - lagrangian_upper_bound (float): Upper bound of Lagrange multiplier.
+
+            - cost_limit (float): Tolerance of constraint violation.
+            - lagrangian_multiplier_init (float): Initial value of Lagrange multiplier.
+            - lambda_lr (float): Learning rate of Lagrange multiplier.
+            - lambda_optimizer (str): Optimizer for Lagrange multiplier.
+
 
 ------
 
@@ -719,7 +733,7 @@ Proof for Theorem 1
     :color: info
     :class-body: sd-border-{3}
 
-    Based on :bdg-info-line:`Lemma 1` the optimal value of the Problem :eq:`focops-eq-2`  :math:`p^*` can be solved by solving the corresponding dual problem.
+    Based on :bdg-info-line:`Lemma 1` the optimal value of the :eq:`focops-eq-2`  :math:`p^*` can be solved by solving the corresponding dual problem.
     Let
 
     .. math::
@@ -737,9 +751,9 @@ Proof for Theorem 1
 
         p^*=\max _{\pi \in \Pi} \min _{\lambda, \nu \geq 0} L(\pi, \lambda, \nu)=\min _{\lambda, \nu \geq 0} \max _{\pi \in \Pi} L(\pi, \lambda, \nu)
 
-    Note that if :math:`\pi^*`, :math:`\lambda^*`, :math:`\nu^*` are optimal for Problem :eq:`focops-eq-12`, :math:`\pi^*` is also optimal for Problem :eq:`focops-eq-2`  because of the strong duality.
+    Note that if :math:`\pi^*`, :math:`\lambda^*`, :math:`\nu^*` are optimal for :eq:`focops-eq-12`, :math:`\pi^*` is also optimal for :eq:`focops-eq-2`  because of the strong duality.
 
-    Consider the inner maximization problem in Problem :eq:`focops-eq-12`.
+    Consider the inner maximization problem in :eq:`focops-eq-12`.
     We separate it from the original problem and try to solve it first:
 
     .. _`focops-eq-16`:
@@ -774,7 +788,7 @@ Proof for Theorem 1
         \frac{\partial G}{\partial \pi(a \mid s)}=A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi(a \mid s)+1-\log \pi_{\theta_k}(a \mid s)\right)+\zeta
 
 
-    Setting Equation :eq:`focops-eq-15` to zero and rearranging the term, we obtain:
+    Setting :eq:`focops-eq-15` to zero and rearranging the term, we obtain:
 
     .. math::
         :label: focops-eq-16
@@ -782,7 +796,7 @@ Proof for Theorem 1
         \pi(a \mid s)=\pi_{\theta_k}(a \mid s) \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)+\frac{\zeta}{\lambda}+1\right)
 
     We chose :math:`\zeta` so that :math:`\sum_a \pi(a \mid s)=1` and rewrite :math:`\zeta / \lambda+1` as :math:`Z_{\lambda, \nu}(s)`.
-    We find that the optimal solution :math:`\pi^*` to Equation :eq:`focops-eq-13` takes the form
+    We find that the optimal solution :math:`\pi^*` to :eq:`focops-eq-13` takes the form
 
     .. math::
         :label: focops-eq-17
@@ -803,7 +817,7 @@ Proof for Theorem 1
         a \sim \pi^*}}{\mathbb{E}}[logZ_{\lambda,\nu}(s)]\nonumber
 
 
-    Plugging the result back to Equation :eq:`focops-eq-12`, we obtain:
+    Plugging the result back to :eq:`focops-eq-12`, we obtain:
 
     .. math::
         :label: focops-eq-19
@@ -839,7 +853,7 @@ Proof of Corollary
 
 
             where :math:`H\left(\pi_\theta\right)[s]` is the entropy and :math:`H\left(\pi_\theta, \pi^*\right)[s]` is the cross-entropy under state :math: 's`.
-            The above Equation is the basic mathematical knowledge in information theory, which you can get in any information theory textbook.
+            The above is the basic mathematical knowledge in information theory, which you can get in any information theory textbook.
             We expand the cross entropy term, which gives us the following:
 
             .. math::

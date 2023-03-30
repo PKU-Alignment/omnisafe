@@ -26,7 +26,34 @@ from omnisafe.utils.config import Config
 
 
 class OffPolicyAdapter(OnlineAdapter):
-    """OffPolicy Adapter for OmniSafe."""
+    """OffPolicy Adapter for OmniSafe.
+
+    :class:`OffPolicyAdapter` is used to adapt the environment to the off-policy training.
+
+    .. note::
+
+        Off-policy training need to update the policy before finish the episode,
+        so the :class:`OffPolicyAdapter` will store the current observation in ``_current_obs``.
+        After update the policy, the agent will *remember* the current observation and
+        use it to interact with the environment.
+
+    Args:
+        env_id (str): The environment id.
+        num_envs (int): The number of environments.
+        seed (int): The random seed.
+        cfgs (Config): The configuration.
+
+    Attributes:
+        _env_id (str): The environment id.
+        _env (CMDP): The environment.
+        _cfgs (Config): The configuration.
+        _device (torch.device): The device.
+        _ep_ret (torch.Tensor): The episode return.
+        _ep_cost (torch.Tensor): The episode cost.
+        _ep_len (torch.Tensor): The episode length.
+        _current_obs (torch.Tensor): The current observation.
+        _max_ep_len (int): The maximum episode length.
+    """
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -55,12 +82,16 @@ class OffPolicyAdapter(OnlineAdapter):
     ) -> None:
         """Roll out the environment and store the data in the buffer.
 
+        .. warning::
+
+            As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,
+            so the final observation will be stored in ``info['final_observation']``.
+
         Args:
-            roll_out_step (int): Number of steps to roll out.
+            steps_per_epoch (int): Number of steps per epoch.
             agent (ConstraintActorCritic): Agent.
             buf (VectorOnPolicyBuffer): Buffer.
             logger (Logger): Logger.
-            use_rand_action (bool): Whether to use random action.
         """
         for _ in range(roll_out_step):
             if use_rand_action:
@@ -97,13 +128,28 @@ class OffPolicyAdapter(OnlineAdapter):
         info: dict,
         **kwargs,  # pylint: disable=unused-argument
     ) -> None:
-        """Log value."""
+        """Log value.
+
+        .. note::
+            OmniSafe uses :class:`RewardNormalizer` wrapper, so the original reward and cost will
+            be stored in ``info['original_reward']`` and ``info['original_cost']``.
+
+        Args:
+            reward (torch.Tensor): The reward.
+            cost (torch.Tensor): The cost.
+            **kwargs: Other arguments.
+        """
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()
         self._ep_len += 1
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
-        """Log metrics."""
+        """Log metrics.
+
+        Args:
+            logger (Logger): Logger.
+            idx (int): The index of the environment.
+        """
         logger.store(
             **{
                 'Metrics/EpRet': self._ep_ret[idx],
@@ -113,7 +159,11 @@ class OffPolicyAdapter(OnlineAdapter):
         )
 
     def _reset_log(self, idx: int | None = None) -> None:
-        """Reset log."""
+        """Reset log.
+
+        Args:
+            idx (int | None): The index of the environment.
+        """
         if idx is None:
             self._ep_ret = torch.zeros(self._env.num_envs)
             self._ep_cost = torch.zeros(self._env.num_envs)

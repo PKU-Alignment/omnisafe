@@ -22,7 +22,7 @@ import os
 from copy import deepcopy
 
 from omnisafe.utils.plotter import Plotter
-from omnisafe.utils.tools import assert_with_exit, hash_string, recursive_dict2json, update_dic
+from omnisafe.utils.tools import assert_with_exit, hash_string, recursive_dict2json, update_dict
 
 
 class StatisticsTools:
@@ -92,6 +92,7 @@ class StatisticsTools:
                 if it is specified, will only compare values in it.
             compare_num (int): number of values to compare,
                 if it is specified, will combine any potential combination to compare.
+
         .. Note::
             `values` and `compare_num` cannot be set at the same time.
         """
@@ -109,7 +110,7 @@ class StatisticsTools:
         # decompress the grid config
         decompressed_cfgs = {}
         for k, v in self.grid_config.items():
-            update_dic(decompressed_cfgs, self.decompress_key(k, v))
+            update_dict(decompressed_cfgs, self.decompress_key(k, v))
         self.decompressed_grid_config = decompressed_cfgs
         parameter_values = self.get_compressed_key(self.decompressed_grid_config, parameter)
 
@@ -127,7 +128,7 @@ class StatisticsTools:
                 img_name_cfgs = self.path_map_img_name[path]
             decompressed_img_name_cfgs = {}
             for k, v in img_name_cfgs.items():
-                update_dic(decompressed_img_name_cfgs, self.decompress_key(k, v[0]))
+                update_dict(decompressed_img_name_cfgs, self.decompress_key(k, v[0]))
             save_name = (
                 param[:10]  # pylint: disable=undefined-loop-variable
                 + '---'
@@ -211,7 +212,7 @@ class StatisticsTools:
             paths = {}
             for path_dict in graph:
                 exp_name = (
-                    path_dict['env_id'][:30] + ':::' + hash_string(recursive_dict2json(path_dict))
+                    path_dict['env_id'][:30] + '---' + hash_string(recursive_dict2json(path_dict))
                 )
                 path = os.path.join(self.exp_dir, exp_name)
                 self.path_map_img_name[path] = img_name_cfgs
@@ -256,12 +257,12 @@ class StatisticsTools:
                 v_temp[key_list[-1]] = val
                 for key in reversed(key_list[:-1]):
                     v_temp = {key: v_temp}
-                self.update_dic(current_variants, v_temp)
+                self.update_dict(current_variants, v_temp)
                 variants.append(current_variants)
 
         return variants
 
-    def update_dic(self, total_dic, item_dic):
+    def update_dict(self, total_dic, item_dic):
         """Updater of multi-level dictionary."""
         for idd in item_dic:
             total_value = total_dic.get(idd)
@@ -270,7 +271,7 @@ class StatisticsTools:
             if total_value is None:
                 total_dic.update({idd: item_value})
             elif isinstance(item_value, dict):
-                self.update_dic(total_value, item_value)
+                self.update_dict(total_value, item_value)
                 total_dic.update({idd: total_value})
             else:
                 total_value = item_value

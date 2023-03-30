@@ -20,7 +20,7 @@ import omnisafe
 
 
 # Just fill your experiment's log directory in here.
-# Such as: ~/omnisafe/examples/runs/PPOLag-<SafetyPointGoal1-v0>/seed-000-2023-03-07-20-25-48
+# Such as: ~/omnisafe/examples/runs/PPOLag-{SafetyPointGoal1-v0}/seed-000-2023-03-07-20-25-48
 LOG_DIR = ''
 if __name__ == '__main__':
     evaluator = omnisafe.Evaluator(render_mode='rgb_array')

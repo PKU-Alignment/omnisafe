@@ -30,9 +30,11 @@ Train policy
     .. code-block:: bash
 
         omnisafe train
-        --algo PPO --total-steps 1024
+        --algo PPO
+        --total-steps 1024
         --vector-env-nums 1
-        --custom-cfgs algo_cfgs:update_cycle 512
+        --custom-cfgs algo_cfgs:update_cycle
+        --custom-cfgs 512
 
     Here we provide a video example:
 
