@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of the Experiment Grid."""
 
+from __future__ import annotations
+
 import json
 import os
 import string
@@ -21,13 +23,15 @@ import time
 from concurrent.futures import ProcessPoolExecutor as Pool
 from copy import deepcopy
 from textwrap import dedent
-from typing import Any, Dict, List
+from typing import Any
 
 import numpy as np
 from rich.console import Console
 from tqdm import trange
 
 from omnisafe.algorithms import ALGORITHM2TYPE
+from omnisafe.common.statistics_tools import StatisticsTools
+from omnisafe.evaluator import Evaluator
 from omnisafe.utils.exp_grid_tools import all_bools, valid_str
 from omnisafe.utils.tools import (
     assert_with_exit,
@@ -48,10 +52,10 @@ class ExperimentGrid:
         Args:
             exp_name (str): Name of the experiment grid.
         """
-        self.keys: List[str] = []
-        self.vals: List[Any] = []
-        self.shs: List[str] = []
-        self.in_names: List[str] = []
+        self.keys: list[str] = []
+        self.vals: list[Any] = []
+        self.shs: list[str] = []
+        self.in_names: list[str] = []
         self.div_line_width = 80
         assert isinstance(exp_name, str), 'Name has to be a string.'
         self.name = exp_name
@@ -66,6 +70,9 @@ class ExperimentGrid:
 
         # Whether to automatically insert a date and time stamp into the names of save directories
         self.foce_datastamp = False
+
+        self._statistical_tools: StatisticsTools
+        self._evaluator: Evaluator
 
     def print(self) -> None:
         """Print a helpful report about the experiment grid.
@@ -142,8 +149,7 @@ class ExperimentGrid:
         def shear(value):
             return ''.join(z for z in value[:3] if z in valid_chars)
 
-        shorthand = '-'.join([shear(x) for x in key.split(':')])
-        return shorthand
+        return '-'.join([shear(x) for x in key.split(':')])
 
     def add(self, key, vals, shorthand=None, in_name=False):
         r"""Add a parameter (key) to the grid config, with potential values (vals).
@@ -254,7 +260,7 @@ class ExperimentGrid:
             total_dic (dict): Total dictionary.
             item_dic (dict): Item dictionary.
         """
-        for idd in item_dic.keys():
+        for idd in item_dic:
             total_value = total_dic.get(idd)
             item_value = item_dic.get(idd)
 
@@ -275,7 +281,7 @@ class ExperimentGrid:
             vals (list): List of values.
         """
         if len(keys) == 1:
-            pre_variants: List[Dict] = [{}]
+            pre_variants: list[dict] = [{}]
         else:
             pre_variants = self._variants(keys[1:], vals[1:])
 
@@ -336,7 +342,7 @@ class ExperimentGrid:
 
         def unflatten_var(var):
             """Build the full nested dict version of var, based on key names."""
-            new_var: Dict = {}
+            new_var: dict = {}
             unflatten_set = set()
 
             for key, value in var.items():
@@ -344,7 +350,8 @@ class ExperimentGrid:
                     splits = key.split(':')
                     k_0 = splits[0]
                     assert k_0 not in new_var or isinstance(
-                        new_var[k_0], dict
+                        new_var[k_0],
+                        dict,
                     ), "You can't assign multiple values to the same key."
 
                     if k_0 not in new_var:
@@ -354,7 +361,7 @@ class ExperimentGrid:
                     new_var[k_0][sub_k] = value
                     unflatten_set.add(k_0)
                 else:
-                    assert not (key in new_var), "You can't assign multiple values to the same key."
+                    assert key not in new_var, "You can't assign multiple values to the same key."
                     new_var[key] = value
 
             # make sure to fill out the nested dict.
@@ -363,9 +370,7 @@ class ExperimentGrid:
 
             return new_var
 
-        new_variants = [unflatten_var(var) for var in flat_variants]
-
-        return new_variants
+        return [unflatten_var(var) for var in flat_variants]
 
     # pylint: disable-next=too-many-locals
     def run(self, thunk, num_pool=1, parent_dir=None, is_test=False, gpu_id=None):
@@ -403,7 +408,7 @@ class ExperimentGrid:
 
         # print variant names for the user.
         var_names = {self.variant_name(var) for var in variants}
-        var_names = sorted(list(var_names))
+        var_names = sorted(var_names)
         line = '=' * self.div_line_width
 
         self._console.print('\nPreparing to run the following experiments...', style='bold green')
@@ -415,12 +420,12 @@ class ExperimentGrid:
             self._console.print(
                 dedent(
                     """
-            Launch delayed to give you a few seconds to review your experiments.
+                    Launch delayed to give you a few seconds to review your experiments.
 
-            To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
-            spinup/user_config.py.
+                    To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
+                    spinup/user_config.py.
 
-            """
+                    """,
                 ),
                 style='cyan, bold',
                 end='',
@@ -456,13 +461,14 @@ class ExperimentGrid:
             hashed_exp_name = var['env_id'][:30] + '---' + hash_string(exp_name)
             exp_names.append(':'.join((hashed_exp_name[:5], exp_name)))
             exp_log_dir = os.path.join(self.log_dir, hashed_exp_name, '')
-            var['logger_cfgs'] = {'log_dir': exp_log_dir}
+            var['logger_cfgs'].update({'log_dir': exp_log_dir})
             self.save_same_exps_config(exp_log_dir, var)
             results.append(pool.submit(thunk, idx, var['algo'], var['env_id'], var))
         pool.shutdown()
 
         if not is_test:
             self.save_results(exp_names, variants, results)
+        self._init_statistical_tools()
 
     def save_results(self, exp_names, variants, results):
         """Save results to a file."""
@@ -491,7 +497,8 @@ class ExperimentGrid:
         os.makedirs(self.log_dir, exist_ok=True)
         path = os.path.join(self.log_dir, 'grid_config.json')
         self._console.print(
-            'Save with config of experiment grid in grid_config.json', style='yellow bold'
+            'Save with config of experiment grid in grid_config.json',
+            style='yellow bold',
         )
         json_config = json.dumps(dict(zip(self.keys, self.vals)), indent=4)
         with open(path, encoding='utf-8', mode='w') as f:
@@ -504,3 +511,95 @@ class ExperimentGrid:
         cfg_path = os.path.join(path, '..', 'configs', algo_type, f"{variant['algo']}.yaml")
         default_config = load_yaml(cfg_path)['defaults']
         recursive_check_config(variant, default_config, exclude_keys=('algo', 'env_id'))
+
+    def _init_statistical_tools(self):
+        """Initialize statistical tools."""
+        self._statistical_tools = StatisticsTools()
+        self._evaluator = Evaluator()
+
+    def analyze(
+        self,
+        parameter: str,
+        values: list = None,
+        compare_num: int = None,
+        cost_limit: float = None,
+    ):
+        """Analyze the experiment results.
+
+        Args:
+            parameter (str): name of parameter to analyze.
+            values (list): specific values of attribute,
+                if it is specified, will only compare values in it.
+            compare_num (int): number of values to compare,
+                if it is specified, will combine any potential combination to compare.
+            cost_limit (float): value for one line showed on graph to indicate cost.
+
+        .. Note::
+            `values` and `compare_num` cannot be set at the same time.
+        """
+        assert self._statistical_tools is not None, 'Please run run() first!'
+        self._statistical_tools.load_source(self.log_dir)
+        self._statistical_tools.draw_graph(parameter, values, compare_num, cost_limit)
+
+    def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
+        """Agent Evaluation.
+
+        Args:
+            num_episodes (int): number of episodes to evaluate.
+            cost_criteria (float): cost criteria for evaluation.
+        """
+        assert self._evaluator is not None, 'Please run run() first!'
+        # pylint: disable-next=too-many-nested-blocks
+        for set_of_params in os.scandir(self.log_dir):
+            if set_of_params.is_dir():
+                for single_exp in os.scandir(set_of_params):
+                    if single_exp.is_dir():
+                        for single_seed in os.scandir(single_exp):
+                            for model in os.scandir(os.path.join(single_seed, 'torch_save')):
+                                if model.is_file() and model.name.split('.')[-1] == 'pt':
+                                    self._evaluator.load_saved(
+                                        save_dir=single_seed,
+                                        model_name=model.name,
+                                    )
+                                    self._evaluator.evaluate(
+                                        num_episodes=num_episodes,
+                                        cost_criteria=cost_criteria,
+                                    )
+
+    # pylint: disable-next=too-many-arguments
+    def render(
+        self,
+        num_episodes: int = 10,
+        render_mode: str = 'rgb_array',
+        camera_name: str = 'track',
+        width: int = 256,
+        height: int = 256,
+    ):
+        """Evaluate and render some episodes.
+
+        Args:
+            num_episodes (int): number of episodes to render.
+            render_mode (str): render mode, can be 'rgb_array', 'depth_array' or 'human'.
+            camera_name (str): camera name, specify the camera which you use to capture
+                images.
+            width (int): width of the rendered image.
+            height (int): height of the rendered image.
+        """
+        assert self._evaluator is not None, 'Please run run() first!'
+        # pylint: disable-next=too-many-nested-blocks
+        for set_of_params in os.scandir(self.log_dir):
+            if set_of_params.is_dir():
+                for single_exp in os.scandir(set_of_params):
+                    if single_exp.is_dir():
+                        for single_seed in os.scandir(single_exp):
+                            for model in os.scandir(os.path.join(single_seed, 'torch_save')):
+                                if model.is_file() and model.name.split('.')[-1] == 'pt':
+                                    self._evaluator.load_saved(
+                                        save_dir=single_seed,
+                                        model_name=model.name,
+                                        render_mode=render_mode,
+                                        camera_name=camera_name,
+                                        width=width,
+                                        height=height,
+                                    )
+                                    self._evaluator.render(num_episodes=num_episodes)

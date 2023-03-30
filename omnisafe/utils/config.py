@@ -14,9 +14,11 @@
 # ==============================================================================
 """Implementation of Config."""
 
+from __future__ import annotations
+
 import json
 import os
-from typing import Any, Dict, List
+from typing import Any
 
 from omnisafe.typing import Activation, ActorType, AdvatageEstimator, InitFunction
 from omnisafe.utils.tools import load_yaml
@@ -59,15 +61,15 @@ class Config(dict):
     max_grad_norm: float
     use_critic_norm: bool
     critic_norm_coeff: bool
-    model_cfgs: 'ModelConfig'
-    buffer_cfgs: 'Config'
+    model_cfgs: ModelConfig
+    buffer_cfgs: Config
     gamma: float
     lam: float
     lam_c: float
     adv_eastimator: AdvatageEstimator
     standardized_rew_adv: bool
     standardized_cost_adv: bool
-    env_cfgs: 'Config'
+    env_cfgs: Config
     num_envs: int
     async_env: bool
     normalized_rew: bool
@@ -110,7 +112,7 @@ class Config(dict):
         return json.dumps(self.todict(), indent=4)
 
     @staticmethod
-    def dict2config(config_dict: dict) -> 'Config':
+    def dict2config(config_dict: dict) -> Config:
         """Convert dictionary to Config.
 
         Args:
@@ -124,7 +126,7 @@ class Config(dict):
                 config[key] = value
         return config
 
-    def recurisve_update(self, update_args: Dict[str, Any]) -> None:
+    def recurisve_update(self, update_args: dict[str, Any]) -> None:
         """Recursively update args.
 
         Args:
@@ -153,11 +155,11 @@ class ModelConfig(Config):
 
     weight_initialization_mode: InitFunction
     actor_type: ActorType
-    actor: 'ModelConfig'
-    critic: 'ModelConfig'
-    hidden_sizes: List[int]
+    actor: ModelConfig
+    critic: ModelConfig
+    hidden_sizes: list[int]
     activation: Activation
-    std: List[float]
+    std: list[float]
     use_obs_encoder: bool
     lr: float
 
@@ -178,7 +180,7 @@ def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:
     print(f'Loading {algo}.yaml from {cfg_path}')
     kwargs = load_yaml(cfg_path)
     default_kwargs = kwargs['defaults']
-    env_spec_kwargs = kwargs[env_id] if env_id in kwargs.keys() else None
+    env_spec_kwargs = kwargs[env_id] if env_id in kwargs else None
 
     default_kwargs = Config.dict2config(default_kwargs)
 
@@ -262,7 +264,8 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
         assert isinstance(configs.use_max_grad_norm, bool), 'use_max_grad_norm must be bool'
         assert isinstance(configs.use_critic_norm, bool), 'use_critic_norm must be bool'
         assert isinstance(configs.max_grad_norm, float) and isinstance(
-            configs.critic_norm_coef, float
+            configs.critic_norm_coef,
+            float,
         ), 'norm must be bool'
         assert (
             isinstance(configs.gamma, float) and configs.gamma >= 0.0 and configs.gamma <= 1.0
@@ -289,7 +292,8 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
             'plain',
         ], "adv_estimation_method must be string, and it values must be ['gae','gae-rtg','vtrace','plain']"
         assert isinstance(configs.standardized_rew_adv, bool) and isinstance(
-            configs.standardized_cost_adv, bool
+            configs.standardized_cost_adv,
+            bool,
         ), 'standardized_<>_adv must be bool'
         assert (
             isinstance(configs.penalty_coef, float)
@@ -303,10 +307,12 @@ def __check_logger_configs(configs: Config, algo_type) -> None:
     """Check logger configs."""
     if algo_type == 'on-policy':
         assert isinstance(configs.use_wandb, bool) and isinstance(
-            configs.wandb_project, str
+            configs.wandb_project,
+            str,
         ), 'use_wandb and wandb_project must be bool and string'
         assert isinstance(configs.use_tensorboard, bool), 'use_tensorboard must be bool'
         assert isinstance(configs.save_model_freq, int) and isinstance(
-            configs.window_lens, int
+            configs.window_lens,
+            int,
         ), 'save_model_freq and window_lens must be int'
         assert isinstance(configs.log_dir, str), 'log_dir must be string'

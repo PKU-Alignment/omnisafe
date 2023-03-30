@@ -14,17 +14,23 @@
 # ==============================================================================
 """Implementation of the AlgoWrapper Class."""
 
+from __future__ import annotations
+
 import difflib
+import os
 import sys
-from typing import Any, Dict, Optional
+from typing import Any
 
 import psutil
 import torch
 
 from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
+from omnisafe.algorithms.base_algo import BaseAlgo
 from omnisafe.envs import support_envs
+from omnisafe.evaluator import Evaluator
 from omnisafe.utils import distributed
 from omnisafe.utils.config import check_all_configs, get_default_kwargs_yaml
+from omnisafe.utils.plotter import Plotter
 from omnisafe.utils.tools import recursive_check_config
 
 
@@ -35,17 +41,19 @@ class AlgoWrapper:
         self,
         algo: str,
         env_id: str,
-        train_terminal_cfgs: Optional[Dict[str, Any]] = None,
-        custom_cfgs: Optional[Dict[str, Any]] = None,
-    ):
+        train_terminal_cfgs: dict[str, Any] | None = None,
+        custom_cfgs: dict[str, Any] | None = None,
+    ) -> None:
         self.algo = algo
         self.env_id = env_id
         # algo_type will set in _init_checks()
         self.algo_type: str
+        self.agent: BaseAlgo
 
         self.train_terminal_cfgs = train_terminal_cfgs
         self.custom_cfgs = custom_cfgs
-        self.evaluator = None
+        self._evaluator: Evaluator = None
+        self._plotter: Plotter = None
         self.cfgs = self._init_config()
         self._init_checks()
 
@@ -58,11 +66,10 @@ class AlgoWrapper:
         self.algo_type = ALGORITHM2TYPE.get(self.algo, '')
         if self.algo_type is None or self.algo_type == '':
             raise ValueError(f'{self.algo} is not supported!')
-        if self.algo_type in ['off-policy', 'model-based']:
-            if self.train_terminal_cfgs is not None:
-                assert (
-                    self.train_terminal_cfgs['parallel'] == 1
-                ), 'off-policy or model-based only support parallel==1!'
+        if self.algo_type in {'off-policy', 'model-based'} and self.train_terminal_cfgs is not None:
+            assert (
+                self.train_terminal_cfgs['parallel'] == 1
+            ), 'off-policy or model-based only support parallel==1!'
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations
@@ -96,7 +103,7 @@ class AlgoWrapper:
         exp_name = f'{self.algo}-{{{self.env_id}}}'
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id, 'algo': self.algo})
         cfgs.train_cfgs.recurisve_update(
-            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle}
+            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle},
         )
         return cfgs
 
@@ -135,27 +142,83 @@ class AlgoWrapper:
         ):
             # Re-launches the current script with workers linked by MPI
             sys.exit()
-        agent = registry.get(self.algo)(
+        self.agent = registry.get(self.algo)(
             env_id=self.env_id,
             cfgs=self.cfgs,
         )
-        ep_ret, ep_cost, ep_len = agent.learn()
+        ep_ret, ep_cost, ep_len = self.agent.learn()
+
+        self._init_statistical_tools()
+
         return ep_ret, ep_len, ep_cost
 
-    # def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
-    #     """Agent Evaluation."""
-    #     assert self.evaluator is not None, 'Please run learn() first!'
-    #     self.evaluator.evaluate(num_episodes, horizon, cost_criteria)
+    def _init_statistical_tools(self):
+        """Init statistical tools."""
+        self._evaluator = Evaluator()
+        self._plotter = Plotter()
 
-    # # pylint: disable-next=too-many-arguments
-    # def render(
-    #     self,
-    #     num_episode: int = 0,
-    #     horizon: int = 1000,
-    #     seed: int = None,
-    #     play=True,
-    #     save_replay_path: Optional[str] = None,
-    # ):
-    #     """Render the environment."""
-    #     assert self.evaluator is not None, 'Please run learn() first!'
-    #     self.evaluator.render(num_episode, horizon, seed, play, save_replay_path)
+    def plot(self, smooth=1):
+        """Plot the training curve.
+
+        Args:
+            smooth (int): window size, for smoothing the curve.
+        """
+        assert self._plotter is not None, 'Please run learn() first!'
+        self._plotter.make_plots(
+            [self.agent.logger.log_dir],
+            None,
+            'Steps',
+            'Rewards',
+            False,
+            self.agent.cost_limit,
+            smooth,
+            None,
+            None,
+            'mean',
+            self.agent.logger.log_dir,
+        )
+
+    def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
+        """Agent Evaluation.
+
+        Args:
+            num_episodes (int): number of episodes to evaluate.
+            cost_criteria (float): the cost criteria to evaluate.
+        """
+        assert self._evaluator is not None, 'Please run learn() first!'
+        for item in os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save')):
+            if item.is_file() and item.name.split('.')[-1] == 'pt':
+                self._evaluator.load_saved(save_dir=self.agent.logger.log_dir, model_name=item.name)
+                self._evaluator.evaluate(num_episodes=num_episodes, cost_criteria=cost_criteria)
+
+    # pylint: disable-next=too-many-arguments
+    def render(
+        self,
+        num_episodes: int = 10,
+        render_mode: str = 'rgb_array',
+        camera_name: str = 'track',
+        width: int = 256,
+        height: int = 256,
+    ):
+        """Evaluate and render some episodes.
+
+        Args:
+            num_episodes (int): number of episodes to render.
+            render_mode (str): render mode, can be 'rgb_array', 'depth_array' or 'human'.
+            camera_name (str): camera name, specify the camera which you use to capture
+                images.
+            width (int): width of the rendered image.
+            height (int): height of the rendered image.
+        """
+        assert self._evaluator is not None, 'Please run learn() first!'
+        for item in os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save')):
+            if item.is_file() and item.name.split('.')[-1] == 'pt':
+                self._evaluator.load_saved(
+                    save_dir=self.agent.logger.log_dir,
+                    model_name=item.name,
+                    render_mode=render_mode,
+                    camera_name=camera_name,
+                    width=width,
+                    height=height,
+                )
+                self._evaluator.render(num_episodes=num_episodes)

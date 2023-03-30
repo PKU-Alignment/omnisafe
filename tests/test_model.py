@@ -96,7 +96,7 @@ def test_actor(
     with pytest.raises(NotImplementedError):
         builder.build_actor(actor_type='invalid')  # type: ignore
 
-    dist = actor_learning(obs)
+    _ = actor_learning(obs)
     action = actor_learning.predict(obs, deterministic)
     assert action.shape == torch.Size([act_dim]), f'actor output shape is {action.shape}'
     lopp = actor_learning.log_prob(action)
@@ -104,7 +104,7 @@ def test_actor(
     actor_learning.std = 0.9  # type: ignore
     assert (actor_learning.std - 0.9) < 1e-4, f'actor std is {actor_learning.std}'  # type: ignore
 
-    dist = actor_sac(obs)
+    _ = actor_sac(obs)
     action = actor_sac.predict(obs, deterministic)
     assert action.shape == torch.Size([act_dim]), f'actor output shape is {action.shape}'
     lopp = actor_sac.log_prob(action)
@@ -139,7 +139,10 @@ def test_actor_critic(
     )
 
     ac = ActorCritic(
-        obs_space=obs_sapce, act_space=act_space, model_cfgs=model_cfgs, epochs=10  # type: ignore
+        obs_space=obs_sapce,
+        act_space=act_space,
+        model_cfgs=model_cfgs,
+        epochs=10,
     )
     obs = torch.randn(obs_dim, dtype=torch.float32)
     act, value, logp = ac(obs)
@@ -150,7 +153,10 @@ def test_actor_critic(
     ac.annealing(5)
 
     cac = ConstraintActorCritic(
-        obs_space=obs_sapce, act_space=act_space, model_cfgs=model_cfgs, epochs=10  # type: ignore
+        obs_space=obs_sapce,
+        act_space=act_space,
+        model_cfgs=model_cfgs,
+        epochs=10,
     )
     obs = torch.randn(obs_dim, dtype=torch.float32)
     act, value_r, value_c, logp = cac(obs)
@@ -166,15 +172,8 @@ def test_actor_critic(
 def test_raise_error(obs_act_type):
     obs_type, act_type = obs_act_type
 
-    if obs_type == 'discrete':
-        obs_sapce = Discrete(10)
-    else:
-        obs_sapce = Box(low=-1.0, high=1.0, shape=(10,))  # type: ignore
-
-    if act_type == 'discrete':
-        act_space = Discrete(5)
-    else:
-        act_space = Box(low=-1.0, high=1.0, shape=(5,))  # type: ignore
+    obs_sapce = Discrete(10) if obs_type == 'discrete' else Box(low=-1.0, high=1.0, shape=(10,))
+    act_space = Discrete(5) if act_type == 'discrete' else Box(low=-1.0, high=1.0, shape=(5,))
 
     builder = ActorBuilder(
         obs_space=obs_sapce,

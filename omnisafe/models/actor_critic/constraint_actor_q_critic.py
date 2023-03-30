@@ -78,12 +78,14 @@ class ConstraintActorQCritic(ActorQCritic):
         self.add_module('cost_critic', self.cost_critic)
 
         self.cost_critic_optimizer = optim.Adam(
-            self.cost_critic.parameters(), lr=model_cfgs.critic.lr
+            self.cost_critic.parameters(),
+            lr=model_cfgs.critic.lr,
         )
 
     def polyak_update(self, tau: float) -> None:
         super().polyak_update(tau)
         for target_param, param in zip(
-            self.target_cost_critic.parameters(), self.cost_critic.parameters()
+            self.target_cost_critic.parameters(),
+            self.cost_critic.parameters(),
         ):
             target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)

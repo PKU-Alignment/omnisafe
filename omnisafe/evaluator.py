@@ -14,10 +14,12 @@
 # ==============================================================================
 """Implementation of Evaluator."""
 
+from __future__ import annotations
+
 import json
 import os
 import warnings
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -38,8 +40,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        render_mode: str = None,
-    ):
+        env: CMDP | None = None,
+        actor: Actor | None = None,
+        render_mode: str | None = None,
+    ) -> None:
         """Initialize the evaluator.
 
         Args:
@@ -48,8 +52,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             obs_normalize (omnisafe.algos.models.obs_normalize): the observation Normalize.
         """
         # set the attributes
-        self._env: CMDP
-        self._actor: Actor
+        self._env: CMDP = env
+        self._actor: Actor = actor
 
         # used when load model from saved file.
         self._cfgs: Config
@@ -58,8 +62,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         self._dividing_line = '\n' + '#' * 50 + '\n'
 
-        if render_mode:
-            self.__set_render_mode(render_mode)
+        self.__set_render_mode(render_mode)
 
     def __set_render_mode(self, render_mode: str):
         """Set the render mode.
@@ -69,7 +72,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             save_replay (bool): whether to save the video.
         """
         # set the render mode
-        if render_mode in ['human', 'rgb_array', 'rgb_array_list']:
+        if render_mode in ['human', 'rgb_array', 'rgb_array_list', None]:
             self._render_mode = render_mode
         else:
             raise NotImplementedError('The render mode is not implemented.')
@@ -86,11 +89,11 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 kwargs = json.load(file)
         except FileNotFoundError as error:
             raise FileNotFoundError(
-                'The config file is not found in the save directory.'
+                f'The config file is not found in the save directory{save_dir}.',
             ) from error
         self._cfgs = Config.dict2config(kwargs)
 
-    def __load_model_and_env(self, save_dir: str, model_name: str, env_kwargs: Dict[str, Any]):
+    def __load_model_and_env(self, save_dir: str, model_name: str, env_kwargs: dict[str, Any]):
         """Load the model from the save directory.
 
         Args:
@@ -139,10 +142,11 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         save_dir: str,
         model_name: str,
-        camera_name: Optional[str] = None,
-        camera_id: Optional[int] = None,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
+        render_mode: str | None = None,
+        camera_name: str | None = None,
+        camera_id: int | None = None,
+        width: int = 256,
+        height: int = 256,
     ):
         """Load a saved model.
 
@@ -155,6 +159,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self._model_name = model_name
 
         self.__load_cfgs(save_dir)
+
+        if render_mode is not None or self._render_mode is None:
+            self.__set_render_mode(render_mode)
 
         env_kwargs = {
             'env_id': self._cfgs['env_id'],
@@ -184,12 +191,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """
         if self._env is None or self._actor is None:
             raise ValueError(
-                'The environment and the policy must be provided or created before evaluating the agent.'
+                'The environment and the policy must be provided or created before evaluating the agent.',
             )
 
-        episode_rewards: List[float] = []
-        episode_costs: List[float] = []
-        episode_lengths: List[float] = []
+        episode_rewards: list[float] = []
+        episode_costs: list[float] = []
+        episode_lengths: list[float] = []
 
         for episode in range(num_episodes):
             obs, _ = self._env.reset()
@@ -240,14 +247,14 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             fps = self._env.metadata['render_fps']
         except AttributeError:
             fps = 30
-            warnings.warn('The fps is not found, use 30 as default.')
+            warnings.warn('The fps is not found, use 30 as default.', stacklevel=2)
 
         return fps
 
     def render(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         self,
         num_episodes: int = 0,
-        save_replay_path: Optional[str] = None,
+        save_replay_path: str | None = None,
         max_render_steps: int = 2000,
         cost_criteria: float = 1.0,
     ):
@@ -273,9 +280,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         elif self._render_mode == 'rgb_array':
             frames.append(self._env.render())
 
-        episode_rewards: List[float] = []
-        episode_costs: List[float] = []
-        episode_lengths: List[float] = []
+        episode_rewards: list[float] = []
+        episode_costs: list[float] = []
+        episode_lengths: list[float] = []
 
         for episode_idx in range(num_episodes):
             step = 0

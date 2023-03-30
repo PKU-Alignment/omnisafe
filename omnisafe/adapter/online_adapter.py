@@ -14,7 +14,7 @@
 # ==============================================================================
 """Online Adapter for OmniSafe."""
 
-from typing import Dict, Tuple
+from __future__ import annotations
 
 import torch
 
@@ -94,8 +94,9 @@ class OnlineAdapter:
         return self._env.observation_space
 
     def step(
-        self, action: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+        self,
+        action: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
@@ -112,7 +113,7 @@ class OnlineAdapter:
         """
         return self._env.step(action)
 
-    def reset(self) -> Tuple[torch.Tensor, Dict]:
+    def reset(self) -> tuple[torch.Tensor, dict]:
         """Resets the environment and returns an initial observation.
 
         Args:
@@ -124,7 +125,7 @@ class OnlineAdapter:
         """
         return self._env.reset()
 
-    def save(self) -> Dict[str, torch.nn.Module]:
+    def save(self) -> dict[str, torch.nn.Module]:
         """Save the environment.
 
         Returns:

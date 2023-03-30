@@ -14,8 +14,9 @@
 # ==============================================================================
 """Implementation of the Policy Gradient algorithm."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Tuple, Union
 
 import torch
 
@@ -47,6 +48,16 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
 
         self._init_log()
 
+    @property
+    def logger(self):
+        """Get the logger."""
+        return self._logger  # pylint: disable=no-member
+
+    @property
+    def cost_limit(self):
+        """Get the cost limit."""
+        return getattr(self._cfgs.algo_cfgs, '_cost_limit', None)
+
     @abstractmethod
     def _init(self) -> None:
         """Initialize the algorithm."""
@@ -64,5 +75,5 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
         """Initialize the logger."""
 
     @abstractmethod
-    def learn(self) -> Tuple[Union[int, float], ...]:
+    def learn(self) -> tuple[int | float, ...]:
         """Learn the policy."""

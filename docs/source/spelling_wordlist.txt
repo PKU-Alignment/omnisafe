@@ -411,3 +411,6 @@ dir
 Martrix
 kaiming
 differentiable
+shs
+mannor
+rgb
