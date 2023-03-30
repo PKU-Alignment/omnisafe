@@ -19,14 +19,14 @@ import sys
 
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
-from omnisafe.typing import NamedTuple, Tuple
+from omnisafe.typing import Tuple
 
 
 def train(
     exp_id: str,
     algo: str,
     env_id: str,
-    custom_cfgs: NamedTuple,
+    custom_cfgs: dict,
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
 
@@ -34,7 +34,7 @@ def train(
         exp_id (str): Experiment ID.
         algo (str): Algorithm to train.
         env_id (str): The name of test environment.
-        custom_cfgs (NamedTuple): Custom configurations.
+        custom_cfgs (dict): Custom configurations.
         num_threads (int, optional): Number of threads. Defaults to 6.
     """
     terminal_log_name = 'terminal.log'
