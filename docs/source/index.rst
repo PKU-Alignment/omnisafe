@@ -390,6 +390,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     envs/core
     envs/wrapper
     envs/safety_gymnasium
+    envs/adapter
 
 
 Indices and tables

@@ -22,8 +22,6 @@ Lagrange Multiplier
         :private-members:
 
 
-
-
 .. currentmodule:: omnisafe.common.pid_lagrange
 
 .. autosummary::

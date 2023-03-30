@@ -3,6 +3,16 @@ Wrapper
 
 .. currentmodule:: omnisafe.envs.wrapper
 
+.. autosummary::
+
+    TimeLimit
+    AutoReset
+    ObsNormalize
+    RewardNormalize
+    CostNormalize
+    ActionScale
+    Unsqueeze
+
 Time Limit Wrapper
 ------------------
 

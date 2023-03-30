@@ -3,6 +3,18 @@ OmniSafe Math
 
 .. currentmodule:: omnisafe.utils.math
 
+.. autosummary::
+
+    get_transpose
+    get_diagonal
+    safe_inverse
+    discount_cumsum
+    conjugate_gradients
+    gaussian_kl
+    SafeTanhTransformer
+    TanhNormal
+    
+
 Tensor Operations
 -----------------
 

@@ -27,7 +27,7 @@ from omnisafe.envs.core import CMDP, env_register
 
 @env_register
 class SafetyGymnasiumEnv(CMDP):
-    """Safety Gymnasium environment.
+    """Safety Gymnasium Environment.
     
     Attributes:
         _support_envs (list[str]): List of supported environments.
@@ -129,8 +129,7 @@ class SafetyGymnasiumEnv(CMDP):
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
             cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended, in which case further step()
-            calls will return undefined results.
+            terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """

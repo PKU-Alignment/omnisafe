@@ -3,6 +3,13 @@ OmniSafe Actor Critic
 
 .. currentmodule:: omnisafe.models.actor_critic
 
+.. autosummary::
+
+    ActorCritic
+    ActorQCritic
+    ConstraintActorCritic
+    ConstraintActorQCritic
+
 Actor Critic
 ------------
 

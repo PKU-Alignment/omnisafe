@@ -84,8 +84,7 @@ class TimeLimit(Wrapper):
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
             cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended, in which case further step()
-            calls will return undefined results.
+            terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
@@ -132,8 +131,7 @@ class AutoReset(Wrapper):
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
             cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended, in which case further step()
-            calls will return undefined results.
+            terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
@@ -192,8 +190,7 @@ class ObsNormalize(Wrapper):
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
             cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended, in which case further step()
-            calls will return undefined results.
+            terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
@@ -280,8 +277,7 @@ class RewardNormalize(Wrapper):
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
             cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended, in which case further step()
-            calls will return undefined results.
+            terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
@@ -340,8 +336,7 @@ class CostNormalize(Wrapper):
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
             cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended, in which case further step()
-            calls will return undefined results.
+            terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
@@ -421,8 +416,7 @@ class ActionScale(Wrapper):
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
             cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended, in which case further step()
-            calls will return undefined results.
+            terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
@@ -466,8 +460,7 @@ class Unsqueeze(Wrapper):
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
             cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended, in which case further step()
-            calls will return undefined results.
+            terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """

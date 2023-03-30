@@ -1,16 +1,11 @@
-Core
-====
+Adapter
+=======
 
-.. currentmodule:: omnisafe.envs.core
+.. currentmodule:: omnisafe.adapter
 
-.. autosummary::
 
-    CMDP
-    Wrapper
-    EnvRegister
-
-CMDP
-----
+Online Adapter
+--------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -19,12 +14,12 @@ CMDP
     Documentation
     ^^^
 
-    .. autoclass:: CMDP
+    .. autoclass:: OnlineAdapter
         :members:
         :private-members:
 
-Wrapper
--------
+On Policy Adapter
+-----------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -33,12 +28,12 @@ Wrapper
     Documentation
     ^^^
 
-    .. autoclass:: Wrapper
+    .. autoclass:: OnPolicyAdapter
         :members:
         :private-members:
 
-Make an environment
--------------------
+Off Policy Adapter
+------------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -47,10 +42,6 @@ Make an environment
     Documentation
     ^^^
 
-    .. autoclass:: EnvRegister
+    .. autoclass:: OffPolicyAdapter
         :members:
         :private-members:
-
-
-
-    .. autofunction:: make

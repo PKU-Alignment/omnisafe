@@ -18,7 +18,6 @@ Base Actor
         :private-members:
 
 
-
 .. currentmodule:: omnisafe.models.actor
 
 .. autosummary::

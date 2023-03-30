@@ -3,6 +3,17 @@ OmniSafe Tools
 
 .. currentmodule:: omnisafe.utils.tools
 
+.. autosummary::
+
+    get_flat_params_from
+    get_flat_gradients_from
+    set_param_values_to_model
+    custom_cfgs_to_dict
+    update_dic
+    load_yaml
+    recursive_check_config
+    seed_all
+
 Algorithms Tools
 ----------------
 

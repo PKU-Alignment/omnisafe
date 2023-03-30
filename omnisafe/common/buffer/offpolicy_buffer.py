@@ -59,6 +59,14 @@ class OffPolicyBuffer(BaseBuffer):
             batch_size (int): The batch size of the buffer.
             device (torch.device, optional): The device of the buffer. Defaults to
                 torch.device('cpu').
+        
+        Attributes:
+            data (dict[str, torch.Tensor]): The data stored in the buffer.
+            _ptr (int): The pointer of the buffer.
+            _size (int): The size of the buffer.
+            _max_size (int): The maximum size of the buffer.
+            _batch_size (int): The batch size of the buffer.
+
         """
         device = torch.device(device)
         super().__init__(obs_space, act_space, size, device)

@@ -3,6 +3,13 @@ OmniSafe Model Utils
 
 .. currentmodule:: omnisafe.utils.model
 
+.. autosummary::
+
+    initialize_layer
+    get_activation
+    build_mlp_network
+    set_optimizer
+
 Model Building Utils
 --------------------
 

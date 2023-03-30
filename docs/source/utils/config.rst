@@ -6,6 +6,12 @@ OmniSafe Config
 .. autosummary::
 
     Config
+    ModelConfig
+    get_default_kwargs_yaml
+    check_all_configs
+    __check_algo_configs
+    __check_logger_configs
+    
 
 Config
 ------

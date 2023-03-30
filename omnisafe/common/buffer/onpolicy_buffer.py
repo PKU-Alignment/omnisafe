@@ -103,6 +103,23 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             standardized_adv_r (bool, optional): Whether to standardize the advantages of the actor. Defaults to False.
             standardized_adv_c (bool, optional): Whether to standardize the advantages of the critic. Defaults to False.
             device (torch.device, optional): The device to store the data. Defaults to torch.device('cpu').
+        
+        Attributes:
+            _standardized_adv_r (bool): Whether to standardize the advantages of the actor.
+            _standardized_adv_c (bool): Whether to standardize the advantages of the critic.
+            _gamma (float): The discount factor.
+            _lam (float): The lambda factor for calculating the advantages.
+            _lam_c (float): The lambda factor for calculating the advantages of the critic.
+            _penalty_coefficient (float): The penalty coefficient.
+            _advantage_estimator (AdvatageEstimator): The advantage estimator.
+            ptr (int): The pointer of the buffer.
+            path_start (int): The start index of the current path.
+            max_size (int): The maximum size of the buffer.
+            data (dict): The data stored in the buffer.
+            obs_space (OmnisafeSpace): The observation space.
+            act_space (OmnisafeSpace): The action space.
+            device (torch.device): The device to store the data.
+
         """
         device = torch.device(device)
         super().__init__(obs_space, act_space, size, device)
