@@ -14,7 +14,7 @@
 # ==============================================================================
 """OffPolicy Adapter for OmniSafe."""
 
-from __future__ import annotations
+from typing import Dict, Optional
 
 import torch
 
@@ -29,12 +29,16 @@ class OffPolicyAdapter(OnlineAdapter):
     """OffPolicy Adapter for OmniSafe."""
 
     def __init__(  # pylint: disable=too-many-arguments
-        self,
-        env_id: str,
-        num_envs: int,
-        seed: int,
-        cfgs: Config,
+        self, env_id: str, num_envs: int, seed: int, cfgs: Config
     ) -> None:
+        """Initialize the off-policy adapter.
+
+        Args:
+            env_id: The environment id.
+            num_envs: The number of environments.
+            seed: The random seed.
+            cfgs: The configuration.
+        """
         super().__init__(env_id, num_envs, seed, cfgs)
 
         self._ep_ret: torch.Tensor
@@ -65,11 +69,11 @@ class OffPolicyAdapter(OnlineAdapter):
             ep_cost = 0
             ep_len = 0
             done = False
-            obs, _ = self._test_env.reset()
+            obs, _ = self._eval_env.reset()
             obs = obs.to(self._device)
             while not done:
                 act = agent.step(obs, deterministic=True)
-                obs, reward, cost, terminated, truncated, info = self._test_env.step(act)
+                obs, reward, cost, terminated, truncated, info = self._eval_env.step(act)
                 obs, reward, cost, terminated, truncated = map(
                     lambda x: torch.as_tensor(x, dtype=torch.float32, device=self._device),
                     (obs, reward, cost, terminated, truncated),
@@ -107,11 +111,10 @@ class OffPolicyAdapter(OnlineAdapter):
         for _ in range(roll_out_step):
             if use_rand_action:
                 act = torch.as_tensor(self._env.sample_action(), dtype=torch.float32).to(
-                    self._device,
+                    self._device
                 )
             else:
                 act = agent.step(self._current_obs, deterministic=False)
-
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
 
             self._log_value(reward=reward, cost=cost, info=info)
@@ -138,7 +141,7 @@ class OffPolicyAdapter(OnlineAdapter):
         self,
         reward: torch.Tensor,
         cost: torch.Tensor,
-        info: dict,
+        info: Dict,
         **kwargs,  # pylint: disable=unused-argument
     ) -> None:
         """Log value."""
@@ -153,10 +156,10 @@ class OffPolicyAdapter(OnlineAdapter):
                 'Metrics/EpRet': self._ep_ret[idx],
                 'Metrics/EpCost': self._ep_cost[idx],
                 'Metrics/EpLen': self._ep_len[idx],
-            },
+            }
         )
 
-    def _reset_log(self, idx: int | None = None) -> None:
+    def _reset_log(self, idx: Optional[int] = None) -> None:
         """Reset log."""
         if idx is None:
             self._ep_ret = torch.zeros(self._env.num_envs)

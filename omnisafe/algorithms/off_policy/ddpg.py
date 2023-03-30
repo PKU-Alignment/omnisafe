@@ -111,13 +111,13 @@ class DDPG(BaseAlgo):
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
 
-        self._logger.register_key('Metrics/EpRet', window_length=10)
-        self._logger.register_key('Metrics/EpCost', window_length=10)
-        self._logger.register_key('Metrics/EpLen', window_length=10)
+        self._logger.register_key('Metrics/EpRet', window_length=50)
+        self._logger.register_key('Metrics/EpCost', window_length=50)
+        self._logger.register_key('Metrics/EpLen', window_length=50)
 
-        self._logger.register_key('Metrics/TestEpRet', window_length=10)
-        self._logger.register_key('Metrics/TestEpCost', window_length=10)
-        self._logger.register_key('Metrics/TestEpLen', window_length=10)
+        self._logger.register_key('Metrics/TestEpRet', window_length=50)
+        self._logger.register_key('Metrics/TestEpCost', window_length=50)
+        self._logger.register_key('Metrics/TestEpLen', window_length=50)
 
         self._logger.register_key('Train/Epoch')
         self._logger.register_key('Train/LR')
@@ -229,7 +229,8 @@ class DDPG(BaseAlgo):
         return ep_ret, ep_cost, ep_len
 
     def _update(self) -> None:
-        for step in range(self._steps_per_sample // self._cfgs.algo_cfgs.update_iters):
+        for step in range(self._cfgs.algo_cfgs.update_iters):
+            self._update_epoch()
             data = self._buf.sample_batch()
             self._update_count += 1
             obs, act, reward, cost, done, next_obs = (

@@ -14,11 +14,11 @@
 # ==============================================================================
 """Online Adapter for OmniSafe."""
 
-from __future__ import annotations
+from typing import Dict, Tuple
 
 import torch
 
-from omnisafe.envs.core import make, support_envs
+from omnisafe.envs.core import CMDP, make, support_envs
 from omnisafe.envs.wrapper import (
     ActionScale,
     AutoReset,
@@ -42,13 +42,30 @@ class OnlineAdapter:
         seed: int,
         cfgs: Config,
     ) -> None:
+        """Initialize the online adapter.
+
+        OmniSafe is a framework for safe reinforcement learning. It is designed to be
+        compatible with any existing RL algorithms. The online adapter is used
+        to adapt the environment to the framework.
+
+        OmniSafe provides a set of adapters to adapt the environment to the framework.
+
+        - OnPolicyAdapter: Adapt the environment to the on-policy framework.
+        - OffPolicyAdapter: Adapt the environment to the off-policy framework.
+        - SauteAdapter: Adapt the environment to the SAUTE framework.
+        - SimmerAdapter: Adapt the environment to the SIMMER framework.
+
+        Args:
+            env_id: The environment id.
+            num_envs: The number of environments.
+            seed: The random seed.
+            cfgs: The configuration.
+        """
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id
         self._env = make(env_id, num_envs=num_envs)
-        self._test_env = make(env_id, num_envs=1)
-        self._cfgs = cfgs
-        self._device = cfgs.train_cfgs.device
+        self._eval_env = make(env_id, num_envs=1)
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
@@ -56,7 +73,10 @@ class OnlineAdapter:
         )
 
         self._env.set_seed(seed)
-        self._test_env.set_seed(seed)
+        self._eval_env.set_seed(seed)
+
+        self._cfgs = cfgs
+        self._device = cfgs.train_cfgs.device
 
     def _wrapper(
         self,
@@ -64,24 +84,43 @@ class OnlineAdapter:
         reward_normalize: bool = True,
         cost_normalize: bool = True,
     ):
+        """Wrapper the environment.
+
+        :class:`OnlineAdapter` provides a set of wrappers as follows:
+
+        .. hint::
+
+            - :class:`TimeLimit`: Limit the maximum number of steps in an episode.
+            - :class:`AutoReset`: Automatically reset the environment when the episode is terminated.
+            - :class:`ObsNormalize`: Normalize the observation.
+            - :class:`RewardNormalize`: Normalize the reward.
+            - :class:`CostNormalize`: Normalize the cost.
+            - :class:`ActionScale`: Scale the action.
+            - :class:`Unsqueeze`: Unsqueeze the observation and action, if the number of environments is 1.
+
+        Args:
+            obs_normalize (bool): Whether to normalize the observation.
+            reward_normalize (bool): Whether to normalize the reward.
+            cost_normalize (bool): Whether to normalize the cost.
+        """
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, time_limit=1000)
-            self._test_env = TimeLimit(self._test_env, time_limit=1000)
+            self._eval_env = TimeLimit(self._eval_env, time_limit=1000)
         if self._env.need_auto_reset_wrapper:
             self._env = AutoReset(self._env)
-            self._test_env = AutoReset(self._test_env)
+            self._eval_env = AutoReset(self._eval_env)
         if obs_normalize:
             self._env = ObsNormalize(self._env)
-            self._test_env = ObsNormalize(self._test_env)
+            self._eval_env = ObsNormalize(self._eval_env)
         if reward_normalize:
-            self._env = RewardNormalize(self._env, device=self._device)
+            self._env = RewardNormalize(self._env)
         if cost_normalize:
             self._env = CostNormalize(self._env)
         self._env = ActionScale(self._env, low=-1.0, high=1.0)
-        self._test_env = ActionScale(self._test_env, low=-1.0, high=1.0)
+        self._eval_env = ActionScale(self._eval_env, low=-1.0, high=1.0)
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env)
-        self._test_env = Unsqueeze(self._test_env)
+        self._eval_env = Unsqueeze(self._eval_env)
 
     @property
     def action_space(self) -> OmnisafeSpace:
@@ -102,9 +141,8 @@ class OnlineAdapter:
         return self._env.observation_space
 
     def step(
-        self,
-        action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+        self, action: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
@@ -126,7 +164,7 @@ class OnlineAdapter:
         )
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self) -> tuple[torch.Tensor, dict]:
+    def reset(self) -> Tuple[torch.Tensor, Dict]:
         """Resets the environment and returns an initial observation.
 
         Args:

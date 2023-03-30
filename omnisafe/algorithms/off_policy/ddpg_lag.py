@@ -45,7 +45,7 @@ class DDPGLag(DDPG):
 
     def _update_epoch(self) -> None:
         super()._update_epoch()
-        Jc = self._logger.get_stats('Metrics/TestEpCost')[0]
+        Jc = self._logger.get_stats('Metrics/EpCost')[0]
         self._lagrange.update_lagrange_multiplier(Jc)
         self._logger.store(
             **{
@@ -63,7 +63,7 @@ class DDPGLag(DDPG):
             self._lagrange.lagrangian_multiplier * self._actor_critic.cost_critic(obs, action)[0]
         )
         return (loss_r + loss_c).mean() / (1 + self._lagrange.lagrangian_multiplier.item())
-    
+
     def _log_when_not_update(self) -> None:
         super()._log_when_not_update()
         self._logger.store(
