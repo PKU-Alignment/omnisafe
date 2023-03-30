@@ -30,6 +30,8 @@ from rich.console import Console
 from tqdm import trange
 
 from omnisafe.algorithms import ALGORITHM2TYPE
+from omnisafe.common.statistics_tools import StatisticsTools
+from omnisafe.evaluator import Evaluator
 from omnisafe.utils.exp_grid_tools import all_bools, valid_str
 from omnisafe.utils.tools import (
     assert_with_exit,
@@ -68,6 +70,9 @@ class ExperimentGrid:
 
         # Whether to automatically insert a date and time stamp into the names of save directories
         self.foce_datastamp = False
+
+        self._statistical_tools: StatisticsTools
+        self._evaluator: Evaluator
 
     def print(self) -> None:
         """Print a helpful report about the experiment grid.
@@ -456,13 +461,14 @@ class ExperimentGrid:
             hashed_exp_name = var['env_id'][:30] + '---' + hash_string(exp_name)
             exp_names.append(':'.join((hashed_exp_name[:5], exp_name)))
             exp_log_dir = os.path.join(self.log_dir, hashed_exp_name, '')
-            var['logger_cfgs'] = {'log_dir': exp_log_dir}
+            var['logger_cfgs'].update({'log_dir': exp_log_dir})
             self.save_same_exps_config(exp_log_dir, var)
             results.append(pool.submit(thunk, idx, var['algo'], var['env_id'], var))
         pool.shutdown()
 
         if not is_test:
             self.save_results(exp_names, variants, results)
+        self._init_statistical_tools()
 
     def save_results(self, exp_names, variants, results):
         """Save results to a file."""
@@ -505,3 +511,95 @@ class ExperimentGrid:
         cfg_path = os.path.join(path, '..', 'configs', algo_type, f"{variant['algo']}.yaml")
         default_config = load_yaml(cfg_path)['defaults']
         recursive_check_config(variant, default_config, exclude_keys=('algo', 'env_id'))
+
+    def _init_statistical_tools(self):
+        """Initialize statistical tools."""
+        self._statistical_tools = StatisticsTools()
+        self._evaluator = Evaluator()
+
+    def analyze(
+        self,
+        parameter: str,
+        values: list = None,
+        compare_num: int = None,
+        cost_limit: float = None,
+    ):
+        """Analyze the experiment results.
+
+        Args:
+            parameter (str): name of parameter to analyze.
+            values (list): specific values of attribute,
+                if it is specified, will only compare values in it.
+            compare_num (int): number of values to compare,
+                if it is specified, will combine any potential combination to compare.
+            cost_limit (float): value for one line showed on graph to indicate cost.
+
+        .. Note::
+            `values` and `compare_num` cannot be set at the same time.
+        """
+        assert self._statistical_tools is not None, 'Please run run() first!'
+        self._statistical_tools.load_source(self.log_dir)
+        self._statistical_tools.draw_graph(parameter, values, compare_num, cost_limit)
+
+    def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
+        """Agent Evaluation.
+
+        Args:
+            num_episodes (int): number of episodes to evaluate.
+            cost_criteria (float): cost criteria for evaluation.
+        """
+        assert self._evaluator is not None, 'Please run run() first!'
+        # pylint: disable-next=too-many-nested-blocks
+        for set_of_params in os.scandir(self.log_dir):
+            if set_of_params.is_dir():
+                for single_exp in os.scandir(set_of_params):
+                    if single_exp.is_dir():
+                        for single_seed in os.scandir(single_exp):
+                            for model in os.scandir(os.path.join(single_seed, 'torch_save')):
+                                if model.is_file() and model.name.split('.')[-1] == 'pt':
+                                    self._evaluator.load_saved(
+                                        save_dir=single_seed,
+                                        model_name=model.name,
+                                    )
+                                    self._evaluator.evaluate(
+                                        num_episodes=num_episodes,
+                                        cost_criteria=cost_criteria,
+                                    )
+
+    # pylint: disable-next=too-many-arguments
+    def render(
+        self,
+        num_episodes: int = 10,
+        render_mode: str = 'rgb_array',
+        camera_name: str = 'track',
+        width: int = 256,
+        height: int = 256,
+    ):
+        """Evaluate and render some episodes.
+
+        Args:
+            num_episodes (int): number of episodes to render.
+            render_mode (str): render mode, can be 'rgb_array', 'depth_array' or 'human'.
+            camera_name (str): camera name, specify the camera which you use to capture
+                images.
+            width (int): width of the rendered image.
+            height (int): height of the rendered image.
+        """
+        assert self._evaluator is not None, 'Please run run() first!'
+        # pylint: disable-next=too-many-nested-blocks
+        for set_of_params in os.scandir(self.log_dir):
+            if set_of_params.is_dir():
+                for single_exp in os.scandir(set_of_params):
+                    if single_exp.is_dir():
+                        for single_seed in os.scandir(single_exp):
+                            for model in os.scandir(os.path.join(single_seed, 'torch_save')):
+                                if model.is_file() and model.name.split('.')[-1] == 'pt':
+                                    self._evaluator.load_saved(
+                                        save_dir=single_seed,
+                                        model_name=model.name,
+                                        render_mode=render_mode,
+                                        camera_name=camera_name,
+                                        width=width,
+                                        height=height,
+                                    )
+                                    self._evaluator.render(num_episodes=num_episodes)

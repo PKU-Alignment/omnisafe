@@ -92,6 +92,7 @@ class StatisticsTools:
                 if it is specified, will only compare values in it.
             compare_num (int): number of values to compare,
                 if it is specified, will combine any potential combination to compare.
+
         .. Note::
             `values` and `compare_num` cannot be set at the same time.
         """
@@ -211,7 +212,7 @@ class StatisticsTools:
             paths = {}
             for path_dict in graph:
                 exp_name = (
-                    path_dict['env_id'][:30] + ':::' + hash_string(recursive_dict2json(path_dict))
+                    path_dict['env_id'][:30] + '---' + hash_string(recursive_dict2json(path_dict))
                 )
                 path = os.path.join(self.exp_dir, exp_name)
                 self.path_map_img_name[path] = img_name_cfgs
