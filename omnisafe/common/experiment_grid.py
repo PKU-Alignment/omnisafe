@@ -525,7 +525,7 @@ class ExperimentGrid:
         cost_limit: float = None,
     ):
         """Analyze the experiment results.
-        
+
         Args:
             parameter (str): name of parameter to analyze.
             values (list): specific values of attribute,
@@ -543,7 +543,7 @@ class ExperimentGrid:
 
     def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
         """Agent Evaluation.
-        
+
         Args:
             num_episodes (int): number of episodes to evaluate.
             cost_criteria (float): cost criteria for evaluation.
@@ -576,7 +576,7 @@ class ExperimentGrid:
         height: int = 256,
     ):
         """Evaluate and render some episodes.
-        
+
         Args:
             num_episodes (int): number of episodes to render.
             render_mode (str): render mode, can be 'rgb_array', 'depth_array' or 'human'.
