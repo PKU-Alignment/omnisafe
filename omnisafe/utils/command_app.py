@@ -245,13 +245,14 @@ def benchmark(
     if gpu_range is not None:
         assert_with_exit(
             len(gpu_range.split(':')) <= 3,
-            'gpu_range must be like 0:2, which means using gpu 0 and 1',
+            'gpu_range must be like x:y:z format,'
+            ' which means using gpu in [x, y) with step size z',
         )
         # Set the device.
         avaliable_gpus = list(range(torch.cuda.device_count()))
         gpu_id = list(range(*[int(i) for i in gpu_range.split(':')]))
 
-        if set(gpu_id) > set(avaliable_gpus):
+        if not set(gpu_id).issubset(set(avaliable_gpus)):
             warnings.warn('The GPU ID is not available, use CPU instead.', stacklevel=1)
             gpu_id = None
 
