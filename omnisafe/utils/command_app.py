@@ -252,7 +252,7 @@ def benchmark(
         avaliable_gpus = list(range(torch.cuda.device_count()))
         gpu_id = list(range(*[int(i) for i in gpu_range.split(':')]))
 
-        if not set(gpu_id).issubset(set(avaliable_gpus)):
+        if not set(gpu_id).issubset(avaliable_gpus):
             warnings.warn('The GPU ID is not available, use CPU instead.', stacklevel=1)
             gpu_id = None
 
