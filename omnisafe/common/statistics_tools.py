@@ -92,7 +92,7 @@ class StatisticsTools:
                 if it is specified, will only compare values in it.
             compare_num (int): number of values to compare,
                 if it is specified, will combine any potential combination to compare.
-
+            cost_limit (float) the cost limit to show in graphs by a single line.
         .. Note::
             `values` and `compare_num` cannot be set at the same time.
         """
@@ -181,7 +181,7 @@ class StatisticsTools:
                 compare_num <= len(parameter_values),
                 (
                     f'compare_num `{compare_num}` is larger than number of values '
-                    '`{len(parameter_values)}` of parameter `{parameter}`',
+                    '`{len(parameter_values)}` of parameter `{parameter}`'
                 ),
             )
             # if compare_num is specified, will combine any potential combination to compare
@@ -192,7 +192,8 @@ class StatisticsTools:
         group_config.pop(parameter)
         # seed is not a parameter
         group_config.pop('seed')
-
+        if 'train_cfgs' in group_config:
+            group_config['train_cfgs'].pop('device', None)
         # combine all possible combinations of other parameters
         # fix them in a single graph and only vary values of parameter which is specified by us
         for pinned_config in self.dict_permutations(group_config):
