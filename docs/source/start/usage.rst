@@ -13,7 +13,7 @@ Quick Facts
     #. You can customize the configuration of the algorithm by running :bdg-info-line:`omnisafe train-config` .
     #. You can run a benchmark by running :bdg-info-line:`omnisafe benchmark` .
     #. You can run an evaluation by running :bdg-info-line:`omnisafe eval` .
-
+    #. You can get some helps by running :bdg-info-line:`omnisafe help` .
 
 Train policy
 ------------
@@ -60,7 +60,7 @@ Customize Configuration
 
     .. code-block:: bash
 
-        omnisafe train-config ./saved_source/train_config.yaml
+        omnisafe train-config "./saved_source/train_config.yaml"
 
     Here we provide a video example:
 
@@ -69,7 +69,7 @@ Customize Configuration
         <script async id="asciicast-qCptIXhxYB2MWEytijrriVhUm" src="https://asciinema.org/a/qCptIXhxYB2MWEytijrriVhUm.js"></script>
 
 .. hint::
-    The above command will generate a configuration file ``train_config.yaml`` in the ``saved_source`` directory. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the algorithm in this file.
+    The above command will use a configuration file `train_config.yaml <https://github.com/PKU-MARL/omnisafe/blob/main/tests/saved_source/train_config.yaml>`_ in the `saved_source <https://github.com/PKU-MARL/omnisafe/tree/main/tests/saved_source>`_ directory to train policy. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the algorithm in this file.
 
 Run Benchmark
 -------------
@@ -84,7 +84,7 @@ Run Benchmark
 
     .. code-block:: bash
 
-        omnisafe benchmark benchmark 2 ./saved_source/benchmark_config.yaml
+        omnisafe benchmark test_benchmark 2 "./saved_source/benchmark_config.yaml"
 
     Here we provide a video example:
 
@@ -93,7 +93,7 @@ Run Benchmark
         <script async id="asciicast-gg6edB7OWiFENACpQzpfgFRx6" src="https://asciinema.org/a/gg6edB7OWiFENACpQzpfgFRx6.js"></script>
 
 .. hint::
-    The above command will run a benchmark with 2 CPU cores. The configuration file ``benchmark_config.yaml`` is in the ``saved_source`` directory. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the benchmark in this file.
+    The above command will run a benchmark with 2 CPU threads. The configuration file `benchmark_config.yaml <https://github.com/PKU-MARL/omnisafe/blob/main/tests/saved_source/benchmark_config.yaml>`_ is in the `saved_source <https://github.com/PKU-MARL/omnisafe/tree/main/tests/saved_source>`_ directory. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the benchmark in this file.
 
 Run Evaluation
 --------------
@@ -108,7 +108,7 @@ Run Evaluation
 
     .. code-block:: bash
 
-        omnisafe eval 2 ./saved_source/evaluate_config.yaml
+        omnisafe eval ./saved_source/PPO-{SafetyPointGoal1-v0} "--num-episode" "1"
 
     Here we provide a video example:
 
@@ -117,7 +117,7 @@ Run Evaluation
         <script async id="asciicast-UbRWY6EI6Nl7R27Lk3Rpk4HI5" src="https://asciinema.org/a/UbRWY6EI6Nl7R27Lk3Rpk4HI5.js"></script>
 
 .. hint::
-    The above command will run an evaluation with 2 CPU cores. The configuration file ``evaluate_config.yaml`` is in the ``saved_source`` directory. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the evaluation in this file.
+    The above command will run an evaluation with 2 CPU threads. The model parameters is in the `saved_source <https://github.com/PKU-MARL/omnisafe/tree/main/tests/saved_source>`_ directory.
 
 Get Help
 --------

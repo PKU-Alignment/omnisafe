@@ -7,7 +7,8 @@ In this section, we will introduce the notations used in this tutorial.
 In Reinforcement Learning, we often use the following two basic notations:
 **Linear Algebra** and **Constrained Markov Decision Processes**.
 Make sure you are familiar with this section before you start.
-You can return to this section any time you are puzzled by some notations in the following chapters.
+You can return to this section any time you are puzzled by some notations
+in the following chapters.
 
 Linear Algebra
 --------------
@@ -95,7 +96,8 @@ It is a tuple :math:`\mathcal{M}=\{\mathcal{S}, \mathcal{A}, \mathbb{P}, r, \mu,
    -  :math:`\gamma\in(0,1)` is the discount factor.
 
 A stationary parameterized policy :math:`\pi_{\theta}` is a probability distribution defined on :math:`\mathcal{S}\times\mathcal{A}`,
-:math:`\pi_{\theta}(a|s)` denotes the probability of playing :math:`a` in state :math:`s`. With explicit notation dropped to reduce clutter,
+:math:`\pi_{\theta}(a|s)` denotes the probability of playing :math:`a` in state :math:`s`.
+With explicit notation dropped to reduce clutter,
 we use :math:`\boldsymbol{\theta}` to represent :math:`\pi_{\theta}`.
 
 .. tab-set::
@@ -142,7 +144,7 @@ we use :math:`\boldsymbol{\theta}` to represent :math:`\pi_{\theta}`.
 
             where :math:`s_0 \sim \mu` and the actions are chosen according to :math:`\pi`.
 
-            Let :math:`d_{\boldsymbol{\pi}}` be the (unnormalized) discounted visitation frequencies here need to explain :math:`\mathbb{P}` and P.
+            Let :math:`d_{\boldsymbol{\pi}}` be the (unnormalized) discounted visitation frequencies here need to explain :math:`\mathbb{P}`.
 
             .. math::
 
@@ -207,6 +209,41 @@ we use :math:`\boldsymbol{\theta}` to represent :math:`\pi_{\theta}`.
             .. math:: A^{C}_{\boldsymbol{\theta}}(s, a) \doteq Q^{C}_{\boldsymbol{\theta}}(s, a)-V^{C}_{\boldsymbol{\theta}}(s).
 
             To summarize all of the above notation, we show the following table,
+
+            .. table::
+
+               :width: 100%
+               :align: center
+               :caption: List of Symbols and Notation
+               :label: undefined
+
+               +------+--------------------------------+--------------------------------------------------------------------------------------+
+               | | Symbol | Definition |
+               +======+================================+======================================================================================+
+               | | $\bm{\tau}$ | $\tau$ is a trajectory that consist of $\left(s_0, a_0, s_1, a_0, \cdots\right)$ |
+               +------+--------------------------------+--------------------------------------------------------------------------------------+
+               | | $\pi_{\theta}, \btheta$ | A stationary parameterized policy $\pi_{\theta}$ is a probability distribution |
+               | | | defined on $\mathcal{S}\times\mathcal{A}$, $\pi_{\theta}(a|s)$ denotes the |
+               | | | probability of playing $a$ in state $s$. |
+               +------+--------------------------------+--------------------------------------------------------------------------------------+
+               | | $J^R(\pi_{\theta}),~ J^R(\bm{\theta})$ | The expected discounted reward over trajectories, depending on a stationary |
+               | | | parameterized policy $\pi_{\theta}$. |
+               +------+--------------------------------+--------------------------------------------------------------------------------------+
+               | | $J^{\mathcal{C}}(\pi_{\theta}),~ J^{\mathcal{C}}(\bm{\theta})$ | The expected discounted cost over trajectories, depending on a stationary |
+               | | | parameterized policy $\pi_{\theta}$. |
+               +------+--------------------------------+--------------------------------------------------------------------------------------+
+               | | $Q_{\pi_{\theta}}^{R}, Q_{\btheta}^{R}$ | The state action value function for reward. |
+               +------+--------------------------------+--------------------------------------------------------------------------------------+
+               | | $Q_{\pi_{\theta}}^{\mathcal{C}i}, Q{\btheta}^{\mathcal{C}i}$ | The state action value function for cost. |
+               +------+--------------------------------+--------------------------------------------------------------------------------------+
+               | | $V{\pi_{\theta}}^{R}, V_{\btheta}^{R}$ | The value function for reward. |
+               +------+--------------------------------+--------------------------------------------------------------------------------------+
+               | | $V_{\pi_{\theta}}^{\mathcal{C}i}, V{\btheta}^{\mathcal{C}i}$ | The value function for cost. |
+               +------+--------------------------------+--------------------------------------------------------------------------------------+
+               | | $A{\pi_{\theta}}^{R}, A_{\btheta}^{R}$ | The advantage function for reward. |
+               +------+--------------------------------+--------------------------------------------------------------------------------------+
+               | | $A_{\pi_{\theta}}^{\mathcal{C}i}, A{\btheta}^{\mathcal{C}_i}$ | The advantage function for cost. |
+               +------+--------------------------------+--------------------------------------------------------------------------------------+
 
 References
 ----------
