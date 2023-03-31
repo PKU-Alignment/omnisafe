@@ -250,28 +250,28 @@ class ExperimentGrid:
 
         return var_name.lstrip('_')
 
-    def update_dict(self, total_dic, item_dic):
+    def update_dict(self, total_dict, item_dict):
         """Updater of multi-level dictionary.
 
         This function is used to update the total dictionary with the item
         dictionary.
 
         Args:
-            total_dic (dict): Total dictionary.
-            item_dic (dict): Item dictionary.
+            total_dict (dict): Total dictionary.
+            item_dict (dict): Item dictionary.
         """
-        for idd in item_dic:
-            total_value = total_dic.get(idd)
-            item_value = item_dic.get(idd)
+        for idd in item_dict:
+            total_value = total_dict.get(idd)
+            item_value = item_dict.get(idd)
 
             if total_value is None:
-                total_dic.update({idd: item_value})
+                total_dict.update({idd: item_value})
             elif isinstance(item_value, dict):
                 self.update_dict(total_value, item_value)
-                total_dic.update({idd: total_value})
+                total_dict.update({idd: total_value})
             else:
                 total_value = item_value
-                total_dic.update({idd: total_value})
+                total_dict.update({idd: total_value})
 
     def _variants(self, keys, vals):
         """Recursively builds list of valid variants.
