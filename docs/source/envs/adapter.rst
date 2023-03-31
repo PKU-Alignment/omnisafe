@@ -1,21 +1,11 @@
-The Lagrange Algorithms
-=======================
+Adapter
+=======
 
-.. currentmodule:: omnisafe.algorithms.on_policy
-
-.. autosummary::
-
-    PPOLag
-    TRPOLag
+.. currentmodule:: omnisafe.adapter
 
 
-
-.. _ppolagapi:
-
-
-
-PPOLag
-------
+Online Adapter
+--------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -24,14 +14,12 @@ PPOLag
     Documentation
     ^^^
 
-    .. autoclass:: PPOLag
+    .. autoclass:: OnlineAdapter
         :members:
         :private-members:
 
-
-
-TRPOLag
--------
+On Policy Adapter
+-----------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -40,14 +28,12 @@ TRPOLag
     Documentation
     ^^^
 
-    .. autoclass:: TRPOLag
+    .. autoclass:: OnPolicyAdapter
         :members:
         :private-members:
 
-
-
-CRPO
-----
+Off Policy Adapter
+------------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -56,6 +42,6 @@ CRPO
     Documentation
     ^^^
 
-    .. autoclass:: OnCRPO
+    .. autoclass:: OffPolicyAdapter
         :members:
         :private-members:

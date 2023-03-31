@@ -89,7 +89,7 @@ Norms
 
             -  **0-norm:**
                :math:`\|\boldsymbol{x}\|_0=\sum_{i=1}^n \mathbb{I}\left(\left|x_i\right|>0\right)`.
-               This is a pseudo-norm, since it does not satisfy homogeneity. It
+               This is a pseudo-norm since it does not satisfy homogeneity. It
                counts the number of non-zero elements in :math:`\boldsymbol{x}`. If we
                define :math:`0^0=0`, we can write this as
                :math:`\|\boldsymbol{x}\|_0=\sum_{i=1}^n x_i^0`
@@ -115,8 +115,8 @@ Norms
 
             .. math:: \|\mathbf{A}\|_2=\sqrt{\lambda_{\max }\left(\mathbf{A}^{\top} \mathbf{A}\right)}=\max _i \sigma_i
 
-            where :math:`\sigma_i` is the :math:`i^{th}`  singular value. The nuclear
-            norm, also called the trace norm, is defined as
+            where :math:`\sigma_i` is the :math:`i^{th}`  singular value. The Nuclear
+            norm also called the trace norm, is defined as
 
             .. math:: \|\mathbf{A}\|_*=\operatorname{tr}\left(\sqrt{\mathbf{A}^{\top} \mathbf{A}}\right)=\sum_i \sigma_i
 
@@ -126,7 +126,7 @@ Norms
             .. math:: \|\mathbf{A}\|_*=\sum_i\left|\sigma_i\right|=\|\boldsymbol{\sigma}\|_1
 
             Using this as a regularizer encourages many singular values to become
-            zero, resulting in a low rank matrix. More generally, we can define the
+            zero, resulting in a low-rank matrix. More generally, we can define the
             Schatten :math:`p`-norm as
 
             .. math:: \|\mathbf{A}\|_p=\left(\sum_i \sigma_i^p(\mathbf{A})\right)^{1 / p}

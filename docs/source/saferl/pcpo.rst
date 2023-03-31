@@ -10,8 +10,9 @@ Quick Facts
 
     #. PCPO is an :bdg-info-line:`on-policy` algorithm.
     #. PCPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
-    #. PCPO is an improvement work done on the basis of :bdg-info-line:`CPO` .
+    #. PCPO is an improvement work done based on:bdg-info-line:`CPO` .
     #. The OmniSafe implementation of PCPO support :bdg-success-line:`parallelization`.
+    #. An :bdg-ref-info-line:`API Documentation <pcpoapi>` is available for PCPO.
 
 
 PCPO Theorem
@@ -22,16 +23,16 @@ Background
 
 **Projection-Based Constrained Policy Optimization (PCPO)** is an iterative method for optimizing policy in a **two-stage process**: the first stage performs a local reward improvement update, while the second stage reconciles any constraint violation by projecting the policy back onto the constraint set.
 
-PCPO is an improvement work done on the basis of **CPO** (:doc:`../saferl/cpo`).
+PCPO is an improvement work done based on **CPO** (:doc:`../saferl/cpo`).
 It provides a lower bound on reward improvement,
 and an upper bound on constraint violation, for each policy update just like CPO does.
 PCPO further characterizes the convergence of PCPO based on two different metrics: :math:`L2` norm and KL divergence.
 
-In a word, PCPO is a CPO-based algorithm dedicated to solving problem of learning control policies that optimize a reward function, while satisfying constraints due to considerations of safety, fairness, or other costs.
+In a word, PCPO is a CPO-based algorithm dedicated to solving the problem of learning control policies that optimize a reward function, while satisfying constraints due to considerations of safety, fairness, or other costs.
 
 .. hint::
 
-    If you have not previously learned the CPO type of algorithm, in order to facilitate your complete understanding of the PCPO algorithm ideas introduced in this section, we strongly recommend that you read this article after reading the CPO tutorial (:doc:`./cpo`) we wrote.
+    If you have not previously learned the CPO type of algorithm, to facilitate your complete understanding of the PCPO algorithm ideas introduced in this section, we strongly recommend that you read this article after reading the CPO tutorial (:doc:`./cpo`) we wrote.
 
 ------
 
@@ -51,7 +52,7 @@ In the previous chapters, you learned that CPO solves the following optimization
 where :math:`\Pi_{\theta}\subseteq\Pi` denotes the set of parametrized policies with parameters :math:`\theta`, and :math:`D` is some distance measure.
 In local policy search for CMDPs, we additionally require policy iterates to be feasible for the CMDP, so instead of optimizing over :math:`\Pi_{\theta}`, PCPO optimizes over :math:`\Pi_{\theta}\cap\Pi_{C}`.
 Next, we will introduce you to how PCPO solves the above optimization problems.
-In order for you to have a clearer understanding, we hope that you will read the next section with the following questions:
+For you to have a clearer understanding, we hope that you will read the next section with the following questions:
 
 .. card::
     :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
@@ -59,7 +60,7 @@ In order for you to have a clearer understanding, we hope that you will read the
 
     Questions
     ^^^
-    -  What is two-stage policy update and how?
+    -  What is a two-stage policy update and how?
 
     -  What is performance bound for PCPO and how PCPO get it?
 
@@ -191,11 +192,11 @@ For the two cases where the agent satisfies the constraint and does not satisfy 
 Practical Implementation
 ------------------------
 
-Implementation of Two-stage Update
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Implementation of a Two-stage Update
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For a large neural network policy with hundreds of thousands of parameters, directly solving for the PCPO update in :eq:`pcpo-eq-2` and :eq:`pcpo-eq-3` is impractical due to the computational cost.
-PCPO proposes that with a small step size :math:`\delta`, the reward function and constraints and the KL divergence constraint in the reward improvement step can be approximated with a first order expansion, while the KL divergence measure in the projection step can also be approximated with a second order expansion.
+PCPO proposes that with a small step size :math:`\delta`, the reward function and constraints and the KL divergence constraint in the reward improvement step can be approximated with a first-order expansion, while the KL divergence measure in the projection step can also be approximated with a second order expansion.
 
 .. tab-set::
 
@@ -216,7 +217,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
 
             :math:`a\doteq\nabla_\theta\underset{\substack{s\sim d^{\pi_k}a\sim \pi}}{\mathbb{E}}[A_{\pi_k}^{C}(s,a)]` is the gradient of the cost advantage function,
 
-            where :math:`\boldsymbol{H}_{i,j}\doteq \frac{\partial^2 \underset{s\sim d^{\pi_{k}}}{\mathbb{E}}\big[KL(\pi ||\pi_{k})[s]\big]}{\partial \theta_j\partial \theta_j}` is the Hessian of the KL divergence constraint (:math:`\boldsymbol{H}` is also called the Fisher information matrix. It is symmetric positive semi-definite), :math:`b\doteq J^{C}(\pi_k)-d` is the constraint violation of the policy :math:`\pi_{k}`, and :math:`\theta` is the parameter of the policy. PCPO linearize the objective function at :math:`\pi_k` subject to second order approximation of the KL divergence constraint in order to obtain the following updates:
+            where :math:`\boldsymbol{H}_{i,j}\doteq \frac{\partial^2 \underset{s\sim d^{\pi_{k}}}{\mathbb{E}}\big[KL(\pi ||\pi_{k})[s]\big]}{\partial \theta_j\partial \theta_j}` is the Hessian of the KL divergence constraint (:math:`\boldsymbol{H}` is also called the Fisher information matrix. It is symmetric positive semi-definite), :math:`b\doteq J^{C}(\pi_k)-d` is the constraint violation of the policy :math:`\pi_{k}`, and :math:`\theta` is the parameter of the policy. PCPO linearize the objective function at :math:`\pi_k` subject to second order approximation of the KL divergence constraint to obtain the following updates:
 
             .. math::
                 :label: pcpo-eq-6
@@ -225,7 +226,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
                 \text{s.t.}\quad &\frac{1}{2}(\theta-\theta_{k})^{T}\boldsymbol{H}(\theta-\theta_k)\le \delta . \label{eq:update1}
 
 
-            In fact, the above problem is essentially an optimization problem presented in TRPO, which can be completely solved using the method we introduced in the TRPO tutorial.
+            The above problem is essentially an optimization problem presented in TRPO, which can be completely solved using the method we introduced in the TRPO tutorial.
             +++
             The Omnisafe code of the :bdg-success-line:`Implementation of Stage I` can be seen in the :bdg-success:`Code with Omnisafe`, click on this :bdg-success-line:`card` to jump to view.
 
@@ -241,7 +242,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
             Projection Stage
             ^^^
             PCPO provides a selection reference for distance measures: if the projection is defined in the parameter space, :math:`L2` norm projection is selected, while if the projection is defined in the probability space, KL divergence projection is better.
-            This can be approximated through the second order expansion.
+            This can be approximated through the second-order expansion.
             Again, PCPO linearize the cost constraint at :math:`\pi_{k}`.
             This gives the following update for the projection step:
 
@@ -256,7 +257,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
             +++
             The Omnisafe code of the :bdg-success-line:`Implementation of Stage II` can be seen in the :bdg-success:`Code with Omnisafe`, click on this :bdg-success-line:`card` to jump to view.
 
-PCPO solves Problem :eq:`cpo-eq-4` and Problem :eq:`pcpo-eq-5` using :bdg-success-line:`convex programming`, see detailed in :bdg-ref-success:`Appendix<convex-programming>`.
+PCPO solves :eq:`cpo-eq-4` and :eq:`pcpo-eq-5` using :bdg-success-line:`convex programming`, see detailed in :bdg-ref-success:`Appendix<convex-programming>`.
 
 For each policy update:
 
@@ -272,7 +273,7 @@ For each policy update:
 .. hint::
 
     :math:`\boldsymbol{H}` is assumed invertible and PCPO requires to invert :math:`\boldsymbol{H}`, which is impractical for huge neural network policies.
-    Hence it use the conjugate gradient method.
+    Hence it uses the conjugate gradient method.
     (See appendix for a discussion of the trade-off between the approximation error, and computational efficiency of the conjugate gradient method.)
 
 .. grid:: 2
@@ -291,7 +292,7 @@ For each policy update:
 
                     Question
                     ^^^
-                    Is using linear approximation to the constraint set enough to ensure constraint satisfaction since the real constraint set is maybe non-convex?
+                    Is using a linear approximation to the constraint set enough to ensure constraint satisfaction since the real constraint set is maybe non-convex?
 
             .. tab-item:: Question II
                 :sync: key2
@@ -302,7 +303,7 @@ For each policy update:
 
                     Question
                     ^^^
-                    Can PCPO solve the multi-constraint problem? And how PCPO actually do that?
+                    Can PCPO solve the multi-constraint problem? And how PCPO do that?
 
     .. grid-item::
         :columns: 12 6 6 7
@@ -318,7 +319,7 @@ For each policy update:
 
                     Answer
                     ^^^
-                    In fact, if the step size :math:`\delta` is small, then the linearization of the constraint set is accurate enough to locally approximate it.
+                    If the step size :math:`\delta` is small, then the linearization of the constraint set is accurate enough to locally approximate it.
 
             .. tab-item:: Answer II
                 :sync: key2
@@ -337,7 +338,7 @@ For each policy update:
 Analysis
 ~~~~~~~~
 
-The update rule in :eq:`pcpo-eq-5` shows that the difference between PCPO with KL divergence and :math:`L2` norm projections is **the cost update direction**, leading to a difference in reward improvement.
+The update rule in :eq:`pcpo-eq-5` shows that the difference between PCPO with KL divergence and :math:`L2` norm projections are **the cost update direction**, leading to a difference in reward improvement.
 These two projections converge to different stationary points with different convergence rates related to the smallest and largest singular values of the Fisher information matrix shown in :bdg-info-line:`Theorem 3`.
 PCPO assumes that: PCPO minimizes the negative reward objective function :math:`f: \mathbb{R}^n \rightarrow \mathbb{R}` .
 The function :math:`f` is :math:`L`-smooth and twice continuously differentiable over the closed and convex constraint set :math:`\mathcal{C}`.
@@ -452,7 +453,7 @@ Quick start
         .. tab-item:: Terminal config style
 
             We use ``train_policy.py`` as the entrance file. You can train the agent with PCPO simply using ``train_policy.py``, with arguments about PCPO and environments does the training.
-            For example, to run PCPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
+            For example, to run PCPO in SafetyPointGoal1-v0 , with 1 torch thread and seed 0, you can use the following command:
 
             .. code-block:: bash
                 :linenos:
@@ -465,23 +466,20 @@ Quick start
 Architecture of functions
 """""""""""""""""""""""""
 
--  ``pcpo.learn()``
+- ``PCPO.learn()``
 
-   -  ``env.roll_out()``
-   -  ``pcpo.update()``
+  - ``PCPO._env.roll_out()``
+  - ``PCPO._update()``
 
-      -  ``pcpo.buf.get()``
-      -  ``pcpo.update_policy_net()``
+    - ``PCPO._buf.get()``
+    - ``PCPO._update_actor()``
 
-         -  ``Fvp()``
-         -  ``conjugate_gradients()``
-         -  ``search_step_size()``
+      - ``PCPO._fvp()``
+      - ``conjugate_gradients()``
+      - ``PCPO._cpo_search_step()``
 
-
-      -  ``pcpo.update_cost_net()``
-      -  ``pcpo.update_value_net()``
-
--  ``pcpo.log()``
+    - ``PCPO._update_cost_critic()``
+    - ``PCPO._update_reward_critic()``
 
 ------
 
@@ -497,7 +495,7 @@ Documentation of basic functions
 
         env.roll_out()
         ^^^
-        Collect data and store to experience buffer.
+        Collect data and store it to experience buffer.
 
     .. card::
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
@@ -522,7 +520,7 @@ Documentation of basic functions
         :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
-        pcpo.update_policy_net()
+        pcpo._update_actor
         ^^^
         Update policy network in 5 kinds of optimization case
 
@@ -531,7 +529,7 @@ Documentation of basic functions
         :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
-        pcpo.update_value_net()
+        pcpo._update_reward_critic
         ^^^
         Update Critic network for estimating reward.
 
@@ -540,7 +538,7 @@ Documentation of basic functions
         :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
-        pcpo.update_cost_net()
+        pcpo._update_cost_critic
         ^^^
         Update Critic network for estimating cost.
 
@@ -555,19 +553,19 @@ Documentation of basic functions
 
 ------
 
-Documentation of new functions
-""""""""""""""""""""""""""""""
+Documentation of algorithm specific functions
+"""""""""""""""""""""""""""""""""""""""""""""
 
 .. tab-set::
 
-    .. tab-item:: pcpo.update_policy_net()
+    .. tab-item:: pcpo._update_actor()
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            pcpo.update_policy_net()
+            pcpo._update_actor()
             ^^^
             Update the policy network, flowing the next steps:
 
@@ -576,22 +574,25 @@ Documentation of new functions
             .. code-block:: python
                 :linenos:
 
-                self.pi_optimizer.zero_grad()
-                loss_pi, pi_info = self.compute_loss_pi(data=data)
-                loss_pi.backward()
-                g_flat = get_flat_gradients_from(self.ac.pi.net)
-                g_flat *= -1
-
+                theta_old = get_flat_params_from(self._actor_critic.actor)
+                self._actor_critic.actor.zero_grad()
+                loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
+                loss_reward_before = distributed.dist_avg(loss_reward).item()
+                p_dist = self._actor_critic.actor(obs)
 
             (2) Get the policy cost performance gradient b (flat as vector)
 
             .. code-block:: python
                 :linenos:
 
-                self.pi_optimizer.zero_grad()
-                loss_cost, _ = self.compute_loss_cost_performance(data=data)
+                self._actor_critic.zero_grad()
+                loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
+                loss_cost_before = distributed.dist_avg(loss_cost).item()
+
                 loss_cost.backward()
-                b_flat = get_flat_gradients_from(self.ac.pi.net)
+                distributed.avg_grads(self._actor_critic.actor)
+
+                b_grad = get_flat_gradients_from(self._actor_critic.actor)
 
 
             (3) Build the Hessian-vector product based on an approximation of the KL-divergence, using ``conjugate_gradients``
@@ -599,24 +600,29 @@ Documentation of new functions
             .. code-block:: python
                 :linenos:
 
-                p = conjugate_gradients(self.Fvp, b_flat, self.cg_iters)
+                p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
                 q = xHx
-                r = g_flat.dot(p)  # g^T H^{-1} b
-                s = b_flat.dot(p)  # b^T H^{-1} b
+                r = grad.dot(p)
+                s = b_grad.dot(p)
 
             (4) Determine step direction and apply SGD step after grads where set (By ``adjust_cpo_step_direction()``)
 
             .. code-block:: python
                 :linenos:
 
-                final_step_dir, accept_step = self.adjust_cpo_step_direction(
-                step_dir,
-                g_flat,
-                c=c,
-                optim_case=2,
-                p_dist=p_dist,
-                data=data,
-                total_steps=20,
+                step_direction, accept_step = self._cpo_search_step(
+                    step_direction=step_direction,
+                    grad=grad,
+                    p_dist=p_dist,
+                    obs=obs,
+                    act=act,
+                    logp=logp,
+                    adv_r=adv_r,
+                    adv_c=adv_c,
+                    loss_reward_before=loss_reward_before,
+                    loss_cost_before=loss_cost_before,
+                    total_steps=200,
+                    violation_c=ep_costs,
                 )
 
             (5) Update actor network parameters
@@ -624,192 +630,124 @@ Documentation of new functions
             .. code-block:: python
                 :linenos:
 
-                new_theta = theta_old + final_step_dir
-                set_param_values_to_model(self.ac.pi.net, new_theta)
-
-    .. tab-item:: pcpo.adjust_cpo_step_direction()
-
-        .. card::
-            :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-            :class-footer: sd-font-weight-bold
-
-            pcpo.adjust_cpo_step_direction()
-            ^^^
-            PCPO algorithm performs line-search to ensure constraint satisfaction for rewards and costs, flowing the next steps:
-
-            (1) Calculate the expected reward improvement.
-
-            .. code-block:: python
-                :linenos:
-
-                expected_rew_improve = g_flat.dot(step_dir)
-
-            (2) Performs line-search to find a step improve the surrogate while not violating trust region.
-
-            - Search acceptance step ranging from 0 to total step
-
-            .. code-block:: python
-                :linenos:
-
-                for j in range(total_steps):
-                new_theta = _theta_old + step_frac * step_dir
-                set_param_values_to_model(self.ac.pi.net, new_theta)
-                acceptance_step = j + 1
-
-            - In each step of for loop, calculate the policy performance and KL divergence.
-
-            .. code-block:: python
-                :linenos:
-
-                with torch.no_grad():
-                    loss_pi_rew, _ = self.compute_loss_pi(data=data)
-                    loss_pi_cost, _ = self.compute_loss_cost_performance(data=data)
-                    q_dist = self.ac.pi.dist(data['obs'])
-                    torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-                loss_rew_improve = self.loss_pi_before - loss_pi_rew.item()
-                cost_diff = loss_pi_cost.item() - self.loss_pi_cost_before
-
-            - Step only if surrogate is improved and within the trust region.
-
-            .. code-block:: python
-                :linenos:
-
-                if not torch.isfinite(loss_pi_rew) and not torch.isfinite(loss_pi_cost):
-                    self.logger.log('WARNING: loss_pi not finite')
-                elif loss_rew_improve < 0 if optim_case > 1 else False:
-                    self.logger.log('INFO: did not improve improve <0')
-
-                elif cost_diff > max(-c, 0):
-                    self.logger.log(f'INFO: no improve {cost_diff} > {max(-c, 0)}')
-                elif torch_kl > self.target_kl * 1.5:
-                    self.logger.log(f'INFO: violated KL constraint {torch_kl} at step {j + 1}.')
-                else:
-                    self.logger.log(f'Accept step at i={j + 1}')
-                    break
-
-            (3) Return appropriate step direction and acceptance step.
+                theta_new = theta_old + step_direction
+                set_param_values_to_model(self._actor_critic.actor, theta_new)
 
 ------
 
-Parameters
+Configs
 """"""""""
 
 .. tab-set::
 
-    .. tab-item:: Specific Parameters
+    .. tab-item:: Train
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Specific Parameters
+            Train Configs
             ^^^
-            -  target_kl(float): Constraint for KL-distance to avoid too far gap
-            -  cg_damping(float): parameter plays a role in building Hessian-vector
-            -  cg_iters(int): Number of iterations of conjugate gradient to perform.
-            -  cost_limit(float): Constraint for agent to avoid too much cost
 
-    .. tab-item:: Basic parameters
+            - device (str): Device to use for training, options: ``cpu``, ``cuda``,``cuda:0``, etc.
+            - torch_threads (int): Number of threads to use for PyTorch.
+            - total_steps (int): Total number of steps to train the agent.
+            - parallel (int): Number of parallel agents, similar to A3C.
+            - vector_env_nums (int): Number of the vector environments.
+
+    .. tab-item:: Algorithm
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Basic parameters
+            Algorithms Configs
             ^^^
-            -  algo (string): The name of algorithm corresponding to current class,
-               it does not actually affect any things which happen in the following.
-            -  actor (string): The type of network in actor, discrete or continuous.
-            -  model_cfgs (dictionary) : Actor and critic's net work configuration,
-               it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
-               -  shared_weights (bool) : Use shared weights between actor and critic network or not.
+            .. note::
 
-               -  weight_initialization_mode (string) : The type of weight initialization method.
+                The following configs are specific to PCPO algorithm.
 
-                  -  pi (dictionary) : parameters for actor network ``pi``
+                - cg_damping (float): Damping coefficient for conjugate gradient.
+                - cg_iters (int): Number of iterations for conjugate gradient.
+                - fvp_sample_freq (int): Frequency of sampling for Fisher vector product.
 
-                     -  hidden_sizes:
+            - update_cycle (int): Number of steps to update the policy network.
+            - update_iters (int): Number of iterations to update the policy network.
+            - batch_size (int): Batch size for each iteration.
+            - target_kl (float): Target KL divergence.
+            - entropy_coef (float): Coefficient of entropy.
+            - reward_normalize (bool): Whether to normalize the reward.
+            - cost_normalize (bool): Whether to normalize the cost.
+            - obs_normalize (bool): Whether to normalize the observation.
+            - kl_early_stop (bool): Whether to stop the training when KL divergence is too large.
+            - max_grad_norm (float): Maximum gradient norm.
+            - use_max_grad_norm (bool): Whether to use maximum gradient norm.
+            - use_critic_norm (bool): Whether to use critic norm.
+            - critic_norm_coef (float): Coefficient of critic norm.
+            - gamma (float): Discount factor.
+            - cost_gamma (float): Cost discount factor.
+            - lam (float): Lambda for GAE-Lambda.
+            - lam_c (float): Lambda for cost GAE-Lambda.
+            - adv_estimation_method (str): The method to estimate the advantage.
+            - standardized_rew_adv (bool): Whether to use standardized reward advantage.
+            - standardized_cost_adv (bool): Whether to use standardized cost advantage.
+            - penalty_coef (float): Penalty coefficient for cost.
+            - use_cost (bool): Whether to use cost.
 
-                        -  64
-                        -  64
 
-                     -  activations: tanh
-
-                  -  val (dictionary) parameters for critic network ``v``
-
-                     -  hidden_sizes:
-
-                        -  64
-                        -  64
-
-                        .. hint::
-
-                            ======== ================  ========================================================================
-                            Name        Type              Description
-                            ======== ================  ========================================================================
-                            ``v``    ``nn.Module``     Gives the current estimate of **V** for states in ``s``.
-                            ``pi``   ``nn.Module``     Deterministically or continuously computes an action from the agent,
-                                                       conditioned on states in ``s``.
-                            ======== ================  ========================================================================
-
-                  -  activations: tanh
-                  -  env_id (string): The name of environment we want to roll out.
-                  -  seed (int): Define the seed of experiments.
-                  -  parallel (int): Define the seed of experiments.
-                  -  epochs (int): The number of epochs we want to roll out.
-                  -  steps_per_epoch (int):The number of time steps per epoch.
-                  -  pi_iters (int): The number of iteration when we update actor network per mini batch.
-                  -  critic_iters (int): The number of iteration when we update critic network per mini batch.
-
-    .. tab-item:: Optional parameters
+    .. tab-item:: Model
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Optional parameters
+            Model Configs
             ^^^
-            -  use_cost_critic (bool): Use cost value function or not.
-            -  linear_lr_decay (bool): Use linear learning rate decay or not.
-            -  exploration_noise_anneal (bool): Use exploration noise anneal or not.
-            -  reward_penalty (bool): Use cost to penalize reward or not.
-            -  kl_early_stopping (bool): Use KL early stopping or not.
-            -  max_grad_norm (float): Use maximum gradient normalization or not.
-            -  scale_rewards (bool): Use reward scaling or not.
 
-    .. tab-item:: Buffer parameters
+            - weight_initialization_mode (str): The type of weight initialization method.
+            - actor_type (str): The type of actor, default to ``gaussian_learning``.
+            - linear_lr_decay (bool): Whether to use linear learning rate decay.
+            - exploration_noise_anneal (bool): Whether to use exploration noise anneal.
+            - std_range (list): The range of standard deviation.
 
-        .. card::
-            :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-            :class-footer: sd-font-weight-bold
-
-            Buffer parameters
-            ^^^
             .. hint::
-                  ============= =============================================================================
-                     Name                    Description
-                  ============= =============================================================================
-                  ``Buffer``      A buffer for storing trajectories experienced by an agent interacting
-                                  with the environment, and using **Generalized Advantage Estimation (GAE)**
-                                  for calculating the advantages of state-action pairs.
-                  ============= =============================================================================
 
-            .. warning::
-                Buffer collects only raw data received from environment.
+                actor (dictionary): parameters for actor network ``actor``
 
-            -  gamma (float): The gamma for GAE.
-            -  lam (float): The lambda for reward GAE.
-            -  adv_estimation_method (float):Roughly what KL divergence we think is
-               appropriate between new and old policies after an update. This will
-               get used for early stopping. (Usually small, 0.01 or 0.05.)
-            -  standardized_reward (int):  Use standardized reward or not.
-            -  standardized_cost (bool): Use standardized cost or not.
+                - activations: tanh
+                - hidden_sizes:
+                - 64
+                - 64
+
+            .. hint::
+
+                critic (dictionary): parameters for critic network ``critic``
+
+                - activations: tanh
+                - hidden_sizes:
+                - 64
+                - 64
+
+    .. tab-item:: Logger
+
+        .. card::
+            :class-header: sd-bg-success sd-text-white sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
+            :class-footer: sd-font-weight-bold
+
+            Logger Configs
+            ^^^
+
+            - use_wandb (bool): Whether to use wandb to log the training process.
+            - wandb_project (str): The name of wandb project.
+            - use_tensorboard (bool): Whether to use tensorboard to log the training process.
+            - log_dir (str): The directory to save the log files.
+            - window_lens (int): The length of the window to calculate the average reward.
+            - save_model_freq (int): The frequency to save the model.
 
 ------
 
@@ -833,7 +771,7 @@ Appendix
 Proof of Theorem 2
 ~~~~~~~~~~~~~~~~~~
 
-To prove the policy performance bound when the current policy is infeasible (constraint-violating), we first prove two lemma of the KL divergence between :math:`\pi_{k}` and :math:`\pi_{k+1}` for the KL divergence projection.
+To prove the policy performance bound when the current policy is infeasible (constraint-violating), we first prove two lemmas of the KL divergence between :math:`\pi_{k}` and :math:`\pi_{k+1}` for the KL divergence projection.
 We then prove the main theorem for the worst-case performance degradation.
 
 .. tab-set::
@@ -848,7 +786,7 @@ We then prove the main theorem for the worst-case performance degradation.
 
             Lemma 1
             ^^^
-            If the current policy :math:`\pi_{k}` satisfies the constraint, the constraint set is closed and convex, the KL divergence constraint for the first step is :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`, where :math:`\delta` is the step size in the reward improvement step, then under KL divergence projection, we have
+            If the current policy :math:`\pi_{k}` satisfies the constraint, the constraint set is closed and convex, and the KL divergence constraint for the first step is :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`, where :math:`\delta` is the step size in the reward improvement step, then under KL divergence projection, we have
 
             .. math::
                 :label: pcpo-eq-11
@@ -926,7 +864,7 @@ We then prove the main theorem for the worst-case performance degradation.
 
             Proof of Lemma 2
             ^^^
-            We define the sub-level set of cost constraint function for the current infeasible policy :math:`\pi_k`:
+            We define the sub-level set of cost constraint functions for the current infeasible policy :math:`\pi_k`:
 
             .. math::
                 :label: pcpo-eq-15
@@ -1141,7 +1079,7 @@ We have the following :bdg-info-line:`Lemma 3` to characterize the projection an
                 & \Rightarrow\left(\theta-\theta^*\right)^T \boldsymbol{L}\left(\theta^{\prime}-\theta^*\right) \leq \frac{\alpha}{2}\left\|\theta^{\prime}-\theta^*\right\|_{\boldsymbol{L}}^2
 
 
-        Since the right hand side of :eq:`pcpo-eq-28` can be made arbitrarily small for a given :math:`\alpha`, and hence we have:
+        Since the right-hand side of :eq:`pcpo-eq-28` can be made arbitrarily small for a given :math:`\alpha`, and hence we have:
 
         .. math::
             :label: pcpo-eq-29
@@ -1184,7 +1122,6 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
 
         f(\theta_{k+1})\leq f(\theta_{k})+||\theta_{k+1}-\theta_{k}||^2_{-\frac{1}{\eta}\boldsymbol{H}+\frac{L}{2}\boldsymbol{I}}
 
-
     PCPO with the :math:`L2` norm projection converges to stationary points with :math:`\boldsymbol{H}^{-1}g\in-a` (i.e., the product of the inverse of :math:`\boldsymbol{H}` and gradient of :math:`f` belongs to the negative gradient of the cost advantage function).
     If :math:`\sigma_\mathrm{max}(\boldsymbol{H})\leq1`, then the objective value changes by
 
@@ -1198,7 +1135,7 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
         :class-body: sd-outline-info
 
         The proof of the theorem is based on working in a Hilbert space and the non-expansive property of the projection.
-        We first prove stationary points for PCPO with the KL divergence and :math:`L2` norm projections, and then prove the change of the objective value.
+        We first prove stationary points for PCPO with the KL divergence and :math:`L2` norm projections and then prove the change of the objective value.
 
         When in stationary points :math:`\theta^*`, we have
 
@@ -1282,9 +1219,9 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
 
         .. hint::
 
-            To make the objective value for PCPO with the KL divergence projection improves, the right hand side of :eq:`pcpo-eq-26` needs to be negative.
+            To make the objective value for PCPO with the KL divergence projection improves, the right-hand side of :eq:`pcpo-eq-26` needs to be negative.
             Hence we have :math:`\frac{L\eta}{2}\boldsymbol{I}\prec\boldsymbol{H}`, implying that :math:`\sigma_\mathrm{min}(\boldsymbol{H})>\frac{L\eta}{2}`.
-            And to make the objective value for PCPO with the :math:`L2` norm projection improves, the right hand side of :eq:`pcpo-eq-28` needs to be negative.
+            And to make the objective value for PCPO with the :math:`L2` norm projection improves, the right-hand side of :eq:`pcpo-eq-28` needs to be negative.
             Hence we have :math:`\eta<\frac{2}{L}`, implying that
 
             .. math::

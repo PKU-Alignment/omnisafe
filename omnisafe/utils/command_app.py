@@ -29,7 +29,7 @@ import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.common.statistics_tools import StatisticsTools
 from omnisafe.typing import NamedTuple, Tuple
-from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dic
+from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dict
 
 
 app = typer.Typer()
@@ -104,7 +104,7 @@ def train(  # pylint: disable=too-many-arguments
 
     parsed_custom_cfgs = {}
     for k, v in custom_cfgs.items():
-        update_dic(parsed_custom_cfgs, custom_cfgs_to_dict(k, v))
+        update_dict(parsed_custom_cfgs, custom_cfgs_to_dict(k, v))
 
     agent = omnisafe.Agent(
         algo=algo,

@@ -3,6 +3,11 @@ OmniSafe Critic
 
 .. currentmodule:: omnisafe.models.base
 
+.. autosummary::
+
+    Critic
+
+
 Base Critic
 -----------
 

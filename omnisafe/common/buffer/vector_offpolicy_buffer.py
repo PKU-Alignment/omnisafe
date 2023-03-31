@@ -52,6 +52,15 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             num_envs (int): The number of environments.
             device (torch.device, optional): The device of the buffer. Defaults to
                 torch.device('cpu').
+
+        Attributes:
+            data (Dict[str, torch.Tensor]): The data of the buffer.
+            _ptr (int): The pointer of the buffer.
+            _size (int): The size of the buffer.
+            _max_size (int): The maximum size of the buffer.
+            _batch_size (int): The batch size of the buffer.
+            _num_envs (int): The number of environments.
+
         """
         device = torch.device(device)
         self._num_envs = num_envs
