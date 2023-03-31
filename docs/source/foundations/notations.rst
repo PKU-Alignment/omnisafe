@@ -212,15 +212,15 @@ we use :math:`\boldsymbol{\theta}` to represent :math:`\pi_{\theta}`.
 To summarize all of the above notation, we show the following table,
 
 - :math:`\tau` is a trajectory that consist of :math:`\left(s_0, a_0, s_1, a_0, \cdots\right)`
-- :math:`\pi_{\theta}, \btheta` is a stationary parameterized policy :math:`\pi_{\theta}` is a probability distribution defined on :math:`\mathcal{S}\times\mathcal{A}`, :math:`\pi_{\theta}(a|s)` denotes the probability of playing :math:`a` in state :math:`s`.
-- :math:`J^R(\pi_{\theta}),~ J^R(\bm{\theta})` is the expected discounted reward over trajectories, depending on a stationary parameterized policy :math:`\pi_{\theta}` or a stationary parameterized policy :math:`\pi_{\theta}`.
-- :math:`J^{\mathcal{C}}(\pi_{\theta}),~ J^{\mathcal{C}}(\bm{\theta})` is the expected discounted cost over trajectories, depending on a stationary parameterized policy :math:`\pi_{\theta}` or a stationary parameterized policy :math:`\pi_{\theta}`.
-- :math:`Q_{\pi_{\theta}}^{R}, Q_{\btheta}^{R}` is the state action value function for reward.
-- :math:`Q_{\pi_{\theta}}^{\mathcal{C}_i}, Q_{\btheta}^{\mathcal{C}_i}` is the state action value function for cost.
-- :math:`V_{\pi_{\theta}}^{R}, V_{\btheta}^{R}` is the value function for reward.
-- :math:`V_{\pi_{\theta}}^{\mathcal{C}_i}, V_{\btheta}^{\mathcal{C}_i}` is the value function for cost.
-- :math:`A_{\pi_{\theta}}^{R}, A_{\btheta}^{R}` is the advantage function for reward.
-- :math:`A_{\pi_{\theta}}^{\mathcal{C}_i}, A_{\btheta}^{\mathcal{C}_i}` is the advantage function for cost.
+- :math:`\pi_{\theta}, \theta` is a stationary parameterized policy :math:`\pi_{\theta}` is a probability distribution defined on :math:`\mathcal{S}\times\mathcal{A}`, :math:`\pi_{\theta}(a|s)` denotes the probability of playing :math:`a` in state :math:`s`.
+- :math:`J^R(\pi_{\theta}),~ J^R(\theta)` is the expected discounted reward over trajectories, depending on a stationary parameterized policy :math:`\pi_{\theta}` or a stationary parameterized policy :math:`\pi_{\theta}`.
+- :math:`J^{\mathcal{C}}(\pi_{\theta}),~ J^{\mathcal{C}}(\theta)` is the expected discounted cost over trajectories, depending on a stationary parameterized policy :math:`\pi_{\theta}` or a stationary parameterized policy :math:`\pi_{\theta}`.
+- :math:`Q_{\pi_{\theta}}^{R}, Q_{\theta}^{R}` is the state action value function for reward.
+- :math:`Q_{\pi_{\theta}}^{\mathcal{C}_i}, Q_{\theta}^{\mathcal{C}_i}` is the state action value function for cost.
+- :math:`V_{\pi_{\theta}}^{R}, V_{\theta}^{R}` is the value function for reward.
+- :math:`V_{\pi_{\theta}}^{\mathcal{C}_i}, V_{\theta}^{\mathcal{C}_i}` is the value function for cost.
+- :math:`A_{\pi_{\theta}}^{R}, A_{\theta}^{R}` is the advantage function for reward.
+- :math:`A_{\pi_{\theta}}^{\mathcal{C}_i}, A_{\theta}^{\mathcal{C}_i}` is the advantage function for cost.
 
 
 References
