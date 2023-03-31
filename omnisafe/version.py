@@ -14,7 +14,7 @@
 # ==============================================================================
 """OmniSafe: A comprehensive and reliable benchmark for safe reinforcement learning."""
 
-__version__ = '0.2.2'
+__version__ = '0.3.0'
 __license__ = 'Apache License, Version 2.0'
 __author__ = 'OmniSafe Contributors'
 __release__ = False
