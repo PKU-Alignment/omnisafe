@@ -24,7 +24,7 @@ train_cfgs:vector_env_nums:
 train_cfgs:torch_threads:
   [1]
 train_cfgs:total_steps:
-  2048
+  4096
 algo_cfgs:update_cycle:
   2048
 seed:

@@ -451,13 +451,13 @@ class ExperimentGrid:
         for idx, var in enumerate(variants):
             self.check_variant_vaild(var)
             print('current_config', var)
+            clean_var = deepcopy(var)
+            clean_var.pop('seed', None)
             if gpu_id is not None:
                 device_id = gpu_id[idx % len(gpu_id)]
                 device = f'cuda:{device_id}'
-                var['train_cfgs'] = {'device': device}
-            no_seed_var = deepcopy(var)
-            no_seed_var.pop('seed', None)
-            exp_name = recursive_dict2json(no_seed_var)
+                self.update_dic(var, {'train_cfgs': {'device': device}})
+            exp_name = recursive_dict2json(clean_var)
             hashed_exp_name = var['env_id'][:30] + '---' + hash_string(exp_name)
             exp_names.append(':'.join((hashed_exp_name[:5], exp_name)))
             exp_log_dir = os.path.join(self.log_dir, hashed_exp_name, '')
