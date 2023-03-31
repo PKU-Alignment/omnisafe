@@ -456,7 +456,7 @@ class ExperimentGrid:
             if gpu_id is not None:
                 device_id = gpu_id[idx % len(gpu_id)]
                 device = f'cuda:{device_id}'
-                self.update_dic(var, {'train_cfgs': {'device': device}})
+                self.update_dict(var, {'train_cfgs': {'device': device}})
             exp_name = recursive_dict2json(clean_var)
             hashed_exp_name = var['env_id'][:30] + '---' + hash_string(exp_name)
             exp_names.append(':'.join((hashed_exp_name[:5], exp_name)))
