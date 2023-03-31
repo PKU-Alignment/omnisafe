@@ -21,8 +21,6 @@ Lagrange Multiplier
         :members:
         :private-members:
 
-        .. automethod:: __init__
-
 
 .. currentmodule:: omnisafe.common.pid_lagrange
 
@@ -43,5 +41,3 @@ PIDLagrange
     .. autoclass:: PIDLagrangian
         :members:
         :private-members:
-
-        .. automethod:: __init__

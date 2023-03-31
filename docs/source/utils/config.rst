@@ -6,6 +6,12 @@ OmniSafe Config
 .. autosummary::
 
     Config
+    ModelConfig
+    get_default_kwargs_yaml
+    check_all_configs
+    __check_algo_configs
+    __check_logger_configs
+
 
 Config
 ------
@@ -65,7 +71,7 @@ Other configurations are similar to ``train_cfgs``. You can refer to the ``omnis
         :members:
         :private-members:
 
-        .. automethod:: __init__
+
 
 Model Config
 ------------
@@ -81,7 +87,7 @@ Model Config
         :members:
         :private-members:
 
-        .. automethod:: __init__
+
 
 Common Method
 -------------

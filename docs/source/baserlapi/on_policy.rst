@@ -25,7 +25,7 @@ Policy Gradient
         :members:
         :private-members:
 
-        .. automethod:: __init__
+
 
 Natural Policy Gradient
 -----------------------
@@ -41,7 +41,11 @@ Natural Policy Gradient
         :members:
         :private-members:
 
-        .. automethod:: __init__
+
+
+
+.. _trpoapi:
+
 
 Trust Region Policy Optimization
 --------------------------------
@@ -57,7 +61,11 @@ Trust Region Policy Optimization
         :members:
         :private-members:
 
-        .. automethod:: __init__
+
+
+
+.. _ppoapi:
+
 
 Proximal Policy Optimization
 ----------------------------
@@ -72,5 +80,3 @@ Proximal Policy Optimization
     .. autoclass:: PPO
         :members:
         :private-members:
-
-        .. automethod:: __init__
