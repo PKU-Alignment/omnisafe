@@ -181,7 +181,7 @@ class StatisticsTools:
                 compare_num <= len(parameter_values),
                 (
                     f'compare_num `{compare_num}` is larger than number of values '
-                    '`{len(parameter_values)}` of parameter `{parameter}`'
+                    f'`{len(parameter_values)}` of parameter `{parameter}`'
                 ),
             )
             # if compare_num is specified, will combine any potential combination to compare
