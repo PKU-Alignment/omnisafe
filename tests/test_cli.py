@@ -32,9 +32,13 @@ def test_benchmark():
             'test_benchmark',
             '2',
             os.path.join(base_path, './saved_source/benchmark_config.yaml'),
+            # '--render',
+            '--evaluate',
+            # '--gpu-range',
+            # '0:1',
         ],
     )
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
 
 
 def test_train():
@@ -52,17 +56,26 @@ def test_train():
             'algo_cfgs:update_cycle',
             '--custom-cfgs',
             '1024',
+            '--plot',
+            # '--render',
+            '--evaluate',
         ],
     )
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
 
 
 def test_train_config():
     result = runner.invoke(
         app,
-        ['train-config', os.path.join(base_path, './saved_source/train_config.yaml')],
+        [
+            'train-config',
+            os.path.join(base_path, './saved_source/train_config.yaml'),
+            '--plot',
+            # '--render',
+            '--evaluate',
+        ],
     )
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
 
 
 def test_eval():
@@ -80,4 +93,20 @@ def test_eval():
             '--no-render',
         ],
     )
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
+
+
+def test_analyze_grid():
+    result = runner.invoke(
+        app,
+        [
+            'analyze-grid',
+            os.path.join(base_path, './saved_source/test_statistics_tools'),
+            'algo',
+            '--compare-num',
+            '2',
+            '--cost-limit',
+            '25',
+        ],
+    )
+    assert result.exit_code == 0, result.output
