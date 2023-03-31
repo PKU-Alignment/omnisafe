@@ -208,42 +208,20 @@ we use :math:`\boldsymbol{\theta}` to represent :math:`\pi_{\theta}`.
 
             .. math:: A^{C}_{\boldsymbol{\theta}}(s, a) \doteq Q^{C}_{\boldsymbol{\theta}}(s, a)-V^{C}_{\boldsymbol{\theta}}(s).
 
-            To summarize all of the above notation, we show the following table,
 
-            .. table::
+To summarize all of the above notation, we show the following table,
 
-               :width: 100%
-               :align: center
-               :caption: List of Symbols and Notation
-               :label: undefined
+- :math:`\tau` is a trajectory that consist of :math:`\left(s_0, a_0, s_1, a_0, \cdots\right)`
+- :math:`\pi_{\theta}, \btheta` is a stationary parameterized policy :math:`\pi_{\theta}` is a probability distribution defined on :math:`\mathcal{S}\times\mathcal{A}`, :math:`\pi_{\theta}(a|s)` denotes the probability of playing :math:`a` in state :math:`s`.
+- :math:`J^R(\pi_{\theta}),~ J^R(\bm{\theta})` is the expected discounted reward over trajectories, depending on a stationary parameterized policy :math:`\pi_{\theta}` or a stationary parameterized policy :math:`\pi_{\theta}`.
+- :math:`J^{\mathcal{C}}(\pi_{\theta}),~ J^{\mathcal{C}}(\bm{\theta})` is the expected discounted cost over trajectories, depending on a stationary parameterized policy :math:`\pi_{\theta}` or a stationary parameterized policy :math:`\pi_{\theta}`.
+- :math:`Q_{\pi_{\theta}}^{R}, Q_{\btheta}^{R}` is the state action value function for reward.
+- :math:`Q_{\pi_{\theta}}^{\mathcal{C}_i}, Q_{\btheta}^{\mathcal{C}_i}` is the state action value function for cost.
+- :math:`V_{\pi_{\theta}}^{R}, V_{\btheta}^{R}` is the value function for reward.
+- :math:`V_{\pi_{\theta}}^{\mathcal{C}_i}, V_{\btheta}^{\mathcal{C}_i}` is the value function for cost.
+- :math:`A_{\pi_{\theta}}^{R}, A_{\btheta}^{R}` is the advantage function for reward.
+- :math:`A_{\pi_{\theta}}^{\mathcal{C}_i}, A_{\btheta}^{\mathcal{C}_i}` is the advantage function for cost.
 
-               +------+--------------------------------+--------------------------------------------------------------------------------------+
-               | | Symbol | Definition |
-               +======+================================+======================================================================================+
-               | | $\bm{\tau}$ | $\tau$ is a trajectory that consist of $\left(s_0, a_0, s_1, a_0, \cdots\right)$ |
-               +------+--------------------------------+--------------------------------------------------------------------------------------+
-               | | $\pi_{\theta}, \btheta$ | A stationary parameterized policy $\pi_{\theta}$ is a probability distribution |
-               | | | defined on $\mathcal{S}\times\mathcal{A}$, $\pi_{\theta}(a|s)$ denotes the |
-               | | | probability of playing $a$ in state $s$. |
-               +------+--------------------------------+--------------------------------------------------------------------------------------+
-               | | $J^R(\pi_{\theta}),~ J^R(\bm{\theta})$ | The expected discounted reward over trajectories, depending on a stationary |
-               | | | parameterized policy $\pi_{\theta}$. |
-               +------+--------------------------------+--------------------------------------------------------------------------------------+
-               | | $J^{\mathcal{C}}(\pi_{\theta}),~ J^{\mathcal{C}}(\bm{\theta})$ | The expected discounted cost over trajectories, depending on a stationary |
-               | | | parameterized policy $\pi_{\theta}$. |
-               +------+--------------------------------+--------------------------------------------------------------------------------------+
-               | | $Q_{\pi_{\theta}}^{R}, Q_{\btheta}^{R}$ | The state action value function for reward. |
-               +------+--------------------------------+--------------------------------------------------------------------------------------+
-               | | $Q_{\pi_{\theta}}^{\mathcal{C}i}, Q{\btheta}^{\mathcal{C}i}$ | The state action value function for cost. |
-               +------+--------------------------------+--------------------------------------------------------------------------------------+
-               | | $V{\pi_{\theta}}^{R}, V_{\btheta}^{R}$ | The value function for reward. |
-               +------+--------------------------------+--------------------------------------------------------------------------------------+
-               | | $V_{\pi_{\theta}}^{\mathcal{C}i}, V{\btheta}^{\mathcal{C}i}$ | The value function for cost. |
-               +------+--------------------------------+--------------------------------------------------------------------------------------+
-               | | $A{\pi_{\theta}}^{R}, A_{\btheta}^{R}$ | The advantage function for reward. |
-               +------+--------------------------------+--------------------------------------------------------------------------------------+
-               | | $A_{\pi_{\theta}}^{\mathcal{C}i}, A{\btheta}^{\mathcal{C}_i}$ | The advantage function for cost. |
-               +------+--------------------------------+--------------------------------------------------------------------------------------+
 
 References
 ----------
