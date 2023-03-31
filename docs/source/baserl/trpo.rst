@@ -1025,7 +1025,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             .. math::
                 :label: trpo-eq-27
 
-                \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right|&\leq& 2 \alpha \max _s \bar{A}^R(s) \\
+                \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right|&\leq 2 \alpha \max _s \bar{A}^R(s) \\
                 &\leq& 4 \alpha\left(1-(1-\alpha)^t\right) \max _s\left|A^R_{\pi}(s, a)\right|
 
 
@@ -1141,8 +1141,8 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
                 :label: trpo-eq-35
 
                 &\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
-                & \leq&\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right|+\left|\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
-                & \leq& 4 \alpha \max _{s, a}\left|A^R_{\pi}(s, a)\right|
+                & \leq\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right|+\left|\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
+                & \leq 4 \alpha \max _{s, a}\left|A^R_{\pi}(s, a)\right|
                 \label{equation: abs performance bound nt geq 0}
 
 
