@@ -12,7 +12,7 @@ Quick Facts
     #. You can train policy by running :bdg-info-line:`omnisafe train` .
     #. You can customize the configuration of the algorithm by running :bdg-info-line:`omnisafe train-config` .
     #. You can run a benchmark by running :bdg-info-line:`omnisafe benchmark` .
-    #. You can run an evaluation by running :bdg-info-line:`omnisafe evaluate` .
+    #. You can run an evaluation by running :bdg-info-line:`omnisafe eval` .
 
 
 Train policy
@@ -108,7 +108,7 @@ Run Evaluation
 
     .. code-block:: bash
 
-        omnisafe evaluate evaluate 2 ./saved_source/evaluate_config.yaml
+        omnisafe eval 2 ./saved_source/evaluate_config.yaml
 
     Here we provide a video example:
 
