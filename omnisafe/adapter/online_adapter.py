@@ -14,6 +14,8 @@
 # ==============================================================================
 """Online Adapter for OmniSafe."""
 
+from __future__ import annotations
+
 from typing import Dict, Tuple
 
 import torch
@@ -63,6 +65,9 @@ class OnlineAdapter:
         """
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
+        self._cfgs = cfgs
+        self._device = cfgs.train_cfgs.device
+
         self._env_id = env_id
         self._env = make(env_id, num_envs=num_envs)
         self._eval_env = make(env_id, num_envs=1)
@@ -75,8 +80,6 @@ class OnlineAdapter:
         self._env.set_seed(seed)
         self._eval_env.set_seed(seed)
 
-        self._cfgs = cfgs
-        self._device = cfgs.train_cfgs.device
 
     def _wrapper(
         self,
@@ -104,23 +107,23 @@ class OnlineAdapter:
             cost_normalize (bool): Whether to normalize the cost.
         """
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, time_limit=1000)
-            self._eval_env = TimeLimit(self._eval_env, time_limit=1000)
+            self._env = TimeLimit(self._env, time_limit=1000, device=self._device)
+            self._eval_env = TimeLimit(self._eval_env, time_limit=1000, device=self._device)
         if self._env.need_auto_reset_wrapper:
-            self._env = AutoReset(self._env)
-            self._eval_env = AutoReset(self._eval_env)
+            self._env = AutoReset(self._env, device=self._device)
+            self._eval_env = AutoReset(self._eval_env, device=self._device)
         if obs_normalize:
-            self._env = ObsNormalize(self._env)
-            self._eval_env = ObsNormalize(self._eval_env)
+            self._env = ObsNormalize(self._env, device=self._device)
+            self._eval_env = ObsNormalize(self._eval_en, device=self._device)
         if reward_normalize:
-            self._env = RewardNormalize(self._env)
+            self._env = RewardNormalize(self._env, device=self._device)
         if cost_normalize:
-            self._env = CostNormalize(self._env)
-        self._env = ActionScale(self._env, low=-1.0, high=1.0)
-        self._eval_env = ActionScale(self._eval_env, low=-1.0, high=1.0)
+            self._env = CostNormalize(self._env, device=self._device)
+        self._env = ActionScale(self._env, low=-1.0, high=1.0, device=self._device)
+        self._eval_env = ActionScale(self._eval_env, low=-1.0, high=1.0, device=self._device)
         if self._env.num_envs == 1:
-            self._env = Unsqueeze(self._env)
-        self._eval_env = Unsqueeze(self._eval_env)
+            self._env = Unsqueeze(self._env, device=self._device)
+        self._eval_env = Unsqueeze(self._eval_env, device=self._device)
 
     @property
     def action_space(self) -> OmnisafeSpace:

@@ -43,9 +43,9 @@ defaults:
     # normalize reward
     reward_normalize: True
     # normalize cost
-    cost_normalize: True
+    cost_normalize: False
     # normalize observation
-    obs_normalize: True
+    obs_normalize: False
     # early stop when kl divergence is bigger than target kl
     kl_early_stop: False
     # use max gradient norm
