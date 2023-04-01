@@ -19,7 +19,7 @@ env_id:
   SafetyAntVelocity-v4
 train_cfgs:
   total_steps:
-    1024
+    2048
   vector_env_nums: 1
 algo_cfgs:
   update_cycle:
