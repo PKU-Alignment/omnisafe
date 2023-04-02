@@ -135,6 +135,8 @@ The supported interface algorithms currently include:
 
 OmniSafe requires Python 3.8+ and PyTorch 1.10+.
 
+> We support and test for Python 3.8, 3.9, 3.10 on Linux. The support of M1 and M2 versions of macOS is undergoing internal verification. We will accept PRs related to Windows, but do not officially support it.
+
 #### Install from source
 
 ```bash
