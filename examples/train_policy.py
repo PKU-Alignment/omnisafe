@@ -26,7 +26,7 @@ if __name__ == '__main__':
         '--algo',
         type=str,
         metavar='ALGO',
-        default='BCQLag',
+        default='CRR',
         help='algorithm to train',
         choices=omnisafe.ALGORITHMS['all'],
     )
