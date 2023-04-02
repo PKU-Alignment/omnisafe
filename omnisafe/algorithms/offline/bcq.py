@@ -85,14 +85,7 @@ class BCQ(BaseOffline):
 
     def _train(
         self,
-        batch: Tuple[
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-        ],
+        batch: Tuple[torch.Tensor, ...],
     ):
         obs, action, reward, _, next_obs, done = batch
 

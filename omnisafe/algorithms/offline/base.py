@@ -112,14 +112,7 @@ class BaseOffline(BaseAlgo):
     @abstractmethod
     def _train(
         self,
-        batch: Tuple[
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-        ],
+        batch: Tuple[torch.Tensor, ...],
     ):
         """Train the model."""
 

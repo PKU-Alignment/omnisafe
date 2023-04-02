@@ -60,14 +60,7 @@ class VAEBC(BaseOffline):
 
     def _train(
         self,
-        batch: Tuple[
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-        ],
+        batch: Tuple[torch.Tensor, ...],
     ):
         obs, act, _, _, _, _ = batch
 
