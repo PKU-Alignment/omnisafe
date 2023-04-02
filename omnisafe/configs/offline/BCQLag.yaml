@@ -42,7 +42,7 @@ defaults:
     phi: 0.05
     # sample action numbers when update critic
     sampled_action_num: 10
-    # minmum weighting when compute Q, Q = w * min(q1, q2) + (1 - w) * max(q1, q2)
+    # minimum weighting when compute Q, Q = w * min(q1, q2) + (1 - w) * max(q1, q2)
     minimum_weighting: 0.75
     # The soft update coefficient
     polyak: 0.005
@@ -68,7 +68,7 @@ defaults:
     actor:
       # Size of hidden layers
       hidden_sizes: [256, 256, 256]
-      # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+      # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
       activation: relu
       # Learning rate of model
       lr: 0.001
@@ -76,7 +76,7 @@ defaults:
     critic:
       # Size of hidden layers
       hidden_sizes: [256, 256, 256]
-      # Type of activation functon, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+      # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
       activation: relu
       # Learning rate of model
       lr: 0.001

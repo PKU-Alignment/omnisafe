@@ -115,5 +115,5 @@ class ActorBuilder:
             )
         raise NotImplementedError(
             f'Actor type {actor_type} is not implemented! '
-            f'Available actor types are: gaussian_learning, gaussian_sac, mlp, vae, perturbation.'
+            f'Available actor types are: gaussian_learning, gaussian_sac, mlp, vae, perturbation.',
         )

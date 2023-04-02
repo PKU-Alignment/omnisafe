@@ -97,7 +97,10 @@ class AlgoWrapper:
             ), 'model-based only support vector_env_nums==1!'
         if self.algo_type is None or self.algo_type == '':
             raise ValueError(f'{self.algo} is not supported!')
-        if self.algo_type in ['off-policy', 'model-based', 'offline'] and self.train_terminal_cfgs is not None:
+        if (
+            self.algo_type in ['off-policy', 'model-based', 'offline']
+            and self.train_terminal_cfgs is not None
+        ):
             assert (
                 self.train_terminal_cfgs['parallel'] == 1
             ), 'off-policy or model-based only support parallel==1!'
@@ -125,10 +128,9 @@ class AlgoWrapper:
                 self.train_terminal_cfgs.pop('algo')
 
             if self.algo_type == 'offline':
-                if 'parallel' in self.train_terminal_cfgs:
-                    self.train_terminal_cfgs.pop('parallel')
                 if 'vector_env_nums' in self.train_terminal_cfgs:
                     self.train_terminal_cfgs.pop('vector_env_nums')
+                cfgs.train_cfgs['parallel'] = 1
 
             # validate the keys of train_terminal_cfgs configuration
             recursive_check_config(self.train_terminal_cfgs, cfgs.train_cfgs)
@@ -152,8 +154,9 @@ class AlgoWrapper:
     def _init_checks(self) -> None:
         """Initial checks."""
         assert isinstance(self.algo, str), 'algo must be a string!'
-        assert isinstance(self.cfgs.train_cfgs.parallel, int), 'parallel must be an integer!'
-        assert self.cfgs.train_cfgs.parallel > 0, 'parallel must be greater than 0!'
+        if self.algo_type != 'offline':
+            assert isinstance(self.cfgs.train_cfgs.parallel, int), 'parallel must be an integer!'
+            assert self.cfgs.train_cfgs.parallel > 0, 'parallel must be greater than 0!'
         assert (
             self.env_id in support_envs()
         ), f"{self.env_id} doesn't exist. Please choose from {support_envs()}."

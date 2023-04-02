@@ -30,27 +30,31 @@ class OfflineDataset(Dataset):
     _name_to_url_dict = {
         'SafetyPointCircle1-v0_mixed_0.5': {
             'url': 'https://drive.google.com/file/d/1CNHoC70kVIE0wP4VoYy0EH4DmdExGCqM/view?usp=share_link',
-            'md5sum': '2aa35f3e99934b3f83e9be49f4666fdf',
+            'sha256sum': 'c33e9b102524b26a7466fd542a3e9e925bc5a7eb8a9fdc4a0dc15443819748fd',
         },
     }
     _default_download_dir = '~/.cache/omnisafe/datasets/'
 
     def __init__(  # pylint: disable=too-many-branches
-        self, dataset_name: str, batch_size=256, gpu_threshold=1024, device='cuda'
-    ):
+        self,
+        dataset_name: str,
+        batch_size=256,
+        gpu_threshold=1024,
+        device='cuda',
+    ) -> None:
         """Initialize the dataset."""
 
         if os.path.exists(dataset_name) and dataset_name.endswith('.npz'):
             # Load data from local .npz file
             try:
                 data = np.load(dataset_name)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 raise ValueError(f'Failed to load data from {dataset_name}') from e
 
         else:
             # Download .npz file from Google Drive
             url = self._name_to_url_dict[dataset_name]['url']
-            md5sum = self._name_to_url_dict[dataset_name]['md5sum']
+            sha256sum = self._name_to_url_dict[dataset_name]['sha256sum']
 
             if not os.path.exists(self._default_download_dir):
                 os.makedirs(self._default_download_dir)
@@ -58,13 +62,13 @@ class OfflineDataset(Dataset):
             file_path = os.path.join(self._default_download_dir, f'{dataset_name}.npz')
             if os.path.exists(file_path):
                 with open(file_path, 'rb') as f:
-                    md5 = hashlib.md5(f.read()).hexdigest()
+                    sha256 = hashlib.sha256(f.read()).hexdigest()
 
-                if md5 == md5sum:
+                if sha256 == sha256sum:
                     print(f'Dataset {dataset_name} already exists and is valid.')
                 else:
                     print(
-                        f'Dataset {dataset_name} already exists but is invalid. Downloading again...'
+                        f'Dataset {dataset_name} already exists but is invalid. Downloading again...',
                     )
                     gdown.download(url, file_path, quiet=False, fuzzy=True)
 
@@ -79,7 +83,7 @@ class OfflineDataset(Dataset):
         required_fields = {'obs', 'action', 'reward', 'cost', 'next_obs', 'done'}
         if not all(field in data for field in required_fields):
             raise ValueError(
-                f'Loaded data does not have all the required fields: {required_fields}'
+                f'Loaded data does not have all the required fields: {required_fields}',
             )
 
         total_size_bytes = 0.0
@@ -121,7 +125,8 @@ class OfflineDataset(Dataset):
         return self._length
 
     def __getitem__(
-        self, idx
+        self,
+        idx,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         if self._pre_transfer:
             return (

@@ -35,7 +35,7 @@ class VAE(Actor):
         hidden_sizes: List[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
-    ):
+    ) -> None:
         """Initialize VAE.
 
         Args:
@@ -51,12 +51,12 @@ class VAE(Actor):
         self._latent_dim = self._act_dim * 2
 
         self._encoder = build_mlp_network(
-            sizes=[self._obs_dim + self._act_dim] + hidden_sizes + [self._latent_dim * 2],
+            sizes=[self._obs_dim + self._act_dim, *hidden_sizes] + [self._latent_dim * 2],
             activation=activation,
             weight_initialization_mode=weight_initialization_mode,
         )
         self._decoder = build_mlp_network(
-            sizes=[self._obs_dim + self._latent_dim] + hidden_sizes + [self._act_dim],
+            sizes=[self._obs_dim + self._latent_dim, *hidden_sizes] + [self._act_dim],
             activation=activation,
             weight_initialization_mode=weight_initialization_mode,
         )
@@ -93,7 +93,9 @@ class VAE(Actor):
         raise NotImplementedError
 
     def predict(  # pylint: disable=unused-argument
-        self, obs: torch.Tensor, deterministic: bool = False
+        self,
+        obs: torch.Tensor,
+        deterministic: bool = False,
     ) -> torch.Tensor:
         """Predict action from observation."""
         return self.decode(obs)

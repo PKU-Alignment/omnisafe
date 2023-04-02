@@ -57,10 +57,12 @@ class BCQ(BaseOffline):
         ).to(self._device)
         self._actor.phi = self._cfgs.algo_cfgs.phi
         self._actor_optimizer = optim.Adam(
-            self._actor.perturbation.parameters(), lr=self._cfgs.model_cfgs.actor.lr
+            self._actor.perturbation.parameters(),
+            lr=self._cfgs.model_cfgs.actor.lr,
         )
         self._vae_optimizer = optim.Adam(
-            self._actor.vae.parameters(), lr=self._cfgs.model_cfgs.actor.lr
+            self._actor.vae.parameters(),
+            lr=self._cfgs.model_cfgs.actor.lr,
         )
 
         self._reward_critic = (
@@ -77,13 +79,19 @@ class BCQ(BaseOffline):
         )
         self._target_reward_critic = deepcopy(self._reward_critic)
         self._reward_critic_optimizer = optim.Adam(
-            self._reward_critic.parameters(), lr=self._cfgs.model_cfgs.critic.lr
+            self._reward_critic.parameters(),
+            lr=self._cfgs.model_cfgs.critic.lr,
         )
 
     def _train(
         self,
         batch: Tuple[
-            torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
         ],
     ):
         obs, action, reward, _, next_obs, done = batch
@@ -104,14 +112,17 @@ class BCQ(BaseOffline):
         with torch.no_grad():
             # sample action from the actor
             next_obs_repeat = torch.repeat_interleave(
-                next_obs, self._cfgs.algo_cfgs.sampled_action_num, dim=0
+                next_obs,
+                self._cfgs.algo_cfgs.sampled_action_num,
+                dim=0,
             )
             next_action = self._actor.predict(next_obs_repeat)
 
             # compute target q
             qr1_target, qr2_target = self._target_reward_critic(next_obs_repeat, next_action)
             qr_target = self._cfgs.algo_cfgs.minimum_weighting * torch.min(
-                qr1_target, qr2_target
+                qr1_target,
+                qr2_target,
             ) + (1 - self._cfgs.algo_cfgs.minimum_weighting) * torch.max(qr1_target, qr2_target)
             qr_target = (
                 qr_target.reshape(self._cfgs.algo_cfgs.batch_size, -1).max(dim=1)[0].reshape(-1, 1)
@@ -121,7 +132,8 @@ class BCQ(BaseOffline):
 
         qr1, qr2 = self._reward_critic.forward(obs, action)
         critic_loss = nn.functional.mse_loss(qr1, qr_target) + nn.functional.mse_loss(
-            qr2, qr_target
+            qr2,
+            qr_target,
         )
         self._reward_critic_optimizer.zero_grad()
         critic_loss.backward()
@@ -132,7 +144,7 @@ class BCQ(BaseOffline):
                 'Loss/Loss_reward_critic': critic_loss.item(),
                 'Qr/data_Qr': qr1[0].mean().item(),
                 'Qr/target_Qr': qr_target[0].mean().item(),
-            }
+            },
         )
 
     def _update_actor(self, obs: torch.Tensor, action: torch.Tensor) -> None:
@@ -158,14 +170,15 @@ class BCQ(BaseOffline):
                 'Loss/Loss_vae': loss.item(),
                 'Loss/Loss_recon': recon_loss.item(),
                 'Loss/Loss_kl': kl_loss.item(),
-            }
+            },
         )
 
     def _polyak_update(self):
         for target_param, param in zip(
-            self._target_reward_critic.parameters(), self._reward_critic.parameters()
+            self._target_reward_critic.parameters(),
+            self._reward_critic.parameters(),
         ):
             target_param.data.copy_(
                 self._cfgs.algo_cfgs.polyak * param.data
-                + (1 - self._cfgs.algo_cfgs.polyak) * target_param.data
+                + (1 - self._cfgs.algo_cfgs.polyak) * target_param.data,
             )

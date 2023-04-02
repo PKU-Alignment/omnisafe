@@ -35,7 +35,7 @@ class PerturbationActor(Actor):
         hidden_sizes: List[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
-    ):
+    ) -> None:
         """Initialize Perturbation Actor.
 
         Args:
@@ -50,7 +50,7 @@ class PerturbationActor(Actor):
 
         self.vae = VAE(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
         self.perturbation = build_mlp_network(
-            sizes=[self._obs_dim + self._act_dim] + hidden_sizes + [self._act_dim],
+            sizes=[self._obs_dim + self._act_dim, *hidden_sizes] + [self._act_dim],
             activation=activation,
             output_activation='tanh',
             weight_initialization_mode=weight_initialization_mode,

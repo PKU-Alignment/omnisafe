@@ -92,7 +92,7 @@ class BaseOffline(BaseAlgo):
                         'Time/Total': time.time() - start_time,
                         'Train/Epoch': self.epoch,
                         'TotalSteps': step + 1,
-                    }
+                    },
                 )
 
                 epoch_time = time.time()
@@ -113,7 +113,12 @@ class BaseOffline(BaseAlgo):
     def _train(
         self,
         batch: Tuple[
-            torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
         ],
     ):
         """Train the model."""

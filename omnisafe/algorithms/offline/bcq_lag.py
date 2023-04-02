@@ -56,7 +56,8 @@ class BCQLag(BCQ):
         )
         self._target_cost_critic = deepcopy(self._cost_critic)
         self._cost_critic_optimizer = optim.Adam(
-            self._cost_critic.parameters(), lr=self._cfgs.model_cfgs.critic.lr
+            self._cost_critic.parameters(),
+            lr=self._cfgs.model_cfgs.critic.lr,
         )
 
         self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
@@ -64,7 +65,12 @@ class BCQLag(BCQ):
     def _train(
         self,
         batch: Tuple[
-            torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
         ],
     ):
         obs, action, reward, cost, next_obs, done = batch
@@ -86,14 +92,17 @@ class BCQLag(BCQ):
         with torch.no_grad():
             # sample action form the actor
             next_obs_repeat = torch.repeat_interleave(
-                next_obs, self._cfgs.algo_cfgs.sampled_action_num, dim=0
+                next_obs,
+                self._cfgs.algo_cfgs.sampled_action_num,
+                dim=0,
             )
             next_action = self._actor.predict(next_obs_repeat)
 
             # compute the target q
             qc1_target, qc2_target = self._target_cost_critic(next_obs_repeat, next_action)
             qc_target = self._cfgs.algo_cfgs.minimum_weighting * torch.min(
-                qc1_target, qc2_target
+                qc1_target,
+                qc2_target,
             ) + (1 - self._cfgs.algo_cfgs.minimum_weighting) * torch.max(qc1_target, qc2_target)
             qc_target = (
                 qc_target.reshape(self._cfgs.algo_cfgs.batch_size, -1).max(dim=1)[0].reshape(-1, 1)
@@ -103,7 +112,8 @@ class BCQLag(BCQ):
 
         qc1, qc2 = self._cost_critic.forward(obs, action)
         critic_loss = nn.functional.mse_loss(qc1, qc_target) + nn.functional.mse_loss(
-            qc2, qc_target
+            qc2,
+            qc_target,
         )
         self._cost_critic_optimizer.zero_grad()
         critic_loss.backward()
@@ -114,7 +124,7 @@ class BCQLag(BCQ):
                 'Loss/Loss_cost_critic': critic_loss.item(),
                 'Qc/data_Qc': qc1[0].mean().item(),
                 'Qc/target_Qc': qc_target[0].mean().item(),
-            }
+            },
         )
 
     def _update_actor(self, obs: torch.Tensor, action: torch.Tensor) -> None:
@@ -149,15 +159,16 @@ class BCQLag(BCQ):
                 'Loss/Loss_recon': recon_loss.item(),
                 'Loss/Loss_kl': kl_loss.item(),
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier,
-            }
+            },
         )
 
     def _polyak_update(self):
         super()._polyak_update()
         for target_param, param in zip(
-            self._target_cost_critic.parameters(), self._cost_critic.parameters()
+            self._target_cost_critic.parameters(),
+            self._cost_critic.parameters(),
         ):
             target_param.data.copy_(
                 self._cfgs.algo_cfgs.polyak * param.data
-                + (1 - self._cfgs.algo_cfgs.polyak) * target_param.data
+                + (1 - self._cfgs.algo_cfgs.polyak) * target_param.data,
             )

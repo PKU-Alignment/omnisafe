@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Example fo collecting offline data with OmniSafe."""
+"""Example of collecting offline data with OmniSafe."""
 
 from omnisafe.common.offline.data_collector import OfflineDataCollector
 

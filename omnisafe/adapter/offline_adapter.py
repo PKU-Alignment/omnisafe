@@ -67,7 +67,8 @@ class OfflineAdapter:
         return self._env.observation_space
 
     def step(
-        self, actions: torch.Tensor
+        self,
+        actions: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         """Take a step in the environment."""
         return self._env.step(actions)
@@ -112,7 +113,7 @@ class OfflineAdapter:
                     'Metrics/EpRet': ep_ret,
                     'Metrics/EpCost': ep_cost,
                     'Metrics/EpLen': ep_len,
-                }
+                },
             )
 
         agent = agent.to(self._device)

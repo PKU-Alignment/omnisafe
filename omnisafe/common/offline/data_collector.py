@@ -17,7 +17,7 @@
 import json
 import os
 from dataclasses import dataclass
-from typing import Callable, List, Union
+from typing import Callable, List
 
 import numpy as np
 import torch
@@ -106,7 +106,7 @@ class OfflineDataCollector:
                 kwargs = json.load(file)
         except FileNotFoundError as error:
             raise FileNotFoundError(
-                'The config file is not found in the save directory.'
+                'The config file is not found in the save directory.',
             ) from error
         cfgs = Config.dict2config(kwargs)
 
@@ -116,11 +116,14 @@ class OfflineDataCollector:
         except FileNotFoundError as error:
             raise FileNotFoundError(f'Model {model_name} not found in {save_dir}') from error
 
-        obs_normalizer: Union[Normalizer, Callable] = lambda x: x
         assert isinstance(self._obs_space, Box), 'Only support Box observation space for now.'
         if cfgs['algo_cfgs']['obs_normalize']:
             obs_normalizer = Normalizer(shape=self._obs_space.shape, clip=5)
             obs_normalizer.load_state_dict(model_params['obs_normalizer'])
+        else:
+
+            def obs_normalizer(x):
+                return x
 
         actor_type = cfgs['model_cfgs']['actor_type']
         pi_cfg = cfgs['model_cfgs']['actor']
@@ -137,8 +140,7 @@ class OfflineDataCollector:
 
         def agent_step(obs: torch.Tensor) -> torch.Tensor:
             obs = obs_normalizer(obs)
-            action = actor.predict(obs, deterministic=False)
-            return action
+            return actor.predict(obs, deterministic=False)
 
         self.agents.append(OfflineAgent(agent_step, size))
 

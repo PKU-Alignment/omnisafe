@@ -54,13 +54,19 @@ class VAEBC(BaseOffline):
         )
 
         self._vae_optimizer = optim.Adam(
-            self._actor.parameters(), lr=self._cfgs.model_cfgs.learning_rate
+            self._actor.parameters(),
+            lr=self._cfgs.model_cfgs.learning_rate,
         )
 
     def _train(
         self,
         batch: Tuple[
-            torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
         ],
     ):
         obs, act, _, _, _, _ = batch
@@ -76,5 +82,5 @@ class VAEBC(BaseOffline):
                 'Loss/Loss_vae': loss.item(),
                 'Loss/Loss_recon': recon_loss.item(),
                 'Loss/Loss_kl': kl_loss.item(),
-            }
+            },
         )
