@@ -13,3 +13,5 @@
 # limitations under the License.
 # ==============================================================================
 """model used in offline RL algorithms."""
+
+from omnisafe.models.offline.dice import ObsActDecoder, ObsDecoder
