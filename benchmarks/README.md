@@ -23,7 +23,7 @@ The OmniSafe Mujoco Velocity Benchmark assesses the efficacy of OmniSafe's SafeR
 - **[ICML 2017]** [Proximal Constrained Policy Optimization (PCPO)](https://proceedings.mlr.press/v70/achiam17a)
 - **[ICLR 2019]** [Reward Constrained Policy Optimization (RCPO)](https://openreview.net/forum?id=SkfrvsA9FX)
 
-> **More details can be refer to [On Policy Experiment](https://github.com/PKU-MARL/omnisafe/tree/main/benchmarks/on-policy/README.md).**
+> **More details can be refer to [On Policy Experiment](./on-policy/README.md).**
 
 ## Off-Policy
 ### Supported Algorithms
@@ -31,4 +31,4 @@ The OmniSafe Mujoco Velocity Benchmark assesses the efficacy of OmniSafe's SafeR
 - [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
 - [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
 
-> **More details can be refer to [Off Policy Experiment](https://github.com/PKU-MARL/omnisafe/tree/main/benchmarks/off-policy/README.md).**
+> **More details can be refer to [Off Policy Experiment](./off-policy/README.md).**
