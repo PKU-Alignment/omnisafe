@@ -24,7 +24,7 @@ from omnisafe.utils.config import Config
 
 
 class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
-    """OnPolicy Adapter for OmniSafe."""
+    """Saute Adapter for OmniSafe."""
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
         """Initialize the adapter."""
@@ -33,24 +33,24 @@ class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
         self._safety_budget: torch.Tensor
         self._safety_obs: torch.Tensor
 
-        if self._cfgs.env_cfgs.scale_safety_budget:
+        if self._cfgs.algo_cfgs.sauet_gamma < 1:
             self._safety_budget = (
-                self._cfgs.env_cfgs.lower_budget
-                * (1 - self._cfgs.env_cfgs.saute_gamma**self._cfgs.env_cfgs.max_ep_len)
-                / (1 - self._cfgs.env_cfgs.saute_gamma)
-                / self._cfgs.env_cfgs.max_ep_len
+                self._cfgs.algo_cfgs.lower_budget
+                * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
+                / (1 - self._cfgs.algo_cfgs.saute_gamma)
+                / self._cfgs.algo_cfgs.max_ep_len
             )
-            self._lower_budget = self._safety_budget
+            self._rel_budget = self._safety_budget
             self._upper_budget = (
-                self._cfgs.env_cfgs.upper_budget
-                * (1 - self._cfgs.env_cfgs.saute_gamma**self._cfgs.env_cfgs.max_ep_len)
-                / (1 - self._cfgs.env_cfgs.saute_gamma)
-                / self._cfgs.env_cfgs.max_ep_len
+                self._cfgs.algo_cfgs.upper_budget
+                * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
+                / (1 - self._cfgs.algo_cfgs.saute_gamma)
+                / self._cfgs.algo_cfgs.max_ep_len
             )
         else:
-            self._safety_budget = self._cfgs.env_cfgs.lower_budget
-            self._lower_budget = self._safety_budget
-            self._upper_budget = self._cfgs.env_cfgs.upper_budget
+            self._safety_budget = self._cfgs.algo_cfgs.lower_budget
+            self._rel_budget = self._safety_budget
+            self._upper_budget = self._cfgs.algo_cfgs.upper_budget
 
         self._ep_budget: torch.Tensor
 
