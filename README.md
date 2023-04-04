@@ -256,7 +256,7 @@ omnisafe train-config ./saved_source/train_config.yaml
 --------------------------------------------------------------------------------
 
 ## Getting Started
-#### Important Hints
+### Important Hints
 - `train_cfgs:torch_threads` is especially important for training speed, and is varying with users' machine, this value shouldn't be too small or too large.
 
 ### Quickstart: Colab in the Cloud
