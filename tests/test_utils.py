@@ -143,7 +143,7 @@ def train(
 def test_train(
     exp_name='make_test_exp_grid',
     algo='CPO',
-    env_id='SafetyHalfCheetahVelocity-v4',
+    env_id='SafetyHalfCheetahVelocity-v1',
 ):
     """Test train."""
     eg = ExperimentGrid(exp_name=exp_name)

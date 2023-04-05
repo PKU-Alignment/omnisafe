@@ -9,12 +9,14 @@
 
   [![Organization](https://img.shields.io/badge/Organization-PKU_MARL-blue.svg)](https://github.com/PKU-MARL)
   [![PyPI](https://img.shields.io/pypi/v/omnisafe?logo=pypi)](https://pypi.org/project/omnisafe)
+  [![tests](https://img.shields.io/github/actions/workflow/status/PKU-MARL/omnisafe/test.yml?label=tests&logo=github)](https://github.com/OmniSafeAI/omnisafe/tree/HEAD/tests)
   [![Documentation Status](https://img.shields.io/readthedocs/omnisafe?logo=readthedocs)](https://omnisafe.readthedocs.io)
   [![Downloads](https://static.pepy.tech/personalized-badge/omnisafe?period=total&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/omnisafe)
   [![GitHub Repo Stars](https://img.shields.io/github/stars/PKU-MARL/omnisafe?color=brightgreen&logo=github)](https://github.com/PKU-MARL/OmniSafe/stargazers)
   [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
   [![License](https://img.shields.io/github/license/PKU-MARL/OmniSafe?label=license)](#license)
   [![CodeCov](https://img.shields.io/codecov/c/github/PKU-MARL/omnisafe/main?logo=codecov)](https://app.codecov.io/gh/PKU-MARL/omnisafe)
+  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PKU-MARL/omnisafe/)
 
 </div>
 
@@ -53,11 +55,8 @@ OmniSafe addresses these issues by providing more than 40 experimentally validat
   - [Examples](#examples)
     - [Try with CLI](#try-with-cli)
 - [Getting Started](#getting-started)
-    - [Important Hints](#important-hints)
-  - [1. Run Agent from preset yaml file](#1-run-agent-from-preset-yaml-file)
-  - [2. Run agent with custom cfg](#2-run-agent-with-custom-cfg)
-  - [3. Run Agent from custom terminal config](#3-run-agent-from-custom-terminal-config)
-  - [4. Evaluate Saved Policy](#4-evaluate-saved-policy)
+  - [Important Hints](#important-hints)
+  - [Quickstart: Colab in the Cloud](#quickstart-colab-in-the-cloud)
 - [Changelog](#changelog)
 - [The OmniSafe Team](#the-omnisafe-team)
 - [License](#license)
@@ -213,7 +212,7 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
     <td>Safe Velocity</td>
     <td>Velocity</td>
     <td>HalfCheetah, Hopper, Swimmer, Walker2d, Ant, Humanoid</td>
-    <td>SafetyHumanoidVelocity-v4</td>
+    <td>SafetyHumanoidVelocity-v1</td>
   </tr>
 </tbody>
 </table>
@@ -254,70 +253,17 @@ omnisafe train-config ./saved_source/train_config.yaml
 --------------------------------------------------------------------------------
 
 ## Getting Started
-#### Important Hints
+### Important Hints
 - `train_cfgs:torch_threads` is especially important for training speed, and is varying with users' machine, this value shouldn't be too small or too large.
-### 1. Run Agent from preset yaml file
 
-```python
-import omnisafe
+### Quickstart: Colab in the Cloud
+Explore OmniSafe easily and quickly through a series of colab notebooks:
+- [Getting Started](https://colab.research.google.com/github/PKU-MARL/omnisafe/blob/main/tutorials/English/1.Getting_Started.ipynb) Introduce the basic usage of OmniSafe so that users can quickly hand on it.
+- [CLI Command](https://colab.research.google.com/github/PKU-MARL/omnisafe/blob/main/tutorials/English/2.CLI_Command.ipynb) Introduce how to use the CLI tool of OmniSafe.
 
-env_id = 'SafetyPointGoal1-v0'
-agent = omnisafe.Agent('PPOLag', env_id)
-agent.learn()
-```
-
-### 2. Run agent with custom cfg
-```python
-import omnisafe
-
-env_id = 'SafetyPointGoal1-v0'
-custom_cfgs = {
-    'train_cfgs': {
-        'total_steps': 1024000,
-        'vector_env_nums': 1,
-        'parallel': 1,
-    },
-    'algo_cfgs': {
-        'update_cycle': 2048,
-        'update_iters': 1,
-    },
-    'logger_cfgs': {
-        'use_wandb': False,
-    },
-}
-agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs)
-agent.learn()
-```
-
-### 3. Run Agent from custom terminal config
-
-You can also run agent from a custom terminal config. You can set any config in a corresponding yaml file.
-
-For example, you can run `PPOLag` agent on `SafetyPointGoal1-v0` environment with `total_steps=1024000`, `vector_env_nums=1` and `parallel=1` by:
-
-```bash
-cd examples
-python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
-```
-
-### 4. Evaluate Saved Policy
-
-```python
-import os
-
-import omnisafe
+We take great pleasure in collaborating with our users to create tutorials in various languages. Please refer to our list of currently supported languages. If you are interested in translating the tutorial into a new language or improving an existing version, kindly submit a PR to us."
 
 
-# Just fill your experiment's log directory in here.
-# Such as: ~/omnisafe/runs/SafetyPointGoal1-v0/CPO/seed-000-2022-12-25_14-45-05
-LOG_DIR = ''
-
-evaluator = omnisafe.Evaluator()
-for item in os.scandir(os.path.join(LOG_DIR, 'torch_save')):
-    if item.is_file() and item.name.split('.')[-1] == 'pt':
-        evaluator.load_saved_model(save_dir=LOG_DIR, model_name=item.name)
-        evaluator.render(num_episode=10, camera_name='track', width=256, height=256)
-```
 
 --------------------------------------------------------------------------------
 
