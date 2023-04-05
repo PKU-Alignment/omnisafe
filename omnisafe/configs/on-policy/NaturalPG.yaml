@@ -127,7 +127,7 @@ defaults:
       # learning rate
       lr: 0.001
 
-SafetyAntVelocity-v4:
+SafetyAntVelocity-v1:
   # algorithm configurations
   algo_cfgs:
     # normalize reward
@@ -137,7 +137,7 @@ SafetyAntVelocity-v4:
     # normalize observation
     obs_normalize: True
 
-SafetyHalfCheetahVelocity-v4:
+SafetyHalfCheetahVelocity-v1:
   # algorithm configurations
   algo_cfgs:
     # normalize reward
@@ -147,7 +147,7 @@ SafetyHalfCheetahVelocity-v4:
     # normalize observation
     obs_normalize: True
 
-SafetyHumanoidVelocity-v4:
+SafetyHumanoidVelocity-v1:
   # algorithm configurations
   algo_cfgs:
     # normalize reward
@@ -157,7 +157,7 @@ SafetyHumanoidVelocity-v4:
     # normalize observation
     obs_normalize: True
 
-SafetySwimmerVelocity-v4:
+SafetySwimmerVelocity-v1:
   # algorithm configurations
   algo_cfgs:
     # normalize reward

@@ -69,7 +69,7 @@ def test_experiment_grid():
     eg = ExperimentGrid(exp_name='Test_experiment_grid')
 
     # Set the environments.
-    mujoco_envs = ['SafetyAntVelocity-v4']
+    mujoco_envs = ['SafetyAntVelocity-v1']
 
     # Set the algorithms.
     eg.add('env_id', mujoco_envs)

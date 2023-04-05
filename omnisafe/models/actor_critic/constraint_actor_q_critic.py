@@ -80,7 +80,7 @@ class ConstraintActorQCritic(ActorQCritic):
             hidden_sizes=model_cfgs.critic.hidden_sizes,
             activation=model_cfgs.critic.activation,
             weight_initialization_mode=model_cfgs.weight_initialization_mode,
-            num_critics=model_cfgs.critic.num_critics,
+            num_critics=1,
             use_obs_encoder=False,
         ).build_critic('q')
         self.target_cost_critic = deepcopy(self.cost_critic)

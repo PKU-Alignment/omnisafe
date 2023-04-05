@@ -23,21 +23,21 @@ defaults:
     # number of threads for torch
     torch_threads: 16
     # number of vectorized environments
-    vector_env_nums: 2
+    vector_env_nums: 1
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
-    total_steps: 1024000
+    total_steps: 1000000
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    update_cycle: 2048
+    update_cycle: 2000
     # number of steps per sample
     steps_per_sample: 1
     # number of iterations to update the policy
     update_iters: 1
     # The size of replay buffer
-    size: 100000
+    size: 1000000
     # The size of batch
     batch_size: 256
     # normalize reward
@@ -57,11 +57,11 @@ defaults:
     # The discount factor of GAE
     gamma: 0.99
     # Actor perdorm random action before `start_learning_steps` steps
-    start_learning_steps: 5000
+    start_learning_steps: 10000
     # The delay step of policy update
     policy_delay: 2
     # Whether to use the exploration noise
-    use_exploration_noise: True
+    use_exploration_noise: False
     # The exploration noise
     exploration_noise: 0.1
     # The policy noise
@@ -69,7 +69,7 @@ defaults:
     # policy_noise_clip
     policy_noise_clip: 0.5
     # The value of alpha
-    alpha: 0.2
+    alpha: 0.01
     # Whether to use auto alpha
     auto_alpha: False
     # use cost
@@ -87,7 +87,7 @@ defaults:
     # save logger path
     log_dir: "./runs"
     # save model path
-    window_lens: 100
+    window_lens: 10
   # model configurations
   model_cfgs:
     # weight initialization mode
@@ -95,7 +95,7 @@ defaults:
     # actor type
     actor_type: gaussian_sac
     # linear learning rate decay
-    linear_lr_decay: True
+    linear_lr_decay: False
     # Configuration of Actor network
     actor:
       # Size of hidden layers
@@ -114,9 +114,3 @@ defaults:
       activation: relu
       # The learning rate of Critic network
       lr: 0.0003
-
-SafetySwimmerVelocity-v4:
-  # algorithm configurations
-  algo_cfgs:
-    # normalize observation
-    reward_normalize: True

@@ -44,7 +44,7 @@ def train(  # pylint: disable=too-many-arguments
         case_sensitive=False,
     ),
     env_id: str = typer.Option(
-        'SafetyHumanoidVelocity-v4',
+        'SafetyHumanoidVelocity-v1',
         help='the name of test environment',
         case_sensitive=False,
     ),

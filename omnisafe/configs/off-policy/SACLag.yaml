@@ -1,0 +1,126 @@
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+defaults:
+  # seed for random number generator
+  seed: 0
+  # training configurations
+  train_cfgs:
+    # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
+    device: cpu
+    # number of threads for torch
+    torch_threads: 16
+    # number of vectorized environments
+    vector_env_nums: 1
+    # number of parallel agent, similar to a3c
+    parallel: 1
+    # total number of steps to train
+    total_steps: 1000000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    update_cycle: 2000
+    # number of steps per sample
+    steps_per_sample: 1
+    # number of iterations to update the policy
+    update_iters: 1
+    # The size of replay buffer
+    size: 1000000
+    # The size of batch
+    batch_size: 256
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: False
+    # max gradient norm
+    max_grad_norm: 40
+    # use critic norm
+    use_critic_norm: False
+    # critic norm coefficient
+    critic_norm_coeff: 0.001
+    # The soft update coefficient
+    polyak: 0.005
+    # The discount factor of GAE
+    gamma: 0.99
+    # Actor perdorm random action before `start_learning_steps` steps
+    start_learning_steps: 10000
+    # The delay step of policy update
+    policy_delay: 2
+    # Whether to use the exploration noise
+    use_exploration_noise: False
+    # The exploration noise
+    exploration_noise: 0.1
+    # The policy noise
+    policy_noise: 0.2
+    # policy_noise_clip
+    policy_noise_clip: 0.5
+    # The value of alpha
+    alpha: 0.2
+    # Whether to use auto alpha
+    auto_alpha: False
+    # use cost
+    use_cost: True
+  # logger configurations
+  logger_cfgs:
+    # use wandb for logging
+    use_wandb: False
+    # wandb project name
+    wandb_project: omnisafe
+    # use tensorboard for logging
+    use_tensorboard: True
+    # save model frequency
+    save_model_freq: 100
+    # save logger path
+    log_dir: "./runs"
+    # save model path
+    window_lens: 10
+  # model configurations
+  model_cfgs:
+    # weight initialization mode
+    weight_initialization_mode: "kaiming_uniform"
+    # actor type
+    actor_type: gaussian_sac
+    # linear learning rate decay
+    linear_lr_decay: False
+    # Configuration of Actor network
+    actor:
+      # Size of hidden layers
+      hidden_sizes: [256, 256]
+      # Activation function
+      activation: relu
+      # The learning rate of Actor network
+      lr: 0.0003
+    # Configuration of Critic network
+    critic:
+      # The number of critic networks
+      num_critics: 2
+      # Size of hidden layers
+      hidden_sizes: [256, 256]
+      # Activation function
+      activation: relu
+      # The learning rate of Critic network
+      lr: 0.0003
+  # lagrangian configurations
+  lagrange_cfgs:
+    # Tolerance of constraint violation
+    cost_limit: 25.0
+    # Initial value of lagrangian multiplier
+    lagrangian_multiplier_init: 0.001
+    # Learning rate of lagrangian multiplier
+    lambda_lr: 0.001
+    # Type of lagrangian optimizer
+    lambda_optimizer: "Adam"

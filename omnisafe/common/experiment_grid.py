@@ -187,6 +187,8 @@ class ExperimentGrid:
             shorthand = self._default_shorthand(key)
         self.keys.append(key)
         self.vals.append(vals)
+        assert len(set(self.keys)) == len(self.keys), f'Duplicate key: `{key}`'
+        assert len(set(vals)) == len(vals), f'Duplicate values in {vals} for key: `{key}`'
         self.shs.append(shorthand)
         self.in_names.append(in_name)
 

@@ -36,12 +36,12 @@ You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
 
     # set up the environment.
     eg.add('env_id', [
-        'SafetyHopperVelocity-v4',
-        'SafetyWalker2dVelocity-v4',
-        'SafetySwimmerVelocity-v4',
-        'SafetyAntVelocity-v4',
-        'SafetyHalfCheetahVelocity-v4',
-        'SafetyHumanoidVelocity-v4'
+        'SafetyHopperVelocity-v1',
+        'SafetyWalker2dVelocity-v1',
+        'SafetySwimmerVelocity-v1',
+        'SafetyAntVelocity-v1',
+        'SafetyHalfCheetahVelocity-v1',
+        'SafetyHumanoidVelocity-v1'
         ])
     eg.add('seed', [0, 5, 10, 15, 20])
     eg.run(train, num_pool=5)
@@ -61,8 +61,8 @@ cd examples
 python plot.py --log-dir ALGODIR
 ```
 
-e.g. ALGODIR can be ``examples/runs/SafetyHopperVelocity-v4``.
-Then you can compare different algorithms in ``SafetyHopperVelocity-v4`` environments.
+e.g. ALGODIR can be ``examples/runs/SafetyHopperVelocity-v1``.
+Then you can compare different algorithms in ``SafetyHopperVelocity-v1`` environments.
 
 Logs is saved in `examples/benchmarks/runs` and can be monitored with tensorboard or wandb.
 
@@ -78,10 +78,10 @@ python evaluate_saved_policy.py
 ```
 Please note that before you evaluate, please set the ``LOG_DIR`` in ``evaluate_saved_policy.py``.
 
-For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
+For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v1``
 
 ```python
-    LOG_DIR = '~/omnisafe/examples/runs/DDPG-<SSafetyHumanoidVelocity-v4>/seed-000-2023-03-07-20-25-48'
+    LOG_DIR = '~/omnisafe/examples/runs/DDPG-<SSafetyHumanoidVelocity-v1>/seed-000-2023-03-07-20-25-48'
     play = True
     save_replay = True
     if __name__ == '__main__':
@@ -105,7 +105,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyAntVelocity-v4</div>
+    padding: 2px;">SafetyAntVelocity-v1</div>
 </center>
 
 <center>
@@ -116,7 +116,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyHalfCheetahVelocity-v4</div>
+    padding: 2px;">SafetyHalfCheetahVelocity-v1</div>
 </center>
 
 <center>
@@ -127,7 +127,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyHopperVelocity-v4</div>
+    padding: 2px;">SafetyHopperVelocity-v1</div>
 </center>
 
 <center>
@@ -138,7 +138,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyHumanoidVelocity-v4</div>
+    padding: 2px;">SafetyHumanoidVelocity-v1</div>
 </center>
 
 <center>
@@ -149,7 +149,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyWalker2dVelocity-v4</div>
+    padding: 2px;">SafetyWalker2dVelocity-v1</div>
 </center>
 
 <center>
@@ -160,7 +160,7 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v4``
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetySwimmerVelocity-v4</div>
+    padding: 2px;">SafetySwimmerVelocity-v1</div>
 </center>
 
 
@@ -220,12 +220,12 @@ If you find that other hyperparameters perform better, please feel free to open 
 
 | Environment | Reward (OmniSafe) | Cost (Omnisafe) |
 | :---------: | :-----------: | :-----------: |
-|     SafetyAntVelocity-v4     | **1243.15±619.17** | **289.80±161.52** |
-| SafetyHalfCheetahVelocity-v4 | **9496.25±999.36** | **882.63±75.43** |
-|    SafetyHopperVelocity-v4   | **2369.89±932.39** | **673.36±278.33** |
-|   SafetyWalker2dVelocity-v4  | **1648.96±578.43** | **298.20±110.75** |
-|   SafetySwimmerVelocity-v4   | **101.63±57.55** | **507.16±152.13** |
-|   SafetyHumanoidVelocity-v4  | **3254.83±297.52** | **0.00±0.00** |
+|     SafetyAntVelocity-v1     | **1243.15±619.17** | **289.80±161.52** |
+| SafetyHalfCheetahVelocity-v1 | **9496.25±999.36** | **882.63±75.43** |
+|    SafetyHopperVelocity-v1   | **2369.89±932.39** | **673.36±278.33** |
+|   SafetyWalker2dVelocity-v1  | **1648.96±578.43** | **298.20±110.75** |
+|   SafetySwimmerVelocity-v1   | **101.63±57.55** | **507.16±152.13** |
+|   SafetyHumanoidVelocity-v1  | **3254.83±297.52** | **0.00±0.00** |
 
 #### Hints for DDPG
 
@@ -233,12 +233,12 @@ DDPG only have one Q-network to estimate the Q-value. So it is easy to overestim
 
 | Environment | obs_normlize | rew_normlize | cost_normlize |
 | :---------: | :-----------: |  :-----------: |  :-----------: |
-|     SafetyAntVelocity-v4     | False | False | False |
-| SafetyHalfCheetahVelocity-v4 | False | False | False |
-|    SafetyHopperVelocity-v4   | False | False | False |
-|    SafetyHumanoidVelocity-v4 | **True** | **True** | False |
-|    SafetyWalker2dVelocity-v4 | False | False | False |
-|    SafetySwimmerVelocity-v4  | False | True | False |
+|     SafetyAntVelocity-v1     | False | False | False |
+| SafetyHalfCheetahVelocity-v1 | False | False | False |
+|    SafetyHopperVelocity-v1   | False | False | False |
+|    SafetyHumanoidVelocity-v1 | **True** | **True** | False |
+|    SafetyWalker2dVelocity-v1 | False | False | False |
+|    SafetySwimmerVelocity-v1  | False | True | False |
 
 Please note that the ``cost_normlize`` make no sense for TD3, but work for TD3-Lag.
 
@@ -246,23 +246,23 @@ Please note that the ``cost_normlize`` make no sense for TD3, but work for TD3-L
 
 | Environment | Reward (OmniSafe) | Cost (Omnisafe) |
 | :---------: | :-----------: | :-----------: |
-|     SafetyAntVelocity-v4     | **5107.66±619.95** | **978.33±4.41** |
-| SafetyHalfCheetahVelocity-v4 | **8844.27±1812.2** | **981.43±1.08** |
-|    SafetyHopperVelocity-v4   | **3567.15±109.79** | **977.43±19.14** |
-|   SafetyWalker2dVelocity-v4  | **3962.93±355.76** | **904.83±21.69** |
-|   SafetySwimmerVelocity-v4   | **81.98±31.23** | **678.66±240.35** |
-|   SafetyHumanoidVelocity-v4  | **5245.66±674.81** | **0.00±0.00** |
+|     SafetyAntVelocity-v1     | **5107.66±619.95** | **978.33±4.41** |
+| SafetyHalfCheetahVelocity-v1 | **8844.27±1812.2** | **981.43±1.08** |
+|    SafetyHopperVelocity-v1   | **3567.15±109.79** | **977.43±19.14** |
+|   SafetyWalker2dVelocity-v1  | **3962.93±355.76** | **904.83±21.69** |
+|   SafetySwimmerVelocity-v1   | **81.98±31.23** | **678.66±240.35** |
+|   SafetyHumanoidVelocity-v1  | **5245.66±674.81** | **0.00±0.00** |
 
 #### Hints for TD3
 
 | Environment | obs_normlize | rew_normlize | cost_normlize |
 | :---------: | :-----------: |  :-----------: |  :-----------: |
-|     SafetyAntVelocity-v4     | **True** | False | False |
-| SafetyHalfCheetahVelocity-v4 | False | False | False |
-|    SafetyHopperVelocity-v4   | False | False | False |
-|    SafetyHumanoidVelocity-v4 | False | False | False |
-|    SafetyWalker2dVelocity-v4 | False | False | False |
-|    SafetySwimmerVelocity-v4  | False | **True** | False |
+|     SafetyAntVelocity-v1     | **True** | False | False |
+| SafetyHalfCheetahVelocity-v1 | False | False | False |
+|    SafetyHopperVelocity-v1   | False | False | False |
+|    SafetyHumanoidVelocity-v1 | False | False | False |
+|    SafetyWalker2dVelocity-v1 | False | False | False |
+|    SafetySwimmerVelocity-v1  | False | **True** | False |
 
 Please note that the ``cost_normlize`` make no sense for TD3, but work for TD3-Lag.
 
@@ -270,22 +270,22 @@ Please note that the ``cost_normlize`` make no sense for TD3, but work for TD3-L
 
 | Environment | Reward (OmniSafe) | Cost (Omnisafe) |
 | :---------: | :-----------: | :-----------: |
-|     SafetyAntVelocity-v4     | **6061.45±129.37** | **929.53±7.10** |
-| SafetyHalfCheetahVelocity-v4 | **10075.95±423.83** | **981.23±1.06** |
-|    SafetyHopperVelocity-v4   | **3386.41±89.95** | **992.76±0.16** |
-|   SafetyWalker2dVelocity-v4  | **4613.00±340.90** | **914.56±14.91** |
-|   SafetySwimmerVelocity-v4   | **44.80±3.65** | **376.50±152.89** |
-|   SafetyHumanoidVelocity-v4  | **5618.22±337.33** | **0.00±0.00** |
+|     SafetyAntVelocity-v1     | **6061.45±129.37** | **929.53±7.10** |
+| SafetyHalfCheetahVelocity-v1 | **10075.95±423.83** | **981.23±1.06** |
+|    SafetyHopperVelocity-v1   | **3386.41±89.95** | **992.76±0.16** |
+|   SafetyWalker2dVelocity-v1  | **4613.00±340.90** | **914.56±14.91** |
+|   SafetySwimmerVelocity-v1   | **44.80±3.65** | **376.50±152.89** |
+|   SafetyHumanoidVelocity-v1  | **5618.22±337.33** | **0.00±0.00** |
 
 #### Hints for SAC
 
 | Environment | obs_normlize | rew_normlize | cost_normlize |
 | :---------: | :-----------: |  :-----------: |  :-----------: |
-|     SafetyAntVelocity-v4     | False | False | False |
-| SafetyHalfCheetahVelocity-v4 | False | False | False |
-|    SafetyHopperVelocity-v4   | False | False | False |
-|    SafetyHumanoidVelocity-v4 | False | False | False |
-|    SafetyWalker2dVelocity-v4 | False | False | False |
-|    SafetySwimmerVelocity-v4  | False | **True** | False |
+|     SafetyAntVelocity-v1     | False | False | False |
+| SafetyHalfCheetahVelocity-v1 | False | False | False |
+|    SafetyHopperVelocity-v1   | False | False | False |
+|    SafetyHumanoidVelocity-v1 | False | False | False |
+|    SafetyWalker2dVelocity-v1 | False | False | False |
+|    SafetySwimmerVelocity-v1  | False | **True** | False |
 
 Please note that the ``cost_normlize`` make no sense for TD3, but work for TD3-Lag.

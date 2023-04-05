@@ -81,7 +81,7 @@ class SAC(DDPG):
     def _alpha(self) -> float:
         return self._log_alpha.exp().item()
 
-    def _update_rewrad_critic(
+    def _update_reward_critic(
         self,
         obs: torch.Tensor,
         action: torch.Tensor,
@@ -149,65 +149,6 @@ class SAC(DDPG):
         self._logger.store(
             **{
                 'Value/alpha': self._alpha,
-            },
-        )
-
-    def _update_cost_critic(
-        self,
-        obs: torch.Tensor,
-        action: torch.Tensor,
-        cost: torch.Tensor,
-        done: torch.Tensor,
-        next_obs: torch.Tensor,
-    ) -> None:
-        """
-        Update cost critic using TD3 algorithm.
-
-        Args:
-            obs (torch.Tensor): current observation
-            act (torch.Tensor): current action
-            cost (torch.Tensor): current cost
-            done (torch.Tensor): current done signal
-            next_obs (torch.Tensor): next observation
-
-        Returns:
-            None
-        """
-        with torch.no_grad():
-            # set the update noise and noise clip.
-            next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
-            next_logp = self._actor_critic.actor.log_prob(next_action)
-            next_q1_value_c, next_q2_value_c = self._actor_critic.target_cost_critic(
-                next_obs,
-                next_action,
-            )
-            next_q_value_c = torch.max(next_q1_value_c, next_q2_value_c) - next_logp * self._alpha
-            target_q_value_c = cost + self._cfgs.algo_cfgs.gamma * (1 - done) * next_q_value_c
-
-        q1_value_c, q2_value_c = self._actor_critic.cost_critic(obs, action)
-        loss = nn.functional.mse_loss(q1_value_c, target_q_value_c) + nn.functional.mse_loss(
-            q2_value_c,
-            target_q_value_c,
-        )
-
-        if self._cfgs.algo_cfgs.use_critic_norm:
-            for param in self._actor_critic.cost_critic.parameters():
-                loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coeff
-
-        self._actor_critic.cost_critic_optimizer.zero_grad()
-        loss.backward()
-
-        if self._cfgs.algo_cfgs.max_grad_norm:
-            clip_grad_norm_(
-                self._actor_critic.cost_critic.parameters(),
-                self._cfgs.algo_cfgs.max_grad_norm,
-            )
-        distributed.avg_grads(self._actor_critic.cost_critic)
-        self._actor_critic.cost_critic_optimizer.step()
-        self._logger.store(
-            **{
-                'Loss/Loss_cost_critic': loss.mean().item(),
-                'Value/cost_critic': q1_value_c.mean().item(),
             },
         )
 

@@ -4,7 +4,7 @@
         "NaturalPG"
     ],
     "env_id": [
-        "SafetyAntVelocity-v4"
+        "SafetyAntVelocity-v1"
     ],
     "logger_cfgs:use_wandb": [
         false
@@ -16,10 +16,10 @@
         1
     ],
     "train_cfgs:total_steps": [
-        1024
+        4096
     ],
     "algo_cfgs:update_cycle": [
-        512
+        2048
     ],
     "seed": [
         0
