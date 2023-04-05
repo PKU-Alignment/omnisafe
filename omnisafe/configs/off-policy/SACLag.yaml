@@ -69,9 +69,9 @@ defaults:
     # policy_noise_clip
     policy_noise_clip: 0.5
     # The value of alpha
-    alpha: 0.05
+    alpha: 0.2
     # Whether to use auto alpha
-    auto_alpha: True
+    auto_alpha: False
     # use cost
     use_cost: True
   # logger configurations
