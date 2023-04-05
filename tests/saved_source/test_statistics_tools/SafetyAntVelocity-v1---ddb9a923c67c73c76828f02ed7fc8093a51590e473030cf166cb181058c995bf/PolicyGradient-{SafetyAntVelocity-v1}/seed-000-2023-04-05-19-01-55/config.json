@@ -5,11 +5,11 @@
         "torch_threads": 1,
         "vector_env_nums": 2,
         "parallel": 1,
-        "total_steps": 1024,
+        "total_steps": 4096,
         "epochs": 2
     },
     "algo_cfgs": {
-        "update_cycle": 512,
+        "update_cycle": 2048,
         "update_iters": 10,
         "batch_size": 64,
         "target_kl": 0.02,
@@ -69,18 +69,19 @@
     "exp_increment_cfgs": {
         "seed": 0,
         "algo_cfgs": {
-            "update_cycle": 512
+            "update_cycle": 2048
         },
         "train_cfgs": {
-            "total_steps": 1024,
+            "total_steps": 4096,
             "torch_threads": 1,
             "vector_env_nums": 2
         },
         "logger_cfgs": {
+            "use_wandb": false,
             "log_dir": ""
         }
     },
-    "exp_name": "PolicyGradient-{SafetyAntVelocity-v4}",
-    "env_id": "SafetyAntVelocity-v4",
+    "exp_name": "PolicyGradient-{SafetyAntVelocity-v1}",
+    "env_id": "SafetyAntVelocity-v1",
     "algo": "PolicyGradient"
 }

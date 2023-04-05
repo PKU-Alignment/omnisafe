@@ -1,2 +1,0 @@
-Safet:{'algo': 'PolicyGradient', 'algo_cfgs:update_cycle': 512, 'env_id': 'SafetyAntVelocity-v4', 'logger_cfgs:use_wandb': false, 'train_cfgs:torch_threads': 1, 'train_cfgs:total_steps': 1024, 'train_cfgs:vector_env_nums': 2}: reward:-141.0,cost:44.06,ep_len:0.875
-Safet:{'algo': 'NaturalPG', 'algo_cfgs:update_cycle': 512, 'env_id': 'SafetyAntVelocity-v4', 'logger_cfgs:use_wandb': false, 'train_cfgs:torch_threads': 1, 'train_cfgs:total_steps': 1024, 'train_cfgs:vector_env_nums': 2}     : reward:-119.33,cost:41.15,ep_len:2.3499999046325684

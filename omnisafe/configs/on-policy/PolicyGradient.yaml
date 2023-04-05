@@ -23,7 +23,7 @@ defaults:
     # number of threads for torch
     torch_threads: 16
     # number of vectorized environments
-    vector_env_nums: 2
+    vector_env_nums: 1
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
@@ -41,9 +41,9 @@ defaults:
     # entropy coefficient
     entropy_coef: 0.0
     # normalize reward
-    reward_normalize: True
+    reward_normalize: False
     # normalize cost
-    cost_normalize: True
+    cost_normalize: False
     # normalize observation
     obs_normalize: True
     # early stop when kl divergence is bigger than target kl
