@@ -219,7 +219,7 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
 
 More information about environments, please refer to [Safety Gymnasium](https://www.safety-gymnasium.com/)
 
-**parallel:** `Number of parallels`
+**parallel:** `Number of parallels
 
 
 #### Try with CLI
