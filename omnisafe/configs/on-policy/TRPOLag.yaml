@@ -137,7 +137,7 @@ defaults:
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
 
-SafetyHopperVelocity-v4:
+SafetyHopperVelocity-v1:
   # algorithm configurations
   algo_cfgs:
     # normalize reward
@@ -147,7 +147,7 @@ SafetyHopperVelocity-v4:
     # normalize observation
     obs_normalize: True
 
-SafetyWalker2dVelocity-v4:
+SafetyWalker2dVelocity-v1:
   # algorithm configurations
   algo_cfgs:
     # normalize reward

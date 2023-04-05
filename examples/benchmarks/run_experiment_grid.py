@@ -78,12 +78,12 @@ if __name__ == '__main__':
 
     # Set the environments.
     mujoco_envs = [
-        'SafetyAntVelocity-v4',
-        'SafetyHopperVelocity-v4',
-        'SafetyHumanoidVelocity-v4',
-        'SafetyWalker2dVelocity-v4',
-        'SafetyHalfCheetahVelocity-v4',
-        'SafetySwimmerVelocity-v4',
+        'SafetyAntVelocity-v1',
+        'SafetyHopperVelocity-v1',
+        'SafetyHumanoidVelocity-v1',
+        'SafetyWalker2dVelocity-v1',
+        'SafetyHalfCheetahVelocity-v1',
+        'SafetySwimmerVelocity-v1',
     ]
     eg.add('env_id', mujoco_envs)
 

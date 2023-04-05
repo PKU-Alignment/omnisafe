@@ -85,7 +85,7 @@
             "log_dir": ""
         }
     },
-    "exp_name": "NaturalPG-{SafetyAntVelocity-v4}",
-    "env_id": "SafetyAntVelocity-v4",
+    "exp_name": "NaturalPG-{SafetyAntVelocity-v1}",
+    "env_id": "SafetyAntVelocity-v1",
     "algo": "NaturalPG"
 }

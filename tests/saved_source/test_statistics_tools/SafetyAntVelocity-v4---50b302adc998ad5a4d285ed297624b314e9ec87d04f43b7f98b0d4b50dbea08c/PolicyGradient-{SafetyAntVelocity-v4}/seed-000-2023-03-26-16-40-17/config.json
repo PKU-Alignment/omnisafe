@@ -80,7 +80,7 @@
             "log_dir": ""
         }
     },
-    "exp_name": "PolicyGradient-{SafetyAntVelocity-v4}",
-    "env_id": "SafetyAntVelocity-v4",
+    "exp_name": "PolicyGradient-{SafetyAntVelocity-v1}",
+    "env_id": "SafetyAntVelocity-v1",
     "algo": "PolicyGradient"
 }

@@ -12,6 +12,6 @@
     "logger_cfgs": {
         "log_dir": ""
     },
-    "env_id": "SafetyAntVelocity-v4",
+    "env_id": "SafetyAntVelocity-v1",
     "algo": "PolicyGradient"
 }

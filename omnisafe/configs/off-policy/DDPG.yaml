@@ -107,7 +107,7 @@ defaults:
       # The learning rate of Critic network
       lr: 0.0003
 
-SafetyHumanoidVelocity-v4:
+SafetyHumanoidVelocity-v1:
   # algorithm configurations
   algo_cfgs:
     # normalize reward

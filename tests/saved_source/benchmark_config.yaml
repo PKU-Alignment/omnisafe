@@ -16,7 +16,7 @@
 algo:
   ['PolicyGradient', 'NaturalPG']
 env_id:
-  ['SafetyAntVelocity-v4']
+  ['SafetyAntVelocity-v1']
 logger_cfgs:use_wandb:
   [False]
 train_cfgs:vector_env_nums:

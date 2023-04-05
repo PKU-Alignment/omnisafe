@@ -72,12 +72,12 @@ class SafetyGymnasiumEnv(CMDP):
         'SafetyAntCircle0-v0',
         'SafetyAntCircle1-v0',
         'SafetyAntCircle2-v0',
-        'SafetyHalfCheetahVelocity-v4',
-        'SafetyHopperVelocity-v4',
-        'SafetySwimmerVelocity-v4',
-        'SafetyWalker2dVelocity-v4',
-        'SafetyAntVelocity-v4',
-        'SafetyHumanoidVelocity-v4',
+        'SafetyHalfCheetahVelocity-v1',
+        'SafetyHopperVelocity-v1',
+        'SafetySwimmerVelocity-v1',
+        'SafetyWalker2dVelocity-v1',
+        'SafetyAntVelocity-v1',
+        'SafetyHumanoidVelocity-v1',
     ]
     need_auto_reset_wrapper = False
     need_time_limit_wrapper = False

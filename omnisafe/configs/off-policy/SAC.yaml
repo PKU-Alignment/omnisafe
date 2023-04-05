@@ -115,7 +115,7 @@ defaults:
       # The learning rate of Critic network
       lr: 0.0003
 
-SafetySwimmerVelocity-v4:
+SafetySwimmerVelocity-v1:
   # algorithm configurations
   algo_cfgs:
     # normalize observation
