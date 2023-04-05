@@ -35,3 +35,7 @@ custom_cfgs = {
 
 agent = omnisafe.Agent('PPOLag', env_id, custom_cfgs=custom_cfgs)
 agent.learn()
+
+agent.plot(smooth=1)
+agent.render(num_episodes=1, render_mode='rgb_array', width=256, height=256)
+agent.evaluate(num_episodes=1)

@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import difflib
+import os
 import sys
 from typing import Any
 
@@ -24,9 +25,12 @@ import psutil
 import torch
 
 from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
+from omnisafe.algorithms.base_algo import BaseAlgo
 from omnisafe.envs import support_envs
+from omnisafe.evaluator import Evaluator
 from omnisafe.utils import distributed
 from omnisafe.utils.config import check_all_configs, get_default_kwargs_yaml
+from omnisafe.utils.plotter import Plotter
 from omnisafe.utils.tools import recursive_check_config
 
 
@@ -44,10 +48,12 @@ class AlgoWrapper:
         self.env_id = env_id
         # algo_type will set in _init_checks()
         self.algo_type: str
+        self.agent: BaseAlgo
 
         self.train_terminal_cfgs = train_terminal_cfgs
         self.custom_cfgs = custom_cfgs
-        self.evaluator = None
+        self._evaluator: Evaluator = None
+        self._plotter: Plotter = None
         self.cfgs = self._init_config()
         self._init_checks()
 
@@ -121,27 +127,83 @@ class AlgoWrapper:
         ):
             # Re-launches the current script with workers linked by MPI
             sys.exit()
-        agent = registry.get(self.algo)(
+        self.agent = registry.get(self.algo)(
             env_id=self.env_id,
             cfgs=self.cfgs,
         )
-        ep_ret, ep_cost, ep_len = agent.learn()
+        ep_ret, ep_cost, ep_len = self.agent.learn()
+
+        self._init_statistical_tools()
+
         return ep_ret, ep_len, ep_cost
 
-    # def evaluate(self, num_episodes: int = 10, horizon: int = 1000, cost_criteria: float = 1.0):
-    #     """Agent Evaluation."""
-    #     assert self.evaluator is not None, 'Please run learn() first!'
-    #     self.evaluator.evaluate(num_episodes, horizon, cost_criteria)
+    def _init_statistical_tools(self):
+        """Init statistical tools."""
+        self._evaluator = Evaluator()
+        self._plotter = Plotter()
 
-    # # pylint: disable-next=too-many-arguments
-    # def render(
-    #     self,
-    #     num_episode: int = 0,
-    #     horizon: int = 1000,
-    #     seed: int = None,
-    #     play=True,
-    #     save_replay_path: Optional[str] = None,
-    # ):
-    #     """Render the environment."""
-    #     assert self.evaluator is not None, 'Please run learn() first!'
-    #     self.evaluator.render(num_episode, horizon, seed, play, save_replay_path)
+    def plot(self, smooth=1):
+        """Plot the training curve.
+
+        Args:
+            smooth (int): window size, for smoothing the curve.
+        """
+        assert self._plotter is not None, 'Please run learn() first!'
+        self._plotter.make_plots(
+            [self.agent.logger.log_dir],
+            None,
+            'Steps',
+            'Rewards',
+            False,
+            self.agent.cost_limit,
+            smooth,
+            None,
+            None,
+            'mean',
+            self.agent.logger.log_dir,
+        )
+
+    def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
+        """Agent Evaluation.
+
+        Args:
+            num_episodes (int): number of episodes to evaluate.
+            cost_criteria (float): the cost criteria to evaluate.
+        """
+        assert self._evaluator is not None, 'Please run learn() first!'
+        for item in os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save')):
+            if item.is_file() and item.name.split('.')[-1] == 'pt':
+                self._evaluator.load_saved(save_dir=self.agent.logger.log_dir, model_name=item.name)
+                self._evaluator.evaluate(num_episodes=num_episodes, cost_criteria=cost_criteria)
+
+    # pylint: disable-next=too-many-arguments
+    def render(
+        self,
+        num_episodes: int = 10,
+        render_mode: str = 'rgb_array',
+        camera_name: str = 'track',
+        width: int = 256,
+        height: int = 256,
+    ):
+        """Evaluate and render some episodes.
+
+        Args:
+            num_episodes (int): number of episodes to render.
+            render_mode (str): render mode, can be 'rgb_array', 'depth_array' or 'human'.
+            camera_name (str): camera name, specify the camera which you use to capture
+                images.
+            width (int): width of the rendered image.
+            height (int): height of the rendered image.
+        """
+        assert self._evaluator is not None, 'Please run learn() first!'
+        for item in os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save')):
+            if item.is_file() and item.name.split('.')[-1] == 'pt':
+                self._evaluator.load_saved(
+                    save_dir=self.agent.logger.log_dir,
+                    model_name=item.name,
+                    render_mode=render_mode,
+                    camera_name=camera_name,
+                    width=width,
+                    height=height,
+                )
+                self._evaluator.render(num_episodes=num_episodes)
