@@ -1,52 +1,15 @@
-The Lagrange Algorithms
-=======================
+Core
+====
 
-.. currentmodule:: omnisafe.algorithms.on_policy
+.. currentmodule:: omnisafe.envs.core
 
 .. autosummary::
 
-    PPOLag
-    TRPOLag
+    CMDP
+    Wrapper
+    EnvRegister
 
-
-
-.. _ppolagapi:
-
-
-
-PPOLag
-------
-
-.. card::
-    :class-header: sd-bg-success sd-text-white
-    :class-card: sd-outline-success  sd-rounded-1
-
-    Documentation
-    ^^^
-
-    .. autoclass:: PPOLag
-        :members:
-        :private-members:
-
-
-
-TRPOLag
--------
-
-.. card::
-    :class-header: sd-bg-success sd-text-white
-    :class-card: sd-outline-success  sd-rounded-1
-
-    Documentation
-    ^^^
-
-    .. autoclass:: TRPOLag
-        :members:
-        :private-members:
-
-
-
-CRPO
+CMDP
 ----
 
 .. card::
@@ -56,6 +19,38 @@ CRPO
     Documentation
     ^^^
 
-    .. autoclass:: OnCRPO
+    .. autoclass:: CMDP
         :members:
         :private-members:
+
+Wrapper
+-------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: Wrapper
+        :members:
+        :private-members:
+
+Make an environment
+-------------------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: EnvRegister
+        :members:
+        :private-members:
+
+
+
+    .. autofunction:: make

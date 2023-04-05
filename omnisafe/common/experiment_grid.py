@@ -250,28 +250,28 @@ class ExperimentGrid:
 
         return var_name.lstrip('_')
 
-    def update_dic(self, total_dic, item_dic):
+    def update_dict(self, total_dict, item_dict):
         """Updater of multi-level dictionary.
 
         This function is used to update the total dictionary with the item
         dictionary.
 
         Args:
-            total_dic (dict): Total dictionary.
-            item_dic (dict): Item dictionary.
+            total_dict (dict): Total dictionary.
+            item_dict (dict): Item dictionary.
         """
-        for idd in item_dic:
-            total_value = total_dic.get(idd)
-            item_value = item_dic.get(idd)
+        for idd in item_dict:
+            total_value = total_dict.get(idd)
+            item_value = item_dict.get(idd)
 
             if total_value is None:
-                total_dic.update({idd: item_value})
+                total_dict.update({idd: item_value})
             elif isinstance(item_value, dict):
-                self.update_dic(total_value, item_value)
-                total_dic.update({idd: total_value})
+                self.update_dict(total_value, item_value)
+                total_dict.update({idd: total_value})
             else:
                 total_value = item_value
-                total_dic.update({idd: total_value})
+                total_dict.update({idd: total_value})
 
     def _variants(self, keys, vals):
         """Recursively builds list of valid variants.
@@ -294,7 +294,7 @@ class ExperimentGrid:
                 v_temp[key_list[-1]] = val
                 for key in reversed(key_list[:-1]):
                     v_temp = {key: v_temp}
-                self.update_dic(current_variants, v_temp)
+                self.update_dict(current_variants, v_temp)
                 variants.append(current_variants)
 
         return variants
@@ -451,13 +451,13 @@ class ExperimentGrid:
         for idx, var in enumerate(variants):
             self.check_variant_vaild(var)
             print('current_config', var)
+            clean_var = deepcopy(var)
+            clean_var.pop('seed', None)
             if gpu_id is not None:
                 device_id = gpu_id[idx % len(gpu_id)]
                 device = f'cuda:{device_id}'
-                var['train_cfgs'] = {'device': device}
-            no_seed_var = deepcopy(var)
-            no_seed_var.pop('seed', None)
-            exp_name = recursive_dict2json(no_seed_var)
+                self.update_dict(var, {'train_cfgs': {'device': device}})
+            exp_name = recursive_dict2json(clean_var)
             hashed_exp_name = var['env_id'][:30] + '---' + hash_string(exp_name)
             exp_names.append(':'.join((hashed_exp_name[:5], exp_name)))
             exp_log_dir = os.path.join(self.log_dir, hashed_exp_name, '')

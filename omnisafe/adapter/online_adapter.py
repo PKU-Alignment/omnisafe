@@ -16,8 +16,6 @@
 
 from __future__ import annotations
 
-from typing import Dict, Tuple
-
 import torch
 
 from omnisafe.envs.core import CMDP, make, support_envs
@@ -35,7 +33,23 @@ from omnisafe.utils.config import Config
 
 
 class OnlineAdapter:
-    """Online Adapter for OmniSafe."""
+    """Online Adapter for OmniSafe.
+
+    Online Adapter is used to adapt the environment to the online training.
+
+    Args:
+        env_id (str): The environment id.
+        num_envs (int): The number of environments.
+        seed (int): The random seed.
+        cfgs (Config): The configuration.
+
+    Attributes:
+        _env_id (str): The environment id.
+        _env (CMDP): The environment.
+        _cfgs (Config): The configuration.
+        _device (torch.device): The device.
+
+    """
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -89,17 +103,28 @@ class OnlineAdapter:
     ):
         """Wrapper the environment.
 
-        :class:`OnlineAdapter` provides a set of wrappers as follows:
-
         .. hint::
 
-            - :class:`TimeLimit`: Limit the maximum number of steps in an episode.
-            - :class:`AutoReset`: Automatically reset the environment when the episode is terminated.
-            - :class:`ObsNormalize`: Normalize the observation.
-            - :class:`RewardNormalize`: Normalize the reward.
-            - :class:`CostNormalize`: Normalize the cost.
-            - :class:`ActionScale`: Scale the action.
-            - :class:`Unsqueeze`: Unsqueeze the observation and action, if the number of environments is 1.
+            OmniSafe supports the following wrappers:
+
+            .. list-table::
+
+                *   -   Wrapper
+                    -   Description
+                *   -   TimeLimit
+                    -   Limit the time steps of the environment.
+                *   -   AutoReset
+                    -   Reset the environment when the episode is done.
+                *   -   ObsNormalize
+                    -   Normalize the observation.
+                *   -   RewardNormalize
+                    -   Normalize the reward.
+                *   -   CostNormalize
+                    -   Normalize the cost.
+                *   -   ActionScale
+                    -   Scale the action.
+                *   -   Unsqueeze
+                    -   Unsqueeze the step result for single environment case.
 
         Args:
             obs_normalize (bool): Whether to normalize the observation.
@@ -144,8 +169,9 @@ class OnlineAdapter:
         return self._env.observation_space
 
     def step(
-        self, action: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+        self,
+        action: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
@@ -155,8 +181,7 @@ class OnlineAdapter:
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
             cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended, in which case further step()
-            calls will return undefined results.
+            terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
@@ -167,7 +192,7 @@ class OnlineAdapter:
         )
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self) -> Tuple[torch.Tensor, Dict]:
+    def reset(self) -> tuple[torch.Tensor, dict]:
         """Resets the environment and returns an initial observation.
 
         Args:

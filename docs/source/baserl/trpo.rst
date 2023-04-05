@@ -10,9 +10,9 @@ Quick Facts
 
     #. TRPO is an :bdg-info-line:`on-policy` algorithm.
     #. TRPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
-    #. TRPO is an improvement work done on the basis of :bdg-info-line:`NPG` .
+    #. TRPO is an improvement work done based on:bdg-info-line:`NPG` .
     #. TRPO is an important theoretical basis for :bdg-info-line:`CPO` .
-    #. The OmniSafe implementation of TRPO supports :bdg-info-line:`parallelization`.
+    #. An :bdg-ref-info-line:`API Documentation <trpoapi>`  is available for TRPO.
 
 ------
 
@@ -24,15 +24,15 @@ Background
 ~~~~~~~~~~
 
 **Trust region policy optimization (TRPO)** is an iterative method for policy optimization that guarantees monotonic improvements.
-TRPO iteratively finds a good local approximation to the objective return and maximize the approximated function.
+TRPO iteratively finds an excellent local approximation to the objective return and maximizes the approximated function.
 To ensure that the surrogate function is a good approximation,
-the new policy should be constrained within a trust region,
-with respect to the current policy by applying KL divergence to measure the distance between two policies.
+the new policy should be constrained within a trust region
+concerning the current policy, by applying KL divergence to measure the distance between two policies.
 
-TRPO can be applied to large nonlinear policies such as neural network.
+TRPO can be applied to comprehensive nonlinear policies such as neural networks.
 Based on **Natural Policy Gradient (NPG)**,
-TRPO uses methods like conjugate gradient to avoid expensive computational cost.
-And it also performs line search to keep policy updating within the fixed KL divergence constraint.
+TRPO uses methods like the conjugate gradient to avoid the expensive computational cost.
+Moreover, it also performs a line search to keep policy updating within the fixed KL divergence constraint.
 
 .. grid:: 2
 
@@ -47,7 +47,7 @@ And it also performs line search to keep policy updating within the fixed KL div
             ^^^
             -  It is very difficult to calculate the entire Hessian matrix directly.
 
-            -  Error introduced by Taylor expansion because of the fix step length.
+            -  Error introduced by Taylor expansion because of the fixed step length.
 
             -  Low utilization of sampled data.
 
@@ -111,7 +111,7 @@ As shown in **NPG**, the difference in performance between two policies :math:`\
     +++
     The proof of the :bdg-info-line:`Theorem 1` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-:bdg-info-line:`Theorem 1` is intuitive as the expected discounted reward of :math:`\pi'` can be view as the expected discounted reward of :math:`\pi`,
+:bdg-info-line:`Theorem 1` is intuitive as the expected discounted reward of :math:`\pi'` can be viewed as the expected discounted reward of :math:`\pi`,
 and an extra advantage of :math:`\pi'` over :math:`\pi`.
 The latter term accounts for how much :math:`\pi'` can improve over :math:`\pi`,
 which is of our interest.
@@ -126,8 +126,8 @@ which is of our interest.
         :label: trpo-eq-3
 
         \label{equation: performance in discount visit density}
-        J^R(\pi') &=J^R(\pi)+\sum_{t=0}^{\infty} \sum_s P\left(s_t=s \mid \pi'\right) \sum_a \pi' (a \mid s) \gamma^t A^R_{\pi}(s, a) \nonumber\\
-        &=J^R(\pi)+\sum_s \sum_{t=0}^{\infty} \gamma^t P\left(s_t=s \mid \pi' \right) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)\nonumber \\
+        J^R(\pi') &=J^R(\pi)+\sum_{t=0}^{\infty} \sum_s P\left(s_t=s \mid \pi'\right) \sum_a \pi' (a \mid s) \gamma^t A^R_{\pi}(s, a) \\
+        &=J^R(\pi)+\sum_s \sum_{t=0}^{\infty} \gamma^t P\left(s_t=s \mid \pi' \right) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a) \\
         &=J^R(\pi)+\sum_s d_{\pi'}(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)
 
 
@@ -136,7 +136,7 @@ This equation implies for any policy :math:`\pi'`, if it has a nonnegative expec
 is guaranteed to increase the policy performance :math:`J`,
 or leave it constant in the case that the expected advantage is zero everywhere.
 However, in the approximate setting, it will typically be unavoidable,
-due to estimation and approximation error,
+due to estimation and approximation errors,
 that there will be some states :math:`s` for which the expected advantage is negative, that is,
 :math:`\sum_a \pi'(a \mid s) A^R_{\pi}(s, a)<0`.
 
@@ -145,9 +145,9 @@ that there will be some states :math:`s` for which the expected advantage is neg
 Surrogate function for the objective
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Equation :eq:`trpo-eq-3` requires knowledge about future state distribution under :math:`\pi'`,
+:eq:`trpo-eq-3` requires knowledge about future state distribution under :math:`\pi'`,
 which is usually unknown and difficult to estimate.
-The complex dependency of :math:`d_{\pi'}(s)` on :math:`\pi'` makes Equation :eq:`trpo-eq-3` difficult to optimize directly.
+The complex dependency of :math:`d_{\pi'}(s)` on :math:`\pi'` makes :eq:`trpo-eq-3` difficult to optimize directly.
 Instead, we introduce the following local approximation to :math:`J`:
 
 .. _`trpo-eq-4`:
@@ -194,7 +194,7 @@ It has been proved that if the two policy :math:`\pi'` and :math:`\pi` are close
     +++
     The proof of the :bdg-info-line:`Corollary 1` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-Equation :eq:`trpo-eq-6` implies that a sufficiently small step :math:`\pi_{\theta_0} \rightarrow \pi'` that improves :math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J`,
+:eq:`trpo-eq-6` implies that a sufficiently small step :math:`\pi_{\theta_0} \rightarrow \pi'` that improves :math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J`,
 but does not give us any guidance on how big of a step to take.
 
 To address this issue, **NPG** proposed a policy updating scheme called **conservative policy iteration(CPI)**,
@@ -217,10 +217,10 @@ Kakade and Langford derived the following lower bound:
     :label: trpo-eq-8
 
     &J\left(\pi_{\text {new }}\right)  \geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{2 \epsilon \gamma}{(1-\gamma)^2} \alpha^2  \\
-    \text { where } &\epsilon=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right| \nonumber
+    \text { where } &\epsilon=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right|
 
 
-However, the lower bound in Equation :eq:`trpo-eq-8` only applies to mixture policies, so it needs to be extended to general policy cases.
+However, the lower bound in :eq:`trpo-eq-8` only applies to mixture policies, so it needs to be extended to general policy cases.
 
 ------
 
@@ -284,10 +284,10 @@ The following bound then follows directly from :bdg-info-line:`Theorem 2` :
     & \quad \text { where } C=\frac{4 \epsilon \gamma}{(1-\gamma)^2}
 
 
-TRPO describes an approximate policy iteration scheme based on the policy improvement bound in Equation :eq:`trpo-eq-11`.
+TRPO describes an approximate policy iteration scheme based on the policy improvement bound in :eq:`trpo-eq-11`.
 Note that for now, we assume exact evaluation of the advantage values :math:`A^R_{\pi}`.
 
-It follows from Equation :eq:`trpo-eq-11` that TRPO is guaranteed to generate a monotonically improving sequence of policies :math:`J\left(\pi_0\right) \leq J\left(\pi_1\right) \leq J\left(\pi_2\right) \leq \cdots`.
+It follows from :eq:`trpo-eq-11` that TRPO is guaranteed to generate a monotonically improving sequence of policies :math:`J\left(\pi_0\right) \leq J\left(\pi_1\right) \leq J\left(\pi_2\right) \leq \cdots`.
 To see this, let :math:`M_i(\pi)=L_{\pi_i}(\pi)-C D_{\mathrm{KL}}^{\max }\left(\pi_i, \pi\right)`.
 Then
 
@@ -322,7 +322,7 @@ the algorithm cannot work well. By plugging in the notation :math:`\theta`, our 
 
 
 where :math:`C=\frac{4 \epsilon \gamma}{(1-\gamma)^2}`, and :math:`\theta_{old}, \theta` are short for :math:`\pi_{\theta_{old}}, \pi_{\theta}`.
-In practice, the penalty coefficient :math:`C` for KL divergence would produce very small step size and the improvement would be too conservative.
+In practice, the penalty coefficient :math:`C` for KL divergence would produce a very small step size and the improvement would be too conservative.
 To allow larger step size, instead of penalty term on KL divergence,
 TRPO uses fixed KL divergence constraint to bound the distance between :math:`\pi_{\theta_{old}}` and :math:`\pi_{\theta}`:
 
@@ -335,8 +335,8 @@ TRPO uses fixed KL divergence constraint to bound the distance between :math:`\p
 
 This problem imposes a constraint that the KL divergence is bounded at every point in the state space.
 While it is motivated by the theory,
-this problem is impractical to solve due to the large number of constraints.
-Instead, TRPO uses a heuristic approximation which considers the average KL divergence:
+this problem is impractical to solve due to a large number of constraints.
+Instead, TRPO uses a heuristic approximation that considers the average KL divergence:
 
 .. math::
     :label: trpo-eq-15
@@ -354,7 +354,7 @@ The method TRPO describes involves two steps:
 
     Two Steps For TRPO Update
     ^^^
-    (1) Compute a search direction, using a linear approximation to objective and quadratic approximation to the constraint.
+    (1) Compute a search direction, using a linear approximation to the objective and quadratic approximation to the constraint.
 
     (2) Perform a line search in that direction, ensuring that we improve the nonlinear objective while satisfying the nonlinear constraint.
 
@@ -371,7 +371,7 @@ The method TRPO describes involves two steps:
          ^^^
          -  It is prohibitively costly to form the full Hessian matrix.
 
-         -  How to compute the maximal step length such that the KL divergence satisfied.
+         -  How to compute the maximal step length such that the KL divergence is satisfied.
 
          -  How to ensure improvement of the surrogate objective and satisfaction of the KL divergence.
     .. grid-item::
@@ -385,7 +385,7 @@ The method TRPO describes involves two steps:
          ^^^
          -  :bdg-ref-success-line:`Conjugate gradient algorithm<conjugate>` can approximately search the update direction without forming this full Hessian matrix.
 
-         -  The max step-size can be formed by an intermediate result produced by the conjugate gradient algorithm.
+         -  The max step size can be formed by an intermediate result produced by the conjugate gradient algorithm.
 
          -  A :bdg-ref-success-line:`line search algorithm<conjugate>` can be used to meet the goal.
 
@@ -433,7 +433,7 @@ The method TRPO describes involves two steps:
                 The term :math:`s^THs` is an intermediate result produced by the conjugate gradient algorithm.
 
             To meet the constraints, TRPO uses line search algorithm to compute the final step length.
-            Detailedly, TRPO perform the line search on the objective :math:`L_{\theta_{\text {old }}}(\theta)-\mathcal{X}\left[\bar{D}_{\text {KL }}\left(\theta_{\text {old }}, \theta\right) \leq \delta\right]`, where :math:`\mathcal{X}[\ldots]` equals zero,
+            Detailedly, TRPO performs the line search on the objective :math:`L_{\theta_{\text {old }}}(\theta)-\mathcal{X}\left[\bar{D}_{\text {KL }}\left(\theta_{\text {old }}, \theta\right) \leq \delta\right]`, where :math:`\mathcal{X}[\ldots]` equals zero,
             when its argument is true and :math:`+\infty` when it is false.
             Starting with the maximal value of the step length :math:`\beta` computed in the previous paragraph,
             TRPO shrinks :math:`\beta` exponentially until the objective improves. Without this line search,
@@ -448,7 +448,6 @@ Code with OmniSafe
 
 Quick start
 """""""""""
-
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
@@ -510,7 +509,7 @@ Quick start
         .. tab-item:: Terminal config style
 
             We use ``train_policy.py`` as the entrance file. You can train the agent with TRPO simply using ``train_policy.py``, with arguments about TRPO and environments does the training.
-            For example, to run TRPO in SafetyPointGoal1-v0 , with 4 cpu cores and seed 0, you can use the following command:
+            For example, to run TRPO in SafetyPointGoal1-v0 , with 1 torch thread and seed 0, you can use the following command:
 
             .. code-block:: bash
                 :linenos:
@@ -523,39 +522,37 @@ Quick start
 Architecture of functions
 """""""""""""""""""""""""
 
--  ``trpo.learn()``
+- ``TRPO.learn()``
 
-   -  ``env.roll_out()``
-   -  ``trpo.update()``
+  - ``TRPO._env.roll_out()``
+  - ``TRPO._update()``
 
-      -  ``trpo.buf.get()``
-      -  ``trpo.update_policy_net()``
+    - ``TRPO._buf.get()``
+    - ``TRPO._update_actor()``
 
-         -  ``Fvp()``
-         -  ``conjugate_gradients()``
-         -  ``search_step_size()``
+      - ``TRPO._fvp()``
+      - ``conjugate_gradients()``
+      - ``TRPO._cpo_search_step()``
 
-      -  ``trpo.update_value_net()``
-
-   -  ``trpo.log()``
+    - ``TRPO._update_reward_critic()``
 
 ------
 
 .. _conjugate:
 
-Documentation of new functions
-""""""""""""""""""""""""""""""
+Documentation of algorithm specific functions
+"""""""""""""""""""""""""""""""""""""""""""""
 
 .. tab-set::
 
-    .. tab-item:: trpo.Fvp()
+    .. tab-item:: trpo._fvp()
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            trpo.Fvp()
+            trpo._fvp()
             ^^^
             TRPO algorithm Builds the Hessian-vector product instead of the full Hessian matrix based on an approximation of the KL-divergence,
             flowing the next steps:
@@ -566,10 +563,10 @@ Documentation of new functions
             .. code-block:: python
                 :linenos:
 
-                self.ac.pi.net.zero_grad()
-                q_dist = self.ac.pi.dist(self.fvp_obs)
+                self._actor_critic.actor.zero_grad()
+                q_dist = self._actor_critic.actor(self._fvp_obs)
                 with torch.no_grad():
-                    p_dist = self.ac.pi.dist(self.fvp_obs)
+                    p_dist = self._actor_critic.actor(self._fvp_obs)
                 kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
 
             (2) Use ``torch.autograd.grad()`` to compute the Hessian-vector product.
@@ -578,18 +575,21 @@ Documentation of new functions
             .. code-block:: python
                 :linenos:
 
-                grads = torch.autograd.grad(kl, self.ac.pi.net.parameters(), create_graph=True)
+                grads = torch.autograd.grad(kl, self._actor_critic.actor.parameters(), create_graph=True)
                 flat_grad_kl = torch.cat([grad.view(-1) for grad in grads])
-                kl_p = (flat_grad_kl * p).sum()
-                grads = torch.autograd.grad(kl_p, self.ac.pi.net.parameters(), retain_graph=False)
-                flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
+
+                kl_p = (flat_grad_kl * params).sum()
+                grads = torch.autograd.grad(kl_p, self._actor_critic.actor.parameters(), retain_graph=False)
 
             (3) return the Hessian-vector product.
 
             .. code-block:: python
                 :linenos:
 
-                return flat_grad_grad_kl + p * self.cg_damping
+                flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
+                distributed.avg_tensor(flat_grad_grad_kl)
+
+                return flat_grad_grad_kl + params * self._cfgs.algo_cfgs.cg_damping
 
     .. tab-item:: conjugate_gradients()
 
@@ -619,10 +619,8 @@ Documentation of new functions
             .. code-block:: python
                 :linenos:
 
-                for i in range(nsteps):
-                    if verbose:
-                        print(fmtstr % (i, rdotr, np.linalg.norm(x)))
-                    z = Fvp(p)
+                for _ in range(num_steps):
+                    z = Avp(p)
                     alpha = rdotr / (torch.dot(p, z) + eps)
                     x += alpha * p
                     r -= alpha * z
@@ -632,41 +630,54 @@ Documentation of new functions
                     mu = new_rdotr / (rdotr + eps)
                     p = r + mu * p
                     rdotr = new_rdotr
+                return x
 
             (3) Return the solution of :math:`x` without computing :math:`x=H^{-1}g`.
 
 
-    .. tab-item:: trpo.search_step_size()
+    .. tab-item:: trpo._search_step_size()
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            trpo.search_step_size()
+            trpo._search_step_size()
             ^^^
             TRPO algorithm performs line-search to ensure constraint satisfaction for rewards and costs,
             and search around for a satisfied step of policy update to improve loss and reward performance,
             flowing the next steps:
 
-            (1) Calculate the expected reward improvement.
+            (1) Get the current policy parameters and initialize the step size.
+
+            .. code-block:: python
+                :linenos:
+
+                # How far to go in a single update
+                step_frac = 1.0
+                # Get old parameterized policy expression
+                theta_old = get_flat_params_from(self._actor_critic.actor)
+
+            (2) Calculate the expected reward improvement.
 
             .. code-block:: python
                 :linenos:
 
                 expected_improve = g_flat.dot(step_dir)
 
-            (2) Performs line-search to find a step improve the surrogate while not violating trust region.
+            (3) Performs line-search to find a step improve the surrogate while not violating trust region.
 
             - Search acceptance step ranging from 0 to total step.
 
             .. code-block:: python
                 :linenos:
 
-                for j in range(total_steps):
-                    new_theta = _theta_old + step_frac * step_dir
-                    set_param_values_to_model(self.ac.pi.net, new_theta)
-                    acceptance_step = j + 1
+                # While not within_trust_region and not out of total_steps:
+                for step in range(total_steps):
+                    # update theta params
+                    new_theta = theta_old + step_frac * step_direction
+                    # set new params as params of net
+                    set_param_values_to_model(self._actor_critic.actor, new_theta)
 
             - In each step of for loop, calculate the policy performance and KL divergence.
 
@@ -674,151 +685,152 @@ Documentation of new functions
                 :linenos:
 
                 with torch.no_grad():
-                    loss_pi_rew, _ = self.compute_loss_pi(data=data)
-                    q_dist = self.ac.pi.dist(data['obs'])
-                    torch_kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-                loss_improve = self.loss_pi_before - loss_pi_rew.item()
+                    loss, _ = self._loss_pi(obs, act, logp, adv)
+                    # compute KL distance between new and old policy
+                    q_dist = self._actor_critic.actor(obs)
+                    # KL-distance of old p-dist and new q-dist, applied in KLEarlyStopping
+                    kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
+                    kl = distributed.dist_avg(kl)
 
             - Step only if surrogate is improved and within the trust region.
 
             .. code-block:: python
                 :linenos:
 
-                if not torch.isfinite(loss_pi_rew) and not torch.isfinite(loss_pi_cost):
-                    self.logger.log('WARNING: loss_pi not finite')
-                elif loss_rew_improve < 0 if optim_case > 1 else False:
-                    self.logger.log('INFO: did not improve improve <0')
-
-                elif cost_diff > max(-c, 0):
-                    self.logger.log(f'INFO: no improve {cost_diff} > {max(-c, 0)}')
-                elif torch_kl > self.target_kl * 1.5:
-                    self.logger.log(f'INFO: violated KL constraint {torch_kl} at step {j + 1}.')
+                # real loss improve: old policy loss - new policy loss
+                loss_improve = loss_before - loss.item()
+                # average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)
+                loss_improve = distributed.dist_avg(loss_improve)
+                self._logger.log(f'Expected Improvement: {expected_improve} Actual: {loss_improve}')
+                if not torch.isfinite(loss):
+                    self._logger.log('WARNING: loss_pi not finite')
+                elif loss_improve < 0:
+                    self._logger.log('INFO: did not improve improve <0')
+                elif kl > self._cfgs.algo_cfgs.target_kl:
+                    self._logger.log('INFO: violated KL constraint.')
                 else:
-                    self.logger.log(f'Accept step at i={j + 1}')
+                    # step only if surrogate is improved and when within trust reg.
+                    acceptance_step = step + 1
+                    self._logger.log(f'Accept step at i={acceptance_step}')
                     break
 
             (3) Return appropriate step direction and acceptance step.
 
 ------
 
-Parameters
+Configs
 """"""""""
 
 .. tab-set::
 
-    .. tab-item:: Specific Parameters
+    .. tab-item:: Train
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Specific Parameters
+            Train Configs
             ^^^
-            -  target_kl(float): Constraint for KL-distance to avoid too far gap
-            -  cg_damping(float): parameter plays a role in building Hessian-vector
-            -  cg_iters(int): Number of iterations of conjugate gradient to perform.
-            -  cost_limit(float): Constraint for agent to avoid too much cost
 
-    .. tab-item:: Basic parameters
+            - device (str): Device to use for training, options: ``cpu``, ``cuda``,``cuda:0``, etc.
+            - torch_threads (int): Number of threads to use for PyTorch.
+            - total_steps (int): Total number of steps to train the agent.
+            - parallel (int): Number of parallel agents, similar to A3C.
+            - vector_env_nums (int): Number of the vector environments.
+
+    .. tab-item:: Algorithm
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Basic parameters
+            Algorithms Configs
             ^^^
-            -  algo (string): The name of algorithm corresponding to current class,
-               it does not actually affect any things which happen in the following.
-            -  actor (string): The type of network in actor, discrete or continuous.
-            -  model_cfgs (dictionary) : Actor and critic's net work configuration,
-               it originates from ``algo.yaml`` file to describe ``hidden layers`` , ``activation function``, ``shared_weights`` and ``weight_initialization_mode``.
 
-               -  shared_weights (bool) : Use shared weights between actor and critic network or not.
+            .. note::
 
-               -  weight_initialization_mode (string) : The type of weight initialization method.
+                The following configs are specific to TRPO algorithm.
 
-                  -  pi (dictionary) : parameters for actor network ``pi``
+                - cg_damping (float): Damping coefficient for conjugate gradient.
+                - cg_iters (int): Number of iterations for conjugate gradient.
+                - fvp_sample_freq (int): Frequency of sampling for Fisher vector product.
 
-                     -  hidden_sizes:
+            - update_cycle (int): Number of steps to update the policy network.
+            - update_iters (int): Number of iterations to update the policy network.
+            - batch_size (int): Batch size for each iteration.
+            - target_kl (float): Target KL divergence.
+            - entropy_coef (float): Coefficient of entropy.
+            - reward_normalize (bool): Whether to normalize the reward.
+            - cost_normalize (bool): Whether to normalize the cost.
+            - obs_normalize (bool): Whether to normalize the observation.
+            - kl_early_stop (bool): Whether to stop the training when KL divergence is too large.
+            - max_grad_norm (float): Maximum gradient norm.
+            - use_max_grad_norm (bool): Whether to use maximum gradient norm.
+            - use_critic_norm (bool): Whether to use critic norm.
+            - critic_norm_coef (float): Coefficient of critic norm.
+            - gamma (float): Discount factor.
+            - cost_gamma (float): Cost discount factor.
+            - lam (float): Lambda for GAE-Lambda.
+            - lam_c (float): Lambda for cost GAE-Lambda.
+            - adv_estimation_method (str): The method to estimate the advantage.
+            - standardized_rew_adv (bool): Whether to use standardized reward advantage.
+            - standardized_cost_adv (bool): Whether to use standardized cost advantage.
+            - penalty_coef (float): Penalty coefficient for cost.
+            - use_cost (bool): Whether to use cost.
 
-                        -  64
-                        -  64
 
-                     -  activations: tanh
-
-                  -  val (dictionary) parameters for critic network ``v``
-
-                     -  hidden_sizes:
-
-                        -  64
-                        -  64
-
-                        .. hint::
-
-                            ======== ================  ========================================================================
-                            Name        Type              Description
-                            ======== ================  ========================================================================
-                            ``v``    ``nn.Module``     Gives the current estimate of **V** for states in ``s``.
-                            ``pi``   ``nn.Module``     Deterministically or continuously computes an action from the agent,
-                                                       conditioned on states in ``s``.
-                            ======== ================  ========================================================================
-
-                  -  activations: tanh
-                  -  env_id (string): The name of environment we want to roll out.
-                  -  seed (int): Define the seed of experiments.
-                  -  parallel (int): Define the seed of experiments.
-                  -  epochs (int): The number of epochs we want to roll out.
-                  -  steps_per_epoch (int):The number of time steps per epoch.
-                  -  pi_iters (int): The number of iteration when we update actor network per mini batch.
-                  -  critic_iters (int): The number of iteration when we update critic network per mini batch.
-
-    .. tab-item:: Optional parameters
+    .. tab-item:: Model
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
             :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
             :class-footer: sd-font-weight-bold
 
-            Optional parameters
+            Model Configs
             ^^^
-            -  use_cost_critic (bool): Use cost value function or not.
-            -  linear_lr_decay (bool): Use linear learning rate decay or not.
-            -  exploration_noise_anneal (bool): Use exploration noise anneal or not.
-            -  reward_penalty (bool): Use cost to penalize reward or not.
-            -  kl_early_stopping (bool): Use KL early stopping or not.
-            -  max_grad_norm (float): Use maximum gradient normalization or not.
-            -  scale_rewards (bool): Use reward scaling or not.
 
-    .. tab-item:: Buffer parameters
+            - weight_initialization_mode (str): The type of weight initialization method.
+            - actor_type (str): The type of actor, default to ``gaussian_learning``.
+            - linear_lr_decay (bool): Whether to use linear learning rate decay.
+            - exploration_noise_anneal (bool): Whether to use exploration noise anneal.
+            - std_range (list): The range of standard deviation.
 
-        .. card::
-            :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-            :class-footer: sd-font-weight-bold
-
-            Buffer parameters
-            ^^^
             .. hint::
-                  ============= =============================================================================
-                     Name                    Description
-                  ============= =============================================================================
-                  ``Buffer``      A buffer for storing trajectories experienced by an agent interacting
-                                  with the environment, and using **Generalized Advantage Estimation (GAE)**
-                                  for calculating the advantages of state-action pairs.
-                  ============= =============================================================================
 
-            .. warning::
-                Buffer collects only raw data received from environment.
+                actor (dictionary): parameters for actor network ``actor``
 
-            -  gamma (float): The gamma for GAE.
-            -  lam (float): The lambda for reward GAE.
-            -  adv_estimation_method (float):Roughly what KL divergence we think is
-               appropriate between new and old policies after an update. This will
-               get used for early stopping. (Usually small, 0.01 or 0.05.)
-            -  standardized_reward (int):  Use standardized reward or not.
-            -  standardized_cost (bool): Use standardized cost or not.
+                - activations: tanh
+                - hidden_sizes:
+                - 64
+                - 64
+
+            .. hint::
+
+                critic (dictionary): parameters for critic network ``critic``
+
+                - activations: tanh
+                - hidden_sizes:
+                - 64
+                - 64
+
+    .. tab-item:: Logger
+
+        .. card::
+            :class-header: sd-bg-success sd-text-white sd-font-weight-bold
+            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
+            :class-footer: sd-font-weight-bold
+
+            Logger Configs
+            ^^^
+
+            - use_wandb (bool): Whether to use wandb to log the training process.
+            - wandb_project (str): The name of wandb project.
+            - use_tensorboard (bool): Whether to use tensorboard to log the training process.
+            - log_dir (str): The directory to save the log files.
+            - window_lens (int): The length of the window to calculate the average reward.
+            - save_model_freq (int): The frequency to save the model.
 
 ------
 
@@ -837,7 +849,7 @@ Appendix
 
 .. _appendix-theorem1:
 
-Proof of Theorem 1 (Difference between two arbitrarily policies)
+Proof of Theorem 1 (Difference between two arbitrary policies)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. card::
@@ -859,9 +871,6 @@ Proof of Theorem 1 (Difference between two arbitrarily policies)
         &=-\mathbb{E}_{s_0}\left[V^R_{\pi}\left(s_0\right)\right]+\mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right] \\
         &=-J^R(\pi)+J^R(\pi')
 
-
-
-
 .. _appendix-corollary1:
 
 Proof of Corollary 1
@@ -873,7 +882,7 @@ Proof of Corollary 1
 
     Proof of Corollary 1
     ^^^
-    From Equation :eq:`trpo-eq-2` and :eq:`trpo-eq-4` , we can easily know that
+    From :eq:`trpo-eq-2` and :eq:`trpo-eq-4` , we can easily know that
 
     .. math::
         :label: trpo-eq-17
@@ -881,15 +890,12 @@ Proof of Corollary 1
         & L_{\pi_{\theta_0}}\left(\pi_{\theta_0}\right)=J\left(\pi_{\theta_0}\right)\quad \\
         \text{since}~~ &\sum_s \rho_\pi(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)=0.
 
-
-
-    Now Equation :eq:`trpo-eq-4` can be written as follows:
+    Now :eq:`trpo-eq-4` can be written as follows:
 
     .. math::
         :label: trpo-eq-18
 
         J\left(\pi^{'}_{\theta}\right) = J(\pi_{\theta_0}) + \sum_s d_{\pi^{'}_{\theta}}(s) \sum_a \pi^{'}_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)
-
 
     So,
 
@@ -900,7 +906,6 @@ Proof of Corollary 1
 
         \nabla_{\theta} J(\pi_{\theta})|_{\theta = \theta_0} &= J(\pi_{\theta_0}) + \sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)+\sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a) \\
         &= J(\pi_{\theta_0}) + \sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)
-
 
     .. note::
         :math:`\sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)=0`
@@ -913,7 +918,6 @@ Proof of Corollary 1
         :label: trpo-eq-20
 
         L_{\pi_{\theta_0}}(\pi_{\theta})=J(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)
-
 
     So,
 
@@ -931,10 +935,9 @@ Proof of Corollary 1
 
         \left.\nabla_\theta L_{\pi_{\theta_0}}\left(\pi_\theta\right)\right|_{\theta=\theta_0}=\left.\nabla_\theta J\left(\pi_\theta\right)\right|_{\theta=\theta_0}
 
-
 .. _appendix-theorem2:
 
-Proof of Theorem 2 (Difference between two arbitrarily policies)
+Proof of Theorem 2 (Difference between two arbitrary policies)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Define :math:`\bar{A}^R(s)` to be the expected advantage of :math:`\pi'` over :math:`\pi` at :math:`s`,
@@ -1022,7 +1025,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             .. math::
                 :label: trpo-eq-27
 
-                \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right|&\leq& 2 \alpha \max _s \bar{A}^R(s) \\
+                \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right|&\leq 2 \alpha \max _s \bar{A}^R(s) \\
                 &\leq& 4 \alpha\left(1-(1-\alpha)^t\right) \max _s\left|A^R_{\pi}(s, a)\right|
 
 
@@ -1138,13 +1141,13 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
                 :label: trpo-eq-35
 
                 &\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
-                & \leq&\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right|+\left|\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
-                & \leq& 4 \alpha \max _{s, a}\left|A^R_{\pi}(s, a)\right|
+                & \leq\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right|+\left|\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
+                & \leq 4 \alpha \max _{s, a}\left|A^R_{\pi}(s, a)\right|
                 \label{equation: abs performance bound nt geq 0}
 
 
             Where the second inequality follows from Lemma 2.
-            Plugging Equation :eq:`trpo-eq-34` and Equation :eq:`trpo-eq-35` into Equation :eq:`trpo-eq-33`, we get
+            Plugging :eq:`trpo-eq-34` and :eq:`trpo-eq-35` into :eq:`trpo-eq-33`, we get
 
             .. math::
                 :label: trpo-eq-36
@@ -1153,7 +1156,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
 
 
 The preceding Lemma bounds the difference in expected advantage at each timestep :math:`t`.
-We can sum over time to bound the difference between :math:`J^R(\pi')` and :math:`L_\pi(\pi')`. Subtracting Equation :eq:`trpo-eq-24` and Equation :eq:`trpo-eq-25`,
+We can sum over time to bound the difference between :math:`J^R(\pi')` and :math:`L_\pi(\pi')`. Subtracting :eq:`trpo-eq-24` and :eq:`trpo-eq-25`,
 and defining :math:`\epsilon=\max _{s, a}\left|A^R_{\pi}(s, a)\right|`, we have
 
 .. _`trpo-eq-36`:
@@ -1161,11 +1164,11 @@ and defining :math:`\epsilon=\max _{s, a}\left|A^R_{\pi}(s, a)\right|`, we have
 .. math::
     :label: trpo-eq-37
 
-    \left|J^R(\pi')-L_\pi(\pi')\right| &=\sum_{t=0}^{\infty} \gamma^t\left|\mathbb{E}_{\tau \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{\tau \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right| \nonumber \\
-    & \leq& \sum_{t=0}^{\infty} \gamma^t \cdot 4 \epsilon \alpha\left(1-(1-\alpha)^t\right) \nonumber \\
-    &=4 \epsilon \alpha\left(\frac{1}{1-\gamma}-\frac{1}{1-\gamma(1-\alpha)}\right) \nonumber \\
-    &=\frac{4 \alpha^2 \gamma \epsilon}{(1-\gamma)(1-\gamma(1-\alpha))} \nonumber \\
-    & \leq& \frac{4 \alpha^2 \gamma \epsilon}{(1-\gamma)^2} \label{TRPO: difference between L and J}
+    \left|J^R(\pi')-L_\pi(\pi')\right| &=\sum_{t=0}^{\infty} \gamma^t\left|\mathbb{E}_{\tau \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{\tau \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right|  \\
+    & \leq \sum_{t=0}^{\infty} \gamma^t \cdot 4 \epsilon \alpha\left(1-(1-\alpha)^t\right)  \\
+    &=4 \epsilon \alpha\left(\frac{1}{1-\gamma}-\frac{1}{1-\gamma(1-\alpha)}\right)  \\
+    &=\frac{4 \alpha^2 \gamma \epsilon}{(1-\gamma)(1-\gamma(1-\alpha))}  \\
+    & \leq \frac{4 \alpha^2 \gamma \epsilon}{(1-\gamma)^2} \label{TRPO: difference between L and J}
 
 
 Last, to replace :math:`\alpha` by the total variation divergence,
@@ -1189,5 +1192,5 @@ such that
     \max_s D_{\mathrm{TV}}(\pi(\cdot|s) \| \pi'(\cdot|s)) \leq \alpha
 
 then we can define an :math:`\alpha`-coupled policy pair :math:`(\pi, \pi')` with appropriate marginals.
-Taking :math:`\alpha=\max _s D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right) \leq \alpha` in Equation :eq:`trpo-eq-37`,
+Taking :math:`\alpha=\max _s D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right) \leq \alpha` in :eq:`trpo-eq-37`,
 :bdg-info-line:`Theorem 2` follows.

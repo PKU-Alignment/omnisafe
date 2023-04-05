@@ -142,7 +142,7 @@ class CUP(PPO):
 
         where :math:`\lambda_k` is the Lagrange multiplier at iteration :math:`k`,
         :math:`\eta` is the Lagrange multiplier learning rate,
-        :math:`J^{C}_{\pi_theta}` is the cost of the current policy,
+        :math:`J^{C}_{\pi_{\theta}}` is the cost of the current policy,
         and :math:`C` is the cost limit.
 
         Then in each iteration of the policy update, CUP calculates current policy's

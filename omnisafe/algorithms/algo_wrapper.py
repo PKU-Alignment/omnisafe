@@ -41,9 +41,9 @@ class AlgoWrapper:
         self,
         algo: str,
         env_id: str,
-        train_terminal_cfgs: Optional[Dict[str, Any]] = None,
-        custom_cfgs: Optional[Dict[str, Any]] = None,
-    ):
+        train_terminal_cfgs: dict[str, Any] | None = None,
+        custom_cfgs: dict[str, Any] | None = None,
+    ) -> None:
         self.algo = algo
         self.env_id = env_id
         # algo_type will set in _init_checks()
@@ -66,11 +66,10 @@ class AlgoWrapper:
         self.algo_type = ALGORITHM2TYPE.get(self.algo, '')
         if self.algo_type is None or self.algo_type == '':
             raise ValueError(f'{self.algo} is not supported!')
-        if self.algo_type in ['off-policy', 'model-based']:
-            if self.train_terminal_cfgs is not None:
-                assert (
-                    self.train_terminal_cfgs['parallel'] == 1
-                ), 'off-policy or model-based only support parallel==1!'
+        if self.algo_type in {'off-policy', 'model-based'} and self.train_terminal_cfgs is not None:
+            assert (
+                self.train_terminal_cfgs['parallel'] == 1
+            ), 'off-policy or model-based only support parallel==1!'
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations
@@ -88,7 +87,7 @@ class AlgoWrapper:
         exp_name = f'{self.algo}-{{{self.env_id}}}'
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id})
         cfgs.train_cfgs.recurisve_update(
-            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle}
+            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle},
         )
         return cfgs
 

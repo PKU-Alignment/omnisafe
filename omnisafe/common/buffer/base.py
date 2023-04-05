@@ -73,6 +73,12 @@ class BaseBuffer(ABC):
             act_space (OmnisafeSpace): The action space.
             size (int): The size of the buffer.
             device (torch.device): The device of the buffer.
+
+        Attributes:
+            data (dict[str, torch.Tensor]): The data of the buffer.
+            _size (int): The size of the buffer.
+            _device (torch.device): The device of the buffer.
+
         """
         device = torch.device(device)
         if isinstance(obs_space, Box):

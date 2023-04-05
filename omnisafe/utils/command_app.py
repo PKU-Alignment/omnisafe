@@ -20,14 +20,16 @@ import warnings
 from typing import List
 
 import numpy as np
+import torch
 import typer
 import yaml
 from rich.console import Console
 
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
+from omnisafe.common.statistics_tools import StatisticsTools
 from omnisafe.typing import NamedTuple, Tuple
-from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dic
+from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dict
 
 
 app = typer.Typer()
@@ -54,6 +56,15 @@ def train(  # pylint: disable=too-many-arguments
     log_dir: str = typer.Option(
         os.path.abspath('.'),
         help='directory to save logs, default is current directory',
+    ),
+    plot: bool = typer.Option(False, help='whether to plot the training curve after training'),
+    render: bool = typer.Option(
+        False,
+        help='whether to render the trajectory of models saved during training',
+    ),
+    evaluate: bool = typer.Option(
+        False,
+        help='whether to evaluate the trajectory of models saved during training',
     ),
     custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
 ):
@@ -93,7 +104,7 @@ def train(  # pylint: disable=too-many-arguments
 
     parsed_custom_cfgs = {}
     for k, v in custom_cfgs.items():
-        update_dic(parsed_custom_cfgs, custom_cfgs_to_dict(k, v))
+        update_dict(parsed_custom_cfgs, custom_cfgs_to_dict(k, v))
 
     agent = omnisafe.Agent(
         algo=algo,
@@ -102,6 +113,22 @@ def train(  # pylint: disable=too-many-arguments
         custom_cfgs=parsed_custom_cfgs,
     )
     agent.learn()
+
+    if plot:
+        try:
+            agent.plot(smooth=1)
+        except RuntimeError:
+            console.print('failed to plot data', style='red bold')
+    if render:
+        try:
+            agent.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
+        except RuntimeError:
+            console.print('failed to render model', style='red bold')
+    if evaluate:
+        try:
+            agent.evaluate(num_episodes=10)
+        except RuntimeError:
+            console.print('failed to evaluate model', style='red bold')
 
 
 def train_grid(
@@ -161,9 +188,22 @@ def benchmark(
         ...,
         help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml',
     ),
+    gpu_range: str = typer.Option(
+        None,
+        help='range of gpu to use, the format is as same as range in python,'
+        'for example, use 2==range(2), 0:2==range(0,2), 0:2:1==range(0,2,1) to select gpu',
+    ),
     log_dir: str = typer.Option(
         os.path.abspath('.'),
         help='directory to save logs, default is current directory',
+    ),
+    render: bool = typer.Option(
+        False,
+        help='whether to render the trajectory of models saved during training',
+    ),
+    evaluate: bool = typer.Option(
+        False,
+        help='whether to evaluate the trajectory of models saved during training',
     ),
 ):
     """Benchmark algorithms configured by .yaml file in OmniSafe via command line.
@@ -200,11 +240,38 @@ def benchmark(
     eg = ExperimentGrid(exp_name=exp_name)
     for k, v in configs.items():
         eg.add(key=k, vals=v)
-    eg.run(train_grid, num_pool=num_pool, parent_dir=log_dir)
+
+    gpu_id = None
+    if gpu_range is not None:
+        assert_with_exit(
+            len(gpu_range.split(':')) <= 3,
+            'gpu_range must be like x:y:z format,'
+            ' which means using gpu in [x, y) with step size z',
+        )
+        # Set the device.
+        avaliable_gpus = list(range(torch.cuda.device_count()))
+        gpu_id = list(range(*[int(i) for i in gpu_range.split(':')]))
+
+        if not set(gpu_id).issubset(avaliable_gpus):
+            warnings.warn('The GPU ID is not available, use CPU instead.', stacklevel=1)
+            gpu_id = None
+
+    eg.run(train_grid, num_pool=num_pool, parent_dir=log_dir, gpu_id=gpu_id)
+
+    if render:
+        try:
+            eg.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
+        except RuntimeError:
+            console.print('failed to render model', style='red bold')
+    if evaluate:
+        try:
+            eg.evaluate(num_episodes=10)
+        except RuntimeError:
+            console.print('failed to evaluate model', style='red bold')
 
 
 @app.command('eval')
-def evaluate(
+def evaluate_model(
     result_dir: str = typer.Argument(
         ...,
         help='directory of experiment results to evaluate, e.g. ./runs/PPO-{SafetyPointGoal1-v0}',
@@ -268,6 +335,15 @@ def train_config(
         os.path.abspath('.'),
         help='directory to save logs, default is current directory',
     ),
+    plot: bool = typer.Option(False, help='whether to plot the training curve after training'),
+    render: bool = typer.Option(
+        False,
+        help='whether to render the trajectory of models saved during training',
+    ),
+    evaluate: bool = typer.Option(
+        False,
+        help='whether to evaluate the trajectory of models saved during training',
+    ),
 ):
     """Train a policy configured by .yaml file in OmniSafe via command line.
 
@@ -296,6 +372,59 @@ def train_config(
     args.update({'logger_cfgs': {'log_dir': os.path.join(log_dir, 'train_dict')}})
     agent = omnisafe.Agent(algo=args['algo'], env_id=args['env_id'], custom_cfgs=args)
     agent.learn()
+
+    if plot:
+        try:
+            agent.plot(smooth=1)
+        except RuntimeError:
+            console.print('failed to plot data', style='red bold')
+    if render:
+        try:
+            agent.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
+        except RuntimeError:
+            console.print('failed to render model', style='red bold')
+    if evaluate:
+        try:
+            agent.evaluate(num_episodes=10)
+        except RuntimeError:
+            console.print('failed to evaluate model', style='red bold')
+
+
+@app.command()
+def analyze_grid(
+    path: str = typer.Argument(
+        ...,
+        help='path of experiment directory, these experiments are launched by omnisafe via experiment grid',
+    ),
+    parameter: str = typer.Argument(
+        ...,
+        help='name of parameter to analyze',
+    ),
+    compare_num: int = typer.Option(
+        None,
+        help='number of values to compare, if it is specified, will combine any potential combination to compare',
+    ),
+    cost_limit: int = typer.Option(
+        None,
+        help='the cost limit to show in graphs by a single line',
+    ),
+):
+    """Statistics tools for experiment grid.
+
+    Just specify in the name of the parameter of which value you want to compare,
+    then you can just specify how many values you want to compare in single graph at most,
+    and the function will automatically generate all possible combinations of the graph.
+    """
+
+    tools = StatisticsTools()
+    tools.load_source(path)
+
+    tools.draw_graph(
+        parameter=parameter,
+        values=None,
+        compare_num=compare_num,
+        cost_limit=cost_limit,
+    )
 
 
 if __name__ == '__main__':

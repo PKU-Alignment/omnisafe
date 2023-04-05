@@ -173,20 +173,20 @@ def custom_cfgs_to_dict(key_list, value):
     return return_dict
 
 
-def update_dic(total_dic, item_dic):
+def update_dict(total_dict, item_dict):
     """Updater of multi-level dictionary."""
-    for idd in item_dic:
-        total_value = total_dic.get(idd)
-        item_value = item_dic.get(idd)
+    for idd in item_dict:
+        total_value = total_dict.get(idd)
+        item_value = item_dict.get(idd)
 
         if total_value is None:
-            total_dic.update({idd: item_value})
+            total_dict.update({idd: item_value})
         elif isinstance(item_value, dict):
-            update_dic(total_value, item_value)
-            total_dic.update({idd: total_value})
+            update_dict(total_value, item_value)
+            total_dict.update({idd: total_value})
         else:
             total_value = item_value
-            total_dic.update({idd: total_value})
+            total_dict.update({idd: total_value})
 
 
 def load_yaml(path) -> dict:
@@ -270,58 +270,3 @@ def hash_string(string) -> str:
     hash_object = hashlib.sha256(salted_string)
     # get the hex digest
     return hash_object.hexdigest()
-
-def to_ndarray(item: Any, dtype: np.dtype = None) -> np.ndarray:
-    r"""
-    Overview:
-        Change `torch.Tensor`, sequence of scalars to ndarray, and keep other data types unchanged.
-    Arguments:
-        - item (:obj:`object`): the item to be changed
-        - dtype (:obj:`type`): the type of wanted ndarray
-    Returns:
-        - item (:obj:`object`): the changed ndarray
-    .. note:
-
-        Now supports item type: :obj:`torch.Tensor`,  :obj:`dict`, :obj:`list`, :obj:`tuple` and :obj:`None`
-    """
-    def transform(d):
-        if dtype is None:
-            return np.array(d)
-        else:
-            return np.array(d, dtype=dtype)
-
-    if isinstance(item, dict):
-        new_data = {}
-        for k, v in item.items():
-            new_data[k] = to_ndarray(v, dtype)
-        return new_data
-    elif isinstance(item, list) or isinstance(item, tuple):
-        if len(item) == 0:
-            return None
-        elif hasattr(item, '_fields'):  # namedtuple
-            return type(item)(*[to_ndarray(t, dtype) for t in item])
-        else:
-            new_data = []
-            for t in item:
-                new_data.append(to_ndarray(t, dtype))
-            return new_data
-    elif isinstance(item, torch.Tensor):
-        if item.device != 'cpu':
-            item = item.detach().cpu()
-        if dtype is None:
-            return item.numpy()
-        else:
-            return item.numpy().astype(dtype)
-    elif isinstance(item, np.ndarray):
-        if dtype is None:
-            return item
-        else:
-            return item.astype(dtype)
-    elif isinstance(item, bool) or isinstance(item, str):
-        return item
-    elif np.isscalar(item):
-        return np.array(item)
-    elif item is None:
-        return None
-    else:
-        raise TypeError("not support item type: {}".format(type(item)))
