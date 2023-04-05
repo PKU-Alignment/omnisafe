@@ -89,11 +89,9 @@ class OffPolicyAdapter(OnlineAdapter):
         """Roll out the environment and store the data in the buffer.
 
         Args:
-            roll_out_step (int): Number of steps to roll out.
+            episode (int): Number of episodes.
             agent (ConstraintActorCritic): Agent.
-            buf (VectorOnPolicyBuffer): Buffer.
             logger (Logger): Logger.
-            use_rand_action (bool): Whether to use random action.
         """
         for _ in range(episode):
             ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
