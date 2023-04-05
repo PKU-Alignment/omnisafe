@@ -21,17 +21,17 @@ defaults:
     # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
     device: cpu
     # number of threads for torch
-    torch_threads: 6
+    torch_threads: 16
     # number of vectorized environments
     vector_env_nums: 1
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
-    total_steps: 1024000
+    total_steps: 1000000
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    update_cycle: 2048
+    update_cycle: 2000
     # number of steps per sample
     steps_per_sample: 1
     # number of iterations to update the policy

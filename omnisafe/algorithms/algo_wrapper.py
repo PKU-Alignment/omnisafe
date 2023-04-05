@@ -159,6 +159,7 @@ class AlgoWrapper:
 
     def plot(self, smooth=1):
         """Plot the training curve.
+
         Args:
             smooth (int): window size, for smoothing the curve.
         """
@@ -179,6 +180,7 @@ class AlgoWrapper:
 
     def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
         """Agent Evaluation.
+
         Args:
             num_episodes (int): number of episodes to evaluate.
             cost_criteria (float): the cost criteria to evaluate.
@@ -199,6 +201,7 @@ class AlgoWrapper:
         height: int = 256,
     ):
         """Evaluate and render some episodes.
+
         Args:
             num_episodes (int): number of episodes to render.
             render_mode (str): render mode, can be 'rgb_array', 'depth_array' or 'human'.

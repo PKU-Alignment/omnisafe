@@ -96,9 +96,7 @@ class OffPolicyAdapter(OnlineAdapter):
             use_rand_action (bool): Whether to use random action.
         """
         for _ in range(episode):
-            ep_ret = 0
-            ep_cost = 0
-            ep_len = 0
+            ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
             done = False
             obs, _ = self._eval_env.reset()
             obs = obs.to(self._device)
@@ -156,7 +154,6 @@ class OffPolicyAdapter(OnlineAdapter):
             real_next_obs = next_obs.clone()
             for idx, done in enumerate(torch.logical_or(terminated, truncated)):
                 if done:
-                    # self._current_obs, _ = self.reset()
                     real_next_obs[idx] = info['final_observation'][idx]
                     self._log_metrics(logger, idx)
                     self._reset_log(idx)

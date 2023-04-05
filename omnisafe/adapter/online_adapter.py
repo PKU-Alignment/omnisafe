@@ -160,6 +160,7 @@ class OnlineAdapter:
     @property
     def observation_space(self) -> OmnisafeSpace:
         """The observation space of the environment.
+
         Returns:
             OmnisafeSpace: the observation space.
         """
@@ -170,8 +171,10 @@ class OnlineAdapter:
         action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         """Run one timestep of the environment's dynamics using the agent actions.
+
         Args:
             action (torch.Tensor): action.
+
         Returns:
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
@@ -184,8 +187,10 @@ class OnlineAdapter:
 
     def reset(self) -> tuple[torch.Tensor, dict]:
         """Resets the environment and returns an initial observation.
+
         Args:
             seed (Optional[int]): seed for the environment.
+
         Returns:
             observation (torch.Tensor): the initial observation of the space.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
@@ -194,6 +199,7 @@ class OnlineAdapter:
 
     def save(self) -> dict[str, torch.nn.Module]:
         """Save the environment.
+
         Returns:
             Dict[str, torch.nn.Module]: the saved environment.
         """
