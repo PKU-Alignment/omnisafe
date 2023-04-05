@@ -4,8 +4,8 @@
 At present, our tutorials are available in the following languages, and you can access them via Colab:
 
 ## English
-- [Getting Started](https://colab.research.google.com/github/PKU-MARL/omnisafe/blob/tutorial/tutorials/English/1.Getting_Started.ipynb) Introduce the basic usage of OmniSafe so that users can quickly hand on it.
-- [CLI Command](https://colab.research.google.com/github/PKU-MARL/omnisafe/blob/tutorial/tutorials/English/2.CLI_Command.ipynb) Introduce how to use the CLI tool of OmniSafe.
+- [Getting Started](https://colab.research.google.com/github/PKU-MARL/omnisafe/blob/main/tutorials/English/1.Getting_Started.ipynb) Introduce the basic usage of OmniSafe so that users can quickly hand on it.
+- [CLI Command](https://colab.research.google.com/github/PKU-MARL/omnisafe/blob/main/tutorials/English/2.CLI_Command.ipynb) Introduce how to use the CLI tool of OmniSafe.
 
 ## 简体中文
 - [Getting Started](https://colab.research.google.com/github/PKU-MARL/omnisafe/blob/main/tutorials/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87/1.Getting%20Started.ipynb) 介绍OmniSafe的基本用法，使用户能够快速上手。

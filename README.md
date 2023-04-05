@@ -258,8 +258,8 @@ omnisafe train-config ./saved_source/train_config.yaml
 
 ### Quickstart: Colab in the Cloud
 Explore OmniSafe easily and quickly through a series of colab notebooks:
-- [Getting Started](https://colab.research.google.com/github/PKU-MARL/omnisafe/blob/tutorial/tutorials/English/1.Getting_Started.ipynb) Introduce the basic usage of OmniSafe so that users can quickly hand on it.
-- [CLI Command](https://colab.research.google.com/github/PKU-MARL/omnisafe/blob/tutorial/tutorials/English/2.CLI_Command.ipynb) Introduce how to use the CLI tool of OmniSafe.
+- [Getting Started](https://colab.research.google.com/github/PKU-MARL/omnisafe/blob/main/tutorials/English/1.Getting_Started.ipynb) Introduce the basic usage of OmniSafe so that users can quickly hand on it.
+- [CLI Command](https://colab.research.google.com/github/PKU-MARL/omnisafe/blob/main/tutorials/English/2.CLI_Command.ipynb) Introduce how to use the CLI tool of OmniSafe.
 
 We take great pleasure in collaborating with our users to create tutorials in various languages. Please refer to our list of currently supported languages. If you are interested in translating the tutorial into a new language or improving an existing version, kindly submit a PR to us."
 
