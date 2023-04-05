@@ -9,7 +9,7 @@
 
   [![Organization](https://img.shields.io/badge/Organization-PKU_MARL-blue.svg)](https://github.com/PKU-MARL)
   [![PyPI](https://img.shields.io/pypi/v/omnisafe?logo=pypi)](https://pypi.org/project/omnisafe)
-  [![tests](https://github.com/PKU-MARL/omnisafe/actions/workflows/test.yml/badge.svg)](https://github.com/PKU-MARL/omnisafe/actions/workflows/test.yml)
+  [![tests](https://img.shields.io/github/actions/workflow/status/PKU-MARL/omnisafe/test.yml?label=tests&logo=github)](https://github.com/OmniSafeAI/omnisafe/tree/HEAD/tests)
   [![Documentation Status](https://img.shields.io/readthedocs/omnisafe?logo=readthedocs)](https://omnisafe.readthedocs.io)
   [![Downloads](https://static.pepy.tech/personalized-badge/omnisafe?period=total&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/omnisafe)
   [![GitHub Repo Stars](https://img.shields.io/github/stars/PKU-MARL/omnisafe?color=brightgreen&logo=github)](https://github.com/PKU-MARL/OmniSafe/stargazers)
