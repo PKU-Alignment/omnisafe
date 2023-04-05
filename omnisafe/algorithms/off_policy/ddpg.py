@@ -195,7 +195,10 @@ class DDPG(BaseAlgo):
             self._logger.store(**{'Time/Update': update_time})
             self._logger.store(**{'Time/Rollout': roll_out_time})
 
-            if step > self._cfgs.algo_cfgs.start_learning_steps and self._cfgs.model_cfgs.linear_lr_decay:
+            if (
+                step > self._cfgs.algo_cfgs.start_learning_steps
+                and self._cfgs.model_cfgs.linear_lr_decay
+            ):
                 self._actor_critic.actor_scheduler.step()
 
             self._logger.store(
