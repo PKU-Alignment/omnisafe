@@ -41,14 +41,14 @@ class TD3Lag(TD3):
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
 
-    def _update_epoch(self) -> None:
-        super()._update_epoch()
+    def _update(self) -> None:
+        super()._update()
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         self._lagrange.update_lagrange_multiplier(Jc)
         self._logger.store(
             **{
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
-            }
+            },
         )
 
     def _loss_pi(
@@ -57,7 +57,7 @@ class TD3Lag(TD3):
     ) -> torch.Tensor:
         action = self._actor_critic.actor.predict(obs, deterministic=True)
         loss_r = -self._actor_critic.reward_critic(obs, action)[0]
-        loss_q_c= self._actor_critic.cost_critic(obs, action)[0]
-        loss_c = self._lagrange.lagrangian_multiplier * loss_q_c
-        
+        loss_q_c = self._actor_critic.cost_critic(obs, action)[0]
+        loss_c = self._lagrange.lagrangian_multiplier.item() * loss_q_c
+
         return (loss_r + loss_c).mean() / (1 + self._lagrange.lagrangian_multiplier.item())

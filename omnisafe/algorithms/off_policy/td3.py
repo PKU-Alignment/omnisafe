@@ -73,7 +73,8 @@ class TD3(DDPG):
             policy_noise = self._cfgs.algo_cfgs.policy_noise
             policy_noise_clip = self._cfgs.algo_cfgs.policy_noise_clip
             noise = (torch.randn_like(next_action) * policy_noise).clamp(
-                -policy_noise_clip, policy_noise_clip
+                -policy_noise_clip,
+                policy_noise_clip,
             )
             next_action = (next_action + noise).clamp(-1.0, 1.0)
             next_q1_value_r, next_q2_value_r = self._actor_critic.target_reward_critic(
