@@ -43,16 +43,6 @@ class DDPGLag(DDPG):
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
 
-    def _update_epoch(self) -> None:
-        super()._update_epoch()
-        Jc = self._logger.get_stats('Metrics/EpCost')[0]
-        self._lagrange.update_lagrange_multiplier(Jc)
-        self._logger.store(
-            **{
-                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
-            },
-        )
-
     def _update(self) -> None:
         super()._update()
         Jc = self._logger.get_stats('Metrics/EpCost')[0]

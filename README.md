@@ -15,6 +15,7 @@
   [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
   [![License](https://img.shields.io/github/license/PKU-MARL/OmniSafe?label=license)](#license)
   [![CodeCov](https://img.shields.io/codecov/c/github/PKU-MARL/omnisafe/main?logo=codecov)](https://app.codecov.io/gh/PKU-MARL/omnisafe)
+
 </div>
 
 <p align="center">

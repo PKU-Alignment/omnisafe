@@ -24,7 +24,6 @@ import numpy as np
 import torch
 import yaml
 from rich.console import Console
-from typing import Any
 
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:

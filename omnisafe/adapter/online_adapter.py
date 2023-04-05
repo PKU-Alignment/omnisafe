@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import torch
 
-from omnisafe.envs.core import CMDP, make, support_envs
+from omnisafe.envs.core import make, support_envs
 from omnisafe.envs.wrapper import (
     ActionScale,
     AutoReset,
@@ -94,7 +94,6 @@ class OnlineAdapter:
         self._env.set_seed(seed)
         self._eval_env.set_seed(seed)
 
-
     def _wrapper(
         self,
         obs_normalize: bool = True,
@@ -139,7 +138,7 @@ class OnlineAdapter:
             self._eval_env = AutoReset(self._eval_env, device=self._device)
         if obs_normalize:
             self._env = ObsNormalize(self._env, device=self._device)
-            self._eval_env = ObsNormalize(self._eval_en, device=self._device)
+            self._eval_env = ObsNormalize(self._eval_env, device=self._device)
         if reward_normalize:
             self._env = RewardNormalize(self._env, device=self._device)
         if cost_normalize:
@@ -153,7 +152,6 @@ class OnlineAdapter:
     @property
     def action_space(self) -> OmnisafeSpace:
         """The action space of the environment.
-
         Returns:
             OmnisafeSpace: the action space.
         """
@@ -162,7 +160,6 @@ class OnlineAdapter:
     @property
     def observation_space(self) -> OmnisafeSpace:
         """The observation space of the environment.
-
         Returns:
             OmnisafeSpace: the observation space.
         """
@@ -173,10 +170,8 @@ class OnlineAdapter:
         action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         """Run one timestep of the environment's dynamics using the agent actions.
-
         Args:
             action (torch.Tensor): action.
-
         Returns:
             observation (torch.Tensor): agent's observation of the current environment.
             reward (torch.Tensor): amount of reward returned after previous action.
@@ -185,29 +180,20 @@ class OnlineAdapter:
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
-        obs, reward, cost, terminated, truncated, info = self._env.step(action)
-        obs, reward, cost, terminated, truncated = map(
-            lambda x: torch.as_tensor(x, dtype=torch.float32, device=self._device),
-            (obs, reward, cost, terminated, truncated),
-        )
-        return obs, reward, cost, terminated, truncated, info
+        return self._env.step(action)
 
     def reset(self) -> tuple[torch.Tensor, dict]:
         """Resets the environment and returns an initial observation.
-
         Args:
             seed (Optional[int]): seed for the environment.
-
         Returns:
             observation (torch.Tensor): the initial observation of the space.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
-        obs, info = self._env.reset()
-        return obs.to(self._device), info
+        return self._env.reset()
 
     def save(self) -> dict[str, torch.nn.Module]:
         """Save the environment.
-
         Returns:
             Dict[str, torch.nn.Module]: the saved environment.
         """

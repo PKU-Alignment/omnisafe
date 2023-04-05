@@ -105,9 +105,9 @@ class OffPolicyAdapter(OnlineAdapter):
             while not done:
                 act = agent.step(obs, deterministic=True)
                 obs, reward, cost, terminated, truncated, info = self._eval_env.step(act)
-                obs, reward, cost, terminated, truncated = map(
-                    lambda x: torch.as_tensor(x, dtype=torch.float32, device=self._device),
-                    (obs, reward, cost, terminated, truncated),
+                obs, reward, cost, terminated, truncated = (
+                    torch.as_tensor(x, dtype=torch.float32, device=self._device)
+                    for x in (obs, reward, cost, terminated, truncated)
                 )
                 ep_ret += info.get('original_reward', reward).cpu()
                 ep_cost += info.get('original_cost', cost).cpu()
@@ -119,7 +119,7 @@ class OffPolicyAdapter(OnlineAdapter):
                             'Metrics/TestEpRet': ep_ret,
                             'Metrics/TestEpCost': ep_cost,
                             'Metrics/TestEpLen': ep_len,
-                        }
+                        },
                     )
 
     def roll_out(  # pylint: disable=too-many-locals

@@ -57,7 +57,7 @@ class DDPG(BaseAlgo):
 
         assert (
             int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.update_cycle == 0
-        ), f'The total number of steps {self._cfgs.train_cfgs.total_steps} is not divisible by the number of steps per epoch {self._cfgs.algo_cfgs.update_cycle}.'
+        ), 'The total number of steps is not divisible by the number of steps per epoch.'
         self._epochs = int(self._cfgs.train_cfgs.total_steps // self._cfgs.algo_cfgs.update_cycle)
         self._epoch = 0
         self._update_cycle = self._cfgs.algo_cfgs.update_cycle // (
@@ -141,10 +141,6 @@ class DDPG(BaseAlgo):
         self._logger.register_key('Time/Update')
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
-
-    def _update_epoch(self) -> None:
-        """Update something per epoch"""
-        self._actor_critic.actor_scheduler.step()
 
     def learn(self) -> tuple[int | float, ...]:
         """This is main function for algorithm update, divided into the following steps:
