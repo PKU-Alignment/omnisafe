@@ -46,10 +46,10 @@ dependencies = [
 dynamic = ["version", "entry-points"]
 
 [project.urls]
-Homepage = "https://github.com/PKU-MARL/omnisafe"
-Repository = "https://github.com/PKU-MARL/omnisafe"
+Homepage = "https://github.com/OmniSafeAI/omnisafe"
+Repository = "https://github.com/OmniSafeAI/omnisafe"
 Documentation = "https://omnisafe.readthedocs.io"
-"Bug Report" = "https://github.com/PKU-MARL/omnisafe/issues"
+"Bug Report" = "https://github.com/OmniSafeAI/omnisafe/issues"
 
 [project.optional-dependencies]
 lint = [

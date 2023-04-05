@@ -16,7 +16,7 @@ You can also install OmniSafe from source:
 
 .. code-block:: bash
 
-    $ git clone https://github.com/PKU-MARL/omnisafe.git
+    $ git clone https://github.com/OmniSafeAI/omnisafe.git
     $ cd omnisafe
     $ conda create -n omnisafe python=3.8
     $ conda activate omnisafe

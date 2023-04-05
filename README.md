@@ -2,17 +2,17 @@
 <!-- markdownlint-disable html -->
 
 <div align="center">
-  <img src="https://github.com/PKU-MARL/omnisafe/raw/HEAD/images/logo.png" width="75%"/>
+  <img src="https://github.com/OmniSafeAI/omnisafe/raw/HEAD/images/logo.png" width="75%"/>
 </div>
 
 <div align="center">
 
-  [![Organization](https://img.shields.io/badge/Organization-PKU_MARL-blue.svg)](https://github.com/PKU-MARL)
+  [![Organization](https://img.shields.io/badge/Organization-PKU_MARL-blue.svg)](https://github.com/OmniSafeAI)
   [![PyPI](https://img.shields.io/pypi/v/omnisafe?logo=pypi)](https://pypi.org/project/omnisafe)
   [![tests](https://img.shields.io/github/actions/workflow/status/PKU-MARL/omnisafe/test.yml?label=tests&logo=github)](https://github.com/OmniSafeAI/omnisafe/tree/HEAD/tests)
   [![Documentation Status](https://img.shields.io/readthedocs/omnisafe?logo=readthedocs)](https://omnisafe.readthedocs.io)
   [![Downloads](https://static.pepy.tech/personalized-badge/omnisafe?period=total&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/omnisafe)
-  [![GitHub Repo Stars](https://img.shields.io/github/stars/PKU-MARL/omnisafe?color=brightgreen&logo=github)](https://github.com/PKU-MARL/OmniSafe/stargazers)
+  [![GitHub Repo Stars](https://img.shields.io/github/stars/OmniSafeAI/omnisafe?color=brightgreen&logo=github)](https://github.com/OmniSafeAI/OmniSafe/stargazers)
   [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
   [![License](https://img.shields.io/github/license/PKU-MARL/OmniSafe?label=license)](#license)
   [![CodeCov](https://img.shields.io/codecov/c/github/PKU-MARL/omnisafe/main?logo=codecov)](https://app.codecov.io/gh/PKU-MARL/omnisafe)
@@ -22,10 +22,10 @@
 
 <p align="center">
   <a href="https://omnisafe.readthedocs.io">Documentation</a> |
-  <a href="https://github.com/PKU-MARL/omnisafe#implemented-algorithms">Implemented Algorithms</a> |
-  <a href="https://github.com/PKU-MARL/omnisafe#installation">Installation</a> |
-  <a href="https://github.com/PKU-MARL/omnisafe#getting-started">Getting Started</a> |
-  <a href="https://github.com/PKU-MARL/omnisafe#license">License</a>
+  <a href="https://github.com/OmniSafeAI/omnisafe#implemented-algorithms">Implemented Algorithms</a> |
+  <a href="https://github.com/OmniSafeAI/omnisafe#installation">Installation</a> |
+  <a href="https://github.com/OmniSafeAI/omnisafe#getting-started">Getting Started</a> |
+  <a href="https://github.com/OmniSafeAI/omnisafe#license">License</a>
 </p>
 
 --------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ OmniSafe requires Python 3.8+ and PyTorch 1.10+.
 
 ```bash
 # Clone the repo
-git clone https://github.com/PKU-MARL/omnisafe
+git clone https://github.com/OmniSafeAI/omnisafe
 cd omnisafe
 
 # Create a conda environment
@@ -226,7 +226,7 @@ More information about environments, please refer to [Safety Gymnasium](https://
 
 **A video example**
 
-![Segmentfault](https://github.com/PKU-MARL/omnisafe/blob/main/images/CLI_example.svg)
+![Segmentfault](https://github.com/OmniSafeAI/omnisafe/blob/main/images/CLI_example.svg)
 
 ```bash
 pip install omnisafe
@@ -268,11 +268,11 @@ We take great pleasure in collaborating with our users to create tutorials in va
 --------------------------------------------------------------------------------
 
 ## Changelog
-See [CHANGELOG.md](https://github.com/PKU-MARL/omnisafe/blob/main/CHANGELOG.md).
+See [CHANGELOG.md](https://github.com/OmniSafeAI/omnisafe/blob/main/CHANGELOG.md).
 
 ## The OmniSafe Team
 
-OmniSafe is mainly developed by the SafeRL research team directed by Prof. [Yaodong Yang](https://github.com/orgs/PKU-MARL/people/PKU-YYang). Our SafeRL research team members include [Borong Zhang](https://github.com/muchvo), [Jiayi Zhou](https://github.com/Gaiejj), [JTao Dai](https://github.com/calico-1226), [Weidong Huang](https://github.com/hdadong), [Ruiyang Sun](https://github.com/rockmagma02), [Xuehai Pan](https://github.com/XuehaiPan) and [Jiaming Ji](https://github.com/zmsn-2077). If you have any questions in the process of using omnisafe, don't hesitate to ask your questions on [the GitHub issue page](https://github.com/PKU-MARL/omnisafe/issues/new/choose), we will reply to you in 2-3 working days.
+OmniSafe is mainly developed by the SafeRL research team directed by Prof. [Yaodong Yang](https://github.com/orgs/OmniSafeAI/people/PKU-YYang). Our SafeRL research team members include [Borong Zhang](https://github.com/muchvo), [Jiayi Zhou](https://github.com/Gaiejj), [JTao Dai](https://github.com/calico-1226), [Weidong Huang](https://github.com/hdadong), [Ruiyang Sun](https://github.com/rockmagma02), [Xuehai Pan](https://github.com/XuehaiPan) and [Jiaming Ji](https://github.com/zmsn-2077). If you have any questions in the process of using omnisafe, don't hesitate to ask your questions on [the GitHub issue page](https://github.com/OmniSafeAI/omnisafe/issues/new/choose), we will reply to you in 2-3 working days.
 
 ## License
 
