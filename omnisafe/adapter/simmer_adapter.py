@@ -35,22 +35,22 @@ class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
 
         if self._cfgs.algo_cfgs.sauet_gamma < 1:
             self._safety_budget = (
-                self._cfgs.algo_cfgs.lower_budget
+                self._cfgs.algo_cfgs.safety_budget
                 * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
                 / (1 - self._cfgs.algo_cfgs.saute_gamma)
                 / self._cfgs.algo_cfgs.max_ep_len
             )
-            self._rel_budget = self._safety_budget
             self._upper_budget = (
                 self._cfgs.algo_cfgs.upper_budget
                 * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
                 / (1 - self._cfgs.algo_cfgs.saute_gamma)
                 / self._cfgs.algo_cfgs.max_ep_len
             )
+            self._rel_safety_budget = self._safety_budget/self._upper_budget
         else:
-            self._safety_budget = self._cfgs.algo_cfgs.lower_budget
-            self._rel_budget = self._safety_budget
+            self._safety_budget = self._cfgs.algo_cfgs.safety_budget
             self._upper_budget = self._cfgs.algo_cfgs.upper_budget
+            self._rel_safety_budget = self._safety_budget/self._upper_budget
 
         self._ep_budget: torch.Tensor
 
@@ -60,3 +60,25 @@ class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
             high=np.inf,
             shape=(self._env.observation_space.shape[0] + 1,),
         )
+
+    @property
+    def safety_budget(self) -> torch.Tensor:
+        """Return the safety budget."""
+        return self._safety_budget
+    
+    @property
+    def upper_budget(self) -> torch.Tensor:
+        """Return the upper budget."""
+        return self._upper_budget
+    
+    @safety_budget.setter
+    def safety_budget(self, safety_budget: torch.Tensor) -> None:
+        """Set the safety budget."""
+        self._safety_budget = safety_budget
+        self._rel_safety_budget = self._safety_budget/self._upper_budget
+
+    @upper_budget.setter
+    def upper_budget(self, upper_budget: torch.Tensor) -> None:
+        """Set the upper budget."""
+        self._upper_budget = upper_budget
+        self._rel_safety_budget = self._safety_budget/self._upper_budget

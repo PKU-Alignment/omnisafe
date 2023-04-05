@@ -180,7 +180,7 @@ class ExperimentGrid:
                 inclusion of this parameter into the name.
         """
         assert isinstance(key, str), 'Key must be a string.'
-        assert shorthand is None and isinstance(shorthand, str), 'Shorthand must be a string.'
+       #assert shorthand is None and isinstance(shorthand, str), 'Shorthand must be a string.'
         if not isinstance(vals, list):
             vals = [vals]
         if self.default_shorthand and shorthand is None:
