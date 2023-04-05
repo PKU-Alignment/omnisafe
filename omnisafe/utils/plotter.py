@@ -28,7 +28,7 @@ class Plotter:
     Suppose you have run several experiments, with the aim of comparing performance
     between different algorithms, resulting in a log directory structure of:
         runs/
-            SafetyAntVelocity-v4/
+            SafetyAntVelocity-v1/
                 CPO/
                     seed0/
                     seed5/
@@ -37,7 +37,7 @@ class Plotter:
                     seed0/
                     seed5/
                     seed10/
-            SafetyHalfCheetahVelocity-v4/
+            SafetyHalfCheetahVelocity-v1/
                 CPO/
                     seed0/
                     seed5/
@@ -47,8 +47,8 @@ class Plotter:
                     seed5/
                     seed10/
     Example:
-        You can easily produce a graph comparing CPO and PCPO in 'SafetyAntVelocity-v4' with:
-            python plot.py './runs/SafetyAntVelocity-v4/'
+        You can easily produce a graph comparing CPO and PCPO in 'SafetyAntVelocity-v1' with:
+            python plot.py './runs/SafetyAntVelocity-v1/'
     """
 
     def __init__(self) -> None:

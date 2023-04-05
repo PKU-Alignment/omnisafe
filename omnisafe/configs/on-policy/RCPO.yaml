@@ -135,7 +135,7 @@ defaults:
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
 
-SafetyHumanoidVelocity-v4:
+SafetyHumanoidVelocity-v1:
   # algorithm configurations
   algo_cfgs:
     # normalize reward

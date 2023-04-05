@@ -16,7 +16,7 @@
 algo:
   PPOLag
 env_id:
-  SafetyAntVelocity-v4
+  SafetyAntVelocity-v1
 train_cfgs:
   total_steps:
     2048

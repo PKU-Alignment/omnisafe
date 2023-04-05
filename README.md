@@ -213,7 +213,7 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
     <td>Safe Velocity</td>
     <td>Velocity</td>
     <td>HalfCheetah, Hopper, Swimmer, Walker2d, Ant, Humanoid</td>
-    <td>SafetyHumanoidVelocity-v4</td>
+    <td>SafetyHumanoidVelocity-v1</td>
   </tr>
 </tbody>
 </table>
