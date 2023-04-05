@@ -16,10 +16,10 @@
         1
     ],
     "train_cfgs:total_steps": [
-        1024
+        4096
     ],
     "algo_cfgs:update_cycle": [
-        512
+        2048
     ],
     "seed": [
         0
