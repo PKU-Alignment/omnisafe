@@ -72,10 +72,10 @@ class OnlineAdapter:
         - SimmerAdapter: Adapt the environment to the SIMMER framework.
 
         Args:
-            env_id: The environment id.
-            num_envs: The number of environments.
-            seed: The random seed.
-            cfgs: The configuration.
+            env_id (str): The environment id.
+            num_envs (int): The number of environments.
+            seed (int): The random seed.
+            cfgs (Config): The configuration.
         """
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
