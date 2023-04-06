@@ -68,8 +68,6 @@ class SACLag(SAC):
         super()._log_when_not_update()
         self._logger.store(
             **{
-                'Loss/Loss_cost_critic': 0.0,
-                'Value/cost_critic': 0.0,
-                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.item(),
+                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
             },
         )

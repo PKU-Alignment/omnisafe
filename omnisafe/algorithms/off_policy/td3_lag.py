@@ -61,3 +61,11 @@ class TD3Lag(TD3):
         loss_c = self._lagrange.lagrangian_multiplier.item() * loss_q_c
 
         return (loss_r + loss_c).mean() / (1 + self._lagrange.lagrangian_multiplier.item())
+
+    def _log_when_not_update(self) -> None:
+        super()._log_when_not_update()
+        self._logger.store(
+            **{
+                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
+            },
+        )
