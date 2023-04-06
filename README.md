@@ -263,8 +263,6 @@ Explore OmniSafe easily and quickly through a series of colab notebooks:
 
 We take great pleasure in collaborating with our users to create tutorials in various languages. Please refer to our list of currently supported languages. If you are interested in translating the tutorial into a new language or improving an existing version, kindly submit a PR to us."
 
-
-
 --------------------------------------------------------------------------------
 
 ## Changelog
