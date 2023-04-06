@@ -11,9 +11,9 @@ body:
       options:
         - label: I have read the documentation <https://omnisafe.readthedocs.io>.
           required: true
-        - label: I have searched the [Issue Tracker](https://github.com/PKU-MARL/omnisafe/issues) and [Discussions](https://github.com/PKU-MARL/omnisafe/discussions) that this hasn't already been reported. (+1 or comment there if it has.)
+        - label: I have searched the [Issue Tracker](https://github.com/OmniSafeAI/omnisafe/issues) and [Discussions](https://github.com/OmniSafeAI/omnisafe/discussions) that this hasn't already been reported. (+1 or comment there if it has.)
           required: true
-        - label: Consider asking first in a [Discussion](https://github.com/PKU-MARL/omnisafe/discussions/new).
+        - label: Consider asking first in a [Discussion](https://github.com/OmniSafeAI/omnisafe/discussions/new).
           required: false
 
   - type: textarea

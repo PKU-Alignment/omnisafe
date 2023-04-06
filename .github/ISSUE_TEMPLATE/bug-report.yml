@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please do your best to make the issue as easy to act on as possible, and only submit here if there is clearly a problem with OmniSafe (ask in [Discussions](https://github.com/PKU-MARL/omnisafe/discussions) first if unsure).
+        Please do your best to make the issue as easy to act on as possible, and only submit here if there is clearly a problem with OmniSafe (ask in [Discussions](https://github.com/OmniSafeAI/omnisafe/discussions) first if unsure).
 
   - type: checkboxes
     id: steps
@@ -17,9 +17,9 @@ body:
       options:
         - label: I have read the documentation <https://omnisafe.readthedocs.io>.
           required: true
-        - label: I have searched the [Issue Tracker](https://github.com/PKU-MARL/omnisafe/issues) and [Discussions](https://github.com/PKU-MARL/omnisafe/discussions) that this hasn't already been reported. (+1 or comment there if it has.)
+        - label: I have searched the [Issue Tracker](https://github.com/OmniSafeAI/omnisafe/issues) and [Discussions](https://github.com/OmniSafeAI/omnisafe/discussions) that this hasn't already been reported. (+1 or comment there if it has.)
           required: true
-        - label: Consider asking first in a [Discussion](https://github.com/PKU-MARL/omnisafe/discussions/new).
+        - label: Consider asking first in a [Discussion](https://github.com/OmniSafeAI/omnisafe/discussions/new).
           required: false
 
   - type: input

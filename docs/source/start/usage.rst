@@ -69,7 +69,7 @@ Customize Configuration
         <script async id="asciicast-qCptIXhxYB2MWEytijrriVhUm" src="https://asciinema.org/a/qCptIXhxYB2MWEytijrriVhUm.js"></script>
 
 .. hint::
-    The above command will use a configuration file `train_config.yaml <https://github.com/PKU-MARL/omnisafe/blob/main/tests/saved_source/train_config.yaml>`_ in the `saved_source <https://github.com/PKU-MARL/omnisafe/tree/main/tests/saved_source>`_ directory to train policy. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the algorithm in this file.
+    The above command will use a configuration file `train_config.yaml <https://github.com/OmniSafeAI/omnisafe/blob/main/tests/saved_source/train_config.yaml>`_ in the `saved_source <https://github.com/OmniSafeAI/omnisafe/tree/main/tests/saved_source>`_ directory to train policy. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the algorithm in this file.
 
 Run Benchmark
 -------------
@@ -93,7 +93,7 @@ Run Benchmark
         <script async id="asciicast-gg6edB7OWiFENACpQzpfgFRx6" src="https://asciinema.org/a/gg6edB7OWiFENACpQzpfgFRx6.js"></script>
 
 .. hint::
-    The above command will run a benchmark with 2 CPU threads. The configuration file `benchmark_config.yaml <https://github.com/PKU-MARL/omnisafe/blob/main/tests/saved_source/benchmark_config.yaml>`_ is in the `saved_source <https://github.com/PKU-MARL/omnisafe/tree/main/tests/saved_source>`_ directory. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the benchmark in this file.
+    The above command will run a benchmark with 2 CPU threads. The configuration file `benchmark_config.yaml <https://github.com/OmniSafeAI/omnisafe/blob/main/tests/saved_source/benchmark_config.yaml>`_ is in the `saved_source <https://github.com/OmniSafeAI/omnisafe/tree/main/tests/saved_source>`_ directory. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the benchmark in this file.
 
 Run Evaluation
 --------------
@@ -117,7 +117,7 @@ Run Evaluation
         <script async id="asciicast-UbRWY6EI6Nl7R27Lk3Rpk4HI5" src="https://asciinema.org/a/UbRWY6EI6Nl7R27Lk3Rpk4HI5.js"></script>
 
 .. hint::
-    The above command will run an evaluation with 2 CPU threads. The model parameters is in the `saved_source <https://github.com/PKU-MARL/omnisafe/tree/main/tests/saved_source>`_ directory.
+    The above command will run an evaluation with 2 CPU threads. The model parameters is in the `saved_source <https://github.com/OmniSafeAI/omnisafe/tree/main/tests/saved_source>`_ directory.
 
 Get Help
 --------

@@ -40,7 +40,7 @@ try:
         author='OmniSafe Team',
         author_email='jiamg.ji@gmail.com',
         description='OmniSafe is an infrastructural framework for accelerating SafeRL research.',
-        url='https://github.com/PKU-MARL/omnisafe',
+        url='https://github.com/OmniSafeAI/omnisafe',
         entry_points={'console_scripts': ['omnisafe=omnisafe.utils.command_app:app']},
         packages=setuptools.find_namespace_packages(
             include=['omnisafe', 'omnisafe.*'],
