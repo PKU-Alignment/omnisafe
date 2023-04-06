@@ -12,26 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Model-Based Policy Optimization algorithm."""
+"""Implementation of the Deep Deterministic Policy Gradient algorithm."""
 
 import time
-from typing import Any, Dict, Tuple, Union
+from typing import Any, Dict, Tuple, Union, Optional
+
 
 import torch
 from torch import nn
 
-from omnisafe.adapter import OffPolicyAdapter
+from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.base_algo import BaseAlgo
-from omnisafe.common.buffer import VectorOffPolicyBuffer
+from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
-from omnisafe.utils import distributed
+
+from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel
+from omnisafe.algorithms.model_based.planner import CEMPlanner
+import numpy as np
+from matplotlib import pylab
+from gymnasium.utils.save_video import save_video
+import os
 
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
-class MBPO(PETS):
+class MBPO(BaseAlgo):
     """The Deep Deterministic Policy Gradient (DDPG) algorithm.
 
     References:
@@ -43,48 +49,56 @@ class MBPO(PETS):
     """
 
     def _init_env(self) -> None:
-        self._env = OffPolicyAdapter(
-            self._env_id, self._cfgs.train_cfgs.vector_env_nums, self._seed, self._cfgs
+        self._env = ModelBasedAdapter(
+            self._env_id, 1, self._seed, self._cfgs
         )
-        assert (self._cfgs.algo_cfgs.update_cycle) % (
-            distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
-        ) == 0, ('The number of steps per epoch is not divisible by the number of ' 'environments.')
-
-        assert int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.update_cycle == 0, (
-            'The total number of steps is not divisible by the number of steps ' 'per epoch.'
-        )
-        self._epochs = int(self._cfgs.train_cfgs.total_steps // self._cfgs.algo_cfgs.update_cycle)
-        self._epoch = 0
-        self._update_cycle = self._cfgs.algo_cfgs.update_cycle // (
-            distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
-        )
-        self._steps_per_sample = self._cfgs.algo_cfgs.steps_per_sample
-        assert self._update_cycle % self._steps_per_sample == 0, (
-            'The number of steps per epoch is not divisible by the number of ' 'steps per sample.'
-        )
-        self._samples_per_epoch = self._update_cycle // self._steps_per_sample
-
+        assert int(self._cfgs.train_cfgs.total_steps) % self._cfgs.logger_cfgs.log_cycle == 0
+        self._total_steps = int(self._cfgs.train_cfgs.total_steps)
+        self._steps_per_epoch = int(self._cfgs.logger_cfgs.log_cycle)
+        self._epochs = self._total_steps // self._cfgs.logger_cfgs.log_cycle
     def _init_model(self) -> None:
-        self._cfgs.model_cfgs.critic['num_critics'] = 1
-        self._actor_critic = ConstraintActorQCritic(
-            obs_space=self._env.observation_space,
-            act_space=self._env.action_space,
-            model_cfgs=self._cfgs.model_cfgs,
-            epochs=self._epochs,
-        ).to(self._device)
+        self._dynamics_state_space = self._env.coordinate_observation_space if hasattr(self._env, 'coordinate_observation_space') else self._env.observation_space
+        self._dynamics = EnsembleDynamicsModel(
+            model_cfgs=self._cfgs.dynamics_cfgs,
+            device=self._device,
+            state_size=self._dynamics_state_space.shape[0],
+            action_size=self._env.action_space.shape[0],
+            reward_size=1,
+            cost_size=1,
+            use_cost=False,
+            use_truncated=False,
+            use_var=False,
+            use_reward_critic=False,
+            use_cost_critic=False,
+            actor_critic=None,
+            rew_func=None,
+            cost_func=None,
+            truncated_func=None,
+        )
+        self._use_actor_critic = True
+        self._policy_state_space = self._env.coordinate_observation_space if self._env.coordinate_observation_space is not None else self._env.observation_space
 
-        if distributed.world_size() > 1:
-            distributed.sync_params(self._actor_critic)
+        self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
     def _init(self) -> None:
-        self._buf = VectorOffPolicyBuffer(
-            obs_space=self._env.observation_space,
+        self._virtual_buf = OffPolicyBuffer(
+            obs_space=self._dynamics_state_space,
             act_space=self._env.action_space,
-            size=self._cfgs.algo_cfgs.size,
-            batch_size=self._cfgs.algo_cfgs.batch_size,
-            num_envs=self._cfgs.train_cfgs.vector_env_nums,
+            size=self._cfgs.train_cfgs.total_steps,
+            batch_size=self._cfgs.dynamics_cfgs.batch_size,
             device=self._device,
         )
+        self._real_buf = OffPolicyBuffer(
+            obs_space=self._dynamics_state_space,
+            act_space=self._env.action_space,
+            size=self._cfgs.train_cfgs.total_steps,
+            batch_size=self._cfgs.dynamics_cfgs.batch_size,
+            device=self._device,
+        )
+        if self._cfgs.evaluation_cfgs.use_eval:
+            self._eval_fn = self._evaluation_single_step
+        else:
+            self._eval_fn = None
 
     def _init_log(self) -> None:
         self._logger = Logger(
@@ -97,44 +111,38 @@ class MBPO(PETS):
         )
 
         what_to_save: Dict[str, Any] = {}
-        what_to_save['pi'] = self._actor_critic.actor
+        # Set up model saving
+        what_to_save = {
+            'dynamics': self._dynamics,
+        }
         if self._cfgs.algo_cfgs.obs_normalize:
             obs_normalizer = self._env.save()['obs_normalizer']
             what_to_save['obs_normalizer'] = obs_normalizer
-
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
-
+        self._logger.register_key('Train/Epoch')
+        self._logger.register_key('TotalEnvSteps')
         self._logger.register_key('Metrics/EpRet', window_length=50)
         self._logger.register_key('Metrics/EpCost', window_length=50)
         self._logger.register_key('Metrics/EpLen', window_length=50)
+        if self._cfgs.evaluation_cfgs.use_eval:
+            self._logger.register_key('EvalMetrics/EpRet', window_length=5)
+            self._logger.register_key('EvalMetrics/EpCost', window_length=5)
+            self._logger.register_key('EvalMetrics/EpLen', window_length=5)
+        self._logger.register_key('Loss/DynamicsTrainMseLoss')
+        self._logger.register_key('Loss/DynamicsValMseLoss')
 
-        self._logger.register_key('Train/Epoch')
-        self._logger.register_key('Train/LR')
-
-        self._logger.register_key('TotalEnvSteps')
-
-        # log information about actor
-        self._logger.register_key('Loss/Loss_pi', delta=True)
-
-        # log information about critic
-        self._logger.register_key('Loss/Loss_reward_critic', delta=True)
-        self._logger.register_key('Value/reward_critic')
-
-        if self._cfgs.algo_cfgs.use_cost:
-            # log information about cost critic
-            self._logger.register_key('Loss/Loss_cost_critic', delta=True)
-            self._logger.register_key('Value/cost_critic')
 
         self._logger.register_key('Time/Total')
         self._logger.register_key('Time/Rollout')
-        self._logger.register_key('Time/Update')
+        self._logger.register_key('Time/UpdateDynamics')
+        if self._use_actor_critic:
+            self._logger.register_key('Time/UpdateActorCritic')
+        if self._cfgs.evaluation_cfgs.use_eval:
+            self._logger.register_key('Time/Eval')
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
-    def _update_epoch(self) -> None:
-        """Update something per epoch"""
-        self._actor_critic.actor_scheduler.step()
 
     def learn(self) -> Tuple[Union[int, float], ...]:
         """This is main function for algorithm update, divided into the following steps:
@@ -145,61 +153,29 @@ class MBPO(PETS):
         """
         self._logger.log('INFO: Start training')
         start_time = time.time()
+        current_step = 0
         for epoch in range(self._epochs):
-            roll_out_time = 0.0
-            update_time = 0.0
-            epoch_time = time.time()
-
-            for sample_step in range(
-                epoch * self._samples_per_epoch, (epoch + 1) * self._samples_per_epoch
-            ):
-                step = sample_step * self._steps_per_sample * self._cfgs.train_cfgs.vector_env_nums
-
-                roll_out_start = time.time()
-                # set noise for exploration
-                if self._cfgs.algo_cfgs.use_exploration_noise:
-                    self._actor_critic.actor.noise = self._cfgs.algo_cfgs.exploration_noise
-
-                # collect data from environment
-                self._env.roll_out(
-                    roll_out_step=self._steps_per_sample,
-                    agent=self._actor_critic,
-                    buffer=self._buf,
-                    logger=self._logger,
-                    use_rand_action=(step <= self._cfgs.algo_cfgs.start_learning_steps),
+            current_step = self._env.roll_out(
+                current_step=current_step,
+                roll_out_step=self._steps_per_epoch,
+                use_actor_critic=False,
+                act_func=self._select_action,
+                store_data_func=self.store_real_data,
+                update_dynamics_func=self.update_dynamics_model,
+                eval_func=self._eval_fn,
+                logger=self._logger,
+                algo_reset_func=None,
+                update_actor_func=None,
                 )
-                roll_out_time += time.time() - roll_out_start
-
-                # update parameters
-                update_start = time.time()
-                if step > self._cfgs.algo_cfgs.start_learning_steps:
-                    self._update()
-                # if we haven't updated the network, log 0 for the loss
-                else:
-                    self._log_when_not_update()
-                update_time += time.time() - update_start
-
-            self._logger.store(**{'Time/Update': update_time})
-            self._logger.store(**{'Time/Rollout': roll_out_time})
-
-            if step > self._cfgs.algo_cfgs.start_learning_steps:
-                # update something per epoch
-                # e.g. update lagrange multiplier
-                self._update_epoch()
-
+            # Evaluate episode
             self._logger.store(
                 **{
-                    'TotalEnvSteps': step,
-                    'Time/FPS': self._cfgs.algo_cfgs.update_cycle / (time.time() - epoch_time),
-                    'Time/Total': (time.time() - start_time),
-                    'Time/Epoch': (time.time() - epoch_time),
                     'Train/Epoch': epoch,
-                    'Train/LR': self._actor_critic.actor_scheduler.get_last_lr()[0],
+                    'TotalEnvSteps': current_step,
+                    'Time/Total': time.time() - start_time,
                 }
             )
-
             self._logger.dump_tabular()
-
             # save model to disk
             if (epoch + 1) % self._cfgs.logger_cfgs.save_model_freq == 0:
                 self._logger.torch_save()
@@ -211,135 +187,245 @@ class MBPO(PETS):
 
         return ep_ret, ep_cost, ep_len
 
-    def _update(self) -> None:
-        for step in range(self._steps_per_sample // self._cfgs.algo_cfgs.update_iters):
-            data = self._buf.sample_batch()
-            obs, act, reward, cost, done, next_obs = (
-                data['obs'],
-                data['act'],
-                data['reward'],
-                data['cost'],
-                data['done'],
-                data['next_obs'],
-            )
+    def algo_reset(self):
+        pass
 
-            self._update_rewrad_critic(obs, act, reward, done, next_obs)
-            if self._cfgs.algo_cfgs.use_cost:
-                self._update_cost_critic(obs, act, cost, done, next_obs)
+    def imagine_rollout(self):
+        if initial_states is None:
+            initial_states = random_choice(self.replay_buffer.get('states'), size=self.rollout_batch_size)
+        buffer = self._create_buffer(self.rollout_batch_size * self.horizon)
+        states = initial_states
+        for t in range(self.horizon):
+            with torch.no_grad():
+                actions = policy.act(states, eval=False)
+                next_states, rewards = self.model_ensemble.sample(states, actions)
+            dones = self.check_done(next_states)
+            violations = self.check_violation(next_states)
+            buffer.extend(states=states, actions=actions, next_states=next_states,
+                          rewards=rewards, dones=dones, violations=violations)
+            continues = ~(dones | violations)
+            if continues.sum() == 0:
+                break
+            states = next_states[continues]
 
-            if step % self._cfgs.algo_cfgs.policy_delay == 0:
-                self._update_actor(obs)
+        self.virt_buffer.extend(**buffer.get(as_dict=True))
+        return buffer
 
-            self._actor_critic.polyak_update(self._cfgs.algo_cfgs.polyak)
+    def update_actor_critic(self):
+        for _ in range(self.solver_updates_per_step):
+            solver = self.solver
+            n_real = int(self.real_fraction * solver.batch_size)
+            real_samples = self.replay_buffer.sample(n_real)
+            virt_samples = self.virt_buffer.sample(solver.batch_size - n_real)
+            combined_samples = [
+                torch.cat([real, virt]) for real, virt in zip(real_samples, virt_samples)
+            ]
+            if self.alive_bonus != 0:
+                REWARD_INDEX = 3
+                assert combined_samples[REWARD_INDEX].ndim == 1
+                combined_samples[REWARD_INDEX] = combined_samples[REWARD_INDEX] + self.alive_bonus
+            critic_loss = solver.update_critic(*combined_samples)
+            self.recent_critic_losses.append(critic_loss)
+            if update_actor:
+                solver.update_actor_and_alpha(combined_samples[0])
 
-    def _update_rewrad_critic(
+    def update_dynamics_model(self, current_step):
+        """Update dynamics."""
+        state = self._dynamics_buf.data['obs'][: self._dynamics_buf.size, :]
+        action = self._dynamics_buf.data['act'][: self._dynamics_buf.size, :]
+        reward = self._dynamics_buf.data['reward'][: self._dynamics_buf.size]
+        cost = self._dynamics_buf.data['cost'][: self._dynamics_buf.size]
+        next_state = self._dynamics_buf.data['next_obs'][: self._dynamics_buf.size, :]
+        delta_state = next_state - state
+        inputs = torch.cat((state, action), -1)
+        inputs = torch.reshape(inputs, (inputs.shape[0], -1))
+
+        labels = torch.cat(
+            (
+                torch.reshape(reward, (reward.shape[0], -1)),
+                torch.reshape(delta_state,(delta_state.shape[0], -1))
+            ),
+            -1
+        )
+        inputs = inputs.cpu().detach().numpy()
+        labels = labels.cpu().detach().numpy()
+        train_mse_losses, val_mse_losses = self._dynamics.train(
+            inputs, labels, holdout_ratio=0.2
+        )
+        # ep_costs = self._logger.get_stats('Metrics/EpCost')[0]
+        # #update Lagrange multiplier parameter
+        # self.update_lagrange_multiplier(ep_costs)
+        self._logger.store(
+            **{
+                'Loss/DynamicsTrainMseLoss': train_mse_losses.item(),
+                'Loss/DynamicsValMseLoss': val_mse_losses.item(),
+            }
+        )
+
+
+    def _select_action(
+            self,
+            current_step: int,
+            state: torch.Tensor) -> Tuple[np.ndarray, Dict]:
+        """action selection"""
+        if current_step < self._cfgs.algo_cfgs.start_learning_steps:
+            action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
+            #action = torch.rand(size=1, *self._env.action_space.shape)
+        else:
+            action = self._planner.output_action(state)
+            #action = action.cpu().detach().numpy()
+        assert action.shape == torch.Size([state.shape[0], self._env.action_space.shape[0]]), "action shape should be [batch_size, action_dim]"
+        info = {}
+        return action, info
+
+    def store_real_data(
         self,
-        obs: torch.Tensor,
+        current_step: int,
+        ep_len: int,
+        state: torch.Tensor,
         action: torch.Tensor,
         reward: torch.Tensor,
-        done: torch.Tensor,
-        next_obs: torch.Tensor,
-    ) -> None:
-        with torch.no_grad():
-            next_action = self._actor_critic.actor.predict(next_obs, deterministic=True)
-            next_q_value_r = self._actor_critic.target_reward_critic(next_obs, next_action)[0]
-            target_q_value_r = reward + self._cfgs.algo_cfgs.gamma * (1 - done) * next_q_value_r
-        q_value_r = self._actor_critic.reward_critic(obs, action)[0]
-        loss = nn.functional.mse_loss(q_value_r, target_q_value_r)
-
-        if self._cfgs.algo_cfgs.use_critic_norm:
-            for param in self._actor_critic.reward_critic.parameters():
-                loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coeff
-        self._logger.store(
-            **{
-                'Loss/Loss_reward_critic': loss.mean().item(),
-                'Value/reward_critic': q_value_r.mean().item(),
-            }
-        )
-        self._actor_critic.reward_critic_optimizer.zero_grad()
-        loss.backward()
-
-        if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.reward_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
-            )
-        distributed.avg_grads(self._actor_critic.reward_critic)
-        self._actor_critic.reward_critic_optimizer.step()
-
-    def _update_cost_critic(
-        self,
-        obs: torch.Tensor,
-        action: torch.Tensor,
         cost: torch.Tensor,
-        done: torch.Tensor,
-        next_obs: torch.Tensor,
+        terminated: torch.Tensor,
+        truncated: torch.Tensor,
+        next_state: torch.Tensor,
+        info: dict,
+        action_info: dict,
+    ) -> None:  # pylint: disable=too-many-arguments
+        """Store real data in buffer."""
+        done = terminated or truncated
+        if 'goal_met' not in info.keys():
+            goal_met = False
+        else:
+            goal_met = info['goal_met']
+        if not terminated and not truncated and not goal_met:
+            # if goal_met == true, Current goal position is not related to the last goal position, this huge transition will confuse the dynamics model.
+            self._true_buf.store(
+                obs=state, act=action, reward=reward, cost=cost, next_obs=next_state, done=done
+            )
+
+    def _evaluation_single_step(
+            self,
+            current_step: int,
     ) -> None:
-        with torch.no_grad():
-            next_action = self._actor_critic.actor.predict(next_obs, deterministic=True)
-            next_q_value_c = self._actor_critic.target_cost_critic(next_obs, next_action)[0]
-            target_q_value_c = cost + self._cfgs.algo_cfgs.gamma * (1 - done) * next_q_value_c
-        q_value_c = self._actor_critic.cost_critic(obs, action)[0]
-        loss = nn.functional.mse_loss(q_value_c, target_q_value_c)
 
-        if self._cfgs.algo_cfgs.use_critic_norm:
-            for param in self._actor_critic.cost_critic.parameters():
-                loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coeff
+        env_kwargs = {
+            'render_mode': 'rgb_array',
+            'camera_name': 'track',
+        }
+        eval_env = ModelBasedAdapter(
+                    self._env_id, 1, self._seed, self._cfgs, **env_kwargs
+                )
+        obs,_ = eval_env.reset()
+        terminated, truncated = False, False
+        ep_len, ep_ret, ep_cost = 0, 0, 0
+        frames = []
+        obs_pred, obs_true = [], []
+        reward_pred, reward_true = [], []
+        num_episode = 0
+        while True:
+            if terminated or truncated:
+                print(f'Eval Episode Return: {ep_ret} \t Cost: {ep_cost}')
+                save_replay_path = os.path.join(self._logger.log_dir,'video-pic')
+                self._logger.store(
+                    **{
+                        'EvalMetrics/EpRet': ep_ret.item(),
+                        'EvalMetrics/EpCost': ep_cost.item(),
+                        'EvalMetrics/EpLen': ep_len,
+                    }
+                )
+                save_video(
+                    frames,
+                    save_replay_path,
+                    fps=30,
+                    episode_trigger=lambda x: True,
+                    episode_index=current_step + num_episode,
+                    name_prefix='eval',
+                )
+                self.draw_picture(
+                    timestep=current_step,
+                    num_episode=self._cfgs.evaluation_cfgs.num_episode,
+                    pred_state=obs_pred,
+                    true_state=obs_true,
+                    save_replay_path=save_replay_path,
+                    name='obs_mean'
+                )
+                self.draw_picture(
+                    timestep=current_step,
+                    num_episode=self._cfgs.evaluation_cfgs.num_episode,
+                    pred_state=reward_pred,
+                    true_state=reward_true,
+                    save_replay_path=save_replay_path,
+                    name='reward'
+                )
+                frames = []
+                obs_pred, obs_true = [], []
 
-        self._actor_critic.cost_critic_optimizer.zero_grad()
-        loss.backward()
+                reward_pred, reward_true = [], []
 
-        if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.cost_critic.parameters(), self._cfgs.algo_cfgs.max_grad_norm
-            )
-        distributed.avg_grads(self._actor_critic.cost_critic)
-        self._actor_critic.cost_critic_optimizer.step()
+                ep_len, ep_ret, ep_cost = 0, 0, 0
+                obs, _ = eval_env.reset()
+                num_episode += 1
+                if num_episode == self._cfgs.evaluation_cfgs.num_episode:
+                    break
+            action, _ = self._select_action(current_step, obs)
 
-        self._logger.store(
-            **{
-                'Loss/Loss_cost_critic': loss.mean().item(),
-                'Value/cost_critic': q_value_c.mean().item(),
-            }
-        )
+            idx = np.random.choice(self._dynamics.elite_model_idxes, size=1)
+            traj = self._dynamics.imagine(states=obs, horizon=1, idx=idx, actions=action.unsqueeze(0))
 
-    def _update_actor(  # pylint: disable=too-many-arguments
+            pred_next_obs_mean = traj['states'][0][0].mean()
+            pred_reward = traj['rewards'][0][0]
+
+            obs, reward, cost, terminated, truncated, info = eval_env.step(action)
+            true_next_obs_mean = obs.mean()
+
+            obs_pred.append(pred_next_obs_mean.item())
+            obs_true.append(true_next_obs_mean.item())
+
+            reward_pred.append(pred_reward.item())
+            reward_true.append(reward.item())
+
+            ep_ret += reward
+            ep_cost += cost
+            ep_len += info['num_step']
+            frames.append(eval_env.render())
+
+    def draw_picture(
         self,
-        obs: torch.Tensor,
-    ) -> None:
-        loss = self._loss_pi(obs)
-        self._actor_critic.actor_optimizer.zero_grad()
-        loss.backward()
-        if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
-                self._actor_critic.actor.parameters(), self._cfgs.algo_cfgs.max_grad_norm
-            )
-        self._actor_critic.actor_optimizer.step()
-        self._logger.store(
-            **{
-                'Loss/Loss_pi': loss.mean().item(),
-            }
-        )
+        timestep: int,
+        num_episode: int,
+        pred_state: list,
+        true_state: list,
+        save_replay_path: str="./",
+        name: str='reward'
+        ) -> None:
+        """draw a curve of the predicted value and the ground true value"""
+        target1 = list(pred_state)
+        target2 = list(true_state)
+        input1 = np.arange(0, np.array(pred_state).shape[0], 1)
+        input2 = np.arange(0, np.array(pred_state).shape[0], 1)
 
-    def _loss_pi(
-        self,
-        obs: torch.Tensor,
-    ) -> torch.Tensor:
-        action = self._actor_critic.actor.predict(obs, deterministic=True)
-        loss = -self._actor_critic.reward_critic(obs, action)[0].mean()
-        return loss
+        pylab.plot(input1, target1, 'r-', label='pred')
+        pylab.plot(input2, target2, 'b-', label='true')
+        pylab.xlabel('Step')
+        pylab.ylabel(name)
+        pylab.xticks(np.arange(0, np.array(pred_state).shape[0], 50))  # Set the axis numbers
+        if name == 'reward':
+            pylab.yticks(np.arange(0, 3, 0.2))
+        else:
+            pylab.yticks(np.arange(0, 1, 0.2))
+        pylab.legend(
+            loc=3, borderaxespad=2.0, bbox_to_anchor=(0.7, 0.7)
+        )  # Sets the position of that box for what each line is
+        pylab.grid()  # draw grid
+        pylab.savefig(
+            os.path.join(save_replay_path,
+            str(name)
+            + str(timestep)
+            + '_'
+            + str(num_episode)
+            + '.png'),
+            dpi=200,
+        )  # save as picture
+        pylab.close()
 
-    def _log_when_not_update(self) -> None:
-        self._logger.store(
-            **{
-                'Loss/Loss_reward_critic': 0.0,
-                'Loss/Loss_pi': 0.0,
-                'Value/reward_critic': 0.0,
-            }
-        )
-        if self._cfgs.algo_cfgs.use_cost:
-            self._logger.store(
-                **{
-                    'Loss/Loss_cost_critic': 0.0,
-                    'Value/cost_critic': 0.0,
-                }
-            )

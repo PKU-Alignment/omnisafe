@@ -37,19 +37,22 @@ from omnisafe.envs.wrapper import (
 )
 import time
 from omnisafe.envs.core import make, support_envs
-
+import numpy as np
 from typing import Callable, Union
+import gymnasium
 
 class ModelBasedAdapter(OnlineAdapter):
     """OffPolicy Adapter for OmniSafe."""
-
+    
     def __init__(  # pylint: disable=too-many-arguments
-        self, env_id: str, num_envs: int, seed: int, cfgs: Config
+        self, env_id: str, num_envs: int, seed: int, cfgs: Config, **kwargs
     ) -> None:
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id
-        self._env = make(env_id, num_envs=num_envs)
+
+
+        self._env = make(env_id, num_envs=num_envs, **kwargs)
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
@@ -60,6 +63,12 @@ class ModelBasedAdapter(OnlineAdapter):
         self._env.set_seed(seed)
         self._cfgs = cfgs
         self._device = cfgs.train_cfgs.device
+        if hasattr(self._env, 'coordinate_observation_space'):
+            self.coordinate_observation_space = self._env.coordinate_observation_space
+            self.lidar_observation_space = self._env.lidar_observation_space
+        else:
+            self.coordinate_observation_space = None
+            self.lidar_observation_space = None
 
         self._ep_ret: torch.Tensor
         self._ep_cost: torch.Tensor
@@ -69,6 +78,20 @@ class ModelBasedAdapter(OnlineAdapter):
         self._reset_log()
         self._last_dynamics_update = 0
         self._last_policy_update = 0
+        self._last_eval = 0
+
+    def get_lidar_from_coordinate(self, obs):
+        return self._env.get_lidar_from_coordinate(obs)
+
+    def get_cost_from_coordinate(self, obs):
+        return self._env.get_cost_from_coordinate(obs)
+
+    def get_reward_from_coordinate(self, obs):
+        return self._env.get_reward_from_coordinate(obs)
+
+    def render(self,*args, **kwargs):
+        return self._env.render(*args, **kwargs)
+
     def _wrapper(
         self,
         obs_normalize: bool = True,
@@ -97,21 +120,25 @@ class ModelBasedAdapter(OnlineAdapter):
             current_step: int,
             roll_out_step: int,
             use_actor_critic: bool,
-            act_fn: Callable,
+            act_func: Callable,
             store_data_func: Callable,
-            update_dynamics_model: Callable,
+            update_dynamics_func: Callable,
             logger: Logger,
+            eval_func: Union[Callable, None]=None,
             algo_reset_func: Union[Callable, None]=None,
-            update_actor_critic: Union[Callable, None]=None,
+            update_actor_func: Union[Callable, None]=None,
         ) -> int:
         epoch_start_time = time.time()
 
         update_actor_critic_time = 0
         update_dynamics_time = 0
+        if eval_func is not None:
+            eval_time = 0
+
         epoch_steps = 0
 
         while epoch_steps < roll_out_step:
-            action, action_info = act_fn(current_step, self._current_obs)
+            action, action_info = act_func(current_step, self._current_obs)
             next_state, reward, cost, terminated, truncated, info = self.step(action)
             epoch_steps += info['num_step']
             current_step += info['num_step']
@@ -155,7 +182,7 @@ class ModelBasedAdapter(OnlineAdapter):
                 and current_step - self._last_dynamics_update >= self._cfgs.algo_cfgs.update_dynamics_cycle
             ):
                 update_dynamics_start = time.time()
-                update_dynamics_model(current_step)
+                update_dynamics_func(current_step)
                 self._last_dynamics_update = current_step
                 update_dynamics_time += time.time() - update_dynamics_start
 
@@ -165,14 +192,27 @@ class ModelBasedAdapter(OnlineAdapter):
                 and current_step - self._last_policy_update >= self._cfgs.algo_cfgs.update_policy_cycle
             ):
                 update_actor_critic_start = time.time()
-                update_actor_critic(current_step)
+                update_actor_func(current_step)
                 self._last_policy_update = current_step
                 update_actor_critic_time += time.time() - update_actor_critic_start
+
+            if (
+                eval_func is not None
+                and current_step % self._cfgs.evaluation_cfgs.eval_cycle < self._cfgs.algo_cfgs.action_repeat
+                and current_step - self._last_eval >= self._cfgs.evaluation_cfgs.eval_cycle
+            ):
+                eval_start = time.time()
+                eval_func(current_step)
+                self._last_eval = current_step
+                eval_time += time.time() - eval_start
 
         epoch_time = time.time() - epoch_start_time
         logger.store(**{'Time/Epoch': epoch_time})
         logger.store(**{'Time/UpdateDynamics': update_dynamics_time})
-        roll_out_time = epoch_time - update_dynamics_time
+        if eval_func is not None:
+            logger.store(**{'Time/Eval': eval_time})
+        roll_out_time = epoch_time - update_dynamics_time - eval_time
+
         if use_actor_critic:
             logger.store(**{'Time/UpdateActorCritic': update_actor_critic_time})
             roll_out_time -= update_actor_critic_time
@@ -190,7 +230,7 @@ class ModelBasedAdapter(OnlineAdapter):
         """Log value."""
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()
-        self._ep_len += info.get('step_num', 1)
+        self._ep_len += info.get('num_step', 1)
 
     def _log_metrics(self, logger: Logger) -> None:
         """Log metrics."""
@@ -207,6 +247,7 @@ class ModelBasedAdapter(OnlineAdapter):
         self._ep_ret = torch.zeros(1)
         self._ep_cost = torch.zeros(1)
         self._ep_len = torch.zeros(1)
+
 
     def check_violation(self, obs: torch.Tensor) -> torch.Tensor:
         assert obs.shape[1] == self.observation_space.shape[0]

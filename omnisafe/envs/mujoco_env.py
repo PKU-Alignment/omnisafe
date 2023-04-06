@@ -33,26 +33,23 @@ class MujocoEnv(CMDP):
         'Hopper-v4',
         'Walker2d-v4',
         'Humanoid-v4',
-        'InvertedPendulum-v4',
-        'InvertedDoublePendulum-v4',
-
-        'SafetyHopperVelocity-v4',
-        'SafetySwimmerVelocity-v4',
-        'SafetyWalker2dVelocity-v4',
-        'SafetyAntVelocity-v4',
-        'SafetyHumanoidVelocity-v4',
+        'Swimmer-v4',
+        'HalfCheetah-v4',
     ]
     need_auto_reset_wrapper = False
+
     need_time_limit_wrapper = False
     need_action_repeat_wrapper = True
     def __init__(self, env_id: str, num_envs: int = 1, **kwargs) -> None:
         super().__init__(env_id)
         if num_envs > 1:
-            self._env = gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
+            # set healthy_reward=0.0 for removing the safety constraint in reward
+            self._env = gymnasium.vector.make(id=env_id, healthy_reward=0.0, num_envs=num_envs, **kwargs)
             self._action_space = self._env.single_action_space
             self._observation_space = self._env.single_observation_space
         else:
-            self._env = gymnasium.make(id=env_id, autoreset=False, **kwargs)
+            # set healthy_reward=0.0 for removing the safety constraint in reward
+            self._env = gymnasium.make(id=env_id, autoreset=False, **kwargs) #  healthy_reward=0.0
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
 
@@ -63,11 +60,11 @@ class MujocoEnv(CMDP):
         self, action: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         obs, reward, terminated, truncated, info = self._env.step(action)
-        cost = 0.0
-        obs, reward, cost, terminated, truncated = map(
+        obs, reward, terminated, truncated = map(
             lambda x: torch.as_tensor(x, dtype=torch.float32),
-            (obs, reward, cost, terminated, truncated),
+            (obs, reward, terminated, truncated),
         )
+        cost = terminated.float()
         if 'final_observation' in info:
             info['final_observation'] = np.array(
                 [

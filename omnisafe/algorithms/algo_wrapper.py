@@ -88,6 +88,18 @@ class AlgoWrapper:
             self.algo in ALGORITHMS['all']
         ), f"{self.algo} doesn't exist. Please choose from {ALGORITHMS['all']}."
         self.algo_type = ALGORITHM2TYPE.get(self.algo, '')
+        if self.algo_type is None or self.algo_type == '':
+            raise ValueError(f'{self.algo} is not supported!')
+        if self.algo_type in ['off-policy', 'model-based']:
+            if self.train_terminal_cfgs is not None:
+                assert (
+                    self.train_terminal_cfgs['parallel'] == 1
+                ), 'off-policy or model-based only support parallel==1!'
+        if self.algo_type in ['model-based']:
+            if self.train_terminal_cfgs is not None:
+                assert (
+                    self.train_terminal_cfgs['vector_env_nums'] == 1
+                ), 'model-based only support vector_env_nums==1!'
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations

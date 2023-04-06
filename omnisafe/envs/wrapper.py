@@ -534,7 +534,11 @@ class ActionRepeat(Wrapper):
             step += 1
             rewards += reward
             costs += cost
-            if terminated or truncated:
+            if 'goal_met' not in info.keys():
+                goal_met = False
+            else:
+                goal_met = info['goal_met']
+            if terminated or truncated or goal_met:
                 break
         info['num_step'] = step
         return obs, rewards, costs, terminated, truncated, info

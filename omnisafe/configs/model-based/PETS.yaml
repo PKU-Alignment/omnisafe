@@ -19,7 +19,7 @@ defaults:
   # training configurations
   train_cfgs:
     # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
-    device: cuda:2
+    device: cuda:7
     # number of threads for torch
     torch_threads: 16
     # total number of steps to train
@@ -39,13 +39,18 @@ defaults:
     # Whether use decay loss
     use_decay: True
     # Whether predict reward
-    predict_rewawrd: True
+    predict_reward: True
     # Whether predict reward
     predict_cost: False
     # Training batch size of dynamics
     batch_size: 256
     # Training max epoch of dynamics
     max_epoch: 5
+  evaluation_cfgs:
+    use_eval: True
+    eval_cycle: 10000
+    num_episode: 2
+
   # algorithm configurations
   algo_cfgs:
     action_repeat: 5
@@ -55,13 +60,14 @@ defaults:
     num_samples: 512
     num_elites: 64
     momentum: 0.1
+    epsilon: 0.001
     # number of steps to update the dynamics
     update_dynamics_cycle: 2048
     # batch size for each iteration
     dynamics_batch_size: 128
     dynamics_max_epochs: 5
     # Actor perdorm random action before `start_learning_steps` steps
-    start_learning_steps: 25000
+    start_learning_steps: 2000
     # normalize reward
     reward_normalize: False
     # normalize cost
@@ -89,6 +95,26 @@ defaults:
     log_dir: "./runs"
     # save model path
     window_lens: 100
+
+Ant-v4:
+  algo_cfgs:
+    action_repeat: 1
+
+Swimmer-v4:
+  algo_cfgs:
+    action_repeat: 1
+    update_dynamics_cycle: 1000
+    dynamics_batch_size: 256
+    plan_horizon: 30
+    num_particles: 20
+
+HalfCheetah-v4:
+  algo_cfgs:
+    action_repeat: 1
+    update_dynamics_cycle: 1000
+    dynamics_batch_size: 256
+    plan_horizon: 30
+    num_particles: 20
 
 SafetyHopperVelocity-v4:
   # algorithm configurations
