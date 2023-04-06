@@ -62,6 +62,14 @@ class OffPolicyAdapter(OnlineAdapter):
         seed: int,
         cfgs: Config,
     ) -> None:
+        """Initialize the off-policy adapter.
+
+        Args:
+            env_id (str): The environment id.
+            num_envs (int): The number of environments.
+            seed (int): The random seed.
+            cfgs (Config): The configuration.
+        """
         super().__init__(env_id, num_envs, seed, cfgs)
 
         self._ep_ret: torch.Tensor
@@ -71,6 +79,44 @@ class OffPolicyAdapter(OnlineAdapter):
         self._max_ep_len = 1000
         self._device = cfgs.train_cfgs.device
         self._reset_log()
+
+    def eval_policy(  # pylint: disable=too-many-locals
+        self,
+        episode: int,
+        agent: ConstraintActorQCritic,
+        logger: Logger,
+    ) -> None:
+        """Roll out the environment and store the data in the buffer.
+
+        Args:
+            episode (int): Number of episodes.
+            agent (ConstraintActorCritic): Agent.
+            logger (Logger): Logger.
+        """
+        for _ in range(episode):
+            ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
+            done = False
+            obs, _ = self._eval_env.reset()
+            obs = obs.to(self._device)
+            while not done:
+                act = agent.step(obs, deterministic=True)
+                obs, reward, cost, terminated, truncated, info = self._eval_env.step(act)
+                obs, reward, cost, terminated, truncated = (
+                    torch.as_tensor(x, dtype=torch.float32, device=self._device)
+                    for x in (obs, reward, cost, terminated, truncated)
+                )
+                ep_ret += info.get('original_reward', reward).cpu()
+                ep_cost += info.get('original_cost', cost).cpu()
+                ep_len += 1
+                done = terminated or truncated
+                if done:
+                    logger.store(
+                        **{
+                            'Metrics/TestEpRet': ep_ret,
+                            'Metrics/TestEpCost': ep_cost,
+                            'Metrics/TestEpLen': ep_len,
+                        },
+                    )
 
     def roll_out(  # pylint: disable=too-many-locals
         self,
@@ -100,26 +146,26 @@ class OffPolicyAdapter(OnlineAdapter):
                 )
             else:
                 act = agent.step(self._current_obs, deterministic=False)
-
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
 
             self._log_value(reward=reward, cost=cost, info=info)
+            real_next_obs = next_obs.clone()
+            for idx, done in enumerate(torch.logical_or(terminated, truncated)):
+                if done:
+                    real_next_obs[idx] = info['final_observation'][idx]
+                    self._log_metrics(logger, idx)
+                    self._reset_log(idx)
 
             buffer.store(
                 obs=self._current_obs,
                 act=act,
                 reward=reward,
                 cost=cost,
-                done=terminated,
-                next_obs=next_obs,
+                done=torch.logical_and(terminated, torch.logical_xor(terminated, truncated)),
+                next_obs=real_next_obs,
             )
 
             self._current_obs = next_obs
-            for idx, done in enumerate(torch.logical_or(terminated, truncated)):
-                if done or self._ep_len[idx] >= self._max_ep_len:
-                    # self.reset()
-                    self._log_metrics(logger, idx)
-                    self._reset_log(idx)
 
     def _log_value(
         self,

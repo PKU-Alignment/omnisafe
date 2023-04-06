@@ -60,25 +60,39 @@ class OnlineAdapter:
     ) -> None:
         """Initialize the online adapter.
 
+        OmniSafe is a framework for safe reinforcement learning. It is designed to be
+        compatible with any existing RL algorithms. The online adapter is used
+        to adapt the environment to the framework.
+
+        OmniSafe provides a set of adapters to adapt the environment to the framework.
+
+        - OnPolicyAdapter: Adapt the environment to the on-policy framework.
+        - OffPolicyAdapter: Adapt the environment to the off-policy framework.
+        - SauteAdapter: Adapt the environment to the SAUTE framework.
+        - SimmerAdapter: Adapt the environment to the SIMMER framework.
+
         Args:
             env_id (str): The environment id.
             num_envs (int): The number of environments.
             seed (int): The random seed.
             cfgs (Config): The configuration.
-
         """
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
-        self._env_id = env_id
-        self._env = make(env_id, num_envs=num_envs, device=cfgs.train_cfgs.device)
         self._cfgs = cfgs
         self._device = cfgs.train_cfgs.device
+
+        self._env_id = env_id
+        self._env = make(env_id, num_envs=num_envs, device=self._device)
+        self._eval_env = make(env_id, num_envs=1, device=self._device)
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
             cost_normalize=cfgs.algo_cfgs.cost_normalize,
         )
+
         self._env.set_seed(seed)
+        self._eval_env.set_seed(seed)
 
     def _wrapper(
         self,
@@ -115,26 +129,29 @@ class OnlineAdapter:
             obs_normalize (bool): Whether to normalize the observation.
             reward_normalize (bool): Whether to normalize the reward.
             cost_normalize (bool): Whether to normalize the cost.
-
         """
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
+            self._env = TimeLimit(self._env, time_limit=1000, device=self._device)
+            self._eval_env = TimeLimit(self._eval_env, time_limit=1000, device=self._device)
         if self._env.need_auto_reset_wrapper:
             self._env = AutoReset(self._env, device=self._device)
+            self._eval_env = AutoReset(self._eval_env, device=self._device)
         if obs_normalize:
             self._env = ObsNormalize(self._env, device=self._device)
+            self._eval_env = ObsNormalize(self._eval_env, device=self._device)
         if reward_normalize:
             self._env = RewardNormalize(self._env, device=self._device)
         if cost_normalize:
             self._env = CostNormalize(self._env, device=self._device)
-        self._env = ActionScale(self._env, device=self._device, low=-1.0, high=1.0)
+        self._env = ActionScale(self._env, low=-1.0, high=1.0, device=self._device)
+        self._eval_env = ActionScale(self._eval_env, low=-1.0, high=1.0, device=self._device)
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
+        self._eval_env = Unsqueeze(self._eval_env, device=self._device)
 
     @property
     def action_space(self) -> OmnisafeSpace:
         """The action space of the environment.
-
         Returns:
             OmnisafeSpace: the action space.
         """

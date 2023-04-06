@@ -68,6 +68,7 @@ class DDPG(BaseAlgo):
             self._update_cycle % self._steps_per_sample == 0
         ), 'The number of steps per epoch is not divisible by the number of steps per sample.'
         self._samples_per_epoch = self._update_cycle // self._steps_per_sample
+        self._update_count = 0
 
     def _init_model(self) -> None:
         self._cfgs.model_cfgs.critic['num_critics'] = 1
@@ -114,6 +115,10 @@ class DDPG(BaseAlgo):
         self._logger.register_key('Metrics/EpCost', window_length=50)
         self._logger.register_key('Metrics/EpLen', window_length=50)
 
+        self._logger.register_key('Metrics/TestEpRet', window_length=50)
+        self._logger.register_key('Metrics/TestEpCost', window_length=50)
+        self._logger.register_key('Metrics/TestEpLen', window_length=50)
+
         self._logger.register_key('Train/Epoch')
         self._logger.register_key('Train/LR')
 
@@ -136,10 +141,6 @@ class DDPG(BaseAlgo):
         self._logger.register_key('Time/Update')
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
-
-    def _update_epoch(self) -> None:
-        """Update something per epoch"""
-        self._actor_critic.actor_scheduler.step()
 
     def learn(self) -> tuple[int | float, ...]:
         """This is main function for algorithm update, divided into the following steps:
@@ -185,13 +186,20 @@ class DDPG(BaseAlgo):
                     self._log_when_not_update()
                 update_time += time.time() - update_start
 
+            self._env.eval_policy(
+                episode=2,
+                agent=self._actor_critic,
+                logger=self._logger,
+            )
+
             self._logger.store(**{'Time/Update': update_time})
             self._logger.store(**{'Time/Rollout': roll_out_time})
 
-            if step > self._cfgs.algo_cfgs.start_learning_steps:
-                # update something per epoch
-                # e.g. update lagrange multiplier
-                self._update_epoch()
+            if (
+                step > self._cfgs.algo_cfgs.start_learning_steps
+                and self._cfgs.model_cfgs.linear_lr_decay
+            ):
+                self._actor_critic.actor_scheduler.step()
 
             self._logger.store(
                 **{
@@ -218,8 +226,9 @@ class DDPG(BaseAlgo):
         return ep_ret, ep_cost, ep_len
 
     def _update(self) -> None:
-        for step in range(self._steps_per_sample // self._cfgs.algo_cfgs.update_iters):
+        for _ in range(self._cfgs.algo_cfgs.update_iters):
             data = self._buf.sample_batch()
+            self._update_count += 1
             obs, act, reward, cost, done, next_obs = (
                 data['obs'],
                 data['act'],
@@ -229,16 +238,15 @@ class DDPG(BaseAlgo):
                 data['next_obs'],
             )
 
-            self._update_rewrad_critic(obs, act, reward, done, next_obs)
+            self._update_reward_critic(obs, act, reward, done, next_obs)
             if self._cfgs.algo_cfgs.use_cost:
                 self._update_cost_critic(obs, act, cost, done, next_obs)
 
-            if step % self._cfgs.algo_cfgs.policy_delay == 0:
+            if self._update_count % self._cfgs.algo_cfgs.policy_delay == 0:
                 self._update_actor(obs)
+                self._actor_critic.polyak_update(self._cfgs.algo_cfgs.polyak)
 
-            self._actor_critic.polyak_update(self._cfgs.algo_cfgs.polyak)
-
-    def _update_rewrad_critic(
+    def _update_reward_critic(
         self,
         obs: torch.Tensor,
         action: torch.Tensor,
