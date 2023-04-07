@@ -83,6 +83,7 @@ class StatisticsTools:
         values: list = None,
         compare_num: int = None,
         cost_limit: float = None,
+        smooth: int = 1,
     ):
         """Draw graph.
 
@@ -144,7 +145,7 @@ class StatisticsTools:
                     'Rewards',
                     False,
                     cost_limit,
-                    1,
+                    smooth,
                     None,
                     None,
                     'mean',
