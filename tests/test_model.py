@@ -116,7 +116,7 @@ def test_actor(
 
 @helpers.parametrize(
     linear_lr_decay=[True, False],
-    lr=['None', 1e-3],
+    lr=[None, 1e-3],
 )
 def test_actor_critic(
     linear_lr_decay: bool,

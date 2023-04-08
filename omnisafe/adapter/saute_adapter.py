@@ -35,16 +35,13 @@ class SauteAdapter(OnPolicyAdapter):
         self._safety_budget: torch.Tensor
         self._safety_obs: torch.Tensor
 
-        if self._cfgs.algo_cfgs.saute_gamma < 1:
-            self._safety_budget = (
-                self._cfgs.algo_cfgs.safety_budget
-                * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
-                / (1 - self._cfgs.algo_cfgs.saute_gamma)
-                / self._cfgs.algo_cfgs.max_ep_len
-                * torch.ones(num_envs, 1)
-            )
-        else:
-            self._safety_budget = self._cfgs.algo_cfgs.safety_budget * torch.ones(num_envs, 1)
+        self._safety_budget = (
+            self._cfgs.algo_cfgs.safety_budget
+            * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
+            / (1 - self._cfgs.algo_cfgs.saute_gamma)
+            / self._cfgs.algo_cfgs.max_ep_len
+            * torch.ones(num_envs, 1)
+        )
 
         self._ep_budget: torch.Tensor
 

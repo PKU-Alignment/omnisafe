@@ -21,7 +21,7 @@ defaults:
     # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
     device: cpu
     # number of threads for torch
-    torch_threads: 16
+    torch_threads: 5
     # number of vectorized environments
     vector_env_nums: 2
     # number of parallel agent, similar to a3c
@@ -116,7 +116,7 @@ defaults:
       activation: tanh
       # out_activation: tanh
       # learning rate
-      lr: None
+      lr: ~
     critic:
       # hidden layer sizes
       hidden_sizes: [64, 64]
