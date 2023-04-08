@@ -37,6 +37,9 @@ from omnisafe.algorithms.on_policy import (
     PPOLag,
     TRPOLag,
     TRPOSaute,
+    TRPOSimmerPID,
+    TRPOPID,
+    TRPOEarlyTerminated,
 )
 
 

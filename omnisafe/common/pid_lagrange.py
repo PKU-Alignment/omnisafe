@@ -69,22 +69,27 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
             lagrangian_multiplier_init: The initial value of the lagrangian multiplier.
             cost_limit: The cost limit.
         """
-        self.pid_kp = pid_kp
-        self.pid_ki = pid_ki
-        self.pid_kd = pid_kd
-        self.pid_d_delay = pid_d_delay
-        self.pid_delta_p_ema_alpha = pid_delta_p_ema_alpha
-        self.pid_delta_d_ema_alpha = pid_delta_d_ema_alpha
-        self.penalty_max = penalty_max
-        self.sum_norm = sum_norm
-        self.diff_norm = diff_norm
-        self.pid_i = lagrangian_multiplier_init
-        self.cost_ds: Deque[float] = deque(maxlen=self.pid_d_delay)
-        self.cost_ds.append(0)
+        self._pid_kp = pid_kp
+        self._pid_ki = pid_ki
+        self._pid_kd = pid_kd
+        self._pid_d_delay = pid_d_delay
+        self._pid_delta_p_ema_alpha = pid_delta_p_ema_alpha
+        self._pid_delta_d_ema_alpha = pid_delta_d_ema_alpha
+        self._penalty_max = penalty_max
+        self._sum_norm = sum_norm
+        self._diff_norm = diff_norm
+        self._pid_i = lagrangian_multiplier_init
+        self._cost_ds: Deque[float] = deque(maxlen=self._pid_d_delay)
+        self._cost_ds.append(0)
         self._delta_p: float = 0
         self._cost_d: float = 0
-        self.cost_limit: float = cost_limit
-        self.cost_penalty: float = 0
+        self._cost_limit: float = cost_limit
+        self._cost_penalty: float = 0
+
+    @property
+    def lagrangian_multiplier(self) -> float:
+        """Return the current value of the lagrangian multiplier."""
+        return self._cost_penalty
 
     def pid_update(self, ep_cost_avg: float) -> None:
         r"""Update the PID controller.
@@ -100,21 +105,21 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
         Args:
             ep_cost_avg (float): The average cost of the current episode.
         """
-        delta = float(ep_cost_avg - self.cost_limit)
-        self.pid_i = max(0.0, self.pid_i + delta * self.pid_ki)
-        if self.diff_norm:
-            self.pid_i = max(0.0, min(1.0, self.pid_i))
-        a_p = self.pid_delta_p_ema_alpha
+        delta = float(ep_cost_avg - self._cost_limit)
+        self._pid_i = max(0.0, self._pid_i + delta * self._pid_ki)
+        if self._diff_norm:
+            self._pid_i = max(0.0, min(1.0, self._pid_i))
+        a_p = self._pid_delta_p_ema_alpha
         self._delta_p *= a_p
         self._delta_p += (1 - a_p) * delta
-        a_d = self.pid_delta_d_ema_alpha
+        a_d = self._pid_delta_d_ema_alpha
         self._cost_d *= a_d
         self._cost_d += (1 - a_d) * float(ep_cost_avg)
-        pid_d = max(0.0, self._cost_d - self.cost_ds[0])
-        pid_o = self.pid_kp * self._delta_p + self.pid_i + self.pid_kd * pid_d
-        self.cost_penalty = max(0.0, pid_o)
-        if self.diff_norm:
-            self.cost_penalty = min(1.0, self.cost_penalty)
-        if not (self.diff_norm or self.sum_norm):
-            self.cost_penalty = min(self.cost_penalty, self.penalty_max)
-        self.cost_ds.append(self._cost_d)
+        pid_d = max(0.0, self._cost_d - self._cost_ds[0])
+        pid_o = self._pid_kp * self._delta_p + self._pid_i + self._pid_kd * pid_d
+        self._cost_penalty = max(0.0, pid_o)
+        if self._diff_norm:
+            self._cost_penalty = min(1.0, self._cost_penalty)
+        if not (self._diff_norm or self._sum_norm):
+            self._cost_penalty = min(self._cost_penalty, self._penalty_max)
+        self._cost_ds.append(self._cost_d)
