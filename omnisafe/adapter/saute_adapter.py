@@ -91,7 +91,7 @@ class SauteAdapter(OnPolicyAdapter):
         reward = self._safety_reward(reward)
 
         # autoreset the environment
-        done = terminated.float().unsqueeze(-1)
+        done = torch.logical_or(terminated, truncated).float().unsqueeze(-1).float()
         self._safety_obs = self._safety_obs * (1 - done) + done
 
         augmented_obs = self._augment_obs(next_obs)

@@ -35,7 +35,6 @@ class BaseSimmerAgent(ABC):
         """Initialize the agent."""
         assert obs_space is not None, 'Please specify the state space for the Simmer agent'
         assert history_len > 0, 'History length should be positive'
-        assert isinstance(action_space) == tuple, 'entry action_space should be a tuple'
         self._history_len = history_len
         self._obs_space = obs_space
         self._action_space = action_space
@@ -118,7 +117,7 @@ class SimmerPIDAgent(BaseSimmerAgent):
         # get the raw action
         raw_action = p_part + i_part + d_part
         # clip the action
-        action = torch.clamp(raw_action, min=self._action_space(0), max=self._action_space[1])
+        action = torch.clamp(raw_action, min=self._action_space[0], max=self._action_space[1])
         # get the next safety budget
         next_safety_budget = torch.clamp(safety_budget + action, 0.0, self._budget_bound)
         # update the true action after clipping
