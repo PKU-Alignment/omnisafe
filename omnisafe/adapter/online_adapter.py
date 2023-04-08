@@ -72,10 +72,10 @@ class OnlineAdapter:
         - SimmerAdapter: Adapt the environment to the SIMMER framework.
 
         Args:
-            env_id: The environment id.
-            num_envs: The number of environments.
-            seed: The random seed.
-            cfgs: The configuration.
+            env_id (str): The environment id.
+            num_envs (int): The number of environments.
+            seed (int): The random seed.
+            cfgs (Config): The configuration.
         """
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
@@ -83,8 +83,8 @@ class OnlineAdapter:
         self._device = cfgs.train_cfgs.device
 
         self._env_id = env_id
-        self._env = make(env_id, num_envs=num_envs)
-        self._eval_env = make(env_id, num_envs=1)
+        self._env = make(env_id, num_envs=num_envs, device=self._device)
+        self._eval_env = make(env_id, num_envs=1, device=self._device)
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,

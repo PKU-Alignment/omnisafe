@@ -81,6 +81,10 @@ class Plotter:
                 z = np.ones(len(x))
                 smoothed_x = np.convolve(x, y, 'same') / np.convolve(z, y, 'same')
                 datum[value] = smoothed_x
+                x = np.asarray(datum['Costs'])
+                z = np.ones(len(x))
+                smoothed_x = np.convolve(x, y, 'same') / np.convolve(z, y, 'same')
+                datum['Costs'] = smoothed_x
 
         if isinstance(data, list):
             data = pd.concat(data, ignore_index=True)

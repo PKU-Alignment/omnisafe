@@ -65,10 +65,10 @@ class OffPolicyAdapter(OnlineAdapter):
         """Initialize the off-policy adapter.
 
         Args:
-            env_id: The environment id.
-            num_envs: The number of environments.
-            seed: The random seed.
-            cfgs: The configuration.
+            env_id (str): The environment id.
+            num_envs (int): The number of environments.
+            seed (int): The random seed.
+            cfgs (Config): The configuration.
         """
         super().__init__(env_id, num_envs, seed, cfgs)
 
