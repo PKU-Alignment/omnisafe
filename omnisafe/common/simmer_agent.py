@@ -27,15 +27,15 @@ class BaseSimmerAgent(ABC):
 
     def __init__(
         self,
-        obs_space: list = [0],
-        action_space: list = [-1, 1],
+        obs_space: tuple = (0),
+        action_space: tuple = (-1, 1),
         history_len: int = 100,
-        **kwargs: dict,  # pylint: disable=unused-argument
+        **kwargs,  # pylint: disable=unused-argument
     ) -> None:
         """Initialize the agent."""
         assert obs_space is not None, 'Please specify the state space for the Simmer agent'
-        assert history_len > 0, 'History length shoud be positive'
-        assert type(action_space) == list, 'entry action_space should be a list'
+        assert history_len > 0, 'History length should be positive'
+        assert isinstance(action_space) == tuple, 'entry action_space should be a tuple'
         self._history_len = history_len
         self._obs_space = obs_space
         self._action_space = action_space
@@ -70,21 +70,22 @@ class BaseSimmerAgent(ABC):
         raise NotImplementedError
 
 
+# pylint: disable-next=too-many-instance-attributes
 class SimmerPIDAgent(BaseSimmerAgent):
     """Simmer PID agent."""
 
     def __init__(
         self,
-        obs_space: list = [0],
-        action_space: list = [-1, 1],
+        obs_space: tuple = (0),
+        action_space: tuple = (-1, 1),
         history_len: int = 100,
         **kwargs,
     ) -> None:
         """Initialize the agent."""
         super().__init__(obs_space, action_space, history_len, **kwargs)
-        self._Kp = kwargs.get('Kp', 0)
-        self._Ki = kwargs.get('Ki', 0)
-        self._Kd = kwargs.get('Kd', 0)
+        self._kp = kwargs.get('kp', 0)
+        self._ki = kwargs.get('ki', 0)
+        self._kd = kwargs.get('kd', 0)
         self._polyak = kwargs.get('polyak', 0.995)
         self._budget_bound = kwargs.get('budget_bound', 25.0)
         self._sum_history = torch.zeros(1)
@@ -109,15 +110,15 @@ class SimmerPIDAgent(BaseSimmerAgent):
         self._integral_history.append(blured_error)
         self._sum_history = sum(self._integral_history)
         # proportional part
-        p_part = self._Kp * blured_error
+        p_part = self._kp * blured_error
         # integral part
-        i_part = self._Ki * self._sum_history
+        i_part = self._ki * self._sum_history
         # derivative part
-        d_part = self._Kd * (self._prev_action - self._prev_raw_action)
+        d_part = self._kd * (self._prev_action - self._prev_raw_action)
         # get the raw action
         raw_action = p_part + i_part + d_part
         # clip the action
-        action = torch.clamp(raw_action, min=self._action_space[0], max=self._action_space[1])
+        action = torch.clamp(raw_action, min=self._action_space(0), max=self._action_space[1])
         # get the next safety budget
         next_safety_budget = torch.clamp(safety_budget + action, 0.0, self._budget_bound)
         # update the true action after clipping
@@ -141,7 +142,7 @@ class SimmerPIDAgent(BaseSimmerAgent):
 
     def reset(self):
         """Resetting the internal state of the agent."""
-        self.sum_history = torch.zeros(1)
-        self.prev_action = torch.zeros(1)
-        self.prev_error = torch.zeros(1)
-        self.prev_raw_action = torch.zeros(1)
+        self._sum_history = torch.zeros(1)
+        self._prev_action = torch.zeros(1)
+        self._prev_error = torch.zeros(1)
+        self._prev_raw_action = torch.zeros(1)

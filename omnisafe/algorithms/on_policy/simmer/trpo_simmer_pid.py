@@ -85,7 +85,8 @@ class TRPOSimmerPID(TRPO):
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         current_safety_budget = self._env.safety_budget
         next_safety_budget = self._controller.act(
-            safety_budget=current_safety_budget, observation=Jc
+            safety_budget=current_safety_budget,
+            observation=Jc,
         )
         self._env.safety_budget = next_safety_budget
         super()._update()

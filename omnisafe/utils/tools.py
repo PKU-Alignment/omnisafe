@@ -29,6 +29,8 @@ import yaml
 from rich.console import Console
 from torch.version import cuda as cuda_version
 
+from omnisafe.typing import cpu
+
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
     """This function is used to get the flattened parameters from the model.
@@ -275,20 +277,23 @@ def hash_string(string) -> str:
     return hash_object.hexdigest()
 
 
-def get_device(device: torch.device | str = 'cpu') -> torch.device:
-    """
-    Retrieve PyTorch device.
+def get_device(device: torch.device = cpu) -> torch.device:
+    """Retrieve PyTorch device.
+
     It checks that the requested device is available first.
     For now, it supports only cpu and cuda.
     By default, it tries to use the gpu.
 
-    :param device: One for 'auto', 'cuda', 'cpu'
-    :return: Supported Pytorch device
+    Args:
+        device (torch.device): device to be used.
+
+    Returns:
+        torch.device: device to be used.
     """
     # Cuda by default
     if device == 'auto':
         device = 'cuda'
-    # Force conversion to th.device
+    # Force conversion to torch.device
     device = torch.device(device)
 
     # Cuda not available

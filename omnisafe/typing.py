@@ -28,6 +28,7 @@ from typing import (
     Union,
 )
 
+import torch
 from gymnasium.spaces import Box, Discrete
 from torch.types import Device
 
@@ -39,6 +40,8 @@ AdvatageEstimator = Literal['gae', 'gae-rtg', 'vtrace', 'plain']
 InitFunction = Literal['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal']
 CriticType = Literal['v', 'q']
 ActorType = Literal['gaussian_learning', 'gaussian_sac', 'mlp']
+cpu = torch.device('cpu')
+
 
 __all__ = [
     'Activation',
@@ -57,4 +60,5 @@ __all__ = [
     'OmnisafeSpace',
     'RenderFrame',
     'Device',
+    'cpu',
 ]

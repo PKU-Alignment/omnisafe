@@ -20,7 +20,7 @@ import torch
 from gymnasium.spaces import Box
 
 from omnisafe.common.buffer.offpolicy_buffer import OffPolicyBuffer
-from omnisafe.typing import OmnisafeSpace
+from omnisafe.typing import OmnisafeSpace, cpu
 
 
 class VectorOffPolicyBuffer(OffPolicyBuffer):
@@ -33,7 +33,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         size: int,
         batch_size: int,
         num_envs: int,
-        device: torch.device = torch.device('cpu'),
+        device: torch.device = cpu,
     ) -> None:
         """Initialize the off policy buffer.
 

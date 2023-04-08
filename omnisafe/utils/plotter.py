@@ -180,12 +180,11 @@ class Plotter:
                 epoch = exp_data.get('Train/Epoch')
                 if epoch is None or update_cycle is None:
                     raise ValueError('No Train/Epoch column in progress.csv')
-                else:
-                    exp_data.insert(
-                        len(exp_data.columns),
-                        'Steps',
-                        epoch * update_cycle,
-                    )
+                exp_data.insert(
+                    len(exp_data.columns),
+                    'Steps',
+                    epoch * update_cycle,
+                )
                 datasets.append(exp_data)
         return datasets
 
@@ -240,7 +239,7 @@ class Plotter:
         all_logdirs,
         legend: str | None = None,
         xaxis: str | None = None,
-        values: list[str] = [],
+        values: tuple[str] = ('Rewards', 'Costs'),
         count=False,
         cost_limit=None,
         smooth=1,
@@ -300,7 +299,7 @@ class Plotter:
         """
         assert xaxis is not None, 'Must specify xaxis'
         data = self.get_all_datasets(all_logdirs, legend, select, exclude)
-        values = values if isinstance(values, list) else [values]
+        values = values if isinstance(values, tuple) else [values]
         condition = 'Condition2' if count else 'Condition1'
         # choose what to show on main curve: mean? max? min?
         estimator = getattr(np, estimator)

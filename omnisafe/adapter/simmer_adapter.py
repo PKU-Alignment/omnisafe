@@ -24,7 +24,7 @@ from omnisafe.utils.config import Config
 
 
 class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
-    """Saute Adapter for OmniSafe."""
+    """Simmer Adapter for OmniSafe."""
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
         """Initialize the adapter."""
