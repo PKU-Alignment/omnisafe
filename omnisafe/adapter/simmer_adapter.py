@@ -21,7 +21,6 @@ from gymnasium.spaces import Box
 from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
 from omnisafe.adapter.saute_adapter import SauteAdapter
 from omnisafe.utils.config import Config
-from omnisafe.common.simmer_agent import SimmerPIDAgent
 
 
 class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
@@ -46,7 +45,7 @@ class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
             / (1 - self._cfgs.algo_cfgs.saute_gamma)
             / self._cfgs.algo_cfgs.max_ep_len
         )
-        self._rel_safety_budget = self._safety_budget/self._upper_budget
+        self._rel_safety_budget = self._safety_budget / self._upper_budget
 
         self._ep_budget: torch.Tensor
 
@@ -61,14 +60,14 @@ class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
     def safety_budget(self) -> torch.Tensor:
         """Return the safety budget."""
         return self._safety_budget
-    
+
     @property
     def upper_budget(self) -> torch.Tensor:
         """Return the upper budget."""
         return self._upper_budget
-    
+
     @safety_budget.setter
     def safety_budget(self, safety_budget: torch.Tensor) -> None:
         """Set the safety budget."""
         self._safety_budget = safety_budget
-        self._rel_safety_budget = self._safety_budget/self._upper_budget
+        self._rel_safety_budget = self._safety_budget / self._upper_budget

@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Optional, Union
 
 
 def _linear_interpolation(left, right, alpha):

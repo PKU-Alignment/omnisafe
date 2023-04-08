@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import torch
 from torch import nn, optim
-from torch.optim.lr_scheduler import ConstantLR, LinearLR, _LRScheduler
+from torch.optim.lr_scheduler import ConstantLR, LinearLR
 
 from omnisafe.models.actor.actor_builder import ActorBuilder
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor

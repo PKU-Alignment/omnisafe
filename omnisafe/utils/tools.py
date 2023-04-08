@@ -24,10 +24,11 @@ import sys
 
 import numpy as np
 import torch
+import torch.backends.cudnn
 import yaml
 from rich.console import Console
-import torch.backends.cudnn
 from torch.version import cuda as cuda_version
+
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
     """This function is used to get the flattened parameters from the model.
@@ -273,6 +274,7 @@ def hash_string(string) -> str:
     # get the hex digest
     return hash_object.hexdigest()
 
+
 def get_device(device: torch.device | str = 'cpu') -> torch.device:
     """
     Retrieve PyTorch device.
@@ -284,13 +286,13 @@ def get_device(device: torch.device | str = 'cpu') -> torch.device:
     :return: Supported Pytorch device
     """
     # Cuda by default
-    if device == "auto":
-        device = "cuda"
+    if device == 'auto':
+        device = 'cuda'
     # Force conversion to th.device
     device = torch.device(device)
 
     # Cuda not available
-    if device.type == torch.device("cuda").type and not torch.cuda.is_available():
-        return torch.device("cpu")
+    if device.type == torch.device('cuda').type and not torch.cuda.is_available():
+        return torch.device('cpu')
 
     return device

@@ -28,7 +28,7 @@ from rich.console import Console
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.common.statistics_tools import StatisticsTools
-from omnisafe.typing import NamedTuple, Tuple
+from omnisafe.typing import Tuple
 from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dict
 
 

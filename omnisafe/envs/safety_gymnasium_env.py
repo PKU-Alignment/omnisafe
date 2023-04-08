@@ -102,13 +102,17 @@ class SafetyGymnasiumEnv(CMDP):
         if num_envs > 1:
             self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
             assert isinstance(self._env.single_action_space, Box), 'Only support Box action space.'
-            assert isinstance(self._env.single_observation_space, Box), 'Only support Box observation space.'
+            assert isinstance(
+                self._env.single_observation_space, Box
+            ), 'Only support Box observation space.'
             self._action_space = self._env.single_action_space
             self._observation_space = self._env.single_observation_space
         else:
             self._env = safety_gymnasium.make(id=env_id, autoreset=True, **kwargs)
             assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
-            assert isinstance(self._env.observation_space, Box), 'Only support Box observation space.'
+            assert isinstance(
+                self._env.observation_space, Box
+            ), 'Only support Box observation space.'
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
 

@@ -36,7 +36,7 @@ from omnisafe.algorithms.on_policy import (
     PolicyGradient,
     PPOLag,
     TRPOLag,
-    TRPOSaute
+    TRPOSaute,
 )
 
 

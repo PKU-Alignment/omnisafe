@@ -14,9 +14,9 @@
 # ==============================================================================
 """Implementation of the Simmer version of the TRPO algorithm."""
 
+from omnisafe.adapter.simmer_adapter import SimmerAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.trpo import TRPO
-from omnisafe.adapter.simmer_adapter import SimmerAdapter
 from omnisafe.common.simmer_agent import SimmerPIDAgent
 from omnisafe.utils import distributed
 
@@ -62,7 +62,6 @@ class TRPOSimmerPID(TRPO):
             // self._cfgs.train_cfgs.vector_env_nums
         )
 
-
     def _init_log(self) -> None:
         r"""Log the TRPOLag specific information.
 
@@ -99,6 +98,8 @@ class TRPOSimmerPID(TRPO):
         # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         current_safety_budget = self._env.safety_budget
-        next_safety_budget = self._controller.act(safety_budget=current_safety_budget, observation=Jc)
+        next_safety_budget = self._controller.act(
+            safety_budget=current_safety_budget, observation=Jc
+        )
         self._env.safety_budget = next_safety_budget
         super()._update()

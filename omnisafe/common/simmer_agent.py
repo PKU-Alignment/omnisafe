@@ -17,25 +17,25 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections import deque
 
 import torch
 
 
-from collections import deque
-
 class BaseSimmerAgent(ABC):
-    """"Base class for controlling safety budget of Simmer adapter."""
+    """ "Base class for controlling safety budget of Simmer adapter."""
+
     def __init__(
         self,
         obs_space: list = [0],
         action_space: list = [-1, 1],
         history_len: int = 100,
-        **kwargs: dict, # pylint: disable=unused-argument
-    ):
+        **kwargs: dict,  # pylint: disable=unused-argument
+    ) -> None:
         """Initialize the agent."""
-        assert obs_space is not None, "Please specify the state space for the Simmer agent"
-        assert history_len > 0, "History length shoud be positive"
-        assert type(action_space) == list, "entry action_space should be a list"
+        assert obs_space is not None, 'Please specify the state space for the Simmer agent'
+        assert history_len > 0, 'History length shoud be positive'
+        assert type(action_space) == list, 'entry action_space should be a list'
         self._history_len = history_len
         self._obs_space = obs_space
         self._action_space = action_space
@@ -48,21 +48,22 @@ class BaseSimmerAgent(ABC):
 
     @abstractmethod
     def get_greedy_action(
-        self, 
+        self,
         safety_budget: torch.Tensor,
         observation: torch.Tensor,
-        ) -> torch.Tensor:
+    ) -> torch.Tensor:
         """Get the greedy action."""
         raise NotImplementedError
-    
+
     @abstractmethod
-    def act(self, 
+    def act(
+        self,
         safety_budget: torch.Tensor,
         observation: torch.Tensor,
-        ) -> torch.Tensor:
+    ) -> torch.Tensor:
         """Get the action."""
         raise NotImplementedError
-    
+
     @abstractmethod
     def reset(self) -> torch.Tensor:
         """Reset the agent."""
@@ -71,16 +72,17 @@ class BaseSimmerAgent(ABC):
 
 class SimmerPIDAgent(BaseSimmerAgent):
     """Simmer PID agent."""
+
     def __init__(
-        self, 
+        self,
         obs_space: list = [0],
         action_space: list = [-1, 1],
         history_len: int = 100,
         **kwargs,
-        ):
+    ) -> None:
         """Initialize the agent."""
         super().__init__(obs_space, action_space, history_len, **kwargs)
-        self._Kp  = kwargs.get('Kp', 0)
+        self._Kp = kwargs.get('Kp', 0)
         self._Ki = kwargs.get('Ki', 0)
         self._Kd = kwargs.get('Kd', 0)
         self._polyak = kwargs.get('polyak', 0.995)
@@ -90,12 +92,12 @@ class SimmerPIDAgent(BaseSimmerAgent):
         self._prev_error = torch.zeros(1)
         self._prev_raw_action = torch.zeros(1)
         self._integral_history = deque([], maxlen=100)
-    
+
     def get_greedy_action(
-        self, 
+        self,
         safety_budget: torch.Tensor,
         observation: torch.Tensor,
-        ) -> torch.Tensor:
+    ) -> torch.Tensor:
         """Get the greedy action."""
         # compute the error
         current_error = safety_budget - observation
@@ -121,15 +123,19 @@ class SimmerPIDAgent(BaseSimmerAgent):
         # update the true action after clipping
         action = next_safety_budget - safety_budget
         # update the history
-        self._prev_action, self._prev_raw_action, self._prev_error = action, raw_action, blured_error
+        self._prev_action, self._prev_raw_action, self._prev_error = (
+            action,
+            raw_action,
+            blured_error,
+        )
 
         return next_safety_budget
 
     def act(
-        self, 
+        self,
         safety_budget: torch.Tensor,
         observation: torch.Tensor,
-        ) -> torch.Tensor:
+    ) -> torch.Tensor:
         """Get the action."""
         return self.get_greedy_action(safety_budget, observation)
 

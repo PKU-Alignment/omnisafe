@@ -19,7 +19,7 @@ from __future__ import annotations
 import torch
 
 from omnisafe.common.buffer.base import BaseBuffer
-from omnisafe.typing import AdvatageEstimator, OmnisafeSpace, Device
+from omnisafe.typing import AdvatageEstimator, OmnisafeSpace
 from omnisafe.utils import distributed
 from omnisafe.utils.math import discount_cumsum
 

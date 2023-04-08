@@ -31,6 +31,7 @@ from typing import (
 from gymnasium.spaces import Box, Discrete
 from torch.types import Device
 
+
 RenderFrame = TypeVar('RenderFrame')
 OmnisafeSpace = Union[Box, Discrete]
 Activation = Literal['identity', 'relu', 'sigmoid', 'softplus', 'tanh']

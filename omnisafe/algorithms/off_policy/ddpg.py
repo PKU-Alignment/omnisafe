@@ -204,7 +204,7 @@ class DDPG(BaseAlgo):
 
             self._logger.store(
                 **{
-                    'TotalEnvSteps': epoch*self._cfgs.algo_cfgs.update_cycle,
+                    'TotalEnvSteps': epoch * self._cfgs.algo_cfgs.update_cycle,
                     'Time/FPS': self._cfgs.algo_cfgs.update_cycle / (time.time() - epoch_time),
                     'Time/Total': (time.time() - start_time),
                     'Time/Epoch': (time.time() - epoch_time),

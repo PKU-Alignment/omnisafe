@@ -18,5 +18,5 @@ from omnisafe.algorithms.on_policy.saute.trpo_saute import TRPOSaute
 
 
 __all__ = [
-    'TRPOSaute'
+    'TRPOSaute',
 ]

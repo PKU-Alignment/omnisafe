@@ -57,7 +57,7 @@ class Plotter:
     def __init__(self) -> None:
         self.div_line_width: int = 50
         self.exp_idx: int = 0
-        self.units: dict= {}
+        self.units: dict = {}
 
     def plot_data(
         self,
@@ -180,7 +180,7 @@ class Plotter:
                     exp_data.insert(
                         len(exp_data.columns),
                         'Steps',
-                        epoch * update_cycle, 
+                        epoch * update_cycle,
                     )
                 datasets.append(exp_data)
         return datasets

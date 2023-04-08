@@ -18,5 +18,5 @@ from omnisafe.algorithms.on_policy.simmer.trpo_simmer_pid import TRPOSimmerPID
 
 
 __all__ = [
-    'TRPOSimmerPID'
+    'TRPOSimmerPID',
 ]

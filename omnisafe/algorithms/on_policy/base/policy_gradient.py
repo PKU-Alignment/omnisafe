@@ -22,8 +22,8 @@ from typing import Any
 import torch
 import torch.nn as nn
 from rich.progress import track
-from torch.utils.data import DataLoader, TensorDataset
 from torch.nn.utils.clip_grad import clip_grad_norm_
+from torch.utils.data import DataLoader, TensorDataset
 
 from omnisafe.adapter import OnPolicyAdapter
 from omnisafe.algorithms import registry
@@ -353,7 +353,7 @@ class PolicyGradient(BaseAlgo):
             batch_size=self._cfgs.algo_cfgs.batch_size,
             shuffle=True,
         )
-        
+
         update_counts = 0
         final_kl = torch.ones_like(old_distribution.loc)
 

@@ -14,11 +14,10 @@
 # ==============================================================================
 """Implementation of the Saute version of the TRPO algorithm."""
 
-import torch
 
+from omnisafe.adapter.saute_adapter import SauteAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.trpo import TRPO
-from omnisafe.adapter.saute_adapter import SauteAdapter
 from omnisafe.utils import distributed
 
 
@@ -54,7 +53,6 @@ class TRPOSaute(TRPO):
             // distributed.world_size()
             // self._cfgs.train_cfgs.vector_env_nums
         )
-
 
     def _init_log(self) -> None:
         r"""Log the TRPOLag specific information.

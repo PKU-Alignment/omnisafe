@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 import torch
 from gymnasium.spaces import Box
 
-from omnisafe.typing import OmnisafeSpace, Device
+from omnisafe.typing import OmnisafeSpace
 
 
 class BaseBuffer(ABC):
