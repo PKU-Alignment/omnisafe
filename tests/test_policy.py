@@ -24,7 +24,9 @@ naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
 first_order_policy = ['CUP', 'FOCOPS']
 second_order_policy = ['CPO', 'PCPO']
 penalty_policy = ['P3O', 'IPO']
-off_policy = ['DDPG', 'TD3', 'SAC']
+off_policy = ['DDPG', 'TD3', 'SAC', 'DDPGLag', 'TD3Lag', 'SACLag']
+saute_policy = ['TRPOSaute']
+simmer_policy = ['TRPOSimmerPID']
 # pid_lagrange_policy = ['CPPOPid', 'TRPOPid']
 # early_terminated_policy = ['PPOEarlyTerminated', 'PPOLagEarlyTerminated']
 # saute_policy = ['PPOSaute', 'PPOLagSaute']
@@ -64,6 +66,8 @@ def test_off_policy(algo):
         + first_order_policy
         + second_order_policy
         + penalty_policy
+        + saute_policy
+        + simmer_policy
     ),
 )
 def test_on_policy(algo):

@@ -14,6 +14,8 @@
 # ==============================================================================
 """tool_function_packages"""
 
+from __future__ import annotations
+
 import hashlib
 import json
 import os
@@ -22,8 +24,12 @@ import sys
 
 import numpy as np
 import torch
+import torch.backends.cudnn
 import yaml
 from rich.console import Console
+from torch.version import cuda as cuda_version
+
+from omnisafe.typing import cpu
 
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
@@ -132,7 +138,7 @@ def seed_all(seed: int):
         torch.use_deterministic_algorithms(True)
         torch.backends.cudnn.enabled = False
         torch.backends.cudnn.benchmark = False
-        if float(torch.version.cuda) >= 10.2:
+        if cuda_version is not None and float(cuda_version) >= 10.2:
             os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
             os.environ['PYTHONHASHSEED'] = str(seed)
     except AttributeError:
@@ -269,3 +275,29 @@ def hash_string(string) -> str:
     hash_object = hashlib.sha256(salted_string)
     # get the hex digest
     return hash_object.hexdigest()
+
+
+def get_device(device: torch.device = cpu) -> torch.device:
+    """Retrieve PyTorch device.
+
+    It checks that the requested device is available first.
+    For now, it supports only cpu and cuda.
+    By default, it tries to use the gpu.
+
+    Args:
+        device (torch.device): device to be used.
+
+    Returns:
+        torch.device: device to be used.
+    """
+    # Cuda by default
+    if device == 'auto':
+        device = 'cuda'
+    # Force conversion to torch.device
+    device = torch.device(device)
+
+    # Cuda not available
+    if device.type == torch.device('cuda').type and not torch.cuda.is_available():
+        return torch.device('cpu')
+
+    return device

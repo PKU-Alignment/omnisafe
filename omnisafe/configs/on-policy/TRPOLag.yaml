@@ -118,7 +118,7 @@ defaults:
       activation: tanh
       # out_activation: tanh
       # learning rate
-      lr: None
+      lr: ~
     critic:
       # hidden layer sizes
       hidden_sizes: [64, 64]

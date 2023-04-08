@@ -55,8 +55,8 @@ class ActorBuilder:
         """
         self._obs_space = obs_space
         self._act_space = act_space
-        self._weight_initialization_mode = weight_initialization_mode
-        self._activation = activation
+        self._weight_initialization_mode: InitFunction = weight_initialization_mode
+        self._activation: Activation = activation
         self._hidden_sizes = hidden_sizes
 
     # pylint: disable-next=too-many-return-statements

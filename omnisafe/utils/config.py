@@ -209,7 +209,7 @@ class ModelConfig(Config):
     activation: Activation
     std: list[float]
     use_obs_encoder: bool
-    lr: float
+    lr: float | None
 
 
 def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:

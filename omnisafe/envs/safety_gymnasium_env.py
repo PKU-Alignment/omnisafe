@@ -23,6 +23,7 @@ import safety_gymnasium
 import torch
 
 from omnisafe.envs.core import CMDP, env_register
+from omnisafe.typing import Box, cpu
 
 
 @env_register
@@ -86,7 +87,7 @@ class SafetyGymnasiumEnv(CMDP):
         self,
         env_id: str,
         num_envs: int = 1,
-        device: torch.device = 'cpu',
+        device: torch.device = cpu,
         **kwargs,
     ) -> None:
         """Initialize the environment.
@@ -100,10 +101,20 @@ class SafetyGymnasiumEnv(CMDP):
         super().__init__(env_id)
         if num_envs > 1:
             self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
+            assert isinstance(self._env.single_action_space, Box), 'Only support Box action space.'
+            assert isinstance(
+                self._env.single_observation_space,
+                Box,
+            ), 'Only support Box observation space.'
             self._action_space = self._env.single_action_space
             self._observation_space = self._env.single_observation_space
         else:
             self._env = safety_gymnasium.make(id=env_id, autoreset=True, **kwargs)
+            assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
+            assert isinstance(
+                self._env.observation_space,
+                Box,
+            ), 'Only support Box observation space.'
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
 

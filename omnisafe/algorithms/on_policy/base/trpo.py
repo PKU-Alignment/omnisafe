@@ -86,6 +86,8 @@ class TRPO(NaturalPG):
         # Change expected objective function gradient = expected_imrpove best this moment
         expected_improve = grad.dot(step_direction)
 
+        final_kl = 0.0
+
         # While not within_trust_region and not out of total_steps:
         for step in range(total_steps):
             # update theta params
@@ -115,6 +117,7 @@ class TRPO(NaturalPG):
                 # step only if surrogate is improved and when within trust reg.
                 acceptance_step = step + 1
                 self._logger.log(f'Accept step at i={acceptance_step}')
+                final_kl = kl
                 break
             step_frac *= decay
         else:
@@ -126,7 +129,7 @@ class TRPO(NaturalPG):
 
         self._logger.store(
             **{
-                'Train/KL': kl,
+                'Train/KL': final_kl,
             },
         )
 

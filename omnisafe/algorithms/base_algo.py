@@ -18,11 +18,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-import torch
-
 from omnisafe.utils import distributed
 from omnisafe.utils.config import Config
-from omnisafe.utils.tools import seed_all
+from omnisafe.utils.tools import get_device, seed_all
 
 
 class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
@@ -37,7 +35,7 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
         seed_all(self._seed)
 
         assert hasattr(cfgs.train_cfgs, 'device'), 'Please specify the device in the config file.'
-        self._device = torch.device(self._cfgs.train_cfgs.device)
+        self._device = get_device(self._cfgs.train_cfgs.device)
 
         distributed.setup_distributed()
 

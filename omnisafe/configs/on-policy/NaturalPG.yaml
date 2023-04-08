@@ -118,7 +118,7 @@ defaults:
       activation: tanh
       # out_activation: tanh
       # learning rate
-      lr: None
+      lr: ~
     critic:
       # hidden layer sizes
       hidden_sizes: [64, 64]
@@ -126,43 +126,3 @@ defaults:
       activation: tanh
       # learning rate
       lr: 0.001
-
-SafetyAntVelocity-v1:
-  # algorithm configurations
-  algo_cfgs:
-    # normalize reward
-    reward_normalize: True
-    # normalize cost
-    cost_normalize: False
-    # normalize observation
-    obs_normalize: True
-
-SafetyHalfCheetahVelocity-v1:
-  # algorithm configurations
-  algo_cfgs:
-    # normalize reward
-    reward_normalize: True
-    # normalize cost
-    cost_normalize: False
-    # normalize observation
-    obs_normalize: True
-
-SafetyHumanoidVelocity-v1:
-  # algorithm configurations
-  algo_cfgs:
-    # normalize reward
-    reward_normalize: True
-    # normalize cost
-    cost_normalize: False
-    # normalize observation
-    obs_normalize: True
-
-SafetySwimmerVelocity-v1:
-  # algorithm configurations
-  algo_cfgs:
-    # normalize reward
-    reward_normalize: True
-    # normalize cost
-    cost_normalize: False
-    # normalize observation
-    obs_normalize: True

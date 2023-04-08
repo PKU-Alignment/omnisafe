@@ -24,7 +24,7 @@ from omnisafe.utils.config import Config
 
 
 class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
-    """OnPolicy Adapter for OmniSafe."""
+    """Simmer Adapter for OmniSafe."""
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
         """Initialize the adapter."""
@@ -33,24 +33,19 @@ class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
         self._safety_budget: torch.Tensor
         self._safety_obs: torch.Tensor
 
-        if self._cfgs.env_cfgs.scale_safety_budget:
-            self._safety_budget = (
-                self._cfgs.env_cfgs.lower_budget
-                * (1 - self._cfgs.env_cfgs.saute_gamma**self._cfgs.env_cfgs.max_ep_len)
-                / (1 - self._cfgs.env_cfgs.saute_gamma)
-                / self._cfgs.env_cfgs.max_ep_len
-            )
-            self._lower_budget = self._safety_budget
-            self._upper_budget = (
-                self._cfgs.env_cfgs.upper_budget
-                * (1 - self._cfgs.env_cfgs.saute_gamma**self._cfgs.env_cfgs.max_ep_len)
-                / (1 - self._cfgs.env_cfgs.saute_gamma)
-                / self._cfgs.env_cfgs.max_ep_len
-            )
-        else:
-            self._safety_budget = self._cfgs.env_cfgs.lower_budget
-            self._lower_budget = self._safety_budget
-            self._upper_budget = self._cfgs.env_cfgs.upper_budget
+        self._safety_budget = (
+            self._cfgs.algo_cfgs.safety_budget
+            * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
+            / (1 - self._cfgs.algo_cfgs.saute_gamma)
+            / self._cfgs.algo_cfgs.max_ep_len
+        )
+        self._upper_budget = (
+            self._cfgs.algo_cfgs.upper_budget
+            * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
+            / (1 - self._cfgs.algo_cfgs.saute_gamma)
+            / self._cfgs.algo_cfgs.max_ep_len
+        )
+        self._rel_safety_budget = self._safety_budget / self._upper_budget
 
         self._ep_budget: torch.Tensor
 
@@ -60,3 +55,19 @@ class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
             high=np.inf,
             shape=(self._env.observation_space.shape[0] + 1,),
         )
+
+    @property
+    def safety_budget(self) -> torch.Tensor:
+        """Return the safety budget."""
+        return self._safety_budget
+
+    @property
+    def upper_budget(self) -> torch.Tensor:
+        """Return the upper budget."""
+        return self._upper_budget
+
+    @safety_budget.setter
+    def safety_budget(self, safety_budget: torch.Tensor) -> None:
+        """Set the safety budget."""
+        self._safety_budget = safety_budget
+        self._rel_safety_budget = self._safety_budget / self._upper_budget

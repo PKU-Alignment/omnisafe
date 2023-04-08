@@ -55,7 +55,7 @@ class ExperimentGrid:
         self.keys: list[str] = []
         self.vals: list[Any] = []
         self.shs: list[str] = []
-        self.in_names: list[str] = []
+        self.in_names: list[bool] = []
         self.div_line_width = 80
         assert isinstance(exp_name, str), 'Name has to be a string.'
         self.name = exp_name
@@ -151,7 +151,7 @@ class ExperimentGrid:
 
         return '-'.join([shear(x) for x in key.split(':')])
 
-    def add(self, key, vals, shorthand=None, in_name=False):
+    def add(self, key, vals, shorthand: str | None = None, in_name: bool = False):
         r"""Add a parameter (key) to the grid config, with potential values (vals).
 
         By default, if a shorthand isn't given, one is automatically generated
@@ -180,7 +180,6 @@ class ExperimentGrid:
                 inclusion of this parameter into the name.
         """
         assert isinstance(key, str), 'Key must be a string.'
-        assert shorthand is None or isinstance(shorthand, str), 'Shorthand must be a string.'
         if not isinstance(vals, list):
             vals = [vals]
         if self.default_shorthand and shorthand is None:

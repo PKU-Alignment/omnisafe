@@ -22,6 +22,7 @@ from typing import Any
 import torch
 import torch.nn as nn
 from rich.progress import track
+from torch.nn.utils.clip_grad import clip_grad_norm_
 from torch.utils.data import DataLoader, TensorDataset
 
 from omnisafe.adapter import OnPolicyAdapter
@@ -264,7 +265,7 @@ class PolicyGradient(BaseAlgo):
             if self._cfgs.model_cfgs.exploration_noise_anneal:
                 self._actor_critic.annealing(epoch)
 
-            if self._cfgs.model_cfgs.actor.lr != 'None':
+            if self._cfgs.model_cfgs.actor.lr is not None:
                 self._actor_critic.actor_scheduler.step()
 
             self._logger.store(
@@ -275,7 +276,7 @@ class PolicyGradient(BaseAlgo):
                     'Time/Epoch': (time.time() - epoch_time),
                     'Train/Epoch': epoch,
                     'Train/LR': 0.0
-                    if self._cfgs.model_cfgs.actor.lr == 'None'
+                    if self._cfgs.model_cfgs.actor.lr is None
                     else self._actor_critic.actor_scheduler.get_last_lr()[0],
                 },
             )
@@ -353,6 +354,9 @@ class PolicyGradient(BaseAlgo):
             shuffle=True,
         )
 
+        update_counts = 0
+        final_kl = torch.ones_like(old_distribution.loc)
+
         for i in track(range(self._cfgs.algo_cfgs.update_iters), description='Updating...'):
             for (
                 obs,
@@ -378,15 +382,18 @@ class PolicyGradient(BaseAlgo):
             )
             kl = distributed.dist_avg(kl)
 
+            final_kl = kl
+            update_counts += 1
+
             if self._cfgs.algo_cfgs.kl_early_stop and kl > self._cfgs.algo_cfgs.target_kl:
                 self._logger.log(f'Early stopping at iter {i + 1} due to reaching max kl')
                 break
 
         self._logger.store(
             **{
-                'Train/StopIter': i + 1,  # pylint: disable=undefined-loop-variable
+                'Train/StopIter': update_counts,  # pylint: disable=undefined-loop-variable
                 'Value/Adv': adv_r.mean().item(),
-                'Train/KL': kl,
+                'Train/KL': final_kl,
             },
         )
 
@@ -420,7 +427,7 @@ class PolicyGradient(BaseAlgo):
         loss.backward()
 
         if self._cfgs.algo_cfgs.use_max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.reward_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
@@ -459,7 +466,7 @@ class PolicyGradient(BaseAlgo):
         loss.backward()
 
         if self._cfgs.algo_cfgs.use_max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.cost_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
@@ -501,7 +508,7 @@ class PolicyGradient(BaseAlgo):
         self._actor_critic.actor_optimizer.zero_grad()
         loss.backward()
         if self._cfgs.algo_cfgs.use_max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.actor.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )

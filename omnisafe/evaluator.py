@@ -119,10 +119,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         if self._cfgs['algo_cfgs']['obs_normalize']:
             obs_normalizer = Normalizer(shape=observation_space.shape, clip=5)
             obs_normalizer.load_state_dict(model_params['obs_normalizer'])
-            self._env = ObsNormalize(self._env, device='cpu', norm=obs_normalizer)
+            self._env = ObsNormalize(self._env, device=torch.device('cpu'), norm=obs_normalizer)
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, device='cpu', time_limit=1000)
-        self._env = ActionScale(self._env, device='cpu', low=-1.0, high=1.0)
+            self._env = TimeLimit(self._env, device=torch.device('cpu'), time_limit=1000)
+        self._env = ActionScale(self._env, device=torch.device('cpu'), low=-1.0, high=1.0)
 
         actor_type = self._cfgs['model_cfgs']['actor_type']
         pi_cfg = self._cfgs['model_cfgs']['actor']

@@ -21,6 +21,7 @@ from typing import Any
 
 import torch
 from torch import nn
+from torch.nn.utils.clip_grad import clip_grad_norm_
 
 from omnisafe.adapter import OffPolicyAdapter
 from omnisafe.algorithms import registry
@@ -274,7 +275,7 @@ class DDPG(BaseAlgo):
         loss.backward()
 
         if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.reward_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
@@ -304,7 +305,7 @@ class DDPG(BaseAlgo):
         loss.backward()
 
         if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.cost_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
@@ -326,7 +327,7 @@ class DDPG(BaseAlgo):
         self._actor_critic.actor_optimizer.zero_grad()
         loss.backward()
         if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.actor.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )

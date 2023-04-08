@@ -28,7 +28,7 @@ from rich.console import Console
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.common.statistics_tools import StatisticsTools
-from omnisafe.typing import NamedTuple, Tuple
+from omnisafe.typing import Tuple
 from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dict
 
 
@@ -135,7 +135,7 @@ def train_grid(
     exp_id: str,
     algo: str,
     env_id: str,
-    custom_cfgs: NamedTuple,
+    custom_cfgs: dict,
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
 
@@ -313,7 +313,7 @@ def evaluate_model(
             for item in os.scandir(models_dir):
                 if item.is_file() and item.name.split('.')[-1] == 'pt':
                     evaluator.load_saved(
-                        save_dir=seed_dir,
+                        save_dir=seed_dir.path,
                         model_name=item.name,
                         camera_name=camera_name,
                         width=width,

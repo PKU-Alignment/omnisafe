@@ -81,7 +81,7 @@ class ConstraintActorCritic(ActorCritic):
         ).build_critic('v')
         self.add_module('cost_critic', self.cost_critic)
 
-        if model_cfgs.critic.lr != 'None':
+        if model_cfgs.critic.lr is not None:
             self.cost_critic_optimizer = optim.Adam(
                 self.cost_critic.parameters(),
                 lr=model_cfgs.critic.lr,
