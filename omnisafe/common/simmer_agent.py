@@ -23,7 +23,7 @@ import torch
 
 
 class BaseSimmerAgent(ABC):
-    """ "Base class for controlling safety budget of Simmer adapter."""
+    """Base class for controlling safety budget of Simmer adapter."""
 
     def __init__(
         self,

@@ -29,9 +29,9 @@ class TRPOSimmerPID(TRPO):
     """
 
     def _init(self) -> None:
-        """Initialize the TRPOLag specific model.
+        """Initialize the TRPOSimmerPID specific model.
 
-        The TRPOLag algorithm uses a Lagrange multiplier to balance the cost and reward.
+        The TRPOSimmerPID algorithm uses PID controller to control the budget.
         """
         super()._init()
         self._controller = SimmerPIDAgent()
@@ -39,7 +39,7 @@ class TRPOSimmerPID(TRPO):
     def _init_env(self) -> None:
         """Initialize the environment.
 
-        Omnisafe use :class:`omnisafe.adapter.OnPolicyAdapter` to adapt the environment to the algorithm.
+        Omnisafe use :class:`omnisafe.adapter.SimmerAdapter` to adapt the environment to the algorithm.
 
         User can customize the environment by inheriting this function.
 
@@ -63,7 +63,7 @@ class TRPOSimmerPID(TRPO):
         )
 
     def _init_log(self) -> None:
-        r"""Log the TRPOLag specific information.
+        r"""Log the TRPOSimmerPID specific information.
 
         .. list-table::
 
@@ -77,20 +77,6 @@ class TRPOSimmerPID(TRPO):
 
     def _update(self) -> None:
         r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
-
-        Additionally, we update the Lagrange multiplier parameter,
-        by calling the :meth:`update_lagrange_multiplier()` method.
-
-        .. note::
-            The :meth:`_loss_pi()` is defined in the :class:`PolicyGradient` algorithm.
-            When a lagrange multiplier is used,
-            the :meth:`_loss_pi()` method will return the loss of the policy as:
-
-            .. math::
-                L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[ \frac{\pi_\theta(a_t|s_t)}{\pi_\theta^{old}(a_t|s_t)}
-                [A^{R}_{\pi_{\theta}}(s_t, a_t) - \lambda A^{C}_{\pi_{\theta}}(s_t, a_t)] \right]
-
-            where :math:`\lambda` is the Lagrange multiplier parameter.
 
         Args:
             self (object): object of the class.
