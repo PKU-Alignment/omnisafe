@@ -223,11 +223,12 @@ class PETS(BaseAlgo):
         delta_state = next_state - state
         inputs = torch.cat((state, action), -1)
         inputs = torch.reshape(inputs, (inputs.shape[0], -1))
+
         labels = torch.reshape(delta_state,(delta_state.shape[0], -1))
         if self._cfgs.dynamics_cfgs.predict_reward:
-            labels = torch.cat((torch.reshape(reward, (reward.shape[0], -1))),labels, -1)
+            labels = torch.cat(((torch.reshape(reward, (reward.shape[0], -1))),labels), -1)
         if self._cfgs.dynamics_cfgs.predict_cost:
-            labels = torch.cat((torch.reshape(cost, (cost.shape[0], -1))),labels, -1)
+            labels = torch.cat(((torch.reshape(cost, (cost.shape[0], -1))),labels), -1)
 
         inputs = inputs.cpu().detach().numpy()
         labels = labels.cpu().detach().numpy()

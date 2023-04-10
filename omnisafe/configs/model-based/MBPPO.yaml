@@ -64,8 +64,6 @@ defaults:
     validation_threshold_num: 4
     # Imaging steps every policy update
     imaging_steps_per_policy_update: 30000
-    # Number of dynamics network for computing performance ratio
-    validation_num: 6
     action_repeat: 2
 
     # number of steps to update the dynamics
@@ -89,7 +87,7 @@ defaults:
 
 
     # number of steps to update the policy
-    update_policy_cycle: 2048
+    update_policy_cycle: 10000
     # number of steps per sample
     steps_per_sample: 1
     # number of iterations to update the policy

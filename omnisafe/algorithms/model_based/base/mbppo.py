@@ -172,6 +172,7 @@ class MBPPO(PETS):
         self.logger.register_key('Loss/DynamicsTrainMseLoss')
         self.logger.register_key('Loss/DynamicsValMseLoss')
 
+        self.logger.register_key('Megaiter')
 
         self._logger.register_key('Train/Entropy')
         self._logger.register_key('Train/KL')
@@ -524,7 +525,7 @@ class MBPPO(PETS):
             for idx, param in enumerate(trainable_params):
                 vals = new_params[current_idx : current_idx + param_sizes[idx]]
                 vals = vals.reshape(param_shapes[idx])
-                param.data = torch.from_numpy(vals).float().to(self.device)
+                param.data = torch.from_numpy(vals).float().to(self._device)
                 current_idx += param_sizes[idx]
 
     def virtual_step(self, state, action, idx=None):
@@ -608,7 +609,7 @@ class MBPPO(PETS):
 
     def validation(self, last_valid_rets):
         """policy validation"""
-        valid_rets = np.zeros(self._cfgs.algo_cfgs.validation_num)
+        valid_rets = np.zeros(self._cfgs.dynamics_cfgs.elite_size)
         winner = 0
         for valid_id in range(len(valid_rets)):  # pylint:disable=consider-using-enumerate
             state, _ = self._env_auxiliary.reset()
@@ -621,8 +622,8 @@ class MBPPO(PETS):
                     state, _  = self._env_auxiliary.reset()
             if valid_rets[valid_id] > last_valid_rets[valid_id]:
                 winner += 1
-        performance_ratio = winner / self._cfgs.algo_cfgs.validation_num
-        threshold = self._cfgs.algo_cfgs.validation_threshold_num / self._cfgs.algo_cfgs.validation_num
+        performance_ratio = winner / self._cfgs.dynamics_cfgs.elite_size
+        threshold = self._cfgs.algo_cfgs.validation_threshold_num / self._cfgs.dynamics_cfgs.elite_size
         result = performance_ratio < threshold
         return result, valid_rets
 
