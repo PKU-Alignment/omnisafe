@@ -15,7 +15,8 @@
 """Model of Model-Based Reinforcement Learning algorithms."""
 
 from omnisafe.algorithms.model_based.models.ensemble_model.ensemble import EnsembleDynamicsModel
-
+from omnisafe.algorithms.model_based.models.virtual_env import VirtualEnv
 __all__ = [
     'EnsembleDynamicsModel',
+    'VirtualEnv',
 ]

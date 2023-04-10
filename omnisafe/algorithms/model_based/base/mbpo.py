@@ -57,7 +57,7 @@ class MBPO(BaseAlgo):
         self._steps_per_epoch = int(self._cfgs.logger_cfgs.log_cycle)
         self._epochs = self._total_steps // self._cfgs.logger_cfgs.log_cycle
     def _init_model(self) -> None:
-        self._dynamics_state_space = self._env.coordinate_observation_space if hasattr(self._env, 'coordinate_observation_space') else self._env.observation_space
+        self._dynamics_state_space = self._env.coordinate_observation_space if self._env.coordinate_observation_space is not None else self._env.observation_space
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,

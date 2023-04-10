@@ -66,14 +66,14 @@ class PETS(BaseAlgo):
             reward_size=1,
             cost_size=1,
             use_cost=False,
-            use_truncated=False,
+            use_terminal=False,
             use_var=False,
             use_reward_critic=False,
             use_cost_critic=False,
             actor_critic=None,
             rew_func=None,
             cost_func=None,
-            truncated_func=None,
+            terminal_func=None,
         )
 
         self._planner = CEMPlanner(
@@ -142,6 +142,13 @@ class PETS(BaseAlgo):
         self._logger.register_key('Loss/DynamicsTrainMseLoss')
         self._logger.register_key('Loss/DynamicsValMseLoss')
 
+        self._logger.register_key('Plan/iter')
+        self._logger.register_key('Plan/last_var_mean')
+        self._logger.register_key('Plan/last_var_max')
+        self._logger.register_key('Plan/last_var_min')
+        self._logger.register_key('Plan/episode_returns_max')
+        self._logger.register_key('Plan/episode_returns_mean')
+        self._logger.register_key('Plan/episode_returns_min')
 
         self._logger.register_key('Time/Total')
         self._logger.register_key('Time/Rollout')
@@ -168,15 +175,19 @@ class PETS(BaseAlgo):
             current_step = self._env.roll_out(
                 current_step=current_step,
                 roll_out_step=self._steps_per_epoch,
-                use_actor_critic=False,
+                use_actor_critic=self._use_actor_critic,
                 act_func=self._select_action,
-                store_data_func=self.store_real_data,
-                update_dynamics_func=self.update_dynamics_model,
+                store_data_func=self._store_real_data,
+                update_dynamics_func=self._update_dynamics_model,
                 eval_func=self._eval_fn,
                 logger=self._logger,
-                algo_reset_func=None,
-                update_actor_func=None,
+                algo_reset_func=self._algo_reset,
+                update_actor_func=self._update_policy,
                 )
+            if current_step > self._cfgs.algo_cfgs.start_learning_steps:
+                # update something per epoch
+                # e.g. update lagrange multiplier
+                self._update_epoch()
             # Evaluate episode
             self._logger.store(
                 **{
@@ -197,10 +208,12 @@ class PETS(BaseAlgo):
 
         return ep_ret, ep_cost, ep_len
 
-    def algo_reset(self):
+    def _algo_reset(self, current_step):
         pass
 
-    def update_dynamics_model(self, current_step):
+    def _update_policy(self, current_step):
+        pass
+    def _update_dynamics_model(self, current_step):
         """Update dynamics."""
         state = self._dynamics_buf.data['obs'][: self._dynamics_buf.size, :]
         action = self._dynamics_buf.data['act'][: self._dynamics_buf.size, :]
@@ -210,14 +223,12 @@ class PETS(BaseAlgo):
         delta_state = next_state - state
         inputs = torch.cat((state, action), -1)
         inputs = torch.reshape(inputs, (inputs.shape[0], -1))
+        labels = torch.reshape(delta_state,(delta_state.shape[0], -1))
+        if self._cfgs.dynamics_cfgs.predict_reward:
+            labels = torch.cat((torch.reshape(reward, (reward.shape[0], -1))),labels, -1)
+        if self._cfgs.dynamics_cfgs.predict_cost:
+            labels = torch.cat((torch.reshape(cost, (cost.shape[0], -1))),labels, -1)
 
-        labels = torch.cat(
-            (
-                torch.reshape(reward, (reward.shape[0], -1)),
-                torch.reshape(delta_state,(delta_state.shape[0], -1))
-            ),
-            -1
-        )
         inputs = inputs.cpu().detach().numpy()
         labels = labels.cpu().detach().numpy()
         train_mse_losses, val_mse_losses = self._dynamics.train(
@@ -232,24 +243,38 @@ class PETS(BaseAlgo):
                 'Loss/DynamicsValMseLoss': val_mse_losses.item(),
             }
         )
-
+    def _update_epoch(self):
+        pass
 
     def _select_action(
             self,
             current_step: int,
-            state: torch.Tensor) -> Tuple[np.ndarray, Dict]:
+            state: torch.Tensor,
+            env: ModelBasedAdapter,
+            ) -> Tuple[np.ndarray, Dict]:
         """action selection"""
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
             #action = torch.rand(size=1, *self._env.action_space.shape)
         else:
-            action = self._planner.output_action(state)
+            action, info = self._planner.output_action(state)
             #action = action.cpu().detach().numpy()
+            self._logger.store(
+                **{
+                'Plan/iter': info['Plan/iter'],
+                'Plan/last_var_max': info['Plan/last_var_max'],
+                'Plan/last_var_mean': info['Plan/last_var_mean'],
+                'Plan/last_var_min': info['Plan/last_var_min'],
+                'Plan/episode_returns_max': info['Plan/episode_returns_max'],
+                'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
+                'Plan/episode_returns_min': info['Plan/episode_returns_min'],
+                }
+            )
         assert action.shape == torch.Size([state.shape[0], self._env.action_space.shape[0]]), "action shape should be [batch_size, action_dim]"
         info = {}
         return action, info
 
-    def store_real_data(
+    def _store_real_data(
         self,
         current_step: int,
         ep_len: int,
@@ -278,6 +303,7 @@ class PETS(BaseAlgo):
     def _evaluation_single_step(
             self,
             current_step: int,
+            use_real_input: bool=True,
     ) -> None:
 
         env_kwargs = {
@@ -288,6 +314,7 @@ class PETS(BaseAlgo):
                     self._env_id, 1, self._seed, self._cfgs, **env_kwargs
                 )
         obs,_ = eval_env.reset()
+        obs_dynamics = obs
         terminated, truncated = False, False
         ep_len, ep_ret, ep_cost = 0, 0, 0
         frames = []
@@ -339,15 +366,18 @@ class PETS(BaseAlgo):
                 num_episode += 1
                 if num_episode == self._cfgs.evaluation_cfgs.num_episode:
                     break
-            action, _ = self._select_action(current_step, obs)
+            action, _ = self._select_action(current_step, obs, eval_env)
 
             idx = np.random.choice(self._dynamics.elite_model_idxes, size=1)
-            traj = self._dynamics.imagine(states=obs, horizon=1, idx=idx, actions=action.unsqueeze(0))
+            traj = self._dynamics.imagine(states=obs_dynamics, horizon=1, idx=idx, actions=action.unsqueeze(0))
 
             pred_next_obs_mean = traj['states'][0][0].mean()
             pred_reward = traj['rewards'][0][0]
 
             obs, reward, cost, terminated, truncated, info = eval_env.step(action)
+
+            obs_dynamics = obs if use_real_input else traj['states'][0][0]
+
             true_next_obs_mean = obs.mean()
 
             obs_pred.append(pred_next_obs_mean.item())

@@ -17,6 +17,7 @@
 import time
 from typing import Any, Dict, Tuple, Union, Optional
 
+from rich.progress import track
 
 import torch
 from torch import nn
@@ -29,10 +30,10 @@ from omnisafe.common.logger import Logger
 
 from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel
 from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
-from omnisafe.common.buffer import VectorOnPolicyBuffer
+from omnisafe.common.buffer import OnPolicyBuffer
 
-
-from omnisafe.algorithms.model_based.planner import CEMPlanner
+from omnisafe.utils import distributed
+from omnisafe.algorithms.model_based.base import PETS
 import numpy as np
 from matplotlib import pylab
 from gymnasium.utils.save_video import save_video
@@ -41,7 +42,7 @@ import os
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
-class MBPPO(BaseAlgo):
+class MBPPO(PETS):
     """The Deep Deterministic Policy Gradient (DDPG) algorithm.
 
     References:
@@ -75,19 +76,21 @@ class MBPPO(BaseAlgo):
             reward_size=1,
             cost_size=1,
             use_cost=False,
-            use_truncated=False,
+            use_terminal=False,
             use_var=False,
             use_reward_critic=False,
             use_cost_critic=False,
             actor_critic=None,
             rew_func=None,
             cost_func=None,
-            truncated_func=None,
+            terminal_func=None,
         )
         self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
         self._use_actor_critic = True
-        self._policy_state_space = self._env.lidar_observation_space if self._env.lidar_observation_space is not None else self._env.observation_space
+        #self._policy_state_space = self._env.lidar_observation_space if self._env.lidar_observation_space is not None else self._env.observation_space
+        self._policy_state_space = self._env.coordinate_observation_space if self._env.coordinate_observation_space is not None else self._env.observation_space
+
         self._actor_critic = ConstraintActorCritic(
             obs_space=self._policy_state_space,
             act_space=self._env.action_space,
@@ -98,6 +101,8 @@ class MBPPO(BaseAlgo):
 
 
     def _init(self) -> None:
+        #self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
+
         self._dynamics_buf = OffPolicyBuffer(
             obs_space=self._dynamics_state_space,
             act_space=self._env.action_space,
@@ -107,10 +112,10 @@ class MBPPO(BaseAlgo):
         )
 
 
-        self._policy_buf = VectorOnPolicyBuffer(
+        self._policy_buf = OnPolicyBuffer(
             obs_space=self._policy_state_space,
             act_space=self._env.action_space,
-            size=self._steps_per_epoch,
+            size=self._cfgs.algo_cfgs.imaging_steps_per_policy_update,
             gamma=self._cfgs.algo_cfgs.gamma,
             lam=self._cfgs.algo_cfgs.lam,
             lam_c=self._cfgs.algo_cfgs.lam_c,
@@ -118,9 +123,9 @@ class MBPPO(BaseAlgo):
             standardized_adv_r=self._cfgs.algo_cfgs.standardized_rew_adv,
             standardized_adv_c=self._cfgs.algo_cfgs.standardized_cost_adv,
             penalty_coefficient=self._cfgs.algo_cfgs.penalty_coef,
-            num_envs=self._cfgs.train_cfgs.vector_env_nums,
             device=self._device,
         )
+
 
         if self._cfgs.evaluation_cfgs.use_eval:
             self._eval_fn = self._evaluation_single_step
@@ -160,26 +165,34 @@ class MBPPO(BaseAlgo):
         self._logger.register_key('Loss/DynamicsTrainMseLoss')
         self._logger.register_key('Loss/DynamicsValMseLoss')
 
-
-        self.logger.register_key('VirtualMetrics/EpRet')
-        self.logger.register_key('VirtualMetrics/EpLen')
-        self.logger.register_key('VirtualMetrics/EpCost')
+        #self._logger.register_key('Metrics/LagrangeMultiplier')
+        self.logger.register_key('DynaMetrics/EpRet')
+        self.logger.register_key('DynaMetrics/EpLen')
+        self.logger.register_key('DynaMetrics/EpCost')
         self.logger.register_key('Loss/DynamicsTrainMseLoss')
         self.logger.register_key('Loss/DynamicsValMseLoss')
-        self.logger.register_key('Loss/Pi')
-        self.logger.register_key('Loss/Value')
-        self.logger.register_key('Loss/DeltaPi')
-        self.logger.register_key('Loss/DeltaValue')
-        self.logger.register_key('Loss/CValue')
-        self.logger.register_key('Loss/DeltaCValue')
-        self.logger.register_key('Penalty')
-        self.logger.register_key('Values/Adv')
-        self.logger.register_key('Values/Adv_C')
-        self.logger.register_key('Megaiter')
-        self.logger.register_key('Entropy')
-        self.logger.register_key('KL')
-        self.logger.register_key('Misc/StopIter')
-        self.logger.register_key('PolicyRatio')
+
+
+        self._logger.register_key('Train/Entropy')
+        self._logger.register_key('Train/KL')
+        self._logger.register_key('Train/StopIter')
+        self._logger.register_key('Train/PolicyRatio')
+        self._logger.register_key('Train/LR')
+        if self._cfgs.model_cfgs.actor_type == 'gaussian_learning':
+            self._logger.register_key('Train/PolicyStd')
+        # log information about actor
+        self._logger.register_key('Loss/Loss_pi', delta=True)
+        self._logger.register_key('Value/Adv')
+
+        # log information about critic
+        self._logger.register_key('Loss/Loss_reward_critic', delta=True)
+        self._logger.register_key('Value/reward')
+
+        if self._cfgs.algo_cfgs.use_cost:
+            # log information about cost critic
+            self._logger.register_key('Loss/Loss_cost_critic', delta=True)
+            self._logger.register_key('Value/cost')
+
 
         self._logger.register_key('Time/Total')
         self._logger.register_key('Time/Rollout')
@@ -191,234 +204,307 @@ class MBPPO(BaseAlgo):
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
-    def learn(self) -> Tuple[Union[int, float], ...]:
-        """This is main function for algorithm update, divided into the following steps:
-
-        - :meth:`rollout`: collect interactive data from environment.
-        - :meth:`update`: perform actor/critic updates.
-        - :meth:`log`: epoch/update information for visualization and terminal log print.
-        """
-        self._logger.log('INFO: Start training')
-        start_time = time.time()
-        current_step = 0
-        for epoch in range(self._epochs):
-            current_step = self._env.roll_out(
-                current_step=current_step,
-                roll_out_step=self._steps_per_epoch,
-                use_actor_critic=False,
-                act_func=self._select_action,
-                store_data_func=self.store_real_data,
-                update_dynamics_func=self.update_dynamics_model,
-                eval_func=self._eval_fn,
-                logger=self._logger,
-                algo_reset_func=None,
-                update_actor_func=None,
-                )
-            # Evaluate episode
-            self._logger.store(
-                **{
-                    'Train/Epoch': epoch,
-                    'TotalEnvSteps': current_step,
-                    'Time/Total': time.time() - start_time,
-                }
-            )
-            self._logger.dump_tabular()
-            # save model to disk
-            if (epoch + 1) % self._cfgs.logger_cfgs.save_model_freq == 0:
-                self._logger.torch_save()
-
-        ep_ret = self._logger.get_stats('Metrics/EpRet')[0]
-        ep_cost = self._logger.get_stats('Metrics/EpCost')[0]
-        ep_len = self._logger.get_stats('Metrics/EpLen')[0]
-        self._logger.close()
-
-        return ep_ret, ep_cost, ep_len
-
-    def select_action(self, time_step, state, env):  # pylint: disable=unused-argument
-        """
-        Select action when interact with real environment.
-
-        Returns:
-                action, action_info
-        """
-        if self._env.env_type == 'gym':
-            state = self._env.generate_lidar(state)
-        act, value_r, value_c, logp =  self._actor_critic.step(state)
-
-        action_info = {'actor_state': state, 'val': value_r, 'cval': value_c, 'logp': logp}
-        return act, action_info
-
-    def algo_reset(self):
-        pass
-
-    def imagine_rollout(self):
-        if initial_states is None:
-            initial_states = random_choice(self.replay_buffer.get('states'), size=self.rollout_batch_size)
-        buffer = self._create_buffer(self.rollout_batch_size * self.horizon)
-        states = initial_states
-        for t in range(self.horizon):
-            with torch.no_grad():
-                actions = policy.act(states, eval=False)
-                next_states, rewards = self.model_ensemble.sample(states, actions)
-            dones = self.check_done(next_states)
-            violations = self.check_violation(next_states)
-            buffer.extend(states=states, actions=actions, next_states=next_states,
-                          rewards=rewards, dones=dones, violations=violations)
-            continues = ~(dones | violations)
-            if continues.sum() == 0:
-                break
-            states = next_states[continues]
-
-        self.virt_buffer.extend(**buffer.get(as_dict=True))
-        return buffer
-
-    def update_actor_critic(self, time_step):  # pylint: disable=unused-argument
+    def _update_policy(self, time_step):  # pylint: disable=unused-argument
         """update actor critic"""
         megaiter = 0
-        last_valid_rets = np.zeros(self.cfgs.dynamics_cfgs.elite_size)
+        last_valid_rets = np.zeros(self._cfgs.dynamics_cfgs.elite_size)
         while True:
             self.imagine_rollout(megaiter)
             # validation
             if megaiter > 0:
-                old_actor = self.get_param_values(self.actor_critic.actor)
-                old_reward_critic = self.get_param_values(self.actor_critic.reward_critic)
-                old_cost_critic = self.get_param_values(self.actor_critic.cost_critic)
-                data = self.buf.get()
-                ep_costs = self.logger.get_stats('DynaMetrics/EpCost')[0]
-                self.update_lagrange_multiplier(ep_costs)
-                self.update_policy_net(data=data)
-                self.update_value_net(data=data)
+                old_actor = self.get_param_values(self._actor_critic.actor)
+                old_reward_critic = self.get_param_values(self._actor_critic.reward_critic)
+                old_cost_critic = self.get_param_values(self._actor_critic.cost_critic)
+                # data = self._policy_buf.get()
+                # ep_costs = self.logger.get_stats('DynaMetrics/EpCost')[0]
+                # self.update_lagrange_multiplier(ep_costs)
+                # self.update_policy_net(data=data)
+                # self.update_value_net(data=data)
+                self._update()
                 result, valid_rets = self.validation(last_valid_rets)
                 if result is True:
                     # backtrack
-                    self.set_param_values(old_actor, self.actor_critic.actor)
-                    self.set_param_values(old_reward_critic, self.actor_critic.reward_critic)
-                    self.set_param_values(old_cost_critic, self.actor_critic.cost_critic)
+                    self.set_param_values(old_actor, self._actor_critic.actor)
+                    self.set_param_values(old_reward_critic, self._actor_critic.reward_critic)
+                    self.set_param_values(old_cost_critic, self._actor_critic.cost_critic)
                     megaiter += 1
                     break
                 megaiter += 1
                 last_valid_rets = valid_rets
             else:
                 megaiter += 1
-                data = self.buf.get()
-                ep_costs = self.logger.get_stats('DynaMetrics/EpCost')[0]
-                self.update_lagrange_multiplier(ep_costs)
-                self.update_policy_net(data=data)
-                self.update_value_net(data=data)
-
+                # data = self._policy_buf.get()
+                # ep_costs = self.logger.get_stats('DynaMetrics/EpCost')[0]
+                # self.update_lagrange_multiplier(ep_costs)
+                # self.update_policy_net(data=data)
+                # self.update_value_net(data=data)
+                self._update()
         self.logger.store(Megaiter=megaiter)
 
-    def compute_loss_v(self, data):
-        """compute the loss of value function"""
-        obs, ret, cret = data['obs'], data['target_value_r'], data['target_value_c']
-        return ((self.actor_critic.reward_critic(obs) - ret) ** 2).mean(), (
-            (self.actor_critic.cost_critic(obs) - cret) ** 2
-        ).mean()
-    def compute_loss_pi(self, data):
-        """compute the loss of policy"""
-        dist, _log_p = self.actor_critic.actor(data['obs'], data['act'])
-        ratio = torch.exp(_log_p - data['logp'])
-        ratio_clip = torch.clamp(ratio, 1 - self.clip, 1 + self.clip)
-        loss_pi = -(torch.min(ratio * data['adv_r'], ratio_clip * data['adv_r'])).mean()
 
-        # ensure that Lagrange multiplier is positive
-        penalty = self.lambda_range_projection(self.lagrangian_multiplier).item()
-        loss_pi += penalty * ((ratio * data['adv_c']).mean())
-        loss_pi /= 1 + penalty
+    def _update(self) -> None:
+        r"""Update actor, critic, following next steps:
 
-        # Useful extra info
-        approx_kl = (data['logp'] - _log_p).mean().item()
-        ent = dist.entropy().mean().item()
-        clipped = ratio.gt(1 + self.clip) | ratio.lt(1 - self.clip)
-        clipfrac = torch.as_tensor(clipped, device=self.device, dtype=torch.float32).mean().item()
-        pi_info = {'kl': approx_kl, 'ent': ent, 'cf': clipfrac}
-        return loss_pi, pi_info
+        -  Get the ``data`` from buffer
 
-    def update_dynamics_model(self, current_step):
-        """Update dynamics."""
-        state = self._dynamics_buf.data['obs'][: self._dynamics_buf.size, :]
-        action = self._dynamics_buf.data['act'][: self._dynamics_buf.size, :]
-        reward = self._dynamics_buf.data['reward'][: self._dynamics_buf.size]
-        cost = self._dynamics_buf.data['cost'][: self._dynamics_buf.size]
-        next_state = self._dynamics_buf.data['next_obs'][: self._dynamics_buf.size, :]
-        delta_state = next_state - state
-        inputs = torch.cat((state, action), -1)
-        inputs = torch.reshape(inputs, (inputs.shape[0], -1))
+        .. hint::
 
-        labels = torch.cat(
-            (
-                torch.reshape(reward, (reward.shape[0], -1)),
-                torch.reshape(delta_state,(delta_state.shape[0], -1))
-            ),
-            -1
+            .. list-table::
+
+                *   -   obs
+                    -   ``observaion`` stored in buffer.
+                *   -   act
+                    -   ``action`` stored in buffer.
+                *   -   target_value_r
+                    -   ``target value`` stored in buffer.
+                *   -   target_value_c
+                    -   ``target cost`` stored in buffer.
+                *   -   logp
+                    -   ``log probability`` stored in buffer.
+                *   -   adv
+                    -   ``estimated advantage`` (e.g. **GAE**) stored in buffer.
+                *   -   cost_adv
+                    -   ``estimated cost advantage`` (e.g. **GAE**) stored in buffer.
+
+        -  Update value net by :meth:`_update_reward_critic()`.
+        -  Update cost net by :meth:`_update_cost_critic()`.
+        -  Update policy net by :meth:`_update_actor()`.
+
+        The basic process of each update is as follows:
+
+        #. Get the data from buffer.
+        #. Shuffle the data and split it into mini-batch data.
+        #. Get the loss of network.
+        #. Update the network by loss.
+        #. Repeat steps 2, 3 until the number of mini-batch data is used up.
+        #. Repeat steps 2, 3, 4 until the KL divergence violates the limit.
+
+        Args:
+            self (object): object of the class.
+        """
+        # # note that logger already uses MPI statistics across all processes..
+        # Jc = self._logger.get_stats('Metrics/EpCost')[0]
+        # assert not np.isnan(Jc), 'cost for updating lagrange multiplier is nan'
+        # # first update Lagrange multiplier parameter
+        # self._lagrange.update_lagrange_multiplier(Jc)
+
+        data = self._policy_buf.get()
+        obs, act, logp, target_value_r, target_value_c, adv_r, adv_c = (
+            data['obs'],
+            data['act'],
+            data['logp'],
+            data['target_value_r'],
+            data['target_value_c'],
+            data['adv_r'],
+            data['adv_c'],
         )
-        inputs = inputs.cpu().detach().numpy()
-        labels = labels.cpu().detach().numpy()
-        train_mse_losses, val_mse_losses = self._dynamics.train(
-            inputs, labels, holdout_ratio=0.2
-        )
-        # ep_costs = self._logger.get_stats('Metrics/EpCost')[0]
-        # #update Lagrange multiplier parameter
-        # self.update_lagrange_multiplier(ep_costs)
+        original_obs = obs
+        old_distribution = self._actor_critic.actor(obs)
+        for i in track(range(self._cfgs.algo_cfgs.update_iters), description='Updating...'):
+            self._update_reward_critic(obs, target_value_r)
+            if self._cfgs.algo_cfgs.use_cost:
+                self._update_cost_critic(obs, target_value_c)
+            self._update_actor(obs, act, logp, adv_r, adv_c)
+
+            new_distribution = self._actor_critic.actor(original_obs)
+
+            kl = (
+                torch.distributions.kl.kl_divergence(old_distribution, new_distribution)
+                .sum(-1, keepdim=True)
+                .mean()
+                .item()
+            )
+            kl = distributed.dist_avg(kl)
+
+            if self._cfgs.algo_cfgs.kl_early_stop and kl > self._cfgs.algo_cfgs.target_kl:
+                self._logger.log(f'Early stopping at iter {i + 1} due to reaching max kl')
+                break
+
         self._logger.store(
             **{
-                'Loss/DynamicsTrainMseLoss': train_mse_losses.item(),
-                'Loss/DynamicsValMseLoss': val_mse_losses.item(),
-            }
+                'Train/StopIter': i + 1,  # pylint: disable=undefined-loop-variable
+                'Value/Adv': adv_r.mean().item(),
+                'Train/KL': kl,
+            },
         )
 
-    def update_policy_net(self, data):
-        """update policy"""
-        # Get prob. distribution before updates: used to measure KL distance
-        pi_l_old, pi_info_old = self.compute_loss_pi(data)
-        self.loss_pi_before = pi_l_old.item()
-        # Train policy with multiple steps of gradient descent
-        for i in range(self.cfgs.actor_iters):
-            loss_pi, pi_info = self.compute_loss_pi(data)
-            kl_div = pi_info['kl']
-            if self.cfgs.kl_early_stopping:
-                if kl_div > self.cfgs.target_kl:
-                    self.logger.log(f'Reached ES criterion after {i+1} steps.')
-                    break
-            self.actor_optimizer.zero_grad()
-            loss_pi.backward()
-            self.actor_optimizer.step()
-        self.logger.store(
+
+    def _update_reward_critic(self, obs: torch.Tensor, target_value_r: torch.Tensor) -> None:
+        r"""Update value network under a double for loop.
+
+        The loss function is ``MSE loss``, which is defined in ``torch.nn.MSELoss``.
+        Specifically, the loss function is defined as:
+
+        .. math::
+            L = \frac{1}{N} \sum_{i=1}^N (\hat{V} - V)^2
+
+        where :math:`\hat{V}` is the predicted cost and :math:`V` is the target cost.
+
+        #. Compute the loss function.
+        #. Add the ``critic norm`` to the loss function if ``use_critic_norm`` is ``True``.
+        #. Clip the gradient if ``use_max_grad_norm`` is ``True``.
+        #. Update the network by loss function.
+
+        Args:
+            obs (torch.Tensor): ``observation`` stored in buffer.
+            target_value_r (torch.Tensor): ``target_value_r`` stored in buffer.
+        """
+        self._actor_critic.reward_critic_optimizer.zero_grad()
+        loss = nn.functional.mse_loss(self._actor_critic.reward_critic(obs)[0], target_value_r)
+
+        if self._cfgs.algo_cfgs.use_critic_norm:
+            for param in self._actor_critic.reward_critic.parameters():
+                loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coef
+
+        loss.backward()
+
+        if self._cfgs.algo_cfgs.use_max_grad_norm:
+            torch.nn.utils.clip_grad_norm_(
+                self._actor_critic.reward_critic.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
+            )
+        distributed.avg_grads(self._actor_critic.reward_critic)
+        self._actor_critic.reward_critic_optimizer.step()
+
+        self._logger.store(**{'Loss/Loss_reward_critic': loss.mean().item()})
+
+    def _update_cost_critic(self, obs: torch.Tensor, target_value_c: torch.Tensor) -> None:
+        r"""Update value network under a double for loop.
+
+        The loss function is ``MSE loss``, which is defined in ``torch.nn.MSELoss``.
+        Specifically, the loss function is defined as:
+
+        .. math::
+            L = \frac{1}{N} \sum_{i=1}^N (\hat{V} - V)^2
+
+        where :math:`\hat{V}` is the predicted cost and :math:`V` is the target cost.
+
+        #. Compute the loss function.
+        #. Add the ``critic norm`` to the loss function if ``use_critic_norm`` is ``True``.
+        #. Clip the gradient if ``use_max_grad_norm`` is ``True``.
+        #. Update the network by loss function.
+
+        Args:
+            obs (torch.Tensor): ``observation`` stored in buffer.
+            target_value_c (torch.Tensor): ``target_value_c`` stored in buffer.
+        """
+        self._actor_critic.cost_critic_optimizer.zero_grad()
+        loss = nn.functional.mse_loss(self._actor_critic.cost_critic(obs)[0], target_value_c)
+
+        if self._cfgs.algo_cfgs.use_critic_norm:
+            for param in self._actor_critic.cost_critic.parameters():
+                loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coef
+
+        loss.backward()
+
+        if self._cfgs.algo_cfgs.use_max_grad_norm:
+            torch.nn.utils.clip_grad_norm_(
+                self._actor_critic.cost_critic.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
+            )
+        distributed.avg_grads(self._actor_critic.cost_critic)
+        self._actor_critic.cost_critic_optimizer.step()
+
+        self._logger.store(**{'Loss/Loss_cost_critic': loss.mean().item()})
+
+    def _update_actor(  # pylint: disable=too-many-arguments
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        logp: torch.Tensor,
+        adv_r: torch.Tensor,
+        adv_c: torch.Tensor,
+    ) -> None:
+        r"""Update policy network under a double for loop.
+
+            #. Compute the loss function.
+            #. Clip the gradient if ``use_max_grad_norm`` is ``True``.
+            #. Update the network by loss function.
+
+            .. warning::
+
+                For some ``KL divergence`` based algorithms (e.g. TRPO, CPO, etc.),
+                the ``KL divergence`` between the old policy and the new policy is calculated.
+                And the ``KL divergence`` is used to determine whether the update is successful.
+                If the ``KL divergence`` is too large, the update will be terminated.
+
+        Args:
+            obs (torch.Tensor): ``observation`` stored in buffer.
+            act (torch.Tensor): ``action`` stored in buffer.
+            log_p (torch.Tensor): ``log_p`` stored in buffer.
+            adv_r (torch.Tensor): ``advantage`` stored in buffer.
+            adv_c (torch.Tensor): ``cost_advantage`` stored in buffer.
+        """
+        adv = self._compute_adv_surrogate(adv_r, adv_c)
+        loss, info = self._loss_pi(obs, act, logp, adv)
+        self._actor_critic.actor_optimizer.zero_grad()
+        loss.backward()
+        if self._cfgs.algo_cfgs.use_max_grad_norm:
+            torch.nn.utils.clip_grad_norm_(
+                self._actor_critic.actor.parameters(),
+                self._cfgs.algo_cfgs.max_grad_norm,
+            )
+        distributed.avg_grads(self._actor_critic.actor)
+        self._actor_critic.actor_optimizer.step()
+        self._logger.store(
             **{
-                'Loss/Pi': self.loss_pi_before,
-                'Loss/DeltaPi': loss_pi.item() - self.loss_pi_before,
-                'Misc/StopIter': i + 1,
-                'Values/Adv': data['adv_r'].cpu().numpy(),
-                'Values/Adv_C': data['adv_c'].cpu().numpy(),
-                'Entropy': pi_info_old['ent'],
-                'KL': pi_info['kl'],
-                'PolicyRatio': pi_info['cf'],
-            }
+                'Train/Entropy': info['entropy'],
+                'Train/PolicyRatio': info['ratio'],
+                'Train/PolicyStd': info['std'],
+                'Loss/Loss_pi': loss.mean().item(),
+            },
         )
 
-    def update_value_net(self, data):
-        """Value function learning"""
-        v_l_old, cv_l_old = self.compute_loss_v(data)
-        self.loss_v_before, self.loss_c_before = v_l_old.item(), cv_l_old.item()
+    def _compute_adv_surrogate(  # pylint: disable=unused-argument
+        self,
+        adv_r: torch.Tensor,
+        adv_c: torch.Tensor,
+    ) -> torch.Tensor:
+        """Compute surrogate loss.
 
-        for _ in range(self.cfgs.critic_iters):
-            loss_v, loss_vc = self.compute_loss_v(data)
-            self.reward_critic_optimizer.zero_grad()
-            loss_v.backward()
-            self.reward_critic_optimizer.step()
+        Policy Gradient only use reward advantage.
 
-            self.cost_critic_optimizer.zero_grad()
-            loss_vc.backward()
-            self.cost_critic_optimizer.step()
+        Args:
+            adv_r (torch.Tensor): reward advantage
+            adv_c (torch.Tensor): cost advantage
+        """
+        return adv_r
 
-        self.logger.store(
-            **{
-                'Loss/DeltaValue': loss_v.item() - self.loss_v_before,
-                'Loss/Value': self.loss_v_before,
-                'Loss/DeltaCValue': loss_vc.item() - self.loss_c_before,
-                'Loss/CValue': self.loss_c_before,
-            }
-        )
+    def _loss_pi(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        logp: torch.Tensor,
+        adv: torch.Tensor,
+    ) -> tuple[torch.Tensor, dict[str, float]]:
+        r"""Computing pi/actor loss.
+
+        In Policy Gradient, the loss is defined as:
+
+        .. math::
+
+            L = -\mathbb{E}_{s_t \sim \rho_\theta} [
+                \sum_{t=0}^T ( \frac{\pi^{'}_\theta(a_t|s_t)}{\pi_\theta(a_t|s_t)} )
+                 A^{R}_{\pi_{\theta}}(s_t, a_t)
+            ]
+
+        where :math:`\pi_\theta` is the policy network, :math:`\pi^{'}_\theta`
+        is the new policy network, :math:`A^{R}_{\pi_{\theta}}(s_t, a_t)` is the advantage.
+
+        Args:
+            obs (torch.Tensor): ``observation`` stored in buffer.
+            act (torch.Tensor): ``action`` stored in buffer.
+            logp (torch.Tensor): ``log probability`` of action stored in buffer.
+            adv (torch.Tensor): ``advantage`` stored in buffer.
+        """
+        distribution = self._actor_critic.actor(obs)
+        logp_ = self._actor_critic.actor.log_prob(act)
+        std = self._actor_critic.actor.std
+        ratio = torch.exp(logp_ - logp)
+        loss = -(ratio * adv).mean()
+        entropy = distribution.entropy().mean().item()
+        info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
+        return loss, info
 
     def get_param_values(self, model):
         """get the dynamics parameters"""
@@ -441,104 +527,124 @@ class MBPPO(BaseAlgo):
                 param.data = torch.from_numpy(vals).float().to(self.device)
                 current_idx += param_sizes[idx]
 
+    def virtual_step(self, state, action, idx=None):
+        """use virtual environment to predict next state, reward, cost"""
+        if hasattr(self._env, 'task') and self._env.task == 'Goal':
+            traj = self._dynamics.imagine(states=state, horizon=1, idx=idx, actions=action.unsqueeze(0))
+            next_state = traj['states'][0][0]
+            reward = traj['rewards'][0][0][0]
+            goal_flag = self._env_auxiliary.get_goal_flag_from_obs_tensor(next_state)
+            goal_flag = goal_flag.squeeze(0).cpu().item()
+            #cost = traj['costs'][0][0]
+            cost = torch.zeros_like(reward, device=self._device)
+            info = {'goal_flag': goal_flag}
+        else:
+            NotImplementedError
+
+        return next_state, reward, cost, info
+
     def imagine_rollout(self, megaiter):  # pylint: disable=too-many-locals
         """collect data and store to experience buffer."""
-        state = self.env_auxiliary.reset()
-        dep_ret, dep_cost, dep_len = 0, 0, 0
-        mix_real = self.cfgs.mixed_real_time_steps if megaiter == 0 else 0
+        state, _ = self._env_auxiliary.reset()
+        dyna_ret, dyna_cost, dyna_len = torch.zeros(1), torch.zeros(1), torch.zeros(1)
 
-        for time_step in range(self.cfgs.imaging_steps_per_policy_update - mix_real):
-            raw_action, action, action_info = self.select_action(time_step, state, self.env_auxiliary)
+        mix_real = self._cfgs.algo_cfgs.mixed_real_time_steps if megaiter == 0 else 0
+
+        for time_step in range(self._cfgs.algo_cfgs.imaging_steps_per_policy_update - mix_real):
+            action, action_info = self._select_action(time_step, state, self._env_auxiliary)
             next_state, reward, cost, info = self.virtual_step(state, action)
 
-            dep_ret += reward
-            dep_cost += (self.cost_gamma**dep_len) * cost
-            dep_len += 1
+            dyna_ret += reward.cpu()
+            dyna_cost += (self._cfgs.algo_cfgs.cost_gamma**dyna_len) * cost.cpu()
+            dyna_len += 1
 
-            obs, reward, cost = expand_dims(
-                action_info['state_vec'], reward, cost
-            )
-            self.buf.store(
-                obs=torch.tensor(obs,device=self.cfgs.device),
-                act=raw_action,
-                reward=torch.tensor(reward,device=self.cfgs.device),
-                value_r=action_info['val'].unsqueeze(0),
+            # obs, reward, cost = expand_dims(
+            #     action_info['state_vec'], reward, cost
+            # )
+
+            self._policy_buf.store(
+                obs=state,
+                act=action,
+                reward=reward,
+                cost=cost,
+                value_r=action_info['val'],
+                value_c=action_info['cval'],
                 logp=action_info['logp'],
-                cost=torch.tensor(cost,device=self.cfgs.device),
-                value_c=action_info['cval'].unsqueeze(0),
             )
             state = next_state
 
-            timeout = dep_len == self.cfgs.horizon
+            timeout = dyna_len.item() == self._cfgs.algo_cfgs.train_horizon
             truncated = timeout
-            epoch_ended = time_step == self.cfgs.imaging_steps_per_policy_update - 1
-            if truncated or epoch_ended or info['goal_flag']:
-                if timeout or epoch_ended or info['goal_flag']:
-                    state_tensor = torch.as_tensor(
-                        action_info['state_vec'], device=self.device, dtype=torch.float32
-                    )
-                    _, _, terminal_value, terminal_cost_value, _ = self.actor_critic.step(state_tensor)
-                    del state_tensor
-                    terminal_value, terminal_cost_value = torch.unsqueeze(
-                        terminal_value, 0
-                    ), torch.unsqueeze(terminal_cost_value, 0)
+            epoch_ended = time_step == self._cfgs.algo_cfgs.imaging_steps_per_policy_update - 1
+            if truncated or epoch_ended or ('goal_flag' in info.keys() and info['goal_flag']):
+                if timeout or epoch_ended or ('goal_flag' in info.keys() and info['goal_flag']):
+                    # state_tensor = torch.as_tensor(
+                    #     action_info['state_vec'], device=self.device, dtype=torch.float32
+                    # )
+                    _, terminal_value, terminal_cost_value, _ = self._actor_critic.step(state)
+                    # terminal_value, terminal_cost_value = torch.unsqueeze(
+                    #     terminal_value, 0
+                    # ), torch.unsqueeze(terminal_cost_value, 0)
                 else:
                     # this means episode is terminated,
                     # and this will be triggered only in robots fall down case
                     terminal_value, terminal_cost_value = torch.zeros(
-                    1, dtype=torch.float32, device=self.cfgs.device
-                ), torch.zeros(1, dtype=torch.float32, device=self.cfgs.device)
+                    1, dtype=torch.float32, device=self._device
+                ), torch.zeros(1, dtype=torch.float32, device=self._device)
 
-                self.buf.finish_path(terminal_value, terminal_cost_value)
+                self._policy_buf.finish_path(terminal_value, terminal_cost_value)
 
                 if timeout:
                     # only save EpRet / EpLen if trajectory finished
                     self.logger.store(
                         **{
-                            'DynaMetrics/EpRet': dep_ret,
-                            'DynaMetrics/EpLen': dep_len,
-                            'DynaMetrics/EpCost': dep_cost,
+                            'DynaMetrics/EpRet': dyna_ret.item(),
+                            'DynaMetrics/EpCost': dyna_cost.item(),
+                            'DynaMetrics/EpLen': dyna_len.item(),
                         }
                     )
-                state = self.env_auxiliary.reset()
-                dep_ret, dep_len, dep_cost = 0, 0, 0
+                state, _ = self._env_auxiliary.reset()
+                dyna_ret, dyna_cost, dyna_len = torch.zeros(1), torch.zeros(1), torch.zeros(1)
 
     def validation(self, last_valid_rets):
         """policy validation"""
-        valid_rets = np.zeros(self.cfgs.validation_num)
+        valid_rets = np.zeros(self._cfgs.algo_cfgs.validation_num)
         winner = 0
         for valid_id in range(len(valid_rets)):  # pylint:disable=consider-using-enumerate
-            state = self.env_auxiliary.reset()
-            for step in range(self.cfgs.validation_horizon):
-                raw_action, action, _ = self.select_action(step, state, self.env_auxiliary)
+            state, _ = self._env_auxiliary.reset()
+            for step in range(self._cfgs.algo_cfgs.validation_horizon):
+                action, _ = self._select_action(step, state, self._env_auxiliary)
                 next_state, reward, _, info = self.virtual_step(state, action, idx=valid_id)
-                valid_rets[valid_id] += reward
+                valid_rets[valid_id] += reward.cpu().item()
                 state = next_state
-                if info['goal_flag']:
-                    state = self.env_auxiliary.reset()
+                if 'goal_flag' in info.keys() and info['goal_flag']:
+                    state, _  = self._env_auxiliary.reset()
             if valid_rets[valid_id] > last_valid_rets[valid_id]:
                 winner += 1
-        performance_ratio = winner / self.cfgs.validation_num
-        threshold = self.cfgs.validation_threshold_num / self.cfgs.validation_num
+        performance_ratio = winner / self._cfgs.algo_cfgs.validation_num
+        threshold = self._cfgs.algo_cfgs.validation_threshold_num / self._cfgs.algo_cfgs.validation_num
         result = performance_ratio < threshold
         return result, valid_rets
 
     def _select_action(
             self,
             current_step: int,
-            state: torch.Tensor) -> Tuple[np.ndarray, Dict]:
+            state: torch.Tensor,
+            env: ModelBasedAdapter,
+            ) -> Tuple[np.ndarray, Dict]:
         """action selection"""
-        if current_step < self._cfgs.algo_cfgs.start_learning_steps:
-            action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
-            #action = torch.rand(size=1, *self._env.action_space.shape)
-        else:
-            action = self._planner.output_action(state)
-            #action = action.cpu().detach().numpy()
+
+        # if hasattr(self._env, 'task') and self._env.task == 'Goal':
+        #     state = env.get_lidar_from_coordinate(state)
+        action, value_r, value_c, logp =  self._actor_critic.step(state)
+
+        action_info = {'actor_state': state, 'val': value_r, 'cval': value_c, 'logp': logp}
         assert action.shape == torch.Size([state.shape[0], self._env.action_space.shape[0]]), "action shape should be [batch_size, action_dim]"
         info = {}
-        return action, info
+        return action, action_info
 
-    def store_real_data(
+    # pylint: disable-next=too-many-arguments
+    def _store_real_data(
         self,
         current_step: int,
         ep_len: int,
@@ -551,8 +657,9 @@ class MBPPO(BaseAlgo):
         next_state: torch.Tensor,
         info: dict,
         action_info: dict,
-    ) -> None:  # pylint: disable=too-many-arguments
-        """Store real data in buffer."""
+    ):
+
+        """store real data"""
         done = terminated or truncated
         if 'goal_met' not in info.keys():
             goal_met = False
@@ -560,215 +667,51 @@ class MBPPO(BaseAlgo):
             goal_met = info['goal_met']
         if not terminated and not truncated and not goal_met:
             # if goal_met == true, Current goal position is not related to the last goal position, this huge transition will confuse the dynamics model.
-            self._true_buf.store(
+            self._dynamics_buf.store(
                 obs=state, act=action, reward=reward, cost=cost, next_obs=next_state, done=done
-            )
 
-
-    # pylint: disable-next=too-many-arguments
-    def store_real_data(
-        self,
-        time_step,
-        ep_len,
-        state,
-        action_info,
-        action,
-        raw_action,
-        reward,
-        cost,
-        terminated,
-        truncated,
-        next_state,
-        info,
-    ):
-        current_step: int,
-        ep_len: int,
-        state: torch.Tensor,
-        action: torch.Tensor,
-        reward: torch.Tensor,
-        cost: torch.Tensor,
-        terminated: torch.Tensor,
-        truncated: torch.Tensor,
-        next_state: torch.Tensor,
-        info: dict,
-        action_info: dict,
-
-        """store real data"""
-        if not terminated and not truncated and not info['goal_met']:
-            self.off_replay_buffer.store(
-                obs=torch.tensor(state, device=self.device),
-                act=torch.tensor(action, device=self.device),
-                reward=torch.tensor(reward, device=self.device),
-                cost=torch.tensor(cost, device=self.device),
-                next_obs=torch.tensor(next_state, device=self.device),
-                done=torch.tensor(truncated, device=self.device),
             )
         if (
-            current_step % self.cfgs.update_policy_freq <= self.cfgs.mixed_real_time_steps
-            and self.buf.buffers[0].ptr < self.cfgs.mixed_real_time_steps
+            current_step % self._cfgs.algo_cfgs.update_policy_cycle <= self._cfgs.algo_cfgs.mixed_real_time_steps
+            and self._policy_buf.ptr < self._cfgs.algo_cfgs.mixed_real_time_steps
         ):
-            obs, reward, cost = expand_dims(
-                action_info['state_vec'], reward, cost
-            )
-            #print(torch.tensor(obs,device=self.cfgs.device),raw_action,torch.tensor(reward,device=self.cfgs.device),action_info['val'].unsqueeze(0),action_info['logp'],torch.tensor(cost,device=self.cfgs.device),action_info['cval'].unsqueeze(0))
-            self.buf.store(
-                obs=torch.tensor(obs,device=self.cfgs.device),
-                act=raw_action,
-                reward=torch.tensor(reward,device=self.cfgs.device),
-                value_r=action_info['val'].unsqueeze(0),
+            # obs, reward, cost = expand_dims(
+            #     action_info['state_vec'], reward, cost
+            # )
+            #print(torch.tensor(obs,device=self._cfgs.algo_cfgs.device),raw_action,torch.tensor(reward,device=self._cfgs.algo_cfgs.device),action_info['val'].unsqueeze(0),action_info['logp'],torch.tensor(cost,device=self._cfgs.algo_cfgs.device),action_info['cval'].unsqueeze(0))
+            self._policy_buf.store(
+                obs=state,
+                act=action,
+                reward=reward,
+                value_r=action_info['val'],
                 logp=action_info['logp'],
-                cost=torch.tensor(cost,device=self.cfgs.device),
-                value_c=action_info['cval'].unsqueeze(0),
+                cost=cost,
+                value_c=action_info['cval'],
             )
             if terminated:
                 # this means episode is terminated,
                 # which will be triggered only in robots fall down case
                 terminal_value, terminal_cost_value = torch.zeros(
-                1, dtype=torch.float32, device=self.cfgs.device
-            ), torch.zeros(1, dtype=torch.float32, device=self.cfgs.device)
+                1, dtype=torch.float32, device=self._device
+            ), torch.zeros(1, dtype=torch.float32, device=self._device)
 
-                self.buf.finish_path(terminal_value, terminal_cost_value)
+                self._policy_buf.finish_path(terminal_value, terminal_cost_value)
 
             # reached max imaging horizon, mixed real timestep, real max timestep , or episode truncated.
             elif (
-                current_step % self.cfgs.horizon < self.cfgs.action_repeat
-                or self.buf.buffers[0].ptr == self.cfgs.mixed_real_time_steps
-                or current_step >= self.cfgs.max_real_time_steps
+                current_step % self._cfgs.algo_cfgs.train_horizon < self._cfgs.algo_cfgs.action_repeat
+                or self._policy_buf.ptr == self._cfgs.algo_cfgs.mixed_real_time_steps
+                or current_step >= self._cfgs.train_cfgs.total_steps
                 or truncated
             ):
-                state_tensor = torch.as_tensor(
-                    action_info['state_vec'], device=self.device, dtype=torch.float32
-                )
-                _, _, terminal_value, terminal_cost_value, _ = self.actor_critic.step(state_tensor)
-                del state_tensor
-                terminal_value, terminal_cost_value = torch.unsqueeze(
-                    terminal_value, 0
-                ), torch.unsqueeze(terminal_cost_value, 0)
-                self.buf.finish_path(terminal_value, terminal_cost_value)
+                # state_tensor = torch.as_tensor(
+                #     action_info['state_vec'], device=self.device, dtype=torch.float32
+                # )
+                _, terminal_value, terminal_cost_value, _ = self._actor_critic.step(state)
+                # terminal_value, terminal_cost_value = torch.unsqueeze(
+                #     terminal_value, 0
+                # ), torch.unsqueeze(terminal_cost_value, 0)
+                self._policy_buf.finish_path(terminal_value, terminal_cost_value)
 
 
-    def _evaluation_single_step(
-            self,
-            current_step: int,
-    ) -> None:
-
-        env_kwargs = {
-            'render_mode': 'rgb_array',
-            'camera_name': 'track',
-        }
-        eval_env = ModelBasedAdapter(
-                    self._env_id, 1, self._seed, self._cfgs, **env_kwargs
-                )
-        obs,_ = eval_env.reset()
-        terminated, truncated = False, False
-        ep_len, ep_ret, ep_cost = 0, 0, 0
-        frames = []
-        obs_pred, obs_true = [], []
-        reward_pred, reward_true = [], []
-        num_episode = 0
-        while True:
-            if terminated or truncated:
-                print(f'Eval Episode Return: {ep_ret} \t Cost: {ep_cost}')
-                save_replay_path = os.path.join(self._logger.log_dir,'video-pic')
-                self._logger.store(
-                    **{
-                        'EvalMetrics/EpRet': ep_ret.item(),
-                        'EvalMetrics/EpCost': ep_cost.item(),
-                        'EvalMetrics/EpLen': ep_len,
-                    }
-                )
-                save_video(
-                    frames,
-                    save_replay_path,
-                    fps=30,
-                    episode_trigger=lambda x: True,
-                    episode_index=current_step + num_episode,
-                    name_prefix='eval',
-                )
-                self.draw_picture(
-                    timestep=current_step,
-                    num_episode=self._cfgs.evaluation_cfgs.num_episode,
-                    pred_state=obs_pred,
-                    true_state=obs_true,
-                    save_replay_path=save_replay_path,
-                    name='obs_mean'
-                )
-                self.draw_picture(
-                    timestep=current_step,
-                    num_episode=self._cfgs.evaluation_cfgs.num_episode,
-                    pred_state=reward_pred,
-                    true_state=reward_true,
-                    save_replay_path=save_replay_path,
-                    name='reward'
-                )
-                frames = []
-                obs_pred, obs_true = [], []
-
-                reward_pred, reward_true = [], []
-
-                ep_len, ep_ret, ep_cost = 0, 0, 0
-                obs, _ = eval_env.reset()
-                num_episode += 1
-                if num_episode == self._cfgs.evaluation_cfgs.num_episode:
-                    break
-            action, _ = self._select_action(current_step, obs)
-
-            idx = np.random.choice(self._dynamics.elite_model_idxes, size=1)
-            traj = self._dynamics.imagine(states=obs, horizon=1, idx=idx, actions=action.unsqueeze(0))
-
-            pred_next_obs_mean = traj['states'][0][0].mean()
-            pred_reward = traj['rewards'][0][0]
-
-            obs, reward, cost, terminated, truncated, info = eval_env.step(action)
-            true_next_obs_mean = obs.mean()
-
-            obs_pred.append(pred_next_obs_mean.item())
-            obs_true.append(true_next_obs_mean.item())
-
-            reward_pred.append(pred_reward.item())
-            reward_true.append(reward.item())
-
-            ep_ret += reward
-            ep_cost += cost
-            ep_len += info['num_step']
-            frames.append(eval_env.render())
-
-    def draw_picture(
-        self,
-        timestep: int,
-        num_episode: int,
-        pred_state: list,
-        true_state: list,
-        save_replay_path: str="./",
-        name: str='reward'
-        ) -> None:
-        """draw a curve of the predicted value and the ground true value"""
-        target1 = list(pred_state)
-        target2 = list(true_state)
-        input1 = np.arange(0, np.array(pred_state).shape[0], 1)
-        input2 = np.arange(0, np.array(pred_state).shape[0], 1)
-
-        pylab.plot(input1, target1, 'r-', label='pred')
-        pylab.plot(input2, target2, 'b-', label='true')
-        pylab.xlabel('Step')
-        pylab.ylabel(name)
-        pylab.xticks(np.arange(0, np.array(pred_state).shape[0], 50))  # Set the axis numbers
-        if name == 'reward':
-            pylab.yticks(np.arange(0, 3, 0.2))
-        else:
-            pylab.yticks(np.arange(0, 1, 0.2))
-        pylab.legend(
-            loc=3, borderaxespad=2.0, bbox_to_anchor=(0.7, 0.7)
-        )  # Sets the position of that box for what each line is
-        pylab.grid()  # draw grid
-        pylab.savefig(
-            os.path.join(save_replay_path,
-            str(name)
-            + str(timestep)
-            + '_'
-            + str(num_episode)
-            + '.png'),
-            dpi=200,
-        )  # save as picture
-        pylab.close()
 

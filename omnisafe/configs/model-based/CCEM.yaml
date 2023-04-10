@@ -53,12 +53,14 @@ defaults:
 
   # algorithm configurations
   algo_cfgs:
+    # Tolerance of constraint violation
+    cost_limit: 1
     action_repeat: 5
     plan_horizon: 7
     num_iterations: 5
-    num_particles: 5
-    num_samples: 512
-    num_elites: 64
+    num_particles: 20
+    num_samples: 500
+    num_elites: 50
     momentum: 0.1
     epsilon: 0.001
     # number of steps to update the dynamics
@@ -82,7 +84,7 @@ defaults:
   # logger configurations
   logger_cfgs:
     # log cycle:
-    log_cycle: 20000
+    log_cycle: 10000
     # use wandb for logging
     use_wandb: False
     # wandb project name
@@ -96,27 +98,32 @@ defaults:
     # save model path
     window_lens: 100
 
+Ant-v4:
+  algo_cfgs:
+    action_repeat: 1
+
+Swimmer-v4:
+  algo_cfgs:
+    action_repeat: 1
+    update_dynamics_cycle: 1000
+    dynamics_batch_size: 256
+    plan_horizon: 30
+    num_particles: 20
+
+HalfCheetah-v4:
+  algo_cfgs:
+    action_repeat: 1
+    update_dynamics_cycle: 1000
+    dynamics_batch_size: 256
+    plan_horizon: 30
+    num_particles: 20
+
 SafetyAntVelocity-v4:
+  # algorithm configurations
   algo_cfgs:
     action_repeat: 1
-    plan_horizon: 25
-SafetyHopperVelocity-v4:
-  algo_cfgs:
-    action_repeat: 1
-    plan_horizon: 15
-SafetyHumanoidVelocity-v4:
-  algo_cfgs:
-    action_repeat: 1
-    plan_horizon: 15
+
+
 SafetyWalker2dVelocity-v4:
+  # algorithm configurations
   algo_cfgs:
-    action_repeat: 1
-    plan_horizon: 15
-SafetyHalfCheetahVelocity-v4:
-  algo_cfgs:
-    action_repeat: 1
-    plan_horizon: 15
-SafetySwimmerVelocity-v4:
-  algo_cfgs:
-    action_repeat: 1
-    plan_horizon: 15

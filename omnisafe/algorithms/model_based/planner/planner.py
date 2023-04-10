@@ -19,181 +19,7 @@ import scipy.stats as stats
 import torch
 
 
-class CEMPlanner:
-    def __init__(self,
-                 dynamics,
-                 num_models,
-                 horizon,
-                 num_iterations,
-                 num_particles,
-                 num_samples,
-                 num_elites,
-                 momentum,
-                 gamma,
-                 state_shape,
-                 action_shape,
-                 action_max,
-                 action_min,
-                 ) -> None:
-        assert (num_samples * num_particles) % num_models == 0, "num_samples * num_elites should be divisible by num_models"
-        assert num_particles % num_models == 0, "num_particles should be divisible by num_models"
-        self._dynamics = dynamics
-        self._num_models = num_models
-        self._horizon = horizon
-        self._num_iterations = num_iterations
-        self._num_particles = num_particles
-        self._num_samples = num_samples
-        self._num_elites = num_elites
-        self._momentum = momentum
-        self._state_shape = state_shape
-        self._action_shape = action_shape
-        self._action_max = action_max
-        self._action_min = action_min
-        self._gamma = gamma
-        self._action_sequence_mean = torch.zeros(self._horizon, *self._action_shape)
-        self._action_sequence_std = 2 * torch.ones(self._horizon, *self._action_shape)
-
-    def _generate_action_from_policy(self,state):
-        actions = torch.clamp(self._action_sequence_mean + self._action_sequence_std  * \
-            torch.randn(self._horizon, self._num_samples, *self._action_shape, device=self._action_sequence_std),self._action_min, self._action_max)
-        return actions
-
-    def _state_action_repeat(self, state, action):
-        """
-        Repeat the state for num_repeat * action.shape[0] times and action for num_repeat times
-        """
-        assert action.shape == (self._horizon, self._num_samples, *self._action_shape), "Input action dimension should be equal to (self._num_samples, self._action_shape)"
-        assert state.shape == (1, *self._state_shape) , "state dimension one should be 1"
-        states = state.repeat(int(self._num_particles/self._num_models * self._num_samples), 1)
-        assert states.shape == (self._horizon, int(self._num_particles/self._num_models * self._num_samples), self._num_samples)
-        actions = actions.unsqueeze(1).repeat(int(self._num_particles/self._num_models), 1)
-        assert actions.shape == (self._horizon, int(self._num_particles/self._num_models), self._num_samples, *self._action_shape)
-        actions = actions.reshape(self._horizon, int(self._num_particles/self._num_models * self._num_samples), *self._action_shape)
-        assert actions.shape[1:-1] == states.shape[:-1], "states and actions should have the same shape"
-        return states, actions
-
-
-    def _compute_actions_return(self, rewards, values=None):
-        """
-        Compute the return of the actions
-        """
-        #assert actions.shape == (self._horizon, self._num_samples, self._action_shape), "Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)"
-
-        assert rewards.shape[0:2] == (self._horizon, self._num_ensemble) and rewards.shape[3] == 1
-        # [horizon, num_particles * num_samples, 1]
-
-        returns = returns.reshape(self._horizon, self._num_samples, self._num_particles)
-        mean_particles_returns = returns.mean(dim=2)
-        mean_horizon_returns = mean_particles_returns.mean(dim=0, keepdim=True)
-
-        assert mean_horizon_returns.shape[0] == self._num_samples
-        return mean_horizon_returns
-
-    def _select_elites(self, actions, returns, num_elites):
-
-        assert actions.shape == (self._horizon, self._num_samples, self._action_shape), "Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)"
-        assert returns.shape == (self._num_samples, 1), "Input returns dimension should be equal to (self._num_samples, 1)"
-
-        elite_idxs = torch.topk(returns.squeeze(1), self._num_elites, dim=0).indices
-        elite_returns, elite_actions = returns[elite_idxs], actions[:, elite_idxs]
-
-        info = {}
-        info['elite_idxs'] = elite_idxs
-        info['best_action'] = elite_actions[0,0]
-        return elite_actions, elite_returns, info
-
-    def _update_mean_std(self, elite_actions, elite_values):
-
-        assert elite_actions.shape == (self._horizon, self._num_elites, self._action_shape), "Input elite_actions dimension should be equal to (self._horizon, self._num_elites, self._action_shape)"
-        assert elite_values.shape == (self._num_elites, 1), "Input elite_values dimension should be equal to (self._num_elites, 1)"
-
-        new_mean = elite_actions.mean(dim=1)
-        new_std = elite_actions.std(dim=1)
-
-        return new_mean, new_std
-
-    def output_action(self,state):
-        assert state.shape == (1, self._state_shape), "Input state dimension should be equal to (1, self._state_shape)"
-        for iter in range(self._num_iterations):
-            actions = self._generate_action_from_policy(state)
-            # [horizon, num_sample, action_shape]
-            states_repeat, actions_repeat = self._state_action_repeat(state, actions)
-            # [num_particles * num_samples/num_ensemble, state_shape], [horizon, num_particles * num_samples/num_ensemble, action_shape]
-            traj = self._dynamics.imagine(states_repeat, self._horizon, actions_repeat)
-            # {states, rewards, values}, each value shape is [horizon, num_ensemble, num_particles * num_samples/num_ensemble, 1]
-
-            returns = self._compute_actions_return(traj['rewards'])
-            # [num_sample, 1]
-            elite_actions, elite_values, info = self._select_elites(actions=actions, returns=returns, num_elites=self._num_elites)
-            new_mean, new_std = self._update_mean_std(elite_actions, elite_values)
-            self._action_sequence_mean = self._momentum * self._action_sequence_mean + (1 - self._momentum) * new_mean
-            self._action_sequence_std = self._momentum * self._action_sequence_std + (1 - self._momentum) * new_std
-        return info['best_action']
-
-    def reset_planner(self):
-        self._action_sequence_mean = torch.zeros(self._horizon, *self._action_shape)
-        self._action_sequence_std = 2 * torch.ones(self._horizon, *self._action_shape)
-
-class MPPIPlanner(CEMPlanner):
-    def __init__(self, temperature, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._temperature = temperature
-
-    def _update_mean_std(self, elite_actions, elite_values):
-        assert elite_actions.shape == (self._horizon, self._num_elites, self._action_shape), "Input elite_actions dimension should be equal to (self._horizon, self._num_elites, self._action_shape)"
-        assert elite_values.shape == (self._num_elites, 1), "Input elite_values dimension should be equal to (self._num_elites, 1)"
-
-        max_value = elite_values.max(0)[0]
-        score = torch.exp(self._temperature*(elite_values - max_value))
-        score /= score.sum(0)
-        _mean = torch.sum(score.unsqueeze(0) * elite_actions, dim=1) / (score.sum(0) + 1e-9)
-        _std = torch.sqrt(torch.sum(score.unsqueeze(0) * (elite_actions - _mean.unsqueeze(1)) ** 2, dim=1) / (score.sum(0) + 1e-9))
-        _std = _std.clamp_(0, 2)
-
-        new_mean = elite_actions.mean(dim=1)
-        new_std = elite_actions.std(dim=1)
-
-        return new_mean, new_std
-
-
-class TDMPCPlanner(MPPIPlanner):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.std = 0.0
-
-    def reset_planner(self, current_training_step):
-        self.std = self.std * 0.99
-
-    def _compute_actions_return(self, actions, traj, returns_key='rewards'):
-        """
-        Compute the return of the actions
-        """
-        assert actions.shape == (self._horizon, self._num_samples, self._action_shape), "Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)"
-
-        if traj.keys().__contains__(returns_key):
-            returns = traj[returns_key]
-        elif returns_key == 'rewards':
-            returns = self._env.get_reward['states']
-        else:
-            raise NotImplementedError
-        # [horizon, num_particles * num_samples, 1]
-
-        returns = returns.reshape(self._horizon, self._num_samples, self._num_particles)
-        mean_returns = returns.mean(dim=2, keepdim=True)
-
-        return mean_returns
-
-
-    def _update_mean_std(self, elite_actions, elite_values):
-        new_mean, new_std = super()._update_mean_std(elite_actions, elite_values)
-        _std = _std.clamp_(self.std, 2)
-        return new_mean, new_std
-
-class ARCPlanner(TDMPCPlanner):  
-
-
-
-    # pylint: disable=too-many-instance-attributes
+class ARCPlanner:  # pylint: disable=too-many-instance-attributes
     """The Actor Regularized Control (ARC) Planner.
 
     References:
@@ -469,7 +295,7 @@ class ARCPlanner(TDMPCPlanner):
             # Shape: [ network_size, particles, num_gau_traj + num_actor_traj, H * action_dim]
 
             actions = torch.FloatTensor(actions).to(self.device)
-            # Shape: [ network_size, particles, num_gau_traj + num_actor_traj, H * action_dim]
+            # Shape: [ network_size, particles*num_gau_traj + num_actor_traj, H * action_dim]
             for current_horizon in range(self.horizon):
                 states_h = state_traj[current_horizon, :, :, self.state_start_dim :]
                 # [ network_size, (num_gau_traj + num_actor_traj) * particles, state_dim]
@@ -840,8 +666,7 @@ class CCEPlanner:
     # pylint: disable-next=too-many-locals, too-many-arguments
     def __init__(
         self,
-        algo,
-        cfgs,
+        obs_dim,
         device,
         env,
         models,
@@ -850,21 +675,20 @@ class CCEPlanner:
         particles,
         max_iters,
         alpha,
-        mixture_coefficient,
         minimal_elites,
         epsilon,
         obs_clip,
         lagrangian_multiplier,
         cost_constrained=True,
         penalize_uncertainty=True,
+        env_type='gym',
     ):
-        self.algo = algo
-        self.cfgs = cfgs
-        self.obs_dim, self.action_dim = env.observation_space.shape[0], env.action_space.shape[0]
+        self.obs_dim, self.action_dim = obs_dim, env.action_space.shape[0]
         self.action_max, self.action_min = env.action_space.high, env.action_space.low
-        self.gamma = self.cfgs.gamma
-        self.c_gamma = self.cfgs.cost_gamma
-        self.cost_limit = self.cfgs.lagrange_cfgs.cost_limit
+        self.gamma = 0.99
+        self.c_gamma = 1
+        self.cost_limit = 1
+        self.max_eplen=1000
         self.cost_constrained = cost_constrained
         self.penalize_uncertainty = penalize_uncertainty
         self.device = device
@@ -882,12 +706,11 @@ class CCEPlanner:
         self.ac_buf = np.array([]).reshape(0, self.action_dim)
         self.prev_sol = np.tile((self.action_min + self.action_max) / 2, [self.horizon])
         self.init_var = np.tile(np.square(self.action_max - self.action_min) / 16, [self.horizon])
-        self.state_start_dim = 2 if self.env.env_type == 'mujoco-velocity' else 1
-        self.mixture_coefficient = mixture_coefficient
+        self.state_start_dim = 2 if env_type == 'mujoco-velocity' else 1
         self.lagrangian_multiplier = lagrangian_multiplier
         self.models = models
         self.elites = None
-
+        self.env_type = env_type
     def get_action(self, obs):
         """Get action from previous solution or planner"""
         if self.models is None:
@@ -922,7 +745,7 @@ class CCEPlanner:
             samples = samples.astype(np.float32)
 
             rewards, costs, eps_lens = self.rollout(obs, samples)
-            epoch_ratio = np.ones_like(eps_lens) * self.cfgs.max_ep_len / self.horizon
+            epoch_ratio = np.ones_like(eps_lens) * self.max_eplen / self.horizon
             terminated = eps_lens != self.horizon
             if self.c_gamma == 1:
                 c_gamma_discount = epoch_ratio
@@ -1011,19 +834,19 @@ class CCEPlanner:
         # [network_size, num_gaussian_traj*particles, 1]
         reward = self._flatten_to_matrix(reward)
         # [network_size * num_gaussian_traj * particles, 1]
-
-        if self.env.env_type == 'mujoco-velocity':
-            cost, _ = output['cost']
-            cost = self._flatten_to_matrix(cost)
-        elif self.env.env_type == 'gym':
-            next_obs_cost = next_obs.unsqueeze(0)
-            cost = self.compute_cost_from_state(next_obs_cost)
-            cost = torch.tensor(cost, device=self.device)
-            # [1, network_size, num_gaussian_traj*particles/network_size, 1]
-            cost = cost.squeeze(0)
-            # [network_size, num_gaussian_traj*particles/network_size, 1]
-            cost = self._flatten_to_matrix(cost)
-            # [num_gaussian_traj*particles, 1]
+        if self.cost_constrained:
+            if self.env_type == 'mujoco-velocity':
+                cost, _ = output['cost']
+                cost = self._flatten_to_matrix(cost)
+            elif self.env_type == 'gym':
+                next_obs_cost = next_obs.unsqueeze(0)
+                cost = self.compute_cost_from_state(next_obs_cost)
+                cost = torch.tensor(cost, device=self.device)
+                # [1, network_size, num_gaussian_traj*particles/network_size, 1]
+                cost = cost.squeeze(0)
+                # [network_size, num_gaussian_traj*particles/network_size, 1]
+                cost = self._flatten_to_matrix(cost)
+                # [num_gaussian_traj*particles, 1]
 
         next_obs = self._flatten_to_matrix(next_obs)
 
@@ -1040,9 +863,10 @@ class CCEPlanner:
             # cost_penalty: [num_gaussian_traj*particles, 1]
             penalty = torch.nn.ReLU()(self.lagrangian_multiplier).item()
             cost += penalty * var_penalty
-
-        return next_obs, reward, cost
-
+        if self.cost_constrained:
+            return next_obs, reward, cost
+        else:
+            return next_obs, reward, reward
     def _expand_to_ts_format(self, mat):
         """Expand input to ensemble network input format"""
         dim = mat.shape[-1]
@@ -1091,3 +915,4 @@ class CCEPlanner:
         )
         # [ horizon+1, network_size, (num_gau_traj + num_actor_traj) * particles, 1]
         return all_safety_costs
+

@@ -45,7 +45,7 @@ class SafetyGymnasiumModelBased(CMDP):
     need_auto_reset_wrapper = False
     need_time_limit_wrapper = False
 
-    def __init__(self, env_id: str, num_envs: int = 1, **kwargs) -> None:
+    def __init__(self, env_id: str, num_envs: int = 1, device: torch.device = 'cpu',**kwargs) -> None:
         super().__init__(env_id)
         if num_envs > 1:
             self._env = safety_gymnasium.vector.make(env_id=env_id.replace('-modelbased', ''), num_envs=num_envs, **kwargs)
@@ -55,6 +55,7 @@ class SafetyGymnasiumModelBased(CMDP):
             self._env = safety_gymnasium.make(id=env_id.replace('-modelbased', ''), autoreset=False, **kwargs)
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
+        self._device = torch.device(device)
 
         self._num_envs = num_envs
         self._metadata = self._env.metadata
@@ -84,22 +85,29 @@ class SafetyGymnasiumModelBased(CMDP):
             self._coordinate_obs_size = sum(np.prod(i.shape) for i in list(coordinate_sensor_obs.values()))
             offset = 0
             self.key_to_slice = {}
+            self.key_to_slice_tensor = {}
+
             for k in self._flatten_order:
                 k_size = np.prod(coordinate_sensor_obs[k].shape)
                 self.key_to_slice[k] = slice(offset, offset + k_size)
+                self.key_to_slice_tensor[k] = torch.arange(offset, offset + k_size)
 
                 offset += k_size
             self._base_state_size = sum(np.prod(coordinate_sensor_obs[k].shape) for k in list(self._base_state))
             self.key_to_slice['base_state'] = slice(0, self._base_state_size)
+            self.key_to_slice_tensor['base_state'] = torch.arange(0, self._base_state_size)
+
             self._num_lidar_bin = 16
             self._max_lidar_dist = 3
+            self.hazards_size = 0.2
+            self.goal_size = 0.3
             self.original_observation_space = self.observation_space
             self.coordinate_observation_space = gymnasium.spaces.Box(
                             -np.inf, np.inf, (self._coordinate_obs_size,), dtype=np.float32
                         )# 26
             flat_coordinate_obs = self._get_flat_coordinate(coordinate_sensor_obs)
             self.lidar_observation_space = gymnasium.spaces.Box(
-                            -np.inf, np.inf, (self._get_lidar_from_coordinate(flat_coordinate_obs).shape[0], ), dtype=np.float32
+                            -np.inf, np.inf, (self.get_lidar_from_coordinate(flat_coordinate_obs).shape[0], ), dtype=np.float32
                         )# 26
 
 
@@ -108,8 +116,12 @@ class SafetyGymnasiumModelBased(CMDP):
             self._task = None
             raise NotImplementedError
 
+    @property
+    def task(self):
+        return self._task
+
     def get_cost_from_coordinate(self, state):
-        assert state.shape == (self.coordinate_observation_space.shape[0],)
+        #assert state.shape == (self.coordinate_observation_space.shape[0],)
         robot_pos = state[self.key_to_slice['robot']]
         # ----cost----
         cost = 0
@@ -127,8 +139,91 @@ class SafetyGymnasiumModelBased(CMDP):
             )
         return cost
 
+    def get_observation_cost(self, obs):
+        """Get batch cost from batch observation"""
+        if torch.is_tensor(obs):
+            obs = obs.cpu().detach().numpy()
+        batch_size = obs.shape[0]
+        hazards_key = self.key_to_slice['hazards']
+        hazard_obs = obs[:, hazards_key].reshape(batch_size, -1, 2)
+        hazards_dist = np.sqrt(np.sum(np.square(hazard_obs), axis=2)).reshape(batch_size, -1)
+        cost = ((hazards_dist < self.hazards_size) * (self.hazards_size - hazards_dist)).sum(1) * 10
+
+        return cost
+
+
+    def get_cost_from_obs_tensor(self, obs, is_binary=True):
+        """Get batch cost from batch observation"""
+        assert torch.is_tensor(obs), 'obs must be tensor'
+        hazards_key = self.key_to_slice_tensor['hazards']
+        if len(obs.shape) == 2:
+            batch_size = obs.shape[0]
+            hazard_obs = obs[:, hazards_key].reshape(batch_size, -1, 2)
+        elif len(obs.shape) == 3:
+            batch_size = obs.shape[0] * obs.shape[1]
+            hazard_obs = obs[:, :, hazards_key].reshape(batch_size, -1, 2)
+        hazards_dist = torch.sqrt(torch.sum(torch.square(hazard_obs), dim=2)).reshape(batch_size, -1)
+        if is_binary:
+            cost = torch.where(hazards_dist <= self.hazards_size, 1.0, 0.0)
+            cost = cost.sum(1)
+            cost = torch.where(cost >= 1, 1.0, 0.0)
+        else:
+            cost = ((hazards_dist < self.hazards_size) * (self.hazards_size - hazards_dist)).sum(
+                1
+            ) * 10
+        if len(obs.shape) == 2:
+            cost = cost.reshape(obs.shape[0], 1)
+        elif len(obs.shape) == 3:
+            cost = cost.reshape(obs.shape[0], obs.shape[1], 1)
+        return cost
+
+    def get_goal_flag_from_obs_tensor(self, obs):
+        """Get batch cost from batch observation"""
+        assert torch.is_tensor(obs), 'obs must be tensor'
+        goal_key = self.key_to_slice_tensor['goal']
+        if len(obs.shape) == 2:
+            batch_size = obs.shape[0]
+            goal_obs = obs[:, goal_key].reshape(batch_size, -1, 2)
+        elif len(obs.shape) == 3:
+            batch_size = obs.shape[0] * obs.shape[1]
+            goal_obs = obs[:, :, goal_key].reshape(batch_size, -1, 2)
+        goal_dist = torch.sqrt(torch.sum(torch.square(goal_obs), dim=2)).reshape(batch_size, -1)
+        goal_flat = goal_dist <= self.goal_size
+
+        if len(obs.shape) == 2:
+            goal_flat = goal_flat.reshape(obs.shape[0], 1)
+        elif len(obs.shape) == 3:
+            goal_flat = goal_flat.reshape(obs.shape[0], obs.shape[1], 1)
+        return goal_flat
+
+    def get_cost_from_obs(self, obs, is_binary):
+        """Get batch cost from batch observation"""
+        assert not torch.is_tensor(obs), "obs should be numpy array"
+        if not self.use_lidar:
+            batch_size = obs.shape[0]
+            hazards_key = self.key_to_slice['hazards']
+            hazard_obs = obs[:, hazards_key].reshape(batch_size, -1, 2)
+            hazards_dist = np.sqrt(np.sum(np.square(hazard_obs), axis=2)).reshape(batch_size, -1)
+            if is_binary:
+                cost = np.where(hazards_dist <= self.hazards_size, 1.0, 0.0)
+                cost = cost.sum(1)
+                cost = np.where(cost >= 1, 1.0, 0.0)
+            else:
+                cost = ((hazards_dist < self.hazards_size) * (self.hazards_size - hazards_dist)).sum(
+                    1
+                ) * 10
+        else:
+            batch_size = obs.shape[0]
+            hazards_key = self.key_slice['hazards_lidar']
+            hazard_obs = obs[:, hazards_key].reshape(batch_size, self.env.task.lidar_conf.num_bins)
+            lidar_hazards_threshold = max(0,self.env.task.lidar_conf.max_dist - self.env.task.hazards.size) / self.env.task.lidar_conf.max_dist
+            cost = np.where(hazard_obs >= lidar_hazards_threshold, 1.0, 0.0)
+            cost = cost.sum(1)
+            cost = np.where(cost >= 1, 1.0, 0.0)
+        return cost
+
     def get_reward_from_coordinate(self, state):
-        assert state.shape == (self.coordinate_observation_space.shape[0],)
+        #assert state.shape == (self.coordinate_observation_space.shape[0],)
         last_dist_goal = self.goal_distance
         robot_pos = state[self.key_to_slice['robot']]
         reward = 0
@@ -158,6 +253,8 @@ class SafetyGymnasiumModelBased(CMDP):
 
     def get_reward_cost(self, state):
         '''Assuming we have reward & cost function. available with us in closed form.'''
+        #assert state.shape == (self.coordinate_observation_space.shape[0],)
+
         last_dist_goal = self.goal_distance
         robot_pos = state[self.key_to_slice['robot']]
         # ----cost----
@@ -194,8 +291,11 @@ class SafetyGymnasiumModelBased(CMDP):
         return reward, cost, goal_flag
 
 
-    def _get_lidar_from_coordinate(self, obs):
+    def get_lidar_from_coordinate(self, obs):
         """Get lidar observation"""
+        #assert obs.shape == torch.Size([1,self.coordinate_observation_space.shape[0]])
+        #obs = obs.squeeze(0)
+
         robot_matrix_x_y = obs[self.key_to_slice['robot_m']]
         robot_matrix_x = robot_matrix_x_y[0]
         robot_matrix_y = robot_matrix_x_y[1]
@@ -213,6 +313,7 @@ class SafetyGymnasiumModelBased(CMDP):
 
         #obs_vec = self.make_observation(obs, lidar_vec)
         obs_vec = np.array(obs_vec)
+        obs_vec = torch.as_tensor(obs_vec, dtype=torch.float32, device=self._device).unsqueeze(0)
         return obs_vec
 
     def _ego_xy(self, robot_matrix, robot_pos, pos):
@@ -351,39 +452,50 @@ class SafetyGymnasiumModelBased(CMDP):
 
     def step(
         self, action: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
-        obs_original, reward, cost, terminated, truncated, info = self._env.step(action)
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+        obs_original, reward, cost, terminated, truncated, info = self._env.step(
+            action.detach().cpu().numpy(),
+        )
+
         if self._task == 'Goal':
-            self.goal_position = self._env.task.goal.pos
+            info['old_goal_distance'] = self.goal_distance
             self.robot_position = self._env.task.agent.pos
-            self.hazards_position = self._env.task.hazards.pos
             self.goal_distance = self._dist_xy(self.robot_position, self.goal_position)
+            info['goal_distance'] = self.goal_distance
+            #reward_pred = (self.last_goal_distance - self.goal_distance)
             coordinate_sensor_obs = self._get_coordinate_sensor()
             obs = self._get_flat_coordinate(coordinate_sensor_obs)
+            goal_position2 = obs[self.key_to_slice['goal']].reshape(1,2)
+            goal_distance2 = np.sqrt(np.sum(np.square(goal_position2), axis=1))
+
+            obs = torch.as_tensor(obs, dtype=torch.float32, device=self._device)
 
             info['obs_original'] = obs_original
             goal_met = 'goal_met' in info.keys()  # reach the goal
             info['goal_met'] = goal_met
 
 
-        obs, reward, cost, terminated, truncated = map(
-            lambda x: torch.as_tensor(x, dtype=torch.float32),
-            (obs, reward, cost, terminated, truncated),
+        obs, reward, cost, terminated, truncated = (
+            torch.as_tensor(x, dtype=torch.float32, device=self._device)
+            for x in (obs, reward, cost, terminated, truncated)
         )
         if 'final_observation' in info:
             info['final_observation'] = np.array(
                 [
                     array if array is not None else np.zeros(obs.shape[-1])
                     for array in info['final_observation']
-                ]
+                ],
             )
             info['final_observation'] = torch.as_tensor(
-                info['final_observation'], dtype=torch.float32
+                info['final_observation'],
+                dtype=torch.float32,
+                device=self._device,
             )
+
 
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: Optional[int] = None) -> Tuple[torch.Tensor, Dict]:
+    def reset(self, seed: Optional[int] = None) -> tuple[torch.Tensor, dict]:
         obs_original, info = self._env.reset(seed=seed)
         if self._task == 'Goal':
             self.goal_position = self._env.task.goal.pos
@@ -391,18 +503,35 @@ class SafetyGymnasiumModelBased(CMDP):
             self.hazards_position = self._env.task.hazards.pos
             self.goal_distance = self._dist_xy(self.robot_position, self.goal_position)
             coordinate_sensor_obs = self._get_coordinate_sensor()
-            obs = self._get_flat_coordinate(coordinate_sensor_obs)
+            flat_coordinate_obs = self._get_flat_coordinate(coordinate_sensor_obs)
+            lidar_obs = self.get_lidar_from_coordinate(flat_coordinate_obs)
             info['obs_original'] = obs_original
             info['goal_met'] = False
-        return torch.as_tensor(obs, dtype=torch.float32), info
+
+            obs = torch.as_tensor(flat_coordinate_obs, dtype=torch.float32, device=self._device)
+        return obs, info
 
     def set_seed(self, seed: int) -> None:
         self.reset(seed=seed)
 
     def sample_action(self) -> torch.Tensor:
-        return torch.as_tensor(self._env.action_space.sample(), dtype=torch.float32)
+        """Sample a random action.
+
+        Returns:
+            torch.Tensor: A random action.
+        """
+        return torch.as_tensor(
+            self._env.action_space.sample(),
+            dtype=torch.float32,
+            device=self._device,
+        )
 
     def render(self) -> Any:
+        """Render the environment.
+
+        Returns:
+            Any: Rendered environment.
+        """
         return self._env.render()
 
     def close(self) -> None:

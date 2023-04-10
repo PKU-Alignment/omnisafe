@@ -31,21 +31,14 @@ defaults:
   # dynamics configurations
   dynamics_cfgs:
     # Number of network for ensemble model
-    num_ensemble: 5
+    network_size: 5
     # output size for ensemble model
     elite_size: 5
     # Size of hidden layers
     hidden_size: 200
     # Whether use decay loss
     use_decay: True
-    # Whether predict reward
-    predict_reward: True
-    # Whether predict reward
-    predict_cost: False
-    # Training batch size of dynamics
-    batch_size: 256
-    # Training max epoch of dynamics
-    max_epoch: 5
+
   evaluation_cfgs:
     use_eval: True
     eval_cycle: 10000
@@ -53,8 +46,8 @@ defaults:
 
   # algorithm configurations
   algo_cfgs:
-    action_repeat: 5
-    plan_horizon: 7
+    action_repeat: 1
+    plan_horizon: 30
     num_iterations: 5
     num_particles: 5
     num_samples: 512
@@ -82,7 +75,7 @@ defaults:
   # logger configurations
   logger_cfgs:
     # log cycle:
-    log_cycle: 20000
+    log_cycle: 10000
     # use wandb for logging
     use_wandb: False
     # wandb project name
@@ -96,27 +89,44 @@ defaults:
     # save model path
     window_lens: 100
 
-SafetyAntVelocity-v4:
+
+SafetyPointGoal1-v0-modelbased:
   algo_cfgs:
-    action_repeat: 1
-    plan_horizon: 25
-SafetyHopperVelocity-v4:
-  algo_cfgs:
-    action_repeat: 1
-    plan_horizon: 15
-SafetyHumanoidVelocity-v4:
-  algo_cfgs:
-    action_repeat: 1
-    plan_horizon: 15
-SafetyWalker2dVelocity-v4:
-  algo_cfgs:
-    action_repeat: 1
-    plan_horizon: 15
+    action_repeat: 5
+    plan_horizon: 7
+
 SafetyHalfCheetahVelocity-v4:
   algo_cfgs:
     action_repeat: 1
-    plan_horizon: 15
-SafetySwimmerVelocity-v4:
+    plan_horizon: 30
+
+
+Ant-v4:
   algo_cfgs:
     action_repeat: 1
-    plan_horizon: 15
+
+Swimmer-v4:
+  algo_cfgs:
+    action_repeat: 1
+    update_dynamics_cycle: 1000
+    dynamics_batch_size: 256
+    plan_horizon: 30
+    num_particles: 20
+
+HalfCheetah-v4:
+  algo_cfgs:
+    action_repeat: 1
+    update_dynamics_cycle: 1000
+    dynamics_batch_size: 256
+    plan_horizon: 30
+    num_particles: 20
+
+SafetyAntVelocity-v4:
+  # algorithm configurations
+  algo_cfgs:
+    action_repeat: 1
+
+
+SafetyWalker2dVelocity-v4:
+  # algorithm configurations
+  algo_cfgs:

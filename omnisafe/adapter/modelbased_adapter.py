@@ -50,9 +50,10 @@ class ModelBasedAdapter(OnlineAdapter):
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id
+        self._device = cfgs.train_cfgs.device
 
 
-        self._env = make(env_id, num_envs=num_envs, **kwargs)
+        self._env = make(env_id, num_envs=num_envs, device=cfgs.train_cfgs.device, **kwargs)
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
@@ -62,13 +63,16 @@ class ModelBasedAdapter(OnlineAdapter):
         )
         self._env.set_seed(seed)
         self._cfgs = cfgs
-        self._device = cfgs.train_cfgs.device
         if hasattr(self._env, 'coordinate_observation_space'):
             self.coordinate_observation_space = self._env.coordinate_observation_space
             self.lidar_observation_space = self._env.lidar_observation_space
         else:
             self.coordinate_observation_space = None
             self.lidar_observation_space = None
+        if hasattr(self._env, 'task'):
+            self.task = self._env.task
+        else:
+            self.task = None
 
         self._ep_ret: torch.Tensor
         self._ep_cost: torch.Tensor
@@ -80,14 +84,23 @@ class ModelBasedAdapter(OnlineAdapter):
         self._last_policy_update = 0
         self._last_eval = 0
 
+    def get_goal_flag_from_obs_tensor(self, obs):
+        return self._env.get_goal_flag_from_obs_tensor(obs)
+
+    def get_cost_from_obs_tensor(self, obs):
+        return self._env.get_cost_from_obs_tensor(obs)
+
+    def get_reward_from_coordinate(self, obs):
+        return self._env.get_reward_from_coordinate(obs)
+
     def get_lidar_from_coordinate(self, obs):
         return self._env.get_lidar_from_coordinate(obs)
 
     def get_cost_from_coordinate(self, obs):
         return self._env.get_cost_from_coordinate(obs)
 
-    def get_reward_from_coordinate(self, obs):
-        return self._env.get_reward_from_coordinate(obs)
+    def get_observation_cost(self, obs):
+        return self._env.get_observation_cost(obs)
 
     def render(self,*args, **kwargs):
         return self._env.render(*args, **kwargs)
@@ -99,21 +112,23 @@ class ModelBasedAdapter(OnlineAdapter):
         cost_normalize: bool = True,
         action_repeat: int = 1,
     ):
+
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, time_limit=1000)
+            self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
         if self._env.need_auto_reset_wrapper:
-            self._env = AutoReset(self._env)
+            self._env = AutoReset(self._env, device=self._device)
         if obs_normalize:
-            self._env = ObsNormalize(self._env)
+            self._env = ObsNormalize(self._env, device=self._device)
         if reward_normalize:
-            self._env = RewardNormalize(self._env)
+            self._env = RewardNormalize(self._env, device=self._device)
         if cost_normalize:
-            self._env = CostNormalize(self._env)
-        self._env = ActionScale(self._env, low=-1.0, high=1.0)
-        self._env = ActionRepeat(self._env, times=action_repeat)
+            self._env = CostNormalize(self._env, device=self._device)
+        self._env = ActionScale(self._env, device=self._device, low=-1.0, high=1.0)
+        self._env = ActionRepeat(self._env, times=action_repeat,device=self._device)
 
         if self._env.num_envs == 1:
-            self._env = Unsqueeze(self._env)
+            self._env = Unsqueeze(self._env, device=self._device)
+
 
     def roll_out(
             self,
@@ -138,7 +153,7 @@ class ModelBasedAdapter(OnlineAdapter):
         epoch_steps = 0
 
         while epoch_steps < roll_out_step:
-            action, action_info = act_func(current_step, self._current_obs)
+            action, action_info = act_func(current_step, self._current_obs, self._env)
             next_state, reward, cost, terminated, truncated, info = self.step(action)
             epoch_steps += info['num_step']
             current_step += info['num_step']

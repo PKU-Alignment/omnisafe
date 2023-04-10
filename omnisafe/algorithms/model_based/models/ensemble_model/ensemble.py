@@ -26,6 +26,7 @@ import torch.nn.functional as F
 from functools import partial
 from collections import defaultdict
 from typing import Dict, List, Tuple, Union
+from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 
 def swish(data):
     """Transform data using sigmoid function."""
@@ -95,12 +96,15 @@ def init_weights(layer):
 # for when we only want to use one of the models.
 def unbatched_forward(layer, input, index):
     if isinstance(layer, EnsembleFC):
-        weight = layer.weight[index]
-        w_times_x = torch.bmm(input.float(), weight)
-        return torch.add(w_times_x, layer.bias[index, None, :])  # w times x + b
+        #weight = layer.weight[index]
+        # w_times_x = F.linear(input.float(), weight)
+        #return torch.add(w_times_x, layer.bias[index, None, :])  # w times x + b
+        #self.weight = nn.Parameter(torch.Tensor(1, in_features, out_features))
+        input = F.linear(input, torch.transpose(layer.weight[index].squeeze(0), 0, 1), layer.bias[index])
+
     else:
         input = layer(input)
-        return input
+    return input
 
 
 class EnsembleFC(nn.Module):
@@ -207,21 +211,21 @@ class EnsembleModel(nn.Module):
 
     def forward_idx(self, data, idx_model, ret_log_var=False):
         assert data.shape[0] == 1
-        data = self.scaler.transform(data)
+        data = self.scaler.transform(data[0])
         unbatched_forward_fn = partial(unbatched_forward, index=idx_model)
         nn1_output = swish(unbatched_forward_fn(self._nn1, data))
         nn2_output = swish(unbatched_forward_fn(self._nn2, nn1_output))
         nn3_output = swish(unbatched_forward_fn(self._nn3, nn2_output))
         nn4_output = swish(unbatched_forward_fn(self._nn4, nn3_output))
         nn5_output = unbatched_forward_fn(self._nn5, nn4_output)
-        mean = nn5_output[:, :, : self._output_dim]
-        logvar = self.max_logvar - F.softplus(self.max_logvar - nn5_output[:, :, self._output_dim :])
+        mean = nn5_output[:, : self._output_dim]
+        logvar = self.max_logvar - F.softplus(self.max_logvar - nn5_output[:, self._output_dim :])
         logvar = self.min_logvar + F.softplus(logvar - self.min_logvar)
         var = torch.exp(logvar)
 
         if ret_log_var:
-            return mean, logvar
-        return mean, var
+            return mean.unsqueeze(0), logvar.unsqueeze(0)
+        return mean.unsqueeze(0), var.unsqueeze(0)
 
     def _get_decay_loss(self):
         """Get decay loss"""
@@ -272,14 +276,14 @@ class EnsembleDynamicsModel:
         reward_size,
         cost_size,
         use_cost,
-        use_truncated,
+        use_terminal,
         use_var,
         use_reward_critic,
         use_cost_critic,
         actor_critic=None,
         rew_func=None,
         cost_func=None,
-        truncated_func=None,
+        terminal_func=None,
     ):
         self._num_ensemble = model_cfgs.num_ensemble
         self._elite_size = model_cfgs.elite_size
@@ -319,14 +323,14 @@ class EnsembleDynamicsModel:
         if use_cost is True:
             if self._predict_cost is False:
                 assert cost_func is not None, "cost_func should not be None"
-        if use_truncated is True:
-            assert truncated_func is not None, "truncated_func should not be None"
+        if use_terminal is True:
+            assert terminal_func is not None, "terminal_func should not be None"
         self._rew_func = rew_func
         self._cost_func = cost_func
-        self._truncated_func = truncated_func
+        self._terminal_func = terminal_func
         self._state_start_dim = int(self._predict_reward)*self._reward_size + int(self._predict_cost)*self._cost_size
         self._use_cost = use_cost
-        self._use_truncated = use_truncated
+        self._use_terminal = use_terminal
         self._use_var = use_var
         self._use_reward_critic = use_reward_critic
         self._use_cost_critic = use_cost_critic
@@ -413,27 +417,30 @@ class EnsembleDynamicsModel:
             self._epochs_since_update += 1
         return self._epochs_since_update > self._max_epoch_since_update
 
+    @torch.no_grad()
     def _compute_reward(
             self,
             network_output: torch.Tensor,
             ) -> torch.Tensor:
         if self._predict_reward:
-            return network_output[:,:,:self._reward_size]
+            reward_start_dim = int(self._predict_cost)*self._cost_size
+            reward_end_dim = reward_start_dim + self._reward_size
+            return network_output[:,:,reward_start_dim:reward_end_dim]
         else:
             return self._rew_func(network_output[:,:,self._state_start_dim:])
 
+    @torch.no_grad()
     def _compute_cost(
             self,
             network_output: torch.Tensor,
             ) -> torch.Tensor:
         if self._predict_cost:
-            cost_start_dim = int(self._predict_reward)*self._reward_size
-            cost_end_dim = cost_start_dim + self._cost_size
-            return network_output[:,:,cost_start_dim:cost_end_dim]
+            return network_output[:,:,:self._cost_size]
         else:
             return self._cost_func(network_output[:,:,self._state_start_dim:])
 
-    def _compute_truncated(
+    @torch.no_grad()
+    def _compute_terminal(
             self,
             network_output: torch.Tensor,
             ) -> torch.Tensor:
@@ -469,7 +476,7 @@ class EnsembleDynamicsModel:
         assert ensemble_mean.shape[:-1] == inputs.shape[:-1] and ensemble_var.shape[:-1] == inputs.shape[:-1], "output shape must be the same as input shape except the last dimension"
         return ensemble_mean, ensemble_var
 
-
+    @torch.no_grad()
     def sample(
             self,
             states: torch.Tensor,
@@ -498,51 +505,55 @@ class EnsembleDynamicsModel:
         info = defaultdict(list)
         if self._use_cost:
             info['costs'].append(self._compute_cost(ensemble_samples))
-        if self._use_truncated:
-            info['truncated'].append(self._compute_truncated(ensemble_samples))
+        if self._use_terminal:
+            info['terminals'].append(self._compute_terminal(ensemble_samples))
         if self._use_var:
-            info['var'].append(ensemble_var)
+            info['vars'].append(ensemble_var)
         if self._use_reward_critic:
-            reward_values = self._actor_critic.reward_critic(states.reshape(-1, self._state_size), actions.reshape(-1, self._action_size)).reshape((states.shapes[:-1],1))
-            info['value'].append(reward_values)
+            reward_values = self._actor_critic.reward_critic(states.reshape(-1, self._state_size), actions.reshape(-1, self._action_size))[0]
+            info['values'].append(reward_values.reshape((*states.shape[:-1],1)))
         if self._use_cost_critic:
-            cost_values = self._actor_critic.cost_critic(states.reshape(-1, self._state_size), actions.reshape(-1, self._action_size)).reshape((states.shapes[:-1],1))
-            info['cost_value'].append(cost_values)
+            cost_values = self._actor_critic.cost_critic(states.reshape(-1, self._state_size), actions.reshape(-1, self._action_size))
+            info['cost_values'].append(cost_values.reshape((*states.shape[:-1],1)))
         return states, rewards, info
 
+    @torch.no_grad()
     def imagine(
             self,
             states: torch.Tensor,
             horizon: int,
             actions: Union[torch.Tensor, None]=None,
+            actor_critic: ConstraintActorQCritic=None,
             idx: Union[int, None]=None,
             ) -> Dict[str, List[torch.Tensor]]:
 
         assert states.shape[1] == self._state_size, "states should be of shape (batch_size, state_size)"
-        if actions is not None:
-            assert actions.shape == torch.Size([horizon, states.shape[0], self._action_size]), "actions should be of shape (horizon, batch_size, action_size)"
-        else:
-            assert self._actor_critic is not None, "Need to provide actions or actor_critic"
-
         if idx is None:
             num_ensemble = self._num_ensemble
         else:
             num_ensemble = 1
+        if actions is not None:
+            assert actions.shape == torch.Size([horizon, states.shape[0], self._action_size]), "actions should be of shape (horizon, batch_size, action_size)"
+            actions = actions[:, None, :, :].repeat([1, num_ensemble, 1, 1])
+
+        else:
+            assert actor_critic is not None, "Need to provide actions or actor_critic"
 
         traj = defaultdict(list)
         states = states[None, :, :].repeat([num_ensemble, 1, 1])
 
         for step in range(horizon):
-            actions_t = actions[step] if actions is not None else self._actor_critic.actor.predict(states, deterministic=False)
-            actions_t = actions_t[None, :, :].repeat([num_ensemble, 1, 1])
+            actions_t = actions[step] if actions is not None else actor_critic.actor.predict(states, deterministic=False)
             states, rewards, info = self.sample(states, actions_t, idx)
-
+            states = torch.clamp(torch.nan_to_num(states, nan=0, posinf=0, neginf=0), -100, 100)
+            rewards = torch.nan_to_num(rewards, nan=0, posinf=0, neginf=0)
 
             traj['states'].append(states)
             traj['actions'].append(actions_t)
             traj['rewards'].append(rewards)
             for key, value in info.items():
-                traj[key].append(value)
+                value_ = torch.nan_to_num(value[0], nan=0, posinf=0, neginf=0)
+                traj[key].append(value_.clone())
         for key, value in traj.items():
             traj[key] = (torch.stack(value, dim=0))
         return traj
