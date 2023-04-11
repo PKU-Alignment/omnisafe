@@ -14,8 +14,9 @@
 # ==============================================================================
 """Environments in the Safety Gymnasium."""
 
+from __future__ import annotations
 
-from typing import Any, Optional, Union
+from typing import Any
 
 import gymnasium
 import numpy as np
@@ -362,8 +363,8 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
     def _dist_xy(
         self,
-        pos1: Union[np.ndarray, list],
-        pos2: Union[np.ndarray, list],
+        pos1: np.ndarray | list,
+        pos2: np.ndarray | list,
     ) -> float:
         """Return the distance from the robot to an XY position."""
         pos1 = np.asarray(pos1)
@@ -415,7 +416,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: Optional[int] = None) -> tuple[torch.Tensor, dict]:
+    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
         obs_original, info = self._env.reset(seed=seed)
         if self._task == 'Goal':
             self.goal_position = self._env.task.goal.pos

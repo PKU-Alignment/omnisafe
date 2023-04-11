@@ -14,6 +14,7 @@
 # ==============================================================================
 """Implementation of the Learning Off-Policy with Online Planning algorithm."""
 
+from __future__ import annotations
 
 import torch
 from torch import nn, optim

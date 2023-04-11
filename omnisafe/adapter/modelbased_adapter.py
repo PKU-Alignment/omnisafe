@@ -13,9 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """OffPolicy Adapter for OmniSafe."""
+from __future__ import annotations
 
 import time
-from typing import Callable, Dict, Optional, Union
+from typing import Callable
 
 import torch
 
@@ -136,9 +137,9 @@ class ModelBasedAdapter(
         store_data_func: Callable,
         update_dynamics_func: Callable,
         logger: Logger,
-        eval_func: Union[Callable, None] = None,
-        algo_reset_func: Union[Callable, None] = None,
-        update_actor_func: Union[Callable, None] = None,
+        eval_func: Callable | None = None,
+        algo_reset_func: Callable | None = None,
+        update_actor_func: Callable | None = None,
     ) -> int:
         """Roll out the environment."""
         epoch_start_time = time.time()
@@ -228,7 +229,7 @@ class ModelBasedAdapter(
         self,
         reward: torch.Tensor,
         cost: torch.Tensor,
-        info: Dict,
+        info: dict,
         **kwargs,  # pylint: disable=unused-argument
     ) -> None:
         """Log value."""
@@ -246,7 +247,7 @@ class ModelBasedAdapter(
             },
         )
 
-    def _reset_log(self, idx: Optional[int] = None) -> None:  # pylint: disable=unused-argument
+    def _reset_log(self, idx: int | None = None) -> None:  # pylint: disable=unused-argument
         """Reset log."""
         self._ep_ret = torch.zeros(1)
         self._ep_cost = torch.zeros(1)

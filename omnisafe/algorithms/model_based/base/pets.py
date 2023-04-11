@@ -13,10 +13,11 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Probabilistic Ensembles with Trajectory Sampling algorithm."""
+from __future__ import annotations
 
 import os
 import time
-from typing import Any, Dict, Tuple, Union
+from typing import Any
 
 import numpy as np
 import torch
@@ -124,7 +125,7 @@ class PETS(BaseAlgo):
             config=self._cfgs,
         )
 
-        what_to_save: Dict[str, Any] = {}
+        what_to_save: dict[str, Any] = {}
         # Set up model saving
         what_to_save = {
             'dynamics': self._dynamics,
@@ -164,7 +165,7 @@ class PETS(BaseAlgo):
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
-    def learn(self) -> Tuple[Union[int, float], ...]:
+    def learn(self) -> tuple[int | float, ...]:
         """This is main function for algorithm update, divided into the following steps:
 
         - :meth:`rollout`: collect interactive data from environment.
@@ -265,7 +266,7 @@ class PETS(BaseAlgo):
         current_step: int,
         state: torch.Tensor,
         env: ModelBasedAdapter,
-    ) -> Tuple[np.ndarray, Dict]:
+    ) -> tuple[np.ndarray, dict]:
         """action selection"""
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)

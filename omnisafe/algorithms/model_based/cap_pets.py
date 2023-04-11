@@ -13,8 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Conservative and Adaptive Penalty algorithm."""
-
-from typing import Dict, Tuple
+from __future__ import annotations
 
 import numpy as np
 import torch
@@ -114,7 +113,7 @@ class CAPPETS(PETS):
         current_step: int,
         state: torch.Tensor,
         env: ModelBasedAdapter,
-    ) -> Tuple[np.ndarray, Dict]:
+    ) -> tuple[np.ndarray, dict]:
         """action selection"""
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
