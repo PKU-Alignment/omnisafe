@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Model Predictive Control Planner."""
+"""Model Predictive Control Planner of the Safe Actor Regularized Control algorithm."""
 
 import torch
 
@@ -20,7 +20,7 @@ from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
 
 
 class SafeARCPlanner(ARCPlanner):
-    """The Safe Actor Regularized Control (ARC) trajectory optimization method.
+    """The planner of Safe Actor Regularized Control (ARC) algorithm.
 
     References:
         - Title: Learning Off-Policy with Online Planning

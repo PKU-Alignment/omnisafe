@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Model Predictive Control Planner."""
+"""Model Predictive Control Planner of Robust Cross Entropy algorithm."""
 
 import torch
 
@@ -20,7 +20,7 @@ from omnisafe.algorithms.model_based.planner.cce import CCEPlanner
 
 
 class RCEPlanner(CCEPlanner):
-    """The Robust Cross Entropy (RCE) trajectory optimization method.
+    """The planner of Robust Cross Entropy (RCE) algorithm.
 
     References:
 

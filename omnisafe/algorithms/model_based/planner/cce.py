@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Model Predictive Control Planner."""
+"""Model Predictive Control Planner of the Constrained Cross-Entropy algorithm."""
 
 import torch
 
@@ -20,7 +20,7 @@ from omnisafe.algorithms.model_based.planner.cem import CEMPlanner
 
 
 class CCEPlanner(CEMPlanner):
-    """The Constrained Cross-Entropy (CCE) trajectory optimization method.
+    """The planner of Constrained Cross-Entropy (CCE) algorithm.
 
     References:
 

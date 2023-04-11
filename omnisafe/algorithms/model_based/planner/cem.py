@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Model Predictive Control Planner."""
+"""Model Predictive Control Planner of Cross-Entropy Method optimization algorithm."""
 
 import torch
 
 
 class CEMPlanner:  # pylint: disable=too-many-instance-attributes
-    """The Cross-Entropy Method optimization (CEM) trajectory optimization method.
+    """The planner of  Cross-Entropy Method optimization (CEM) algorithm.
 
     References:
         - URL: `A good description of CEM <https://arxiv.org/pdf/2008.06389.pdf>`_

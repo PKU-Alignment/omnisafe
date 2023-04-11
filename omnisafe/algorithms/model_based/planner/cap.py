@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Model Predictive Control Planner."""
+"""Model Predictive Control Planner of the Conservative and Adaptive Penalty algorithm."""
 
 import torch
 
@@ -20,7 +20,7 @@ from omnisafe.algorithms.model_based.planner.cce import CCEPlanner
 
 
 class CAPPlanner(CCEPlanner):
-    """The Conservative and Adaptive Penalty (CAP) trajectory optimization method.
+    """The planner of Conservative and Adaptive Penalty (CAP) algorithm.
 
     References:
 

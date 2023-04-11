@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Model Predictive Control Planner."""
+"""Model Predictive Control Planner of the Actor Regularized Control (ARC) algorithm."""
 
 import torch
 
 
 class ARCPlanner:  # pylint: disable=too-many-instance-attributes
-    """The Actor Regularized Control (ARC) algorithm.
+    """The planner of Actor Regularized Control (ARC) algorithm.
 
     References:
 

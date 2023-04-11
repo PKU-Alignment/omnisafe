@@ -19,7 +19,7 @@ from omnisafe.algorithms.model_based.cap_pets import CAPPETS
 from omnisafe.algorithms.model_based.cce_pets import CCEPETS
 from omnisafe.algorithms.model_based.rce_pets import RCEPETS
 from omnisafe.algorithms.model_based.safeloop import SafeLOOP
-
+from omnisafe.algorithms.model_based.base import PETS, LOOP
 
 __all__ = [
     *base.__all__,

@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Basic Reinforcement Learning algorithms."""
+"""Basic Model Based Reinforcement Learning algorithms."""
 
 from omnisafe.algorithms.model_based.base.loop import LOOP
 from omnisafe.algorithms.model_based.base.pets import PETS
 
 
-__all__ = [
-    'LOOP',
-    'PETS',
-]
+__all__ = ['LOOP', 'PETS']
