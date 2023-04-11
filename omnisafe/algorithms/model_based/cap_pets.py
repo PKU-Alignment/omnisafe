@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Deep Deterministic Policy Gradient algorithm."""
+"""Implementation of the Conservative and Adaptive Penalty algorithm."""
 
 import time
 from typing import Any, Dict, Tuple, Union, Optional
@@ -24,7 +24,7 @@ from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
 
 
-from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel
+from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.cap import CAPPlanner
 from omnisafe.algorithms.model_based.base import PETS
 import numpy as np
@@ -35,14 +35,13 @@ from omnisafe.common.lagrange import Lagrange
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
 class CAPPETS(PETS):
-    """The Deep Deterministic Policy Gradient (DDPG) algorithm.
+    """The Conservative and Adaptive Penalty (CAP) algorithm implementation based on PETS.
 
     References:
 
-        - Title: Continuous control with deep reinforcement learning
-        - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-        Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
-        - URL: `DDPG <https://arxiv.org/abs/1509.02971>`_
+        - Title: Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning
+        - Authors: Yecheng Jason Ma, Andrew Shen, Osbert Bastani, Dinesh Jayaraman.
+        - URL: `CAP <https://arxiv.org/abs/2112.07701>`_
     """
 
 
@@ -100,6 +99,9 @@ class CAPPETS(PETS):
         self._logger.register_key('Plan/episode_costs_mean')
         self._logger.register_key('Plan/episode_costs_min')
         self._logger.register_key('Metrics/LagrangeMultiplier')
+        self._logger.register_key('Plan/var_penalty_max')
+        self._logger.register_key('Plan/var_penalty_mean')
+        self._logger.register_key('Plan/var_penalty_min')
 
     def _update_epoch(self) -> None:
         # note that logger already uses MPI statistics across all processes..
@@ -120,10 +122,8 @@ class CAPPETS(PETS):
         """action selection"""
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
-            #action = torch.rand(size=1, *self._env.action_space.shape)
         else:
             action, info = self._planner.output_action(state)
-            #action = action.cpu().detach().numpy()
             self._logger.store(
                 **{
                 'Plan/iter': info['Plan/iter'],
@@ -137,6 +137,9 @@ class CAPPETS(PETS):
                 'Plan/episode_costs_max': info['Plan/episode_costs_max'],
                 'Plan/episode_costs_mean': info['Plan/episode_costs_mean'],
                 'Plan/episode_costs_min': info['Plan/episode_costs_min'],
+                'Plan/var_penalty_max': info['Plan/var_penalty_max'],
+                'Plan/var_penalty_mean': info['Plan/var_penalty_mean'],
+                'Plan/var_penalty_min': info['Plan/var_penalty_min'],
                 }
             )
         assert action.shape == torch.Size([state.shape[0], self._env.action_space.shape[0]]), "action shape should be [batch_size, action_dim]"

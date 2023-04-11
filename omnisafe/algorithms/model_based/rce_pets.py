@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Deep Deterministic Policy Gradient algorithm."""
+"""Implementation of the Robust Cross Entropy algorithm."""
 
 import time
 from typing import Any, Dict, Tuple, Union, Optional
@@ -24,25 +24,22 @@ from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
 
 
-from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel
+from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.rce import RCEPlanner
 from omnisafe.algorithms.model_based.base import PETS
 import numpy as np
-
-from omnisafe.common.lagrange import Lagrange
 
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
 class RCEPETS(PETS):
-    """The Deep Deterministic Policy Gradient (DDPG) algorithm.
+    """The Robust Cross Entropy (RCE) algorithm implementation based on PETS.
 
     References:
 
-        - Title: Continuous control with deep reinforcement learning
-        - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-        Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
-        - URL: `DDPG <https://arxiv.org/abs/1509.02971>`_
+        - Title: Constrained Model-based Reinforcement Learning with Robust Cross-Entropy Method
+        - Authors: Zuxin Liu, Hongyi Zhou, Baiming Chen, Sicheng Zhong, Martial Hebert, Ding Zhao.
+        - URL: `RCE <https://arxiv.org/abs/2010.07968>`_
     """
 
 
@@ -108,10 +105,8 @@ class RCEPETS(PETS):
         """action selection"""
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
-            #action = torch.rand(size=1, *self._env.action_space.shape)
         else:
             action, info = self._planner.output_action(state)
-            #action = action.cpu().detach().numpy()
             self._logger.store(
                 **{
                 'Plan/iter': info['Plan/iter'],

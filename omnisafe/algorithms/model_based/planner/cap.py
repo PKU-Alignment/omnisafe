@@ -12,12 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Safe controllers which do a black box optimization incorporating the constraint costs."""
+"""Model Predictive Control Planner."""
 
 import torch
 from omnisafe.algorithms.model_based.planner.cce import CCEPlanner
 
 class CAPPlanner(CCEPlanner):
+    """The Conservative and Adaptive Penalty (CAP) trajectory optimization method.
+
+    References:
+
+        - Title: Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning
+        - Authors: Yecheng Jason Ma, Andrew Shen, Osbert Bastani, Dinesh Jayaraman.
+        - URL: `CAP <https://arxiv.org/abs/2112.07701>`_
+    """
     def __init__(self,
                  dynamics,
                  num_models,
@@ -71,15 +79,13 @@ class CAPPlanner(CCEPlanner):
         assert rewards.shape == torch.Size([self._horizon, self._num_models, int(self._num_particles/self._num_models*self._num_samples), 1]), "Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)"
         assert vars.shape[:-1] == torch.Size([self._horizon, self._num_models, int(self._num_particles/self._num_models*self._num_samples)]), "Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, dynamics_state_shape)"
         assert costs.shape == torch.Size([self._horizon, self._num_models, int(self._num_particles/self._num_models*self._num_samples), 1]), "Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)"
-
-
-        # var: [_horizon, network_size, num_gaussian_traj*particles/network_size, state_dim]
+        # var: [horizon, network_size, num_gaussian_traj*particles/network_size, state_dim]
         var_penalty = vars.sqrt().norm(dim=3).max(1)[0]
-        # cost_penalty: [_horizon, num_gaussian_traj*particles/network_size]
+        # cost_penalty: [horizon, num_gaussian_traj*particles/network_size]
         var_penalty = var_penalty.repeat_interleave(self._num_models).view(
             costs.shape
         )
-        # cost_penalty: [_horizon, num_gaussian_traj*particle]
+        # cost_penalty: [horizon, num_gaussian_traj*particle]
         costs += self._lagrange.lagrangian_multiplier * var_penalty
 
         costs = costs.reshape(self._horizon, self._num_particles, self._num_samples, 1)
@@ -105,6 +111,9 @@ class CAPPlanner(CCEPlanner):
         elite_returns_topk, elite_actions_topk = elite_values[elite_idxs_topk], elite_actions[:, elite_idxs_topk]
         info = {
             'Plan/feasible_num': feasible_num,
+            'Plan/var_penalty_max': var_penalty.max().item(),
+            'Plan/var_penalty_mean': var_penalty.mean().item(),
+            'Plan/var_penalty_min': var_penalty.min().item(),
             'Plan/episode_returns_max': mean_episode_returns.max().item(),
             'Plan/episode_returns_mean': mean_episode_returns.mean().item(),
             'Plan/episode_returns_min': mean_episode_returns.min().item(),

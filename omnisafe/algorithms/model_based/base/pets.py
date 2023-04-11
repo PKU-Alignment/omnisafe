@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Deep Deterministic Policy Gradient algorithm."""
+"""Implementation of the Probabilistic Ensembles with Trajectory Sampling algorithm."""
 
 import time
 from typing import Any, Dict, Tuple, Union, Optional
 
 
 import torch
-from torch import nn
 
 from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
@@ -27,7 +26,7 @@ from omnisafe.algorithms.base_algo import BaseAlgo
 from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.common.logger import Logger
 
-from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel
+from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.cem import CEMPlanner
 import numpy as np
 from matplotlib import pylab
@@ -38,14 +37,13 @@ import os
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
 class PETS(BaseAlgo):
-    """The Deep Deterministic Policy Gradient (DDPG) algorithm.
+    """The Probabilistic Ensembles with Trajectory Sampling (PETS) algorithm.
 
     References:
 
-        - Title: Continuous control with deep reinforcement learning
-        - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-        Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
-        - URL: `DDPG <https://arxiv.org/abs/1509.02971>`_
+        - Title: Deep Reinforcement Learning in a Handful of Trials using Probabilistic Dynamics Models
+        - Authors: Kurtland Chua, Roberto Calandra, Rowan McAllister, Sergey Levine.
+        - URL: `PETS <https://arxiv.org/abs/1805.12114>`_
     """
 
     def _init_env(self) -> None:
@@ -235,9 +233,6 @@ class PETS(BaseAlgo):
         train_mse_losses, val_mse_losses = self._dynamics.train(
             inputs, labels, holdout_ratio=0.2
         )
-        # ep_costs = self._logger.get_stats('Metrics/EpCost')[0]
-        # #update Lagrange multiplier parameter
-        # self.update_lagrange_multiplier(ep_costs)
         self._logger.store(
             **{
                 'Loss/DynamicsTrainMseLoss': train_mse_losses.item(),
@@ -256,10 +251,8 @@ class PETS(BaseAlgo):
         """action selection"""
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
-            #action = torch.rand(size=1, *self._env.action_space.shape)
         else:
             action, info = self._planner.output_action(state)
-            #action = action.cpu().detach().numpy()
             self._logger.store(
                 **{
                 'Plan/iter': info['Plan/iter'],

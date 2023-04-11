@@ -12,43 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Deep Deterministic Policy Gradient algorithm."""
+"""Implementation of the Learning Off-Policy with Online Planning algorithm."""
 
-import time
 from typing import Any, Dict, Tuple, Union, Optional
 
 
 import torch
 from torch import nn
 
-from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.base_algo import BaseAlgo
-from omnisafe.common.buffer import OffPolicyBuffer
-from omnisafe.common.logger import Logger
 
-from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel
+
+from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.algorithms.model_based.base.pets import PETS
-import numpy as np
-from matplotlib import pylab
-from gymnasium.utils.save_video import save_video
-import os
+
 from torch import nn, optim
 
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
 class LOOP(PETS):
-    """The Deep Deterministic Policy Gradient (DDPG) algorithm.
+    """The Learning Off-Policy with Online Planning (LOOP) algorithm.
 
     References:
 
-        - Title: Continuous control with deep reinforcement learning
-        - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-        Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
-        - URL: `DDPG <https://arxiv.org/abs/1509.02971>`_
+        - Title: Learning Off-Policy with Online Planning
+        - Authors: Harshit Sikchi, Wenxuan Zhou, David Held.
+        - URL: `LOOP <https://arxiv.org/abs/2008.10066>`_
     """
 
     def _init_model(self) -> None:

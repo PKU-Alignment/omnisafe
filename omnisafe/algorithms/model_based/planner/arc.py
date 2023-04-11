@@ -12,11 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Safe controllers which do a black box optimization incorporating the constraint costs."""
+"""Model Predictive Control Planner."""
 
 import torch
 
 class ARCPlanner():
+    """The Actor Regularized Control (ARC) algorithm.
+
+    References:
+
+        - Title: Learning Off-Policy with Online Planning
+        - Authors: Harshit Sikchi, Wenxuan Zhou, David Held.
+        - URL: `ARC <https://arxiv.org/abs/2008.10066>`_
+    """
     def __init__(self,
                  dynamics,
                  actor_critic,
@@ -58,14 +66,10 @@ class ARCPlanner():
         self._gamma = gamma
         self._device = device
         self._action_sequence_mean = torch.zeros(self._horizon, *self._action_shape, device=self._device)
-        #self._action_sequence_var = ((action_max - action_min)**2)/16 * torch.ones(self._horizon, *self._action_shape, device=self._device)
         self._action_sequence_var = 4 * torch.ones(self._horizon, *self._action_shape, device=self._device)
     @torch.no_grad()
     def _act_from_last_gaus(self,state, last_mean, last_var):
         # Sample actions from the last gaussian distribution
-        # Constrain the variance to be less than the distance to the boundary
-        left_dist, right_dist = last_mean - self._action_min, self._action_max - last_mean
-        #constrained_var = torch.minimum(torch.minimum(torch.square(left_dist / 2), torch.square(right_dist / 2)), last_var)
         constrained_std = torch.sqrt(last_var)
         actions = torch.clamp(last_mean.unsqueeze(1) + constrained_std.unsqueeze(1)  * \
             torch.randn(self._horizon, self._num_samples, *self._action_shape, device=self._device),self._action_min, self._action_max)
@@ -172,6 +176,6 @@ class ARCPlanner():
         self._action_sequence_mean = last_mean.clone()
         return last_mean[0].clone().unsqueeze(0), logger_info
 
-    # def reset_planner(self):
-    #     self._action_sequence_mean = torch.zeros(self._horizon, *self._action_shape, device=self._device)
-    #     self._action_sequence_std = 2 * torch.ones(self._horizon, *self._action_shape, device=self._device)
+    def reset_planner(self):
+        self._action_sequence_mean = torch.zeros(self._horizon, *self._action_shape, device=self._device)
+        self._action_sequence_var = 4 * torch.ones(self._horizon, *self._action_shape, device=self._device)

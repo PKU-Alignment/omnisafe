@@ -16,22 +16,19 @@
 
 from omnisafe.algorithms.model_based import (
     base,
-    models,
 )
 
-from omnisafe.algorithms.model_based.cap2 import CAP
 from omnisafe.algorithms.model_based.cap_pets import CAPPETS
 from omnisafe.algorithms.model_based.rce_pets import RCEPETS
 
-from omnisafe.algorithms.model_based.ccem import CCEM
+from omnisafe.algorithms.model_based.cce_pets import CCEPETS
 from omnisafe.algorithms.model_based.safeloop import SafeLOOP
 
 
 __all__ = [
     *base.__all__,
-    'CAP',
     'CAPPETS',
-    'CCEM',
+    'CCEPETS',
     'SafeLOOP',
     'RCEPETS',
 ]

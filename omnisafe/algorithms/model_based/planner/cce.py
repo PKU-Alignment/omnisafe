@@ -12,12 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Safe controllers which do a black box optimization incorporating the constraint costs."""
+"""Model Predictive Control Planner."""
 
 import torch
 from omnisafe.algorithms.model_based.planner.cem import CEMPlanner
 
 class CCEPlanner(CEMPlanner):
+    """The Constrained Cross-Entropy (CCE) trajectory optimization method.
+
+    References:
+
+        - Title: Constrained Cross-Entropy Method for Safe Reinforcement Learning
+        - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
+        Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
+        - URL: `CCE <https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html>`_
+    """
     def __init__(self,
                  dynamics,
                  num_models,

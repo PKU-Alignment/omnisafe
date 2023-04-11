@@ -12,12 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Safe controllers which do a black box optimization incorporating the constraint costs."""
+"""Model Predictive Control Planner."""
 
 import torch
 from omnisafe.algorithms.model_based.planner.cce import CCEPlanner
 
 class RCEPlanner(CCEPlanner):
+    """The Robust Cross Entropy (RCE) trajectory optimization method.
+
+    References:
+
+        - Title: Constrained Model-based Reinforcement Learning with Robust Cross-Entropy Method
+        - Authors: Zuxin Liu, Hongyi Zhou, Baiming Chen, Sicheng Zhong, Martial Hebert, Ding Zhao.
+        - URL: `RCE <https://arxiv.org/abs/2010.07968>`_
+    """
     def __init__(self,
                  dynamics,
                  num_models,

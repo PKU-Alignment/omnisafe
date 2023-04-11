@@ -12,11 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Safe controllers which do a black box optimization incorporating the constraint costs."""
+"""Model Predictive Control Planner."""
 
 import torch
 
 class CEMPlanner():
+    """The Cross-Entropy Method optimization (CEM) trajectory optimization method.
+
+    References:
+        - URL: `A good description of CEM <https://arxiv.org/pdf/2008.06389.pdf>`_
+    """
     def __init__(self,
                  dynamics,
                  num_models,
@@ -73,34 +78,6 @@ class CEMPlanner():
         actions = action.unsqueeze(1).repeat(1, int(self._num_particles/self._num_models), 1, 1)
         actions = actions.reshape(self._horizon, int(self._num_particles/self._num_models * self._num_samples), *self._action_shape)
         return states, actions
-
-    # @torch.no_grad()
-    # def _compute_actions_return(self, rewards, values=None):
-    #     """
-    #     Compute the return of the actions
-    #     """
-    #     assert rewards.shape == torch.Size([self._horizon, self._num_models, int(self._num_particles/self._num_models*self._num_samples), 1]), "Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)"
-    #     returns = rewards.reshape(self._horizon, self._num_particles,  self._num_samples, 1)
-    #     sum_horizon_returns = torch.sum(returns, dim=0)
-    #     mean_particles_returns = sum_horizon_returns.mean(dim=0)
-
-    #     assert mean_particles_returns.shape[0] == self._num_samples
-    #     return mean_particles_returns
-    # @torch.no_grad()
-    # def _select_elites(self, actions, returns, num_elites):
-
-    #     assert actions.shape == torch.Size([self._horizon, self._num_samples, *self._action_shape]), "Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)"
-    #     assert returns.shape == torch.Size([self._num_samples, 1]), "Input returns dimension should be equal to (self._num_samples, 1)"
-
-    #     elite_idxs = torch.topk(returns.squeeze(1), self._num_elites, dim=0).indices
-    #     elite_returns, elite_actions = returns[elite_idxs], actions[:, elite_idxs]
-
-    #     info = {}
-    #     info['elite_idxs'] = elite_idxs
-    #     info['best_action'] = elite_actions[0,0].unsqueeze(0)
-    #     assert info['best_action'].shape == torch.Size([1, *self._action_shape])
-
-    #     return elite_actions, elite_returns, info
 
     @torch.no_grad()
     def _select_elites(self, actions, traj):
@@ -170,6 +147,3 @@ class CEMPlanner():
         self._action_sequence_mean = last_mean.clone()
         return last_mean[0].clone().unsqueeze(0), logger_info
 
-    # def reset_planner(self):
-    #     self._action_sequence_mean = torch.zeros(self._horizon, *self._action_shape, device=self._device)
-    #     self._action_sequence_std = 2 * torch.ones(self._horizon, *self._action_shape, device=self._device)

@@ -15,7 +15,7 @@
 # Modified version of model.py from  https://github.com/Xingyu-Lin/mbpo_pytorch/blob/main/model.py
 # original version doesn't validate model error batch-wise and is highly memory intensive.
 # ==============================================================================
-"""Dynamics Model"""
+"""The Dynamics Model of MBPO and PETS."""
 
 import itertools
 
@@ -96,10 +96,6 @@ def init_weights(layer):
 # for when we only want to use one of the models.
 def unbatched_forward(layer, input, index):
     if isinstance(layer, EnsembleFC):
-        #weight = layer.weight[index]
-        # w_times_x = F.linear(input.float(), weight)
-        #return torch.add(w_times_x, layer.bias[index, None, :])  # w times x + b
-        #self.weight = nn.Parameter(torch.Tensor(1, in_features, out_features))
         input = F.linear(input, torch.transpose(layer.weight[index].squeeze(0), 0, 1), layer.bias[index])
 
     else:
@@ -351,8 +347,6 @@ class EnsembleDynamicsModel:
         train_inputs, train_labels = inputs[num_holdout:], labels[num_holdout:]
         holdout_inputs, holdout_labels = inputs[:num_holdout], labels[:num_holdout]
         self._ensemble_model.scaler.fit(train_inputs)
-        #train_inputs = self._ensemble_model.scaler.transform(train_inputs)
-        #holdout_inputs = self._ensemble_model.scaler.transform(holdout_inputs)
 
         for epoch in itertools.count():
             train_mse_losses = []

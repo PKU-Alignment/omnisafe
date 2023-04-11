@@ -12,12 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Safe controllers which do a black box optimization incorporating the constraint costs."""
+"""Model Predictive Control Planner."""
 
 import torch
 from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
 
 class SafeARCPlanner(ARCPlanner):
+    """The Safe Actor Regularized Control (ARC) trajectory optimization method.
+
+    References:
+        - Title: Learning Off-Policy with Online Planning
+        - Authors: Harshit Sikchi, Wenxuan Zhou, David Held.
+        - URL: `Safe ARC <https://arxiv.org/abs/2008.10066>`_
+    """
     def __init__(self,
                  dynamics,
                  actor_critic,

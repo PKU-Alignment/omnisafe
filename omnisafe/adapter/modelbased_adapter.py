@@ -43,7 +43,7 @@ import gymnasium
 
 class ModelBasedAdapter(OnlineAdapter):
     """OffPolicy Adapter for OmniSafe."""
-    
+
     def __init__(  # pylint: disable=too-many-arguments
         self, env_id: str, num_envs: int, seed: int, cfgs: Config, **kwargs
     ) -> None:
@@ -90,17 +90,8 @@ class ModelBasedAdapter(OnlineAdapter):
     def get_cost_from_obs_tensor(self, obs):
         return self._env.get_cost_from_obs_tensor(obs)
 
-    def get_reward_from_coordinate(self, obs):
-        return self._env.get_reward_from_coordinate(obs)
-
     def get_lidar_from_coordinate(self, obs):
         return self._env.get_lidar_from_coordinate(obs)
-
-    def get_cost_from_coordinate(self, obs):
-        return self._env.get_cost_from_coordinate(obs)
-
-    def get_observation_cost(self, obs):
-        return self._env.get_observation_cost(obs)
 
     def render(self,*args, **kwargs):
         return self._env.render(*args, **kwargs)
@@ -159,19 +150,6 @@ class ModelBasedAdapter(OnlineAdapter):
             current_step += info['num_step']
             self._log_value(reward=reward, cost=cost, info=info)
 
-            store_data = {
-                'current_step': current_step,
-                'ep_len': self._ep_len,
-                'current_obs': self._current_obs,
-                'action_info': action_info,
-                'action': action,
-                'reward': reward,
-                'cost': cost,
-                'terminated': terminated,
-                'truncated': truncated,
-                'next_state': next_state,
-                'info': info,
-            }
             store_data_func(
                 current_step,
                 self._ep_len,

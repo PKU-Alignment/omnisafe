@@ -12,41 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Deep Deterministic Policy Gradient algorithm."""
+"""Implementation of the Constrained Cross-Entropy algorithm."""
 
-import time
 from typing import Any, Dict, Tuple, Union, Optional
 
 
 import torch
-from torch import nn
 
 from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.base_algo import BaseAlgo
-from omnisafe.common.buffer import OffPolicyBuffer
-from omnisafe.common.logger import Logger
 
-from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel
+
+from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.cce import CCEPlanner
 from omnisafe.algorithms.model_based.base import PETS
 import numpy as np
-from matplotlib import pylab
-from gymnasium.utils.save_video import save_video
-import os
 
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
-class CCEM(PETS):
-    """The Deep Deterministic Policy Gradient (DDPG) algorithm.
+class CCEPETS(PETS):
+    """The Constrained Cross-Entropy (CCE) algorithm implementation based on PETS.
 
     References:
 
-        - Title: Continuous control with deep reinforcement learning
+        - Title: Constrained Cross-Entropy Method for Safe Reinforcement Learning
         - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
         Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
-        - URL: `DDPG <https://arxiv.org/abs/1509.02971>`_
+        - URL: `CCE <https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html>`_
     """
 
     def _init_model(self) -> None:
@@ -109,10 +102,8 @@ class CCEM(PETS):
         """action selection"""
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
-            #action = torch.rand(size=1, *self._env.action_space.shape)
         else:
             action, info = self._planner.output_action(state)
-            #action = action.cpu().detach().numpy()
             self._logger.store(
                 **{
                 'Plan/iter': info['Plan/iter'],
