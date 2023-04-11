@@ -28,7 +28,7 @@ from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.common.logger import Logger
 
 from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel
-from omnisafe.algorithms.model_based.planner import CCEPlanner
+from omnisafe.algorithms.model_based.planner.cce import CCEPlanner
 from omnisafe.algorithms.model_based.base import PETS
 import numpy as np
 from matplotlib import pylab

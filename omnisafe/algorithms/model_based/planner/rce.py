@@ -15,20 +15,17 @@
 """Safe controllers which do a black box optimization incorporating the constraint costs."""
 
 import torch
-from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
+from omnisafe.algorithms.model_based.planner.cce import CCEPlanner
 
-class SafeARCPlanner(ARCPlanner):
+class RCEPlanner(CCEPlanner):
     def __init__(self,
                  dynamics,
-                 actor_critic,
                  num_models,
                  horizon,
                  num_iterations,
                  num_particles,
                  num_samples,
                  num_elites,
-                 mixture_coefficient,
-                 temperature,
                  momentum,
                  epsilon,
                  gamma,
@@ -41,28 +38,24 @@ class SafeARCPlanner(ARCPlanner):
                  action_min,
                  ) -> None:
         super().__init__(
-                 dynamics,
-                 actor_critic,
-                 num_models,
-                 horizon,
-                 num_iterations,
-                 num_particles,
-                 num_samples,
-                 num_elites,
-                 mixture_coefficient,
-                 temperature,
-                 momentum,
-                 epsilon,
-                 gamma,
-                 device,
-                 dynamics_state_shape,
-                 action_shape,
-                 action_max,
-                 action_min,
+            dynamics,
+            num_models,
+            horizon,
+            num_iterations,
+            num_particles,
+            num_samples,
+            num_elites,
+            momentum,
+            epsilon,
+            gamma,
+            cost_gamma,
+            cost_limit,
+            device,
+            dynamics_state_shape,
+            action_shape,
+            action_max,
+            action_min,
         )
-        self._cost_gamma = cost_gamma
-        self._cost_limit = cost_limit
-
 
     @torch.no_grad()
     def _select_elites(self, actions, traj):
@@ -70,26 +63,22 @@ class SafeARCPlanner(ARCPlanner):
         Compute the return of the actions
         """
         rewards = traj['rewards']
-        values = traj['values']
         costs = traj['costs']
-        assert actions.shape == torch.Size([self._horizon, self._num_action, *self._action_shape]), "Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)"
-        assert rewards.shape == torch.Size([self._horizon, self._num_models, int(self._num_particles*self._num_action), 1]), "Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles*self._num_samples, 1)"
-        assert values.shape == torch.Size([self._horizon, self._num_models, int(self._num_particles*self._num_action), 1]), "Input values dimension should be equal to (self._horizon, self._num_models, self._num_particles*self._num_samples, 1)"
-        assert costs.shape == torch.Size([self._horizon, self._num_models, int(self._num_particles*self._num_action), 1]), "Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles*self._num_samples, 1)"
+        assert actions.shape == torch.Size([self._horizon, self._num_samples, *self._action_shape]), "Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)"
+        assert rewards.shape == torch.Size([self._horizon, self._num_models, int(self._num_particles/self._num_models*self._num_samples), 1]), "Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)"
+        assert costs.shape == torch.Size([self._horizon, self._num_models, int(self._num_particles/self._num_models*self._num_samples), 1]), "Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)"
 
-        costs = costs.reshape(self._horizon, self._num_models*self._num_particles,  self._num_action, 1)
+        costs = costs.reshape(self._horizon, self._num_particles,  self._num_samples, 1)
         max_cost = torch.max(costs, dim=1).values
         sum_horizon_costs = torch.sum(max_cost, dim=0)
         mean_episode_costs = sum_horizon_costs * (1000/self._horizon)
 
-        rewards = rewards.reshape(self._horizon, self._num_models*self._num_particles,  self._num_action, 1)
-        values = values.reshape(self._horizon, self._num_models*self._num_particles,  self._num_action, 1)
-
-        sum_horizon_returns = torch.sum(rewards, dim=0) + values[-1,:,:,:]
+        returns = rewards.reshape(self._horizon, self._num_particles,  self._num_samples, 1)
+        sum_horizon_returns = torch.sum(returns, dim=0)
         mean_particles_returns = sum_horizon_returns.mean(dim=0)
         mean_episode_returns = mean_particles_returns * (1000/self._horizon)
 
-        assert mean_episode_returns.shape[0] == self._num_action
+        assert mean_particles_returns.shape[0] == self._num_samples
 
         feasible_num = torch.sum(mean_episode_costs <= self._cost_limit).item()
         if feasible_num < self._num_elites:
@@ -98,18 +87,18 @@ class SafeARCPlanner(ARCPlanner):
             elite_idxs = (mean_episode_costs <= self._cost_limit).nonzero().reshape(-1) # like tensor([0, 1])
             elite_values, elite_actions = mean_episode_returns[elite_idxs], actions[:, elite_idxs]
 
+        elite_idxs_topk = torch.topk(elite_values.squeeze(1), self._num_elites, dim=0).indices
+        elite_returns_topk, elite_actions_topk = elite_values[elite_idxs_topk], elite_actions[:, elite_idxs_topk]
         info = {
+            'Plan/feasible_num': feasible_num,
             'Plan/episode_returns_max': mean_episode_returns.max().item(),
             'Plan/episode_returns_mean': mean_episode_returns.mean().item(),
             'Plan/episode_returns_min': mean_episode_returns.min().item(),
-            'Plan/feasible_num': feasible_num,
             'Plan/episode_costs_max': mean_episode_costs.max().item(),
             'Plan/episode_costs_mean': mean_episode_costs.mean().item(),
             'Plan/episode_costs_min': mean_episode_costs.min().item(),
         }
 
-        return elite_values, elite_actions, info
-
-
+        return elite_returns_topk, elite_actions_topk, info
 
 

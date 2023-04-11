@@ -28,7 +28,7 @@ from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.common.logger import Logger
 
 from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel
-from omnisafe.algorithms.model_based.planner import ARCPlanner
+from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.algorithms.model_based.base.pets import PETS
 import numpy as np

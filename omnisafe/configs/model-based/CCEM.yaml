@@ -54,7 +54,7 @@ defaults:
   # algorithm configurations
   algo_cfgs:
     # Tolerance of constraint violation
-    cost_limit: 1
+    cost_limit: 1.0
     action_repeat: 5
     plan_horizon: 7
     num_iterations: 5
@@ -84,7 +84,7 @@ defaults:
   # logger configurations
   logger_cfgs:
     # log cycle:
-    log_cycle: 10000
+    log_cycle: 20000
     # use wandb for logging
     use_wandb: False
     # wandb project name
@@ -97,33 +97,3 @@ defaults:
     log_dir: "./runs"
     # save model path
     window_lens: 100
-
-Ant-v4:
-  algo_cfgs:
-    action_repeat: 1
-
-Swimmer-v4:
-  algo_cfgs:
-    action_repeat: 1
-    update_dynamics_cycle: 1000
-    dynamics_batch_size: 256
-    plan_horizon: 30
-    num_particles: 20
-
-HalfCheetah-v4:
-  algo_cfgs:
-    action_repeat: 1
-    update_dynamics_cycle: 1000
-    dynamics_batch_size: 256
-    plan_horizon: 30
-    num_particles: 20
-
-SafetyAntVelocity-v4:
-  # algorithm configurations
-  algo_cfgs:
-    action_repeat: 1
-
-
-SafetyWalker2dVelocity-v4:
-  # algorithm configurations
-  algo_cfgs:

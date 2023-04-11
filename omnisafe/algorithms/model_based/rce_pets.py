@@ -19,29 +19,22 @@ from typing import Any, Dict, Tuple, Union, Optional
 
 
 import torch
-from torch import nn
 
 from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.base_algo import BaseAlgo
-from omnisafe.common.buffer import OffPolicyBuffer
-from omnisafe.common.logger import Logger
+
 
 from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel
-from omnisafe.algorithms.model_based.planner.safe_arc import SafeARCPlanner
-from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
-from omnisafe.algorithms.model_based.base.loop import LOOP
+from omnisafe.algorithms.model_based.planner.rce import RCEPlanner
+from omnisafe.algorithms.model_based.base import PETS
 import numpy as np
-from matplotlib import pylab
-from gymnasium.utils.save_video import save_video
-import os
-from torch import nn, optim
 
+from omnisafe.common.lagrange import Lagrange
 
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
-class SafeLOOP(LOOP):
+class RCEPETS(PETS):
     """The Deep Deterministic Policy Gradient (DDPG) algorithm.
 
     References:
@@ -52,16 +45,9 @@ class SafeLOOP(LOOP):
         - URL: `DDPG <https://arxiv.org/abs/1509.02971>`_
     """
 
+
     def _init_model(self) -> None:
         self._dynamics_state_space = self._env.coordinate_observation_space if self._env.coordinate_observation_space is not None else self._env.observation_space
-
-        self._actor_critic = ConstraintActorQCritic(
-            obs_space=self._dynamics_state_space,
-            act_space=self._env.action_space,
-            model_cfgs=self._cfgs.model_cfgs,
-            epochs=self._epochs,
-        ).to(self._device)
-        self._use_actor_critic = True
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
@@ -72,27 +58,23 @@ class SafeLOOP(LOOP):
             use_cost=True,
             use_terminal=False,
             use_var=False,
-            use_reward_critic=True,
+            use_reward_critic=False,
             use_cost_critic=False,
-            actor_critic=self._actor_critic,
+            actor_critic=None,
             rew_func=None,
             cost_func=self._env.get_cost_from_obs_tensor,
             terminal_func=None,
         )
-        self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
 
-        self._planner = SafeARCPlanner(
+        self._planner = RCEPlanner(
             dynamics=self._dynamics,
-            actor_critic=self._actor_critic,
             num_models=self._cfgs.dynamics_cfgs.num_ensemble,
             horizon=self._cfgs.algo_cfgs.plan_horizon,
             num_iterations=self._cfgs.algo_cfgs.num_iterations,
             num_particles=self._cfgs.algo_cfgs.num_particles,
             num_samples=self._cfgs.algo_cfgs.num_samples,
             num_elites=self._cfgs.algo_cfgs.num_elites,
-            mixture_coefficient=self._cfgs.algo_cfgs.mixture_coefficient,
-            temperature=self._cfgs.algo_cfgs.temperature,
             momentum=self._cfgs.algo_cfgs.momentum,
             epsilon=self._cfgs.algo_cfgs.epsilon,
             gamma=self._cfgs.algo_cfgs.gamma,
@@ -105,19 +87,24 @@ class SafeLOOP(LOOP):
             action_min=-1.0,
         )
 
+        self._use_actor_critic = False
+        self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
+
+
     def _init_log(self) -> None:
         super()._init_log()
         self._logger.register_key('Plan/feasible_num')
         self._logger.register_key('Plan/episode_costs_max')
         self._logger.register_key('Plan/episode_costs_mean')
         self._logger.register_key('Plan/episode_costs_min')
-
+        self._logger.register_key('Metrics/LagrangeMultiplier')
 
     def _select_action(
             self,
             current_step: int,
             state: torch.Tensor,
-            env: ModelBasedAdapter) -> Tuple[np.ndarray, Dict]:
+            env: ModelBasedAdapter,
+            ) -> Tuple[np.ndarray, Dict]:
         """action selection"""
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
@@ -143,3 +130,9 @@ class SafeLOOP(LOOP):
         assert action.shape == torch.Size([state.shape[0], self._env.action_space.shape[0]]), "action shape should be [batch_size, action_dim]"
         info = {}
         return action, info
+
+
+
+
+
+

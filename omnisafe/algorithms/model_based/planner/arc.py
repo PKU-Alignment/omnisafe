@@ -14,8 +14,6 @@
 # ==============================================================================
 """Safe controllers which do a black box optimization incorporating the constraint costs."""
 
-import numpy as np
-import scipy.stats as stats
 import torch
 
 class ARCPlanner():
@@ -77,7 +75,6 @@ class ARCPlanner():
     def _act_from_actor(self, state):
         assert state.shape == torch.Size([1, *self._dynamics_state_shape]) , "state dimension one should be 1"
         assert self._actor_traj % self._num_models == 0, "actor_traj should be divisible by num_models"
-        #states = state.repeat((self._actor_traj//self._num_models), 1)
         traj = self._dynamics.imagine(states=state, horizon=self._horizon, actions=None, actor_critic=self._actor_critic, idx=0)
         actions = traj['actions'].reshape(self._horizon, 1, *self._action_shape).clone().repeat([1, self._actor_traj, 1])
         return actions
@@ -150,7 +147,7 @@ class ARCPlanner():
 
         iter = 0
         actions_actor = self._act_from_actor(state)
-        while iter < self._num_iterations:
+        while iter < self._num_iterations and last_var.max() > self._epsilon:
             actions_gauss = self._act_from_last_gaus(state, last_mean=last_mean, last_var=last_var)
             actions = torch.cat([actions_gauss, actions_actor], dim=1)
             # [horizon, num_sample, action_shape]

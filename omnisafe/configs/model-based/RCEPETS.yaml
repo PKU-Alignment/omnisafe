@@ -51,17 +51,17 @@ defaults:
     eval_cycle: 10000
     num_episode: 1
 
+
   # algorithm configurations
   algo_cfgs:
+    # Tolerance of constraint violation
     cost_limit: 1.0
     action_repeat: 5
     plan_horizon: 7
     num_iterations: 5
-    num_particles: 4
-    num_samples: 100
-    mixture_coefficient: 0.05
-    num_elites: 20
-    temperature: 100.0
+    num_particles: 20
+    num_samples: 500
+    num_elites: 50
     momentum: 0.1
     epsilon: 0.001
     # number of steps to update the dynamics
@@ -81,63 +81,6 @@ defaults:
     gamma: 0.99
     # cost discount factor
     cost_gamma: 0.99
-  # model configurations
-    # number of steps to update the policy
-    update_policy_cycle: 100
-    # number of steps per sample
-    steps_per_sample: 1
-    # number of iterations to update the policy
-    update_iters: 1
-    # max gradient norm
-    max_grad_norm: 40
-    # use critic norm
-    use_critic_norm: False
-    # critic norm coefficient
-    critic_norm_coeff: 0.001
-    # The soft update coefficient
-    polyak: 0.005
-    # The delay step of policy update
-    policy_delay: 2
-    # Whether to use the exploration noise
-    use_exploration_noise: True
-    # The exploration noise
-    exploration_noise: 0.1
-    # The policy noise
-    policy_noise: 0.2
-    # policy_noise_clip
-    policy_noise_clip: 0.5
-    # The value of alpha
-    alpha: 0.2
-    # Whether to use auto alpha
-    auto_alpha: False
-    # use cost
-    use_cost: False
-
-  model_cfgs:
-    # weight initialization mode
-    weight_initialization_mode: "kaiming_uniform"
-    # actor type
-    actor_type: gaussian_sac
-    # linear learning rate decay
-    linear_lr_decay: True
-    # Configuration of Actor network
-    actor:
-      # Size of hidden layers
-      hidden_sizes: [256, 256]
-      # Activation function
-      activation: relu
-      # The learning rate of Actor network
-      lr: 0.0003
-    # Configuration of Critic network
-    critic:
-      # The number of critic networks
-      num_critics: 2
-      # Size of hidden layers
-      hidden_sizes: [256, 256]
-      # Activation function
-      activation: relu
-      # The learning rate of Critic network
-      lr: 0.0003
 
   # logger configurations
   logger_cfgs:
@@ -155,4 +98,5 @@ defaults:
     log_dir: "./runs"
     # save model path
     window_lens: 100
+
 

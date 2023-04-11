@@ -14,10 +14,7 @@
 # ==============================================================================
 """Safe controllers which do a black box optimization incorporating the constraint costs."""
 
-import numpy as np
-import scipy.stats as stats
 import torch
-from torch import jit
 
 class CEMPlanner():
     def __init__(self,

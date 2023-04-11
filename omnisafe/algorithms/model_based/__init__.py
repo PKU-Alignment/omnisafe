@@ -16,13 +16,13 @@
 
 from omnisafe.algorithms.model_based import (
     base,
-    planner,
     models,
 )
-from omnisafe.algorithms.model_based.base import PETS
-from omnisafe.algorithms.model_based.planner import CEMPlanner
 
-from omnisafe.algorithms.model_based.cap import CAP
+from omnisafe.algorithms.model_based.cap2 import CAP
+from omnisafe.algorithms.model_based.cap_pets import CAPPETS
+from omnisafe.algorithms.model_based.rce_pets import RCEPETS
+
 from omnisafe.algorithms.model_based.ccem import CCEM
 from omnisafe.algorithms.model_based.safeloop import SafeLOOP
 
@@ -30,6 +30,8 @@ from omnisafe.algorithms.model_based.safeloop import SafeLOOP
 __all__ = [
     *base.__all__,
     'CAP',
+    'CAPPETS',
     'CCEM',
     'SafeLOOP',
+    'RCEPETS',
 ]

@@ -28,7 +28,6 @@ from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.common.logger import Logger
 
 #from omnisafe.algorithms.model_based.models import EnsembleDynamicsModel
-from omnisafe.algorithms.model_based.planner import CEMPlanner
 import numpy as np
 from matplotlib import pylab
 from gymnasium.utils.save_video import save_video
