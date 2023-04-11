@@ -16,25 +16,24 @@
 
 from omnisafe.algorithms.on_policy import (
     base,
+    early_terminated,
     first_order,
     naive_lagrange,
     penalty_function,
+    pid_lagrange,
     saute,
     second_order,
     simmer,
-    pid_lagrange,
-    early_terminated,
 )
 from omnisafe.algorithms.on_policy.base import PPO, TRPO, NaturalPG, PolicyGradient
-
+from omnisafe.algorithms.on_policy.early_terminated import PPOEarlyTerminated, TRPOEarlyTerminated
 from omnisafe.algorithms.on_policy.first_order import CUP, FOCOPS
 from omnisafe.algorithms.on_policy.naive_lagrange import PDO, RCPO, OnCRPO, PPOLag, TRPOLag
 from omnisafe.algorithms.on_policy.penalty_function import IPO, P3O
-from omnisafe.algorithms.on_policy.saute import TRPOSaute
+from omnisafe.algorithms.on_policy.pid_lagrange import CPPOPID, TRPOPID
+from omnisafe.algorithms.on_policy.saute import PPOSaute, TRPOSaute
 from omnisafe.algorithms.on_policy.second_order import CPO, PCPO
-from omnisafe.algorithms.on_policy.simmer import TRPOSimmerPID
-from omnisafe.algorithms.on_policy.pid_lagrange import TRPOPID
-from omnisafe.algorithms.on_policy.early_terminated import TRPOEarlyTerminated
+from omnisafe.algorithms.on_policy.simmer import PPOSimmerPID, TRPOSimmerPID
 
 
 # from omnisafe.algorithms.on_policy.pid_lagrange import CPPOPid, TRPOPid

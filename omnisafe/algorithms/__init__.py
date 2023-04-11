@@ -24,6 +24,7 @@ from omnisafe.algorithms.off_policy import DDPG, SAC, TD3, DDPGLag, SACLag, TD3L
 # On-Policy Safe
 from omnisafe.algorithms.on_policy import (
     CPO,
+    CPPOPID,
     CUP,
     FOCOPS,
     PCPO,
@@ -31,15 +32,18 @@ from omnisafe.algorithms.on_policy import (
     PPO,
     RCPO,
     TRPO,
+    TRPOPID,
     NaturalPG,
     OnCRPO,
     PolicyGradient,
+    PPOEarlyTerminated,
     PPOLag,
+    PPOSaute,
+    PPOSimmerPID,
+    TRPOEarlyTerminated,
     TRPOLag,
     TRPOSaute,
     TRPOSimmerPID,
-    TRPOPID,
-    TRPOEarlyTerminated,
 )
 
 

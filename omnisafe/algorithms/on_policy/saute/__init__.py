@@ -14,9 +14,11 @@
 # ==============================================================================
 """Saute Reinforcement Learning algorithms."""
 
+from omnisafe.algorithms.on_policy.saute.ppo_saute import PPOSaute
 from omnisafe.algorithms.on_policy.saute.trpo_saute import TRPOSaute
 
 
 __all__ = [
     'TRPOSaute',
+    'PPOSaute',
 ]

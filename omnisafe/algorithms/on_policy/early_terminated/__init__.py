@@ -14,9 +14,11 @@
 # ==============================================================================
 """Early Terminated Reinforcement Learning algorithms."""
 
+from omnisafe.algorithms.on_policy.early_terminated.ppo_early_terminated import PPOEarlyTerminated
 from omnisafe.algorithms.on_policy.early_terminated.trpo_early_terminated import TRPOEarlyTerminated
 
 
 __all__ = [
     'TRPOEarlyTerminated',
+    'PPOEarlyTerminated',
 ]
