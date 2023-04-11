@@ -26,7 +26,7 @@ from omnisafe.envs.core import CMDP, env_register
 
 @env_register
 class MujocoEnv(CMDP):
-    """Safety Gymnasium environment."""
+    """Gymnasium Mujoco environment."""
 
     _support_envs = [
         'Ant-v4',
@@ -55,7 +55,7 @@ class MujocoEnv(CMDP):
             self._observation_space = self._env.single_observation_space
         else:
             # set healthy_reward=0.0 for removing the safety constraint in reward
-            self._env = gymnasium.make(id=env_id, autoreset=False, **kwargs)  #  healthy_reward=0.0
+            self._env = gymnasium.make(id=env_id, autoreset=False, healthy_reward=0.0, **kwargs)
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
 
