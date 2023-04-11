@@ -125,7 +125,7 @@ class Plotter:
             borderaxespad=0.0,
             prop={'size': 13},
         )
-
+        sub_figures[1].set_ylim(0, 100)
         xscale = np.max(np.asarray(data[xaxis])) > 5e3
         if xscale:
             # just some formatting niceness: x-axis scale in scientific notation if max x is large
@@ -239,7 +239,7 @@ class Plotter:
         all_logdirs,
         legend: str | None = None,
         xaxis: str | None = None,
-        value: str = 'Rewards',
+        values: tuple[str] = ('Rewards', 'Costs'),
         count=False,
         cost_limit=None,
         smooth=1,
@@ -299,60 +299,33 @@ class Plotter:
         """
         assert xaxis is not None, 'Must specify xaxis'
         data = self.get_all_datasets(all_logdirs, legend, select, exclude)
+        values = values if isinstance(values, tuple) else [values]
         condition = 'Condition2' if count else 'Condition1'
         # choose what to show on main curve: mean? max? min?
         estimator = getattr(np, estimator)
         sns.set()
-        fig, axes = plt.subplots(
-            1,
-            2,
-            figsize=(15, 5),
-        )
-        self.plot_data(
-            axes,
-            data,
-            xaxis=xaxis,
-            value=value,
-            condition=condition,
-            smooth=smooth,
-            estimator=estimator,
-        )
-        if cost_limit:
-            axes[1].axhline(y=cost_limit, ls='--', c='black', linewidth=2)
-        plt.show()
-        if save_name is None:
-            save_name = all_logdirs[0].split('/')[-1]
-        fig.savefig(
-            os.path.join(save_dir, f'{save_name}.{save_format}'),
-            bbox_inches='tight',
-            pad_inches=0.0,
-        )
-
-
-if __name__ == '__main__':
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--logdir', nargs='*')
-    parser.add_argument('--legend', '-l', nargs='*')
-    parser.add_argument('--xaxis', '-x', default='Steps')
-    parser.add_argument('--value', '-y', default='Rewards', nargs='*')
-    parser.add_argument('--count', action='store_true')
-    parser.add_argument('--smooth', '-s', type=int, default=1)
-    parser.add_argument('--select', nargs='*')
-    parser.add_argument('--exclude', nargs='*')
-    parser.add_argument('--estimator', default='mean')
-    args = parser.parse_args()
-
-    plotter = Plotter()
-    plotter.make_plots(
-        args.logdir,
-        args.legend,
-        args.xaxis,
-        args.value,
-        args.count,
-        smooth=args.smooth,
-        select=args.select,
-        exclude=args.exclude,
-        estimator=args.estimator,
-    )
+        for value in values:
+            fig, axes = plt.subplots(
+                1,
+                2,
+                figsize=(15, 5),
+            )
+            self.plot_data(
+                axes,
+                data,
+                xaxis=xaxis,
+                value=value,
+                condition=condition,
+                smooth=smooth,
+                estimator=estimator,
+            )
+            if cost_limit:
+                axes[1].axhline(y=cost_limit, ls='--', c='black', linewidth=2)
+            plt.show()
+            if save_name is None:
+                save_name = all_logdirs[0].split('/')[-1]
+            fig.savefig(
+                os.path.join(save_dir, f'{save_name}.{save_format}'),
+                bbox_inches='tight',
+                pad_inches=0.0,
+            )

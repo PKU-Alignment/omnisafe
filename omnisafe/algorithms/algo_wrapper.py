@@ -16,12 +16,10 @@
 
 from __future__ import annotations
 
-import difflib
 import os
 import sys
 from typing import Any
 
-import psutil
 import torch
 
 from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
@@ -59,17 +57,10 @@ class AlgoWrapper:
 
     def _init_config(self):
         """Init config."""
-        assert self.algo in ALGORITHMS['all'], (
-            f"{self.algo} doesn't exist. "
-            f"Did you mean {difflib.get_close_matches(self.algo, ALGORITHMS['all'], n=1)[0]}?"
-        )
+        assert (
+            self.algo in ALGORITHMS['all']
+        ), f"{self.algo} doesn't exist. Please choose from {ALGORITHMS['all']}."
         self.algo_type = ALGORITHM2TYPE.get(self.algo, '')
-        if self.algo_type is None or self.algo_type == '':
-            raise ValueError(f'{self.algo} is not supported!')
-        if self.algo_type in {'off-policy', 'model-based'} and self.train_terminal_cfgs is not None:
-            assert (
-                self.train_terminal_cfgs['parallel'] == 1
-            ), 'off-policy or model-based only support parallel==1!'
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations
@@ -105,6 +96,10 @@ class AlgoWrapper:
         cfgs.train_cfgs.recurisve_update(
             {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle},
         )
+        if self.algo_type in {'off-policy', 'model-based'}:
+            assert (
+                cfgs.train_cfgs.parallel == 1
+            ), 'off-policy or model-based only support parallel==1!'
         return cfgs
 
     def _init_checks(self):
@@ -113,21 +108,14 @@ class AlgoWrapper:
         assert isinstance(self.cfgs.train_cfgs.parallel, int), 'parallel must be an integer!'
         assert self.cfgs.train_cfgs.parallel > 0, 'parallel must be greater than 0!'
         assert (
-            isinstance(self.custom_cfgs, dict) or self.custom_cfgs is None
-        ), 'custom_cfgs must be a dict!'
-        assert self.env_id in support_envs(), (
-            f"{self.env_id} doesn't exist. "
-            f'Did you mean {difflib.get_close_matches(self.env_id, support_envs(), n=1)[0]}?'
-        )
+            self.env_id in support_envs()
+        ), f"{self.env_id} doesn't exist. Please choose from {support_envs()}."
 
     def learn(self):
         """Agent Learning."""
         # Use number of physical cores as default.
         # If also hardware threading CPUs should be used
         # enable this by the use_number_of_threads=True
-        physical_cores = psutil.cpu_count(logical=False)
-        use_number_of_threads = bool(self.cfgs.train_cfgs.parallel > physical_cores)
-
         check_all_configs(self.cfgs, self.algo_type)
         device = self.cfgs.train_cfgs.device
         if device == 'cpu':
@@ -137,7 +125,6 @@ class AlgoWrapper:
             torch.cuda.set_device(self.cfgs.train_cfgs.device)
         if distributed.fork(
             self.cfgs.train_cfgs.parallel,
-            use_number_of_threads=use_number_of_threads,
             device=self.cfgs.train_cfgs.device,
         ):
             # Re-launches the current script with workers linked by MPI
@@ -199,7 +186,7 @@ class AlgoWrapper:
         camera_name: str = 'track',
         width: int = 256,
         height: int = 256,
-    ):
+    ):  # pragma: no cover
         """Evaluate and render some episodes.
 
         Args:

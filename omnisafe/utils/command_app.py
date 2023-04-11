@@ -136,7 +136,7 @@ def train_grid(
     algo: str,
     env_id: str,
     custom_cfgs: dict,
-) -> Tuple[float, float, float]:
+) -> Tuple[float, float, float]:  # pragma: no cover
     """Train a policy from exp-x config with OmniSafe.
 
     Example:
@@ -242,7 +242,7 @@ def benchmark(
         eg.add(key=k, vals=v)
 
     gpu_id = None
-    if gpu_range is not None:
+    if gpu_range is not None:  # pragma: no cover
         assert_with_exit(
             len(gpu_range.split(':')) <= 3,
             'gpu_range must be like x:y:z format,'
@@ -260,12 +260,12 @@ def benchmark(
 
     if render:
         try:
-            eg.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
+            eg.render(num_episodes=1, render_mode='rgb_array', width=256, height=256)
         except RuntimeError:
             console.print('failed to render model', style='red bold')
     if evaluate:
         try:
-            eg.evaluate(num_episodes=10)
+            eg.evaluate(num_episodes=1)
         except RuntimeError:
             console.print('failed to evaluate model', style='red bold')
 

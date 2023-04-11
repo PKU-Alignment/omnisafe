@@ -94,7 +94,7 @@ class MLPActor(Actor):
         raise NotImplementedError
 
     def forward(self, obs: torch.Tensor) -> Distribution:
-        raise NotImplementedError
+        return self._distribution(obs)
 
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError

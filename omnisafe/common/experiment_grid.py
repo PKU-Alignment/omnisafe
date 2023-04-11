@@ -19,15 +19,12 @@ from __future__ import annotations
 import json
 import os
 import string
-import time
 from concurrent.futures import ProcessPoolExecutor as Pool
 from copy import deepcopy
-from textwrap import dedent
 from typing import Any
 
 import numpy as np
 from rich.console import Console
-from tqdm import trange
 
 from omnisafe.algorithms import ALGORITHM2TYPE
 from omnisafe.common.statistics_tools import StatisticsTools
@@ -417,33 +414,6 @@ class ExperimentGrid:
         announcement = f'\n{joined_var_names}\n\n{line}'
         print(announcement)
 
-        if self.wait_defore_launch > 0:
-            self._console.print(
-                dedent(
-                    """
-                    Launch delayed to give you a few seconds to review your experiments.
-
-                    To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
-                    spinup/user_config.py.
-
-                    """,
-                ),
-                style='cyan, bold',
-                end='',
-            )
-            print(line)
-            wait, steps = self.wait_defore_launch, 100
-            prog_bar = trange(
-                steps,
-                desc='Launching in...',
-                leave=False,
-                ncols=self.div_line_width,
-                mininterval=0.25,
-                bar_format='{desc}: {bar}| {remaining} {elapsed}',
-            )
-            for _ in prog_bar:
-                time.sleep(wait / steps)
-
         pool = Pool(max_workers=num_pool)
         # run the variants.
         results = []
@@ -575,7 +545,7 @@ class ExperimentGrid:
         camera_name: str = 'track',
         width: int = 256,
         height: int = 256,
-    ):
+    ):  # pragma: no cover
         """Evaluate and render some episodes.
 
         Args:

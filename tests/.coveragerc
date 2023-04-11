@@ -1,0 +1,9 @@
+[report]
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError
+    raise FileNotFoundError
+    class .*\bProtocol\):
+    @(abc\.)?abstractmethod
+    if __name__ == ('__main__'|"__main__"):
+    if TYPE_CHECKING:

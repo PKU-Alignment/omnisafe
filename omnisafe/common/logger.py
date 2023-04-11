@@ -25,7 +25,6 @@ from typing import Any, Deque, TextIO
 
 import numpy as np
 import torch
-import tqdm
 import wandb
 from rich import print  # pylint: disable=redefined-builtin
 from rich.console import Console
@@ -43,7 +42,7 @@ from omnisafe.utils.distributed import dist_statistics_scalar, get_rank
 try:  # noqa: SIM105
     # pylint: disable-next=wrong-import-order,unused-import,deprecated-module
     import distutils.version  # isort:skip  # noqa: F401
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 
 # pylint: disable-next=wrong-import-order
@@ -77,7 +76,6 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         output_dir: str,
         exp_name: str,
         output_fname: str = 'progress.csv',
-        verbose: bool = True,
         seed: int = 0,
         use_tensorboard: bool = True,
         use_wandb: bool = False,
@@ -90,7 +88,6 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             output_dir: The directory to save the log file.
             exp_name: The name of the experiment.
             output_fname: The name of the log file.
-            verbose: Whether to print the log to the console.
             seed: The random seed.
             use_tensorboard: Whether to use tensorboard.
             use_wandb: Whether to use wandb.
@@ -105,7 +102,6 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         self._hms_time = hms_time
         self._log_dir = os.path.join(output_dir, exp_name, relpath)
-        self._verbose = verbose
         self._maste_proc = get_rank() == 0
         self._console = Console()
 
@@ -140,7 +136,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         if self._use_tensorboard and self._maste_proc:
             self._tensorboard_writer = SummaryWriter(log_dir=os.path.join(self._log_dir, 'tb'))
 
-        if self._use_wandb and self._maste_proc:
+        if self._use_wandb and self._maste_proc:  # pragma: no cover
             project: str = self._config.logger_cfgs.get('wandb_project', 'omnisafe')
             name: str = f'{exp_name}-{relpath}'
             print('project', project, 'name', name)
@@ -151,12 +147,6 @@ class Logger:  # pylint: disable=too-many-instance-attributes
                 for model in models:
                     wandb.watch(model)
 
-        if not self._verbose:
-            assert (
-                'epochs' in self._config
-            ), 'epochs must be specified in the config file when verbose is False'
-            self._proc_bar = tqdm.tqdm(total=self._config['epochs'], desc='Epochs')
-
     def log(self, msg: str, color: str = 'green', bold: bool = False) -> None:
         """Log the message to the console and the file.
 
@@ -165,7 +155,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             color (int): The color of the message.
             bold (bool): Whether to use bold font.
         """
-        if self._verbose and self._maste_proc:
+        if self._maste_proc:
             style = ' '.join([color, 'bold' if bold else ''])
             self._console.print(msg, style=style)
 
@@ -232,6 +222,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         """
         assert (key and f'{key}/Mean') not in self._current_row, f'Key {key} has been registered'
         if min_and_max:
+            self._current_row[key] = 0
             self._current_row[f'{key}/Mean'] = 0
             self._current_row[f'{key}/Min'] = 0
             self._current_row[f'{key}/Max'] = 0
@@ -289,14 +280,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         table = Table('Metrics', 'Value')
         if self._maste_proc:
             self._epoch += 1
-            if self._verbose:
-                key_lens = list(map(len, self._current_row.keys()))
-                max_key_len = max(15, *key_lens)
-                for key, val in self._current_row.items():
-                    table.add_row(key[:max_key_len], str(val)[:max_key_len])
-
-            else:
-                self._proc_bar.update(1)
+            key_lens = list(map(len, self._current_row.keys()))
+            max_key_len = max(15, *key_lens)
+            for key, val in self._current_row.items():
+                table.add_row(key[:max_key_len], str(val)[:max_key_len])
 
             if self._first_row:
                 self._csv_writer.writerow(self._current_row.keys())
@@ -322,6 +309,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             if self._headers_minmax[key]:
                 old_data = self._current_row[f'{key}/Mean']
                 mean, min_val, max_val, std = self.get_stats(key, True)
+                self._current_row[key] = mean
                 self._current_row[f'{key}/Mean'] = mean
                 self._current_row[f'{key}/Min'] = min_val
                 self._current_row[f'{key}/Max'] = max_val
@@ -354,7 +342,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
                 torch.tensor(vals),
                 with_min_and_max=True,
             )
-            return mean.item(), min_val.item(), max_val.item(), std.item()
+            return mean.item(), min_val.mean().item(), max_val.mean().item(), std.item()
 
         mean, std = dist_statistics_scalar(  # pylint: disable=unbalanced-tuple-unpacking
             torch.tensor(vals),
