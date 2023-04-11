@@ -29,7 +29,7 @@ class CAPPlanner(CCEPlanner):
         - URL: `CAP <https://arxiv.org/abs/2112.07701>`_
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
         dynamics,
         num_models,
@@ -72,15 +72,16 @@ class CAPPlanner(CCEPlanner):
         self._lagrange = lagrange
 
     @torch.no_grad()
-    def _select_elites(self, actions, traj):
+    def _select_elites(self, actions, traj):  # pylint: disable=too-many-locals
         """
         Compute the return of the actions
         """
         rewards = traj['rewards']
         costs = traj['costs']
-        vars = traj['vars']
+        state_vars = traj['vars']
         assert actions.shape == torch.Size(
             [self._horizon, self._num_samples, *self._action_shape],
+            # pylint: disable-next=line-too-long
         ), 'Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)'
         assert rewards.shape == torch.Size(
             [
@@ -89,13 +90,15 @@ class CAPPlanner(CCEPlanner):
                 int(self._num_particles / self._num_models * self._num_samples),
                 1,
             ],
+            # pylint: disable-next=line-too-long
         ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)'
-        assert vars.shape[:-1] == torch.Size(
+        assert state_vars.shape[:-1] == torch.Size(
             [
                 self._horizon,
                 self._num_models,
                 int(self._num_particles / self._num_models * self._num_samples),
             ],
+            # pylint: disable-next=line-too-long
         ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, dynamics_state_shape)'
         assert costs.shape == torch.Size(
             [
@@ -104,9 +107,10 @@ class CAPPlanner(CCEPlanner):
                 int(self._num_particles / self._num_models * self._num_samples),
                 1,
             ],
+            # pylint: disable-next=line-too-long
         ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)'
         # var: [horizon, network_size, num_gaussian_traj*particles/network_size, state_dim]
-        var_penalty = vars.sqrt().norm(dim=3).max(1)[0]
+        var_penalty = state_vars.sqrt().norm(dim=3).max(1)[0]
         # cost_penalty: [horizon, num_gaussian_traj*particles/network_size]
         var_penalty = var_penalty.repeat_interleave(self._num_models).view(
             costs.shape,

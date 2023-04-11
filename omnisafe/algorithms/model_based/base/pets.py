@@ -211,13 +211,22 @@ class PETS(BaseAlgo):
 
         return ep_ret, ep_cost, ep_len
 
-    def _algo_reset(self, current_step):
+    def _algo_reset(
+        self,
+        current_step,  # pylint: disable=unused-argument
+    ):
         pass
 
-    def _update_policy(self, current_step):
+    def _update_policy(
+        self,
+        current_step,  # pylint: disable=unused-argument
+    ):
         pass
 
-    def _update_dynamics_model(self, current_step):
+    def _update_dynamics_model(
+        self,
+        current_step,  # pylint: disable=unused-argument
+    ):
         """Update dynamics."""
         state = self._dynamics_buf.data['obs'][: self._dynamics_buf.size, :]
         action = self._dynamics_buf.data['act'][: self._dynamics_buf.size, :]
@@ -251,7 +260,7 @@ class PETS(BaseAlgo):
     def _update_epoch(self):
         pass
 
-    def _select_action(
+    def _select_action(  # pylint: disable=unused-argument
         self,
         current_step: int,
         state: torch.Tensor,
@@ -279,7 +288,7 @@ class PETS(BaseAlgo):
         info = {}
         return action, info
 
-    def _store_real_data(
+    def _store_real_data(  # pylint: disable=too-many-arguments,unused-argument
         self,
         current_step: int,
         ep_len: int,
@@ -297,6 +306,7 @@ class PETS(BaseAlgo):
         done = terminated or truncated
         goal_met = False if 'goal_met' not in info.keys() else info['goal_met']
         if not terminated and not truncated and not goal_met:
+            # pylint: disable-next=line-too-long
             # if goal_met == true, Current goal position is not related to the last goal position, this huge transition will confuse the dynamics model.
             self._dynamics_buf.store(
                 obs=state,
@@ -307,7 +317,7 @@ class PETS(BaseAlgo):
                 done=done,
             )
 
-    def _evaluation_single_step(
+    def _evaluation_single_step(  # pylint: disable=too-many-locals
         self,
         current_step: int,
         use_real_input: bool = True,

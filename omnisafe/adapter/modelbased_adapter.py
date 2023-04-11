@@ -35,8 +35,10 @@ from omnisafe.envs.wrapper import (
 from omnisafe.utils.config import Config
 
 
-class ModelBasedAdapter(OnlineAdapter):
-    """OffPolicy Adapter for OmniSafe."""
+class ModelBasedAdapter(
+    OnlineAdapter,
+):  # pylint: disable=too-many-instance-attributes,super-init-not-called
+    """Model Based Adapter for OmniSafe."""
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -82,15 +84,23 @@ class ModelBasedAdapter(OnlineAdapter):
         self._last_eval = 0
 
     def get_goal_flag_from_obs_tensor(self, obs):
+        """
+        get goal flag from tensor observation
+        """
         return self._env.get_goal_flag_from_obs_tensor(obs)
 
     def get_cost_from_obs_tensor(self, obs):
+        """
+        get cost from tensor observation
+        """
         return self._env.get_cost_from_obs_tensor(obs)
 
     def get_lidar_from_coordinate(self, obs):
+        """get lidar from coordinate"""
         return self._env.get_lidar_from_coordinate(obs)
 
-    def render(self, *args, **kwargs):
+    def render(self, *args: str, **kwargs: int):
+        """render the environment"""
         return self._env.render(*args, **kwargs)
 
     def _wrapper(
@@ -100,6 +110,7 @@ class ModelBasedAdapter(OnlineAdapter):
         cost_normalize: bool = True,
         action_repeat: int = 1,
     ):
+        """Wrapper for environment."""
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
         if self._env.need_auto_reset_wrapper:
@@ -116,7 +127,7 @@ class ModelBasedAdapter(OnlineAdapter):
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
 
-    def roll_out(
+    def roll_out(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         current_step: int,
         roll_out_step: int,
@@ -129,6 +140,7 @@ class ModelBasedAdapter(OnlineAdapter):
         algo_reset_func: Union[Callable, None] = None,
         update_actor_func: Union[Callable, None] = None,
     ) -> int:
+        """Roll out the environment."""
         epoch_start_time = time.time()
 
         update_actor_critic_time = 0
@@ -234,13 +246,14 @@ class ModelBasedAdapter(OnlineAdapter):
             },
         )
 
-    def _reset_log(self, idx: Optional[int] = None) -> None:
+    def _reset_log(self, idx: Optional[int] = None) -> None:  # pylint: disable=unused-argument
         """Reset log."""
         self._ep_ret = torch.zeros(1)
         self._ep_cost = torch.zeros(1)
         self._ep_len = torch.zeros(1)
 
     def check_violation(self, obs: torch.Tensor) -> torch.Tensor:
+        """Check if the observation violates the environment's constraints."""
         assert obs.shape[1] == self.observation_space.shape[0]
         if self._env_id == 'Ant-v4':
             min_z, max_z = 0.2, 1.0

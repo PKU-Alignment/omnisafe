@@ -28,7 +28,7 @@ class SafeARCPlanner(ARCPlanner):
         - URL: `Safe ARC <https://arxiv.org/abs/2008.10066>`_
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
         dynamics,
         actor_critic,
@@ -84,15 +84,19 @@ class SafeARCPlanner(ARCPlanner):
         costs = traj['costs']
         assert actions.shape == torch.Size(
             [self._horizon, self._num_action, *self._action_shape],
+            # pylint: disable-next=line-too-long
         ), 'Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)'
         assert rewards.shape == torch.Size(
             [self._horizon, self._num_models, int(self._num_particles * self._num_action), 1],
+            # pylint: disable-next=line-too-long
         ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles*self._num_samples, 1)'
         assert values.shape == torch.Size(
             [self._horizon, self._num_models, int(self._num_particles * self._num_action), 1],
+            # pylint: disable-next=line-too-long
         ), 'Input values dimension should be equal to (self._horizon, self._num_models, self._num_particles*self._num_samples, 1)'
         assert costs.shape == torch.Size(
             [self._horizon, self._num_models, int(self._num_particles * self._num_action), 1],
+            # pylint: disable-next=line-too-long
         ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles*self._num_samples, 1)'
 
         costs = costs.reshape(

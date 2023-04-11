@@ -38,7 +38,7 @@ def swish(data):
 class StandardScaler:
     """Normalize data"""
 
-    def __init__(self, device=torch.device('cpu')) -> None:
+    def __init__(self, device) -> None:
         self._mean = 0.0
         self._std = 1.0
         self._mean_t = torch.tensor(self._mean).to(device)
@@ -97,19 +97,20 @@ def init_weights(layer):
         layer.bias.data.fill_(0.0)
 
 
-# Special forward for nn.Sequential modules which contain BatchedLinear layers,
-# for when we only want to use one of the models.
-def unbatched_forward(layer, input, index):
+def unbatched_forward(layer, input_data, index):
+    """Special forward for nn.Sequential modules which contain BatchedLinear layers,
+    for when we only want to use one of the models.
+    """
     if isinstance(layer, EnsembleFC):
-        input = F.linear(
-            input,
+        output = F.linear(
+            input_data,
             torch.transpose(layer.weight[index].squeeze(0), 0, 1),
             layer.bias[index],
         )
 
     else:
-        input = layer(input)
-    return input
+        output = layer(input_data)
+    return output
 
 
 class EnsembleFC(nn.Module):
@@ -164,7 +165,7 @@ class EnsembleModel(nn.Module):
         hidden_size=200,
         learning_rate=1e-3,
         use_decay=False,
-        device=torch.device('cpu'),
+        device='cpu',
     ) -> None:
         super().__init__()
 
@@ -207,7 +208,7 @@ class EnsembleModel(nn.Module):
         self.scaler = StandardScaler(self._device)
 
     # pylint: disable-next=too-many-locals
-    def forward_all(self, data, ret_log_var=False):
+    def forward(self, data, ret_log_var=False):
         """Compute next state, reward, cost"""
         data = self.scaler.transform(data)
         nn1_output = swish(self._nn1(data))
@@ -226,6 +227,7 @@ class EnsembleModel(nn.Module):
         return mean, var
 
     def forward_idx(self, data, idx_model, ret_log_var=False):
+        """Compute next state, reward, cost from an certain model"""
         assert data.shape[0] == 1
         data = self.scaler.transform(data[0])
         unbatched_forward_fn = partial(unbatched_forward, index=idx_model)
@@ -382,7 +384,7 @@ class EnsembleDynamicsModel:
                 idx = train_idx[:, start_pos : start_pos + self._batch_size]
                 train_input = torch.from_numpy(train_inputs[idx]).float().to(self._device)
                 train_label = torch.from_numpy(train_labels[idx]).float().to(self._device)
-                mean, logvar = self._ensemble_model.forward_all(train_input, ret_log_var=True)
+                mean, logvar = self._ensemble_model.forward(train_input, ret_log_var=True)
                 total_loss, mse_loss = self._ensemble_model.loss(mean, logvar, train_label)
                 self._ensemble_model.train_ensemble(total_loss)
                 train_mse_losses.append(mse_loss.detach().cpu().numpy().mean())
@@ -399,7 +401,7 @@ class EnsembleDynamicsModel:
                     idx = val_idx[:, start_pos : start_pos + val_batch_size]
                     val_input = torch.from_numpy(holdout_inputs[idx]).float().to(self._device)
                     val_label = torch.from_numpy(holdout_labels[idx]).float().to(self._device)
-                    holdout_mean, holdout_logvar = self._ensemble_model.forward_all(
+                    holdout_mean, holdout_logvar = self._ensemble_model.forward(
                         val_input,
                         ret_log_var=True,
                     )
@@ -448,8 +450,7 @@ class EnsembleDynamicsModel:
             reward_start_dim = int(self._predict_cost) * self._cost_size
             reward_end_dim = reward_start_dim + self._reward_size
             return network_output[:, :, reward_start_dim:reward_end_dim]
-        else:
-            return self._rew_func(network_output[:, :, self._state_start_dim :])
+        return self._rew_func(network_output[:, :, self._state_start_dim :])
 
     @torch.no_grad()
     def _compute_cost(
@@ -458,15 +459,14 @@ class EnsembleDynamicsModel:
     ) -> torch.Tensor:
         if self._predict_cost:
             return network_output[:, :, : self._cost_size]
-        else:
-            return self._cost_func(network_output[:, :, self._state_start_dim :])
+        return self._cost_func(network_output[:, :, self._state_start_dim :])
 
     @torch.no_grad()
     def _compute_terminal(
         self,
         network_output: torch.Tensor,
     ) -> torch.Tensor:
-        return self._trunc_func(network_output[:, :, self._state_start_dim :])
+        return self._terminal_func(network_output[:, :, self._state_start_dim :])
 
     def _predict(
         self,
@@ -488,7 +488,7 @@ class EnsembleDynamicsModel:
             model_input = inputs[:, i : min(i + batch_size, inputs.shape[1]), :]
             # input shape: [networ_size, (num_gaus+num_actor)*paritcle ,state_dim + action_dim]
             if idx is None:
-                b_mean, b_var = self._ensemble_model.forward_all(
+                b_mean, b_var = self._ensemble_model.forward(
                     model_input,
                     ret_log_var=ret_log_var,
                 )
@@ -516,6 +516,7 @@ class EnsembleDynamicsModel:
         idx: Union[int, None] = None,
         deterministic: bool = False,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, List[torch.Tensor]]]:
+        """sample states and rewards from the ensemble model"""
         assert (
             states.shape[:-1] == actions.shape[:-1]
         ), 'states and actions must have the same shape except the last dimension'
@@ -564,6 +565,7 @@ class EnsembleDynamicsModel:
         actor_critic: ConstraintActorQCritic = None,
         idx: Union[int, None] = None,
     ) -> Dict[str, List[torch.Tensor]]:
+        """imagine the future states and rewards from the ensemble model"""
         assert (
             states.shape[1] == self._state_size
         ), 'states should be of shape (batch_size, state_size)'

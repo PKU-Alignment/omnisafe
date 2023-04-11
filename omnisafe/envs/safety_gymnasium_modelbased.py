@@ -26,8 +26,8 @@ from omnisafe.envs.core import CMDP, env_register
 
 
 @env_register
-class SafetyGymnasiumModelBased(CMDP):
-    """Safety Gymnasium environment."""
+class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attributes
+    """Safety Gymnasium environment for Model based algorithms."""
 
     _support_envs = [
         'SafetyPointGoal0-v0-modelbased',
@@ -57,7 +57,7 @@ class SafetyGymnasiumModelBased(CMDP):
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
         else:
-            NotImplementedError
+            raise NotImplementedError
 
         self._device = torch.device(device)
 
@@ -132,6 +132,7 @@ class SafetyGymnasiumModelBased(CMDP):
 
     @property
     def task(self):
+        """Get task name"""
         return self._task
 
     def get_cost_from_obs_tensor(self, obs, is_binary=True):
@@ -181,10 +182,10 @@ class SafetyGymnasiumModelBased(CMDP):
             goal_flat = goal_flat.reshape(obs.shape[0], obs.shape[1], 1)
         return goal_flat
 
-    def get_cost_from_obs(self, obs, is_binary):
+    def get_cost_from_obs(self, obs, is_binary, use_lidar):
         """Get batch cost from batch observation"""
         assert not torch.is_tensor(obs), 'obs should be numpy array'
-        if not self.use_lidar:
+        if not use_lidar:
             batch_size = obs.shape[0]
             hazards_key = self.key_to_slice['hazards']
             hazard_obs = obs[:, hazards_key].reshape(batch_size, -1, 2)
@@ -201,11 +202,11 @@ class SafetyGymnasiumModelBased(CMDP):
                 ) * 10
         else:
             batch_size = obs.shape[0]
-            hazards_key = self.key_slice['hazards_lidar']
-            hazard_obs = obs[:, hazards_key].reshape(batch_size, self.env.task.lidar_conf.num_bins)
+            hazards_key = self.key_to_slice['hazards_lidar']
+            hazard_obs = obs[:, hazards_key].reshape(batch_size, self._env.task.lidar_conf.num_bins)
             lidar_hazards_threshold = (
-                max(0, self.env.task.lidar_conf.max_dist - self.env.task.hazards.size)
-                / self.env.task.lidar_conf.max_dist
+                max(0, self._env.task.lidar_conf.max_dist - self._env.task.hazards.size)
+                / self._env.task.lidar_conf.max_dist
             )
             cost = np.where(hazard_obs >= lidar_hazards_threshold, 1.0, 0.0)
             cost = cost.sum(1)
@@ -317,14 +318,22 @@ class SafetyGymnasiumModelBased(CMDP):
         The returned obs coordinates are all in the robot coordinates.
         """
         obs = {}
+        robot_matrix = self._env.task.agent.mat
+        obs['robot_m'] = np.array(robot_matrix[0][:2])
+
         robot_pos = self._env.task.agent.pos
         goal_pos = self._env.task.goal.pos
-        vases_pos_list = self._env.task.vases.pos  # list of shape (3,) ndarray
+        # vases_pos_list = self._env.task.vases.pos  # list of shape (3,) ndarray
         hazards_pos_list = self._env.task.hazards.pos  # list of shape (3,) ndarray
-        ego_goal_pos = self._env.task._ego_xy(goal_pos[:2])
-        [self._env.task._ego_xy(pos[:2]) for pos in vases_pos_list]  # list of shape (2,) ndarray
+        # ego_goal_pos = self._env.task._ego_xy(goal_pos[:2])
+        # [self._env.task._ego_xy(pos[:2]) for pos in vases_pos_list]  # list of shape (2,) ndarray
+        # ego_hazards_pos_list = [
+        #     self._env.task._ego_xy(pos[:2]) for pos in hazards_pos_list
+        # ]  # list of shape (2,) ndarray
+
+        ego_goal_pos = self._ego_xy(robot_matrix, robot_pos, goal_pos[:2])
         ego_hazards_pos_list = [
-            self._env.task._ego_xy(pos[:2]) for pos in hazards_pos_list
+            self._ego_xy(robot_matrix, robot_pos, pos[:2]) for pos in hazards_pos_list
         ]  # list of shape (2,) ndarray
 
         # append obs to the dict
@@ -347,8 +356,6 @@ class SafetyGymnasiumModelBased(CMDP):
         # --------modification-----------------
         obs['robot'] = np.array(robot_pos[:2])
         obs['hazards'] = np.array(ego_hazards_pos_list)  # (hazard_num, 2)
-        robot_matrix = self._env.task.agent.mat
-        obs['robot_m'] = np.array(robot_matrix[0][:2])
         obs['goal'] = ego_goal_pos  # (2,)
         # obs['vases'] = np.array(ego_vases_pos_list)  # (vase_num, 2)
         return obs

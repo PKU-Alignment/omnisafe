@@ -29,46 +29,6 @@ class RCEPlanner(CCEPlanner):
         - URL: `RCE <https://arxiv.org/abs/2010.07968>`_
     """
 
-    def __init__(
-        self,
-        dynamics,
-        num_models,
-        horizon,
-        num_iterations,
-        num_particles,
-        num_samples,
-        num_elites,
-        momentum,
-        epsilon,
-        gamma,
-        cost_gamma,
-        cost_limit,
-        device,
-        dynamics_state_shape,
-        action_shape,
-        action_max,
-        action_min,
-    ) -> None:
-        super().__init__(
-            dynamics,
-            num_models,
-            horizon,
-            num_iterations,
-            num_particles,
-            num_samples,
-            num_elites,
-            momentum,
-            epsilon,
-            gamma,
-            cost_gamma,
-            cost_limit,
-            device,
-            dynamics_state_shape,
-            action_shape,
-            action_max,
-            action_min,
-        )
-
     @torch.no_grad()
     def _select_elites(self, actions, traj):
         """
@@ -78,6 +38,7 @@ class RCEPlanner(CCEPlanner):
         costs = traj['costs']
         assert actions.shape == torch.Size(
             [self._horizon, self._num_samples, *self._action_shape],
+            # pylint: disable-next=line-too-long
         ), 'Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)'
         assert rewards.shape == torch.Size(
             [
@@ -86,6 +47,7 @@ class RCEPlanner(CCEPlanner):
                 int(self._num_particles / self._num_models * self._num_samples),
                 1,
             ],
+            # pylint: disable-next=line-too-long
         ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)'
         assert costs.shape == torch.Size(
             [
@@ -94,6 +56,7 @@ class RCEPlanner(CCEPlanner):
                 int(self._num_particles / self._num_models * self._num_samples),
                 1,
             ],
+            # pylint: disable-next=line-too-long
         ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)'
 
         costs = costs.reshape(self._horizon, self._num_particles, self._num_samples, 1)

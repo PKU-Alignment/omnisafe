@@ -19,6 +19,6 @@ from omnisafe.algorithms.model_based.base.pets import PETS
 
 
 __all__ = [
-    'PETS',
     'LOOP',
+    'PETS',
 ]

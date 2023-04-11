@@ -30,7 +30,7 @@ class CCEPlanner(CEMPlanner):
         - URL: `CCE <https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html>`_
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
         dynamics,
         num_models,
@@ -77,24 +77,27 @@ class CCEPlanner(CEMPlanner):
         """
         rewards = traj['rewards']
         costs = traj['costs']
-        assert actions.shape == torch.Size(
+        assert actions.shape == torch.Size(  # pylint: disable=line-too-long
             [self._horizon, self._num_samples, *self._action_shape],
+            # pylint: disable-next=line-too-long
         ), 'Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)'
-        assert rewards.shape == torch.Size(
+        assert rewards.shape == torch.Size(  # pylint: disable=line-too-long
             [
                 self._horizon,
                 self._num_models,
                 int(self._num_particles / self._num_models * self._num_samples),
                 1,
             ],
+            # pylint: disable-next=line-too-long
         ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)'
-        assert costs.shape == torch.Size(
+        assert costs.shape == torch.Size(  # pylint: disable=line-too-long
             [
                 self._horizon,
                 self._num_models,
                 int(self._num_particles / self._num_models * self._num_samples),
                 1,
             ],
+            # pylint: disable-next=line-too-long
         ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)'
 
         costs = costs.reshape(self._horizon, self._num_particles, self._num_samples, 1)

@@ -17,7 +17,7 @@
 import torch
 
 
-class ARCPlanner:
+class ARCPlanner:  # pylint: disable=too-many-instance-attributes
     """The Actor Regularized Control (ARC) algorithm.
 
     References:
@@ -27,7 +27,7 @@ class ARCPlanner:
         - URL: `ARC <https://arxiv.org/abs/2008.10066>`_
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
         dynamics,
         actor_critic,
@@ -80,10 +80,10 @@ class ARCPlanner:
         )
 
     @torch.no_grad()
-    def _act_from_last_gaus(self, state, last_mean, last_var):
+    def _act_from_last_gaus(self, last_mean, last_var):
         # Sample actions from the last gaussian distribution
         constrained_std = torch.sqrt(last_var)
-        actions = torch.clamp(
+        return torch.clamp(
             last_mean.unsqueeze(1)
             + constrained_std.unsqueeze(1)
             * torch.randn(
@@ -95,8 +95,6 @@ class ARCPlanner:
             self._action_min,
             self._action_max,
         )
-
-        return actions
 
     @torch.no_grad()
     def _act_from_actor(self, state):
@@ -113,13 +111,12 @@ class ARCPlanner:
             actor_critic=self._actor_critic,
             idx=0,
         )
-        actions = (
+        return (
             traj['actions']
             .reshape(self._horizon, 1, *self._action_shape)
             .clone()
             .repeat([1, self._actor_traj, 1])
         )
-        return actions
 
     @torch.no_grad()
     def _state_action_repeat(self, state, action):
@@ -150,12 +147,15 @@ class ARCPlanner:
         values = traj['values']
         assert actions.shape == torch.Size(
             [self._horizon, self._num_action, *self._action_shape],
+            # pylint: disable-next=line-too-long
         ), 'Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)'
         assert rewards.shape == torch.Size(
             [self._horizon, self._num_models, int(self._num_particles * self._num_action), 1],
+            # pylint: disable-next=line-too-long
         ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles*self._num_samples, 1)'
         assert values.shape == torch.Size(
             [self._horizon, self._num_models, int(self._num_particles * self._num_action), 1],
+            # pylint: disable-next=line-too-long
         ), 'Input values dimension should be equal to (self._horizon, self._num_models, self._num_particles*self._num_samples, 1)'
 
         rewards = rewards.reshape(
@@ -213,6 +213,7 @@ class ARCPlanner:
 
     @torch.no_grad()
     def output_action(self, state):
+        """Output action from the planner"""
         assert state.shape == torch.Size(
             [1, *self._dynamics_state_shape],
         ), 'Input state dimension should be equal to (1, self._dynamics_state_shape)'
@@ -221,15 +222,17 @@ class ARCPlanner:
         last_mean[:-1] = self._action_sequence_mean[1:].clone()
         last_mean[-1] = self._action_sequence_mean[-1].clone()
 
-        iter = 0
+        current_iter = 0
         actions_actor = self._act_from_actor(state)
-        while iter < self._num_iterations and last_var.max() > self._epsilon:
-            actions_gauss = self._act_from_last_gaus(state, last_mean=last_mean, last_var=last_var)
+        while current_iter < self._num_iterations and last_var.max() > self._epsilon:
+            actions_gauss = self._act_from_last_gaus(last_mean=last_mean, last_var=last_var)
             actions = torch.cat([actions_gauss, actions_actor], dim=1)
             # [horizon, num_sample, action_shape]
             states_repeat, actions_repeat = self._state_action_repeat(state, actions)
+            # pylint: disable-next=line-too-long
             # [num_particles * num_samples/num_ensemble, state_shape], [horizon, num_particles * num_samples/num_ensemble, action_shape]
             traj = self._dynamics.imagine(states_repeat, self._horizon, actions_repeat)
+            # pylint: disable-next=line-too-long
             # {states, rewards, values}, each value shape is [horizon, num_ensemble, num_particles * num_samples/num_ensemble, 1]
 
             elite_values, elite_actions, info = self._select_elites(actions, traj)
@@ -237,9 +240,9 @@ class ARCPlanner:
             new_mean, new_var = self._update_mean_var(elite_actions, elite_values)
             last_mean = self._momentum * last_mean + (1 - self._momentum) * new_mean
             last_var = self._momentum * last_var + (1 - self._momentum) * new_var
-            iter += 1
+            current_iter += 1
         logger_info = {
-            'Plan/iter': iter,
+            'Plan/iter': current_iter,
             'Plan/last_var_mean': last_var.mean().item(),
             'Plan/last_var_max': last_var.max().item(),
             'Plan/last_var_min': last_var.min().item(),
@@ -249,6 +252,7 @@ class ARCPlanner:
         return last_mean[0].clone().unsqueeze(0), logger_info
 
     def reset_planner(self):
+        """Reset the planner"""
         self._action_sequence_mean = torch.zeros(
             self._horizon,
             *self._action_shape,

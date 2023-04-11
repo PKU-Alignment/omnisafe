@@ -17,14 +17,14 @@
 import torch
 
 
-class CEMPlanner:
+class CEMPlanner:  # pylint: disable=too-many-instance-attributes
     """The Cross-Entropy Method optimization (CEM) trajectory optimization method.
 
     References:
         - URL: `A good description of CEM <https://arxiv.org/pdf/2008.06389.pdf>`_
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
         dynamics,
         num_models,
@@ -123,6 +123,7 @@ class CEMPlanner:
                 int(self._num_particles / self._num_models * self._num_samples),
                 1,
             ],
+            # pylint: disable-next=line-too-long
         ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)'
         returns = rewards.reshape(self._horizon, self._num_particles, self._num_samples, 1)
         sum_horizon_returns = torch.sum(returns, dim=0)
@@ -161,6 +162,7 @@ class CEMPlanner:
 
     @torch.no_grad()
     def output_action(self, state):
+        """Output action from the planner"""
         assert state.shape == torch.Size(
             [1, *self._dynamics_state_shape],
         ), 'Input state dimension should be equal to (1, self._dynamics_state_shape)'
@@ -169,13 +171,15 @@ class CEMPlanner:
         last_mean[:-1] = self._action_sequence_mean[1:].clone()
         last_mean[-1] = self._action_sequence_mean[-1].clone()
 
-        iter = 0
-        while iter < self._num_iterations:
+        current_iter = 0
+        while current_iter < self._num_iterations:
             actions = self._act_from_last_gaus(last_mean=last_mean, last_var=last_var)
             # [horizon, num_sample, action_shape]
             states_repeat, actions_repeat = self._state_action_repeat(state, actions)
+            # pylint: disable-next=line-too-long
             # [num_particles * num_samples/num_ensemble, state_shape], [horizon, num_particles * num_samples/num_ensemble, action_shape]
             traj = self._dynamics.imagine(states_repeat, self._horizon, actions_repeat)
+            # pylint: disable-next=line-too-long
             # {states, rewards, values}, each value shape is [horizon, num_ensemble, num_particles * num_samples/num_ensemble, 1]
 
             elite_values, elite_actions, info = self._select_elites(actions, traj)
@@ -183,9 +187,9 @@ class CEMPlanner:
             new_mean, new_var = self._update_mean_var(elite_actions, elite_values)
             last_mean = self._momentum * last_mean + (1 - self._momentum) * new_mean
             last_var = self._momentum * last_var + (1 - self._momentum) * new_var
-            iter += 1
+            current_iter += 1
         logger_info = {
-            'Plan/iter': iter,
+            'Plan/iter': current_iter,
             'Plan/last_var_mean': last_var.mean().item(),
             'Plan/last_var_max': last_var.max().item(),
             'Plan/last_var_min': last_var.min().item(),
