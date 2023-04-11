@@ -14,8 +14,9 @@
 # ==============================================================================
 """Basic Reinforcement Learning algorithms."""
 
-from omnisafe.algorithms.model_based.base.pets import PETS
 from omnisafe.algorithms.model_based.base.loop import LOOP
+from omnisafe.algorithms.model_based.base.pets import PETS
+
 
 __all__ = [
     'PETS',

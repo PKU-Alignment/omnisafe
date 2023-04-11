@@ -16,31 +16,36 @@
 
 import torch
 
-class CEMPlanner():
+
+class CEMPlanner:
     """The Cross-Entropy Method optimization (CEM) trajectory optimization method.
 
     References:
         - URL: `A good description of CEM <https://arxiv.org/pdf/2008.06389.pdf>`_
     """
-    def __init__(self,
-                 dynamics,
-                 num_models,
-                 horizon,
-                 num_iterations,
-                 num_particles,
-                 num_samples,
-                 num_elites,
-                 momentum,
-                 epsilon,
-                 gamma,
-                 device,
-                 dynamics_state_shape,
-                 action_shape,
-                 action_max,
-                 action_min,
-                 ) -> None:
-        assert (num_samples * num_particles) % num_models == 0, "num_samples * num_elites should be divisible by num_models"
-        assert num_particles % num_models == 0, "num_particles should be divisible by num_models"
+
+    def __init__(
+        self,
+        dynamics,
+        num_models,
+        horizon,
+        num_iterations,
+        num_particles,
+        num_samples,
+        num_elites,
+        momentum,
+        epsilon,
+        gamma,
+        device,
+        dynamics_state_shape,
+        action_shape,
+        action_max,
+        action_min,
+    ) -> None:
+        assert (
+            num_samples * num_particles
+        ) % num_models == 0, 'num_samples * num_elites should be divisible by num_models'
+        assert num_particles % num_models == 0, 'num_particles should be divisible by num_models'
         self._dynamics = dynamics
         self._num_models = num_models
         self._horizon = horizon
@@ -56,14 +61,32 @@ class CEMPlanner():
         self._action_min = action_min
         self._gamma = gamma
         self._device = device
-        self._action_sequence_mean = torch.zeros(self._horizon, *self._action_shape, device=self._device)
-        self._action_sequence_var = 4 * torch.ones(self._horizon, *self._action_shape, device=self._device)
+        self._action_sequence_mean = torch.zeros(
+            self._horizon,
+            *self._action_shape,
+            device=self._device,
+        )
+        self._action_sequence_var = 4 * torch.ones(
+            self._horizon,
+            *self._action_shape,
+            device=self._device,
+        )
 
     @torch.no_grad()
     def _act_from_last_gaus(self, last_mean, last_var):
         constrained_std = torch.sqrt(last_var)
-        actions = torch.clamp(last_mean.unsqueeze(1) + constrained_std.unsqueeze(1)  * \
-            torch.randn(self._horizon, self._num_samples, *self._action_shape, device=self._device),self._action_min, self._action_max)
+        actions = torch.clamp(
+            last_mean.unsqueeze(1)
+            + constrained_std.unsqueeze(1)
+            * torch.randn(
+                self._horizon,
+                self._num_samples,
+                *self._action_shape,
+                device=self._device,
+            ),
+            self._action_min,
+            self._action_max,
+        )
         actions.clamp_(min=self._action_min, max=self._action_max)  # Clip action range
         return actions
 
@@ -72,23 +95,42 @@ class CEMPlanner():
         """
         Repeat the state for num_repeat * action.shape[0] times and action for num_repeat times
         """
-        assert action.shape == torch.Size([self._horizon, self._num_samples, *self._action_shape]), "Input action dimension should be equal to (self._num_samples, self._action_shape)"
-        assert state.shape == torch.Size([1, *self._dynamics_state_shape]) , "state dimension one should be 1"
-        states = state.repeat(int(self._num_particles/self._num_models * self._num_samples), 1)
-        actions = action.unsqueeze(1).repeat(1, int(self._num_particles/self._num_models), 1, 1)
-        actions = actions.reshape(self._horizon, int(self._num_particles/self._num_models * self._num_samples), *self._action_shape)
+        assert action.shape == torch.Size(
+            [self._horizon, self._num_samples, *self._action_shape],
+        ), 'Input action dimension should be equal to (self._num_samples, self._action_shape)'
+        assert state.shape == torch.Size(
+            [1, *self._dynamics_state_shape],
+        ), 'state dimension one should be 1'
+        states = state.repeat(int(self._num_particles / self._num_models * self._num_samples), 1)
+        actions = action.unsqueeze(1).repeat(1, int(self._num_particles / self._num_models), 1, 1)
+        actions = actions.reshape(
+            self._horizon,
+            int(self._num_particles / self._num_models * self._num_samples),
+            *self._action_shape,
+        )
         return states, actions
 
     @torch.no_grad()
     def _select_elites(self, actions, traj):
         rewards = traj['rewards']
-        assert actions.shape == torch.Size([self._horizon, self._num_samples, *self._action_shape]), "Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)"
-        assert rewards.shape == torch.Size([self._horizon, self._num_models, int(self._num_particles/self._num_models*self._num_samples), 1]), "Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)"
-        returns = rewards.reshape(self._horizon, self._num_particles,  self._num_samples, 1)
+        assert actions.shape == torch.Size(
+            [self._horizon, self._num_samples, *self._action_shape],
+        ), 'Input action dimension should be equal to (self._horizon, self._num_samples, self._action_shape)'
+        assert rewards.shape == torch.Size(
+            [
+                self._horizon,
+                self._num_models,
+                int(self._num_particles / self._num_models * self._num_samples),
+                1,
+            ],
+        ), 'Input rewards dimension should be equal to (self._horizon, self._num_models, self._num_particles/self._num_models*self._num_samples, 1)'
+        returns = rewards.reshape(self._horizon, self._num_particles, self._num_samples, 1)
         sum_horizon_returns = torch.sum(returns, dim=0)
         mean_particles_returns = sum_horizon_returns.mean(dim=0)
-        mean_episode_returns = mean_particles_returns * (1000/self._horizon)
-        assert mean_episode_returns.shape == torch.Size([self._num_samples, 1]), "Input returns dimension should be equal to (self._num_samples, 1)"
+        mean_episode_returns = mean_particles_returns * (1000 / self._horizon)
+        assert mean_episode_returns.shape == torch.Size(
+            [self._num_samples, 1],
+        ), 'Input returns dimension should be equal to (self._num_samples, 1)'
         elite_idxs = torch.topk(mean_episode_returns.squeeze(1), self._num_elites, dim=0).indices
         elite_values, elite_actions = mean_episode_returns[elite_idxs], actions[:, elite_idxs]
 
@@ -98,16 +140,19 @@ class CEMPlanner():
             'Plan/episode_returns_min': mean_episode_returns.min().item(),
         }
         info['elite_idxs'] = elite_idxs
-        info['best_action'] = elite_actions[0,0].unsqueeze(0)
+        info['best_action'] = elite_actions[0, 0].unsqueeze(0)
         assert info['best_action'].shape == torch.Size([1, *self._action_shape])
 
         return elite_values, elite_actions, info
 
     @torch.no_grad()
     def _update_mean_var(self, elite_actions, elite_values):
-
-        assert elite_actions.shape == torch.Size([self._horizon, self._num_elites, *self._action_shape]), "Input elite_actions dimension should be equal to (self._horizon, self._num_elites, self._action_shape)"
-        assert elite_values.shape == torch.Size([self._num_elites, 1]), "Input elite_values dimension should be equal to (self._num_elites, 1)"
+        assert elite_actions.shape == torch.Size(
+            [self._horizon, self._num_elites, *self._action_shape],
+        ), 'Input elite_actions dimension should be equal to (self._horizon, self._num_elites, self._action_shape)'
+        assert elite_values.shape == torch.Size(
+            [self._num_elites, 1],
+        ), 'Input elite_values dimension should be equal to (self._num_elites, 1)'
 
         new_mean = elite_actions.mean(dim=1)
         new_var = elite_actions.var(dim=1)
@@ -115,8 +160,10 @@ class CEMPlanner():
         return new_mean, new_var
 
     @torch.no_grad()
-    def output_action(self,state):
-        assert state.shape == torch.Size([1, *self._dynamics_state_shape]), "Input state dimension should be equal to (1, self._dynamics_state_shape)"
+    def output_action(self, state):
+        assert state.shape == torch.Size(
+            [1, *self._dynamics_state_shape],
+        ), 'Input state dimension should be equal to (1, self._dynamics_state_shape)'
         last_mean = torch.zeros_like(self._action_sequence_mean)
         last_var = self._action_sequence_var.clone()
         last_mean[:-1] = self._action_sequence_mean[1:].clone()
@@ -146,4 +193,3 @@ class CEMPlanner():
         logger_info.update(info)
         self._action_sequence_mean = last_mean.clone()
         return last_mean[0].clone().unsqueeze(0), logger_info
-

@@ -63,7 +63,9 @@ defaults:
     # Learning rate of lagrangian multiplier
     lambda_lr: 0.1
     # Type of lagrangian optimizer
-    lambda_optimizer: "Adam"
+    lambda_optimizer: "SGD"
+    # The upper bound of lagrange multiplier
+    lagrangian_upper_bound: 0.5
 
   # algorithm configurations
   algo_cfgs:

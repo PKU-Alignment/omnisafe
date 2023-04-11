@@ -14,20 +14,17 @@
 # ==============================================================================
 """OffPolicy Adapter for OmniSafe."""
 
-from functools import partial
-from typing import Dict, Optional
+import time
+from typing import Callable, Dict, Optional, Union
 
 import torch
-from gymnasium import spaces
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
-from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
-from omnisafe.utils.config import Config
+from omnisafe.envs.core import make, support_envs
 from omnisafe.envs.wrapper import (
-    ActionScale,
     ActionRepeat,
+    ActionScale,
     AutoReset,
     CostNormalize,
     ObsNormalize,
@@ -35,23 +32,24 @@ from omnisafe.envs.wrapper import (
     TimeLimit,
     Unsqueeze,
 )
-import time
-from omnisafe.envs.core import make, support_envs
-import numpy as np
-from typing import Callable, Union
-import gymnasium
+from omnisafe.utils.config import Config
+
 
 class ModelBasedAdapter(OnlineAdapter):
     """OffPolicy Adapter for OmniSafe."""
 
     def __init__(  # pylint: disable=too-many-arguments
-        self, env_id: str, num_envs: int, seed: int, cfgs: Config, **kwargs
+        self,
+        env_id: str,
+        num_envs: int,
+        seed: int,
+        cfgs: Config,
+        **kwargs,
     ) -> None:
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id
         self._device = cfgs.train_cfgs.device
-
 
         self._env = make(env_id, num_envs=num_envs, device=cfgs.train_cfgs.device, **kwargs)
         self._wrapper(
@@ -59,7 +57,6 @@ class ModelBasedAdapter(OnlineAdapter):
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
             cost_normalize=cfgs.algo_cfgs.cost_normalize,
             action_repeat=cfgs.algo_cfgs.action_repeat,
-
         )
         self._env.set_seed(seed)
         self._cfgs = cfgs
@@ -93,7 +90,7 @@ class ModelBasedAdapter(OnlineAdapter):
     def get_lidar_from_coordinate(self, obs):
         return self._env.get_lidar_from_coordinate(obs)
 
-    def render(self,*args, **kwargs):
+    def render(self, *args, **kwargs):
         return self._env.render(*args, **kwargs)
 
     def _wrapper(
@@ -103,7 +100,6 @@ class ModelBasedAdapter(OnlineAdapter):
         cost_normalize: bool = True,
         action_repeat: int = 1,
     ):
-
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
         if self._env.need_auto_reset_wrapper:
@@ -115,25 +111,24 @@ class ModelBasedAdapter(OnlineAdapter):
         if cost_normalize:
             self._env = CostNormalize(self._env, device=self._device)
         self._env = ActionScale(self._env, device=self._device, low=-1.0, high=1.0)
-        self._env = ActionRepeat(self._env, times=action_repeat,device=self._device)
+        self._env = ActionRepeat(self._env, times=action_repeat, device=self._device)
 
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
 
-
     def roll_out(
-            self,
-            current_step: int,
-            roll_out_step: int,
-            use_actor_critic: bool,
-            act_func: Callable,
-            store_data_func: Callable,
-            update_dynamics_func: Callable,
-            logger: Logger,
-            eval_func: Union[Callable, None]=None,
-            algo_reset_func: Union[Callable, None]=None,
-            update_actor_func: Union[Callable, None]=None,
-        ) -> int:
+        self,
+        current_step: int,
+        roll_out_step: int,
+        use_actor_critic: bool,
+        act_func: Callable,
+        store_data_func: Callable,
+        update_dynamics_func: Callable,
+        logger: Logger,
+        eval_func: Union[Callable, None] = None,
+        algo_reset_func: Union[Callable, None] = None,
+        update_actor_func: Union[Callable, None] = None,
+    ) -> int:
         epoch_start_time = time.time()
 
         update_actor_critic_time = 0
@@ -171,8 +166,10 @@ class ModelBasedAdapter(OnlineAdapter):
                 if algo_reset_func is not None:
                     algo_reset_func(current_step)
             if (
-                current_step % self._cfgs.algo_cfgs.update_dynamics_cycle < self._cfgs.algo_cfgs.action_repeat
-                and current_step - self._last_dynamics_update >= self._cfgs.algo_cfgs.update_dynamics_cycle
+                current_step % self._cfgs.algo_cfgs.update_dynamics_cycle
+                < self._cfgs.algo_cfgs.action_repeat
+                and current_step - self._last_dynamics_update
+                >= self._cfgs.algo_cfgs.update_dynamics_cycle
             ):
                 update_dynamics_start = time.time()
                 update_dynamics_func(current_step)
@@ -181,8 +178,10 @@ class ModelBasedAdapter(OnlineAdapter):
 
             if (
                 use_actor_critic
-                and current_step % self._cfgs.algo_cfgs.update_policy_cycle < self._cfgs.algo_cfgs.action_repeat
-                and current_step - self._last_policy_update >= self._cfgs.algo_cfgs.update_policy_cycle
+                and current_step % self._cfgs.algo_cfgs.update_policy_cycle
+                < self._cfgs.algo_cfgs.action_repeat
+                and current_step - self._last_policy_update
+                >= self._cfgs.algo_cfgs.update_policy_cycle
             ):
                 update_actor_critic_start = time.time()
                 update_actor_func(current_step)
@@ -191,7 +190,8 @@ class ModelBasedAdapter(OnlineAdapter):
 
             if (
                 eval_func is not None
-                and current_step % self._cfgs.evaluation_cfgs.eval_cycle < self._cfgs.algo_cfgs.action_repeat
+                and current_step % self._cfgs.evaluation_cfgs.eval_cycle
+                < self._cfgs.algo_cfgs.action_repeat
                 and current_step - self._last_eval >= self._cfgs.evaluation_cfgs.eval_cycle
             ):
                 eval_start = time.time()
@@ -212,7 +212,6 @@ class ModelBasedAdapter(OnlineAdapter):
         logger.store(**{'Time/Rollout': roll_out_time})
         return current_step
 
-
     def _log_value(
         self,
         reward: torch.Tensor,
@@ -232,7 +231,7 @@ class ModelBasedAdapter(OnlineAdapter):
                 'Metrics/EpRet': self._ep_ret,
                 'Metrics/EpCost': self._ep_cost,
                 'Metrics/EpLen': self._ep_len,
-            }
+            },
         )
 
     def _reset_log(self, idx: Optional[int] = None) -> None:
@@ -241,28 +240,27 @@ class ModelBasedAdapter(OnlineAdapter):
         self._ep_cost = torch.zeros(1)
         self._ep_len = torch.zeros(1)
 
-
     def check_violation(self, obs: torch.Tensor) -> torch.Tensor:
         assert obs.shape[1] == self.observation_space.shape[0]
-        if self._env_id == "Ant-v4":
+        if self._env_id == 'Ant-v4':
             min_z, max_z = 0.2, 1.0
             is_finite = torch.isfinite(obs).all()
             is_between = torch.logical_and(min_z < obs[:, 0], obs[:, 0] < max_z)
             is_healthy = torch.logical_and(is_finite, is_between)
-        elif self._env_id == "Humanoid-v4":
+        elif self._env_id == 'Humanoid-v4':
             min_z, max_z = 1.0, 2.0
-            is_healthy = torch.logical_and(min_z < obs[:, 0],  obs[:, 0] < max_z)
-        elif self._env_id == "Hopper-v4":
+            is_healthy = torch.logical_and(min_z < obs[:, 0], obs[:, 0] < max_z)
+        elif self._env_id == 'Hopper-v4':
             z, angle = obs[:, 0:2]
             state = obs[:, 1:]
             min_state, max_state = -100.0, 100.0
-            min_z, max_z = (0.7, float("inf"))
+            min_z, max_z = (0.7, float('inf'))
             min_angle, max_angle = (-0.2, 0.2)
             healthy_state = torch.logical_and(min_state < state, state < max_state)
             healthy_z = torch.logical_and(min_z < z, z < max_z)
             healthy_angle = torch.logical_and(min_angle < angle, angle < max_angle)
             is_healthy = torch.all(torch.stack([healthy_state, healthy_z, healthy_angle]), dim=0)
-        elif self._env_id == "walker2d-v4":
+        elif self._env_id == 'walker2d-v4':
             z, angle = obs[0:2]
             min_z, max_z = (0.8, 2)
             min_angle, max_angle = (-1, 1)
@@ -270,6 +268,6 @@ class ModelBasedAdapter(OnlineAdapter):
             healthy_angle = torch.logical_and(min_angle < angle, angle < max_angle)
             is_healthy = torch.logical_and(healthy_z, healthy_angle)
 
-        assert is_healthy.shape == obs.shape[:1], f"{is_healthy.shape} != {obs.shape[:1]}"
+        assert is_healthy.shape == obs.shape[:1], f'{is_healthy.shape} != {obs.shape[:1]}'
 
         return is_healthy

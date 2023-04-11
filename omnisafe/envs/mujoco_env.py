@@ -17,8 +17,8 @@
 
 from typing import Any, Dict, Optional, Tuple
 
-import numpy as np
 import gymnasium
+import numpy as np
 import torch
 
 from omnisafe.envs.core import CMDP, env_register
@@ -40,16 +40,22 @@ class MujocoEnv(CMDP):
 
     need_time_limit_wrapper = False
     need_action_repeat_wrapper = True
+
     def __init__(self, env_id: str, num_envs: int = 1, **kwargs) -> None:
         super().__init__(env_id)
         if num_envs > 1:
             # set healthy_reward=0.0 for removing the safety constraint in reward
-            self._env = gymnasium.vector.make(id=env_id, healthy_reward=0.0, num_envs=num_envs, **kwargs)
+            self._env = gymnasium.vector.make(
+                id=env_id,
+                healthy_reward=0.0,
+                num_envs=num_envs,
+                **kwargs,
+            )
             self._action_space = self._env.single_action_space
             self._observation_space = self._env.single_observation_space
         else:
             # set healthy_reward=0.0 for removing the safety constraint in reward
-            self._env = gymnasium.make(id=env_id, autoreset=False, **kwargs) #  healthy_reward=0.0
+            self._env = gymnasium.make(id=env_id, autoreset=False, **kwargs)  #  healthy_reward=0.0
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
 
@@ -57,12 +63,12 @@ class MujocoEnv(CMDP):
         self._metadata = self._env.metadata
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         obs, reward, terminated, truncated, info = self._env.step(action)
-        obs, reward, terminated, truncated = map(
-            lambda x: torch.as_tensor(x, dtype=torch.float32),
-            (obs, reward, terminated, truncated),
+        obs, reward, terminated, truncated = (
+            torch.as_tensor(x, dtype=torch.float32) for x in (obs, reward, terminated, truncated)
         )
         cost = terminated.float()
         if 'final_observation' in info:
@@ -70,10 +76,11 @@ class MujocoEnv(CMDP):
                 [
                     array if array is not None else np.zeros(obs.shape[-1])
                     for array in info['final_observation']
-                ]
+                ],
             )
             info['final_observation'] = torch.as_tensor(
-                info['final_observation'], dtype=torch.float32
+                info['final_observation'],
+                dtype=torch.float32,
             )
 
         return obs, reward, cost, terminated, truncated, info

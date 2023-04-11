@@ -15,16 +15,15 @@
 """Environments in the Safety Gymnasium."""
 
 
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
-
+import gymnasium
 import numpy as np
 import safety_gymnasium
 import torch
 
 from omnisafe.envs.core import CMDP, env_register
 
-import gymnasium
 
 @env_register
 class SafetyGymnasiumModelBased(CMDP):
@@ -37,15 +36,24 @@ class SafetyGymnasiumModelBased(CMDP):
         'SafetyCarGoal1-v0-modelbased',
         'SafetyAntGoal0-v0-modelbased',
         'SafetyAntGoal1-v0-modelbased',
-
     ]
     need_auto_reset_wrapper = False
     need_time_limit_wrapper = False
 
-    def __init__(self, env_id: str, num_envs: int = 1, device: torch.device = 'cpu',**kwargs) -> None:
+    def __init__(
+        self,
+        env_id: str,
+        num_envs: int = 1,
+        device: torch.device = 'cpu',
+        **kwargs,
+    ) -> None:
         super().__init__(env_id)
-        if num_envs ==1 :
-            self._env = safety_gymnasium.make(id=env_id.replace('-modelbased', ''), autoreset=False, **kwargs)
+        if num_envs == 1:
+            self._env = safety_gymnasium.make(
+                id=env_id.replace('-modelbased', ''),
+                autoreset=False,
+                **kwargs,
+            )
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
         else:
@@ -60,11 +68,16 @@ class SafetyGymnasiumModelBased(CMDP):
             'SafetyCarGoal1-v0-modelbased',
             'SafetyAntGoal1-v0-modelbased',
         ]:
-            self._constraints = ['hazards'] #'gremlins', 'buttons'],
+            self._constraints = ['hazards']  #'gremlins', 'buttons'],
             self._xyz_sensors = ['velocimeter', 'accelerometer']
             self._angle_sensors = ['gyro', 'magnetometer']
             self._flatten_order = (
-                self._xyz_sensors + self._angle_sensors + ['goal'] + self._constraints + ['robot_m'] + ['robot']
+                self._xyz_sensors
+                + self._angle_sensors
+                + ['goal']
+                + self._constraints
+                + ['robot_m']
+                + ['robot']
             )
             self._base_state = self._xyz_sensors + self._angle_sensors
             self._task = 'Goal'
@@ -75,7 +88,9 @@ class SafetyGymnasiumModelBased(CMDP):
             self.goal_distance = self._dist_xy(self.robot_position, self.goal_position)
 
             coordinate_sensor_obs = self._get_coordinate_sensor()
-            self._coordinate_obs_size = sum(np.prod(i.shape) for i in list(coordinate_sensor_obs.values()))
+            self._coordinate_obs_size = sum(
+                np.prod(i.shape) for i in list(coordinate_sensor_obs.values())
+            )
             offset = 0
             self.key_to_slice = {}
             self.key_to_slice_tensor = {}
@@ -86,7 +101,9 @@ class SafetyGymnasiumModelBased(CMDP):
                 self.key_to_slice_tensor[k] = torch.arange(offset, offset + k_size)
 
                 offset += k_size
-            self._base_state_size = sum(np.prod(coordinate_sensor_obs[k].shape) for k in list(self._base_state))
+            self._base_state_size = sum(
+                np.prod(coordinate_sensor_obs[k].shape) for k in list(self._base_state)
+            )
             self.key_to_slice['base_state'] = slice(0, self._base_state_size)
             self.key_to_slice_tensor['base_state'] = torch.arange(0, self._base_state_size)
 
@@ -96,14 +113,18 @@ class SafetyGymnasiumModelBased(CMDP):
             self.goal_size = 0.3
             self.original_observation_space = self.observation_space
             self.coordinate_observation_space = gymnasium.spaces.Box(
-                            -np.inf, np.inf, (self._coordinate_obs_size,), dtype=np.float32
-                        )
+                -np.inf,
+                np.inf,
+                (self._coordinate_obs_size,),
+                dtype=np.float32,
+            )
             flat_coordinate_obs = self._get_flat_coordinate(coordinate_sensor_obs)
             self.lidar_observation_space = gymnasium.spaces.Box(
-                            -np.inf, np.inf, (self.get_lidar_from_coordinate(flat_coordinate_obs).shape[0], ), dtype=np.float32
-                        )
-
-
+                -np.inf,
+                np.inf,
+                (self.get_lidar_from_coordinate(flat_coordinate_obs).shape[0],),
+                dtype=np.float32,
+            )
 
         else:
             self._task = None
@@ -112,8 +133,6 @@ class SafetyGymnasiumModelBased(CMDP):
     @property
     def task(self):
         return self._task
-
-
 
     def get_cost_from_obs_tensor(self, obs, is_binary=True):
         """Get batch cost from batch observation"""
@@ -125,14 +144,17 @@ class SafetyGymnasiumModelBased(CMDP):
         elif len(obs.shape) == 3:
             batch_size = obs.shape[0] * obs.shape[1]
             hazard_obs = obs[:, :, hazards_key].reshape(batch_size, -1, 2)
-        hazards_dist = torch.sqrt(torch.sum(torch.square(hazard_obs), dim=2)).reshape(batch_size, -1)
+        hazards_dist = torch.sqrt(torch.sum(torch.square(hazard_obs), dim=2)).reshape(
+            batch_size,
+            -1,
+        )
         if is_binary:
             cost = torch.where(hazards_dist <= self.hazards_size, 1.0, 0.0)
             cost = cost.sum(1)
             cost = torch.where(cost >= 1, 1.0, 0.0)
         else:
             cost = ((hazards_dist < self.hazards_size) * (self.hazards_size - hazards_dist)).sum(
-                1
+                1,
             ) * 10
         if len(obs.shape) == 2:
             cost = cost.reshape(obs.shape[0], 1)
@@ -161,7 +183,7 @@ class SafetyGymnasiumModelBased(CMDP):
 
     def get_cost_from_obs(self, obs, is_binary):
         """Get batch cost from batch observation"""
-        assert not torch.is_tensor(obs), "obs should be numpy array"
+        assert not torch.is_tensor(obs), 'obs should be numpy array'
         if not self.use_lidar:
             batch_size = obs.shape[0]
             hazards_key = self.key_to_slice['hazards']
@@ -172,19 +194,23 @@ class SafetyGymnasiumModelBased(CMDP):
                 cost = cost.sum(1)
                 cost = np.where(cost >= 1, 1.0, 0.0)
             else:
-                cost = ((hazards_dist < self.hazards_size) * (self.hazards_size - hazards_dist)).sum(
-                    1
+                cost = (
+                    (hazards_dist < self.hazards_size) * (self.hazards_size - hazards_dist)
+                ).sum(
+                    1,
                 ) * 10
         else:
             batch_size = obs.shape[0]
             hazards_key = self.key_slice['hazards_lidar']
             hazard_obs = obs[:, hazards_key].reshape(batch_size, self.env.task.lidar_conf.num_bins)
-            lidar_hazards_threshold = max(0,self.env.task.lidar_conf.max_dist - self.env.task.hazards.size) / self.env.task.lidar_conf.max_dist
+            lidar_hazards_threshold = (
+                max(0, self.env.task.lidar_conf.max_dist - self.env.task.hazards.size)
+                / self.env.task.lidar_conf.max_dist
+            )
             cost = np.where(hazard_obs >= lidar_hazards_threshold, 1.0, 0.0)
             cost = cost.sum(1)
             cost = np.where(cost >= 1, 1.0, 0.0)
         return cost
-
 
     def get_lidar_from_coordinate(self, obs):
         """Get lidar observation"""
@@ -203,13 +229,13 @@ class SafetyGymnasiumModelBased(CMDP):
 
         obs_vec = list(base_state_vec) + list(hazards_lidar_vec) + list(goal_lidar_vec)
 
-        #obs_vec = self.make_observation(obs, lidar_vec)
+        # obs_vec = self.make_observation(obs, lidar_vec)
         obs_vec = np.array(obs_vec)
         obs_vec = torch.as_tensor(obs_vec, dtype=torch.float32, device=self._device).unsqueeze(0)
         return obs_vec
 
     def _ego_xy(self, robot_matrix, robot_pos, pos):
-        '''Return the egocentric XY vector to a position from the robot'''
+        """Return the egocentric XY vector to a position from the robot"""
         assert pos.shape == (2,), f'Bad pos {pos}'
         robot_3vec = robot_pos
         robot_mat = robot_matrix
@@ -219,9 +245,11 @@ class SafetyGymnasiumModelBased(CMDP):
         world_3vec = pos_3vec - robot_3vec
         return np.matmul(world_3vec, robot_mat)[:2]
 
-
     def _obs_lidar_pseudo(
-        self, robot_matrix, robot_pos, positions
+        self,
+        robot_matrix,
+        robot_pos,
+        positions,
     ):  # pylint: disable=too-many-locals
         '''
         Return a robot-centric lidar observation of a list of positions.
@@ -251,7 +279,7 @@ class SafetyGymnasiumModelBased(CMDP):
             if pos.shape == (3,):
                 pos = pos[:2]  # Truncate Z coordinate
             position_z = np.complex(
-                *self._ego_xy(robot_matrix, robot_pos, pos)
+                *self._ego_xy(robot_matrix, robot_pos, pos),
             )  # X, Y as real, imaginary components
             dist = np.abs(position_z)
             angle = np.angle(position_z) % (np.pi * 2)
@@ -276,7 +304,7 @@ class SafetyGymnasiumModelBased(CMDP):
         return obs
 
     def _get_flat_coordinate(self, coordinate_obs) -> np.ndarray:
-        '''get the flattened obs.'''
+        """get the flattened obs."""
         flat_obs = np.zeros(self.coordinate_observation_space.shape[0])
         for k in self._flatten_order:
             idx = self.key_to_slice[k]
@@ -284,19 +312,17 @@ class SafetyGymnasiumModelBased(CMDP):
         return flat_obs
 
     def _get_coordinate_sensor(self) -> dict:
-        '''
+        """
         We will ignore the z-axis coordinates in every poses.
         The returned obs coordinates are all in the robot coordinates.
-        '''
+        """
         obs = {}
         robot_pos = self._env.task.agent.pos
         goal_pos = self._env.task.goal.pos
         vases_pos_list = self._env.task.vases.pos  # list of shape (3,) ndarray
         hazards_pos_list = self._env.task.hazards.pos  # list of shape (3,) ndarray
         ego_goal_pos = self._env.task._ego_xy(goal_pos[:2])
-        ego_vases_pos_list = [
-            self._env.task._ego_xy(pos[:2]) for pos in vases_pos_list
-        ]  # list of shape (2,) ndarray
+        [self._env.task._ego_xy(pos[:2]) for pos in vases_pos_list]  # list of shape (2,) ndarray
         ego_hazards_pos_list = [
             self._env.task._ego_xy(pos[:2]) for pos in hazards_pos_list
         ]  # list of shape (2,) ndarray
@@ -324,16 +350,15 @@ class SafetyGymnasiumModelBased(CMDP):
         robot_matrix = self._env.task.agent.mat
         obs['robot_m'] = np.array(robot_matrix[0][:2])
         obs['goal'] = ego_goal_pos  # (2,)
-        #obs['vases'] = np.array(ego_vases_pos_list)  # (vase_num, 2)
+        # obs['vases'] = np.array(ego_vases_pos_list)  # (vase_num, 2)
         return obs
 
-
     def _dist_xy(
-            self,
-            pos1: Union[np.ndarray, list],
-            pos2: Union[np.ndarray, list],
-            ) -> float:
-        '''Return the distance from the robot to an XY position.'''
+        self,
+        pos1: Union[np.ndarray, list],
+        pos2: Union[np.ndarray, list],
+    ) -> float:
+        """Return the distance from the robot to an XY position."""
         pos1 = np.asarray(pos1)
         pos2 = np.asarray(pos2)
         if pos1.shape == (3,):
@@ -343,7 +368,8 @@ class SafetyGymnasiumModelBased(CMDP):
         return np.sqrt(np.sum(np.square(pos1 - pos2)))
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         obs_original, reward, cost, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy(),
@@ -360,9 +386,8 @@ class SafetyGymnasiumModelBased(CMDP):
             obs = torch.as_tensor(obs, dtype=torch.float32, device=self._device)
 
             info['obs_original'] = obs_original
-            goal_met = 'goal_met' in info.keys()  # reach the goal
+            goal_met = 'goal_met' in info  # reach the goal
             info['goal_met'] = goal_met
-
 
         obs, reward, cost, terminated, truncated = (
             torch.as_tensor(x, dtype=torch.float32, device=self._device)
@@ -381,7 +406,6 @@ class SafetyGymnasiumModelBased(CMDP):
                 device=self._device,
             )
 
-
         return obs, reward, cost, terminated, truncated, info
 
     def reset(self, seed: Optional[int] = None) -> tuple[torch.Tensor, dict]:
@@ -393,7 +417,7 @@ class SafetyGymnasiumModelBased(CMDP):
             self.goal_distance = self._dist_xy(self.robot_position, self.goal_position)
             coordinate_sensor_obs = self._get_coordinate_sensor()
             flat_coordinate_obs = self._get_flat_coordinate(coordinate_sensor_obs)
-            lidar_obs = self.get_lidar_from_coordinate(flat_coordinate_obs)
+            self.get_lidar_from_coordinate(flat_coordinate_obs)
             info['obs_original'] = obs_original
             info['goal_met'] = False
 

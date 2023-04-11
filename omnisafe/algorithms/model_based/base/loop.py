@@ -14,21 +14,15 @@
 # ==============================================================================
 """Implementation of the Learning Off-Policy with Online Planning algorithm."""
 
-from typing import Any, Dict, Tuple, Union, Optional
-
 
 import torch
-from torch import nn
+from torch import nn, optim
 
 from omnisafe.algorithms import registry
-
-
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
+from omnisafe.algorithms.model_based.base.pets import PETS
 from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
-from omnisafe.algorithms.model_based.base.pets import PETS
-
-from torch import nn, optim
 
 
 @registry.register
@@ -44,7 +38,11 @@ class LOOP(PETS):
     """
 
     def _init_model(self) -> None:
-        self._dynamics_state_space = self._env.coordinate_observation_space if self._env.coordinate_observation_space is not None else self._env.observation_space
+        self._dynamics_state_space = (
+            self._env.coordinate_observation_space
+            if self._env.coordinate_observation_space is not None
+            else self._env.observation_space
+        )
 
         self._actor_critic = ConstraintActorQCritic(
             obs_space=self._dynamics_state_space,
@@ -101,11 +99,12 @@ class LOOP(PETS):
             self._target_entropy = -torch.prod(torch.Tensor(self._env.action_space.shape)).item()
             self._log_alpha = torch.zeros(1, requires_grad=True, device=self._device)
             self._alpha_optimizer = optim.Adam(
-                [self._log_alpha], lr=self._cfgs.model_cfgs.critic.lr
+                [self._log_alpha],
+                lr=self._cfgs.model_cfgs.critic.lr,
             )
         else:
             self._log_alpha = torch.log(
-                torch.tensor(self._cfgs.algo_cfgs.alpha, device=self._device)
+                torch.tensor(self._cfgs.algo_cfgs.alpha, device=self._device),
             )
 
     def _init_log(self) -> None:
@@ -131,7 +130,9 @@ class LOOP(PETS):
         return self._log_alpha.exp().item()
 
     def _update_policy(self, current_step) -> None:
-        for step in range(self._cfgs.algo_cfgs.steps_per_sample // self._cfgs.algo_cfgs.update_iters):
+        for step in range(
+            self._cfgs.algo_cfgs.steps_per_sample // self._cfgs.algo_cfgs.update_iters,
+        ):
             data = self._dynamics_buf.sample_batch()
             obs, act, reward, cost, done, next_obs = (
                 data['obs'],
@@ -198,7 +199,6 @@ class LOOP(PETS):
                 'Value/reward_critic': q1_value_r.mean().item(),
             },
         )
-
 
     def _update_cost_critic(
         self,
@@ -305,7 +305,6 @@ class LOOP(PETS):
         q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
         return (self._alpha * log_prob - torch.min(q1_value_r, q2_value_r)).mean()
 
-
     def _log_when_not_update(self) -> None:
         self._logger.store(
             **{
@@ -321,10 +320,3 @@ class LOOP(PETS):
                     'Value/cost_critic': 0.0,
                 },
             )
-
-
-
-
-
-
-

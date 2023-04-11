@@ -14,24 +14,22 @@
 # ==============================================================================
 """Implementation of the Probabilistic Ensembles with Trajectory Sampling algorithm."""
 
+import os
 import time
-from typing import Any, Dict, Tuple, Union, Optional
+from typing import Any, Dict, Tuple, Union
 
-
+import numpy as np
 import torch
+from gymnasium.utils.save_video import save_video
+from matplotlib import pylab
 
 from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.base_algo import BaseAlgo
-from omnisafe.common.buffer import OffPolicyBuffer
-from omnisafe.common.logger import Logger
-
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.cem import CEMPlanner
-import numpy as np
-from matplotlib import pylab
-from gymnasium.utils.save_video import save_video
-import os
+from omnisafe.common.buffer import OffPolicyBuffer
+from omnisafe.common.logger import Logger
 
 
 @registry.register
@@ -48,14 +46,22 @@ class PETS(BaseAlgo):
 
     def _init_env(self) -> None:
         self._env = ModelBasedAdapter(
-            self._env_id, 1, self._seed, self._cfgs
+            self._env_id,
+            1,
+            self._seed,
+            self._cfgs,
         )
         assert int(self._cfgs.train_cfgs.total_steps) % self._cfgs.logger_cfgs.log_cycle == 0
         self._total_steps = int(self._cfgs.train_cfgs.total_steps)
         self._steps_per_epoch = int(self._cfgs.logger_cfgs.log_cycle)
         self._epochs = self._total_steps // self._cfgs.logger_cfgs.log_cycle
+
     def _init_model(self) -> None:
-        self._dynamics_state_space = self._env.coordinate_observation_space if self._env.coordinate_observation_space is not None else self._env.observation_space
+        self._dynamics_state_space = (
+            self._env.coordinate_observation_space
+            if self._env.coordinate_observation_space is not None
+            else self._env.observation_space
+        )
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
@@ -158,7 +164,6 @@ class PETS(BaseAlgo):
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
-
     def learn(self) -> Tuple[Union[int, float], ...]:
         """This is main function for algorithm update, divided into the following steps:
 
@@ -181,7 +186,7 @@ class PETS(BaseAlgo):
                 logger=self._logger,
                 algo_reset_func=self._algo_reset,
                 update_actor_func=self._update_policy,
-                )
+            )
             if current_step > self._cfgs.algo_cfgs.start_learning_steps:
                 # update something per epoch
                 # e.g. update lagrange multiplier
@@ -192,7 +197,7 @@ class PETS(BaseAlgo):
                     'Train/Epoch': epoch,
                     'TotalEnvSteps': current_step,
                     'Time/Total': time.time() - start_time,
-                }
+                },
             )
             self._logger.dump_tabular()
             # save model to disk
@@ -211,6 +216,7 @@ class PETS(BaseAlgo):
 
     def _update_policy(self, current_step):
         pass
+
     def _update_dynamics_model(self, current_step):
         """Update dynamics."""
         state = self._dynamics_buf.data['obs'][: self._dynamics_buf.size, :]
@@ -222,32 +228,35 @@ class PETS(BaseAlgo):
         inputs = torch.cat((state, action), -1)
         inputs = torch.reshape(inputs, (inputs.shape[0], -1))
 
-        labels = torch.reshape(delta_state,(delta_state.shape[0], -1))
+        labels = torch.reshape(delta_state, (delta_state.shape[0], -1))
         if self._cfgs.dynamics_cfgs.predict_reward:
-            labels = torch.cat(((torch.reshape(reward, (reward.shape[0], -1))),labels), -1)
+            labels = torch.cat(((torch.reshape(reward, (reward.shape[0], -1))), labels), -1)
         if self._cfgs.dynamics_cfgs.predict_cost:
-            labels = torch.cat(((torch.reshape(cost, (cost.shape[0], -1))),labels), -1)
+            labels = torch.cat(((torch.reshape(cost, (cost.shape[0], -1))), labels), -1)
 
         inputs = inputs.cpu().detach().numpy()
         labels = labels.cpu().detach().numpy()
         train_mse_losses, val_mse_losses = self._dynamics.train(
-            inputs, labels, holdout_ratio=0.2
+            inputs,
+            labels,
+            holdout_ratio=0.2,
         )
         self._logger.store(
             **{
                 'Loss/DynamicsTrainMseLoss': train_mse_losses.item(),
                 'Loss/DynamicsValMseLoss': val_mse_losses.item(),
-            }
+            },
         )
+
     def _update_epoch(self):
         pass
 
     def _select_action(
-            self,
-            current_step: int,
-            state: torch.Tensor,
-            env: ModelBasedAdapter,
-            ) -> Tuple[np.ndarray, Dict]:
+        self,
+        current_step: int,
+        state: torch.Tensor,
+        env: ModelBasedAdapter,
+    ) -> Tuple[np.ndarray, Dict]:
         """action selection"""
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
@@ -255,16 +264,18 @@ class PETS(BaseAlgo):
             action, info = self._planner.output_action(state)
             self._logger.store(
                 **{
-                'Plan/iter': info['Plan/iter'],
-                'Plan/last_var_max': info['Plan/last_var_max'],
-                'Plan/last_var_mean': info['Plan/last_var_mean'],
-                'Plan/last_var_min': info['Plan/last_var_min'],
-                'Plan/episode_returns_max': info['Plan/episode_returns_max'],
-                'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
-                'Plan/episode_returns_min': info['Plan/episode_returns_min'],
-                }
+                    'Plan/iter': info['Plan/iter'],
+                    'Plan/last_var_max': info['Plan/last_var_max'],
+                    'Plan/last_var_mean': info['Plan/last_var_mean'],
+                    'Plan/last_var_min': info['Plan/last_var_min'],
+                    'Plan/episode_returns_max': info['Plan/episode_returns_max'],
+                    'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
+                    'Plan/episode_returns_min': info['Plan/episode_returns_min'],
+                },
             )
-        assert action.shape == torch.Size([state.shape[0], self._env.action_space.shape[0]]), "action shape should be [batch_size, action_dim]"
+        assert action.shape == torch.Size(
+            [state.shape[0], self._env.action_space.shape[0]],
+        ), 'action shape should be [batch_size, action_dim]'
         info = {}
         return action, info
 
@@ -284,30 +295,35 @@ class PETS(BaseAlgo):
     ) -> None:  # pylint: disable=too-many-arguments
         """Store real data in buffer."""
         done = terminated or truncated
-        if 'goal_met' not in info.keys():
-            goal_met = False
-        else:
-            goal_met = info['goal_met']
+        goal_met = False if 'goal_met' not in info.keys() else info['goal_met']
         if not terminated and not truncated and not goal_met:
             # if goal_met == true, Current goal position is not related to the last goal position, this huge transition will confuse the dynamics model.
             self._dynamics_buf.store(
-                obs=state, act=action, reward=reward, cost=cost, next_obs=next_state, done=done
+                obs=state,
+                act=action,
+                reward=reward,
+                cost=cost,
+                next_obs=next_state,
+                done=done,
             )
 
     def _evaluation_single_step(
-            self,
-            current_step: int,
-            use_real_input: bool=True,
+        self,
+        current_step: int,
+        use_real_input: bool = True,
     ) -> None:
-
         env_kwargs = {
             'render_mode': 'rgb_array',
             'camera_name': 'track',
         }
         eval_env = ModelBasedAdapter(
-                    self._env_id, 1, self._seed, self._cfgs, **env_kwargs
-                )
-        obs,_ = eval_env.reset()
+            self._env_id,
+            1,
+            self._seed,
+            self._cfgs,
+            **env_kwargs,
+        )
+        obs, _ = eval_env.reset()
         obs_dynamics = obs
         terminated, truncated = False, False
         ep_len, ep_ret, ep_cost = 0, 0, 0
@@ -318,13 +334,13 @@ class PETS(BaseAlgo):
         while True:
             if terminated or truncated:
                 print(f'Eval Episode Return: {ep_ret} \t Cost: {ep_cost}')
-                save_replay_path = os.path.join(self._logger.log_dir,'video-pic')
+                save_replay_path = os.path.join(self._logger.log_dir, 'video-pic')
                 self._logger.store(
                     **{
                         'EvalMetrics/EpRet': ep_ret.item(),
                         'EvalMetrics/EpCost': ep_cost.item(),
                         'EvalMetrics/EpLen': ep_len,
-                    }
+                    },
                 )
                 save_video(
                     frames,
@@ -340,7 +356,7 @@ class PETS(BaseAlgo):
                     pred_state=obs_pred,
                     true_state=obs_true,
                     save_replay_path=save_replay_path,
-                    name='obs_mean'
+                    name='obs_mean',
                 )
                 self.draw_picture(
                     timestep=current_step,
@@ -348,7 +364,7 @@ class PETS(BaseAlgo):
                     pred_state=reward_pred,
                     true_state=reward_true,
                     save_replay_path=save_replay_path,
-                    name='reward'
+                    name='reward',
                 )
                 frames = []
                 obs_pred, obs_true = [], []
@@ -363,7 +379,12 @@ class PETS(BaseAlgo):
             action, _ = self._select_action(current_step, obs, eval_env)
 
             idx = np.random.choice(self._dynamics.elite_model_idxes, size=1)
-            traj = self._dynamics.imagine(states=obs_dynamics, horizon=1, idx=idx, actions=action.unsqueeze(0))
+            traj = self._dynamics.imagine(
+                states=obs_dynamics,
+                horizon=1,
+                idx=idx,
+                actions=action.unsqueeze(0),
+            )
 
             pred_next_obs_mean = traj['states'][0][0].mean()
             pred_reward = traj['rewards'][0][0]
@@ -391,9 +412,9 @@ class PETS(BaseAlgo):
         num_episode: int,
         pred_state: list,
         true_state: list,
-        save_replay_path: str="./",
-        name: str='reward'
-        ) -> None:
+        save_replay_path: str = './',
+        name: str = 'reward',
+    ) -> None:
         """draw a curve of the predicted value and the ground true value"""
         target1 = list(pred_state)
         target2 = list(true_state)
@@ -410,17 +431,16 @@ class PETS(BaseAlgo):
         else:
             pylab.yticks(np.arange(0, 1, 0.2))
         pylab.legend(
-            loc=3, borderaxespad=2.0, bbox_to_anchor=(0.7, 0.7)
+            loc=3,
+            borderaxespad=2.0,
+            bbox_to_anchor=(0.7, 0.7),
         )  # Sets the position of that box for what each line is
         pylab.grid()  # draw grid
         pylab.savefig(
-            os.path.join(save_replay_path,
-            str(name)
-            + str(timestep)
-            + '_'
-            + str(num_episode)
-            + '.png'),
+            os.path.join(
+                save_replay_path,
+                str(name) + str(timestep) + '_' + str(num_episode) + '.png',
+            ),
             dpi=200,
         )  # save as picture
         pylab.close()
-

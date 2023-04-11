@@ -502,6 +502,7 @@ class ActionScale(Wrapper):
         ) / (self._max_action - self._min_action)
         return super().step(action)
 
+
 class ActionRepeat(Wrapper):
     """Repeat ab action given times.
 
@@ -526,7 +527,8 @@ class ActionRepeat(Wrapper):
         self._times = times
 
     def step(
-        self, action: torch.Tensor
+        self,
+        action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         step = 0
         rewards, costs = 0.0, 0.0
@@ -535,14 +537,12 @@ class ActionRepeat(Wrapper):
             step += 1
             rewards += reward
             costs += cost
-            if 'goal_met' not in info.keys():
-                goal_met = False
-            else:
-                goal_met = info['goal_met']
+            goal_met = False if 'goal_met' not in info.keys() else info['goal_met']
             if terminated or truncated or goal_met:
                 break
         info['num_step'] = step
         return obs, rewards, costs, terminated, truncated, info
+
 
 class Unsqueeze(Wrapper):
     """Unsqueeze the observation, reward, cost, terminated, truncated and info.

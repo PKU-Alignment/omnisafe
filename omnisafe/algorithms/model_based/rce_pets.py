@@ -14,20 +14,16 @@
 # ==============================================================================
 """Implementation of the Robust Cross Entropy algorithm."""
 
-import time
-from typing import Any, Dict, Tuple, Union, Optional
+from typing import Dict, Tuple
 
-
+import numpy as np
 import torch
 
 from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
-
-
+from omnisafe.algorithms.model_based.base import PETS
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.rce import RCEPlanner
-from omnisafe.algorithms.model_based.base import PETS
-import numpy as np
 
 
 @registry.register
@@ -42,9 +38,12 @@ class RCEPETS(PETS):
         - URL: `RCE <https://arxiv.org/abs/2010.07968>`_
     """
 
-
     def _init_model(self) -> None:
-        self._dynamics_state_space = self._env.coordinate_observation_space if self._env.coordinate_observation_space is not None else self._env.observation_space
+        self._dynamics_state_space = (
+            self._env.coordinate_observation_space
+            if self._env.coordinate_observation_space is not None
+            else self._env.observation_space
+        )
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
@@ -62,7 +61,6 @@ class RCEPETS(PETS):
             cost_func=self._env.get_cost_from_obs_tensor,
             terminal_func=None,
         )
-
 
         self._planner = RCEPlanner(
             dynamics=self._dynamics,
@@ -87,7 +85,6 @@ class RCEPETS(PETS):
         self._use_actor_critic = False
         self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
-
     def _init_log(self) -> None:
         super()._init_log()
         self._logger.register_key('Plan/feasible_num')
@@ -97,11 +94,11 @@ class RCEPETS(PETS):
         self._logger.register_key('Metrics/LagrangeMultiplier')
 
     def _select_action(
-            self,
-            current_step: int,
-            state: torch.Tensor,
-            env: ModelBasedAdapter,
-            ) -> Tuple[np.ndarray, Dict]:
+        self,
+        current_step: int,
+        state: torch.Tensor,
+        env: ModelBasedAdapter,
+    ) -> Tuple[np.ndarray, Dict]:
         """action selection"""
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
@@ -109,25 +106,21 @@ class RCEPETS(PETS):
             action, info = self._planner.output_action(state)
             self._logger.store(
                 **{
-                'Plan/iter': info['Plan/iter'],
-                'Plan/last_var_max': info['Plan/last_var_max'],
-                'Plan/last_var_mean': info['Plan/last_var_mean'],
-                'Plan/last_var_min': info['Plan/last_var_min'],
-                'Plan/feasible_num': info['Plan/feasible_num'],
-                'Plan/episode_returns_max': info['Plan/episode_returns_max'],
-                'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
-                'Plan/episode_returns_min': info['Plan/episode_returns_min'],
-                'Plan/episode_costs_max': info['Plan/episode_costs_max'],
-                'Plan/episode_costs_mean': info['Plan/episode_costs_mean'],
-                'Plan/episode_costs_min': info['Plan/episode_costs_min'],
-                }
+                    'Plan/iter': info['Plan/iter'],
+                    'Plan/last_var_max': info['Plan/last_var_max'],
+                    'Plan/last_var_mean': info['Plan/last_var_mean'],
+                    'Plan/last_var_min': info['Plan/last_var_min'],
+                    'Plan/feasible_num': info['Plan/feasible_num'],
+                    'Plan/episode_returns_max': info['Plan/episode_returns_max'],
+                    'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
+                    'Plan/episode_returns_min': info['Plan/episode_returns_min'],
+                    'Plan/episode_costs_max': info['Plan/episode_costs_max'],
+                    'Plan/episode_costs_mean': info['Plan/episode_costs_mean'],
+                    'Plan/episode_costs_min': info['Plan/episode_costs_min'],
+                },
             )
-        assert action.shape == torch.Size([state.shape[0], self._env.action_space.shape[0]]), "action shape should be [batch_size, action_dim]"
+        assert action.shape == torch.Size(
+            [state.shape[0], self._env.action_space.shape[0]],
+        ), 'action shape should be [batch_size, action_dim]'
         info = {}
         return action, info
-
-
-
-
-
-

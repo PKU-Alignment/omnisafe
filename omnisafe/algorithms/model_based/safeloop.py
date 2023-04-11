@@ -14,20 +14,18 @@
 # ==============================================================================
 """Implementation of the Safe Learning Off-Policy with Online Planning algorithm."""
 
-import time
-from typing import Any, Dict, Tuple, Union, Optional
+from typing import Dict, Tuple
 
-
+import numpy as np
 import torch
 
 from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
-
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
+from omnisafe.algorithms.model_based.base.loop import LOOP
 from omnisafe.algorithms.model_based.planner.safe_arc import SafeARCPlanner
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
-from omnisafe.algorithms.model_based.base.loop import LOOP
-import numpy as np
+
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
@@ -42,7 +40,11 @@ class SafeLOOP(LOOP):
     """
 
     def _init_model(self) -> None:
-        self._dynamics_state_space = self._env.coordinate_observation_space if self._env.coordinate_observation_space is not None else self._env.observation_space
+        self._dynamics_state_space = (
+            self._env.coordinate_observation_space
+            if self._env.coordinate_observation_space is not None
+            else self._env.observation_space
+        )
 
         self._actor_critic = ConstraintActorQCritic(
             obs_space=self._dynamics_state_space,
@@ -69,7 +71,6 @@ class SafeLOOP(LOOP):
             terminal_func=None,
         )
         self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
-
 
         self._planner = SafeARCPlanner(
             dynamics=self._dynamics,
@@ -101,12 +102,12 @@ class SafeLOOP(LOOP):
         self._logger.register_key('Plan/episode_costs_mean')
         self._logger.register_key('Plan/episode_costs_min')
 
-
     def _select_action(
-            self,
-            current_step: int,
-            state: torch.Tensor,
-            env: ModelBasedAdapter) -> Tuple[np.ndarray, Dict]:
+        self,
+        current_step: int,
+        state: torch.Tensor,
+        env: ModelBasedAdapter,
+    ) -> Tuple[np.ndarray, Dict]:
         """action selection"""
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
@@ -114,19 +115,21 @@ class SafeLOOP(LOOP):
             action, info = self._planner.output_action(state)
             self._logger.store(
                 **{
-                'Plan/iter': info['Plan/iter'],
-                'Plan/last_var_max': info['Plan/last_var_max'],
-                'Plan/last_var_mean': info['Plan/last_var_mean'],
-                'Plan/last_var_min': info['Plan/last_var_min'],
-                'Plan/feasible_num': info['Plan/feasible_num'],
-                'Plan/episode_returns_max': info['Plan/episode_returns_max'],
-                'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
-                'Plan/episode_returns_min': info['Plan/episode_returns_min'],
-                'Plan/episode_costs_max': info['Plan/episode_costs_max'],
-                'Plan/episode_costs_mean': info['Plan/episode_costs_mean'],
-                'Plan/episode_costs_min': info['Plan/episode_costs_min'],
-                }
+                    'Plan/iter': info['Plan/iter'],
+                    'Plan/last_var_max': info['Plan/last_var_max'],
+                    'Plan/last_var_mean': info['Plan/last_var_mean'],
+                    'Plan/last_var_min': info['Plan/last_var_min'],
+                    'Plan/feasible_num': info['Plan/feasible_num'],
+                    'Plan/episode_returns_max': info['Plan/episode_returns_max'],
+                    'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
+                    'Plan/episode_returns_min': info['Plan/episode_returns_min'],
+                    'Plan/episode_costs_max': info['Plan/episode_costs_max'],
+                    'Plan/episode_costs_mean': info['Plan/episode_costs_mean'],
+                    'Plan/episode_costs_min': info['Plan/episode_costs_min'],
+                },
             )
-        assert action.shape == torch.Size([state.shape[0], self._env.action_space.shape[0]]), "action shape should be [batch_size, action_dim]"
+        assert action.shape == torch.Size(
+            [state.shape[0], self._env.action_space.shape[0]],
+        ), 'action shape should be [batch_size, action_dim]'
         info = {}
         return action, info

@@ -18,15 +18,17 @@
 """The Dynamics Model of MBPO and PETS."""
 
 import itertools
+from collections import defaultdict
+from functools import partial
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from functools import partial
-from collections import defaultdict
-from typing import Dict, List, Tuple, Union
+
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
+
 
 def swish(data):
     """Transform data using sigmoid function."""
@@ -36,7 +38,7 @@ def swish(data):
 class StandardScaler:
     """Normalize data"""
 
-    def __init__(self, device=torch.device('cpu')):
+    def __init__(self, device=torch.device('cpu')) -> None:
         self._mean = 0.0
         self._std = 1.0
         self._mean_t = torch.tensor(self._mean).to(device)
@@ -83,7 +85,9 @@ def init_weights(layer):
             if not torch.sum(cond):
                 break
             weight = torch.where(
-                cond, torch.nn.init.normal_(torch.ones(weight.shape), mean=mean, std=std), weight
+                cond,
+                torch.nn.init.normal_(torch.ones(weight.shape), mean=mean, std=std),
+                weight,
             )
         return weight
 
@@ -92,11 +96,16 @@ def init_weights(layer):
         truncated_normal_init(layer.weight, std=1 / (2 * np.sqrt(input_dim)))
         layer.bias.data.fill_(0.0)
 
+
 # Special forward for nn.Sequential modules which contain BatchedLinear layers,
 # for when we only want to use one of the models.
 def unbatched_forward(layer, input, index):
     if isinstance(layer, EnsembleFC):
-        input = F.linear(input, torch.transpose(layer.weight[index].squeeze(0), 0, 1), layer.bias[index])
+        input = F.linear(
+            input,
+            torch.transpose(layer.weight[index].squeeze(0), 0, 1),
+            layer.bias[index],
+        )
 
     else:
         input = layer(input)
@@ -111,6 +120,7 @@ class EnsembleFC(nn.Module):
     out_features: int
     ensemble_size: int
     weight: torch.Tensor
+
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
@@ -155,7 +165,7 @@ class EnsembleModel(nn.Module):
         learning_rate=1e-3,
         use_decay=False,
         device=torch.device('cpu'),
-    ):
+    ) -> None:
         super().__init__()
 
         self._state_size = state_size
@@ -174,12 +184,20 @@ class EnsembleModel(nn.Module):
         self._use_decay = use_decay
 
         self._nn1 = EnsembleFC(
-            state_size + action_size, hidden_size, ensemble_size, weight_decay=0.000025
+            state_size + action_size,
+            hidden_size,
+            ensemble_size,
+            weight_decay=0.000025,
         )
         self._nn2 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.00005)
         self._nn3 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
         self._nn4 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
-        self._nn5 = EnsembleFC(hidden_size, self._output_dim * 2, ensemble_size, weight_decay=0.0001)
+        self._nn5 = EnsembleFC(
+            hidden_size,
+            self._output_dim * 2,
+            ensemble_size,
+            weight_decay=0.0001,
+        )
 
         self.register_buffer('max_logvar', (torch.ones((1, self._output_dim)).float() / 2))
         self.register_buffer('min_logvar', (-torch.ones((1, self._output_dim)).float() * 10))
@@ -198,7 +216,9 @@ class EnsembleModel(nn.Module):
         nn4_output = swish(self._nn4(nn3_output))
         nn5_output = self._nn5(nn4_output)
         mean = nn5_output[:, :, : self._output_dim]
-        logvar = self.max_logvar - F.softplus(self.max_logvar - nn5_output[:, :, self._output_dim :])
+        logvar = self.max_logvar - F.softplus(
+            self.max_logvar - nn5_output[:, :, self._output_dim :],
+        )
         logvar = self.min_logvar + F.softplus(logvar - self.min_logvar)
         var = torch.exp(logvar)
         if ret_log_var:
@@ -280,7 +300,7 @@ class EnsembleDynamicsModel:
         rew_func=None,
         cost_func=None,
         terminal_func=None,
-    ):
+    ) -> None:
         self._num_ensemble = model_cfgs.num_ensemble
         self._elite_size = model_cfgs.elite_size
         self._predict_reward = model_cfgs.predict_reward
@@ -305,7 +325,7 @@ class EnsembleDynamicsModel:
             hidden_size=model_cfgs.hidden_size,
             learning_rate=1e-3,
             use_decay=model_cfgs.use_decay,
-            device=self._device
+            device=self._device,
         )
 
         self._ensemble_model.to(self._device)
@@ -315,16 +335,18 @@ class EnsembleDynamicsModel:
         self._snapshots = {i: (None, 1e10) for i in range(self._num_ensemble)}
 
         if self._predict_reward is False:
-            assert rew_func is not None, "rew_func should not be None"
-        if use_cost is True:
-            if self._predict_cost is False:
-                assert cost_func is not None, "cost_func should not be None"
+            assert rew_func is not None, 'rew_func should not be None'
+        if use_cost is True and self._predict_cost is False:
+            assert cost_func is not None, 'cost_func should not be None'
         if use_terminal is True:
-            assert terminal_func is not None, "terminal_func should not be None"
+            assert terminal_func is not None, 'terminal_func should not be None'
         self._rew_func = rew_func
         self._cost_func = cost_func
         self._terminal_func = terminal_func
-        self._state_start_dim = int(self._predict_reward)*self._reward_size + int(self._predict_cost)*self._cost_size
+        self._state_start_dim = (
+            int(self._predict_reward) * self._reward_size
+            + int(self._predict_cost) * self._cost_size
+        )
         self._use_cost = use_cost
         self._use_terminal = use_terminal
         self._use_var = use_var
@@ -352,7 +374,7 @@ class EnsembleDynamicsModel:
             train_mse_losses = []
             # training
             train_idx = np.vstack(
-                [np.random.permutation(train_inputs.shape[0]) for _ in range(self._num_ensemble)]
+                [np.random.permutation(train_inputs.shape[0]) for _ in range(self._num_ensemble)],
             )
             # shape: [train_inputs.shape[0],num_ensemble]
 
@@ -367,7 +389,7 @@ class EnsembleDynamicsModel:
 
             # validation
             val_idx = np.vstack(
-                [np.random.permutation(holdout_inputs.shape[0]) for _ in range(self._num_ensemble)]
+                [np.random.permutation(holdout_inputs.shape[0]) for _ in range(self._num_ensemble)],
             )
             val_batch_size = 512
             val_losses_list = []
@@ -377,9 +399,15 @@ class EnsembleDynamicsModel:
                     idx = val_idx[:, start_pos : start_pos + val_batch_size]
                     val_input = torch.from_numpy(holdout_inputs[idx]).float().to(self._device)
                     val_label = torch.from_numpy(holdout_labels[idx]).float().to(self._device)
-                    holdout_mean, holdout_logvar = self._ensemble_model.forward_all(val_input, ret_log_var=True)
+                    holdout_mean, holdout_logvar = self._ensemble_model.forward_all(
+                        val_input,
+                        ret_log_var=True,
+                    )
                     _, holdout_mse_losses = self._ensemble_model.loss(
-                        holdout_mean, holdout_logvar, val_label, inc_var_loss=False
+                        holdout_mean,
+                        holdout_logvar,
+                        val_label,
+                        inc_var_loss=False,
                     )
                     holdout_mse_losses = holdout_mse_losses.detach().cpu().numpy()
                     val_losses_list.append(holdout_mse_losses)
@@ -413,40 +441,40 @@ class EnsembleDynamicsModel:
 
     @torch.no_grad()
     def _compute_reward(
-            self,
-            network_output: torch.Tensor,
-            ) -> torch.Tensor:
+        self,
+        network_output: torch.Tensor,
+    ) -> torch.Tensor:
         if self._predict_reward:
-            reward_start_dim = int(self._predict_cost)*self._cost_size
+            reward_start_dim = int(self._predict_cost) * self._cost_size
             reward_end_dim = reward_start_dim + self._reward_size
-            return network_output[:,:,reward_start_dim:reward_end_dim]
+            return network_output[:, :, reward_start_dim:reward_end_dim]
         else:
-            return self._rew_func(network_output[:,:,self._state_start_dim:])
+            return self._rew_func(network_output[:, :, self._state_start_dim :])
 
     @torch.no_grad()
     def _compute_cost(
-            self,
-            network_output: torch.Tensor,
-            ) -> torch.Tensor:
+        self,
+        network_output: torch.Tensor,
+    ) -> torch.Tensor:
         if self._predict_cost:
-            return network_output[:,:,:self._cost_size]
+            return network_output[:, :, : self._cost_size]
         else:
-            return self._cost_func(network_output[:,:,self._state_start_dim:])
+            return self._cost_func(network_output[:, :, self._state_start_dim :])
 
     @torch.no_grad()
     def _compute_terminal(
-            self,
-            network_output: torch.Tensor,
-            ) -> torch.Tensor:
-        return self._trunc_func(network_output[:,:,self._state_start_dim:])
+        self,
+        network_output: torch.Tensor,
+    ) -> torch.Tensor:
+        return self._trunc_func(network_output[:, :, self._state_start_dim :])
 
     def _predict(
-            self,
-            inputs: torch.Tensor,
-            batch_size: int=1024,
-            idx: Union[int, None]=None,
-            ret_log_var: bool=False
-            ) -> Tuple[torch.Tensor, torch.Tensor]:
+        self,
+        inputs: torch.Tensor,
+        batch_size: int = 1024,
+        idx: Union[int, None] = None,
+        ret_log_var: bool = False,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Input type and output type both are tensor, used for planning loop"""
         # input shape: [networ_size, (num_gaus+num_actor)*paritcle ,state_dim + action_dim]
         if idx is not None:
@@ -457,30 +485,40 @@ class EnsembleDynamicsModel:
 
         ensemble_mean, ensemble_var = [], []
         for i in range(0, inputs.shape[1], batch_size):
-            model_input = inputs[:,i : min(i + batch_size, inputs.shape[1]),:]
+            model_input = inputs[:, i : min(i + batch_size, inputs.shape[1]), :]
             # input shape: [networ_size, (num_gaus+num_actor)*paritcle ,state_dim + action_dim]
             if idx is None:
-                b_mean, b_var = self._ensemble_model.forward_all(model_input, ret_log_var=ret_log_var)
+                b_mean, b_var = self._ensemble_model.forward_all(
+                    model_input,
+                    ret_log_var=ret_log_var,
+                )
             else:
-                b_mean, b_var = self._ensemble_model.forward_idx(model_input, idx, ret_log_var=ret_log_var)
+                b_mean, b_var = self._ensemble_model.forward_idx(
+                    model_input,
+                    idx,
+                    ret_log_var=ret_log_var,
+                )
             ensemble_mean.append(b_mean)
             ensemble_var.append(b_var)
         ensemble_mean = torch.cat(ensemble_mean, dim=1)
         ensemble_var = torch.cat(ensemble_var, dim=1)
-        assert ensemble_mean.shape[:-1] == inputs.shape[:-1] and ensemble_var.shape[:-1] == inputs.shape[:-1], "output shape must be the same as input shape except the last dimension"
+        assert (
+            ensemble_mean.shape[:-1] == inputs.shape[:-1]
+            and ensemble_var.shape[:-1] == inputs.shape[:-1]
+        ), 'output shape must be the same as input shape except the last dimension'
         return ensemble_mean, ensemble_var
 
     @torch.no_grad()
     def sample(
-            self,
-            states: torch.Tensor,
-            actions: torch.Tensor,
-            idx: Union[int, None]=None,
-            deterministic: bool=False,
-            ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, List[torch.Tensor]]]:
-
-        assert states.shape[:-1] == actions.shape[:-1], "states and actions must have the same shape except the last dimension"
-
+        self,
+        states: torch.Tensor,
+        actions: torch.Tensor,
+        idx: Union[int, None] = None,
+        deterministic: bool = False,
+    ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, List[torch.Tensor]]]:
+        assert (
+            states.shape[:-1] == actions.shape[:-1]
+        ), 'states and actions must have the same shape except the last dimension'
 
         inputs = torch.cat((states, actions), dim=-1)
 
@@ -504,40 +542,50 @@ class EnsembleDynamicsModel:
         if self._use_var:
             info['vars'].append(ensemble_var)
         if self._use_reward_critic:
-            reward_values = self._actor_critic.reward_critic(states.reshape(-1, self._state_size), actions.reshape(-1, self._action_size))[0]
-            info['values'].append(reward_values.reshape((*states.shape[:-1],1)))
+            reward_values = self._actor_critic.reward_critic(
+                states.reshape(-1, self._state_size),
+                actions.reshape(-1, self._action_size),
+            )[0]
+            info['values'].append(reward_values.reshape((*states.shape[:-1], 1)))
         if self._use_cost_critic:
-            cost_values = self._actor_critic.cost_critic(states.reshape(-1, self._state_size), actions.reshape(-1, self._action_size))
-            info['cost_values'].append(cost_values.reshape((*states.shape[:-1],1)))
+            cost_values = self._actor_critic.cost_critic(
+                states.reshape(-1, self._state_size),
+                actions.reshape(-1, self._action_size),
+            )
+            info['cost_values'].append(cost_values.reshape((*states.shape[:-1], 1)))
         return states, rewards, info
 
     @torch.no_grad()
     def imagine(
-            self,
-            states: torch.Tensor,
-            horizon: int,
-            actions: Union[torch.Tensor, None]=None,
-            actor_critic: ConstraintActorQCritic=None,
-            idx: Union[int, None]=None,
-            ) -> Dict[str, List[torch.Tensor]]:
-
-        assert states.shape[1] == self._state_size, "states should be of shape (batch_size, state_size)"
-        if idx is None:
-            num_ensemble = self._num_ensemble
-        else:
-            num_ensemble = 1
+        self,
+        states: torch.Tensor,
+        horizon: int,
+        actions: Union[torch.Tensor, None] = None,
+        actor_critic: ConstraintActorQCritic = None,
+        idx: Union[int, None] = None,
+    ) -> Dict[str, List[torch.Tensor]]:
+        assert (
+            states.shape[1] == self._state_size
+        ), 'states should be of shape (batch_size, state_size)'
+        num_ensemble = self._num_ensemble if idx is None else 1
         if actions is not None:
-            assert actions.shape == torch.Size([horizon, states.shape[0], self._action_size]), "actions should be of shape (horizon, batch_size, action_size)"
+            assert actions.shape == torch.Size(
+                [horizon, states.shape[0], self._action_size],
+            ), 'actions should be of shape (horizon, batch_size, action_size)'
             actions = actions[:, None, :, :].repeat([1, num_ensemble, 1, 1])
 
         else:
-            assert actor_critic is not None, "Need to provide actions or actor_critic"
+            assert actor_critic is not None, 'Need to provide actions or actor_critic'
 
         traj = defaultdict(list)
         states = states[None, :, :].repeat([num_ensemble, 1, 1])
 
         for step in range(horizon):
-            actions_t = actions[step] if actions is not None else actor_critic.actor.predict(states, deterministic=False)
+            actions_t = (
+                actions[step]
+                if actions is not None
+                else actor_critic.actor.predict(states, deterministic=False)
+            )
             states, rewards, info = self.sample(states, actions_t, idx)
             states = torch.clamp(torch.nan_to_num(states, nan=0, posinf=0, neginf=0), -100, 100)
             rewards = torch.nan_to_num(rewards, nan=0, posinf=0, neginf=0)
@@ -549,5 +597,5 @@ class EnsembleDynamicsModel:
                 value_ = torch.nan_to_num(value[0], nan=0, posinf=0, neginf=0)
                 traj[key].append(value_.clone())
         for key, value in traj.items():
-            traj[key] = (torch.stack(value, dim=0))
+            traj[key] = torch.stack(value, dim=0)
         return traj
