@@ -30,7 +30,7 @@ What types of changes does your code introduce? Put an `x` in all the boxes that
 Go over all the following points, and put an `x` in all the boxes that apply.
 If you are unsure about any of these, don't hesitate to ask. We are here to help!
 
-- [ ] I have read the [CONTRIBUTION](https://omnisafe.readthedocs.io/en/latest/developer/contributing.html) guide. (**required**)
+- [ ] I have read the [CONTRIBUTION](https://github.com/OmniSafeAI/omnisafe/blob/HEAD/CONTRIBUTING.md) guide. (**required**)
 - [ ] My change requires a change to the documentation.
 - [ ] I have updated the tests accordingly. (*required for a bug fix or a new feature*)
 - [ ] I have updated the documentation accordingly.
