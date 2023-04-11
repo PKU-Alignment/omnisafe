@@ -7,7 +7,6 @@ OmniSafe Distributed
 
     setup_distributed
     get_rank
-    is_master
     world_size
     fork
     avg_tensor
@@ -34,7 +33,6 @@ Set up distributed training
 
     .. autofunction:: setup_distributed
     .. autofunction:: get_rank
-    .. autofunction:: is_master
     .. autofunction:: world_size
     .. autofunction:: fork
 
