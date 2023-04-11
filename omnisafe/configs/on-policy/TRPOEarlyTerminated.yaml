@@ -126,4 +126,3 @@ defaults:
       activation: tanh
       # learning rate
       lr: 0.001
-
