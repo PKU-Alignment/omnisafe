@@ -19,7 +19,7 @@ defaults:
   # training configurations
   train_cfgs:
     # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
-    device: cuda:7
+    device: cuda:0
     # number of threads for torch
     torch_threads: 16
     # total number of steps to train
@@ -46,25 +46,38 @@ defaults:
     batch_size: 256
     # Training max epoch of dynamics
     max_epoch: 5
+  # evaluation configurations
   evaluation_cfgs:
+    # Whether evaluation
     use_eval: True
+    # evaluation cycle
     eval_cycle: 10000
+    # evaluation episode
     num_episode: 1
 
   # algorithm configurations
   algo_cfgs:
+    # Number of action repetition
     action_repeat: 5
+    # Planning hoirzon
     plan_horizon: 7
+    # Planning iteration
     num_iterations: 5
-    num_particles: 5
+    # the number of particle in plannnig
+    num_particles: 20
+    # the number of action sample in planning
     num_samples: 512
+    # the number of candidate action in planning
     num_elites: 64
+    # the momentum coefficients for the mean and variance update in planning
     momentum: 0.1
+    # the var threshold in planning
     epsilon: 0.001
-    # number of steps to update the dynamics
+    # update cycle to dynamics
     update_dynamics_cycle: 1200
-    # batch size for each iteration
+    # batch size for each dynamics update iteration
     dynamics_batch_size: 256
+    # the number of dynamics update epoch
     dynamics_max_epochs: 5
     # Actor perdorm random action before `start_learning_steps` steps
     start_learning_steps: 10000
