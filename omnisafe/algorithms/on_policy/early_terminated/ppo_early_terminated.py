@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Early terminated version of the TRPO algorithm."""
+"""Implementation of the Early terminated version of the PPO algorithm."""
 
 
 from omnisafe.adapter.early_terminated_adapter import EarlyTerminatedAdapter
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.base.trpo import TRPO
+from omnisafe.algorithms.on_policy.base.ppo import PPO
 from omnisafe.utils import distributed
 
 
 @registry.register
-class TRPOEarlyTerminated(TRPO):
-    """The Early terminated version of the TRPO algorithm.
+class PPOEarlyTerminated(PPO):
+    """The Early terminated version of the PPO algorithm.
 
-    A simple combination of the Early terminated RL and the Trust Region Policy Optimization algorithm.
+    A simple combination of the Early terminated RL and the Proximal Policy Optimization algorithm.
     """
 
     def _init_env(self) -> None:
