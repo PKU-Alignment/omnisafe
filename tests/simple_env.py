@@ -31,7 +31,7 @@ class SimpleEnv(CMDP):
     """Simplest environment for testing."""
 
     _support_envs = ['Simple-v0']
-    metadata = {'render_fps':30}
+    metadata = {'render_fps': 30}
     need_auto_reset_wrapper = True
     need_time_limit_wrapper = True
     _num_envs = 1
