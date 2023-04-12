@@ -512,7 +512,6 @@ class ExperimentGrid:
         self._statistical_tools.load_source(self.log_dir)
         self._statistical_tools.draw_graph(parameter, values, compare_num, cost_limit)
 
-    # pylint: disable-next=too-many-nested-blocks
     def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
         """Agent Evaluation.
 
@@ -522,6 +521,7 @@ class ExperimentGrid:
         """
         assert self._evaluator is not None, 'Please run run() first!'
         param_dir = os.scandir(self.log_dir)
+        # pylint: disable-next=too-many-nested-blocks
         for set_of_params in param_dir:
             if set_of_params.is_dir():
                 exp_dir = os.scandir(set_of_params)
@@ -545,7 +545,6 @@ class ExperimentGrid:
         exp_dir.close()
         param_dir.close()
 
-    # pylint: disable-next=too-many-nested-blocks
     def render(
         self,
         num_episodes: int = 10,
@@ -565,6 +564,7 @@ class ExperimentGrid:
             height (int): height of the rendered image.
         """
         assert self._evaluator is not None, 'Please run run() first!'
+        # pylint: disable-next=too-many-nested-blocks
         for set_of_params in os.scandir(self.log_dir):
             if set_of_params.is_dir():
                 for single_exp in os.scandir(set_of_params):
