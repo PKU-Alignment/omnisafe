@@ -35,6 +35,7 @@ class SimpleEnv(CMDP):
     need_auto_reset_wrapper = True
     need_time_limit_wrapper = True
     _num_envs = 1
+    _count = 0
 
     def __init__(self, env_id: str, **kwargs) -> None:
         self._observation_space = spaces.Box(low=-1.0, high=1.0, shape=(3,))
@@ -44,17 +45,19 @@ class SimpleEnv(CMDP):
         self,
         action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+        self._count += 1
         obs = torch.as_tensor(self._observation_space.sample())
         reward = torch.as_tensor(random.random())
         cost = torch.as_tensor(random.random())
         termiated = torch.as_tensor(random.random() > 0.5)
-        truncated = torch.as_tensor(random.random() > 0.5)
+        truncated = torch.as_tensor(self._count > 10)
         return obs, reward, cost, termiated, truncated, {}
 
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
         if seed is not None:
             self.set_seed(seed)
         obs = torch.as_tensor(self._observation_space.sample())
+        self._count = 0
         return obs, {}
 
     def set_seed(self, seed: int) -> None:

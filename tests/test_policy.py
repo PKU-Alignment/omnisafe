@@ -83,6 +83,7 @@ def test_assertion_error():
     with pytest.raises(AssertionError):
         custom_cfgs['train_cfgs']['parallel'] = 2
         agent = omnisafe.Agent('DDPG', env_id, custom_cfgs=custom_cfgs)
+        agent.learn()
     with pytest.raises(AssertionError):
         custom_cfgs['train_cfgs']['parallel'] = 'abc'
         agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
