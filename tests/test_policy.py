@@ -35,6 +35,14 @@ early_terminated_policy = ['TRPOEarlyTerminated', 'PPOEarlyTerminated']
 # saute_policy = ['PPOSaute', 'PPOLagSaute']
 # simmer_policy = ['PPOSimmerQ', 'PPOLagSimmerQ', 'PPOSimmerPid', 'PPOLagSimmerPid']
 # model_based_policy = ['MBPPOLag', 'SafeLOOP', 'CAP']
+model_cfgs = {
+    'actor': {
+        'hidden_sizes': [8, 8],
+    },
+    'critic': {
+        'hidden_sizes': [8, 8],
+    },
+}
 
 
 def test_assertion_error():
@@ -55,14 +63,15 @@ def test_assertion_error():
             'use_tensorboard': True,
             'save_model_freq': 1,
         },
+        'model_cfgs': model_cfgs,
     }
     with pytest.raises(AssertionError):
         agent = omnisafe.Agent('NotExist', env_id, custom_cfgs=custom_cfgs)
-    with pytest.raises(AssertionError):
+    with pytest.raises(NotImplementedError):
         custom_cfgs['train_cfgs']['vector_env_nums'] = 2
         agent = omnisafe.Agent('PPOEarlyTerminated', env_id, custom_cfgs=custom_cfgs)
         agent.learn()
-    with pytest.raises(AssertionError):
+    with pytest.raises(NotImplementedError):
         custom_cfgs['train_cfgs']['vector_env_nums'] = 2
         agent = omnisafe.Agent('TRPOEarlyTerminated', env_id, custom_cfgs=custom_cfgs)
         agent.learn()
@@ -74,7 +83,6 @@ def test_assertion_error():
     with pytest.raises(AssertionError):
         custom_cfgs['train_cfgs']['parallel'] = 2
         agent = omnisafe.Agent('DDPG', env_id, custom_cfgs=custom_cfgs)
-        agent.learn()
     with pytest.raises(AssertionError):
         custom_cfgs['train_cfgs']['parallel'] = 'abc'
         agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
@@ -103,6 +111,7 @@ def test_render():
             'use_wandb': False,
             'save_model_freq': 1,
         },
+        'model_cfgs': model_cfgs,
     }
     agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
@@ -131,6 +140,7 @@ def test_off_policy(algo):
             'use_wandb': False,
             'save_model_freq': 1,
         },
+        'model_cfgs': model_cfgs,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
@@ -162,6 +172,7 @@ def test_sac_policy(auto_alpha):
             'use_wandb': False,
             'save_model_freq': 1,
         },
+        'model_cfgs': model_cfgs,
     }
     agent = omnisafe.Agent('SAC', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
@@ -193,6 +204,7 @@ def test_sac_lag_policy(auto_alpha):
             'use_wandb': False,
             'save_model_freq': 1,
         },
+        'model_cfgs': model_cfgs,
     }
     agent = omnisafe.Agent('SACLag', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
@@ -228,6 +240,7 @@ def test_on_policy(algo):
             'use_wandb': False,
             'save_model_freq': 1,
         },
+        'model_cfgs': model_cfgs,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
@@ -251,6 +264,7 @@ def test_workflow_for_training(algo):
             'use_wandb': False,
             'save_model_freq': 1,
         },
+        'model_cfgs': model_cfgs,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
@@ -277,6 +291,12 @@ def test_std_anealing():
             'save_model_freq': 1,
         },
         'model_cfgs': {
+            'actor': {
+                'hidden_sizes': [8, 8],
+            },
+            'critic': {
+                'hidden_sizes': [8, 8],
+            },
             'exploration_noise_anneal': True,
         },
     }

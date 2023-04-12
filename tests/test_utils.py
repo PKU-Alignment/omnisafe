@@ -39,6 +39,29 @@ from omnisafe.utils.math import (
 )
 from omnisafe.utils.model import get_activation, initialize_layer
 from omnisafe.utils.schedule import ConstantSchedule, PiecewiseSchedule
+from omnisafe.utils.tools import custom_cfgs_to_dict, update_dict
+
+
+def test_custom_cfgs_to_dict():
+    unparsed_args = {
+        'str': 'PPOLag',
+        'str_true': 'True',
+        'str_false': 'False',
+        'float': '1.0',
+        'digit': '2',
+    }
+    custom_cfgs = {}
+    for k, v in unparsed_args.items():
+        update_dict(custom_cfgs, custom_cfgs_to_dict(k, v))
+    print(custom_cfgs)
+    assert custom_cfgs['str'] == unparsed_args['str']
+    assert custom_cfgs['str_true'] is True
+    assert custom_cfgs['str_false'] is False
+    assert custom_cfgs['float'] == float(unparsed_args['float'])
+    assert custom_cfgs['digit'] == int(unparsed_args['digit'])
+
+
+test_custom_cfgs_to_dict()
 
 
 def test_config():

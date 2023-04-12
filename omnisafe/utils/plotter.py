@@ -249,6 +249,7 @@ class Plotter:
         save_dir='./',
         save_name=None,
         save_format='png',
+        show_image=False,
     ):  # pylint: disable=too-many-arguments
         """Example usage:
         Args:
@@ -321,6 +322,8 @@ class Plotter:
             axes[1].axhline(y=cost_limit, ls='--', c='black', linewidth=2)
         if save_name is None:
             save_name = all_logdirs[0].split('/')[-1]
+        if show_image:
+            plt.show()
         fig.savefig(
             os.path.join(save_dir, f'{save_name}.{save_format}'),
             bbox_inches='tight',

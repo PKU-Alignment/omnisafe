@@ -157,7 +157,11 @@ def custom_cfgs_to_dict(key_list, value):
         key_list (list): list of keys.
         value: value.
     """
-    if '.' in value:
+    if value == 'True':
+        value = True
+    elif value == 'False':
+        value = False
+    elif '.' in value:
         value = float(value)
     elif value.isdigit():
         value = int(value)
