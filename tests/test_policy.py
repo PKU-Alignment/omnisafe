@@ -280,7 +280,6 @@ def test_std_anealing():
     agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
 
-#test_render()
 # @helpers.parametrize(algo=['PPOLag'])
 # def test_cuda(algo):
 #    """Test std_anealing."""
