@@ -19,6 +19,7 @@ from __future__ import annotations
 import random
 from typing import Any
 
+import numpy as np
 import torch
 from gymnasium import spaces
 
@@ -62,7 +63,7 @@ class SimpleEnv(CMDP):
         return torch.as_tensor(self._action_space.sample())
 
     def render(self) -> Any:
-        raise NotImplementedError
+        return np.zeros((100, 100, 3), dtype=np.uint8)
 
     def close(self) -> None:
         pass

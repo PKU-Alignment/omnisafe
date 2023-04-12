@@ -213,4 +213,3 @@ class AlgoWrapper:
                 )
                 self._evaluator.render(num_episodes=num_episodes)
         scan_dir.close()
-

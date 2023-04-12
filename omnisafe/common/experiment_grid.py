@@ -545,7 +545,7 @@ class ExperimentGrid:
         exp_dir.close()
         param_dir.close()
 
-    # pylint: disable-next=too-many-arguments
+    # pylint: disable-next=too-many-nested-blocks
     def render(
         self,
         num_episodes: int = 10,
@@ -565,7 +565,6 @@ class ExperimentGrid:
             height (int): height of the rendered image.
         """
         assert self._evaluator is not None, 'Please run run() first!'
-        # pylint: disable-next=too-many-nested-blocks
         for set_of_params in os.scandir(self.log_dir):
             if set_of_params.is_dir():
                 for single_exp in os.scandir(set_of_params):
