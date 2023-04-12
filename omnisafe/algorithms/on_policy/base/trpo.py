@@ -107,7 +107,9 @@ class TRPO(NaturalPG):
             # average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)
             loss_improve = distributed.dist_avg(loss_improve)
             self._logger.log(f'Expected Improvement: {expected_improve} Actual: {loss_improve}')
-            if loss_improve < 0:
+            if not torch.isfinite(loss):
+                self._logger.log('WARNING: loss_pi not finite')
+            elif loss_improve < 0:
                 self._logger.log('INFO: did not improve improve <0')
             elif kl > self._cfgs.algo_cfgs.target_kl:
                 self._logger.log('INFO: violated KL constraint.')

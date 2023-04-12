@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the PID-Lagrange version of the PPO algorithm."""
+"""Implementation of the CPPOPID (PID version of PPOLag) algorithm."""
 
 import torch
 
@@ -23,7 +23,7 @@ from omnisafe.common.pid_lagrange import PIDLagrangian
 
 @registry.register
 class CPPOPID(PPO):
-    """The PID-Lagrange version of the PPO algorithm.
+    """The CPPOPID (PID version of PPOLag) algorithm.
 
     References:
         - Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
@@ -72,7 +72,7 @@ class CPPOPID(PPO):
         Args:
             self (object): object of the class.
         """
-        # note that logger already uses MPI statistics across all processes..
+        # note that logger already uses MPI statistics across all processes.
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         # first update PID-Lagrange multiplier parameter
         self._lagrange.pid_update(Jc)

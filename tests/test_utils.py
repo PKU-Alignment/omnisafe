@@ -46,8 +46,8 @@ def test_config():
     cfg = Config(a=1, b={'c': 2})
     cfg.a = 2
     cfg.recurisve_update({'a': {'d': 3}, 'e': {'f': 4}})
-
     cfg = get_default_kwargs_yaml('PPO', 'Simple-v0', 'on-policy')
+    cfg.recurisve_update({'exp_name': 'test_configs', 'env_id': 'Simple-v0', 'algo': 'PPO'})
     check_all_configs(cfg, 'on-policy')
 
 

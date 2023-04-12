@@ -96,10 +96,6 @@ class AlgoWrapper:
         cfgs.train_cfgs.recurisve_update(
             {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle},
         )
-        if self.algo_type in {'off-policy', 'model-based'}:
-            assert (
-                cfgs.train_cfgs.parallel == 1
-            ), 'off-policy or model-based only support parallel==1!'
         return cfgs
 
     def _init_checks(self):

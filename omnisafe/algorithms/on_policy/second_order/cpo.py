@@ -139,6 +139,9 @@ class CPO(TRPO):
             self._logger.log(
                 f'Expected Improvement: {expected_reward_improve} Actual: {loss_reward_improve}',
             )
+            # check whether there are nan.
+            if not torch.isfinite(loss_reward) and not torch.isfinite(loss_cost):
+                self._logger.log('WARNING: loss_pi not finite')
             if not torch.isfinite(kl):
                 self._logger.log('WARNING: KL not finite')
                 continue

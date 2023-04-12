@@ -39,8 +39,6 @@ class PPOEarlyTerminated(PPO):
             >>> def _init_env(self) -> None:
             >>>    self._env = CustomAdapter()
         """
-        if self._cfgs.train_cfgs.vector_env_nums != 1:
-            raise NotImplementedError('Early terminated RL only supports single environment.')
         self._env = EarlyTerminatedAdapter(
             self._env_id,
             self._cfgs.train_cfgs.vector_env_nums,

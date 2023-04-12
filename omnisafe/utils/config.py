@@ -251,6 +251,26 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
     ## check algo configs
     __check_algo_configs(configs.algo_cfgs, algo_type)
     __check_logger_configs(configs.logger_cfgs, algo_type)
+    __check_parallel_and_vectorized(configs, algo_type)
+
+
+def __check_parallel_and_vectorized(configs: Config, algo_type: str) -> None:
+    """Check parallel and vectorized configs.
+
+    This function is used to check the parallel and vectorized configs.
+
+    Args:
+        configs (dict): configs to be checked.
+        algo_type (str): algorithm type.
+    """
+    if algo_type in {'off-policy', 'model-based'}:
+        assert (
+            configs.train_cfgs.parallel == 1
+        ), 'off-policy or model-based only support parallel==1!'
+    if configs.algo in ['PPOEarlyTerminated', 'TRPOEarlyTerminated']:
+        assert (
+            configs.train_cfgs.vector_env_nums == 1
+        ), 'PPOEarlyTerminated or TRPOEarlyTerminated only support vector_env_nums == 1!'
 
 
 def __check_algo_configs(configs: Config, algo_type) -> None:

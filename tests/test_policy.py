@@ -58,11 +58,11 @@ def test_assertion_error():
     }
     with pytest.raises(AssertionError):
         agent = omnisafe.Agent('NotExist', env_id, custom_cfgs=custom_cfgs)
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(AssertionError):
         custom_cfgs['train_cfgs']['vector_env_nums'] = 2
         agent = omnisafe.Agent('PPOEarlyTerminated', env_id, custom_cfgs=custom_cfgs)
         agent.learn()
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(AssertionError):
         custom_cfgs['train_cfgs']['vector_env_nums'] = 2
         agent = omnisafe.Agent('TRPOEarlyTerminated', env_id, custom_cfgs=custom_cfgs)
         agent.learn()
@@ -74,6 +74,7 @@ def test_assertion_error():
     with pytest.raises(AssertionError):
         custom_cfgs['train_cfgs']['parallel'] = 2
         agent = omnisafe.Agent('DDPG', env_id, custom_cfgs=custom_cfgs)
+        agent.learn()
     with pytest.raises(AssertionError):
         custom_cfgs['train_cfgs']['parallel'] = 'abc'
         agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
