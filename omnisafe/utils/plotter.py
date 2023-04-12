@@ -125,7 +125,7 @@ class Plotter:
             borderaxespad=0.0,
             prop={'size': 13},
         )
-        sub_figures[1].set_ylim(0, 100)
+
         xscale = np.max(np.asarray(data[xaxis])) > 5e3
         if xscale:
             # just some formatting niceness: x-axis scale in scientific notation if max x is large
