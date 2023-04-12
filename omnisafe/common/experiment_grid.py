@@ -512,6 +512,7 @@ class ExperimentGrid:
         self._statistical_tools.load_source(self.log_dir)
         self._statistical_tools.draw_graph(parameter, values, compare_num, cost_limit)
 
+    # pylint: disable-next=too-many-nested-blocks
     def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
         """Agent Evaluation.
 
@@ -520,13 +521,16 @@ class ExperimentGrid:
             cost_criteria (float): cost criteria for evaluation.
         """
         assert self._evaluator is not None, 'Please run run() first!'
-        # pylint: disable-next=too-many-nested-blocks
-        for set_of_params in os.scandir(self.log_dir):
+        param_dir = os.scandir(self.log_dir)
+        for set_of_params in param_dir:
             if set_of_params.is_dir():
-                for single_exp in os.scandir(set_of_params):
+                exp_dir = os.scandir(set_of_params)
+                for single_exp in exp_dir:
                     if single_exp.is_dir():
-                        for single_seed in os.scandir(single_exp):
-                            for model in os.scandir(os.path.join(single_seed, 'torch_save')):
+                        seed_dir = os.scandir(single_exp)
+                        for single_seed in seed_dir:
+                            model_dir = os.scandir(os.path.join(single_seed, 'torch_save'))
+                            for model in model_dir:
                                 if model.is_file() and model.name.split('.')[-1] == 'pt':
                                     self._evaluator.load_saved(
                                         save_dir=single_seed,
@@ -536,6 +540,10 @@ class ExperimentGrid:
                                         num_episodes=num_episodes,
                                         cost_criteria=cost_criteria,
                                     )
+        model_dir.close()
+        seed_dir.close()
+        exp_dir.close()
+        param_dir.close()
 
     # pylint: disable-next=too-many-arguments
     def render(

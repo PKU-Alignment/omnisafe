@@ -84,6 +84,27 @@ def test_assertion_error():
         custom_cfgs = [1, 2, 3]
         agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
 
+def test_render():
+    """Test render image"""
+    env_id = 'Simple-v0'
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 2048,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'update_cycle': 1024,
+            'update_iters': 2,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+    }
+    agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
+    agent.render(num_episodes=1, render_mode='rgb_array')
 
 @helpers.parametrize(algo=off_policy)
 def test_off_policy(algo):
@@ -259,7 +280,7 @@ def test_std_anealing():
     agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
 
-
+#test_render()
 # @helpers.parametrize(algo=['PPOLag'])
 # def test_cuda(algo):
 #    """Test std_anealing."""

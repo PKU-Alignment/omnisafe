@@ -1,3 +1,10 @@
+[run]
+omit =
+    ../omnisafe/version.py
+    ../docs/*
+    ../examples/*
+    ../tutorials/*
+
 [report]
 exclude_lines =
     pragma: no cover

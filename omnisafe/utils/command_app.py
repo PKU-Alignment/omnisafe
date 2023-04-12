@@ -307,10 +307,13 @@ def evaluate_model(
     """
     evaluator = omnisafe.Evaluator(render_mode=render_mode)
     assert_with_exit(os.path.exists(result_dir), f'path{result_dir}, no torch_save directory')
-    for seed_dir in os.scandir(result_dir):
+
+    scan_result = os.scandir(result_dir)
+    for seed_dir in scan_result:
         if seed_dir.is_dir():
             models_dir = os.path.join(seed_dir.path, 'torch_save')
-            for item in os.scandir(models_dir):
+            scan_models = os.scandir(models_dir)
+            for item in scan_models:
                 if item.is_file() and item.name.split('.')[-1] == 'pt':
                     evaluator.load_saved(
                         save_dir=seed_dir.path,
@@ -323,6 +326,8 @@ def evaluate_model(
                         evaluator.render(num_episodes=num_episode)
                     else:
                         evaluator.evaluate(num_episodes=num_episode)
+    scan_models.close()
+    scan_result.close()
 
 
 @app.command()

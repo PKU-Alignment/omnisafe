@@ -173,10 +173,12 @@ class AlgoWrapper:
             cost_criteria (float): the cost criteria to evaluate.
         """
         assert self._evaluator is not None, 'Please run learn() first!'
-        for item in os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save')):
+        scan_dir = os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save'))
+        for item in scan_dir:
             if item.is_file() and item.name.split('.')[-1] == 'pt':
                 self._evaluator.load_saved(save_dir=self.agent.logger.log_dir, model_name=item.name)
                 self._evaluator.evaluate(num_episodes=num_episodes, cost_criteria=cost_criteria)
+        scan_dir.close()
 
     # pylint: disable-next=too-many-arguments
     def render(
@@ -186,7 +188,7 @@ class AlgoWrapper:
         camera_name: str = 'track',
         width: int = 256,
         height: int = 256,
-    ):  # pragma: no cover
+    ):
         """Evaluate and render some episodes.
 
         Args:
@@ -198,7 +200,8 @@ class AlgoWrapper:
             height (int): height of the rendered image.
         """
         assert self._evaluator is not None, 'Please run learn() first!'
-        for item in os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save')):
+        scan_dir = os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save'))
+        for item in scan_dir:
             if item.is_file() and item.name.split('.')[-1] == 'pt':
                 self._evaluator.load_saved(
                     save_dir=self.agent.logger.log_dir,
@@ -209,3 +212,5 @@ class AlgoWrapper:
                     height=height,
                 )
                 self._evaluator.render(num_episodes=num_episodes)
+        scan_dir.close()
+

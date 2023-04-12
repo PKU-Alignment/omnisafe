@@ -305,7 +305,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
             if self._render_mode == 'rgb_array_list':
                 frames = self._env.render()
-
+            print(frames)
             if save_replay_path is not None:
                 save_video(
                     frames,
@@ -327,7 +327,6 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 print(f'Episode cost: {ep_cost}', file=f)
                 print(f'Episode length: {length}', file=f)
         with open(result_path, 'a+', encoding='utf-8') as f:
-            self._env.close()
             print(self._dividing_line)
             print('Evaluation results:', file=f)
             print(f'Average episode reward: {np.mean(episode_rewards)}', file=f)
