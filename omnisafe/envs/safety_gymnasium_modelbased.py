@@ -239,6 +239,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
     def _ego_xy(self, robot_matrix, robot_pos, pos):
         """Return the egocentric XY vector to a position from the robot"""
         assert pos.shape == (2,), f'Bad pos {pos}'
+        assert robot_pos.shape == (2,), f'Bad robot_pos {robot_pos}'
         robot_3vec = robot_pos
         robot_mat = robot_matrix
 
@@ -332,9 +333,9 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         #     self._env.task._ego_xy(pos[:2]) for pos in hazards_pos_list
         # ]  # list of shape (2,) ndarray
 
-        ego_goal_pos = self._ego_xy(robot_matrix, robot_pos, goal_pos[:2])
+        ego_goal_pos = self._ego_xy(robot_matrix, robot_pos[:2], goal_pos[:2])
         ego_hazards_pos_list = [
-            self._ego_xy(robot_matrix, robot_pos, pos[:2]) for pos in hazards_pos_list
+            self._ego_xy(robot_matrix, robot_pos[:2], pos[:2]) for pos in hazards_pos_list
         ]  # list of shape (2,) ndarray
 
         # append obs to the dict

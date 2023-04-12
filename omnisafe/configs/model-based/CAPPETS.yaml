@@ -65,7 +65,7 @@ defaults:
     # Type of lagrangian optimizer
     lambda_optimizer: "SGD"
     # The upper bound of lagrange multiplier
-    lagrangian_upper_bound: 0.5
+    lagrangian_upper_bound: 1.0
 
   # algorithm configurations
   algo_cfgs:
