@@ -253,11 +253,11 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
     def render(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         self,
-        num_episodes: int = 0,
+        num_episodes: int = 1,
         save_replay_path: str | None = None,
         max_render_steps: int = 2000,
         cost_criteria: float = 1.0,
-    ):
+    ):  # pragma: no cover
         """Render the environment for one episode.
 
         Args:
@@ -305,7 +305,6 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
             if self._render_mode == 'rgb_array_list':
                 frames = self._env.render()
-
             if save_replay_path is not None:
                 save_video(
                     frames,

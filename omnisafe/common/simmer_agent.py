@@ -63,11 +63,6 @@ class BaseSimmerAgent(ABC):
         """Get the action."""
         raise NotImplementedError
 
-    @abstractmethod
-    def reset(self) -> torch.Tensor:
-        """Reset the agent."""
-        raise NotImplementedError
-
 
 # pylint: disable-next=too-many-instance-attributes
 class SimmerPIDAgent(BaseSimmerAgent):
@@ -138,10 +133,3 @@ class SimmerPIDAgent(BaseSimmerAgent):
     ) -> torch.Tensor:
         """Get the action."""
         return self.get_greedy_action(safety_budget, observation)
-
-    def reset(self):
-        """Resetting the internal state of the agent."""
-        self._sum_history = torch.zeros(1)
-        self._prev_action = torch.zeros(1)
-        self._prev_error = torch.zeros(1)
-        self._prev_raw_action = torch.zeros(1)

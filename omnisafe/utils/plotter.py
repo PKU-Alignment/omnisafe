@@ -249,6 +249,7 @@ class Plotter:
         save_dir='./',
         save_name=None,
         save_format='png',
+        show_image=False,
     ):  # pylint: disable=too-many-arguments
         """Example usage:
         Args:
@@ -319,40 +320,12 @@ class Plotter:
         )
         if cost_limit:
             axes[1].axhline(y=cost_limit, ls='--', c='black', linewidth=2)
-        plt.show()
         if save_name is None:
             save_name = all_logdirs[0].split('/')[-1]
+        if show_image:
+            plt.show()
         fig.savefig(
             os.path.join(save_dir, f'{save_name}.{save_format}'),
             bbox_inches='tight',
             pad_inches=0.0,
         )
-
-
-if __name__ == '__main__':
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--logdir', nargs='*')
-    parser.add_argument('--legend', '-l', nargs='*')
-    parser.add_argument('--xaxis', '-x', default='Steps')
-    parser.add_argument('--value', '-y', default='Rewards', nargs='*')
-    parser.add_argument('--count', action='store_true')
-    parser.add_argument('--smooth', '-s', type=int, default=1)
-    parser.add_argument('--select', nargs='*')
-    parser.add_argument('--exclude', nargs='*')
-    parser.add_argument('--estimator', default='mean')
-    args = parser.parse_args()
-
-    plotter = Plotter()
-    plotter.make_plots(
-        args.logdir,
-        args.legend,
-        args.xaxis,
-        args.value,
-        args.count,
-        smooth=args.smooth,
-        select=args.select,
-        exclude=args.exclude,
-        estimator=args.estimator,
-    )

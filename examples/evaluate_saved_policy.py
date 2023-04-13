@@ -24,7 +24,8 @@ import omnisafe
 LOG_DIR = ''
 if __name__ == '__main__':
     evaluator = omnisafe.Evaluator(render_mode='rgb_array')
-    for item in os.scandir(os.path.join(LOG_DIR, 'torch_save')):
+    scan_dir = os.scandir(os.path.join(LOG_DIR, 'torch_save'))
+    for item in scan_dir:
         if item.is_file() and item.name.split('.')[-1] == 'pt':
             evaluator.load_saved(
                 save_dir=LOG_DIR,
@@ -35,3 +36,4 @@ if __name__ == '__main__':
             )
             evaluator.render(num_episodes=1)
             evaluator.evaluate(num_episodes=1)
+    scan_dir.close()

@@ -30,7 +30,7 @@ class EarlyTerminatedAdapter(OnPolicyAdapter):
 
         super().__init__(env_id, num_envs, seed, cfgs)
 
-        self._cost_limit = cfgs.cost_limit
+        self._cost_limit = cfgs.algo_cfgs.cost_limit
         self._cost_logger = torch.zeros(self._env.num_envs)
 
     def step(

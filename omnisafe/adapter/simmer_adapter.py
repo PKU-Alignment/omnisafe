@@ -61,11 +61,6 @@ class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
         """Return the safety budget."""
         return self._safety_budget
 
-    @property
-    def upper_budget(self) -> torch.Tensor:
-        """Return the upper budget."""
-        return self._upper_budget
-
     @safety_budget.setter
     def safety_budget(self, safety_budget: torch.Tensor) -> None:
         """Set the safety budget."""

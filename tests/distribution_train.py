@@ -19,7 +19,7 @@ import simple_env  # noqa: F401
 
 
 if __name__ == '__main__':
-    algo = 'PolicyGradient'
+    algo = 'NaturalPG'
     env_id = 'Simple-v0'
     custom_cfgs = {
         'train_cfgs': {

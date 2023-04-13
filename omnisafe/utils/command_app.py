@@ -136,7 +136,7 @@ def train_grid(
     algo: str,
     env_id: str,
     custom_cfgs: dict,
-) -> Tuple[float, float, float]:
+) -> Tuple[float, float, float]:  # pragma: no cover
     """Train a policy from exp-x config with OmniSafe.
 
     Example:
@@ -242,7 +242,7 @@ def benchmark(
         eg.add(key=k, vals=v)
 
     gpu_id = None
-    if gpu_range is not None:
+    if gpu_range is not None:  # pragma: no cover
         assert_with_exit(
             len(gpu_range.split(':')) <= 3,
             'gpu_range must be like x:y:z format,'
@@ -260,12 +260,12 @@ def benchmark(
 
     if render:
         try:
-            eg.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
+            eg.render(num_episodes=1, render_mode='rgb_array', width=256, height=256)
         except RuntimeError:
             console.print('failed to render model', style='red bold')
     if evaluate:
         try:
-            eg.evaluate(num_episodes=10)
+            eg.evaluate(num_episodes=1)
         except RuntimeError:
             console.print('failed to evaluate model', style='red bold')
 
@@ -307,10 +307,13 @@ def evaluate_model(
     """
     evaluator = omnisafe.Evaluator(render_mode=render_mode)
     assert_with_exit(os.path.exists(result_dir), f'path{result_dir}, no torch_save directory')
-    for seed_dir in os.scandir(result_dir):
+
+    scan_result = os.scandir(result_dir)
+    for seed_dir in scan_result:
         if seed_dir.is_dir():
             models_dir = os.path.join(seed_dir.path, 'torch_save')
-            for item in os.scandir(models_dir):
+            scan_models = os.scandir(models_dir)
+            for item in scan_models:
                 if item.is_file() and item.name.split('.')[-1] == 'pt':
                     evaluator.load_saved(
                         save_dir=seed_dir.path,
@@ -323,6 +326,8 @@ def evaluate_model(
                         evaluator.render(num_episodes=num_episode)
                     else:
                         evaluator.evaluate(num_episodes=num_episode)
+    scan_models.close()
+    scan_result.close()
 
 
 @app.command()

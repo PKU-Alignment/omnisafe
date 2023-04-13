@@ -39,6 +39,26 @@ from omnisafe.utils.math import (
 )
 from omnisafe.utils.model import get_activation, initialize_layer
 from omnisafe.utils.schedule import ConstantSchedule, PiecewiseSchedule
+from omnisafe.utils.tools import custom_cfgs_to_dict, update_dict
+
+
+def test_custom_cfgs_to_dict():
+    unparsed_args = {
+        'str': 'PPOLag',
+        'str_true': 'True',
+        'str_false': 'False',
+        'float': '1.0',
+        'digit': '2',
+    }
+    custom_cfgs = {}
+    for k, v in unparsed_args.items():
+        update_dict(custom_cfgs, custom_cfgs_to_dict(k, v))
+    print(custom_cfgs)
+    assert custom_cfgs['str'] == unparsed_args['str']
+    assert custom_cfgs['str_true'] is True
+    assert custom_cfgs['str_false'] is False
+    assert custom_cfgs['float'] == float(unparsed_args['float'])
+    assert custom_cfgs['digit'] == int(unparsed_args['digit'])
 
 
 def test_config():
@@ -46,8 +66,8 @@ def test_config():
     cfg = Config(a=1, b={'c': 2})
     cfg.a = 2
     cfg.recurisve_update({'a': {'d': 3}, 'e': {'f': 4}})
-
     cfg = get_default_kwargs_yaml('PPO', 'Simple-v0', 'on-policy')
+    cfg.recurisve_update({'exp_name': 'test_configs', 'env_id': 'Simple-v0', 'algo': 'PPO'})
     check_all_configs(cfg, 'on-policy')
 
 

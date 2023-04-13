@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Saute Reinforcement Learning algorithms."""
+"""Test registry."""
 
-from omnisafe.algorithms.on_policy.saute.ppo_saute import PPOSaute
-from omnisafe.algorithms.on_policy.saute.trpo_saute import TRPOSaute
+import pytest
+
+from omnisafe.algorithms.registry import Registry
 
 
-__all__ = [
-    'TRPOSaute',
-    'PPOSaute',
-]
+class TestRegistry:
+    name: str = 'test'
+    idx: int = 0
+
+
+def test_with_error() -> None:
+    registry = Registry('test')
+    TestRegistry()
+    with pytest.raises(TypeError):
+        registry.register('test')
+    with pytest.raises(KeyError):
+        registry.get('test')

@@ -28,20 +28,10 @@ class Registry:
         self._name = name
         self._module_dict: dict = {}
 
-    def __repr__(self) -> str:
-        return (
-            f'{self.__class__.__name__ }(name={self._name}, items={list(self._module_dict.keys())})'
-        )
-
     @property
     def name(self):
         """Return the name of the registry."""
         return self._name
-
-    @property
-    def module_dict(self):
-        """Return a dict mapping names to classes."""
-        return self._module_dict
 
     def get(self, key):
         """Get the class that has been registered under the given key."""

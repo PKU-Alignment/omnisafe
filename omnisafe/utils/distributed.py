@@ -57,11 +57,6 @@ def get_rank() -> int:
     return dist.get_rank()
 
 
-def is_master() -> bool:
-    """Test whether the process is the root process."""
-    return bool(get_rank() == 0)
-
-
 def world_size() -> int:
     """Count active MPI processes."""
     if os.getenv('MASTER_ADDR') is None:
@@ -79,8 +74,6 @@ scatter = dist.scatter
 
 def fork(
     parallel: int,
-    bind_to_core: bool = False,
-    use_number_of_threads: bool = False,
     device: str = 'cpu',
     manual_args: list[str] | None = None,
 ) -> bool:
@@ -98,7 +91,6 @@ def fork(
     Args:
         parallel (int): number of processes to launch.
         bind_to_core (bool, optional): Defaults to False.
-        use_number_of_threads (bool, optional): Defaults to False.
     """
     backend = 'gloo' if device == 'cpu' else 'nccl'
     if os.getenv('MASTER_ADDR') is not None and os.getenv('IN_DIST') is None:
@@ -118,10 +110,6 @@ def fork(
             '--nproc_per_node',
             str(parallel),
         ]
-        if bind_to_core:
-            args += ['-bind-to', 'core']
-        if use_number_of_threads:
-            args += ['--use-hwthread-cpus']
         if manual_args is not None:
             args += manual_args
             print(manual_args)

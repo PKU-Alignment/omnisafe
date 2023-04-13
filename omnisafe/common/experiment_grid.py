@@ -19,15 +19,12 @@ from __future__ import annotations
 import json
 import os
 import string
-import time
 from concurrent.futures import ProcessPoolExecutor as Pool
 from copy import deepcopy
-from textwrap import dedent
 from typing import Any
 
 import numpy as np
 from rich.console import Console
-from tqdm import trange
 
 from omnisafe.algorithms import ALGORITHM2TYPE
 from omnisafe.common.statistics_tools import StatisticsTools
@@ -417,33 +414,6 @@ class ExperimentGrid:
         announcement = f'\n{joined_var_names}\n\n{line}'
         print(announcement)
 
-        if self.wait_defore_launch > 0:
-            self._console.print(
-                dedent(
-                    """
-                    Launch delayed to give you a few seconds to review your experiments.
-
-                    To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
-                    spinup/user_config.py.
-
-                    """,
-                ),
-                style='cyan, bold',
-                end='',
-            )
-            print(line)
-            wait, steps = self.wait_defore_launch, 100
-            prog_bar = trange(
-                steps,
-                desc='Launching in...',
-                leave=False,
-                ncols=self.div_line_width,
-                mininterval=0.25,
-                bar_format='{desc}: {bar}| {remaining} {elapsed}',
-            )
-            for _ in prog_bar:
-                time.sleep(wait / steps)
-
         pool = Pool(max_workers=num_pool)
         # run the variants.
         results = []
@@ -550,13 +520,17 @@ class ExperimentGrid:
             cost_criteria (float): cost criteria for evaluation.
         """
         assert self._evaluator is not None, 'Please run run() first!'
+        param_dir = os.scandir(self.log_dir)
         # pylint: disable-next=too-many-nested-blocks
-        for set_of_params in os.scandir(self.log_dir):
+        for set_of_params in param_dir:
             if set_of_params.is_dir():
-                for single_exp in os.scandir(set_of_params):
+                exp_dir = os.scandir(set_of_params)
+                for single_exp in exp_dir:
                     if single_exp.is_dir():
-                        for single_seed in os.scandir(single_exp):
-                            for model in os.scandir(os.path.join(single_seed, 'torch_save')):
+                        seed_dir = os.scandir(single_exp)
+                        for single_seed in seed_dir:
+                            model_dir = os.scandir(os.path.join(single_seed, 'torch_save'))
+                            for model in model_dir:
                                 if model.is_file() and model.name.split('.')[-1] == 'pt':
                                     self._evaluator.load_saved(
                                         save_dir=single_seed,
@@ -566,8 +540,11 @@ class ExperimentGrid:
                                         num_episodes=num_episodes,
                                         cost_criteria=cost_criteria,
                                     )
+        model_dir.close()
+        seed_dir.close()
+        exp_dir.close()
+        param_dir.close()
 
-    # pylint: disable-next=too-many-arguments
     def render(
         self,
         num_episodes: int = 10,
@@ -575,7 +552,7 @@ class ExperimentGrid:
         camera_name: str = 'track',
         width: int = 256,
         height: int = 256,
-    ):
+    ):  # pragma: no cover
         """Evaluate and render some episodes.
 
         Args:

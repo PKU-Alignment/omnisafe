@@ -61,7 +61,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--vector-env-nums',
         type=int,
-        default=2,
+        default=1,
         metavar='VECTOR-ENV',
         help='number of vector envs to use for training',
     )

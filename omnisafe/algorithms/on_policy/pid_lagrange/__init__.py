@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Saute Reinforcement Learning algorithms."""
+"""PID Lagrange algorithms."""
 
-from omnisafe.algorithms.on_policy.saute.ppo_saute import PPOSaute
-from omnisafe.algorithms.on_policy.saute.trpo_saute import TRPOSaute
+from omnisafe.algorithms.on_policy.pid_lagrange.cppo_pid import CPPOPID
+from omnisafe.algorithms.on_policy.pid_lagrange.trpo_pid import TRPOPID
 
 
 __all__ = [
-    'TRPOSaute',
-    'PPOSaute',
+    'CPPOPID',
+    'TRPOPID',
 ]

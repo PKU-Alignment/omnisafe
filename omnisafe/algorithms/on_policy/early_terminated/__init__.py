@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Saute Reinforcement Learning algorithms."""
+"""Early Terminated Safe Reinforcement Learning algorithms."""
 
-from omnisafe.algorithms.on_policy.saute.ppo_saute import PPOSaute
-from omnisafe.algorithms.on_policy.saute.trpo_saute import TRPOSaute
+from omnisafe.algorithms.on_policy.early_terminated.ppo_early_terminated import PPOEarlyTerminated
+from omnisafe.algorithms.on_policy.early_terminated.trpo_early_terminated import TRPOEarlyTerminated
 
 
 __all__ = [
-    'TRPOSaute',
-    'PPOSaute',
+    'TRPOEarlyTerminated',
+    'PPOEarlyTerminated',
 ]
