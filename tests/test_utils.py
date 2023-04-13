@@ -61,9 +61,6 @@ def test_custom_cfgs_to_dict():
     assert custom_cfgs['digit'] == int(unparsed_args['digit'])
 
 
-test_custom_cfgs_to_dict()
-
-
 def test_config():
     """Test config"""
     cfg = Config(a=1, b={'c': 2})
