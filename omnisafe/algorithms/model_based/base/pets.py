@@ -91,6 +91,7 @@ class PETS(BaseAlgo):
             num_elites=self._cfgs.algo_cfgs.num_elites,
             momentum=self._cfgs.algo_cfgs.momentum,
             epsilon=self._cfgs.algo_cfgs.epsilon,
+            init_var=self._cfgs.algo_cfgs.init_var,
             gamma=self._cfgs.algo_cfgs.gamma,
             device=self._device,
             dynamics_state_shape=self._dynamics_state_space.shape,

@@ -77,6 +77,8 @@ defaults:
     momentum: 0.1
     # the var threshold in planning
     epsilon: 0.001
+    # the initial variance of planning
+    init_var: 4
     # update cycle to dynamics
     update_dynamics_cycle: 1200
     # batch size for each dynamics update iteration

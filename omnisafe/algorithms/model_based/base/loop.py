@@ -19,6 +19,7 @@ from __future__ import annotations
 import torch
 from torch import nn, optim
 
+from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.base.pets import PETS
@@ -83,6 +84,7 @@ class LOOP(PETS):
             temperature=self._cfgs.algo_cfgs.temperature,
             momentum=self._cfgs.algo_cfgs.momentum,
             epsilon=self._cfgs.algo_cfgs.epsilon,
+            init_var=self._cfgs.algo_cfgs.init_var,
             gamma=self._cfgs.algo_cfgs.gamma,
             device=self._device,
             dynamics_state_shape=self._dynamics_state_space.shape,
@@ -125,6 +127,35 @@ class LOOP(PETS):
             # log information about cost critic
             self._logger.register_key('Loss/Loss_cost_critic', delta=True)
             self._logger.register_key('Value/cost_critic')
+
+    def _select_action(  # pylint: disable=unused-argument
+        self,
+        current_step: int,
+        state: torch.Tensor,
+        env: ModelBasedAdapter,
+    ) -> tuple[torch.Tensor, dict]:
+        """action selection"""
+        if current_step < self._cfgs.algo_cfgs.start_learning_steps:
+            action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
+        else:
+            # action, info = self._planner.output_action(state)
+            action = self._actor_critic.actor.predict(state, deterministic=False)
+            # self._logger.store(
+            #     **{
+            #         'Plan/iter': info['Plan/iter'],
+            #         'Plan/last_var_max': info['Plan/last_var_max'],
+            #         'Plan/last_var_mean': info['Plan/last_var_mean'],
+            #         'Plan/last_var_min': info['Plan/last_var_min'],
+            #         'Plan/episode_returns_max': info['Plan/episode_returns_max'],
+            #         'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
+            #         'Plan/episode_returns_min': info['Plan/episode_returns_min'],
+            #     },
+            # )
+        assert action.shape == torch.Size(
+            [state.shape[0], self._env.action_space.shape[0]],
+        ), 'action shape should be [batch_size, action_dim]'
+        info = {}
+        return action, info
 
     @property
     def _alpha(self) -> float:

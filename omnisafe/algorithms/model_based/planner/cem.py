@@ -35,6 +35,7 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
         num_elites,
         momentum,
         epsilon,
+        init_var,
         gamma,
         device,
         dynamics_state_shape,
@@ -66,7 +67,7 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
             *self._action_shape,
             device=self._device,
         )
-        self._action_sequence_var = 4 * torch.ones(
+        self._action_sequence_var = init_var * torch.ones(
             self._horizon,
             *self._action_shape,
             device=self._device,

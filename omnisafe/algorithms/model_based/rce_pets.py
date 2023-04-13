@@ -71,6 +71,7 @@ class RCEPETS(PETS):
             num_elites=self._cfgs.algo_cfgs.num_elites,
             momentum=self._cfgs.algo_cfgs.momentum,
             epsilon=self._cfgs.algo_cfgs.epsilon,
+            init_var=self._cfgs.algo_cfgs.init_var,
             gamma=self._cfgs.algo_cfgs.gamma,
             cost_gamma=self._cfgs.algo_cfgs.cost_gamma,
             cost_limit=self._cfgs.algo_cfgs.cost_limit,
