@@ -37,7 +37,7 @@
         "wandb_project": "omnisafe",
         "use_tensorboard": true,
         "save_model_freq": 100,
-        "log_dir": "/root/omnisafe_zjy/tests/benchmark/test_benchmark/SafetyAntVelocity-v1---bc8c9e4f26a8072e52cf3eddefc51eae641946d3314efe537e918e0851f83aa5/",
+        "log_dir": "",
         "window_lens": 100
     },
     "model_cfgs": {
@@ -78,7 +78,7 @@
         },
         "logger_cfgs": {
             "use_wandb": false,
-            "log_dir": "/root/omnisafe_zjy/tests/benchmark/test_benchmark/SafetyAntVelocity-v1---bc8c9e4f26a8072e52cf3eddefc51eae641946d3314efe537e918e0851f83aa5/"
+            "log_dir": ""
         }
     },
     "exp_name": "PolicyGradient-{SafetyAntVelocity-v1}",

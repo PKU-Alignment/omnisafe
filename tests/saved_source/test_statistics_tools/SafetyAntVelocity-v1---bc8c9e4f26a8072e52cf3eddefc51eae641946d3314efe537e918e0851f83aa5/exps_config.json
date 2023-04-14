@@ -11,7 +11,7 @@
     },
     "logger_cfgs": {
         "use_wandb": false,
-        "log_dir": "/root/omnisafe_zjy/tests/benchmark/test_benchmark/SafetyAntVelocity-v1---bc8c9e4f26a8072e52cf3eddefc51eae641946d3314efe537e918e0851f83aa5/"
+        "log_dir": ""
     },
     "env_id": "SafetyAntVelocity-v1",
     "algo": "PolicyGradient"
