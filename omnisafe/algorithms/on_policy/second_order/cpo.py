@@ -206,6 +206,127 @@ class CPO(TRPO):
         ratio = torch.exp(logp_ - logp)
         return (ratio * adv_c).mean()
 
+    # pylint: disable=invalid-name
+    def _determine_case(
+        self,
+        b_grad: torch.Tensor,
+        ep_costs: torch.Tensor,
+        q: torch.Tensor,
+        r: torch.Tensor,
+        s: torch.Tensor,
+    ) -> tuple(int, torch.Tensor, torch.Tensor):
+        """Determine the case of the trust region update.
+
+        Args:
+            b_grad (torch.Tensor): Gradient of the cost function.
+            ep_costs (torch.Tensor): Cost of the current episode.
+            q (torch.Tensor): The quadratic term of the quadratic approximation of the cost function.
+            r (torch.Tensor): The linear term of the quadratic approximation of the cost function.
+            s (torch.Tensor): The constant term of the quadratic approximation of the cost function.
+        """
+        if b_grad.dot(b_grad) <= 1e-6 and ep_costs < 0:
+            # feasible step and cost grad is zero: use plain TRPO update...
+            A = torch.zeros(1)
+            B = torch.zeros(1)
+            optim_case = 4
+        else:
+            assert torch.isfinite(r).all(), 'r is not finite'
+            assert torch.isfinite(s).all(), 's is not finite'
+
+            A = q - r**2 / (s + 1e-8)
+            B = 2 * self._cfgs.algo_cfgs.target_kl - ep_costs**2 / (s + 1e-8)
+
+            if ep_costs < 0 and B < 0:
+                # point in trust region is feasible and safety boundary doesn't intersect
+                # ==> entire trust region is feasible
+                optim_case = 3
+            elif ep_costs < 0 <= B:
+                # point in trust region is feasible but safety boundary intersects
+                # ==> only part of trust region is feasible
+                optim_case = 2
+            elif ep_costs >= 0 and B >= 0:
+                # point in trust region is infeasible and cost boundary doesn't intersect
+                # ==> entire trust region is infeasible
+                optim_case = 1
+                self._logger.log('Alert! Attempting feasible recovery!', 'yellow')
+            else:
+                # x = 0 infeasible, and safety half space is outside trust region
+                # ==> whole trust region is infeasible, try to fail gracefully
+                optim_case = 0
+                self._logger.log('Alert! Attempting infeasible recovery!', 'red')
+
+        return optim_case, A, B
+
+    # pylint: disable=invalid-name
+    def _step_direction(
+            self,
+            optim_case: int,
+            xHx: torch.Tensor,
+            x: torch.Tensor,
+            A: torch.Tensor,
+            B: torch.Tensor,
+            q: torch.Tensor,
+            p: torch.Tensor,
+            r: torch.Tensor,
+            s: torch.Tensor,
+            ep_costs: torch.Tensor,
+    ) -> tuple(torch.Tensor, ...):
+        if optim_case in (3, 4):
+            # under 3 and 4 cases directly use TRPO method
+            alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
+            nu_star = torch.zeros(1)
+            lambda_star = 1 / (alpha + 1e-8)
+            step_direction = alpha * x
+
+        elif optim_case in (1, 2):
+
+            def project(data: torch.Tensor, low: float, high: float) -> torch.Tensor:
+                """Project data to [low, high] interval."""
+                return torch.clamp(data, low, high)
+                #return torch.max(torch.min(data, torch.tensor(high)), torch.tensor(low))
+
+            #  analytical Solution to LQCLP, employ lambda,nu to compute final solution of OLOLQC
+            #  λ=argmax(f_a(λ),f_b(λ)) = λa_star or λb_star
+            #  computing formula shown in appendix, lambda_a and lambda_b
+            lambda_a = torch.sqrt(A / B)
+            lambda_b = torch.sqrt(q / (2 * self._cfgs.algo_cfgs.target_kl))
+            # λa_star = Proj(lambda_a ,0 ~ r/c)  λb_star=Proj(lambda_b,r/c~ +inf)
+            # where projection(str,b,c)=max(b,min(str,c))
+            # may be regarded as a projection from effective region towards safety region
+            r_num = r.item()
+            eps_cost = ep_costs + 1e-8
+            if ep_costs < 0:
+                lambda_a_star = project(lambda_a, torch.as_tensor(0.0), r_num / eps_cost)
+                lambda_b_star = project(lambda_b, r_num / eps_cost, torch.as_tensor(torch.inf))
+            else:
+                lambda_a_star = project(lambda_a, r_num / eps_cost, torch.as_tensor(torch.inf))
+                lambda_b_star = project(lambda_b, torch.as_tensor(0.0), r_num / eps_cost)
+
+            def f_a(lam):
+                return -0.5 * (A / (lam + 1e-8) + B * lam) - r * ep_costs / (s + 1e-8)
+
+            def f_b(lam):
+                return -0.5 * (q / (lam + 1e-8) + 2 * self._cfgs.algo_cfgs.target_kl * lam)
+
+            lambda_star = (
+                lambda_a_star if f_a(lambda_a_star) >= f_b(lambda_b_star) else lambda_b_star
+            )
+
+            # discard all negative values with torch.clamp(x, min=0)
+            # Nu_star = (lambda_star * - r)/s
+            nu_star = torch.clamp(lambda_star * ep_costs - r, min=0) / (s + 1e-8)
+            # final x_star as final direction played as policy's loss to backward and update
+            step_direction = 1.0 / (lambda_star + 1e-8) * (x - nu_star * p)
+
+        else:  # case == 0
+            # purely decrease costs
+            # without further check
+            lambda_star = torch.zeros(1)
+            nu_star = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (s + 1e-8))
+            step_direction = -nu_star * p
+
+        return step_direction, lambda_star, nu_star
+
     # pylint: disable=invalid-name,too-many-arguments,too-many-locals
     def _update_actor(
         self,
@@ -247,89 +368,26 @@ class CPO(TRPO):
         r = grad.dot(p)
         s = b_grad.dot(p)
 
-        if b_grad.dot(b_grad) <= 1e-6 and ep_costs < 0:
-            # feasible step and cost grad is zero: use plain TRPO update...
-            A = torch.zeros(1)
-            B = torch.zeros(1)
-            optim_case = 4
-        else:
-            assert torch.isfinite(r).all(), 'r is not finite'
-            assert torch.isfinite(s).all(), 's is not finite'
-
-            A = q - r**2 / (s + 1e-8)
-            B = 2 * self._cfgs.algo_cfgs.target_kl - ep_costs**2 / (s + 1e-8)
-
-            if ep_costs < 0 and B < 0:
-                # point in trust region is feasible and safety boundary doesn't intersect
-                # ==> entire trust region is feasible
-                optim_case = 3
-            elif ep_costs < 0 <= B:
-                # point in trust region is feasible but safety boundary intersects
-                # ==> only part of trust region is feasible
-                optim_case = 2
-            elif ep_costs >= 0 and B >= 0:
-                # point in trust region is infeasible and cost boundary doesn't intersect
-                # ==> entire trust region is infeasible
-                optim_case = 1
-                self._logger.log('Alert! Attempting feasible recovery!', 'yellow')
-            else:
-                # x = 0 infeasible, and safety half space is outside trust region
-                # ==> whole trust region is infeasible, try to fail gracefully
-                optim_case = 0
-                self._logger.log('Alert! Attempting infeasible recovery!', 'red')
-
-        if optim_case in (3, 4):
-            # under 3 and 4 cases directly use TRPO method
-            alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
-            nu_star = torch.zeros(1)
-            lambda_star = 1 / (alpha + 1e-8)
-            step_direction = alpha * x
-
-        elif optim_case in (1, 2):
-
-            def project(data: torch.Tensor, low: float, high: float) -> torch.Tensor:
-                """Project data to [low, high] interval."""
-                return torch.max(torch.min(data, torch.tensor(high)), torch.tensor(low))
-
-            #  analytical Solution to LQCLP, employ lambda,nu to compute final solution of OLOLQC
-            #  λ=argmax(f_a(λ),f_b(λ)) = λa_star or λb_star
-            #  computing formula shown in appendix, lambda_a and lambda_b
-            lambda_a = torch.sqrt(A / B)
-            lambda_b = torch.sqrt(q / (2 * self._cfgs.algo_cfgs.target_kl))
-            # λa_star = Proj(lambda_a ,0 ~ r/c)  λb_star=Proj(lambda_b,r/c~ +inf)
-            # where projection(str,b,c)=max(b,min(str,c))
-            # may be regarded as a projection from effective region towards safety region
-            r_num = r.item()
-            eps_cost = ep_costs + 1e-8
-            if ep_costs < 0:
-                lambda_a_star = project(lambda_a, 0.0, r_num / eps_cost)
-                lambda_b_star = project(lambda_b, r_num / eps_cost, torch.inf)
-            else:
-                lambda_a_star = project(lambda_a, r_num / eps_cost, torch.inf)
-                lambda_b_star = project(lambda_b, 0.0, r_num / eps_cost)
-
-            def f_a(lam):
-                return -0.5 * (A / (lam + 1e-8) + B * lam) - r * ep_costs / (s + 1e-8)
-
-            def f_b(lam):
-                return -0.5 * (q / (lam + 1e-8) + 2 * self._cfgs.algo_cfgs.target_kl * lam)
-
-            lambda_star = (
-                lambda_a_star if f_a(lambda_a_star) >= f_b(lambda_b_star) else lambda_b_star
+        optim_case, A, B = self._determine_case(
+            b_grad=b_grad,
+            ep_costs=ep_costs,
+            q=q,
+            r=r,
+            s=s,
             )
 
-            # discard all negative values with torch.clamp(x, min=0)
-            # Nu_star = (lambda_star * - r)/s
-            nu_star = torch.clamp(lambda_star * ep_costs - r, min=0) / (s + 1e-8)
-            # final x_star as final direction played as policy's loss to backward and update
-            step_direction = 1.0 / (lambda_star + 1e-8) * (x - nu_star * p)
-
-        else:  # case == 0
-            # purely decrease costs
-            # without further check
-            lambda_star = torch.zeros(1)
-            nu_star = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (s + 1e-8))
-            step_direction = -nu_star * p
+        step_direction, lambda_star, nu_star = self._step_direction(
+            optim_case=optim_case,
+            xHx=xHx,
+            x=x,
+            A=A,
+            B=B,
+            q=q,
+            p=p,
+            r=r,
+            s=s,
+            ep_costs=ep_costs,
+        )
 
         step_direction, accept_step = self._cpo_search_step(
             step_direction=step_direction,
