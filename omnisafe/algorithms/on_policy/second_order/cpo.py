@@ -257,19 +257,19 @@ class CPO(TRPO):
 
         return optim_case, A, B
 
-    # pylint: disable=invalid-name
+    # pylint: disable=invalid-name, too-many-arguments, too-many-locals
     def _step_direction(
-            self,
-            optim_case: int,
-            xHx: torch.Tensor,
-            x: torch.Tensor,
-            A: torch.Tensor,
-            B: torch.Tensor,
-            q: torch.Tensor,
-            p: torch.Tensor,
-            r: torch.Tensor,
-            s: torch.Tensor,
-            ep_costs: torch.Tensor,
+        self,
+        optim_case: int,
+        xHx: torch.Tensor,
+        x: torch.Tensor,
+        A: torch.Tensor,
+        B: torch.Tensor,
+        q: torch.Tensor,
+        p: torch.Tensor,
+        r: torch.Tensor,
+        s: torch.Tensor,
+        ep_costs: torch.Tensor,
     ) -> tuple(torch.Tensor, ...):
         if optim_case in (3, 4):
             # under 3 and 4 cases directly use TRPO method
@@ -283,7 +283,7 @@ class CPO(TRPO):
             def project(data: torch.Tensor, low: float, high: float) -> torch.Tensor:
                 """Project data to [low, high] interval."""
                 return torch.clamp(data, low, high)
-                #return torch.max(torch.min(data, torch.tensor(high)), torch.tensor(low))
+                # return torch.max(torch.min(data, torch.tensor(high)), torch.tensor(low))
 
             #  analytical Solution to LQCLP, employ lambda,nu to compute final solution of OLOLQC
             #  λ=argmax(f_a(λ),f_b(λ)) = λa_star or λb_star
@@ -374,7 +374,7 @@ class CPO(TRPO):
             q=q,
             r=r,
             s=s,
-            )
+        )
 
         step_direction, lambda_star, nu_star = self._step_direction(
             optim_case=optim_case,

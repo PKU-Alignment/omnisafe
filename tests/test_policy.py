@@ -46,7 +46,9 @@ model_cfgs = {
     },
 }
 
-optim_case=[0, 1, 2, 3, 4]
+optim_case = [0, 1, 2, 3, 4]
+
+
 @helpers.parametrize(optim_case=optim_case)
 def test_cpo(optim_case):
     agent = omnisafe.Agent('CPO', 'Simple-v0', custom_cfgs={})
@@ -104,7 +106,6 @@ def test_cpo(optim_case):
         loss_reward_before=loss_reward_before,
         loss_cost_before=loss_cost_before,
     )
-    
 
 
 def test_assertion_error():

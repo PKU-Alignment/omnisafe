@@ -39,7 +39,7 @@ from omnisafe.utils.math import (
 )
 from omnisafe.utils.model import get_activation, initialize_layer
 from omnisafe.utils.schedule import ConstantSchedule, PiecewiseSchedule
-from omnisafe.utils.tools import custom_cfgs_to_dict, update_dict, assert_with_exit
+from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dict
 
 
 def test_update_dict():
@@ -47,9 +47,11 @@ def test_update_dict():
     update_dict(d, {'a': 2, 'b': {'d': 3}, 'e': {'f': 4}})
     assert d == {'a': 2, 'b': {'c': 2, 'd': 3}, 'e': {'f': 4}}
 
+
 def test_assert_with_exit():
     with pytest.raises(SystemExit):
         assert_with_exit(False, 'test')
+
 
 def test_custom_cfgs_to_dict():
     unparsed_args = {

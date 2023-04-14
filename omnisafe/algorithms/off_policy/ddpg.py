@@ -60,7 +60,7 @@ class DDPG(BaseAlgo):
             int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.steps_per_epoch == 0
         ), 'The total number of steps is not divisible by the number of steps per epoch.'
         self._epochs = int(
-            self._cfgs.train_cfgs.total_steps // self._cfgs.algo_cfgs.steps_per_epoch
+            self._cfgs.train_cfgs.total_steps // self._cfgs.algo_cfgs.steps_per_epoch,
         )
         self._epoch = 0
         self._steps_per_epoch = self._cfgs.algo_cfgs.steps_per_epoch // (

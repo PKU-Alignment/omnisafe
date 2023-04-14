@@ -47,8 +47,8 @@ class SimpleEnv(CMDP):
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         self._count += 1
         obs = torch.as_tensor(self._observation_space.sample())
-        reward = 1000*torch.as_tensor(random.random())
-        cost = 1000*torch.as_tensor(random.random())
+        reward = 1000 * torch.as_tensor(random.random())
+        cost = 1000 * torch.as_tensor(random.random())
         termiated = torch.as_tensor(random.random() > 0.9)
         truncated = torch.as_tensor(self._count > 10)
         return obs, reward, cost, termiated, truncated, {}
