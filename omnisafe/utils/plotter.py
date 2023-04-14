@@ -143,13 +143,13 @@ class Plotter:
         for root, _, files in os.walk(logdir):
             if 'progress.csv' in files:
                 exp_name = None
-                update_cycle = None
+                steps_per_epoch = None
                 try:
                     with open(os.path.join(root, 'config.json'), encoding='utf-8') as f:
                         config = json.load(f)
                         if 'exp_name' in config:
                             exp_name = config['algo']
-                            update_cycle = config['algo_cfgs']['update_cycle']
+                            steps_per_epoch = config['algo_cfgs']['steps_per_epoch']
                 except FileNotFoundError as error:
                     config_path = os.path.join(root, 'config.json')
                     raise FileNotFoundError(f'Could not read from {config_path}') from error
@@ -178,12 +178,12 @@ class Plotter:
                 exp_data.insert(len(exp_data.columns), 'Rewards', exp_data[performance])
                 exp_data.insert(len(exp_data.columns), 'Costs', exp_data[cost_performance])
                 epoch = exp_data.get('Train/Epoch')
-                if epoch is None or update_cycle is None:
+                if epoch is None or steps_per_epoch is None:
                     raise ValueError('No Train/Epoch column in progress.csv')
                 exp_data.insert(
                     len(exp_data.columns),
                     'Steps',
-                    epoch * update_cycle,
+                    epoch * steps_per_epoch,
                 )
                 datasets.append(exp_data)
         return datasets

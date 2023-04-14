@@ -37,7 +37,7 @@ class StatisticsTools:
         self.grid_config_dir: str  # experiment's config directory
         self.grid_config: dict  # experiment's config
         # decompressed grid config
-        # e.g. {'algo_cfgs:update_cycle': 2048} -> {'algo_cfgs': {'update_cycle': 2048}}
+        # e.g. {'algo_cfgs:steps_per_epoch': 2048} -> {'algo_cfgs': {'steps_per_epoch': 2048}}
         self.decompressed_grid_config: dict
         # map the path of data to the config which generate the name of image
         self.path_map_img_name: dict
@@ -318,23 +318,8 @@ class StatisticsTools:
             unflatten_set = set()
 
             for key, value in var.items():
-                if ':' in key:
-                    splits = key.split(':')
-                    k_0 = splits[0]
-                    assert k_0 not in new_var or isinstance(
-                        new_var[k_0],
-                        dict,
-                    ), "You can't assign multiple values to the same key."
-
-                    if k_0 not in new_var:
-                        new_var[k_0] = {}
-
-                    sub_k = ':'.join(splits[1:])
-                    new_var[k_0][sub_k] = value
-                    unflatten_set.add(k_0)
-                else:
-                    assert key not in new_var, "You can't assign multiple values to the same key."
-                    new_var[key] = value
+                assert key not in new_var, "You can't assign multiple values to the same key."
+                new_var[key] = value
 
             # make sure to fill out the nested dict.
             for key in unflatten_set:

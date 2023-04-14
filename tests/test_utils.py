@@ -39,8 +39,17 @@ from omnisafe.utils.math import (
 )
 from omnisafe.utils.model import get_activation, initialize_layer
 from omnisafe.utils.schedule import ConstantSchedule, PiecewiseSchedule
-from omnisafe.utils.tools import custom_cfgs_to_dict, update_dict
+from omnisafe.utils.tools import custom_cfgs_to_dict, update_dict, assert_with_exit
 
+
+def test_update_dict():
+    d = {'a': 1, 'b': {'c': 2}}
+    update_dict(d, {'a': 2, 'b': {'d': 3}, 'e': {'f': 4}})
+    assert d == {'a': 2, 'b': {'c': 2, 'd': 3}, 'e': {'f': 4}}
+
+def test_assert_with_exit():
+    with pytest.raises(SystemExit):
+        assert_with_exit(False, 'test')
 
 def test_custom_cfgs_to_dict():
     unparsed_args = {
@@ -49,6 +58,7 @@ def test_custom_cfgs_to_dict():
         'str_false': 'False',
         'float': '1.0',
         'digit': '2',
+        'list': '[a,b,c]',
     }
     custom_cfgs = {}
     for k, v in unparsed_args.items():
@@ -59,6 +69,7 @@ def test_custom_cfgs_to_dict():
     assert custom_cfgs['str_false'] is False
     assert custom_cfgs['float'] == float(unparsed_args['float'])
     assert custom_cfgs['digit'] == int(unparsed_args['digit'])
+    assert custom_cfgs['list'] == ['a', 'b', 'c']
 
 
 def test_config():
@@ -170,7 +181,7 @@ def test_train(
     eg.add('algo', [algo])
     eg.add('env_id', [env_id])
     eg.add('logger_cfgs:use_wandb', [False])
-    eg.add('algo_cfgs:update_cycle', [512])
+    eg.add('algo_cfgs:steps_per_epoch', [512])
     eg.add('train_cfgs:total_steps', [1024, 2048])
     eg.add('train_cfgs:vector_env_nums', [1])
     eg.run(train, num_pool=1, is_test=True)

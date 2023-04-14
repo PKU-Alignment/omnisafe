@@ -22,5 +22,5 @@ train_cfgs:
     2048
   vector_env_nums: 1
 algo_cfgs:
-  update_cycle:
+  steps_per_epoch:
     1024

@@ -448,7 +448,7 @@ Quick start
                         'parallel': 1,
                     },
                     'algo_cfgs': {
-                        'update_cycle': 2048,
+                        'steps_per_epoch': 2048,
                         'update_iters': 1,
                     },
                     'logger_cfgs': {
@@ -590,7 +590,7 @@ Configs
 
                 - clip (float): Clipping parameter for FOCOPS.
 
-            - update_cycle (int): Number of steps to update the policy network.
+            - steps_per_epoch (int): Number of steps to update the policy network.
             - update_iters (int): Number of iterations to update the policy network.
             - batch_size (int): Batch size for each iteration.
             - target_kl (float): Target KL divergence.

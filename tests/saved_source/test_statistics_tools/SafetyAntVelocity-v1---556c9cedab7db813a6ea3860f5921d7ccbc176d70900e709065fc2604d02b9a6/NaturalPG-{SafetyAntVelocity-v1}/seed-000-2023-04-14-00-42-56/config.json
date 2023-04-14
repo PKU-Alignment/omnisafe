@@ -9,15 +9,15 @@
         "epochs": 2
     },
     "algo_cfgs": {
-        "update_cycle": 2048,
+        "steps_per_epoch": 2048,
         "update_iters": 10,
-        "batch_size": 64,
-        "target_kl": 0.02,
+        "batch_size": 128,
+        "target_kl": 0.01,
         "entropy_coef": 0.0,
-        "reward_normalize": true,
-        "cost_normalize": true,
+        "reward_normalize": false,
+        "cost_normalize": false,
         "obs_normalize": true,
-        "kl_early_stop": true,
+        "kl_early_stop": false,
         "use_max_grad_norm": true,
         "max_grad_norm": 40.0,
         "use_critic_norm": true,
@@ -26,24 +26,29 @@
         "cost_gamma": 0.99,
         "lam": 0.95,
         "lam_c": 0.95,
+        "clip": 0.2,
         "adv_estimation_method": "gae",
         "standardized_rew_adv": true,
         "standardized_cost_adv": true,
         "penalty_coef": 0.0,
-        "use_cost": false
+        "use_cost": false,
+        "cg_damping": 0.1,
+        "cg_iters": 15,
+        "fvp_obs": "None",
+        "fvp_sample_freq": 1
     },
     "logger_cfgs": {
         "use_wandb": false,
         "wandb_project": "omnisafe",
         "use_tensorboard": true,
         "save_model_freq": 100,
-        "log_dir": "",
+        "log_dir": "/root/omnisafe_zjy/tests/benchmark/test_benchmark/SafetyAntVelocity-v1---556c9cedab7db813a6ea3860f5921d7ccbc176d70900e709065fc2604d02b9a6/",
         "window_lens": 100
     },
     "model_cfgs": {
         "weight_initialization_mode": "kaiming_uniform",
         "actor_type": "gaussian_learning",
-        "linear_lr_decay": true,
+        "linear_lr_decay": false,
         "exploration_noise_anneal": false,
         "std_range": [
             0.5,
@@ -55,7 +60,7 @@
                 64
             ],
             "activation": "tanh",
-            "lr": 0.0003
+            "lr": null
         },
         "critic": {
             "hidden_sizes": [
@@ -63,13 +68,13 @@
                 64
             ],
             "activation": "tanh",
-            "lr": 0.0003
+            "lr": 0.001
         }
     },
     "exp_increment_cfgs": {
         "seed": 0,
         "algo_cfgs": {
-            "update_cycle": 2048
+            "steps_per_epoch": 2048
         },
         "train_cfgs": {
             "total_steps": 4096,
@@ -78,10 +83,10 @@
         },
         "logger_cfgs": {
             "use_wandb": false,
-            "log_dir": ""
+            "log_dir": "/root/omnisafe_zjy/tests/benchmark/test_benchmark/SafetyAntVelocity-v1---556c9cedab7db813a6ea3860f5921d7ccbc176d70900e709065fc2604d02b9a6/"
         }
     },
-    "exp_name": "PolicyGradient-{SafetyAntVelocity-v1}",
+    "exp_name": "NaturalPG-{SafetyAntVelocity-v1}",
     "env_id": "SafetyAntVelocity-v1",
-    "algo": "PolicyGradient"
+    "algo": "NaturalPG"
 }

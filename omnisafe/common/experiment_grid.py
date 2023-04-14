@@ -344,23 +344,8 @@ class ExperimentGrid:
             unflatten_set = set()
 
             for key, value in var.items():
-                if ':' in key:
-                    splits = key.split(':')
-                    k_0 = splits[0]
-                    assert k_0 not in new_var or isinstance(
-                        new_var[k_0],
-                        dict,
-                    ), "You can't assign multiple values to the same key."
-
-                    if k_0 not in new_var:
-                        new_var[k_0] = {}
-
-                    sub_k = ':'.join(splits[1:])
-                    new_var[k_0][sub_k] = value
-                    unflatten_set.add(k_0)
-                else:
-                    assert key not in new_var, "You can't assign multiple values to the same key."
-                    new_var[key] = value
+                assert key not in new_var, "You can't assign multiple values to the same key."
+                new_var[key] = value
 
             # make sure to fill out the nested dict.
             for key in unflatten_set:

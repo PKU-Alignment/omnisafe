@@ -18,7 +18,7 @@ from omnisafe.common.statistics_tools import StatisticsTools
 
 
 # just fill in the path in which experiment grid runs.
-path = ''
+path = '/root/omnisafe_zjy/tests/saved_source/test_statistics_tools'
 st = StatisticsTools()
 st.load_source(path)
 # just fill in the name of the parameter of which value you want to compare.
@@ -26,4 +26,4 @@ st.load_source(path)
 # or you can just specify how many values you want to compare in single graph at most,
 # and the function will automatically generate all possible combinations of the graph.
 # but the two mode can not be used at the same time.
-st.draw_graph(parameter='', values=None, compare_num=2, cost_limit=None)
+st.draw_graph(parameter='algo', values=None, compare_num=2, cost_limit=None)

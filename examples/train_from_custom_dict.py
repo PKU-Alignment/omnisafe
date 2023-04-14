@@ -25,7 +25,7 @@ custom_cfgs = {
         'parallel': 1,
     },
     'algo_cfgs': {
-        'update_cycle': 2048,
+        'steps_per_epoch': 2048,
         'update_iters': 1,
     },
     'logger_cfgs': {

@@ -2,7 +2,7 @@
 {
     "seed": 0,
     "algo_cfgs": {
-        "update_cycle": 2048
+        "steps_per_epoch": 2048
     },
     "train_cfgs": {
         "total_steps": 4096,
@@ -11,8 +11,8 @@
     },
     "logger_cfgs": {
         "use_wandb": false,
-        "log_dir": ""
+        "log_dir": "/root/omnisafe_zjy/tests/benchmark/test_benchmark/SafetyAntVelocity-v1---bc8c9e4f26a8072e52cf3eddefc51eae641946d3314efe537e918e0851f83aa5/"
     },
     "env_id": "SafetyAntVelocity-v1",
-    "algo": "NaturalPG"
+    "algo": "PolicyGradient"
 }

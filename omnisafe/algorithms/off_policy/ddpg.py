@@ -52,23 +52,25 @@ class DDPG(BaseAlgo):
             self._seed,
             self._cfgs,
         )
-        assert (self._cfgs.algo_cfgs.update_cycle) % (
+        assert (self._cfgs.algo_cfgs.steps_per_epoch) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         ) == 0, 'The number of steps per epoch is not divisible by the number of environments.'
 
         assert (
-            int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.update_cycle == 0
+            int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.steps_per_epoch == 0
         ), 'The total number of steps is not divisible by the number of steps per epoch.'
-        self._epochs = int(self._cfgs.train_cfgs.total_steps // self._cfgs.algo_cfgs.update_cycle)
+        self._epochs = int(
+            self._cfgs.train_cfgs.total_steps // self._cfgs.algo_cfgs.steps_per_epoch
+        )
         self._epoch = 0
-        self._update_cycle = self._cfgs.algo_cfgs.update_cycle // (
+        self._steps_per_epoch = self._cfgs.algo_cfgs.steps_per_epoch // (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         )
-        self._steps_per_sample = self._cfgs.algo_cfgs.steps_per_sample
+        self._update_cycle = self._cfgs.algo_cfgs.update_cycle
         assert (
-            self._update_cycle % self._steps_per_sample == 0
+            self._steps_per_epoch % self._update_cycle == 0
         ), 'The number of steps per epoch is not divisible by the number of steps per sample.'
-        self._samples_per_epoch = self._update_cycle // self._steps_per_sample
+        self._samples_per_epoch = self._steps_per_epoch // self._update_cycle
         self._update_count = 0
 
     def _init_model(self) -> None:
@@ -79,9 +81,6 @@ class DDPG(BaseAlgo):
             model_cfgs=self._cfgs.model_cfgs,
             epochs=self._epochs,
         ).to(self._device)
-
-        if distributed.world_size() > 1:
-            distributed.sync_params(self._actor_critic)
 
     def _init(self) -> None:
         self._buf = VectorOffPolicyBuffer(
@@ -161,7 +160,7 @@ class DDPG(BaseAlgo):
                 epoch * self._samples_per_epoch,
                 (epoch + 1) * self._samples_per_epoch,
             ):
-                step = sample_step * self._steps_per_sample * self._cfgs.train_cfgs.vector_env_nums
+                step = sample_step * self._update_cycle * self._cfgs.train_cfgs.vector_env_nums
 
                 roll_out_start = time.time()
                 # set noise for exploration
@@ -170,7 +169,7 @@ class DDPG(BaseAlgo):
 
                 # collect data from environment
                 self._env.roll_out(
-                    roll_out_step=self._steps_per_sample,
+                    roll_out_step=self._update_cycle,
                     agent=self._actor_critic,
                     buffer=self._buf,
                     logger=self._logger,
@@ -204,8 +203,8 @@ class DDPG(BaseAlgo):
 
             self._logger.store(
                 **{
-                    'TotalEnvSteps': step,
-                    'Time/FPS': self._cfgs.algo_cfgs.update_cycle / (time.time() - epoch_time),
+                    'TotalEnvSteps': step + 1,
+                    'Time/FPS': self._cfgs.algo_cfgs.steps_per_epoch / (time.time() - epoch_time),
                     'Time/Total': (time.time() - start_time),
                     'Time/Epoch': (time.time() - epoch_time),
                     'Train/Epoch': epoch,

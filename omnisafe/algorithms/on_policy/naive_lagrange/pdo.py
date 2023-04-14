@@ -34,7 +34,7 @@ class PDO(PolicyGradient):
 
     def _init_log(self) -> None:
         super()._init_log()
-        self._logger.register_key('Metrics/LagrangeMultiplier')
+        self._logger.register_key('Metrics/LagrangeMultiplier', min_and_max=True)
 
     def _update(self) -> None:
         r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.

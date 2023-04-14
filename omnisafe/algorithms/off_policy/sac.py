@@ -52,9 +52,6 @@ class SAC(DDPG):
             epochs=self._epochs,
         ).to(self._device)
 
-        if distributed.world_size() > 1:
-            distributed.sync_params(self._actor_critic)
-
     def _init(self) -> None:
         super()._init()
         if self._cfgs.algo_cfgs.auto_alpha:

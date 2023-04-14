@@ -220,17 +220,15 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             min_and_max (bool): Whether to record the min and max value of the key.
             delta (bool): Whether to record the delta value of the key.
         """
-        assert (key and f'{key}/Mean') not in self._current_row, f'Key {key} has been registered'
+        assert key not in self._current_row, f'Key {key} has been registered'
+        self._current_row[key] = 0
         if min_and_max:
-            self._current_row[key] = 0
-            self._current_row[f'{key}/Mean'] = 0
             self._current_row[f'{key}/Min'] = 0
             self._current_row[f'{key}/Max'] = 0
             self._current_row[f'{key}/Std'] = 0
             self._headers_minmax[key] = True
 
         else:
-            self._current_row[key] = 0
             self._headers_minmax[key] = False
 
         if delta:
@@ -306,16 +304,14 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         Update the current row with the data stored in the logger.
         """
         for key in self._data:
+            old_data = self._current_row[key]
             if self._headers_minmax[key]:
-                old_data = self._current_row[f'{key}/Mean']
                 mean, min_val, max_val, std = self.get_stats(key, True)
                 self._current_row[key] = mean
-                self._current_row[f'{key}/Mean'] = mean
                 self._current_row[f'{key}/Min'] = min_val
                 self._current_row[f'{key}/Max'] = max_val
                 self._current_row[f'{key}/Std'] = std
             else:
-                old_data = self._current_row[key]
                 mean = self.get_stats(key, False)[0]
                 self._current_row[key] = mean
 
