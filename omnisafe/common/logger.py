@@ -121,7 +121,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self._first_row: bool = True
         self._what_to_save: dict[str, Any] | None = None
         self._data: dict[str, Deque[int | float] | list[int | float]] = {}
-        self._headers_windwos: dict[str, int | None] = {}
+        self._headers_windows: dict[str, int | None] = {}
         self._headers_minmax: dict[str, bool] = {}
         self._headers_delta: dict[str, bool] = {}
         self._current_row: dict[str, int | float] = {}
@@ -227,6 +227,9 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             self._current_row[f'{key}/Max'] = 0
             self._current_row[f'{key}/Std'] = 0
             self._headers_minmax[key] = True
+            self._headers_minmax[f'{key}/Min'] = False
+            self._headers_minmax[f'{key}/Max'] = False
+            self._headers_minmax[f'{key}/Std'] = False
 
         else:
             self._headers_minmax[key] = False
@@ -234,15 +237,17 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         if delta:
             self._current_row[f'{key}/Delta'] = 0
             self._headers_delta[key] = True
+            self._headers_delta[f'{key}/Delta'] = False
+            self._headers_minmax[f'{key}/Delta'] = False
         else:
             self._headers_delta[key] = False
 
         if window_length is not None:
             self._data[key] = deque(maxlen=window_length)
-            self._headers_windwos[key] = window_length
+            self._headers_windows[key] = window_length
         else:
             self._data[key] = []
-            self._headers_windwos[key] = None
+            self._headers_windows[key] = None
 
     def store(self, **kwargs: int | float | np.ndarray | torch.Tensor) -> None:
         """Store the data to the logger.
@@ -281,7 +286,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             key_lens = list(map(len, self._current_row.keys()))
             max_key_len = max(15, *key_lens)
             for key, val in self._current_row.items():
-                table.add_row(key[:max_key_len], str(val)[:max_key_len])
+                if self._headers_minmax[key]:
+                    table.add_row(f'{key}/Mean', str(val)[:max_key_len])
+                else:
+                    table.add_row(key[:max_key_len], str(val)[:max_key_len])
 
             if self._first_row:
                 self._csv_writer.writerow(self._current_row.keys())
@@ -318,7 +326,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             if self._headers_delta[key]:
                 self._current_row[f'{key}/Delta'] = mean - old_data
 
-            if self._headers_windwos[key] is None:
+            if self._headers_windows[key] is None:
                 self._data[key] = []
 
     def get_stats(self, key, min_and_max: bool = False) -> tuple[int | float, ...]:

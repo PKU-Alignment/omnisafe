@@ -114,9 +114,6 @@ class CUP(PPO):
         )
         loss = (self._lagrange.lagrangian_multiplier * coef * ratio * adv_c + kl).mean()
 
-        # useful extra info
-        torch.max(ratio).detach().mean().item()
-        torch.min(ratio).detach().mean().item()
         entropy = distribution.entropy().mean().item()
         info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
 
