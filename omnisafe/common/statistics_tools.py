@@ -312,7 +312,7 @@ class StatisticsTools:
         """
         flat_variants = self._variants(keys, vals)
 
-        def remove_duplicate(var):
+        def check_duplicate(var):
             """Build the full nested dict version of var, based on key names."""
             new_var: dict = {}
             unflatten_set = set()
@@ -323,11 +323,11 @@ class StatisticsTools:
 
             # make sure to fill out the nested dict.
             for key in unflatten_set:
-                new_var[key] = remove_duplicate(new_var[key])
+                new_var[key] = check_duplicate(new_var[key])
 
             return new_var
 
-        return [remove_duplicate(var) for var in flat_variants]
+        return [check_duplicate(var) for var in flat_variants]
 
     def combine(self, sequence, num_choosen):
         """Combine elements in sequence to n elements."""

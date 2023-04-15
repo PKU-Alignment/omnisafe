@@ -338,7 +338,7 @@ class ExperimentGrid:
         """
         flat_variants = self._variants(self.keys, self.vals)
 
-        def remove_duplicate(var):
+        def check_duplicate(var):
             """Build the full nested dict version of var, based on key names."""
             new_var: dict = {}
             unflatten_set = set()
@@ -349,11 +349,11 @@ class ExperimentGrid:
 
             # make sure to fill out the nested dict.
             for key in unflatten_set:
-                new_var[key] = remove_duplicate(new_var[key])
+                new_var[key] = check_duplicate(new_var[key])
 
             return new_var
 
-        return [remove_duplicate(var) for var in flat_variants]
+        return [check_duplicate(var) for var in flat_variants]
 
     # pylint: disable-next=too-many-locals
     def run(self, thunk, num_pool=1, parent_dir=None, is_test=False, gpu_id=None):
