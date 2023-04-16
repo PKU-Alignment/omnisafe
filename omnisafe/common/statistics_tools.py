@@ -77,7 +77,7 @@ class StatisticsTools:
                 'The config file is not found in the save directory.',
             ) from error
 
-    def draw_graph(
+    def draw_graph(  # pylint: disable=too-many-locals
         self,
         parameter: str,
         values: list = None,
