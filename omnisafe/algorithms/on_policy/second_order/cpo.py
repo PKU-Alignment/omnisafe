@@ -283,7 +283,6 @@ class CPO(TRPO):
             def project(data: torch.Tensor, low: float, high: float) -> torch.Tensor:
                 """Project data to [low, high] interval."""
                 return torch.clamp(data, low, high)
-                # return torch.max(torch.min(data, torch.tensor(high)), torch.tensor(low))
 
             #  analytical Solution to LQCLP, employ lambda,nu to compute final solution of OLOLQC
             #  λ=argmax(f_a(λ),f_b(λ)) = λa_star or λb_star
