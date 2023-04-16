@@ -22,7 +22,7 @@ from typing import Any
 
 import torch
 
-from omnisafe.typing import OmnisafeSpace
+from omnisafe.typing import OmnisafeSpace, cpu
 
 
 class CMDP(ABC):
@@ -196,7 +196,7 @@ class Wrapper(CMDP):
 
     """
 
-    def __init__(self, env: CMDP, device: torch.device) -> None:
+    def __init__(self, env: CMDP, device: torch.device = cpu) -> None:
         """Initialize the wrapper.
 
         Args:

@@ -25,7 +25,7 @@ train_cfgs:torch_threads:
   [1]
 train_cfgs:total_steps:
   4096
-algo_cfgs:update_cycle:
+algo_cfgs:steps_per_epoch:
   2048
 seed:
   [0]

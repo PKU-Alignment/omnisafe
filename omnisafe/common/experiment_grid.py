@@ -19,15 +19,12 @@ from __future__ import annotations
 import json
 import os
 import string
-import time
 from concurrent.futures import ProcessPoolExecutor as Pool
 from copy import deepcopy
-from textwrap import dedent
 from typing import Any
 
 import numpy as np
 from rich.console import Console
-from tqdm import trange
 
 from omnisafe.algorithms import ALGORITHM2TYPE
 from omnisafe.common.statistics_tools import StatisticsTools
@@ -55,7 +52,7 @@ class ExperimentGrid:
         self.keys: list[str] = []
         self.vals: list[Any] = []
         self.shs: list[str] = []
-        self.in_names: list[str] = []
+        self.in_names: list[bool] = []
         self.div_line_width = 80
         assert isinstance(exp_name, str), 'Name has to be a string.'
         self.name = exp_name
@@ -151,7 +148,7 @@ class ExperimentGrid:
 
         return '-'.join([shear(x) for x in key.split(':')])
 
-    def add(self, key, vals, shorthand=None, in_name=False):
+    def add(self, key, vals, shorthand: str | None = None, in_name: bool = False):
         r"""Add a parameter (key) to the grid config, with potential values (vals).
 
         By default, if a shorthand isn't given, one is automatically generated
@@ -180,7 +177,6 @@ class ExperimentGrid:
                 inclusion of this parameter into the name.
         """
         assert isinstance(key, str), 'Key must be a string.'
-        assert shorthand is None or isinstance(shorthand, str), 'Shorthand must be a string.'
         if not isinstance(vals, list):
             vals = [vals]
         if self.default_shorthand and shorthand is None:
@@ -342,37 +338,22 @@ class ExperimentGrid:
         """
         flat_variants = self._variants(self.keys, self.vals)
 
-        def unflatten_var(var):
+        def check_duplicate(var):
             """Build the full nested dict version of var, based on key names."""
             new_var: dict = {}
             unflatten_set = set()
 
             for key, value in var.items():
-                if ':' in key:
-                    splits = key.split(':')
-                    k_0 = splits[0]
-                    assert k_0 not in new_var or isinstance(
-                        new_var[k_0],
-                        dict,
-                    ), "You can't assign multiple values to the same key."
-
-                    if k_0 not in new_var:
-                        new_var[k_0] = {}
-
-                    sub_k = ':'.join(splits[1:])
-                    new_var[k_0][sub_k] = value
-                    unflatten_set.add(k_0)
-                else:
-                    assert key not in new_var, "You can't assign multiple values to the same key."
-                    new_var[key] = value
+                assert key not in new_var, "You can't assign multiple values to the same key."
+                new_var[key] = value
 
             # make sure to fill out the nested dict.
             for key in unflatten_set:
-                new_var[key] = unflatten_var(new_var[key])
+                new_var[key] = check_duplicate(new_var[key])
 
             return new_var
 
-        return [unflatten_var(var) for var in flat_variants]
+        return [check_duplicate(var) for var in flat_variants]
 
     # pylint: disable-next=too-many-locals
     def run(self, thunk, num_pool=1, parent_dir=None, is_test=False, gpu_id=None):
@@ -417,33 +398,6 @@ class ExperimentGrid:
         joined_var_names = '\n'.join(var_names)
         announcement = f'\n{joined_var_names}\n\n{line}'
         print(announcement)
-
-        if self.wait_defore_launch > 0:
-            self._console.print(
-                dedent(
-                    """
-                    Launch delayed to give you a few seconds to review your experiments.
-
-                    To customize or disable this behavior, change WAIT_BEFORE_LAUNCH in
-                    spinup/user_config.py.
-
-                    """,
-                ),
-                style='cyan, bold',
-                end='',
-            )
-            print(line)
-            wait, steps = self.wait_defore_launch, 100
-            prog_bar = trange(
-                steps,
-                desc='Launching in...',
-                leave=False,
-                ncols=self.div_line_width,
-                mininterval=0.25,
-                bar_format='{desc}: {bar}| {remaining} {elapsed}',
-            )
-            for _ in prog_bar:
-                time.sleep(wait / steps)
 
         pool = Pool(max_workers=num_pool)
         # run the variants.
@@ -552,13 +506,17 @@ class ExperimentGrid:
             cost_criteria (float): cost criteria for evaluation.
         """
         assert self._evaluator is not None, 'Please run run() first!'
+        param_dir = os.scandir(self.log_dir)
         # pylint: disable-next=too-many-nested-blocks
-        for set_of_params in os.scandir(self.log_dir):
+        for set_of_params in param_dir:
             if set_of_params.is_dir():
-                for single_exp in os.scandir(set_of_params):
+                exp_dir = os.scandir(set_of_params)
+                for single_exp in exp_dir:
                     if single_exp.is_dir():
-                        for single_seed in os.scandir(single_exp):
-                            for model in os.scandir(os.path.join(single_seed, 'torch_save')):
+                        seed_dir = os.scandir(single_exp)
+                        for single_seed in seed_dir:
+                            model_dir = os.scandir(os.path.join(single_seed, 'torch_save'))
+                            for model in model_dir:
                                 if model.is_file() and model.name.split('.')[-1] == 'pt':
                                     self._evaluator.load_saved(
                                         save_dir=single_seed,
@@ -568,8 +526,11 @@ class ExperimentGrid:
                                         num_episodes=num_episodes,
                                         cost_criteria=cost_criteria,
                                     )
+        model_dir.close()
+        seed_dir.close()
+        exp_dir.close()
+        param_dir.close()
 
-    # pylint: disable-next=too-many-arguments
     def render(
         self,
         num_episodes: int = 10,
@@ -577,7 +538,7 @@ class ExperimentGrid:
         camera_name: str = 'track',
         width: int = 256,
         height: int = 256,
-    ):
+    ):  # pragma: no cover
         """Evaluate and render some episodes.
 
         Args:

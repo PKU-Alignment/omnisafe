@@ -16,6 +16,7 @@
 
 import torch
 from torch import nn
+from torch.nn.utils.clip_grad import clip_grad_norm_
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
@@ -42,9 +43,6 @@ class TD3(DDPG):
             model_cfgs=self._cfgs.model_cfgs,
             epochs=self._epochs,
         ).to(self._device)
-
-        if distributed.world_size() > 1:
-            distributed.sync_params(self._actor_critic)
 
     def _update_reward_critic(
         self,
@@ -98,7 +96,7 @@ class TD3(DDPG):
         loss.backward()
 
         if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.reward_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )

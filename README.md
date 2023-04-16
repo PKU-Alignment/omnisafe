@@ -243,7 +243,7 @@ omnisafe eval ./saved_source/PPO-{SafetyPointGoal1-v0} --num-episode 1
 
 # Quick training some algorithms to validate your thoughts
 # Note: use `key1:key2`, your can select key of hyperparameters which are recursively contained, and use `--custom-cfgs`, you can add custom cfgs via CLI
-omnisafe train --algo PPO --total-steps 2048 --vector-env-nums 1 --custom-cfgs algo_cfgs:update_cycle --custom-cfgs 1024
+omnisafe train --algo PPO --total-steps 2048 --vector-env-nums 1 --custom-cfgs algo_cfgs:steps_per_epoch --custom-cfgs 1024
 
 # Quick training some algorithms via a saved config file, the format is as same as default format
 omnisafe train-config ./saved_source/train_config.yaml
@@ -261,7 +261,7 @@ Explore OmniSafe easily and quickly through a series of colab notebooks:
 - [Getting Started](https://colab.research.google.com/github/OmniSafeAI/omnisafe/blob/main/tutorials/English/1.Getting_Started.ipynb) Introduce the basic usage of OmniSafe so that users can quickly hand on it.
 - [CLI Command](https://colab.research.google.com/github/OmniSafeAI/omnisafe/blob/main/tutorials/English/2.CLI_Command.ipynb) Introduce how to use the CLI tool of OmniSafe.
 
-We take great pleasure in collaborating with our users to create tutorials in various languages. Please refer to our list of currently supported languages. If you are interested in translating the tutorial into a new language or improving an existing version, kindly submit a PR to us."
+We take great pleasure in collaborating with our users to create tutorials in various languages. Please refer to our list of currently supported languages. If you are interested in translating the tutorial into a new language or improving an existing version, kindly submit a PR to us.
 
 --------------------------------------------------------------------------------
 

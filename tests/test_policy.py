@@ -14,6 +14,9 @@
 # ==============================================================================
 """Test policy algorithms"""
 
+import pytest
+import torch
+
 import helpers
 import omnisafe
 import simple_env  # noqa: F401
@@ -24,12 +27,159 @@ naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
 first_order_policy = ['CUP', 'FOCOPS']
 second_order_policy = ['CPO', 'PCPO']
 penalty_policy = ['P3O', 'IPO']
-off_policy = ['DDPG', 'TD3', 'SAC']
-# pid_lagrange_policy = ['CPPOPid', 'TRPOPid']
-# early_terminated_policy = ['PPOEarlyTerminated', 'PPOLagEarlyTerminated']
+off_policy = ['DDPG', 'TD3', 'DDPGLag', 'TD3Lag']
+sac_policy = ['SAC', 'SACLag']
+saute_policy = ['TRPOSaute', 'PPOSaute']
+simmer_policy = ['TRPOSimmerPID', 'PPOSimmerPID']
+pid_lagrange_policy = ['TRPOPID', 'CPPOPID']
+early_terminated_policy = ['TRPOEarlyTerminated', 'PPOEarlyTerminated']
 # saute_policy = ['PPOSaute', 'PPOLagSaute']
 # simmer_policy = ['PPOSimmerQ', 'PPOLagSimmerQ', 'PPOSimmerPid', 'PPOLagSimmerPid']
 # model_based_policy = ['MBPPOLag', 'SafeLOOP', 'CAP']
+model_cfgs = {
+    'linear_lr_decay': True,
+    'actor': {
+        'hidden_sizes': [8, 8],
+    },
+    'critic': {
+        'hidden_sizes': [8, 8],
+    },
+}
+
+optim_case = [0, 1, 2, 3, 4]
+
+
+@helpers.parametrize(optim_case=optim_case)
+def test_cpo(optim_case):
+    agent = omnisafe.Agent('CPO', 'Simple-v0', custom_cfgs={})
+    b_grad = torch.Tensor([1])
+    ep_costs = torch.Tensor([-1])
+    r = torch.Tensor([0])
+    q = torch.Tensor([0])
+    s = torch.Tensor([1])
+    p = torch.Tensor([1])
+    xHx = torch.Tensor([1])
+    x = torch.Tensor([1])
+    A = torch.Tensor([1])
+    B = torch.Tensor([1])
+    assert agent.agent._determine_case(b_grad, ep_costs, q, r, s)[0] == 3
+    s = torch.Tensor([-1])
+    assert agent.agent._determine_case(b_grad, ep_costs, q, r, s)[0] == 2
+    ep_costs = torch.Tensor([1])
+    assert agent.agent._determine_case(b_grad, ep_costs, q, r, s)[0] == 1
+    s = torch.Tensor([1])
+    assert agent.agent._determine_case(b_grad, ep_costs, q, r, s)[0] == 0
+    step_direction, lambda_star, nu_star = agent.agent._step_direction(
+        optim_case=optim_case,
+        xHx=xHx,
+        x=x,
+        A=A,
+        B=B,
+        q=q,
+        p=p,
+        r=r,
+        s=s,
+        ep_costs=ep_costs,
+    )
+    assert isinstance(step_direction, torch.Tensor)
+    assert isinstance(lambda_star, torch.Tensor)
+    assert isinstance(nu_star, torch.Tensor)
+    step_direction = torch.as_tensor(1000000.0).unsqueeze(0)
+    grad = torch.as_tensor(torch.inf).unsqueeze(0)
+    p_dist = torch.distributions.Normal(torch.Tensor([0.0]), torch.Tensor([1.0]))
+    obs = torch.Tensor([1.0, 1.0, 1.0])
+    act = torch.Tensor([1.0, 1.0])
+    logp = torch.Tensor([1.0])
+    adv_r = torch.Tensor([1.0])
+    adv_c = torch.Tensor([1.0])
+    loss_reward_before = torch.Tensor([1.0])
+    loss_cost_before = torch.Tensor([1.0])
+    step_direction, acceptance_step = agent.agent._cpo_search_step(
+        step_direction=step_direction,
+        grad=grad,
+        p_dist=p_dist,
+        obs=obs,
+        act=act,
+        logp=logp,
+        adv_r=adv_r,
+        adv_c=adv_c,
+        loss_reward_before=loss_reward_before,
+        loss_cost_before=loss_cost_before,
+    )
+
+
+def test_assertion_error():
+    """Test base algorithms."""
+    env_id = 'Simple-v0'
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 200,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'steps_per_epoch': 100,
+            'update_iters': 2,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'use_tensorboard': True,
+            'save_model_freq': 1,
+        },
+        'model_cfgs': model_cfgs,
+    }
+    with pytest.raises(AssertionError):
+        agent = omnisafe.Agent('NotExist', env_id, custom_cfgs=custom_cfgs)
+    with pytest.raises(AssertionError):
+        custom_cfgs['train_cfgs']['vector_env_nums'] = 2
+        agent = omnisafe.Agent('PPOEarlyTerminated', env_id, custom_cfgs=custom_cfgs)
+        agent.learn()
+    with pytest.raises(AssertionError):
+        custom_cfgs['train_cfgs']['vector_env_nums'] = 2
+        agent = omnisafe.Agent('TRPOEarlyTerminated', env_id, custom_cfgs=custom_cfgs)
+        agent.learn()
+    custom_cfgs['train_cfgs']['vector_env_nums'] = 1
+    with pytest.raises(AssertionError):
+        agent = omnisafe.Agent(111, env_id, custom_cfgs=custom_cfgs)
+    with pytest.raises(AssertionError):
+        agent = omnisafe.Agent('PPO', 'NotExist', custom_cfgs=custom_cfgs)
+    with pytest.raises(AssertionError):
+        custom_cfgs['train_cfgs']['parallel'] = 2
+        agent = omnisafe.Agent('DDPG', env_id, custom_cfgs=custom_cfgs)
+        agent.learn()
+    with pytest.raises(AssertionError):
+        custom_cfgs['train_cfgs']['parallel'] = 'abc'
+        agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
+    with pytest.raises(AssertionError):
+        custom_cfgs['train_cfgs']['parallel'] = 0
+        agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
+    with pytest.raises(AssertionError):
+        custom_cfgs = [1, 2, 3]
+        agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
+
+
+def test_render():
+    """Test render image"""
+    env_id = 'Simple-v0'
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 200,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'steps_per_epoch': 100,
+            'update_iters': 2,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+        'model_cfgs': model_cfgs,
+    }
+    agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
+    agent.render(num_episodes=1, render_mode='rgb_array')
 
 
 @helpers.parametrize(algo=off_policy)
@@ -38,22 +188,89 @@ def test_off_policy(algo):
     env_id = 'Simple-v0'
     custom_cfgs = {
         'train_cfgs': {
-            'total_steps': 2048,
+            'total_steps': 200,
             'vector_env_nums': 1,
             'torch_threads': 4,
         },
         'algo_cfgs': {
-            'update_cycle': 1024,
-            'steps_per_sample': 1024,
-            'update_iters': 1,
+            'steps_per_epoch': 100,
+            'update_cycle': 50,
+            'update_iters': 2,
             'start_learning_steps': 0,
+            'use_critic_norm': True,
+            'max_grad_norm': True,
+            'obs_normalize': True,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+        'model_cfgs': model_cfgs,
+    }
+    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
+
+
+auto_alpha = [True, False]
+
+
+@helpers.parametrize(auto_alpha=auto_alpha)
+def test_sac_policy(auto_alpha):
+    """Test sac algorithms."""
+    env_id = 'Simple-v0'
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 200,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'steps_per_epoch': 100,
+            'update_cycle': 50,
+            'update_iters': 2,
+            'start_learning_steps': 0,
+            'auto_alpha': auto_alpha,
+            'use_critic_norm': True,
+            'max_grad_norm': True,
         },
         'logger_cfgs': {
             'use_wandb': False,
             'save_model_freq': 1,
         },
     }
-    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    agent = omnisafe.Agent('SAC', env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
+
+
+auto_alpha = [True, False]
+
+
+@helpers.parametrize(auto_alpha=auto_alpha)
+def test_sac_lag_policy(auto_alpha):
+    """Test sac algorithms."""
+    env_id = 'Simple-v0'
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 200,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'steps_per_epoch': 100,
+            'update_cycle': 50,
+            'update_iters': 2,
+            'start_learning_steps': 0,
+            'auto_alpha': auto_alpha,
+            'use_critic_norm': True,
+            'max_grad_norm': True,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+        'model_cfgs': model_cfgs,
+    }
+    agent = omnisafe.Agent('SACLag', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
 
 
@@ -64,6 +281,10 @@ def test_off_policy(algo):
         + first_order_policy
         + second_order_policy
         + penalty_policy
+        + saute_policy
+        + simmer_policy
+        + pid_lagrange_policy
+        + early_terminated_policy
     ),
 )
 def test_on_policy(algo):
@@ -71,12 +292,12 @@ def test_on_policy(algo):
     env_id = 'Simple-v0'
     custom_cfgs = {
         'train_cfgs': {
-            'total_steps': 2048,
+            'total_steps': 200,
             'vector_env_nums': 1,
             'torch_threads': 4,
         },
         'algo_cfgs': {
-            'update_cycle': 1024,
+            'steps_per_epoch': 100,
             'update_iters': 2,
         },
         'logger_cfgs': {
@@ -94,23 +315,24 @@ def test_workflow_for_training(algo):
     env_id = 'Simple-v0'
     custom_cfgs = {
         'train_cfgs': {
-            'total_steps': 2048,
+            'total_steps': 200,
             'vector_env_nums': 1,
             'torch_threads': 4,
         },
         'algo_cfgs': {
-            'update_cycle': 1024,
+            'steps_per_epoch': 100,
             'update_iters': 2,
         },
         'logger_cfgs': {
             'use_wandb': False,
             'save_model_freq': 1,
         },
+        'model_cfgs': model_cfgs,
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
 
-    agent.plot(smooth=1)
+    agent.plot(smooth=2)
     # agent.render(num_episodes=1, render_mode='rgb_array', width=1, height=1)
     agent.evaluate(num_episodes=1)
 
@@ -120,11 +342,11 @@ def test_std_anealing():
     env_id = 'Simple-v0'
     custom_cfgs = {
         'train_cfgs': {
-            'total_steps': 2048,
+            'total_steps': 200,
             'vector_env_nums': 1,
         },
         'algo_cfgs': {
-            'update_cycle': 1024,
+            'steps_per_epoch': 100,
             'update_iters': 2,
         },
         'logger_cfgs': {
@@ -132,6 +354,12 @@ def test_std_anealing():
             'save_model_freq': 1,
         },
         'model_cfgs': {
+            'actor': {
+                'hidden_sizes': [8, 8],
+            },
+            'critic': {
+                'hidden_sizes': [8, 8],
+            },
             'exploration_noise_anneal': True,
         },
     }
@@ -145,13 +373,13 @@ def test_std_anealing():
 #    env_id = 'Simple-v0'
 #    custom_cfgs = {
 #        'train_cfgs': {
-#            'total_steps': 2048,
+#            'total_steps': 200,
 #            'vector_env_nums': 1,
 #            'torch_threads': 4,
 #            'device': 'cuda:0',
 #        },
 #        'algo_cfgs': {
-#            'update_cycle': 1024,
+#            'steps_per_epoch': 100,
 #            'update_iters': 2,
 #        },
 #        'logger_cfgs': {

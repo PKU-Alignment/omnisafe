@@ -93,30 +93,41 @@ def test_actor(
     obs = torch.randn(obs_dim, dtype=torch.float32)
     actor_learning = builder.build_actor(actor_type='gaussian_learning')
     actor_sac = builder.build_actor(actor_type='gaussian_sac')
+    actor_mlp = builder.build_actor(actor_type='mlp')
     with pytest.raises(NotImplementedError):
         builder.build_actor(actor_type='invalid')  # type: ignore
 
     _ = actor_learning(obs)
     action = actor_learning.predict(obs, deterministic)
     assert action.shape == torch.Size([act_dim]), f'actor output shape is {action.shape}'
-    lopp = actor_learning.log_prob(action)
-    assert lopp.shape == torch.Size([]), f'actor log_prob shape is {lopp.shape}'
+    logp = actor_learning.log_prob(action)
+    assert logp.shape == torch.Size([]), f'actor log_prob shape is {logp.shape}'
     actor_learning.std = 0.9  # type: ignore
     assert (actor_learning.std - 0.9) < 1e-4, f'actor std is {actor_learning.std}'  # type: ignore
 
     _ = actor_sac(obs)
     action = actor_sac.predict(obs, deterministic)
     assert action.shape == torch.Size([act_dim]), f'actor output shape is {action.shape}'
-    lopp = actor_sac.log_prob(action)
-    assert lopp.shape == torch.Size([]), f'actor log_prob shape is {lopp.shape}'
+    logp = actor_sac.log_prob(action)
+    assert logp.shape == torch.Size([]), f'actor log_prob shape is {logp.shape}'
     with pytest.raises(NotImplementedError):
         actor_sac.std = 0.9  # type: ignore
     assert isinstance(actor_sac.std, float), f'actor std is {actor_sac.std}'  # type: ignore
 
+    action = actor_mlp.predict(obs, deterministic)
+    actor_mlp.noise = 0.1
+    assert actor_mlp.noise == 0.1, f'actor noise is {actor_mlp.noise}'
+    with pytest.raises(AssertionError):
+        actor_mlp.noise = -0.1
+    with pytest.raises(NotImplementedError):
+        actor_mlp(obs)
+    with pytest.raises(NotImplementedError):
+        actor_mlp.log_prob(action)
+
 
 @helpers.parametrize(
     linear_lr_decay=[True, False],
-    lr=['None', 1e-3],
+    lr=[None, 1e-3],
 )
 def test_actor_critic(
     linear_lr_decay: bool,

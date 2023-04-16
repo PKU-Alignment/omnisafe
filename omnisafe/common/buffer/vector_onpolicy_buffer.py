@@ -19,7 +19,7 @@ from __future__ import annotations
 import torch
 
 from omnisafe.common.buffer.onpolicy_buffer import OnPolicyBuffer
-from omnisafe.typing import AdvatageEstimator, OmnisafeSpace
+from omnisafe.typing import AdvatageEstimator, OmnisafeSpace, cpu
 from omnisafe.utils import distributed
 
 
@@ -39,7 +39,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         standardized_adv_r: bool,
         standardized_adv_c: bool,
         num_envs: int = 1,
-        device: torch.device = 'cpu',
+        device: torch.device = cpu,
     ) -> None:
         """Initialize the vector-on-policy buffer.
 

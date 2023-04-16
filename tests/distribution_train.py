@@ -19,7 +19,7 @@ import simple_env  # noqa: F401
 
 
 if __name__ == '__main__':
-    algo = 'PolicyGradient'
+    algo = 'NaturalPG'
     env_id = 'Simple-v0'
     custom_cfgs = {
         'train_cfgs': {
@@ -27,7 +27,7 @@ if __name__ == '__main__':
             'vector_env_nums': 1,
         },
         'algo_cfgs': {
-            'update_cycle': 1024,
+            'steps_per_epoch': 1024,
             'update_iters': 2,
         },
         'logger_cfgs': {

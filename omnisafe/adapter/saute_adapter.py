@@ -35,16 +35,13 @@ class SauteAdapter(OnPolicyAdapter):
         self._safety_budget: torch.Tensor
         self._safety_obs: torch.Tensor
 
-        if self._cfgs.env_cfgs.scale_safety_budget:
-            self._safety_budget = (
-                self._cfgs.env_cfgs.safety_budget
-                * (1 - self._cfgs.env_cfgs.saute_gamma**self._cfgs.env_cfgs.max_ep_len)
-                / (1 - self._cfgs.env_cfgs.saute_gamma)
-                / self._cfgs.env_cfgs.max_ep_len
-                * torch.ones(num_envs, 1)
-            )
-        else:
-            self._safety_budget = self._cfgs.env_cfgs.safety_budget * torch.ones(num_envs, 1)
+        self._safety_budget = (
+            self._cfgs.algo_cfgs.safety_budget
+            * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
+            / (1 - self._cfgs.algo_cfgs.saute_gamma)
+            / self._cfgs.algo_cfgs.max_ep_len
+            * torch.ones(num_envs, 1)
+        )
 
         self._ep_budget: torch.Tensor
 
@@ -88,25 +85,29 @@ class SauteAdapter(OnPolicyAdapter):
         action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         next_obs, reward, cost, terminated, truncated, info = self._env.step(action)
+        info['original_reward'] = reward
 
         self._safety_step(cost)
         reward = self._safety_reward(reward)
 
         # autoreset the environment
-        done = torch.logical_or(terminated, truncated).float().unsqueeze(-1)
+        done = torch.logical_or(terminated, truncated).float().unsqueeze(-1).float()
         self._safety_obs = self._safety_obs * (1 - done) + done
 
         augmented_obs = self._augment_obs(next_obs)
+
+        if 'final_observation' in info:
+            info['final_observation'] = self._augment_obs(info['final_observation'])
 
         return augmented_obs, reward, cost, terminated, truncated, info
 
     def _safety_step(self, cost: torch.Tensor) -> None:
         self._safety_obs -= cost.unsqueeze(-1) / self._safety_budget
-        self._safety_obs /= self._safety_budget
+        self._safety_obs /= self._cfgs.algo_cfgs.saute_gamma
 
     def _safety_reward(self, reward: torch.Tensor) -> torch.Tensor:
         safe = torch.as_tensor(self._safety_obs > 0, dtype=reward.dtype).squeeze(-1)
-        return safe * reward + (1 - safe) * self._cfgs.env_cfgs.unsafe_reward
+        return safe * reward + (1 - safe) * self._cfgs.algo_cfgs.unsafe_reward
 
     def _augment_obs(self, obs: torch.Tensor) -> torch.Tensor:
         return torch.cat([obs, self._safety_obs], dim=-1)

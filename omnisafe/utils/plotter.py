@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 """Plotter class for plotting data from experiments."""
+
+from __future__ import annotations
+
 import json
 import os
 import os.path as osp
@@ -52,9 +55,9 @@ class Plotter:
     """
 
     def __init__(self) -> None:
-        self.div_line_width = 50
-        self.exp_idx = 0
-        self.units = {}
+        self.div_line_width: int = 50
+        self.exp_idx: int = 0
+        self.units: dict = {}
 
     def plot_data(
         self,
@@ -78,6 +81,10 @@ class Plotter:
                 z = np.ones(len(x))
                 smoothed_x = np.convolve(x, y, 'same') / np.convolve(z, y, 'same')
                 datum[value] = smoothed_x
+                x = np.asarray(datum['Costs'])
+                z = np.ones(len(x))
+                smoothed_x = np.convolve(x, y, 'same') / np.convolve(z, y, 'same')
+                datum['Costs'] = smoothed_x
 
         if isinstance(data, list):
             data = pd.concat(data, ignore_index=True)
@@ -136,13 +143,13 @@ class Plotter:
         for root, _, files in os.walk(logdir):
             if 'progress.csv' in files:
                 exp_name = None
-                update_cycle = None
+                steps_per_epoch = None
                 try:
                     with open(os.path.join(root, 'config.json'), encoding='utf-8') as f:
                         config = json.load(f)
                         if 'exp_name' in config:
                             exp_name = config['algo']
-                            update_cycle = config['algo_cfgs']['update_cycle']
+                            steps_per_epoch = config['algo_cfgs']['steps_per_epoch']
                 except FileNotFoundError as error:
                     config_path = os.path.join(root, 'config.json')
                     raise FileNotFoundError(f'Could not read from {config_path}') from error
@@ -170,12 +177,14 @@ class Plotter:
                 exp_data.insert(len(exp_data.columns), 'Condition2', condition2)
                 exp_data.insert(len(exp_data.columns), 'Rewards', exp_data[performance])
                 exp_data.insert(len(exp_data.columns), 'Costs', exp_data[cost_performance])
+                epoch = exp_data.get('Train/Epoch')
+                if epoch is None or steps_per_epoch is None:
+                    raise ValueError('No Train/Epoch column in progress.csv')
                 exp_data.insert(
                     len(exp_data.columns),
                     'Steps',
-                    exp_data['Train/Epoch'] * update_cycle,
+                    epoch * steps_per_epoch,
                 )
-
                 datasets.append(exp_data)
         return datasets
 
@@ -228,9 +237,9 @@ class Plotter:
     def make_plots(
         self,
         all_logdirs,
-        legend=None,
-        xaxis=None,
-        values=None,
+        legend: str | None = None,
+        xaxis: str | None = None,
+        value: str = 'Rewards',
         count=False,
         cost_limit=None,
         smooth=1,
@@ -240,6 +249,7 @@ class Plotter:
         save_dir='./',
         save_name=None,
         save_format='png',
+        show_image=False,
     ):  # pylint: disable=too-many-arguments
         """Example usage:
         Args:
@@ -288,63 +298,34 @@ class Plotter:
                 curves from logdirs that do not contain these sub strings.
 
         """
+        assert xaxis is not None, 'Must specify xaxis'
         data = self.get_all_datasets(all_logdirs, legend, select, exclude)
-        values = values if isinstance(values, list) else [values]
         condition = 'Condition2' if count else 'Condition1'
         # choose what to show on main curve: mean? max? min?
         estimator = getattr(np, estimator)
         sns.set()
-        for value in values:
-            fig, axes = plt.subplots(
-                1,
-                2,
-                figsize=(15, 5),
-            )
-            self.plot_data(
-                axes,
-                data,
-                xaxis=xaxis,
-                value=value,
-                condition=condition,
-                smooth=smooth,
-                estimator=estimator,
-            )
-            if cost_limit:
-                axes[1].axhline(y=cost_limit, ls='--', c='black', linewidth=2)
-        plt.show()
+        fig, axes = plt.subplots(
+            1,
+            2,
+            figsize=(15, 5),
+        )
+        self.plot_data(
+            axes,
+            data,
+            xaxis=xaxis,
+            value=value,
+            condition=condition,
+            smooth=smooth,
+            estimator=estimator,
+        )
+        if cost_limit:
+            axes[1].axhline(y=cost_limit, ls='--', c='black', linewidth=2)
         if save_name is None:
             save_name = all_logdirs[0].split('/')[-1]
+        if show_image:
+            plt.show()
         fig.savefig(
             os.path.join(save_dir, f'{save_name}.{save_format}'),
             bbox_inches='tight',
             pad_inches=0.0,
         )
-
-
-if __name__ == '__main__':
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--logdir', nargs='*')
-    parser.add_argument('--legend', '-l', nargs='*')
-    parser.add_argument('--xaxis', '-x', default='Steps')
-    parser.add_argument('--value', '-y', default='Rewards', nargs='*')
-    parser.add_argument('--count', action='store_true')
-    parser.add_argument('--smooth', '-s', type=int, default=1)
-    parser.add_argument('--select', nargs='*')
-    parser.add_argument('--exclude', nargs='*')
-    parser.add_argument('--estimator', default='mean')
-    args = parser.parse_args()
-
-    plotter = Plotter()
-    plotter.make_plots(
-        args.logdir,
-        args.legend,
-        args.xaxis,
-        args.value,
-        args.count,
-        smooth=args.smooth,
-        select=args.select,
-        exclude=args.exclude,
-        estimator=args.estimator,
-    )

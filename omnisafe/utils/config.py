@@ -209,7 +209,7 @@ class ModelConfig(Config):
     activation: Activation
     std: list[float]
     use_obs_encoder: bool
-    lr: float
+    lr: float | None
 
 
 def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:
@@ -251,6 +251,26 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
     ## check algo configs
     __check_algo_configs(configs.algo_cfgs, algo_type)
     __check_logger_configs(configs.logger_cfgs, algo_type)
+    __check_parallel_and_vectorized(configs, algo_type)
+
+
+def __check_parallel_and_vectorized(configs: Config, algo_type: str) -> None:
+    """Check parallel and vectorized configs.
+
+    This function is used to check the parallel and vectorized configs.
+
+    Args:
+        configs (dict): configs to be checked.
+        algo_type (str): algorithm type.
+    """
+    if algo_type in {'off-policy', 'model-based'}:
+        assert (
+            configs.train_cfgs.parallel == 1
+        ), 'off-policy or model-based only support parallel==1!'
+    if configs.algo in ['PPOEarlyTerminated', 'TRPOEarlyTerminated']:
+        assert (
+            configs.train_cfgs.vector_env_nums == 1
+        ), 'PPOEarlyTerminated or TRPOEarlyTerminated only support vector_env_nums == 1!'
 
 
 def __check_algo_configs(configs: Config, algo_type) -> None:
@@ -262,7 +282,7 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
     .. note::
 
         - ``update_iters`` must be greater than 0 and must be int.
-        - ``update_cycle`` must be greater than 0 and must be int.
+        - ``steps_per_epoch`` must be greater than 0 and must be int.
         - ``batch_size`` must be greater than 0 and must be int.
         - ``target_kl`` must be greater than 0 and must be float.
         - ``entropy_coeff`` must be in [0, 1] and must be float.
@@ -292,8 +312,8 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
             isinstance(configs.update_iters, int) and configs.update_iters > 0
         ), 'update_iters must be int and greater than 0'
         assert (
-            isinstance(configs.update_cycle, int) and configs.update_cycle > 0
-        ), 'update_cycle must be int and greater than 0'
+            isinstance(configs.steps_per_epoch, int) and configs.steps_per_epoch > 0
+        ), 'steps_per_epoch must be int and greater than 0'
         assert (
             isinstance(configs.batch_size, int) and configs.batch_size > 0
         ), 'batch_size must be int and greater than 0'

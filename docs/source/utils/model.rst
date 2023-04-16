@@ -8,7 +8,6 @@ OmniSafe Model Utils
     initialize_layer
     get_activation
     build_mlp_network
-    set_optimizer
 
 Model Building Utils
 --------------------
@@ -23,4 +22,3 @@ Model Building Utils
     .. autofunction:: initialize_layer
     .. autofunction:: get_activation
     .. autofunction:: build_mlp_network
-    .. autofunction:: set_optimizer

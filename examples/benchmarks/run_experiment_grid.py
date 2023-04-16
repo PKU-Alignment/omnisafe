@@ -56,8 +56,8 @@ if __name__ == '__main__':
     eg.add('logger_cfgs:use_wandb', [False])
     eg.add('train_cfgs:vector_env_nums', [4])
     eg.add('train_cfgs:torch_threads', [1])
-    eg.add('algo_cfgs:update_cycle', [2048])
-    eg.add('train_cfgs:total_steps', [1024000])
+    eg.add('algo_cfgs:steps_per_epoch', [20000])
+    eg.add('train_cfgs:total_steps', [10000000])
     eg.add('seed', [0])
     # total experiment num must can be divided by num_pool
     # meanwhile, users should decide this value according to their machine

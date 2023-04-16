@@ -36,6 +36,39 @@ from omnisafe.utils.math import (
 )
 from omnisafe.utils.model import get_activation, initialize_layer
 from omnisafe.utils.schedule import ConstantSchedule, PiecewiseSchedule
+from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dict
+
+
+def test_update_dict():
+    d = {'a': 1, 'b': {'c': 2}}
+    update_dict(d, {'a': 2, 'b': {'d': 3}, 'e': {'f': 4}})
+    assert d == {'a': 2, 'b': {'c': 2, 'd': 3}, 'e': {'f': 4}}
+
+
+def test_assert_with_exit():
+    with pytest.raises(SystemExit):
+        assert_with_exit(False, 'test')
+
+
+def test_custom_cfgs_to_dict():
+    unparsed_args = {
+        'str': 'PPOLag',
+        'str_true': 'True',
+        'str_false': 'False',
+        'float': '1.0',
+        'digit': '2',
+        'list': '[a,b,c]',
+    }
+    custom_cfgs = {}
+    for k, v in unparsed_args.items():
+        update_dict(custom_cfgs, custom_cfgs_to_dict(k, v))
+    print(custom_cfgs)
+    assert custom_cfgs['str'] == unparsed_args['str']
+    assert custom_cfgs['str_true'] is True
+    assert custom_cfgs['str_false'] is False
+    assert custom_cfgs['float'] == float(unparsed_args['float'])
+    assert custom_cfgs['digit'] == int(unparsed_args['digit'])
+    assert custom_cfgs['list'] == ['a', 'b', 'c']
 
 
 def test_config():
@@ -43,8 +76,8 @@ def test_config():
     cfg = Config(a=1, b={'c': 2})
     cfg.a = 2
     cfg.recurisve_update({'a': {'d': 3}, 'e': {'f': 4}})
-
     cfg = get_default_kwargs_yaml('PPO', 'Simple-v0', 'on-policy')
+    cfg.recurisve_update({'exp_name': 'test_configs', 'env_id': 'Simple-v0', 'algo': 'PPO'})
     check_all_configs(cfg, 'on-policy')
 
 
@@ -109,7 +142,7 @@ def test_train(
     eg.add('algo', [algo])
     eg.add('env_id', [env_id])
     eg.add('logger_cfgs:use_wandb', [False])
-    eg.add('algo_cfgs:update_cycle', [512])
+    eg.add('algo_cfgs:steps_per_epoch', [512])
     eg.add('train_cfgs:total_steps', [1024, 2048])
     eg.add('train_cfgs:vector_env_nums', [1])
     eg.run(train, num_pool=1, is_test=True)

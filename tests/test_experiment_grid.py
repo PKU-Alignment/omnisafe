@@ -33,7 +33,8 @@ def test_experiment_grid():
     eg.add('logger_cfgs:use_wandb', [False])
     eg.add('train_cfgs:vector_env_nums', [1])
     eg.add('train_cfgs:torch_threads', [1])
-    eg.add('algo_cfgs:update_cycle', [1024])
+    eg.add('algo_cfgs:steps_per_epoch', [1024])
+    eg.add('model_cfgs:actor:activation', ['tanh'])
     eg.add('train_cfgs:total_steps', [1024])
     eg.add('seed', [0])
     # total experiment num must can be divided by num_pool

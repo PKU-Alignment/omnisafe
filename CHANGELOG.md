@@ -11,13 +11,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
+- Feat(pid-lagrange, test): add algo and update test [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#210](https://github.com/OmniSafeAI/omnisafe/pull/210).
+
+- Feat(saute, simmer): support saute rl and clean the code [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#209](https://github.com/OmniSafeAI/omnisafe/pull/209).
+
+- Feat(off-policy): support off-policy lag by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#204](https://github.com/OmniSafeAI/omnisafe/pull/204).
+
+- Chore: upload tutorial by [@Borong Zhang](https://github.com/muchvo) in PR [#201](https://github.com/OmniSafeAI/omnisafe/pull/201).
+
+- Chore(pre-commit): [pre-commit.ci] autoupdate by [@pre-commit.ci](https://github.com/apps/pre-commit-ci) in PR [#200](https://github.com/OmniSafeAI/omnisafe/pull/200).
+
+- Feat: update CLI for gpu and statistics tools by [@Borong Zhang](https://github.com/muchvo) in PR [#192](https://github.com/OmniSafeAI/omnisafe/pull/192).
+
 - Feat: add `ruff` and `codespell` integration by [@XuehaiPan](https://github.com/XuehaiPan) in PR [#186](https://github.com/OmniSafeAI/omnisafe/pull/186).
 
 ### Fixes
 
+- Fix: enable smooth param in Costs when plotting [@Borong Zhang](https://github.com/muchvo) in PR [#208](https://github.com/OmniSafeAI/omnisafe/pull/208).
+
+- Fix(off-policy): fix log when not update by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#206](https://github.com/OmniSafeAI/omnisafe/pull/206).
+
+- Fix: check duplicated parameters and values which are specified in experiment grid by [@Borong Zhang](https://github.com/muchvo) in PR [#203](https://github.com/OmniSafeAI/omnisafe/pull/203).
+
+- Fix(experiment grid): fix file path problem when using gpu in experiment grid by [@Borong Zhang](https://github.com/muchvo) in PR [#194](https://github.com/OmniSafeAI/omnisafe/pull/194).
+
 ### Documentation
 
+- Docs: fix small typo in README.md by [@mickelliu](https://github.com/mickelliu) in PR [#211](https://github.com/OmniSafeAI/omnisafe/pull/211).
 
+- Docs: change link to OmniSafeAI by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#205](https://github.com/OmniSafeAI/omnisafe/pull/205).
+
+- Docs: update api documents by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#191](https://github.com/OmniSafeAI/omnisafe/pull/191).
+
+### Refactor
+
+- Refactor(algo_wrapper, configs): rename update cycle and refactor structure by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#213](https://github.com/OmniSafeAI/omnisafe/pull/213).
+
+- Refactor: update hyper-parameters for first-order algorithms by [@Borong Zhang](https://github.com/muchvo) in PR [#199](https://github.com/OmniSafeAI/omnisafe/pull/199).
+
+- Refactor: condense top-level benchmarks by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#198](https://github.com/OmniSafeAI/omnisafe/pull/198).
 
 ## v0.2.2
 
