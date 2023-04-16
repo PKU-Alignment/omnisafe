@@ -525,6 +525,7 @@ class ExperimentGrid:
         values: list = None,
         compare_num: int = None,
         cost_limit: float = None,
+        show_image: bool = False,
     ):
         """Analyze the experiment results.
 
@@ -541,7 +542,7 @@ class ExperimentGrid:
         """
         assert self._statistical_tools is not None, 'Please run run() first!'
         self._statistical_tools.load_source(self.log_dir)
-        self._statistical_tools.draw_graph(parameter, values, compare_num, cost_limit)
+        self._statistical_tools.draw_graph(parameter, values, compare_num, cost_limit, show_image=show_image)
 
     def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
         """Agent Evaluation.

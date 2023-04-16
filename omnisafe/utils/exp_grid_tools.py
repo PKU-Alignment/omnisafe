@@ -16,7 +16,12 @@
 
 from __future__ import annotations
 
+import os
 import string
+import sys
+
+import omnisafe
+from omnisafe.typing import NamedTuple, Tuple
 
 
 def all_bools(vals: list) -> bool:
@@ -49,3 +54,45 @@ def valid_str(vals: list | str) -> str:
     str_v = str(vals).lower()
     valid_chars = f'-_{string.ascii_letters}{string.digits}'
     return ''.join(c if c in valid_chars else '-' for c in str_v)
+
+
+def train(
+    exp_id: str,
+    algo: str,
+    env_id: str,
+    custom_cfgs: NamedTuple,
+) -> Tuple[float, float, float]:
+    """Train a policy from exp-x config with OmniSafe.
+
+    Args:
+        exp_id (str): Experiment ID.
+        algo (str): Algorithm to train.
+        env_id (str): The name of test environment.
+        custom_cfgs (NamedTuple): Custom configurations.
+        num_threads (int, optional): Number of threads. Defaults to 6.
+    """
+    terminal_log_name = 'terminal.log'
+    error_log_name = 'error.log'
+    if 'seed' in custom_cfgs:
+        terminal_log_name = f'seed{custom_cfgs["seed"]}_{terminal_log_name}'
+        error_log_name = f'seed{custom_cfgs["seed"]}_{error_log_name}'
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+    print(f'exp-x: {exp_id} is training...')
+    if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
+        os.makedirs(custom_cfgs['logger_cfgs']['log_dir'], exist_ok=True)
+    # pylint: disable-next=consider-using-with
+    sys.stdout = open(  # noqa: SIM115
+        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', terminal_log_name),
+        'w',
+        encoding='utf-8',
+    )
+    # pylint: disable-next=consider-using-with
+    sys.stderr = open(  # noqa: SIM115
+        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', error_log_name),
+        'w',
+        encoding='utf-8',
+    )
+    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    reward, cost, ep_len = agent.learn()
+    return reward, cost, ep_len

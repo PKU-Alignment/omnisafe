@@ -83,6 +83,7 @@ class StatisticsTools:
         values: list = None,
         compare_num: int = None,
         cost_limit: float = None,
+        show_image: bool = False,
     ):
         """Draw graph.
 
@@ -149,11 +150,13 @@ class StatisticsTools:
                     None,
                     'mean',
                     save_name=save_name,
+                    show_image=show_image,
                 )
-            except RuntimeError:
+            except Exception:  # noqa # pylint: disable=broad-except
                 print(
                     f'Cannot generate graph for {save_name[:5] + str(decompressed_img_name_cfgs)}',
                 )
+                print(Exception)
 
     def make_config_groups(self, parameter, parameter_values: list, values: list, compare_num: int):
         """Make config groups.

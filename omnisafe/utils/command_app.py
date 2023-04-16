@@ -15,7 +15,6 @@
 """Implementation of the command interfaces."""
 
 import os
-import sys
 import warnings
 from typing import List
 
@@ -28,7 +27,7 @@ from rich.console import Console
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.common.statistics_tools import StatisticsTools
-from omnisafe.typing import NamedTuple, Tuple
+from omnisafe.utils.exp_grid_tools import train as train_grid
 from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dict
 
 
@@ -129,55 +128,6 @@ def train(  # pylint: disable=too-many-arguments
             agent.evaluate(num_episodes=10)
         except RuntimeError:
             console.print('failed to evaluate model', style='red bold')
-
-
-def train_grid(
-    exp_id: str,
-    algo: str,
-    env_id: str,
-    custom_cfgs: NamedTuple,
-) -> Tuple[float, float, float]:
-    """Train a policy from exp-x config with OmniSafe.
-
-    Example:
-
-    .. code-block:: bash
-
-        python -m omnisafe train_grid --exp_id exp-1 --algo PPOLag --env_id SafetyPointGoal1-v0
-        --parallel 1 --total_steps 1000000 --device cpu --vector_env_nums 1
-
-    Args:
-        exp_id (str): Experiment ID.
-        algo (str): Algorithm to train.
-        env_id (str): The name of test environment.
-        custom_cfgs (NamedTuple): Custom configurations.
-        num_threads (int, optional): Number of threads. Defaults to 6.
-    """
-    terminal_log_name = 'terminal.log'
-    error_log_name = 'error.log'
-    if 'seed' in custom_cfgs:
-        terminal_log_name = f'seed{custom_cfgs["seed"]}_{terminal_log_name}'
-        error_log_name = f'seed{custom_cfgs["seed"]}_{error_log_name}'
-    sys.stdout = sys.__stdout__
-    sys.stderr = sys.__stderr__
-    print(f'exp-x: {exp_id} is training...')
-    if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
-        os.makedirs(custom_cfgs['logger_cfgs']['log_dir'])
-    # pylint: disable-next=consider-using-with
-    sys.stdout = open(  # noqa: SIM115
-        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', terminal_log_name),
-        'w',
-        encoding='utf-8',
-    )
-    # pylint: disable-next=consider-using-with
-    sys.stderr = open(  # noqa: SIM115
-        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', error_log_name),
-        'w',
-        encoding='utf-8',
-    )
-    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
-    reward, cost, ep_len = agent.learn()
-    return reward, cost, ep_len
 
 
 @app.command()
@@ -408,6 +358,10 @@ def analyze_grid(
         None,
         help='the cost limit to show in graphs by a single line',
     ),
+    show_image: bool = typer.Option(
+        False,
+        help='whether to show the images in GUI window',
+    ),
 ):
     """Statistics tools for experiment grid.
 
@@ -424,6 +378,7 @@ def analyze_grid(
         values=None,
         compare_num=compare_num,
         cost_limit=cost_limit,
+        show_image=show_image,
     )
 
 
