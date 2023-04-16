@@ -16,14 +16,14 @@
 
 from omnisafe.common.statistics_tools import StatisticsTools
 
-
 # just fill in the path in which experiment grid runs.
-path = ''
-st = StatisticsTools()
-st.load_source(path)
-# just fill in the name of the parameter of which value you want to compare.
-# then you can specify the value of the parameter you want to compare,
-# or you can just specify how many values you want to compare in single graph at most,
-# and the function will automatically generate all possible combinations of the graph.
-# but the two mode can not be used at the same time.
-st.draw_graph(parameter='', values=None, compare_num=2, cost_limit=None, show_image=True)
+PATH = ''
+if __name__ == '__main__':
+    st = StatisticsTools()
+    st.load_source(PATH)
+    # just fill in the name of the parameter of which value you want to compare.
+    # then you can specify the value of the parameter you want to compare,
+    # or you can just specify how many values you want to compare in single graph at most,
+    # and the function will automatically generate all possible combinations of the graph.
+    # but the two mode can not be used at the same time.
+    st.draw_graph(parameter='', values=None, compare_num=2, cost_limit=None, show_image=True)

@@ -24,28 +24,28 @@ from omnisafe.utils.plotter import Plotter
 # python plot.py --logdir omnisafe/examples/runs/PPOLag-{SafetyAntVelocity-v1}
 # after training the policy with the following command:
 # python train_policy.py --algo PPOLag --env-id SafetyAntVelocity-v1
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--logdir', nargs='*')
+    parser.add_argument('--legend', '-l', nargs='*')
+    parser.add_argument('--xaxis', '-x', default='Steps')
+    parser.add_argument('--value', '-y', default='Rewards', nargs='*')
+    parser.add_argument('--count', action='store_true')
+    parser.add_argument('--smooth', '-s', type=int, default=1)
+    parser.add_argument('--select', nargs='*')
+    parser.add_argument('--exclude', nargs='*')
+    parser.add_argument('--estimator', default='mean')
+    args = parser.parse_args()
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--logdir', nargs='*')
-parser.add_argument('--legend', '-l', nargs='*')
-parser.add_argument('--xaxis', '-x', default='Steps')
-parser.add_argument('--value', '-y', default='Rewards', nargs='*')
-parser.add_argument('--count', action='store_true')
-parser.add_argument('--smooth', '-s', type=int, default=1)
-parser.add_argument('--select', nargs='*')
-parser.add_argument('--exclude', nargs='*')
-parser.add_argument('--estimator', default='mean')
-args = parser.parse_args()
-
-plotter = Plotter()
-plotter.make_plots(
-    args.logdir,
-    args.legend,
-    args.xaxis,
-    args.value,
-    args.count,
-    smooth=args.smooth,
-    select=args.select,
-    exclude=args.exclude,
-    estimator=args.estimator,
-)
+    plotter = Plotter()
+    plotter.make_plots(
+        args.logdir,
+        args.legend,
+        args.xaxis,
+        args.value,
+        args.count,
+        smooth=args.smooth,
+        select=args.select,
+        exclude=args.exclude,
+        estimator=args.estimator,
+    )
