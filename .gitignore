@@ -1,6 +1,10 @@
 ##### Project Specification #####
 **/runs
 **/exp-x
+benchmark/
+train/
+train_dict/
+*.png
 
 ##### Python.gitignore #####
 # Byte-compiled / optimized / DLL files
