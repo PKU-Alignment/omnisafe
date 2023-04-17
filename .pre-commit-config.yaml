@@ -3,8 +3,8 @@
 ci:
   skip: [pylint]
   autofix_prs: true
-  autofix_commit_msg: 'fix: [pre-commit.ci] auto fixes [...]'
-  autoupdate_commit_msg: 'chore(pre-commit): [pre-commit.ci] autoupdate'
+  autofix_commit_msg: "fix: [pre-commit.ci] auto fixes [...]"
+  autoupdate_commit_msg: "chore(pre-commit): [pre-commit.ci] autoupdate"
 default_stages: [commit, push, manual]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -41,7 +41,23 @@ repos:
     rev: v3.3.1
     hooks:
       - id: pyupgrade
-        args: [--py38-plus]
+        args: [--py38-plus] # sync with requires-python
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-bugbear
+          - flake8-comprehensions
+          - flake8-docstrings
+          - flake8-pyi
+          - flake8-simplify
+        exclude: |
+          (?x)(
+            ^examples/|
+            ^tests/|
+            ^docs/source/conf.py$
+          )
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.4
     hooks:
