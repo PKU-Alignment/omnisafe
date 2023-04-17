@@ -122,3 +122,53 @@ defaults:
     log_dir: "./runs"
     # save model path
     window_lens: 100
+
+
+SafetyAntVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True
+SafetyHopperVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True
+SafetyHumanoidVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True
+SafetyWalker2dVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True
+SafetyHalfCheetahVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True
+SafetySwimmerVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True

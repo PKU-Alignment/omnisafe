@@ -18,13 +18,16 @@ from __future__ import annotations
 
 import torch
 from torch import nn, optim
+from torch.nn.utils.clip_grad import clip_grad_norm_
 
 from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.base.pets import PETS
 from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
+from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
+from omnisafe.utils import distributed
 
 
 @registry.register
@@ -52,7 +55,10 @@ class LOOP(PETS):
             model_cfgs=self._cfgs.model_cfgs,
             epochs=self._epochs,
         ).to(self._device)
+        if distributed.world_size() > 1:
+            distributed.sync_params(self._actor_critic)
         self._use_actor_critic = True
+        self._update_count = 0
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
@@ -98,24 +104,25 @@ class LOOP(PETS):
         self._log_alpha: torch.Tensor
         self._alpha_optimizer: optim.Optimizer
         self._target_entropy: float
-        if self._cfgs.algo_cfgs.auto_alpha:
-            self._target_entropy = -torch.prod(torch.Tensor(self._env.action_space.shape)).item()
-            self._log_alpha = torch.zeros(1, requires_grad=True, device=self._device)
-            self._alpha_optimizer = optim.Adam(
-                [self._log_alpha],
-                lr=self._cfgs.model_cfgs.critic.lr,
-            )
-        else:
-            self._log_alpha = torch.log(
-                torch.tensor(self._cfgs.algo_cfgs.alpha, device=self._device),
-            )
+
+        self._alpha = self._cfgs.algo_cfgs.alpha
+        self._alpha_gamma = self._cfgs.algo_cfgs.alpha_gamma
+        self._policy_buf = OffPolicyBuffer(
+            obs_space=self._dynamics_state_space,
+            act_space=self._env.action_space,
+            size=self._cfgs.train_cfgs.total_steps,
+            batch_size=self._cfgs.dynamics_cfgs.batch_size,
+            device=self._device,
+        )
+
+    def _alpha_discount(self):
+        """Alpha discount."""
+        self._alpha *= self._alpha_gamma
 
     def _init_log(self) -> None:
+        """Initialize logger."""
         super()._init_log()
         self._logger.register_key('Value/alpha')
-        if self._cfgs.algo_cfgs.auto_alpha:
-            self._logger.register_key('Loss/alpha_loss')
-
         # log information about actor
         self._logger.register_key('Loss/Loss_pi', delta=True)
 
@@ -134,59 +141,136 @@ class LOOP(PETS):
         state: torch.Tensor,
         env: ModelBasedAdapter,
     ) -> tuple[torch.Tensor, dict]:
-        """action selection"""
+        """Select action.
+
+        Args:
+            current_step (int): current step
+            state (torch.Tensor): current state
+            env (ModelBasedAdapter): environment
+
+        Returns:
+            action (torch.Tensor): action
+            action_info (dict): action information
+        """
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
         else:
-            # action, info = self._planner.output_action(state)
-            action = self._actor_critic.actor.predict(state, deterministic=False)
-            # self._logger.store(
-            #     **{
-            #         'Plan/iter': info['Plan/iter'],
-            #         'Plan/last_var_max': info['Plan/last_var_max'],
-            #         'Plan/last_var_mean': info['Plan/last_var_mean'],
-            #         'Plan/last_var_min': info['Plan/last_var_min'],
-            #         'Plan/episode_returns_max': info['Plan/episode_returns_max'],
-            #         'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
-            #         'Plan/episode_returns_min': info['Plan/episode_returns_min'],
-            #     },
-            # )
+            action, info = self._planner.output_action(state)
+            # action = self._actor_critic.actor.predict(state, deterministic=False).detach()
+            self._logger.store(**info)
+
         assert action.shape == torch.Size(
             [state.shape[0], self._env.action_space.shape[0]],
         ), 'action shape should be [batch_size, action_dim]'
         info = {}
         return action, info
 
-    @property
-    def _alpha(self) -> float:
-        return self._log_alpha.exp().item()
+    def _update_policy(self, current_step: int) -> None:
+        """Update policy.
 
-    def _update_policy(self, current_step) -> None:
-        for step in range(
-            self._cfgs.algo_cfgs.steps_per_sample // self._cfgs.algo_cfgs.update_iters,
-        ):
-            data = self._dynamics_buf.sample_batch()
-            obs, act, reward, cost, done, next_obs = (
-                data['obs'],
-                data['act'],
-                data['reward'],
-                data['cost'],
-                data['done'],
-                data['next_obs'],
+        Args:
+            current_step (int): current step
+        """
+        if current_step >= self._cfgs.algo_cfgs.start_learning_steps:
+            for _step in range(self._cfgs.algo_cfgs.update_policy_iters):
+                self._update_count += 1
+
+                data = self._policy_buf.sample_batch()
+                obs, act, reward, cost, done, next_obs = (
+                    data['obs'],
+                    data['act'],
+                    data['reward'],
+                    data['cost'],
+                    data['done'],
+                    data['next_obs'],
+                )
+
+                self._update_reward_critic(obs, act, reward, done, next_obs)
+                if self._cfgs.algo_cfgs.use_cost:
+                    self._update_cost_critic(obs, act, cost, done, next_obs)
+
+                if self._update_count % self._cfgs.algo_cfgs.policy_delay == 0:
+                    # Freeze Q-network so you don't waste computational effort
+                    # computing gradients for it during the policy learning step.
+                    for param in self._actor_critic.reward_critic.parameters():
+                        param.requires_grad = False
+                    if self._cfgs.algo_cfgs.use_cost:
+                        for param in self._actor_critic.cost_critic.parameters():
+                            param.requires_grad = False
+
+                    self._update_actor(obs)
+
+                    # Unfreeze Q-network so you can optimize it at next DDPG step.
+                    for param in self._actor_critic.reward_critic.parameters():
+                        param.requires_grad = True
+                    if self._cfgs.algo_cfgs.use_cost:
+                        for param in self._actor_critic.cost_critic.parameters():
+                            param.requires_grad = True
+
+                    self._actor_critic.polyak_update(self._cfgs.algo_cfgs.polyak)
+
+                if self._cfgs.algo_cfgs.alpha_discount:
+                    self._alpha_discount()
+
+    def _store_real_data(  # pylint: disable=too-many-arguments,unused-argument
+        self,
+        current_step: int,
+        ep_len: int,
+        state: torch.Tensor,
+        action: torch.Tensor,
+        reward: torch.Tensor,
+        cost: torch.Tensor,
+        terminated: torch.Tensor,
+        truncated: torch.Tensor,
+        next_state: torch.Tensor,
+        info: dict,
+        action_info: dict,
+    ) -> None:  # pylint: disable=too-many-arguments
+        """Store real data in buffer.
+
+        Args:
+            current_step (int): current step
+            ep_len (int): episode length
+            state (torch.Tensor): current state
+            action (torch.Tensor): action
+            reward (torch.Tensor): reward
+            cost (torch.Tensor): cost
+            terminated (torch.Tensor): terminated
+            truncated (torch.Tensor): truncated
+            next_state (torch.Tensor): next state
+            info (dict): information
+            action_info (dict): action information
+        """
+        done = terminated or truncated
+        goal_met = False if 'goal_met' not in info.keys() else info['goal_met']
+        if not done and not goal_met:
+            # pylint: disable-next=line-too-long
+            # if goal_met == true, Current goal position is not related to the last goal position, this huge transition will confuse the dynamics model.
+            self._dynamics_buf.store(
+                obs=state,
+                act=action,
+                reward=reward,
+                cost=cost,
+                next_obs=next_state,
+                done=done,
             )
-
-            self._update_reward_critic(obs, act, reward, done, next_obs)
-            if self._cfgs.algo_cfgs.use_cost:
-                self._update_cost_critic(obs, act, cost, done, next_obs)
-
-            if step % self._cfgs.algo_cfgs.policy_delay == 0:
-                self._update_actor(obs)
-
-            self._actor_critic.polyak_update(self._cfgs.algo_cfgs.polyak)
-
-    def _update_epoch(self) -> None:
-        """Update something per epoch"""
-        self._actor_critic.actor_scheduler.step()
+            self._policy_buf.store(
+                obs=state,
+                act=action,
+                reward=reward,
+                cost=cost,
+                next_obs=next_state,
+                done=done,
+            )
+        if done and self._cfgs.algo_cfgs.policy_store_done:
+            self._policy_buf.store(
+                obs=state,
+                act=action,
+                reward=reward,
+                cost=cost,
+                next_obs=next_state,
+                done=done,
+            )
 
     def _update_reward_critic(
         self,
@@ -196,6 +280,17 @@ class LOOP(PETS):
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
+        """Update reward critic using Soft Actor-Critic.
+
+        Args:
+            obs (torch.Tensor): observation
+            action (torch.Tensor): action
+            reward (torch.Tensor): reward
+            done (torch.Tensor): done
+            next_obs (torch.Tensor): next observation
+        """
+        self._actor_critic.reward_critic_optimizer.zero_grad()
+
         with torch.no_grad():
             next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
             next_logp = self._actor_critic.actor.log_prob(next_action)
@@ -211,19 +306,17 @@ class LOOP(PETS):
             q2_value_r,
             target_q_value_r,
         )
-
         if self._cfgs.algo_cfgs.use_critic_norm:
             for param in self._actor_critic.reward_critic.parameters():
                 loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coeff
-
-        self._actor_critic.reward_critic_optimizer.zero_grad()
         loss.backward()
 
-        if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+        if self._cfgs.algo_cfgs.use_grad_norm:
+            clip_grad_norm_(
                 self._actor_critic.reward_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
+        distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
         self._logger.store(
             **{
@@ -269,18 +362,18 @@ class LOOP(PETS):
             q2_value_c,
             target_q_value_c,
         )
-
         if self._cfgs.algo_cfgs.use_critic_norm:
             for param in self._actor_critic.cost_critic.parameters():
                 loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coeff
 
         self._actor_critic.cost_critic_optimizer.zero_grad()
         loss.backward()
-        if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+        if self._cfgs.algo_cfgs.use_grad_norm:
+            clip_grad_norm_(
                 self._actor_critic.cost_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
+        distributed.avg_grads(self._actor_critic.cost_critic)
         self._actor_critic.cost_critic_optimizer.step()
         self._logger.store(
             **{
@@ -293,11 +386,16 @@ class LOOP(PETS):
         self,
         obs: torch.Tensor,
     ) -> None:
-        loss = self._loss_pi(obs)
+        """Update actor using Soft Actor-Critic algorithm.
+
+        Args:
+            obs (torch.Tensor): observation
+        """
         self._actor_critic.actor_optimizer.zero_grad()
+        loss = self._loss_pi(obs)
         loss.backward()
-        if self._cfgs.algo_cfgs.max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+        if self._cfgs.algo_cfgs.use_grad_norm:
+            clip_grad_norm_(
                 self._actor_critic.actor.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
@@ -308,20 +406,6 @@ class LOOP(PETS):
             },
         )
 
-        if self._cfgs.algo_cfgs.auto_alpha:
-            with torch.no_grad():
-                action = self._actor_critic.actor.predict(obs, deterministic=False)
-                log_prob = self._actor_critic.actor.log_prob(action)
-            alpha_loss = -self._log_alpha * (log_prob + self._target_entropy).mean()
-
-            self._alpha_optimizer.zero_grad()
-            alpha_loss.backward()
-            self._alpha_optimizer.step()
-            self._logger.store(
-                **{
-                    'Loss/alpha_loss': alpha_loss.mean().item(),
-                },
-            )
         self._logger.store(
             **{
                 'Value/alpha': self._alpha,
@@ -332,12 +416,21 @@ class LOOP(PETS):
         self,
         obs: torch.Tensor,
     ) -> torch.Tensor:
-        action = self._actor_critic.actor.predict(obs, deterministic=False)
+        """Compute loss for actor using Soft Actor-Critic algorithm.
+
+        Args:
+            obs (torch.Tensor): observation
+        """
+        action = self._actor_critic.actor.predict(
+            obs,
+            deterministic=self._cfgs.algo_cfgs.loss_pi_deterministic,
+        )
         log_prob = self._actor_critic.actor.log_prob(action)
         q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
         return (self._alpha * log_prob - torch.min(q1_value_r, q2_value_r)).mean()
 
     def _log_when_not_update(self) -> None:
+        """Log when not update."""
         self._logger.store(
             **{
                 'Loss/Loss_reward_critic': 0.0,

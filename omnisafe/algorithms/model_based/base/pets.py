@@ -58,6 +58,7 @@ class PETS(BaseAlgo):
         self._epochs = self._total_steps // self._cfgs.logger_cfgs.log_cycle
 
     def _init_model(self) -> None:
+        """Initialize dynamics model and planner."""
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
@@ -104,6 +105,7 @@ class PETS(BaseAlgo):
         self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
     def _init(self) -> None:
+        """Initialize the algorithm."""
         self._dynamics_buf = OffPolicyBuffer(
             obs_space=self._dynamics_state_space,
             act_space=self._env.action_space,
@@ -112,11 +114,23 @@ class PETS(BaseAlgo):
             device=self._device,
         )
         if self._cfgs.evaluation_cfgs.use_eval:
+            env_kwargs = {
+                'render_mode': 'rgb_array',
+                'camera_name': 'track',
+            }
+            self._eval_env = ModelBasedAdapter(
+                self._env_id,
+                1,
+                self._seed,
+                self._cfgs,
+                **env_kwargs,
+            )
             self._eval_fn = self._evaluation_single_step
         else:
             self._eval_fn = None
 
     def _init_log(self) -> None:
+        """Initialize logger."""
         self._logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,
             exp_name=self._cfgs.exp_name,
@@ -170,7 +184,6 @@ class PETS(BaseAlgo):
         """This is main function for algorithm update, divided into the following steps:
 
         - :meth:`rollout`: collect interactive data from environment.
-        - :meth:`update`: perform actor/critic updates.
         - :meth:`log`: epoch/update information for visualization and terminal log print.
         """
         self._logger.log('INFO: Start training')
@@ -215,21 +228,25 @@ class PETS(BaseAlgo):
 
     def _algo_reset(
         self,
-        current_step,  # pylint: disable=unused-argument
+        current_step: int,  # pylint: disable=unused-argument
     ):
-        pass
+        ...
 
     def _update_policy(
         self,
-        current_step,  # pylint: disable=unused-argument
+        current_step: int,  # pylint: disable=unused-argument
     ):
-        pass
+        ...
 
     def _update_dynamics_model(
         self,
-        current_step,  # pylint: disable=unused-argument
+        current_step: int,  # pylint: disable=unused-argument
     ):
-        """Update dynamics."""
+        """Update dynamics.
+
+        Args:
+            current_step (int): current step.
+        """
         state = self._dynamics_buf.data['obs'][: self._dynamics_buf.size, :]
         action = self._dynamics_buf.data['act'][: self._dynamics_buf.size, :]
         reward = self._dynamics_buf.data['reward'][: self._dynamics_buf.size]
@@ -260,32 +277,34 @@ class PETS(BaseAlgo):
         )
 
     def _update_epoch(self):
-        pass
+        ...
 
     def _select_action(  # pylint: disable=unused-argument
         self,
         current_step: int,
         state: torch.Tensor,
         env: ModelBasedAdapter,
-    ) -> tuple[np.ndarray, dict]:
-        """action selection"""
+    ) -> tuple[torch.Tensor, dict]:
+        """Action selection."
+
+        Args:
+            current_step (int): current step.
+            state (torch.Tensor): current state.
+            env (ModelBasedAdapter): environment.
+
+        Returns:
+            action (torch.Tensor): action.
+            info (dict): information.
+        """
+        assert state.shape == torch.Size([1, self._env.observation_space.shape[0]])
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
         else:
             action, info = self._planner.output_action(state)
-            self._logger.store(
-                **{
-                    'Plan/iter': info['Plan/iter'],
-                    'Plan/last_var_max': info['Plan/last_var_max'],
-                    'Plan/last_var_mean': info['Plan/last_var_mean'],
-                    'Plan/last_var_min': info['Plan/last_var_min'],
-                    'Plan/episode_returns_max': info['Plan/episode_returns_max'],
-                    'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
-                    'Plan/episode_returns_min': info['Plan/episode_returns_min'],
-                },
-            )
+            self._logger.store(**info)
+
         assert action.shape == torch.Size(
-            [state.shape[0], self._env.action_space.shape[0]],
+            [1, self._env.action_space.shape[0]],
         ), 'action shape should be [batch_size, action_dim]'
         info = {}
         return action, info
@@ -304,7 +323,21 @@ class PETS(BaseAlgo):
         info: dict,
         action_info: dict,
     ) -> None:  # pylint: disable=too-many-arguments
-        """Store real data in buffer."""
+        """Store real data in buffer.
+
+        Args:
+            current_step (int): current step.
+            ep_len (int): episode length.
+            state (torch.Tensor): current state.
+            action (torch.Tensor): action.
+            reward (torch.Tensor): reward.
+            cost (torch.Tensor): cost.
+            terminated (torch.Tensor): terminated.
+            truncated (torch.Tensor): truncated.
+            next_state (torch.Tensor): next state.
+            info (dict): information.
+            action_info (dict): action information.
+        """
         done = terminated or truncated
         goal_met = False if 'goal_met' not in info.keys() else info['goal_met']
         if not terminated and not truncated and not goal_met:
@@ -324,18 +357,14 @@ class PETS(BaseAlgo):
         current_step: int,
         use_real_input: bool = True,
     ) -> None:
-        env_kwargs = {
-            'render_mode': 'rgb_array',
-            'camera_name': 'track',
-        }
-        eval_env = ModelBasedAdapter(
-            self._env_id,
-            1,
-            self._seed,
-            self._cfgs,
-            **env_kwargs,
-        )
-        obs, _ = eval_env.reset()
+        """Evaluation dynamics model single step.
+
+        Args:
+            current_step (int): current step.
+            use_real_input (bool): use real input or not.
+
+        """
+        obs, _ = self._eval_env.reset()
         obs_dynamics = obs
         terminated, truncated = False, False
         ep_len, ep_ret, ep_cost = 0, 0, 0
@@ -384,11 +413,11 @@ class PETS(BaseAlgo):
                 reward_pred, reward_true = [], []
 
                 ep_len, ep_ret, ep_cost = 0, 0, 0
-                obs, _ = eval_env.reset()
+                obs, _ = self._eval_env.reset()
                 num_episode += 1
                 if num_episode == self._cfgs.evaluation_cfgs.num_episode:
                     break
-            action, _ = self._select_action(current_step, obs, eval_env)
+            action, _ = self._select_action(current_step, obs, self._eval_env)
 
             idx = np.random.choice(self._dynamics.elite_model_idxes, size=1)
             traj = self._dynamics.imagine(
@@ -401,7 +430,7 @@ class PETS(BaseAlgo):
             pred_next_obs_mean = traj['states'][0][0].mean()
             pred_reward = traj['rewards'][0][0]
 
-            obs, reward, cost, terminated, truncated, info = eval_env.step(action)
+            obs, reward, cost, terminated, truncated, info = self._eval_env.step(action)
 
             obs_dynamics = obs if use_real_input else traj['states'][0][0]
 
@@ -416,7 +445,7 @@ class PETS(BaseAlgo):
             ep_ret += reward
             ep_cost += cost
             ep_len += info['num_step']
-            frames.append(eval_env.render())
+            frames.append(self._eval_env.render())
 
     def draw_picture(
         self,
@@ -427,7 +456,16 @@ class PETS(BaseAlgo):
         save_replay_path: str = './',
         name: str = 'reward',
     ) -> None:
-        """draw a curve of the predicted value and the ground true value"""
+        """Draw a curve of the predicted value and the ground true value.
+
+        Args:
+            timestep (int): current step.
+            num_episode (int): number of episodes.
+            pred_state (list): predicted state.
+            true_state (list): true state.
+            save_replay_path (str): save replay path.
+            name (str): name of the curve.
+        """
         target1 = list(pred_state)
         target2 = list(true_state)
         input1 = np.arange(0, np.array(pred_state).shape[0], 1)

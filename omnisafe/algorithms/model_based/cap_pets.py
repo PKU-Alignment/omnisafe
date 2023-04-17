@@ -16,9 +16,7 @@
 from __future__ import annotations
 
 import numpy as np
-import torch
 
-from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base import PETS
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
@@ -39,6 +37,7 @@ class CAPPETS(PETS):
     """
 
     def _init_model(self) -> None:
+        """Initialize the dynamics model and the planner."""
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
@@ -90,6 +89,7 @@ class CAPPETS(PETS):
         self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
     def _init_log(self) -> None:
+        """Initialize the logger"""
         super()._init_log()
         self._logger.register_key('Plan/feasible_num')
         self._logger.register_key('Plan/episode_costs_max')
@@ -108,38 +108,3 @@ class CAPPETS(PETS):
         self._lagrange.update_lagrange_multiplier(Jc)
         # then update the policy and value function
         self._logger.store(**{'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier})
-
-    def _select_action(
-        self,
-        current_step: int,
-        state: torch.Tensor,
-        env: ModelBasedAdapter,
-    ) -> tuple[np.ndarray, dict]:
-        """action selection"""
-        if current_step < self._cfgs.algo_cfgs.start_learning_steps:
-            action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
-        else:
-            action, info = self._planner.output_action(state)
-            self._logger.store(
-                **{
-                    'Plan/iter': info['Plan/iter'],
-                    'Plan/last_var_max': info['Plan/last_var_max'],
-                    'Plan/last_var_mean': info['Plan/last_var_mean'],
-                    'Plan/last_var_min': info['Plan/last_var_min'],
-                    'Plan/feasible_num': info['Plan/feasible_num'],
-                    'Plan/episode_returns_max': info['Plan/episode_returns_max'],
-                    'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
-                    'Plan/episode_returns_min': info['Plan/episode_returns_min'],
-                    'Plan/episode_costs_max': info['Plan/episode_costs_max'],
-                    'Plan/episode_costs_mean': info['Plan/episode_costs_mean'],
-                    'Plan/episode_costs_min': info['Plan/episode_costs_min'],
-                    'Plan/var_penalty_max': info['Plan/var_penalty_max'],
-                    'Plan/var_penalty_mean': info['Plan/var_penalty_mean'],
-                    'Plan/var_penalty_min': info['Plan/var_penalty_min'],
-                },
-            )
-        assert action.shape == torch.Size(
-            [state.shape[0], self._env.action_space.shape[0]],
-        ), 'action shape should be [batch_size, action_dim]'
-        info = {}
-        return action, info

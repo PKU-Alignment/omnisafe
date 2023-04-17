@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""OffPolicy Adapter for OmniSafe."""
+"""Model-based Adapter for OmniSafe."""
 from __future__ import annotations
 
 import time
@@ -39,7 +39,33 @@ from omnisafe.utils.config import Config
 class ModelBasedAdapter(
     OnlineAdapter,
 ):  # pylint: disable=too-many-instance-attributes,super-init-not-called
-    """Model Based Adapter for OmniSafe."""
+    """Model Based Adapter for OmniSafe.
+
+    :class:`ModelBasedAdapter` is used to adapt the environment to the model-based training.
+
+
+    Args:
+        env_id (str): The environment id.
+        num_envs (int): The number of environments.
+        seed (int): The random seed.
+        cfgs (Config): The configuration.
+        kwargs(dict): The other keyword arguments.
+
+    Attributes:
+        _env_id (str): The environment id.
+        _device (torch.device): The device.
+        _env (CMDP): The environment.
+        _cfgs (Config): The configuration.
+        _ep_ret (torch.Tensor): The episode return.
+        _ep_cost (torch.Tensor): The episode cost.
+        _ep_len (torch.Tensor): The episode length.
+        _last_dynamics_update (float): The last time of dynamics update.
+        _last_policy_update (float): The last time of policy update.
+        _last_eval (float): The last time of evaluation.
+        coordinate_observation_space (OmnisafeSpace): The coordinate observation space.
+        lidar_observation_space (OmnisafeSpace): The lidar observation space.
+        task (str): The task. eg. The task of SafetyPointGoal-v0 is 'goal'
+    """
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -55,6 +81,8 @@ class ModelBasedAdapter(
         self._device = cfgs.train_cfgs.device
 
         self._env = make(env_id, num_envs=num_envs, device=cfgs.train_cfgs.device, **kwargs)
+
+        # Wrap the environment, use the action repeat in model-based setting.
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
@@ -85,23 +113,48 @@ class ModelBasedAdapter(
         self._last_eval = 0
 
     def get_goal_flag_from_obs_tensor(self, obs):
+        """Get goal flag from tensor observation.
+
+        Args:
+            obs (torch.Tensor): The observation.
         """
-        get goal flag from tensor observation
-        """
-        return self._env.get_goal_flag_from_obs_tensor(obs)
+        return (
+            self._env.get_goal_flag_from_obs_tensor(obs)
+            if hasattr(self._env, 'get_goal_flag_from_obs_tensor')
+            else None
+        )
 
     def get_cost_from_obs_tensor(self, obs):
+        """Get cost from tensor observation.
+
+        Args:
+            obs (torch.Tensor): The observation.
         """
-        get cost from tensor observation
-        """
-        return self._env.get_cost_from_obs_tensor(obs)
+        return (
+            self._env.get_cost_from_obs_tensor(obs)
+            if hasattr(self._env, 'get_cost_from_obs_tensor')
+            else None
+        )
 
     def get_lidar_from_coordinate(self, obs):
-        """get lidar from coordinate"""
-        return self._env.get_lidar_from_coordinate(obs)
+        """Get lidar from numpy coordinate.
+
+        Args:
+            obs (np.ndarray): The observation.
+        """
+        return (
+            self._env.get_lidar_from_coordinate(obs)
+            if hasattr(self._env, 'get_lidar_from_coordinate')
+            else None
+        )
 
     def render(self, *args: str, **kwargs: int):
-        """render the environment"""
+        """Render the environment.
+
+        Args:
+            args (str): The arguments.
+            kwargs (int): The keyword arguments.
+        """
         return self._env.render(*args, **kwargs)
 
     def _wrapper(
@@ -111,7 +164,38 @@ class ModelBasedAdapter(
         cost_normalize: bool = True,
         action_repeat: int = 1,
     ):
-        """Wrapper for environment."""
+        """Wrapper the environment.
+
+        .. hint::
+
+            OmniSafe supports the following wrappers:
+
+            .. list-table::
+
+                *   -   Wrapper
+                    -   Description
+                *   -   TimeLimit
+                    -   Limit the time steps of the environment.
+                *   -   AutoReset
+                    -   Reset the environment when the episode is done.
+                *   -   ObsNormalize
+                    -   Normalize the observation.
+                *   -   RewardNormalize
+                    -   Normalize the reward.
+                *   -   CostNormalize
+                    -   Normalize the cost.
+                *   -   ActionScale
+                    -   Scale the action.
+                *   -   ActionRepeat
+                    -   Repeat the action.
+                *   -   Unsqueeze
+                    -   Unsqueeze the step result for single environment case.
+
+        Args:
+            obs_normalize (bool): Whether to normalize the observation.
+            reward_normalize (bool): Whether to normalize the reward.
+            cost_normalize (bool): Whether to normalize the cost.
+        """
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
         if self._env.need_auto_reset_wrapper:
@@ -141,7 +225,26 @@ class ModelBasedAdapter(
         algo_reset_func: Callable | None = None,
         update_actor_func: Callable | None = None,
     ) -> int:
-        """Roll out the environment."""
+        """Roll out the environment and store the data in the buffer.
+
+        .. warning::
+
+            As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,
+            so the final observation will be stored in ``info['final_observation']``.
+
+        Args:
+            current_step (int): Current training step.
+            roll_out_step (int): Number of steps to roll out.
+            use_actor_critic (bool): Whether to use actor-critic.
+            act_func (Callable): Function to get action.
+            store_data_func (Callable): Function to store data.
+            update_dynamics_func (Callable): Function to update dynamics.
+            logger (Logger): Logger.
+            eval_func (Callable): Function to evaluate the agent.
+            algo_reset_func (Callable): Function to reset the algorithm.
+            update_actor_func (Callable): Function to update the actor.
+        """
+
         epoch_start_time = time.time()
 
         update_actor_critic_time = 0
@@ -232,13 +335,27 @@ class ModelBasedAdapter(
         info: dict,
         **kwargs,  # pylint: disable=unused-argument
     ) -> None:
-        """Log value."""
+        """Log value.
+
+        .. note::
+            OmniSafe uses :class:`RewardNormalizer` wrapper, so the original reward and cost will
+            be stored in ``info['original_reward']`` and ``info['original_cost']``.
+
+        Args:
+            reward (torch.Tensor): The reward.
+            cost (torch.Tensor): The cost.
+            **kwargs: Other arguments.
+        """
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()
         self._ep_len += info.get('num_step', 1)
 
     def _log_metrics(self, logger: Logger) -> None:
-        """Log metrics."""
+        """Log metrics.
+
+        Args:
+            logger (Logger): Logger.
+        """
         logger.store(
             **{
                 'Metrics/EpRet': self._ep_ret,
@@ -248,40 +365,11 @@ class ModelBasedAdapter(
         )
 
     def _reset_log(self, idx: int | None = None) -> None:  # pylint: disable=unused-argument
-        """Reset log."""
+        """Reset log.
+
+        Args:
+            idx (int | None): The index of the environment.
+        """
         self._ep_ret = torch.zeros(1)
         self._ep_cost = torch.zeros(1)
         self._ep_len = torch.zeros(1)
-
-    def check_violation(self, obs: torch.Tensor) -> torch.Tensor:
-        """Check if the observation violates the environment's constraints."""
-        assert obs.shape[1] == self.observation_space.shape[0]
-        if self._env_id == 'Ant-v4':
-            min_z, max_z = 0.2, 1.0
-            is_finite = torch.isfinite(obs).all()
-            is_between = torch.logical_and(min_z < obs[:, 0], obs[:, 0] < max_z)
-            is_healthy = torch.logical_and(is_finite, is_between)
-        elif self._env_id == 'Humanoid-v4':
-            min_z, max_z = 1.0, 2.0
-            is_healthy = torch.logical_and(min_z < obs[:, 0], obs[:, 0] < max_z)
-        elif self._env_id == 'Hopper-v4':
-            z, angle = obs[:, 0:2]
-            state = obs[:, 1:]
-            min_state, max_state = -100.0, 100.0
-            min_z, max_z = (0.7, float('inf'))
-            min_angle, max_angle = (-0.2, 0.2)
-            healthy_state = torch.logical_and(min_state < state, state < max_state)
-            healthy_z = torch.logical_and(min_z < z, z < max_z)
-            healthy_angle = torch.logical_and(min_angle < angle, angle < max_angle)
-            is_healthy = torch.all(torch.stack([healthy_state, healthy_z, healthy_angle]), dim=0)
-        elif self._env_id == 'walker2d-v4':
-            z, angle = obs[0:2]
-            min_z, max_z = (0.8, 2)
-            min_angle, max_angle = (-1, 1)
-            healthy_z = torch.logical_and(min_z < z, z < max_z)
-            healthy_angle = torch.logical_and(min_angle < angle, angle < max_angle)
-            is_healthy = torch.logical_and(healthy_z, healthy_angle)
-
-        assert is_healthy.shape == obs.shape[:1], f'{is_healthy.shape} != {obs.shape[:1]}'
-
-        return is_healthy

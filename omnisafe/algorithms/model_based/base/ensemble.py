@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 # original version doesn't validate model error batch-wise and is highly memory intensive.
 # ==============================================================================
 """The Dynamics Model of MBPO and PETS."""
+from __future__ import annotations
 
 import itertools
 from collections import defaultdict
 from functools import partial
-from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import torch
@@ -38,22 +38,20 @@ def swish(data):
 class StandardScaler:
     """Normalize data"""
 
-    def __init__(self, device) -> None:
+    def __init__(self, device: str) -> None:
         self._mean = 0.0
         self._std = 1.0
         self._mean_t = torch.tensor(self._mean).to(device)
         self._std_t = torch.tensor(self._std).to(device)
         self._device = device
 
-    def fit(self, data):
+    def fit(self, data: torch.Tensor | np.ndarray) -> None:
         """Runs two ops, one for assigning the mean of the data to the internal mean, and
         another for assigning the standard deviation of the data to the internal standard deviation.
         This function must be called within a 'with <session>.as_default()' block.
 
-        Arguments:
-        data (np.ndarray): A numpy array containing the input
-
-        Returns: None.
+        Args:
+            data (np.ndarray): A numpy array containing the input
         """
         self._mean = np.mean(data, axis=0, keepdims=True)
         self._std = np.std(data, axis=0, keepdims=True)
@@ -61,23 +59,24 @@ class StandardScaler:
         self._mean_t = torch.FloatTensor(self._mean).to(self._device)
         self._std_t = torch.FloatTensor(self._std).to(self._device)
 
-    def transform(self, data):
+    def transform(self, data: torch.Tensor | np.ndarray) -> torch.Tensor | np.ndarray:
         """Transforms the input matrix data using the parameters of this scaler.
 
         Arguments:
-        data (np.array): A numpy array containing the points to be transformed.
+            data (torch.Tensor|np.ndarray): A numpy array containing the input
 
-        Returns: (np.array) The transformed dataset.
+        Returns:
+            transformed_data (torch.Tensor|np.ndarray): The transformed data.
         """
         if torch.is_tensor(data):
             return (data - self._mean_t) / self._std_t
         return (data - self._mean) / self._std
 
 
-def init_weights(layer):
+def init_weights(layer: nn.Module) -> None:
     """Initialize network weight"""
 
-    def truncated_normal_init(weight, mean=0.0, std=0.01):
+    def truncated_normal_init(weight, mean: float = 0.0, std: float = 0.01) -> torch.Tensor:
         """Initialize network weight"""
         torch.nn.init.normal_(weight, mean=mean, std=std)
         while True:
@@ -97,9 +96,21 @@ def init_weights(layer):
         layer.bias.data.fill_(0.0)
 
 
-def unbatched_forward(layer, input_data, index):
+def unbatched_forward(
+    layer: nn.Module | EnsembleFC,
+    input_data: torch.Tensor,
+    index: int,
+) -> torch.Tensor:
     """Special forward for nn.Sequential modules which contain BatchedLinear layers,
     for when we only want to use one of the models.
+
+    Args:
+        layer (nn.Module|EnsembleFC): The layer to forward through.
+        input_data (torch.Tensor): The input data.
+        index (int): The index of the model to use.
+
+    Returns:
+        output (torch.Tensor): The output of the layer.
     """
     if isinstance(layer, EnsembleFC):
         output = F.linear(
@@ -114,7 +125,7 @@ def unbatched_forward(layer, input_data, index):
 
 
 class EnsembleFC(nn.Module):
-    """Ensemble fully connected network"""
+    """Ensemble fully connected network."""
 
     _constants_ = ['in_features', 'out_features']
     in_features: int
@@ -143,14 +154,14 @@ class EnsembleFC(nn.Module):
             self.register_parameter('bias', None)
 
     def forward(self, input_data: torch.Tensor) -> torch.Tensor:
-        """forward"""
+        """Forward pass."""
         w_times_x = torch.bmm(input_data, self.weight)
         return torch.add(w_times_x, self.bias[:, None, :])  # w times x + b
 
 
 # pylint: disable-next=too-many-instance-attributes
 class EnsembleModel(nn.Module):
-    """Ensemble dynamics model"""
+    """Ensemble dynamics model."""
 
     # pylint: disable-next=too-many-arguments
     def __init__(
@@ -208,8 +219,21 @@ class EnsembleModel(nn.Module):
         self.scaler = StandardScaler(self._device)
 
     # pylint: disable-next=too-many-locals
-    def forward(self, data, ret_log_var=False):
-        """Compute next state, reward, cost"""
+    def forward(
+        self,
+        data: torch.Tensor,
+        ret_log_var: bool = False,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Compute next state, reward, cost using all models.
+
+        Args:
+            data (torch.Tensor): Input data.
+            ret_log_var (bool): Whether to return the log variance.
+
+        Returns:
+            mean (torch.Tensor): Mean of the next state, reward, cost.
+            logvar or var (torch.Tensor): Log variance of the next state, reward, cost.
+        """
         data = self.scaler.transform(data)
         nn1_output = swish(self._nn1(data))
         nn2_output = swish(self._nn2(nn1_output))
@@ -226,8 +250,23 @@ class EnsembleModel(nn.Module):
             return mean, logvar
         return mean, var
 
-    def forward_idx(self, data, idx_model, ret_log_var=False):
-        """Compute next state, reward, cost from an certain model"""
+    def forward_idx(
+        self,
+        data: torch.Tensor,
+        idx_model: int,
+        ret_log_var: bool = False,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Compute next state, reward, cost from an certain model.
+
+        Args:
+            data (torch.Tensor): Input data.
+            idx_model (int): Index of the model.
+            ret_log_var (bool): Whether to return the log variance.
+
+        Returns:
+            mean (torch.Tensor): Mean of the next state, reward, cost.
+            logvar or var (torch.Tensor): Log variance of the next state, reward, cost.
+        """
         assert data.shape[0] == 1
         data = self.scaler.transform(data[0])
         unbatched_forward_fn = partial(unbatched_forward, index=idx_model)
@@ -246,17 +285,31 @@ class EnsembleModel(nn.Module):
         return mean.unsqueeze(0), var.unsqueeze(0)
 
     def _get_decay_loss(self):
-        """Get decay loss"""
+        """Get decay loss."""
         decay_loss = 0.0
         for layer in self.children():
             if isinstance(layer, EnsembleFC):
                 decay_loss += layer.weight_decay * torch.sum(torch.square(layer.weight)) / 2.0
         return decay_loss
 
-    def loss(self, mean, logvar, labels, inc_var_loss=True):
-        """
-        mean, logvar: Ensemble_size x N x dim
-        labels: N x dim
+    def loss(
+        self,
+        mean: torch.Tensor,
+        logvar: torch.Tensor,
+        labels: torch.Tensor,
+        inc_var_loss: bool = True,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Compute loss.
+
+        Args:
+            mean (torch.Tensor): Mean of the next state, reward, cost.
+            logvar (torch.Tensor): Log variance of the next state, reward, cost.
+            labels (torch.Tensor): Ground truth of the next state, reward, cost.
+            inc_var_loss (bool): Whether to include the variance loss.
+
+        Returns:
+            total_loss (torch.Tensor): Total loss.
+            mse_loss (torch.Tensor): MSE loss.
         """
         assert len(mean.shape) == len(logvar.shape) == len(labels.shape) == 3
         inv_var = torch.exp(-logvar)
@@ -271,7 +324,7 @@ class EnsembleModel(nn.Module):
         return total_loss, mse_loss
 
     def train_ensemble(self, loss):
-        """Train the dynamics model"""
+        """Train the dynamics model."""
         self._optimizer.zero_grad()
         loss += 0.01 * torch.sum(self.max_logvar) - 0.01 * torch.sum(self.min_logvar)
         if self._use_decay:
@@ -282,7 +335,7 @@ class EnsembleModel(nn.Module):
 
 # pylint: disable-next=too-many-instance-attributes
 class EnsembleDynamicsModel:
-    """Dynamics model for predict next state, reward and cost"""
+    """Dynamics model for predict next state, reward and cost."""
 
     # pylint: disable-next=too-many-arguments
     def __init__(
@@ -357,8 +410,19 @@ class EnsembleDynamicsModel:
         self._actor_critic = actor_critic
 
     # pylint: disable-next=too-many-locals, too-many-arguments
-    def train(self, inputs, labels, holdout_ratio=0.0):
-        """train dynamics, holdout_ratio is the data ratio hold out for validation"""
+    def train(
+        self,
+        inputs: np.ndarray,
+        labels: np.ndarray,
+        holdout_ratio: float = 0.0,
+    ) -> None:
+        """Train the dynamics, holdout_ratio is the data ratio hold out for validation.
+
+        Args:
+            inputs (np.ndarray): Input data.
+            labels (np.ndarray): Ground truth of the next state, reward, cost.
+            holdout_ratio (float): The ratio of the data hold out for validation.
+        """
         self._epochs_since_update = 0
         self._state = {}
         self._snapshots = {i: (None, 1e10) for i in range(self._num_ensemble)}
@@ -426,7 +490,8 @@ class EnsembleDynamicsModel:
         val_mse_losses = np.array(val_losses).mean()
         return train_mse_losses, val_mse_losses
 
-    def _save_best(self, epoch, holdout_losses):
+    def _save_best(self, epoch: int, holdout_losses: np.ndarray) -> bool:
+        """Save the best model."""
         updated = False
         for i, current_loss in enumerate(holdout_losses):
             _, best = self._snapshots[i]
@@ -446,6 +511,7 @@ class EnsembleDynamicsModel:
         self,
         network_output: torch.Tensor,
     ) -> torch.Tensor:
+        """Compute the reward from the network output."""
         if self._predict_reward:
             reward_start_dim = int(self._predict_cost) * self._cost_size
             reward_end_dim = reward_start_dim + self._reward_size
@@ -457,6 +523,7 @@ class EnsembleDynamicsModel:
         self,
         network_output: torch.Tensor,
     ) -> torch.Tensor:
+        """Compute the cost from the network output."""
         if self._predict_cost:
             return network_output[:, :, : self._cost_size]
         return self._cost_func(network_output[:, :, self._state_start_dim :])
@@ -466,21 +533,29 @@ class EnsembleDynamicsModel:
         self,
         network_output: torch.Tensor,
     ) -> torch.Tensor:
+        """Compute the terminal from the network output."""
         return self._terminal_func(network_output[:, :, self._state_start_dim :])
 
     def _predict(
         self,
         inputs: torch.Tensor,
         batch_size: int = 1024,
-        idx: Union[int, None] = None,
+        idx: int | None = None,
         ret_log_var: bool = False,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Input type and output type both are tensor, used for planning loop"""
-        # input shape: [networ_size, (num_gaus+num_actor)*paritcle ,state_dim + action_dim]
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Input type and output type both are tensor, used for planning loop.
+
+        Args:
+            inputs (torch.Tensor): the inputs to the network.
+            batch_size (int, optional): the batch size for prediction.
+            idx (Union[int, None], optional): the index of the model to use.
+            ret_log_var (bool, optional): whether to return the log variance.
+        """
         if idx is not None:
             assert inputs.shape[0] == 1
         else:
             assert inputs.shape[0] == self._num_ensemble
+        # input shape: [networ_size, (num_gaus+num_actor)*paritcle ,state_dim + action_dim]
         assert inputs.shape[2] == self._state_size + self._action_size
 
         ensemble_mean, ensemble_var = [], []
@@ -513,14 +588,27 @@ class EnsembleDynamicsModel:
         self,
         states: torch.Tensor,
         actions: torch.Tensor,
-        idx: Union[int, None] = None,
+        idx: int | None = None,
         deterministic: bool = False,
-    ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, List[torch.Tensor]]]:
-        """sample states and rewards from the ensemble model"""
+    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, list[torch.Tensor]]]:
+        # pylint: disable-next=line-too-long
+        """Sample states and rewards from the ensemble model.
+
+        Args:
+            states (torch.Tensor): the states.
+            actions (torch.Tensor): the actions.
+            idx (Union[int, None], optional): the index of the model to use. Defaults to None.
+            deterministic (bool, optional): whether to use the deterministic version of the model. Defaults to False.
+
+        Returns:
+            sample_states (torch.Tensor): the sampled states.
+            rewards (torch.Tensor): the rewards.
+            info (Dict[str, List[torch.Tensor]]): the info dict, contains the costs if use_cost is True
+        """
         assert (
             states.shape[:-1] == actions.shape[:-1]
         ), 'states and actions must have the same shape except the last dimension'
-
+        # shape: [network_size, (num_gaus+num_actor)*paritcle ,state_dim]
         inputs = torch.cat((states, actions), dim=-1)
 
         ensemble_mean, ensemble_var = self._predict(inputs, idx=idx)
@@ -534,7 +622,9 @@ class EnsembleDynamicsModel:
                 + torch.randn(size=ensemble_mean.shape).to(self._device) * ensemble_std
             )
         states = ensemble_samples[:, :, self._state_start_dim :]
+        # shape: [network_size, (num_gaus+num_actor)*paritcle ,state_dim]
         rewards = self._compute_reward(ensemble_samples)
+        # shape: [network_size, (num_gaus+num_actor)*paritcle ,reward_dim]
         info = defaultdict(list)
         if self._use_cost:
             info['costs'].append(self._compute_cost(ensemble_samples))
@@ -561,11 +651,22 @@ class EnsembleDynamicsModel:
         self,
         states: torch.Tensor,
         horizon: int,
-        actions: Union[torch.Tensor, None] = None,
+        actions: torch.Tensor | None = None,
         actor_critic: ConstraintActorQCritic = None,
-        idx: Union[int, None] = None,
-    ) -> Dict[str, List[torch.Tensor]]:
-        """imagine the future states and rewards from the ensemble model"""
+        idx: int | None = None,
+    ) -> dict[str, list[torch.Tensor]]:
+        """Imagine the future states and rewards from the ensemble model.
+
+        Args:
+            states (torch.Tensor): the states.
+            horizon (int): the horizon.
+            actions (torch.Tensor, optional): the actions.
+            actor_critic (ConstraintActorQCritic, optional): the actor_critic to use if actions is None.
+            idx (int, optional): the index of the model to use.
+
+        Returns:
+            traj (Dict[str, List[torch.Tensor]]): the trajectory dict, contains the states, rewards, etc.
+        """
         assert (
             states.shape[1] == self._state_size
         ), 'states should be of shape (batch_size, state_size)'

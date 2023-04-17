@@ -28,7 +28,13 @@ from omnisafe.envs.core import CMDP, env_register
 
 @env_register
 class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attributes
-    """Safety Gymnasium environment for Model based algorithms."""
+    """Safety Gymnasium environment for Model-based algorithms.
+
+    Attributes:
+        _support_envs (list[str]): List of supported environments.
+        need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
+        need_time_limit_wrapper (bool): Whether to use time limit wrapper.
+    """
 
     _support_envs = [
         'SafetyPointGoal0-v0-modelbased',
@@ -48,6 +54,14 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         device: torch.device = 'cpu',
         **kwargs,
     ) -> None:
+        """Initialize the environment.
+
+        Args:
+            env_id (str): Environment id.
+            num_envs (int, optional): Number of environments. Defaults to 1.
+            device (torch.device, optional): Device to store the data. Defaults to 'cpu'.
+            **kwargs: Other arguments.
+        """
         super().__init__(env_id)
         if num_envs == 1:
             self._env = safety_gymnasium.make(
@@ -133,11 +147,19 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
     @property
     def task(self):
-        """Get task name"""
+        """Get the name of the task."""
         return self._task
 
     def get_cost_from_obs_tensor(self, obs, is_binary=True):
-        """Get batch cost from batch observation"""
+        """Get batch cost from batch observation.
+
+        Args:
+            obs (torch.Tensor): Batch observation.
+            is_binary (bool, optional): Whether to use binary cost. Defaults to True.
+
+        Returns:
+            cost (torch.Tensor): Batch cost.
+        """
         assert torch.is_tensor(obs), 'obs must be tensor'
         hazards_key = self.key_to_slice_tensor['hazards']
         if len(obs.shape) == 2:
@@ -165,7 +187,14 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         return cost
 
     def get_goal_flag_from_obs_tensor(self, obs):
-        """Get batch cost from batch observation"""
+        """Get goal flag from batch observation.
+
+        Args:
+            obs (torch.Tensor): Batch observation.
+
+        Returns:
+            goal_flat (torch.Tensor): Batch goal flag.
+        """
         assert torch.is_tensor(obs), 'obs must be tensor'
         goal_key = self.key_to_slice_tensor['goal']
         if len(obs.shape) == 2:
@@ -184,7 +213,16 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         return goal_flat
 
     def get_cost_from_obs(self, obs, is_binary, use_lidar):
-        """Get batch cost from batch observation"""
+        """Get batch cost from batch numpy observation.
+
+        args:
+            obs (np.ndarray): Batch observation.
+            is_binary (bool): Whether to use binary cost.
+            use_lidar (bool): Whether to use lidar.
+
+        returns:
+            cost (np.ndarray): Batch cost.
+        """
         assert not torch.is_tensor(obs), 'obs should be numpy array'
         if not use_lidar:
             batch_size = obs.shape[0]
@@ -215,7 +253,14 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         return cost
 
     def get_lidar_from_coordinate(self, obs):
-        """Get lidar observation"""
+        """Get lidar observation.
+
+        Args:
+            obs (np.ndarray): observation.
+
+        Returns:
+            lidar_obs (np.ndarray): lidar observation.
+        """
         robot_matrix_x_y = obs[self.key_to_slice['robot_m']]
         robot_matrix_x = robot_matrix_x_y[0]
         robot_matrix_y = robot_matrix_x_y[1]
@@ -237,7 +282,16 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         return obs_vec
 
     def _ego_xy(self, robot_matrix, robot_pos, pos):
-        """Return the egocentric XY vector to a position from the robot"""
+        """Return the egocentric XY vector to a position from the robot.
+
+        Args:
+            robot_matrix (np.ndarray): 3x3 rotation matrix.
+            robot_pos (np.ndarray): 2D robot position.
+            pos (np.ndarray): 2D position.
+
+        Returns:
+            2D_egocentric_vector (np.ndarray): 2D egocentric vector.
+        """
         assert pos.shape == (2,), f'Bad pos {pos}'
         assert robot_pos.shape == (2,), f'Bad robot_pos {robot_pos}'
         robot_3vec = robot_pos
@@ -273,6 +327,14 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             - maximum reading is 1.0 (where the object overlaps the robot)
             - close objects occlude far objects
             - constant size observation with variable numbers of objects
+
+        Args:
+            robot_matrix (np.ndarray): 3x3 rotation matrix.
+            robot_pos (np.ndarray): 2D robot position.
+            positions (np.ndarray): 2D positions.
+
+        Returns:
+            lidar_observation (np.ndarray): lidar observation.
         '''
         obs = np.zeros(self._num_lidar_bin)
         lidar_exp_gain = 1.0
@@ -306,8 +368,15 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
                 obs[bin_minus] = max(obs[bin_minus], (1 - alias) * sensor)
         return obs
 
-    def _get_flat_coordinate(self, coordinate_obs) -> np.ndarray:
-        """get the flattened obs."""
+    def _get_flat_coordinate(self, coordinate_obs: dict) -> np.ndarray:
+        """Get the flattened obs.
+
+        Args:
+            coordinate_obs: dict of coordinate and sensor observations.
+
+        Returns:
+            flat_obs (np.ndarray): flattened observation.
+        """
         flat_obs = np.zeros(self.coordinate_observation_space.shape[0])
         for k in self._flatten_order:
             idx = self.key_to_slice[k]
@@ -316,8 +385,12 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
     def _get_coordinate_sensor(self) -> dict:
         """
+        Return the coordinate observation and sensor observation.
         We will ignore the z-axis coordinates in every poses.
         The returned obs coordinates are all in the robot coordinates.
+
+        Returns:
+            coordinate_obs (dict): coordinate observation.
         """
         obs = {}
         robot_matrix = self._env.task.agent.mat
@@ -367,7 +440,15 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         pos1: np.ndarray | list,
         pos2: np.ndarray | list,
     ) -> float:
-        """Return the distance from the robot to an XY position."""
+        """Return the distance from the robot to an XY position.
+
+        Args:
+            pos1 (np.ndarray | list): The first position.
+            pos2 (np.ndarray | list): The second position.
+
+        Returns:
+            distance (float): The distance between the two positions.
+        """
         pos1 = np.asarray(pos1)
         pos2 = np.asarray(pos2)
         if pos1.shape == (3,):
@@ -380,6 +461,25 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         self,
         action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+        """Step the environment.
+
+        .. note::
+
+            OmniSafe use auto reset wrapper to reset the environment when the episode is
+            terminated. So the ``obs`` will be the first observation of the next episode.
+            And the true ``final_observation`` in ``info`` will be stored in the ``final_observation`` key of ``info``.
+
+        Args:
+            action (torch.Tensor): Action to take.
+
+        Returns:
+            observation (torch.Tensor): agent's observation of the current environment.
+            reward (torch.Tensor): amount of reward returned after previous action.
+            cost (torch.Tensor): amount of cost returned after previous action.
+            terminated (torch.Tensor): whether the episode has ended.
+            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
+            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+        """
         obs_original, reward, cost, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy(),
         )
@@ -418,6 +518,15 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         return obs, reward, cost, terminated, truncated, info
 
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
+        """Reset the environment.
+
+        Args:
+            seed (int, optional): Seed to reset the environment. Defaults to None.
+
+        Returns:
+            observation (torch.Tensor): agent's observation of the current environment.
+            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+        """
         obs_original, info = self._env.reset(seed=seed)
         if self._task == 'Goal':
             self.goal_position = self._env.task.goal.pos
@@ -434,6 +543,11 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         return obs, info
 
     def set_seed(self, seed: int) -> None:
+        """Set the seed for the environment.
+
+        Args:
+            seed (int): Seed to set.
+        """
         self.reset(seed=seed)
 
     def sample_action(self) -> torch.Tensor:
@@ -457,4 +571,5 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         return self._env.render()
 
     def close(self) -> None:
+        """Close the environment."""
         self._env.close()

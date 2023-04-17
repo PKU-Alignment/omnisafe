@@ -15,15 +15,12 @@
 """Implementation of the Safe Learning Off-Policy with Online Planning algorithm."""
 from __future__ import annotations
 
-import numpy as np
-import torch
-
-from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.base.loop import LOOP
 from omnisafe.algorithms.model_based.planner.safe_arc import SafeARCPlanner
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
+from omnisafe.utils import distributed
 
 
 @registry.register
@@ -39,6 +36,7 @@ class SafeLOOP(LOOP):
     """
 
     def _init_model(self) -> None:
+        """Initialize the dynamics model and the planner."""
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
@@ -51,7 +49,10 @@ class SafeLOOP(LOOP):
             model_cfgs=self._cfgs.model_cfgs,
             epochs=self._epochs,
         ).to(self._device)
+        if distributed.world_size() > 1:
+            distributed.sync_params(self._actor_critic)
         self._use_actor_critic = True
+        self._update_count = 0
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
@@ -82,6 +83,7 @@ class SafeLOOP(LOOP):
             num_elites=self._cfgs.algo_cfgs.num_elites,
             mixture_coefficient=self._cfgs.algo_cfgs.mixture_coefficient,
             temperature=self._cfgs.algo_cfgs.temperature,
+            cost_temperature=self._cfgs.algo_cfgs.cost_temperature,
             momentum=self._cfgs.algo_cfgs.momentum,
             epsilon=self._cfgs.algo_cfgs.epsilon,
             init_var=self._cfgs.algo_cfgs.init_var,
@@ -96,40 +98,9 @@ class SafeLOOP(LOOP):
         )
 
     def _init_log(self) -> None:
+        """Initialize the logger keys for the algorithm."""
         super()._init_log()
         self._logger.register_key('Plan/feasible_num')
         self._logger.register_key('Plan/episode_costs_max')
         self._logger.register_key('Plan/episode_costs_mean')
         self._logger.register_key('Plan/episode_costs_min')
-
-    def _select_action(
-        self,
-        current_step: int,
-        state: torch.Tensor,
-        env: ModelBasedAdapter,
-    ) -> tuple[np.ndarray, dict]:
-        """action selection"""
-        if current_step < self._cfgs.algo_cfgs.start_learning_steps:
-            action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
-        else:
-            action, info = self._planner.output_action(state)
-            self._logger.store(
-                **{
-                    'Plan/iter': info['Plan/iter'],
-                    'Plan/last_var_max': info['Plan/last_var_max'],
-                    'Plan/last_var_mean': info['Plan/last_var_mean'],
-                    'Plan/last_var_min': info['Plan/last_var_min'],
-                    'Plan/feasible_num': info['Plan/feasible_num'],
-                    'Plan/episode_returns_max': info['Plan/episode_returns_max'],
-                    'Plan/episode_returns_mean': info['Plan/episode_returns_mean'],
-                    'Plan/episode_returns_min': info['Plan/episode_returns_min'],
-                    'Plan/episode_costs_max': info['Plan/episode_costs_max'],
-                    'Plan/episode_costs_mean': info['Plan/episode_costs_mean'],
-                    'Plan/episode_costs_min': info['Plan/episode_costs_min'],
-                },
-            )
-        assert action.shape == torch.Size(
-            [state.shape[0], self._env.action_space.shape[0]],
-        ), 'action shape should be [batch_size, action_dim]'
-        info = {}
-        return action, info

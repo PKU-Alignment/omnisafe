@@ -1,4 +1,4 @@
-# Copyright 2022 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Model Predictive Control Planner of the Constrained Cross-Entropy algorithm."""
+from __future__ import annotations
 
 import torch
 
@@ -73,9 +74,21 @@ class CCEPlanner(CEMPlanner):
         self._cost_limit = cost_limit
 
     @torch.no_grad()
-    def _select_elites(self, actions, traj):
-        """
-        Compute the return of the actions
+    def _select_elites(
+        self,
+        actions: torch.Tensor,
+        traj: dict,
+    ) -> tuple[torch.Tensor, torch.Tensor, dict]:
+        """Select elites from the sampled actions.
+
+        Args:
+            actions (torch.Tensor): Sampled actions.
+            traj (dict): Trajectory dictionary.
+
+        Returns:
+            elites_value (torch.Tensor): Value of the elites.
+            elites_action (torch.Tensor): Action of the elites.
+            info (dict): Dictionary containing the information of elites value and action.
         """
         rewards = traj['rewards']
         costs = traj['costs']
