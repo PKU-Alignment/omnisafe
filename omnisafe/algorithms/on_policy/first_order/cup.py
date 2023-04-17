@@ -117,7 +117,7 @@ class CUP(PPO):
         entropy = distribution.entropy().mean().item()
         info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
 
-        self._logger.store(**{'Loss/Loss_pi_c': loss.item()})
+        self._logger.store({'Loss/Loss_pi_c': loss.item()})
 
         return loss, info
 
@@ -195,7 +195,7 @@ class CUP(PPO):
                 break
 
         self._logger.store(
-            **{
+            {
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.item(),
                 'Train/SecondStepStopIter': i + 1,  # pylint: disable=undefined-loop-variable
                 'Train/SecondStepEntropy': info['entropy'],

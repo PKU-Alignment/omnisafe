@@ -202,7 +202,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         The logger can record the following data:
 
-        .. code-block:: bash
+        .. code-block:: text
 
             ----------------------------------------------------
             |       Name            |            Value         |
@@ -249,12 +249,19 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             self._data[key] = []
             self._headers_windows[key] = None
 
-    def store(self, **kwargs: int | float | np.ndarray | torch.Tensor) -> None:
+    def store(
+        self,
+        data: dict[str, int | float | np.ndarray | torch.Tensor] | None = None,
+        /,
+        **kwargs: int | float | np.ndarray | torch.Tensor,
+    ) -> None:
         """Store the data to the logger.
 
         Args:
             **kwargs: The data to be stored.
         """
+        if data is not None:
+            kwargs.update(data)
         for key, val in kwargs.items():
             assert key in self._current_row, f'Key {key} has not been registered'
             if isinstance(val, (int, float)):

@@ -117,7 +117,7 @@ class SAC(DDPG):
         distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
         self._logger.store(
-            **{
+            {
                 'Loss/Loss_reward_critic': loss.mean().item(),
                 'Value/reward_critic': q1_value_r.mean().item(),
             },
@@ -139,12 +139,12 @@ class SAC(DDPG):
             alpha_loss.backward()
             self._alpha_optimizer.step()
             self._logger.store(
-                **{
+                {
                     'Loss/alpha_loss': alpha_loss.mean().item(),
                 },
             )
         self._logger.store(
-            **{
+            {
                 'Value/alpha': self._alpha,
             },
         )
@@ -161,13 +161,13 @@ class SAC(DDPG):
     def _log_when_not_update(self) -> None:
         super()._log_when_not_update()
         self._logger.store(
-            **{
+            {
                 'Value/alpha': self._alpha,
             },
         )
         if self._cfgs.algo_cfgs.auto_alpha:
             self._logger.store(
-                **{
+                {
                     'Loss/alpha_loss': 0.0,
                 },
             )

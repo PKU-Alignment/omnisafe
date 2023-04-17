@@ -67,6 +67,6 @@ class IPO(PPO):
         if penalty < 0 or penalty > self._cfgs.algo_cfgs.penalty_max:
             penalty = self._cfgs.algo_cfgs.penalty_max
 
-        self._logger.store(**{'Misc/Penalty': penalty})
+        self._logger.store({'Misc/Penalty': penalty})
 
         return (adv_r - penalty * adv_c) / (1 + penalty)

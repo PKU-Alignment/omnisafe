@@ -46,7 +46,7 @@ class TD3Lag(TD3):
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         self._lagrange.update_lagrange_multiplier(Jc)
         self._logger.store(
-            **{
+            {
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
             },
         )
@@ -65,7 +65,7 @@ class TD3Lag(TD3):
     def _log_when_not_update(self) -> None:
         super()._log_when_not_update()
         self._logger.store(
-            **{
+            {
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
             },
         )
