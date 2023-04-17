@@ -84,6 +84,8 @@ class AlgoWrapper:
         Raises:
             AssertionError: If the algorithm name is not in the supported algorithms.
         """
+    def _init_config(self):  # pylint: disable=too-many-branches
+        """Init config."""
         assert (
             self.algo in ALGORITHMS['all']
         ), f"{self.algo} doesn't exist. Please choose from {ALGORITHMS['all']}."
@@ -97,10 +99,7 @@ class AlgoWrapper:
             ), 'model-based only support vector_env_nums==1!'
         if self.algo_type is None or self.algo_type == '':
             raise ValueError(f'{self.algo} is not supported!')
-        if (
-            self.algo_type in ['off-policy', 'model-based', 'offline']
-            and self.train_terminal_cfgs is not None
-        ):
+        if self.algo_type in ['off-policy', 'model-based'] and self.train_terminal_cfgs is not None:
             assert (
                 self.train_terminal_cfgs['parallel'] == 1
             ), 'off-policy or model-based only support parallel==1!'
@@ -114,7 +113,8 @@ class AlgoWrapper:
             if 'algo' in self.custom_cfgs:
                 self.custom_cfgs.pop('algo')
             # validate the keys of custom configuration
-            recursive_check_config(self.custom_cfgs, cfgs)
+            if self.algo_type != 'offline':
+                recursive_check_config(self.custom_cfgs, cfgs)
             # update the cfgs from custom configurations
             cfgs.recurisve_update(self.custom_cfgs)
             # save configurations specified in current experiment
@@ -130,10 +130,11 @@ class AlgoWrapper:
             if self.algo_type == 'offline':
                 if 'vector_env_nums' in self.train_terminal_cfgs:
                     self.train_terminal_cfgs.pop('vector_env_nums')
-                cfgs.train_cfgs['parallel'] = 1
+                cfgs.train_cfgs.recurisve_update({'parallel': 1})
 
-            # validate the keys of train_terminal_cfgs configuration
-            recursive_check_config(self.train_terminal_cfgs, cfgs.train_cfgs)
+            if self.algo_type != 'offline':
+                # validate the keys of train_terminal_cfgs configuration
+                recursive_check_config(self.train_terminal_cfgs, cfgs.train_cfgs)
             # update the cfgs.train_cfgs from train_terminal configurations
             cfgs.train_cfgs.recurisve_update(self.train_terminal_cfgs)
             # save configurations specified in current experiment

@@ -28,7 +28,13 @@ from omnisafe.models.critic.critic_builder import CriticBuilder
 
 @registry.register
 class CCRR(CRR):
-    """C-CRR Lag"""
+    """Constraint variant of CRR.
+
+    References:
+        - Title: COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation
+        - Author: Lee, JongminPaduraru, CosminMankowitz, Daniel JHeess, NicolasPrecup, Doina
+        - URL: `https://arxiv.org/abs/2204.08957`
+    """
 
     def _init_log(self) -> None:
         super()._init_log()
@@ -163,6 +169,7 @@ class CCRR(CRR):
             **{
                 'Loss/Loss_actor': policy_loss.item(),
                 'Qr/current_Qr': qr_data[0].mean().item(),
+                'Qc/current_Qc': qc_data[0].mean().item(),
                 'Train/PolicyStd': self._actor.std,
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier,
             },

@@ -14,4 +14,4 @@
 # ==============================================================================
 """model used in offline RL algorithms."""
 
-from omnisafe.models.offline.dice import ObsActDecoder, ObsDecoder
+from omnisafe.models.offline.dice import ObsDecoder

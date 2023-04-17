@@ -457,3 +457,7 @@ VAE
 vae
 BCQ
 CRR
+Doina
+JHeess
+Jost
+Autoencoder

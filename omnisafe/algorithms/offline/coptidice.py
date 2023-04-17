@@ -28,7 +28,15 @@ from omnisafe.models.offline import ObsDecoder
 
 @registry.register
 class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
-    """CoptiDICE."""
+    """COptiDICE: COptiDICE: Offline Constrained Reinforcement Learning via
+        Stationary Distribution Correction Estimation
+
+    References:
+        - Title: COptiDICE: Offline Constrained Reinforcement Learning via Stationary
+                Distribution Correction Estimation
+        - Author: Lee, JongminPaduraru, CosminMankowitz, Daniel JHeess, NicolasPrecup, Doina
+        - URL: `https://arxiv.org/abs/2204.08957`
+    """
 
     def _init(self) -> None:
         self._dataset = OfflineDatasetWithInit(

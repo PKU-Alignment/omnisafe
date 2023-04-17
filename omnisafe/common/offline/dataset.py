@@ -238,7 +238,10 @@ class OfflineDatasetWithInit(OfflineDataset):
                 f'Loaded data does not have all the required fields: {required_fields}',
             )
 
-        episode_length = self._name_to_metadata[dataset_name].episode_length
+        try:
+            episode_length = self._name_to_metadata[dataset_name].episode_length
+        except KeyError:
+            episode_length = None
         if episode_length is None:
             try:
                 init_obs = data['init_obs']

@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "safety-gymnasium >= 0.1.0",
+    "safety-gymnasium >= 0.2.0",
     "torch >= 1.10.0",
     "numpy >= 1.20.0",
     "tensorboard >= 2.8.0",

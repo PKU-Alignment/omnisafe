@@ -176,3 +176,21 @@ def test_schedule():
     piece = PiecewiseSchedule(endpoints, outside_value=0)
     assert piece.value(1) == 0.5
     assert piece.value(100) == 0
+
+
+def teardown_module():
+    """teardown_module."""
+
+    # remove runs folder
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    runs_path = os.path.join(current_path, 'runs')
+    if os.path.exists(runs_path):
+        os.system(f'rm -rf {runs_path}')
+
+    # remove exp-x folder
+    exp_x_path = os.path.join(current_path, 'exp-x')
+    if os.path.exists(exp_x_path):
+        os.system(f'rm -rf {exp_x_path}')
+
+    # remove png
+    os.system(f'rm -rf {current_path}/algo--*.png')

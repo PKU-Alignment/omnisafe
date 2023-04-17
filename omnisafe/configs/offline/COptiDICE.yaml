@@ -28,6 +28,8 @@ defaults:
     dataset: SafetyPointCircle1-v0_mixed_0.5
     # evaluate_epoisodes
     evaluate_epoisodes: 10
+    # parallel, offline only supports 1
+    parallel: 1
   # algorithm configurations
   algo_cfgs:
     # gamma used in RL

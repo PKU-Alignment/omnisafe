@@ -27,7 +27,13 @@ from omnisafe.models.actor.vae_actor import VAE
 
 @registry.register
 class VAEBC(BaseOffline):
-    """VAE Behavior Cloning."""
+    """Behavior Cloning with Variational Autoencoder.
+
+    References:
+        - Title: Off-Policy Deep Reinforcement Learning without Exploration
+        - Author: Fujimoto, ScottMeger, DavidPrecup, Doina.
+        - URL: `https://arxiv.org/abs/1812.02900`
+    """
 
     def _init_log(self) -> None:
         super()._init_log()

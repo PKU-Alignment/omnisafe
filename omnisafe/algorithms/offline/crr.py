@@ -28,7 +28,13 @@ from omnisafe.models.critic.critic_builder import CriticBuilder
 
 @registry.register
 class CRR(BaseOffline):
-    """CRR."""
+    """Critic Regularized Regression
+
+    References:
+        - Title: Critic Regularized Regression
+        - Author: Wang, ZiyuNovikov, AlexanderZolna, KonradSpringenberg, Jost TobiasReed, Scott
+        - URL: `https://arxiv.org/abs/2006.15134`
+    """
 
     def _init_log(self) -> None:
         super()._init_log()

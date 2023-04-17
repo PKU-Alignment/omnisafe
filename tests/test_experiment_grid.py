@@ -86,3 +86,17 @@ def test_modelbased_experiment_grid():
     eg.analyze('algo')
     # eg.render(num_episodes=1, render_mode='rgb_array', width=256, height=256)
     eg.evaluate(num_episodes=1)
+
+
+def teardown_module():
+    """teardown_module."""
+
+    base_path = os.path.dirname(os.path.abspath(__file__))
+
+    # remove exp-x folder
+    exp_x_path = os.path.join(base_path, 'exp-x')
+    if os.path.exists(exp_x_path):
+        os.system(f'rm -rf {exp_x_path}')
+
+    # remove png
+    os.system(f'rm -rf {base_path}/algo--*.png')

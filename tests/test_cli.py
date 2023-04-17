@@ -110,3 +110,22 @@ def test_analyze_grid():
         ],
     )
     assert result.exit_code == 0, result.output
+
+
+def teardown_module():
+    """teardown_module."""
+
+    # remove the train_dict folder
+    path = os.path.join(base_path, './train_dict')
+    if os.path.exists(path):
+        os.system('rm -rf ' + path)
+
+    # remove the train folder
+    path = os.path.join(base_path, './train')
+    if os.path.exists(path):
+        os.system('rm -rf ' + path)
+
+    # remove the benchmark folder
+    path = os.path.join(base_path, './benchmark')
+    if os.path.exists(path):
+        os.system('rm -rf ' + path)

@@ -28,7 +28,13 @@ from omnisafe.models.critic.critic_builder import CriticBuilder
 
 @registry.register
 class BCQLag(BCQ):
-    """BCQ Lag"""
+    """Batch-Constrained Deep Reinforcement Learning with Lagrange Multiplier.
+
+    References:
+        - Title: Off-Policy Deep Reinforcement Learning without Exploration
+        - Author: Fujimoto, ScottMeger, DavidPrecup, Doina.
+        - URL: `https://arxiv.org/abs/1812.02900`
+    """
 
     def _init_log(self) -> None:
         super()._init_log()

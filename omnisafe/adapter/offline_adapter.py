@@ -38,7 +38,7 @@ class OfflineAdapter:
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id
-        self._env = make(env_id, num_envs=1)
+        self._env = make(env_id, num_envs=1, device=cfgs.train_cfgs.device)
         self._cfgs = cfgs
         self._device = cfgs.train_cfgs.device
 
@@ -90,9 +90,6 @@ class OfflineAdapter:
             agent (Actor): the agent to be evaluated.
             logger (Logger): the logger for logging the evaluation results.
         """
-
-        agent = agent.to('cpu')
-
         for _ in range(evaluate_epoisodes):
             ep_ret, ep_cost, ep_len = 0.0, 0.0, 0.0
 
@@ -100,7 +97,7 @@ class OfflineAdapter:
             obs, _ = self.reset()
             while not done:
                 action = agent.predict(obs.unsqueeze(0), deterministic=True)
-                obs, reward, cost, terminated, truncated, _ = self.step(action)
+                obs, reward, cost, terminated, truncated, _ = self.step(action.squeeze(0))
 
                 ep_ret += reward.item()
                 ep_cost += cost.item()
@@ -115,5 +112,3 @@ class OfflineAdapter:
                     'Metrics/EpLen': ep_len,
                 },
             )
-
-        agent = agent.to(self._device)
