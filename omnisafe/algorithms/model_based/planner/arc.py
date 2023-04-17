@@ -50,6 +50,7 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
         action_max,
         action_min,
     ) -> None:
+        assert (num_samples + mixture_coefficient * num_samples)  > num_elites, "The number of samples should be larger than the number of elites."
         self._dynamics = dynamics
         self._actor_critic = actor_critic
         self._num_models = num_models

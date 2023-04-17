@@ -111,7 +111,7 @@ class LOOP(PETS):
             obs_space=self._dynamics_state_space,
             act_space=self._env.action_space,
             size=self._cfgs.train_cfgs.total_steps,
-            batch_size=self._cfgs.dynamics_cfgs.batch_size,
+            batch_size=self._cfgs.algo_cfgs.policy_batch_size,
             device=self._device,
         )
 

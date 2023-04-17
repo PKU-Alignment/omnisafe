@@ -137,7 +137,7 @@ python analyze_experiment_results.py
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/first_order_swimmer.png">
+    src="./benchmarks/SafetyCarGoal1-v0-modelbased.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -148,7 +148,7 @@ python analyze_experiment_results.py
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/second_order_swimmer.png">
+    src="./benchmarks/SafetyPointGoal1-v0-modelbased.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;

@@ -23,7 +23,8 @@ from omnisafe.envs.core import make
 @helpers.parametrize(
     num_envs=[1, 2],
 )
-def test_safety_gymnasium(num_envs: int) -> None:
+def test_safety_gymnasium(num_envs) -> None:
+    """Test envs."""
     env_id = 'SafetyPointGoal0-v0'
     env = make(env_id, num_envs=num_envs)
 
@@ -60,5 +61,89 @@ def test_safety_gymnasium(num_envs: int) -> None:
         assert terminated.shape == ()
         assert truncated.shape == ()
         assert isinstance(info, dict)
+
+    env.close()
+
+
+@helpers.parametrize(
+    num_envs=[1],
+)
+def test_safety_gymnasium_modelbased(num_envs: int) -> None:
+    """Test model-based envs."""
+    env_id = 'SafetyPointGoal1-v0-modelbased'
+    env = make(env_id, num_envs=num_envs)
+
+
+    obs_space = (
+        env.coordinate_observation_space
+        if env.coordinate_observation_space is not None
+        else env.observation_space
+    )
+    act_space = env.action_space
+
+    assert isinstance(obs_space, Box)
+    assert isinstance(act_space, Box)
+
+    env.set_seed(0)
+    obs, _ = env.reset()
+    if num_envs > 1:
+        assert obs.shape == (num_envs, obs_space.shape[0])
+    else:
+        assert obs.shape == (obs_space.shape[0],)
+
+    act = env.sample_action()
+    if num_envs > 1:
+        act = act.repeat(num_envs, 1)
+
+    obs, reward, cost, terminated, truncated, info = env.step(act)
+
+
+    assert obs.shape == (obs_space.shape[0],)
+    assert reward.shape == ()
+    assert cost.shape == ()
+    assert terminated.shape == ()
+    assert truncated.shape == ()
+    assert isinstance(info, dict)
+
+    env.close()
+
+
+@helpers.parametrize(
+    num_envs=[1, 2],
+)
+def test_mujoco(num_envs: int) -> None:
+    """Test mujoco envs."""
+    env_id = 'Ant-v4'
+    env = make(env_id, num_envs=num_envs)
+
+
+    obs_space = env.observation_space
+
+    act_space = env.action_space
+
+    assert isinstance(obs_space, Box)
+    assert isinstance(act_space, Box)
+
+    env.set_seed(0)
+    obs, _ = env.reset()
+    if num_envs > 1:
+        assert obs.shape == (num_envs, obs_space.shape[0])
+    else:
+        assert obs.shape == (obs_space.shape[0],)
+
+    act = env.sample_action()
+    if num_envs > 1:
+        act = act.repeat(num_envs, 1)
+
+    obs, reward, cost, terminated, truncated, info = env.step(act)
+
+
+    assert obs.shape == (obs_space.shape[0],)
+    assert reward.shape == ()
+    assert cost.shape == ()
+    assert cost == env.get_cost_from_obs_tensor(obs.unsqueeze(0)).squeeze(0)
+    assert terminated.shape == ()
+    assert truncated.shape == ()
+    assert isinstance(info, dict)
 
     env.close()

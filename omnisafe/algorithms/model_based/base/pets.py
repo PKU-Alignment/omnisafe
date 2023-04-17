@@ -296,7 +296,7 @@ class PETS(BaseAlgo):
             action (torch.Tensor): action.
             info (dict): information.
         """
-        assert state.shape == torch.Size([1, self._env.observation_space.shape[0]])
+        assert state.shape[0] == 1, 'state shape should be [1, state_dim]'
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
         else:

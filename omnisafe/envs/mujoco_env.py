@@ -67,7 +67,6 @@ class MujocoEnv(CMDP):
             # set healthy_reward=0.0 for removing the safety constraint in reward
             self._env = gymnasium.vector.make(
                 id=env_id,
-                healthy_reward=0.0,
                 num_envs=num_envs,
                 **kwargs,
             )
@@ -75,7 +74,7 @@ class MujocoEnv(CMDP):
             self._observation_space = self._env.single_observation_space
         else:
             # set healthy_reward=0.0 for removing the safety constraint in reward
-            self._env = gymnasium.make(id=env_id, autoreset=False, healthy_reward=0.0, **kwargs)
+            self._env = gymnasium.make(id=env_id, autoreset=False, **kwargs)
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
         self._device = torch.device(device)
@@ -106,9 +105,11 @@ class MujocoEnv(CMDP):
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
             info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
-        obs, reward, terminated, truncated, info = self._env.step(action)
+        obs, reward, terminated, truncated, info = self._env.step(
+            action.detach().cpu().numpy(),
+        )
         obs, reward, terminated, truncated = (
-            torch.as_tensor(x, dtype=torch.float32) for x in (obs, reward, terminated, truncated)
+            torch.as_tensor(x, dtype=torch.float32, device=self._device) for x in (obs, reward, terminated, truncated)
         )
         cost = terminated.float()
         if 'final_observation' in info:
@@ -121,6 +122,7 @@ class MujocoEnv(CMDP):
             info['final_observation'] = torch.as_tensor(
                 info['final_observation'],
                 dtype=torch.float32,
+                device=self._device,
             )
 
         return obs, reward, cost, terminated, truncated, info
@@ -170,9 +172,16 @@ class MujocoEnv(CMDP):
         """Close the environment."""
         self._env.close()
 
-    def get_cost_from_obs(self, obs: torch.Tensor) -> torch.Tensor:
+    def get_cost_from_obs_tensor(self, input_obs: torch.Tensor) -> torch.Tensor:
         """Check if the observation violates the environment's constraints."""
-        assert obs.shape[1] == self.observation_space.shape[0]
+        assert torch.is_tensor(input_obs), 'obs must be tensor'
+        if len(input_obs.shape) == 2:
+            batch_size = input_obs.shape[0]
+            obs = input_obs.reshape(batch_size, -1)
+        elif len(input_obs.shape) == 3:
+            batch_size = input_obs.shape[0] * input_obs.shape[1]
+            obs = input_obs.reshape(batch_size, -1)
+
         if self._env_id == 'Ant-v4':
             min_z, max_z = 0.2, 1.0
             is_finite = torch.isfinite(obs).all()
@@ -198,6 +207,11 @@ class MujocoEnv(CMDP):
             healthy_z = torch.logical_and(min_z < z, z < max_z)
             healthy_angle = torch.logical_and(min_angle < angle, angle < max_angle)
             is_healthy = torch.logical_and(healthy_z, healthy_angle)
-
-        assert is_healthy.shape == obs.shape[:1], f'{is_healthy.shape} != {obs.shape[:1]}'
-        return not is_healthy
+        else :
+            is_healthy = torch.ones(batch_size, dtype=torch.bool, device=input_obs.device)
+        cost = ~is_healthy
+        if len(input_obs.shape) == 2:
+            cost = cost.reshape(input_obs.shape[0], 1)
+        elif len(input_obs.shape) == 3:
+            cost = cost.reshape(input_obs.shape[0], input_obs.shape[1], 1)
+        return cost.float()

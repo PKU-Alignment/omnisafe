@@ -19,7 +19,7 @@ defaults:
   # training configurations
   train_cfgs:
     # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
-    device: cuda:0
+    device: cpu
     # number of threads for torch
     torch_threads: 16
     # total number of steps to train
@@ -79,10 +79,6 @@ defaults:
     init_var: 4
     # update cycle to dynamics
     update_dynamics_cycle: 1200
-    # batch size for each dynamics update iteration
-    dynamics_batch_size: 256
-    # the number of dynamics update epoch
-    dynamics_max_epochs: 5
     # Actor perdorm random action before `start_learning_steps` steps
     start_learning_steps: 10000
     # normalize reward

@@ -318,9 +318,11 @@ class ModelBasedAdapter(
         epoch_time = time.time() - epoch_start_time
         logger.store(**{'Time/Epoch': epoch_time})
         logger.store(**{'Time/UpdateDynamics': update_dynamics_time})
+        roll_out_time = epoch_time - update_dynamics_time
+
         if eval_func is not None:
             logger.store(**{'Time/Eval': eval_time})
-        roll_out_time = epoch_time - update_dynamics_time - eval_time
+            roll_out_time -= eval_time
 
         if use_actor_critic:
             logger.store(**{'Time/UpdateActorCritic': update_actor_critic_time})
