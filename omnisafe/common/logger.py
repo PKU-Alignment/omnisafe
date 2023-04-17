@@ -287,7 +287,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             max_key_len = max(15, *key_lens)
             for key, val in self._current_row.items():
                 if self._headers_minmax[key]:
-                    table.add_row(f'{key}/Mean', str(val)[:max_key_len])
+                    table.add_row(f'{key}/Mean'[:max_key_len], str(val)[:max_key_len])
                 else:
                     table.add_row(key[:max_key_len], str(val)[:max_key_len])
 
