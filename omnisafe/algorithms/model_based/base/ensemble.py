@@ -393,7 +393,9 @@ class EnsembleDynamicsModel:
             assert rew_func is not None, 'rew_func should not be None'
         if use_cost is True and self._predict_cost is False:
             assert cost_func is not None, 'cost_func should not be None'
-            assert cost_func(torch.zeros((1, state_size)).to(self._device)) is not None, 'cost_func should return cost'
+            assert (
+                cost_func(torch.zeros((1, state_size)).to(self._device)) is not None
+            ), 'cost_func should return cost'
         if use_terminal is True:
             assert terminal_func is not None, 'terminal_func should not be None'
         self._rew_func = rew_func

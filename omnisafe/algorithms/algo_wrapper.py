@@ -127,15 +127,9 @@ class AlgoWrapper:
         # the exp_name format is PPO-{SafetyPointGoal1-v0}
         exp_name = f'{self.algo}-{{{self.env_id}}}'
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id, 'algo': self.algo})
-
-        if self.algo_type in ['model-based']:
-            cfgs.train_cfgs.recurisve_update(
-                {'epochs': cfgs.train_cfgs.total_steps // cfgs.logger_cfgs.log_cycle},
-            )
-        else:
-            cfgs.train_cfgs.recurisve_update(
-                {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle},
-            )
+        cfgs.train_cfgs.recurisve_update(
+            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.steps_per_epoch},
+        )
         return cfgs
 
     def _init_checks(self) -> None:

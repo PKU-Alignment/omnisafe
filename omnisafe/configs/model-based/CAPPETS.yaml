@@ -69,6 +69,8 @@ defaults:
 
   # algorithm configurations
   algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 20000
     # Number of action repetition
     action_repeat: 5
     # Planning hoirzon
@@ -105,7 +107,6 @@ defaults:
   # logger configurations
   logger_cfgs:
     # log cycle:
-    log_cycle: 20000
     # use wandb for logging
     use_wandb: False
     # wandb project name

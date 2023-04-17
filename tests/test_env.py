@@ -73,7 +73,6 @@ def test_safety_gymnasium_modelbased(num_envs: int) -> None:
     env_id = 'SafetyPointGoal1-v0-modelbased'
     env = make(env_id, num_envs=num_envs)
 
-
     obs_space = (
         env.coordinate_observation_space
         if env.coordinate_observation_space is not None
@@ -97,7 +96,6 @@ def test_safety_gymnasium_modelbased(num_envs: int) -> None:
 
     obs, reward, cost, terminated, truncated, info = env.step(act)
 
-
     assert obs.shape == (obs_space.shape[0],)
     assert reward.shape == ()
     assert cost.shape == ()
@@ -115,7 +113,6 @@ def test_mujoco(num_envs: int) -> None:
     """Test mujoco envs."""
     env_id = 'Ant-v4'
     env = make(env_id, num_envs=num_envs)
-
 
     obs_space = env.observation_space
 
@@ -136,7 +133,6 @@ def test_mujoco(num_envs: int) -> None:
         act = act.repeat(num_envs, 1)
 
     obs, reward, cost, terminated, truncated, info = env.step(act)
-
 
     assert obs.shape == (obs_space.shape[0],)
     assert reward.shape == ()

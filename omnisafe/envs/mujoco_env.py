@@ -109,7 +109,8 @@ class MujocoEnv(CMDP):
             action.detach().cpu().numpy(),
         )
         obs, reward, terminated, truncated = (
-            torch.as_tensor(x, dtype=torch.float32, device=self._device) for x in (obs, reward, terminated, truncated)
+            torch.as_tensor(x, dtype=torch.float32, device=self._device)
+            for x in (obs, reward, terminated, truncated)
         )
         cost = terminated.float()
         if 'final_observation' in info:
@@ -207,7 +208,7 @@ class MujocoEnv(CMDP):
             healthy_z = torch.logical_and(min_z < z, z < max_z)
             healthy_angle = torch.logical_and(min_angle < angle, angle < max_angle)
             is_healthy = torch.logical_and(healthy_z, healthy_angle)
-        else :
+        else:
             is_healthy = torch.ones(batch_size, dtype=torch.bool, device=input_obs.device)
         cost = ~is_healthy
         if len(input_obs.shape) == 2:

@@ -66,64 +66,6 @@ example:
 path ='/home/username/omnisafe/omnisafe/examples/benchmarks/exp-x/Model-Based-Benchmarks'
 ```
 
-Then you should change the get_datasets function of ``omnisafe/utils/plotter.y`` model-based setting as:
-```python
-    def get_datasets(self, logdir, condition=None):
-        """Recursively look through logdir for files named "progress.txt".
-
-        Assumes that any file "progress.txt" is a valid hit.
-
-        """
-        datasets = []
-        for root, _, files in os.walk(logdir):
-            if 'progress.csv' in files:
-                exp_name = None
-                update_cycle = None
-                try:
-                    with open(os.path.join(root, 'config.json'), encoding='utf-8') as f:
-                        config = json.load(f)
-                        if 'exp_name' in config:
-                            exp_name = config['exp_name']
-                            update_cycle = config['logger_cfgs']['log_cycle']
-                except FileNotFoundError as error:
-                    config_path = os.path.join(root, 'config.json')
-                    raise FileNotFoundError(f'Could not read from {config_path}') from error
-                condition1 = condition or exp_name or 'exp'
-                condition2 = condition1 + '-' + str(self.exp_idx)
-                self.exp_idx += 1
-                if condition1 not in self.units:
-                    self.units[condition1] = 0
-                unit = self.units[condition1]
-                self.units[condition1] += 1
-                try:
-                    exp_data = pd.read_csv(os.path.join(root, 'progress.csv'))
-
-                except FileNotFoundError as error:
-                    progress_path = os.path.join(root, 'progress.csv')
-                    raise FileNotFoundError(f'Could not read from {progress_path}') from error
-                performance = (
-                    'Metrics/TestEpRet' if 'Metrics/TestEpRet' in exp_data else 'Metrics/EpRet'
-                )
-                cost_performance = (
-                    'Metrics/TestEpCost' if 'Metrics/TestEpCost' in exp_data else 'Metrics/EpCost'
-                )
-                exp_data.insert(len(exp_data.columns), 'Unit', unit)
-                exp_data.insert(len(exp_data.columns), 'Condition1', condition1)
-                exp_data.insert(len(exp_data.columns), 'Condition2', condition2)
-                exp_data.insert(len(exp_data.columns), 'Rewards', exp_data[performance])
-                exp_data.insert(len(exp_data.columns), 'Costs', exp_data[cost_performance])
-                epoch = exp_data.get('Train/Epoch')
-                if epoch is None or update_cycle is None:
-                    raise ValueError('No Train/Epoch column in progress.csv')
-                exp_data.insert(
-                    len(exp_data.columns),
-                    'Steps',
-                    epoch * update_cycle,
-                )
-                datasets.append(exp_data)
-        return datasets
-```
-
 You can also plot the results by running the following command:
 
 ```bash

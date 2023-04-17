@@ -175,9 +175,9 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
             'Plan/episode_returns_mean': mean_episode_returns.mean().item(),
             'Plan/episode_returns_min': mean_episode_returns.min().item(),
         }
-        #info['elite_idxs'] = elite_idxs
-        #info['best_action'] = elite_actions[0, 0].unsqueeze(0)
-        #assert info['best_action'].shape == torch.Size([1, *self._action_shape])
+        # info['elite_idxs'] = elite_idxs
+        # info['best_action'] = elite_actions[0, 0].unsqueeze(0)
+        # assert info['best_action'].shape == torch.Size([1, *self._action_shape])
 
         return elite_values, elite_actions, info
 

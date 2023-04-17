@@ -181,6 +181,7 @@ def test_render():
     agent.learn()
     agent.render(num_episodes=1, render_mode='rgb_array')
 
+
 @helpers.parametrize(algo=['PETS', 'CCEPETS', 'CAPPETS', 'RCEPETS'])
 def test_cem_based(algo):
     """Test model_based algorithms."""
@@ -193,6 +194,7 @@ def test_cem_based(algo):
             'torch_threads': 4,
         },
         'algo_cfgs': {
+            'steps_per_epoch': 100,
             'action_repeat': 1,
             'plan_horizon': 2,
             'num_particles': 5,
@@ -205,19 +207,19 @@ def test_cem_based(algo):
             'num_ensemble': 5,
             'batch_size': 10,
             'max_epoch': 1,
-            'predict_cost': True
+            'predict_cost': True,
         },
-        'evaluation_cfgs':{
+        'evaluation_cfgs': {
             'use_eval': False,
         },
         'logger_cfgs': {
-            'log_cycle': 100,
             'use_wandb': False,
             'save_model_freq': 1,
         },
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
+
 
 @helpers.parametrize(algo=['LOOP', 'SafeLOOP'])
 def test_loop(algo):
@@ -231,6 +233,7 @@ def test_loop(algo):
             'torch_threads': 4,
         },
         'algo_cfgs': {
+            'steps_per_epoch': 100,
             'action_repeat': 1,
             'plan_horizon': 2,
             'num_particles': 5,
@@ -246,19 +249,19 @@ def test_loop(algo):
             'num_ensemble': 5,
             'batch_size': 10,
             'max_epoch': 1,
-            'predict_cost': True
+            'predict_cost': True,
         },
-        'evaluation_cfgs':{
+        'evaluation_cfgs': {
             'use_eval': False,
         },
         'logger_cfgs': {
-            'log_cycle': 100,
             'use_wandb': False,
             'save_model_freq': 1,
         },
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
+
 
 @helpers.parametrize(algo=off_policy)
 def test_off_policy(algo):
@@ -410,10 +413,6 @@ def test_pid(algo):
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
-
-
-
-
 
 
 @helpers.parametrize(algo=['PPO', 'SAC', 'PPOLag'])
