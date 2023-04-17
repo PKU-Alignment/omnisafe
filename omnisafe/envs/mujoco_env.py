@@ -173,46 +173,45 @@ class MujocoEnv(CMDP):
         """Close the environment."""
         self._env.close()
 
-    def get_cost_from_obs_tensor(self, input_obs: torch.Tensor) -> torch.Tensor:
-        """Check if the observation violates the environment's constraints."""
-        assert torch.is_tensor(input_obs), 'obs must be tensor'
-        if len(input_obs.shape) == 2:
-            batch_size = input_obs.shape[0]
-            obs = input_obs.reshape(batch_size, -1)
-        elif len(input_obs.shape) == 3:
-            batch_size = input_obs.shape[0] * input_obs.shape[1]
-            obs = input_obs.reshape(batch_size, -1)
-
-        if self._env_id == 'Ant-v4':
-            min_z, max_z = 0.2, 1.0
-            is_finite = torch.isfinite(obs).all()
-            is_between = torch.logical_and(min_z < obs[:, 0], obs[:, 0] < max_z)
-            is_healthy = torch.logical_and(is_finite, is_between)
-        elif self._env_id == 'Humanoid-v4':
-            min_z, max_z = 1.0, 2.0
-            is_healthy = torch.logical_and(min_z < obs[:, 0], obs[:, 0] < max_z)
-        elif self._env_id == 'Hopper-v4':
-            z, angle = obs[:, 0:2]
-            state = obs[:, 1:]
-            min_state, max_state = -100.0, 100.0
-            min_z, max_z = (0.7, float('inf'))
-            min_angle, max_angle = (-0.2, 0.2)
-            healthy_state = torch.logical_and(min_state < state, state < max_state)
-            healthy_z = torch.logical_and(min_z < z, z < max_z)
-            healthy_angle = torch.logical_and(min_angle < angle, angle < max_angle)
-            is_healthy = torch.all(torch.stack([healthy_state, healthy_z, healthy_angle]), dim=0)
-        elif self._env_id == 'walker2d-v4':
-            z, angle = obs[:, 0:2]
-            min_z, max_z = (0.8, 2)
-            min_angle, max_angle = (-1, 1)
-            healthy_z = torch.logical_and(min_z < z, z < max_z)
-            healthy_angle = torch.logical_and(min_angle < angle, angle < max_angle)
-            is_healthy = torch.logical_and(healthy_z, healthy_angle)
-        else:
-            is_healthy = torch.ones(batch_size, dtype=torch.bool, device=input_obs.device)
-        cost = ~is_healthy
-        if len(input_obs.shape) == 2:
-            cost = cost.reshape(input_obs.shape[0], 1)
-        elif len(input_obs.shape) == 3:
-            cost = cost.reshape(input_obs.shape[0], input_obs.shape[1], 1)
-        return cost.float()
+    # def get_cost_from_obs_tensor(self, input_obs: torch.Tensor) -> torch.Tensor:
+    #     """Check if the observation violates the environment's constraints."""
+    #     assert torch.is_tensor(input_obs), 'obs must be tensor'
+    #     if len(input_obs.shape) == 2:
+    #         batch_size = input_obs.shape[0]
+    #         obs = input_obs.reshape(batch_size, -1)
+    #     elif len(input_obs.shape) == 3:
+    #         batch_size = input_obs.shape[0] * input_obs.shape[1]
+    #         obs = input_obs.reshape(batch_size, -1)
+    #     if self._env_id == 'Ant-v4':
+    #         min_z, max_z = 0.2, 1.0
+    #         is_finite = torch.isfinite(obs).all()
+    #         is_between = torch.logical_and(min_z < obs[:, 0], obs[:, 0] < max_z)
+    #         is_healthy = torch.logical_and(is_finite, is_between)
+    #     elif self._env_id == 'Humanoid-v4':
+    #         min_z, max_z = 1.0, 2.0
+    #         is_healthy = torch.logical_and(min_z < obs[:, 0], obs[:, 0] < max_z)
+    #     elif self._env_id == 'Hopper-v4':
+    #         z, angle = obs[:, 0], obs[:, 1]
+    #         state = obs[:, 1:]
+    #         min_state, max_state = -100.0, 100.0
+    #         min_z, max_z = (0.7, float('inf'))
+    #         min_angle, max_angle = (-0.2, 0.2)
+    #         healthy_state = torch.all(torch.logical_and(min_state < state, state < max_state))
+    #         healthy_z = torch.logical_and(min_z < z, z < max_z)
+    #         healthy_angle = torch.logical_and(min_angle < angle, angle < max_angle)
+    #         is_healthy = torch.all(torch.stack([healthy_state, healthy_z, healthy_angle]), dim=0)
+    #     elif self._env_id == 'walker2d-v4':
+    #         z, angle = obs[:, 0], obs[:, 1]
+    #         min_z, max_z = (0.8, 2)
+    #         min_angle, max_angle = (-1, 1)
+    #         healthy_z = torch.logical_and(min_z < z, z < max_z)
+    #         healthy_angle = torch.logical_and(min_angle < angle, angle < max_angle)
+    #         is_healthy = torch.logical_and(healthy_z, healthy_angle)
+    #     else:
+    #         is_healthy = torch.ones(batch_size, dtype=torch.bool, device=input_obs.device)
+    #     cost = ~is_healthy
+    #     if len(input_obs.shape) == 2:
+    #         cost = cost.reshape(input_obs.shape[0], 1)
+    #     elif len(input_obs.shape) == 3:
+    #         cost = cost.reshape(input_obs.shape[0], input_obs.shape[1], 1)
+    #     return cost.float()

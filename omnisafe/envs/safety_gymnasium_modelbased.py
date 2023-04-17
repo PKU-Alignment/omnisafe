@@ -78,72 +78,63 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
         self._num_envs = num_envs
         self._metadata = self._env.metadata
-        if env_id in [
-            'SafetyPointGoal1-v0-modelbased',
-            'SafetyCarGoal1-v0-modelbased',
-            'SafetyAntGoal1-v0-modelbased',
-        ]:
-            self._constraints = ['hazards']  #'gremlins', 'buttons'],
-            self._xyz_sensors = ['velocimeter', 'accelerometer']
-            self._angle_sensors = ['gyro', 'magnetometer']
-            self._flatten_order = (
-                self._xyz_sensors
-                + self._angle_sensors
-                + ['goal']
-                + self._constraints
-                + ['robot_m']
-                + ['robot']
-            )
-            self._base_state = self._xyz_sensors + self._angle_sensors
-            self._task = 'Goal'
-            self._env.reset()
-            self.goal_position = self._env.task.goal.pos
-            self.robot_position = self._env.task.agent.pos
-            self.hazards_position = self._env.task.hazards.pos
-            self.goal_distance = self._dist_xy(self.robot_position, self.goal_position)
+        self._constraints = ['hazards']  #'gremlins', 'buttons'],
+        self._xyz_sensors = ['velocimeter', 'accelerometer']
+        self._angle_sensors = ['gyro', 'magnetometer']
+        self._flatten_order = (
+            self._xyz_sensors
+            + self._angle_sensors
+            + ['goal']
+            + self._constraints
+            + ['robot_m']
+            + ['robot']
+        )
+        self._base_state = self._xyz_sensors + self._angle_sensors
+        self._task = 'Goal'
+        self._env.reset()
+        self.goal_position = self._env.task.goal.pos
+        self.robot_position = self._env.task.agent.pos
+        self.hazards_position = self._env.task.hazards.pos
+        self.goal_distance = self._dist_xy(self.robot_position, self.goal_position)
 
-            coordinate_sensor_obs = self._get_coordinate_sensor()
-            self._coordinate_obs_size = sum(
-                np.prod(i.shape) for i in list(coordinate_sensor_obs.values())
-            )
-            offset = 0
-            self.key_to_slice = {}
-            self.key_to_slice_tensor = {}
+        coordinate_sensor_obs = self._get_coordinate_sensor()
+        self._coordinate_obs_size = sum(
+            np.prod(i.shape) for i in list(coordinate_sensor_obs.values())
+        )
+        offset = 0
+        self.key_to_slice = {}
+        self.key_to_slice_tensor = {}
 
-            for k in self._flatten_order:
-                k_size = np.prod(coordinate_sensor_obs[k].shape)
-                self.key_to_slice[k] = slice(offset, offset + k_size)
-                self.key_to_slice_tensor[k] = torch.arange(offset, offset + k_size)
+        for k in self._flatten_order:
+            k_size = np.prod(coordinate_sensor_obs[k].shape)
+            self.key_to_slice[k] = slice(offset, offset + k_size)
+            self.key_to_slice_tensor[k] = torch.arange(offset, offset + k_size)
 
-                offset += k_size
-            self._base_state_size = sum(
-                np.prod(coordinate_sensor_obs[k].shape) for k in list(self._base_state)
-            )
-            self.key_to_slice['base_state'] = slice(0, self._base_state_size)
-            self.key_to_slice_tensor['base_state'] = torch.arange(0, self._base_state_size)
+            offset += k_size
+        self._base_state_size = sum(
+            np.prod(coordinate_sensor_obs[k].shape) for k in list(self._base_state)
+        )
+        self.key_to_slice['base_state'] = slice(0, self._base_state_size)
+        self.key_to_slice_tensor['base_state'] = torch.arange(0, self._base_state_size)
 
-            self._num_lidar_bin = 16
-            self._max_lidar_dist = 3
-            self.hazards_size = 0.2
-            self.goal_size = 0.3
-            self.original_observation_space = self.observation_space
-            self.coordinate_observation_space = gymnasium.spaces.Box(
-                -np.inf,
-                np.inf,
-                (self._coordinate_obs_size,),
-                dtype=np.float32,
-            )
-            flat_coordinate_obs = self._get_flat_coordinate(coordinate_sensor_obs)
-            self.lidar_observation_space = gymnasium.spaces.Box(
-                -np.inf,
-                np.inf,
-                (self.get_lidar_from_coordinate(flat_coordinate_obs).shape[0],),
-                dtype=np.float32,
-            )
-
-        else:
-            self._task = None
-            raise NotImplementedError
+        self._num_lidar_bin = 16
+        self._max_lidar_dist = 3
+        self.hazards_size = 0.2
+        self.goal_size = 0.3
+        self.original_observation_space = self.observation_space
+        self.coordinate_observation_space = gymnasium.spaces.Box(
+            -np.inf,
+            np.inf,
+            (self._coordinate_obs_size,),
+            dtype=np.float32,
+        )
+        flat_coordinate_obs = self._get_flat_coordinate(coordinate_sensor_obs)
+        self.lidar_observation_space = gymnasium.spaces.Box(
+            -np.inf,
+            np.inf,
+            (self.get_lidar_from_coordinate(flat_coordinate_obs).shape[0],),
+            dtype=np.float32,
+        )
 
     @property
     def task(self):
@@ -343,7 +334,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             pos = np.asarray(pos)
             if pos.shape == (3,):
                 pos = pos[:2]  # Truncate Z coordinate
-            position_z = np.complex(
+            position_z = complex(
                 *self._ego_xy(robot_matrix, robot_pos, pos),
             )  # X, Y as real, imaginary components
             dist = np.abs(position_z)

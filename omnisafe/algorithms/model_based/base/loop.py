@@ -27,7 +27,6 @@ from omnisafe.algorithms.model_based.base.pets import PETS
 from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
 from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
-from omnisafe.utils import distributed
 
 
 @registry.register
@@ -55,8 +54,6 @@ class LOOP(PETS):
             model_cfgs=self._cfgs.model_cfgs,
             epochs=self._epochs,
         ).to(self._device)
-        if distributed.world_size() > 1:
-            distributed.sync_params(self._actor_critic)
         self._use_actor_critic = True
         self._update_count = 0
         self._dynamics = EnsembleDynamicsModel(
@@ -254,15 +251,7 @@ class LOOP(PETS):
                 next_obs=next_state,
                 done=done,
             )
-            self._policy_buf.store(
-                obs=state,
-                act=action,
-                reward=reward,
-                cost=cost,
-                next_obs=next_state,
-                done=done,
-            )
-        if done and self._cfgs.algo_cfgs.policy_store_done:
+        if (done and self._cfgs.algo_cfgs.policy_store_done) or (not done and not goal_met):
             self._policy_buf.store(
                 obs=state,
                 act=action,
@@ -316,7 +305,6 @@ class LOOP(PETS):
                 self._actor_critic.reward_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
-        distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
         self._logger.store(
             **{
@@ -347,38 +335,30 @@ class LOOP(PETS):
             None
         """
         with torch.no_grad():
-            # set the update noise and noise clip.
-            next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
-            next_logp = self._actor_critic.actor.log_prob(next_action)
-            next_q1_value_c, next_q2_value_c = self._actor_critic.target_cost_critic(
-                next_obs,
-                next_action,
-            )
-            next_q_value_c = torch.max(next_q1_value_c, next_q2_value_c) - next_logp * self._alpha
+            next_action = self._actor_critic.actor.predict(next_obs, deterministic=True)
+            next_q_value_c = self._actor_critic.target_cost_critic(next_obs, next_action)[0]
             target_q_value_c = cost + self._cfgs.algo_cfgs.gamma * (1 - done) * next_q_value_c
+        q_value_c = self._actor_critic.cost_critic(obs, action)[0]
+        loss = nn.functional.mse_loss(q_value_c, target_q_value_c)
 
-        q1_value_c, q2_value_c = self._actor_critic.cost_critic(obs, action)
-        loss = nn.functional.mse_loss(q1_value_c, target_q_value_c) + nn.functional.mse_loss(
-            q2_value_c,
-            target_q_value_c,
-        )
         if self._cfgs.algo_cfgs.use_critic_norm:
             for param in self._actor_critic.cost_critic.parameters():
                 loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coeff
 
         self._actor_critic.cost_critic_optimizer.zero_grad()
         loss.backward()
+
         if self._cfgs.algo_cfgs.use_grad_norm:
             clip_grad_norm_(
                 self._actor_critic.cost_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
-        distributed.avg_grads(self._actor_critic.cost_critic)
         self._actor_critic.cost_critic_optimizer.step()
+
         self._logger.store(
             **{
                 'Loss/Loss_cost_critic': loss.mean().item(),
-                'Value/cost_critic': q1_value_c.mean().item(),
+                'Value/cost_critic': q_value_c.mean().item(),
             },
         )
 

@@ -194,6 +194,7 @@ def test_cem_based(algo):
             'torch_threads': 4,
         },
         'algo_cfgs': {
+            'obs_normalize': True,
             'steps_per_epoch': 100,
             'action_repeat': 1,
             'plan_horizon': 2,
@@ -201,7 +202,7 @@ def test_cem_based(algo):
             'num_samples': 10,
             'num_elites': 5,
             'update_dynamics_cycle': 100,
-            'start_learning_steps': 0,
+            'start_learning_steps': 3,
         },
         'dynamics_cfgs': {
             'num_ensemble': 5,
@@ -210,7 +211,8 @@ def test_cem_based(algo):
             'predict_cost': True,
         },
         'evaluation_cfgs': {
-            'use_eval': False,
+            'use_eval': True,
+            'eval_cycle': 100,
         },
         'logger_cfgs': {
             'use_wandb': False,
@@ -233,6 +235,8 @@ def test_loop(algo):
             'torch_threads': 4,
         },
         'algo_cfgs': {
+            'obs_normalize': True,
+            'use_cost': True,
             'steps_per_epoch': 100,
             'action_repeat': 1,
             'plan_horizon': 2,
@@ -242,7 +246,7 @@ def test_loop(algo):
             'update_dynamics_cycle': 100,
             'update_policy_cycle': 100,
             'update_policy_iters': 1,
-            'start_learning_steps': 0,
+            'start_learning_steps': 3,
             'policy_batch_size': 10,
         },
         'dynamics_cfgs': {
@@ -252,7 +256,8 @@ def test_loop(algo):
             'predict_cost': True,
         },
         'evaluation_cfgs': {
-            'use_eval': False,
+            'use_eval': True,
+            'eval_cycle': 100,
         },
         'logger_cfgs': {
             'use_wandb': False,
