@@ -31,9 +31,9 @@ defaults:
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    update_cycle: 2000
+    steps_per_epoch: 2000
     # number of steps per sample
-    steps_per_sample: 1
+    update_cycle: 1
     # number of iterations to update the policy
     update_iters: 1
     # The size of replay buffer

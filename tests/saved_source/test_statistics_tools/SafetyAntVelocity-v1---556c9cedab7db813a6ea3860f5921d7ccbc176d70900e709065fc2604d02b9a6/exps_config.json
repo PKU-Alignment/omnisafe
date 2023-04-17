@@ -2,7 +2,7 @@
 {
     "seed": 0,
     "algo_cfgs": {
-        "update_cycle": 2048
+        "steps_per_epoch": 2048
     },
     "train_cfgs": {
         "total_steps": 4096,

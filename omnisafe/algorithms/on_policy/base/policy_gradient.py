@@ -62,11 +62,11 @@ class PolicyGradient(BaseAlgo):
             self._seed,
             self._cfgs,
         )
-        assert (self._cfgs.algo_cfgs.update_cycle) % (
+        assert (self._cfgs.algo_cfgs.steps_per_epoch) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         ) == 0, 'The number of steps per epoch is not divisible by the number of environments.'
         self._steps_per_epoch = (
-            self._cfgs.algo_cfgs.update_cycle
+            self._cfgs.algo_cfgs.steps_per_epoch
             // distributed.world_size()
             // self._cfgs.train_cfgs.vector_env_nums
         )
@@ -199,7 +199,7 @@ class PolicyGradient(BaseAlgo):
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
 
-        self._logger.register_key('Metrics/EpRet', window_length=50, min_and_max=True)
+        self._logger.register_key('Metrics/EpRet', window_length=50)
         self._logger.register_key('Metrics/EpCost', window_length=50)
         self._logger.register_key('Metrics/EpLen', window_length=50)
 
@@ -207,7 +207,7 @@ class PolicyGradient(BaseAlgo):
         self._logger.register_key('Train/Entropy')
         self._logger.register_key('Train/KL')
         self._logger.register_key('Train/StopIter')
-        self._logger.register_key('Train/PolicyRatio')
+        self._logger.register_key('Train/PolicyRatio', min_and_max=True)
         self._logger.register_key('Train/LR')
         if self._cfgs.model_cfgs.actor_type == 'gaussian_learning':
             self._logger.register_key('Train/PolicyStd')
@@ -270,8 +270,8 @@ class PolicyGradient(BaseAlgo):
 
             self._logger.store(
                 **{
-                    'TotalEnvSteps': (epoch + 1) * self._cfgs.algo_cfgs.update_cycle,
-                    'Time/FPS': self._cfgs.algo_cfgs.update_cycle / (time.time() - epoch_time),
+                    'TotalEnvSteps': (epoch + 1) * self._cfgs.algo_cfgs.steps_per_epoch,
+                    'Time/FPS': self._cfgs.algo_cfgs.steps_per_epoch / (time.time() - epoch_time),
                     'Time/Total': (time.time() - start_time),
                     'Time/Epoch': (time.time() - epoch_time),
                     'Train/Epoch': epoch,

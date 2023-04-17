@@ -53,7 +53,7 @@ def test_train():
             '--vector-env-nums',
             '1',
             '--custom-cfgs',
-            'algo_cfgs:update_cycle',
+            'algo_cfgs:steps_per_epoch',
             '--custom-cfgs',
             '1024',
             '--plot',

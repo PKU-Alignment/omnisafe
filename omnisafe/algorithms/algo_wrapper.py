@@ -54,6 +54,7 @@ class AlgoWrapper:
         self._plotter: Plotter = None
         self.cfgs = self._init_config()
         self._init_checks()
+        self._init_algo()
 
     def _init_config(self):
         """Init config."""
@@ -94,7 +95,7 @@ class AlgoWrapper:
         exp_name = f'{self.algo}-{{{self.env_id}}}'
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id, 'algo': self.algo})
         cfgs.train_cfgs.recurisve_update(
-            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle},
+            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.steps_per_epoch},
         )
         return cfgs
 
@@ -107,8 +108,8 @@ class AlgoWrapper:
             self.env_id in support_envs()
         ), f"{self.env_id} doesn't exist. Please choose from {support_envs()}."
 
-    def learn(self):
-        """Agent Learning."""
+    def _init_algo(self):
+        """Init algo."""
         # Use number of physical cores as default.
         # If also hardware threading CPUs should be used
         # enable this by the use_number_of_threads=True
@@ -129,6 +130,9 @@ class AlgoWrapper:
             env_id=self.env_id,
             cfgs=self.cfgs,
         )
+
+    def learn(self):
+        """Agent Learning."""
         ep_ret, ep_cost, ep_len = self.agent.learn()
 
         self._init_statistical_tools()

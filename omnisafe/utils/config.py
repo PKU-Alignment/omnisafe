@@ -282,7 +282,7 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
     .. note::
 
         - ``update_iters`` must be greater than 0 and must be int.
-        - ``update_cycle`` must be greater than 0 and must be int.
+        - ``steps_per_epoch`` must be greater than 0 and must be int.
         - ``batch_size`` must be greater than 0 and must be int.
         - ``target_kl`` must be greater than 0 and must be float.
         - ``entropy_coeff`` must be in [0, 1] and must be float.
@@ -312,8 +312,8 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
             isinstance(configs.update_iters, int) and configs.update_iters > 0
         ), 'update_iters must be int and greater than 0'
         assert (
-            isinstance(configs.update_cycle, int) and configs.update_cycle > 0
-        ), 'update_cycle must be int and greater than 0'
+            isinstance(configs.steps_per_epoch, int) and configs.steps_per_epoch > 0
+        ), 'steps_per_epoch must be int and greater than 0'
         assert (
             isinstance(configs.batch_size, int) and configs.batch_size > 0
         ), 'batch_size must be int and greater than 0'

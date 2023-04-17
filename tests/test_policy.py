@@ -15,6 +15,7 @@
 """Test policy algorithms"""
 
 import pytest
+import torch
 
 import helpers
 import omnisafe
@@ -36,6 +37,7 @@ early_terminated_policy = ['TRPOEarlyTerminated', 'PPOEarlyTerminated']
 # simmer_policy = ['PPOSimmerQ', 'PPOLagSimmerQ', 'PPOSimmerPid', 'PPOLagSimmerPid']
 # model_based_policy = ['MBPPOLag', 'SafeLOOP', 'CAP']
 model_cfgs = {
+    'linear_lr_decay': True,
     'actor': {
         'hidden_sizes': [8, 8],
     },
@@ -43,6 +45,67 @@ model_cfgs = {
         'hidden_sizes': [8, 8],
     },
 }
+
+optim_case = [0, 1, 2, 3, 4]
+
+
+@helpers.parametrize(optim_case=optim_case)
+def test_cpo(optim_case):
+    agent = omnisafe.Agent('CPO', 'Simple-v0', custom_cfgs={})
+    b_grad = torch.Tensor([1])
+    ep_costs = torch.Tensor([-1])
+    r = torch.Tensor([0])
+    q = torch.Tensor([0])
+    s = torch.Tensor([1])
+    p = torch.Tensor([1])
+    xHx = torch.Tensor([1])
+    x = torch.Tensor([1])
+    A = torch.Tensor([1])
+    B = torch.Tensor([1])
+    assert agent.agent._determine_case(b_grad, ep_costs, q, r, s)[0] == 3
+    s = torch.Tensor([-1])
+    assert agent.agent._determine_case(b_grad, ep_costs, q, r, s)[0] == 2
+    ep_costs = torch.Tensor([1])
+    assert agent.agent._determine_case(b_grad, ep_costs, q, r, s)[0] == 1
+    s = torch.Tensor([1])
+    assert agent.agent._determine_case(b_grad, ep_costs, q, r, s)[0] == 0
+    step_direction, lambda_star, nu_star = agent.agent._step_direction(
+        optim_case=optim_case,
+        xHx=xHx,
+        x=x,
+        A=A,
+        B=B,
+        q=q,
+        p=p,
+        r=r,
+        s=s,
+        ep_costs=ep_costs,
+    )
+    assert isinstance(step_direction, torch.Tensor)
+    assert isinstance(lambda_star, torch.Tensor)
+    assert isinstance(nu_star, torch.Tensor)
+    step_direction = torch.as_tensor(1000000.0).unsqueeze(0)
+    grad = torch.as_tensor(torch.inf).unsqueeze(0)
+    p_dist = torch.distributions.Normal(torch.Tensor([0.0]), torch.Tensor([1.0]))
+    obs = torch.Tensor([1.0, 1.0, 1.0])
+    act = torch.Tensor([1.0, 1.0])
+    logp = torch.Tensor([1.0])
+    adv_r = torch.Tensor([1.0])
+    adv_c = torch.Tensor([1.0])
+    loss_reward_before = torch.Tensor([1.0])
+    loss_cost_before = torch.Tensor([1.0])
+    step_direction, acceptance_step = agent.agent._cpo_search_step(
+        step_direction=step_direction,
+        grad=grad,
+        p_dist=p_dist,
+        obs=obs,
+        act=act,
+        logp=logp,
+        adv_r=adv_r,
+        adv_c=adv_c,
+        loss_reward_before=loss_reward_before,
+        loss_cost_before=loss_cost_before,
+    )
 
 
 def test_assertion_error():
@@ -55,7 +118,7 @@ def test_assertion_error():
             'torch_threads': 4,
         },
         'algo_cfgs': {
-            'update_cycle': 100,
+            'steps_per_epoch': 100,
             'update_iters': 2,
         },
         'logger_cfgs': {
@@ -105,7 +168,7 @@ def test_render():
             'torch_threads': 4,
         },
         'algo_cfgs': {
-            'update_cycle': 100,
+            'steps_per_epoch': 100,
             'update_iters': 2,
         },
         'logger_cfgs': {
@@ -130,12 +193,13 @@ def test_off_policy(algo):
             'torch_threads': 4,
         },
         'algo_cfgs': {
-            'update_cycle': 100,
-            'steps_per_sample': 50,
+            'steps_per_epoch': 100,
+            'update_cycle': 50,
             'update_iters': 2,
             'start_learning_steps': 0,
             'use_critic_norm': True,
             'max_grad_norm': True,
+            'obs_normalize': True,
         },
         'logger_cfgs': {
             'use_wandb': False,
@@ -161,8 +225,8 @@ def test_sac_policy(auto_alpha):
             'torch_threads': 4,
         },
         'algo_cfgs': {
-            'update_cycle': 100,
-            'steps_per_sample': 50,
+            'steps_per_epoch': 100,
+            'update_cycle': 50,
             'update_iters': 2,
             'start_learning_steps': 0,
             'auto_alpha': auto_alpha,
@@ -192,8 +256,8 @@ def test_sac_lag_policy(auto_alpha):
             'torch_threads': 4,
         },
         'algo_cfgs': {
-            'update_cycle': 100,
-            'steps_per_sample': 50,
+            'steps_per_epoch': 100,
+            'update_cycle': 50,
             'update_iters': 2,
             'start_learning_steps': 0,
             'auto_alpha': auto_alpha,
@@ -233,7 +297,7 @@ def test_on_policy(algo):
             'torch_threads': 4,
         },
         'algo_cfgs': {
-            'update_cycle': 100,
+            'steps_per_epoch': 100,
             'update_iters': 2,
         },
         'logger_cfgs': {
@@ -256,7 +320,7 @@ def test_workflow_for_training(algo):
             'torch_threads': 4,
         },
         'algo_cfgs': {
-            'update_cycle': 100,
+            'steps_per_epoch': 100,
             'update_iters': 2,
         },
         'logger_cfgs': {
@@ -282,7 +346,7 @@ def test_std_anealing():
             'vector_env_nums': 1,
         },
         'algo_cfgs': {
-            'update_cycle': 100,
+            'steps_per_epoch': 100,
             'update_iters': 2,
         },
         'logger_cfgs': {
@@ -315,7 +379,7 @@ def test_std_anealing():
 #            'device': 'cuda:0',
 #        },
 #        'algo_cfgs': {
-#            'update_cycle': 100,
+#            'steps_per_epoch': 100,
 #            'update_iters': 2,
 #        },
 #        'logger_cfgs': {

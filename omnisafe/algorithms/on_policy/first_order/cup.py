@@ -65,18 +65,14 @@ class CUP(PPO):
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
-        self._logger.register_key('Train/MaxRatio')
-        self._logger.register_key('Train/MinRatio')
         self._logger.register_key('Loss/Loss_pi_c', delta=True)
         self._logger.register_key('Train/SecondStepStopIter')
         self._logger.register_key('Train/SecondStepEntropy')
-        self._logger.register_key('Train/SecondStepPolicyRatio')
+        self._logger.register_key('Train/SecondStepPolicyRatio', min_and_max=True)
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
         super().__init__(env_id, cfgs)
         self._p_dist: Normal
-        self._max_ratio: float = 0.0
-        self._min_ratio: float = 0.0
 
     def _loss_pi_cost(self, obs, act, logp, adv_c):
         r"""Compute the performance of cost on this moment.
@@ -118,13 +114,6 @@ class CUP(PPO):
         )
         loss = (self._lagrange.lagrangian_multiplier * coef * ratio * adv_c + kl).mean()
 
-        # useful extra info
-        temp_max = torch.max(ratio).detach().mean().item()
-        temp_min = torch.min(ratio).detach().mean().item()
-        if temp_max > self._max_ratio:
-            self._max_ratio = temp_max
-        if temp_min < self._min_ratio:
-            self._min_ratio = temp_min
         entropy = distribution.entropy().mean().item()
         info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
 
@@ -208,8 +197,6 @@ class CUP(PPO):
         self._logger.store(
             **{
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.item(),
-                'Train/MaxRatio': self._max_ratio,
-                'Train/MinRatio': self._min_ratio,
                 'Train/SecondStepStopIter': i + 1,  # pylint: disable=undefined-loop-variable
                 'Train/SecondStepEntropy': info['entropy'],
                 'Train/SecondStepPolicyRatio': info['ratio'],

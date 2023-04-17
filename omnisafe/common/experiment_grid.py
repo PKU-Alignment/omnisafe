@@ -338,37 +338,22 @@ class ExperimentGrid:
         """
         flat_variants = self._variants(self.keys, self.vals)
 
-        def unflatten_var(var):
+        def check_duplicate(var):
             """Build the full nested dict version of var, based on key names."""
             new_var: dict = {}
             unflatten_set = set()
 
             for key, value in var.items():
-                if ':' in key:
-                    splits = key.split(':')
-                    k_0 = splits[0]
-                    assert k_0 not in new_var or isinstance(
-                        new_var[k_0],
-                        dict,
-                    ), "You can't assign multiple values to the same key."
-
-                    if k_0 not in new_var:
-                        new_var[k_0] = {}
-
-                    sub_k = ':'.join(splits[1:])
-                    new_var[k_0][sub_k] = value
-                    unflatten_set.add(k_0)
-                else:
-                    assert key not in new_var, "You can't assign multiple values to the same key."
-                    new_var[key] = value
+                assert key not in new_var, "You can't assign multiple values to the same key."
+                new_var[key] = value
 
             # make sure to fill out the nested dict.
             for key in unflatten_set:
-                new_var[key] = unflatten_var(new_var[key])
+                new_var[key] = check_duplicate(new_var[key])
 
             return new_var
 
-        return [unflatten_var(var) for var in flat_variants]
+        return [check_duplicate(var) for var in flat_variants]
 
     # pylint: disable-next=too-many-locals
     def run(self, thunk, num_pool=1, parent_dir=None, is_test=False, gpu_id=None):

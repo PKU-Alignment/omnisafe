@@ -45,11 +45,11 @@ class PPOEarlyTerminated(PPO):
             self._seed,
             self._cfgs,
         )
-        assert (self._cfgs.algo_cfgs.update_cycle) % (
+        assert (self._cfgs.algo_cfgs.steps_per_epoch) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         ) == 0, 'The number of steps per epoch is not divisible by the number of environments.'
         self._steps_per_epoch = (
-            self._cfgs.algo_cfgs.update_cycle
+            self._cfgs.algo_cfgs.steps_per_epoch
             // distributed.world_size()
             // self._cfgs.train_cfgs.vector_env_nums
         )
