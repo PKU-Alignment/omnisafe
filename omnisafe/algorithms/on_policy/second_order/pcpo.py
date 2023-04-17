@@ -132,7 +132,7 @@ class PCPO(CPO):
             loss = loss_reward + loss_cost
 
         self._logger.store(
-            **{
+            {
                 'Loss/Loss_pi': loss.item(),
                 'Train/Entropy': info['entropy'],
                 'Train/PolicyRatio': info['ratio'],

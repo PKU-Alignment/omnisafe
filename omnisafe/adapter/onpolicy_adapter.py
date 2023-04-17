@@ -96,8 +96,8 @@ class OnPolicyAdapter(OnlineAdapter):
             self._log_value(reward=reward, cost=cost, info=info)
 
             if self._cfgs.algo_cfgs.use_cost:
-                logger.store(**{'Value/cost': value_c})
-            logger.store(**{'Value/reward': value_r})
+                logger.store({'Value/cost': value_c})
+            logger.store({'Value/reward': value_r})
 
             buffer.store(
                 obs=obs,
@@ -169,7 +169,7 @@ class OnPolicyAdapter(OnlineAdapter):
             idx (int): The index of the environment.
         """
         logger.store(
-            **{
+            {
                 'Metrics/EpRet': self._ep_ret[idx],
                 'Metrics/EpCost': self._ep_cost[idx],
                 'Metrics/EpLen': self._ep_len[idx],

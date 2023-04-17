@@ -129,7 +129,7 @@ class P3O(PPO):
         self._actor_critic.actor_optimizer.step()
 
         self._logger.store(
-            **{
+            {
                 'Train/Entropy': info['entropy'],
                 'Train/PolicyRatio': info['ratio'],
                 'Train/PolicyStd': info['std'],
