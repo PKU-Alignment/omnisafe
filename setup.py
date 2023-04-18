@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-
-# pylint: disable=missing-module-docstring
-
 import pathlib
 import re
 import sys
