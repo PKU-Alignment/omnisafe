@@ -31,7 +31,7 @@ defaults:
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 2000
+    steps_per_epoch: 20000
     # number of iterations to update the policy
     update_iters: 10
     # batch size for each iteration
@@ -134,3 +134,13 @@ defaults:
       activation: tanh
       # learning rate
       lr: 0.001
+  # controller configurations
+  control_cfgs:
+    # The Kp of PID controller
+    kp: 1.0
+    # The Ki of PID controller
+    ki: 0.001
+    # The Kd of PID controller
+    kd: 0.01
+    # The polyak coefficient of the target
+    polyak: 0.995

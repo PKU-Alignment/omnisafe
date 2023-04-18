@@ -14,10 +14,11 @@
 # ==============================================================================
 """Implementation of the Simmer version of the TRPO algorithm."""
 
+import torch
+
 from omnisafe.adapter.simmer_adapter import SimmerAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.trpo import TRPO
-from omnisafe.common.simmer_agent import SimmerPIDAgent
 from omnisafe.utils import distributed
 
 
@@ -27,14 +28,6 @@ class TRPOSimmerPID(TRPO):
 
     A simple combination of the Simmer RL and the Trust Region Policy Optimization algorithm.
     """
-
-    def _init(self) -> None:
-        """Initialize the TRPOSimmerPID specific model.
-
-        The TRPOSimmerPID algorithm uses PID controller to control the budget.
-        """
-        super()._init()
-        self._controller = SimmerPIDAgent()
 
     def _init_env(self) -> None:
         """Initialize the environment.
@@ -83,10 +76,5 @@ class TRPOSimmerPID(TRPO):
         """
         # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
-        current_safety_budget = self._env.safety_budget
-        next_safety_budget = self._controller.act(
-            safety_budget=current_safety_budget,
-            observation=Jc,
-        )
-        self._env.safety_budget = next_safety_budget
+        self._env.control_budget(torch.as_tensor(Jc, dtype=torch.float32, device=self._device))
         super()._update()

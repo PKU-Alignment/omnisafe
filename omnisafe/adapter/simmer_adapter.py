@@ -22,6 +22,7 @@ from gymnasium.spaces import Box
 
 from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
 from omnisafe.adapter.saute_adapter import SauteAdapter
+from omnisafe.common.simmer_agent import SimmerPIDAgent
 from omnisafe.utils.config import Config
 
 
@@ -61,10 +62,14 @@ class SimmerAdapter(SauteAdapter):
             high=np.inf,
             shape=(self._env.observation_space.shape[0] + 1,),
         )
+        self._controller = SimmerPIDAgent(
+            cfgs=cfgs.control_cfgs,
+            budget_bound=self._upper_budget,
+        )
 
     def reset(self) -> tuple[torch.Tensor, dict]:
         obs, info = self._env.reset()
-        self._safety_obs = self._rel_safety_budget*torch.ones(self._env.num_envs, 1)
+        self._safety_obs = self._rel_safety_budget * torch.ones(self._env.num_envs, 1)
         print(self._safety_obs)
         obs = self._augment_obs(obs)
         return obs, info
@@ -84,3 +89,14 @@ class SimmerAdapter(SauteAdapter):
         """Set the safety budget."""
         self._safety_budget = safety_budget
         self._rel_safety_budget = self._safety_budget / self._upper_budget
+
+    def control_budget(self, ep_costs: torch.Tensor):
+        """Control the safety budget.
+
+        Args:
+            ep_costs (torch.Tensor): The episode costs.
+        """
+        self._safety_budget = self._controller.act(
+            safety_budget=self._safety_budget,
+            observation=ep_costs,
+        )
