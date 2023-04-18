@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""OnPolicy Adapter for OmniSafe."""
+"""Simmer Adapter for OmniSafe."""
+
+from __future__ import annotations
 
 import numpy as np
 import torch
@@ -23,7 +25,7 @@ from omnisafe.adapter.saute_adapter import SauteAdapter
 from omnisafe.utils.config import Config
 
 
-class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
+class SimmerAdapter(SauteAdapter):
     """Simmer Adapter for OmniSafe."""
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
@@ -32,18 +34,22 @@ class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
 
         self._safety_budget: torch.Tensor
         self._safety_obs: torch.Tensor
+        self._num_envs = num_envs
 
         self._safety_budget = (
             self._cfgs.algo_cfgs.safety_budget
             * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
             / (1 - self._cfgs.algo_cfgs.saute_gamma)
             / self._cfgs.algo_cfgs.max_ep_len
+            * torch.ones(num_envs, 1)
         )
+
         self._upper_budget = (
             self._cfgs.algo_cfgs.upper_budget
             * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
             / (1 - self._cfgs.algo_cfgs.saute_gamma)
             / self._cfgs.algo_cfgs.max_ep_len
+            * torch.ones(num_envs, 1)
         )
         self._rel_safety_budget = self._safety_budget / self._upper_budget
 
@@ -56,10 +62,22 @@ class SimmerAdapter(SauteAdapter, OnPolicyAdapter):
             shape=(self._env.observation_space.shape[0] + 1,),
         )
 
+    def reset(self) -> tuple[torch.Tensor, dict]:
+        obs, info = self._env.reset()
+        self._safety_obs = self._rel_safety_budget*torch.ones(self._env.num_envs, 1)
+        print(self._safety_obs)
+        obs = self._augment_obs(obs)
+        return obs, info
+
     @property
     def safety_budget(self) -> torch.Tensor:
         """Return the safety budget."""
         return self._safety_budget
+
+    @property
+    def upper_budget(self) -> torch.Tensor:
+        """Return the safety budget."""
+        return self._upper_budget
 
     @safety_budget.setter
     def safety_budget(self, safety_budget: torch.Tensor) -> None:

@@ -77,16 +77,16 @@ class SimmerPIDAgent(BaseSimmerAgent):
     ) -> None:
         """Initialize the agent."""
         super().__init__(obs_space, action_space, history_len, **kwargs)
-        self._kp = kwargs.get('kp', 0)
-        self._ki = kwargs.get('ki', 0)
-        self._kd = kwargs.get('kd', 0)
+        self._kp = kwargs.get('kp', 0.1)
+        self._ki = kwargs.get('ki', 0.01)
+        self._kd = kwargs.get('kd', 0.01)
         self._polyak = kwargs.get('polyak', 0.995)
-        self._budget_bound = kwargs.get('budget_bound', 25.0)
+        self._budget_bound = kwargs.get('budget_bound', 15.8076)
         self._sum_history = torch.zeros(1)
         self._prev_action = torch.zeros(1)
         self._prev_error = torch.zeros(1)
         self._prev_raw_action = torch.zeros(1)
-        self._integral_history = deque([], maxlen=100)
+        self._integral_history = deque([], maxlen=10)
 
     def get_greedy_action(
         self,
