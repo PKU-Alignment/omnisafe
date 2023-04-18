@@ -128,7 +128,7 @@ class TRPO(NaturalPG):
         set_param_values_to_model(self._actor_critic.actor, theta_old)
 
         self._logger.store(
-            **{
+            {
                 'Train/KL': final_kl,
             },
         )
@@ -199,7 +199,7 @@ class TRPO(NaturalPG):
             loss, info = self._loss_pi(obs, act, logp, adv)
 
         self._logger.store(
-            **{
+            {
                 'Train/Entropy': info['entropy'],
                 'Train/PolicyRatio': info['ratio'],
                 'Train/PolicyStd': info['std'],

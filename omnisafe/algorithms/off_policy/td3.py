@@ -103,7 +103,7 @@ class TD3(DDPG):
         distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
         self._logger.store(
-            **{
+            {
                 'Loss/Loss_reward_critic': loss.mean().item(),
                 'Value/reward_critic': q1_value_r.mean().item(),
             },

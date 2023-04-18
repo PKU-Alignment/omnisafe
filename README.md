@@ -32,9 +32,13 @@
 
 **This library is currently under heavy development - if you have suggestions on the API or use-cases you'd like to be covered, please open a GitHub issue or reach out. We'd love to hear about how you're using the library.**
 
-OmniSafe is an infrastructural framework designed to accelerate safe reinforcement learning (RL) research by providing a comprehensive and reliable benchmark for safe RL algorithms. The field of RL has great potential to benefit society, but safety concerns are a significant issue, and RL algorithms have raised concerns about unintended harm or unsafe behavior. Safe RL intends to develop algorithms that minimize the risk of unintended harm or unsafe behavior, but there is currently a lack of commonly recognized safe RL algorithm benchmarks.
+OmniSafe is an infrastructural framework designed to accelerate safe reinforcement learning (RL) research by providing a comprehensive and reliable benchmark for safe RL algorithms.
+The field of RL has great potential to benefit the society, and safety concerns are a significant issue, and RL algorithms have raised concerns about unintended harm or unsafe behavior.
+Safe RL intends to develop algorithms that minimize the risk of unintended harm or unsafe behavior, but there is currently a lack of commonly recognized safe RL algorithm benchmarks.
 
-OmniSafe addresses these issues by providing more than 40 experimentally validated algorithms and a sound and efficient simulation environment. Researchers can use OmniSafe to conduct experiments and verify their ideas, ensuring consistency and enabling more efficient development of safe RL algorithms. By using OmniSafe as a benchmark, researchers can evaluate the performance of their own safe RL algorithms and contribute to the advancement of safe RL research.
+OmniSafe addresses these issues by providing more than 40 experimentally validated algorithms and a sound and efficient simulation environment.
+Researchers can use OmniSafe to conduct experiments and verify their ideas, ensuring consistency and enabling more efficient development of safe RL algorithms.
+By using OmniSafe as a benchmark, researchers can evaluate the performance of their own safe RL algorithms and contribute to the advancement of safe RL research.
 
 --------------------------------------------------------------------------------
 
@@ -56,7 +60,7 @@ OmniSafe addresses these issues by providing more than 40 experimentally validat
     - [Try with CLI](#try-with-cli)
 - [Getting Started](#getting-started)
   - [Important Hints](#important-hints)
-  - [Quickstart: Colab in the Cloud](#quickstart-colab-in-the-cloud)
+  - [Quickstart: Colab on the Cloud](#quickstart-colab-on-the-cloud)
 - [Changelog](#changelog)
 - [The OmniSafe Team](#the-omnisafe-team)
 - [License](#license)
@@ -144,7 +148,7 @@ git clone https://github.com/OmniSafeAI/omnisafe
 cd omnisafe
 
 # Create a conda environment
-conda create -n omnisafe python=3.8
+conda env create --file conda-recipe.yaml
 conda activate omnisafe
 
 # Install omnisafe
@@ -152,11 +156,12 @@ pip install -e .
 ```
 
 #### Install from PyPI
+
 OmniSafe is hosted in [![PyPI](https://img.shields.io/pypi/v/omnisafe?label=pypi&logo=pypi)](https://pypi.org/project/omnisafe) / ![Status](https://img.shields.io/pypi/status/omnisafe?label=status).
+
 ```bash
 pip install omnisafe
 ```
-
 
 ### Examples
 
@@ -164,7 +169,6 @@ pip install omnisafe
 cd examples
 python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 ```
-
 
 **algo:**
 | Type              | Name                                                             |
@@ -179,7 +183,6 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
 | `Simmer RL`       | `PPOSimmerQ, PPOSimmerPid` <br> `PPOLagSimmerQ, PPOLagSimmerPid` |
 | `EarlyTerminated` | `PPOEarlyTerminated` <br> `PPOLagEarlyTerminated`                |
 | `Model-Based`     | `CAP, MBPPOLag, SafeLOOP`                                        |
-
 
 **env-id:** Environment id in [Safety Gymnasium](https://www.safety-gymnasium.com/), here a list of envs that safety-gymnasium supports.
 
@@ -221,7 +224,6 @@ More information about environments, please refer to [Safety Gymnasium](https://
 
 **parallel:** `Number of parallels`
 
-
 #### Try with CLI
 
 **A video example**
@@ -249,28 +251,36 @@ omnisafe train --algo PPO --total-steps 2048 --vector-env-nums 1 --custom-cfgs a
 omnisafe train-config ./saved_source/train_config.yaml
 ```
 
-
 --------------------------------------------------------------------------------
 
 ## Getting Started
+
 ### Important Hints
+
 - `train_cfgs:torch_threads` is especially important for training speed, and is varying with users' machine, this value shouldn't be too small or too large.
 
-### Quickstart: Colab in the Cloud
+### Quickstart: Colab on the Cloud
+
 Explore OmniSafe easily and quickly through a series of colab notebooks:
+
 - [Getting Started](https://colab.research.google.com/github/OmniSafeAI/omnisafe/blob/main/tutorials/English/1.Getting_Started.ipynb) Introduce the basic usage of OmniSafe so that users can quickly hand on it.
 - [CLI Command](https://colab.research.google.com/github/OmniSafeAI/omnisafe/blob/main/tutorials/English/2.CLI_Command.ipynb) Introduce how to use the CLI tool of OmniSafe.
 
-We take great pleasure in collaborating with our users to create tutorials in various languages. Please refer to our list of currently supported languages. If you are interested in translating the tutorial into a new language or improving an existing version, kindly submit a PR to us.
+We take great pleasure in collaborating with our users to create tutorials in various languages.
+Please refer to our list of currently supported languages.
+If you are interested in translating the tutorial into a new language or improving an existing version, kindly submit a PR to us.
 
 --------------------------------------------------------------------------------
 
 ## Changelog
+
 See [CHANGELOG.md](https://github.com/OmniSafeAI/omnisafe/blob/main/CHANGELOG.md).
 
 ## The OmniSafe Team
 
-OmniSafe is mainly developed by the SafeRL research team directed by Prof. [Yaodong Yang](https://github.com/orgs/OmniSafeAI/people/PKU-YYang). Our SafeRL research team members include [Borong Zhang](https://github.com/muchvo), [Jiayi Zhou](https://github.com/Gaiejj), [JTao Dai](https://github.com/calico-1226), [Weidong Huang](https://github.com/hdadong), [Ruiyang Sun](https://github.com/rockmagma02), [Xuehai Pan](https://github.com/XuehaiPan) and [Jiaming Ji](https://github.com/zmsn-2077). If you have any questions in the process of using omnisafe, don't hesitate to ask your questions on [the GitHub issue page](https://github.com/OmniSafeAI/omnisafe/issues/new/choose), we will reply to you in 2-3 working days.
+OmniSafe is mainly developed by the SafeRL research team directed by Prof. [Yaodong Yang](https://github.com/orgs/OmniSafeAI/people/PKU-YYang).
+Our SafeRL research team members include [Borong Zhang](https://github.com/muchvo), [Jiayi Zhou](https://github.com/Gaiejj), [JTao Dai](https://github.com/calico-1226), [Weidong Huang](https://github.com/hdadong), [Ruiyang Sun](https://github.com/rockmagma02), [Xuehai Pan](https://github.com/XuehaiPan) and [Jiaming Ji](https://github.com/zmsn-2077).
+If you have any questions in the process of using omnisafe, don't hesitate to ask your questions on [the GitHub issue page](https://github.com/OmniSafeAI/omnisafe/issues/new/choose), we will reply to you in 2-3 working days.
 
 ## License
 

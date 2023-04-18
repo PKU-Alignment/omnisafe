@@ -166,7 +166,7 @@ class CPO(TRPO):
             acceptance_step = 0
 
         self._logger.store(
-            **{
+            {
                 'Train/KL': kl,
             },
         )
@@ -413,7 +413,7 @@ class CPO(TRPO):
             loss = loss_reward + loss_cost
 
         self._logger.store(
-            **{
+            {
                 'Loss/Loss_pi': loss.item(),
                 'Train/Entropy': info['entropy'],
                 'Train/PolicyRatio': info['ratio'],

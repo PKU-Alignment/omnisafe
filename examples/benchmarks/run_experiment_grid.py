@@ -109,14 +109,11 @@ if __name__ == '__main__':
         "TRPOLag"
         ])
     eg.add('logger_cfgs:use_wandb', [False])
-    eg.add('train_cfgs:vector_env_nums', [10])
-    eg.add('train_cfgs:torch_threads', [5])
+    eg.add('train_cfgs:vector_env_nums', [4])
+    eg.add('train_cfgs:torch_threads', [1])
     eg.add('algo_cfgs:steps_per_epoch', [20000])
-    eg.add('algo_cfgs:obs_normalize', [True])
-    eg.add('algo_cfgs:reward_normalize', [False])
-    eg.add('algo_cfgs:cost_normalize', [False])
     eg.add('train_cfgs:total_steps', [10000000])
-    eg.add('seed', [0, 5, 10, 15, 20])
+    eg.add('seed', [0])
     # total experiment num must can be divided by num_pool
     # meanwhile, users should decide this value according to their machine
     eg.run(train, num_pool=15, gpu_id=gpu_id)
