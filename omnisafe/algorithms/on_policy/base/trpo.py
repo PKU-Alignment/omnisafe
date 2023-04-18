@@ -96,7 +96,7 @@ class TRPO(NaturalPG):
             set_param_values_to_model(self._actor_critic.actor, new_theta)
 
             with torch.no_grad():
-                loss, _ = self._loss_pi(obs, act, logp, adv)
+                loss = self._loss_pi(obs, act, logp, adv)
                 # compute KL distance between new and old policy
                 q_dist = self._actor_critic.actor(obs)
                 # KL-distance of old p-dist and new q-dist, applied in KLEarlyStopping
@@ -165,7 +165,7 @@ class TRPO(NaturalPG):
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
         adv = self._compute_adv_surrogate(adv_r, adv_c)
-        loss, info = self._loss_pi(obs, act, logp, adv)
+        loss = self._loss_pi(obs, act, logp, adv)
         loss_before = distributed.dist_avg(loss).item()
         p_dist = self._actor_critic.actor(obs)
 
@@ -196,14 +196,10 @@ class TRPO(NaturalPG):
         set_param_values_to_model(self._actor_critic.actor, theta_new)
 
         with torch.no_grad():
-            loss, info = self._loss_pi(obs, act, logp, adv)
+            loss = self._loss_pi(obs, act, logp, adv)
 
         self._logger.store(
             {
-                'Train/Entropy': info['entropy'],
-                'Train/PolicyRatio': info['ratio'],
-                'Train/PolicyStd': info['std'],
-                'Loss/Loss_pi': loss.mean().item(),
                 'Misc/Alpha': alpha.item(),
                 'Misc/FinalStepNorm': torch.norm(step_direction).mean().item(),
                 'Misc/xHx': xHx.item(),

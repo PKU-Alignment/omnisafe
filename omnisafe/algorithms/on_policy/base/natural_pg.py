@@ -143,7 +143,7 @@ class NaturalPG(PolicyGradient):
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
         adv = self._compute_adv_surrogate(adv_r, adv_c)
-        loss, info = self._loss_pi(obs, act, logp, adv)
+        loss = self._loss_pi(obs, act, logp, adv)
 
         loss.backward()
         distributed.avg_grads(self._actor_critic.actor)
@@ -161,14 +161,10 @@ class NaturalPG(PolicyGradient):
         set_param_values_to_model(self._actor_critic.actor, theta_new)
 
         with torch.no_grad():
-            loss, info = self._loss_pi(obs, act, logp, adv)
+            loss = self._loss_pi(obs, act, logp, adv)
 
         self._logger.store(
             {
-                'Train/Entropy': info['entropy'],
-                'Train/PolicyRatio': info['ratio'],
-                'Train/PolicyStd': info['std'],
-                'Loss/Loss_pi': loss.mean().item(),
                 'Misc/Alpha': alpha.item(),
                 'Misc/FinalStepNorm': torch.norm(step_direction).mean().item(),
                 'Misc/xHx': xHx.item(),

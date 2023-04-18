@@ -105,6 +105,7 @@ class CPO(TRPO):
         # reward improvement, g-flat as gradient of reward
         expected_reward_improve = grad.dot(step_direction)
 
+        final_kl = 0.0
         # while not within_trust_region and not finish all steps:
         for step in range(total_steps):
             # get new theta
@@ -117,7 +118,7 @@ class CPO(TRPO):
             with torch.no_grad():
                 try:
                     # loss of policy reward from target/expected reward
-                    loss_reward, _ = self._loss_pi(obs=obs, act=act, logp=logp, adv=adv_r)
+                    loss_reward = self._loss_pi(obs=obs, act=act, logp=logp, adv=adv_r)
                 except ValueError:
                     step_frac *= decay
                     continue

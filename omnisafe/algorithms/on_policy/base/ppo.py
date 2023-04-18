@@ -70,5 +70,12 @@ class PPO(PolicyGradient):
         loss -= self._cfgs.algo_cfgs.entropy_coef * distribution.entropy().mean()
         # useful extra info
         entropy = distribution.entropy().mean().item()
-        info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
-        return loss, info
+        self._logger.store(
+            {
+                'Train/Entropy': entropy,
+                'Train/PolicyRatio': ratio,
+                'Train/PolicyStd': std,
+                'Loss/Loss_pi': loss.mean().item(),
+            },
+        )
+        return loss

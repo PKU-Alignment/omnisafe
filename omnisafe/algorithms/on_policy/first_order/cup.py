@@ -17,6 +17,7 @@
 import torch
 from rich.progress import track
 from torch.distributions import Normal
+from torch.nn.utils.clip_grad import clip_grad_norm_
 from torch.utils.data import DataLoader, TensorDataset
 
 from omnisafe.algorithms import registry
@@ -115,11 +116,14 @@ class CUP(PPO):
         loss = (self._lagrange.lagrangian_multiplier * coef * ratio * adv_c + kl).mean()
 
         entropy = distribution.entropy().mean().item()
-        info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
-
-        self._logger.store({'Loss/Loss_pi_c': loss.item()})
-
-        return loss, info
+        self._logger.store(
+            {
+                'Loss/Loss_pi_c': loss.item(),
+                'Train/SecondStepEntropy': entropy,
+                'Train/SecondStepPolicyRatio': ratio,
+            },
+        )
+        return loss
 
     def _update(self) -> None:
         r"""Update actor, critic, and Lagrange multiplier parameters.
@@ -166,14 +170,16 @@ class CUP(PPO):
             shuffle=True,
         )
 
+        final_steps = 0
         for i in track(range(self._cfgs.algo_cfgs.update_iters), description='Updating...'):
+            final_steps+=1
             for obs, act, logp, adv_c, old_mean, old_std in dataloader:
                 self._p_dist = Normal(old_mean, old_std)
-                loss_cost, info = self._loss_pi_cost(obs, act, logp, adv_c)
+                loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
                 self._actor_critic.actor_optimizer.zero_grad()
                 loss_cost.backward()
                 if self._cfgs.algo_cfgs.max_grad_norm is not None:
-                    torch.nn.utils.clip_grad_norm_(
+                    clip_grad_norm_(
                         self._actor_critic.actor.parameters(),
                         self._cfgs.algo_cfgs.max_grad_norm,
                     )
@@ -197,8 +203,6 @@ class CUP(PPO):
         self._logger.store(
             {
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.item(),
-                'Train/SecondStepStopIter': i + 1,  # pylint: disable=undefined-loop-variable
-                'Train/SecondStepEntropy': info['entropy'],
-                'Train/SecondStepPolicyRatio': info['ratio'],
+                'Train/SecondStepStopIter': final_steps,  # pylint: disable=undefined-loop-variable
             },
         )

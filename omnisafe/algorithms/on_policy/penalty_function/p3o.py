@@ -16,7 +16,7 @@
 
 import torch
 import torch.nn.functional as F
-
+from torch.nn.utils.clip_grad import clip_grad_norm_
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
 from omnisafe.utils import distributed
@@ -78,6 +78,7 @@ class P3O(PPO):
         surr_cadv = (ratio * adv_c).mean()
         Jc = self._logger.get_stats('Metrics/EpCost')[0] - self._cfgs.algo_cfgs.cost_limit
         loss_cost = self._cfgs.algo_cfgs.kappa * F.relu(surr_cadv + Jc)
+        self._logger.store({'Loss/Loss_pi_cost': loss_cost.mean().item()})
         return loss_cost.mean()
 
     def _update_actor(
@@ -113,7 +114,7 @@ class P3O(PPO):
             adv (torch.Tensor): ``advantage`` stored in buffer.
             adv_c (torch.Tensor): ``cost_advantage`` stored in buffer.
         """
-        loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
+        loss_reward = self._loss_pi(obs, act, logp, adv_r)
         loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
 
         loss = loss_reward + loss_cost
@@ -121,19 +122,10 @@ class P3O(PPO):
         self._actor_critic.actor_optimizer.zero_grad()
         loss.backward()
         if self._cfgs.algo_cfgs.use_max_grad_norm:
-            torch.nn.utils.clip_grad_norm_(
+            clip_grad_norm_(
                 self._actor_critic.actor.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
         distributed.avg_grads(self._actor_critic.actor)
         self._actor_critic.actor_optimizer.step()
 
-        self._logger.store(
-            {
-                'Train/Entropy': info['entropy'],
-                'Train/PolicyRatio': info['ratio'],
-                'Train/PolicyStd': info['std'],
-                'Loss/Loss_pi': loss_reward.mean().item(),
-                'Loss/Loss_pi_cost': loss_cost.mean().item(),
-            },
-        )

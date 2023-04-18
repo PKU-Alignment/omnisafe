@@ -504,7 +504,7 @@ class PolicyGradient(BaseAlgo):
             adv_c (torch.Tensor): ``cost_advantage`` stored in buffer.
         """
         adv = self._compute_adv_surrogate(adv_r, adv_c)
-        loss, info = self._loss_pi(obs, act, logp, adv)
+        loss = self._loss_pi(obs, act, logp, adv)
         self._actor_critic.actor_optimizer.zero_grad()
         loss.backward()
         if self._cfgs.algo_cfgs.use_max_grad_norm:
@@ -514,14 +514,6 @@ class PolicyGradient(BaseAlgo):
             )
         distributed.avg_grads(self._actor_critic.actor)
         self._actor_critic.actor_optimizer.step()
-        self._logger.store(
-            {
-                'Train/Entropy': info['entropy'],
-                'Train/PolicyRatio': info['ratio'],
-                'Train/PolicyStd': info['std'],
-                'Loss/Loss_pi': loss.mean().item(),
-            },
-        )
 
     def _compute_adv_surrogate(  # pylint: disable=unused-argument
         self,
@@ -544,7 +536,7 @@ class PolicyGradient(BaseAlgo):
         act: torch.Tensor,
         logp: torch.Tensor,
         adv: torch.Tensor,
-    ) -> tuple[torch.Tensor, dict[str, float]]:
+    ) -> torch.Tensor:
         r"""Computing pi/actor loss.
 
         In Policy Gradient, the loss is defined as:
@@ -571,5 +563,12 @@ class PolicyGradient(BaseAlgo):
         ratio = torch.exp(logp_ - logp)
         loss = -(ratio * adv).mean()
         entropy = distribution.entropy().mean().item()
-        info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
-        return loss, info
+        self._logger.store(
+            {
+                'Train/Entropy': entropy,
+                'Train/PolicyRatio': ratio,
+                'Train/PolicyStd': std,
+                'Loss/Loss_pi': loss.mean().item(),
+            },
+        )
+        return loss
