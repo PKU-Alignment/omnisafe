@@ -96,6 +96,11 @@ class SimmerAdapter(SauteAdapter):
         Args:
             ep_costs (torch.Tensor): The episode costs.
         """
+        ep_costs = (
+            ep_costs * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
+            / (1 - self._cfgs.algo_cfgs.saute_gamma)
+            / self._cfgs.algo_cfgs.max_ep_len
+        )
         self._safety_budget = self._controller.act(
             safety_budget=self._safety_budget,
             observation=ep_costs,

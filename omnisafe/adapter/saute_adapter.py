@@ -77,7 +77,6 @@ class SauteAdapter(OnPolicyAdapter):
     def reset(self) -> tuple[torch.Tensor, dict]:
         obs, info = self._env.reset()
         self._safety_obs = torch.ones(self._env.num_envs, 1)
-        print(self._safety_obs)
         obs = self._augment_obs(obs)
         return obs, info
 

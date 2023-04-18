@@ -32,6 +32,7 @@ def train(
     custom_cfgs: NamedTuple,
 ) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
+
     Args:
         exp_id (str): Experiment ID.
         algo (str): Algorithm to train.
