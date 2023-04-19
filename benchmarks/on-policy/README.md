@@ -124,133 +124,287 @@ For example, if I train ``PPOLag`` in ``SafetyHumanoidVelocity-v1``
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/first_order_ant.png">
+    src="./benchmarks/first_order_ant_1e6.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyAntVelocity-v1</div>
+    padding: 2px;">SafetyAntVelocity-v1(1e6)</div>
 </center>
 
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/second_order_ant.png">
+    src="./benchmarks/second_order_ant_1e6.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyAntVelocity-v1</div>
+    padding: 2px;">SafetyAntVelocity-v1(1e6)</div>
 </center>
 
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/first_order_halfcheetah.png">
+    src="./benchmarks/first_order_ant_1e7.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyHalfCheetahVelocity-v1</div>
+    padding: 2px;">SafetyAntVelocity-v1(1e7)</div>
 </center>
 
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/second_order_halfcheetah.png">
+    src="./benchmarks/first_order_halfcheetah_1e6.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyHalfCheetahVelocity-v1</div>
+    padding: 2px;">SafetyHalfCheetahVelocity-v1(1e6)</div>
 </center>
 
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/first_order_hopper.png">
+    src="./benchmarks/second_order_halfcheetah_1e6.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyHopperVelocity-v1</div>
+    padding: 2px;">SafetyHalfCheetahVelocity-v1(1e6)</div>
 </center>
 
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/second_order_hopper.png">
+    src="./benchmarks/first_order_halfcheetah_1e7.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyHopperVelocity-v1</div>
+    padding: 2px;">SafetyHalfCheetahVelocity-v1(1e7)</div>
 </center>
 
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/first_order_humanoid.png">
+    src="./benchmarks/first_order_hopper_1e6.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyHumanoidVelocity-v1</div>
+    padding: 2px;">SafetyHopperVelocity-v1(1e6)</div>
 </center>
 
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/second_order_humanoid.png">
+    src="./benchmarks/second_order_hopper_1e6.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyHumanoidVelocity-v1</div>
+    padding: 2px;">SafetyHopperVelocity-v1(1e6)</div>
 </center>
 
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/first_order_walker2d.png">
+    src="./benchmarks/first_order_hopper_1e7.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyWalker2dVelocity-v1</div>
+    padding: 2px;">SafetyHopperVelocity-v1(1e7)</div>
 </center>
 
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/second_order_walker2d.png">
+    src="./benchmarks/first_order_humanoid_1e6.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetyWalker2dVelocity-v1</div>
+    padding: 2px;">SafetyHumanoidVelocity-v1(1e6)</div>
 </center>
 
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/first_order_swimmer.png">
+    src="./benchmarks/second_order_humanoid_1e6.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetySwimmerVelocity-v1</div>
+    padding: 2px;">SafetyHumanoidVelocity-v1(1e6)</div>
 </center>
 
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/second_order_swimmer.png">
+    src="./benchmarks/first_order_humanoid_1e7.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">SafetySwimmerVelocity-v1</div>
+    padding: 2px;">SafetyHumanoidVelocity-v1(1e7)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_walker2d_1e6.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyWalker2dVelocity-v1(1e6)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/second_order_walker2d_1e6.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyWalker2dVelocity-v1(1e6)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_walker2d_1e7.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyWalker2dVelocity-v1(1e7)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_swimmer_1e6.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetySwimmerVelocity-v1(1e6)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/second_order_swimmer_1e6.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetySwimmerVelocity-v1(1e6)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_swimmer_1e7.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetySwimmerVelocity-v1(1e7)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_pointgoal1_1e7.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyPointGoal1-v0(1e7)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_pointgoal2_1e7.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyPointGoal2-v0(1e7)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_cargoal1_1e7.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyCarGoal1-v0(1e7)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_cargoal2_1e7.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyCarGoal2-v0(1e7)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_pointbutton1_1e7.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyPointButton1-v0(1e7)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_pointbutton2_1e7.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyPointButton2-v0(1e7)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_carbutton1_1e7.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyCarButton1-v0(1e7)</div>
+</center>
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/first_order_carbutton2_1e7.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyCarButton2-v0(1e7)</div>
 </center>
 
 
@@ -296,69 +450,189 @@ If you find that other hyperparameters perform better, please feel free to open 
 
 |         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
 | :--------------------------: | :---------------: | :-------------: |
-|     SafetyAntVelocity-v1     |   1128.4±654.6    |   155.0±96.5    |
-| SafetyHalfCheetahVelocity-v1 |   1700.2±902.4    |   422.2±234.1   |
-|   SafetyHopperVelocity-v1    |    674.4±127.2    |   180.5±26.4    |
-|  SafetyWalker2dVelocity-v1   |    624.2±301.4    |   125.8±67.5    |
-|   SafetySwimmerVelocity-v1   |     37.7±8.2      |   695.0±230.3   |
-|  SafetyHumanoidVelocity-v1   |    612.7±131.6    |    38.9±17.8    |
+|     SafetyAntVelocity-v1     |   858.23±560.39   |   68.27±59.44   |
+| SafetyHalfCheetahVelocity-v1 |   1659.58±814.3   |   314.25±212.57 |
+|   SafetyHopperVelocity-v1    |   1600.12±650.83  |   465.24±193.57 |
+|  SafetyWalker2dVelocity-v1   |   1438.59±811.74  |   204.65±158.58 |
+|   SafetySwimmerVelocity-v1   |   47.45±25.17     |   55.66±53.26   |
+|  SafetyHumanoidVelocity-v1   |   615.56±219.51   |    5.25±9.7     |
+
+### PG(10M)
+
+|         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
+| :--------------------------: | :---------------: | :-------------: |
+|     SafetyAntVelocity-v1     |   4740.04±770.86  |   902.88±151.01 |
+| SafetyHalfCheetahVelocity-v1 |   4564.63±1251.58 |   853.26±222.4  |
+|   SafetyHopperVelocity-v1    |   2200.08±906.16  |   588.28±254.18 |
+|  SafetyWalker2dVelocity-v1   |   4366.36±1060.97 |   780.65±180.65 |
+|   SafetySwimmerVelocity-v1   |     75.85±34.01   |   116.96±65.19  |
+|  SafetyHumanoidVelocity-v1   |    5689.59±1578.32|    597.04±315.8 |
+|   SafetyPointGoal1-v0        |   26.63±1.27      |   59.06±31.33   |
+|   SafetyPointGoal2-v0        |   24.21±3.85      |   204.96±104.97 |
+|   SafetyCarGoal1-v0          |   36.08±2.02      |   63.74±51.7    |
+|   SafetyCarGoal2-v0          |   29.46±4.03      |    205.22±78.21 |
+|   SafetyPointButton1-v0      |   29.97±6.3       |   145.02±94.54  |
+|   SafetyPointButton2-v0      |   27.87±4.88      |   152.48±76.25  |
+|   SafetyCarButton1-v0        |   20.12±10.27     |   332.34±187.49 |
+|   SafetyCarButton2-v0        |   17.87±11.27     |   367.76±195.48 |
 
 ### PPO(1M)
 
 |         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
 | :--------------------------: | :---------------: | :-------------: |
-|     SafetyAntVelocity-v1     |   3012.2±1167.0   |   618.3±255.0   |
-| SafetyHalfCheetahVelocity-v1 |   3641.1±1202.3   |   812.8±219.1   |
-|   SafetyHopperVelocity-v1    |    685.2±132.8    |   170.2±25.7    |
-|  SafetyWalker2dVelocity-v1   |    723.0±175.3    |   141.0±30.8    |
-|   SafetySwimmerVelocity-v1   |     52.4±19.9     |   472.9±300.3   |
-|  SafetyHumanoidVelocity-v1   |    633.3±128.7    |    45.9±16.1    |
+|     SafetyAntVelocity-v1     |   2831.88±1242.25 |   576.84±285.03 |
+| SafetyHalfCheetahVelocity-v1 |   3100.31±1403.77 |   595.97±325.07 |
+|   SafetyHopperVelocity-v1    |    2323.12±929.72 |   612.24±253.16 |
+|  SafetyWalker2dVelocity-v1   |    3442.6±1507.25 |   652.75±291.44 |
+|   SafetySwimmerVelocity-v1   |     112.35±20.57  |   153.68±37.3   |
+|  SafetyHumanoidVelocity-v1   |    876.06±380.75  |    11.71±14.78  |
+
+### PPO(10M)
+
+|         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
+| :--------------------------: | :---------------: | :-------------: |
+|     SafetyAntVelocity-v1     |   5667.14±942.66  |   942.57±152.14 |
+| SafetyHalfCheetahVelocity-v1 |   6678.42±1640.91 |   914.97±176.39 |
+|   SafetyHopperVelocity-v1    |    2148.43±917.65 |   505.95±231.22 |
+|  SafetyWalker2dVelocity-v1   |    5736.48±1413.97|   840.55±190.32 |
+|   SafetySwimmerVelocity-v1   |     119.81±13.11  |   166.42±18.09  |
+|  SafetyHumanoidVelocity-v1   |    7777.96±1748.55|    861.78±187.85|
+|   SafetyPointGoal1-v0        |   26.32±1.18      |   48.2±36.32    |
+|   SafetyPointGoal2-v0        |   26.43±1.86      |   159.28±87.13  |
+|   SafetyCarGoal1-v0          |   33.67±2.95      |   59.42±39.63   |
+|   SafetyCarGoal2-v0          |   30.09±4.84      |   216.64±90.29  |
+|   SafetyPointButton1-v0      |   26.1±5.61       |   151.38±89.61  |
+|   SafetyPointButton2-v0      |   27.96±4.94      |   166.74±64.6   |
+|   SafetyCarButton1-v0        |   16.69±9.76      |   402.28±191.59 |
+|   SafetyCarButton2-v0        |   18.45±9.51      |   328.64±170.09 |
 
 ### PPOLag(1M)
 
 |         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
 | :--------------------------: | :---------------: | :-------------: |
-|     SafetyAntVelocity-v1     |   2256.6±315.1    |    29.8±54.7    |
-| SafetyHalfCheetahVelocity-v1 |   2065.5±234.5    |     4.7±5.1     |
-|   SafetyHopperVelocity-v1    |    415.8±367.9    |    47.2±28.4    |
-|  SafetyWalker2dVelocity-v1   |    310.4±44.7     |    19.9±9.9     |
-|   SafetySwimmerVelocity-v1   |     22.0± 7.8     |    63.2±16.3    |
-|  SafetyHumanoidVelocity-v1   |    623.0±173.7    |    17.0±19.7    |
+|     SafetyAntVelocity-v1     |   2643.2±303.57   |    23.55±8.05   |
+| SafetyHalfCheetahVelocity-v1 |   2213.62±665.4   |     23.3±9.02   |
+|   SafetyHopperVelocity-v1    |    1630.06±253.7  |    28.31±25.87  |
+|  SafetyWalker2dVelocity-v1   |    2256.96±944.06 |    25.47±17.36  |
+|   SafetySwimmerVelocity-v1   |     53.18±14.58   |    27.74±5.29   |
+|  SafetyHumanoidVelocity-v1   |    841.84±302.61  |    8.19±11.65   |
+|   SafetyPointGoal1-v0        |   1600.12±650.83  |   465.24±193.57 |
+|   SafetyPointGoal2-v0        |   1438.59±811.74  |   204.65±158.58 |
+|   SafetyCarGoal1-v0          |   47.45±25.17     |   55.66±53.26   |
+|   SafetyCarGoal2-v0          |   615.56±219.51   |    5.25±9.7     |
+|   SafetyPointButton1-v0      |   1600.12±650.83  |   465.24±193.57 |
+|   SafetyPointButton2-v0      |   1438.59±811.74  |   204.65±158.58 |
+|   SafetyCarButton1-v0        |   47.45±25.17     |   55.66±53.26   |
+|   SafetyCarButton2-v0        |   615.56±219.51   |    5.25±9.7     |
+
+### PPOLag(10M)
+
+|         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
+| :--------------------------: | :---------------: | :-------------: |
+|     SafetyAntVelocity-v1     |   3230.19±85.06   |    22.14±8.73   |
+| SafetyHalfCheetahVelocity-v1 |   2939.65±309.22  |     20.07±6.35  |
+|   SafetyHopperVelocity-v1    |    931.46±749.53  |    15.8±20.67   |
+|  SafetyWalker2dVelocity-v1   |    2897.17±806.23 |    33.19±19.04  |
+|   SafetySwimmerVelocity-v1   |     65.83±17.08   |    28.42±4.35   |
+|  SafetyHumanoidVelocity-v1   |    6501.24±568.04 |    28.95±22.43  |
+|   SafetyPointGoal1-v0        |   12.6±5.74       |   34.78±51.85   |
+|   SafetyPointGoal2-v0        |   1.77±3.72       |   20.0±49.84    |
+|   SafetyCarGoal1-v0          |   12.32±8.17      |   19.34±27.36   |
+|   SafetyCarGoal2-v0          |   1.49±2.38       |    41.04±102.2  |
+|   SafetyPointButton1-v0      |   5.57±4.46       |   32.22±40.1    |
+|   SafetyPointButton2-v0      |   2.04±3.15       |   26.74±44.77   |
+|   SafetyCarButton1-v0        |   1.08±2.72       |   32.1±49.06    |
+|   SafetyCarButton2-v0        |   -0.01±2.44      |    39.1±50.7    |
 
 ### P3O(1M)
 
 |         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
 | :--------------------------: | :---------------: | :-------------: |
-|     SafetyAntVelocity-v1     |   1837.5±331.2    |    35.5±28.2    |
-| SafetyHalfCheetahVelocity-v1 |   1251.2±117.4    |    14.7±15.3    |
-|   SafetyHopperVelocity-v1    |    779.0±383.2    |    21.4±13.9    |
-|  SafetyWalker2dVelocity-v1   |   1493.1±515.5    |    27.9±26.7    |
-|   SafetySwimmerVelocity-v1   |     -8.8±14.3     |   125.0±58.5    |
-|  SafetyHumanoidVelocity-v1   |   1027.3±404.7    |     0.4±2.0     |
+|     SafetyAntVelocity-v1     |   1835.38±357.9   |    18.06±10.26  |
+| SafetyHalfCheetahVelocity-v1 |   1668.45±297.64  |    20.01±9.03   |
+|   SafetyHopperVelocity-v1    |    1285.99±220.5  |    14.99±15.63  |
+|  SafetyWalker2dVelocity-v1   |   1547.39±737.5   |    16.58±16.29  |
+|   SafetySwimmerVelocity-v1   |     27.46±8.8     |   22.98±8.57    |
+|  SafetyHumanoidVelocity-v1   |   806.66±263.83   |     8.87±12.4   |
+
+### P3O(10M)
+
+|         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
+| :--------------------------: | :---------------: | :-------------: |
+|     SafetyAntVelocity-v1     |   1835.38±357.9   |    18.06±10.26  |
+| SafetyHalfCheetahVelocity-v1 |   1668.45±297.64  |    20.01±9.03   |
+|   SafetyHopperVelocity-v1    |    1285.99±220.5  |    14.99±15.63  |
+|  SafetyWalker2dVelocity-v1   |   1547.39±737.5   |    16.58±16.29  |
+|   SafetySwimmerVelocity-v1   |     27.46±8.8     |   22.98±8.57    |
+|  SafetyHumanoidVelocity-v1   |   806.66±263.83   |     8.87±12.4   |
+|   SafetyPointGoal1-v0        |   1.77±3.42       |   16.76±21.57   |
+|   SafetyPointGoal2-v0        |   0.45±2.13       |   92.62±143.59  |
+|   SafetyCarGoal1-v0          |   -0.43±6.51      |   34.14±103.54  |
+|   SafetyCarGoal2-v0          |   0.07±1.52       |   22.26±40.84   |
+|   SafetyPointButton1-v0      |   -0.5±1.46       |   30.88±71.69   |
+|   SafetyPointButton2-v0      |   0.02±1.44       |   30.66±46.61   |
+|   SafetyCarButton1-v0        |   -1.45±5.85      |   34.04±68.05   |
+|   SafetyCarButton2-v0        |   -0.14±0.65      |    45.4±81.36   |
 
 ### FOCOPS(1M)
 
 |         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
 | :--------------------------: | :---------------: | :-------------: |
-|     SafetyAntVelocity-v1     |   2022.0±226.6    |     4.5±5.6     |
-| SafetyHalfCheetahVelocity-v1 |   1759.8±414.4    |    31.3±55.2    |
-|   SafetyHopperVelocity-v1    |    255.4±190.0    |    10.2±12.4    |
-|  SafetyWalker2dVelocity-v1   |    346.3±100.2    |    22.1±16.1    |
-|   SafetySwimmerVelocity-v1   |     9.0±17.1      |   86.6 ±80.8    |
-|  SafetyHumanoidVelocity-v1   |    703.5±188.0    |    14.4±16.5    |
+|     SafetyAntVelocity-v1     |   2175.39±334.07  |     27.15±9.69  |
+| SafetyHalfCheetahVelocity-v1 |   1953.34±574.51  |    30.88±11.66  |
+|   SafetyHopperVelocity-v1    |    1462.06±363.06 |    18.35±15.15  |
+|  SafetyWalker2dVelocity-v1   |    2194.62±732.01 |    29.61±32.1   |
+|   SafetySwimmerVelocity-v1   |     39.46±3.92    |   29.05±5.31    |
+|  SafetyHumanoidVelocity-v1   |    761.98±267.66  |    5.85±8.55    |
+
+### FOCOPS(10M)
+
+|         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
+| :--------------------------: | :---------------: | :-------------: |
+|     SafetyAntVelocity-v1     |   3161.01±41.51   |     29.48±8.93  |
+| SafetyHalfCheetahVelocity-v1 |   2977.44±55.91   |    18.34±9.44   |
+|   SafetyHopperVelocity-v1    |    1367.59±523.66 |    17.25±12.21  |
+|  SafetyWalker2dVelocity-v1   |    3083.97±243.19 |    24.65±16.66  |
+|   SafetySwimmerVelocity-v1   |     52.51±17.41   |   30.09±7.14    |
+|  SafetyHumanoidVelocity-v1   |    6275.47±595.52 |    25.5±16.81   |
+|   SafetyPointGoal1-v0        |   15.1±8.95       |   18.12±23.11   |
+|   SafetyPointGoal2-v0        |   2.59±4.63       |   18.9±37.46    |
+|   SafetyCarGoal1-v0          |   16.05±12.76     |   18.74±30.09   |
+|   SafetyCarGoal2-v0          |   1.87±3.8        |    29.46±68.83  |
+|   SafetyPointButton1-v0      |   6.18±6.84       |   27.86±42.79   |
+|   SafetyPointButton2-v0      |   2.71±5.11       |   18.06±35.4    |
+|   SafetyCarButton1-v0        |   0.76±2.97       |   51.78±99.25   |
+|   SafetyCarButton2-v0        |   0.85±2.71       |    36.64±56.29  |
 
 ### CUP(1M)
 
 |         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
 | :--------------------------: | :---------------: | :-------------: |
-|     SafetyAntVelocity-v1     |   1530.4±723.3    |    60.6±48.4    |
-| SafetyHalfCheetahVelocity-v1 |   1217.6±288.0    |    15.2±14.6    |
-|   SafetyHopperVelocity-v1    |    249.8±308.5    |    32.2±21.1    |
-|  SafetyWalker2dVelocity-v1   |    673.3±608.6    |    22.2±21.6    |
-|   SafetySwimmerVelocity-v1   |     1.2±19.3      |   113.9±57.0    |
-|  SafetyHumanoidVelocity-v1   |    535.0±78.2     |    16.3±13.6    |
+|     SafetyAntVelocity-v1     |   1529.39±524.31  |    28.63±24.65  |
+| SafetyHalfCheetahVelocity-v1 |   1386.94±342.01  |    14.91±10.74  |
+|   SafetyHopperVelocity-v1    |    1313.58±424.02 |    24.69±29.85  |
+|  SafetyWalker2dVelocity-v1   |    1483.52±845.33 |    15.94±14.99  |
+|   SafetySwimmerVelocity-v1   |     40.45±4.85    |   25.3±7.45     |
+|  SafetyHumanoidVelocity-v1   |    560.57±141.69  |    2.38±5.07    |
 
+### CUP(10M)
 
+|         Environment          | Reward (OmniSafe) | Cost (Omnisafe) |
+| :--------------------------: | :---------------: | :-------------: |
+|     SafetyAntVelocity-v1     |   3161.03±252.34  |    28.99±17.83  |
+| SafetyHalfCheetahVelocity-v1 |   2795.51±394.91  |    20.65±14.2   |
+|   SafetyHopperVelocity-v1    |    1691.37±173.73 |    20.19±10.85  |
+|  SafetyWalker2dVelocity-v1   |   2337.75±1147.77 |    16.97±14.06  |
+|   SafetySwimmerVelocity-v1   |     63.55±46.23   |   24.58±13.13   |
+|  SafetyHumanoidVelocity-v1   |    6109.94±497.56 |    24.69±20.54  |
+|   SafetyPointGoal1-v0        |   14.36±6.66      |   30.5±34.95    |
+|   SafetyPointGoal2-v0        |   2.22±2.79       |   81.64±138.73  |
+|   SafetyCarGoal1-v0          |   8.21±8.63       |   28.04±55.36   |
+|   SafetyCarGoal2-v0          |   0.71±7.18       |    97.04±130.75 |
+|   SafetyPointButton1-v0      |   4.57±7.12       |   53.92±66.07   |
+|   SafetyPointButton2-v0      |   2.42±3.58       |   48.66±61.84   |
+|   SafetyCarButton1-v0        |   1.38±2.98       |   142.16±178.31 |
+|   SafetyCarButton2-v0        |   2.05±3.82       |    135.14±154.51|
 
 ### Second-Order Algorithms Experiment Results
 
