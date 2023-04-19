@@ -123,9 +123,10 @@ class SimmerPIDAgent(BaseSimmerAgent):
         # clip the action
         action = torch.clamp(raw_action, min=self._action_space[0], max=self._action_space[1])
         # get the next safety budget
+        eps = 1e-6
         next_safety_budget = torch.clamp(
             safety_budget + action,
-            torch.zeros_like(safety_budget),
+            eps*torch.ones_like(safety_budget),
             self._budget_bound,
         )
         # update the true action after clipping
