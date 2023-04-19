@@ -69,26 +69,9 @@ class SimmerAdapter(SauteAdapter):
 
     def reset(self) -> tuple[torch.Tensor, dict]:
         obs, info = self._env.reset()
-        self._safety_obs = self._rel_safety_budget * torch.ones(self._env.num_envs, 1)
-        print(self._safety_obs)
+        self._safety_obs = self._rel_safety_budget * torch.ones(self._num_envs, 1)
         obs = self._augment_obs(obs)
         return obs, info
-
-    @property
-    def safety_budget(self) -> torch.Tensor:
-        """Return the safety budget."""
-        return self._safety_budget
-
-    @property
-    def upper_budget(self) -> torch.Tensor:
-        """Return the safety budget."""
-        return self._upper_budget
-
-    @safety_budget.setter
-    def safety_budget(self, safety_budget: torch.Tensor) -> None:
-        """Set the safety budget."""
-        self._safety_budget = safety_budget
-        self._rel_safety_budget = self._safety_budget / self._upper_budget
 
     def control_budget(self, ep_costs: torch.Tensor):
         """Control the safety budget.
