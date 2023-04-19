@@ -105,7 +105,7 @@ class CPO(TRPO):
         # reward improvement, g-flat as gradient of reward
         expected_reward_improve = grad.dot(step_direction)
 
-        final_kl = 0.0
+        kl = torch.zeros(1)
         # while not within_trust_region and not finish all steps:
         for step in range(total_steps):
             # get new theta
@@ -215,7 +215,7 @@ class CPO(TRPO):
         q: torch.Tensor,
         r: torch.Tensor,
         s: torch.Tensor,
-    ) -> tuple(int, torch.Tensor, torch.Tensor):
+    ) -> tuple:
         """Determine the case of the trust region update.
 
         Args:
@@ -271,7 +271,7 @@ class CPO(TRPO):
         r: torch.Tensor,
         s: torch.Tensor,
         ep_costs: torch.Tensor,
-    ) -> tuple(torch.Tensor, ...):
+    ) -> tuple:
         if optim_case in (3, 4):
             # under 3 and 4 cases directly use TRPO method
             alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))
@@ -281,7 +281,7 @@ class CPO(TRPO):
 
         elif optim_case in (1, 2):
 
-            def project(data: torch.Tensor, low: float, high: float) -> torch.Tensor:
+            def project(data: torch.Tensor, low: torch.Tensor, high: torch.Tensor) -> torch.Tensor:
                 """Project data to [low, high] interval."""
                 return torch.clamp(data, low, high)
 
@@ -416,9 +416,6 @@ class CPO(TRPO):
         self._logger.store(
             {
                 'Loss/Loss_pi': loss.item(),
-                'Train/Entropy': info['entropy'],
-                'Train/PolicyRatio': info['ratio'],
-                'Train/PolicyStd': info['std'],
                 'Misc/AcceptanceStep': accept_step,
                 'Misc/Alpha': alpha.item(),
                 'Misc/FinalStepNorm': step_direction.norm().mean().item(),

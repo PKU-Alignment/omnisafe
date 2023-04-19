@@ -21,6 +21,7 @@ from abc import ABC, abstractmethod
 from omnisafe.utils import distributed
 from omnisafe.utils.config import Config
 from omnisafe.utils.tools import get_device, seed_all
+from omnisafe.common.logger import Logger
 
 
 class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
@@ -71,6 +72,7 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
     @abstractmethod
     def _init_log(self) -> None:
         """Initialize the logger."""
+        self._logger: Logger
 
     @abstractmethod
     def learn(self) -> tuple[int | float, ...]:

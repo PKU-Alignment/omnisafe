@@ -151,6 +151,7 @@ class DDPG(BaseAlgo):
         """
         self._logger.log('INFO: Start training')
         start_time = time.time()
+        step = 0
         for epoch in range(self._epochs):
             roll_out_time = 0.0
             update_time = 0.0
