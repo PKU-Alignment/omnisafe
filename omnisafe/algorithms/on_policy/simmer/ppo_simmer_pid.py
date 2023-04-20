@@ -14,27 +14,20 @@
 # ==============================================================================
 """Implementation of the Simmer version of the PPO algorithm."""
 
+import torch
+
 from omnisafe.adapter.simmer_adapter import SimmerAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
-from omnisafe.common.simmer_agent import SimmerPIDAgent
 from omnisafe.utils import distributed
 
 
 @registry.register
 class PPOSimmerPID(PPO):
-    """The Simmer version of the PPO algorithm.
+    """The Simmer version(based on PID controller) of the PPO algorithm.
 
     A simple combination of the Simmer RL and the Proximal Policy Optimization algorithm.
     """
-
-    def _init(self) -> None:
-        """Initialize the PPOSimmerPID specific model.
-
-        The PPOSimmerPID algorithm uses PID controller to control the budget.
-        """
-        super()._init()
-        self._controller = SimmerPIDAgent()
 
     def _init_env(self) -> None:
         """Initialize the environment.
@@ -81,12 +74,6 @@ class PPOSimmerPID(PPO):
         Args:
             self (object): object of the class.
         """
-        # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
-        current_safety_budget = self._env.safety_budget
-        next_safety_budget = self._controller.act(
-            safety_budget=current_safety_budget,
-            observation=Jc,
-        )
-        self._env.safety_budget = next_safety_budget
+        self._env.control_budget(torch.as_tensor(Jc, dtype=torch.float32, device=self._device))
         super()._update()
