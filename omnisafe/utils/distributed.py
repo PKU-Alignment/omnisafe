@@ -118,7 +118,7 @@ def fork(
             args += sys.argv
             print(sys.argv)
         # this is the parent process, spawn sub-processes..
-        subprocess.check_call(args, env=env)
+        subprocess.check_call(args=args, env=env)
         return True
     return False
 
