@@ -6,5 +6,5 @@ sphinx-markdown-tables
 recommonmark
 sphinx-autoapi
 sphinx-autobuild
-sphinx_autodoc_typehints
+sphinx-autodoc-typehints
 furo
