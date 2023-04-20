@@ -1,6 +1,6 @@
 # Sync with project.dependencies
 safety-gymnasium >= 0.1.0
-torch >= 1.10.0, < 2.0.0a0
+torch >= 1.10.0
 numpy >= 1.20.0
 tensorboard >= 2.8.0
 wandb >= 0.13.0

@@ -45,7 +45,7 @@ defaults:
     # normalize cost
     cost_normalize: False
     # normalize observation
-    obs_normalize: False
+    obs_normalize: True
     # early stop when kl divergence is bigger than target kl
     kl_early_stop: False
     # use max gradient norm

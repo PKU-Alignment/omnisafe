@@ -45,7 +45,7 @@ defaults:
     # normalize cost
     cost_normalize: False
     # normalize observation
-    obs_normalize: False
+    obs_normalize: True
     # early stop when kl divergence is bigger than target kl
     kl_early_stop: False
     # use max gradient norm
@@ -128,3 +128,13 @@ defaults:
       activation: tanh
       # learning rate
       lr: 0.0003
+  # controller configurations
+  control_cfgs:
+    # The Kp of PID controller
+    kp: 1.0
+    # The Ki of PID controller
+    ki: 0.001
+    # The Kd of PID controller
+    kd: 0.01
+    # The polyak coefficient of the target
+    polyak: 0.995
