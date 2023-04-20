@@ -69,7 +69,7 @@ class FOCOPS(PolicyGradient):
         act: torch.Tensor,
         logp: torch.Tensor,
         adv: torch.Tensor,
-    ) -> tuple[torch.Tensor, dict[str, float]]:
+    ) -> torch.Tensor:
         r"""Compute pi/actor loss.
 
         In FOCOPS, the loss is defined as:

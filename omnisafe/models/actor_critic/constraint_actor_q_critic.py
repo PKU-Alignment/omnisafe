@@ -87,11 +87,11 @@ class ConstraintActorQCritic(ActorQCritic):
         for param in self.target_cost_critic.parameters():
             param.requires_grad = False
         self.add_module('cost_critic', self.cost_critic)
-
-        self.cost_critic_optimizer = optim.Adam(
-            self.cost_critic.parameters(),
-            lr=model_cfgs.critic.lr,
-        )
+        if model_cfgs.critic.lr is not None:
+            self.cost_critic_optimizer = optim.Adam(
+                self.cost_critic.parameters(),
+                lr=model_cfgs.critic.lr,
+            )
 
     def polyak_update(self, tau: float) -> None:
         super().polyak_update(tau)

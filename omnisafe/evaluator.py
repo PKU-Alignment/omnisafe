@@ -42,7 +42,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         env: CMDP | None = None,
         actor: Actor | None = None,
-        render_mode: str | None = None,
+        render_mode: str = 'rgb_array',
     ) -> None:
         """Initialize the evaluator.
 
@@ -52,8 +52,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             obs_normalize (omnisafe.algos.models.obs_normalize): the observation Normalize.
         """
         # set the attributes
-        self._env: CMDP = env
-        self._actor: Actor = actor
+        self._env: CMDP | None = env
+        self._actor: Actor | None = actor
 
         # used when load model from saved file.
         self._cfgs: Config
@@ -142,7 +142,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         save_dir: str,
         model_name: str,
-        render_mode: str | None = None,
+        render_mode: str = 'rgb_array',
         camera_name: str | None = None,
         camera_id: int | None = None,
         width: int = 256,
@@ -160,7 +160,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         self.__load_cfgs(save_dir)
 
-        if render_mode is not None or self._render_mode is None:
+        if render_mode is not None:
             self.__set_render_mode(render_mode)
 
         env_kwargs = {
@@ -228,9 +228,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         print(self._dividing_line)
         print('Evaluation results:')
-        print(f'Average episode reward: {np.mean(episode_rewards)}')
-        print(f'Average episode cost: {np.mean(episode_costs)}')
-        print(f'Average episode length: {np.mean(episode_lengths)}')
+        print(f'Average episode reward: {np.mean(a=episode_rewards)}')
+        print(f'Average episode cost: {np.mean(a=episode_costs)}')
+        print(f'Average episode length: {np.mean(a=episode_lengths)}')
         return (
             episode_rewards,
             episode_costs,
@@ -243,6 +243,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         Returns:
             int: the fps.
         """
+        assert (
+            self._env is not None
+        ), 'The environment must be provided or created before getting the fps.'
         try:
             fps = self._env.metadata['render_fps']
         except AttributeError:
@@ -264,7 +267,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             seed (int): seed for the environment. If None, the environment will be reset with a random seed.
             save_replay_path (str): path to save the replay. If None, no replay is saved.
         """
-
+        assert (
+            self._env is not None
+        ), 'The environment must be provided or created before rendering.'
+        assert self._actor is not None, 'The policy must be provided or created before rendering.'
         if save_replay_path is None:
             save_replay_path = os.path.join(self._save_dir, 'video', self._model_name.split('.')[0])
         result_path = os.path.join(save_replay_path, 'result.txt')

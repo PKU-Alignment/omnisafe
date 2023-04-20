@@ -50,8 +50,8 @@ class AlgoWrapper:
 
         self.train_terminal_cfgs = train_terminal_cfgs
         self.custom_cfgs = custom_cfgs
-        self._evaluator: Evaluator|None = None
-        self._plotter: Plotter|None = None
+        self._evaluator: Evaluator | None = None
+        self._plotter: Plotter | None = None
         self.cfgs = self._init_config()
         self._init_checks()
         self._init_algo()

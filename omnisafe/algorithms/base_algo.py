@@ -18,10 +18,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+from omnisafe.common.logger import Logger
 from omnisafe.utils import distributed
 from omnisafe.utils.config import Config
 from omnisafe.utils.tools import get_device, seed_all
-from omnisafe.common.logger import Logger
 
 
 class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods

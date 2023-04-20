@@ -19,7 +19,6 @@ from __future__ import annotations
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
 from omnisafe.models.actor.mlp_actor import MLPActor
-from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 
 
@@ -60,7 +59,10 @@ class ActorBuilder:
         self._hidden_sizes = hidden_sizes
 
     # pylint: disable-next=too-many-return-statements
-    def build_actor(self, actor_type: ActorType) -> Actor:
+    def build_actor(
+        self,
+        actor_type: ActorType,
+    ) -> GaussianLearningActor | GaussianSACActor | MLPActor:
         """Build actor network.
 
         Currently, we support the following actor types:

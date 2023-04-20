@@ -20,6 +20,7 @@ import itertools
 import json
 import os
 from copy import deepcopy
+from typing import Any
 
 from omnisafe.utils.plotter import Plotter
 from omnisafe.utils.tools import assert_with_exit, hash_string, recursive_dict2json, update_dict
@@ -80,9 +81,9 @@ class StatisticsTools:
     def draw_graph(
         self,
         parameter: str,
-        values: list = None,
-        compare_num: int = None,
-        cost_limit: float = None,
+        values: list | None = None,
+        compare_num: int | None = None,
+        cost_limit: float | None = None,
         smooth: int = 1,
     ):
         """Draw graph.
@@ -109,7 +110,7 @@ class StatisticsTools:
         )
 
         # decompress the grid config
-        decompressed_cfgs = {}
+        decompressed_cfgs: dict = {}
         for k, v in self.grid_config.items():
             update_dict(decompressed_cfgs, self.decompress_key(k, v))
         self.decompressed_grid_config = decompressed_cfgs
@@ -123,15 +124,16 @@ class StatisticsTools:
         for graph_dict in graph_paths:
             legend = []
             log_dirs = []
-            for (param, value), path in graph_dict.items():  # noqa: B007
+            img_name_cfgs = {}
+            for (_, value), path in graph_dict.items():
                 legend += [f'{value}']
                 log_dirs += [path]
-                img_name_cfgs = self.path_map_img_name[path]
-            decompressed_img_name_cfgs = {}
+            img_name_cfgs = self.path_map_img_name[graph_dict.values()[-1]]
+            decompressed_img_name_cfgs: dict = {}
             for k, v in img_name_cfgs.items():
                 update_dict(decompressed_img_name_cfgs, self.decompress_key(k, v[0]))
             save_name = (
-                param[:10]  # pylint: disable=undefined-loop-variable
+                graph_dict.keys()[-1][0][:10]  # pylint: disable=undefined-loop-variable
                 + '---'
                 + decompressed_img_name_cfgs['env_id'][:30]
                 + '---'
@@ -156,7 +158,13 @@ class StatisticsTools:
                     f'Cannot generate graph for {save_name[:5] + str(decompressed_img_name_cfgs)}',
                 )
 
-    def make_config_groups(self, parameter, parameter_values: list, values: list, compare_num: int):
+    def make_config_groups(
+        self,
+        parameter,
+        parameter_values: list,
+        values: list | None,
+        compare_num: int | None,
+    ):
         """Make config groups.
 
         Each group contains a list of config paths to compare.
@@ -169,7 +177,11 @@ class StatisticsTools:
                 if it is specified, will combine any potential combination to compare.
         """
         self.path_map_img_name = {}
+        parameter_values_combination: list[tuple] = []
         graph_groups: list[list] = []
+        assert (values is not None) ^ (
+            compare_num is not None
+        ), 'The values and compare_num cannot be set at the same time'
         if values:
             assert_with_exit(
                 all(v in parameter_values for v in values),
@@ -187,7 +199,6 @@ class StatisticsTools:
             )
             # if compare_num is specified, will combine any potential combination to compare
             parameter_values_combination = list(self.combine(parameter_values, compare_num))
-
         group_config = deepcopy(self.grid_config)
         # value of parameter is determined above
         group_config.pop(parameter)
@@ -203,10 +214,10 @@ class StatisticsTools:
                 group_config[parameter] = list(compare_value)
                 img_name_cfgs = deepcopy(group_config)
                 graph_groups.append(
-                    (
+                    [
                         img_name_cfgs,
                         self.variants(list(group_config.keys()), list(group_config.values())),
-                    ),
+                    ],
                 )
 
         graph_paths = []
@@ -315,7 +326,7 @@ class StatisticsTools:
         def check_duplicate(var):
             """Build the full nested dict version of var, based on key names."""
             new_var: dict = {}
-            unflatten_set = set()
+            unflatten_set: set = set()
 
             for key, value in var.items():
                 assert key not in new_var, "You can't assign multiple values to the same key."
@@ -339,7 +350,7 @@ class StatisticsTools:
                 for nxt in self.combine(sequence[i + 1 :], num_choosen - 1):
                     yield (item, *nxt)
 
-    def dict_permutations(self, input_dict):
+    def dict_permutations(self, input_dict) -> list:
         """Generate all possible combinations of the values in a dictionary.
 
         Takes a dictionary with string keys and list values, and returns a dictionary
@@ -358,7 +369,7 @@ class StatisticsTools:
 
         return result
 
-    def get_compressed_key(self, dictionary, key):
+    def get_compressed_key(self, dictionary: dict, key: str) -> Any:
         """Get the value of the key."""
         inner_config = dictionary
         for k in key.split(':'):

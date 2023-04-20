@@ -108,15 +108,14 @@ class OffPolicyAdapter(OnlineAdapter):
                 ep_ret += info.get('original_reward', reward).cpu()
                 ep_cost += info.get('original_cost', cost).cpu()
                 ep_len += 1
-                done = terminated or truncated
-                if done:
-                    logger.store(
-                        {
-                            'Metrics/TestEpRet': ep_ret,
-                            'Metrics/TestEpCost': ep_cost,
-                            'Metrics/TestEpLen': ep_len,
-                        },
-                    )
+                done = bool(terminated[0].item()) or bool(truncated[0].item())
+            logger.store(
+                {
+                    'Metrics/TestEpRet': ep_ret,
+                    'Metrics/TestEpCost': ep_cost,
+                    'Metrics/TestEpLen': ep_len,
+                },
+            )
 
     def roll_out(  # pylint: disable=too-many-locals
         self,

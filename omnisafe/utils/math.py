@@ -161,8 +161,6 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     """
 
     arg_constraints = {'loc': constraints.real, 'scale': constraints.positive}
-    support = constraints.real
-    has_rsample = True
 
     def __init__(self, loc, scale, validate_args=None) -> None:
         base_dist = Normal(loc, scale, validate_args=validate_args)
@@ -176,12 +174,12 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     @property
     def loc(self):
         """The loc of the tanh normal distribution."""
-        return self.base_dist.loc
+        return self.base_dist.mean
 
     @property
     def scale(self):
         """The scale of the tanh normal distribution."""
-        return self.base_dist.scale
+        return self.base_dist.stddev
 
     @property
     def mean(self):

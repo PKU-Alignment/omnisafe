@@ -38,9 +38,6 @@ def valid_str(vals: list | str) -> str:
     Args:
         vals: Value or values to convert to a string.
     """
-    if hasattr(vals, '__name__'):
-        return valid_str(vals.__name__)
-
     if isinstance(vals, (list, tuple)):
         return '-'.join([valid_str(x) for x in vals])
 

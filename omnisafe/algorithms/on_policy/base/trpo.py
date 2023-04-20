@@ -101,7 +101,7 @@ class TRPO(NaturalPG):
                 q_dist = self._actor_critic.actor(obs)
                 # KL-distance of old p-dist and new q-dist, applied in KLEarlyStopping
                 kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-                kl = distributed.dist_avg(kl)
+                kl = distributed.dist_avg(kl).mean().item()
             # real loss improve: old policy loss - new policy loss
             loss_improve = loss_before - loss.item()
             # average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)

@@ -57,6 +57,7 @@ ruff-install:
 
 mypy-install:
 	$(call check_pip_install,mypy)
+	$(PYTHON) -m mypy --install-types
 
 pre-commit-install:
 	$(call check_pip_install,pre-commit)

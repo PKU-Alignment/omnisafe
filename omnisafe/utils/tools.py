@@ -220,7 +220,7 @@ def recursive_check_config(config, default_config, exclude_keys=()):
         config (dict): config to be checked.
         default_config (dict): default config.
     """
-    assert isinstance(config, dict) or config is None, 'custom_cfgs must be a dict!'
+    assert isinstance(config, dict), 'custom_cfgs must be a dict!'
     for key in config:
         if key not in default_config.keys() and key not in exclude_keys:
             raise KeyError(f'Invalid key: {key}')
@@ -291,9 +291,6 @@ def get_device(device: torch.device = cpu) -> torch.device:
     Returns:
         torch.device: device to be used.
     """
-    # Cuda by default
-    if device == 'auto':
-        device = 'cuda'
     # Force conversion to torch.device
     device = torch.device(device)
 

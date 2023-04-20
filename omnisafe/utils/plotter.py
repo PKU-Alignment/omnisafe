@@ -237,7 +237,7 @@ class Plotter:
     def make_plots(
         self,
         all_logdirs,
-        legend: str | None = None,
+        legend: list | None = None,
         xaxis: str | None = None,
         value: str = 'Rewards',
         count=False,

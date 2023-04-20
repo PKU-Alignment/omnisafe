@@ -17,6 +17,7 @@
 import torch
 import torch.nn.functional as F
 from torch.nn.utils.clip_grad import clip_grad_norm_
+
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
 from omnisafe.utils import distributed
@@ -128,4 +129,3 @@ class P3O(PPO):
             )
         distributed.avg_grads(self._actor_critic.actor)
         self._actor_critic.actor_optimizer.step()
-

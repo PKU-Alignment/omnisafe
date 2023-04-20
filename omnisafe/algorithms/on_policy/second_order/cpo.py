@@ -339,7 +339,7 @@ class CPO(TRPO):
         self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
-        loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
+        loss_reward = self._loss_pi(obs, act, logp, adv_r)
         loss_reward_before = distributed.dist_avg(loss_reward).item()
         p_dist = self._actor_critic.actor(obs)
 
@@ -409,7 +409,7 @@ class CPO(TRPO):
         set_param_values_to_model(self._actor_critic.actor, theta_new)
 
         with torch.no_grad():
-            loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
+            loss_reward = self._loss_pi(obs, act, logp, adv_r)
             loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
             loss = loss_reward + loss_cost
 

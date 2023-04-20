@@ -98,3 +98,8 @@ class MLPActor(Actor):
 
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError
+
+    @property
+    def std(self) -> float:
+        """Get the action noise."""
+        return self._noise

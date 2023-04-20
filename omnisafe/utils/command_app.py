@@ -99,11 +99,11 @@ def train(  # pylint: disable=too-many-arguments
     }
     keys = custom_cfgs[0::2]
     values = list(custom_cfgs[1::2])
-    custom_cfgs = dict(zip(keys, values))
-    custom_cfgs.update({'logger_cfgs:log_dir': os.path.join(log_dir, 'train')})
+    custom_cfgs_dict = dict(zip(keys, values))
+    custom_cfgs_dict.update({'logger_cfgs:log_dir': os.path.join(log_dir, 'train')})
 
-    parsed_custom_cfgs = {}
-    for k, v in custom_cfgs.items():
+    parsed_custom_cfgs: dict = {}
+    for k, v in custom_cfgs_dict.items():
         update_dict(parsed_custom_cfgs, custom_cfgs_to_dict(k, v))
 
     agent = omnisafe.Agent(
@@ -328,7 +328,7 @@ def evaluate_model(
                         evaluator.render(num_episodes=num_episode)
                     else:
                         evaluator.evaluate(num_episodes=num_episode)
-    scan_models.close()
+            scan_models.close()
     scan_result.close()
 
 

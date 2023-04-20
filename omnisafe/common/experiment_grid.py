@@ -185,7 +185,8 @@ class ExperimentGrid:
         self.vals.append(vals)
         assert len(set(self.keys)) == len(self.keys), f'Duplicate key: `{key}`'
         assert len(set(vals)) == len(vals), f'Duplicate values in {vals} for key: `{key}`'
-        self.shs.append(shorthand)
+        if shorthand is not None:
+            self.shs.append(shorthand)
         self.in_names.append(in_name)
 
     def variant_name(self, variant):
@@ -341,7 +342,7 @@ class ExperimentGrid:
         def check_duplicate(var):
             """Build the full nested dict version of var, based on key names."""
             new_var: dict = {}
-            unflatten_set = set()
+            unflatten_set: set = set()
 
             for key, value in var.items():
                 assert key not in new_var, "You can't assign multiple values to the same key."
@@ -476,9 +477,9 @@ class ExperimentGrid:
     def analyze(
         self,
         parameter: str,
-        values: list = None,
-        compare_num: int = None,
-        cost_limit: float = None,
+        values: list | None = None,
+        compare_num: int | None = None,
+        cost_limit: float | None = None,
     ):
         """Analyze the experiment results.
 
@@ -518,16 +519,16 @@ class ExperimentGrid:
                             for model in model_dir:
                                 if model.is_file() and model.name.split('.')[-1] == 'pt':
                                     self._evaluator.load_saved(
-                                        save_dir=single_seed,
+                                        save_dir=single_seed.path,
                                         model_name=model.name,
                                     )
                                     self._evaluator.evaluate(
                                         num_episodes=num_episodes,
                                         cost_criteria=cost_criteria,
                                     )
-        model_dir.close()
-        seed_dir.close()
-        exp_dir.close()
+                            model_dir.close()
+                        seed_dir.close()
+                exp_dir.close()
         param_dir.close()
 
     def render(
@@ -558,7 +559,7 @@ class ExperimentGrid:
                             for model in os.scandir(os.path.join(single_seed, 'torch_save')):
                                 if model.is_file() and model.name.split('.')[-1] == 'pt':
                                     self._evaluator.load_saved(
-                                        save_dir=single_seed,
+                                        save_dir=single_seed.path,
                                         model_name=model.name,
                                         render_mode=render_mode,
                                         camera_name=camera_name,

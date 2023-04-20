@@ -38,7 +38,7 @@ class PPO(PolicyGradient):
         act: torch.Tensor,
         logp: torch.Tensor,
         adv: torch.Tensor,
-    ) -> tuple[torch.Tensor, dict[str, float]]:
+    ) -> torch.Tensor:
         r"""Computing pi/actor loss.
 
         In Proximal Policy Optimization, the loss is defined as:

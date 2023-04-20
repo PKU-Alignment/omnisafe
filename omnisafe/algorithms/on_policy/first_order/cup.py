@@ -105,7 +105,6 @@ class CUP(PPO):
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
-        std = self._actor_critic.actor.std
         ratio = torch.exp(logp_ - logp)
 
         kl = torch.distributions.kl_divergence(distribution, self._p_dist).sum(-1, keepdim=True)
@@ -172,7 +171,7 @@ class CUP(PPO):
 
         final_steps = 0
         for i in track(range(self._cfgs.algo_cfgs.update_iters), description='Updating...'):
-            final_steps+=1
+            final_steps += 1
             for obs, act, logp, adv_c, old_mean, old_std in dataloader:
                 self._p_dist = Normal(old_mean, old_std)
                 loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
