@@ -57,7 +57,6 @@ ruff-install:
 
 mypy-install:
 	$(call check_pip_install,mypy)
-	$(PYTHON) -m mypy --install-types
 
 pre-commit-install:
 	$(call check_pip_install,pre-commit)
@@ -117,7 +116,7 @@ ruff-fix: ruff-install
 	$(PYTHON) -m ruff check . --fix --exit-non-zero-on-fix
 
 mypy: mypy-install
-	$(PYTHON) -m mypy $(PROJECT_PATH)
+	$(PYTHON) -m mypy $(PROJECT_PATH) --install-types --non-interactive
 
 pre-commit: pre-commit-install
 	$(PYTHON) -m pre_commit run --all-files
