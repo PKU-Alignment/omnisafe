@@ -165,8 +165,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         self.__load_cfgs(save_dir)
 
-        if render_mode is not None:
-            self.__set_render_mode(render_mode)
+        self.__set_render_mode(render_mode)
 
         env_kwargs = {
             'env_id': self._cfgs['env_id'],

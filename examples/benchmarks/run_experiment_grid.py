@@ -14,9 +14,12 @@
 # ==============================================================================
 """Example of training a policy from exp-x config with OmniSafe."""
 
+from __future__ import annotations
+
 import os
 import sys
 import warnings
+from typing import Any
 
 import torch
 
@@ -28,8 +31,8 @@ def train(
     exp_id: str,
     algo: str,
     env_id: str,
-    custom_cfgs: dict,
-) -> tuple:
+    custom_cfgs: dict[str, Any],
+) -> tuple[float, ...]:
     """Train a policy from exp-x config with OmniSafe.
     Args:
         exp_id (str): Experiment ID.

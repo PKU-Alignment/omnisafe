@@ -98,8 +98,9 @@ def train(  # pylint: disable=too-many-arguments
         'torch_threads': torch_threads,
     }
     keys = custom_cfgs[0::2]
-    values = list(custom_cfgs[1::2])
+    values = custom_cfgs[1::2]
     custom_cfgs_dict = dict(zip(keys, values))
+    assert_with_exit(len(custom_cfgs_dict) % 2 == 0, 'custom_cfgs_dict should in pairs')
     custom_cfgs_dict.update({'logger_cfgs:log_dir': os.path.join(log_dir, 'train')})
 
     parsed_custom_cfgs: dict = {}

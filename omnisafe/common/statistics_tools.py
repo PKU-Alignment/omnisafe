@@ -162,7 +162,7 @@ class StatisticsTools:
         self,
         parameter: str,
         parameter_values: list[str],
-        values: list | None,
+        values: list[Any] | None,
         compare_num: int | None,
     ) -> list[dict[tuple[str, Any], str]]:
         """Make config groups.
@@ -257,7 +257,7 @@ class StatisticsTools:
     def _variants(self, keys: list[str], vals: list[Any]) -> list[dict[str, Any]]:
         """Recursively builds list of valid variants."""
         if len(keys) == 1:
-            pre_variants: list[dict] = [{}]
+            pre_variants: list[dict[str, Any]] = [{}]
         else:
             pre_variants = self._variants(keys[1:], vals[1:])
 
@@ -275,7 +275,7 @@ class StatisticsTools:
 
         return variants
 
-    def update_dict(self, total_dict: dict, item_dict: dict) -> None:
+    def update_dict(self, total_dict: dict[str, Any], item_dict: dict[str, Any]) -> None:
         """Updater of multi-level dictionary."""
         for idd in item_dict:
             total_value = total_dict.get(idd)
@@ -326,21 +326,16 @@ class StatisticsTools:
         def check_duplicate(var: dict[str, Any]) -> dict[str, Any]:
             """Build the full nested dict version of var, based on key names."""
             new_var: dict = {}
-            unflatten_set: set = set()
 
             for key, value in var.items():
                 assert key not in new_var, "You can't assign multiple values to the same key."
                 new_var[key] = value
 
-            # make sure to fill out the nested dict.
-            for key in unflatten_set:
-                new_var[key] = check_duplicate(new_var[key])
-
             return new_var
 
         return [check_duplicate(var) for var in flat_variants]
 
-    def combine(self, sequence: list, num_choosen: int) -> Generator:
+    def combine(self, sequence: list[str], num_choosen: int) -> Generator:
         """Combine elements in sequence to n elements."""
         if num_choosen == 1:
             for i in sequence:
@@ -369,7 +364,7 @@ class StatisticsTools:
 
         return result
 
-    def get_compressed_key(self, dictionary: dict, key: str) -> Any:
+    def get_compressed_key(self, dictionary: dict[str, Any], key: str) -> Any:
         """Get the value of the key."""
         inner_config = dictionary
         for k in key.split(':'):

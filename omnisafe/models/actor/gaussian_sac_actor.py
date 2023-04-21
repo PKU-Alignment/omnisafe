@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import torch
 from torch import nn
-from torch.distributions import Distribution, Normal
+from torch.distributions import Normal
 
 from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, InitFunction, OmnisafeSpace

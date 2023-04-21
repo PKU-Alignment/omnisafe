@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from pandas import DataFrame
 
 
 class Plotter:
@@ -63,7 +64,7 @@ class Plotter:
     def plot_data(
         self,
         sub_figures: np.ndarray,
-        data: list,
+        data: list[DataFrame],
         xaxis: str = 'Steps',
         value: str = 'Rewards',
         condition: str = 'Condition1',
@@ -88,9 +89,9 @@ class Plotter:
                 datum['Costs'] = smoothed_x
 
         if isinstance(data, list):
-            plot_data = pd.concat(data, ignore_index=True)
+            data_to_plot = pd.concat(data, ignore_index=True)
         sns.lineplot(
-            data=plot_data,
+            data=data_to_plot,
             x=xaxis,
             y='Rewards',
             hue=condition,
@@ -99,7 +100,7 @@ class Plotter:
             **kwargs,
         )
         sns.lineplot(
-            data=plot_data,
+            data=data_to_plot,
             x=xaxis,
             y='Costs',
             hue=condition,
@@ -127,20 +128,20 @@ class Plotter:
             prop={'size': 13},
         )
 
-        xscale = np.max(np.asarray(plot_data[xaxis])) > 5e3
+        xscale = np.max(np.asarray(data_to_plot[xaxis], dtype=np.int32)) > 5e3
         if xscale:
             # just some formatting niceness: x-axis scale in scientific notation if max x is large
             plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
 
         plt.tight_layout(pad=0.5)
 
-    def get_datasets(self, logdir: str, condition: str | None = None) -> list[dict[str, Any]]:
+    def get_datasets(self, logdir: str, condition: str | None = None) -> list[DataFrame]:
         """Recursively look through logdir for files named "progress.txt".
 
         Assumes that any file "progress.txt" is a valid hit.
 
         """
-        datasets = []
+        datasets: list[DataFrame] = []
         for root, _, files in os.walk(logdir):
             if 'progress.csv' in files:
                 exp_name = None
@@ -192,10 +193,10 @@ class Plotter:
     def get_all_datasets(
         self,
         all_logdirs: list[str],
-        legend: list | None = None,
-        select: list | None = None,
-        exclude: list | None = None,
-    ) -> list[dict[str, Any]]:
+        legend: list[str] | None = None,
+        select: str | None = None,
+        exclude: str | None = None,
+    ) -> list[DataFrame]:
         """
         For every entry in all_logdirs,
             1) check if the entry is a real directory and if it is, pull data from it;
@@ -245,14 +246,14 @@ class Plotter:
     def make_plots(
         self,
         all_logdirs: list[str],
-        legend: list | None = None,
-        xaxis: str | None = None,
+        legend: list[str] | None = None,
+        xaxis: str = 'Steps',
         value: str = 'Rewards',
         count: bool = False,
         cost_limit: float | None = None,
         smooth: int = 1,
-        select: list | None = None,
-        exclude: list | None = None,
+        select: str | None = None,
+        exclude: str | None = None,
         estimator: str = 'mean',
         save_dir: str = './',
         save_name: str | None = None,
