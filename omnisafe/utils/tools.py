@@ -21,6 +21,7 @@ import json
 import os
 import random
 import sys
+from typing import Any
 
 import numpy as np
 import torch
@@ -113,7 +114,7 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
     assert i == len(vals), f'Lengths do not match: {i} vs. {len(vals)}'
 
 
-def seed_all(seed: int):
+def seed_all(seed: int) -> None:
     """This function is used to set the random seed for all the packages.
 
     .. hint::
@@ -145,7 +146,7 @@ def seed_all(seed: int):
         pass
 
 
-def custom_cfgs_to_dict(key_list, value):
+def custom_cfgs_to_dict(key_list: str, value: Any) -> dict[str, Any]:
     """This function is used to convert the custom configurations to dict.
 
     .. note::
@@ -154,7 +155,7 @@ def custom_cfgs_to_dict(key_list, value):
         then the output dict will be ``{'train_cfgs': {'use_wandb': True}}``.
 
     Args:
-        key_list (list): list of keys.
+        key_list (str): list of keys.
         value: value.
     """
     if value == 'True':
@@ -178,7 +179,7 @@ def custom_cfgs_to_dict(key_list, value):
     return return_dict
 
 
-def update_dict(total_dict, item_dict):
+def update_dict(total_dict: dict, item_dict: dict) -> None:
     """Updater of multi-level dictionary."""
     for idd in item_dict:
         total_value = total_dict.get(idd)
@@ -194,7 +195,7 @@ def update_dict(total_dict, item_dict):
             total_dict.update({idd: total_value})
 
 
-def load_yaml(path) -> dict:
+def load_yaml(path: str) -> dict:
     """Get the default kwargs from ``yaml`` file.
 
     .. note::
@@ -213,7 +214,7 @@ def load_yaml(path) -> dict:
     return kwargs
 
 
-def recursive_check_config(config, default_config, exclude_keys=()):
+def recursive_check_config(config: dict, default_config: dict, exclude_keys: tuple = ()) -> None:
     """Check whether config is valid in default_config.
 
     Args:
@@ -228,7 +229,7 @@ def recursive_check_config(config, default_config, exclude_keys=()):
             recursive_check_config(config[key], default_config[key])
 
 
-def assert_with_exit(condition, msg) -> None:
+def assert_with_exit(condition: bool, msg: str) -> None:
     """Assert with message.
 
     Args:
@@ -243,7 +244,7 @@ def assert_with_exit(condition, msg) -> None:
         sys.exit(1)
 
 
-def recursive_dict2json(dict_obj) -> str:
+def recursive_dict2json(dict_obj: dict) -> str:
     """This function is used to recursively convert the dict to json.
 
     Args:
@@ -252,7 +253,7 @@ def recursive_dict2json(dict_obj) -> str:
     assert isinstance(dict_obj, dict), 'Input must be a dict.'
     flat_dict = {}
 
-    def _flatten_dict(dict_obj, path=''):
+    def _flatten_dict(dict_obj: dict | Any, path: str = '') -> None:
         if isinstance(dict_obj, dict):
             for key, value in dict_obj.items():
                 _flatten_dict(value, path + key + ':')
@@ -263,7 +264,7 @@ def recursive_dict2json(dict_obj) -> str:
     return json.dumps(flat_dict, sort_keys=True).replace('"', "'")
 
 
-def hash_string(string) -> str:
+def hash_string(string: str) -> str:
     """This function is used to generate the folder name.
 
     Args:
