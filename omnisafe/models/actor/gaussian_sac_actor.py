@@ -60,8 +60,9 @@ class GaussianSACActor(Actor):
         self._current_raw_action: torch.Tensor | None = None
         self.register_buffer('_log2', torch.log(torch.tensor(2.0)))
         self._log2: torch.Tensor
+        self._current_dist: Normal
 
-    def _distribution(self, obs: torch.Tensor) -> Distribution:
+    def _distribution(self, obs: torch.Tensor) -> Normal:
         """Get the distribution of the actor.
 
         .. warning::
@@ -100,7 +101,7 @@ class GaussianSACActor(Actor):
 
         return torch.tanh(action)
 
-    def forward(self, obs: torch.Tensor) -> Distribution:
+    def forward(self, obs: torch.Tensor) -> TanhNormal:
         """Forward method.
 
         Args:

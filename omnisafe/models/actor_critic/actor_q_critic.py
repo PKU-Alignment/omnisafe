@@ -14,11 +14,13 @@
 # ==============================================================================
 """Implementation of ActorQCritic."""
 
+from __future__ import annotations
+
 from copy import deepcopy
 
 import torch
 from torch import nn, optim
-from torch.optim.lr_scheduler import ConstantLR, LinearLR, _LRScheduler
+from torch.optim.lr_scheduler import ConstantLR, LinearLR
 
 from omnisafe.models.actor.actor_builder import ActorBuilder
 from omnisafe.models.critic.critic_builder import CriticBuilder
@@ -101,7 +103,7 @@ class ActorQCritic(nn.Module):
                 lr=model_cfgs.critic.lr,
             )
 
-        self.actor_scheduler: _LRScheduler
+        self.actor_scheduler: LinearLR | ConstantLR
         if model_cfgs.linear_lr_decay:
             self.actor_scheduler = LinearLR(
                 self.actor_optimizer,

@@ -57,8 +57,9 @@ class GaussianLearningActor(GaussianActor):
             weight_initialization_mode=weight_initialization_mode,
         )
         self.log_std = nn.Parameter(torch.zeros(self._act_dim), requires_grad=True)
+        self._current_dist: Normal
 
-    def _distribution(self, obs: torch.Tensor) -> Distribution:
+    def _distribution(self, obs: torch.Tensor) -> Normal:
         """Get the distribution of the actor.
 
         .. warning::
