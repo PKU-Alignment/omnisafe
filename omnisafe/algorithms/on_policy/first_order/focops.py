@@ -192,9 +192,8 @@ class FOCOPS(PolicyGradient):
             shuffle=True,
         )
 
-        final_steps = 0
+        final_steps = self._cfgs.algo_cfgs.update_iters
         for i in track(range(self._cfgs.algo_cfgs.update_iters), description='Updating...'):
-            final_steps += 1
             for (
                 obs,
                 act,
@@ -225,12 +224,13 @@ class FOCOPS(PolicyGradient):
 
             self._logger.store({'Train/KL': kl})
             if self._cfgs.algo_cfgs.kl_early_stop and kl > self._cfgs.algo_cfgs.target_kl:
+                final_steps = i + 1
                 self._logger.log(f'Early stopping at iter {i + 1} due to reaching max kl')
                 break
 
         self._logger.store(
             {
-                'Train/StopIter': final_steps,  # pylint: disable=undefined-loop-variable
+                'Train/StopIter': final_steps,
                 'Value/Adv': adv_r.mean().item(),
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier,
             },

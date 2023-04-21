@@ -169,9 +169,8 @@ class CUP(PPO):
             shuffle=True,
         )
 
-        final_steps = 0
+        final_steps = self._cfgs.algo_cfgs.update_iters
         for i in track(range(self._cfgs.algo_cfgs.update_iters), description='Updating...'):
-            final_steps += 1
             for obs, act, logp, adv_c, old_mean, old_std in dataloader:
                 self._p_dist = Normal(old_mean, old_std)
                 loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
@@ -196,6 +195,7 @@ class CUP(PPO):
             kl = distributed.dist_avg(kl)
 
             if self._cfgs.algo_cfgs.kl_early_stop and kl > self._cfgs.algo_cfgs.target_kl:
+                final_steps = i + 1
                 self._logger.log(f'Early stopping at iter {i + 1} due to reaching max kl')
                 break
 

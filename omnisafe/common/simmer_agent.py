@@ -41,14 +41,14 @@ class BaseSimmerAgent(ABC):
         self._history_len = history_len
         self._obs_space = obs_space
         self._action_space = action_space
-        self._budget_bound = budget_bound
+        self._budget_bound = torch.as_tensor(budget_bound, dtype=torch.float32)
         self._cfgs = cfgs
         # history
-        self._error_history = deque([], maxlen=self._history_len)
-        self._reward_history = deque([], maxlen=self._history_len)
-        self._state_history = deque([], maxlen=self._history_len)
-        self._action_history = deque([], maxlen=self._history_len)
-        self._observation_history = deque([], maxlen=self._history_len)
+        self._error_history: deque = deque([], maxlen=self._history_len)
+        self._reward_history: deque = deque([], maxlen=self._history_len)
+        self._state_history: deque = deque([], maxlen=self._history_len)
+        self._action_history: deque = deque([], maxlen=self._history_len)
+        self._observation_history: deque = deque([], maxlen=self._history_len)
 
     @abstractmethod
     def get_greedy_action(
@@ -93,7 +93,7 @@ class SimmerPIDAgent(BaseSimmerAgent):
         self._prev_action = torch.zeros(1)
         self._prev_error = torch.zeros(1)
         self._prev_raw_action = torch.zeros(1)
-        self._integral_history = deque([], maxlen=10)
+        self._integral_history: deque = deque([], maxlen=10)
 
     def get_greedy_action(
         self,

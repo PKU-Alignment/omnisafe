@@ -128,12 +128,12 @@ class StatisticsTools:
             for (_, value), path in graph_dict.items():
                 legend += [f'{value}']
                 log_dirs += [path]
-            img_name_cfgs = self.path_map_img_name[graph_dict.values()[-1]]
+            img_name_cfgs = self.path_map_img_name[list(graph_dict.values())[-1]]
             decompressed_img_name_cfgs: dict = {}
             for k, v in img_name_cfgs.items():
                 update_dict(decompressed_img_name_cfgs, self.decompress_key(k, v[0]))
             save_name = (
-                graph_dict.keys()[-1][0][:10]  # pylint: disable=undefined-loop-variable
+                list(graph_dict.keys())[-1][0][:10]  # pylint: disable=undefined-loop-variable
                 + '---'
                 + decompressed_img_name_cfgs['env_id'][:30]
                 + '---'

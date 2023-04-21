@@ -138,8 +138,8 @@ def seed_all(seed: int):
         torch.use_deterministic_algorithms(True)
         torch.backends.cudnn.enabled = False
         torch.backends.cudnn.benchmark = False
-        if cuda_version is not None and float(cuda_version) >= 10.2:
-            os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+        if cuda_version is not None and float(cuda_version) >= 10.2:  # type: ignore
+            os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'  # type: ignore
             os.environ['PYTHONHASHSEED'] = str(seed)
     except AttributeError:  # pragma: no cover
         pass
