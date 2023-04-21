@@ -241,6 +241,7 @@ class Plotter:
                 data += self.get_datasets(log)
         return data
 
+    # pylint: disable-next=too-many-arguments
     def make_plots(
         self,
         all_logdirs: list[str],
@@ -257,7 +258,7 @@ class Plotter:
         save_name: str | None = None,
         save_format: str = 'png',
         show_image: bool = False,
-    ) -> None:  # pylint: disable=too-many-arguments
+    ) -> None:
         """Example usage:
         Args:
             logdir (strings): As many log directories (or prefixes to log

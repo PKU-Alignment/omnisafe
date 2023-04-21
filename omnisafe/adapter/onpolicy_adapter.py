@@ -16,8 +16,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import torch
 from rich.progress import track
 
@@ -145,7 +143,6 @@ class OnPolicyAdapter(OnlineAdapter):
         reward: torch.Tensor,
         cost: torch.Tensor,
         info: dict,
-        **kwargs: Any,  # pylint: disable=unused-argument
     ) -> None:
         """Log value.
 
@@ -156,7 +153,7 @@ class OnPolicyAdapter(OnlineAdapter):
         Args:
             reward (torch.Tensor): The reward.
             cost (torch.Tensor): The cost.
-            **kwargs: Other arguments.
+            info (dict): The information.
         """
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()

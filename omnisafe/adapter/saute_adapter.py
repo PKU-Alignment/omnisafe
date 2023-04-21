@@ -16,8 +16,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 import torch
 from gymnasium.spaces import Box
@@ -119,9 +117,8 @@ class SauteAdapter(OnPolicyAdapter):
         reward: torch.Tensor,
         cost: torch.Tensor,
         info: dict,
-        **kwargs: Any,
     ) -> None:
-        super()._log_value(reward, cost, info, **kwargs)
+        super()._log_value(reward, cost, info)
         self._ep_budget += self._safety_obs.squeeze(-1)
 
     def _reset_log(self, idx: int | None = None) -> None:

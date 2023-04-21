@@ -50,36 +50,37 @@ def get_diagonal(tensor: torch.Tensor) -> torch.Tensor:
     return tensor.diagonal(dim1=-2, dim2=-1).sum(-1)
 
 
-def discount_cumsum(x_vector: torch.Tensor, discount: float) -> torch.Tensor:
+def discount_cumsum(vector_x: torch.Tensor, discount: float) -> torch.Tensor:
     """Compute the discounted cumulative sum of vectors.
 
     Example:
-        >>> x_vector = torch.arange(1, 5)
-        >>> x_vector
+        >>> vector_x = torch.arange(1, 5)
+        >>> vector_x
         tensor([1, 2, 3, 4])
-        >>> discount_cumsum(x_vector, 0.9)
+        >>> discount_cumsum(vector_x, 0.9)
         tensor([4.00, 3.90, 3.00, 1.00])
 
     Args:
-        x_vector (torch.Tensor): shape (B, T).
+        vector_x (torch.Tensor): shape (B, T).
         discount (float): discount factor.
     """
-    length = x_vector.shape[0]
-    x_vector = x_vector.type(torch.float64)
-    cumsum = x_vector[-1]
+    length = vector_x.shape[0]
+    vector_x = vector_x.type(torch.float64)
+    cumsum = vector_x[-1]
     for idx in reversed(range(length - 1)):
-        cumsum = x_vector[idx] + discount * cumsum
-        x_vector[idx] = cumsum
-    return x_vector
+        cumsum = vector_x[idx] + discount * cumsum
+        vector_x[idx] = cumsum
+    return vector_x
 
 
+# pylint: disable-next=too-many-locals
 def conjugate_gradients(
-    Avp: Callable[[torch.Tensor], torch.Tensor],
-    b_vector: torch.Tensor,
+    fisher_product: Callable[[torch.Tensor], torch.Tensor],
+    vector_b: torch.Tensor,
     num_steps: int = 10,
     residual_tol: float = 1e-10,
     eps: float = 1e-6,
-) -> torch.Tensor:  # pylint: disable=invalid-name,too-many-locals
+) -> torch.Tensor:
     """Implementation of Conjugate gradient algorithm.
 
     Conjugate gradient algorithm is used to solve the linear system of equations :math:`Ax = b`.
@@ -94,30 +95,30 @@ def conjugate_gradients(
         Also probably don't play with this hyperparameter.
 
     Args:
-        Avp (Callable[[torch.Tensor], torch.Tensor]):  Fisher information matrix vector product.
-        b_vector (torch.Tensor): The vector :math:`b` in the equation :math:`Ax = b`.
+        fisher_product (Callable[[torch.Tensor], torch.Tensor]):  Fisher information matrix vector product.
+        vector_b (torch.Tensor): The vector :math:`b` in the equation :math:`Ax = b`.
         num_steps (int): The number of steps to run the algorithm for.
         residual_tol (float): The tolerance for the residual.
         eps (float): A small number to avoid dividing by zero.
     """
 
-    x = torch.zeros_like(b_vector)
-    r = b_vector - Avp(x)
-    p = r.clone()
-    rdotr = torch.dot(r, r)
+    vector_x = torch.zeros_like(vector_b)
+    vector_r = vector_b - fisher_product(vector_x)
+    vector_p = vector_r.clone()
+    rdotr = torch.dot(vector_r, vector_r)
 
     for _ in range(num_steps):
-        z = Avp(p)
-        alpha = rdotr / (torch.dot(p, z) + eps)
-        x += alpha * p
-        r -= alpha * z
-        new_rdotr = torch.dot(r, r)
+        vector_z = fisher_product(vector_p)
+        alpha = rdotr / (torch.dot(vector_p, vector_z) + eps)
+        vector_x += alpha * vector_p
+        vector_r -= alpha * vector_z
+        new_rdotr = torch.dot(vector_r, vector_r)
         if torch.sqrt(new_rdotr) < residual_tol:
             break
-        mu = new_rdotr / (rdotr + eps)
-        p = r + mu * p
+        vector_mu = new_rdotr / (rdotr + eps)
+        vector_p = vector_r + vector_mu * vector_p
         rdotr = new_rdotr
-    return x
+    return vector_x
 
 
 class SafeTanhTransformer(TanhTransform):
@@ -127,7 +128,7 @@ class SafeTanhTransformer(TanhTransform):
     being too large or too small.
     """
 
-    def _call(self, x: torch.Tensor) -> torch.Tensor:
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
         return torch.clamp(torch.tanh(x), min=-0.999999, max=0.999999)
 
     def _inverse(self, y: torch.Tensor) -> torch.Tensor:
@@ -184,7 +185,7 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     @property
     def mean(self) -> torch.Tensor:
         """The mean of the tanh normal distribution."""
-        return SafeTanhTransformer()._call(self.base_dist.mean)
+        return SafeTanhTransformer()(self.base_dist.mean)
 
     @property
     def stddev(self) -> torch.Tensor:
