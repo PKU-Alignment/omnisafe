@@ -22,7 +22,6 @@ import torch
 
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
-from omnisafe.typing import NamedTuple, Tuple
 
 
 def train(

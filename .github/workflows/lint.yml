@@ -65,9 +65,9 @@ jobs:
         run: |
           make addlicense
 
-      # - name: mypy
-      #   run: |
-      #     make mypy
+       - name: mypy
+        run: |
+          make mypy
 
       - name: Install dependencies
         run: |
