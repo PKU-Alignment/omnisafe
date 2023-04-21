@@ -111,7 +111,7 @@ class SimmerPIDAgent(BaseSimmerAgent):
         self._error_history.append(blured_error)
         # compute the integral
         self._integral_history.append(blured_error)
-        self._sum_history = sum(self._integral_history)
+        self._sum_history = torch.as_tensor(sum(self._integral_history))
         # proportional part
         p_part = self._cfgs.kp * blured_error
         # integral part

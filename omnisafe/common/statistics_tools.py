@@ -341,8 +341,8 @@ class StatisticsTools:
             for i in sequence:
                 yield (i,)
         else:
-            for i, item in enumerate(sequence):
-                for nxt in self.combine(sequence[i + 1 :], num_choosen - 1):
+            for idx, item in enumerate(sequence):
+                for nxt in self.combine(sequence[idx + 1 :], num_choosen - 1):
                     yield (item, *nxt)
 
     def dict_permutations(self, input_dict: dict[str, Any]) -> list:
