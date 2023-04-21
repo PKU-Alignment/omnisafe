@@ -75,7 +75,13 @@ class CUP(PPO):
         super().__init__(env_id, cfgs)
         self._p_dist: Normal
 
-    def _loss_pi_cost(self, obs, act, logp, adv_c):
+    def _loss_pi_cost(
+        self,
+        obs: torch.Tensor,
+        act: torch.Tensor,
+        logp: torch.Tensor,
+        adv_c: torch.Tensor,
+    ) -> torch.Tensor:
         r"""Compute the performance of cost on this moment.
 
         Detailedly, we compute the KL divergence between the current policy and the old policy,

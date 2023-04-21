@@ -21,7 +21,7 @@ import os
 import string
 from concurrent.futures import ProcessPoolExecutor as Pool
 from copy import deepcopy
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 from rich.console import Console
@@ -43,7 +43,7 @@ from omnisafe.utils.tools import (
 class ExperimentGrid:
     """Tool for running many experiments given hyper-parameters ranges."""
 
-    def __init__(self, exp_name='') -> None:
+    def __init__(self, exp_name: str = '') -> None:
         """Initialize the ExperimentGrid.
 
         Args:
@@ -126,7 +126,7 @@ class ExperimentGrid:
         print()
         print('=' * self.div_line_width)
 
-    def _default_shorthand(self, key):
+    def _default_shorthand(self, key: str) -> str:
         r"""Default shorthand.
         Create a default shorthand for the key, built from the first
         three letters of each colon-separated part.
@@ -143,12 +143,18 @@ class ExperimentGrid:
 
         valid_chars = f'{string.ascii_letters}{string.digits}'
 
-        def shear(value):
+        def shear(value: str) -> str:
             return ''.join(z for z in value[:3] if z in valid_chars)
 
         return '-'.join([shear(x) for x in key.split(':')])
 
-    def add(self, key, vals, shorthand: str | None = None, in_name: bool = False):
+    def add(
+        self,
+        key: str,
+        vals: list | Any,
+        shorthand: str | None = None,
+        in_name: bool = False,
+    ) -> None:
         r"""Add a parameter (key) to the grid config, with potential values (vals).
 
         By default, if a shorthand isn't given, one is automatically generated
@@ -189,7 +195,7 @@ class ExperimentGrid:
             self.shs.append(shorthand)
         self.in_names.append(in_name)
 
-    def variant_name(self, variant):
+    def variant_name(self, variant: dict[str, Any]) -> str:
         r"""Given a variant (dict of valid param/value pairs), make an exp_name.
 
         A variant's name is constructed as the grid name (if you've given it
@@ -207,7 +213,7 @@ class ExperimentGrid:
             variant (dict): Variant dictionary.
         """
 
-        def get_val(value, key):
+        def get_val(value: dict[str, Any], key: str) -> Any:
             # utility method for getting the correct value out of a variant
             # given as a nested dict. Assumes that a parameter name, k,
             # describes a path into the nested dict, such that k='a:b:c'
@@ -249,7 +255,7 @@ class ExperimentGrid:
 
         return var_name.lstrip('_')
 
-    def update_dict(self, total_dict, item_dict):
+    def update_dict(self, total_dict: dict[str, Any], item_dict: dict[str, Any]) -> None:
         """Updater of multi-level dictionary.
 
         This function is used to update the total dictionary with the item
@@ -272,7 +278,7 @@ class ExperimentGrid:
                 total_value = item_value
                 total_dict.update({idd: total_value})
 
-    def _variants(self, keys, vals):
+    def _variants(self, keys: list[str], vals: list[Any]) -> list[dict[str, Any]]:
         """Recursively builds list of valid variants.
 
         Args:
@@ -298,7 +304,7 @@ class ExperimentGrid:
 
         return variants
 
-    def variants(self):
+    def variants(self) -> list[dict[str, Any]]:
         r"""Makes a list of dict, where each dict is a valid config in the grid.
 
         There is special handling for variant parameters whose names take
@@ -339,7 +345,7 @@ class ExperimentGrid:
         """
         flat_variants = self._variants(self.keys, self.vals)
 
-        def check_duplicate(var):
+        def check_duplicate(var: dict[str, Any]) -> dict[str, Any]:
             """Build the full nested dict version of var, based on key names."""
             new_var: dict = {}
             unflatten_set: set = set()
@@ -357,7 +363,14 @@ class ExperimentGrid:
         return [check_duplicate(var) for var in flat_variants]
 
     # pylint: disable-next=too-many-locals
-    def run(self, thunk, num_pool=1, parent_dir=None, is_test=False, gpu_id=None):
+    def run(
+        self,
+        thunk: Callable,
+        num_pool: int = 1,
+        parent_dir: str | None = None,
+        is_test: bool = False,
+        gpu_id: list[int] | None = None,
+    ) -> None:
         r"""Run each variant in the grid with function 'thunk'.
 
         Note: 'thunk' must be either a callable function, or a string. If it is
@@ -427,7 +440,12 @@ class ExperimentGrid:
             self.save_results(exp_names, variants, results)
         self._init_statistical_tools()
 
-    def save_results(self, exp_names, variants, results):
+    def save_results(
+        self,
+        exp_names: list[str],
+        variants: list[dict[str, Any]],
+        results: list,
+    ) -> None:
         """Save results to a file."""
         path = os.path.join(self.log_dir, 'exp-x-results.txt')
         str_len = max(len(exp_name) for exp_name in exp_names)
@@ -435,13 +453,13 @@ class ExperimentGrid:
         with open(path, 'a+', encoding='utf-8') as f:
             for idx, _ in enumerate(variants):
                 f.write(exp_names[idx] + ': ')
-                reward, cost, ep_len = results[idx].result()
+                reward, cost, ep_len = results[idx]
                 f.write('reward:' + str(round(reward, 2)) + ',')
                 f.write('cost:' + str(round(cost, 2)) + ',')
                 f.write('ep_len:' + str(ep_len))
                 f.write('\n')
 
-    def save_same_exps_config(self, exps_log_dir, variant):
+    def save_same_exps_config(self, exps_log_dir: str, variant: dict) -> None:
         """Save experiment grid configurations as json."""
         os.makedirs(exps_log_dir, exist_ok=True)
         path = os.path.join(exps_log_dir, 'exps_config.json')
@@ -449,7 +467,7 @@ class ExperimentGrid:
         with open(path, encoding='utf-8', mode='a+') as f:
             f.write('\n' + json_config)
 
-    def save_grid_config(self):
+    def save_grid_config(self) -> None:
         """Save experiment grid configurations as json."""
         os.makedirs(self.log_dir, exist_ok=True)
         path = os.path.join(self.log_dir, 'grid_config.json')
@@ -461,7 +479,7 @@ class ExperimentGrid:
         with open(path, encoding='utf-8', mode='w') as f:
             f.write(json_config)
 
-    def check_variant_vaild(self, variant):
+    def check_variant_vaild(self, variant: dict[str, Any]) -> None:
         """Check if the variant is valid."""
         path = os.path.dirname(os.path.abspath(__file__))
         algo_type = ALGORITHM2TYPE.get(variant['algo'], '')
@@ -469,7 +487,7 @@ class ExperimentGrid:
         default_config = load_yaml(cfg_path)['defaults']
         recursive_check_config(variant, default_config, exclude_keys=('algo', 'env_id'))
 
-    def _init_statistical_tools(self):
+    def _init_statistical_tools(self) -> None:
         """Initialize statistical tools."""
         self._statistical_tools = StatisticsTools()
         self._evaluator = Evaluator()
@@ -480,7 +498,7 @@ class ExperimentGrid:
         values: list | None = None,
         compare_num: int | None = None,
         cost_limit: float | None = None,
-    ):
+    ) -> None:
         """Analyze the experiment results.
 
         Args:
@@ -498,7 +516,7 @@ class ExperimentGrid:
         self._statistical_tools.load_source(self.log_dir)
         self._statistical_tools.draw_graph(parameter, values, compare_num, cost_limit)
 
-    def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
+    def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0) -> None:
         """Agent Evaluation.
 
         Args:
@@ -538,7 +556,7 @@ class ExperimentGrid:
         camera_name: str = 'track',
         width: int = 256,
         height: int = 256,
-    ):  # pragma: no cover
+    ) -> None:  # pragma: no cover
         """Evaluate and render some episodes.
 
         Args:

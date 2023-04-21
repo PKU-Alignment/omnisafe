@@ -273,7 +273,7 @@ def __check_parallel_and_vectorized(configs: Config, algo_type: str) -> None:
         ), 'PPOEarlyTerminated or TRPOEarlyTerminated only support vector_env_nums == 1!'
 
 
-def __check_algo_configs(configs: Config, algo_type) -> None:
+def __check_algo_configs(configs: Config, algo_type: str) -> None:
     r"""Check algorithm configs.
 
 
@@ -371,7 +371,7 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
         assert isinstance(configs.use_cost, bool), 'penalty_coef must be bool'
 
 
-def __check_logger_configs(configs: Config, algo_type) -> None:
+def __check_logger_configs(configs: Config, algo_type: str) -> None:
     """Check logger configs."""
     if algo_type == 'on-policy':
         assert isinstance(configs.use_wandb, bool) and isinstance(

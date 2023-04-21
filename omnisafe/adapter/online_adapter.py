@@ -99,7 +99,7 @@ class OnlineAdapter:
         obs_normalize: bool = True,
         reward_normalize: bool = True,
         cost_normalize: bool = True,
-    ):
+    ) -> None:
         """Wrapper the environment.
 
         .. hint::

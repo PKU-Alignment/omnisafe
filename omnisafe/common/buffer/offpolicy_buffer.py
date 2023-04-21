@@ -97,7 +97,7 @@ class OffPolicyBuffer(BaseBuffer):
         """Return the batch size of the buffer."""
         return self._batch_size
 
-    def store(self, **data: torch.Tensor):
+    def store(self, **data: torch.Tensor) -> None:
         """Store data into the buffer.
 
         .. hint::

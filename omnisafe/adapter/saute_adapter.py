@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import torch
 from gymnasium.spaces import Box
@@ -61,7 +63,7 @@ class SauteAdapter(OnPolicyAdapter):
         obs_normalize: bool = True,
         reward_normalize: bool = False,
         cost_normalize: bool = False,
-    ):
+    ) -> None:
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
         if self._env.need_auto_reset_wrapper:
@@ -112,7 +114,13 @@ class SauteAdapter(OnPolicyAdapter):
     def _augment_obs(self, obs: torch.Tensor) -> torch.Tensor:
         return torch.cat([obs, self._safety_obs], dim=-1)
 
-    def _log_value(self, reward: torch.Tensor, cost: torch.Tensor, info: dict, **kwargs) -> None:
+    def _log_value(
+        self,
+        reward: torch.Tensor,
+        cost: torch.Tensor,
+        info: dict,
+        **kwargs: Any,
+    ) -> None:
         super()._log_value(reward, cost, info, **kwargs)
         self._ep_budget += self._safety_obs.squeeze(-1)
 

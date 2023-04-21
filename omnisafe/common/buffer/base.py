@@ -113,7 +113,7 @@ class BaseBuffer(ABC):
         """Return the length of the buffer."""
         return self._size
 
-    def add_field(self, name: str, shape: tuple, dtype: torch.dtype):
+    def add_field(self, name: str, shape: tuple, dtype: torch.dtype) -> None:
         """Add a field to the buffer.
 
         Example:
@@ -130,7 +130,7 @@ class BaseBuffer(ABC):
         self.data[name] = torch.zeros((self._size, *shape), dtype=dtype, device=self._device)
 
     @abstractmethod
-    def store(self, **data: torch.Tensor):
+    def store(self, **data: torch.Tensor) -> None:
         """Store a transition in the buffer.
 
         .. warning::

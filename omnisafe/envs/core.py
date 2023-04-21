@@ -62,7 +62,7 @@ class CMDP(ABC):
         return cls._support_envs
 
     @abstractmethod
-    def __init__(self, env_id: str, **kwargs) -> None:
+    def __init__(self, env_id: str, **kwargs: Any) -> None:
         """Initialize the environment.
 
         Args:
@@ -377,7 +377,7 @@ env_register = ENV_REGISTRY.register
 support_envs = ENV_REGISTRY.support_envs
 
 
-def make(env_id: str, class_name: str | None = None, **kwargs) -> CMDP:
+def make(env_id: str, class_name: str | None = None, **kwargs: Any) -> CMDP:
     """Create an environment.
 
     Args:

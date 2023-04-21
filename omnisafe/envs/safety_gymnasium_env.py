@@ -88,7 +88,7 @@ class SafetyGymnasiumEnv(CMDP):
         env_id: str,
         num_envs: int = 1,
         device: torch.device = cpu,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Initialize the environment.
 

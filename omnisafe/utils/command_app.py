@@ -67,7 +67,7 @@ def train(  # pylint: disable=too-many-arguments
         help='whether to evaluate the trajectory of models saved during training',
     ),
     custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
-):
+) -> None:
     """Train a single policy in OmniSafe via command line.
 
     Example:
@@ -205,7 +205,7 @@ def benchmark(
         False,
         help='whether to evaluate the trajectory of models saved during training',
     ),
-):
+) -> None:
     """Benchmark algorithms configured by .yaml file in OmniSafe via command line.
 
     Example:
@@ -287,7 +287,7 @@ def evaluate_model(
     camera_name: str = typer.Option('track', help='camera name to render'),
     width: int = typer.Option(256, help='width of rendered image'),
     height: int = typer.Option(256, help='height of rendered image'),
-):
+) -> None:
     """Evaluate a policy which trained by OmniSafe via command line.
 
     Example:
@@ -351,7 +351,7 @@ def train_config(
         False,
         help='whether to evaluate the trajectory of models saved during training',
     ),
-):
+) -> None:
     """Train a policy configured by .yaml file in OmniSafe via command line.
 
     Example:
@@ -418,7 +418,7 @@ def analyze_grid(
         None,
         help='the cost limit to show in graphs by a single line',
     ),
-):
+) -> None:
     """Statistics tools for experiment grid.
 
     Just specify in the name of the parameter of which value you want to compare,

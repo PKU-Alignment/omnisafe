@@ -302,10 +302,10 @@ class CPO(TRPO):
                 lambda_a_star = project(lambda_a, r_num / eps_cost, torch.as_tensor(torch.inf))
                 lambda_b_star = project(lambda_b, torch.as_tensor(0.0), r_num / eps_cost)
 
-            def f_a(lam):
+            def f_a(lam: torch.Tensor) -> torch.Tensor:
                 return -0.5 * (A / (lam + 1e-8) + B * lam) - r * ep_costs / (s + 1e-8)
 
-            def f_b(lam):
+            def f_b(lam: torch.Tensor) -> torch.Tensor:
                 return -0.5 * (q / (lam + 1e-8) + 2 * self._cfgs.algo_cfgs.target_kl * lam)
 
             lambda_star = (

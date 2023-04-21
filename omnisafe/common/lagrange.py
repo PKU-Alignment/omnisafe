@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implementation of Lagrange."""
 
+from __future__ import annotations
+
 import torch
 
 
@@ -53,7 +55,7 @@ class Lagrange:
         lagrangian_multiplier_init: float,
         lambda_lr: float,
         lambda_optimizer: str,
-        lagrangian_upper_bound=None,
+        lagrangian_upper_bound: float | None = None,
     ) -> None:
         """Initialize Lagrange multiplier."""
         self.cost_limit = cost_limit

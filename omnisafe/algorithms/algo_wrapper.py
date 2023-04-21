@@ -27,7 +27,7 @@ from omnisafe.algorithms.base_algo import BaseAlgo
 from omnisafe.envs import support_envs
 from omnisafe.evaluator import Evaluator
 from omnisafe.utils import distributed
-from omnisafe.utils.config import check_all_configs, get_default_kwargs_yaml
+from omnisafe.utils.config import Config, check_all_configs, get_default_kwargs_yaml
 from omnisafe.utils.plotter import Plotter
 from omnisafe.utils.tools import recursive_check_config
 
@@ -56,7 +56,7 @@ class AlgoWrapper:
         self._init_checks()
         self._init_algo()
 
-    def _init_config(self):
+    def _init_config(self) -> Config:
         """Init config."""
         assert (
             self.algo in ALGORITHMS['all']
@@ -99,7 +99,7 @@ class AlgoWrapper:
         )
         return cfgs
 
-    def _init_checks(self):
+    def _init_checks(self) -> None:
         """Init checks."""
         assert isinstance(self.algo, str), 'algo must be a string!'
         assert isinstance(self.cfgs.train_cfgs.parallel, int), 'parallel must be an integer!'
@@ -108,7 +108,7 @@ class AlgoWrapper:
             self.env_id in support_envs()
         ), f"{self.env_id} doesn't exist. Please choose from {support_envs()}."
 
-    def _init_algo(self):
+    def _init_algo(self) -> None:
         """Init algo."""
         # Use number of physical cores as default.
         # If also hardware threading CPUs should be used
@@ -131,7 +131,7 @@ class AlgoWrapper:
             cfgs=self.cfgs,
         )
 
-    def learn(self):
+    def learn(self) -> tuple:
         """Agent Learning."""
         ep_ret, ep_cost, ep_len = self.agent.learn()
 
@@ -139,12 +139,12 @@ class AlgoWrapper:
 
         return ep_ret, ep_len, ep_cost
 
-    def _init_statistical_tools(self):
+    def _init_statistical_tools(self) -> None:
         """Init statistical tools."""
         self._evaluator = Evaluator()
         self._plotter = Plotter()
 
-    def plot(self, smooth=1):
+    def plot(self, smooth: int = 1) -> None:
         """Plot the training curve.
 
         Args:
@@ -165,7 +165,7 @@ class AlgoWrapper:
             self.agent.logger.log_dir,
         )
 
-    def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
+    def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0) -> None:
         """Agent Evaluation.
 
         Args:
@@ -188,7 +188,7 @@ class AlgoWrapper:
         camera_name: str = 'track',
         width: int = 256,
         height: int = 256,
-    ):
+    ) -> None:
         """Evaluate and render some episodes.
 
         Args:

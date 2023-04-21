@@ -15,6 +15,7 @@
 """Registry for algorithms."""
 
 import inspect
+from typing import Any
 
 
 class Registry:
@@ -24,23 +25,23 @@ class Registry:
         name (str): Registry name.
     """
 
-    def __init__(self, name) -> None:
+    def __init__(self, name: str) -> None:
         self._name = name
         self._module_dict: dict = {}
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the name of the registry."""
         return self._name
 
-    def get(self, key):
+    def get(self, key: str) -> Any:
         """Get the class that has been registered under the given key."""
         res = self._module_dict.get(key)
         if res is None:
             raise KeyError(f'{key} is not in the {self.name} registry')
         return res
 
-    def _register_module(self, module_class):
+    def _register_module(self, module_class: type) -> None:
         """Register a module.
         Args:
             module (:obj:`nn.Module`): Module to be registered.
@@ -52,7 +53,7 @@ class Registry:
             raise KeyError(f'{module_name} is already registered in {self.name}')
         self._module_dict[module_name] = module_class
 
-    def register(self, cls):
+    def register(self, cls: type) -> type:
         """Register a module class."""
         self._register_module(cls)
         return cls

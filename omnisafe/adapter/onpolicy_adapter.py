@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 from rich.progress import track
 
@@ -143,7 +145,7 @@ class OnPolicyAdapter(OnlineAdapter):
         reward: torch.Tensor,
         cost: torch.Tensor,
         info: dict,
-        **kwargs,  # pylint: disable=unused-argument
+        **kwargs: Any,  # pylint: disable=unused-argument
     ) -> None:
         """Log value.
 

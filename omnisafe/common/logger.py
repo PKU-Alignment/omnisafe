@@ -336,7 +336,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             if self._headers_windows[key] is None:
                 self._data[key] = []
 
-    def get_stats(self, key, min_and_max: bool = False) -> tuple[int | float, ...]:
+    def get_stats(self, key: str, min_and_max: bool = False) -> tuple[int | float, ...]:
         """Get the statistics of the key.
 
         Args:

@@ -64,7 +64,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         self.__set_render_mode(render_mode)
 
-    def __set_render_mode(self, render_mode: str):
+    def __set_render_mode(self, render_mode: str) -> None:
         """Set the render mode.
 
         Args:
@@ -77,7 +77,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         else:
             raise NotImplementedError('The render mode is not implemented.')
 
-    def __load_cfgs(self, save_dir: str):
+    def __load_cfgs(self, save_dir: str) -> None:
         """Load the config from the save directory.
 
         Args:
@@ -93,7 +93,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             ) from error
         self._cfgs = Config.dict2config(kwargs)
 
-    def __load_model_and_env(self, save_dir: str, model_name: str, env_kwargs: dict[str, Any]):
+    def __load_model_and_env(
+        self,
+        save_dir: str,
+        model_name: str,
+        env_kwargs: dict[str, Any],
+    ) -> None:
         """Load the model from the save directory.
 
         Args:
@@ -147,7 +152,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         camera_id: int | None = None,
         width: int = 256,
         height: int = 256,
-    ):
+    ) -> None:
         """Load a saved model.
 
         Args:
@@ -179,7 +184,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         num_episodes: int = 10,
         cost_criteria: float = 1.0,
-    ):
+    ) -> tuple[list[float], list[float]]:
         """Evaluate the agent for num_episodes episodes.
 
         Args:
@@ -260,7 +265,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         save_replay_path: str | None = None,
         max_render_steps: int = 2000,
         cost_criteria: float = 1.0,
-    ):  # pragma: no cover
+    ) -> None:  # pragma: no cover
         """Render the environment for one episode.
 
         Args:

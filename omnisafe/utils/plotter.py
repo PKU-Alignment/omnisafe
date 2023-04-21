@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import os
 import os.path as osp
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -61,14 +62,14 @@ class Plotter:
 
     def plot_data(
         self,
-        sub_figures,
-        data,
-        xaxis='Steps',
-        value='Rewards',
-        condition='Condition1',
-        smooth=1,
-        **kwargs,
-    ):
+        sub_figures: np.ndarray,
+        data: list,
+        xaxis: str = 'Steps',
+        value: str = 'Rewards',
+        condition: str = 'Condition1',
+        smooth: int = 1,
+        **kwargs: Any,
+    ) -> None:
         """Plot data from a pandas dataframe."""
 
         # smooth data with moving window average.
@@ -87,9 +88,9 @@ class Plotter:
                 datum['Costs'] = smoothed_x
 
         if isinstance(data, list):
-            data = pd.concat(data, ignore_index=True)
+            plot_data = pd.concat(data, ignore_index=True)
         sns.lineplot(
-            data=data,
+            data=plot_data,
             x=xaxis,
             y='Rewards',
             hue=condition,
@@ -98,7 +99,7 @@ class Plotter:
             **kwargs,
         )
         sns.lineplot(
-            data=data,
+            data=plot_data,
             x=xaxis,
             y='Costs',
             hue=condition,
@@ -126,14 +127,14 @@ class Plotter:
             prop={'size': 13},
         )
 
-        xscale = np.max(np.asarray(data[xaxis])) > 5e3
+        xscale = np.max(np.asarray(plot_data[xaxis])) > 5e3
         if xscale:
             # just some formatting niceness: x-axis scale in scientific notation if max x is large
             plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
 
         plt.tight_layout(pad=0.5)
 
-    def get_datasets(self, logdir, condition=None):
+    def get_datasets(self, logdir: str, condition: str | None = None) -> list[dict[str, Any]]:
         """Recursively look through logdir for files named "progress.txt".
 
         Assumes that any file "progress.txt" is a valid hit.
@@ -188,7 +189,13 @@ class Plotter:
                 datasets.append(exp_data)
         return datasets
 
-    def get_all_datasets(self, all_logdirs, legend=None, select=None, exclude=None):
+    def get_all_datasets(
+        self,
+        all_logdirs: list[str],
+        legend: list | None = None,
+        select: list | None = None,
+        exclude: list | None = None,
+    ) -> list[dict[str, Any]]:
         """
         For every entry in all_logdirs,
             1) check if the entry is a real directory and if it is, pull data from it;
@@ -236,21 +243,21 @@ class Plotter:
 
     def make_plots(
         self,
-        all_logdirs,
+        all_logdirs: list[str],
         legend: list | None = None,
         xaxis: str | None = None,
         value: str = 'Rewards',
-        count=False,
-        cost_limit=None,
-        smooth=1,
-        select=None,
-        exclude=None,
-        estimator='mean',
-        save_dir='./',
-        save_name=None,
-        save_format='png',
-        show_image=False,
-    ):  # pylint: disable=too-many-arguments
+        count: bool = False,
+        cost_limit: float | None = None,
+        smooth: int = 1,
+        select: list | None = None,
+        exclude: list | None = None,
+        estimator: str = 'mean',
+        save_dir: str = './',
+        save_name: str | None = None,
+        save_format: str = 'png',
+        show_image: bool = False,
+    ) -> None:  # pylint: disable=too-many-arguments
         """Example usage:
         Args:
             logdir (strings): As many log directories (or prefixes to log

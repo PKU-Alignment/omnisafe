@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from typing import Any, Callable
 
 import torch
 from torch.distributions import Normal, TanhTransform, TransformedDistribution, constraints
@@ -79,7 +79,7 @@ def conjugate_gradients(
     num_steps: int = 10,
     residual_tol: float = 1e-10,
     eps: float = 1e-6,
-):  # pylint: disable=invalid-name,too-many-locals
+) -> torch.Tensor:  # pylint: disable=invalid-name,too-many-locals
     """Implementation of Conjugate gradient algorithm.
 
     Conjugate gradient algorithm is used to solve the linear system of equations :math:`Ax = b`.
@@ -162,40 +162,40 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
 
     arg_constraints = {'loc': constraints.real, 'scale': constraints.positive}
 
-    def __init__(self, loc, scale, validate_args=None) -> None:
-        base_dist = Normal(loc, scale, validate_args=validate_args)
-        super().__init__(base_dist, SafeTanhTransformer(), validate_args=validate_args)
+    def __init__(self, loc: torch.Tensor, scale: torch.Tensor) -> None:
+        base_dist = Normal(loc, scale)
+        super().__init__(base_dist, SafeTanhTransformer())
 
-    def expand(self, batch_shape, instance=None):
+    def expand(self, batch_shape: tuple, instance: Any | None = None) -> TanhNormal:
         """Expand the distribution."""
         new = self._get_checked_instance(TanhNormal, instance)
         return super().expand(batch_shape, new)
 
     @property
-    def loc(self):
+    def loc(self) -> torch.Tensor:
         """The loc of the tanh normal distribution."""
         return self.base_dist.mean
 
     @property
-    def scale(self):
+    def scale(self) -> torch.Tensor:
         """The scale of the tanh normal distribution."""
         return self.base_dist.stddev
 
     @property
-    def mean(self):
+    def mean(self) -> torch.Tensor:
         """The mean of the tanh normal distribution."""
-        return SafeTanhTransformer()(self.base_dist.mean)
+        return SafeTanhTransformer()._call(self.base_dist.mean)
 
     @property
-    def stddev(self):
+    def stddev(self) -> torch.Tensor:
         """The stddev of the tanh normal distribution."""
         return self.base_dist.stddev
 
-    def entropy(self):
+    def entropy(self) -> torch.Tensor:
         """The entropy of the tanh normal distribution."""
         return self.base_dist.entropy()
 
     @property
-    def variance(self):
+    def variance(self) -> torch.Tensor:
         """The variance of the tanh normal distribution."""
         return self.base_dist.variance

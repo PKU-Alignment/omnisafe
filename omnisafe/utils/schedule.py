@@ -20,7 +20,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 
-def _linear_interpolation(left, right, alpha):
+def _linear_interpolation(left: float, right: float, alpha: float) -> float:
     return left + alpha * (right - left)
 
 
@@ -74,9 +74,9 @@ class PiecewiseSchedule(Schedule):
 class ConstantSchedule(Schedule):
     """Constant schedule for a value"""
 
-    def __init__(self, value) -> None:
+    def __init__(self, value: float) -> None:
         """Value remains constant over time."""
-        self._v = value
+        self._v: float = value
 
     def value(self, time: int | float) -> int | float:  # pylint: disable=unused-argument
         """See Schedule.value"""

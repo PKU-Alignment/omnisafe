@@ -20,7 +20,7 @@ import itertools
 import json
 import os
 from copy import deepcopy
-from typing import Any
+from typing import Any, Generator
 
 from omnisafe.utils.plotter import Plotter
 from omnisafe.utils.tools import assert_with_exit, hash_string, recursive_dict2json, update_dict
@@ -85,7 +85,7 @@ class StatisticsTools:
         compare_num: int | None = None,
         cost_limit: float | None = None,
         smooth: int = 1,
-    ):
+    ) -> None:
         """Draw graph.
 
         Args:
@@ -160,11 +160,11 @@ class StatisticsTools:
 
     def make_config_groups(
         self,
-        parameter,
-        parameter_values: list,
+        parameter: str,
+        parameter_values: list[str],
         values: list | None,
         compare_num: int | None,
-    ):
+    ) -> list[dict[tuple[str, Any], str]]:
         """Make config groups.
 
         Each group contains a list of config paths to compare.
@@ -235,7 +235,7 @@ class StatisticsTools:
 
         return graph_paths
 
-    def decompress_key(self, compressed_key, value):
+    def decompress_key(self, compressed_key: str, value: Any) -> dict[str, Any]:
         """This function is used to convert the custom configurations to dict.
 
         .. note::
@@ -254,7 +254,7 @@ class StatisticsTools:
             return_dict = {key.replace('-', '_'): return_dict}
         return return_dict
 
-    def _variants(self, keys, vals):
+    def _variants(self, keys: list[str], vals: list[Any]) -> list[dict[str, Any]]:
         """Recursively builds list of valid variants."""
         if len(keys) == 1:
             pre_variants: list[dict] = [{}]
@@ -275,22 +275,22 @@ class StatisticsTools:
 
         return variants
 
-    def update_dict(self, total_dic, item_dic):
+    def update_dict(self, total_dict: dict, item_dict: dict) -> None:
         """Updater of multi-level dictionary."""
-        for idd in item_dic:
-            total_value = total_dic.get(idd)
-            item_value = item_dic.get(idd)
+        for idd in item_dict:
+            total_value = total_dict.get(idd)
+            item_value = item_dict.get(idd)
 
             if total_value is None:
-                total_dic.update({idd: item_value})
+                total_dict.update({idd: item_value})
             elif isinstance(item_value, dict):
                 self.update_dict(total_value, item_value)
-                total_dic.update({idd: total_value})
+                total_dict.update({idd: total_value})
             else:
                 total_value = item_value
-                total_dic.update({idd: total_value})
+                total_dict.update({idd: total_value})
 
-    def variants(self, keys, vals):
+    def variants(self, keys: list[str], vals: list[Any]) -> list[dict[str, Any]]:
         r"""Makes a list of dict, where each dict is a valid config in the grid.
 
         There is special handling for variant parameters whose names take
@@ -323,7 +323,7 @@ class StatisticsTools:
         """
         flat_variants = self._variants(keys, vals)
 
-        def check_duplicate(var):
+        def check_duplicate(var: dict[str, Any]) -> dict[str, Any]:
             """Build the full nested dict version of var, based on key names."""
             new_var: dict = {}
             unflatten_set: set = set()
@@ -340,7 +340,7 @@ class StatisticsTools:
 
         return [check_duplicate(var) for var in flat_variants]
 
-    def combine(self, sequence, num_choosen):
+    def combine(self, sequence: list, num_choosen: int) -> Generator:
         """Combine elements in sequence to n elements."""
         if num_choosen == 1:
             for i in sequence:
@@ -350,7 +350,7 @@ class StatisticsTools:
                 for nxt in self.combine(sequence[i + 1 :], num_choosen - 1):
                     yield (item, *nxt)
 
-    def dict_permutations(self, input_dict) -> list:
+    def dict_permutations(self, input_dict: dict[str, Any]) -> list:
         """Generate all possible combinations of the values in a dictionary.
 
         Takes a dictionary with string keys and list values, and returns a dictionary

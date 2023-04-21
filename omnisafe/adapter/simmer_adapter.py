@@ -73,7 +73,7 @@ class SimmerAdapter(SauteAdapter):
         obs = self._augment_obs(obs)
         return obs, info
 
-    def control_budget(self, ep_costs: torch.Tensor):
+    def control_budget(self, ep_costs: torch.Tensor) -> None:
         """Control the safety budget.
 
         Args:

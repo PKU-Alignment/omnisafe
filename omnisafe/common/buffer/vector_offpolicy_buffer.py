@@ -106,7 +106,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         """Return the number of environments."""
         return self._num_envs
 
-    def add_field(self, name: str, shape: tuple, dtype: torch.dtype):
+    def add_field(self, name: str, shape: tuple, dtype: torch.dtype) -> None:
         """Add a field to the buffer.
 
         Example:

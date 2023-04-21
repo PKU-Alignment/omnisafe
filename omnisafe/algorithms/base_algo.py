@@ -48,12 +48,12 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
         self._init_log()
 
     @property
-    def logger(self):
+    def logger(self) -> Logger:
         """Get the logger."""
         return self._logger  # pylint: disable=no-member
 
     @property
-    def cost_limit(self):
+    def cost_limit(self) -> float | None:
         """Get the cost limit."""
         return getattr(self._cfgs.algo_cfgs, '_cost_limit', None)
 
