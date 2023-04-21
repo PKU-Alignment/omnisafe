@@ -13,3 +13,6 @@ coverage:
       default:
         target: 100%
         informational: true
+        branches:
+          - main
+          - dev
