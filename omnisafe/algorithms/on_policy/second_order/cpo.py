@@ -215,7 +215,7 @@ class CPO(TRPO):
         q: torch.Tensor,
         r: torch.Tensor,
         s: torch.Tensor,
-    ) -> tuple:
+    ) -> tuple[int, torch.Tensor, torch.Tensor]:
         """Determine the case of the trust region update.
 
         Args:
@@ -271,7 +271,7 @@ class CPO(TRPO):
         r: torch.Tensor,
         s: torch.Tensor,
         ep_costs: torch.Tensor,
-    ) -> tuple:
+    ) -> tuple[torch.Tensor, ...]:
         if optim_case in (3, 4):
             # under 3 and 4 cases directly use TRPO method
             alpha = torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (xHx + 1e-8))

@@ -42,16 +42,23 @@ class AlgoWrapper:
         train_terminal_cfgs: dict[str, Any] | None = None,
         custom_cfgs: dict[str, Any] | None = None,
     ) -> None:
+        self.algo: str
+        self.env_id: str
+        self.algo_type: str
+        self.cfgs: Config
+        self.train_terminal_cfgs: dict[str, Any] | None
+        self.custom_cfgs: dict[str, Any] | None
+        self._evaluator: Evaluator | None
+        self._plotter: Plotter | None
+
+        self.agent: BaseAlgo
         self.algo = algo
         self.env_id = env_id
         # algo_type will set in _init_checks()
-        self.algo_type: str
-        self.agent: BaseAlgo
-
         self.train_terminal_cfgs = train_terminal_cfgs
         self.custom_cfgs = custom_cfgs
-        self._evaluator: Evaluator | None = None
-        self._plotter: Plotter | None = None
+        self._evaluator = None
+        self._plotter = None
         self.cfgs = self._init_config()
         self._init_checks()
         self._init_algo()

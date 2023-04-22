@@ -18,6 +18,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+import torch
+
 from omnisafe.common.logger import Logger
 from omnisafe.utils import distributed
 from omnisafe.utils.config import Config
@@ -28,6 +30,11 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
     """Base class for all algorithms."""
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
+        self._env_id: str
+        self._cfgs: Config
+        self._seed: int
+        self._device: torch.device
+
         self._env_id = env_id
         self._cfgs = cfgs
 

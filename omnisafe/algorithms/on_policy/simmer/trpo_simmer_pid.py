@@ -40,7 +40,10 @@ class TRPOSimmerPID(TRPO):
             >>> def _init_env(self) -> None:
             >>>    self._env = CustomAdapter()
         """
-        self._env: SimmerAdapter = SimmerAdapter(
+        self._env: SimmerAdapter
+        self._steps_per_epoch: int
+
+        self._env = SimmerAdapter(
             self._env_id,
             self._cfgs.train_cfgs.vector_env_nums,
             self._seed,

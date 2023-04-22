@@ -56,6 +56,7 @@ class PolicyGradient(BaseAlgo):
             >>> def _init_env(self) -> None:
             >>>    self._env = CustomAdapter()
         """
+        self._env: OnPolicyAdapter
         self._env = OnPolicyAdapter(
             self._env_id,
             self._cfgs.train_cfgs.vector_env_nums,
@@ -83,6 +84,7 @@ class PolicyGradient(BaseAlgo):
             >>> def _init_model(self) -> None:
             >>>    self._actor_critic = CustomActorCritic()
         """
+        self._actor_critic: ConstraintActorCritic
         self._actor_critic = ConstraintActorCritic(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
@@ -110,6 +112,7 @@ class PolicyGradient(BaseAlgo):
             >>>    self._buffer = CustomBuffer()
             >>>    self._model = CustomModel()
         """
+        self._buf: VectorOnPolicyBuffer
         self._buf = VectorOnPolicyBuffer(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,

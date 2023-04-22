@@ -37,6 +37,7 @@ class CPPOPID(PPO):
         The CPPOPID algorithm uses a PID-Lagrange multiplier to balance the cost and reward.
         """
         super()._init()
+        self._lagrange: PIDLagrangian
         self._lagrange = PIDLagrangian(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:

@@ -39,6 +39,7 @@ class TRPOEarlyTerminated(TRPO):
             >>> def _init_env(self) -> None:
             >>>    self._env = CustomAdapter()
         """
+        self._env: EarlyTerminatedAdapter
         self._env = EarlyTerminatedAdapter(
             self._env_id,
             self._cfgs.train_cfgs.vector_env_nums,

@@ -30,6 +30,7 @@ class PDO(PolicyGradient):
 
     def _init(self) -> None:
         super()._init()
+        self._lagrange: Lagrange
         self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
