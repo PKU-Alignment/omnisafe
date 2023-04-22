@@ -14,12 +14,11 @@
 # ==============================================================================
 """Implementation of the command interfaces."""
 
-from __future__ import annotations
 
 import os
 import sys
 import warnings
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import torch
@@ -67,17 +66,13 @@ def train(  # pylint: disable=too-many-arguments
         False,
         help='whether to evaluate the trajectory of models saved during training',
     ),
-    custom_cfgs: list[str] = typer.Option([], help='custom configuration for training'),
+    custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
 ) -> None:
     """Train a single policy in OmniSafe via command line.
-
     Example:
-
     .. code-block:: bash
-
         python -m omnisafe train --algo PPOLag --env_id SafetyPointGoal1-v0 --parallel 1
         --total_steps 1000000 --device cpu --vector_env_nums 1
-
     Args:
         algo: algorithm to train.
         env_id: the name of test environment.
@@ -104,7 +99,7 @@ def train(  # pylint: disable=too-many-arguments
     custom_cfgs_dict = dict(zip(keys, values))
     custom_cfgs_dict.update({'logger_cfgs:log_dir': os.path.join(log_dir, 'train')})
 
-    parsed_custom_cfgs: dict[str, Any] = {}
+    parsed_custom_cfgs: Dict[str, Any] = {}
     for k, v in custom_cfgs_dict.items():
         update_dict(parsed_custom_cfgs, custom_cfgs_to_dict(k, v))
 
@@ -137,17 +132,13 @@ def train_grid(
     exp_id: str,
     algo: str,
     env_id: str,
-    custom_cfgs: dict[str, Any],
-) -> tuple[float, float, float]:  # pragma: no cover
+    custom_cfgs: Dict[str, Any],
+) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
-
     Example:
-
     .. code-block:: bash
-
         python -m omnisafe train_grid --exp_id exp-1 --algo PPOLag --env_id SafetyPointGoal1-v0
         --parallel 1 --total_steps 1000000 --device cpu --vector_env_nums 1
-
     Args:
         exp_id (str): Experiment ID.
         algo (str): Algorithm to train.
@@ -209,14 +200,10 @@ def benchmark(
     ),
 ) -> None:
     """Benchmark algorithms configured by .yaml file in OmniSafe via command line.
-
     Example:
-
     .. code-block:: bash
-
         python -m omnisafe benchmark --exp_name exp-1 --num_pool 1 --config_path ./configs/
         on-policy/PPOLag.yaml--log_dir ./runs
-
     Args:
         exp_name: experiment name
         num_pool: number of paralleled experiments.
@@ -291,14 +278,10 @@ def evaluate_model(
     height: int = typer.Option(256, help='height of rendered image'),
 ) -> None:
     """Evaluate a policy which trained by OmniSafe via command line.
-
     Example:
-
     .. code-block:: bash
-
         python -m omnisafe eval --result_dir ./runs/PPOLag-{SafetyPointGoal1-v0} --num_episode 10
         --render True --render_mode rgb_array --camera_name track --width 256 --height 256
-
     Args:
         result_dir (str): Directory of experiment results to evaluate.
         num_episode (int, optional): Number of episodes to render. Defaults to 10.
@@ -355,14 +338,10 @@ def train_config(
     ),
 ) -> None:
     """Train a policy configured by .yaml file in OmniSafe via command line.
-
     Example:
-
     .. code-block:: bash
-
         python -m omnisafe train_config --config_path ./configs/on-policy/PPOLag.yaml --log_dir ./
         runs
-
     Args:
         config_path (str): path to config file, it is supposed to be yaml file.
         log_dir (str, optional): directory to save logs, default is current directory.
@@ -422,7 +401,6 @@ def analyze_grid(
     ),
 ) -> None:
     """Statistics tools for experiment grid.
-
     Just specify in the name of the parameter of which value you want to compare,
     then you can just specify how many values you want to compare in single graph at most,
     and the function will automatically generate all possible combinations of the graph.
