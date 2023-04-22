@@ -92,7 +92,7 @@ class BCQ(BaseOffline):
     def _train(
         self,
         batch: Tuple[torch.Tensor, ...],
-    ):
+    ) -> None:
         obs, action, reward, _, next_obs, done = batch
 
         self._update_reward_critic(obs, action, reward, next_obs, done)
