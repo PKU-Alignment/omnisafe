@@ -48,7 +48,8 @@ class SauteAdapter(OnPolicyAdapter):
         self._ep_budget: torch.Tensor
 
         assert isinstance(self._env.observation_space, Box), 'Observation space must be Box'
-        self._observation_space: Box = Box(
+        self._observation_space: Box
+        self._observation_space = Box(
             low=-np.inf,
             high=np.inf,
             shape=(self._env.observation_space.shape[0] + 1,),
