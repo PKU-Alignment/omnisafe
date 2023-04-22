@@ -137,7 +137,7 @@ class CMDP(ABC):
         """
 
     @abstractmethod
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
+    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
         """Resets the environment and returns an initial observation.
 
         Args:
@@ -241,7 +241,7 @@ class Wrapper(CMDP):
         """
         return self._env.step(action)
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
+    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
         """Resets the environment and returns an initial observation.
 
         Args:
@@ -303,8 +303,8 @@ class EnvRegister:
         >>> class CustomEnv():
 
     Attributes:
-        _class (Dict[str, Type[CMDP]]): the registered environment class.
-        _support_envs (Dict[str, List[str]]): the environment ids supported by the environment class.
+        _class (dict[str, type[CMDP]]): the registered environment class.
+        _support_envs (dict[str, list[str]]): the environment ids supported by the environment class.
     """
 
     def __init__(self) -> None:
@@ -366,7 +366,7 @@ class EnvRegister:
         """The supported environments.
 
         Returns:
-            List[str]: the supported environments.
+            list[str]: the supported environments.
         """
         return list({env_id for env_ids in self._support_envs.values() for env_id in env_ids})
 
