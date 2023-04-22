@@ -65,18 +65,22 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
             device (torch.device, optional): Device to store the data. Defaults to torch.device('cpu').
 
         Attributes:
-            buffers (List[OnPolicyBuffer]): List of on-policy buffers.
+            buffers (list[OnPolicyBuffer]): List of on-policy buffers.
             _num_buffers (int): Number of buffers.
             _standardized_adv_r (bool): Whether to standardize the advantage for reward.
             _standardized_adv_c (bool): Whether to standardize the advantage for cost.
 
         """
+        self._num_buffers: int
+        self._standardized_adv_r: bool
+        self._standardized_adv_c: bool
+
         self._num_buffers = num_envs
         self._standardized_adv_r = standardized_adv_r
         self._standardized_adv_c = standardized_adv_c
         if num_envs < 1:
             raise ValueError('num_envs must be greater than 0.')
-        self.buffers = [
+        self.buffers: list[OnPolicyBuffer] = [
             OnPolicyBuffer(
                 obs_space=obs_space,
                 act_space=act_space,

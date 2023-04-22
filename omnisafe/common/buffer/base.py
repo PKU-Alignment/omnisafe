@@ -80,6 +80,10 @@ class BaseBuffer(ABC):
             _device (torch.device): The device of the buffer.
 
         """
+        self._device: torch.device
+        self._size: int
+        self.data: dict[str, torch.Tensor]
+
         self._device = device
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros((size, *obs_space.shape), dtype=torch.float32, device=device)
@@ -90,7 +94,7 @@ class BaseBuffer(ABC):
         else:
             raise NotImplementedError
 
-        self.data: dict[str, torch.Tensor] = {
+        self.data = {
             'obs': obs_buf,
             'act': act_buf,
             'reward': torch.zeros(size, dtype=torch.float32, device=device),
@@ -113,7 +117,7 @@ class BaseBuffer(ABC):
         """Return the length of the buffer."""
         return self._size
 
-    def add_field(self, name: str, shape: tuple, dtype: torch.dtype) -> None:
+    def add_field(self, name: str, shape: tuple[int, ...], dtype: torch.dtype) -> None:
         """Add a field to the buffer.
 
         Example:
@@ -124,7 +128,7 @@ class BaseBuffer(ABC):
 
         Args:
             name (str): The name of the field.
-            shape (tuple): The shape of the field.
+            shape (tuple[int, ...]): The shape of the field.
             dtype (torch.dtype): The dtype of the field.
         """
         self.data[name] = torch.zeros((self._size, *shape), dtype=dtype, device=self._device)

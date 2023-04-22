@@ -62,6 +62,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             _num_envs (int): The number of environments.
 
         """
+        self._num_envs: int
         self._num_envs = num_envs
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros(
@@ -106,7 +107,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         """Return the number of environments."""
         return self._num_envs
 
-    def add_field(self, name: str, shape: tuple, dtype: torch.dtype) -> None:
+    def add_field(self, name: str, shape: tuple[int, ...], dtype: torch.dtype) -> None:
         """Add a field to the buffer.
 
         Example:
@@ -117,7 +118,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
 
         Args:
             name (str): The name of the field.
-            shape (tuple): The shape of the field.
+            shape (tuple[int, ...]): The shape of the field.
             dtype (torch.dtype): The dtype of the field.
         """
         self.data[name] = torch.zeros(
