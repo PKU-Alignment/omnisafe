@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of C_CRR"""
+"""Implementation of C_CRR."""
 
 from copy import deepcopy
 from typing import Tuple
