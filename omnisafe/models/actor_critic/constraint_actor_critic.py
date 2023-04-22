@@ -90,7 +90,11 @@ class ConstraintActorCritic(ActorCritic):
                 lr=model_cfgs.critic.lr,
             )
 
-    def step(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
+    def step(
+        self,
+        obs: torch.Tensor,
+        deterministic: bool = False,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """Choose action based on observation.
 
         Args:
@@ -112,7 +116,11 @@ class ConstraintActorCritic(ActorCritic):
 
         return action, value_r[0], value_c[0], log_prob
 
-    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
+    def forward(
+        self,
+        obs: torch.Tensor,
+        deterministic: bool = False,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """Choose action based on observation.
 
         Args:

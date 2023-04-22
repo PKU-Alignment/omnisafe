@@ -31,16 +31,16 @@ class BaseSimmerAgent(ABC):
         self,
         cfgs: Config,
         budget_bound: float,
-        obs_space: tuple[int, ...] = (0,),
-        action_space: tuple[int, ...] = (-1, 1),
+        obs_space: tuple[int,] = (0,),
+        action_space: tuple[int, int] = (-1, 1),
         history_len: int = 100,
     ) -> None:
         """Initialize the agent."""
         assert obs_space is not None, 'Please specify the state space for the Simmer agent'
         assert history_len > 0, 'History length should be positive'
         self._history_len: int
-        self._obs_space: tuple[int, ...]
-        self._action_space: tuple[int, ...]
+        self._obs_space: tuple[int,]
+        self._action_space: tuple[int, int]
         self._budget_bound: torch.Tensor
         self._cfgs: Config
         # history
@@ -89,8 +89,8 @@ class SimmerPIDAgent(BaseSimmerAgent):
         self,
         cfgs: Config,
         budget_bound: float,
-        obs_space: tuple[int, ...] = (0,),
-        action_space: tuple[int, ...] = (-1, 1),
+        obs_space: tuple[int,] = (0,),
+        action_space: tuple[int, int] = (-1, 1),
         history_len: int = 100,
     ) -> None:
         """Initialize the agent."""

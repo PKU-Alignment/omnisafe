@@ -142,7 +142,7 @@ class DDPG(BaseAlgo):
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
-    def learn(self) -> tuple[int | float, ...]:
+    def learn(self) -> tuple[float, float, float]:
         """This is main function for algorithm update, divided into the following steps:
 
         - :meth:`rollout`: collect interactive data from environment.

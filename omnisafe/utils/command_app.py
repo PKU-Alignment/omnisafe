@@ -19,7 +19,7 @@ from __future__ import annotations
 import os
 import sys
 import warnings
-from typing import Any, List
+from typing import Any
 
 import numpy as np
 import torch
@@ -67,7 +67,7 @@ def train(  # pylint: disable=too-many-arguments
         False,
         help='whether to evaluate the trajectory of models saved during training',
     ),
-    custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
+    custom_cfgs: list[str] = typer.Option([], help='custom configuration for training'),
 ) -> None:
     """Train a single policy in OmniSafe via command line.
 
@@ -138,7 +138,7 @@ def train_grid(
     algo: str,
     env_id: str,
     custom_cfgs: dict[str, Any],
-) -> tuple[float, ...]:  # pragma: no cover
+) -> tuple[float, float, float]:  # pragma: no cover
     """Train a policy from exp-x config with OmniSafe.
 
     Example:
