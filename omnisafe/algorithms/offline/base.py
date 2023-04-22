@@ -87,7 +87,7 @@ class BaseOffline(BaseAlgo):
 
                 self._logger.store(
                     **{
-                        'Time/Evaluate': time.time() - evla_time,
+                        'Time/Evaluate': time.time() - eval_time,
                         'Time/Epoch': time.time() - epoch_time,
                         'Time/Total': time.time() - start_time,
                         'Train/Epoch': self.epoch,
