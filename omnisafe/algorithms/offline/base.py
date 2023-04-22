@@ -69,7 +69,7 @@ class BaseOffline(BaseAlgo):
         self._logger.register_key('Train/Epoch')
         self._logger.register_key('TotalSteps')
 
-    def learn(self) -> Tuple[Union[int, float], ...]:
+    def learn(self) -> tuple[float, float, int]:
         self._logger.log('Start training ...')
 
         start_time = time.time()
