@@ -87,7 +87,7 @@ def build_mlp_network(
         )
 
     Args:
-        sizes (List[int]): The sizes of the layers.
+        sizes (list[int]): The sizes of the layers.
         activation (Activation): The activation function.
         output_activation (Activation): The output activation function.
         weight_initialization_mode (InitFunction): The initialization function.

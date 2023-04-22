@@ -59,7 +59,7 @@ class Plotter:
     def __init__(self) -> None:
         self.div_line_width: int = 50
         self.exp_idx: int = 0
-        self.units: dict = {}
+        self.units: dict[str, Any] = {}
 
     def plot_data(
         self,

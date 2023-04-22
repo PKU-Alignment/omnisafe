@@ -167,7 +167,7 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
         base_dist = Normal(loc, scale)
         super().__init__(base_dist, SafeTanhTransformer())
 
-    def expand(self, batch_shape: tuple, instance: Any | None = None) -> TanhNormal:
+    def expand(self, batch_shape: tuple[int, ...], instance: Any | None = None) -> TanhNormal:
         """Expand the distribution."""
         new = self._get_checked_instance(TanhNormal, instance)
         return super().expand(batch_shape, new)

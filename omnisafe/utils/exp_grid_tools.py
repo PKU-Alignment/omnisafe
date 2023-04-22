@@ -17,9 +17,10 @@
 from __future__ import annotations
 
 import string
+from typing import Any
 
 
-def all_bools(vals: list) -> bool:
+def all_bools(vals: list[Any]) -> bool:
     """Check if all values are bools
 
     Args:
@@ -28,7 +29,7 @@ def all_bools(vals: list) -> bool:
     return all(isinstance(v, bool) for v in vals)
 
 
-def valid_str(vals: list | str) -> str:
+def valid_str(vals: list[Any] | str) -> str:
     r"""Convert a value or values to a string which could go in a path of file.
 
     Partly based on `this gist`_.

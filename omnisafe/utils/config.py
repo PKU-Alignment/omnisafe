@@ -145,9 +145,9 @@ class Config(dict):
         """Set attribute."""
         self[name] = value
 
-    def todict(self) -> dict:
+    def todict(self) -> dict[str, Any]:
         """Convert Config to dictionary."""
-        config_dict = {}
+        config_dict: dict[str, Any] = {}
         for key, value in self.items():
             if isinstance(value, Config):
                 config_dict[key] = value.todict()
@@ -160,11 +160,11 @@ class Config(dict):
         return json.dumps(self.todict(), indent=4)
 
     @staticmethod
-    def dict2config(config_dict: dict) -> Config:
+    def dict2config(config_dict: dict[str, Any]) -> Config:
         """Convert dictionary to Config.
 
         Args:
-            config_dict (dict): dictionary to be converted.
+            config_dict (dict[str, Any]): dictionary to be converted.
         """
         config = Config()
         for key, value in config_dict.items():
@@ -178,7 +178,7 @@ class Config(dict):
         """Recursively update args.
 
         Args:
-            update_args (Dict[str, Any]): args to be updated.
+            update_args (dict[str, Any]): args to be updated.
         """
         for key, value in self.items():
             if key in update_args:
@@ -244,7 +244,7 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
     This function is used to check the configs.
 
     Args:
-        configs (dict): configs to be checked.
+        configs (Config): configs to be checked.
         algo_type (str): algorithm type.
     """
 
@@ -260,7 +260,7 @@ def __check_parallel_and_vectorized(configs: Config, algo_type: str) -> None:
     This function is used to check the parallel and vectorized configs.
 
     Args:
-        configs (dict): configs to be checked.
+        configs (Config): configs to be checked.
         algo_type (str): algorithm type.
     """
     if algo_type in {'off-policy', 'model-based'}:

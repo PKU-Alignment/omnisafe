@@ -156,7 +156,7 @@ def custom_cfgs_to_dict(key_list: str, value: Any) -> dict[str, Any]:
 
     Args:
         key_list (str): list of keys.
-        value: value.
+        value (Any): value.
     """
     if value == 'True':
         value = True
@@ -179,7 +179,7 @@ def custom_cfgs_to_dict(key_list: str, value: Any) -> dict[str, Any]:
     return return_dict
 
 
-def update_dict(total_dict: dict, item_dict: dict) -> None:
+def update_dict(total_dict: dict[str, Any], item_dict: dict[str, Any]) -> None:
     """Updater of multi-level dictionary."""
     for idd in item_dict:
         total_value = total_dict.get(idd)
@@ -195,7 +195,7 @@ def update_dict(total_dict: dict, item_dict: dict) -> None:
             total_dict.update({idd: total_value})
 
 
-def load_yaml(path: str) -> dict:
+def load_yaml(path: str) -> dict[str, Any]:
     """Get the default kwargs from ``yaml`` file.
 
     .. note::
@@ -214,7 +214,11 @@ def load_yaml(path: str) -> dict:
     return kwargs
 
 
-def recursive_check_config(config: dict, default_config: dict, exclude_keys: tuple = ()) -> None:
+def recursive_check_config(
+    config: dict[str, Any],
+    default_config: dict[str, Any],
+    exclude_keys: tuple[str, ...] = (),
+) -> None:
     """Check whether config is valid in default_config.
 
     Args:
@@ -244,16 +248,16 @@ def assert_with_exit(condition: bool, msg: str) -> None:
         sys.exit(1)
 
 
-def recursive_dict2json(dict_obj: dict) -> str:
+def recursive_dict2json(dict_obj: dict[str, Any]) -> str:
     """This function is used to recursively convert the dict to json.
 
     Args:
         dict_obj (dict): dict to be converted.
     """
     assert isinstance(dict_obj, dict), 'Input must be a dict.'
-    flat_dict = {}
+    flat_dict: dict[str, Any] = {}
 
-    def _flatten_dict(dict_obj: dict | Any, path: str = '') -> None:
+    def _flatten_dict(dict_obj: dict[str, Any] | Any, path: str = '') -> None:
         if isinstance(dict_obj, dict):
             for key, value in dict_obj.items():
                 _flatten_dict(value, path + key + ':')

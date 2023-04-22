@@ -14,10 +14,12 @@
 # ==============================================================================
 """Implementation of the command interfaces."""
 
+from __future__ import annotations
+
 import os
 import sys
 import warnings
-from typing import List
+from typing import Any
 
 import numpy as np
 import torch
@@ -28,7 +30,6 @@ from rich.console import Console
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.common.statistics_tools import StatisticsTools
-from omnisafe.typing import Tuple
 from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dict
 
 
@@ -66,7 +67,7 @@ def train(  # pylint: disable=too-many-arguments
         False,
         help='whether to evaluate the trajectory of models saved during training',
     ),
-    custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
+    custom_cfgs: list[str] = typer.Option([], help='custom configuration for training'),
 ) -> None:
     """Train a single policy in OmniSafe via command line.
 
@@ -103,7 +104,7 @@ def train(  # pylint: disable=too-many-arguments
     custom_cfgs_dict = dict(zip(keys, values))
     custom_cfgs_dict.update({'logger_cfgs:log_dir': os.path.join(log_dir, 'train')})
 
-    parsed_custom_cfgs: dict = {}
+    parsed_custom_cfgs: dict[str, Any] = {}
     for k, v in custom_cfgs_dict.items():
         update_dict(parsed_custom_cfgs, custom_cfgs_to_dict(k, v))
 
@@ -136,8 +137,8 @@ def train_grid(
     exp_id: str,
     algo: str,
     env_id: str,
-    custom_cfgs: dict,
-) -> Tuple[float, float, float]:  # pragma: no cover
+    custom_cfgs: dict[str, Any],
+) -> tuple[float, ...]:  # pragma: no cover
     """Train a policy from exp-x config with OmniSafe.
 
     Example:
