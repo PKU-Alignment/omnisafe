@@ -56,6 +56,8 @@ class Normalizer(nn.Module):
         self._std: torch.Tensor  # running standard deviation
         self._count: torch.Tensor  # number of samples
         self._clip: torch.Tensor  # clip value
+        self._shape: tuple[int, ...]  # shape of the normalize
+        self._first: bool  # whether the data is the first data
 
         self._shape = shape
         self._first = True

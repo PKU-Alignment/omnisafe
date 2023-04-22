@@ -94,6 +94,23 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             config: The config of the experiment.
             models: The models to be saved.
         """
+        self._hms_time: str
+        self._log_dir: str
+        self._maste_proc: bool
+        self._console: Console
+        self._output_file: TextIO
+        self._epoch: int
+        self._first_row: bool
+        self._what_to_save: dict[str, Any] | None
+        self._data: dict[str, Deque[int | float] | list[int | float]]
+        self._headers_windows: dict[str, int | None]
+        self._headers_minmax: dict[str, bool]
+        self._headers_delta: dict[str, bool]
+        self._current_row: dict[str, int | float]
+        self._config: Config
+        self._use_tensorboard: bool
+        self._use_wandb: bool
+
         hms_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
         relpath = hms_time
 
@@ -105,7 +122,6 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self._maste_proc = get_rank() == 0
         self._console = Console()
 
-        self._output_file: TextIO
         if self._maste_proc:
             os.makedirs(self._log_dir, exist_ok=True)
             self._output_file = open(  # noqa: SIM115 # pylint: disable=consider-using-with
@@ -117,14 +133,14 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             self.log(f'Logging data to {self._output_file.name}', 'cyan', bold=True)
             self._csv_writer = csv.writer(self._output_file)
 
-        self._epoch: int = 0
-        self._first_row: bool = True
-        self._what_to_save: dict[str, Any] | None = None
-        self._data: dict[str, Deque[int | float] | list[int | float]] = {}
-        self._headers_windows: dict[str, int | None] = {}
-        self._headers_minmax: dict[str, bool] = {}
-        self._headers_delta: dict[str, bool] = {}
-        self._current_row: dict[str, int | float] = {}
+        self._epoch = 0
+        self._first_row = True
+        self._what_to_save = None
+        self._data = {}
+        self._headers_windows = {}
+        self._headers_minmax = {}
+        self._headers_delta = {}
+        self._current_row = {}
 
         if config is not None:
             self.save_config(config)
@@ -174,7 +190,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         """Setup the torch saver.
 
         Args:
-            what_to_save (dict): The dict of the things to be saved.
+            what_to_save (dict[str, Any]): The dict of the things to be saved.
         """
         self._what_to_save = what_to_save
 

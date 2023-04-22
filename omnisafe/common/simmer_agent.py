@@ -31,24 +31,36 @@ class BaseSimmerAgent(ABC):
         self,
         cfgs: Config,
         budget_bound: float,
-        obs_space: tuple = (0,),
-        action_space: tuple = (-1, 1),
+        obs_space: tuple[int, ...] = (0,),
+        action_space: tuple[int, ...] = (-1, 1),
         history_len: int = 100,
     ) -> None:
         """Initialize the agent."""
         assert obs_space is not None, 'Please specify the state space for the Simmer agent'
         assert history_len > 0, 'History length should be positive'
+        self._history_len: int
+        self._obs_space: tuple[int, ...]
+        self._action_space: tuple[int, ...]
+        self._budget_bound: torch.Tensor
+        self._cfgs: Config
+        # history
+        self._error_history: deque[torch.Tensor]
+        self._reward_history: deque[torch.Tensor]
+        self._state_history: deque[torch.Tensor]
+        self._action_history: deque[torch.Tensor]
+        self._observation_history: deque[torch.Tensor]
+
         self._history_len = history_len
         self._obs_space = obs_space
         self._action_space = action_space
         self._budget_bound = torch.as_tensor(budget_bound, dtype=torch.float32)
         self._cfgs = cfgs
         # history
-        self._error_history: deque[torch.Tensor] = deque([], maxlen=self._history_len)
-        self._reward_history: deque[torch.Tensor] = deque([], maxlen=self._history_len)
-        self._state_history: deque[torch.Tensor] = deque([], maxlen=self._history_len)
-        self._action_history: deque[torch.Tensor] = deque([], maxlen=self._history_len)
-        self._observation_history: deque[torch.Tensor] = deque([], maxlen=self._history_len)
+        self._error_history = deque([], maxlen=self._history_len)
+        self._reward_history = deque([], maxlen=self._history_len)
+        self._state_history = deque([], maxlen=self._history_len)
+        self._action_history = deque([], maxlen=self._history_len)
+        self._observation_history = deque([], maxlen=self._history_len)
 
     @abstractmethod
     def get_greedy_action(
@@ -77,8 +89,8 @@ class SimmerPIDAgent(BaseSimmerAgent):
         self,
         cfgs: Config,
         budget_bound: float,
-        obs_space: tuple = (0,),
-        action_space: tuple = (-1, 1),
+        obs_space: tuple[int, ...] = (0,),
+        action_space: tuple[int, ...] = (-1, 1),
         history_len: int = 100,
     ) -> None:
         """Initialize the agent."""
@@ -89,11 +101,17 @@ class SimmerPIDAgent(BaseSimmerAgent):
             action_space=action_space,
             history_len=history_len,
         )
+        self._sum_history: torch.Tensor
+        self._prev_action: torch.Tensor
+        self._prev_error: torch.Tensor
+        self._prev_raw_action: torch.Tensor
+        self._integral_history: deque[torch.Tensor]
+
         self._sum_history = torch.zeros(1)
         self._prev_action = torch.zeros(1)
         self._prev_error = torch.zeros(1)
         self._prev_raw_action = torch.zeros(1)
-        self._integral_history: deque[torch.Tensor] = deque([], maxlen=10)
+        self._integral_history = deque([], maxlen=10)
 
     def get_greedy_action(
         self,

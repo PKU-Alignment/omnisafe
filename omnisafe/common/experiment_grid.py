@@ -49,27 +49,34 @@ class ExperimentGrid:
         Args:
             exp_name (str): Name of the experiment grid.
         """
-        self.keys: list[str] = []
-        self.vals: list[Any] = []
-        self.shs: list[str] = []
-        self.in_names: list[bool] = []
+        self.keys: list[str]
+        self.vals: list[Any]
+        self.shs: list[str]
+        self.in_names: list[bool]
+        self.div_line_width: int
+        self.name: str
+        self._console: Console
+        self.log_dir: str
+        self.default_shorthand: bool
+        self.wait_defore_launch: int
+        self.foce_datastamp: bool
+        self._statistical_tools: StatisticsTools
+        self._evaluator: Evaluator
+
+        self.keys = []
+        self.vals = []
+        self.shs = []
+        self.in_names = []
         self.div_line_width = 80
         assert isinstance(exp_name, str), 'Name has to be a string.'
         self.name = exp_name
         self._console = Console()
-        self.log_dir: str
-
         # Whether GridSearch provides automatically-generated default shorthands
         self.default_shorthand = True
-
         # Tells the GridSearch how many seconds to pause for before launching experiments
         self.wait_defore_launch = 0
-
         # Whether to automatically insert a date and time stamp into the names of save directories
         self.foce_datastamp = False
-
-        self._statistical_tools: StatisticsTools
-        self._evaluator: Evaluator
 
     def print(self) -> None:
         """Print a helpful report about the experiment grid.
@@ -151,7 +158,7 @@ class ExperimentGrid:
     def add(
         self,
         key: str,
-        vals: list | Any,
+        vals: list[Any] | Any,
         shorthand: str | None = None,
         in_name: bool = False,
     ) -> None:
@@ -210,7 +217,7 @@ class ExperimentGrid:
             exp_name = 'SafetyPointGoal1-v0_SAC_0'
 
         Args:
-            variant (dict): Variant dictionary.
+            variant (dict[str, Any]): Variant dictionary.
         """
 
         def get_val(value: dict[str, Any], key: str) -> Any:
@@ -262,8 +269,8 @@ class ExperimentGrid:
         dictionary.
 
         Args:
-            total_dict (dict): Total dictionary.
-            item_dict (dict): Item dictionary.
+            total_dict (dict[str, Any]): Total dictionary.
+            item_dict (dict[str, Any]): Item dictionary.
         """
         for idd in item_dict:
             total_value = total_dict.get(idd)
@@ -282,11 +289,11 @@ class ExperimentGrid:
         """Recursively builds list of valid variants.
 
         Args:
-            keys (list): List of keys.
-            vals (list): List of values.
+            keys (keys: list[str]): List of keys.
+            vals (list[Any]): List of values.
         """
         if len(keys) == 1:
-            pre_variants: list[dict] = [{}]
+            pre_variants: list[dict[str, Any]] = [{}]
         else:
             pre_variants = self._variants(keys[1:], vals[1:])
 
@@ -347,7 +354,7 @@ class ExperimentGrid:
 
         def check_duplicate(var: dict[str, Any]) -> dict[str, Any]:
             """Build the full nested dict version of var, based on key names."""
-            new_var: dict = {}
+            new_var: dict[str, Any] = {}
             unflatten_set: set = set()
 
             for key, value in var.items():
@@ -459,7 +466,7 @@ class ExperimentGrid:
                 f.write('ep_len:' + str(ep_len))
                 f.write('\n')
 
-    def save_same_exps_config(self, exps_log_dir: str, variant: dict) -> None:
+    def save_same_exps_config(self, exps_log_dir: str, variant: dict[str, Any]) -> None:
         """Save experiment grid configurations as json."""
         os.makedirs(exps_log_dir, exist_ok=True)
         path = os.path.join(exps_log_dir, 'exps_config.json')
@@ -495,7 +502,7 @@ class ExperimentGrid:
     def analyze(
         self,
         parameter: str,
-        values: list | None = None,
+        values: list[Any] | None = None,
         compare_num: int | None = None,
         cost_limit: float | None = None,
     ) -> None:
@@ -503,7 +510,7 @@ class ExperimentGrid:
 
         Args:
             parameter (str): name of parameter to analyze.
-            values (list): specific values of attribute,
+            values (list[Any]): specific values of attribute,
                 if it is specified, will only compare values in it.
             compare_num (int): number of values to compare,
                 if it is specified, will combine any potential combination to compare.

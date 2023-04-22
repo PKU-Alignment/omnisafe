@@ -36,12 +36,13 @@ class StatisticsTools:
     def __init__(self) -> None:
         self.exp_dir: str  # experiment directory
         self.grid_config_dir: str  # experiment's config directory
-        self.grid_config: dict  # experiment's config
+        self.grid_config: dict[str, Any]  # experiment's config
+        self.plotter: Plotter
         # decompressed grid config
         # e.g. {'algo_cfgs:steps_per_epoch': 2048} -> {'algo_cfgs': {'steps_per_epoch': 2048}}
-        self.decompressed_grid_config: dict
+        self.decompressed_grid_config: dict[str, Any]
         # map the path of data to the config which generate the name of image
-        self.path_map_img_name: dict
+        self.path_map_img_name: dict[str, Any]
         # plotter instance
         self.plotter = Plotter()
 

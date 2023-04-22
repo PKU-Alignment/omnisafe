@@ -58,6 +58,13 @@ class Lagrange:
         lagrangian_upper_bound: float | None = None,
     ) -> None:
         """Initialize Lagrange multiplier."""
+        self.cost_limit: float
+        self.lagrangian_multiplier: torch.nn.Parameter
+        self.lambda_optimizer: torch.optim.Optimizer
+        self.lambda_range_projection: torch.nn.ReLU
+        self.lagrangian_upper_bound: float | None
+        self.lambda_lr: float
+
         self.cost_limit = cost_limit
         self.lambda_lr = lambda_lr
         self.lagrangian_upper_bound = lagrangian_upper_bound

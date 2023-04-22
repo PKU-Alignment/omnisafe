@@ -14,6 +14,8 @@
 # ==============================================================================
 """Registry for algorithms."""
 
+from __future__ import annotations
+
 import inspect
 from typing import Any
 
@@ -26,8 +28,8 @@ class Registry:
     """
 
     def __init__(self, name: str) -> None:
-        self._name = name
-        self._module_dict: dict = {}
+        self._name: str = name
+        self._module_dict: dict[str, type] = {}
 
     @property
     def name(self) -> str:
@@ -43,6 +45,7 @@ class Registry:
 
     def _register_module(self, module_class: type) -> None:
         """Register a module.
+
         Args:
             module (:obj:`nn.Module`): Module to be registered.
         """
