@@ -52,14 +52,16 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             obs_normalize (omnisafe.algos.models.obs_normalize): the observation Normalize.
         """
         # set the attributes
-        self._env: CMDP | None = env
-        self._actor: Actor | None = actor
-
+        self._env: CMDP | None
+        self._actor: Actor | None
         # used when load model from saved file.
         self._cfgs: Config
         self._save_dir: str
         self._model_name: str
+        self._dividing_line: str
 
+        self._env = env
+        self._actor = actor
         self._dividing_line = '\n' + '#' * 50 + '\n'
 
         self.__set_render_mode(render_mode)
