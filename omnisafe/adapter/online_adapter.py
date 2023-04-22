@@ -16,9 +16,11 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 
-from omnisafe.envs.core import make, support_envs
+from omnisafe.envs.core import CMDP, make, support_envs
 from omnisafe.envs.wrapper import (
     ActionScale,
     AutoReset,
@@ -30,6 +32,7 @@ from omnisafe.envs.wrapper import (
 )
 from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils.config import Config
+from omnisafe.utils.tools import get_device
 
 
 class OnlineAdapter:
@@ -79,12 +82,18 @@ class OnlineAdapter:
         """
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
-        self._cfgs = cfgs
-        self._device = cfgs.train_cfgs.device
+        self._cfgs: Config
+        self._device: torch.device
+        self._env_id: str
+        self._env: CMDP
+        self._eval_env: CMDP
 
+        self._cfgs = cfgs
+        self._device = get_device(cfgs.train_cfgs.device)
         self._env_id = env_id
         self._env = make(env_id, num_envs=num_envs, device=self._device)
         self._eval_env = make(env_id, num_envs=1, device=self._device)
+
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
@@ -169,7 +178,14 @@ class OnlineAdapter:
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
@@ -181,11 +197,11 @@ class OnlineAdapter:
             cost (torch.Tensor): amount of cost returned after previous action.
             terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            info (dict[str, Any]): contains auxiliary diagnostic information.
         """
         return self._env.step(action)
 
-    def reset(self) -> tuple[torch.Tensor, dict]:
+    def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
         """Resets the environment and returns an initial observation.
 
         Args:
@@ -193,7 +209,7 @@ class OnlineAdapter:
 
         Returns:
             observation (torch.Tensor): the initial observation of the space.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            info (dict[str, Any]): contains auxiliary diagnostic information.
         """
         return self._env.reset()
 
@@ -201,6 +217,6 @@ class OnlineAdapter:
         """Save the environment.
 
         Returns:
-            Dict[str, torch.nn.Module]: the saved environment.
+            dict[str, torch.nn.Module]: the saved environment.
         """
         return self._env.save()

@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
@@ -75,9 +77,10 @@ class OffPolicyAdapter(OnlineAdapter):
         self._ep_ret: torch.Tensor
         self._ep_cost: torch.Tensor
         self._ep_len: torch.Tensor
+        self._current_obs: torch.Tensor
         self._current_obs, _ = self.reset()
+        self._max_ep_len: int
         self._max_ep_len = 1000
-        self._device = cfgs.train_cfgs.device
         self._reset_log()
 
     def eval_policy(  # pylint: disable=too-many-locals
@@ -170,7 +173,7 @@ class OffPolicyAdapter(OnlineAdapter):
         self,
         reward: torch.Tensor,
         cost: torch.Tensor,
-        info: dict,
+        info: dict[str, Any],
     ) -> None:
         """Log value.
 
@@ -181,7 +184,7 @@ class OffPolicyAdapter(OnlineAdapter):
         Args:
             reward (torch.Tensor): The reward.
             cost (torch.Tensor): The cost.
-            info (dict): The information.
+            info (dict[str, Any]): The information.
         """
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()

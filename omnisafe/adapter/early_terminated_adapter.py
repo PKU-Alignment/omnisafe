@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 
 from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
@@ -30,13 +32,22 @@ class EarlyTerminatedAdapter(OnPolicyAdapter):
 
         super().__init__(env_id, num_envs, seed, cfgs)
 
+        self._cost_limit: float
+        self._cost_logger: torch.Tensor
         self._cost_limit = cfgs.algo_cfgs.cost_limit
         self._cost_logger = torch.zeros(self._env.num_envs)
 
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         next_obs, reward, cost, terminated, truncated, info = super().step(action)
 
         self._cost_logger += info.get('original_cost', cost)

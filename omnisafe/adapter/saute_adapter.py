@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import torch
 from gymnasium.spaces import Box
@@ -46,7 +48,7 @@ class SauteAdapter(OnPolicyAdapter):
         self._ep_budget: torch.Tensor
 
         assert isinstance(self._env.observation_space, Box), 'Observation space must be Box'
-        self._observation_space = Box(
+        self._observation_space: Box = Box(
             low=-np.inf,
             high=np.inf,
             shape=(self._env.observation_space.shape[0] + 1,),
@@ -74,7 +76,7 @@ class SauteAdapter(OnPolicyAdapter):
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
 
-    def reset(self) -> tuple[torch.Tensor, dict]:
+    def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
         obs, info = self._env.reset()
         self._safety_obs = torch.ones(self._env.num_envs, 1)
         obs = self._augment_obs(obs)
@@ -83,7 +85,14 @@ class SauteAdapter(OnPolicyAdapter):
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         next_obs, reward, cost, terminated, truncated, info = self._env.step(action)
         info['original_reward'] = reward
 
@@ -116,7 +125,7 @@ class SauteAdapter(OnPolicyAdapter):
         self,
         reward: torch.Tensor,
         cost: torch.Tensor,
-        info: dict,
+        info: dict[str, Any],
     ) -> None:
         super()._log_value(reward, cost, info)
         self._ep_budget += self._safety_obs.squeeze(-1)
