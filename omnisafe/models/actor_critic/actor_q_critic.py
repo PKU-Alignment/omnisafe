@@ -22,7 +22,9 @@ import torch
 from torch import nn, optim
 from torch.optim.lr_scheduler import ConstantLR, LinearLR
 
+from omnisafe.models.actor import GaussianLearningActor, GaussianSACActor, MLPActor
 from omnisafe.models.actor.actor_builder import ActorBuilder
+from omnisafe.models.base import Critic
 from omnisafe.models.critic.critic_builder import CriticBuilder
 from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils.config import ModelConfig
@@ -70,6 +72,11 @@ class ActorQCritic(nn.Module):
     ) -> None:
         """Initialize ActorQCritic."""
         super().__init__()
+        self.actor: GaussianLearningActor | GaussianSACActor | MLPActor
+        self.target_actor: GaussianLearningActor | GaussianSACActor | MLPActor
+        self.reward_critic: Critic
+        self.target_reward_critic: Critic
+
         self.actor = ActorBuilder(
             obs_space=obs_space,
             act_space=act_space,
@@ -96,8 +103,10 @@ class ActorQCritic(nn.Module):
         self.add_module('reward_critic', self.reward_critic)
 
         if model_cfgs.actor.lr is not None:
+            self.actor_optimizer: optim.Optimizer
             self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
         if model_cfgs.critic.lr is not None:
+            self.reward_critic_optimizer: optim.Optimizer
             self.reward_critic_optimizer = optim.Adam(
                 self.reward_critic.parameters(),
                 lr=model_cfgs.critic.lr,

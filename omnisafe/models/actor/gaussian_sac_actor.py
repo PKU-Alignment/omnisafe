@@ -45,22 +45,25 @@ class GaussianSACActor(Actor):
         Args:
             obs_space (OmnisafeSpace): Observation space.
             act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list): List of hidden layer sizes.
+            hidden_sizes (list[int]): List of hidden layer sizes.
             activation (Activation): Activation function.
             weight_initialization_mode (InitFunction): Weight initialization mode.
             shared (nn.Module): Shared module.
         """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
+        self.net: nn.Module
+        self._current_raw_action: torch.Tensor | None
+        self._log2: torch.Tensor
+        self._current_dist: Normal
+
         self.net = build_mlp_network(
             sizes=[self._obs_dim, *self._hidden_sizes, self._act_dim * 2],
             activation=activation,
             weight_initialization_mode=weight_initialization_mode,
         )
 
-        self._current_raw_action: torch.Tensor | None = None
+        self._current_raw_action = None
         self.register_buffer('_log2', torch.log(torch.tensor(2.0)))
-        self._log2: torch.Tensor
-        self._current_dist: Normal
 
     def _distribution(self, obs: torch.Tensor) -> Normal:
         """Get the distribution of the actor.

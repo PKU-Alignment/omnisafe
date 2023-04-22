@@ -52,12 +52,20 @@ class CriticBuilder:
         Args:
             obs_space (OmnisafeSpace): Observation space.
             act_space (OmnisafeSpace): Action space.
-            hidden_sizes (List[int]): Hidden sizes of the critic network.
+            hidden_sizes (list[int]): Hidden sizes of the critic network.
             activation (Activation): Activation function.
             weight_initialization_mode (InitFunction): Weight initialization mode.
             num_critics (int): Number of critics.
             use_obs_encoder (bool): Whether to use observation encoder, only used in q critic.
         """
+        self._obs_space: OmnisafeSpace
+        self._act_space: OmnisafeSpace
+        self._weight_initialization_mode: InitFunction
+        self._activation: Activation
+        self._hidden_sizes: list[int]
+        self._num_critics: int
+        self._use_obs_encoder: bool
+
         self._obs_space = obs_space
         self._act_space = act_space
         self._weight_initialization_mode = weight_initialization_mode

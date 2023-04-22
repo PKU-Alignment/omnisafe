@@ -42,12 +42,15 @@ class MLPActor(Actor):
         Args:
             obs_space (OmnisafeSpace): Observation space.
             act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list): List of hidden layer sizes.
+            hidden_sizes (list[int]): List of hidden layer sizes.
             activation (Activation): Activation function.
             output_activation (Activation): Output activation function.
             weight_initialization_mode (InitFunction): Weight initialization mode.
         """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
+        self.net: torch.nn.Module
+        self._noise: float
+
         self.net = build_mlp_network(
             sizes=[self._obs_dim, *self._hidden_sizes, self._act_dim],
             activation=activation,

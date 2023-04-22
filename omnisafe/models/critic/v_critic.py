@@ -46,7 +46,7 @@ class VCritic(Critic):
         Args:
             obs_dim (int): Observation dimension.
             act_dim (int): Action dimension.
-            hidden_sizes (list): Hidden layer sizes.
+            hidden_sizes (list[int]): Hidden layer sizes.
             activation (Activation): Activation function.
             weight_initialization_mode (InitFunction): Weight initialization mode.
             shared (nn.Module): Shared network.
@@ -60,7 +60,9 @@ class VCritic(Critic):
             num_critics,
             use_obs_encoder=False,
         )
-        self.net_lst: list[nn.Module] = []
+        self.net_lst: list[nn.Module]
+        self.net_lst = []
+
         for idx in range(self._num_critics):
             net = build_mlp_network(
                 sizes=[self._obs_dim, *self._hidden_sizes, 1],

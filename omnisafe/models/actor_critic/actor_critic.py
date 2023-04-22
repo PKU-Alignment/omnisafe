@@ -20,8 +20,9 @@ import torch
 from torch import nn, optim
 from torch.optim.lr_scheduler import ConstantLR, LinearLR
 
+from omnisafe.models.actor import GaussianLearningActor, GaussianSACActor, MLPActor
 from omnisafe.models.actor.actor_builder import ActorBuilder
-from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
+from omnisafe.models.base import Critic
 from omnisafe.models.critic.critic_builder import CriticBuilder
 from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils.config import ModelConfig
@@ -66,6 +67,10 @@ class ActorCritic(nn.Module):
     ) -> None:
         """Initialize ActorCritic."""
         super().__init__()
+        self.actor: GaussianLearningActor | GaussianSACActor | MLPActor
+        self.reward_critic: Critic
+        self.std_schedule: Schedule
+
         self.actor = ActorBuilder(
             obs_space=obs_space,
             act_space=act_space,
@@ -86,8 +91,10 @@ class ActorCritic(nn.Module):
         self.add_module('reward_critic', self.reward_critic)
 
         if model_cfgs.actor.lr is not None:
+            self.actor_optimizer: optim.Optimizer
             self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
         if model_cfgs.critic.lr is not None:
+            self.reward_critic_optimizer: optim.Optimizer
             self.reward_critic_optimizer = optim.Adam(
                 self.reward_critic.parameters(),
                 lr=model_cfgs.critic.lr,
@@ -109,8 +116,6 @@ class ActorCritic(nn.Module):
                     total_iters=epochs,
                     verbose=True,
                 )
-
-            self.std_schedule: Schedule
 
     def step(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in rollout without gradient.

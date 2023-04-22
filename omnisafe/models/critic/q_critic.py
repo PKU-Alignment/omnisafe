@@ -83,7 +83,8 @@ class QCritic(Critic):
             num_critics,
             use_obs_encoder,
         )
-        self.net_lst: list[nn.Module] = []
+        self.net_lst: list[nn.Module]
+        self.net_lst = []
         for idx in range(self._num_critics):
             if self._use_obs_encoder:
                 obs_encoder = build_mlp_network(

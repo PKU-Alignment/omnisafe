@@ -45,19 +45,22 @@ class GaussianLearningActor(GaussianActor):
         Args:
             obs_space (OmnisafeSpace): Observation space.
             act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list): List of hidden layer sizes.
+            hidden_sizes (list[int]): List of hidden layer sizes.
             activation (Activation): Activation function.
             weight_initialization_mode (InitFunction): Weight initialization mode.
             shared (nn.Module): Shared module.
         """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
+        self.mean: nn.Module
+        self.log_std: nn.Parameter
+        self._current_dist: Normal
+
         self.mean = build_mlp_network(
             sizes=[self._obs_dim, *self._hidden_sizes, self._act_dim],
             activation=activation,
             weight_initialization_mode=weight_initialization_mode,
         )
         self.log_std = nn.Parameter(torch.zeros(self._act_dim), requires_grad=True)
-        self._current_dist: Normal
 
     def _distribution(self, obs: torch.Tensor) -> Normal:
         """Get the distribution of the actor.

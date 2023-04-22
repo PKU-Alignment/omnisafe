@@ -48,14 +48,20 @@ class ActorBuilder:
         Args:
             obs_space (OmnisafeSpace): Observation space.
             act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list): List of hidden layer sizes.
+            hidden_sizes (list[int]): List of hidden layer sizes.
             activation (Activation): Activation function.
             weight_initialization_mode (InitFunction): Weight initialization mode.
         """
+        self._obs_space: OmnisafeSpace
+        self._act_space: OmnisafeSpace
+        self._weight_initialization_mode: InitFunction
+        self._activation: Activation
+        self._hidden_sizes: list[int]
+
         self._obs_space = obs_space
         self._act_space = act_space
-        self._weight_initialization_mode: InitFunction = weight_initialization_mode
-        self._activation: Activation = activation
+        self._weight_initialization_mode = weight_initialization_mode
+        self._activation = activation
         self._hidden_sizes = hidden_sizes
 
     # pylint: disable-next=too-many-return-statements

@@ -19,6 +19,7 @@ from copy import deepcopy
 from torch import optim
 
 from omnisafe.models.actor_critic.actor_q_critic import ActorQCritic
+from omnisafe.models.base import Critic
 from omnisafe.models.critic.critic_builder import CriticBuilder
 from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils.config import ModelConfig
@@ -74,6 +75,9 @@ class ConstraintActorQCritic(ActorQCritic):
     ) -> None:
         """Initialize ConstraintActorCritic."""
         super().__init__(obs_space, act_space, model_cfgs, epochs)
+        self.cost_critic: Critic
+        self.target_cost_critic: Critic
+
         self.cost_critic = CriticBuilder(
             obs_space=obs_space,
             act_space=act_space,
@@ -88,6 +92,7 @@ class ConstraintActorQCritic(ActorQCritic):
             param.requires_grad = False
         self.add_module('cost_critic', self.cost_critic)
         if model_cfgs.critic.lr is not None:
+            self.cost_critic_optimizer: optim.Optimizer
             self.cost_critic_optimizer = optim.Adam(
                 self.cost_critic.parameters(),
                 lr=model_cfgs.critic.lr,
