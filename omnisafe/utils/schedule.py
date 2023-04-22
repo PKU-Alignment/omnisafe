@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import Callable
 
 
 def _linear_interpolation(left: float, right: float, alpha: float) -> float:
@@ -51,6 +52,10 @@ class PiecewiseSchedule(Schedule):
         """From OpenAI baselines"""
         idxes = [e[0] for e in endpoints]
         assert idxes == sorted(idxes)
+        self._interpolation: Callable[[float, float, float], float]
+        self._outside_value: int | float
+        self._endpoints: list[tuple[int, float]]
+
         self._interpolation = _linear_interpolation
         self._outside_value = outside_value
         self._endpoints = endpoints
