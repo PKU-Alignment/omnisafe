@@ -144,6 +144,9 @@ class Plotter:
 
         Assumes that any file "progress.txt" is a valid hit.
 
+        Args:
+            logdir (str): directory to search for progress.txt files
+            condition (str): condition to filter on.
         """
         datasets: list[DataFrame] = []
         for root, _, files in os.walk(logdir):
@@ -201,11 +204,16 @@ class Plotter:
         select: str | None = None,
         exclude: str | None = None,
     ) -> list[DataFrame]:
-        """
-        For every entry in all_logdirs,
-            1) check if the entry is a real directory and if it is, pull data from it;
+        """For every entry in all_logdirs:
 
+            1) check if the entry is a real directory and if it is, pull data from it;
             2) if not, check to see if the entry is a prefix for a real directory, and pull data from that.
+
+        Args:
+            all_logdirs (list[str]): list of log directories.
+            legend (list[str], optional): list of legend names. Defaults to None.
+            select (str, optional): select logdirs that contain this string. Defaults to None.
+            exclude (str, optional): exclude logdirs that contain this string. Defaults to None.
         """
         logdirs = []
         for logdir in all_logdirs:
@@ -266,11 +274,10 @@ class Plotter:
     ) -> None:
         """Example usage:
         Args:
-            logdir (strings): As many log directories (or prefixes to log
+            all_logdirs (list[str]): As many log directories (or prefixes to log
                 directories, which the plotter will automatically complete internally) as
                 you'd like to plot from.
-
-            legend (strings): Optional way to specify legend for the plot. The
+            legend (list[str]): Optional way to specify legend for the plot. The
                 plotter legend will automatically use the ``exp_name`` from the
                 config.json file, unless you tell it otherwise through this flag.
                 This only works if you provide a name for each directory that
@@ -281,10 +288,8 @@ class Plotter:
                 legend string for each one of those matches---unless you have
                 removed some of them as candidates via selection or exclusion
                 rules (below).)
-
             xaxis (string): Pick what column from data is used for the x-axis.
                 Defaults to ``TotalEnvInteracts``.
-
             value (strings): Pick what columns from data to graph on the y-axis.
                 Submitting multiple values will produce multiple graphs. Defaults
                 to ``Performance``, which is not an actual output of any algorithm.
@@ -294,22 +299,28 @@ class Plotter:
                 off-policy algorithms. The plotter will automatically figure out
                 which of ``AverageEpRet`` or ``AverageTestEpRet`` to report for
                 each separate logdir.
-
-            count: Optional flag. By default, the plotter shows y-values which
+            count (bool): Optional flag. By default, the plotter shows y-values which
                 are averaged across all results that share an ``exp_name``,
                 which is typically a set of identical experiments that only vary
                 in random seed. But if you'd like to see all of those curves
                 separately, use the ``--count`` flag.
-
             smooth (int): Smooth data by averaging it over a fixed window. This
                 parameter says how wide the averaging window will be.
-
             select (strings): Optional selection rule: the plotter will only show
                 curves from logdirs that contain all of these sub strings.
-
             exclude (strings): Optional exclusion rule: plotter will only show
                 curves from logdirs that do not contain these sub strings.
-
+            estimator (string): Optional way to specify how to aggregate data
+                across multiple runs. Defaults to ``mean``.
+            save_dir (string): Optional way to specify where to save the plot.
+                Defaults to ``./``.
+            save_name (string): Optional way to specify the name of the plot.
+                Defaults to ``None``, which means the plot will be saved with
+                the name of the first logdir.
+            save_format (string): Optional way to specify the format of the plot.
+                Defaults to ``png``.
+            show_image (bool): Optional flag. If set, the plot will be displayed
+                on screen. Defaults to ``False``.
         """
         assert xaxis is not None, 'Must specify xaxis'
         data = self.get_all_datasets(all_logdirs, legend, select, exclude)

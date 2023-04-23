@@ -64,7 +64,7 @@ class PiecewiseSchedule(Schedule):
         """Value at time t.
 
         Args:
-            t (float): Time.
+            time (int|float): Time.
         """
         for (left_t, left), (right_t, right) in zip(self._endpoints[:-1], self._endpoints[1:]):
             if left_t <= time < right_t:

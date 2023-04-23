@@ -74,15 +74,27 @@ def train(  # pylint: disable=too-many-arguments
         python -m omnisafe train --algo PPOLag --env_id SafetyPointGoal1-v0 --parallel 1
         --total_steps 1000000 --device cpu --vector_env_nums 1
     Args:
-        algo: algorithm to train.
-        env_id: the name of test environment.
-        parallel: number of paralleled progress for calculations.
-        total_steps: total number of steps to train for algorithm
-        device: device to use for training.
-        vector_env_nums: number of vector envs to use for training
-        torch_threads: number of threads to use for torch.
-        log_dir: directory to save logs, default is current directory
-        custom_cfgs: custom configuration for training.
+        algo (str): Algorithm to train.
+        env_id (str): The name of test environment.
+        parallel (int, optional): Number of paralleled progress for calculations.
+            Defaults to 1.
+        total_steps (int, optional): Total number of steps to train for algorithm.
+            Defaults to 16384000
+        device (str, optional): Device to use for training. Defaults to 'cpu'.
+        vector_env_nums (int, optional): Number of vector envs to use for training.
+            Defaults to 16.
+        torch_threads (int, optional): Number of threads to use for torch.
+            Defaults to 16.
+        log_dir (str, optional): Directory to save logs, default is current directory.
+            Defaults to os.path.abspath('.').
+        plot (bool, optional): Whether to plot the training curve after training.
+            Defaults to False.
+        render (bool, optional): Whether to render the trajectory of models saved
+            during training. Defaults to False.
+        evaluate (bool, optional): Whether to evaluate the trajectory of models saved
+            during training. Defaults to False.
+        custom_cfgs (List[str], optional): Custom configuration for training.
+            Defaults to [].
     """
     args = {
         'algo': algo,
@@ -143,8 +155,7 @@ def train_grid(
         exp_id (str): Experiment ID.
         algo (str): Algorithm to train.
         env_id (str): The name of test environment.
-        custom_cfgs (NamedTuple): Custom configurations.
-        num_threads (int, optional): Number of threads. Defaults to 6.
+        custom_cfgs (Dict[str, Any]): Custom configuration for training.
     """
     terminal_log_name = 'terminal.log'
     error_log_name = 'error.log'

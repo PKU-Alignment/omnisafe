@@ -222,8 +222,9 @@ def recursive_check_config(
     """Check whether config is valid in default_config.
 
     Args:
-        config (dict): config to be checked.
-        default_config (dict): default config.
+        config (dict[str, Any]): config to be checked.
+        default_config (dict[str, Any]): default config.
+        exclude_keys (tuple[str, ...], optional): keys to be excluded. Defaults to ().
     """
     assert isinstance(config, dict), 'custom_cfgs must be a dict!'
     for key in config:
@@ -252,7 +253,7 @@ def recursive_dict2json(dict_obj: dict[str, Any]) -> str:
     """This function is used to recursively convert the dict to json.
 
     Args:
-        dict_obj (dict): dict to be converted.
+        dict_obj (dict[str, Any]): dict to be converted.
     """
     assert isinstance(dict_obj, dict), 'Input must be a dict.'
     flat_dict: dict[str, Any] = {}

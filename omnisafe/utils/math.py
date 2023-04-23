@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the algo utils."""
+"""Implementation of the math utils."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def get_diagonal(tensor: torch.Tensor) -> torch.Tensor:
         torch.Size([2, 3])
 
     Args:
-        tensor: torch.Tensor
+        tensor (torch.Tensor): The tensor to get the diagonal from.
     """
     return tensor.diagonal(dim1=-2, dim2=-1).sum(-1)
 
