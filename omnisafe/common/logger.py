@@ -85,14 +85,32 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         """Initialize the logger.
 
         Args:
-            output_dir: The directory to save the log file.
-            exp_name: The name of the experiment.
-            output_fname: The name of the log file.
-            seed: The random seed.
-            use_tensorboard: Whether to use tensorboard.
-            use_wandb: Whether to use wandb.
-            config: The config of the experiment.
-            models: The models to be saved.
+            output_dir (str): The output directory.
+            exp_name (str): The experiment name.
+            output_fname (str, optional): The output file name. Defaults to 'progress.csv'.
+            seed (int, optional): The random seed. Defaults to 0.
+            use_tensorboard (bool, optional): Whether to use tensorboard. Defaults to True.
+            use_wandb (bool, optional): Whether to use wandb. Defaults to False.
+            config (Config, optional): The config. Defaults to None.
+            models (list[torch.nn.Module], optional): The models. Defaults to None.
+
+        Attributes:
+            _hms_time (str): The time in the format of %Y-%m-%d-%H-%M-%S.
+            _log_dir (str): The log directory.
+            _maste_proc (bool): Whether the process is the master process.
+            _console (Console): The console.
+            _output_file (TextIO): The output file.
+            _epoch (int): The current epoch.
+            _first_row (bool): Whether the current row is the first row.
+            _what_to_save (dict[str, Any] | None): The data to save.
+            _data (dict[str, Deque[int | float] | list[int | float]]): The data.
+            _headers_windows (dict[str, int | None]): The headers for the windows.
+            _headers_minmax (dict[str, bool]): The headers to record with the min and max.
+            _headers_delta (dict[str, bool]): The headers to record with the delta.
+            _current_row (dict[str, int | float]): The current row.
+            _config (Config): The config.
+            _use_tensorboard (bool): Whether to use tensorboard.
+            _use_wandb (bool): Whether to use wandb.
         """
         self._hms_time: str
         self._log_dir: str
@@ -168,8 +186,8 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         Args:
             msg (str): The message to be logged.
-            color (int): The color of the message.
-            bold (bool): Whether to use bold font.
+            color (str, optional): The color of the message. Defaults to 'green'.
+            bold (bool, optional): Whether the message is bold. Defaults to False.
         """
         if self._maste_proc:
             style = ' '.join([color, 'bold' if bold else ''])
@@ -230,11 +248,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             ----------------------------------------------------
 
         Args:
-            key (str): The key to be registered.
-            window_length (int): The window length for the key, \
-                if window_length is None, the key will be averaged in epoch.
-            min_and_max (bool): Whether to record the min and max value of the key.
-            delta (bool): Whether to record the delta value of the key.
+            key (str): The name of the key.
+            window_length (int, optional): The length of the window. Defaults to None.
+            min_and_max (bool, optional): Whether to record the min and max value. \\Defaults to False.
+            delta (bool, optional): Whether to record the delta value. Defaults to False.
         """
         assert key not in self._current_row, f'Key {key} has been registered'
         self._current_row[key] = 0
@@ -273,8 +290,13 @@ class Logger:  # pylint: disable=too-many-instance-attributes
     ) -> None:
         """Store the data to the logger.
 
+        .. note ::
+            The data stored in ``data`` will be updated by ``kwargs``.
+
         Args:
-            **kwargs: The data to be stored.
+            data (dict[str, int | float | np.ndarray | torch.Tensor], optional):
+            The data to be stored. Defaults to None.
+            **kwargs (int | float | np.ndarray | torch.Tensor): The data to be stored.
         """
         if data is not None:
             kwargs.update(data)
@@ -295,7 +317,6 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         The dumped data will be separated by the following steps:
 
         .. hint::
-
             - If the key is registered with window_length, the data will be averaged in the window.
             - Write the data to the csv file.
             - Write the data to the tensorboard.

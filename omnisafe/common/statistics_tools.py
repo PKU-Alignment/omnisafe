@@ -90,13 +90,13 @@ class StatisticsTools:
         """Draw graph.
 
         Args:
-            parameter (str): name of parameter to analyze.
-            values (list): specific values of attribute,
-                if it is specified, will only compare values in it.
-            compare_num (int): number of values to compare,
-                if it is specified, will combine any potential combination to compare.
-            cost_limit (float) the cost limit to show in graphs by a single line.
-        .. Note::
+            parameter (str): the parameter to compare.
+            values (list, optional): the values of the parameter to compare. Defaults to None.
+            compare_num (int, optional): the number of values to compare. Defaults to None.
+            cost_limit (float, optional): the cost limit of the experiment. Defaults to None.
+            smooth (int, optional): the smooth window size. Defaults to 1.
+
+        .. note::
             `values` and `compare_num` cannot be set at the same time.
         """
         # check whether operation is valid
@@ -169,13 +169,15 @@ class StatisticsTools:
         """Make config groups.
 
         Each group contains a list of config paths to compare.
+
+        .. warning::
+            `values` and `compare_num` cannot be set at the same time.
+
         Args:
-            parameter (str): name of parameter to analyze.
-            parameter_values (list): values of parameter.
-            values (list): specific values of attribute,
-                if it is specified, will only compare values in it.
-            compare_num (int): number of values to compare,
-                if it is specified, will combine any potential combination to compare.
+            parameter (str): the parameter to compare.
+            parameter_values (list[str]): the values of the parameter to compare.
+            values (list, optional): the values of the parameter to compare. Defaults to None.
+            compare_num (int, optional): the number of values to compare. Defaults to None.
         """
         self.path_map_img_name = {}
         parameter_values_combination: list[tuple] = []
@@ -245,8 +247,8 @@ class StatisticsTools:
             then the output dict will be ``{'train_cfgs': {'use_wandb': True}}``.
 
         Args:
-            key (str): nested keys joined by `:`.
-            value (list): value.
+            compressed_key (str): the compressed key.
+            value (Any): the value of the compressed key.
         """
         keys_split = compressed_key.replace('-', '_').split(':')
         return_dict = {keys_split[-1]: value}
@@ -256,7 +258,12 @@ class StatisticsTools:
         return return_dict
 
     def _variants(self, keys: list[str], vals: list[Any]) -> list[dict[str, Any]]:
-        """Recursively builds list of valid variants."""
+        """Recursively builds list of valid variants.
+
+        Args:
+            keys (list[str]): the keys of the config.
+            vals (list[Any]): the values of the config.
+        """
         if len(keys) == 1:
             pre_variants: list[dict[str, Any]] = [{}]
         else:
@@ -277,7 +284,12 @@ class StatisticsTools:
         return variants
 
     def update_dict(self, total_dict: dict[str, Any], item_dict: dict[str, Any]) -> None:
-        """Updater of multi-level dictionary."""
+        """Updater of multi-level dictionary.
+
+        Args:
+            total_dict (dict[str, Any]): the total dictionary.
+            item_dict (dict[str, Any]): the item dictionary.
+        """
         for idd in item_dict:
             total_value = total_dict.get(idd)
             item_value = item_dict.get(idd)
@@ -321,6 +333,10 @@ class StatisticsTools:
                         }
                     }
                 }
+
+        Args:
+            keys (list[str]): the keys of the config.
+            vals (list[Any]): the values of the config.
         """
         flat_variants = self._variants(keys, vals)
 

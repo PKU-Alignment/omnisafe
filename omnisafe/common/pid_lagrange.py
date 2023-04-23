@@ -52,22 +52,22 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
         diff_norm: bool,
         penalty_max: int,
         lagrangian_multiplier_init: float,
-        cost_limit: int,
+        cost_limit: float,
     ) -> None:
         """Initialize PIDLagrangian.
 
         Args:
-            pid_kp: The proportional gain of the PID controller.
-            pid_ki: The integral gain of the PID controller.
-            pid_kd: The derivative gain of the PID controller.
-            pid_d_delay: The delay of the derivative term of the PID controller.
-            pid_delta_p_ema_alpha: The exponential moving average alpha of the proportional term of the PID controller.
-            pid_delta_d_ema_alpha: The exponential moving average alpha of the derivative term of the PID controller.
-            sum_norm: Whether to normalize the sum of the cost.
-            diff_norm: Whether to normalize the difference of the cost.
-            penalty_max: The maximum penalty.
-            lagrangian_multiplier_init: The initial value of the lagrangian multiplier.
-            cost_limit: The cost limit.
+            pid_kp (float): The proportional gain of the PID controller.
+            pid_ki (float): The integral gain of the PID controller.
+            pid_kd (float): The derivative gain of the PID controller.
+            pid_d_delay (int): The delay of the derivative term.
+            pid_delta_p_ema_alpha (float): The exponential moving average alpha of the delta_p.
+            pid_delta_d_ema_alpha (float): The exponential moving average alpha of the delta_d.
+            sum_norm (bool): Whether to use the sum norm.
+            diff_norm (bool): Whether to use the diff norm.
+            penalty_max (int): The maximum penalty.
+            lagrangian_multiplier_init (float): The initial value of the lagrangian multiplier.
+            cost_limit (float): The cost limit.
         """
         self._pid_kp: float
         self._pid_ki: float

@@ -179,15 +179,9 @@ class ExperimentGrid:
 
         Args:
             key (string): Name of parameter.
-
-            vals (value or list of values): Allowed values of parameter.
-
-            shorthand (string): Optional, shortened name of parameter. For
-                example, maybe the parameter ``steps_per_epoch`` is shortened
-                to ``steps``.
-
-            in_name (bool): When constructing variant names, force the
-                inclusion of this parameter into the name.
+            vals (list or object): Possible values for parameter.
+            shorthand (string, optional): Shorthand for parameter.
+            in_name (bool, optional): Whether to include this parameter in the experiment name.
         """
         assert isinstance(key, str), 'Key must be a string.'
         if not isinstance(vals, list):
@@ -372,7 +366,7 @@ class ExperimentGrid:
     # pylint: disable-next=too-many-locals
     def run(
         self,
-        thunk: Callable,
+        thunk: Callable[[str, str, str, dict[str, Any]], tuple[float, float, int]],
         num_pool: int = 1,
         parent_dir: str | None = None,
         is_test: bool = False,
@@ -390,6 +384,17 @@ class ExperimentGrid:
         Maintenance note: the args for ExperimentGrid.run should track closely
         to the args for call_experiment. However, ``seed`` is omitted because
         we presume the user may add it as a parameter in the grid.
+
+        Args:
+            thunk (Callable): Function to be called.
+            num_pool (int, optional): Number of processes to run in parallel.
+                Defaults to 1.
+            parent_dir (str, optional): Parent directory to save the experiment
+                results. Defaults to None.
+            is_test (bool, optional): Whether to run the experiment in test
+                mode. Defaults to False.
+            gpu_id (list[int], optional): List of GPU IDs to use. Defaults to
+                None.
         """
         if parent_dir is None:
             self.log_dir = os.path.join('./', 'exp-x', self.name)
@@ -510,11 +515,11 @@ class ExperimentGrid:
 
         Args:
             parameter (str): name of parameter to analyze.
-            values (list[Any]): specific values of attribute,
+            values (list[Any], optional): specific values of attribute,
                 if it is specified, will only compare values in it.
-            compare_num (int): number of values to compare,
+            compare_num (int, optional): number of values to compare,
                 if it is specified, will combine any potential combination to compare.
-            cost_limit (float): value for one line showed on graph to indicate cost.
+            cost_limit (float, optional): value for one line showed on graph to indicate cost.
 
         .. Note::
             `values` and `compare_num` cannot be set at the same time.

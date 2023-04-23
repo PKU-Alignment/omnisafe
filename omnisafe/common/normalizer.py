@@ -104,7 +104,7 @@ class Normalizer(nn.Module):
         """Update the mean and std by the raw_data.
 
         Args:
-            raw_data: raw data to be normalized.
+            raw_data (torch.Tensor): raw data to be normalized.
         """
         if raw_data.shape == self._shape:
             raw_data = raw_data.unsqueeze(0)
