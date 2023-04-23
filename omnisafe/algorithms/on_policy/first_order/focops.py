@@ -25,7 +25,6 @@ from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
 from omnisafe.common.lagrange import Lagrange
 from omnisafe.utils import distributed
-from omnisafe.utils.config import Config
 
 
 @registry.register
@@ -38,14 +37,15 @@ class FOCOPS(PolicyGradient):
         - URL: `FOCOPS <https://arxiv.org/abs/2002.06506>`_
     """
 
+    _p_dist: Normal
+
     def _init(self) -> None:
         """Initialize the FOCOPS specific model.
 
         The FOCOPS algorithm uses a Lagrange multiplier to balance the cost and reward.
         """
         super()._init()
-        self._lagrange: Lagrange
-        self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
+        self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
         r"""Log the FOCOPS specific information.
@@ -59,10 +59,6 @@ class FOCOPS(PolicyGradient):
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
-
-    def __init__(self, env_id: str, cfgs: Config) -> None:
-        super().__init__(env_id, cfgs)
-        self._p_dist: Normal
 
     def _loss_pi(
         self,

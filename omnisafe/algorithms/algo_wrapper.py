@@ -42,24 +42,14 @@ class AlgoWrapper:
         train_terminal_cfgs: dict[str, Any] | None = None,
         custom_cfgs: dict[str, Any] | None = None,
     ) -> None:
-        self.algo: str
-        self.env_id: str
-        self.algo_type: str
-        self.cfgs: Config
-        self.train_terminal_cfgs: dict[str, Any] | None
-        self.custom_cfgs: dict[str, Any] | None
-        self._evaluator: Evaluator | None
-        self._plotter: Plotter | None
-
-        self.agent: BaseAlgo
-        self.algo = algo
-        self.env_id = env_id
+        self.algo: str = algo
+        self.env_id: str = env_id
         # algo_type will set in _init_checks()
-        self.train_terminal_cfgs = train_terminal_cfgs
-        self.custom_cfgs = custom_cfgs
-        self._evaluator = None
-        self._plotter = None
-        self.cfgs = self._init_config()
+        self.train_terminal_cfgs: dict[str, Any] | None = train_terminal_cfgs
+        self.custom_cfgs: dict[str, Any] | None = custom_cfgs
+        self._evaluator: Evaluator | None = None
+        self._plotter: Plotter | None = None
+        self.cfgs: Config = self._init_config()
         self._init_checks()
         self._init_algo()
 
@@ -68,7 +58,7 @@ class AlgoWrapper:
         assert (
             self.algo in ALGORITHMS['all']
         ), f"{self.algo} doesn't exist. Please choose from {ALGORITHMS['all']}."
-        self.algo_type = ALGORITHM2TYPE.get(self.algo, '')
+        self.algo_type: str = ALGORITHM2TYPE.get(self.algo, '')
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations
@@ -130,7 +120,7 @@ class AlgoWrapper:
         ):
             # Re-launches the current script with workers linked by MPI
             sys.exit()
-        self.agent = registry.get(self.algo)(
+        self.agent: BaseAlgo = registry.get(self.algo)(
             env_id=self.env_id,
             cfgs=self.cfgs,
         )

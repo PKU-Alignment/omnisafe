@@ -34,8 +34,7 @@ class TRPOPID(TRPO):
         The TRPOPID algorithm uses a PID-Lagrange multiplier to balance the cost and reward.
         """
         super()._init()
-        self._lagrange: PIDLagrangian
-        self._lagrange = PIDLagrangian(**self._cfgs.lagrange_cfgs)
+        self._lagrange: PIDLagrangian = PIDLagrangian(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
         r"""Log the TRPOPID specific information.

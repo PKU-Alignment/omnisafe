@@ -29,21 +29,18 @@ from omnisafe.utils.tools import get_device, seed_all
 class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
     """Base class for all algorithms."""
 
-    def __init__(self, env_id: str, cfgs: Config) -> None:
-        self._env_id: str
-        self._cfgs: Config
-        self._seed: int
-        self._device: torch.device
+    _logger: Logger
 
-        self._env_id = env_id
-        self._cfgs = cfgs
+    def __init__(self, env_id: str, cfgs: Config) -> None:
+        self._env_id: str = env_id
+        self._cfgs: Config = cfgs
 
         assert hasattr(cfgs, 'seed'), 'Please specify the seed in the config file.'
-        self._seed = int(cfgs.seed) + distributed.get_rank() * 1000
+        self._seed: int = int(cfgs.seed) + distributed.get_rank() * 1000
         seed_all(self._seed)
 
         assert hasattr(cfgs.train_cfgs, 'device'), 'Please specify the device in the config file.'
-        self._device = get_device(self._cfgs.train_cfgs.device)
+        self._device: torch.device = get_device(self._cfgs.train_cfgs.device)
 
         distributed.setup_distributed()
 
@@ -79,7 +76,6 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
     @abstractmethod
     def _init_log(self) -> None:
         """Initialize the logger."""
-        self._logger: Logger
 
     @abstractmethod
     def learn(self) -> tuple[float, float, int]:

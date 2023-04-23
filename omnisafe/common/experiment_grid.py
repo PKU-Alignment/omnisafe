@@ -43,40 +43,30 @@ from omnisafe.utils.tools import (
 class ExperimentGrid:
     """Tool for running many experiments given hyper-parameters ranges."""
 
+    _statistical_tools: StatisticsTools
+    log_dir: str
+    _evaluator: Evaluator
+
     def __init__(self, exp_name: str = '') -> None:
         """Initialize the ExperimentGrid.
 
         Args:
             exp_name (str): Name of the experiment grid.
         """
-        self.keys: list[str]
-        self.vals: list[Any]
-        self.shs: list[str]
-        self.in_names: list[bool]
-        self.div_line_width: int
-        self.name: str
-        self._console: Console
-        self.log_dir: str
-        self.default_shorthand: bool
-        self.wait_defore_launch: int
-        self.foce_datastamp: bool
-        self._statistical_tools: StatisticsTools
-        self._evaluator: Evaluator
-
-        self.keys = []
-        self.vals = []
-        self.shs = []
-        self.in_names = []
-        self.div_line_width = 80
+        self.keys: list[str] = []
+        self.vals: list[Any] = []
+        self.shs: list[str] = []
+        self.in_names: list[bool] = []
+        self.div_line_width: int = 80
         assert isinstance(exp_name, str), 'Name has to be a string.'
-        self.name = exp_name
-        self._console = Console()
+        self.name: str = exp_name
+        self._console: Console = Console()
         # Whether GridSearch provides automatically-generated default shorthands
-        self.default_shorthand = True
+        self.default_shorthand: bool = True
         # Tells the GridSearch how many seconds to pause for before launching experiments
-        self.wait_defore_launch = 0
+        self.wait_defore_launch: int = 0
         # Whether to automatically insert a date and time stamp into the names of save directories
-        self.foce_datastamp = False
+        self.foce_datastamp: bool = False
 
     def print(self) -> None:
         """Print a helpful report about the experiment grid.

@@ -24,7 +24,6 @@ from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.ppo import PPO
 from omnisafe.common.lagrange import Lagrange
 from omnisafe.utils import distributed
-from omnisafe.utils.config import Config
 
 
 @registry.register
@@ -38,10 +37,11 @@ class CUP(PPO):
         - URL: `CUP <https://arxiv.org/abs/2209.07089>`_
     """
 
+    _p_dist: Normal
+
     def _init(self) -> None:
         super()._init()
-        self._lagrange: Lagrange
-        self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
+        self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
         r"""Log the CUP specific information.
@@ -71,10 +71,6 @@ class CUP(PPO):
         self._logger.register_key('Train/SecondStepStopIter')
         self._logger.register_key('Train/SecondStepEntropy')
         self._logger.register_key('Train/SecondStepPolicyRatio', min_and_max=True)
-
-    def __init__(self, env_id: str, cfgs: Config) -> None:
-        super().__init__(env_id, cfgs)
-        self._p_dist: Normal
 
     def _loss_pi_cost(
         self,

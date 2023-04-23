@@ -35,8 +35,7 @@ class PPOLag(PPO):
         The PPOLag algorithm uses a Lagrange multiplier to balance the cost and reward.
         """
         super()._init()
-        self._lagrange: Lagrange
-        self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
+        self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
         r"""Log the PPOLag specific information.

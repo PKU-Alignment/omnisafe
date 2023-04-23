@@ -20,7 +20,6 @@ from torch.utils.data import DataLoader, TensorDataset
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
 from omnisafe.utils import distributed
-from omnisafe.utils.config import Config
 from omnisafe.utils.math import conjugate_gradients
 from omnisafe.utils.tools import (
     get_flat_gradients_from,
@@ -43,10 +42,7 @@ class NaturalPG(PolicyGradient):
         - URL: `Natural PG <https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf>`_
     """
 
-    def __init__(self, env_id: str, cfgs: Config) -> None:
-        super().__init__(env_id, cfgs)
-
-        self._fvp_obs: torch.Tensor
+    _fvp_obs: torch.Tensor
 
     def _init_log(self) -> None:
         r"""Log the Natural Policy Gradient specific information.

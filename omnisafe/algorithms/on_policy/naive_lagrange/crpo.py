@@ -33,10 +33,8 @@ class OnCRPO(PPO):
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
         super().__init__(env_id, cfgs)
-        self._rew_update: int
-        self._cost_update: int
-        self._rew_update = 0
-        self._cost_update = 0
+        self._rew_update: int = 0
+        self._cost_update: int = 0
 
     def _init_log(self) -> None:
         r"""Log the CRPO specific information.

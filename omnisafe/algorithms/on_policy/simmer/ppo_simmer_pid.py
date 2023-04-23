@@ -40,10 +40,7 @@ class PPOSimmerPID(PPO):
             >>> def _init_env(self) -> None:
             >>>    self._env = CustomAdapter()
         """
-        self._env: SimmerAdapter
-        self._steps_per_epoch: int
-
-        self._env = SimmerAdapter(
+        self._env: SimmerAdapter = SimmerAdapter(
             self._env_id,
             self._cfgs.train_cfgs.vector_env_nums,
             self._seed,
@@ -52,7 +49,7 @@ class PPOSimmerPID(PPO):
         assert (self._cfgs.algo_cfgs.steps_per_epoch) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         ) == 0, 'The number of steps per epoch is not divisible by the number of environments.'
-        self._steps_per_epoch = (
+        self._steps_per_epoch: int = (
             self._cfgs.algo_cfgs.steps_per_epoch
             // distributed.world_size()
             // self._cfgs.train_cfgs.vector_env_nums

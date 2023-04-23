@@ -23,7 +23,6 @@ from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils import distributed
-from omnisafe.utils.config import Config
 
 
 @registry.register
@@ -37,11 +36,9 @@ class SAC(DDPG):
         - URL: `SAC <https://arxiv.org/abs/1801.01290>`_
     """
 
-    def __init__(self, env_id: str, cfgs: Config) -> None:
-        super().__init__(env_id, cfgs)
-        self._log_alpha: torch.Tensor
-        self._alpha_optimizer: optim.Optimizer
-        self._target_entropy: float
+    _log_alpha: torch.Tensor
+    _alpha_optimizer: optim.Optimizer
+    _target_entropy: float
 
     def _init_model(self) -> None:
         self._cfgs.model_cfgs.critic['num_critics'] = 2

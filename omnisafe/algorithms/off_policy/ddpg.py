@@ -46,7 +46,7 @@ class DDPG(BaseAlgo):
     """
 
     def _init_env(self) -> None:
-        self._env = OffPolicyAdapter(
+        self._env: OffPolicyAdapter = OffPolicyAdapter(
             self._env_id,
             self._cfgs.train_cfgs.vector_env_nums,
             self._seed,
@@ -59,23 +59,23 @@ class DDPG(BaseAlgo):
         assert (
             int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.steps_per_epoch == 0
         ), 'The total number of steps is not divisible by the number of steps per epoch.'
-        self._epochs = int(
+        self._epochs: int = int(
             self._cfgs.train_cfgs.total_steps // self._cfgs.algo_cfgs.steps_per_epoch,
         )
-        self._epoch = 0
-        self._steps_per_epoch = self._cfgs.algo_cfgs.steps_per_epoch // (
+        self._epoch: int = 0
+        self._steps_per_epoch: int = self._cfgs.algo_cfgs.steps_per_epoch // (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         )
-        self._update_cycle = self._cfgs.algo_cfgs.update_cycle
+        self._update_cycle: int = self._cfgs.algo_cfgs.update_cycle
         assert (
             self._steps_per_epoch % self._update_cycle == 0
         ), 'The number of steps per epoch is not divisible by the number of steps per sample.'
-        self._samples_per_epoch = self._steps_per_epoch // self._update_cycle
-        self._update_count = 0
+        self._samples_per_epoch: int = self._steps_per_epoch // self._update_cycle
+        self._update_count: int = 0
 
     def _init_model(self) -> None:
         self._cfgs.model_cfgs.critic['num_critics'] = 1
-        self._actor_critic = ConstraintActorQCritic(
+        self._actor_critic: ConstraintActorQCritic = ConstraintActorQCritic(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
             model_cfgs=self._cfgs.model_cfgs,
@@ -83,7 +83,7 @@ class DDPG(BaseAlgo):
         ).to(self._device)
 
     def _init(self) -> None:
-        self._buf = VectorOffPolicyBuffer(
+        self._buf: VectorOffPolicyBuffer = VectorOffPolicyBuffer(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
             size=self._cfgs.algo_cfgs.size,
@@ -93,7 +93,7 @@ class DDPG(BaseAlgo):
         )
 
     def _init_log(self) -> None:
-        self._logger = Logger(
+        self._logger: Logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,
             exp_name=self._cfgs.exp_name,
             seed=self._cfgs.seed,

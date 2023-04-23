@@ -33,8 +33,7 @@ class RCPO(NaturalPG):
 
     def _init(self) -> None:
         super()._init()
-        self._lagrange: Lagrange
-        self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
+        self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
         super()._init_log()

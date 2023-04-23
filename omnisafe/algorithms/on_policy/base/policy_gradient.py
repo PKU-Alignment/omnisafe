@@ -56,8 +56,7 @@ class PolicyGradient(BaseAlgo):
             >>> def _init_env(self) -> None:
             >>>    self._env = CustomAdapter()
         """
-        self._env: OnPolicyAdapter
-        self._env = OnPolicyAdapter(
+        self._env: OnPolicyAdapter = OnPolicyAdapter(
             self._env_id,
             self._cfgs.train_cfgs.vector_env_nums,
             self._seed,
@@ -66,7 +65,7 @@ class PolicyGradient(BaseAlgo):
         assert (self._cfgs.algo_cfgs.steps_per_epoch) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         ) == 0, 'The number of steps per epoch is not divisible by the number of environments.'
-        self._steps_per_epoch = (
+        self._steps_per_epoch: int = (
             self._cfgs.algo_cfgs.steps_per_epoch
             // distributed.world_size()
             // self._cfgs.train_cfgs.vector_env_nums
@@ -84,8 +83,7 @@ class PolicyGradient(BaseAlgo):
             >>> def _init_model(self) -> None:
             >>>    self._actor_critic = CustomActorCritic()
         """
-        self._actor_critic: ConstraintActorCritic
-        self._actor_critic = ConstraintActorCritic(
+        self._actor_critic: ConstraintActorCritic = ConstraintActorCritic(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
             model_cfgs=self._cfgs.model_cfgs,
@@ -112,8 +110,7 @@ class PolicyGradient(BaseAlgo):
             >>>    self._buffer = CustomBuffer()
             >>>    self._model = CustomModel()
         """
-        self._buf: VectorOnPolicyBuffer
-        self._buf = VectorOnPolicyBuffer(
+        self._buf: VectorOnPolicyBuffer = VectorOnPolicyBuffer(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
             size=self._steps_per_epoch,
