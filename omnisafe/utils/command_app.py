@@ -145,7 +145,7 @@ def train_grid(
     algo: str,
     env_id: str,
     custom_cfgs: Dict[str, Any],
-) -> Tuple[float, float, float]:
+) -> Tuple[float, float, int]:
     """Train a policy from exp-x config with OmniSafe.
     Example:
     .. code-block:: bash
