@@ -142,9 +142,8 @@ clean-docs:
 
 # Utility functions
 
-# TODO: add mypy when ready
 # TODO: add docstyle when ready
-lint: ruff flake8 py-format pylint addlicense spelling
+lint: ruff flake8 py-format pylint addlicense spelling mypy
 
 format: py-format-install ruff-install addlicense-install
 	$(PYTHON) -m isort --project $(PROJECT_NAME) $(PYTHON_FILES)

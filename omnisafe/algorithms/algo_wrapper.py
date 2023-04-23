@@ -33,7 +33,7 @@ from omnisafe.utils.tools import recursive_check_config
 
 
 class AlgoWrapper:
-    """Algo Wrapper for algo."""
+    """Algo Wrapper for algorithms."""
 
     def __init__(
         self,
@@ -116,10 +116,7 @@ class AlgoWrapper:
         ), f"{self.env_id} doesn't exist. Please choose from {support_envs()}."
 
     def _init_algo(self) -> None:
-        """Init algo."""
-        # Use number of physical cores as default.
-        # If also hardware threading CPUs should be used
-        # enable this by the use_number_of_threads=True
+        """Init algorithms."""
         check_all_configs(self.cfgs, self.algo_type)
         device = self.cfgs.train_cfgs.device
         if device == 'cpu':
@@ -139,7 +136,7 @@ class AlgoWrapper:
         )
 
     def learn(self) -> tuple[float, float, int]:
-        """Agent Learning."""
+        """Agent learning."""
         ep_ret, ep_cost, ep_len = self.agent.learn()
 
         self._init_statistical_tools()
