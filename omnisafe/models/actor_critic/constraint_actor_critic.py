@@ -102,7 +102,7 @@ class ConstraintActorCritic(ActorCritic):
             deterministic (bool): Whether to use deterministic policy.
 
         Returns:
-            action (torch.Tensor): Action.
+            action (torch.Tensor): action from the agent or random.
             value_r (torch.Tensor): Reward value.
             value_c (torch.Tensor): Cost value.
             log_prob (torch.Tensor): Log probability of action.
@@ -128,7 +128,7 @@ class ConstraintActorCritic(ActorCritic):
             deterministic (bool): Whether to use deterministic policy.
 
         Returns:
-            action (torch.Tensor): Action.
+            action (torch.Tensor): action from the agent or random.
             value_r (torch.Tensor): Reward value.
             value_c (torch.Tensor): Cost value.
             log_prob (torch.Tensor): Log probability of action.

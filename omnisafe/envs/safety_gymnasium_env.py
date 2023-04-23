@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Environments in the Safety Gymnasium."""
+"""Environments in the Safety-Gymnasium."""
 
 from __future__ import annotations
 
@@ -96,7 +96,7 @@ class SafetyGymnasiumEnv(CMDP):
             env_id (str): Environment id.
             num_envs (int, optional): Number of environments. Defaults to 1.
             device (torch.device, optional): Device to store the data. Defaults to 'cpu'.
-            **kwargs: Other arguments.
+            **kwargs (Any): Other arguments.
         """
         super().__init__(env_id)
         if num_envs > 1:
@@ -150,7 +150,7 @@ class SafetyGymnasiumEnv(CMDP):
             cost (torch.Tensor): amount of cost returned after previous action.
             terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            info (dict[str, Any]): some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy(),
@@ -182,7 +182,7 @@ class SafetyGymnasiumEnv(CMDP):
 
         Returns:
             observation (torch.Tensor): agent's observation of the current environment.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            info (dict[str, Any]): some information logged by the environment.
         """
         obs, info = self._env.reset(seed=seed)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info

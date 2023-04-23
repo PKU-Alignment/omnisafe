@@ -77,7 +77,7 @@ class ActorBuilder:
             - ``mlp``: Multi-layer perceptron actor, used in ``DDPG`` and ``TD3``.
 
         Args:
-            actor_type (ActorType): Actor type.
+            actor_type (ActorType): Type of actor network, e.g. ``gaussian_learning``.
         """
         if actor_type == 'gaussian_learning':
             return GaussianLearningActor(

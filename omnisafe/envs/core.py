@@ -67,6 +67,7 @@ class CMDP(ABC):
 
         Args:
             env_id (str): the environment id.
+            **kwargs (Any): the keyword arguments.
         """
         assert (
             env_id in self.support_envs()
@@ -95,7 +96,7 @@ class CMDP(ABC):
         """The metadata of the environment.
 
         Returns:
-            Dict[str, Any]: the metadata.
+            dict[str, Any]: the metadata.
         """
         return self._metadata
 
@@ -121,11 +122,18 @@ class CMDP(ABC):
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
-            action (torch.Tensor): action.
+            action (torch.Tensor): action from the agent or random.
 
         Returns:
             observation (torch.Tensor): agent's observation of the current environment.
@@ -133,7 +141,7 @@ class CMDP(ABC):
             cost (torch.Tensor): amount of cost returned after previous action.
             terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            info (dict[str, Any]): Some information logged by the environment.
         """
 
     @abstractmethod
@@ -145,7 +153,7 @@ class CMDP(ABC):
 
         Returns:
             observation (torch.Tensor): the initial observation of the space.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            info (dict[str, Any]): Some information logged by the environment.
         """
 
     @abstractmethod
@@ -225,11 +233,18 @@ class Wrapper(CMDP):
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
-            action (torch.Tensor): action.
+            action (torch.Tensor): action from the agent or random.
 
         Returns:
             observation (torch.Tensor): agent's observation of the current environment.
@@ -237,7 +252,7 @@ class Wrapper(CMDP):
             cost (torch.Tensor): amount of cost returned after previous action.
             terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            info (dict[str, Any]): some information logged by the environment.
         """
         return self._env.step(action)
 
@@ -249,7 +264,7 @@ class Wrapper(CMDP):
 
         Returns:
             observation (torch.Tensor): the initial observation of the space.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            info (dict[str, Any]): some information logged by the environment.
         """
         return self._env.reset(seed)
 
@@ -281,7 +296,7 @@ class Wrapper(CMDP):
         """Save the important components of the environment.
 
         Returns:
-            Dict[str, torch.nn.Module]: the saved components.
+            dict[str, torch.nn.Module]: the saved components.
         """
         return self._env.save()
 
@@ -308,8 +323,10 @@ class EnvRegister:
     """
 
     def __init__(self) -> None:
-        self._class: dict[str, type[CMDP]] = {}
-        self._support_envs: dict[str, list[str]] = {}
+        self._class: dict[str, type[CMDP]]
+        self._support_envs: dict[str, list[str]]
+        self._class = {}
+        self._support_envs = {}
 
     def _register(self, env_class: type[CMDP]) -> None:
         """Register the environment class.
@@ -386,7 +403,7 @@ def make(env_id: str, class_name: str | None = None, **kwargs: Any) -> CMDP:
         **kwargs: the keyword arguments for the environment initialization.
 
     Returns:
-        CMDP: the environment.
+        CMDP (CMDP): the environment.
     """
     env_class = ENV_REGISTRY.get_class(env_id, class_name)
     return env_class(env_id, **kwargs)
