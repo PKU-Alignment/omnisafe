@@ -89,7 +89,7 @@ class OffPolicyAdapter(OnlineAdapter):
         agent: ConstraintActorQCritic,
         logger: Logger,
     ) -> None:
-        """Roll out the environment and store the data in the buffer.
+        """Roll out the environment and log the data into Logger.
 
         Args:
             episode (int): Number of episodes.
@@ -137,8 +137,8 @@ class OffPolicyAdapter(OnlineAdapter):
 
         Args:
             steps_per_epoch (int): Number of steps per epoch.
-            agent (ConstraintActorCritic): Agent.
-            buf (VectorOnPolicyBuffer): Buffer.
+            agent (ConstraintActorCritic): Constraint actor-critic, including actor , reward critic and cost critic.
+            buf (VectorOnPolicyBuffer): Vector on-policy buffer.
             logger (Logger): Logger.
         """
         for _ in range(roll_out_step):
@@ -184,7 +184,7 @@ class OffPolicyAdapter(OnlineAdapter):
         Args:
             reward (torch.Tensor): The reward.
             cost (torch.Tensor): The cost.
-            info (dict[str, Any]): The information.
+            info (dict[str, Any]): some information logged by the environment.
         """
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()
@@ -209,7 +209,7 @@ class OffPolicyAdapter(OnlineAdapter):
         """Reset log.
 
         Args:
-            idx (int | None): The index of the environment.
+            idx (int | None): The index of the environment. Defaults to None (single environment).
         """
         if idx is None:
             self._ep_ret = torch.zeros(self._env.num_envs)

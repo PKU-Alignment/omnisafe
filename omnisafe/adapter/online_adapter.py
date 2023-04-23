@@ -49,6 +49,7 @@ class OnlineAdapter:
     Attributes:
         _env_id (str): The environment id.
         _env (CMDP): The environment.
+        _eval_env (CMDP): The evaluation environment.
         _cfgs (Config): The configuration.
         _device (torch.device): The device.
 
@@ -189,7 +190,7 @@ class OnlineAdapter:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
-            action (torch.Tensor): action.
+            action (torch.Tensor): action from the agent or random.
 
         Returns:
             observation (torch.Tensor): agent's observation of the current environment.
@@ -197,19 +198,16 @@ class OnlineAdapter:
             cost (torch.Tensor): amount of cost returned after previous action.
             terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): contains auxiliary diagnostic information.
+            info (dict[str, Any]): some information logged by the environment.
         """
         return self._env.step(action)
 
     def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
         """Resets the environment and returns an initial observation.
 
-        Args:
-            seed (Optional[int]): seed for the environment.
-
         Returns:
             observation (torch.Tensor): the initial observation of the space.
-            info (dict[str, Any]): contains auxiliary diagnostic information.
+            info (dict[str, Any]): some information logged by the environment.
         """
         return self._env.reset()
 

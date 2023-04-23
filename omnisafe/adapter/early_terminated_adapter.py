@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""OnPolicy Adapter for OmniSafe."""
+"""EarlyTerminated Adapter for OmniSafe."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ from omnisafe.utils.config import Config
 
 
 class EarlyTerminatedAdapter(OnPolicyAdapter):
-    """OnPolicy Adapter for OmniSafe."""
+    """EarlyTerminated Adapter for OmniSafe."""
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
         assert num_envs == 1, 'EarlyTerminatedAdapter only supports num_envs=1.'
@@ -53,7 +53,7 @@ class EarlyTerminatedAdapter(OnPolicyAdapter):
         self._cost_logger += info.get('original_cost', cost)
 
         if self._cost_logger > self._cost_limit:
-            reward = torch.zeros(self._env.num_envs)  # r_e = 0
+            reward = torch.zeros(self._env.num_envs)
             terminated = torch.ones(self._env.num_envs)
             next_obs, _ = self._env.reset()
             self._cost_logger = torch.zeros(self._env.num_envs)
