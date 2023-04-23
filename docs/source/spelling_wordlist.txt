@@ -425,3 +425,5 @@ bdg
 num
 gpu
 Stooke
+abspath
+Deque
