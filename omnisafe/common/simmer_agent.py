@@ -30,7 +30,7 @@ class BaseSimmerAgent(ABC):
     def __init__(
         self,
         cfgs: Config,
-        budget_bound: float,
+        budget_bound: torch.Tensor,
         obs_space: tuple[int,] = (0,),
         action_space: tuple[int, int] = (-1, 1),
         history_len: int = 100,
@@ -53,7 +53,7 @@ class BaseSimmerAgent(ABC):
         self._history_len = history_len
         self._obs_space = obs_space
         self._action_space = action_space
-        self._budget_bound = torch.as_tensor(budget_bound, dtype=torch.float32)
+        self._budget_bound = budget_bound
         self._cfgs = cfgs
         # history
         self._error_history = deque([], maxlen=self._history_len)
@@ -88,7 +88,7 @@ class SimmerPIDAgent(BaseSimmerAgent):
     def __init__(
         self,
         cfgs: Config,
-        budget_bound: float,
+        budget_bound: torch.Tensor,
         obs_space: tuple[int,] = (0,),
         action_space: tuple[int, int] = (-1, 1),
         history_len: int = 100,

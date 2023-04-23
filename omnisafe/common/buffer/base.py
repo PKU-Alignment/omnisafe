@@ -80,11 +80,7 @@ class BaseBuffer(ABC):
             _device (torch.device): The device of the buffer.
 
         """
-        self._device: torch.device
-        self._size: int
-        self.data: dict[str, torch.Tensor]
-
-        self._device = device
+        self._device: torch.device = device
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros((size, *obs_space.shape), dtype=torch.float32, device=device)
         else:
@@ -94,14 +90,14 @@ class BaseBuffer(ABC):
         else:
             raise NotImplementedError
 
-        self.data = {
+        self.data: dict[str, torch.Tensor] = {
             'obs': obs_buf,
             'act': act_buf,
             'reward': torch.zeros(size, dtype=torch.float32, device=device),
             'cost': torch.zeros(size, dtype=torch.float32, device=device),
             'done': torch.zeros(size, dtype=torch.float32, device=device),
         }
-        self._size = size
+        self._size: int = size
 
     @property
     def device(self) -> torch.device:

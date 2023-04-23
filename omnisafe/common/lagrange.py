@@ -58,30 +58,23 @@ class Lagrange:
         lagrangian_upper_bound: float | None = None,
     ) -> None:
         """Initialize Lagrange multiplier."""
-        self.cost_limit: float
-        self.lagrangian_multiplier: torch.nn.Parameter
-        self.lambda_optimizer: torch.optim.Optimizer
-        self.lambda_range_projection: torch.nn.ReLU
-        self.lagrangian_upper_bound: float | None
-        self.lambda_lr: float
-
-        self.cost_limit = cost_limit
-        self.lambda_lr = lambda_lr
-        self.lagrangian_upper_bound = lagrangian_upper_bound
+        self.cost_limit: float = cost_limit
+        self.lambda_lr: float = lambda_lr
+        self.lagrangian_upper_bound: float | None = lagrangian_upper_bound
 
         init_value = max(lagrangian_multiplier_init, 1e-5)
-        self.lagrangian_multiplier = torch.nn.Parameter(
+        self.lagrangian_multiplier: torch.nn.Parameter = torch.nn.Parameter(
             torch.as_tensor(init_value),
             requires_grad=True,
         )
-        self.lambda_range_projection = torch.nn.ReLU()
+        self.lambda_range_projection: torch.nn.ReLU = torch.nn.ReLU()
         # fetch optimizer from PyTorch optimizer package
         assert hasattr(
             torch.optim,
             lambda_optimizer,
         ), f'Optimizer={lambda_optimizer} not found in torch.'
         torch_opt = getattr(torch.optim, lambda_optimizer)
-        self.lambda_optimizer = torch_opt(
+        self.lambda_optimizer: torch.optim.Optimizer = torch_opt(
             [
                 self.lagrangian_multiplier,
             ],

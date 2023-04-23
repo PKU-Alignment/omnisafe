@@ -62,8 +62,12 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             _num_envs (int): The number of environments.
 
         """
-        self._num_envs: int
-        self._num_envs = num_envs
+        self._num_envs: int = num_envs
+        self._ptr: int = 0
+        self._size: int = 0
+        self._max_size: int = size
+        self._batch_size: int = batch_size
+        self._device: torch.device = device
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros(
                 (size, num_envs, *obs_space.shape),
@@ -95,12 +99,6 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             'done': torch.zeros((size, num_envs), dtype=torch.float32, device=device),
             'next_obs': next_obs_buf,
         }
-
-        self._ptr: int = 0
-        self._size: int = 0
-        self._max_size: int = size
-        self._batch_size: int = batch_size
-        self._device = device
 
     @property
     def num_envs(self) -> int:

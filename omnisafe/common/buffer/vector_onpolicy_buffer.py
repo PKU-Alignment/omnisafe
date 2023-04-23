@@ -71,13 +71,10 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
             _standardized_adv_c (bool): Whether to standardize the advantage for cost.
 
         """
-        self._num_buffers: int
-        self._standardized_adv_r: bool
-        self._standardized_adv_c: bool
+        self._num_buffers: int = num_envs
+        self._standardized_adv_r: bool = standardized_adv_r
+        self._standardized_adv_c: bool = standardized_adv_c
 
-        self._num_buffers = num_envs
-        self._standardized_adv_r = standardized_adv_r
-        self._standardized_adv_c = standardized_adv_c
         if num_envs < 1:
             raise ValueError('num_envs must be greater than 0.')
         self.buffers: list[OnPolicyBuffer] = [

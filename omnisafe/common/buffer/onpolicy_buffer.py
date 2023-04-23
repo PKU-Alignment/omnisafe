@@ -123,19 +123,8 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         """
         super().__init__(obs_space, act_space, size, device)
 
-        self._standardized_adv_r: bool
-        self._standardized_adv_c: bool
-        self._gamma: float
-        self._lam: float
-        self._lam_c: float
-        self._penalty_coefficient: float
-        self._advantage_estimator: AdvatageEstimator
-        self.ptr: int
-        self.path_start_idx: int
-        self.max_size: int
-
-        self._standardized_adv_r = standardized_adv_r
-        self._standardized_adv_c = standardized_adv_c
+        self._standardized_adv_r: bool = standardized_adv_r
+        self._standardized_adv_c: bool = standardized_adv_c
         self.data['adv_r'] = torch.zeros((size,), dtype=torch.float32, device=device)
         self.data['discounted_ret'] = torch.zeros((size,), dtype=torch.float32, device=device)
         self.data['value_r'] = torch.zeros((size,), dtype=torch.float32, device=device)
@@ -145,14 +134,14 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         self.data['target_value_c'] = torch.zeros((size,), dtype=torch.float32, device=device)
         self.data['logp'] = torch.zeros((size,), dtype=torch.float32, device=device)
 
-        self._gamma = gamma
-        self._lam = lam
-        self._lam_c = lam_c
-        self._penalty_coefficient = penalty_coefficient
-        self._advantage_estimator = advantage_estimator
-        self.ptr = 0
-        self.path_start_idx = 0
-        self.max_size = size
+        self._gamma: float = gamma
+        self._lam: float = lam
+        self._lam_c: float = lam_c
+        self._penalty_coefficient: float = penalty_coefficient
+        self._advantage_estimator: AdvatageEstimator = advantage_estimator
+        self.ptr: int = 0
+        self.path_start_idx: int = 0
+        self.max_size: int = size
 
         assert self._penalty_coefficient >= 0, 'penalty_coefficient must be non-negative!'
         assert self._advantage_estimator in ['gae', 'gae-rtg', 'vtrace', 'plain']

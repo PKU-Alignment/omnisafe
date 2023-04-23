@@ -77,14 +77,11 @@ class OffPolicyBuffer(BaseBuffer):
             )
         else:
             raise NotImplementedError
-        self._ptr: int
-        self._max_size: int
-        self._batch_size: int
 
-        self._ptr = 0
-        self._size = 0
-        self._max_size = size
-        self._batch_size = batch_size
+        self._ptr: int = 0
+        self._size: int = 0
+        self._max_size: int = size
+        self._batch_size: int = batch_size
 
         assert (
             self._max_size > self._batch_size
