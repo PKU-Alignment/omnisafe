@@ -31,13 +31,13 @@ from omnisafe.utils.config import Config
 class SauteAdapter(OnPolicyAdapter):
     """OnPolicy Adapter for OmniSafe."""
 
+    _safety_obs: torch.Tensor
+    _ep_budget: torch.Tensor
+
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
         super().__init__(env_id, num_envs, seed, cfgs)
 
-        self._safety_budget: torch.Tensor
-        self._safety_obs: torch.Tensor
-
-        self._safety_budget = (
+        self._safety_budget: torch.Tensor = (
             self._cfgs.algo_cfgs.safety_budget
             * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
             / (1 - self._cfgs.algo_cfgs.saute_gamma)
@@ -45,11 +45,8 @@ class SauteAdapter(OnPolicyAdapter):
             * torch.ones(num_envs, 1)
         )
 
-        self._ep_budget: torch.Tensor
-
         assert isinstance(self._env.observation_space, Box), 'Observation space must be Box'
-        self._observation_space: Box
-        self._observation_space = Box(
+        self._observation_space: Box = Box(
             low=-np.inf,
             high=np.inf,
             shape=(self._env.observation_space.shape[0] + 1,),

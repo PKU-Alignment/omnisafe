@@ -51,6 +51,10 @@ class OnPolicyAdapter(OnlineAdapter):
 
     """
 
+    _ep_ret: torch.Tensor
+    _ep_cost: torch.Tensor
+    _ep_len: torch.Tensor
+
     def __init__(  # pylint: disable=too-many-arguments
         self,
         env_id: str,
@@ -59,10 +63,6 @@ class OnPolicyAdapter(OnlineAdapter):
         cfgs: Config,
     ) -> None:
         super().__init__(env_id, num_envs, seed, cfgs)
-
-        self._ep_ret: torch.Tensor
-        self._ep_cost: torch.Tensor
-        self._ep_len: torch.Tensor
         self._reset_log()
 
     def roll_out(  # pylint: disable=too-many-locals

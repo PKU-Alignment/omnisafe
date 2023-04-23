@@ -35,37 +35,30 @@ class SimmerAdapter(SauteAdapter):
         """Initialize the adapter."""
         super(OnPolicyAdapter, self).__init__(env_id, num_envs, seed, cfgs)
 
-        self._safety_budget: torch.Tensor
-        self._safety_obs: torch.Tensor
-        self._rel_safety_budget: torch.Tensor
-        self._ep_budget: torch.Tensor
-        self._num_envs: int
-        self._controller: BaseSimmerAgent
-
-        self._num_envs = num_envs
-        self._safety_budget = (
+        self._num_envs: int = num_envs
+        self._safety_budget: torch.Tensor = (
             self._cfgs.algo_cfgs.safety_budget
             * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
             / (1 - self._cfgs.algo_cfgs.saute_gamma)
             / self._cfgs.algo_cfgs.max_ep_len
             * torch.ones(num_envs, 1)
         )
-        self._upper_budget = (
+        self._upper_budget: torch.Tensor = (
             self._cfgs.algo_cfgs.upper_budget
             * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
             / (1 - self._cfgs.algo_cfgs.saute_gamma)
             / self._cfgs.algo_cfgs.max_ep_len
             * torch.ones(num_envs, 1)
         )
-        self._rel_safety_budget = self._safety_budget / self._upper_budget
+        self._rel_safety_budget: torch.Tensor = self._safety_budget / self._upper_budget
 
         assert isinstance(self._env.observation_space, Box), 'Observation space must be Box'
-        self._observation_space = Box(
+        self._observation_space: Box = Box(
             low=-np.inf,
             high=np.inf,
             shape=(self._env.observation_space.shape[0] + 1,),
         )
-        self._controller = SimmerPIDAgent(
+        self._controller: BaseSimmerAgent = SimmerPIDAgent(
             cfgs=cfgs.control_cfgs,
             budget_bound=self._upper_budget,
         )

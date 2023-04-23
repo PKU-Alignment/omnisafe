@@ -83,17 +83,11 @@ class OnlineAdapter:
         """
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
-        self._cfgs: Config
-        self._device: torch.device
-        self._env_id: str
-        self._env: CMDP
-        self._eval_env: CMDP
-
-        self._cfgs = cfgs
-        self._device = get_device(cfgs.train_cfgs.device)
-        self._env_id = env_id
-        self._env = make(env_id, num_envs=num_envs, device=self._device)
-        self._eval_env = make(env_id, num_envs=1, device=self._device)
+        self._cfgs: Config = cfgs
+        self._device: torch.device = get_device(cfgs.train_cfgs.device)
+        self._env_id: str = env_id
+        self._env: CMDP = make(env_id, num_envs=num_envs, device=self._device)
+        self._eval_env: CMDP = make(env_id, num_envs=1, device=self._device)
 
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,

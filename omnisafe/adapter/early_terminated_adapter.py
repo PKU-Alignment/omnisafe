@@ -32,10 +32,8 @@ class EarlyTerminatedAdapter(OnPolicyAdapter):
 
         super().__init__(env_id, num_envs, seed, cfgs)
 
-        self._cost_limit: float
-        self._cost_logger: torch.Tensor
-        self._cost_limit = cfgs.algo_cfgs.cost_limit
-        self._cost_logger = torch.zeros(self._env.num_envs)
+        self._cost_limit: float = cfgs.algo_cfgs.cost_limit
+        self._cost_logger: torch.Tensor = torch.zeros(self._env.num_envs)
 
     def step(
         self,

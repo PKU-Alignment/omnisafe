@@ -57,6 +57,11 @@ class OffPolicyAdapter(OnlineAdapter):
         _max_ep_len (int): The maximum episode length.
     """
 
+    _current_obs: torch.Tensor
+    _ep_ret: torch.Tensor
+    _ep_cost: torch.Tensor
+    _ep_len: torch.Tensor
+
     def __init__(  # pylint: disable=too-many-arguments
         self,
         env_id: str,
@@ -73,14 +78,8 @@ class OffPolicyAdapter(OnlineAdapter):
             cfgs (Config): The configuration.
         """
         super().__init__(env_id, num_envs, seed, cfgs)
-
-        self._ep_ret: torch.Tensor
-        self._ep_cost: torch.Tensor
-        self._ep_len: torch.Tensor
-        self._current_obs: torch.Tensor
         self._current_obs, _ = self.reset()
-        self._max_ep_len: int
-        self._max_ep_len = 1000
+        self._max_ep_len: int = 1000
         self._reset_log()
 
     def eval_policy(  # pylint: disable=too-many-locals
