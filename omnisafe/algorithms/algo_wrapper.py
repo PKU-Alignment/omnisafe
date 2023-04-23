@@ -138,13 +138,13 @@ class AlgoWrapper:
             cfgs=self.cfgs,
         )
 
-    def learn(self) -> tuple:
+    def learn(self) -> tuple[float, float, int]:
         """Agent Learning."""
         ep_ret, ep_cost, ep_len = self.agent.learn()
 
         self._init_statistical_tools()
 
-        return ep_ret, ep_len, ep_cost
+        return ep_ret, ep_cost, ep_len
 
     def _init_statistical_tools(self) -> None:
         """Init statistical tools."""
