@@ -439,10 +439,14 @@ class ActionScale(Wrapper):
         )
 
         self._min_action: torch.Tensor = torch.tensor(
-            min_action, dtype=torch.float32, device=self._device
+            min_action,
+            dtype=torch.float32,
+            device=self._device,
         )
         self._max_action: torch.Tensor = torch.tensor(
-            max_action, dtype=torch.float32, device=self._device
+            max_action,
+            dtype=torch.float32,
+            device=self._device,
         )
 
     def step(

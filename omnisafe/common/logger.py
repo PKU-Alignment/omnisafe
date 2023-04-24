@@ -26,7 +26,6 @@ from typing import Any, Deque, TextIO
 import numpy as np
 import torch
 import wandb
-from _csv import _writer
 from rich import print  # pylint: disable=redefined-builtin
 from rich.console import Console
 from rich.table import Table
@@ -133,7 +132,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             )
             atexit.register(self._output_file.close)
             self.log(f'Logging data to {self._output_file.name}', 'cyan', bold=True)
-            self._csv_writer: _writer = csv.writer(self._output_file)
+            self._csv_writer = csv.writer(self._output_file)
 
         self._epoch: int = 0
         self._first_row: bool = True

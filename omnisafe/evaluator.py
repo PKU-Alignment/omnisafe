@@ -38,6 +38,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     """This class includes common evaluation methods for safe RL algorithms."""
 
     _cfgs: Config
+    _save_dir: str
+    _model_name: str
 
     # pylint: disable-next=too-many-arguments
     def __init__(
@@ -53,7 +55,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             pi (omnisafe.algos.models.actor.Actor): the policy. if None, the policy will be created from the config.
             obs_normalize (omnisafe.algos.models.obs_normalize): the observation Normalize.
         """
-        self._env_env: CMDP | None = env
+        self._env: CMDP | None = env
         self._actor: Actor | None = actor
         self._dividing_line: str = '\n' + '#' * 50 + '\n'
 

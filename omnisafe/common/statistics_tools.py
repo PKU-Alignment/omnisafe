@@ -42,6 +42,12 @@ class StatisticsTools:
         path_map_img_name: map the path of data to the config which generate the name of image
     """
 
+    grid_config_dir: str
+    decompressed_grid_config: dict[str, Any]
+    path_map_img_name: dict[str, Any]
+    grid_config: dict[str, Any]
+    exp_dir: str
+
     def __init__(self) -> None:
         self.plotter: Plotter = Plotter()
 

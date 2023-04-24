@@ -93,7 +93,7 @@ class ActorQCritic(nn.Module):
         for param in self.target_reward_critic.parameters():
             param.requires_grad = False
         self.target_actor: GaussianLearningActor | GaussianSACActor | MLPActor = deepcopy(
-            self.actor
+            self.actor,
         )
         for param in self.target_actor.parameters():
             param.requires_grad = False
