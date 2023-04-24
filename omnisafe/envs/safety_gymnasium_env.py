@@ -36,7 +36,7 @@ class SafetyGymnasiumEnv(CMDP):
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
 
-    need_auto_reset_wrapper: bool = True
+    need_auto_reset_wrapper: bool = False
     need_time_limit_wrapper: bool = False
     _support_envs: list[str] = [
         'SafetyPointGoal0-v0',
@@ -112,6 +112,7 @@ class SafetyGymnasiumEnv(CMDP):
             self._observation_space = self._env.single_observation_space
         else:
             self.need_time_limit_wrapper = True
+            self.need_auto_reset_wrapper = True
             self._env = safety_gymnasium.make(id=env_id, autoreset=True, **kwargs)
             assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
             assert isinstance(
