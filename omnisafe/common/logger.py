@@ -26,6 +26,7 @@ from typing import Any, Deque, TextIO
 import numpy as np
 import torch
 import wandb
+from _csv import _writer
 from rich import print  # pylint: disable=redefined-builtin
 from rich.console import Console
 from rich.table import Table
@@ -112,60 +113,43 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             _use_tensorboard (bool): Whether to use tensorboard.
             _use_wandb (bool): Whether to use wandb.
         """
-        self._hms_time: str
-        self._log_dir: str
-        self._maste_proc: bool
-        self._console: Console
-        self._output_file: TextIO
-        self._epoch: int
-        self._first_row: bool
-        self._what_to_save: dict[str, Any] | None
-        self._data: dict[str, Deque[int | float] | list[int | float]]
-        self._headers_windows: dict[str, int | None]
-        self._headers_minmax: dict[str, bool]
-        self._headers_delta: dict[str, bool]
-        self._current_row: dict[str, int | float]
-        self._config: Config
-        self._use_tensorboard: bool
-        self._use_wandb: bool
-
         hms_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
         relpath = hms_time
 
         if seed is not None:
             relpath = f'seed-{str(seed).zfill(3)}-{relpath}'
 
-        self._hms_time = hms_time
-        self._log_dir = os.path.join(output_dir, exp_name, relpath)
-        self._maste_proc = get_rank() == 0
-        self._console = Console()
+        self._hms_time: str = hms_time
+        self._log_dir: str = os.path.join(output_dir, exp_name, relpath)
+        self._maste_proc: bool = get_rank() == 0
+        self._console: Console = Console()
 
         if self._maste_proc:
             os.makedirs(self._log_dir, exist_ok=True)
-            self._output_file = open(  # noqa: SIM115 # pylint: disable=consider-using-with
+            self._output_file: TextIO = open(  # noqa: SIM115 # pylint: disable=consider-using-with
                 os.path.join(self._log_dir, output_fname),
                 encoding='utf-8',
                 mode='w',
             )
             atexit.register(self._output_file.close)
             self.log(f'Logging data to {self._output_file.name}', 'cyan', bold=True)
-            self._csv_writer = csv.writer(self._output_file)
+            self._csv_writer: _writer = csv.writer(self._output_file)
 
-        self._epoch = 0
-        self._first_row = True
-        self._what_to_save = None
-        self._data = {}
-        self._headers_windows = {}
-        self._headers_minmax = {}
-        self._headers_delta = {}
-        self._current_row = {}
+        self._epoch: int = 0
+        self._first_row: bool = True
+        self._what_to_save: dict[str, Any] | None = None
+        self._data: dict[str, Deque[int | float] | list[int | float]] = {}
+        self._headers_windows: dict[str, int | None] = {}
+        self._headers_minmax: dict[str, bool] = {}
+        self._headers_delta: dict[str, bool] = {}
+        self._current_row: dict[str, int | float] = {}
 
         if config is not None:
             self.save_config(config)
-            self._config = config
+            self._config: Config = config
 
-        self._use_tensorboard = use_tensorboard
-        self._use_wandb = use_wandb
+        self._use_tensorboard: bool = use_tensorboard
+        self._use_wandb: bool = use_wandb
 
         if self._use_tensorboard and self._maste_proc:
             self._tensorboard_writer = SummaryWriter(log_dir=os.path.join(self._log_dir, 'tb'))

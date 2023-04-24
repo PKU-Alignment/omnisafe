@@ -32,6 +32,13 @@ class Normalizer(nn.Module):
         - URL: http://i.stanford.edu/pub/cstr/reports/cs/tr/79/773/CS-TR-79-773.pdf
     """
 
+    _mean: torch.Tensor  # running mean
+    _sumsq: torch.Tensor  # running sum of squares
+    _var: torch.Tensor  # running variance
+    _std: torch.Tensor  # running standard deviation
+    _count: torch.Tensor  # number of samples
+    _clip: torch.Tensor  # clip value
+
     def __init__(self, shape: tuple[int, ...], clip: float = 1e6) -> None:
         """Initialize the normalize."""
         super().__init__()
@@ -50,17 +57,8 @@ class Normalizer(nn.Module):
             self.register_buffer('_count', torch.tensor(0))
             self.register_buffer('_clip', clip * torch.ones(*shape))
 
-        self._mean: torch.Tensor  # running mean
-        self._sumsq: torch.Tensor  # running sum of squares
-        self._var: torch.Tensor  # running variance
-        self._std: torch.Tensor  # running standard deviation
-        self._count: torch.Tensor  # number of samples
-        self._clip: torch.Tensor  # clip value
-        self._shape: tuple[int, ...]  # shape of the normalize
-        self._first: bool  # whether the data is the first data
-
-        self._shape = shape
-        self._first = True
+        self._shape: tuple[int, ...] = shape
+        self._first: bool = True
 
     @property
     def shape(self) -> tuple[int, ...]:

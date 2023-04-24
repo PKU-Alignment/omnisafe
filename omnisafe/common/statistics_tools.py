@@ -31,20 +31,19 @@ class StatisticsTools:
 
     Users can choose any parameters to compare the results.
     Aiming to help users to find the best hyperparameters faster.
+
+    Attributes:
+        exp_dir: experiment directory
+        grid_config_dir: experiment's config directory
+        grid_config: experiment's config
+        plotter: Plotter
+        decompressed_grid_config: decompressed grid config
+            e.g. {'algo_cfgs:steps_per_epoch': 2048} -> {'algo_cfgs': {'steps_per_epoch': 2048}}
+        path_map_img_name: map the path of data to the config which generate the name of image
     """
 
     def __init__(self) -> None:
-        self.exp_dir: str  # experiment directory
-        self.grid_config_dir: str  # experiment's config directory
-        self.grid_config: dict[str, Any]  # experiment's config
-        self.plotter: Plotter
-        # decompressed grid config
-        # e.g. {'algo_cfgs:steps_per_epoch': 2048} -> {'algo_cfgs': {'steps_per_epoch': 2048}}
-        self.decompressed_grid_config: dict[str, Any]
-        # map the path of data to the config which generate the name of image
-        self.path_map_img_name: dict[str, Any]
-        # plotter instance
-        self.plotter = Plotter()
+        self.plotter: Plotter = Plotter()
 
     def load_source(self, path: str) -> None:
         """Load experiment results.

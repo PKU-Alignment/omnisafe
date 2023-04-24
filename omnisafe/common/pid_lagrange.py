@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import abc
 from collections import deque
-from typing import Deque
 
 
 # pylint: disable-next=too-few-public-methods,too-many-instance-attributes
@@ -69,38 +68,22 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
             lagrangian_multiplier_init (float): The initial value of the lagrangian multiplier.
             cost_limit (float): The cost limit.
         """
-        self._pid_kp: float
-        self._pid_ki: float
-        self._pid_kd: float
-        self._pid_d_delay: int
-        self._pid_delta_p_ema_alpha: float
-        self._pid_delta_d_ema_alpha: float
-        self._penalty_max: int
-        self._sum_norm: bool
-        self._diff_norm: bool
-        self._pid_i: float
-        self._cost_ds: Deque[float]
-        self._delta_p: float
-        self._cost_d: float
-        self._cost_limit: float
-        self._cost_penalty: float
-
-        self._pid_kp = pid_kp
-        self._pid_ki = pid_ki
-        self._pid_kd = pid_kd
+        self._pid_kp: float = pid_kp
+        self._pid_ki: float = pid_ki
+        self._pid_kd: float = pid_kd
         self._pid_d_delay = pid_d_delay
-        self._pid_delta_p_ema_alpha = pid_delta_p_ema_alpha
-        self._pid_delta_d_ema_alpha = pid_delta_d_ema_alpha
-        self._penalty_max = penalty_max
-        self._sum_norm = sum_norm
-        self._diff_norm = diff_norm
-        self._pid_i = lagrangian_multiplier_init
-        self._cost_ds = deque(maxlen=self._pid_d_delay)
-        self._cost_ds.append(0)
-        self._delta_p = 0
-        self._cost_d = 0
-        self._cost_limit = cost_limit
-        self._cost_penalty = 0
+        self._pid_delta_p_ema_alpha: float = pid_delta_p_ema_alpha
+        self._pid_delta_d_ema_alpha: float = pid_delta_d_ema_alpha
+        self._penalty_max: int = penalty_max
+        self._sum_norm: bool = sum_norm
+        self._diff_norm: bool = diff_norm
+        self._pid_i: float = lagrangian_multiplier_init
+        self._cost_ds: deque[float] = deque(maxlen=self._pid_d_delay)
+        self._cost_ds.append(0.0)
+        self._delta_p: float = 0.0
+        self._cost_d: float = 0.0
+        self._cost_limit: float = cost_limit
+        self._cost_penalty: float = 0.0
 
     @property
     def lagrangian_multiplier(self) -> float:
