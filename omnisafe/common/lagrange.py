@@ -29,7 +29,7 @@ class Lagrange:
         Any traditional policy gradient algorithm can be converted to a Lagrangian-based algorithm
         by inheriting from this class and implementing the :meth:`_loss_pi` method.
 
-    Example:
+    Examples:
         >>> from omnisafe.common.lagrange import Lagrange
         >>> def loss_pi(self, data):
         >>>     # implement your own loss function here
@@ -38,7 +38,7 @@ class Lagrange:
     You can also inherit this class to implement your own Lagrangian-based algorithm,
     with any policy gradient method you like in ``omnisafe``.
 
-    Example:
+    Examples:
         >>> from omnisafe.common.lagrange import Lagrange
         >>> class CustomAlgo:
         >>>     def __init(self) -> None:

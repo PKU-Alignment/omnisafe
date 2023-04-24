@@ -19,7 +19,7 @@ from __future__ import annotations
 import torch
 
 from omnisafe.common.buffer.base import BaseBuffer
-from omnisafe.typing import AdvatageEstimator, OmnisafeSpace, cpu
+from omnisafe.typing import DEVICE_CPU, AdvatageEstimator, OmnisafeSpace
 from omnisafe.utils import distributed
 from omnisafe.utils.math import discount_cumsum
 
@@ -43,7 +43,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         penalty_coefficient: float = 0,
         standardized_adv_r: bool = False,
         standardized_adv_c: bool = False,
-        device: torch.device = cpu,
+        device: torch.device = DEVICE_CPU,
     ) -> None:
         """Initialize the on-policy buffer.
 
@@ -119,7 +119,6 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             obs_space (OmnisafeSpace): The observation space.
             act_space (OmnisafeSpace): The action space.
             device (torch.device): The device to store the data.
-
         """
         super().__init__(obs_space, act_space, size, device)
 
@@ -182,7 +181,6 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         state-action pairs and stores them in the buffer, following the steps:
 
         .. hint::
-
             #. Calculate the discounted return.
             #. Calculate the advantages of the reward.
             #. Calculate the advantages of the cost.
@@ -232,13 +230,11 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         """Get the data in the buffer.
 
         .. hint::
-
             We provide a trick to standardize the advantages of state-action pairs.
             We calculate the mean and standard deviation of the advantages of state-action pairs
             and then standardize the advantages of state-action pairs.
             You can turn on this trick by setting the ``standardized_adv_r`` to ``True``.
             The same trick is applied to the advantages of the cost.
-
         """
         self.ptr, self.path_start_idx = 0, 0
 

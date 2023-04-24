@@ -23,7 +23,7 @@ import safety_gymnasium
 import torch
 
 from omnisafe.envs.core import CMDP, env_register
-from omnisafe.typing import Box, cpu
+from omnisafe.typing import DEVICE_CPU, Box
 
 
 @env_register
@@ -87,7 +87,7 @@ class SafetyGymnasiumEnv(CMDP):
         self,
         env_id: str,
         num_envs: int = 1,
-        device: torch.device = cpu,
+        device: torch.device = DEVICE_CPU,
         **kwargs: Any,
     ) -> None:
         """Initialize the environment.
@@ -137,7 +137,6 @@ class SafetyGymnasiumEnv(CMDP):
         """Step the environment.
 
         .. note::
-
             OmniSafe use auto reset wrapper to reset the environment when the episode is
             terminated. So the ``obs`` will be the first observation of the next episode.
             And the true ``final_observation`` in ``info`` will be stored in the ``final_observation`` key of ``info``.

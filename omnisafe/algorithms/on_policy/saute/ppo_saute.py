@@ -35,7 +35,7 @@ class PPOSaute(PPO):
 
         User can customize the environment by inheriting this function.
 
-        Example:
+        Examples:
             >>> def _init_env(self) -> None:
             >>>    self._env = CustomAdapter()
         """

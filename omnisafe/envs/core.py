@@ -22,7 +22,7 @@ from typing import Any
 
 import torch
 
-from omnisafe.typing import OmnisafeSpace, cpu
+from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
 
 class CMDP(ABC):
@@ -146,7 +146,7 @@ class CMDP(ABC):
 
     @abstractmethod
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
-        """Resets the environment and returns an initial observation.
+        """Reset the environment and returns an initial observation.
 
         Args:
             seed (Optional[int]): seed for the environment.
@@ -158,7 +158,7 @@ class CMDP(ABC):
 
     @abstractmethod
     def set_seed(self, seed: int) -> None:
-        """Sets the seed for this env's random number generator(s).
+        """Set the seed for this env's random number generator(s).
 
         Args:
             seed (int): the seed to use.
@@ -201,10 +201,9 @@ class Wrapper(CMDP):
 
     Attributes:
         _env (CMDP): the environment.
-
     """
 
-    def __init__(self, env: CMDP, device: torch.device = cpu) -> None:
+    def __init__(self, env: CMDP, device: torch.device = DEVICE_CPU) -> None:
         """Initialize the wrapper.
 
         Args:
@@ -257,7 +256,7 @@ class Wrapper(CMDP):
         return self._env.step(action)
 
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
-        """Resets the environment and returns an initial observation.
+        """Reset the environment and returns an initial observation.
 
         Args:
             seed (Optional[int]): seed for the environment.
@@ -269,7 +268,7 @@ class Wrapper(CMDP):
         return self._env.reset(seed)
 
     def set_seed(self, seed: int) -> None:
-        """Sets the seed for this env's random number generator(s).
+        """Set the seed for this env's random number generator(s).
 
         Args:
             seed (int): the seed to use.
@@ -311,7 +310,7 @@ class EnvRegister:
     The EnvRegister is used to register the environment class. It provides the
     method to get the environment class by the environment id.
 
-    Example:
+    Examples:
         >>> from omnisafe.envs.core import env_register
         >>> from cunstom_env import CustomEnv
         >>> @env_register

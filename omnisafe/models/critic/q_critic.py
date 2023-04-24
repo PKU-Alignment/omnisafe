@@ -72,7 +72,6 @@ class QCritic(Critic):
             shared (nn.Module): shared network.
             num_critics (int): number of critics.
             use_obs_encoder (bool): whether to use observation encoder.
-
         """
         super().__init__(
             obs_space,

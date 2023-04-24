@@ -48,7 +48,6 @@ class OnPolicyAdapter(OnlineAdapter):
         _ep_ret (torch.Tensor): The episode return.
         _ep_cost (torch.Tensor): The episode cost.
         _ep_len (torch.Tensor): The episode length.
-
     """
 
     _ep_ret: torch.Tensor
@@ -75,7 +74,6 @@ class OnPolicyAdapter(OnlineAdapter):
         """Roll out the environment and store the data in the buffer.
 
         .. warning::
-
             As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,
             so the final observation will be stored in ``info['final_observation']``.
 

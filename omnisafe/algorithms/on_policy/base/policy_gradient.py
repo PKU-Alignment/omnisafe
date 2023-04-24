@@ -52,7 +52,7 @@ class PolicyGradient(BaseAlgo):
 
         User can customize the environment by inheriting this function.
 
-        Example:
+        Examples:
             >>> def _init_env(self) -> None:
             >>>    self._env = CustomAdapter()
         """
@@ -79,7 +79,7 @@ class PolicyGradient(BaseAlgo):
 
         User can customize the model by inheriting this function.
 
-        Example:
+        Examples:
             >>> def _init_model(self) -> None:
             >>>    self._actor_critic = CustomActorCritic()
         """
@@ -104,7 +104,7 @@ class PolicyGradient(BaseAlgo):
 
         User can define the initialization of the algorithm by inheriting this function.
 
-        Example:
+        Examples:
             >>> def _init(self) -> None:
             >>>    super()._init()
             >>>    self._buffer = CustomBuffer()
@@ -490,7 +490,6 @@ class PolicyGradient(BaseAlgo):
             #. Update the network by loss function.
 
             .. warning::
-
                 For some ``KL divergence`` based algorithms (e.g. TRPO, CPO, etc.),
                 the ``KL divergence`` between the old policy and the new policy is calculated.
                 And the ``KL divergence`` is used to determine whether the update is successful.

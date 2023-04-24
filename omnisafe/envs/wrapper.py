@@ -29,7 +29,7 @@ from omnisafe.envs.core import CMDP, Wrapper
 class TimeLimit(Wrapper):
     """Time limit wrapper for the environment.
 
-    Example:
+    Examples:
         >>> env = TimeLimit(env, time_limit=100)
 
     Attributes:
@@ -110,9 +110,8 @@ class TimeLimit(Wrapper):
 class AutoReset(Wrapper):
     """Auto reset the environment when the episode is terminated.
 
-    Example:
+    Examples:
         >>> env = AutoReset(env)
-
     """
 
     def __init__(self, env: CMDP, device: torch.device) -> None:
@@ -170,7 +169,7 @@ class AutoReset(Wrapper):
 class ObsNormalize(Wrapper):
     """Normalize the observation.
 
-    Example:
+    Examples:
         >>> env = ObsNormalize(env)
         >>> norm = Normalizer(env.observation_space.shape) # load saved normalizer
         >>> env = ObsNormalize(env, norm)
@@ -229,7 +228,7 @@ class ObsNormalize(Wrapper):
         return obs, reward, cost, terminated, truncated, info
 
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
-        """Resets the environment and returns an initial observation.
+        """Reset the environment and returns an initial observation.
 
         Args:
             seed (Optional[int]): seed for the environment.
@@ -260,11 +259,10 @@ class ObsNormalize(Wrapper):
 class RewardNormalize(Wrapper):
     """Normalize the reward.
 
-    Example:
+    Examples:
         >>> env = RewardNormalize(env)
         >>> norm = Normalizer(()) # load saved normalizer
         >>> env = RewardNormalize(env, norm)
-
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
@@ -330,7 +328,7 @@ class RewardNormalize(Wrapper):
 class CostNormalize(Wrapper):
     """Normalize the cost.
 
-    Example:
+    Examples:
         >>> env = CostNormalize(env)
         >>> norm = Normalizer(()) # load saved normalizer
         >>> env = CostNormalize(env, norm)
@@ -394,7 +392,7 @@ class CostNormalize(Wrapper):
 class ActionScale(Wrapper):
     """Scale the action space to a given range.
 
-    Example:
+    Examples:
         >>> env = ActionScale(env, low=-1, high=1)
         >>> env.action_space
         Box(-1.0, 1.0, (1,), float32)
@@ -485,7 +483,7 @@ class ActionScale(Wrapper):
 class Unsqueeze(Wrapper):
     """Unsqueeze the observation, reward, cost, terminated, truncated and info.
 
-    Example:
+    Examples:
         >>> env = Unsqueeze(env)
     """
 
@@ -539,7 +537,7 @@ class Unsqueeze(Wrapper):
         return obs, reward, cost, terminated, truncated, info
 
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
-        """Resets the environment and returns a new observation.
+        """Reset the environment and returns a new observation.
 
         .. note::
             The vector information will be unsqueezed to (1, dim) for agent training.

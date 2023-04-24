@@ -68,11 +68,14 @@ def train(  # pylint: disable=too-many-arguments
     ),
     custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
 ) -> None:
-    """Train a single policy in OmniSafe via command line.
-    Example:
-    .. code-block:: bash
-        python -m omnisafe train --algo PPOLag --env_id SafetyPointGoal1-v0 --parallel 1
-        --total_steps 1000000 --device cpu --vector_env_nums 1
+    r"""Train a single policy in OmniSafe via command line.
+
+    Examples:
+        .. code-block:: bash
+
+            python -m omnisafe train --algo PPOLag --env_id SafetyPointGoal1-v0 --parallel 1 \
+                --total_steps 1000000 --device cpu --vector_env_nums 1
+
     Args:
         algo (str): Algorithm to train.
         env_id (str): The name of test environment.
@@ -146,11 +149,14 @@ def train_grid(
     env_id: str,
     custom_cfgs: Dict[str, Any],
 ) -> Tuple[float, float, int]:
-    """Train a policy from exp-x config with OmniSafe.
-    Example:
-    .. code-block:: bash
-        python -m omnisafe train_grid --exp_id exp-1 --algo PPOLag --env_id SafetyPointGoal1-v0
-        --parallel 1 --total_steps 1000000 --device cpu --vector_env_nums 1
+    r"""Train a policy from exp-x config with OmniSafe.
+
+    Examples:
+        .. code-block:: bash
+
+            python -m omnisafe train_grid --exp_id exp-1 --algo PPOLag --env_id SafetyPointGoal1-v0 \
+                --parallel 1 --total_steps 1000000 --device cpu --vector_env_nums 1
+
     Args:
         exp_id (str): Experiment ID.
         algo (str): Algorithm to train.
@@ -210,11 +216,14 @@ def benchmark(
         help='whether to evaluate the trajectory of models saved during training',
     ),
 ) -> None:
-    """Benchmark algorithms configured by .yaml file in OmniSafe via command line.
-    Example:
-    .. code-block:: bash
-        python -m omnisafe benchmark --exp_name exp-1 --num_pool 1 --config_path ./configs/
-        on-policy/PPOLag.yaml--log_dir ./runs
+    r"""Benchmark algorithms configured by .yaml file in OmniSafe via command line.
+
+    Examples:
+        .. code-block:: bash
+
+            python -m omnisafe benchmark --exp_name exp-1 --num_pool 1 \
+                --config_path ./configs/on-policy/PPOLag.yaml --log_dir ./runs
+
     Args:
         exp_name: experiment name
         num_pool: number of paralleled experiments.
@@ -288,11 +297,14 @@ def evaluate_model(
     width: int = typer.Option(256, help='width of rendered image'),
     height: int = typer.Option(256, help='height of rendered image'),
 ) -> None:
-    """Evaluate a policy which trained by OmniSafe via command line.
-    Example:
-    .. code-block:: bash
-        python -m omnisafe eval --result_dir ./runs/PPOLag-{SafetyPointGoal1-v0} --num_episode 10
-        --render True --render_mode rgb_array --camera_name track --width 256 --height 256
+    r"""Evaluate a policy which trained by OmniSafe via command line.
+
+    Examples:
+        .. code-block:: bash
+
+            python -m omnisafe eval --result_dir ./runs/PPOLag-{SafetyPointGoal1-v0} --num_episode 10 \
+                --render True --render_mode rgb_array --camera_name track --width 256 --height 256
+
     Args:
         result_dir (str): Directory of experiment results to evaluate.
         num_episode (int, optional): Number of episodes to render. Defaults to 10.
@@ -348,11 +360,14 @@ def train_config(
         help='whether to evaluate the trajectory of models saved during training',
     ),
 ) -> None:
-    """Train a policy configured by .yaml file in OmniSafe via command line.
-    Example:
-    .. code-block:: bash
-        python -m omnisafe train_config --config_path ./configs/on-policy/PPOLag.yaml --log_dir ./
-        runs
+    r"""Train a policy configured by .yaml file in OmniSafe via command line.
+
+    Examples:
+        .. code-block:: bash
+
+            python -m omnisafe train_config --config_path ./configs/on-policy/PPOLag.yaml \
+                --log_dir ./runs
+
     Args:
         config_path (str): path to config file, it is supposed to be yaml file.
         log_dir (str, optional): directory to save logs, default is current directory.
@@ -412,6 +427,7 @@ def analyze_grid(
     ),
 ) -> None:
     """Statistics tools for experiment grid.
+
     Just specify in the name of the parameter of which value you want to compare,
     then you can just specify how many values you want to compare in single graph at most,
     and the function will automatically generate all possible combinations of the graph.

@@ -52,7 +52,6 @@ class OnlineAdapter:
         _eval_env (CMDP): The evaluation environment.
         _cfgs (Config): The configuration.
         _device (torch.device): The device.
-
     """
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -107,7 +106,6 @@ class OnlineAdapter:
         """Wrapper the environment.
 
         .. hint::
-
             OmniSafe supports the following wrappers:
 
             .. list-table::
@@ -156,6 +154,7 @@ class OnlineAdapter:
     @property
     def action_space(self) -> OmnisafeSpace:
         """The action space of the environment.
+
         Returns:
             OmnisafeSpace: the action space.
         """
@@ -187,21 +186,21 @@ class OnlineAdapter:
             action (torch.Tensor): action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): some information logged by the environment.
+            observation (torch.Tensor): The agent's observation of the current environment.
+            reward (torch.Tensor): The amount of reward returned after previous action.
+            cost (torch.Tensor): The amount of cost returned after previous action.
+            terminated (torch.Tensor): Whether the episode has ended.
+            truncated (torch.Tensor): Whether the episode has been truncated due to a time limit.
+            info (dict[str, Any]): Some information logged by the environment.
         """
         return self._env.step(action)
 
     def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
-        """Resets the environment and returns an initial observation.
+        """Reset the environment and returns an initial observation.
 
         Returns:
-            observation (torch.Tensor): the initial observation of the space.
-            info (dict[str, Any]): some information logged by the environment.
+            observation (torch.Tensor): The initial observation of the space.
+            info (dict[str, Any]): Some information logged by the environment.
         """
         return self._env.reset()
 
@@ -209,6 +208,6 @@ class OnlineAdapter:
         """Save the environment.
 
         Returns:
-            dict[str, torch.nn.Module]: the saved environment.
+            dict[str, torch.nn.Module]: The saved environment.
         """
         return self._env.save()

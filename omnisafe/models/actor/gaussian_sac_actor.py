@@ -68,7 +68,6 @@ class GaussianSACActor(Actor):
         """Get the distribution of the actor.
 
         .. warning::
-
             This method is not supposed to be called by users.
             You should call :meth:`forward` instead.
 
@@ -120,7 +119,6 @@ class GaussianSACActor(Actor):
             You must call :meth:`forward` or :meth:`predict` before calling this method.
 
         .. note::
-
             In this method, we will regularize the log probability of the action.
             The regularization is as follows:
 

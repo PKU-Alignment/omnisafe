@@ -19,7 +19,7 @@ from __future__ import annotations
 import torch
 
 from omnisafe.common.buffer.onpolicy_buffer import OnPolicyBuffer
-from omnisafe.typing import AdvatageEstimator, OmnisafeSpace, cpu
+from omnisafe.typing import DEVICE_CPU, AdvatageEstimator, OmnisafeSpace
 from omnisafe.utils import distributed
 
 
@@ -39,7 +39,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         standardized_adv_r: bool,
         standardized_adv_c: bool,
         num_envs: int = 1,
-        device: torch.device = cpu,
+        device: torch.device = DEVICE_CPU,
     ) -> None:
         """Initialize the vector-on-policy buffer.
 
@@ -69,7 +69,6 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
             _num_buffers (int): Number of buffers.
             _standardized_adv_r (bool): Whether to standardize the advantage for reward.
             _standardized_adv_c (bool): Whether to standardize the advantage for cost.
-
         """
         self._num_buffers: int = num_envs
         self._standardized_adv_r: bool = standardized_adv_r
@@ -103,7 +102,6 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         .. hint::
             The data should be a list of tensors, each of which corresponds to one environment.
             Then the data will be stored into the corresponding buffer.
-
         """
         for i, buffer in enumerate(self.buffers):
             buffer.store(**{k: v[i] for k, v in data.items()})
@@ -119,13 +117,11 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         In vector-on-policy buffer, we get the data from each buffer and then concatenate them.
 
         .. hint::
-
             We provide a trick to standardize the advantages of state-action pairs.
             We calculate the mean and standard deviation of the advantages of state-action pairs
             and then standardize the advantages of state-action pairs.
             You can turn on this trick by setting the ``standardized_adv_r`` to ``True``.
             The same trick is applied to the advantages of the cost.
-
         """
         self.buffers[idx].finish_path(last_value_r, last_value_c)
 

@@ -130,7 +130,7 @@ class ExperimentGrid:
         But if the first three letters contains something which isn't
         alphanumeric, shear that off.
 
-        Example:
+        Examples:
             >>> _default_shorthand('env_name:SafetyPointGoal1-v0')
             'env'
 
@@ -159,10 +159,9 @@ class ExperimentGrid:
         term.
 
         .. hint::
-
             This function is called in ``omnisafe/examples/benchmarks/run_experiment_grid.py``.
 
-        Example:
+        Examples:
             >>> add('env_id', ['SafetyPointGoal1-v0', 'MountainCar-v0', 'Acrobot-v1'])
             >>> add('algo', ['SAC', 'DDPG', 'TD3'])
             >>> add('seed', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
@@ -196,7 +195,7 @@ class ExperimentGrid:
         ..warning::
             if ``seed`` is a parameter, it is not included in the name.
 
-        Example:
+        Examples:
             >>> variant_name({'env_id': 'SafetyPointGoal1-v0', 'algo': 'SAC', 'seed': 0})
             exp_name = 'SafetyPointGoal1-v0_SAC_0'
 

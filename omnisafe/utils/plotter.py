@@ -51,8 +51,11 @@ class Plotter:
                     seed0/
                     seed5/
                     seed10/
-    Example:
+    Examples:
         You can easily produce a graph comparing CPO and PCPO in 'SafetyAntVelocity-v1' with:
+
+        .. code-block:: bash
+
             python plot.py './runs/SafetyAntVelocity-v1/'
     """
 

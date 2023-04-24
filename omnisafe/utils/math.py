@@ -25,7 +25,7 @@ from torch.distributions import Normal, TanhTransform, TransformedDistribution, 
 def get_transpose(tensor: torch.Tensor) -> torch.Tensor:
     """Transpose the last two dimensions of a tensor.
 
-    Example:
+    Examples:
         >>> tensor = torch.rand(2, 3, 4)
         >>> get_transpose(tensor).shape
         torch.Size([2, 4, 3])
@@ -39,7 +39,7 @@ def get_transpose(tensor: torch.Tensor) -> torch.Tensor:
 def get_diagonal(tensor: torch.Tensor) -> torch.Tensor:
     """Get the diagonal of the last two dimensions of a tensor.
 
-    Example:
+    Examples:
         >>> tensor = torch.rand(2, 3, 4)
         >>> get_diagonal(tensor).shape
         torch.Size([2, 3])
@@ -53,7 +53,7 @@ def get_diagonal(tensor: torch.Tensor) -> torch.Tensor:
 def discount_cumsum(vector_x: torch.Tensor, discount: float) -> torch.Tensor:
     """Compute the discounted cumulative sum of vectors.
 
-    Example:
+    Examples:
         >>> vector_x = torch.arange(1, 5)
         >>> vector_x
         tensor([1, 2, 3, 4])
@@ -150,8 +150,7 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
 
         Y = tanh(X) \sim TanhNormal(loc, scale)
 
-    Example::
-
+    Examples:
         >>> m = TanhNormal(torch.tensor([0.0]), torch.tensor([1.0]))
         >>> m.sample()  # tanh-normal distributed with mean=0 and stddev=1
         tensor([-0.7616])

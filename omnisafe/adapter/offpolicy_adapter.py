@@ -33,7 +33,6 @@ class OffPolicyAdapter(OnlineAdapter):
     :class:`OffPolicyAdapter` is used to adapt the environment to the off-policy training.
 
     .. note::
-
         Off-policy training need to update the policy before finish the episode,
         so the :class:`OffPolicyAdapter` will store the current observation in ``_current_obs``.
         After update the policy, the agent will *remember* the current observation and
@@ -97,9 +96,10 @@ class OffPolicyAdapter(OnlineAdapter):
         """
         for _ in range(episode):
             ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
-            done = False
             obs, _ = self._eval_env.reset()
             obs = obs.to(self._device)
+
+            done = False
             while not done:
                 act = agent.step(obs, deterministic=True)
                 obs, reward, cost, terminated, truncated, info = self._eval_env.step(act)
@@ -111,6 +111,7 @@ class OffPolicyAdapter(OnlineAdapter):
                 ep_cost += info.get('original_cost', cost).cpu()
                 ep_len += 1
                 done = bool(terminated[0].item()) or bool(truncated[0].item())
+
             logger.store(
                 {
                     'Metrics/TestEpRet': ep_ret,
@@ -130,13 +131,13 @@ class OffPolicyAdapter(OnlineAdapter):
         """Roll out the environment and store the data in the buffer.
 
         .. warning::
-
             As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,
             so the final observation will be stored in ``info['final_observation']``.
 
         Args:
             steps_per_epoch (int): Number of steps per epoch.
-            agent (ConstraintActorCritic): Constraint actor-critic, including actor , reward critic and cost critic.
+            agent (ConstraintActorCritic): Constraint actor-critic, including actor, reward critic,
+                and cost critic.
             buf (VectorOnPolicyBuffer): Vector on-policy buffer.
             logger (Logger): Logger.
         """
@@ -183,7 +184,7 @@ class OffPolicyAdapter(OnlineAdapter):
         Args:
             reward (torch.Tensor): The reward.
             cost (torch.Tensor): The cost.
-            info (dict[str, Any]): some information logged by the environment.
+            info (dict[str, Any]): Some information logged by the environment.
         """
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()
@@ -208,7 +209,7 @@ class OffPolicyAdapter(OnlineAdapter):
         """Reset log.
 
         Args:
-            idx (int | None): The index of the environment. Defaults to None (single environment).
+            idx (int or None): The index of the environment. Defaults to None (single environment).
         """
         if idx is None:
             self._ep_ret = torch.zeros(self._env.num_envs)

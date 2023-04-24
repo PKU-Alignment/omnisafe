@@ -20,7 +20,7 @@ import torch
 from gymnasium.spaces import Box
 
 from omnisafe.common.buffer.offpolicy_buffer import OffPolicyBuffer
-from omnisafe.typing import OmnisafeSpace, cpu
+from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
 
 class VectorOffPolicyBuffer(OffPolicyBuffer):
@@ -33,7 +33,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         size: int,
         batch_size: int,
         num_envs: int,
-        device: torch.device = cpu,
+        device: torch.device = DEVICE_CPU,
     ) -> None:
         """Initialize the off policy buffer.
 
@@ -60,7 +60,6 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             _max_size (int): The maximum size of the buffer.
             _batch_size (int): The batch size of the buffer.
             _num_envs (int): The number of environments.
-
         """
         self._num_envs: int = num_envs
         self._ptr: int = 0
@@ -108,7 +107,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
     def add_field(self, name: str, shape: tuple[int, ...], dtype: torch.dtype) -> None:
         """Add a field to the buffer.
 
-        Example:
+        Examples:
             >>> buffer = BaseBuffer(...)
             >>> buffer.add_field('new_field', (2, 3), torch.float32)
             >>> buffer.data['new_field'].shape

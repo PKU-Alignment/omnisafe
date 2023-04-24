@@ -280,7 +280,6 @@ def __check_algo_configs(configs: Config, algo_type: str) -> None:
     This function is used to check the algorithm configs.
 
     .. note::
-
         - ``update_iters`` must be greater than 0 and must be int.
         - ``steps_per_epoch`` must be greater than 0 and must be int.
         - ``batch_size`` must be greater than 0 and must be int.

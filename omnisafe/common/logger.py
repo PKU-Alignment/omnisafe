@@ -304,7 +304,6 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             - Write the data to the csv file.
             - Write the data to the tensorboard.
             - Update the progress logger.
-
         """
         self._update_current_row()
         table = Table('Metrics', 'Value')

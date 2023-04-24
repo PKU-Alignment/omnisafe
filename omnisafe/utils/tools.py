@@ -30,7 +30,7 @@ import yaml
 from rich.console import Console
 from torch.version import cuda as cuda_version
 
-from omnisafe.typing import cpu
+from omnisafe.typing import DEVICE_CPU
 
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
@@ -41,7 +41,7 @@ def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
         such as the :class:`TRPO` and :class:`CPO` algorithm.
         In these algorithms, the parameters are flattened and then used to calculate the loss.
 
-    Example:
+    Examples:
         >>> model = torch.nn.Linear(2, 2)
         >>> model.weight.data = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
         >>> get_flat_params_from(model)
@@ -87,7 +87,7 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
         Some algorithms (e.g. TRPO, CPO, etc.) need to set the parameters to the model,
         instead of using the ``optimizer.step()``.
 
-    Example:
+    Examples:
         >>> model = torch.nn.Linear(2, 2)
         >>> model.weight.data = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
         >>> vals = torch.tensor([1.0, 2.0, 3.0, 4.0])
@@ -284,7 +284,7 @@ def hash_string(string: str) -> str:
     return hash_object.hexdigest()
 
 
-def get_device(device: torch.device = cpu) -> torch.device:
+def get_device(device: torch.device | str | int = DEVICE_CPU) -> torch.device:
     """Retrieve PyTorch device.
 
     It checks that the requested device is available first.
@@ -292,16 +292,16 @@ def get_device(device: torch.device = cpu) -> torch.device:
     By default, it tries to use the gpu.
 
     Args:
-        device (torch.device): device to be used.
+        device (torch.device, str, or int): The device to use.
 
     Returns:
-        torch.device: device to be used.
+        The device to use.
     """
     # Force conversion to torch.device
     device = torch.device(device)
 
     # Cuda not available
-    if device.type == torch.device('cuda').type and not torch.cuda.is_available():
+    if not torch.cuda.is_available() and device.type == torch.device('cuda').type:
         return torch.device('cpu')
 
     return device

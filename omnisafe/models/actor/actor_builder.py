@@ -32,7 +32,6 @@ class ActorBuilder:
         _weight_initialization_mode (InitFunction): Weight initialization mode.
         _activation (Activation): Activation function.
         _hidden_sizes (list[int]): List of hidden layer sizes.
-
     """
 
     def __init__(

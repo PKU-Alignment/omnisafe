@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 import torch
 from gymnasium.spaces import Box
 
-from omnisafe.typing import OmnisafeSpace, cpu
+from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
 
 class BaseBuffer(ABC):
@@ -32,7 +32,7 @@ class BaseBuffer(ABC):
         obs_space: OmnisafeSpace,
         act_space: OmnisafeSpace,
         size: int,
-        device: torch.device = cpu,
+        device: torch.device = DEVICE_CPU,
     ) -> None:
         """Initialize the buffer.
 
@@ -78,7 +78,6 @@ class BaseBuffer(ABC):
             data (dict[str, torch.Tensor]): The data of the buffer.
             _size (int): The size of the buffer.
             _device (torch.device): The device of the buffer.
-
         """
         self._device: torch.device = device
         if isinstance(obs_space, Box):
@@ -116,7 +115,7 @@ class BaseBuffer(ABC):
     def add_field(self, name: str, shape: tuple[int, ...], dtype: torch.dtype) -> None:
         """Add a field to the buffer.
 
-        Example:
+        Examples:
             >>> buffer = BaseBuffer(...)
             >>> buffer.add_field('new_field', (2, 3), torch.float32)
             >>> buffer.data['new_field'].shape
@@ -136,7 +135,7 @@ class BaseBuffer(ABC):
         .. warning::
             This is an abstract method.
 
-        Example:
+        Examples:
             >>> buffer = BaseBuffer(...)
             >>> buffer.store(obs=obs, act=act, reward=reward, cost=cost, done=done)
 

@@ -27,7 +27,6 @@ class CriticBuilder:
     """Implementation of CriticBuilder
 
     .. note::
-
         A :class:`CriticBuilder` is a class for building a critic network.
         In ``omnisafe``, instead of building the critic network directly,
         we build it by integrating various types of critic networks into the :class:`CriticBuilder`.
