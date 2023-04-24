@@ -37,6 +37,8 @@ from omnisafe.utils.config import Config
 class Evaluator:  # pylint: disable=too-many-instance-attributes
     """This class includes common evaluation methods for safe RL algorithms."""
 
+    _cfgs: Config
+
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
@@ -51,22 +53,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             pi (omnisafe.algos.models.actor.Actor): the policy. if None, the policy will be created from the config.
             obs_normalize (omnisafe.algos.models.obs_normalize): the observation Normalize.
         """
-        # set the attributes
-        self._env: CMDP | None
-        self._actor: Actor | None
-        # used when load model from saved file.
-        self._cfgs: Config
-        self._save_dir: str
-        self._model_name: str
-        self._dividing_line: str
-
-        self._env = env
-        self._actor = actor
-        self._dividing_line = '\n' + '#' * 50 + '\n'
+        self._env_env: CMDP | None = env
+        self._actor: Actor | None = actor
+        self._dividing_line: str = '\n' + '#' * 50 + '\n'
 
         self.__set_render_mode(render_mode)
 
-    def __set_render_mode(self, render_mode: str) -> None:
+    def __set_render_mode(self, render_mode: str | None) -> None:
         """Set the render mode.
 
         Args:
@@ -74,8 +67,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             save_replay (bool): whether to save the video.
         """
         # set the render mode
-        if render_mode in ['human', 'rgb_array', 'rgb_array_list', None]:
-            self._render_mode = render_mode
+        if render_mode in ['human', 'rgb_array', 'rgb_array_list']:
+            self._render_mode: str = render_mode
         else:
             raise NotImplementedError('The render mode is not implemented.')
 

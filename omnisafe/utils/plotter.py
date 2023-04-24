@@ -57,13 +57,9 @@ class Plotter:
     """
 
     def __init__(self) -> None:
-        self.div_line_width: int
-        self.exp_idx: int
-        self.units: dict[str, Any]
-
-        self.div_line_width = 50
-        self.exp_idx = 0
-        self.units = {}
+        self.div_line_width: int = 50
+        self.exp_idx: int = 0
+        self.units: dict[str, Any] = {}
 
     def plot_data(
         self,

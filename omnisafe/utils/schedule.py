@@ -52,13 +52,9 @@ class PiecewiseSchedule(Schedule):
         """From OpenAI baselines"""
         idxes = [e[0] for e in endpoints]
         assert idxes == sorted(idxes)
-        self._interpolation: Callable[[float, float, float], float]
-        self._outside_value: int | float
-        self._endpoints: list[tuple[int, float]]
-
-        self._interpolation = _linear_interpolation
-        self._outside_value = outside_value
-        self._endpoints = endpoints
+        self._interpolation: Callable[[float, float, float], float] = _linear_interpolation
+        self._outside_value: int | float = outside_value
+        self._endpoints: list[tuple[int, float]] = endpoints
 
     def value(self, time: int | float) -> int | float:
         """Value at time t.

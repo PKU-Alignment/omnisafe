@@ -49,11 +49,8 @@ class TimeLimit(Wrapper):
         """
         super().__init__(env=env, device=device)
         assert self.num_envs == 1, 'TimeLimit only supports single environment'
-        self._time: int
-        self._time_limit: int
-
-        self._time_limit = time_limit
-        self._time = 0
+        self._time: int = 0
+        self._time_limit: int = time_limit
 
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment.
@@ -420,18 +417,13 @@ class ActionScale(Wrapper):
         """
         super().__init__(env=env, device=device)
         assert isinstance(self.action_space, spaces.Box), 'Action space must be Box'
-        self._old_min_action: torch.Tensor
-        self._old_max_action: torch.Tensor
-        self._action_space: spaces.Box
-        self._min_action: torch.Tensor
-        self._max_action: torch.Tensor
 
-        self._old_min_action = torch.tensor(
+        self._old_min_action: torch.Tensor = torch.tensor(
             self.action_space.low,
             dtype=torch.float32,
             device=self._device,
         )
-        self._old_max_action = torch.tensor(
+        self._old_max_action: torch.Tensor = torch.tensor(
             self.action_space.high,
             dtype=torch.float32,
             device=self._device,
@@ -439,15 +431,19 @@ class ActionScale(Wrapper):
 
         min_action = np.zeros(self.action_space.shape, dtype=self.action_space.dtype) + low
         max_action = np.zeros(self.action_space.shape, dtype=self.action_space.dtype) + high
-        self._action_space = spaces.Box(
+        self._action_space: spaces.Box = spaces.Box(
             low=min_action,
             high=max_action,
             shape=self.action_space.shape,
             dtype=self.action_space.dtype,  # type: ignore
         )
 
-        self._min_action = torch.tensor(min_action, dtype=torch.float32, device=self._device)
-        self._max_action = torch.tensor(max_action, dtype=torch.float32, device=self._device)
+        self._min_action: torch.Tensor = torch.tensor(
+            min_action, dtype=torch.float32, device=self._device
+        )
+        self._max_action: torch.Tensor = torch.tensor(
+            max_action, dtype=torch.float32, device=self._device
+        )
 
     def step(
         self,

@@ -214,8 +214,8 @@ class Wrapper(CMDP):
             _env (CMDP): the environment.
             _device (torch.device): the device of the environment.
         """
-        self._env = env
-        self._device = device
+        self._env: CMDP = env
+        self._device: torch.device = device
 
     def __getattr__(self, name: str) -> Any:
         """Get the attribute of the environment.

@@ -36,53 +36,6 @@ class SafetyGymnasiumEnv(CMDP):
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
 
-    _support_envs = [
-        'SafetyPointGoal0-v0',
-        'SafetyPointGoal1-v0',
-        'SafetyPointGoal2-v0',
-        'SafetyPointButton0-v0',
-        'SafetyPointButton1-v0',
-        'SafetyPointButton2-v0',
-        'SafetyPointPush0-v0',
-        'SafetyPointPush1-v0',
-        'SafetyPointPush2-v0',
-        'SafetyPointCircle0-v0',
-        'SafetyPointCircle1-v0',
-        'SafetyPointCircle2-v0',
-        'SafetyCarGoal0-v0',
-        'SafetyCarGoal1-v0',
-        'SafetyCarGoal2-v0',
-        'SafetyCarButton0-v0',
-        'SafetyCarButton1-v0',
-        'SafetyCarButton2-v0',
-        'SafetyCarPush0-v0',
-        'SafetyCarPush1-v0',
-        'SafetyCarPush2-v0',
-        'SafetyCarCircle0-v0',
-        'SafetyCarCircle1-v0',
-        'SafetyCarCircle2-v0',
-        'SafetyAntGoal0-v0',
-        'SafetyAntGoal1-v0',
-        'SafetyAntGoal2-v0',
-        'SafetyAntButton0-v0',
-        'SafetyAntButton1-v0',
-        'SafetyAntButton2-v0',
-        'SafetyAntPush0-v0',
-        'SafetyAntPush1-v0',
-        'SafetyAntPush2-v0',
-        'SafetyAntCircle0-v0',
-        'SafetyAntCircle1-v0',
-        'SafetyAntCircle2-v0',
-        'SafetyHalfCheetahVelocity-v1',
-        'SafetyHopperVelocity-v1',
-        'SafetySwimmerVelocity-v1',
-        'SafetyWalker2dVelocity-v1',
-        'SafetyAntVelocity-v1',
-        'SafetyHumanoidVelocity-v1',
-    ]
-    need_auto_reset_wrapper = False
-    need_time_limit_wrapper = False
-
     def __init__(
         self,
         env_id: str,
@@ -99,6 +52,54 @@ class SafetyGymnasiumEnv(CMDP):
             **kwargs (Any): Other arguments.
         """
         super().__init__(env_id)
+        self.need_auto_reset_wrapper: bool = True
+        self.need_time_limit_wrapper: bool = True
+        self._num_envs = num_envs
+        self._device = torch.device(device)
+        self._support_envs: list[str] = [
+            'SafetyPointGoal0-v0',
+            'SafetyPointGoal1-v0',
+            'SafetyPointGoal2-v0',
+            'SafetyPointButton0-v0',
+            'SafetyPointButton1-v0',
+            'SafetyPointButton2-v0',
+            'SafetyPointPush0-v0',
+            'SafetyPointPush1-v0',
+            'SafetyPointPush2-v0',
+            'SafetyPointCircle0-v0',
+            'SafetyPointCircle1-v0',
+            'SafetyPointCircle2-v0',
+            'SafetyCarGoal0-v0',
+            'SafetyCarGoal1-v0',
+            'SafetyCarGoal2-v0',
+            'SafetyCarButton0-v0',
+            'SafetyCarButton1-v0',
+            'SafetyCarButton2-v0',
+            'SafetyCarPush0-v0',
+            'SafetyCarPush1-v0',
+            'SafetyCarPush2-v0',
+            'SafetyCarCircle0-v0',
+            'SafetyCarCircle1-v0',
+            'SafetyCarCircle2-v0',
+            'SafetyAntGoal0-v0',
+            'SafetyAntGoal1-v0',
+            'SafetyAntGoal2-v0',
+            'SafetyAntButton0-v0',
+            'SafetyAntButton1-v0',
+            'SafetyAntButton2-v0',
+            'SafetyAntPush0-v0',
+            'SafetyAntPush1-v0',
+            'SafetyAntPush2-v0',
+            'SafetyAntCircle0-v0',
+            'SafetyAntCircle1-v0',
+            'SafetyAntCircle2-v0',
+            'SafetyHalfCheetahVelocity-v1',
+            'SafetyHopperVelocity-v1',
+            'SafetySwimmerVelocity-v1',
+            'SafetyWalker2dVelocity-v1',
+            'SafetyAntVelocity-v1',
+            'SafetyHumanoidVelocity-v1',
+        ]
         if num_envs > 1:
             self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
             assert isinstance(self._env.single_action_space, Box), 'Only support Box action space.'
@@ -117,10 +118,7 @@ class SafetyGymnasiumEnv(CMDP):
             ), 'Only support Box observation space.'
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
-
-        self._num_envs = num_envs
         self._metadata = self._env.metadata
-        self._device = torch.device(device)
 
     def step(
         self,
