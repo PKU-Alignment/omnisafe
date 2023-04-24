@@ -29,6 +29,8 @@ from omnisafe.utils.model import build_mlp_network
 class GaussianLearningActor(GaussianActor):
     """Implementation of GaussianLearningActor."""
 
+    _current_dist: Normal
+
     def __init__(
         self,
         obs_space: OmnisafeSpace,
@@ -51,16 +53,13 @@ class GaussianLearningActor(GaussianActor):
             shared (nn.Module): Shared module.
         """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
-        self.mean: nn.Module
-        self.log_std: nn.Parameter
-        self._current_dist: Normal
 
-        self.mean = build_mlp_network(
+        self.mean: nn.Module = build_mlp_network(
             sizes=[self._obs_dim, *self._hidden_sizes, self._act_dim],
             activation=activation,
             weight_initialization_mode=weight_initialization_mode,
         )
-        self.log_std = nn.Parameter(torch.zeros(self._act_dim), requires_grad=True)
+        self.log_std: nn.Parameter = nn.Parameter(torch.zeros(self._act_dim), requires_grad=True)
 
     def _distribution(self, obs: torch.Tensor) -> Normal:
         """Get the distribution of the actor.

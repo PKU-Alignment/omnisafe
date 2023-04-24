@@ -29,6 +29,9 @@ from omnisafe.utils.model import build_mlp_network
 class GaussianSACActor(Actor):
     """Implementation of GaussianSACActor."""
 
+    _log2: torch.Tensor
+    _current_dist: Normal
+
     def __init__(
         self,
         obs_space: OmnisafeSpace,
@@ -51,18 +54,14 @@ class GaussianSACActor(Actor):
             shared (nn.Module): Shared module.
         """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
-        self.net: nn.Module
-        self._current_raw_action: torch.Tensor | None
-        self._log2: torch.Tensor
-        self._current_dist: Normal
 
-        self.net = build_mlp_network(
+        self.net: nn.Module = build_mlp_network(
             sizes=[self._obs_dim, *self._hidden_sizes, self._act_dim * 2],
             activation=activation,
             weight_initialization_mode=weight_initialization_mode,
         )
 
-        self._current_raw_action = None
+        self._current_raw_action: torch.Tensor | None = None
         self.register_buffer('_log2', torch.log(torch.tensor(2.0)))
 
     def _distribution(self, obs: torch.Tensor) -> Normal:

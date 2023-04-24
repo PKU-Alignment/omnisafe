@@ -69,30 +69,20 @@ class Actor(ABC, nn.Module):
             shared (nn.Module, optional): shared module. Defaults to None.
         """
         nn.Module.__init__(self)
-        self._obs_space: OmnisafeSpace
-        self._act_space: OmnisafeSpace
-        self._weight_initialization_mode: InitFunction
-        self._activation: Activation
-        self._hidden_sizes: list[int]
-        self._current_dist: Distribution
-        self._after_inference: bool
-        self._obs_dim: int
-        self._act_dim: int
-
-        self._obs_space = obs_space
-        self._act_space = act_space
-        self._weight_initialization_mode = weight_initialization_mode
-        self._activation = activation
-        self._hidden_sizes = hidden_sizes
-        self._after_inference = False
+        self._obs_space: OmnisafeSpace = obs_space
+        self._act_space: OmnisafeSpace = act_space
+        self._weight_initialization_mode: InitFunction = weight_initialization_mode
+        self._activation: Activation = activation
+        self._hidden_sizes: list[int] = hidden_sizes
+        self._after_inference: bool = False
 
         if isinstance(self._obs_space, spaces.Box) and len(self._obs_space.shape) == 1:
-            self._obs_dim = self._obs_space.shape[0]
+            self._obs_dim: int = self._obs_space.shape[0]
         else:
             raise NotImplementedError
 
         if isinstance(self._act_space, spaces.Box) and len(self._act_space.shape) == 1:
-            self._act_dim = self._act_space.shape[0]
+            self._act_dim: int = self._act_space.shape[0]
         else:
             raise NotImplementedError
 
@@ -215,13 +205,13 @@ class Critic(ABC, nn.Module):
             shared (nn.Module, optional): shared module. Defaults to None.
         """
         nn.Module.__init__(self)
-        self._obs_space = obs_space
-        self._act_space = act_space
-        self._weight_initialization_mode = weight_initialization_mode
-        self._activation = activation
-        self._hidden_sizes = hidden_sizes
-        self._num_critics = num_critics
-        self._use_obs_encoder = use_obs_encoder
+        self._obs_space: OmnisafeSpace = obs_space
+        self._act_space: OmnisafeSpace = act_space
+        self._weight_initialization_mode: InitFunction = weight_initialization_mode
+        self._activation: Activation = activation
+        self._hidden_sizes: list[int] = hidden_sizes
+        self._num_critics: int = num_critics
+        self._use_obs_encoder: bool = use_obs_encoder
 
         if isinstance(self._obs_space, spaces.Box) and len(self._obs_space.shape) == 1:
             self._obs_dim = self._obs_space.shape[0]

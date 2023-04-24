@@ -71,8 +71,7 @@ class ConstraintActorCritic(ActorCritic):
     ) -> None:
         """Initialize ConstraintActorCritic."""
         super().__init__(obs_space, act_space, model_cfgs, epochs)
-        self.cost_critic: Critic
-        self.cost_critic = CriticBuilder(
+        self.cost_critic: Critic = CriticBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.critic.hidden_sizes,

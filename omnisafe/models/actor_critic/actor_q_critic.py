@@ -72,19 +72,15 @@ class ActorQCritic(nn.Module):
     ) -> None:
         """Initialize ActorQCritic."""
         super().__init__()
-        self.actor: GaussianLearningActor | GaussianSACActor | MLPActor
-        self.target_actor: GaussianLearningActor | GaussianSACActor | MLPActor
-        self.reward_critic: Critic
-        self.target_reward_critic: Critic
 
-        self.actor = ActorBuilder(
+        self.actor: GaussianLearningActor | GaussianSACActor | MLPActor = ActorBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.actor.hidden_sizes,
             activation=model_cfgs.actor.activation,
             weight_initialization_mode=model_cfgs.weight_initialization_mode,
         ).build_actor(actor_type=model_cfgs.actor_type)
-        self.reward_critic = CriticBuilder(
+        self.reward_critic: Critic = CriticBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.critic.hidden_sizes,
@@ -93,10 +89,12 @@ class ActorQCritic(nn.Module):
             num_critics=model_cfgs.critic.num_critics,
             use_obs_encoder=False,
         ).build_critic(critic_type='q')
-        self.target_reward_critic = deepcopy(self.reward_critic)
+        self.target_reward_critic: Critic = deepcopy(self.reward_critic)
         for param in self.target_reward_critic.parameters():
             param.requires_grad = False
-        self.target_actor = deepcopy(self.actor)
+        self.target_actor: GaussianLearningActor | GaussianSACActor | MLPActor = deepcopy(
+            self.actor
+        )
         for param in self.target_actor.parameters():
             param.requires_grad = False
         self.add_module('actor', self.actor)

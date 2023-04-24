@@ -58,21 +58,14 @@ class CriticBuilder:
             num_critics (int): Number of critics.
             use_obs_encoder (bool): Whether to use observation encoder, only used in q critic.
         """
-        self._obs_space: OmnisafeSpace
-        self._act_space: OmnisafeSpace
-        self._weight_initialization_mode: InitFunction
-        self._activation: Activation
-        self._hidden_sizes: list[int]
-        self._num_critics: int
-        self._use_obs_encoder: bool
 
-        self._obs_space = obs_space
-        self._act_space = act_space
-        self._weight_initialization_mode = weight_initialization_mode
-        self._activation = activation
-        self._hidden_sizes = hidden_sizes
-        self._num_critics = num_critics
-        self._use_obs_encoder = use_obs_encoder
+        self._obs_space: OmnisafeSpace = obs_space
+        self._act_space: OmnisafeSpace = act_space
+        self._weight_initialization_mode: InitFunction = weight_initialization_mode
+        self._activation: Activation = activation
+        self._hidden_sizes: list[int] = hidden_sizes
+        self._num_critics: int = num_critics
+        self._use_obs_encoder: bool = use_obs_encoder
 
     def build_critic(
         self,

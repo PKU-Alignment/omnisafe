@@ -75,10 +75,8 @@ class ConstraintActorQCritic(ActorQCritic):
     ) -> None:
         """Initialize ConstraintActorCritic."""
         super().__init__(obs_space, act_space, model_cfgs, epochs)
-        self.cost_critic: Critic
-        self.target_cost_critic: Critic
 
-        self.cost_critic = CriticBuilder(
+        self.cost_critic: Critic = CriticBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.critic.hidden_sizes,
@@ -87,7 +85,7 @@ class ConstraintActorQCritic(ActorQCritic):
             num_critics=1,
             use_obs_encoder=False,
         ).build_critic('q')
-        self.target_cost_critic = deepcopy(self.cost_critic)
+        self.target_cost_critic: Critic = deepcopy(self.cost_critic)
         for param in self.target_cost_critic.parameters():
             param.requires_grad = False
         self.add_module('cost_critic', self.cost_critic)

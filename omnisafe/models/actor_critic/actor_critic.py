@@ -57,6 +57,8 @@ class ActorCritic(nn.Module):
         std_schedule (Schedule): The schedule for the standard deviation of the Gaussian distribution.
     """
 
+    std_schedule: Schedule
+
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
@@ -67,18 +69,15 @@ class ActorCritic(nn.Module):
     ) -> None:
         """Initialize ActorCritic."""
         super().__init__()
-        self.actor: GaussianLearningActor | GaussianSACActor | MLPActor
-        self.reward_critic: Critic
-        self.std_schedule: Schedule
 
-        self.actor = ActorBuilder(
+        self.actor: GaussianLearningActor | GaussianSACActor | MLPActor = ActorBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.actor.hidden_sizes,
             activation=model_cfgs.actor.activation,
             weight_initialization_mode=model_cfgs.weight_initialization_mode,
         ).build_actor(actor_type=model_cfgs.actor_type)
-        self.reward_critic = CriticBuilder(
+        self.reward_critic: Critic = CriticBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.critic.hidden_sizes,
@@ -94,8 +93,7 @@ class ActorCritic(nn.Module):
             self.actor_optimizer: optim.Optimizer
             self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
         if model_cfgs.critic.lr is not None:
-            self.reward_critic_optimizer: optim.Optimizer
-            self.reward_critic_optimizer = optim.Adam(
+            self.reward_critic_optimizer: optim.Optimizer = optim.Adam(
                 self.reward_critic.parameters(),
                 lr=model_cfgs.critic.lr,
             )

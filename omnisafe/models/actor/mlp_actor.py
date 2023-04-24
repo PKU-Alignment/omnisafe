@@ -48,16 +48,14 @@ class MLPActor(Actor):
             weight_initialization_mode (InitFunction): Weight initialization mode.
         """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
-        self.net: torch.nn.Module
-        self._noise: float
 
-        self.net = build_mlp_network(
+        self.net: torch.nn.Module = build_mlp_network(
             sizes=[self._obs_dim, *self._hidden_sizes, self._act_dim],
             activation=activation,
             output_activation=output_activation,
             weight_initialization_mode=weight_initialization_mode,
         )
-        self._noise = 0.1
+        self._noise: float = 0.1
 
     def predict(
         self,
