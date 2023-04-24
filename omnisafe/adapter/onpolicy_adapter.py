@@ -33,21 +33,11 @@ class OnPolicyAdapter(OnlineAdapter):
 
     :class:`OnPolicyAdapter` is used to adapt the environment to the on-policy training.
 
-
     Args:
         env_id (str): The environment id.
         num_envs (int): The number of environments.
         seed (int): The random seed.
         cfgs (Config): The configuration.
-
-    Attributes:
-        _env_id (str): The environment id.
-        _env (CMDP): The environment.
-        _cfgs (Config): The configuration.
-        _device (torch.device): The device.
-        _ep_ret (torch.Tensor): The episode return.
-        _ep_cost (torch.Tensor): The episode cost.
-        _ep_len (torch.Tensor): The episode length.
     """
 
     _ep_ret: torch.Tensor
@@ -81,7 +71,7 @@ class OnPolicyAdapter(OnlineAdapter):
             steps_per_epoch (int): Number of steps per epoch.
             agent (ConstraintActorCritic): Constraint actor-critic, including actor , reward critic and cost critic.
             buf (VectorOnPolicyBuffer): Vector on-policy buffer.
-            logger (Logger): Logger.
+            logger (Logger): Logger, to log `` EpRet``, ``EpCost``, ``EpLen``.
         """
         self._reset_log()
 
@@ -151,8 +141,8 @@ class OnPolicyAdapter(OnlineAdapter):
             be stored in ``info['original_reward']`` and ``info['original_cost']``.
 
         Args:
-            reward (torch.Tensor): The reward.
-            cost (torch.Tensor): The cost.
+            reward (torch.Tensor): The episode reward.
+            cost (torch.Tensor): The episode cost.
             info (dict[str, Any]): some information logged by the environment.
         """
         self._ep_ret += info.get('original_reward', reward).cpu()
@@ -160,10 +150,10 @@ class OnPolicyAdapter(OnlineAdapter):
         self._ep_len += 1
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
-        """Log metrics.
+        """Log metrics, including ``EpRet``, ``EpCost``, ``EpLen``.
 
         Args:
-            logger (Logger): Logger.
+            logger (Logger): Logger, to log `` EpRet``, ``EpCost``, ``EpLen``.
             idx (int): The index of the environment.
         """
         logger.store(
@@ -175,10 +165,10 @@ class OnPolicyAdapter(OnlineAdapter):
         )
 
     def _reset_log(self, idx: int | None = None) -> None:
-        """Reset log.
+        """Reset the logger.
 
         Args:
-            idx (int | None): The index of the environment. Defaults to None (single environment).
+            idx (int or None): The index of the environment. Defaults to None (single environment).
         """
         if idx is None:
             self._ep_ret = torch.zeros(self._env.num_envs)

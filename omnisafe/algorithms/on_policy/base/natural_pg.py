@@ -65,9 +65,6 @@ class NaturalPG(PolicyGradient):
                 -   :math:`xHx` in original paper.
             *   -   ``Misc/H_inv_g``
                 -   :math:`H^{-1}g` in original paper.
-
-        Args:
-            epoch (int): current epoch.
         """
         super()._init_log()
 
@@ -132,8 +129,8 @@ class NaturalPG(PolicyGradient):
             obs (torch.Tensor): The observation tensor.
             act (torch.Tensor): The action tensor.
             log_p (torch.Tensor): The log probability of the action.
-            adv (torch.Tensor): The advantage tensor.
-            cost_adv (torch.Tensor): The cost advantage tensor.
+            adv_r (torch.Tensor): The reward advantage tensor.
+            adv_c (torch.Tensor): The cost advantage tensor.
         """
         self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
@@ -184,9 +181,6 @@ class NaturalPG(PolicyGradient):
             and the new policy is larger than a threshold,
             the update of the actor network is rejected,
             but the update of the critic network is still accepted.
-
-        Args:
-            self (object): object of the class.
         """
         data = self._buf.get()
         obs, act, logp, target_value_r, target_value_c, adv_r, adv_c = (

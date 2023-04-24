@@ -62,8 +62,8 @@ class TimeLimit(Wrapper):
             seed (int, optional): The seed for the environment. Defaults to None.
 
         Returns:
-            observation (torch.Tensor): the initial observation of the space.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
         """
         self._time = 0
         return super().reset(seed)
@@ -88,12 +88,12 @@ class TimeLimit(Wrapper):
             action (torch.Tensor): action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = super().step(action)
 
@@ -141,12 +141,12 @@ class AutoReset(Wrapper):
             action (torch.Tensor): action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = super().step(action)
 
@@ -208,12 +208,12 @@ class ObsNormalize(Wrapper):
             action (torch.Tensor): action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = super().step(action)
         if 'final_observation' in info:
@@ -234,8 +234,8 @@ class ObsNormalize(Wrapper):
             seed (Optional[int]): seed for the environment.
 
         Returns:
-            observation (torch.Tensor): the initial observation of the space.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
         """
         obs, info = super().reset(seed)
         info['original_obs'] = obs
@@ -243,13 +243,16 @@ class ObsNormalize(Wrapper):
         return obs, info
 
     def save(self) -> dict[str, torch.nn.Module]:
-        """Save the normalizer.
+        """Save the observation normalizer.
 
         .. note::
-            When evaluating the saved model, the normalizer should be loaded.
+            The saved components will be stored in the wrapped environment.
+            If the environment is not wrapped, the saved components will be
+            empty dict. common wrappers are obs_normalize, reward_normalize,
+            and cost_normalize. When evaluating the saved model, the normalizer should be loaded.
 
         Returns:
-            dict[str, torch.nn.Module]: The saved normalizer.
+            self._env.save(): The saved components, that is the observation normalizer.
         """
         saved = super().save()
         saved['obs_normalizer'] = self._obs_normalizer
@@ -302,12 +305,12 @@ class RewardNormalize(Wrapper):
             action (torch.Tensor): action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = super().step(action)
         info['original_reward'] = reward
@@ -315,10 +318,16 @@ class RewardNormalize(Wrapper):
         return obs, reward, cost, terminated, truncated, info
 
     def save(self) -> dict[str, torch.nn.Module]:
-        """Save the normalizer.
+        """Save the reward normalizer.
+
+        .. note::
+            The saved components will be stored in the wrapped environment.
+            If the environment is not wrapped, the saved components will be
+            empty dict. common wrappers are obs_normalize, reward_normalize,
+            and cost_normalize.
 
         Returns:
-            dict[str, torch.nn.Module]: The saved normalizer.
+            self._env.save(): The saved components, that is the reward normalizer.
         """
         saved = super().save()
         saved['reward_normalizer'] = self._reward_normalizer
@@ -371,12 +380,12 @@ class CostNormalize(Wrapper):
             action (torch.Tensor): action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = super().step(action)
         info['original_cost'] = cost
@@ -384,6 +393,17 @@ class CostNormalize(Wrapper):
         return obs, reward, cost, terminated, truncated, info
 
     def save(self) -> dict[str, torch.nn.Module]:
+        """Save the cost normalizer.
+
+        .. note::
+            The saved components will be stored in the wrapped environment.
+            If the environment is not wrapped, the saved components will be
+            empty dict. common wrappers are obs_normalize, reward_normalize,
+            and cost_normalize.
+
+        Returns:
+            self._env.save(): The saved components, that is the cost normalizer.
+        """
         saved = super().save()
         saved['cost_normalizer'] = self._cost_normalizer
         return saved
@@ -467,12 +487,12 @@ class ActionScale(Wrapper):
             action (torch.Tensor): action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         action = self._old_min_action + (self._old_max_action - self._old_min_action) * (
             action - self._min_action
@@ -518,12 +538,12 @@ class Unsqueeze(Wrapper):
             action (torch.Tensor): action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         action = action.squeeze(0)
         obs, reward, cost, terminated, truncated, info = super().step(action)
@@ -546,8 +566,8 @@ class Unsqueeze(Wrapper):
             seed (int | None): The seed to use for the environment.
 
         Returns:
-            observation (torch.Tensor): The initial observation of the space.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
         """
         obs, info = super().reset(seed)
         obs = obs.unsqueeze(0)

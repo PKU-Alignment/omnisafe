@@ -43,17 +43,6 @@ class OffPolicyAdapter(OnlineAdapter):
         num_envs (int): The number of environments.
         seed (int): The random seed.
         cfgs (Config): The configuration.
-
-    Attributes:
-        _env_id (str): The environment id.
-        _env (CMDP): The environment.
-        _cfgs (Config): The configuration.
-        _device (torch.device): The device.
-        _ep_ret (torch.Tensor): The episode return.
-        _ep_cost (torch.Tensor): The episode cost.
-        _ep_len (torch.Tensor): The episode length.
-        _current_obs (torch.Tensor): The current observation.
-        _max_ep_len (int): The maximum episode length.
     """
 
     _current_obs: torch.Tensor
@@ -68,14 +57,6 @@ class OffPolicyAdapter(OnlineAdapter):
         seed: int,
         cfgs: Config,
     ) -> None:
-        """Initialize the off-policy adapter.
-
-        Args:
-            env_id (str): The environment id.
-            num_envs (int): The number of environments.
-            seed (int): The random seed.
-            cfgs (Config): The configuration.
-        """
         super().__init__(env_id, num_envs, seed, cfgs)
         self._current_obs, _ = self.reset()
         self._max_ep_len: int = 1000
@@ -87,12 +68,13 @@ class OffPolicyAdapter(OnlineAdapter):
         agent: ConstraintActorQCritic,
         logger: Logger,
     ) -> None:
-        """Roll out the environment and log the data into Logger.
+        """Roll out the environment with deterministic agent action
+        and log the data into Logger.
 
         Args:
             episode (int): Number of episodes.
             agent (ConstraintActorCritic): Agent.
-            logger (Logger): Logger.
+            logger (Logger): Logger, to log `` EpRet``, ``EpCost``, ``EpLen``.
         """
         for _ in range(episode):
             ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
@@ -139,7 +121,7 @@ class OffPolicyAdapter(OnlineAdapter):
             agent (ConstraintActorCritic): Constraint actor-critic, including actor, reward critic,
                 and cost critic.
             buf (VectorOnPolicyBuffer): Vector on-policy buffer.
-            logger (Logger): Logger.
+            logger (Logger): Logger, to log `` EpRet``, ``EpCost``, ``EpLen``.
         """
         for _ in range(roll_out_step):
             if use_rand_action:
@@ -182,8 +164,8 @@ class OffPolicyAdapter(OnlineAdapter):
             be stored in ``info['original_reward']`` and ``info['original_cost']``.
 
         Args:
-            reward (torch.Tensor): The reward.
-            cost (torch.Tensor): The cost.
+            reward (torch.Tensor): The episode reward.
+            cost (torch.Tensor): The episode cost.
             info (dict[str, Any]): Some information logged by the environment.
         """
         self._ep_ret += info.get('original_reward', reward).cpu()
@@ -191,10 +173,10 @@ class OffPolicyAdapter(OnlineAdapter):
         self._ep_len += 1
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
-        """Log metrics.
+        """Log metrics, including ``EpRet``, ``EpCost``, ``EpLen``.
 
         Args:
-            logger (Logger): Logger.
+            logger (Logger): Logger, to log `` EpRet``, ``EpCost``, ``EpLen``.
             idx (int): The index of the environment.
         """
         logger.store(
@@ -206,7 +188,7 @@ class OffPolicyAdapter(OnlineAdapter):
         )
 
     def _reset_log(self, idx: int | None = None) -> None:
-        """Reset log.
+        """Reset the logger.
 
         Args:
             idx (int or None): The index of the environment. Defaults to None (single environment).

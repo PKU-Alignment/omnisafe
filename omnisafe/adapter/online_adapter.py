@@ -38,20 +38,22 @@ from omnisafe.utils.tools import get_device
 class OnlineAdapter:
     """Online Adapter for OmniSafe.
 
-    Online Adapter is used to adapt the environment to the online training.
+    OmniSafe is a framework for safe reinforcement learning. It is designed to be
+    compatible with any existing RL algorithms. The online adapter is used
+    to adapt the environment to the framework.
+
+    OmniSafe provides a set of adapters to adapt the environment to the framework.
+
+    - OnPolicyAdapter: Adapt the environment to the on-policy framework.
+    - OffPolicyAdapter: Adapt the environment to the off-policy framework.
+    - SauteAdapter: Adapt the environment to the SAUTE framework.
+    - SimmerAdapter: Adapt the environment to the SIMMER framework.
 
     Args:
         env_id (str): The environment id.
-        num_envs (int): The number of environments.
+        num_envs (int): The number of parallel environments.
         seed (int): The random seed.
         cfgs (Config): The configuration.
-
-    Attributes:
-        _env_id (str): The environment id.
-        _env (CMDP): The environment.
-        _eval_env (CMDP): The evaluation environment.
-        _cfgs (Config): The configuration.
-        _device (torch.device): The device.
     """
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -61,25 +63,6 @@ class OnlineAdapter:
         seed: int,
         cfgs: Config,
     ) -> None:
-        """Initialize the online adapter.
-
-        OmniSafe is a framework for safe reinforcement learning. It is designed to be
-        compatible with any existing RL algorithms. The online adapter is used
-        to adapt the environment to the framework.
-
-        OmniSafe provides a set of adapters to adapt the environment to the framework.
-
-        - OnPolicyAdapter: Adapt the environment to the on-policy framework.
-        - OffPolicyAdapter: Adapt the environment to the off-policy framework.
-        - SauteAdapter: Adapt the environment to the SAUTE framework.
-        - SimmerAdapter: Adapt the environment to the SIMMER framework.
-
-        Args:
-            env_id (str): The environment id.
-            num_envs (int): The number of environments.
-            seed (int): The random seed.
-            cfgs (Config): The configuration.
-        """
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._cfgs: Config = cfgs
@@ -156,7 +139,7 @@ class OnlineAdapter:
         """The action space of the environment.
 
         Returns:
-            OmnisafeSpace: the action space.
+            action_space: The environment action space.
         """
         return self._env.action_space
 
@@ -165,7 +148,7 @@ class OnlineAdapter:
         """The observation space of the environment.
 
         Returns:
-            OmnisafeSpace: the observation space.
+            observation_space: The environment observation space.
         """
         return self._env.observation_space
 
@@ -186,12 +169,12 @@ class OnlineAdapter:
             action (torch.Tensor): action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): The agent's observation of the current environment.
-            reward (torch.Tensor): The amount of reward returned after previous action.
-            cost (torch.Tensor): The amount of cost returned after previous action.
-            terminated (torch.Tensor): Whether the episode has ended.
-            truncated (torch.Tensor): Whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): Some information logged by the environment.
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         return self._env.step(action)
 
@@ -199,15 +182,21 @@ class OnlineAdapter:
         """Reset the environment and returns an initial observation.
 
         Returns:
-            observation (torch.Tensor): The initial observation of the space.
-            info (dict[str, Any]): Some information logged by the environment.
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
         """
         return self._env.reset()
 
     def save(self) -> dict[str, torch.nn.Module]:
-        """Save the environment.
+        """Save the important components of the environment.
+
+        .. note::
+            The saved components will be stored in the wrapped environment.
+            If the environment is not wrapped, the saved components will be
+            empty dict. common wrappers are obs_normalize, reward_normalize,
+            and cost_normalize.
 
         Returns:
-            dict[str, torch.nn.Module]: The saved environment.
+            _env.save(): The saved components.
         """
         return self._env.save()

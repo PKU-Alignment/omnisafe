@@ -145,12 +145,12 @@ class SafetyGymnasiumEnv(CMDP):
             action (torch.Tensor): Action to take.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy(),

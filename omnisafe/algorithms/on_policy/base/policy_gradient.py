@@ -55,6 +55,9 @@ class PolicyGradient(BaseAlgo):
         Examples:
             >>> def _init_env(self) -> None:
             >>>    self._env = CustomAdapter()
+
+        Args:
+            self (object): object of the class.
         """
         self._env: OnPolicyAdapter = OnPolicyAdapter(
             self._env_id,
@@ -82,6 +85,9 @@ class PolicyGradient(BaseAlgo):
         Examples:
             >>> def _init_model(self) -> None:
             >>>    self._actor_critic = CustomActorCritic()
+
+        Args:
+            self (object): object of the class.
         """
         self._actor_critic: ConstraintActorCritic = ConstraintActorCritic(
             obs_space=self._env.observation_space,
@@ -109,6 +115,9 @@ class PolicyGradient(BaseAlgo):
             >>>    super()._init()
             >>>    self._buffer = CustomBuffer()
             >>>    self._model = CustomModel()
+
+        Args:
+            self (object): object of the class.
         """
         self._buf: VectorOnPolicyBuffer = VectorOnPolicyBuffer(
             obs_space=self._env.observation_space,
@@ -180,7 +189,7 @@ class PolicyGradient(BaseAlgo):
                     -   Frames per second of the epoch.
 
         Args:
-            epoch (int): current epoch.
+            self (object): object of the class.
         """
         self._logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,
@@ -234,7 +243,7 @@ class PolicyGradient(BaseAlgo):
         self._logger.register_key('Time/FPS')
 
     def learn(self) -> tuple[float, float, int]:
-        r"""This is main function for algorithm update, divided into the following steps,
+        r"""This is main function for algorithm update, divided into the following steps:
 
         - :meth:`rollout`: collect interactive data from environment.
         - :meth:`update`: perform actor/critic updates.
@@ -242,6 +251,11 @@ class PolicyGradient(BaseAlgo):
 
         Args:
             self (object): object of the class.
+
+        Returns:
+            ep_ret: average episode return in final epoch.
+            ep_cost: average episode cost in final epoch.
+            ep_len: average episode length in final epoch.
         """
         start_time = time.time()
         self._logger.log('INFO: Start training')

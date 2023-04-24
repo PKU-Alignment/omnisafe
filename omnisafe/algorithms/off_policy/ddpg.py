@@ -143,11 +143,16 @@ class DDPG(BaseAlgo):
         self._logger.register_key('Time/FPS')
 
     def learn(self) -> tuple[float, float, int]:
-        """This is main function for algorithm update, divided into the following steps:
+        r"""This is main function for algorithm update, divided into the following steps:
 
         - :meth:`rollout`: collect interactive data from environment.
         - :meth:`update`: perform actor/critic updates.
         - :meth:`log`: epoch/update information for visualization and terminal log print.
+
+        Returns:
+            ep_ret: average episode return in final epoch.
+            ep_cost: average episode cost in final epoch.
+            ep_len: average episode length in final epoch.
         """
         self._logger.log('INFO: Start training')
         start_time = time.time()

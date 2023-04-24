@@ -136,12 +136,12 @@ class CMDP(ABC):
             action (torch.Tensor): action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): Some information logged by the environment.
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
 
     @abstractmethod
@@ -152,8 +152,8 @@ class CMDP(ABC):
             seed (Optional[int]): seed for the environment.
 
         Returns:
-            observation (torch.Tensor): the initial observation of the space.
-            info (dict[str, Any]): Some information logged by the environment.
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
         """
 
     @abstractmethod
@@ -182,8 +182,15 @@ class CMDP(ABC):
 
     def save(self) -> dict[str, torch.nn.Module]:
         """Save the important components of the environment.
+
+        .. note::
+            The saved components will be stored in the wrapped environment.
+            If the environment is not wrapped, the saved components will be
+            empty dict. common wrappers are obs_normalize, reward_normalize,
+            and cost_normalize.
+
         Returns:
-            Dict[str, torch.nn.Module]: the saved components.
+            self._env.save(): The saved components.
         """
         return {}
 
@@ -246,12 +253,12 @@ class Wrapper(CMDP):
             action (torch.Tensor): action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         return self._env.step(action)
 
@@ -262,8 +269,8 @@ class Wrapper(CMDP):
             seed (Optional[int]): seed for the environment.
 
         Returns:
-            observation (torch.Tensor): the initial observation of the space.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
         """
         return self._env.reset(seed)
 
@@ -294,8 +301,14 @@ class Wrapper(CMDP):
     def save(self) -> dict[str, torch.nn.Module]:
         """Save the important components of the environment.
 
+        .. note::
+            The saved components will be stored in the wrapped environment.
+            If the environment is not wrapped, the saved components will be
+            empty dict. common wrappers are obs_normalize, reward_normalize,
+            and cost_normalize.
+
         Returns:
-            dict[str, torch.nn.Module]: the saved components.
+            self._env.save(): The saved components.
         """
         return self._env.save()
 

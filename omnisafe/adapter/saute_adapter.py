@@ -29,7 +29,17 @@ from omnisafe.utils.config import Config
 
 
 class SauteAdapter(OnPolicyAdapter):
-    """OnPolicy Adapter for OmniSafe."""
+    """Saute Adapter for OmniSafe.
+
+    The Saute Adapter is used to adapt the environment to the Saute RL training.
+    The adapter will terminate the episode when the accumulated cost exceeds the cost limit.
+
+    Args:
+        env_id (str): The environment id.
+        num_envs (int): The number of parallel environments.
+        seed (int): The random seed.
+        cfgs (Config): The configuration passed from yaml file.
+    """
 
     _safety_obs: torch.Tensor
     _ep_budget: torch.Tensor

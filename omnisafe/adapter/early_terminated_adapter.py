@@ -25,7 +25,17 @@ from omnisafe.utils.config import Config
 
 
 class EarlyTerminatedAdapter(OnPolicyAdapter):
-    """EarlyTerminated Adapter for OmniSafe."""
+    """EarlyTerminated Adapter for OmniSafe.
+
+    The EarlyTerminated Adapter is used to adapt the environment to the early terminated training.
+    The adapter will terminate the episode when the accumulated cost exceeds the cost limit.
+
+    Args:
+        env_id (str): The environment id.
+        num_envs (int): The number of parallel environments.
+        seed (int): The random seed.
+        cfgs (Config): The configuration passed from yaml file.
+    """
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
         assert num_envs == 1, 'EarlyTerminatedAdapter only supports num_envs=1.'
@@ -46,6 +56,23 @@ class EarlyTerminatedAdapter(OnPolicyAdapter):
         torch.Tensor,
         dict[str, Any],
     ]:
+        """Run one timestep of the environment's dynamics using the agent actions.
+
+        .. note::
+            Early terminated adapter will accumulate the cost,
+            and terminate the episode when the accumulated cost exceeds the cost limit.
+
+        Args:
+            action (torch.Tensor): action from the agent or random.
+
+        Returns:
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
+        """
         next_obs, reward, cost, terminated, truncated, info = super().step(action)
 
         self._cost_logger += info.get('original_cost', cost)

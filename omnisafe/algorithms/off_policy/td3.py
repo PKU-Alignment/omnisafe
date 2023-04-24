@@ -56,11 +56,11 @@ class TD3(DDPG):
         Update reward critic using TD3 algorithm.
 
         Args:
-            obs (torch.Tensor): current observation
-            act (torch.Tensor): current action
-            reward (torch.Tensor): current reward
-            done (torch.Tensor): current done signal
-            next_obs (torch.Tensor): next observation
+            obs (torch.Tensor): Observation sampled from buffer.
+            act (torch.Tensor): Action sampled from buffer.
+            reward (torch.Tensor): Reward sampled from buffer.
+            done (torch.Tensor): Done signal sampled from buffer.
+            next_obs (torch.Tensor): Next observation sampled from buffer.
 
         Returns:
             None
