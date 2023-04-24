@@ -35,7 +35,8 @@ class SafetyGymnasiumEnv(CMDP):
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
-
+    need_auto_reset_wrapper: bool=False
+    need_time_limit_wrapper: bool=False
     _support_envs: list[str] = [
         'SafetyPointGoal0-v0',
         'SafetyPointGoal1-v0',
@@ -97,8 +98,6 @@ class SafetyGymnasiumEnv(CMDP):
             **kwargs (Any): Other arguments.
         """
         super().__init__(env_id)
-        self.need_auto_reset_wrapper: bool = True
-        self.need_time_limit_wrapper: bool = True
         self._num_envs = num_envs
         self._device = torch.device(device)
         if num_envs > 1:
@@ -111,6 +110,7 @@ class SafetyGymnasiumEnv(CMDP):
             self._action_space = self._env.single_action_space
             self._observation_space = self._env.single_observation_space
         else:
+            self.need_time_limit_wrapper = True
             self._env = safety_gymnasium.make(id=env_id, autoreset=True, **kwargs)
             assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
             assert isinstance(
