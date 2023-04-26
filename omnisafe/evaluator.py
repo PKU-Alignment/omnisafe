@@ -106,7 +106,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             save_dir (str): directory where the model is saved.
             model_name (str): name of the model.
             env_kwargs (dict[str, Any]): keyword arguments for the environment.
-        
+
         Raises:
             FileNotFoundError: if the model is not found.
         """
@@ -163,7 +163,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         Args:
             save_dir (str): The directory where the model is saved.
             model_name (str): The name of the model.
-            render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'. Defaults to 'rgb_array'.
+            render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'.
+            Defaults to 'rgb_array'.
             camera_name (str or None, optional): The name of the camera. Defaults to None.
             camera_id (int or None, optional): The id of the camera. Defaults to None.
             width (int, optional): The width of the image. Defaults to 256.
@@ -202,7 +203,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         Returns:
             (episode_rewards, episode_costs): The episode rewards and costs.
-        
+
         Raises:
             ValueError: if the environment and the policy are not provided or created.
         """
@@ -256,7 +257,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     @property
     def fps(self) -> int:
         """int: The fps of the environment.
-        
+
         Raises:
             AssertionError: if the environment is not provided or created.
             AtrributeError: if the fps is not found.

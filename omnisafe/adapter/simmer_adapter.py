@@ -55,6 +55,7 @@ class SimmerAdapter(SauteAdapter):
         seed (int): The random seed.
         cfgs (Config): The configuration passed from yaml file.
     """
+
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
         super(OnPolicyAdapter, self).__init__(env_id, num_envs, seed, cfgs)
 

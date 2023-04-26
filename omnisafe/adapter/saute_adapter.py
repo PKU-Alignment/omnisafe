@@ -187,7 +187,7 @@ class SauteAdapter(OnPolicyAdapter):
 
         Args:
             reward (torch.Tensor): The reward of the current step.
-        
+
         Returns:
             The final reward determined by the safety observation.
         """

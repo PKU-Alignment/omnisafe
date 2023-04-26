@@ -69,7 +69,7 @@ class PiecewiseSchedule(Schedule):
         Returns:
             The interpolation value at time t or outside_value if t is
             before the first time in endpoints of after the last one.
-        
+
         Raises:
             AssertionError: If the time is not in the endpoints.
         """

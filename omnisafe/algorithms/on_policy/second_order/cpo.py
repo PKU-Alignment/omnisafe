@@ -97,7 +97,7 @@ class CPO(TRPO):
             decay (float, optional): The decay rate of the step size. Defaults to 0.8.
             c (int, optional): The violation of constraint. Defaults to 0.
             optim_case (int, optional): The optimization case. Defaults to 0.
-        
+
         Returns:
             A tuple of final step direction and the size of acceptance steps.
         """

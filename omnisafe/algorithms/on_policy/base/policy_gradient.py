@@ -131,56 +131,56 @@ class PolicyGradient(BaseAlgo):
     def _init_log(self) -> None:
         """Log info about epoch.
 
-            .. list-table::
+        .. list-table::
 
-                *   -   Things to log
-                    -   Description
-                *   -   Train/Epoch
-                    -   Current epoch.
-                *   -   Metrics/EpCost
-                    -   Average cost of the epoch.
-                *   -   Metrics/EpCost
-                    -   Average cost of the epoch.
-                *   -   Metrics/EpRet
-                    -   Average return of the epoch.
-                *   -   Metrics/EpLen
-                    -   Average length of the epoch.
-                *   -   Values/reward
-                    -   Average value in :meth:`roll_out()` (from critic network) of the epoch.
-                *   -   Values/cost
-                    -   Average cost in :meth:`roll_out()` (from critic network) of the epoch.
-                *   -   Values/Adv
-                    -   Average advantage in :meth:`roll_out()` of the epoch.
-                *   -   Loss/Loss_pi
-                    -   Loss of the policy network.
-                *   -   Loss/Delta_loss_pi
-                    -   Delta loss of the policy network.
-                *   -   Loss/Loss_reward_critic
-                    -   Loss of the value network.
-                *   -   Loss/Delta_loss_reward_critic
-                    -   Delta loss of the value network.
-                *   -   Loss/Loss_cost_critic
-                    -   Loss of the cost network.
-                *   -   Loss/Delta_loss_cost_critic
-                    -   Delta loss of the cost network.
-                *   -   Train/Entropy
-                    -   Entropy of the policy network.
-                *   -   Train/KL
-                    -   KL divergence of the policy network.
-                *   -   Train/StopIters
-                    -   Number of iterations of the policy network.
-                *   -   Train/PolicyRatio
-                    -   Ratio of the policy network.
-                *   -   Train/LR
-                    -   Learning rate of the policy network.
-                *   -   Misc/Seed
-                    -   Seed of the experiment.
-                *   -   Misc/TotalEnvSteps
-                    -   Total steps of the experiment.
-                *   -   Time
-                    -   Total time.
-                *   -   FPS
-                    -   Frames per second of the epoch.
+            *   -   Things to log
+                -   Description
+            *   -   Train/Epoch
+                -   Current epoch.
+            *   -   Metrics/EpCost
+                -   Average cost of the epoch.
+            *   -   Metrics/EpCost
+                -   Average cost of the epoch.
+            *   -   Metrics/EpRet
+                -   Average return of the epoch.
+            *   -   Metrics/EpLen
+                -   Average length of the epoch.
+            *   -   Values/reward
+                -   Average value in :meth:`roll_out()` (from critic network) of the epoch.
+            *   -   Values/cost
+                -   Average cost in :meth:`roll_out()` (from critic network) of the epoch.
+            *   -   Values/Adv
+                -   Average advantage in :meth:`roll_out()` of the epoch.
+            *   -   Loss/Loss_pi
+                -   Loss of the policy network.
+            *   -   Loss/Delta_loss_pi
+                -   Delta loss of the policy network.
+            *   -   Loss/Loss_reward_critic
+                -   Loss of the value network.
+            *   -   Loss/Delta_loss_reward_critic
+                -   Delta loss of the value network.
+            *   -   Loss/Loss_cost_critic
+                -   Loss of the cost network.
+            *   -   Loss/Delta_loss_cost_critic
+                -   Delta loss of the cost network.
+            *   -   Train/Entropy
+                -   Entropy of the policy network.
+            *   -   Train/KL
+                -   KL divergence of the policy network.
+            *   -   Train/StopIters
+                -   Number of iterations of the policy network.
+            *   -   Train/PolicyRatio
+                -   Ratio of the policy network.
+            *   -   Train/LR
+                -   Learning rate of the policy network.
+            *   -   Misc/Seed
+                -   Seed of the experiment.
+            *   -   Misc/TotalEnvSteps
+                -   Total steps of the experiment.
+            *   -   Time
+                -   Total time.
+            *   -   FPS
+                -   Frames per second of the epoch.
 
         """
         self._logger = Logger(

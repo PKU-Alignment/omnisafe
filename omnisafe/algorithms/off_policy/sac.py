@@ -73,7 +73,7 @@ class SAC(DDPG):
             >>>    super()._init()
             >>>    self._buffer = CustomBuffer()
             >>>    self._model = CustomModel()
-        
+
         In SAC, we need to initialize the ``log_alpha`` and ``alpha_optimizer``.
         """
         super()._init()

@@ -176,7 +176,7 @@ class AlgoWrapper:
 
         Args:
             smooth (int): window size, for smoothing the curve.
-        
+
         Raises:
             AssertionError: If the :meth:`learn` method has not been called.
         """
@@ -201,7 +201,7 @@ class AlgoWrapper:
         Args:
             num_episodes (int): number of episodes to evaluate.
             cost_criteria (float): the cost criteria to evaluate.
-        
+
         Raises:
             AssertionError: If the :meth:`learn` method has not been called.
         """
@@ -231,7 +231,7 @@ class AlgoWrapper:
                 images.
             width (int): The width of the rendered image.
             height (int): The height of the rendered image.
-        
+
         Raises:
             AssertionError: If the :meth:`learn` method has not been called.
         """

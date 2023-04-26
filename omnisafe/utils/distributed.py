@@ -373,7 +373,7 @@ def dist_statistics_scalar(
         with_min_and_max (bool): whether to return min and max.
 
     Returns:
-        The (mean, std) or (mean, std, min, max) of the input tensor, 
+        The (mean, std) or (mean, std, min, max) of the input tensor,
         depends on the value of ``with_min_and_max``.
     """
     global_sum = dist_sum(torch.sum(value))
