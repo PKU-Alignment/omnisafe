@@ -51,6 +51,12 @@ class ActorCritic(nn.Module):
                 :class:`QCritic`, :class:`VCritic`.
             -   Estimate the reward value of the observation.
 
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        model_cfgs (ModelConfig): The model configurations.
+        epochs (int): The number of epochs.
+
     Attributes:
         actor (Actor): The actor network.
         reward_critic (Critic): The critic network.
@@ -67,7 +73,6 @@ class ActorCritic(nn.Module):
         model_cfgs: ModelConfig,
         epochs: int,
     ) -> None:
-        """Initialize ActorCritic."""
         super().__init__()
 
         self.actor: GaussianLearningActor | GaussianSACActor | MLPActor = ActorBuilder(
@@ -115,15 +120,18 @@ class ActorCritic(nn.Module):
                     verbose=True,
                 )
 
-    def step(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
+    def step(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Choose the action based on the observation. used in rollout without gradient.
 
         Args:
-            obs: The observation.
-            deterministic: Whether to use deterministic action. default: False.
+            obs (torch.tensor): The observation.
+            deterministic (bool): Whether to use deterministic action. default: False.
 
         Returns:
-            The action, value_r, and log_prob.
+            action: The deterministic action if ``deterministic`` is True,
+            otherwise the action with Gaussian noise.
+            value_r: The reward value of the observation.
+            log_prob: The log probability of the action.
         """
         with torch.no_grad():
             value_r = self.reward_critic(obs)
@@ -131,15 +139,18 @@ class ActorCritic(nn.Module):
             log_prob = self.actor.log_prob(act)
         return act, value_r[0], log_prob
 
-    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
+    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Choose the action based on the observation. used in training with gradient.
 
         Args:
-            obs: The observation.
-            deterministic: Whether to use deterministic action. default: False.
+            obs (torch.tensor): The observation.
+            deterministic (bool): Whether to use deterministic action. default: False.
 
         Returns:
-            The action, value_r, and log_prob.
+            action: The deterministic action if ``deterministic`` is True,
+            otherwise the action with Gaussian noise.
+            value_r: The reward value of the observation.
+            log_prob: The log probability of the action.
         """
         return self.step(obs, deterministic=deterministic)
 
@@ -147,7 +158,8 @@ class ActorCritic(nn.Module):
         """Set the annealing mode for the actor.
 
         Args:
-            annealing: Whether to use annealing mode.
+            epochs (list[int]): The list of epochs.
+            std (list[float]): The list of standard deviation.
         """
         assert isinstance(
             self.actor,
@@ -162,7 +174,7 @@ class ActorCritic(nn.Module):
         """Set the annealing mode for the actor.
 
         Args:
-            epoch: The current epoch.
+            epoch (int): The current epoch.
         """
         assert isinstance(
             self.actor,

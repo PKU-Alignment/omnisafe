@@ -55,6 +55,12 @@ class ConstraintActorCritic(ActorCritic):
                     :class:`QCritic`, :class:`VCritic`.
                 -   Estimate the cost value of the observation.
 
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        model_cfgs (ModelConfig): The model configurations.
+        epochs (int): The number of epochs.
+
     Attributes:
         actor (Actor): The actor network.
         reward_critic (Critic): The critic network.
@@ -69,7 +75,6 @@ class ConstraintActorCritic(ActorCritic):
         model_cfgs: ModelConfig,
         epochs: int,
     ) -> None:
-        """Initialize ConstraintActorCritic."""
         super().__init__(obs_space, act_space, model_cfgs, epochs)
         self.cost_critic: Critic = CriticBuilder(
             obs_space=obs_space,
@@ -101,10 +106,11 @@ class ConstraintActorCritic(ActorCritic):
             deterministic (bool): Whether to use deterministic policy.
 
         Returns:
-            action (torch.Tensor): action from the agent or random.
-            value_r (torch.Tensor): Reward value.
-            value_c (torch.Tensor): Cost value.
-            log_prob (torch.Tensor): Log probability of action.
+            action: The deterministic action if ``deterministic`` is True,
+            otherwise the action with Gaussian noise.
+            value_r: The reward value of the observation.
+            value_c: The cost value of the observation.
+            log_prob: The log probability of the action.
         """
         with torch.no_grad():
             value_r = self.reward_critic(obs)
@@ -127,9 +133,10 @@ class ConstraintActorCritic(ActorCritic):
             deterministic (bool): Whether to use deterministic policy.
 
         Returns:
-            action (torch.Tensor): action from the agent or random.
-            value_r (torch.Tensor): Reward value.
-            value_c (torch.Tensor): Cost value.
-            log_prob (torch.Tensor): Log probability of action.
+            action: The deterministic action if ``deterministic`` is True,
+            otherwise the action with Gaussian noise.
+            value_r: The reward value of the observation.
+            value_c: The cost value of the observation.
+            log_prob: The log probability of the action.
         """
         return self.step(obs, deterministic=deterministic)

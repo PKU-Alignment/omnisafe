@@ -77,6 +77,9 @@ class TRPO(NaturalPG):
             loss_pi_before (float): The loss of the policy before the update.
             total_steps (int, optional): The total steps to search. Defaults to 15.
             decay (float, optional): The decay rate of the step size. Defaults to 0.8.
+
+        Returns:
+            The tuple of final update step and acceptance step size.
         """
         # How far to go in a single update
         step_frac = 1.0
@@ -157,7 +160,7 @@ class TRPO(NaturalPG):
             obs (torch.Tensor): The observation tensor.
             act (torch.Tensor): The action tensor.
             logp (torch.Tensor): The log probability of the action.
-            adv_r (torch.Tensor): The advantage tensor.
+            adv_r (torch.Tensor): The reward advantage tensor.
             adv_c (torch.Tensor): The cost advantage tensor.
         """
         self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]

@@ -29,8 +29,16 @@ from omnisafe.envs.core import CMDP, Wrapper
 class TimeLimit(Wrapper):
     """Time limit wrapper for the environment.
 
+        .. warning::
+            The time limit wrapper only supports single environment.
+
     Examples:
         >>> env = TimeLimit(env, time_limit=100)
+
+    Args:
+        env (CMDP): The environment to wrap.
+        time_limit (int): The time limit for each episode.
+        device (torch.device): The torch device to use.
 
     Attributes:
         _time_limit (int): The time limit for each episode.
@@ -38,15 +46,6 @@ class TimeLimit(Wrapper):
     """
 
     def __init__(self, env: CMDP, time_limit: int, device: torch.device) -> None:
-        """Initialize the time limit wrapper.
-
-        .. warning::
-            The time limit wrapper only supports single environment.
-
-        Args:
-            env (CMDP): The environment to wrap.
-            time_limit (int): The time limit for each episode.
-        """
         super().__init__(env=env, device=device)
         assert self.num_envs == 1, 'TimeLimit only supports single environment'
         self._time: int = 0
@@ -85,7 +84,7 @@ class TimeLimit(Wrapper):
             Additionally, the time step will be increased by 1.
 
         Args:
-            action (torch.Tensor): action from the agent or random.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
             observation: The agent's observation of the current environment.
@@ -112,6 +111,10 @@ class AutoReset(Wrapper):
 
     Examples:
         >>> env = AutoReset(env)
+
+    Args:
+        env (CMDP): The environment to wrap.
+        device (torch.device): The torch device to use.
     """
 
     def __init__(self, env: CMDP, device: torch.device) -> None:
@@ -138,7 +141,7 @@ class AutoReset(Wrapper):
             And the true final observation will be stored in ``info['final_observation']``.
 
         Args:
-            action (torch.Tensor): action from the agent or random.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
             observation: The agent's observation of the current environment.
@@ -174,8 +177,10 @@ class ObsNormalize(Wrapper):
         >>> norm = Normalizer(env.observation_space.shape) # load saved normalizer
         >>> env = ObsNormalize(env, norm)
 
-    Attributes:
-        _obs_normalizer (Normalizer): The normalizer for the observation.
+    Args:
+        env (CMDP): The environment to wrap.
+        device (torch.device): The torch device to use.
+        norm (Normalizer, optional): The normalizer to use. Defaults to None.
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
@@ -205,7 +210,7 @@ class ObsNormalize(Wrapper):
             The observation and the ``info['final_observation']`` will be normalized.
 
         Args:
-            action (torch.Tensor): action from the agent or random.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
             observation: The agent's observation of the current environment.
@@ -231,7 +236,7 @@ class ObsNormalize(Wrapper):
         """Reset the environment and returns an initial observation.
 
         Args:
-            seed (Optional[int]): seed for the environment.
+            seed (Optional[int]): Seed for the environment.
 
         Returns:
             observation: The initial observation of the space.
@@ -266,16 +271,14 @@ class RewardNormalize(Wrapper):
         >>> env = RewardNormalize(env)
         >>> norm = Normalizer(()) # load saved normalizer
         >>> env = RewardNormalize(env, norm)
+
+    Args:
+        env (CMDP): The environment to wrap.
+        device (torch.device): The torch device to use.
+        norm (Normalizer, optional): The normalizer to use. Defaults to None.
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
-        """Initialize the reward normalizer.
-
-        Args:
-            env (CMDP): The environment to wrap.
-            device (torch.device): The device to use.
-            norm (Optional[Normalizer], optional): The normalizer to use. Defaults to None.
-        """
         super().__init__(env=env, device=device)
         self._reward_normalizer: Normalizer
 
@@ -302,7 +305,7 @@ class RewardNormalize(Wrapper):
             Then the original reward will be stored in ``info['original_reward']`` for logging.
 
         Args:
-            action (torch.Tensor): action from the agent or random.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
             observation: The agent's observation of the current environment.
@@ -341,16 +344,14 @@ class CostNormalize(Wrapper):
         >>> env = CostNormalize(env)
         >>> norm = Normalizer(()) # load saved normalizer
         >>> env = CostNormalize(env, norm)
+
+    Args:
+        env (CMDP): The environment to wrap.
+        device (torch.device): The torch device to use.
+        norm (Normalizer, optional): The normalizer to use. Defaults to None.
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
-        """Initialize the cost normalizer.
-
-        Args:
-            env (CMDP): The environment to wrap.
-            device (torch.device): The device to use.
-            norm (Normalizer, optional): The normalizer to use. Defaults to None.
-        """
         super().__init__(env=env, device=device)
         self._cost_normalizer: Normalizer
 
@@ -377,7 +378,7 @@ class CostNormalize(Wrapper):
             Then the original reward will be stored in ``info['original_cost']`` for logging.
 
         Args:
-            action (torch.Tensor): action from the agent or random.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
             observation: The agent's observation of the current environment.
@@ -416,6 +417,12 @@ class ActionScale(Wrapper):
         >>> env = ActionScale(env, low=-1, high=1)
         >>> env.action_space
         Box(-1.0, 1.0, (1,), float32)
+
+    Args:
+        env (CMDP): The environment to wrap.
+        device (torch.device): The device to use.
+        low (int or float): The lower bound of the action space.
+        high (int or float): The upper bound of the action space.
     """
 
     def __init__(
@@ -425,14 +432,6 @@ class ActionScale(Wrapper):
         low: int | float,
         high: int | float,
     ) -> None:
-        """Initialize the wrapper.
-
-        Args:
-            env (CMDP): The environment to wrap.
-            device (torch.device): The device to use.
-            low (int | float): The lower bound of the action space.
-            high (int | float): The upper bound of the action space.
-        """
         super().__init__(env=env, device=device)
         assert isinstance(self.action_space, spaces.Box), 'Action space must be Box'
 
@@ -484,7 +483,7 @@ class ActionScale(Wrapper):
             The action will be scaled to the original range for agent training.
 
         Args:
-            action (torch.Tensor): action from the agent or random.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
             observation: The agent's observation of the current environment.
@@ -535,7 +534,7 @@ class Unsqueeze(Wrapper):
             The vector information will be unsqueezed to (1, dim) for agent training.
 
         Args:
-            action (torch.Tensor): action from the agent or random.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
             observation: The agent's observation of the current environment.
@@ -563,7 +562,7 @@ class Unsqueeze(Wrapper):
             The vector information will be unsqueezed to (1, dim) for agent training.
 
         Args:
-            seed (int | None): The seed to use for the environment.
+            seed (int, optional): Set the seed for the environment(s
 
         Returns:
             observation: The initial observation of the space.

@@ -97,6 +97,9 @@ class CPO(TRPO):
             decay (float, optional): The decay rate of the step size. Defaults to 0.8.
             c (int, optional): The violation of constraint. Defaults to 0.
             optim_case (int, optional): The optimization case. Defaults to 0.
+        
+        Returns:
+            A tuple of final step direction and the size of acceptance steps.
         """
         # get distance each time theta goes towards certain direction
         step_frac = 1.0
@@ -194,13 +197,13 @@ class CPO(TRPO):
         :math:`\pi^{'}(a|s)` is the current policy.
 
         Args:
-            obs (torch.Tensor): Observation.
-            act (torch.Tensor): Action.
-            logp (torch.Tensor): Log probability of action.
-            adv_c (torch.Tensor): Cost advantage.
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            act (torch.Tensor): The ``action`` sampled from buffer.
+            logp (torch.Tensor): The ``log probability`` of action sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
 
         Returns:
-            torch.Tensor: The loss of cost of policy cost from real cost.
+            loss: The loss of the cost performance.
         """
         self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
@@ -224,6 +227,11 @@ class CPO(TRPO):
             q (torch.Tensor): The quadratic term of the quadratic approximation of the cost function.
             r (torch.Tensor): The linear term of the quadratic approximation of the cost function.
             s (torch.Tensor): The constant term of the quadratic approximation of the cost function.
+
+        Returns:
+            optim_case: The case of the trust region update.
+            A: The quadratic term of the quadratic approximation of the cost function.
+            B: The linear term of the quadratic approximation of the cost function.
         """
         if b_grad.dot(b_grad) <= 1e-6 and ep_costs < 0:
             # feasible step and cost grad is zero: use plain TRPO update...
@@ -336,6 +344,24 @@ class CPO(TRPO):
         adv_r: torch.Tensor,
         adv_c: torch.Tensor,
     ) -> None:
+        """Update policy network.
+
+        Constrained Policy Optimization updates policy network using the
+        `conjugate gradient <https://en.wikipedia.org/wiki/Conjugate_gradient_method>`_ algorithm,
+        following the steps:
+
+        - Compute the gradient of the policy.
+        - Compute the step direction.
+        - Search for a step size that satisfies the constraint.
+        - Update the policy network.
+
+        Args:
+            obs (torch.Tensor): The observation tensor.
+            act (torch.Tensor): The action tensor.
+            logp (torch.Tensor): The log probability of the action.
+            adv_r (torch.Tensor): The reward advantage tensor.
+            adv_c (torch.Tensor): The cost advantage tensor.
+        """
         self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()

@@ -59,8 +59,11 @@ class IPO(PPO):
         :math:`\epsilon` is a small number to avoid division by zero.
 
         Args:
-            adv (torch.Tensor): reward advantage
-            adv_c (torch.Tensor): cost advantage
+            adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
+
+        Returns:
+            The ``advantage``combined with ``reward_advantage`` and ``cost_advantage``.
         """
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         penalty = self._cfgs.algo_cfgs.kappa / (self._cfgs.algo_cfgs.cost_limit - Jc + 1e-8)

@@ -36,6 +36,20 @@ class TD3(DDPG):
     """
 
     def _init_model(self) -> None:
+        """Initialize the model.
+
+        Omnisafe use :class:`omnisafe.models.actor_critic.constraint_actor_q_critic.
+        ConstraintActorQCritic` as the default model.
+
+        User can customize the model by inheriting this function.
+
+        .. note::
+            The ``num_critics`` in ``critic`` configuration must be 2.
+
+        Examples:
+            >>> def _init_model(self) -> None:
+            >>>    self._actor_critic = CustomActorQCritic()
+        """
         self._cfgs.model_cfgs.critic['num_critics'] = 2
         self._actor_critic = ConstraintActorQCritic(
             obs_space=self._env.observation_space,
@@ -52,18 +66,22 @@ class TD3(DDPG):
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
-        """
-        Update reward critic using TD3 algorithm.
+        """Update reward critic.
+
+        - Get the target action by target actor.
+        - Add noise to target action.
+        - Clip the noise.
+
+        - Get the target Q value by target critic.
+        - Use the minimum target Q value to update reward critic.
+        - Log useful information.
 
         Args:
-            obs (torch.Tensor): Observation sampled from buffer.
-            act (torch.Tensor): Action sampled from buffer.
-            reward (torch.Tensor): Reward sampled from buffer.
-            done (torch.Tensor): Done signal sampled from buffer.
-            next_obs (torch.Tensor): Next observation sampled from buffer.
-
-        Returns:
-            None
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            action (torch.Tensor): The ``action`` sampled from buffer.
+            reward (torch.Tensor): The ``reward`` sampled from buffer.
+            done (torch.Tensor): The ``terminated`` sampled from buffer.
+            next_obs (torch.Tensor): The ``next observation`` sampled from buffer.
         """
         with torch.no_grad():
             # set the update noise and noise clip.

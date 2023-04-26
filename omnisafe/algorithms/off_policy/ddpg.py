@@ -46,6 +46,20 @@ class DDPG(BaseAlgo):
     """
 
     def _init_env(self) -> None:
+        """Initialize the environment.
+
+        Omnisafe use :class:`omnisafe.adapter.OffPolicyAdapter` to adapt the environment to the algorithm.
+
+        User can customize the environment by inheriting this function.
+
+        Examples:
+            >>> def _init_env(self) -> None:
+            >>>    self._env = CustomAdapter()
+
+        Raises:
+            AssertionError: If the number of steps per epoch is not divisible by the number of environments.
+            AssertionError: If the total number of steps is not divisible by the number of steps per epoch.
+        """
         self._env: OffPolicyAdapter = OffPolicyAdapter(
             self._env_id,
             self._cfgs.train_cfgs.vector_env_nums,
@@ -74,6 +88,17 @@ class DDPG(BaseAlgo):
         self._update_count: int = 0
 
     def _init_model(self) -> None:
+        """Initialize the model.
+
+        Omnisafe use :class:`omnisafe.models.actor_critic.constraint_actor_q_critic.
+        ConstraintActorQCritic` as the default model.
+
+        User can customize the model by inheriting this function.
+
+        Examples:
+            >>> def _init_model(self) -> None:
+            >>>    self._actor_critic = CustomActorQCritic()
+        """
         self._cfgs.model_cfgs.critic['num_critics'] = 1
         self._actor_critic: ConstraintActorQCritic = ConstraintActorQCritic(
             obs_space=self._env.observation_space,
@@ -83,6 +108,16 @@ class DDPG(BaseAlgo):
         ).to(self._device)
 
     def _init(self) -> None:
+        """The initialization of the algorithm.
+
+        User can define the initialization of the algorithm by inheriting this function.
+
+        Examples:
+            >>> def _init(self) -> None:
+            >>>    super()._init()
+            >>>    self._buffer = CustomBuffer()
+            >>>    self._model = CustomModel()
+        """
         self._buf: VectorOffPolicyBuffer = VectorOffPolicyBuffer(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
@@ -93,6 +128,56 @@ class DDPG(BaseAlgo):
         )
 
     def _init_log(self) -> None:
+        """Log info about epoch.
+
+            .. list-table::
+
+                *   -   Things to log
+                    -   Description
+                *   -   Train/Epoch
+                    -   Current epoch.
+                *   -   Metrics/EpCost
+                    -   Average cost of the epoch.
+                *   -   Metrics/EpCost
+                    -   Average cost of the epoch.
+                *   -   Metrics/EpRet
+                    -   Average return of the epoch.
+                *   -   Metrics/EpLen
+                    -   Average length of the epoch.
+                *   -   Metrics/TestEpCost
+                    -   Average cost of the evaluate epoch.
+                *   -   Metrics/TestEpRet
+                    -   Average return of the evaluate epoch.
+                *   -   Metrics/TestEpLen
+                    -   Average length of the evaluate epoch.
+                *   -   Value/reward_critic
+                    -   Average value in :meth:`roll_out()` (from critic network) of the epoch.
+                *   -   Values/cost_critic
+                    -   Average cost in :meth:`roll_out()` (from critic network) of the epoch.
+                *   -   Loss/Loss_pi
+                    -   Loss of the policy network.
+                *   -   Loss/Delta_loss_pi
+                    -   Delta loss of the policy network.
+                *   -   Loss/Loss_reward_critic
+                    -   Loss of the reward critic.
+                *   -   Loss/Delta_loss_reward_critic
+                    -   Delta loss of the reward critic.
+                *   -   Loss/Loss_cost_critic
+                    -   Loss of the cost critic.
+                *   -   Loss/Delta_loss_cost_critic
+                    -   Delta loss of the cost critic.
+                *   -   Train/LR
+                    -   Learning rate of the policy network.
+                *   -   Misc/Seed
+                    -   Seed of the experiment.
+                *   -   Misc/TotalEnvSteps
+                    -   Total steps of the experiment.
+                *   -   Time
+                    -   Total time.
+                *   -   FPS
+                    -   Frames per second of the epoch.
+
+        """
         self._logger: Logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,
             exp_name=self._cfgs.exp_name,
@@ -232,6 +317,38 @@ class DDPG(BaseAlgo):
         return ep_ret, ep_cost, ep_len
 
     def _update(self) -> None:
+        r"""Update actor, critic, running statistics, following next steps:
+
+        -  Get the ``data`` from buffer
+
+        .. note::
+
+            .. list-table::
+
+                *   -   obs
+                    -   ``observaion`` stored in buffer.
+                *   -   act
+                    -   ``action`` stored in buffer.
+                *   -   reward
+                    -   ``reward`` stored in buffer.
+                *   -   cost
+                    -   ``cost`` stored in buffer.
+                *   -   next_obs
+                    -   ``next observaion`` stored in buffer.
+                *   -   done
+                    -   ``terminated`` stored in buffer.
+
+        -  Update value net by :meth:`_update_reward_critic`.
+        -  Update cost net by :meth:`_update_cost_critic`.
+        -  Update policy net by :meth:`_update_actor`.
+
+        The basic process of each update is as follows:
+
+        #. Get the mini-batch data from buffer.
+        #. Get the loss of network.
+        #. Update the network by loss.
+        #. Repeat steps 2, 3 until the ``update_iters`` times.
+        """
         for _ in range(self._cfgs.algo_cfgs.update_iters):
             data = self._buf.sample_batch()
             self._update_count += 1
@@ -260,6 +377,19 @@ class DDPG(BaseAlgo):
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
+        """Update reward critic.
+
+        - Get the TD loss of reward critic.
+        - Update critic network by loss.
+        - Log useful information.
+
+        Args:
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            action (torch.Tensor): The ``action`` sampled from buffer.
+            reward (torch.Tensor): The ``reward`` sampled from buffer.
+            done (torch.Tensor): The ``terminated`` sampled from buffer.
+            next_obs (torch.Tensor): The ``next observation`` sampled from buffer.
+        """
         with torch.no_grad():
             next_action = self._actor_critic.actor.predict(next_obs, deterministic=True)
             next_q_value_r = self._actor_critic.target_reward_critic(next_obs, next_action)[0]
@@ -295,6 +425,19 @@ class DDPG(BaseAlgo):
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
+        """Update cost critic.
+
+        - Get the TD loss of cost critic.
+        - Update critic network by loss.
+        - Log useful information.
+
+        Args:
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            action (torch.Tensor): The ``action`` sampled from buffer.
+            cost (torch.Tensor): The ``cost`` sampled from buffer.
+            done (torch.Tensor): The ``terminated`` sampled from buffer.
+            next_obs (torch.Tensor): The ``next observation`` sampled from buffer.
+        """
         with torch.no_grad():
             next_action = self._actor_critic.actor.predict(next_obs, deterministic=True)
             next_q_value_c = self._actor_critic.target_cost_critic(next_obs, next_action)[0]
@@ -328,6 +471,15 @@ class DDPG(BaseAlgo):
         self,
         obs: torch.Tensor,
     ) -> None:
+        """Update actor.
+
+        - Get the loss of actor.
+        - Update actor by loss.
+        - Log useful information.
+
+        Args:
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+        """
         loss = self._loss_pi(obs)
         self._actor_critic.actor_optimizer.zero_grad()
         loss.backward()
@@ -347,10 +499,27 @@ class DDPG(BaseAlgo):
         self,
         obs: torch.Tensor,
     ) -> torch.Tensor:
+        r"""Computing ``pi/actor`` loss.
+
+        Detailedly, the loss function in DDPG is defined as:
+
+        .. math::
+            L = -Q^V(s, \pi(s))
+
+        where :math:`Q^V` is the reward critic network,
+        and :math:`\pi` is the policy network.
+
+        Args:
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+
+        Returns:
+            loss: The loss of pi/actor.
+        """
         action = self._actor_critic.actor.predict(obs, deterministic=True)
         return -self._actor_critic.reward_critic(obs, action)[0].mean()
 
     def _log_when_not_update(self) -> None:
+        """Log zero value when not update."""
         self._logger.store(
             {
                 'Loss/Loss_reward_critic': 0.0,

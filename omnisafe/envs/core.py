@@ -33,13 +33,8 @@ class CMDP(ABC):
     and implement the abstract methods.
 
     Attributes:
-        _support_envs (List[str]): the supported environments.
-        _action_space (OmnisafeSpace): the action space of the environment.
-        _observation_space (OmnisafeSpace): the observation space of the environment.
-        _num_envs (int): the parallel environments, for env that not support parallel, num_envs should be 1
-        _time_limit (Optional[int]): the time limit of the environment, if None, the environment is infinite.
-        need_time_limit_wrapper (bool): whether the environment need time limit wrapper.
-        need_auto_reset_wrapper (bool): whether the environment need auto reset wrapper.
+        need_time_limit_wrapper (bool): Whether the environment need time limit wrapper.
+        need_auto_reset_wrapper (bool): Whether the environment need auto reset wrapper.
     """
 
     _support_envs: list[str]
@@ -57,7 +52,7 @@ class CMDP(ABC):
         """The supported environments.
 
         Returns:
-            List[str]: the supported environments.
+            List[str]: The supported environments.
         """
         return cls._support_envs
 
@@ -66,8 +61,8 @@ class CMDP(ABC):
         """Initialize the environment.
 
         Args:
-            env_id (str): the environment id.
-            **kwargs (Any): the keyword arguments.
+            env_id (str): The environment id.
+            **kwargs (Any): The keyword arguments.
         """
         assert (
             env_id in self.support_envs()
@@ -75,47 +70,27 @@ class CMDP(ABC):
 
     @property
     def action_space(self) -> OmnisafeSpace:
-        """The action space of the environment.
-
-        Returns:
-            OmnisafeSpace: the action space.
-        """
+        """OmniSafeSpace: The action space of the environment."""
         return self._action_space
 
     @property
     def observation_space(self) -> OmnisafeSpace:
-        """The observation space of the environment.
-
-        Returns:
-            OmnisafeSpace: the observation space.
-        """
+        """OmniSafeSpace: The observation space of the environment."""
         return self._observation_space
 
     @property
     def metadata(self) -> dict[str, Any]:
-        """The metadata of the environment.
-
-        Returns:
-            dict[str, Any]: the metadata.
-        """
+        """dict[str, Any]: The metadata of the environment."""
         return self._metadata
 
     @property
     def num_envs(self) -> int:
-        """The parallel environments.
-
-        Returns:
-            int: the parallel environments.
-        """
+        """int: The number of parallel environments."""
         return self._num_envs
 
     @property
     def time_limit(self) -> int | None:
-        """The time limit of the environment.
-
-        Returns:
-            Optional[int]: the time limit of the environment.
-        """
+        """int or None: The time limit of the environment."""
         return self._time_limit
 
     @abstractmethod
@@ -133,7 +108,7 @@ class CMDP(ABC):
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
-            action (torch.Tensor): action from the agent or random.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
             observation: The agent's observation of the current environment.
@@ -149,7 +124,7 @@ class CMDP(ABC):
         """Reset the environment and returns an initial observation.
 
         Args:
-            seed (Optional[int]): seed for the environment.
+            seed (Optional[int]): Seed for the environment.
 
         Returns:
             observation: The initial observation of the space.
@@ -161,7 +136,7 @@ class CMDP(ABC):
         """Set the seed for this env's random number generator(s).
 
         Args:
-            seed (int): the seed to use.
+            seed (int): The seed to use.
         """
 
     @abstractmethod
@@ -169,7 +144,7 @@ class CMDP(ABC):
         """Sample an action from the action space.
 
         Returns:
-            torch.Tensor: the sampled action.
+            torch.Tensor: The sampled action.
         """
 
     @abstractmethod
@@ -177,7 +152,7 @@ class CMDP(ABC):
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
 
         Returns:
-            Any: the render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
+            Any: The render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
         """
 
     def save(self) -> dict[str, torch.nn.Module]:
@@ -207,18 +182,18 @@ class Wrapper(CMDP):
     from this class and implement the abstract methods.
 
     Attributes:
-        _env (CMDP): the environment.
+        _env (CMDP): The environment.
     """
 
     def __init__(self, env: CMDP, device: torch.device = DEVICE_CPU) -> None:
         """Initialize the wrapper.
 
         Args:
-            env (CMDP): the environment.
+            env (CMDP): The environment.
 
         Attributes:
-            _env (CMDP): the environment.
-            _device (torch.device): the device of the environment.
+            _env (CMDP): The environment.
+            _device (torch.device): The device of the environment.
         """
         self._env: CMDP = env
         self._device: torch.device = device
@@ -227,10 +202,10 @@ class Wrapper(CMDP):
         """Get the attribute of the environment.
 
         Args:
-            name (str): the attribute name.
+            name (str): The attribute name.
 
         Returns:
-            Any: the attribute.
+            Any: The attribute.
         """
         if name.startswith('_'):
             raise AttributeError(f'attempted to get missing private attribute {name}')
@@ -250,7 +225,7 @@ class Wrapper(CMDP):
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
-            action (torch.Tensor): action from the agent or random.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
             observation: The agent's observation of the current environment.
@@ -278,7 +253,7 @@ class Wrapper(CMDP):
         """Set the seed for this env's random number generator(s).
 
         Args:
-            seed (int): the seed to use.
+            seed (int): The random seed to use.
         """
         self._env.set_seed(seed)
 
@@ -286,7 +261,7 @@ class Wrapper(CMDP):
         """Sample an action from the action space.
 
         Returns:
-            torch.Tensor: the sampled action.
+            torch.Tensor: The sampled action.
         """
         return self._env.sample_action()
 
@@ -294,7 +269,7 @@ class Wrapper(CMDP):
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
 
         Returns:
-            Any: the render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
+            Any: The render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
         """
         return self._env.render()
 
@@ -328,10 +303,6 @@ class EnvRegister:
         >>> from cunstom_env import CustomEnv
         >>> @env_register
         >>> class CustomEnv():
-
-    Attributes:
-        _class (dict[str, type[CMDP]]): the registered environment class.
-        _support_envs (dict[str, list[str]]): the environment ids supported by the environment class.
     """
 
     def __init__(self) -> None:
@@ -344,7 +315,7 @@ class EnvRegister:
         """Register the environment class.
 
         Args:
-            env_class (Type[CMDP]): the environment class.
+            env_class (Type[CMDP]): The environment class.
         """
         if not inspect.isclass(env_class):
             raise TypeError(f'{env_class} must be a class')
@@ -361,10 +332,10 @@ class EnvRegister:
         """Register the environment class.
 
         Args:
-            env_class (Type[CMDP]): the environment class.
+            env_class (Type[CMDP]): The environment class.
 
         Returns:
-            Type[CMDP]: the environment class.
+            env_class: The environment class.
         """
         self._register(env_class)
         return env_class
@@ -373,11 +344,11 @@ class EnvRegister:
         """Get the environment class.
 
         Args:
-            env_id (str): the environment id.
-            class_name (Optional[str]): the environment class name.
+            env_id (str): The environment id.
+            class_name (Optional[str]): The environment class name.
 
         Returns:
-            Type[CMDP]: the environment class.
+            env_class: The environment class.
         """
         if class_name is not None:
             assert class_name in self._class, f'{class_name} is not registered'
@@ -395,7 +366,7 @@ class EnvRegister:
         """The supported environments.
 
         Returns:
-            list[str]: the supported environments.
+            support_envs: The supported environments.
         """
         return list({env_id for env_ids in self._support_envs.values() for env_id in env_ids})
 
@@ -410,12 +381,12 @@ def make(env_id: str, class_name: str | None = None, **kwargs: Any) -> CMDP:
     """Create an environment.
 
     Args:
-        env_id (str): the environment id.
-        class_name (Optional[str]): the environment class name.
+        env_id (str): The environment id.
+        class_name (Optional[str]): The environment class name.
         **kwargs: the keyword arguments for the environment initialization.
 
     Returns:
-        CMDP (CMDP): the environment.
+        env_class: The environment class.
     """
     env_class = ENV_REGISTRY.get_class(env_id, class_name)
     return env_class(env_id, **kwargs)

@@ -56,8 +56,8 @@ class PolicyGradient(BaseAlgo):
             >>> def _init_env(self) -> None:
             >>>    self._env = CustomAdapter()
 
-        Args:
-            self (object): object of the class.
+        Raises:
+            AssertionError: If the number of steps per epoch is not divisible by the number of environments.
         """
         self._env: OnPolicyAdapter = OnPolicyAdapter(
             self._env_id,
@@ -85,9 +85,6 @@ class PolicyGradient(BaseAlgo):
         Examples:
             >>> def _init_model(self) -> None:
             >>>    self._actor_critic = CustomActorCritic()
-
-        Args:
-            self (object): object of the class.
         """
         self._actor_critic: ConstraintActorCritic = ConstraintActorCritic(
             obs_space=self._env.observation_space,
@@ -115,9 +112,6 @@ class PolicyGradient(BaseAlgo):
             >>>    super()._init()
             >>>    self._buffer = CustomBuffer()
             >>>    self._model = CustomModel()
-
-        Args:
-            self (object): object of the class.
         """
         self._buf: VectorOnPolicyBuffer = VectorOnPolicyBuffer(
             obs_space=self._env.observation_space,
@@ -188,8 +182,6 @@ class PolicyGradient(BaseAlgo):
                 *   -   FPS
                     -   Frames per second of the epoch.
 
-        Args:
-            self (object): object of the class.
         """
         self._logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,
@@ -249,13 +241,10 @@ class PolicyGradient(BaseAlgo):
         - :meth:`update`: perform actor/critic updates.
         - :meth:`log`: epoch/update information for visualization and terminal log print.
 
-        Args:
-            self (object): object of the class.
-
         Returns:
-            ep_ret: average episode return in final epoch.
-            ep_cost: average episode cost in final epoch.
-            ep_len: average episode length in final epoch.
+            ep_ret: Average episode return in final epoch.
+            ep_cost: Average episode cost in final epoch.
+            ep_len: Average episode length in final epoch.
         """
         start_time = time.time()
         self._logger.log('INFO: Start training')
@@ -318,19 +307,19 @@ class PolicyGradient(BaseAlgo):
             .. list-table::
 
                 *   -   obs
-                    -   ``observaion`` stored in buffer.
+                    -   ``observaion`` sampled from buffer.
                 *   -   act
-                    -   ``action`` stored in buffer.
+                    -   ``action`` sampled from buffer.
                 *   -   target_value_r
-                    -   ``target value`` stored in buffer.
+                    -   ``target value`` sampled from buffer.
                 *   -   target_value_c
-                    -   ``target cost`` stored in buffer.
+                    -   ``target cost`` sampled from buffer.
                 *   -   logp
-                    -   ``log probability`` stored in buffer.
+                    -   ``log probability`` sampled from buffer.
                 *   -   adv
-                    -   ``estimated advantage`` (e.g. **GAE**) stored in buffer.
+                    -   ``estimated advantage`` (e.g. **GAE**) sampled from buffer.
                 *   -   cost_adv
-                    -   ``estimated cost advantage`` (e.g. **GAE**) stored in buffer.
+                    -   ``estimated cost advantage`` (e.g. **GAE**) sampled from buffer.
 
         -  Update value net by :meth:`_update_reward_critic()`.
         -  Update cost net by :meth:`_update_cost_critic()`.
@@ -345,8 +334,6 @@ class PolicyGradient(BaseAlgo):
         #. Repeat steps 2, 3 until the number of mini-batch data is used up.
         #. Repeat steps 2, 3, 4 until the KL divergence violates the limit.
 
-        Args:
-            self (object): object of the class.
         """
         data = self._buf.get()
         obs, act, logp, target_value_r, target_value_c, adv_r, adv_c = (
@@ -428,8 +415,8 @@ class PolicyGradient(BaseAlgo):
         #. Update the network by loss function.
 
         Args:
-            obs (torch.Tensor): ``observation`` stored in buffer.
-            target_value_r (torch.Tensor): ``target_value_r`` stored in buffer.
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            target_value_r (torch.Tensor): The ``target_value_r`` sampled from buffer.
         """
         self._actor_critic.reward_critic_optimizer.zero_grad()
         loss = nn.functional.mse_loss(self._actor_critic.reward_critic(obs)[0], target_value_r)
@@ -467,8 +454,8 @@ class PolicyGradient(BaseAlgo):
         #. Update the network by loss function.
 
         Args:
-            obs (torch.Tensor): ``observation`` stored in buffer.
-            target_value_c (torch.Tensor): ``target_value_c`` stored in buffer.
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            target_value_c (torch.Tensor): The ``target_value_c`` sampled from buffer.
         """
         self._actor_critic.cost_critic_optimizer.zero_grad()
         loss = nn.functional.mse_loss(self._actor_critic.cost_critic(obs)[0], target_value_c)
@@ -510,11 +497,11 @@ class PolicyGradient(BaseAlgo):
                 If the ``KL divergence`` is too large, the update will be terminated.
 
         Args:
-            obs (torch.Tensor): ``observation`` stored in buffer.
-            act (torch.Tensor): ``action`` stored in buffer.
-            log_p (torch.Tensor): ``log_p`` stored in buffer.
-            adv_r (torch.Tensor): ``advantage`` stored in buffer.
-            adv_c (torch.Tensor): ``cost_advantage`` stored in buffer.
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            act (torch.Tensor): The ``action`` sampled from buffer.
+            log_p (torch.Tensor): The ``log_p`` sampled from buffer.
+            adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
         """
         adv = self._compute_adv_surrogate(adv_r, adv_c)
         loss = self._loss_pi(obs, act, logp, adv)
@@ -538,8 +525,11 @@ class PolicyGradient(BaseAlgo):
         Policy Gradient only use reward advantage.
 
         Args:
-            adv_r (torch.Tensor): reward advantage
-            adv_c (torch.Tensor): cost advantage
+            adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
+
+        Returns:
+            adv: The ``reward_advantage`` used to update policy network.
         """
         return adv_r
 
@@ -565,10 +555,13 @@ class PolicyGradient(BaseAlgo):
         is the new policy network, :math:`A^{R}_{\pi_{\theta}}(s_t, a_t)` is the advantage.
 
         Args:
-            obs (torch.Tensor): ``observation`` stored in buffer.
-            act (torch.Tensor): ``action`` stored in buffer.
-            logp (torch.Tensor): ``log probability`` of action stored in buffer.
-            adv (torch.Tensor): ``advantage`` stored in buffer.
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            act (torch.Tensor): The ``action`` sampled from buffer.
+            logp (torch.Tensor): The ``log probability`` of action sampled from buffer.
+            adv (torch.Tensor): The ``advantage`` sampled from buffer.
+
+        Returns:
+            loss: The loss of pi/actor.
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)

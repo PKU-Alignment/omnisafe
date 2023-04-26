@@ -54,6 +54,12 @@ class ConstraintActorQCritic(ActorQCritic):
                     :class:`QCritic`, :class:`VCritic`.
                 -   Estimate the cost value of the observation.
 
+        Args:
+            obs_space (OmnisafeSpace): The observation space.
+            act_space (OmnisafeSpace): The action space.
+            model_cfgs (ModelConfig): The model configurations.
+            epochs (int): The number of epochs.
+
         Attributes:
             actor (Actor): The actor network.
             target_actor (Actor): The target actor network.
@@ -73,7 +79,6 @@ class ConstraintActorQCritic(ActorQCritic):
         model_cfgs: ModelConfig,
         epochs: int,
     ) -> None:
-        """Initialize ConstraintActorCritic."""
         super().__init__(obs_space, act_space, model_cfgs, epochs)
 
         self.cost_critic: Critic = CriticBuilder(
@@ -97,6 +102,11 @@ class ConstraintActorQCritic(ActorQCritic):
             )
 
     def polyak_update(self, tau: float) -> None:
+        """Update the target network with polyak averaging.
+
+        Args:
+            tau: The polyak averaging factor.
+        """
         super().polyak_update(tau)
         for target_param, param in zip(
             self.target_cost_critic.parameters(),

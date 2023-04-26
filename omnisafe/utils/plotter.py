@@ -57,6 +57,11 @@ class Plotter:
         .. code-block:: bash
 
             python plot.py './runs/SafetyAntVelocity-v1/'
+
+    Attributes:
+        div_line_width (int): The width of the dividing line between subplots.
+        exp_idx (int): The index of the experiment.
+        units (dict[str, Any]): The units of the data.
     """
 
     def __init__(self) -> None:
@@ -74,7 +79,17 @@ class Plotter:
         smooth: int = 1,
         **kwargs: Any,
     ) -> None:
-        """Plot data from a pandas dataframe."""
+        """Plot data from a pandas dataframe.
+
+        Args:
+            sub_figures (np.ndarray): The subplots.
+            data (list[DataFrame]): The data to plot.
+            xaxis (str, optional): The x-axis label. Defaults to 'Steps'.
+            value (str, optional): The y-axis label. Defaults to 'Rewards'.
+            condition (str, optional): The condition label. Defaults to 'Condition1'.
+            smooth (int, optional): The smoothing window size. Defaults to 1.
+            **kwargs (Any): Additional arguments.
+        """
 
         # smooth data with moving window average.
         # smoothed_y[t] = average(y[t-k], y[t-k+1], ..., y[t+k-1], y[t+k])
@@ -144,8 +159,16 @@ class Plotter:
         Assumes that any file "progress.txt" is a valid hit.
 
         Args:
-            logdir (str): directory to search for progress.txt files
-            condition (str): condition to filter on.
+            logdir (str): The directory to search for progress.txt files
+            condition (str, optional): The condition label. Defaults to None.
+
+        Returns:
+            datasets: The datasets.
+
+        Raise:
+            FileNotFoundError: If the config file is not found.
+            FileNotFoundError: If could not read from ``progress.csv`` file.
+            ValueError: If no Train/Epoch column in progress.csv.
         """
         datasets: list[DataFrame] = []
         for root, _, files in os.walk(logdir):
@@ -213,6 +236,9 @@ class Plotter:
             legend (list[str], optional): list of legend names. Defaults to None.
             select (str, optional): select logdirs that contain this string. Defaults to None.
             exclude (str, optional): exclude logdirs that contain this string. Defaults to None.
+
+        Returns:
+            data: All the data stored in a list of DataFrames.
         """
         logdirs = []
         for logdir in all_logdirs:
@@ -271,7 +297,8 @@ class Plotter:
         save_format: str = 'png',
         show_image: bool = False,
     ) -> None:
-        """Example usage:
+        """Make plots from the data in the specified log directories.
+
         Args:
             all_logdirs (list[str]): As many log directories (or prefixes to log
                 directories, which the plotter will automatically complete internally) as

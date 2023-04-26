@@ -52,10 +52,13 @@ class PPO(PolicyGradient):
         :math:`\epsilon` is the clip parameter, :math:`A^{R}_{\pi_{\theta}}(s_t, a_t)` is the advantage.
 
         Args:
-            obs (torch.Tensor): ``observation`` stored in buffer.
-            act (torch.Tensor): ``action`` stored in buffer.
-            log_p (torch.Tensor): ``log probability`` of action stored in buffer.
-            adv (torch.Tensor): ``advantage`` stored in buffer.
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            act (torch.Tensor): The ``action`` sampled from buffer.
+            logp (torch.Tensor): The ``log probability`` of action sampled from buffer.
+            adv (torch.Tensor): The ``advantage`` sampled from buffer.
+
+        Returns:
+            loss: The loss of pi/actor.
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)

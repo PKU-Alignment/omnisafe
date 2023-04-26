@@ -63,7 +63,7 @@ class EarlyTerminatedAdapter(OnPolicyAdapter):
             and terminate the episode when the accumulated cost exceeds the cost limit.
 
         Args:
-            action (torch.Tensor): action from the agent or random.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
             observation: The agent's observation of the current environment.

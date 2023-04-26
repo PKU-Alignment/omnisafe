@@ -69,6 +69,17 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         |  Metrics/EpRet  |            13.24         |
         |  Metrics/EpStd  |            0.12          |
         ----------------------------------------------
+
+    Args:
+        output_dir (str): The output directory.
+        exp_name (str): The experiment name.
+        output_fname (str, optional): The output file name. Defaults to 'progress.csv'.
+        seed (int, optional): The random seed. Defaults to 0.
+        use_tensorboard (bool, optional): Whether to use tensorboard. Defaults to True.
+        use_wandb (bool, optional): Whether to use wandb. Defaults to False.
+        config (Config, optional): The config. Defaults to None.
+        models (list[torch.nn.Module], optional): The models. Defaults to None.
+
     """
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals
@@ -82,36 +93,6 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         config: Config | None = None,
         models: list[torch.nn.Module] | None = None,
     ) -> None:
-        """Initialize the logger.
-
-        Args:
-            output_dir (str): The output directory.
-            exp_name (str): The experiment name.
-            output_fname (str, optional): The output file name. Defaults to 'progress.csv'.
-            seed (int, optional): The random seed. Defaults to 0.
-            use_tensorboard (bool, optional): Whether to use tensorboard. Defaults to True.
-            use_wandb (bool, optional): Whether to use wandb. Defaults to False.
-            config (Config, optional): The config. Defaults to None.
-            models (list[torch.nn.Module], optional): The models. Defaults to None.
-
-        Attributes:
-            _hms_time (str): The time in the format of %Y-%m-%d-%H-%M-%S.
-            _log_dir (str): The log directory.
-            _maste_proc (bool): Whether the process is the master process.
-            _console (Console): The console.
-            _output_file (TextIO): The output file.
-            _epoch (int): The current epoch.
-            _first_row (bool): Whether the current row is the first row.
-            _what_to_save (dict[str, Any] | None): The data to save.
-            _data (dict[str, Deque[int | float] | list[int | float]]): The data.
-            _headers_windows (dict[str, int | None]): The headers for the windows.
-            _headers_minmax (dict[str, bool]): The headers to record with the min and max.
-            _headers_delta (dict[str, bool]): The headers to record with the delta.
-            _current_row (dict[str, int | float]): The current row.
-            _config (Config): The config.
-            _use_tensorboard (bool): Whether to use tensorboard.
-            _use_wandb (bool): Whether to use wandb.
-        """
         hms_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
         relpath = hms_time
 
@@ -277,9 +258,9 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             The data stored in ``data`` will be updated by ``kwargs``.
 
         Args:
-            data (dict[str, int | float | np.ndarray | torch.Tensor], optional):
+            data (dict[str, int, float, np.ndarray or torch.Tensor], optional):
             The data to be stored. Defaults to None.
-            **kwargs (int | float | np.ndarray | torch.Tensor): The data to be stored.
+            **kwargs (int, float, np.ndarray or torch.Tensor): The data to be stored.
         """
         if data is not None:
             kwargs.update(data)
@@ -355,12 +336,17 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             if self._headers_windows[key] is None:
                 self._data[key] = []
 
-    def get_stats(self, key: str, min_and_max: bool = False) -> tuple[int | float, ...]:
+    def get_stats(
+        self, key: str, min_and_max: bool = False
+    ) -> tuple[int | float] | tuple[int | float, int | float, int | float, int | float]:
         """Get the statistics of the key.
 
         Args:
             key (str): The key to be registered.
             min_and_max (bool): Whether to record the min and max value of the key.
+
+        Returns:
+            mean value of the key or (mean, min, max, std) of the key.
         """
         assert key in self._current_row, f'Key {key} has not been registered'
         vals = self._data[key]
@@ -381,12 +367,12 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
     @property
     def current_epoch(self) -> int:
-        """Return the current epoch."""
+        """int: Return the current epoch."""
         return self._epoch
 
     @property
     def log_dir(self) -> str:
-        """Return the log directory."""
+        """str: Return the log directory."""
         return self._log_dir
 
     def close(self) -> None:

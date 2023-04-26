@@ -27,7 +27,19 @@ from omnisafe.utils.model import build_mlp_network
 
 
 class GaussianSACActor(Actor):
-    """Implementation of GaussianSACActor."""
+    """Implementation of GaussianSACActor.
+
+    GaussianSACActor is a Gaussian actor with a learnable standard deviation network.
+    It is used in ``SAC``, and other off-line or model-based algorithms related to ``SAC``.
+
+    Args:
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
+        hidden_sizes (list[int]): List of hidden layer sizes.
+        activation (Activation): Activation function.
+        weight_initialization_mode (InitFunction): Weight initialization mode.
+        shared (nn.Module): Shared module.
+    """
 
     _log2: torch.Tensor
     _current_dist: Normal
@@ -40,19 +52,6 @@ class GaussianSACActor(Actor):
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize GaussianSACActor.
-
-        GaussianSACActor is a Gaussian actor with a learnable standard deviation network.
-        It is used in ``SAC``, and other off-line or model-based algorithms related to ``SAC``.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list[int]): List of hidden layer sizes.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-            shared (nn.Module): Shared module.
-        """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
 
         self.net: nn.Module = build_mlp_network(
@@ -75,6 +74,9 @@ class GaussianSACActor(Actor):
 
         Args:
             obs (torch.Tensor): Observation.
+
+        Returns:
+            Normal: The normal distribution of the mean and standard deviation from the actor.
         """
         mean, log_std = self.net(obs).chunk(2, dim=-1)
         log_std = torch.clamp(log_std, min=-20, max=2)
@@ -92,6 +94,10 @@ class GaussianSACActor(Actor):
         Args:
             obs (torch.Tensor): Observation.
             deterministic (bool): Whether to use deterministic policy.
+
+        Returns:
+            The mean of the distribution if ``deterministic`` is ``True``,
+            otherwise the sampled action.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -107,6 +113,9 @@ class GaussianSACActor(Actor):
 
         Args:
             obs (torch.Tensor): Observation.
+
+        Returns:
+            current_dist: The current distribution.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -130,6 +139,9 @@ class GaussianSACActor(Actor):
 
         Args:
             act (torch.Tensor): Action.
+
+        Returns:
+            log_prob: Log probability of the action.
         """
         assert self._after_inference, 'log_prob() should be called after predict() or forward()'
         self._after_inference = False
@@ -156,7 +168,7 @@ class GaussianSACActor(Actor):
 
     @property
     def std(self) -> float:
-        """Get the standard deviation of the normal distribution."""
+        """float: Standard deviation of the distribution."""
         return self._current_dist.stddev.mean().item()
 
     @std.setter

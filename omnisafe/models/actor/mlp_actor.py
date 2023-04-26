@@ -26,7 +26,19 @@ from omnisafe.utils.model import build_mlp_network
 
 # pylint: disable-next=too-many-instance-attributes
 class MLPActor(Actor):
-    """Implementation of MLPActor."""
+    """Implementation of MLPActor.
+
+    MLPActor is a Gaussian actor with a learnable mean value.
+    It is used in off-policy algorithms such as ``DDPG``, ``TD3`` and so on.
+
+    Args:
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
+        hidden_sizes (list[int]): List of hidden layer sizes.
+        activation (Activation): Activation function.
+        weight_initialization_mode (InitFunction): Weight initialization mode.
+        shared (nn.Module): Shared module.
+    """
 
     def __init__(
         self,
@@ -37,16 +49,6 @@ class MLPActor(Actor):
         output_activation: Activation = 'tanh',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize MLPActor.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list[int]): List of hidden layer sizes.
-            activation (Activation): Activation function.
-            output_activation (Activation): Output activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-        """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
 
         self.net: torch.nn.Module = build_mlp_network(
@@ -82,7 +84,7 @@ class MLPActor(Actor):
 
     @property
     def noise(self) -> float:
-        """Get the action noise."""
+        """float: Noise of the action."""
         return self._noise
 
     @noise.setter
@@ -102,5 +104,5 @@ class MLPActor(Actor):
 
     @property
     def std(self) -> float:
-        """Get the action noise."""
+        """float: Standard deviation of the distribution."""
         return self._noise

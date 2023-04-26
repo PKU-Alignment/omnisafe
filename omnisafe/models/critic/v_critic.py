@@ -30,6 +30,14 @@ class VCritic(Critic):
     A V-function approximator that uses a multi-layer perceptron (MLP) to map observations to V-values.
     This class is an inherit class of :class:`Critic`.
     You can design your own V-function approximator by inheriting this class or :class:`Critic`.
+
+    Args:
+        obs_dim (int): Observation dimension.
+        act_dim (int): Action dimension.
+        hidden_sizes (list[int]): Hidden layer sizes.
+        activation (Activation): Activation function.
+        weight_initialization_mode (InitFunction): Weight initialization mode.
+        shared (nn.Module): Shared network.
     """
 
     def __init__(
@@ -41,16 +49,6 @@ class VCritic(Critic):
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
         num_critics: int = 1,
     ) -> None:
-        """Initialize the critic network.
-
-        Args:
-            obs_dim (int): Observation dimension.
-            act_dim (int): Action dimension.
-            hidden_sizes (list[int]): Hidden layer sizes.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-            shared (nn.Module): Shared network.
-        """
         super().__init__(
             obs_space,
             act_space,
@@ -82,6 +80,9 @@ class VCritic(Critic):
 
         Args:
             obs (torch.Tensor): Observations.
+
+        Returns:
+            res: The V critic value of observation.
         """
         res = []
         for critic in self.net_lst:

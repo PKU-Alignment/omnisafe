@@ -31,7 +31,10 @@ def get_transpose(tensor: torch.Tensor) -> torch.Tensor:
         torch.Size([2, 4, 3])
 
     Args:
-        tensor: torch.Tensor
+        tensor(torch.Tensor): The tensor to transpose.
+
+    Returns:
+        Transposed tensor.
     """
     return tensor.transpose(dim0=-2, dim1=-1)
 
@@ -46,6 +49,9 @@ def get_diagonal(tensor: torch.Tensor) -> torch.Tensor:
 
     Args:
         tensor (torch.Tensor): The tensor to get the diagonal from.
+
+    Returns:
+        Diagonal part of the tensor.
     """
     return tensor.diagonal(dim1=-2, dim2=-1).sum(-1)
 
@@ -63,6 +69,9 @@ def discount_cumsum(vector_x: torch.Tensor, discount: float) -> torch.Tensor:
     Args:
         vector_x (torch.Tensor): shape (B, T).
         discount (float): discount factor.
+
+    Returns:
+        vector_x: The discounted cumulative sum of vectors.
     """
     length = vector_x.shape[0]
     vector_x = vector_x.type(torch.float64)
@@ -100,6 +109,9 @@ def conjugate_gradients(
         num_steps (int): The number of steps to run the algorithm for.
         residual_tol (float): The tolerance for the residual.
         eps (float): A small number to avoid dividing by zero.
+
+    Returns:
+        vector_x: The vector :math:`x` in the equation :math:`Ax = b`.
     """
 
     vector_x = torch.zeros_like(vector_b)
@@ -141,8 +153,7 @@ class SafeTanhTransformer(TanhTransform):
 
 
 class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
-    r"""
-    Creates a tanh-normal distribution.
+    r"""Creates a tanh-normal distribution.
 
     .. math::
 
@@ -156,8 +167,8 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
         tensor([-0.7616])
 
     Args:
-        loc (float or Tensor): mean of the underlying normal distribution
-        scale (float or Tensor): standard deviation of the underlying normal distribution
+        loc (float or Tensor): The mean of the underlying normal distribution.
+        scale (float or Tensor): The standard deviation of the underlying normal distribution.
     """
 
     arg_constraints = {'loc': constraints.real, 'scale': constraints.positive}
@@ -173,29 +184,33 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
 
     @property
     def loc(self) -> torch.Tensor:
-        """The loc of the tanh normal distribution."""
+        """torch.Tensor: The mean of the normal distribution."""
         return self.base_dist.mean
 
     @property
     def scale(self) -> torch.Tensor:
-        """The scale of the tanh normal distribution."""
+        """torch.Tensor: The standard deviation of the normal distribution."""
         return self.base_dist.stddev
 
     @property
     def mean(self) -> torch.Tensor:
-        """The mean of the tanh normal distribution."""
+        """torch.Tensor: The mean of the tanh normal distribution."""
         return SafeTanhTransformer()(self.base_dist.mean)
 
     @property
     def stddev(self) -> torch.Tensor:
-        """The stddev of the tanh normal distribution."""
+        """torch.Tensor: The standard deviation of the tanh normal distribution."""
         return self.base_dist.stddev
 
     def entropy(self) -> torch.Tensor:
-        """The entropy of the tanh normal distribution."""
+        """The entropy of the tanh normal distribution.
+
+        Returns:
+            The entropy of the tanh normal distribution.
+        """
         return self.base_dist.entropy()
 
     @property
     def variance(self) -> torch.Tensor:
-        """The variance of the tanh normal distribution."""
+        """torch.Tensor: The variance of the tanh normal distribution."""
         return self.base_dist.variance

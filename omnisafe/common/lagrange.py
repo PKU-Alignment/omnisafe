@@ -46,6 +46,22 @@ class Lagrange:
         >>>         super().__init__()
         >>>         # initialize the Lagrange multiplier
         >>>         self.lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
+
+    Args:
+        cost_limit (float): The cost limit.
+        lagrangian_multiplier_init (float): The initial value of the Lagrange multiplier.
+        lambda_lr (float): The learning rate of the Lagrange multiplier.
+        lambda_optimizer (str): The optimizer for the Lagrange multiplier.
+        lagrangian_upper_bound (float, optional): The upper bound of the Lagrange multiplier.
+            Defaults to None.
+
+    Attributes:
+        cost_limit (float): The cost limit.
+        lambda_lr (float): The learning rate of the Lagrange multiplier.
+        lagrangian_upper_bound (float, optional): The upper bound of the Lagrange multiplier.
+            Defaults to None.
+        lagrangian_multiplier (torch.nn.Parameter): The Lagrange multiplier.
+        lambda_range_projection (torch.nn.ReLU): The projection function for the Lagrange multiplier.
     """
 
     # pylint: disable-next=too-many-arguments
@@ -57,7 +73,6 @@ class Lagrange:
         lambda_optimizer: str,
         lagrangian_upper_bound: float | None = None,
     ) -> None:
-        """Initialize Lagrange multiplier."""
         self.cost_limit: float = cost_limit
         self.lambda_lr: float = lambda_lr
         self.lagrangian_upper_bound: float | None = lagrangian_upper_bound
@@ -91,6 +106,9 @@ class Lagrange:
 
         Args:
             mean_ep_cost (float): mean episode cost.
+
+        Returns:
+            lambda_loss: penalty loss for Lagrange multiplier.
         """
         return -self.lagrangian_multiplier * (mean_ep_cost - self.cost_limit)
 

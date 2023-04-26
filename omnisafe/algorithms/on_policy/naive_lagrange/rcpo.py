@@ -66,5 +66,20 @@ class RCPO(NaturalPG):
         self._logger.store({'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier})
 
     def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
+        r"""Compute surrogate loss.
+
+        RCPO uses the following surrogate loss:
+
+        .. math::
+            L = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
+            - \lambda A^C_{\pi_{\theta}}(s, a)]
+
+        Args:
+            adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
+
+        Returns:
+            The ``advantage``combined with ``reward_advantage`` and ``cost_advantage``.
+        """
         penalty = self._lagrange.lagrangian_multiplier.item()
         return (adv_r - penalty * adv_c) / (1 + penalty)

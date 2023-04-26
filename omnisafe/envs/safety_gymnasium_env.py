@@ -30,8 +30,13 @@ from omnisafe.typing import DEVICE_CPU, Box
 class SafetyGymnasiumEnv(CMDP):
     """Safety Gymnasium Environment.
 
+    Args:
+        env_id (str): Environment id.
+        num_envs (int, optional): Number of environments. Defaults to 1.
+        device (torch.device, optional): Device to store the data. Defaults to 'cpu'.
+        **kwargs (Any): Other arguments.
+
     Attributes:
-        _support_envs (list[str]): List of supported environments.
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
@@ -90,14 +95,6 @@ class SafetyGymnasiumEnv(CMDP):
         device: torch.device = DEVICE_CPU,
         **kwargs: Any,
     ) -> None:
-        """Initialize the environment.
-
-        Args:
-            env_id (str): Environment id.
-            num_envs (int, optional): Number of environments. Defaults to 1.
-            device (torch.device, optional): Device to store the data. Defaults to 'cpu'.
-            **kwargs (Any): Other arguments.
-        """
         super().__init__(env_id)
         self._num_envs = num_envs
         self._device = torch.device(device)
@@ -181,8 +178,8 @@ class SafetyGymnasiumEnv(CMDP):
             seed (int, optional): Seed to reset the environment. Defaults to None.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            info (dict[str, Any]): some information logged by the environment.
+            observation: Agent's observation of the current environment.
+            info: Some information logged by the environment.
         """
         obs, info = self._env.reset(seed=seed)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
@@ -211,7 +208,7 @@ class SafetyGymnasiumEnv(CMDP):
         """Render the environment.
 
         Returns:
-            Any: Rendered environment.
+            Any: Rendered image.
         """
         return self._env.render()
 

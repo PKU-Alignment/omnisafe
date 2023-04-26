@@ -22,7 +22,7 @@ from collections import deque
 
 # pylint: disable-next=too-few-public-methods,too-many-instance-attributes
 class PIDLagrangian(abc.ABC):  # noqa: B024
-    """Abstract base class for Lagrangian-base Algorithms.
+    """PID version of Lagrangian.
 
     Similar to the :class:`Lagrange` module, this module implements the PID version of the lagrangian method.
 
@@ -30,6 +30,19 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
         The PID-Lagrange is more general than the Lagrange, and can be used in any policy gradient algorithm.
         As PID_Lagrange use the PID controller to control the lagrangian multiplier,
         it is more stable than the naive Lagrange.
+
+    Args:
+        pid_kp (float): The proportional gain of the PID controller.
+        pid_ki (float): The integral gain of the PID controller.
+        pid_kd (float): The derivative gain of the PID controller.
+        pid_d_delay (int): The delay of the derivative term.
+        pid_delta_p_ema_alpha (float): The exponential moving average alpha of the delta_p.
+        pid_delta_d_ema_alpha (float): The exponential moving average alpha of the delta_d.
+        sum_norm (bool): Whether to use the sum norm.
+        diff_norm (bool): Whether to use the diff norm.
+        penalty_max (int): The maximum penalty.
+        lagrangian_multiplier_init (float): The initial value of the lagrangian multiplier.
+        cost_limit (float): The cost limit.
 
     References:
 
@@ -53,21 +66,6 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
         lagrangian_multiplier_init: float,
         cost_limit: float,
     ) -> None:
-        """Initialize PIDLagrangian.
-
-        Args:
-            pid_kp (float): The proportional gain of the PID controller.
-            pid_ki (float): The integral gain of the PID controller.
-            pid_kd (float): The derivative gain of the PID controller.
-            pid_d_delay (int): The delay of the derivative term.
-            pid_delta_p_ema_alpha (float): The exponential moving average alpha of the delta_p.
-            pid_delta_d_ema_alpha (float): The exponential moving average alpha of the delta_d.
-            sum_norm (bool): Whether to use the sum norm.
-            diff_norm (bool): Whether to use the diff norm.
-            penalty_max (int): The maximum penalty.
-            lagrangian_multiplier_init (float): The initial value of the lagrangian multiplier.
-            cost_limit (float): The cost limit.
-        """
         self._pid_kp: float = pid_kp
         self._pid_ki: float = pid_ki
         self._pid_kd: float = pid_kd
@@ -87,7 +85,7 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
 
     @property
     def lagrangian_multiplier(self) -> float:
-        """Return the current value of the lagrangian multiplier."""
+        """float: The lagrangian multiplier."""
         return self._cost_penalty
 
     def pid_update(self, ep_cost_avg: float) -> None:

@@ -35,7 +35,13 @@ from omnisafe.utils.config import Config
 
 
 class Evaluator:  # pylint: disable=too-many-instance-attributes
-    """This class includes common evaluation methods for safe RL algorithms."""
+    """This class includes common evaluation methods for safe RL algorithms.
+
+    Args:
+        env (CMDP, optional): the environment. Defaults to None.
+        actor (Actor, optional): the actor. Defaults to None.
+        render_mode (str, optional): the render mode. Defaults to 'rgb_array'.
+    """
 
     _cfgs: Config
     _save_dir: str
@@ -48,25 +54,20 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         actor: Actor | None = None,
         render_mode: str = 'rgb_array',
     ) -> None:
-        """Initialize the evaluator.
-
-        Args:
-            env (gymnasium.Env): the environment. if None, the environment will be created from the config.
-            pi (omnisafe.algos.models.actor.Actor): the policy. if None, the policy will be created from the config.
-            obs_normalize (omnisafe.algos.models.obs_normalize): the observation Normalize.
-        """
         self._env: CMDP | None = env
         self._actor: Actor | None = actor
         self._dividing_line: str = '\n' + '#' * 50 + '\n'
 
         self.__set_render_mode(render_mode)
 
-    def __set_render_mode(self, render_mode: str | None) -> None:
+    def __set_render_mode(self, render_mode: str) -> None:
         """Set the render mode.
 
         Args:
-            play (bool): whether to play the video.
-            save_replay (bool): whether to save the video.
+            render_mode (str, optional): the render mode. Defaults to 'rgb_array'.
+
+        Raises:
+            NotImplementedError: if the render mode is not implemented.
         """
         # set the render mode
         if render_mode in ['human', 'rgb_array', 'rgb_array_list']:
@@ -79,6 +80,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         Args:
             save_dir (str): directory where the model is saved.
+
+        Raises:
+            FileNotFoundError: if the config file is not found.
         """
         cfg_path = os.path.join(save_dir, 'config.json')
         try:
@@ -101,6 +105,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         Args:
             save_dir (str): directory where the model is saved.
             model_name (str): name of the model.
+            env_kwargs (dict[str, Any]): keyword arguments for the environment.
+        
+        Raises:
+            FileNotFoundError: if the model is not found.
         """
         # load the saved model
         model_path = os.path.join(save_dir, 'torch_save', model_name)
@@ -153,8 +161,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """Load a saved model.
 
         Args:
-            save_dir (str): directory where the model is saved.
-            model_name (str): name of the model.
+            save_dir (str): The directory where the model is saved.
+            model_name (str): The name of the model.
+            render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'. Defaults to 'rgb_array'.
+            camera_name (str or None, optional): The name of the camera. Defaults to None.
+            camera_id (int or None, optional): The id of the camera. Defaults to None.
+            width (int, optional): The width of the image. Defaults to 256.
+            height (int, optional): The height of the image. Defaults to 256.
         """
         # load the config
         self._save_dir = save_dir
@@ -184,11 +197,14 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """Evaluate the agent for num_episodes episodes.
 
         Args:
-            num_episodes (int): number of episodes to evaluate the agent.
-            cost_criteria (float): the cost criteria for the evaluation.
+            num_episodes (int, optional): The number of episodes to evaluate. Defaults to 10.
+            cost_criteria (float, optional): The cost criteria. Defaults to 1.0.
 
         Returns:
-            (float, float, float): the average return, the average cost, and the average length of the episodes.
+            (episode_rewards, episode_costs): The episode rewards and costs.
+        
+        Raises:
+            ValueError: if the environment and the policy are not provided or created.
         """
         if self._env is None or self._actor is None:
             raise ValueError(
@@ -239,10 +255,11 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
     @property
     def fps(self) -> int:
-        """The fps of the environment.
-
-        Returns:
-            int: the fps.
+        """int: The fps of the environment.
+        
+        Raises:
+            AssertionError: if the environment is not provided or created.
+            AtrributeError: if the fps is not found.
         """
         assert (
             self._env is not None
@@ -265,8 +282,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """Render the environment for one episode.
 
         Args:
-            seed (int): seed for the environment. If None, the environment will be reset with a random seed.
-            save_replay_path (str): path to save the replay. If None, no replay is saved.
+            num_episodes (int, optional): The number of episodes to render. Defaults to 1.
+            save_replay_path (str or None, optional): The path to save the replay video. Defaults to None.
+            max_render_steps (int, optional): The maximum number of steps to render. Defaults to 2000.
+            cost_criteria (float, optional): The discount factor for the cost. Defaults to 1.0.
         """
         assert (
             self._env is not None

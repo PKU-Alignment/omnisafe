@@ -162,6 +162,11 @@ def train_grid(
         algo (str): Algorithm to train.
         env_id (str): The name of test environment.
         custom_cfgs (Dict[str, Any]): Custom configuration for training.
+
+    Returns:
+        ep_ret: Average episode return in final epoch.
+        ep_cost: Average episode cost in final epoch.
+        ep_len: Average episode length in final epoch.
     """
     terminal_log_name = 'terminal.log'
     error_log_name = 'error.log'
@@ -186,8 +191,8 @@ def train_grid(
         encoding='utf-8',
     )
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
-    reward, cost, ep_len = agent.learn()
-    return reward, cost, ep_len
+    ep_ret, ep_cost, ep_len = agent.learn()
+    return ep_ret, ep_cost, ep_len
 
 
 @app.command()
@@ -421,7 +426,7 @@ def analyze_grid(
         None,
         help='number of values to compare, if it is specified, will combine any potential combination to compare',
     ),
-    cost_limit: int = typer.Option(
+    cost_limit: float = typer.Option(
         None,
         help='the cost limit to show in graphs by a single line',
     ),
@@ -431,6 +436,13 @@ def analyze_grid(
     Just specify in the name of the parameter of which value you want to compare,
     then you can just specify how many values you want to compare in single graph at most,
     and the function will automatically generate all possible combinations of the graph.
+
+    Args:
+        path (str): Path of experiment directory, these experiments are launched by omnisafe via experiment grid.
+        parameter (str): Name of parameter to analyze.
+        compare_num (int): Number of values to compare, if it is specified,
+        will combine any potential combination to compare
+        cost_limit (float): The cost limit.
     """
 
     tools = StatisticsTools()

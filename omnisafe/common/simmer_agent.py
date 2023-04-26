@@ -25,7 +25,15 @@ from omnisafe.utils.config import Config
 
 
 class BaseSimmerAgent(ABC):
-    """Base class for controlling safety budget of Simmer adapter."""
+    """Base class for controlling safety budget of Simmer adapter.
+
+    Args:
+        cfgs (Config): The configurations for the agent.
+        budget_bound (torch.Tensor): The bound of the safety budget.
+        obs_space (tuple[int,], optional): The observation space. Defaults to (0,).
+        action_space (tuple[int, int], optional): The action space. Defaults to (-1, 1).
+        history_len (int, optional): The length of the history. Defaults to 100.
+    """
 
     def __init__(
         self,
@@ -35,7 +43,6 @@ class BaseSimmerAgent(ABC):
         action_space: tuple[int, int] = (-1, 1),
         history_len: int = 100,
     ) -> None:
-        """Initialize the agent."""
         assert obs_space is not None, 'Please specify the state space for the Simmer agent'
         assert history_len > 0, 'History length should be positive'
 
@@ -57,7 +64,15 @@ class BaseSimmerAgent(ABC):
         safety_budget: torch.Tensor,
         observation: torch.Tensor,
     ) -> torch.Tensor:
-        """Get the greedy action."""
+        """Get the greedy action.
+
+        Args:
+            safety_budget (torch.Tensor): The current safety budget.
+            observation (torch.Tensor): The current observation.
+
+        Raises:
+            NotImplementedError: The method is not implemented.
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -66,13 +81,29 @@ class BaseSimmerAgent(ABC):
         safety_budget: torch.Tensor,
         observation: torch.Tensor,
     ) -> torch.Tensor:
-        """Get the action."""
+        """Get the action.
+
+        Args:
+            safety_budget (torch.Tensor): The current safety budget.
+            observation (torch.Tensor): The current observation.
+
+        Raises:
+            NotImplementedError: The method is not implemented.
+        """
         raise NotImplementedError
 
 
 # pylint: disable-next=too-many-instance-attributes
 class SimmerPIDAgent(BaseSimmerAgent):
-    """Simmer PID agent."""
+    """Simmer PID agent.
+
+    Args:
+        cfgs (Config): The configurations for the agent.
+        budget_bound (torch.Tensor): The bound of the safety budget.
+        obs_space (tuple[int,], optional): The observation space. Defaults to (0,).
+        action_space (tuple[int, int], optional): The action space. Defaults to (-1, 1).
+        history_len (int, optional): The length of the history. Defaults to 100.
+    """
 
     def __init__(
         self,
@@ -82,7 +113,6 @@ class SimmerPIDAgent(BaseSimmerAgent):
         action_space: tuple[int, int] = (-1, 1),
         history_len: int = 100,
     ) -> None:
-        """Initialize the agent."""
         super().__init__(
             cfgs=cfgs,
             budget_bound=budget_bound,
@@ -102,7 +132,15 @@ class SimmerPIDAgent(BaseSimmerAgent):
         safety_budget: torch.Tensor,
         observation: torch.Tensor,
     ) -> torch.Tensor:
-        """Get the greedy action."""
+        """Get the greedy action.
+
+        Args:
+            safety_budget (torch.Tensor): The current safety budget.
+            observation (torch.Tensor): The current observation.
+
+        Returns:
+            action: The greedy action.
+        """
         # compute the error
         current_error = safety_budget - observation
         # blur the error
@@ -147,5 +185,13 @@ class SimmerPIDAgent(BaseSimmerAgent):
         safety_budget: torch.Tensor,
         observation: torch.Tensor,
     ) -> torch.Tensor:
-        """Get the action."""
+        """Get the action.
+
+        Args:
+            safety_budget (torch.Tensor): The current safety budget.
+            observation (torch.Tensor): The current observation.
+
+        Returns:
+            action: The selected action.
+        """
         return self.get_greedy_action(safety_budget, observation)

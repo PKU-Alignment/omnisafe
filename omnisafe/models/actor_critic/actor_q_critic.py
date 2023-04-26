@@ -52,6 +52,12 @@ class ActorQCritic(nn.Module):
                 :class:`QCritic`, :class:`VCritic`.
             -   Estimate the reward value of the observation.
 
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        model_cfgs (ModelConfig): The model configurations.
+        epochs (int): The number of epochs.
+
     Attributes:
         actor (Actor): The actor network.
         target_actor (Actor): The target actor network.
@@ -70,7 +76,6 @@ class ActorQCritic(nn.Module):
         model_cfgs: ModelConfig,
         epochs: int,
     ) -> None:
-        """Initialize ActorQCritic."""
         super().__init__()
 
         self.actor: GaussianLearningActor | GaussianSACActor | MLPActor = ActorBuilder(
@@ -131,11 +136,12 @@ class ActorQCritic(nn.Module):
         """Choose the action based on the observation. used in rollout without gradient.
 
         Args:
-            obs: The observation.
-            deterministic: Whether to use deterministic action. default: False.
+            obs (torch.tensor): The observation.
+            deterministic (bool): Whether to use deterministic action. default: False.
 
         Returns:
-            The action, value_r, and log_prob.
+            action: The deterministic action if ``deterministic`` is True,
+            otherwise the action with Gaussian noise.
         """
         with torch.no_grad():
             return self.actor.predict(obs, deterministic=deterministic)
@@ -144,11 +150,12 @@ class ActorQCritic(nn.Module):
         """Choose the action based on the observation. used in training with gradient.
 
         Args:
-            obs: The observation.
-            deterministic: Whether to use deterministic action. default: False.
+            obs (torch.tensor): The observation.
+            deterministic (bool): Whether to use deterministic action. default: False.
 
         Returns:
-            The action, value_r, and log_prob.
+            The deterministic action if ``deterministic`` is True, otherwise the action with
+            Gaussian noise.
         """
         return self.step(obs, deterministic=deterministic)
 

@@ -33,6 +33,15 @@ class CriticBuilder:
         The advantage of this is that each type of critic has a uniform way of passing parameters.
         This makes it easy for users to use existing critics,
         and also facilitates the extension of new critic types.
+
+    Args:
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
+        hidden_sizes (list[int]): Hidden sizes of the critic network.
+        activation (Activation): Activation function.
+        weight_initialization_mode (InitFunction): Weight initialization mode.
+        num_critics (int): Number of critics.
+        use_obs_encoder (bool): Whether to use observation encoder, only used in q critic.
     """
 
     # pylint: disable-next=too-many-arguments
@@ -46,18 +55,6 @@ class CriticBuilder:
         num_critics: int = 1,
         use_obs_encoder: bool = False,
     ) -> None:
-        """Initialize CriticBuilder.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list[int]): Hidden sizes of the critic network.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-            num_critics (int): Number of critics.
-            use_obs_encoder (bool): Whether to use observation encoder, only used in q critic.
-        """
-
         self._obs_space: OmnisafeSpace = obs_space
         self._act_space: OmnisafeSpace = act_space
         self._weight_initialization_mode: InitFunction = weight_initialization_mode
@@ -77,6 +74,12 @@ class CriticBuilder:
 
         Args:
             critic_type (str): Critic type.
+
+        Returns:
+            Critic: V-Critic or Q-Critic.
+
+        Raises:
+            NotImplementedError: If the critic type is not ``q`` or ``v``.
         """
         if critic_type == 'q':
             return QCritic(

@@ -48,13 +48,17 @@ def initialize_layer(init_function: InitFunction, layer: nn.Linear) -> None:
 def get_activation(
     activation: Activation,
 ) -> type[nn.Identity] | type[nn.ReLU] | type[nn.Sigmoid] | type[nn.Softplus] | type[nn.Tanh]:
-    """Get the activation function.
+    r"""Get the activation function.
 
     The ``activation`` can be chosen from:
     ``identity``, ``relu``, ``sigmoid``, ``softplus``, ``tanh``.
 
     Args:
         activation (Activation): The activation function.
+
+    Returns:
+        The activation function, ranging from ``nn.Identity``, ``nn.ReLU``,
+        ``nn.Sigmoid``, ``nn.Softplus`` to ``nn.Tanh``.
     """
     activations = {
         'identity': nn.Identity,
@@ -91,6 +95,9 @@ def build_mlp_network(
         activation (Activation): The activation function.
         output_activation (Activation): The output activation function.
         weight_initialization_mode (InitFunction): The initialization function.
+
+    Returns:
+        The MLP network.
     """
     activation_fn = get_activation(activation)
     output_activation_fn = get_activation(output_activation)

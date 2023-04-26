@@ -25,6 +25,9 @@ def all_bools(vals: list[Any]) -> bool:
 
     Args:
         vals (list[Any]): Values to check.
+
+    Returns:
+        True if all values are bools, False otherwise.
     """
     return all(isinstance(v, bool) for v in vals)
 
@@ -38,6 +41,9 @@ def valid_str(vals: list[Any] | str) -> str:
 
     Args:
         vals (list[Any] | str): Values to convert.
+
+    Returns:
+        Converted string.
     """
     if isinstance(vals, (list, tuple)):
         return '-'.join([valid_str(x) for x in vals])

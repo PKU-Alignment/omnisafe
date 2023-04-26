@@ -33,7 +33,24 @@ from omnisafe.utils.tools import recursive_check_config
 
 
 class AlgoWrapper:
-    """Algo Wrapper for algorithms."""
+    """Algo Wrapper for algorithms.
+
+    Args:
+        algo (str): The algorithm name.
+        env_id (str): The environment id.
+        train_terminal_cfgs (dict[str, Any], optional): The configurations for training termination. Defaults to None.
+        custom_cfgs (dict[str, Any], optional): The custom configurations. Defaults to None.
+
+    Attributes:
+        algo (str): The algorithm name.
+        env_id (str): The environment id.
+        train_terminal_cfgs (dict[str, Any]): The configurations for training termination.
+        custom_cfgs (dict[str, Any]): The custom configurations.
+        cfgs (Config): The configurations for the algorithm.
+        algo_type (str): The algorithm type.
+    """
+
+    algo_type: str
 
     def __init__(
         self,
@@ -54,11 +71,21 @@ class AlgoWrapper:
         self._init_algo()
 
     def _init_config(self) -> Config:
-        """Init config."""
+        """Initialize config.
+
+        Initialize the configurations for the algorithm, following the order of
+        default configurations, custom configurations, and terminal configurations.
+
+        Returns:
+            Config: The configurations for the algorithm.
+
+        Raises:
+            AssertionError: If the algorithm name is not in the supported algorithms.
+        """
         assert (
             self.algo in ALGORITHMS['all']
         ), f"{self.algo} doesn't exist. Please choose from {ALGORITHMS['all']}."
-        self.algo_type: str = ALGORITHM2TYPE.get(self.algo, '')
+        self.algo_type = ALGORITHM2TYPE.get(self.algo, '')
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations
@@ -97,7 +124,7 @@ class AlgoWrapper:
         return cfgs
 
     def _init_checks(self) -> None:
-        """Init checks."""
+        """Initial checks."""
         assert isinstance(self.algo, str), 'algo must be a string!'
         assert isinstance(self.cfgs.train_cfgs.parallel, int), 'parallel must be an integer!'
         assert self.cfgs.train_cfgs.parallel > 0, 'parallel must be greater than 0!'
@@ -106,7 +133,7 @@ class AlgoWrapper:
         ), f"{self.env_id} doesn't exist. Please choose from {support_envs()}."
 
     def _init_algo(self) -> None:
-        """Init algorithms."""
+        """Initialize the algorithm."""
         check_all_configs(self.cfgs, self.algo_type)
         device = self.cfgs.train_cfgs.device
         if device == 'cpu':
@@ -126,7 +153,13 @@ class AlgoWrapper:
         )
 
     def learn(self) -> tuple[float, float, int]:
-        """Agent learning."""
+        """Agent learning.
+
+        Returns:
+            ep_ret: The episode return of the final episode.
+            ep_cost: The episode cost of the final episode.
+            ep_len: The episode length of the final episode.
+        """
         ep_ret, ep_cost, ep_len = self.agent.learn()
 
         self._init_statistical_tools()
@@ -134,7 +167,7 @@ class AlgoWrapper:
         return ep_ret, ep_cost, ep_len
 
     def _init_statistical_tools(self) -> None:
-        """Init statistical tools."""
+        """Initialize statistical tools."""
         self._evaluator = Evaluator()
         self._plotter = Plotter()
 
@@ -143,6 +176,9 @@ class AlgoWrapper:
 
         Args:
             smooth (int): window size, for smoothing the curve.
+        
+        Raises:
+            AssertionError: If the :meth:`learn` method has not been called.
         """
         assert self._plotter is not None, 'Please run learn() first!'
         self._plotter.make_plots(
@@ -165,6 +201,9 @@ class AlgoWrapper:
         Args:
             num_episodes (int): number of episodes to evaluate.
             cost_criteria (float): the cost criteria to evaluate.
+        
+        Raises:
+            AssertionError: If the :meth:`learn` method has not been called.
         """
         assert self._evaluator is not None, 'Please run learn() first!'
         scan_dir = os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save'))
@@ -186,12 +225,15 @@ class AlgoWrapper:
         """Evaluate and render some episodes.
 
         Args:
-            num_episodes (int): number of episodes to render.
-            render_mode (str): render mode, can be 'rgb_array', 'depth_array' or 'human'.
-            camera_name (str): camera name, specify the camera which you use to capture
+            num_episodes (int): The number of episodes to render.
+            render_mode (str): The render mode, can be 'rgb_array', 'depth_array' or 'human'.
+            camera_name (str): the camera name, specify the camera which you use to capture
                 images.
-            width (int): width of the rendered image.
-            height (int): height of the rendered image.
+            width (int): The width of the rendered image.
+            height (int): The height of the rendered image.
+        
+        Raises:
+            AssertionError: If the :meth:`learn` method has not been called.
         """
         assert self._evaluator is not None, 'Please run learn() first!'
         scan_dir = os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save'))

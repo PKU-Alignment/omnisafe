@@ -50,6 +50,9 @@ def get_rank() -> int:
         >>> # In process 0
         >>> get_rank()
         0
+
+    Returns:
+        rank: The rank of calling process.
     """
     if os.getenv('MASTER_ADDR') is None:
         return 0
@@ -57,7 +60,11 @@ def get_rank() -> int:
 
 
 def world_size() -> int:
-    """Count active MPI processes."""
+    """Count active MPI processes.
+
+    Returns:
+        size: The number of active MPI processes.
+    """
     if os.getenv('MASTER_ADDR') is None:
         return 1
     return dist.get_world_size()
@@ -87,8 +94,11 @@ def fork(
         Usage: if ``mpi_fork(n)`` : ``sys.exit()``
 
     Args:
-        parallel (int): number of processes to launch.
+        parallel (int): Number of processes to launch.
         bind_to_core (bool, optional): Defaults to False.
+
+    Returns:
+        bool: Whether the current process is the parent process.
     """
     backend = 'gloo' if device == 'cpu' else 'nccl'
     if os.getenv('MASTER_ADDR') is not None and os.getenv('IN_DIST') is None:
@@ -138,7 +148,7 @@ def avg_tensor(value: torch.Tensor) -> None:
         tensor(1.5)
 
     Args:
-        value (torch.Tensor): value to be averaged.
+        value (torch.Tensor): The value to be averaged.
     """
     assert isinstance(value, torch.Tensor)
     if world_size() > 1:
@@ -171,7 +181,7 @@ def avg_grads(module: torch.nn.Module) -> None:
         tensor(3.)
 
     Args:
-        module (torch.nn.Module): module to be averaged.
+        module (torch.nn.Module): The module in which grad need to be averaged.
     """
     if world_size() > 1:
         for parameter in module.parameters():
@@ -203,7 +213,7 @@ def sync_params(module: torch.nn.Module) -> None:
         tensor([[1.]])
 
     Args:
-        module (torch.nn.Module): module to be synchronized.
+        module (torch.nn.Module): The module to be synchronized.
     """
     if world_size() > 1:
         for parameter in module.parameters():
@@ -230,7 +240,7 @@ def avg_params(module: torch.nn.Module) -> None:
         tensor([[1.5]])
 
     Args:
-        module (torch.nn.Module): module to be averaged.
+        module (torch.nn.Module): The module in which parameters need to be averaged.
     """
     if world_size() > 1:
         for parameter in module.parameters():
@@ -249,6 +259,12 @@ def dist_avg(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
         >>> x = torch.tensor(2.0)
         >>> dist_avg(x)
         tensor(1.5)
+
+    Args:
+        value (np.ndarray, torch.Tensor, int or float): value to be averaged.
+
+    Returns:
+        Averaged tensor.
     """
     return dist_sum(value) / world_size()
 
@@ -263,6 +279,12 @@ def dist_max(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
         >>> x = torch.tensor(2.0)
         >>> dist_max(x)
         tensor(2.)
+
+    Args:
+        value (np.ndarray, torch.Tensor, int or float): value to be find max value.
+
+    Returns:
+        Maximum tensor.
     """
     return dist_op(value, ReduceOp.MAX)
 
@@ -277,6 +299,12 @@ def dist_min(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
         >>> x = torch.tensor(2.0)
         >>> dist_min(x)
         tensor(1.)
+
+    Args:
+        value (np.ndarray, torch.Tensor, int or float): value to be find min value.
+
+    Returns:
+        Minimum tensor.
     """
     return dist_op(value, ReduceOp.MIN)
 
@@ -291,6 +319,12 @@ def dist_sum(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
         >>> x = torch.tensor(2.0)
         >>> dist_sum(x)
         tensor(3.)
+
+    Args:
+        value (np.ndarray, torch.Tensor, int or float): The value to be summed.
+
+    Returns:
+        Summed tensor.
     """
     return dist_op(value, ReduceOp.SUM)
 
@@ -303,8 +337,11 @@ def dist_op(value: np.ndarray | torch.Tensor | int | float, operation: Any) -> t
         corresponding to :meth:`mpi_sum`, :meth:`mpi_max`, :meth:`mpi_min`, respectively.
 
     Args:
-        value (torch.Tensor): value to be operated.
+        value (np.ndarray, torch.Tensor, int or float): The value to be operated.
         operation (ReduceOp): operation type.
+
+    Returns:
+        Operated (SUM, MAX, MIN) tensor.
     """
     if world_size() == 1:
         return torch.as_tensor(value, dtype=torch.float32)
@@ -317,7 +354,10 @@ def dist_op(value: np.ndarray | torch.Tensor | int | float, operation: Any) -> t
 def dist_statistics_scalar(
     value: torch.Tensor,
     with_min_and_max: bool = False,
-) -> tuple[torch.Tensor, ...]:
+) -> (
+    tuple[torch.Tensor, torch.Tensor]
+    | tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
+):
     """Get mean/std and optional min/max of scalar x across MPI processes.
 
     Examples:
@@ -331,6 +371,10 @@ def dist_statistics_scalar(
     Args:
         value (torch.Tensor): value to be operated.
         with_min_and_max (bool): whether to return min and max.
+
+    Returns:
+        The (mean, std) or (mean, std, min, max) of the input tensor, 
+        depends on the value of ``with_min_and_max``.
     """
     global_sum = dist_sum(torch.sum(value))
     global_n = dist_sum(len(value))

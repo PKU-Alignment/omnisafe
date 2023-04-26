@@ -85,6 +85,9 @@ class NaturalPG(PolicyGradient):
 
         Args:
             params (torch.Tensor): The parameters of the actor network.
+
+        Returns:
+            fisher_vector_product: The Fisher vector product.
         """
         self._actor_critic.actor.zero_grad()
         q_dist = self._actor_critic.actor(self._fvp_obs)
@@ -116,7 +119,7 @@ class NaturalPG(PolicyGradient):
         adv_r: torch.Tensor,
         adv_c: torch.Tensor,
     ) -> None:
-        """Update policy network.
+        r"""Update policy network.
 
         Natural Policy Gradient (NPG) update policy network using the conjugate gradient algorithm,
         following the steps:
@@ -131,6 +134,11 @@ class NaturalPG(PolicyGradient):
             log_p (torch.Tensor): The log probability of the action.
             adv_r (torch.Tensor): The reward advantage tensor.
             adv_c (torch.Tensor): The cost advantage tensor.
+
+        Raises:
+            AssertionError: If :math:`x` is not finite.
+            AssertionError: If :math:`xHx` is not positive.
+            AssertionError: If :math:`\alpha` is not finite.
         """
         self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)

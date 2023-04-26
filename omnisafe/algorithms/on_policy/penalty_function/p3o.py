@@ -65,13 +65,13 @@ class P3O(PPO):
         :math:`\pi^{'}(a|s)` is the current policy.
 
         Args:
-            obs (torch.Tensor): Observation.
-            act (torch.Tensor): Action.
-            logp (torch.Tensor): Log probability of action.
-            adv_c (torch.Tensor): Cost advantage.
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            act (torch.Tensor): The ``action`` sampled from buffer.
+            logp (torch.Tensor): The ``log probability`` of action sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
 
         Returns:
-            torch.Tensor: The loss of cost of policy cost from real cost.
+            loss: The loss of the cost performance.
         """
         self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)

@@ -36,16 +36,14 @@ class Actor(ABC, nn.Module):
     .. note::
         You can use this class to implement your own actor by inheriting it.
 
-    Attributes:
-        _obs_space (OmnisafeSpace): observation space.
-        _act_space (OmnisafeSpace): action space.
-        _weight_initialization_mode (InitFunction): weight initialization mode.
-        _activation (Activation): activation function.
-        _hidden_sizes (list[int]): hidden layer sizes.
-        _current_dist (Distribution): current distribution.
-        _after_inference (bool): whether the actor has been used to sample actions.
-        _obs_dim (int): observation dimension.
-        _act_dim (int): action dimension.
+    Args:
+        obs_space (OmnisafeSpace): observation space.
+        act_space (OmnisafeSpace): action space.
+        hidden_sizes (list[int]): hidden layer sizes.
+        activation (Activation): activation function.
+        weight_initialization_mode (InitFunction, optional): weight initialization mode.
+        Defaults to ``kaiming_uniform``.
+        shared (nn.Module, optional): shared module. Defaults to None.
     """
 
     # pylint: disable-next=too-many-arguments
@@ -57,17 +55,6 @@ class Actor(ABC, nn.Module):
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize the base actor.
-
-        Args:
-            obs_space (OmnisafeSpace): observation space.
-            act_space (OmnisafeSpace): action space.
-            hidden_sizes (list[int]): hidden layer sizes.
-            activation (Activation): activation function.
-            weight_initialization_mode (InitFunction, optional): weight initialization mode.
-                                                                Defaults to ``kaiming_uniform``.
-            shared (nn.Module, optional): shared module. Defaults to None.
-        """
         nn.Module.__init__(self)
         self._obs_space: OmnisafeSpace = obs_space
         self._act_space: OmnisafeSpace = act_space
@@ -180,6 +167,15 @@ class Critic(ABC, nn.Module):
         Q critic (Input = ``observation`` + ``action`` , Output = ``value``),
         and V critic (Input = ``observation`` , Output = ``value``).
         You can also use this class to implement your own actor by inheriting it.
+
+    Args:
+        obs_space (OmnisafeSpace): observation space.
+        act_space (OmnisafeSpace): action space.
+        hidden_sizes (list[int]): hidden layer sizes.
+        activation (Activation, optional): activation function. Defaults to 'relu'.
+        weight_initialization_mode (InitFunction, optional): weight initialization mode.
+                                                            Defaults to 'kaiming_uniform'.
+        shared (nn.Module, optional): shared module. Defaults to None.
     """
 
     # pylint: disable-next=too-many-arguments
@@ -193,17 +189,6 @@ class Critic(ABC, nn.Module):
         num_critics: int = 1,
         use_obs_encoder: bool = False,
     ) -> None:
-        """Initialize the base critic.
-
-        Args:
-            obs_space (OmnisafeSpace): observation space.
-            act_space (OmnisafeSpace): action space.
-            hidden_sizes (list[int]): hidden layer sizes.
-            activation (Activation, optional): activation function. Defaults to 'relu'.
-            weight_initialization_mode (InitFunction, optional): weight initialization mode.
-                                                                Defaults to 'kaiming_uniform'.
-            shared (nn.Module, optional): shared module. Defaults to None.
-        """
         nn.Module.__init__(self)
         self._obs_space: OmnisafeSpace = obs_space
         self._act_space: OmnisafeSpace = act_space

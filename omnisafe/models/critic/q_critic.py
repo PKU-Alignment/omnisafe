@@ -122,6 +122,9 @@ class QCritic(Critic):
         Args:
             obs (torch.Tensor): Observation.
             act (torch.Tensor): Action.
+
+        Returns:
+            res: A list of Q critic values of action and observation pair.
         """
         res = []
         for critic in self.net_lst:

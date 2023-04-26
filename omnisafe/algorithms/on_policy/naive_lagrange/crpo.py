@@ -60,8 +60,11 @@ class OnCRPO(PPO):
         Otherwise, we use the advantage of the cost.
 
         Args:
-            adv_r (torch.Tensor): The advantage of the policy.
-            adv_c (torch.Tensor): The advantage of the cost.
+            adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
+
+        Returns:
+            The ``advantage`` chosen from ``reward_advantage`` and ``cost_advantage``.
         """
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         if Jc <= self._cfgs.algo_cfgs.cost_limit + self._cfgs.algo_cfgs.distance:

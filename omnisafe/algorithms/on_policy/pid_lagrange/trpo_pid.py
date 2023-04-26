@@ -65,9 +65,6 @@ class TRPOPID(TRPO):
                 [A^{R}_{\pi_{\theta}}(s_t, a_t) - \lambda A^{C}_{\pi_{\theta}}(s_t, a_t)] \right]
 
             where :math:`\lambda` is the PID-Lagrange multiplier parameter.
-
-        Args:
-            self (object): object of the class.
         """
         # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
@@ -81,15 +78,18 @@ class TRPOPID(TRPO):
     def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
         r"""Compute surrogate loss.
 
-        PPOLag uses the following surrogate loss:
+        TRPOPID uses the following surrogate loss:
 
         .. math::
             L = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
             - \lambda A^C_{\pi_{\theta}}(s, a)]
 
         Args:
-            adv (torch.Tensor): reward advantage
-            cost_adv (torch.Tensor): cost advantage
+            adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
+
+        Returns:
+            The ``advantage``combined with ``reward_advantage`` and ``cost_advantage``.
         """
         penalty = self._lagrange.lagrangian_multiplier
         return (adv_r - penalty * adv_c) / (1 + penalty)

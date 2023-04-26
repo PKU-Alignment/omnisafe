@@ -101,10 +101,13 @@ class CUP(PPO):
         current policy and the old policy.
 
         Args:
-            obs (torch.Tensor): Observation.
-            act (torch.Tensor): Action.
-            log_p (torch.Tensor): Log probability.
-            cost_adv (torch.Tensor): Cost advantage.
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            act (torch.Tensor): The ``action`` sampled from buffer.
+            logp (torch.Tensor): The ``log probability`` of action sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
+
+        Returns:
+            loss: The loss of the cost performance.
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
@@ -142,9 +145,6 @@ class CUP(PPO):
 
         Then in each iteration of the policy update, CUP calculates current policy's
         distribution, which used to calculate the policy loss.
-
-        Args:
-            self (object): object of the class.
         """
         # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]

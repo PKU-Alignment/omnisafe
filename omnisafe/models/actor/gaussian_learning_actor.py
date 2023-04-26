@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of GaussianStdNetActor."""
+"""Implementation of GaussianLearningActor."""
 
 from __future__ import annotations
 
@@ -27,7 +27,19 @@ from omnisafe.utils.model import build_mlp_network
 
 # pylint: disable-next=too-many-instance-attributes
 class GaussianLearningActor(GaussianActor):
-    """Implementation of GaussianLearningActor."""
+    """Implementation of GaussianLearningActor.
+
+    GaussianLearningActor is a Gaussian actor with a learnable standard deviation.
+    It is used in on-policy algorithms such as ``PPO``, ``TRPO`` and so on.
+
+    Args:
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
+        hidden_sizes (list[int]): List of hidden layer sizes.
+        activation (Activation): Activation function.
+        weight_initialization_mode (InitFunction): Weight initialization mode.
+        shared (nn.Module): Shared module.
+    """
 
     _current_dist: Normal
 
@@ -39,19 +51,6 @@ class GaussianLearningActor(GaussianActor):
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize GaussianLearningActor.
-
-        GaussianLearningActor is a Gaussian actor with a learnable standard deviation.
-        It is used in on-policy algorithms such as ``PPO``, ``TRPO`` and so on.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list[int]): List of hidden layer sizes.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-            shared (nn.Module): Shared module.
-        """
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
 
         self.mean: nn.Module = build_mlp_network(
@@ -70,6 +69,9 @@ class GaussianLearningActor(GaussianActor):
 
         Args:
             obs (torch.Tensor): Observation.
+
+        Returns:
+            Normal: The normal distribution of the mean and standard deviation from the actor.
         """
         mean = self.mean(obs)
         std = torch.exp(self.log_std)
@@ -86,6 +88,10 @@ class GaussianLearningActor(GaussianActor):
         Args:
             obs (torch.Tensor): Observation.
             deterministic (bool): Whether to use deterministic policy.
+
+        Returns:
+            The mean of the distribution if ``deterministic`` is ``True``,
+            otherwise the sampled action.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -98,6 +104,9 @@ class GaussianLearningActor(GaussianActor):
 
         Args:
             obs (torch.Tensor): Observation.
+
+        Returns:
+            current_dist: The current distribution.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -111,6 +120,9 @@ class GaussianLearningActor(GaussianActor):
 
         Args:
             act (torch.Tensor): Action.
+
+        Returns:
+            log_prob: Log probability of the action.
         """
         assert self._after_inference, 'log_prob() should be called after predict() or forward()'
         self._after_inference = False
@@ -118,19 +130,10 @@ class GaussianLearningActor(GaussianActor):
 
     @property
     def std(self) -> float:
-        """Get the standard deviation of the distribution."""
+        """float: Standard deviation of the distribution."""
         return torch.exp(self.log_std).mean().item()
 
     @std.setter
     def std(self, std: float) -> None:
-        """Set the standard deviation of the distribution.
-
-        .. hint::
-            This method is only used for annealing the standard deviation.
-            It can be called.
-
-        Args:
-            std (float): Standard deviation.
-        """
         device = self.log_std.device
         self.log_std.data.fill_(torch.log(torch.tensor(std, device=device)))

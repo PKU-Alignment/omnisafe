@@ -49,6 +49,12 @@ def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
 
     Args:
         model (torch.nn.Module): model to be flattened.
+
+    Returns:
+        Flattened parameters.
+
+    Raises:
+        AssertionError: If no gradients were found in model parameters.
     """
     flat_params = []
     for _, param in model.named_parameters():
@@ -69,7 +75,13 @@ def get_flat_gradients_from(model: torch.nn.Module) -> torch.Tensor:
         In these algorithms, the gradients are flattened and then used to calculate the loss.
 
     Args:
-        model (torch.nn.Module): model to be flattened.
+        model (torch.nn.Module): The model to be flattened.
+
+    Returns:
+        Flattened gradients.
+
+    Raises:
+        AssertionError: If no gradients were found in model parameters.
     """
     grads = []
     for _, param in model.named_parameters():
@@ -97,8 +109,12 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
                 [3., 4.]])
 
     Args:
-        model (torch.nn.Module): model to be set.
-        vals (torch.Tensor): parameters to be set.
+        model (torch.nn.Module): The model to be set.
+        vals (torch.Tensor): The parameters to be set.
+
+    Raises:
+        AssertionError: If the instance of the parameters is not ``torch.Tensor``,
+            or the lengths of the parameters and the model parameters do not match.
     """
     assert isinstance(vals, torch.Tensor)
     i: int = 0
@@ -125,6 +141,9 @@ def seed_all(seed: int) -> None:
         If you want to use the ``torch.backends.cudnn.benchmark`` or ``torch.backends.cudnn.
         deterministic`` and your ``cuda`` version is over 10.2, you need to set the
         ``CUBLAS_WORKSPACE_CONFIG`` and ``PYTHONHASHSEED`` environment variables.
+
+    Args:
+        seed (int): The random seed.
     """
 
     os.environ['PYTHONHASHSEED'] = str(seed)
@@ -157,6 +176,9 @@ def custom_cfgs_to_dict(key_list: str, value: Any) -> dict[str, Any]:
     Args:
         key_list (str): list of keys.
         value (Any): value.
+
+    Returns:
+        The converted dict.
     """
     if value == 'True':
         value = True
@@ -180,7 +202,19 @@ def custom_cfgs_to_dict(key_list: str, value: Any) -> dict[str, Any]:
 
 
 def update_dict(total_dict: dict[str, Any], item_dict: dict[str, Any]) -> None:
-    """Updater of multi-level dictionary."""
+    """Updater of multi-level dictionary.
+
+    Args:
+        total_dict (dict[str, Any]): The total dictionary.
+        item_dict (dict[str, Any]): The item dictionary.
+
+    Examples:
+        >>> total_dict = {'a': {'b': 1, 'c': 2}}
+        >>> item_dict = {'a': {'b': 3, 'd': 4}}
+        >>> update_dict(total_dict, item_dict)
+        >>> total_dict
+        {'a': {'b': 3, 'c': 2, 'd': 4}}
+    """
     for idd in item_dict:
         total_value = total_dict.get(idd)
         item_value = item_dict.get(idd)
@@ -203,7 +237,13 @@ def load_yaml(path: str) -> dict[str, Any]:
         Make sure your new implemented algorithm or environment has the same name as the yaml file.
 
     Args:
-        path (str): path of the ``yaml`` file.
+        path (str): The path of the ``yaml`` file.
+
+    Returns:
+        The default kwargs.
+
+    Raises:
+        AssertionError: If the ``yaml`` file is not found.
     """
     with open(path, encoding='utf-8') as file:
         try:
@@ -222,9 +262,13 @@ def recursive_check_config(
     """Check whether config is valid in default_config.
 
     Args:
-        config (dict[str, Any]): config to be checked.
-        default_config (dict[str, Any]): default config.
-        exclude_keys (tuple[str, ...], optional): keys to be excluded. Defaults to ().
+        config (dict[str, Any]): The config to be checked.
+        default_config (dict[str, Any]): The default config.
+        exclude_keys (tuple[str, ...], optional): The keys to be excluded. Defaults to ().
+
+    Raises:
+        AssertionError: If the type of the value is not the same as the default value.
+        KeyError: If the key is not in default_config.
     """
     assert isinstance(config, dict), 'custom_cfgs must be a dict!'
     for key in config:
@@ -237,9 +281,16 @@ def recursive_check_config(
 def assert_with_exit(condition: bool, msg: str) -> None:
     """Assert with message.
 
+    Examples:
+        >>> assert_with_exit(1 == 2, '1 must equal to 2')
+        AssertionError: 1 must equal to 2
+
     Args:
         condition (bool): condition to be checked.
         msg (str): message to be printed.
+
+    Raises:
+        AssertionError: If the condition is not satisfied.
     """
     try:
         assert condition
@@ -250,10 +301,16 @@ def assert_with_exit(condition: bool, msg: str) -> None:
 
 
 def recursive_dict2json(dict_obj: dict[str, Any]) -> str:
-    """This function is used to recursively convert the dict to json.
+    r"""This function is used to recursively convert the dict to json.
 
     Args:
         dict_obj (dict[str, Any]): dict to be converted.
+
+    Returns:
+        The converted json string.
+
+    Raises:
+        AssertionError: If the instance of the input is not ``dict``.
     """
     assert isinstance(dict_obj, dict), 'Input must be a dict.'
     flat_dict: dict[str, Any] = {}
@@ -274,6 +331,9 @@ def hash_string(string: str) -> str:
 
     Args:
         string (str): string to be hashed.
+
+    Returns:
+        The hashed string.
     """
     salt = b'\xf8\x99/\xe4\xe6J\xd8d\x1a\x9b\x8b\x98\xa2\x1d\xff3*^\\\xb1\xc1:e\x11M=PW\x03\xa5\\h'
     # convert string to bytes and add salt

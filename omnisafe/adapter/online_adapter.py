@@ -136,20 +136,12 @@ class OnlineAdapter:
 
     @property
     def action_space(self) -> OmnisafeSpace:
-        """The action space of the environment.
-
-        Returns:
-            action_space: The environment action space.
-        """
+        """OmniSafeSpace: The action space of the environment."""
         return self._env.action_space
 
     @property
     def observation_space(self) -> OmnisafeSpace:
-        """The observation space of the environment.
-
-        Returns:
-            observation_space: The environment observation space.
-        """
+        """OmniSafeSpace: The observation space of the environment."""
         return self._env.observation_space
 
     def step(
@@ -166,7 +158,7 @@ class OnlineAdapter:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
-            action (torch.Tensor): action from the agent or random.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
             observation: The agent's observation of the current environment.
@@ -197,6 +189,6 @@ class OnlineAdapter:
             and cost_normalize.
 
         Returns:
-            _env.save(): The saved components.
+            The saved components of environment, e.g. ``obs_normalizer``.
         """
         return self._env.save()

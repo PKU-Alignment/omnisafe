@@ -62,21 +62,28 @@ class Normalizer(nn.Module):
 
     @property
     def shape(self) -> tuple[int, ...]:
-        """Return the shape of the normalize."""
+        """tuple[int, ...]: Return the shape of the normalize."""
         return self._shape
 
     @property
     def mean(self) -> torch.Tensor:
-        """Return the mean of the normalize."""
+        """torch.Tensor: Return the mean of the normalize."""
         return self._mean
 
     @property
     def std(self) -> torch.Tensor:
-        """Return the std of the normalize."""
+        """torch.Tensor: Return the std of the normalize."""
         return self._std
 
     def forward(self, data: torch.Tensor) -> torch.Tensor:
-        """Normalize the data."""
+        """Normalize the data.
+
+        Args:
+            data (torch.Tensor): raw data to be normalized.
+
+        Returns:
+            normalized data: The normalized data.
+        """
         return self.normalize(data)
 
     def normalize(self, data: torch.Tensor) -> torch.Tensor:
@@ -90,6 +97,9 @@ class Normalizer(nn.Module):
 
         Args:
             data: raw data to be normalized.
+
+        Returns:
+            normalized data: The normalized data.
         """
         data = data.to(self._mean.device)
         self._push(data)

@@ -30,26 +30,30 @@ class Schedule(ABC):
 
     @abstractmethod
     def value(self, time: int | float) -> int | float:
-        """Value at time t.
-
-        Args:
-            t (float): Time.
-
-        Returns:
-            float: Value at time t.
-        """
+        """Value at time t."""
 
 
 # pylint: disable=too-few-public-methods
 class PiecewiseSchedule(Schedule):
-    """Piece-wise schedule for a value based on the step"""
+    """Piece-wise schedule for a value based on the step, from OpenAI baselines.
+
+    Args:
+        endpoints (list[tuple[int, float]]): List of pairs `(time, value)` meaning that schedule
+            will output `value` when `t==time`. All the values for time must be sorted in
+            an increasing order. When t is between two times, e.g. `(time_a, value_a)` and
+            `(time_b, value_b)`, such that `time_a <= t < time_b` then value outputs is
+            interpolated linearly between `value_a` and `value_b`.
+            outside_value (int|float): Value to use if `t` is before the first time in `endpoints`
+            or after the last one.
+        outside_value (int or float): Value to use if `t` is before the first time in `endpoints`
+            or after the last one.
+    """
 
     def __init__(
         self,
         endpoints: list[tuple[int, float]],
         outside_value: int | float,
     ) -> None:
-        """From OpenAI baselines"""
         idxes = [e[0] for e in endpoints]
         assert idxes == sorted(idxes)
         self._interpolation: Callable[[float, float, float], float] = _linear_interpolation
@@ -60,7 +64,14 @@ class PiecewiseSchedule(Schedule):
         """Value at time t.
 
         Args:
-            time (int|float): Time.
+            time (int or float): Current time step.
+
+        Returns:
+            The interpolation value at time t or outside_value if t is
+            before the first time in endpoints of after the last one.
+        
+        Raises:
+            AssertionError: If the time is not in the endpoints.
         """
         for (left_t, left), (right_t, right) in zip(self._endpoints[:-1], self._endpoints[1:]):
             if left_t <= time < right_t:
@@ -76,9 +87,16 @@ class ConstantSchedule(Schedule):
     """Constant schedule for a value"""
 
     def __init__(self, value: float) -> None:
-        """Value remains constant over time."""
         self._v: float = value
 
     def value(self, time: int | float) -> int | float:  # pylint: disable=unused-argument
-        """See Schedule.value"""
+        """Value at time t.
+
+        Args:
+            time (int or float): Current time step.
+
+        Returns:
+            The interpolation value at time t or outside_value if t is
+            before the first time in endpoints of after the last one.
+        """
         return self._v

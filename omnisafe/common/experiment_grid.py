@@ -41,18 +41,29 @@ from omnisafe.utils.tools import (
 
 # pylint: disable-next=too-many-instance-attributes
 class ExperimentGrid:
-    """Tool for running many experiments given hyper-parameters ranges."""
+    """Tool for running many experiments given hyper-parameters ranges.
+
+    Args:
+        exp_name (str, optional): Name of the experiment grid. Defaults to ''.
+
+    Attributes:
+        keys (list[str]): The keys of the configurations for the experiments.
+        vals (list[Any]): The values of the configurations for the experiments.
+        shs (list[str]): The shorthands of the configurations for the experiments.
+        in_names (list[bool]): Whether the shorthand is included in the name of the experiment.
+        div_line_width (int): The width of the dividing line.
+        name (str): Name of the experiment grid.
+        default_shorthand (bool): Whether GridSearch provides default shorthands.
+        wait_defore_launch (int): Tells the GridSearch how many seconds to pause for before launching experiments.
+        foce_datastamp (bool): Whether to automatically insert a date and time stamp into the names of save directories.
+        log_dir (str): The directory for saving the logs.
+    """
 
     _statistical_tools: StatisticsTools
     log_dir: str
     _evaluator: Evaluator
 
     def __init__(self, exp_name: str = '') -> None:
-        """Initialize the ExperimentGrid.
-
-        Args:
-            exp_name (str): Name of the experiment grid.
-        """
         self.keys: list[str] = []
         self.vals: list[Any] = []
         self.shs: list[str] = []
@@ -136,6 +147,9 @@ class ExperimentGrid:
 
         Args:
             key (string): Name of parameter.
+
+        Returns:
+            shorthand: Shorthand of parameter.
         """
 
         valid_chars = f'{string.ascii_letters}{string.digits}'
@@ -201,14 +215,27 @@ class ExperimentGrid:
 
         Args:
             variant (dict[str, Any]): Variant dictionary.
+
+        Returns:
+            exp_name (string): Experiment name.
         """
 
         def get_val(value: dict[str, Any], key: str) -> Any:
-            # utility method for getting the correct value out of a variant
-            # given as a nested dict. Assumes that a parameter name, k,
-            # describes a path into the nested dict, such that k='a:b:c'
-            # corresponds to value=variant['a']['b']['c']. Uses recursion
-            # to get this
+            """Get value from variant.
+
+            Utility method for getting the correct value out of a variant
+            given as a nested dict. Assumes that a parameter name, k,
+            describes a path into the nested dict, such that k='a:b:c'
+            corresponds to value=variant['a']['b']['c']. Uses recursion
+            to get this.
+
+            Args:
+                value (dict[str, Any]): Variant dictionary.
+                key (string): Key of variant dictionary.
+
+            Returns:
+                value: Value of variant dictionary.
+            """
             print('value', value, 'key', key)
             if key in value:
                 return value[key]
@@ -274,6 +301,9 @@ class ExperimentGrid:
         Args:
             keys (keys: list[str]): List of keys.
             vals (list[Any]): List of values.
+
+        Returns:
+            variants: List of valid variants.
         """
         if len(keys) == 1:
             pre_variants: list[dict[str, Any]] = [{}]
@@ -332,6 +362,9 @@ class ExperimentGrid:
                     'e': 5
                 }
             }
+
+        Returns:
+            variants: List of valid and not duplicate variants.
         """
         flat_variants = self._variants(self.keys, self.vals)
 
@@ -447,7 +480,13 @@ class ExperimentGrid:
         variants: list[dict[str, Any]],
         results: list,
     ) -> None:
-        """Save results to a file."""
+        """Save results to a file.
+
+        Args:
+            exp_names (list[str]): List of experiment names.
+            variants (list[dict[str, Any]]): List of experiment variants.
+            results (list): List of experiment results.
+        """
         path = os.path.join(self.log_dir, 'exp-x-results.txt')
         str_len = max(len(exp_name) for exp_name in exp_names)
         exp_names = [exp_name.ljust(str_len) for exp_name in exp_names]
@@ -461,7 +500,12 @@ class ExperimentGrid:
                 f.write('\n')
 
     def save_same_exps_config(self, exps_log_dir: str, variant: dict[str, Any]) -> None:
-        """Save experiment grid configurations as json."""
+        """Save experiment grid configurations as json.
+
+        Args:
+            exps_log_dir (str): Experiment log directory.
+            variant (dict[str, Any]): Experiment variant.
+        """
         os.makedirs(exps_log_dir, exist_ok=True)
         path = os.path.join(exps_log_dir, 'exps_config.json')
         json_config = json.dumps(variant, indent=4)
@@ -481,7 +525,11 @@ class ExperimentGrid:
             f.write(json_config)
 
     def check_variant_vaild(self, variant: dict[str, Any]) -> None:
-        """Check if the variant is valid."""
+        """Check if the variant is valid.
+
+        Args:
+            variant (dict[str, Any]): Experiment variant to be checked.
+        """
         path = os.path.dirname(os.path.abspath(__file__))
         algo_type = ALGORITHM2TYPE.get(variant['algo'], '')
         cfg_path = os.path.join(path, '..', 'configs', algo_type, f"{variant['algo']}.yaml")
@@ -502,6 +550,9 @@ class ExperimentGrid:
     ) -> None:
         """Analyze the experiment results.
 
+        .. note::
+            `values` and `compare_num` cannot be set at the same time.
+
         Args:
             parameter (str): name of parameter to analyze.
             values (list[Any], optional): specific values of attribute,
@@ -509,9 +560,6 @@ class ExperimentGrid:
             compare_num (int, optional): number of values to compare,
                 if it is specified, will combine any potential combination to compare.
             cost_limit (float, optional): value for one line showed on graph to indicate cost.
-
-        .. Note::
-            `values` and `compare_num` cannot be set at the same time.
         """
         assert self._statistical_tools is not None, 'Please run run() first!'
         self._statistical_tools.load_source(self.log_dir)

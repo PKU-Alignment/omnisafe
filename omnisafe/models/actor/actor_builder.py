@@ -26,12 +26,12 @@ from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 class ActorBuilder:
     """Class for building actor networks.
 
-    Attributes:
-        _obs_space (OmnisafeSpace): Observation space.
-        _act_space (OmnisafeSpace): Action space.
-        _weight_initialization_mode (InitFunction): Weight initialization mode.
-        _activation (Activation): Activation function.
-        _hidden_sizes (list[int]): List of hidden layer sizes.
+    Args:
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
+        hidden_sizes (list[int]): List of hidden layer sizes.
+        activation (Activation): Activation function.
+        weight_initialization_mode (InitFunction): Weight initialization mode.
     """
 
     def __init__(
@@ -42,15 +42,6 @@ class ActorBuilder:
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize ActorBuilder.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list[int]): List of hidden layer sizes.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-        """
         self._obs_space: OmnisafeSpace = obs_space
         self._act_space: OmnisafeSpace = act_space
         self._weight_initialization_mode: InitFunction = weight_initialization_mode
@@ -71,6 +62,12 @@ class ActorBuilder:
 
         Args:
             actor_type (ActorType): Type of actor network, e.g. ``gaussian_learning``.
+
+        Returns:
+            actor: Actor network, ranging from ``GaussianLearningActor``, ``GaussianSACActor`` to ``MLPActor``.
+
+        Raises:
+            NotImplementedError: If the actor type is not implemented.
         """
         if actor_type == 'gaussian_learning':
             return GaussianLearningActor(

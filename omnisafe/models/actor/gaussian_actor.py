@@ -20,7 +20,7 @@ from omnisafe.models.base import Actor
 
 
 class GaussianActor(Actor, ABC):
-    """A abstract class for normal distribution actor.
+    """An abstract class for normal distribution actor.
 
     A NormalActor inherits from Actor and use Normal distribution to approximate
     the policy function.

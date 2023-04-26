@@ -29,10 +29,33 @@ from omnisafe.utils.config import Config
 
 
 class SimmerAdapter(SauteAdapter):
-    """Simmer Adapter for OmniSafe."""
+    r"""SimmerEnvWrapper.
 
+    Simmer is a safe RL algorithm that uses a safety budget to control the exploration of the RL agent.
+    Similar to :class:`SauteEnvWrapper`, Simmer uses state augmentation to ensure safety.
+    Additionally, Simmer uses controller to control the safety budget.
+
+    .. note::
+
+        - If the safety state is greater than 0, the reward is the original reward.
+        - If the safety state is less than 0, the reward is the unsafe reward (always 0 or less than 0).
+
+    ``omnisafe`` provides two implementations of Simmer RL: :class:`PPOSimmer` and :class:`TRPOSimmer`.
+
+    References:
+
+        - Title: Effects of Safety State Augmentation on Safe Exploration.
+        - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
+        David Mguni, Jun Wang, Haitham Bou-Ammar.
+        - URL: https://arxiv.org/abs/2202.06558
+
+    Args:
+        env_id (str): The environment id.
+        num_envs (int): The number of parallel environments.
+        seed (int): The random seed.
+        cfgs (Config): The configuration passed from yaml file.
+    """
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
-        """Initialize the adapter."""
         super(OnPolicyAdapter, self).__init__(env_id, num_envs, seed, cfgs)
 
         self._num_envs: int = num_envs
@@ -64,6 +87,17 @@ class SimmerAdapter(SauteAdapter):
         )
 
     def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
+        """Reset the environment and returns an initial observation.
+
+        .. note::
+            Additionally, the safety observation will be reset.
+            And the safety budget will be reset to the value of
+            current ``rel_safety_budget``.
+
+        Returns:
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
+        """
         obs, info = self._env.reset()
         self._safety_obs = self._rel_safety_budget * torch.ones(self._num_envs, 1)
         obs = self._augment_obs(obs)

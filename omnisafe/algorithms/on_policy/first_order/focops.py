@@ -88,10 +88,13 @@ class FOCOPS(PolicyGradient):
         :math:`\pi^*` is the optimal policy, and :math:`\pi_{\theta}` is the current policy.
 
         Args:
-            obs (torch.Tensor): ``observation`` stored in buffer.
-            act (torch.Tensor): ``action`` stored in buffer.
-            logp (torch.Tensor): ``log probability`` of action stored in buffer.
-            adv (torch.Tensor): ``advantage`` stored in buffer.
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            act (torch.Tensor): The ``action`` sampled from buffer.
+            logp (torch.Tensor): The ``log probability`` of action sampled from buffer.
+            adv (torch.Tensor): The ``advantage`` sampled from buffer.
+
+        Returns:
+            loss: The loss of pi/actor.
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
@@ -126,8 +129,11 @@ class FOCOPS(PolicyGradient):
             - \lambda A^C_{\pi_{\theta}}(s, a)]
 
         Args:
-            adv (torch.Tensor): reward advantage
-            cost_adv (torch.Tensor): cost advantage
+            adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
+
+        Returns:
+            The ``advantage``combined with ``reward_advantage`` and ``cost_advantage``.
         """
         return (adv_r - self._lagrange.lagrangian_multiplier * adv_c) / (
             1 + self._lagrange.lagrangian_multiplier
@@ -148,9 +154,6 @@ class FOCOPS(PolicyGradient):
 
         Then in each iteration of the policy update, FOCOPS calculates current policy's
         distribution, which used to calculate the policy loss.
-
-        Args:
-            self (object): object of the class.
         """
         # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
