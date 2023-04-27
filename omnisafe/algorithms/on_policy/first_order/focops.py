@@ -145,6 +145,7 @@ class FOCOPS(PolicyGradient):
         In FOCOPS, the Lagrange multiplier is updated as the naive lagrange multiplier update:
 
         .. math::
+
             \lambda_{k+1} = \lambda_k + \eta (J^{C}_{\pi_\theta} - C)
 
         where :math:`\lambda_k` is the Lagrange multiplier at iteration :math:`k`,
