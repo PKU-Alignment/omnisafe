@@ -74,7 +74,7 @@ class OffPolicyAdapter(OnlineAdapter):
         Args:
             episode (int): Number of episodes.
             agent (ConstraintActorCritic): Agent.
-            logger (Logger): Logger, to log `` EpRet``, ``EpCost``, ``EpLen``.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
         """
         for _ in range(episode):
             ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
@@ -177,7 +177,7 @@ class OffPolicyAdapter(OnlineAdapter):
         """Log metrics, including ``EpRet``, ``EpCost``, ``EpLen``.
 
         Args:
-            logger (Logger): Logger, to log `` EpRet``, ``EpCost``, ``EpLen``.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
             idx (int): The index of the environment.
         """
         logger.store(

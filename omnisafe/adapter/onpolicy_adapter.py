@@ -72,7 +72,7 @@ class OnPolicyAdapter(OnlineAdapter):
             steps_per_epoch (int): Number of steps per epoch.
             agent (ConstraintActorCritic): Constraint actor-critic, including actor , reward critic and cost critic.
             buffer (VectorOnPolicyBuffer): Vector on-policy buffer.
-            logger (Logger): Logger, to log `` EpRet``, ``EpCost``, ``EpLen``.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
         """
         self._reset_log()
 
@@ -154,7 +154,7 @@ class OnPolicyAdapter(OnlineAdapter):
         """Log metrics, including ``EpRet``, ``EpCost``, ``EpLen``.
 
         Args:
-            logger (Logger): Logger, to log `` EpRet``, ``EpCost``, ``EpLen``.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
             idx (int): The index of the environment.
         """
         logger.store(

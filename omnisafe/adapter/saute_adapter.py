@@ -243,7 +243,7 @@ class SauteAdapter(OnPolicyAdapter):
         """Log metrics, including ``EpRet``, ``EpCost``, ``EpLen`` and ``EpBudget``.
 
         Args:
-            logger (Logger): Logger, to log `` EpRet``, ``EpCost``, ``EpLen``.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
             idx (int): The index of the environment.
         """
         super()._log_metrics(logger, idx)
