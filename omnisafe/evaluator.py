@@ -54,6 +54,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         actor: Actor | None = None,
         render_mode: str = 'rgb_array',
     ) -> None:
+        """Initialize an instance of :class:`Evaluator`."""
         self._env: CMDP | None = env
         self._actor: Actor | None = actor
         self._dividing_line: str = '\n' + '#' * 50 + '\n'

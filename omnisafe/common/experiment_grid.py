@@ -64,6 +64,7 @@ class ExperimentGrid:
     _evaluator: Evaluator
 
     def __init__(self, exp_name: str = '') -> None:
+        """Initialize an instance of :class:`ExperimentGrid`."""
         self.keys: list[str] = []
         self.vals: list[Any] = []
         self.shs: list[str] = []
@@ -135,7 +136,8 @@ class ExperimentGrid:
         print('=' * self.div_line_width)
 
     def _default_shorthand(self, key: str) -> str:
-        r"""Default shorthand.
+        r"""Get the default shorthand.
+
         Create a default shorthand for the key, built from the first
         three letters of each colon-separated part.
         But if the first three letters contains something which isn't
@@ -151,7 +153,6 @@ class ExperimentGrid:
         Returns:
             shorthand: Shorthand of parameter.
         """
-
         valid_chars = f'{string.ascii_letters}{string.digits}'
 
         def shear(value: str) -> str:

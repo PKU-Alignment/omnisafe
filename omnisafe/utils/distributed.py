@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""torch.distributed for multi-processing"""
+"""Tools of torch.distributed for multi-processing."""
 
 from __future__ import annotations
 
@@ -28,7 +28,9 @@ from torch.distributed import ReduceOp
 
 
 def setup_distributed() -> None:
-    """Avoid slowdowns caused by each separate process's PyTorch,
+    """Setup distributed training environment.
+
+    Avoid slowdowns caused by each separate process's PyTorch,
     using more than its fair share of CPU resources.
     """
     old_num_threads = torch.get_num_threads()

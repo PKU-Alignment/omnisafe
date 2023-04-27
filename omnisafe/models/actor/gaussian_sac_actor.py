@@ -52,6 +52,7 @@ class GaussianSACActor(Actor):
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
+        """Initialize an instance of :class:`GaussianSACActor`."""
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
 
         self.net: nn.Module = build_mlp_network(
@@ -73,7 +74,7 @@ class GaussianSACActor(Actor):
         **Specifically, this method will clip the standard deviation to a range of [-20, 2].**
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
 
         Returns:
             Normal: The normal distribution of the mean and standard deviation from the actor.
@@ -92,7 +93,7 @@ class GaussianSACActor(Actor):
         - If ``deterministic`` is ``False``, the predicted action is sampled from the distribution.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
             deterministic (bool): Whether to use deterministic policy.
 
         Returns:
@@ -112,7 +113,7 @@ class GaussianSACActor(Actor):
         """Forward method.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
 
         Returns:
             current_dist: The current distribution.

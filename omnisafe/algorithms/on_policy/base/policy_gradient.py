@@ -235,16 +235,18 @@ class PolicyGradient(BaseAlgo):
         self._logger.register_key('Time/FPS')
 
     def learn(self) -> tuple[float, float, int]:
-        r"""This is main function for algorithm update, divided into the following steps:
+        r"""This is main function for algorithm update.
+
+        It is divided into the following steps:
 
         - :meth:`rollout`: collect interactive data from environment.
         - :meth:`update`: perform actor/critic updates.
         - :meth:`log`: epoch/update information for visualization and terminal log print.
 
         Returns:
-            ep_ret: Average episode return in final epoch.
-            ep_cost: Average episode cost in final epoch.
-            ep_len: Average episode length in final epoch.
+            ep_ret: average episode return in final epoch.
+            ep_cost: average episode cost in final epoch.
+            ep_len: average episode length in final epoch.
         """
         start_time = time.time()
         self._logger.log('INFO: Start training')
@@ -298,7 +300,7 @@ class PolicyGradient(BaseAlgo):
         return ep_ret, ep_cost, ep_len
 
     def _update(self) -> None:
-        r"""Update actor, critic, following next steps:
+        r"""Update actor, critic.
 
         -  Get the ``data`` from buffer
 
@@ -499,7 +501,7 @@ class PolicyGradient(BaseAlgo):
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
             act (torch.Tensor): The ``action`` sampled from buffer.
-            log_p (torch.Tensor): The ``log_p`` sampled from buffer.
+            logp (torch.Tensor): The ``log_p`` sampled from buffer.
             adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.
             adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
         """

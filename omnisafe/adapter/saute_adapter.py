@@ -42,7 +42,6 @@ class SauteAdapter(OnPolicyAdapter):
     ``omnisafe`` provides two implementations of Saute RL: :class:`PPOSaute` and :class:`TRPOSaute`.
 
     References:
-
         - Title: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation
         - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
         David Mguni, Jun Wang, Haitham Bou-Ammar.
@@ -59,6 +58,7 @@ class SauteAdapter(OnPolicyAdapter):
     _ep_budget: torch.Tensor
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
+        """Initialize an instance of :class:`SauteAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
 
         self._safety_budget: torch.Tensor = (

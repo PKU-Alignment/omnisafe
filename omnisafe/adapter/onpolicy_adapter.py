@@ -51,6 +51,7 @@ class OnPolicyAdapter(OnlineAdapter):
         seed: int,
         cfgs: Config,
     ) -> None:
+        """Initialize an instance of :class:`OnPolicyAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
         self._reset_log()
 
@@ -70,7 +71,7 @@ class OnPolicyAdapter(OnlineAdapter):
         Args:
             steps_per_epoch (int): Number of steps per epoch.
             agent (ConstraintActorCritic): Constraint actor-critic, including actor , reward critic and cost critic.
-            buf (VectorOnPolicyBuffer): Vector on-policy buffer.
+            buffer (VectorOnPolicyBuffer): Vector on-policy buffer.
             logger (Logger): Logger, to log `` EpRet``, ``EpCost``, ``EpLen``.
         """
         self._reset_log()

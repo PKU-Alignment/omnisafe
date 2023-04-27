@@ -24,7 +24,31 @@ from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
 
 class VectorOffPolicyBuffer(OffPolicyBuffer):
-    """A VectorReplayBuffer for OffPolicy Algorithms."""
+    """Vectorized on-policy buffer.
+
+    The vector-off-policy buffer is a vectorized version of the off-policy buffer.
+    It stores the data in a single tensor, and the data of each environment is
+    stored in a separate column.
+
+    .. warning::
+        The buffer only supports Box spaces.
+
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        size (int): The size of the buffer.
+        batch_size (int): The batch size of the buffer.
+        num_envs (int): The number of environments.
+        device (torch.device, optional): The device of the buffer. Defaults to
+            torch.device('cpu').
+
+    Attributes:
+        data (dict[str, torch.Tensor]): The data of the buffer.
+
+    Raises:
+        NotImplementedError: If the observation space or the action space is not Box.
+        NotImplementedError: If the action space or the action space is not Box.
+    """
 
     def __init__(  # pylint: disable=super-init-not-called,too-many-arguments
         self,
@@ -35,31 +59,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         num_envs: int,
         device: torch.device = DEVICE_CPU,
     ) -> None:
-        """Initialize the vector-off-policy buffer.
-
-        The vector-off-policy buffer is a vectorized version of the off-policy buffer.
-        It stores the data in a single tensor, and the data of each environment is
-        stored in a separate column.
-
-        .. warning::
-            The buffer only supports Box spaces.
-
-        Args:
-            obs_space (OmnisafeSpace): The observation space.
-            act_space (OmnisafeSpace): The action space.
-            size (int): The size of the buffer.
-            batch_size (int): The batch size of the buffer.
-            num_envs (int): The number of environments.
-            device (torch.device, optional): The device of the buffer. Defaults to
-                torch.device('cpu').
-
-        Attributes:
-            data (dict[str, torch.Tensor]): The data of the buffer.
-
-        Raises:
-            NotImplementedError: If the observation space or the action space is not Box.
-            NotImplementedError: If the action space or the action space is not Box.
-        """
+        """Initialize an instance of :class:`VectorOffPolicyBuffer`."""
         self._num_envs: int = num_envs
         self._ptr: int = 0
         self._size: int = 0

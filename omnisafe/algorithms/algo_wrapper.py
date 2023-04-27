@@ -59,6 +59,7 @@ class AlgoWrapper:
         train_terminal_cfgs: dict[str, Any] | None = None,
         custom_cfgs: dict[str, Any] | None = None,
     ) -> None:
+        """Initialize an instance of :class:`AlgoWrapper`."""
         self.algo: str = algo
         self.env_id: str = env_id
         # algo_type will set in _init_checks()

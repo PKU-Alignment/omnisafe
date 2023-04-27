@@ -32,6 +32,7 @@ class OnCRPO(PPO):
     """
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
+        """Initialize an instance of :class:`OnCRPO`."""
         super().__init__(env_id, cfgs)
         self._rew_update: int = 0
         self._cost_update: int = 0

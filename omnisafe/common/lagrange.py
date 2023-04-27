@@ -73,6 +73,7 @@ class Lagrange:
         lambda_optimizer: str,
         lagrangian_upper_bound: float | None = None,
     ) -> None:
+        """Initialize an instance of :class:`Lagrange`."""
         self.cost_limit: float = cost_limit
         self.lambda_lr: float = lambda_lr
         self.lagrangian_upper_bound: float | None = lagrangian_upper_bound

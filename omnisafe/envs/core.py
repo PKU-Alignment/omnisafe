@@ -58,12 +58,7 @@ class CMDP(ABC):
 
     @abstractmethod
     def __init__(self, env_id: str, **kwargs: Any) -> None:
-        """Initialize the environment.
-
-        Args:
-            env_id (str): The environment id.
-            **kwargs (Any): The keyword arguments.
-        """
+        """Initialize an instance of :class:`CMDP`."""
         assert (
             env_id in self.support_envs()
         ), f'env_id {env_id} is not supported by {self.__class__.__name__}'
@@ -90,7 +85,7 @@ class CMDP(ABC):
 
     @property
     def time_limit(self) -> int | None:
-        """int or None: The time limit of the environment."""
+        """None or int: The time limit of the environment."""
         return self._time_limit
 
     @abstractmethod
@@ -181,20 +176,16 @@ class Wrapper(CMDP):
     interface of the environment wrapper. The environment wrapper should inherit
     from this class and implement the abstract methods.
 
+    Args:
+        env (CMDP): The environment.
+        device (torch.device): The device to use.
+
     Attributes:
         _env (CMDP): The environment.
     """
 
     def __init__(self, env: CMDP, device: torch.device = DEVICE_CPU) -> None:
-        """Initialize the wrapper.
-
-        Args:
-            env (CMDP): The environment.
-
-        Attributes:
-            _env (CMDP): The environment.
-            _device (torch.device): The device of the environment.
-        """
+        """Initialize an instance of :class:`Wrapper`."""
         self._env: CMDP = env
         self._device: torch.device = device
 
@@ -306,6 +297,7 @@ class EnvRegister:
     """
 
     def __init__(self) -> None:
+        """Initialize an instance of :class:`EnvRegister`."""
         self._class: dict[str, type[CMDP]]
         self._support_envs: dict[str, list[str]]
         self._class = {}

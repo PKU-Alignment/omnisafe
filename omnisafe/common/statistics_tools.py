@@ -48,6 +48,7 @@ class StatisticsTools:
     exp_dir: str
 
     def __init__(self) -> None:
+        """Initialize an instance of :class:`StatisticsTools`."""
         self.plotter: Plotter = Plotter()
 
     def load_source(self, path: str) -> None:

@@ -43,6 +43,7 @@ class BaseSimmerAgent(ABC):
         action_space: tuple[int, int] = (-1, 1),
         history_len: int = 100,
     ) -> None:
+        """Initialize an instance of :class:`BaseSimmerAgent`."""
         assert obs_space is not None, 'Please specify the state space for the Simmer agent'
         assert history_len > 0, 'History length should be positive'
 
@@ -113,6 +114,7 @@ class SimmerPIDAgent(BaseSimmerAgent):
         action_space: tuple[int, int] = (-1, 1),
         history_len: int = 100,
     ) -> None:
+        """Initialize an instance of :class:`SimmerPIDAgent`."""
         super().__init__(
             cfgs=cfgs,
             budget_bound=budget_bound,

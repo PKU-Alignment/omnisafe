@@ -30,6 +30,7 @@ from pandas import DataFrame
 
 class Plotter:
     """Plotter class for plotting data from experiments.
+
     Suppose you have run several experiments, with the aim of comparing performance
     between different algorithms, resulting in a log directory structure of:
         runs/
@@ -51,6 +52,7 @@ class Plotter:
                     seed0/
                     seed5/
                     seed10/
+
     Examples:
         You can easily produce a graph comparing CPO and PCPO in 'SafetyAntVelocity-v1' with:
 
@@ -65,6 +67,7 @@ class Plotter:
     """
 
     def __init__(self) -> None:
+        """Initialize an instance of :class:`Plotter`."""
         self.div_line_width: int = 50
         self.exp_idx: int = 0
         self.units: dict[str, Any] = {}
@@ -81,6 +84,14 @@ class Plotter:
     ) -> None:
         """Plot data from a pandas dataframe.
 
+        .. note::
+            The ``smooth`` means smoothing the data with moving window average.
+
+        Example:
+            >>> smoothed_y[t] = average(y[t-k], y[t-k+1], ..., y[t+k-1], y[t+k])
+
+        where the "smooth" param is width of that window (2k+1)
+
         Args:
             sub_figures (np.ndarray): The subplots.
             data (list[DataFrame]): The data to plot.
@@ -90,10 +101,6 @@ class Plotter:
             smooth (int, optional): The smoothing window size. Defaults to 1.
             **kwargs (Any): Additional arguments.
         """
-
-        # smooth data with moving window average.
-        # smoothed_y[t] = average(y[t-k], y[t-k+1], ..., y[t+k-1], y[t+k])
-        # where the "smooth" param is width of that window (2k+1)
         if smooth > 1:
             y = np.ones(smooth)
             for datum in data:
@@ -226,8 +233,9 @@ class Plotter:
         select: str | None = None,
         exclude: str | None = None,
     ) -> list[DataFrame]:
-        """For every entry in all_logdirs:
+        """Get all the data from all the log directories.
 
+        For every entry in all_logdirs.
             1) check if the entry is a real directory and if it is, pull data from it;
             2) if not, check to see if the entry is a prefix for a real directory, and pull data from that.
 
@@ -330,6 +338,9 @@ class Plotter:
                 which is typically a set of identical experiments that only vary
                 in random seed. But if you'd like to see all of those curves
                 separately, use the ``--count`` flag.
+            cost_limit (float): Optional way to specify the cost limit of the
+                plot. Defaults to ``None``, which means the plot will not have
+                a cost limit.
             smooth (int): Smooth data by averaging it over a fixed window. This
                 parameter says how wide the averaging window will be.
             select (strings): Optional selection rule: the plotter will only show

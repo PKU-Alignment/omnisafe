@@ -113,7 +113,6 @@ def conjugate_gradients(
     Returns:
         vector_x: The vector :math:`x` in the equation :math:`Ax = b`.
     """
-
     vector_x = torch.zeros_like(vector_b)
     vector_r = vector_b - fisher_product(vector_x)
     vector_p = vector_r.clone()
@@ -141,6 +140,7 @@ class SafeTanhTransformer(TanhTransform):
     """
 
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        """Apply the transform to the input."""
         return torch.clamp(torch.tanh(x), min=-0.999999, max=0.999999)
 
     def _inverse(self, y: torch.Tensor) -> torch.Tensor:
@@ -174,6 +174,7 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
     arg_constraints = {'loc': constraints.real, 'scale': constraints.positive}
 
     def __init__(self, loc: torch.Tensor, scale: torch.Tensor) -> None:
+        """Initialize an instance of :class:`TanhNormal`."""
         base_dist = Normal(loc, scale)
         super().__init__(base_dist, SafeTanhTransformer())
 

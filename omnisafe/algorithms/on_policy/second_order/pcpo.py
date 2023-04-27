@@ -59,9 +59,9 @@ class PCPO(CPO):
         Args:
             obs (torch.Tensor): The observation tensor.
             act (torch.Tensor): The action tensor.
-            log_p (torch.Tensor): The log probability of the action.
-            adv (torch.Tensor): The advantage tensor.
-            cost_adv (torch.Tensor): The cost advantage tensor.
+            logp (torch.Tensor): The log probability of the action.
+            adv_r (torch.Tensor): The reward advantage tensor.
+            adv_c (torch.Tensor): The cost advantage tensor.
         """
         # pylint: disable=invalid-name
         self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""tool_function_packages"""
+"""OmniSafe tools package."""
 
 from __future__ import annotations
 
@@ -145,7 +145,6 @@ def seed_all(seed: int) -> None:
     Args:
         seed (int): The random seed.
     """
-
     os.environ['PYTHONHASHSEED'] = str(seed)
 
     random.seed(seed)

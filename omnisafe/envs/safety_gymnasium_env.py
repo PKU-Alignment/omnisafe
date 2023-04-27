@@ -95,6 +95,7 @@ class SafetyGymnasiumEnv(CMDP):
         device: torch.device = DEVICE_CPU,
         **kwargs: Any,
     ) -> None:
+        """Initialize an instance of :class:`SafetyGymnasiumEnv`."""
         super().__init__(env_id)
         self._num_envs = num_envs
         self._device = torch.device(device)

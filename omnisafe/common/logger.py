@@ -93,6 +93,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         config: Config | None = None,
         models: list[torch.nn.Module] | None = None,
     ) -> None:
+        """Initialize an instance of :class:`Logger`."""
         hms_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
         relpath = hms_time
 
@@ -196,7 +197,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         min_and_max: bool = False,
         delta: bool = False,
     ) -> None:
-        """Register a key to the logger.
+        r"""Register a key to the logger.
 
         The logger can record the following data:
 

@@ -111,6 +111,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         standardized_adv_c: bool = False,
         device: torch.device = DEVICE_CPU,
     ) -> None:
+        """Initialize an instance of :class:`OnPolicyBuffer`."""
         super().__init__(obs_space, act_space, size, device)
 
         self._standardized_adv_r: bool = standardized_adv_r
@@ -313,7 +314,6 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         Raises:
             NotImplementedError: If the advantage estimator is not supported.
         """
-
         if self._advantage_estimator == 'gae':
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
             deltas = rewards[:-1] + self._gamma * values[1:] - values[:-1]

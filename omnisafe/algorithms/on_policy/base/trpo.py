@@ -73,7 +73,7 @@ class TRPO(NaturalPG):
             act (torch.Tensor): The action.
             logp (torch.Tensor): The log probability of the action.
             adv (torch.Tensor): The advantage.
-            cost_adv (torch.Tensor): The cost advantage.
+            adv_c (torch.Tensor): The cost advantage.
             loss_pi_before (float): The loss of the policy before the update.
             total_steps (int, optional): The total steps to search. Defaults to 15.
             decay (float, optional): The decay rate of the step size. Defaults to 0.8.

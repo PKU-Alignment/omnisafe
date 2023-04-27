@@ -80,6 +80,7 @@ class BaseBuffer(ABC):
         size: int,
         device: torch.device = DEVICE_CPU,
     ) -> None:
+        """Initialize an instance of :class:`BaseBuffer`."""
         self._device: torch.device = device
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros((size, *obs_space.shape), dtype=torch.float32, device=device)

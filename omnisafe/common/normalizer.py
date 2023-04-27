@@ -24,7 +24,7 @@ from torch.nn.modules.module import _IncompatibleKeys
 
 
 class Normalizer(nn.Module):
-    """Calculate normalized raw_data from running mean and std
+    """Calculate normalized raw_data from running mean and std.
 
     References:
         - Title: Updating Formulae and a Pairwise Algorithm for Computing Sample Variances
@@ -40,7 +40,7 @@ class Normalizer(nn.Module):
     _clip: torch.Tensor  # clip value
 
     def __init__(self, shape: tuple[int, ...], clip: float = 1e6) -> None:
-        """Initialize the normalize."""
+        """Initialize an instance of :class:`Normalizer`."""
         super().__init__()
         if shape == ():
             self.register_buffer('_mean', torch.tensor(0.0))
@@ -145,5 +145,14 @@ class Normalizer(nn.Module):
         state_dict: Mapping[str, Any],
         strict: bool = True,
     ) -> _IncompatibleKeys:
+        """Load the state_dict to the normalizer.
+
+        Args:
+            state_dict (Mapping[str, Any]): The state_dict to be loaded.
+            strict (bool, optional): Whether to strictly enforce that the keys in :attr:`state_dict`
+
+        Returns:
+            The loaded normalizer.
+        """
         self._first = False
         return super().load_state_dict(state_dict, strict)

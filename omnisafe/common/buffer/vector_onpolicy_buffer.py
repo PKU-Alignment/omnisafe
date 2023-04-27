@@ -26,8 +26,6 @@ from omnisafe.utils import distributed
 class VectorOnPolicyBuffer(OnPolicyBuffer):
     """Vectorized on-policy buffer.
 
-    Initialize the vector-on-policy buffer.
-
     The vector-on-policy buffer is used to store the data from vector environments.
     The data is stored in a list of on-policy buffers, each of which corresponds to
     one environment.
@@ -68,6 +66,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         num_envs: int = 1,
         device: torch.device = DEVICE_CPU,
     ) -> None:
+        """Initialize an instance of :class:`VectorOnPolicyBuffer`."""
         self._num_buffers: int = num_envs
         self._standardized_adv_r: bool = standardized_adv_r
         self._standardized_adv_c: bool = standardized_adv_c

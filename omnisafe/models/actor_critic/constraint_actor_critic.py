@@ -75,6 +75,7 @@ class ConstraintActorCritic(ActorCritic):
         model_cfgs: ModelConfig,
         epochs: int,
     ) -> None:
+        """Initialize an instance of :class:`ConstraintActorCritic`."""
         super().__init__(obs_space, act_space, model_cfgs, epochs)
         self.cost_critic: Critic = CriticBuilder(
             obs_space=obs_space,
@@ -102,7 +103,7 @@ class ConstraintActorCritic(ActorCritic):
         """Choose action based on observation.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
             deterministic (bool): Whether to use deterministic policy.
 
         Returns:
@@ -129,7 +130,7 @@ class ConstraintActorCritic(ActorCritic):
         """Choose action based on observation.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
             deterministic (bool): Whether to use deterministic policy.
 
         Returns:

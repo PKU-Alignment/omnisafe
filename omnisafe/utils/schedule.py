@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""helper class to generate scheduling params"""
+"""helper class to generate scheduling params."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ def _linear_interpolation(left: float, right: float, alpha: float) -> float:
 
 
 class Schedule(ABC):
-    """Schedule for a value based on the step"""
+    """Schedule for a value based on the step."""
 
     @abstractmethod
     def value(self, time: int | float) -> int | float:
@@ -54,6 +54,7 @@ class PiecewiseSchedule(Schedule):
         endpoints: list[tuple[int, float]],
         outside_value: int | float,
     ) -> None:
+        """Initialize an instance of :class:`PiecewiseSchedule`."""
         idxes = [e[0] for e in endpoints]
         assert idxes == sorted(idxes)
         self._interpolation: Callable[[float, float, float], float] = _linear_interpolation
@@ -84,9 +85,10 @@ class PiecewiseSchedule(Schedule):
 
 
 class ConstantSchedule(Schedule):
-    """Constant schedule for a value"""
+    """Constant schedule for a value."""
 
     def __init__(self, value: float) -> None:
+        """Initialize an instance of :class:`ConstantSchedule`."""
         self._v: float = value
 
     def value(self, time: int | float) -> int | float:  # pylint: disable=unused-argument

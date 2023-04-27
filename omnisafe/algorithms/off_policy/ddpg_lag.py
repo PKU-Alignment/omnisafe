@@ -28,7 +28,6 @@ class DDPGLag(DDPG):
     """The Lagrangian version of Deep Deterministic Policy Gradient (DDPG) algorithm.
 
     References:
-
         - Title: Continuous control with deep reinforcement learning
         - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
         Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.

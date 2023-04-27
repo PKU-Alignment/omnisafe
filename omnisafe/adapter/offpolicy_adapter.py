@@ -57,6 +57,7 @@ class OffPolicyAdapter(OnlineAdapter):
         seed: int,
         cfgs: Config,
     ) -> None:
+        """Initialize a instance of :class:`OffPolicyAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
         self._current_obs, _ = self.reset()
         self._max_ep_len: int = 1000
@@ -68,8 +69,7 @@ class OffPolicyAdapter(OnlineAdapter):
         agent: ConstraintActorQCritic,
         logger: Logger,
     ) -> None:
-        """Roll out the environment with deterministic agent action
-        and log the data into Logger.
+        """Roll out the environment with deterministic agent action.
 
         Args:
             episode (int): Number of episodes.
@@ -117,11 +117,12 @@ class OffPolicyAdapter(OnlineAdapter):
             so the final observation will be stored in ``info['final_observation']``.
 
         Args:
-            steps_per_epoch (int): Number of steps per epoch.
+            roll_out_step (int): Number of roll out steps.
             agent (ConstraintActorCritic): Constraint actor-critic, including actor, reward critic,
                 and cost critic.
-            buf (VectorOnPolicyBuffer): Vector on-policy buffer.
+            buffer (VectorOnPolicyBuffer): Vector on-policy buffer.
             logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
+            use_rand_action (bool): Whether to use random action.
         """
         for _ in range(roll_out_step):
             if use_rand_action:

@@ -73,6 +73,7 @@ class ActorCritic(nn.Module):
         model_cfgs: ModelConfig,
         epochs: int,
     ) -> None:
+        """Initialize an instance of :class:`ActorCritic`."""
         super().__init__()
 
         self.actor: GaussianLearningActor | GaussianSACActor | MLPActor = ActorBuilder(

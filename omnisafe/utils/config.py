@@ -130,6 +130,7 @@ class Config(dict):
     num_threads: int
 
     def __init__(self, **kwargs: Any) -> None:
+        """Initialize an instance of :class:`Config`."""
         for key, value in kwargs.items():
             if isinstance(value, dict):
                 self[key] = Config.dict2config(value)
@@ -291,7 +292,6 @@ def __check_parallel_and_vectorized(configs: Config, algo_type: str) -> None:
 
 def __check_algo_configs(configs: Config, algo_type: str) -> None:
     r"""Check algorithm configs.
-
 
     This function is used to check the algorithm configs.
 

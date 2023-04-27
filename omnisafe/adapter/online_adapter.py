@@ -63,6 +63,7 @@ class OnlineAdapter:
         seed: int,
         cfgs: Config,
     ) -> None:
+        """Initialize an instance of :class:`OnlineAdapter`."""
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._cfgs: Config = cfgs

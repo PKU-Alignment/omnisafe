@@ -120,7 +120,7 @@ class QCritic(Critic):
         and then use the index 0 to get the Q-value.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
             act (torch.Tensor): Action.
 
         Returns:

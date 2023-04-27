@@ -46,6 +46,7 @@ class TimeLimit(Wrapper):
     """
 
     def __init__(self, env: CMDP, time_limit: int, device: torch.device) -> None:
+        """Initialize an instance of :class:`TimeLimit`."""
         super().__init__(env=env, device=device)
         assert self.num_envs == 1, 'TimeLimit only supports single environment'
         self._time: int = 0
@@ -118,6 +119,7 @@ class AutoReset(Wrapper):
     """
 
     def __init__(self, env: CMDP, device: torch.device) -> None:
+        """Initialize an instance of :class:`AutoReset`."""
         super().__init__(env=env, device=device)
 
         assert self.num_envs == 1, 'AutoReset only supports single environment'
@@ -184,6 +186,7 @@ class ObsNormalize(Wrapper):
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
+        """Initialize an instance of :class:`ObsNormalize`."""
         super().__init__(env=env, device=device)
         assert isinstance(self.observation_space, spaces.Box), 'Observation space must be Box'
         self._obs_normalizer: Normalizer
@@ -279,6 +282,7 @@ class RewardNormalize(Wrapper):
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
+        """Initialize an instance of :class:`RewardNormalize`."""
         super().__init__(env=env, device=device)
         self._reward_normalizer: Normalizer
 
@@ -352,6 +356,7 @@ class CostNormalize(Wrapper):
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
+        """Initialize an instance of :class:`CostNormalize`."""
         super().__init__(env=env, device=device)
         self._cost_normalizer: Normalizer
 
@@ -432,6 +437,7 @@ class ActionScale(Wrapper):
         low: int | float,
         high: int | float,
     ) -> None:
+        """Initialize an instance of :class:`ActionScale`."""
         super().__init__(env=env, device=device)
         assert isinstance(self.action_space, spaces.Box), 'Action space must be Box'
 
@@ -507,12 +513,7 @@ class Unsqueeze(Wrapper):
     """
 
     def __init__(self, env: CMDP, device: torch.device) -> None:
-        """Initialize the wrapper.
-
-        Args:
-            env: The environment to wrap.
-            device: The device to use.
-        """
+        """Initialize an instance of :class:`Unsqueeze`."""
         super().__init__(env=env, device=device)
         assert self.num_envs == 1, 'Unsqueeze only works with single environment'
         assert isinstance(self.observation_space, spaces.Box), 'Observation space must be Box'

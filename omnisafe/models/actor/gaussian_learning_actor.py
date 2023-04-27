@@ -51,6 +51,7 @@ class GaussianLearningActor(GaussianActor):
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
+        """Initialize an instance of :class:`GaussianLearningActor`."""
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
 
         self.mean: nn.Module = build_mlp_network(
@@ -68,7 +69,7 @@ class GaussianLearningActor(GaussianActor):
             You should call :meth:`forward` instead.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
 
         Returns:
             Normal: The normal distribution of the mean and standard deviation from the actor.
@@ -86,7 +87,7 @@ class GaussianLearningActor(GaussianActor):
         - If ``deterministic`` is ``False``, the predicted action is sampled from the distribution.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
             deterministic (bool): Whether to use deterministic policy.
 
         Returns:
@@ -103,7 +104,7 @@ class GaussianLearningActor(GaussianActor):
         """Forward method.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
 
         Returns:
             current_dist: The current distribution.

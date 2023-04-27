@@ -55,6 +55,7 @@ class Actor(ABC, nn.Module):
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
+        """Initialize an instance of :class:`Actor`."""
         nn.Module.__init__(self)
         self._obs_space: OmnisafeSpace = obs_space
         self._act_space: OmnisafeSpace = act_space
@@ -94,7 +95,7 @@ class Actor(ABC, nn.Module):
             instead, you should use the public method ``predict`` to sample actions.
 
         Args:
-            obs (torch.Tensor): observation.
+            obs (torch.Tensor): Observation from environments.
 
         Returns:
             Distribution: the distribution of action.
@@ -105,7 +106,7 @@ class Actor(ABC, nn.Module):
         r"""Return the distribution of action.
 
         Args:
-            obs (torch.Tensor): observation.
+            obs (torch.Tensor): Observation from environments.
         """
 
     @abstractmethod
@@ -136,7 +137,7 @@ class Actor(ABC, nn.Module):
         :math:`A^R (s, a)` is the advantage function.
 
         Args:
-            obs (torch.Tensor): observation.
+            obs (torch.Tensor): Observation from environments.
             deterministic (bool, optional): whether to predict deterministic action. Defaults to False.
         """
 
@@ -147,7 +148,7 @@ class Actor(ABC, nn.Module):
         ``log_prob`` only can be called after calling ``predict`` or ``forward``.
 
         Args:
-            obs (torch.Tensor): observation.
+            obs (torch.Tensor): Observation from environments.
             act (torch.Tensor): action.
 
         Returns:
@@ -189,6 +190,7 @@ class Critic(ABC, nn.Module):
         num_critics: int = 1,
         use_obs_encoder: bool = False,
     ) -> None:
+        """Initialize an instance of :class:`Critic`."""
         nn.Module.__init__(self)
         self._obs_space: OmnisafeSpace = obs_space
         self._act_space: OmnisafeSpace = act_space

@@ -42,6 +42,7 @@ class ActorBuilder:
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
+        """Initialize an instance of :class:`ActorBuilder`."""
         self._obs_space: OmnisafeSpace = obs_space
         self._act_space: OmnisafeSpace = act_space
         self._weight_initialization_mode: InitFunction = weight_initialization_mode

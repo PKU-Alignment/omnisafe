@@ -49,6 +49,7 @@ class VCritic(Critic):
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
         num_critics: int = 1,
     ) -> None:
+        """Initialize an instance of :class:`VCritic`."""
         super().__init__(
             obs_space,
             act_space,

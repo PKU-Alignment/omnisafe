@@ -38,6 +38,7 @@ class EarlyTerminatedAdapter(OnPolicyAdapter):
     """
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
+        """Initialize an instance of :class:`EarlyTerminatedAdapter`."""
         assert num_envs == 1, 'EarlyTerminatedAdapter only supports num_envs=1.'
 
         super().__init__(env_id, num_envs, seed, cfgs)

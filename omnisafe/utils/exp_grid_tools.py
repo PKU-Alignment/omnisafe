@@ -21,7 +21,7 @@ from typing import Any
 
 
 def all_bools(vals: list[Any]) -> bool:
-    """Check if all values are bools
+    """Check if all values are bools.
 
     Args:
         vals (list[Any]): Values to check.

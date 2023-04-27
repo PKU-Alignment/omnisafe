@@ -29,7 +29,7 @@ from omnisafe.utils.config import Config
 
 
 class SimmerAdapter(SauteAdapter):
-    r"""SimmerEnvWrapper.
+    r"""Simmer Adapter for OmniSafe.
 
     Simmer is a safe RL algorithm that uses a safety budget to control the exploration of the RL agent.
     Similar to :class:`SauteEnvWrapper`, Simmer uses state augmentation to ensure safety.
@@ -43,7 +43,6 @@ class SimmerAdapter(SauteAdapter):
     ``omnisafe`` provides two implementations of Simmer RL: :class:`PPOSimmer` and :class:`TRPOSimmer`.
 
     References:
-
         - Title: Effects of Safety State Augmentation on Safe Exploration.
         - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
         David Mguni, Jun Wang, Haitham Bou-Ammar.
@@ -57,6 +56,7 @@ class SimmerAdapter(SauteAdapter):
     """
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
+        """Initialize an instance of :class:`SimmerAdapter`."""
         super(OnPolicyAdapter, self).__init__(env_id, num_envs, seed, cfgs)
 
         self._num_envs: int = num_envs

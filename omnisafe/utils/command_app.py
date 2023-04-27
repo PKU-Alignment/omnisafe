@@ -444,7 +444,6 @@ def analyze_grid(
         will combine any potential combination to compare
         cost_limit (float): The cost limit.
     """
-
     tools = StatisticsTools()
     tools.load_source(path)
 

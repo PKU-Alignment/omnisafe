@@ -45,10 +45,9 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
         cost_limit (float): The cost limit.
 
     References:
-
-    - Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
-    - Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
-    - URL: `PID Lagrange <https://arxiv.org/abs/2007.03964>`_
+        - Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
+        - Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+        - URL: `PID Lagrange <https://arxiv.org/abs/2007.03964>`_
     """
 
     # pylint: disable-next=too-many-arguments
@@ -66,6 +65,7 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
         lagrangian_multiplier_init: float,
         cost_limit: float,
     ) -> None:
+        """Initialize an instance of :class:`PIDLagrangian`."""
         self._pid_kp: float = pid_kp
         self._pid_ki: float = pid_ki
         self._pid_kd: float = pid_kd

@@ -62,6 +62,7 @@ class OffPolicyBuffer(BaseBuffer):
         batch_size: int,
         device: torch.device = DEVICE_CPU,
     ) -> None:
+        """Initialize an instance of :class:`OffPolicyBuffer`."""
         super().__init__(obs_space, act_space, size, device)
         if isinstance(obs_space, Box):
             self.data['next_obs'] = torch.zeros(

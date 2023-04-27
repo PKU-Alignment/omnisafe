@@ -38,7 +38,6 @@ class DDPG(BaseAlgo):
     """The Deep Deterministic Policy Gradient (DDPG) algorithm.
 
     References:
-
         - Title: Continuous control with deep reinforcement learning
         - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
         Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
@@ -228,7 +227,9 @@ class DDPG(BaseAlgo):
         self._logger.register_key('Time/FPS')
 
     def learn(self) -> tuple[float, float, int]:
-        r"""This is main function for algorithm update, divided into the following steps:
+        r"""This is main function for algorithm update.
+
+        It is divided into the following steps:
 
         - :meth:`rollout`: collect interactive data from environment.
         - :meth:`update`: perform actor/critic updates.
@@ -317,7 +318,7 @@ class DDPG(BaseAlgo):
         return ep_ret, ep_cost, ep_len
 
     def _update(self) -> None:
-        r"""Update actor, critic,, following next steps:
+        r"""Update actor, critic.
 
         -  Get the ``data`` from buffer
 

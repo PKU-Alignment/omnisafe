@@ -54,22 +54,22 @@ class ConstraintActorQCritic(ActorQCritic):
                     :class:`QCritic`, :class:`VCritic`.
                 -   Estimate the cost value of the observation.
 
-        Args:
-            obs_space (OmnisafeSpace): The observation space.
-            act_space (OmnisafeSpace): The action space.
-            model_cfgs (ModelConfig): The model configurations.
-            epochs (int): The number of epochs.
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        model_cfgs (ModelConfig): The model configurations.
+        epochs (int): The number of epochs.
 
-        Attributes:
-            actor (Actor): The actor network.
-            target_actor (Actor): The target actor network.
-            reward_critic (Critic): The critic network.
-            target_reward_critic (Critic): The target critic network.
-            cost_critic (Critic): The critic network.
-            target_cost_critic (Critic): The target critic network.
-            actor_optimizer (Optimizer): The optimizer for the actor network.
-            reward_critic_optimizer (Optimizer): The optimizer for the critic network.
-            std_schedule (Schedule): The schedule for the standard deviation of the Gaussian distribution.
+    Attributes:
+        actor (Actor): The actor network.
+        target_actor (Actor): The target actor network.
+        reward_critic (Critic): The critic network.
+        target_reward_critic (Critic): The target critic network.
+        cost_critic (Critic): The critic network.
+        target_cost_critic (Critic): The target critic network.
+        actor_optimizer (Optimizer): The optimizer for the actor network.
+        reward_critic_optimizer (Optimizer): The optimizer for the critic network.
+        std_schedule (Schedule): The schedule for the standard deviation of the Gaussian distribution.
     """
 
     def __init__(
@@ -79,6 +79,7 @@ class ConstraintActorQCritic(ActorQCritic):
         model_cfgs: ModelConfig,
         epochs: int,
     ) -> None:
+        """Initialize an instance of :class:`ConstraintActorQCritic`."""
         super().__init__(obs_space, act_space, model_cfgs, epochs)
 
         self.cost_critic: Critic = CriticBuilder(

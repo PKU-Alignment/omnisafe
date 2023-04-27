@@ -28,6 +28,7 @@ class Registry:
     """
 
     def __init__(self, name: str) -> None:
+        """Initialize an instance of :class:`Registry`."""
         self._name: str = name
         self._module_dict: dict[str, type] = {}
 
@@ -47,7 +48,7 @@ class Registry:
         """Register a module.
 
         Args:
-            module (:obj:`nn.Module`): Module to be registered.
+            module_class (:obj:`nn.Module`): Module to be registered.
         """
         if not inspect.isclass(module_class):
             raise TypeError(f'module must be a class, but got {type(module_class)}')

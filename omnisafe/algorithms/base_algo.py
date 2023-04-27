@@ -32,6 +32,7 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
     _logger: Logger
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
+        """Initialize an instance of :class:`BaseAlgo`."""
         self._env_id: str = env_id
         self._cfgs: Config = cfgs
 

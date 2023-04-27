@@ -49,6 +49,7 @@ class MLPActor(Actor):
         output_activation: Activation = 'tanh',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
+        """Initialize an instance of :class:`MLPActor`."""
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
 
         self.net: torch.nn.Module = build_mlp_network(
@@ -72,7 +73,7 @@ class MLPActor(Actor):
         - If ``deterministic`` is ``False``, the predicted action is sampled from the distribution.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
             deterministic (bool): Whether to use deterministic policy.
         """
         action = self.net(obs)
@@ -97,9 +98,25 @@ class MLPActor(Actor):
         raise NotImplementedError
 
     def forward(self, obs: torch.Tensor) -> Distribution:
+        """Forward method implementation.
+
+        Args:
+            obs (torch.Tensor): Observation from environments.
+
+        Returns:
+            The distribution of the action.
+        """
         return self._distribution(obs)
 
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
+        """Log probability of the action.
+
+        Args:
+            act (torch.Tensor): Action tensor.
+
+        Raises:
+            NotImplementedError: The method is not implemented.
+        """
         raise NotImplementedError
 
     @property
