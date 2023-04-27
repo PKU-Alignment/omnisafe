@@ -99,7 +99,7 @@ class ConstraintActorCritic(ActorCritic):
         self,
         obs: torch.Tensor,
         deterministic: bool = False,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, ...]:
         """Choose action based on observation.
 
         Args:
@@ -126,7 +126,7 @@ class ConstraintActorCritic(ActorCritic):
         self,
         obs: torch.Tensor,
         deterministic: bool = False,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, ...]:
         """Choose action based on observation.
 
         Args:

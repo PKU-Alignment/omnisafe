@@ -341,7 +341,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self,
         key: str,
         min_and_max: bool = False,
-    ) -> tuple[int | float] | tuple[int | float, int | float, int | float, int | float]:
+    ) -> tuple[int | float, ...]:
         """Get the statistics of the key.
 
         Args:

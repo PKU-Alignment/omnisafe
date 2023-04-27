@@ -356,10 +356,7 @@ def dist_op(value: np.ndarray | torch.Tensor | int | float, operation: Any) -> t
 def dist_statistics_scalar(
     value: torch.Tensor,
     with_min_and_max: bool = False,
-) -> (
-    tuple[torch.Tensor, torch.Tensor]
-    | tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
-):
+) -> tuple[torch.Tensor, ...]:
     """Get mean/std and optional min/max of scalar x across MPI processes.
 
     Examples:

@@ -125,7 +125,7 @@ class ActorCritic(nn.Module):
         self,
         obs: torch.Tensor,
         deterministic: bool = False,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in rollout without gradient.
 
         Args:
@@ -148,7 +148,7 @@ class ActorCritic(nn.Module):
         self,
         obs: torch.Tensor,
         deterministic: bool = False,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in training with gradient.
 
         Args:
