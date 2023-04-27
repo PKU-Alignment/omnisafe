@@ -37,6 +37,11 @@ class SafeLOOP(LOOP):
 
     def _init_model(self) -> None:
         """Initialize the dynamics model and the planner."""
+        if self._env.action_space is not None and len(self._env.action_space.shape) > 0:
+            self._action_dim = self._env.action_space.shape[0]
+        else:
+            # error handling for action dimension is none of shape of action less than 0
+            raise ValueError('Action dimension is None or less than 0')
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
@@ -56,8 +61,8 @@ class SafeLOOP(LOOP):
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
-            state_size=self._dynamics_state_space.shape[0],
-            action_size=self._env.action_space.shape[0],
+            state_shape=self._dynamics_state_space.shape,
+            action_shape=self._env.action_space.shape,
             reward_size=1,
             cost_size=1,
             use_cost=True,

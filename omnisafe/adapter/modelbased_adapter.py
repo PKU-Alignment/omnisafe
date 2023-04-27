@@ -221,9 +221,10 @@ class ModelBasedAdapter(
         store_data_func: Callable,
         update_dynamics_func: Callable,
         logger: Logger,
-        eval_func: Callable | None = None,
-        algo_reset_func: Callable | None = None,
-        update_actor_func: Callable | None = None,
+        use_eval: bool,
+        eval_func: Callable,
+        algo_reset_func: Callable,
+        update_actor_func: Callable,
     ) -> int:
         """Roll out the environment and store the data in the buffer.
 
@@ -247,10 +248,10 @@ class ModelBasedAdapter(
 
         epoch_start_time = time.time()
 
-        update_actor_critic_time = 0
-        update_dynamics_time = 0
+        update_actor_critic_time = 0.0
+        update_dynamics_time = 0.0
         if eval_func is not None:
-            eval_time = 0
+            eval_time = 0.0
 
         epoch_steps = 0
 
@@ -305,7 +306,7 @@ class ModelBasedAdapter(
                 update_actor_critic_time += time.time() - update_actor_critic_start
 
             if (
-                eval_func is not None
+                use_eval
                 and current_step % self._cfgs.evaluation_cfgs.eval_cycle
                 < self._cfgs.algo_cfgs.action_repeat
                 and current_step - self._last_eval >= self._cfgs.evaluation_cfgs.eval_cycle

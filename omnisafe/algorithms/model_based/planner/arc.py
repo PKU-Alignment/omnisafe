@@ -143,7 +143,11 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
         )
 
     @torch.no_grad()
-    def _state_action_repeat(self, state: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
+    def _state_action_repeat(
+        self,
+        state: torch.Tensor,
+        action: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Repeat the state for num_repeat * action.shape[0] times and action for num_repeat times.
 
         Args:

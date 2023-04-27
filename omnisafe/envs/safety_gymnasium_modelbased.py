@@ -51,7 +51,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         self,
         env_id: str,
         num_envs: int = 1,
-        device: torch.device = 'cpu',
+        device: str = 'cpu',
         **kwargs,
     ) -> None:
         """Initialize the environment.
@@ -78,7 +78,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
         self._num_envs = num_envs
         self._metadata = self._env.metadata
-        self._constraints = ['hazards']  #'gremlins', 'buttons'],
+        self._constraints = ['hazards']  # gremlins, vase, buttons
         self._xyz_sensors = ['velocimeter', 'accelerometer']
         self._angle_sensors = ['gyro', 'magnetometer']
         self._flatten_order = (
@@ -481,9 +481,9 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             self.goal_distance = self._dist_xy(self.robot_position, self.goal_position)
             info['goal_distance'] = self.goal_distance
             coordinate_sensor_obs = self._get_coordinate_sensor()
-            obs = self._get_flat_coordinate(coordinate_sensor_obs)
+            obs_np = self._get_flat_coordinate(coordinate_sensor_obs)
 
-            obs = torch.as_tensor(obs, dtype=torch.float32, device=self._device)
+            obs = torch.as_tensor(obs_np, dtype=torch.float32, device=self._device)
 
             info['obs_original'] = obs_original
             goal_met = 'goal_met' in info  # reach the goal

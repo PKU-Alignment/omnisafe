@@ -530,17 +530,15 @@ class ActionRepeat(Wrapper):
         self,
         action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
-        step = 0
         rewards, costs = 0.0, 0.0
-        for _ in range(self._times):
+        for _step, _ in enumerate(range(self._times)):
             obs, reward, cost, terminated, truncated, info = super().step(action)
-            step += 1
             rewards += reward
             costs += cost
-            goal_met = False if 'goal_met' not in info.keys() else info['goal_met']
+            goal_met = info.get('goal_met', False)
             if terminated or truncated or goal_met:
                 break
-        info['num_step'] = step
+        info['num_step'] = _step + 1
         return obs, rewards, costs, terminated, truncated, info
 
 

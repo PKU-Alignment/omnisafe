@@ -59,6 +59,11 @@ class PETS(BaseAlgo):
 
     def _init_model(self) -> None:
         """Initialize dynamics model and planner."""
+        if self._env.action_space is not None and len(self._env.action_space.shape) > 0:
+            self._action_dim = self._env.action_space.shape[0]
+        else:
+            # error handling for action dimension is none of shape of action less than 0
+            raise ValueError('Action dimension is None or less than 0')
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
@@ -67,8 +72,8 @@ class PETS(BaseAlgo):
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
-            state_size=self._dynamics_state_space.shape[0],
-            action_size=self._env.action_space.shape[0],
+            state_shape=self._dynamics_state_space.shape,
+            action_shape=self._env.action_space.shape,
             reward_size=1,
             cost_size=1,
             use_cost=False,
@@ -113,21 +118,18 @@ class PETS(BaseAlgo):
             batch_size=self._cfgs.dynamics_cfgs.batch_size,
             device=self._device,
         )
-        if self._cfgs.evaluation_cfgs.use_eval:
-            env_kwargs = {
-                'render_mode': 'rgb_array',
-                'camera_name': 'track',
-            }
-            self._eval_env = ModelBasedAdapter(
-                self._env_id,
-                1,
-                self._seed,
-                self._cfgs,
-                **env_kwargs,
-            )
-            self._eval_fn = self._evaluation_single_step
-        else:
-            self._eval_fn = None
+        env_kwargs = {
+            'render_mode': 'rgb_array',
+            'camera_name': 'track',
+        }
+        self._eval_env = ModelBasedAdapter(
+            self._env_id,
+            1,
+            self._seed,
+            self._cfgs,
+            **env_kwargs,
+        )
+        self._eval_fn = self._evaluation_single_step
 
     def _init_log(self) -> None:
         """Initialize logger."""
@@ -197,6 +199,7 @@ class PETS(BaseAlgo):
                 act_func=self._select_action,
                 store_data_func=self._store_real_data,
                 update_dynamics_func=self._update_dynamics_model,
+                use_eval=self._cfgs.evaluation_cfgs.use_eval,
                 eval_func=self._eval_fn,
                 logger=self._logger,
                 algo_reset_func=self._algo_reset,
@@ -253,17 +256,20 @@ class PETS(BaseAlgo):
         cost = self._dynamics_buf.data['cost'][: self._dynamics_buf.size]
         next_state = self._dynamics_buf.data['next_obs'][: self._dynamics_buf.size, :]
         delta_state = next_state - state
-        inputs = torch.cat((state, action), -1)
-        inputs = torch.reshape(inputs, (inputs.shape[0], -1))
+        if torch.is_tensor(delta_state):
+            inputs = torch.cat((state, action), -1)
+            inputs = torch.reshape(inputs, (inputs.shape[0], -1))
 
-        labels = torch.reshape(delta_state, (delta_state.shape[0], -1))
-        if self._cfgs.dynamics_cfgs.predict_reward:
-            labels = torch.cat(((torch.reshape(reward, (reward.shape[0], -1))), labels), -1)
-        if self._cfgs.dynamics_cfgs.predict_cost:
-            labels = torch.cat(((torch.reshape(cost, (cost.shape[0], -1))), labels), -1)
-
-        inputs = inputs.cpu().detach().numpy()
-        labels = labels.cpu().detach().numpy()
+            labels = torch.reshape(delta_state, (delta_state.shape[0], -1))
+            if self._cfgs.dynamics_cfgs.predict_reward:
+                labels = torch.cat(((torch.reshape(reward, (reward.shape[0], -1))), labels), -1)
+            if self._cfgs.dynamics_cfgs.predict_cost:
+                labels = torch.cat(((torch.reshape(cost, (cost.shape[0], -1))), labels), -1)
+            inputs = inputs.cpu().detach().numpy()
+            labels = labels.cpu().detach().numpy()
+        assert not torch.is_tensor(inputs) and not torch.is_tensor(
+            labels,
+        ), 'inputs and labels should be numpy array'
         train_mse_losses, val_mse_losses = self._dynamics.train(
             inputs,
             labels,
@@ -302,9 +308,8 @@ class PETS(BaseAlgo):
         else:
             action, info = self._planner.output_action(state)
             self._logger.store(**info)
-
         assert action.shape == torch.Size(
-            [1, self._env.action_space.shape[0]],
+            [1, self._action_dim],
         ), 'action shape should be [batch_size, action_dim]'
         info = {}
         return action, info
@@ -366,11 +371,13 @@ class PETS(BaseAlgo):
         """
         obs, _ = self._eval_env.reset()
         obs_dynamics = obs
-        terminated, truncated = False, False
         ep_len, ep_ret, ep_cost = 0, 0, 0
-        frames = []
-        obs_pred, obs_true = [], []
-        reward_pred, reward_true = [], []
+        terminated, truncated = torch.tensor([False]), torch.tensor([False])
+        frames: list[np.ndarray] = []
+        obs_pred: list[float] = []
+        obs_true: list[float] = []
+        reward_pred: list[float] = []
+        reward_true: list[float] = []
         num_episode = 0
         while True:
             if terminated or truncated:
@@ -378,8 +385,8 @@ class PETS(BaseAlgo):
                 save_replay_path = os.path.join(self._logger.log_dir, 'video-pic')
                 self._logger.store(
                     **{
-                        'EvalMetrics/EpRet': ep_ret.item(),
-                        'EvalMetrics/EpCost': ep_cost.item(),
+                        'EvalMetrics/EpRet': ep_ret,
+                        'EvalMetrics/EpCost': ep_cost,
                         'EvalMetrics/EpLen': ep_len,
                     },
                 )
@@ -419,7 +426,7 @@ class PETS(BaseAlgo):
                     break
             action, _ = self._select_action(current_step, obs, self._eval_env)
 
-            idx = np.random.choice(self._dynamics.elite_model_idxes, size=1)
+            idx = np.random.choice(self._dynamics.elite_model_idxes, size=1)[0]
             traj = self._dynamics.imagine(
                 states=obs_dynamics,
                 horizon=1,
@@ -442,8 +449,8 @@ class PETS(BaseAlgo):
             reward_pred.append(pred_reward.item())
             reward_true.append(reward.item())
 
-            ep_ret += reward
-            ep_cost += cost
+            ep_ret += reward.cpu().numpy().item()
+            ep_cost += cost.cpu().numpy().item()
             ep_len += info['num_step']
             frames.append(self._eval_env.render())
 
