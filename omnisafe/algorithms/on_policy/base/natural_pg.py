@@ -75,7 +75,9 @@ class NaturalPG(PolicyGradient):
         self._logger.register_key('Misc/H_inv_g')
 
     def _fvp(self, params: torch.Tensor) -> torch.Tensor:
-        """Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_ , which is the second-order derivative of the KL-divergence.
+        """Build the `Hessian-vector product.
+        
+        Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_ , which is the second-order derivative of the KL-divergence.
 
         The Hessian-vector product is approximated by the Fisher information matrix,
         which is the second-order derivative of the KL-divergence.
