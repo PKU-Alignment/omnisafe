@@ -50,24 +50,20 @@ class CUP(PPO):
     def _init_log(self) -> None:
         r"""Log the CUP specific information.
 
-        .. list-table::
+        +-----------------------------+----------------------------------------------------------+
+        | Things to log               | Description                                              |
+        +=============================+==========================================================+
+        | Metrics/LagrangeMultiplier  | The Lagrange multiplier.                                 |
+        +-----------------------------+----------------------------------------------------------+
+        | Loss/Loss_pi_c              | The loss of the cost performance.                        |
+        +-----------------------------+----------------------------------------------------------+
+        | Train/SecondStepStopIter    | The number of iterations to stop the second step.        |
+        +-----------------------------+----------------------------------------------------------+
+        | Train/SecondStepEntropy     | The entropy of the current policy.                       |
+        +-----------------------------+----------------------------------------------------------+
+        | Train/SecondStepPolicyRatio | The ratio between the current policy and the old policy. |
+        +-----------------------------+----------------------------------------------------------+
 
-            *   -   Things to log
-                -   Description
-            *   -   ``Metrics/LagrangeMultiplier``
-                -   The Lagrange multiplier.
-            *   -   ``Train/MaxRatio``
-                -   The maximum ratio between the current policy and the old policy.
-            *   -   ``Train/MinRatio``
-                -   The minimum ratio between the current policy and the old policy.
-            *   -   ``Loss/Loss_pi_c``
-                -   The loss of the cost performance.
-            *   -   ``Train/SecondStepStopIter``
-                -   The number of iterations to stop the second step.
-            *   -   ``Train/SecondStepEntropy``
-                -   The entropy of the current policy.
-            *   -   ``Train/SecondStepPolicyRatio``
-                -   The ratio between the current policy and the old policy.
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')

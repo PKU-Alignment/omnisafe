@@ -30,29 +30,15 @@ class ConstraintActorQCritic(ActorQCritic):
 
     In ``omnisafe``, we combine the actor and critic into one this class.
 
-        .. list-table::
-
-            *   -   Model
-                -   Description
-                -   Function
-            *   -   Actor
-                -   The policy network, input is observation, output is action.
-                    Choose the actor from the following options:
-                    :class:`MLPActor`, :class:`CategoricalActor`, :class:`GaussianAnnealingActor`,
-                    :class:`GaussianLearningActor`, :class:`GaussianStdNetActor`, :class:`MLPCholeskyActor`.
-                -   Choose the action based on the observation.
-            *   -   Reward Critic
-                -   The value network, input is observation,
-                    output is reward value.
-                    Choose the critic from the following options:
-                    :class:`QCritic`, :class:`VCritic`.
-                -   Estimate the reward value of the observation.
-            *   -   Cost Critic
-                -   The value network, input is observation,
-                    output is cost value.
-                    Choose the critic from the following options:
-                    :class:`QCritic`, :class:`VCritic`.
-                -   Estimate the cost value of the observation.
+    +-----------------+---------------------------------------------------+
+    | Model           | Description                                       |
+    +=================+===================================================+
+    | Actor           | Input is observation. Output is action.           |
+    +-----------------+---------------------------------------------------+
+    | Reward Q Critic | Input is obs-action pair, Output is reward value. |
+    +-----------------+---------------------------------------------------+
+    | Cost Q Critic   | Input is obs-action pair. Output is cost value.   |
+    +-----------------+---------------------------------------------------+
 
     Args:
         obs_space (OmnisafeSpace): The observation space.

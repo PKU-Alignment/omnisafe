@@ -39,12 +39,11 @@ class TRPOLag(TRPO):
     def _init_log(self) -> None:
         r"""Log the TRPOLag specific information.
 
-        .. list-table::
-
-            *   -   Things to log
-                -   Description
-            *   -   ``Metrics/LagrangeMultiplier``
-                -   The Lagrange multiplier.
+        +----------------------------+--------------------------+
+        | Things to log              | Description              |
+        +============================+==========================+
+        | Metrics/LagrangeMultiplier | The Lagrange multiplier. |
+        +----------------------------+--------------------------+
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier', min_and_max=True)

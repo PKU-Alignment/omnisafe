@@ -50,12 +50,12 @@ class FOCOPS(PolicyGradient):
     def _init_log(self) -> None:
         r"""Log the FOCOPS specific information.
 
-        .. list-table::
+        +----------------------------+--------------------------+
+        | Things to log              | Description              |
+        +============================+==========================+
+        | Metrics/LagrangeMultiplier | The Lagrange multiplier. |
+        +----------------------------+--------------------------+
 
-            *   -   Things to log
-                -   Description
-            *   -   ``Metrics/LagrangeMultiplier``
-                -   The Lagrange multiplier.
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')

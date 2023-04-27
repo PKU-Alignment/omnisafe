@@ -42,6 +42,15 @@ class SACLag(SAC):
         self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
+        r"""Log the SACLag specific information.
+
+        +----------------------------+--------------------------+
+        | Things to log              | Description              |
+        +============================+==========================+
+        | Metrics/LagrangeMultiplier | The Lagrange multiplier. |
+        +----------------------------+--------------------------+
+
+        """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
 

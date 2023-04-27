@@ -47,24 +47,22 @@ class NaturalPG(PolicyGradient):
     def _init_log(self) -> None:
         r"""Log the Natural Policy Gradient specific information.
 
-        .. list-table::
+        +---------------------+----------------------------------------------------+
+        | Things to log       | Description                                        |
+        +=====================+====================================================+
+        | Misc/AcceptanceStep | The acceptance step size.                          |
+        +---------------------+----------------------------------------------------+
+        | Misc/Alpha          | :math:`\frac{\delta_{KL}}{xHx}` in original paper. |
+        +---------------------+----------------------------------------------------+
+        | Misc/FinalStepNorm  | The final step norm.                               |
+        +---------------------+----------------------------------------------------+
+        | Misc/gradient_norm  | The gradient norm.                                 |
+        +---------------------+----------------------------------------------------+
+        | Misc/xHx            | :math:`xHx` in original paper.                     |
+        +---------------------+----------------------------------------------------+
+        | Misc/H_inv_g        | :math:`H^{-1}g` in original paper.                 |
+        +---------------------+----------------------------------------------------+
 
-            *   -   Things to log
-                -   Description
-            *   -   ``Misc/AcceptanceStep``
-                -   The acceptance step size.
-            *   -   ``Misc/Alpha``
-                -   :math:`\frac{\delta_{KL}}{xHx}` in original paper.
-                    where :math:`x` is the step direction, :math:`H` is the Hessian matrix,
-                    and :math:`\delta_{KL}` is the target KL divergence.
-            *   -   ``Misc/FinalStepNorm``
-                -   The final step norm.
-            *   -   ``Misc/gradient_norm``
-                -   The gradient norm.
-            *   -   ``Misc/xHx``
-                -   :math:`xHx` in original paper.
-            *   -   ``Misc/H_inv_g``
-                -   :math:`H^{-1}g` in original paper.
         """
         super()._init_log()
 

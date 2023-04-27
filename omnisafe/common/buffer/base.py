@@ -32,32 +32,20 @@ class BaseBuffer(ABC):
 
     In  base buffer, we store the following data:
 
-    .. list-table::
+    +--------+-------------------------+---------------+-----------------------------------+
+    | Name   | Shape                   | Dtype         | Description                       |
+    +========+=========================+===============+===================================+
+    | obs    | (size, obs_space.shape) | torch.float32 | The observation from environment. |
+    +--------+-------------------------+---------------+-----------------------------------+
+    | act    | (size, act_space.shape) | torch.float32 | The action from agent.            |
+    +--------+-------------------------+---------------+-----------------------------------+
+    | reward | (size, )                | torch.float32 | Single step reward.               |
+    +--------+-------------------------+---------------+-----------------------------------+
+    | cost   | (size, )                | torch.float32 | Single step cost.                 |
+    +--------+-------------------------+---------------+-----------------------------------+
+    | done   | (size, )                | torch.float32 | Whether the episode is done.      |
+    +--------+-------------------------+---------------+-----------------------------------+
 
-        *   -   Name
-            -   Shape
-            -   Dtype
-            -   Description
-        *   -   obs
-            -   (size, obs_space.shape)
-            -   torch.float32
-            -   The observation.
-        *   -   act
-            -   (size, act_space.shape)
-            -   torch.float32
-            -   The action.
-        *   -   reward
-            -   (size, )
-            -   torch.float32
-            -   Single step reward.
-        *   -   cost
-            -   (size, )
-            -   torch.float32
-            -   Single step cost.
-        *   -   done
-            -   (size, )
-            -   torch.float32
-            -   Whether the episode is done.
 
     Args:
         obs_space (OmnisafeSpace): The observation space.

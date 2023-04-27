@@ -31,16 +31,11 @@ class OffPolicyBuffer(BaseBuffer):
 
     Compared to the base buffer, the off-policy buffer stores extra data:
 
-    .. list-table::
-
-        *   -   Name
-            -   Shape
-            -   Dtype
-            -   Description
-        *   -   next_obs
-            -   (batch_size, obs_space.shape)
-            -   torch.float32
-            -   The next observation.
+    +----------+-------------------------+---------------+----------------------------------------+
+    | Name     | Shape                   | Dtype         | Description                            |
+    +==========+=========================+===============+========================================+
+    | next_obs | (size, obs_space.shape) | torch.float32 | The next observation from environment. |
+    +----------+-------------------------+---------------+----------------------------------------+
 
     Args:
         obs_space (OmnisafeSpace): The observation space.

@@ -92,24 +92,24 @@ class OnlineAdapter:
         .. hint::
             OmniSafe supports the following wrappers:
 
-            .. list-table::
+        +-----------------+--------------------------------------------------------+
+        | Wrapper         | Description                                            |
+        +=================+========================================================+
+        | TimeLimit       | Limit the time steps of the environment.               |
+        +-----------------+--------------------------------------------------------+
+        | AutoReset       | Reset the environment when the episode is done.        |
+        +-----------------+--------------------------------------------------------+
+        | ObsNormalize    | Normalize the observation.                             |
+        +-----------------+--------------------------------------------------------+
+        | RewardNormalize | Normalize the reward.                                  |
+        +-----------------+--------------------------------------------------------+
+        | CostNormalize   | Normalize the cost.                                    |
+        +-----------------+--------------------------------------------------------+
+        | ActionScale     | Scale the action.                                      |
+        +-----------------+--------------------------------------------------------+
+        | Unsqueeze       | Unsqueeze the step result for single environment case. |
+        +-----------------+--------------------------------------------------------+
 
-                *   -   Wrapper
-                    -   Description
-                *   -   TimeLimit
-                    -   Limit the time steps of the environment.
-                *   -   AutoReset
-                    -   Reset the environment when the episode is done.
-                *   -   ObsNormalize
-                    -   Normalize the observation.
-                *   -   RewardNormalize
-                    -   Normalize the reward.
-                *   -   CostNormalize
-                    -   Normalize the cost.
-                *   -   ActionScale
-                    -   Scale the action.
-                *   -   Unsqueeze
-                    -   Unsqueeze the step result for single environment case.
 
         Args:
             obs_normalize (bool): Whether to normalize the observation.

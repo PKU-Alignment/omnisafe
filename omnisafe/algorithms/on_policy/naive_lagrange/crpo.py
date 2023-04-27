@@ -40,14 +40,14 @@ class OnCRPO(PPO):
     def _init_log(self) -> None:
         r"""Log the CRPO specific information.
 
-        .. list-table::
+        +-----------------+--------------------------------------------+
+        | Things to log   | Description                                |
+        +=================+============================================+
+        | Misc/RewUpdate  | The number of times the reward is updated. |
+        +-----------------+--------------------------------------------+
+        | Misc/CostUpdate | The number of times the cost is updated.   |
+        +-----------------+--------------------------------------------+
 
-            *   -   Things to log
-                -   Description
-            *   -  ``Misc/RewUpdate``
-                -   The number of times the reward is updated.
-            *   -  ``Misc/CostUpdate``
-                -   The number of times the cost is updated.
         """
         super()._init_log()
         self._logger.register_key('Misc/RewUpdate')

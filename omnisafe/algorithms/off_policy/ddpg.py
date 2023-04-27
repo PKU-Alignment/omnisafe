@@ -129,53 +129,43 @@ class DDPG(BaseAlgo):
     def _init_log(self) -> None:
         """Log info about epoch.
 
-        .. list-table::
-
-            *   -   Things to log
-                -   Description
-            *   -   Train/Epoch
-                -   Current epoch.
-            *   -   Metrics/EpCost
-                -   Average cost of the epoch.
-            *   -   Metrics/EpCost
-                -   Average cost of the epoch.
-            *   -   Metrics/EpRet
-                -   Average return of the epoch.
-            *   -   Metrics/EpLen
-                -   Average length of the epoch.
-            *   -   Metrics/TestEpCost
-                -   Average cost of the evaluate epoch.
-            *   -   Metrics/TestEpRet
-                -   Average return of the evaluate epoch.
-            *   -   Metrics/TestEpLen
-                -   Average length of the evaluate epoch.
-            *   -   Value/reward_critic
-                -   Average value in :meth:`roll_out()` (from critic network) of the epoch.
-            *   -   Values/cost_critic
-                -   Average cost in :meth:`roll_out()` (from critic network) of the epoch.
-            *   -   Loss/Loss_pi
-                -   Loss of the policy network.
-            *   -   Loss/Delta_loss_pi
-                -   Delta loss of the policy network.
-            *   -   Loss/Loss_reward_critic
-                -   Loss of the reward critic.
-            *   -   Loss/Delta_loss_reward_critic
-                -   Delta loss of the reward critic.
-            *   -   Loss/Loss_cost_critic
-                -   Loss of the cost critic.
-            *   -   Loss/Delta_loss_cost_critic
-                -   Delta loss of the cost critic.
-            *   -   Train/LR
-                -   Learning rate of the policy network.
-            *   -   Misc/Seed
-                -   Seed of the experiment.
-            *   -   Misc/TotalEnvSteps
-                -   Total steps of the experiment.
-            *   -   Time
-                -   Total time.
-            *   -   FPS
-                -   Frames per second of the epoch.
-
+        +-------------------------+-------------------------------------------------------------------------+
+        | Things to log           | Description                                                             |
+        +=========================+=========================================================================+
+        | Train/Epoch             | Current epoch.                                                          |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Metrics/EpCost          | Average cost of the epoch.                                              |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Metrics/EpRet           | Average return of the epoch.                                            |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Metrics/EpLen           | Average length of the epoch.                                            |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Metrics/TestEpCost      | Average cost of the evaluate epoch.                                     |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Metrics/TestEpRet       | Average return of the evaluate epoch.                                   |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Metrics/TestEpLen       | Average length of the evaluate epoch.                                   |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Value/reward_critic     | Average value in :meth:`roll_out()` (from critic network) of the epoch. |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Values/cost_critic      | Average cost in :meth:`roll_out()` (from critic network) of the epoch.  |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Loss/Loss_pi            | Loss of the policy network.                                             |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Loss/Loss_reward_critic | Loss of the reward critic.                                              |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Loss/Loss_cost_critic   | Loss of the cost critic network.                                        |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Train/LR                | Learning rate of the policy network.                                    |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Misc/Seed               | Seed of the experiment.                                                 |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Misc/TotalEnvSteps      | Total steps of the experiment.                                          |
+        +-------------------------+-------------------------------------------------------------------------+
+        | Time                    | Total time.                                                             |
+        +-------------------------+-------------------------------------------------------------------------+
+        | FPS                     | Frames per second of the epoch.                                         |
+        +-------------------------+-------------------------------------------------------------------------+
         """
         self._logger: Logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,
@@ -324,20 +314,19 @@ class DDPG(BaseAlgo):
 
         .. note::
 
-            .. list-table::
-
-                *   -   obs
-                    -   ``observaion`` stored in buffer.
-                *   -   act
-                    -   ``action`` stored in buffer.
-                *   -   reward
-                    -   ``reward`` stored in buffer.
-                *   -   cost
-                    -   ``cost`` stored in buffer.
-                *   -   next_obs
-                    -   ``next observaion`` stored in buffer.
-                *   -   done
-                    -   ``terminated`` stored in buffer.
+            +----------+---------------------------------------+
+            | obs      | ``observaion`` stored in buffer.      |
+            +==========+=======================================+
+            | act      | ``action`` stored in buffer.          |
+            +----------+---------------------------------------+
+            | reward   | ``reward`` stored in buffer.          |
+            +----------+---------------------------------------+
+            | cost     | ``cost`` stored in buffer.            |
+            +----------+---------------------------------------+
+            | next_obs | ``next observaion`` stored in buffer. |
+            +----------+---------------------------------------+
+            | done     | ``terminated`` stored in buffer.      |
+            +----------+---------------------------------------+
 
         -  Update value net by :meth:`_update_reward_critic`.
         -  Update cost net by :meth:`_update_cost_critic`.

@@ -36,12 +36,12 @@ class P3O(PPO):
     def _init_log(self) -> None:
         r"""Log the P3O specific information.
 
-        .. list-table::
+        +-------------------+-----------------------------------+
+        | Things to log     | Description                       |
+        +===================+===================================+
+        | Loss/Loss_pi_cost | The loss of the cost performance. |
+        +-------------------+-----------------------------------+
 
-            *   -   Things to log
-                -   Description
-            *   -  ``Loss/Loss_pi_cost``
-                -   The loss of the cost performance.
         """
         super()._init_log()
         self._logger.register_key('Loss/Loss_pi_cost', delta=True)

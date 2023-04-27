@@ -63,12 +63,12 @@ class TRPOSaute(TRPO):
     def _init_log(self) -> None:
         r"""Log the TRPOSaute specific information.
 
-        .. list-table::
+        +------------------+-----------------------------------+
+        | Things to log    | Description                       |
+        +==================+===================================+
+        | Metrics/EpBudget | The safety budget of the episode. |
+        +------------------+-----------------------------------+
 
-            *   -   Things to log
-                -   Description
-            *   -   ``Metrics/EpBudget``
-                -   The budget of the episode.
         """
         super()._init_log()
         self._logger.register_key('Metrics/EpBudget')

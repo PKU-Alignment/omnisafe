@@ -35,44 +35,25 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
     Compared to the base buffer, the on-policy buffer stores extra data:
 
-    .. list-table::
-
-        *   -   Name
-            -   Shape
-            -   Dtype
-            -   Description
-        *   -   discounted_ret
-            -   (size, )
-            -   torch.float32
-            -   The discounted return.
-        *   -   target_value_r
-            -   (size, )
-            -   torch.float32
-            -   The target value of the reward critic.
-        *   -   adv_r
-            -   (size, )
-            -   torch.float32
-            -   The advantage of the reward.
-        *   -   value_r
-            -   (size, )
-            -   torch.float32
-            -   The value estimated by reward critic.
-        *   -   target_value_c
-            -   (size, )
-            -   torch.float32
-            -   The target value of the cost critic.
-        *   -   adv_c
-            -   (size, )
-            -   torch.float32
-            -   The advantage of the critic.
-        *   -   value_c
-            -   (size, )
-            -   torch.float32
-            -   The value estimated by cost critic.
-        *   -   logp
-            -   (size, )
-            -   torch.float32
-            -   The log probability of the action.
+    +----------------+----------+---------------+----------------------------------------+
+    | Name           | Shape    | Dtype         | Shape                                  |
+    +================+==========+===============+========================================+
+    | discounted_ret | (size, ) | torch.float32 | The discounted sum of return.          |
+    +----------------+----------+---------------+----------------------------------------+
+    | value_r        | (size, ) | torch.float32 | The value estimated by reward critic.  |
+    +----------------+----------+---------------+----------------------------------------+
+    | value_c        | (size, ) | torch.float32 | The value estimated by cost critic.    |
+    +----------------+----------+---------------+----------------------------------------+
+    | adv_r          | (size, ) | torch.float32 | The advantage of the reward.           |
+    +----------------+----------+---------------+----------------------------------------+
+    | adv_c          | (size, ) | torch.float32 | The advantage of the cost.             |
+    +----------------+----------+---------------+----------------------------------------+
+    | target_value_r | (size, ) | torch.float32 | The target value of the reward critic. |
+    +----------------+----------+---------------+----------------------------------------+
+    | target_value_c | (size, ) | torch.float32 | The target value of the cost critic.   |
+    +----------------+----------+---------------+----------------------------------------+
+    | logp           | (size, ) | torch.float32 | The log probability of the action.     |
+    +----------------+----------+---------------+----------------------------------------+
 
     Args:
         obs_space (OmnisafeSpace): The observation space.

@@ -33,12 +33,12 @@ class IPO(PPO):
     def _init_log(self) -> None:
         r"""Log the IPO specific information.
 
-        .. list-table::
+        +---------------+--------------------------+
+        | Things to log | Description              |
+        +===============+==========================+
+        | Misc/Penalty  | The penalty coefficient. |
+        +---------------+--------------------------+
 
-            *   -   Things to log
-                -   Description
-            *   -   ``Misc/Penalty``
-                -   The penalty coefficient.
         """
         super()._init_log()
         self._logger.register_key('Misc/Penalty')

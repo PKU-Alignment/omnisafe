@@ -42,12 +42,12 @@ class CPPOPID(PPO):
     def _init_log(self) -> None:
         r"""Log the CPPOPID specific information.
 
-        .. list-table::
+        +----------------------------+------------------------------+
+        | Things to log              | Description                  |
+        +============================+==============================+
+        | Metrics/LagrangeMultiplier | The PID-Lagrange multiplier. |
+        +----------------------------+------------------------------+
 
-            *   -   Things to log
-                -   Description
-            *   -   ``Metrics/LagrangeMultiplier``
-                -   The PID-Lagrange multiplier.
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
