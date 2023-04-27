@@ -79,7 +79,7 @@ class TRPO(NaturalPG):
             decay (float, optional): The decay rate of the step size. Defaults to 0.8.
 
         Returns:
-            The tuple of final update step and acceptance step size.
+            The tuple of final update direction and acceptance step size.
         """
         # How far to go in a single update
         step_frac = 1.0

@@ -27,6 +27,11 @@ class TRPOSimmerPID(TRPO):
     """The Simmer version(based on PID controller) of the TRPO algorithm.
 
     A simple combination of the Simmer RL and the Trust Region Policy Optimization algorithm.
+
+    References:
+        - Title: Effects of Safety State Augmentation on Safe Exploration.
+        - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Jun Wang, Haitham Bou Ammar.
+        - URL: `TRPOSimmerPID <https://arxiv.org/pdf/2206.02675.pdf>`_
     """
 
     def _init_env(self) -> None:
@@ -69,7 +74,7 @@ class TRPOSimmerPID(TRPO):
         self._logger.register_key('Metrics/EpBudget')
 
     def _update(self) -> None:
-        r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
+        r"""Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
 
         Args:
             self (object): object of the class.

@@ -50,7 +50,7 @@ class TRPOPID(TRPO):
         self._logger.register_key('Metrics/LagrangeMultiplier')
 
     def _update(self) -> None:
-        r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
+        r"""Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
 
         Additionally, we update the PID-Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier()` method.

@@ -32,6 +32,10 @@ class RCPO(NaturalPG):
     """
 
     def _init(self) -> None:
+        """The initialization of the algorithm.
+
+        Here we additionally initialize the Lagrange multiplier.
+        """
         super()._init()
         self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
@@ -40,7 +44,7 @@ class RCPO(NaturalPG):
         self._logger.register_key('Metrics/LagrangeMultiplier', min_and_max=True)
 
     def _update(self) -> None:
-        r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
+        r"""Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
 
         Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.

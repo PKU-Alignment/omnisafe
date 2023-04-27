@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of the Soft Actor-Critic algorithm."""
 
-
 import torch
 from torch import nn, optim
 from torch.nn.utils.clip_grad import clip_grad_norm_
@@ -99,6 +98,7 @@ class SAC(DDPG):
 
     @property
     def _alpha(self) -> float:
+        """float: The value of alpha."""
         return self._log_alpha.exp().item()
 
     def _update_reward_critic(
@@ -109,6 +109,21 @@ class SAC(DDPG):
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
+        """Update reward critic.
+
+        - Sample the target action by target actor.
+        - Get the target Q value by target critic.
+        - Use the minimum target Q value to update reward critic.
+        - Add the entropy loss to reward critic.
+        - Log useful information.
+
+        Args:
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            action (torch.Tensor): The ``action`` sampled from buffer.
+            reward (torch.Tensor): The ``reward`` sampled from buffer.
+            done (torch.Tensor): The ``terminated`` sampled from buffer.
+            next_obs (torch.Tensor): The ``next observation`` sampled from buffer.
+        """
         with torch.no_grad():
             next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
             next_logp = self._actor_critic.actor.log_prob(next_action)
@@ -150,6 +165,11 @@ class SAC(DDPG):
         self,
         obs: torch.Tensor,
     ) -> None:
+        """Update actor and alpha if ``auto_alpha`` is True.
+
+        Args:
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+        """
         super()._update_actor(obs)
 
         if self._cfgs.algo_cfgs.auto_alpha:
@@ -176,12 +196,30 @@ class SAC(DDPG):
         self,
         obs: torch.Tensor,
     ) -> torch.Tensor:
+        r"""Computing ``pi/actor`` loss.
+
+        Detailedly, the loss function in SAC is defined as:
+
+        .. math::
+            L = -Q^V(s, \pi(s)) + \alpha log \pi(s)
+
+        where :math:`Q^V` is the min value of two reward critic networks,
+        and :math:`\pi` is the policy network.
+        \alpha is the temperature parameter.
+
+        Args:
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+
+        Returns:
+            loss: The loss of pi/actor.
+        """
         action = self._actor_critic.actor.predict(obs, deterministic=False)
         log_prob = self._actor_critic.actor.log_prob(action)
         q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
         return (self._alpha * log_prob - torch.min(q1_value_r, q2_value_r)).mean()
 
     def _log_when_not_update(self) -> None:
+        """Log default value when not update."""
         super()._log_when_not_update()
         self._logger.store(
             {

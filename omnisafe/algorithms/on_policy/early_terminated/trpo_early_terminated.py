@@ -25,7 +25,10 @@ from omnisafe.utils import distributed
 class TRPOEarlyTerminated(TRPO):
     """The Early terminated version of the TRPO algorithm.
 
-    A simple combination of the Early terminated RL and the Trust Region Policy Optimization algorithm.
+    References:
+        - Title: Safe Exploration by Solving Early Terminated MDP.
+        - Authors: Hao Sun, Ziping Xu, Meng Fang, Zhenghao Peng, Jiadong Guo, Bo Dai, Bolei Zhou.
+        - URL: `TRPOEarlyTerminated <https://arxiv.org/pdf/2107.04200.pdf>`_
     """
 
     def _init_env(self) -> None:

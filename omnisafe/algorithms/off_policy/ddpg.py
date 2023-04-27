@@ -317,7 +317,7 @@ class DDPG(BaseAlgo):
         return ep_ret, ep_cost, ep_len
 
     def _update(self) -> None:
-        r"""Update actor, critic, running statistics, following next steps:
+        r"""Update actor, critic,, following next steps:
 
         -  Get the ``data`` from buffer
 
@@ -519,7 +519,7 @@ class DDPG(BaseAlgo):
         return -self._actor_critic.reward_critic(obs, action)[0].mean()
 
     def _log_when_not_update(self) -> None:
-        """Log zero value when not update."""
+        """Log default value when not update."""
         self._logger.store(
             {
                 'Loss/Loss_reward_critic': 0.0,

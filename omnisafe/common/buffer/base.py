@@ -25,7 +25,53 @@ from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
 
 class BaseBuffer(ABC):
-    """Abstract base class for buffer."""
+    """Abstract base class for buffer.
+
+    .. warning::
+        The buffer only supports Box spaces.
+
+    In  base buffer, we store the following data:
+
+    .. list-table::
+
+        *   -   Name
+            -   Shape
+            -   Dtype
+            -   Description
+        *   -   obs
+            -   (size, obs_space.shape)
+            -   torch.float32
+            -   The observation.
+        *   -   act
+            -   (size, act_space.shape)
+            -   torch.float32
+            -   The action.
+        *   -   reward
+            -   (size, )
+            -   torch.float32
+            -   Single step reward.
+        *   -   cost
+            -   (size, )
+            -   torch.float32
+            -   Single step cost.
+        *   -   done
+            -   (size, )
+            -   torch.float32
+            -   Whether the episode is done.
+
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        size (int): The size of the buffer.
+        device (torch.device): The device of the buffer.
+
+    Attributes:
+        data (dict[str, torch.Tensor]): The data of the buffer.
+
+    Raises:
+        NotImplementedError: If the observation space or the action space is not Box.
+        NotImplementedError: If the action space or the action space is not Box.
+    """
 
     def __init__(
         self,
@@ -34,51 +80,6 @@ class BaseBuffer(ABC):
         size: int,
         device: torch.device = DEVICE_CPU,
     ) -> None:
-        """Initialize the buffer.
-
-        .. warning::
-            The buffer only supports Box spaces.
-
-        In  base buffer, we store the following data:
-
-        .. list-table::
-
-            *   -   Name
-                -   Shape
-                -   Dtype
-                -   Description
-            *   -   obs
-                -   (size, obs_space.shape)
-                -   torch.float32
-                -   The observation.
-            *   -   act
-                -   (size, act_space.shape)
-                -   torch.float32
-                -   The action.
-            *   -   reward
-                -   (size, )
-                -   torch.float32
-                -   Single step reward.
-            *   -   cost
-                -   (size, )
-                -   torch.float32
-                -   Single step cost.
-            *   -   done
-                -   (size, )
-                -   torch.float32
-                -   Whether the episode is done.
-
-        Args:
-            obs_space (OmnisafeSpace): The observation space.
-            act_space (OmnisafeSpace): The action space.
-            size (int): The size of the buffer.
-            device (torch.device): The device of the buffer.
-
-        Attributes:
-            data (dict[str, torch.Tensor]): The data of the buffer.
-            _size (int): The size of the buffer.
-            _device (torch.device): The device of the buffer.
-        """
         self._device: torch.device = device
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros((size, *obs_space.shape), dtype=torch.float32, device=device)
@@ -100,12 +101,12 @@ class BaseBuffer(ABC):
 
     @property
     def device(self) -> torch.device:
-        """Return the device of the buffer."""
+        """torch.device: The device of the buffer."""
         return self._device
 
     @property
     def size(self) -> int:
-        """Return the size of the buffer."""
+        """int: The size of the buffer."""
         return self._size
 
     def __len__(self) -> int:

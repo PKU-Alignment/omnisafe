@@ -29,6 +29,72 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
     Besides, The buffer also provides the functionality of calculating the advantages of state-action pairs,
     ranging from ``GAE``, ``GAE-RTG`` ,``V-trace`` to ``Plain`` method.
+
+    .. warning::
+        The buffer only supports Box spaces.
+
+    Compared to the base buffer, the on-policy buffer stores extra data:
+
+    .. list-table::
+
+        *   -   Name
+            -   Shape
+            -   Dtype
+            -   Description
+        *   -   discounted_ret
+            -   (size, )
+            -   torch.float32
+            -   The discounted return.
+        *   -   target_value_r
+            -   (size, )
+            -   torch.float32
+            -   The target value of the reward critic.
+        *   -   adv_r
+            -   (size, )
+            -   torch.float32
+            -   The advantage of the reward.
+        *   -   value_r
+            -   (size, )
+            -   torch.float32
+            -   The value estimated by reward critic.
+        *   -   target_value_c
+            -   (size, )
+            -   torch.float32
+            -   The target value of the cost critic.
+        *   -   adv_c
+            -   (size, )
+            -   torch.float32
+            -   The advantage of the critic.
+        *   -   value_c
+            -   (size, )
+            -   torch.float32
+            -   The value estimated by cost critic.
+        *   -   logp
+            -   (size, )
+            -   torch.float32
+            -   The log probability of the action.
+
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        size (int): The size of the buffer.
+        gamma (float): The discount factor.
+        lam (float): The lambda factor for calculating the advantages.
+        lam_c (float): The lambda factor for calculating the advantages of the critic.
+        advantage_estimator (AdvatageEstimator): The advantage estimator.
+        penalty_coefficient (float, optional): The penalty coefficient. Defaults to 0.
+        standardized_adv_r (bool, optional): Whether to standardize the advantages of the actor. Defaults to False.
+        standardized_adv_c (bool, optional): Whether to standardize the advantages of the critic. Defaults to False.
+        device (torch.device, optional): The device to store the data. Defaults to torch.device('cpu').
+
+    Attributes:
+        ptr (int): The pointer of the buffer.
+        path_start (int): The start index of the current path.
+        max_size (int): The maximum size of the buffer.
+        data (dict): The data stored in the buffer.
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        device (torch.device): The device to store the data.
     """
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -45,81 +111,6 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         standardized_adv_c: bool = False,
         device: torch.device = DEVICE_CPU,
     ) -> None:
-        """Initialize the on-policy buffer.
-
-        .. warning::
-            The buffer only supports Box spaces.
-
-        Compared to the base buffer, the on-policy buffer stores extra data:
-
-        .. list-table::
-
-            *   -   Name
-                -   Shape
-                -   Dtype
-                -   Description
-            *   -   discounted_ret
-                -   (size, )
-                -   torch.float32
-                -   The discounted return.
-            *   -   target_value_r
-                -   (size, )
-                -   torch.float32
-                -   The target value of the reward critic.
-            *   -   adv_r
-                -   (size, )
-                -   torch.float32
-                -   The advantage of the reward.
-            *   -   value_r
-                -   (size, )
-                -   torch.float32
-                -   The value estimated by reward critic.
-            *   -   target_value_c
-                -   (size, )
-                -   torch.float32
-                -   The target value of the cost critic.
-            *   -   adv_c
-                -   (size, )
-                -   torch.float32
-                -   The advantage of the critic.
-            *   -   value_c
-                -   (size, )
-                -   torch.float32
-                -   The value estimated by cost critic.
-            *   -   logp
-                -   (size, )
-                -   torch.float32
-                -   The log probability of the action.
-
-        Args:
-            obs_space (OmnisafeSpace): The observation space.
-            act_space (OmnisafeSpace): The action space.
-            size (int): The size of the buffer.
-            gamma (float): The discount factor.
-            lam (float): The lambda factor for calculating the advantages.
-            lam_c (float): The lambda factor for calculating the advantages of the critic.
-            advantage_estimator (AdvatageEstimator): The advantage estimator.
-            penalty_coefficient (float, optional): The penalty coefficient. Defaults to 0.
-            standardized_adv_r (bool, optional): Whether to standardize the advantages of the actor. Defaults to False.
-            standardized_adv_c (bool, optional): Whether to standardize the advantages of the critic. Defaults to False.
-            device (torch.device, optional): The device to store the data. Defaults to torch.device('cpu').
-
-        Attributes:
-            _standardized_adv_r (bool): Whether to standardize the advantages of the actor.
-            _standardized_adv_c (bool): Whether to standardize the advantages of the critic.
-            _gamma (float): The discount factor.
-            _lam (float): The lambda factor for calculating the advantages.
-            _lam_c (float): The lambda factor for calculating the advantages of the critic.
-            _penalty_coefficient (float): The penalty coefficient.
-            _advantage_estimator (AdvatageEstimator): The advantage estimator.
-            ptr (int): The pointer of the buffer.
-            path_start (int): The start index of the current path.
-            max_size (int): The maximum size of the buffer.
-            data (dict): The data stored in the buffer.
-            obs_space (OmnisafeSpace): The observation space.
-            act_space (OmnisafeSpace): The action space.
-            device (torch.device): The device to store the data.
-        """
         super().__init__(obs_space, act_space, size, device)
 
         self._standardized_adv_r: bool = standardized_adv_r
@@ -147,12 +138,12 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
     @property
     def standardized_adv_r(self) -> bool:
-        """Get the standardized_adv_r."""
+        """bool: Whether to standardize the advantages of the actor."""
         return self._standardized_adv_r
 
     @property
     def standardized_adv_c(self) -> bool:
-        """Get the standardized_adv_c."""
+        """bool: Whether to standardize the advantages of the critic."""
         return self._standardized_adv_c
 
     def store(self, **data: torch.Tensor) -> None:
@@ -235,6 +226,9 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             and then standardize the advantages of state-action pairs.
             You can turn on this trick by setting the ``standardized_adv_r`` to ``True``.
             The same trick is applied to the advantages of the cost.
+
+        Returns:
+            The data stored and calculated in the buffer.
         """
         self.ptr, self.path_start_idx = 0, 0
 
@@ -248,9 +242,6 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             'adv_c': self.data['adv_c'],
             'target_value_c': self.data['target_value_c'],
         }
-
-        # self.data['adv_r'] = torch.zeros_like(self.data['adv_r'])
-        # self.data['adv_c'] = torch.zeros_like(self.data['adv_c'])
 
         adv_mean, adv_std, *_ = distributed.dist_statistics_scalar(data['adv_r'])
         cadv_mean, *_ = distributed.dist_statistics_scalar(data['adv_c'])
@@ -311,9 +302,16 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         It is unbiased but has high variance.
 
         Args:
-            vals (np.array): The value of states.
-            rews (np.array): The reward of states.
-            lam (float, optional): The lambda factor for GAE. Defaults to 0.95.
+            vals (torch.Tensor): The value of states.
+            rews (torch.Tensory): The reward of states.
+            lam (float): The lambda parameter in GAE formula.
+
+        Returns:
+            adv (torch.Tensor): The estimated advantage.
+            target_value (torch.Tensor): The target value for the value function.
+
+        Raises:
+            NotImplementedError: If the advantage estimator is not supported.
         """
 
         if self._advantage_estimator == 'gae':
@@ -377,22 +375,26 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         please refer to the paper: `Espeholt et al. 2018, IMPALA <https://arxiv.org/abs/1802.01561>`_.
 
         Args:
-            policy_action_probs (torch.Tensor): action probabilities of policy network, shape=(sequence_length,)
-            values (torch.Tensor): state values, shape=(sequence_length+1,)
-            rewards (torch.Tensor): rewards, shape=(sequence_length+1,)
-            behavior_action_probs (torch.Tensor): action probabilities of behavior network, shape=(sequence_length,)
-            gamma (float): discount factor
-            rho_bar (float): clip rho
-            c_bar (float): clip c
+            policy_action_probs (torch.Tensor): Action probabilities of the policy.
+            values (torch.Tensor): The value of states.
+            rewards (torch.Tensor): The reward of states.
+            behavior_action_probs (torch.Tensor): Action probabilities of the behavior policy.
+            gamma (float, optional): The discount factor. Defaults to 0.99.
+            rho_bar (float, optional): The maximum value of importance weights. Defaults to 1.0.
+            c_bar (float, optional): The maximum value of clipped importance weights. Defaults to 1.0.
 
         Returns:
             tuple: V-trace targets, shape=(batch_size, sequence_length)
+
+        Raises:
+            AssertionError: If the input tensors are scalars.
+            AssertionError: If c_bar is greater than rho_bar.
         """
-        assert values.ndim == 1, 'Please provide 1d-arrays'
-        assert rewards.ndim == 1
-        assert policy_action_probs.ndim == 1
-        assert behavior_action_probs.ndim == 1
-        assert c_bar <= rho_bar
+        assert values.ndim == 1, 'Please provide arrays instead of scalars'
+        assert rewards.ndim == 1, 'Please provide arrays instead of scalars'
+        assert policy_action_probs.ndim == 1, 'Please provide arrays instead of scalars'
+        assert behavior_action_probs.ndim == 1, 'Please provide arrays instead of scalars'
+        assert c_bar <= rho_bar, 'c_bar should be less than or equal to rho_bar'
 
         sequence_length = policy_action_probs.shape[0]
         # pylint: disable-next=assignment-from-no-return

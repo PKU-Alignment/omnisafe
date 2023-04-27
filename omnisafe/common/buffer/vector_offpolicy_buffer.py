@@ -35,7 +35,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         num_envs: int,
         device: torch.device = DEVICE_CPU,
     ) -> None:
-        """Initialize the off policy buffer.
+        """Initialize the vector-off-policy buffer.
 
         The vector-off-policy buffer is a vectorized version of the off-policy buffer.
         It stores the data in a single tensor, and the data of each environment is
@@ -54,12 +54,11 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
                 torch.device('cpu').
 
         Attributes:
-            data (Dict[str, torch.Tensor]): The data of the buffer.
-            _ptr (int): The pointer of the buffer.
-            _size (int): The size of the buffer.
-            _max_size (int): The maximum size of the buffer.
-            _batch_size (int): The batch size of the buffer.
-            _num_envs (int): The number of environments.
+            data (dict[str, torch.Tensor]): The data of the buffer.
+
+        Raises:
+            NotImplementedError: If the observation space or the action space is not Box.
+            NotImplementedError: If the action space or the action space is not Box.
         """
         self._num_envs: int = num_envs
         self._ptr: int = 0
@@ -101,7 +100,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
 
     @property
     def num_envs(self) -> int:
-        """Return the number of environments."""
+        """int: The number of parallel environments."""
         return self._num_envs
 
     def add_field(self, name: str, shape: tuple[int, ...], dtype: torch.dtype) -> None:
@@ -125,7 +124,11 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         )
 
     def sample_batch(self) -> dict[str, torch.Tensor]:
-        """Sample a batch from the buffer."""
+        """Sample a batch of data from the buffer.
+
+        Returns:
+            The sampled batch of data.
+        """
         idx = torch.randint(
             0,
             self._size,

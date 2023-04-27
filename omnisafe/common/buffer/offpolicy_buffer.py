@@ -24,7 +24,35 @@ from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
 
 class OffPolicyBuffer(BaseBuffer):
-    """A ReplayBuffer for off_policy Algorithms."""
+    """A ReplayBuffer for off_policy Algorithms.
+
+    .. warning::
+        The buffer only supports Box spaces.
+
+    Compared to the base buffer, the off-policy buffer stores extra data:
+
+    .. list-table::
+
+        *   -   Name
+            -   Shape
+            -   Dtype
+            -   Description
+        *   -   next_obs
+            -   (batch_size, obs_space.shape)
+            -   torch.float32
+            -   The next observation.
+
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        size (int): The size of the buffer.
+        batch_size (int): The batch size of the buffer.
+        device (torch.device, optional): The device of the buffer. Defaults to
+            torch.device('cpu').
+
+    Attributes:
+        data (dict[str, torch.Tensor]): The data stored in the buffer.
+    """
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -34,39 +62,6 @@ class OffPolicyBuffer(BaseBuffer):
         batch_size: int,
         device: torch.device = DEVICE_CPU,
     ) -> None:
-        """Initialize the off policy buffer.
-
-        .. warning::
-            The buffer only supports Box spaces.
-
-        Compared to the base buffer, the off-policy buffer stores extra data:
-
-        .. list-table::
-
-            *   -   Name
-                -   Shape
-                -   Dtype
-                -   Description
-            *   -   next_obs
-                -   (batch_size, obs_space.shape)
-                -   torch.float32
-                -   The next observation.
-
-        Args:
-            obs_space (OmnisafeSpace): The observation space.
-            act_space (OmnisafeSpace): The action space.
-            size (int): The size of the buffer.
-            batch_size (int): The batch size of the buffer.
-            device (torch.device, optional): The device of the buffer. Defaults to
-                torch.device('cpu').
-
-        Attributes:
-            data (dict[str, torch.Tensor]): The data stored in the buffer.
-            _ptr (int): The pointer of the buffer.
-            _size (int): The size of the buffer.
-            _max_size (int): The maximum size of the buffer.
-            _batch_size (int): The batch size of the buffer.
-        """
         super().__init__(obs_space, act_space, size, device)
         if isinstance(obs_space, Box):
             self.data['next_obs'] = torch.zeros(
@@ -88,12 +83,12 @@ class OffPolicyBuffer(BaseBuffer):
 
     @property
     def max_size(self) -> int:
-        """Return the maximum size of the buffer."""
+        """int: Return the max size of the buffer."""
         return self._max_size
 
     @property
     def batch_size(self) -> int:
-        """Return the batch size of the buffer."""
+        """int: Return the batch size of the buffer."""
         return self._batch_size
 
     def store(self, **data: torch.Tensor) -> None:
@@ -112,6 +107,10 @@ class OffPolicyBuffer(BaseBuffer):
         self._size = min(self._size + 1, self._max_size)
 
     def sample_batch(self) -> dict[str, torch.Tensor]:
-        """Sample a batch of data from the buffer."""
+        """Sample a batch of data from the buffer.
+
+        Returns:
+            The sampled batch of data.
+        """
         idxs = torch.randint(0, self._size, (self._batch_size,))
         return {key: value[idxs] for key, value in self.data.items()}

@@ -26,6 +26,12 @@ class TRPOSaute(TRPO):
     """The Saute version of the TRPO algorithm.
 
     A simple combination of the Saute RL and the Trust Region Policy Optimization algorithm.
+
+    References:
+        - Title: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation
+        - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
+        David Mguni, Jun Wang, Haitham Bou-Ammar.
+        - URL: `TRPOSaute <https://arxiv.org/abs/2202.06558>`_
     """
 
     def _init_env(self) -> None:

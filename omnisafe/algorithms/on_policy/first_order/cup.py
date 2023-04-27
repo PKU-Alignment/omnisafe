@@ -40,6 +40,10 @@ class CUP(PPO):
     _p_dist: Normal
 
     def _init(self) -> None:
+        """The initialization of the algorithm.
+
+        Here we additionally initialize the Lagrange multiplier.
+        """
         super()._init()
         self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
