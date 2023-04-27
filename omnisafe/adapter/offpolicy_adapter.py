@@ -111,7 +111,7 @@ class OffPolicyAdapter(OnlineAdapter):
                 done = terminated or truncated
                 if done:
                     logger.store(
-                        **{
+                        {
                             'Metrics/TestEpRet': ep_ret,
                             'Metrics/TestEpCost': ep_cost,
                             'Metrics/TestEpLen': ep_len,
@@ -197,7 +197,7 @@ class OffPolicyAdapter(OnlineAdapter):
             idx (int): The index of the environment.
         """
         logger.store(
-            **{
+            {
                 'Metrics/EpRet': self._ep_ret[idx],
                 'Metrics/EpCost': self._ep_cost[idx],
                 'Metrics/EpLen': self._ep_len[idx],

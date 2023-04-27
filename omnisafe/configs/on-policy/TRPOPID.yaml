@@ -41,9 +41,9 @@ defaults:
     # entropy coefficient
     entropy_coef: 0.0
     # normalize reward
-    reward_normalize: True
+    reward_normalize: False
     # normalize cost
-    cost_normalize: True
+    cost_normalize: False
     # normalize observation
     obs_normalize: True
     # early stop when kl divergence is bigger than target kl
@@ -129,7 +129,7 @@ defaults:
   # lagrangian configurations
   lagrange_cfgs:
     # The Kp of PID controller
-    pid_kp: 0.01
+    pid_kp: 0.1
     # The Ki of PID controller
     pid_ki: 0.01
     # The Kd of PID controller

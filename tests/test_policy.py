@@ -283,7 +283,6 @@ def test_sac_lag_policy(auto_alpha):
         + penalty_policy
         + saute_policy
         + simmer_policy
-        + pid_lagrange_policy
         + early_terminated_policy
     ),
 )
@@ -303,6 +302,32 @@ def test_on_policy(algo):
         'logger_cfgs': {
             'use_wandb': False,
             'save_model_freq': 1,
+        },
+    }
+    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
+
+
+@helpers.parametrize(algo=pid_lagrange_policy)
+def test_pid(algo):
+    """Test pid algorithms."""
+    env_id = 'Simple-v0'
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 200,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'steps_per_epoch': 100,
+            'update_iters': 2,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+        'lagrange_cfgs': {
+            'diff_norm': True,
         },
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)

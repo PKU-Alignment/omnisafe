@@ -109,7 +109,7 @@ class NaturalPG(PolicyGradient):
         distributed.avg_tensor(flat_grad_grad_kl)
 
         self._logger.store(
-            **{
+            {
                 'Train/KL': kl.item(),
             },
         )
@@ -164,7 +164,7 @@ class NaturalPG(PolicyGradient):
             loss, info = self._loss_pi(obs, act, logp, adv)
 
         self._logger.store(
-            **{
+            {
                 'Train/Entropy': info['entropy'],
                 'Train/PolicyRatio': info['ratio'],
                 'Train/PolicyStd': info['std'],
@@ -225,7 +225,7 @@ class NaturalPG(PolicyGradient):
                     self._update_cost_critic(obs, target_value_c)
 
         self._logger.store(
-            **{
+            {
                 'Train/StopIter': self._cfgs.algo_cfgs.update_iters,
                 'Value/Adv': adv_r.mean().item(),
             },

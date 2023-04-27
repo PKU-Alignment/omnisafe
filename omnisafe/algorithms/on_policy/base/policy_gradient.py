@@ -256,11 +256,11 @@ class PolicyGradient(BaseAlgo):
                 buffer=self._buf,
                 logger=self._logger,
             )
-            self._logger.store(**{'Time/Rollout': time.time() - roll_out_time})
+            self._logger.store({'Time/Rollout': time.time() - roll_out_time})
 
             update_time = time.time()
             self._update()
-            self._logger.store(**{'Time/Update': time.time() - update_time})
+            self._logger.store({'Time/Update': time.time() - update_time})
 
             if self._cfgs.model_cfgs.exploration_noise_anneal:
                 self._actor_critic.annealing(epoch)
@@ -269,7 +269,7 @@ class PolicyGradient(BaseAlgo):
                 self._actor_critic.actor_scheduler.step()
 
             self._logger.store(
-                **{
+                {
                     'TotalEnvSteps': (epoch + 1) * self._cfgs.algo_cfgs.steps_per_epoch,
                     'Time/FPS': self._cfgs.algo_cfgs.steps_per_epoch / (time.time() - epoch_time),
                     'Time/Total': (time.time() - start_time),
@@ -390,7 +390,7 @@ class PolicyGradient(BaseAlgo):
                 break
 
         self._logger.store(
-            **{
+            {
                 'Train/StopIter': update_counts,  # pylint: disable=undefined-loop-variable
                 'Value/Adv': adv_r.mean().item(),
                 'Train/KL': final_kl,
@@ -434,7 +434,7 @@ class PolicyGradient(BaseAlgo):
         distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
 
-        self._logger.store(**{'Loss/Loss_reward_critic': loss.mean().item()})
+        self._logger.store({'Loss/Loss_reward_critic': loss.mean().item()})
 
     def _update_cost_critic(self, obs: torch.Tensor, target_value_c: torch.Tensor) -> None:
         r"""Update value network under a double for loop.
@@ -473,7 +473,7 @@ class PolicyGradient(BaseAlgo):
         distributed.avg_grads(self._actor_critic.cost_critic)
         self._actor_critic.cost_critic_optimizer.step()
 
-        self._logger.store(**{'Loss/Loss_cost_critic': loss.mean().item()})
+        self._logger.store({'Loss/Loss_cost_critic': loss.mean().item()})
 
     def _update_actor(  # pylint: disable=too-many-arguments
         self,
@@ -515,7 +515,7 @@ class PolicyGradient(BaseAlgo):
         distributed.avg_grads(self._actor_critic.actor)
         self._actor_critic.actor_optimizer.step()
         self._logger.store(
-            **{
+            {
                 'Train/Entropy': info['entropy'],
                 'Train/PolicyRatio': info['ratio'],
                 'Train/PolicyStd': info['std'],

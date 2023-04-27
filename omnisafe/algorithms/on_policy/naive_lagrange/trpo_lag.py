@@ -76,7 +76,7 @@ class TRPOLag(TRPO):
         # then update the policy and value function
         super()._update()
 
-        self._logger.store(**{'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier})
+        self._logger.store({'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier})
 
     def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
         r"""Compute surrogate loss.

@@ -22,33 +22,35 @@ name: omnisafe
 
 channels:
   - pytorch
-  - nvidia/label/cuda-11.6.2
+  - nvidia/label/cuda-11.7.1
   - defaults
   - conda-forge
 
 dependencies:
-  - python = 3.8
+  - python = 3.10
   - pip
 
   # Learning
-  - pytorch::pytorch >= 1.10.0, < 2.0.0a0  # sync with project.dependencies
+  - pytorch::pytorch >= 1.10.0  # sync with project.dependencies
   - pytorch::torchvision
   - pytorch::pytorch-mutex = *=*cuda*
   - pip:
-      - cpprb
-      - safety-gymnasium>=0.1.0b0
+      - safety-gymnasium >= 0.1
   - tensorboard
   - wandb
 
   # Other dependencies
-  - scipy
+  - numpy
+  - moviepy
   - pyyaml
-  - psutil
-  - mpi4py
-  - joblib
+  - typer
+  - seaborn
+  - pandas
+  - matplotlib-base
+  - typing-extensions
 
   # Device select
-  - nvidia/label/cuda-11.6.2::cuda-toolkit = 11.6
+  - nvidia/label/cuda-11.7.1::cuda-toolkit = 11.7
 
   # Documentation
   - sphinx

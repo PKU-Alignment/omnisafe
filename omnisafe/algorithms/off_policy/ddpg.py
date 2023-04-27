@@ -192,8 +192,8 @@ class DDPG(BaseAlgo):
                 logger=self._logger,
             )
 
-            self._logger.store(**{'Time/Update': update_time})
-            self._logger.store(**{'Time/Rollout': roll_out_time})
+            self._logger.store({'Time/Update': update_time})
+            self._logger.store({'Time/Rollout': roll_out_time})
 
             if (
                 step > self._cfgs.algo_cfgs.start_learning_steps
@@ -202,7 +202,7 @@ class DDPG(BaseAlgo):
                 self._actor_critic.actor_scheduler.step()
 
             self._logger.store(
-                **{
+                {
                     'TotalEnvSteps': step + 1,
                     'Time/FPS': self._cfgs.algo_cfgs.steps_per_epoch / (time.time() - epoch_time),
                     'Time/Total': (time.time() - start_time),
@@ -265,7 +265,7 @@ class DDPG(BaseAlgo):
             for param in self._actor_critic.reward_critic.parameters():
                 loss += param.pow(2).sum() * self._cfgs.algo_cfgs.critic_norm_coeff
         self._logger.store(
-            **{
+            {
                 'Loss/Loss_reward_critic': loss.mean().item(),
                 'Value/reward_critic': q_value_r.mean().item(),
             },
@@ -312,7 +312,7 @@ class DDPG(BaseAlgo):
         self._actor_critic.cost_critic_optimizer.step()
 
         self._logger.store(
-            **{
+            {
                 'Loss/Loss_cost_critic': loss.mean().item(),
                 'Value/cost_critic': q_value_c.mean().item(),
             },
@@ -332,7 +332,7 @@ class DDPG(BaseAlgo):
             )
         self._actor_critic.actor_optimizer.step()
         self._logger.store(
-            **{
+            {
                 'Loss/Loss_pi': loss.mean().item(),
             },
         )
@@ -346,7 +346,7 @@ class DDPG(BaseAlgo):
 
     def _log_when_not_update(self) -> None:
         self._logger.store(
-            **{
+            {
                 'Loss/Loss_reward_critic': 0.0,
                 'Loss/Loss_pi': 0.0,
                 'Value/reward_critic': 0.0,
@@ -354,7 +354,7 @@ class DDPG(BaseAlgo):
         )
         if self._cfgs.algo_cfgs.use_cost:
             self._logger.store(
-                **{
+                {
                     'Loss/Loss_cost_critic': 0.0,
                     'Value/cost_critic': 0.0,
                 },

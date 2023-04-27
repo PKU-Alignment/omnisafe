@@ -248,7 +248,7 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
         algo_type (str): algorithm type.
     """
 
-    ## check algo configs
+    # check algo configs
     __check_algo_configs(configs.algo_cfgs, algo_type)
     __check_logger_configs(configs.logger_cfgs, algo_type)
     __check_parallel_and_vectorized(configs, algo_type)

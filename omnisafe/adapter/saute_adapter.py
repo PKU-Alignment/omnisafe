@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""OnPolicy Adapter for OmniSafe."""
+"""Saute Adapter for OmniSafe."""
 
 from __future__ import annotations
 
@@ -125,4 +125,4 @@ class SauteAdapter(OnPolicyAdapter):
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
         super()._log_metrics(logger, idx)
-        logger.store(**{'Metrics/EpBudget': self._ep_budget[idx]})
+        logger.store({'Metrics/EpBudget': self._ep_budget[idx]})

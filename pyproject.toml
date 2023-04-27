@@ -20,22 +20,17 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    'Intended Audience :: Science/Research',
-    'Topic :: Scientific/Engineering :: Artificial Intelligence',
-    'Topic :: Software Development :: Libraries :: Python Modules',
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
     "safety-gymnasium >= 0.1.0",
-    "torch >= 1.10.0, < 2.0.0a0",
+    "torch >= 1.10.0",
     "numpy >= 1.20.0",
     "tensorboard >= 2.8.0",
     "wandb >= 0.13.0",
-    "psutil >= 5.9.1",
-    "scipy >= 1.7.0",
-    "joblib",
     "pyyaml >= 6.0",
-    "types-pyyaml >= 6.0",
-    "xmltodict >= 0.13.0",
     "moviepy >= 1.0.0",
     "typing-extensions >= 4.0.0",
     "typer[all] >= 0.7.0",
@@ -65,7 +60,13 @@ lint = [
     "pyenchant",
     "pre-commit",
 ]
-test = ['pytest', 'pytest-cov', 'pytest-xdist']
+test = ["pytest", "pytest-cov", "pytest-xdist"]
+
+[project.scripts]
+omnisafe = "omnisafe.utils.command_app:app"
+
+[tool.setuptools]
+include-package-data = true
 
 [tool.setuptools.packages.find]
 include = ["omnisafe", "omnisafe.*"]

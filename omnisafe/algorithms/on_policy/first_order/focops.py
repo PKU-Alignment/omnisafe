@@ -219,7 +219,7 @@ class FOCOPS(PolicyGradient):
                 break
 
         self._logger.store(
-            **{
+            {
                 'Train/StopIter': i + 1,  # pylint: disable=undefined-loop-variable
                 'Value/Adv': adv_r.mean().item(),
                 'Train/KL': kl,

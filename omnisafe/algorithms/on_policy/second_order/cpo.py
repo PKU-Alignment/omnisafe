@@ -166,7 +166,7 @@ class CPO(TRPO):
             acceptance_step = 0
 
         self._logger.store(
-            **{
+            {
                 'Train/KL': kl,
             },
         )
@@ -283,7 +283,6 @@ class CPO(TRPO):
             def project(data: torch.Tensor, low: float, high: float) -> torch.Tensor:
                 """Project data to [low, high] interval."""
                 return torch.clamp(data, low, high)
-                # return torch.max(torch.min(data, torch.tensor(high)), torch.tensor(low))
 
             #  analytical Solution to LQCLP, employ lambda,nu to compute final solution of OLOLQC
             #  λ=argmax(f_a(λ),f_b(λ)) = λa_star or λb_star
@@ -414,7 +413,7 @@ class CPO(TRPO):
             loss = loss_reward + loss_cost
 
         self._logger.store(
-            **{
+            {
                 'Loss/Loss_pi': loss.item(),
                 'Train/Entropy': info['entropy'],
                 'Train/PolicyRatio': info['ratio'],

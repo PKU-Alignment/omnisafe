@@ -35,7 +35,7 @@ class Registry:
 
     def get(self, key):
         """Get the class that has been registered under the given key."""
-        res = self._module_dict.get(key, None)
+        res = self._module_dict.get(key)
         if res is None:
             raise KeyError(f'{key} is not in the {self.name} registry')
         return res
