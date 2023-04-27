@@ -59,8 +59,6 @@ class TD3Lag(TD3):
                 'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
             },
         )
-        super()._init()
-        self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _loss_pi(
         self,

@@ -112,7 +112,7 @@ class P3O(PPO):
             obs (torch.Tensor): ``observation`` stored in buffer.
             act (torch.Tensor): ``action`` stored in buffer.
             log_p (torch.Tensor): ``log_p`` stored in buffer.
-            adv (torch.Tensor): ``advantage`` stored in buffer.
+            adv_r (torch.Tensor): ``reward_advantage`` stored in buffer.
             adv_c (torch.Tensor): ``cost_advantage`` stored in buffer.
         """
         loss_reward = self._loss_pi(obs, act, logp, adv_r)

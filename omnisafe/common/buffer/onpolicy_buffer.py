@@ -303,7 +303,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
         Args:
             vals (torch.Tensor): The value of states.
-            rews (torch.Tensory): The reward of states.
+            rews (torch.Tensor): The reward of states.
             lam (float): The lambda parameter in GAE formula.
 
         Returns:
