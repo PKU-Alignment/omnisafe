@@ -16,6 +16,7 @@
 
 import omnisafe
 
+
 if __name__ == '__main__':
     env_id = 'SafetyPointGoal1-v0'
     custom_cfgs = {

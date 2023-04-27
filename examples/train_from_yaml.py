@@ -15,6 +15,7 @@
 """Example of training a policy from default config yaml with OmniSafe."""
 import omnisafe
 
+
 if __name__ == '__main__':
     env_id = 'SafetyPointGoal1-v0'
 
