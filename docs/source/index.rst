@@ -17,12 +17,13 @@ Welcome To OmniSafe Tutorial
     :scale: 45%
 
 Welcome to `OmniSafe <https://jmlr.org/papers/v16/garcia15a.html>`__ in Safe RL!
-OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learning, encompassing more than 20 different kinds of algorithms covering a multitude of SafeRL domains and delivering a new suite of testing environments.
+OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learning, encompassing more than 40 different kinds of algorithms covering a multitude of SafeRL domains and delivering a new suite of testing environments.
 
 .. hint::
 
     For beginners, it is necessary first to introduce you to Safe RL(Safe Reinforcement Learning).
-    *Safe Reinforcement Learning* can be defined as the learning agents that maximize the expectation of the return on problems, ensure reasonable system performance, and respect safety constraints during the learning and deployment processes.
+    *Safe Reinforcement Learning* can be defined as the learning agents that maximize the expectation of the return on problems, ensure reasonable system performance, 
+    and respect safety constraints during the learning and deployment processes.
 
 **This tutorial is useful for reinforcement learning learners of many levels.**
 
@@ -71,8 +72,8 @@ Examples include:
 - Completing complex control tasks in high dimensions.
 - Beating human grandmasters at Go tournaments.
 
-However, in the process of strategy updating by RL, the agents often learn **cheating or even dangerous behaviors** to improve their performance.
-Such an agent that can quickly achieve high scores differs from our desired result.
+However, in the process of policy updating by RL, the agents often learn **cheating or even dangerous behaviors** to improve their performance.
+Such an agent that can quickly achieve high scores but differs from our desired result.
 Therefore, Safe RL algorithms are dedicated to solving the problem of how to train an agent to learn to achieve the desired training goal without violating constraints simultaneously.
 
 .. admonition:: However
@@ -133,7 +134,8 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
             Robust Code
             ^^^^^^^^^^^
-            OmniSafe tutorial gives a **code-level** introduction in each algorithm introduction, allowing learners who are new to Safe RL theory to understand how to relate algorithmic ideas to code and give experts in the field of Safe RL new insights into algorithm implementation.
+            The OmniSafe tutorial gives a **code-level** introduction in each algorithm introduction, 
+            allowing learners new to Safe RL theory to understand how to connect algorithm ideas with code and providing Safe RL experts with unique insights into algorithm implementation.
 
 
 
@@ -167,9 +169,9 @@ Code Design Principles
         Robust and Readable
         ^^^^^^^^^^^^^^^^^^^^
         Our code can play the role of both a tutorial and a tool.
-        If you still need to become familiar with algorithms' implementations in Safe RL, the highly readable code in OmniSafe can help you get started quickly.
+        If you want to become familiar with algorithms' implementations in Safe RL, the highly readable code in OmniSafe can help you get started quickly.
         You can see how each algorithm performs.
-        If you want to build your algorithms, OmniSafe's highly robust code can also be an excellent tool!
+        If you want to build your algorithms, OmniSafe's highly inherited code can also be an excellent tool!
 
     .. grid-item-card::
         :class-item: sd-font-weight-bold
@@ -180,7 +182,9 @@ Code Design Principles
         Long-lived
         ^^^^^^^^^^^^^^^^^^^^^^^^^^
         Unlike other code that relies on a large number of external libraries, OmniSafe minimizes the dependency on third-party libraries.
-        This avoids shortening the life of the project due to iterative changes in third-party library code and also optimizes the user's experience in installing and using OmniSafe, because they do not have to install lots of dependencies to run OmniSafe.
+        This avoids shortening the life of the project due to iterative changes in third-party library code,
+        and also optimizes the user's experience in installing and using OmniSafe, 
+        because they do not have to install lots of dependencies to run OmniSafe.
 
 Before Reading
 --------------
