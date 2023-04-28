@@ -94,11 +94,19 @@ class NaturalPG(PolicyGradient):
             p_dist = self._actor_critic.actor(self._fvp_obs)
         kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
 
-        grads = torch.autograd.grad(kl, self._actor_critic.actor.parameters(), create_graph=True)  # type: ignore
+        grads = torch.autograd.grad(
+            kl,
+            tuple(self._actor_critic.actor.parameters()),
+            create_graph=True,
+        )
         flat_grad_kl = torch.cat([grad.view(-1) for grad in grads])
 
         kl_p = (flat_grad_kl * params).sum()
-        grads = torch.autograd.grad(kl_p, self._actor_critic.actor.parameters(), retain_graph=False)  # type: ignore
+        grads = torch.autograd.grad(
+            kl_p,
+            tuple(self._actor_critic.actor.parameters()),
+            retain_graph=False,
+        )
 
         flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
         distributed.avg_tensor(flat_grad_grad_kl)

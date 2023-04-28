@@ -80,7 +80,7 @@ class QCritic(Critic):
             num_critics,
             use_obs_encoder,
         )
-        self.net_lst: list[nn.Module] = []
+        self.net_lst: list[nn.Sequential] = []
         for idx in range(self._num_critics):
             if self._use_obs_encoder:
                 obs_encoder = build_mlp_network(
@@ -126,8 +126,8 @@ class QCritic(Critic):
         res = []
         for critic in self.net_lst:
             if self._use_obs_encoder:
-                obs_encode = critic[0](obs)  # type: ignore
-                res.append(torch.squeeze(critic[1](torch.cat([obs_encode, act], dim=-1)), -1))  # type: ignore
+                obs_encode = critic[0](obs)
+                res.append(torch.squeeze(critic[1](torch.cat([obs_encode, act], dim=-1)), -1))
             else:
                 res.append(torch.squeeze(critic(torch.cat([obs, act], dim=-1)), -1))
         return res

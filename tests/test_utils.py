@@ -198,7 +198,7 @@ def test_initalize(init_function: InitFunction):
     initialize_layer(init_function=init_function, layer=layer)
 
     with pytest.raises(TypeError) as e:
-        initialize_layer(init_function='test', layer=layer)  # type: ignore
+        initialize_layer(init_function='test', layer=layer)
     assert e.value.args[0] == 'Invalid initialization function: test'
 
 
