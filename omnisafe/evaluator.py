@@ -38,9 +38,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     """This class includes common evaluation methods for safe RL algorithms.
 
     Args:
-        env (CMDP, optional): the environment. Defaults to None.
-        actor (Actor, optional): the actor. Defaults to None.
-        render_mode (str, optional): the render mode. Defaults to 'rgb_array'.
+        env (CMDP or None, optional): The environment. Defaults to None.
+        actor (Actor or None, optional): The actor. Defaults to None.
+        render_mode (str, optional): The render mode. Defaults to 'rgb_array'.
     """
 
     _cfgs: Config
@@ -65,10 +65,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """Set the render mode.
 
         Args:
-            render_mode (str, optional): the render mode. Defaults to 'rgb_array'.
+            render_mode (str, optional): The render mode. Defaults to 'rgb_array'.
 
         Raises:
-            NotImplementedError: if the render mode is not implemented.
+            NotImplementedError: If the render mode is not implemented.
         """
         # set the render mode
         if render_mode in ['human', 'rgb_array', 'rgb_array_list']:
@@ -80,10 +80,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """Load the config from the save directory.
 
         Args:
-            save_dir (str): directory where the model is saved.
+            save_dir (str): Directory where the model is saved.
 
         Raises:
-            FileNotFoundError: if the config file is not found.
+            FileNotFoundError: If the config file is not found.
         """
         cfg_path = os.path.join(save_dir, 'config.json')
         try:
@@ -104,12 +104,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """Load the model from the save directory.
 
         Args:
-            save_dir (str): directory where the model is saved.
-            model_name (str): name of the model.
-            env_kwargs (dict[str, Any]): keyword arguments for the environment.
+            save_dir (str): Directory where the model is saved.
+            model_name (str): Name of the model.
+            env_kwargs (dict[str, Any]): Keyword arguments for the environment.
 
         Raises:
-            FileNotFoundError: if the model is not found.
+            FileNotFoundError: If the model is not found.
         """
         # load the saved model
         model_path = os.path.join(save_dir, 'torch_save', model_name)
@@ -164,8 +164,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         Args:
             save_dir (str): The directory where the model is saved.
             model_name (str): The name of the model.
-            render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'.
-            Defaults to 'rgb_array'.
+            render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array',
+                'rgb_array_list'. Defaults to 'rgb_array'.
             camera_name (str or None, optional): The name of the camera. Defaults to None.
             camera_id (int or None, optional): The id of the camera. Defaults to None.
             width (int, optional): The width of the image. Defaults to 256.
@@ -206,7 +206,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             (episode_rewards, episode_costs): The episode rewards and costs.
 
         Raises:
-            ValueError: if the environment and the policy are not provided or created.
+            ValueError: If the environment and the policy are not provided or created.
         """
         if self._env is None or self._actor is None:
             raise ValueError(
@@ -260,8 +260,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         """The fps of the environment.
 
         Raises:
-            AssertionError: if the environment is not provided or created.
-            AtrributeError: if the fps is not found.
+            AssertionError: If the environment is not provided or created.
+            AtrributeError: If the fps is not found.
         """
         assert (
             self._env is not None
@@ -285,7 +285,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         Args:
             num_episodes (int, optional): The number of episodes to render. Defaults to 1.
-            save_replay_path (str or None, optional): The path to save the replay video. Defaults to None.
+            save_replay_path (str or None, optional): The path to save the replay video. Defaults to
+                None.
             max_render_steps (int, optional): The maximum number of steps to render. Defaults to 2000.
             cost_criteria (float, optional): The discount factor for the cost. Defaults to 1.0.
         """

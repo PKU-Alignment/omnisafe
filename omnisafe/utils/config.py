@@ -27,10 +27,9 @@ from omnisafe.utils.tools import load_yaml
 class Config(dict):
     """Config class for storing hyperparameters.
 
-    OmniSafe uses a Config class to store all hyperparameters.
-    OmniSafe store hyperparameters in a yaml file and load them into a Config object.
-    Then the Config class will check the hyperparameters are valid,
-    then pass them to the algorithm class.
+    OmniSafe uses a Config class to store all hyperparameters. OmniSafe store hyperparameters in a
+    yaml file and load them into a Config object. Then the Config class will check the
+    hyperparameters are valid, then pass them to the algorithm class.
 
     Attributes:
         seed (int): Random seed.
@@ -230,8 +229,8 @@ def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:
     """Get the default kwargs from ``yaml`` file.
 
     .. note::
-        This function search the ``yaml`` file by the algorithm name and environment name.
-        Make sure your new implemented algorithm or environment has the same name as the yaml file.
+        This function search the ``yaml`` file by the algorithm name and environment name. Make
+        sure your new implemented algorithm or environment has the same name as the yaml file.
 
     Args:
         algo (str): The algorithm name.

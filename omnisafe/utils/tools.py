@@ -37,9 +37,9 @@ def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
     """This function is used to get the flattened parameters from the model.
 
     .. note::
-        Some algorithms need to get the flattened parameters from the model,
-        such as the :class:`TRPO` and :class:`CPO` algorithm.
-        In these algorithms, the parameters are flattened and then used to calculate the loss.
+        Some algorithms need to get the flattened parameters from the model, such as the
+        :class:`TRPO` and :class:`CPO` algorithm. In these algorithms, the parameters are flattened
+        and then used to calculate the loss.
 
     Examples:
         >>> model = torch.nn.Linear(2, 2)
@@ -70,9 +70,9 @@ def get_flat_gradients_from(model: torch.nn.Module) -> torch.Tensor:
     """This function is used to get the flattened gradients from the model.
 
     .. note::
-        Some algorithms need to get the flattened gradients from the model,
-        such as the :class:`TRPO` and :class:`CPO` algorithm.
-        In these algorithms, the gradients are flattened and then used to calculate the loss.
+        Some algorithms need to get the flattened gradients from the model, such as the
+        :class:`TRPO` and :class:`CPO` algorithm. In these algorithms, the gradients are flattened
+        and then used to calculate the loss.
 
     Args:
         model (torch.nn.Module): The model to be flattened.
@@ -96,8 +96,8 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
     """This function is used to set the parameters to the model.
 
     .. note::
-        Some algorithms (e.g. TRPO, CPO, etc.) need to set the parameters to the model,
-        instead of using the ``optimizer.step()``.
+        Some algorithms (e.g. TRPO, CPO, etc.) need to set the parameters to the model, instead of
+        using the ``optimizer.step()``.
 
     Examples:
         >>> model = torch.nn.Linear(2, 2)
@@ -113,8 +113,8 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
         vals (torch.Tensor): The parameters to be set.
 
     Raises:
-        AssertionError: If the instance of the parameters is not ``torch.Tensor``,
-            or the lengths of the parameters and the model parameters do not match.
+        AssertionError: If the instance of the parameters is not ``torch.Tensor``, or the lengths of
+            the parameters and the model parameters do not match.
     """
     assert isinstance(vals, torch.Tensor)
     i: int = 0
@@ -134,13 +134,13 @@ def seed_all(seed: int) -> None:
     """This function is used to set the random seed for all the packages.
 
     .. hint::
-        To reproduce the results, you need to set the random seed for all the packages.
-        Including ``numpy``, ``random``, ``torch``, ``torch.cuda``, ``torch.backends.cudnn``.
+        To reproduce the results, you need to set the random seed for all the packages. Including
+        ``numpy``, ``random``, ``torch``, ``torch.cuda``, ``torch.backends.cudnn``.
 
     .. warning::
-        If you want to use the ``torch.backends.cudnn.benchmark`` or ``torch.backends.cudnn.
-        deterministic`` and your ``cuda`` version is over 10.2, you need to set the
-        ``CUBLAS_WORKSPACE_CONFIG`` and ``PYTHONHASHSEED`` environment variables.
+        If you want to use the ``torch.backends.cudnn.benchmark`` or ``torch.backends.cudnn.deterministic``
+        and your ``cuda`` version is over 10.2, you need to set the ``CUBLAS_WORKSPACE_CONFIG`` and
+        ``PYTHONHASHSEED`` environment variables.
 
     Args:
         seed (int): The random seed.
@@ -168,9 +168,9 @@ def custom_cfgs_to_dict(key_list: str, value: Any) -> dict[str, Any]:
     """This function is used to convert the custom configurations to dict.
 
     .. note::
-        This function is used to convert the custom configurations to dict.
-        For example, if the custom configurations are ``train_cfgs:use_wandb`` and ``True``,
-        then the output dict will be ``{'train_cfgs': {'use_wandb': True}}``.
+        This function is used to convert the custom configurations to dict. For example, if the
+        custom configurations are ``train_cfgs:use_wandb`` and ``True``, then the output dict will
+        be ``{'train_cfgs': {'use_wandb': True}}``.
 
     Args:
         key_list (str): list of keys.
@@ -232,8 +232,8 @@ def load_yaml(path: str) -> dict[str, Any]:
     """Get the default kwargs from ``yaml`` file.
 
     .. note::
-        This function search the ``yaml`` file by the algorithm name and environment name.
-        Make sure your new implemented algorithm or environment has the same name as the yaml file.
+        This function search the ``yaml`` file by the algorithm name and environment name. Make sure
+        your new implemented algorithm or environment has the same name as the yaml file.
 
     Args:
         path (str): The path of the ``yaml`` file.
@@ -346,12 +346,12 @@ def hash_string(string: str) -> str:
 def get_device(device: torch.device | str | int = DEVICE_CPU) -> torch.device:
     """Retrieve PyTorch device.
 
-    It checks that the requested device is available first.
-    For now, it supports only cpu and cuda.
+    It checks that the requested device is available first. For now, it supports only cpu and cuda.
     By default, it tries to use the gpu.
 
     Args:
-        device (torch.device, str, or int): The device to use.
+        device (torch.device, str, or int, optional): The device to use. Defaults to
+            ``torch.device('cpu')``.
 
     Returns:
         The device to use.

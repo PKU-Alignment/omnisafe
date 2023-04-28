@@ -40,7 +40,7 @@ console = Console()
 def train(  # pylint: disable=too-many-arguments
     algo: str = typer.Option(
         'PPOLag',
-        help=f"algorithm to train{omnisafe.ALGORITHMS['all']}",
+        help=f"algorithm to train {omnisafe.ALGORITHMS['all']}",
         case_sensitive=False,
     ),
     env_id: str = typer.Option(
@@ -48,16 +48,34 @@ def train(  # pylint: disable=too-many-arguments
         help='the name of test environment',
         case_sensitive=False,
     ),
-    parallel: int = typer.Option(1, help='number of paralleled progress for calculations.'),
-    total_steps: int = typer.Option(1638400, help='total number of steps to train for algorithm'),
-    device: str = typer.Option('cpu', help='device to use for training'),
-    vector_env_nums: int = typer.Option(16, help='number of vector envs to use for training'),
-    torch_threads: int = typer.Option(16, help='number of threads to use for torch'),
+    parallel: int = typer.Option(
+        1,
+        help='number of paralleled progress for calculations.',
+    ),
+    total_steps: int = typer.Option(
+        1638400,
+        help='total number of steps to train for algorithm',
+    ),
+    device: str = typer.Option(
+        'cpu',
+        help='device to use for training',
+    ),
+    vector_env_nums: int = typer.Option(
+        16,
+        help='number of vector envs to use for training',
+    ),
+    torch_threads: int = typer.Option(
+        16,
+        help='number of threads to use for torch',
+    ),
     log_dir: str = typer.Option(
         os.path.abspath('.'),
         help='directory to save logs, default is current directory',
     ),
-    plot: bool = typer.Option(False, help='whether to plot the training curve after training'),
+    plot: bool = typer.Option(
+        False,
+        help='whether to plot the training curve after training',
+    ),
     render: bool = typer.Option(
         False,
         help='whether to render the trajectory of models saved during training',
@@ -66,7 +84,10 @@ def train(  # pylint: disable=too-many-arguments
         False,
         help='whether to evaluate the trajectory of models saved during training',
     ),
-    custom_cfgs: List[str] = typer.Option([], help='custom configuration for training'),
+    custom_cfgs: List[str] = typer.Option(
+        [],
+        help='custom configuration for training',
+    ),
 ) -> None:
     r"""Train a single policy in OmniSafe via command line.
 
@@ -79,25 +100,20 @@ def train(  # pylint: disable=too-many-arguments
     Args:
         algo (str): Algorithm to train.
         env_id (str): The name of test environment.
-        parallel (int, optional): Number of paralleled progress for calculations.
-            Defaults to 1.
-        total_steps (int, optional): Total number of steps to train for algorithm.
-            Defaults to 16384000
+        parallel (int, optional): Number of paralleled progress for calculations. Defaults to 1.
+        total_steps (int, optional): Total number of steps to train for algorithm. Defaults to
+            16384000.
         device (str, optional): Device to use for training. Defaults to 'cpu'.
-        vector_env_nums (int, optional): Number of vector envs to use for training.
-            Defaults to 16.
-        torch_threads (int, optional): Number of threads to use for torch.
-            Defaults to 16.
-        log_dir (str, optional): Directory to save logs, default is current directory.
-            Defaults to os.path.abspath('.').
-        plot (bool, optional): Whether to plot the training curve after training.
+        vector_env_nums (int, optional): Number of vector envs to use for training. Defaults to 16.
+        torch_threads (int, optional): Number of threads to use for torch. Defaults to 16.
+        log_dir (str, optional): Directory to save logs, default is current directory. Defaults to
+            ``os.path.abspath('.')``.
+        plot (bool, optional): Whether to plot the training curve after training. Defaults to False.
+        render (bool, optional): Whether to render the trajectory of models saved during training.
             Defaults to False.
-        render (bool, optional): Whether to render the trajectory of models saved
-            during training. Defaults to False.
-        evaluate (bool, optional): Whether to evaluate the trajectory of models saved
-            during training. Defaults to False.
-        custom_cfgs (List[str], optional): Custom configuration for training.
-            Defaults to [].
+        evaluate (bool, optional): Whether to evaluate the trajectory of models saved during
+            training. Defaults to False.
+        custom_cfgs (list of str, optional): Custom configuration for training. Defaults to ``[]``.
     """
     args = {
         'algo': algo,
@@ -161,7 +177,7 @@ def train_grid(
         exp_id (str): Experiment ID.
         algo (str): Algorithm to train.
         env_id (str): The name of test environment.
-        custom_cfgs (Dict[str, Any]): Custom configuration for training.
+        custom_cfgs (dict[str, Any]): Custom configuration for training.
 
     Returns:
         ep_ret: Average episode return in final epoch.
@@ -197,15 +213,21 @@ def train_grid(
 
 @app.command()
 def benchmark(
-    exp_name: str = typer.Argument(..., help='experiment name'),
-    num_pool: int = typer.Argument(..., help='number of paralleled experiments.'),
+    exp_name: str = typer.Argument(
+        ...,
+        help='experiment name',
+    ),
+    num_pool: int = typer.Argument(
+        ...,
+        help='number of paralleled experiments.',
+    ),
     config_path: str = typer.Argument(
         ...,
         help='path to config file, it is supposed to be yaml file, e.g. ./configs/ppo.yaml',
     ),
     gpu_range: str = typer.Option(
         None,
-        help='range of gpu to use, the format is as same as range in python,'
+        help='range of gpu to use, the format is as same as range in python, '
         'for example, use 2==range(2), 0:2==range(0,2), 0:2:1==range(0,2,1) to select gpu',
     ),
     log_dir: str = typer.Option(
@@ -292,15 +314,30 @@ def evaluate_model(
         ...,
         help='directory of experiment results to evaluate, e.g. ./runs/PPO-{SafetyPointGoal1-v0}',
     ),
-    num_episode: int = typer.Option(10, help='number of episodes to render'),
-    render: bool = typer.Option(True, help='whether to render'),
+    num_episode: int = typer.Option(
+        10,
+        help='number of episodes to render',
+    ),
+    render: bool = typer.Option(
+        True,
+        help='whether to render',
+    ),
     render_mode: str = typer.Option(
         'rgb_array',
-        help="render mode('human', 'rgb_array', 'rgb_array_list', 'depth_array', 'depth_array_list')",
+        help="render mode ('human', 'rgb_array', 'rgb_array_list', 'depth_array', 'depth_array_list')",
     ),
-    camera_name: str = typer.Option('track', help='camera name to render'),
-    width: int = typer.Option(256, help='width of rendered image'),
-    height: int = typer.Option(256, help='height of rendered image'),
+    camera_name: str = typer.Option(
+        'track',
+        help='camera name to render',
+    ),
+    width: int = typer.Option(
+        256,
+        help='width of rendered image',
+    ),
+    height: int = typer.Option(
+        256,
+        help='height of rendered image',
+    ),
 ) -> None:
     r"""Evaluate a policy which trained by OmniSafe via command line.
 
@@ -314,8 +351,8 @@ def evaluate_model(
         result_dir (str): Directory of experiment results to evaluate.
         num_episode (int, optional): Number of episodes to render. Defaults to 10.
         render (bool, optional): Whether to render. Defaults to True.
-        render_mode (str, optional): Render mode('human', 'rgb_array', 'rgb_array_list',
-        'depth_array', 'depth_array_list'). Defaults to 'rgb_array'.
+        render_mode (str, optional): Render mode ('human', 'rgb_array', 'rgb_array_list',
+            'depth_array', 'depth_array_list'). Defaults to 'rgb_array'.
         camera_name (str, optional): Camera name to render. Defaults to 'track'.
         width (int, optional): Width of rendered image. Defaults to 256.
         height (int, optional): Height of rendered image. Defaults to 256.
@@ -375,8 +412,8 @@ def train_config(
 
     Args:
         config_path (str): path to config file, it is supposed to be yaml file.
-        log_dir (str, optional): directory to save logs, default is current directory.
-        Defaults to os.path.join(os.getcwd()).
+        log_dir (str, optional): directory to save logs, default is current directory. Defaults to
+            ``os.path.join(os.getcwd())``.
     """
     assert_with_exit(config_path.endswith('.yaml'), 'config file must be yaml file')
     with open(config_path, encoding='utf-8') as file:
@@ -433,15 +470,16 @@ def analyze_grid(
 ) -> None:
     """Statistics tools for experiment grid.
 
-    Just specify in the name of the parameter of which value you want to compare,
-    then you can just specify how many values you want to compare in single graph at most,
-    and the function will automatically generate all possible combinations of the graph.
+    Just specify in the name of the parameter of which value you want to compare, then you can just
+    specify how many values you want to compare in single graph at most, and the function will
+    automatically generate all possible combinations of the graph.
 
     Args:
-        path (str): Path of experiment directory, these experiments are launched by omnisafe via experiment grid.
+        path (str): Path of experiment directory, these experiments are launched by omnisafe via
+            experiment grid.
         parameter (str): Name of parameter to analyze.
-        compare_num (int): Number of values to compare, if it is specified,
-        will combine any potential combination to compare
+        compare_num (int): Number of values to compare, if it is specified, will combine any
+            potential combination to compare
         cost_limit (float): The cost limit.
     """
     tools = StatisticsTools()

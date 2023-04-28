@@ -67,8 +67,8 @@ def discount_cumsum(vector_x: torch.Tensor, discount: float) -> torch.Tensor:
         tensor([4.00, 3.90, 3.00, 1.00])
 
     Args:
-        vector_x (torch.Tensor): shape (B, T).
-        discount (float): discount factor.
+        vector_x (torch.Tensor): A sequence of shape (B, T).
+        discount (float): The discount factor.
 
     Returns:
         The discounted cumulative sum of vectors.
@@ -92,26 +92,26 @@ def conjugate_gradients(
 ) -> torch.Tensor:
     """Implementation of Conjugate gradient algorithm.
 
-    Conjugate gradient algorithm is used to solve the linear system of equations :math:`Ax = b`.
+    Conjugate gradient algorithm is used to solve the linear system of equations :math:`A x = b`.
     The algorithm is described in detail in the paper `Conjugate Gradient Method`_.
 
     .. _Conjugate Gradient Method: https://en.wikipedia.org/wiki/Conjugate_gradient_method
 
     .. note::
-        Increasing ``num_steps`` will lead to a more accurate approximation
-        to :math:`A^{-1} b`, and possibly slightly-improved performance,
-        but at the cost of slowing things down.
-        Also probably don't play with this hyperparameter.
+        Increasing ``num_steps`` will lead to a more accurate approximation to :math:`A^{-1} b`, and
+        possibly slightly-improved performance, but at the cost of slowing things down. Also
+        probably don't play with this hyperparameter.
 
     Args:
-        fisher_product (Callable[[torch.Tensor], torch.Tensor]):  Fisher information matrix vector product.
-        vector_b (torch.Tensor): The vector :math:`b` in the equation :math:`Ax = b`.
-        num_steps (int): The number of steps to run the algorithm for.
-        residual_tol (float): The tolerance for the residual.
-        eps (float): A small number to avoid dividing by zero.
+        fisher_product (Callable[[torch.Tensor], torch.Tensor]): Fisher information matrix vector
+            product.
+        vector_b (torch.Tensor): The vector :math:`b` in the equation :math:`A x = b`.
+        num_steps (int, optional): The number of steps to run the algorithm for. Defaults to 10.
+        residual_tol (float, optional): The tolerance for the residual. Defaults to 1e-10.
+        eps (float, optional): A small number to avoid dividing by zero. Defaults to 1e-6.
 
     Returns:
-        The vector :math:`x` in the equation :math:`Ax = b`.
+        The vector :math:`x` in the equation :math:`A x = b`.
     """
     vector_x = torch.zeros_like(vector_b)
     vector_r = vector_b - fisher_product(vector_x)
@@ -135,8 +135,8 @@ def conjugate_gradients(
 class SafeTanhTransformer(TanhTransform):
     """Safe Tanh Transformer.
 
-    This transformer is used to avoid the error caused by the input of tanh function
-    being too large or too small.
+    This transformer is used to avoid the error caused by the input of tanh function being too large
+    or too small.
     """
 
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
@@ -204,11 +204,7 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
         return self.base_dist.stddev
 
     def entropy(self) -> torch.Tensor:
-        """The entropy of the tanh normal distribution.
-
-        Returns:
-            The entropy of the tanh normal distribution.
-        """
+        """The entropy of the tanh normal distribution."""
         return self.base_dist.entropy()
 
     @property

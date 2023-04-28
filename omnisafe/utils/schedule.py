@@ -39,14 +39,12 @@ class PiecewiseSchedule(Schedule):
 
     Args:
         endpoints (list[tuple[int, float]]): List of pairs `(time, value)` meaning that schedule
-            will output `value` when `t==time`. All the values for time must be sorted in
-            an increasing order. When t is between two times, e.g. `(time_a, value_a)` and
-            `(time_b, value_b)`, such that `time_a <= t < time_b` then value outputs is
-            interpolated linearly between `value_a` and `value_b`.
-            outside_value (int|float): Value to use if `t` is before the first time in `endpoints`
-            or after the last one.
-        outside_value (int or float): Value to use if `t` is before the first time in `endpoints`
-            or after the last one.
+            will output `value` when `t==time`. All the values for time must be sorted in an
+            increasing order. When t is between two times, e.g. `(time_a, value_a)` and
+            `(time_b, value_b)`, such that `time_a <= t < time_b` then value outputs is interpolated
+            linearly between `value_a` and `value_b`.
+        outside_value (int or float): Value to use if `t` is before the first time in `endpoints` or
+            after the last one.
     """
 
     def __init__(
@@ -68,8 +66,8 @@ class PiecewiseSchedule(Schedule):
             time (int or float): Current time step.
 
         Returns:
-            The interpolation value at time t or outside_value if t is
-            before the first time in endpoints of after the last one.
+            The interpolation value at time t or outside_value if t is before the first time in
+            endpoints of after the last one.
 
         Raises:
             AssertionError: If the time is not in the endpoints.
@@ -98,7 +96,7 @@ class ConstantSchedule(Schedule):
             time (int or float): Current time step.
 
         Returns:
-            The interpolation value at time t or outside_value if t is
-            before the first time in endpoints of after the last one.
+            The interpolation value at time t or outside_value if t is before the first time in
+            endpoints of after the last one.
         """
         return self._v
