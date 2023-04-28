@@ -19,6 +19,7 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+from typing import Any
 
 import numpy as np
 import torch
@@ -324,7 +325,7 @@ def dist_sum(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     return dist_op(value, ReduceOp.SUM)
 
 
-def dist_op(value: np.ndarray | torch.Tensor | int | float, operation: ReduceOp) -> torch.Tensor:
+def dist_op(value: np.ndarray | torch.Tensor | int | float, operation: Any) -> torch.Tensor:
     """Multi-processing operation.
 
     .. note::
