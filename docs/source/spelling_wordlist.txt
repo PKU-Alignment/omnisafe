@@ -429,3 +429,12 @@ abspath
 Deque
 datasets
 ziping
+LagrangeMultiplier
+SecondStepStopIter
+SecondStepEntropy
+SecondStepPolicyRatio
+RewUpdate
+CostUpdate
+AcceptanceStep
+FinalStepNorm
+xHx
