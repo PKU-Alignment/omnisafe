@@ -192,7 +192,8 @@ class OffPolicyAdapter(OnlineAdapter):
         """Reset the episode return, episode cost and episode length.
 
         Args:
-            idx (int or None): The index of the environment. Defaults to None (single environment).
+            idx (int or None, optional): The index of the environment. Defaults to None
+                (single environment).
         """
         if idx is None:
             self._ep_ret = torch.zeros(self._env.num_envs)

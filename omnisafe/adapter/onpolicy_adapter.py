@@ -70,7 +70,8 @@ class OnPolicyAdapter(OnlineAdapter):
 
         Args:
             steps_per_epoch (int): Number of steps per epoch.
-            agent (ConstraintActorCritic): Constraint actor-critic, including actor , reward critic and cost critic.
+            agent (ConstraintActorCritic): Constraint actor-critic, including actor , reward critic
+                and cost critic.
             buffer (VectorOnPolicyBuffer): Vector on-policy buffer.
             logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
         """
@@ -169,7 +170,8 @@ class OnPolicyAdapter(OnlineAdapter):
         """Reset the episode return, episode cost and episode length.
 
         Args:
-            idx (int or None): The index of the environment. Defaults to None (single environment).
+            idx (int or None, optional): The index of the environment. Defaults to None
+                (single environment).
         """
         if idx is None:
             self._ep_ret = torch.zeros(self._env.num_envs)

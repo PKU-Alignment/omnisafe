@@ -31,12 +31,11 @@ from omnisafe.utils.config import Config
 class SimmerAdapter(SauteAdapter):
     r"""Simmer Adapter for OmniSafe.
 
-    Simmer is a safe RL algorithm that uses a safety budget to control the exploration of the RL agent.
-    Similar to :class:`SauteEnvWrapper`, Simmer uses state augmentation to ensure safety.
+    Simmer is a safe RL algorithm that uses a safety budget to control the exploration of the RL
+    agent. Similar to :class:`SauteEnvWrapper`, Simmer uses state augmentation to ensure safety.
     Additionally, Simmer uses controller to control the safety budget.
 
     .. note::
-
         - If the safety state is greater than 0, the reward is the original reward.
         - If the safety state is less than 0, the reward is the unsafe reward (always 0 or less than 0).
 
@@ -91,9 +90,8 @@ class SimmerAdapter(SauteAdapter):
         """Reset the environment and returns an initial observation.
 
         .. note::
-            Additionally, the safety observation will be reset.
-            And the safety budget will be reset to the value of
-            current ``rel_safety_budget``.
+            Additionally, the safety observation will be reset. And the safety budget will be reset
+            to the value of current ``rel_safety_budget``.
 
         Returns:
             observation: The initial observation of the space.

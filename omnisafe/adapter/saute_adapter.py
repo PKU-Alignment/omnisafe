@@ -31,9 +31,9 @@ from omnisafe.utils.config import Config
 class SauteAdapter(OnPolicyAdapter):
     """Saute Adapter for OmniSafe.
 
-    Saute is a safe RL algorithm that uses state augmentation to ensure safety.
-    The state augmentation is the concatenation of the original state and the safety state.
-    The safety state is the safety budget minus the cost divided by the safety budget.
+    Saute is a safe RL algorithm that uses state augmentation to ensure safety. The state
+    augmentation is the concatenation of the original state and the safety state. The safety state
+    is the safety budget minus the cost divided by the safety budget.
 
     .. note::
         - If the safety state is greater than 0, the reward is the original reward.
@@ -78,7 +78,7 @@ class SauteAdapter(OnPolicyAdapter):
 
     @property
     def observation_space(self) -> Box:
-        """Box: The observation space of the environment."""
+        """The observation space of the environment."""
         return self._observation_space
 
     def _wrapper(
@@ -93,9 +93,9 @@ class SauteAdapter(OnPolicyAdapter):
             The reward or cost normalization is not supported in Saute Adapter.
 
         Args:
-            obs_normalize (bool): Whether to normalize the observation.
-            reward_normalize (bool): Whether to normalize the reward.
-            cost_normalize (bool): Whether to normalize the cost.
+            obs_normalize (bool, optional): Whether to normalize the observation. Defaults to True.
+            reward_normalize (bool, optional): Whether to normalize the reward. Defaults to True.
+            cost_normalize (bool, optional): Whether to normalize the cost. Defaults to True.
         """
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
@@ -138,8 +138,8 @@ class SauteAdapter(OnPolicyAdapter):
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
-            The :meth:`_saute_step` will be called to update the safety observation.
-            Then the reward will be updated by :meth:`_safety_reward`.
+            The :meth:`_saute_step` will be called to update the safety observation. Then the reward
+            will be updated by :meth:`_safety_reward`.
 
         Args:
             action (torch.Tensor): The action from the agent or random.
@@ -197,8 +197,8 @@ class SauteAdapter(OnPolicyAdapter):
     def _augment_obs(self, obs: torch.Tensor) -> torch.Tensor:
         """Augmenting the obs with the safety obs.
 
-        Detailedly, the augmented obs is the concatenation of the original obs and the safety obs.
-        The safety obs is the safety budget minus the cost divided by the safety budget.
+        The augmented obs is the concatenation of the original obs and the safety obs. The safety
+        obs is the safety budget minus the cost divided by the safety budget.
 
         Args:
             obs (torch.Tensor): The original observation.
@@ -231,7 +231,8 @@ class SauteAdapter(OnPolicyAdapter):
         """Reset the episode return, episode cost, episode length and episode budget.
 
         Args:
-            idx (int or None): The index of the environment. Defaults to None (single environment).
+            idx (int or None, optional): The index of the environment. Defaults to None
+                (single environment).
         """
         super()._reset_log(idx)
         if idx is None:

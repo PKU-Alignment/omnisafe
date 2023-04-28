@@ -60,8 +60,8 @@ class EarlyTerminatedAdapter(OnPolicyAdapter):
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
-            Early terminated adapter will accumulate the cost,
-            and terminate the episode when the accumulated cost exceeds the cost limit.
+            Early terminated adapter will accumulate the cost and terminate the episode when the
+            accumulated cost exceeds the cost limit.
 
         Args:
             action (torch.Tensor): The action from the agent or random.

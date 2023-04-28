@@ -38,9 +38,9 @@ from omnisafe.utils.tools import get_device
 class OnlineAdapter:
     """Online Adapter for OmniSafe.
 
-    OmniSafe is a framework for safe reinforcement learning. It is designed to be
-    compatible with any existing RL algorithms. The online adapter is used
-    to adapt the environment to the framework.
+    OmniSafe is a framework for safe reinforcement learning. It is designed to be compatible with
+    any existing RL algorithms. The online adapter is used to adapt the environment to the
+    framework.
 
     OmniSafe provides a set of adapters to adapt the environment to the framework.
 
@@ -112,9 +112,9 @@ class OnlineAdapter:
 
 
         Args:
-            obs_normalize (bool): Whether to normalize the observation.
-            reward_normalize (bool): Whether to normalize the reward.
-            cost_normalize (bool): Whether to normalize the cost.
+            obs_normalize (bool, optional): Whether to normalize the observation. Defaults to True.
+            reward_normalize (bool, optional): Whether to normalize the reward. Defaults to True.
+            cost_normalize (bool, optional): Whether to normalize the cost. Defaults to True.
         """
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, time_limit=1000, device=self._device)
@@ -137,12 +137,12 @@ class OnlineAdapter:
 
     @property
     def action_space(self) -> OmnisafeSpace:
-        """OmniSafeSpace: The action space of the environment."""
+        """The action space of the environment."""
         return self._env.action_space
 
     @property
     def observation_space(self) -> OmnisafeSpace:
-        """OmniSafeSpace: The observation space of the environment."""
+        """The observation space of the environment."""
         return self._env.observation_space
 
     def step(
@@ -184,12 +184,11 @@ class OnlineAdapter:
         """Save the important components of the environment.
 
         .. note::
-            The saved components will be stored in the wrapped environment.
-            If the environment is not wrapped, the saved components will be
-            empty dict. common wrappers are obs_normalize, reward_normalize,
-            and cost_normalize.
+            The saved components will be stored in the wrapped environment. If the environment is
+            not wrapped, the saved components will be an empty dict. common wrappers are
+            ``obs_normalize``, ``reward_normalize``, and ``cost_normalize``.
 
         Returns:
-            The saved components of environment, e.g. ``obs_normalizer``.
+            The saved components of environment, e.g., ``obs_normalizer``.
         """
         return self._env.save()
