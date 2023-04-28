@@ -146,9 +146,9 @@ class DDPG(BaseAlgo):
         +-------------------------+-------------------------------------------------------------------------+
         | Metrics/TestEpLen       | Average length of the evaluate epoch.                                   |
         +-------------------------+-------------------------------------------------------------------------+
-        | Value/reward_critic     | Average value in :meth:`rollout` (from critic network) of the epoch.   |
+        | Value/reward_critic     | Average value in :meth:`rollout` (from critic network) of the epoch.    |
         +-------------------------+-------------------------------------------------------------------------+
-        | Values/cost_critic      | Average cost in :meth:`rollout` (from critic network) of the epoch.    |
+        | Values/cost_critic      | Average cost in :meth:`rollout` (from critic network) of the epoch.     |
         +-------------------------+-------------------------------------------------------------------------+
         | Loss/Loss_pi            | Loss of the policy network.                                             |
         +-------------------------+-------------------------------------------------------------------------+
