@@ -88,7 +88,7 @@ class PDO(PolicyGradient):
             adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
 
         Returns:
-            The ``advantage``combined with ``reward_advantage`` and ``cost_advantage``.
+            The ``advantage`` combined with ``reward_advantage`` and ``cost_advantage``.
         """
         penalty = self._lagrange.lagrangian_multiplier.item()
         return (adv_r - penalty * adv_c) / (1 + penalty)

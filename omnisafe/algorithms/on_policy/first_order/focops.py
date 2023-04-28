@@ -74,11 +74,11 @@ class FOCOPS(PolicyGradient):
             :nowrap:
 
             \begin{eqnarray}
-            L = \nabla_\theta D_{K L}\left(\pi_\theta^{'} \| \pi_{\theta}\right)[s]
-            -\frac{1}{\eta} \underset{a \sim \pi_{\theta}}
-            {\mathbb{E}}\left[\frac{\nabla_\theta \pi_\theta(a \mid s)}
-            {\pi_{\theta}(a \mid s)}\left(A^{R}_{\pi_{\theta}}(s, a)
-            -\lambda A^C_{\pi_{\theta}}(s, a)\right)\right]
+                L = \nabla_{\theta} D_{K L} \left( \pi_{\theta}^{'} \| \pi_{\theta} \right)[s]
+                - \frac{1}{\eta} \underset{a \sim \pi_{\theta}}{\mathbb{E}} \left[
+                    \frac{\nabla_{\theta} \pi_{\theta} (a \mid s)}{\pi_{\theta}(a \mid s)}
+                    \left( A^{R}_{\pi_{\theta}} (s, a) - \lambda A^C_{\pi_{\theta}} (s, a) \right)
+                \right]
             \end{eqnarray}
 
         where :math:`\eta` is a hyperparameter, :math:`\lambda` is the Lagrange multiplier,
@@ -124,15 +124,18 @@ class FOCOPS(PolicyGradient):
         FOCOPS uses the following surrogate loss:
 
         .. math::
-            L = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
-            - \lambda A^C_{\pi_{\theta}}(s, a)]
+
+            L = \frac{1}{1 + \lambda} [
+                A^{R}_{\pi_{\theta}} (s, a)
+                - \lambda A^C_{\pi_{\theta}} (s, a)
+            ]
 
         Args:
             adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.
             adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
 
         Returns:
-            The ``advantage``combined with ``reward_advantage`` and ``cost_advantage``.
+            The ``advantage`` combined with ``reward_advantage`` and ``cost_advantage``.
         """
         return (adv_r - self._lagrange.lagrangian_multiplier * adv_c) / (
             1 + self._lagrange.lagrangian_multiplier
@@ -147,10 +150,9 @@ class FOCOPS(PolicyGradient):
 
             \lambda_{k+1} = \lambda_k + \eta (J^{C}_{\pi_\theta} - C)
 
-        where :math:`\lambda_k` is the Lagrange multiplier at iteration :math:`k`,
-        :math:`\eta` is the Lagrange multiplier learning rate,
-        :math:`J^{C}_{\pi_\theta}` is the cost of the current policy,
-        and :math:`C` is the cost limit.
+        where :math:`\lambda_k` is the Lagrange multiplier at iteration :math:`k`, :math:`\eta` is
+        the Lagrange multiplier learning rate, :math:`J^{C}_{\pi_\theta}` is the cost of the current
+        policy, and :math:`C` is the cost limit.
 
         Then in each iteration of the policy update, FOCOPS calculates current policy's
         distribution, which used to calculate the policy loss.
