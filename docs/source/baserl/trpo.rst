@@ -524,7 +524,7 @@ Architecture of functions
 
 - ``TRPO.learn()``
 
-  - ``TRPO._env.roll_out()``
+  - ``TRPO._env.rollout()``
   - ``TRPO._update()``
 
     - ``TRPO._buf.get()``

@@ -55,14 +55,14 @@ class OnPolicyAdapter(OnlineAdapter):
         super().__init__(env_id, num_envs, seed, cfgs)
         self._reset_log()
 
-    def roll_out(  # pylint: disable=too-many-locals
+    def rollout(  # pylint: disable=too-many-locals
         self,
         steps_per_epoch: int,
         agent: ConstraintActorCritic,
         buffer: VectorOnPolicyBuffer,
         logger: Logger,
     ) -> None:
-        """Roll out the environment and store the data in the buffer.
+        """Rollout the environment and store the data in the buffer.
 
         .. warning::
             As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,

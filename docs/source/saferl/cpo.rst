@@ -493,7 +493,7 @@ Architecture of functions
 
 - ``CPO.learn()``
 
-  - ``CPO._env.roll_out()``
+  - ``CPO._env.rollout()``
   - ``CPO._update()``
 
     - ``CPO._buf.get()``

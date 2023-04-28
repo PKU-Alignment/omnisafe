@@ -69,7 +69,7 @@ class OffPolicyAdapter(OnlineAdapter):
         agent: ConstraintActorQCritic,
         logger: Logger,
     ) -> None:
-        """Roll out the environment with deterministic agent action.
+        """Rollout the environment with deterministic agent action.
 
         Args:
             episode (int): Number of episodes.
@@ -102,29 +102,29 @@ class OffPolicyAdapter(OnlineAdapter):
                 },
             )
 
-    def roll_out(  # pylint: disable=too-many-locals
+    def rollout(  # pylint: disable=too-many-locals
         self,
-        roll_out_step: int,
+        rollout_step: int,
         agent: ConstraintActorQCritic,
         buffer: VectorOffPolicyBuffer,
         logger: Logger,
         use_rand_action: bool,
     ) -> None:
-        """Roll out the environment and store the data in the buffer.
+        """Rollout the environment and store the data in the buffer.
 
         .. warning::
             As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,
             so the final observation will be stored in ``info['final_observation']``.
 
         Args:
-            roll_out_step (int): Number of roll out steps.
+            rollout_step (int): Number of rollout steps.
             agent (ConstraintActorCritic): Constraint actor-critic, including actor, reward critic,
                 and cost critic.
             buffer (VectorOnPolicyBuffer): Vector on-policy buffer.
             logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
             use_rand_action (bool): Whether to use random action.
         """
-        for _ in range(roll_out_step):
+        for _ in range(rollout_step):
             if use_rand_action:
                 act = torch.as_tensor(self._env.sample_action(), dtype=torch.float32).to(
                     self._device,

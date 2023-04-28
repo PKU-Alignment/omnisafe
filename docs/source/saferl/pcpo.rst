@@ -468,7 +468,7 @@ Architecture of functions
 
 - ``PCPO.learn()``
 
-  - ``PCPO._env.roll_out()``
+  - ``PCPO._env.rollout()``
   - ``PCPO._update()``
 
     - ``PCPO._buf.get()``
@@ -493,7 +493,7 @@ Documentation of basic functions
         :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
-        env.roll_out()
+        env.rollout()
         ^^^
         Collect data and store it to experience buffer.
 

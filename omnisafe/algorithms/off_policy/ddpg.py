@@ -146,9 +146,9 @@ class DDPG(BaseAlgo):
         +-------------------------+-------------------------------------------------------------------------+
         | Metrics/TestEpLen       | Average length of the evaluate epoch.                                   |
         +-------------------------+-------------------------------------------------------------------------+
-        | Value/reward_critic     | Average value in :meth:`roll_out` (from critic network) of the epoch.   |
+        | Value/reward_critic     | Average value in :meth:`rollout` (from critic network) of the epoch.   |
         +-------------------------+-------------------------------------------------------------------------+
-        | Values/cost_critic      | Average cost in :meth:`roll_out` (from critic network) of the epoch.    |
+        | Values/cost_critic      | Average cost in :meth:`rollout` (from critic network) of the epoch.    |
         +-------------------------+-------------------------------------------------------------------------+
         | Loss/Loss_pi            | Loss of the policy network.                                             |
         +-------------------------+-------------------------------------------------------------------------+
@@ -234,7 +234,7 @@ class DDPG(BaseAlgo):
         start_time = time.time()
         step = 0
         for epoch in range(self._epochs):
-            roll_out_time = 0.0
+            rollout_time = 0.0
             update_time = 0.0
             epoch_time = time.time()
 
@@ -244,20 +244,20 @@ class DDPG(BaseAlgo):
             ):
                 step = sample_step * self._update_cycle * self._cfgs.train_cfgs.vector_env_nums
 
-                roll_out_start = time.time()
+                rollout_start = time.time()
                 # set noise for exploration
                 if self._cfgs.algo_cfgs.use_exploration_noise:
                     self._actor_critic.actor.noise = self._cfgs.algo_cfgs.exploration_noise
 
                 # collect data from environment
-                self._env.roll_out(
-                    roll_out_step=self._update_cycle,
+                self._env.rollout(
+                    rollout_step=self._update_cycle,
                     agent=self._actor_critic,
                     buffer=self._buf,
                     logger=self._logger,
                     use_rand_action=(step <= self._cfgs.algo_cfgs.start_learning_steps),
                 )
-                roll_out_time += time.time() - roll_out_start
+                rollout_time += time.time() - rollout_start
 
                 # update parameters
                 update_start = time.time()
@@ -275,7 +275,7 @@ class DDPG(BaseAlgo):
             )
 
             self._logger.store({'Time/Update': update_time})
-            self._logger.store({'Time/Rollout': roll_out_time})
+            self._logger.store({'Time/Rollout': rollout_time})
 
             if (
                 step > self._cfgs.algo_cfgs.start_learning_steps

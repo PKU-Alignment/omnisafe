@@ -142,9 +142,9 @@ class PolicyGradient(BaseAlgo):
         +-----------------------+-------------------------------------------------------------------------+
         | Metrics/EpLen         | Average length of the epoch.                                            |
         +-----------------------+-------------------------------------------------------------------------+
-        | Values/reward         | Average value in :meth:`roll_out` (from critic network) of the epoch.   |
+        | Values/reward         | Average value in :meth:`rollout` (from critic network) of the epoch.   |
         +-----------------------+-------------------------------------------------------------------------+
-        | Values/cost           | Average cost in :meth:`roll_out` (from critic network) of the epoch.    |
+        | Values/cost           | Average cost in :meth:`rollout` (from critic network) of the epoch.    |
         +-----------------------+-------------------------------------------------------------------------+
         | Values/Adv            | Average reward advantage of the epoch.                                  |
         +-----------------------+-------------------------------------------------------------------------+
@@ -241,14 +241,14 @@ class PolicyGradient(BaseAlgo):
         for epoch in range(self._cfgs.train_cfgs.epochs):
             epoch_time = time.time()
 
-            roll_out_time = time.time()
-            self._env.roll_out(
+            rollout_time = time.time()
+            self._env.rollout(
                 steps_per_epoch=self._steps_per_epoch,
                 agent=self._actor_critic,
                 buffer=self._buf,
                 logger=self._logger,
             )
-            self._logger.store({'Time/Rollout': time.time() - roll_out_time})
+            self._logger.store({'Time/Rollout': time.time() - rollout_time})
 
             update_time = time.time()
             self._update()

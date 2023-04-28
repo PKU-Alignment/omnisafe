@@ -478,7 +478,7 @@ Architecture of functions
 
 -  ``FOCOPS.learn()``
 
-   - ``FOCOPS._env.roll_out()``
+   - ``FOCOPS._env.rollout()``
    - ``FOCOPS._update()``
 
      - ``FOCOPS._buf.get()``

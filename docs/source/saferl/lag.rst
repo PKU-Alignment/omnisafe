@@ -341,7 +341,7 @@ Architecture of functions
 
 -  ``PPOLag.learn()``
 
-   - ``PPOLag._env.roll_out()``
+   - ``PPOLag._env.rollout()``
    - ``PPOLag._update()``
 
      - ``PPOLag._buf.get()``

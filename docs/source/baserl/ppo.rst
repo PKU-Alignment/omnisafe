@@ -373,7 +373,7 @@ Architecture of functions
 
 -  ``PPO.learn()``
 
-   - ``PPO._env.roll_out()``
+   - ``PPO._env.rollout()``
    - ``PPO._update()``
 
      - ``PPO._buf.get()``
