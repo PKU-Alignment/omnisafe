@@ -142,9 +142,9 @@ class PolicyGradient(BaseAlgo):
         +-----------------------+-------------------------------------------------------------------------+
         | Metrics/EpLen         | Average length of the epoch.                                            |
         +-----------------------+-------------------------------------------------------------------------+
-        | Values/reward         | Average value in :meth:`roll_out()` (from critic network) of the epoch. |
+        | Values/reward         | Average value in :meth:`roll_out` (from critic network) of the epoch.   |
         +-----------------------+-------------------------------------------------------------------------+
-        | Values/cost           | Average cost in :meth:`roll_out()` (from critic network) of the epoch.  |
+        | Values/cost           | Average cost in :meth:`roll_out` (from critic network) of the epoch.    |
         +-----------------------+-------------------------------------------------------------------------+
         | Values/Adv            | Average reward advantage of the epoch.                                  |
         +-----------------------+-------------------------------------------------------------------------+
