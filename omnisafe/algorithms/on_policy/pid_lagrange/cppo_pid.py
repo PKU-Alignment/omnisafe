@@ -54,8 +54,8 @@ class CPPOPID(PPO):
     def _update(self) -> None:
         r"""Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
 
-        Additionally, we update the PID-Lagrange multiplier parameter,
-        by calling the :meth:`update_lagrange_multiplier` method.
+        Additionally, we update the PID-Lagrange multiplier parameter by calling the
+        :meth:`update_lagrange_multiplier` method.
 
         .. note::
             The :meth:`_loss_pi` is defined in the :class:`PolicyGradient` algorithm.
@@ -64,8 +64,10 @@ class CPPOPID(PPO):
 
             .. math::
 
-                L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[ \frac{\pi_\theta(a_t|s_t)}{\pi_\theta^{old}(a_t|s_t)}
-                [A^{R}_{\pi_{\theta}}(s_t, a_t) - \lambda A^{C}_{\pi_{\theta}}(s_t, a_t)] \right]
+                L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[
+                    \frac{\pi_{\theta} (a_t|s_t)}{\pi_{\theta}^{old} (a_t|s_t)}
+                    [ A^{R}_{\pi_{\theta}} (s_t, a_t) - \lambda A^{C}_{\pi_{\theta}} (s_t, a_t) ]
+                \right]
 
             where :math:`\lambda` is the PID-Lagrange multiplier parameter.
         """
@@ -85,8 +87,10 @@ class CPPOPID(PPO):
 
         .. math::
 
-            L = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
-            - \lambda A^C_{\pi_{\theta}}(s, a)]
+            L = \frac{1}{1 + \lambda} [
+                A^{R}_{\pi_{\theta}} (s, a)
+                - \lambda A^C_{\pi_{\theta}} (s, a)
+            ]
 
         Args:
             adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.

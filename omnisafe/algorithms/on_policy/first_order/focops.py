@@ -148,10 +148,10 @@ class FOCOPS(PolicyGradient):
 
         .. math::
 
-            \lambda_{k+1} = \lambda_k + \eta (J^{C}_{\pi_\theta} - C)
+            \lambda_{k+1} = \lambda_k + \eta (J^{C}_{\pi_{\theta}} - C)
 
         where :math:`\lambda_k` is the Lagrange multiplier at iteration :math:`k`, :math:`\eta` is
-        the Lagrange multiplier learning rate, :math:`J^{C}_{\pi_\theta}` is the cost of the current
+        the Lagrange multiplier learning rate, :math:`J^{C}_{\pi_{\theta}}` is the cost of the current
         policy, and :math:`C` is the cost limit.
 
         Then in each iteration of the policy update, FOCOPS calculates current policy's

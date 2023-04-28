@@ -91,7 +91,7 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
     def pid_update(self, ep_cost_avg: float) -> None:
         r"""Update the PID controller.
 
-        Detailedly, PID controller update the lagrangian multiplier following the next equation:
+        PID controller update the lagrangian multiplier following the next equation:
 
         .. math::
 

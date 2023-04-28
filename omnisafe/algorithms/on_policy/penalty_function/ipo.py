@@ -49,13 +49,13 @@ class IPO(PPO):
 
         .. math::
 
-            L = \mathbb{E}_{s_t \sim \pi_\theta} \left[
-                \frac{\pi_\theta^{'}(a_t|s_t)}{\pi_\theta(a_t|s_t)} A(s_t, a_t)
-                - \kappa \frac{J^{C}_{\pi_\theta}(s_t, a_t)}{C - J^{C}_{\pi_\theta}(s_t, a_t) + \epsilon}
+            L = \mathbb{E}_{s_t \sim \pi_{\theta}} \left[
+                \frac{\pi_{\theta}^{'} (a_t|s_t)}{\pi_{\theta} (a_t|s_t)} A (s_t, a_t)
+                - \kappa \frac{J^{C}_{\pi_{\theta}} (s_t, a_t)}{C - J^{C}_{\pi_{\theta}} (s_t, a_t) + \epsilon}
             \right]
 
         Where :math:`\kappa` is the penalty coefficient, :math:`C` is the cost limit,
-        :math:`\epsilon` is a small number to avoid division by zero.
+        and :math:`\epsilon` is a small number to avoid division by zero.
 
         Args:
             adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.

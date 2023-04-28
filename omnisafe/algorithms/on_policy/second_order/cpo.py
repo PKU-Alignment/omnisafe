@@ -188,7 +188,7 @@ class CPO(TRPO):
     ) -> torch.Tensor:
         r"""Compute the performance of cost on this moment.
 
-        Detailedly, we compute the loss of cost of policy cost from real cost.
+        We compute the loss of cost of policy cost from real cost.
 
         .. math::
 

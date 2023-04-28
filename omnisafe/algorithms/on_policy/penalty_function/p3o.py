@@ -54,15 +54,16 @@ class P3O(PPO):
     ) -> torch.Tensor:
         r"""Compute the performance of cost on this moment.
 
-        Detailedly, we compute the loss of cost of policy cost from real cost.
+        We compute the loss of cost of policy cost from real cost.
 
         .. math::
 
-            L = \mathbb{E}_{\pi} \left[ \frac{\pi^{'}(a|s)}{\pi(a|s)} A^{C}_{\pi_\theta}(s, a) \right]
+            L = \mathbb{E}_{\pi} \left[
+                \frac{\pi^{'} (a|s)}{\pi (a|s)} A^{C}_{\pi_{\theta}} (s, a)
+            \right]
 
-        where :math:`A^{C}_{\pi_\theta}(s, a)` is the cost advantage,
-        :math:`\pi(a|s)` is the old policy,
-        :math:`\pi^{'}(a|s)` is the current policy.
+        where :math:`A^{C}_{\pi_{\theta}} (s, a)` is the cost advantage, :math:`\pi (a|s)` is the
+        old policy, and :math:`\pi^{'} (a|s)` is the current policy.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
@@ -92,21 +93,21 @@ class P3O(PPO):
     ) -> None:
         """Update policy network under a double for loop.
 
-            The pseudo code is shown below:
+        The pseudo code is shown below:
 
-            .. code-block:: python
+        .. code-block:: python
 
-                for _ in range(self.cfgs.actor_iters):
-                    for _ in range(self.cfgs.num_mini_batches):
-                        # Get mini-batch data
-                        # Compute loss
-                        # Update network
+            for _ in range(self.cfgs.actor_iters):
+                for _ in range(self.cfgs.num_mini_batches):
+                    # Get mini-batch data
+                    # Compute loss
+                    # Update network
 
-            .. warning::
-                For some ``KL divergence`` based algorithms (e.g. TRPO, CPO, etc.),
-                the ``KL divergence`` between the old policy and the new policy is calculated.
-                And the ``KL divergence`` is used to determine whether the update is successful.
-                If the ``KL divergence`` is too large, the update will be terminated.
+        .. warning::
+            For some ``KL divergence`` based algorithms (e.g. TRPO, CPO, etc.), the ``KL divergence``
+            between the old policy and the new policy is calculated. And the ``KL divergence`` is
+            used to determine whether the update is successful. If the ``KL divergence`` is too
+            large, the update will be terminated.
 
         Args:
             obs (torch.Tensor): ``observation`` stored in buffer.

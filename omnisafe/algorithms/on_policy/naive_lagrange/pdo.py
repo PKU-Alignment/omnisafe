@@ -51,8 +51,8 @@ class PDO(PolicyGradient):
     def _update(self) -> None:
         r"""Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
 
-        Additionally, we update the Lagrange multiplier parameter,
-        by calling the :meth:`update_lagrange_multiplier` method.
+        Additionally, we update the Lagrange multiplier parameter by calling the
+        :meth:`update_lagrange_multiplier` method.
 
         .. note::
             The :meth:`compute_loss_pi` is defined in the :class:`PolicyGradient` algorithm. When a

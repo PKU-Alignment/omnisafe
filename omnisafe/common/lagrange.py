@@ -116,7 +116,7 @@ class Lagrange:
     def update_lagrange_multiplier(self, Jc: float) -> None:
         r"""Update Lagrange multiplier (lambda).
 
-        Detailedly speaking, we update the Lagrange multiplier by minimizing the
+        We update the Lagrange multiplier by minimizing the
         penalty loss, which is defined as:
 
         .. math::
