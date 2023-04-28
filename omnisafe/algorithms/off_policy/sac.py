@@ -42,17 +42,17 @@ class SAC(DDPG):
     def _init_model(self) -> None:
         """Initialize the model.
 
-        OmniSafe use :class:`omnisafe.models.actor_critic.constraint_actor_q_critic.
-        ConstraintActorQCritic` as the default model.
+        OmniSafe uses :class:`omnisafe.models.actor_critic.constraint_actor_q_critic.ConstraintActorQCritic`
+        as the default model.
 
-        User can customize the model by inheriting this function.
+        User can customize the model by inheriting this method.
 
         .. note::
             The ``num_critics`` in ``critic`` configuration must be 2.
 
         Examples:
             >>> def _init_model(self) -> None:
-            >>>    self._actor_critic = CustomActorQCritic()
+            ...     self._actor_critic = CustomActorQCritic()
         """
         self._cfgs.model_cfgs.critic['num_critics'] = 2
         self._actor_critic = ConstraintActorQCritic(
@@ -65,13 +65,13 @@ class SAC(DDPG):
     def _init(self) -> None:
         """The initialization of the algorithm.
 
-        User can define the initialization of the algorithm by inheriting this function.
+        User can define the initialization of the algorithm by inheriting this method.
 
         Examples:
             >>> def _init(self) -> None:
-            >>>    super()._init()
-            >>>    self._buffer = CustomBuffer()
-            >>>    self._model = CustomModel()
+            ...     super()._init()
+            ...     self._buffer = CustomBuffer()
+            ...     self._model = CustomModel()
 
         In SAC, we need to initialize the ``log_alpha`` and ``alpha_optimizer``.
         """
@@ -198,20 +198,19 @@ class SAC(DDPG):
     ) -> torch.Tensor:
         r"""Computing ``pi/actor`` loss.
 
-        Detailedly, the loss function in SAC is defined as:
+        The loss function in SAC is defined as:
 
         .. math::
-            L = -Q^V(s, \pi(s)) + \alpha log \pi(s)
+            L = -Q^V (s, \pi (s)) + \alpha \log \pi (s)
 
-        where :math:`Q^V` is the min value of two reward critic networks,
-        and :math:`\pi` is the policy network.
-        \alpha is the temperature parameter.
+        where :math:`Q^V` is the min value of two reward critic networks, and :math:`\pi` is the
+        policy network, and :math:`\alpha` is the temperature parameter.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
 
         Returns:
-            loss: The loss of pi/actor.
+            The loss of pi/actor.
         """
         action = self._actor_critic.actor.predict(obs, deterministic=False)
         log_prob = self._actor_critic.actor.log_prob(action)

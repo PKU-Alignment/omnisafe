@@ -38,7 +38,6 @@ class IPO(PPO):
         +===============+==========================+
         | Misc/Penalty  | The penalty coefficient. |
         +---------------+--------------------------+
-
         """
         super()._init_log()
         self._logger.register_key('Misc/Penalty')

@@ -63,7 +63,6 @@ class CUP(PPO):
         +-----------------------------+----------------------------------------------------------+
         | Train/SecondStepPolicyRatio | The ratio between the current policy and the old policy. |
         +-----------------------------+----------------------------------------------------------+
-
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')

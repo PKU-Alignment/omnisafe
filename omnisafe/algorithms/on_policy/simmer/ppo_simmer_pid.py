@@ -37,9 +37,9 @@ class PPOSimmerPID(PPO):
     def _init_env(self) -> None:
         """Initialize the environment.
 
-        OmniSafe use :class:`omnisafe.adapter.SimmerAdapter` to adapt the environment to the algorithm.
+        OmniSafe uses :class:`omnisafe.adapter.SimmerAdapter` to adapt the environment to the algorithm.
 
-        User can customize the environment by inheriting this function.
+        User can customize the environment by inheriting this method.
 
         Examples:
             >>> def _init_env(self) -> None:
@@ -68,7 +68,6 @@ class PPOSimmerPID(PPO):
         +==================+===================================+
         | Metrics/EpBudget | The safety budget of the episode. |
         +------------------+-----------------------------------+
-
         """
         super()._init_log()
         self._logger.register_key('Metrics/EpBudget')

@@ -49,7 +49,6 @@ class SACLag(SAC):
         +============================+==========================+
         | Metrics/LagrangeMultiplier | The Lagrange multiplier. |
         +----------------------------+--------------------------+
-
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
@@ -57,8 +56,8 @@ class SACLag(SAC):
     def _update(self) -> None:
         r"""Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
 
-        Additionally, we update the Lagrange multiplier parameter,
-        by calling the :meth:`update_lagrange_multiplier` method.
+        Additionally, we update the Lagrange multiplier parameter by calling the
+        :meth:`update_lagrange_multiplier` method.
         """
         super()._update()
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
@@ -75,21 +74,20 @@ class SACLag(SAC):
     ) -> torch.Tensor:
         r"""Computing ``pi/actor`` loss.
 
-        Detailedly, the loss function in DDPGLag is defined as:
+        The loss function in SACLag is defined as:
 
         .. math::
-            L = -Q^V(s, \pi(s)) + \lambda Q^C(s, \pi(s))
 
-        where :math:`Q^V` is the min value of two reward critic networks outputs,
-        :math:`Q^C` is the value of cost critic network,
-        and :math:`\pi` is the policy network.
-        \alpha is the temperature parameter.
+            L = -Q^V (s, \pi (s)) + \lambda Q^C (s, \pi (s))
+
+        where :math:`Q^V` is the min value of two reward critic networks outputs, :math:`Q^C` is the
+        value of cost critic network, and :math:`\pi` is the policy network.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
 
         Returns:
-            loss: The loss of pi/actor.
+            The loss of pi/actor.
         """
         action = self._actor_critic.actor.predict(obs, deterministic=False)
         log_prob = self._actor_critic.actor.log_prob(action)

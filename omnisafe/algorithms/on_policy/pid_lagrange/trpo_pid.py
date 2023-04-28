@@ -44,7 +44,6 @@ class TRPOPID(TRPO):
         +============================+==============================+
         | Metrics/LagrangeMultiplier | The PID-Lagrange multiplier. |
         +----------------------------+------------------------------+
-
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')

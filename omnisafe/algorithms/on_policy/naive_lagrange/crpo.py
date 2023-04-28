@@ -47,7 +47,6 @@ class OnCRPO(PPO):
         +-----------------+--------------------------------------------+
         | Misc/CostUpdate | The number of times the cost is updated.   |
         +-----------------+--------------------------------------------+
-
         """
         super()._init_log()
         self._logger.register_key('Misc/RewUpdate')

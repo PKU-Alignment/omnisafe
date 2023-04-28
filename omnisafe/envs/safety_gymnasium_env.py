@@ -135,7 +135,7 @@ class SafetyGymnasiumEnv(CMDP):
         """Step the environment.
 
         .. note::
-            OmniSafe use auto reset wrapper to reset the environment when the episode is
+            OmniSafe uses auto reset wrapper to reset the environment when the episode is
             terminated. So the ``obs`` will be the first observation of the next episode.
             And the true ``final_observation`` in ``info`` will be stored in the ``final_observation`` key of ``info``.
 

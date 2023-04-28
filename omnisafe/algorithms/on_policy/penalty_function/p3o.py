@@ -41,7 +41,6 @@ class P3O(PPO):
         +===================+===================================+
         | Loss/Loss_pi_cost | The loss of the cost performance. |
         +-------------------+-----------------------------------+
-
         """
         super()._init_log()
         self._logger.register_key('Loss/Loss_pi_cost', delta=True)

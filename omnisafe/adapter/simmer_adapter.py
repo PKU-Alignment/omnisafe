@@ -29,7 +29,7 @@ from omnisafe.utils.config import Config
 
 
 class SimmerAdapter(SauteAdapter):
-    r"""Simmer Adapter for OmniSafe.
+    """Simmer Adapter for OmniSafe.
 
     Simmer is a safe RL algorithm that uses a safety budget to control the exploration of the RL
     agent. Similar to :class:`SauteEnvWrapper`, Simmer uses state augmentation to ensure safety.

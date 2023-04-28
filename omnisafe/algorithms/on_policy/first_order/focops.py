@@ -55,7 +55,6 @@ class FOCOPS(PolicyGradient):
         +============================+==========================+
         | Metrics/LagrangeMultiplier | The Lagrange multiplier. |
         +----------------------------+--------------------------+
-
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')

@@ -79,7 +79,6 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         use_wandb (bool, optional): Whether to use wandb. Defaults to False.
         config (Config, optional): The config. Defaults to None.
         models (list[torch.nn.Module], optional): The models. Defaults to None.
-
     """
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals

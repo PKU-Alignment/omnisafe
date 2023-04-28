@@ -34,9 +34,9 @@ class TRPOEarlyTerminated(TRPO):
     def _init_env(self) -> None:
         """Initialize the environment.
 
-        OmniSafe use :class:`omnisafe.adapter.EarlyTerminatedAdapter` to adapt the environment to the algorithm.
+        OmniSafe uses :class:`omnisafe.adapter.EarlyTerminatedAdapter` to adapt the environment to the algorithm.
 
-        User can customize the environment by inheriting this function.
+        User can customize the environment by inheriting this method.
 
         Examples:
             >>> def _init_env(self) -> None:

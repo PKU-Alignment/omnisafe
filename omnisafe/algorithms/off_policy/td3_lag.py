@@ -49,7 +49,6 @@ class TD3Lag(TD3):
         +============================+==========================+
         | Metrics/LagrangeMultiplier | The Lagrange multiplier. |
         +----------------------------+--------------------------+
-
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
@@ -57,8 +56,8 @@ class TD3Lag(TD3):
     def _update(self) -> None:
         r"""Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
 
-        Additionally, we update the Lagrange multiplier parameter,
-        by calling the :meth:`update_lagrange_multiplier` method.
+        Additionally, we update the Lagrange multiplier parameter by calling the
+        :meth:`update_lagrange_multiplier` method.
         """
         super()._update()
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
@@ -75,20 +74,19 @@ class TD3Lag(TD3):
     ) -> torch.Tensor:
         r"""Computing ``pi/actor`` loss.
 
-        Detailedly, the loss function in DDPGLag is defined as:
+        The loss function in TD3Lag is defined as:
 
         .. math::
-            L = -Q^V(s, \pi(s)) + \lambda Q^C(s, \pi(s))
+            L = -Q^V (s, \pi (s)) + \lambda Q^C (s, \pi (s))
 
-        where :math:`Q^V` is the value of reward critic network output,
-        :math:`Q^C` is the value of cost critic network,
-        and :math:`\pi` is the policy network.
+        where :math:`Q^V` is the value of reward critic network output, :math:`Q^C` is the value of
+        cost critic network, and :math:`\pi` is the policy network.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
 
         Returns:
-            loss: The loss of pi/actor.
+            The loss of pi/actor.
         """
         action = self._actor_critic.actor.predict(obs, deterministic=True)
         loss_r = -self._actor_critic.reward_critic(obs, action)[0]

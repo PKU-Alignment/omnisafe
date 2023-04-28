@@ -47,18 +47,20 @@ class DDPG(BaseAlgo):
     def _init_env(self) -> None:
         """Initialize the environment.
 
-        OmniSafe use :class:`omnisafe.adapter.OffPolicyAdapter` to adapt the environment to this
+        OmniSafe uses :class:`omnisafe.adapter.OffPolicyAdapter` to adapt the environment to this
         algorithm.
 
-        User can customize the environment by inheriting this function.
+        User can customize the environment by inheriting this method.
 
         Examples:
             >>> def _init_env(self) -> None:
-            >>>    self._env = CustomAdapter()
+            ...     self._env = CustomAdapter()
 
         Raises:
-            AssertionError: If the number of steps per epoch is not divisible by the number of environments.
-            AssertionError: If the total number of steps is not divisible by the number of steps per epoch.
+            AssertionError: If the number of steps per epoch is not divisible by the number of
+                environments.
+            AssertionError: If the total number of steps is not divisible by the number of steps per
+                epoch.
         """
         self._env: OffPolicyAdapter = OffPolicyAdapter(
             self._env_id,
@@ -90,14 +92,14 @@ class DDPG(BaseAlgo):
     def _init_model(self) -> None:
         """Initialize the model.
 
-        OmniSafe use :class:`omnisafe.models.actor_critic.constraint_actor_q_critic.
-        ConstraintActorQCritic` as the default model.
+        OmniSafe uses :class:`omnisafe.models.actor_critic.constraint_actor_q_critic.ConstraintActorQCritic`
+        as the default model.
 
-        User can customize the model by inheriting this function.
+        User can customize the model by inheriting this method.
 
         Examples:
             >>> def _init_model(self) -> None:
-            >>>    self._actor_critic = CustomActorQCritic()
+            ...     self._actor_critic = CustomActorQCritic()
         """
         self._cfgs.model_cfgs.critic['num_critics'] = 1
         self._actor_critic: ConstraintActorQCritic = ConstraintActorQCritic(
@@ -110,13 +112,13 @@ class DDPG(BaseAlgo):
     def _init(self) -> None:
         """The initialization of the algorithm.
 
-        User can define the initialization of the algorithm by inheriting this function.
+        User can define the initialization of the algorithm by inheriting this method.
 
         Examples:
             >>> def _init(self) -> None:
-            >>>    super()._init()
-            >>>    self._buffer = CustomBuffer()
-            >>>    self._model = CustomModel()
+            ...     super()._init()
+            ...     self._buffer = CustomBuffer()
+            ...     self._model = CustomModel()
         """
         self._buf: VectorOffPolicyBuffer = VectorOffPolicyBuffer(
             obs_space=self._env.observation_space,
@@ -130,43 +132,43 @@ class DDPG(BaseAlgo):
     def _init_log(self) -> None:
         """Log info about epoch.
 
-        +-------------------------+-------------------------------------------------------------------------+
-        | Things to log           | Description                                                             |
-        +=========================+=========================================================================+
-        | Train/Epoch             | Current epoch.                                                          |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Metrics/EpCost          | Average cost of the epoch.                                              |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Metrics/EpRet           | Average return of the epoch.                                            |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Metrics/EpLen           | Average length of the epoch.                                            |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Metrics/TestEpCost      | Average cost of the evaluate epoch.                                     |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Metrics/TestEpRet       | Average return of the evaluate epoch.                                   |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Metrics/TestEpLen       | Average length of the evaluate epoch.                                   |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Value/reward_critic     | Average value in :meth:`rollout` (from critic network) of the epoch.    |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Values/cost_critic      | Average cost in :meth:`rollout` (from critic network) of the epoch.     |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Loss/Loss_pi            | Loss of the policy network.                                             |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Loss/Loss_reward_critic | Loss of the reward critic.                                              |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Loss/Loss_cost_critic   | Loss of the cost critic network.                                        |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Train/LR                | Learning rate of the policy network.                                    |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Misc/Seed               | Seed of the experiment.                                                 |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Misc/TotalEnvSteps      | Total steps of the experiment.                                          |
-        +-------------------------+-------------------------------------------------------------------------+
-        | Time                    | Total time.                                                             |
-        +-------------------------+-------------------------------------------------------------------------+
-        | FPS                     | Frames per second of the epoch.                                         |
-        +-------------------------+-------------------------------------------------------------------------+
+        +-------------------------+----------------------------------------------------------------------+
+        | Things to log           | Description                                                          |
+        +=========================+======================================================================+
+        | Train/Epoch             | Current epoch.                                                       |
+        +-------------------------+----------------------------------------------------------------------+
+        | Metrics/EpCost          | Average cost of the epoch.                                           |
+        +-------------------------+----------------------------------------------------------------------+
+        | Metrics/EpRet           | Average return of the epoch.                                         |
+        +-------------------------+----------------------------------------------------------------------+
+        | Metrics/EpLen           | Average length of the epoch.                                         |
+        +-------------------------+----------------------------------------------------------------------+
+        | Metrics/TestEpCost      | Average cost of the evaluate epoch.                                  |
+        +-------------------------+----------------------------------------------------------------------+
+        | Metrics/TestEpRet       | Average return of the evaluate epoch.                                |
+        +-------------------------+----------------------------------------------------------------------+
+        | Metrics/TestEpLen       | Average length of the evaluate epoch.                                |
+        +-------------------------+----------------------------------------------------------------------+
+        | Value/reward_critic     | Average value in :meth:`rollout` (from critic network) of the epoch. |
+        +-------------------------+----------------------------------------------------------------------+
+        | Values/cost_critic      | Average cost in :meth:`rollout` (from critic network) of the epoch.  |
+        +-------------------------+----------------------------------------------------------------------+
+        | Loss/Loss_pi            | Loss of the policy network.                                          |
+        +-------------------------+----------------------------------------------------------------------+
+        | Loss/Loss_reward_critic | Loss of the reward critic.                                           |
+        +-------------------------+----------------------------------------------------------------------+
+        | Loss/Loss_cost_critic   | Loss of the cost critic network.                                     |
+        +-------------------------+----------------------------------------------------------------------+
+        | Train/LR                | Learning rate of the policy network.                                 |
+        +-------------------------+----------------------------------------------------------------------+
+        | Misc/Seed               | Seed of the experiment.                                              |
+        +-------------------------+----------------------------------------------------------------------+
+        | Misc/TotalEnvSteps      | Total steps of the experiment.                                       |
+        +-------------------------+----------------------------------------------------------------------+
+        | Time                    | Total time.                                                          |
+        +-------------------------+----------------------------------------------------------------------+
+        | FPS                     | Frames per second of the epoch.                                      |
+        +-------------------------+----------------------------------------------------------------------+
         """
         self._logger: Logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,
@@ -218,7 +220,7 @@ class DDPG(BaseAlgo):
         self._logger.register_key('Time/FPS')
 
     def learn(self) -> tuple[float, float, int]:
-        r"""This is main function for algorithm update.
+        """This is main function for algorithm update.
 
         It is divided into the following steps:
 
@@ -492,19 +494,19 @@ class DDPG(BaseAlgo):
     ) -> torch.Tensor:
         r"""Computing ``pi/actor`` loss.
 
-        Detailedly, the loss function in DDPG is defined as:
+        The loss function in DDPG is defined as:
 
         .. math::
-            L = -Q^V(s, \pi(s))
 
-        where :math:`Q^V` is the reward critic network,
-        and :math:`\pi` is the policy network.
+            L = -Q^V (s, \pi (s))
+
+        where :math:`Q^V` is the reward critic network, and :math:`\pi` is the policy network.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
 
         Returns:
-            loss: The loss of pi/actor.
+            The loss of pi/actor.
         """
         action = self._actor_critic.actor.predict(obs, deterministic=True)
         return -self._actor_critic.reward_critic(obs, action)[0].mean()

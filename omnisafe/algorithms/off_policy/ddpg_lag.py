@@ -43,20 +43,19 @@ class DDPGLag(DDPG):
         self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
-        r"""Log the DDPGLag specific information.
+        """Log the DDPGLag specific information.
 
         +----------------------------+--------------------------+
         | Things to log              | Description              |
         +============================+==========================+
         | Metrics/LagrangeMultiplier | The Lagrange multiplier. |
         +----------------------------+--------------------------+
-
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
 
     def _update(self) -> None:
-        r"""Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
+        """Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
 
         Additionally, we update the Lagrange multiplier parameter,
         by calling the :meth:`update_lagrange_multiplier` method.
@@ -76,10 +75,11 @@ class DDPGLag(DDPG):
     ) -> torch.Tensor:
         r"""Computing ``pi/actor`` loss.
 
-        Detailedly, the loss function in DDPGLag is defined as:
+        The loss function in DDPGLag is defined as:
 
         .. math::
-            L = -Q^V(s, \pi(s)) + \lambda Q^C(s, \pi(s))
+
+            L = -Q^V (s, \pi (s)) + \lambda Q^C (s, \pi (s))
 
         where :math:`Q^V` is the value of reward critic network output,
         and :math:`\pi` is the policy network.

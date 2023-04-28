@@ -48,9 +48,9 @@ class PolicyGradient(BaseAlgo):
     def _init_env(self) -> None:
         """Initialize the environment.
 
-        OmniSafe use :class:`omnisafe.adapter.OnPolicyAdapter` to adapt the environment to the algorithm.
+        OmniSafe uses :class:`omnisafe.adapter.OnPolicyAdapter` to adapt the environment to the algorithm.
 
-        User can customize the environment by inheriting this function.
+        User can customize the environment by inheriting this method.
 
         Examples:
             >>> def _init_env(self) -> None:
@@ -77,10 +77,10 @@ class PolicyGradient(BaseAlgo):
     def _init_model(self) -> None:
         """Initialize the model.
 
-        OmniSafe use :class:`omnisafe.models.actor_critic.constraint_actor_critic.
+        OmniSafe uses :class:`omnisafe.models.actor_critic.constraint_actor_critic.
         ConstraintActorCritic` as the default model.
 
-        User can customize the model by inheriting this function.
+        User can customize the model by inheriting this method.
 
         Examples:
             >>> def _init_model(self) -> None:
@@ -105,7 +105,7 @@ class PolicyGradient(BaseAlgo):
     def _init(self) -> None:
         """The initialization of the algorithm.
 
-        User can define the initialization of the algorithm by inheriting this function.
+        User can define the initialization of the algorithm by inheriting this method.
 
         Examples:
             >>> def _init(self) -> None:
@@ -168,7 +168,6 @@ class PolicyGradient(BaseAlgo):
         +-----------------------+-------------------------------------------------------------------------+
         | FPS                   | Frames per second of the epoch.                                         |
         +-----------------------+-------------------------------------------------------------------------+
-
         """
         self._logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,
@@ -322,7 +321,6 @@ class PolicyGradient(BaseAlgo):
         #. Update the network by loss.
         #. Repeat steps 2, 3 until the number of mini-batch data is used up.
         #. Repeat steps 2, 3, 4 until the KL divergence violates the limit.
-
         """
         data = self._buf.get()
         obs, act, logp, target_value_r, target_value_c, adv_r, adv_c = (
