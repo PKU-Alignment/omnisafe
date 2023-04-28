@@ -48,16 +48,18 @@ class PolicyGradient(BaseAlgo):
     def _init_env(self) -> None:
         """Initialize the environment.
 
-        OmniSafe uses :class:`omnisafe.adapter.OnPolicyAdapter` to adapt the environment to the algorithm.
+        OmniSafe uses :class:`omnisafe.adapter.OnPolicyAdapter` to adapt the environment to the
+        algorithm.
 
         User can customize the environment by inheriting this method.
 
         Examples:
             >>> def _init_env(self) -> None:
-            >>>    self._env = CustomAdapter()
+            ...     self._env = CustomAdapter()
 
         Raises:
-            AssertionError: If the number of steps per epoch is not divisible by the number of environments.
+            AssertionError: If the number of steps per epoch is not divisible by the number of
+                environments.
         """
         self._env: OnPolicyAdapter = OnPolicyAdapter(
             self._env_id,
@@ -77,14 +79,14 @@ class PolicyGradient(BaseAlgo):
     def _init_model(self) -> None:
         """Initialize the model.
 
-        OmniSafe uses :class:`omnisafe.models.actor_critic.constraint_actor_critic.
-        ConstraintActorCritic` as the default model.
+        OmniSafe uses :class:`omnisafe.models.actor_critic.constraint_actor_critic.ConstraintActorCritic`
+        as the default model.
 
         User can customize the model by inheriting this method.
 
         Examples:
             >>> def _init_model(self) -> None:
-            >>>    self._actor_critic = CustomActorCritic()
+            ...     self._actor_critic = CustomActorCritic()
         """
         self._actor_critic: ConstraintActorCritic = ConstraintActorCritic(
             obs_space=self._env.observation_space,
@@ -109,9 +111,9 @@ class PolicyGradient(BaseAlgo):
 
         Examples:
             >>> def _init(self) -> None:
-            >>>    super()._init()
-            >>>    self._buffer = CustomBuffer()
-            >>>    self._model = CustomModel()
+            ...     super()._init()
+            ...     self._buffer = CustomBuffer()
+            ...     self._model = CustomModel()
         """
         self._buf: VectorOnPolicyBuffer = VectorOnPolicyBuffer(
             obs_space=self._env.observation_space,
@@ -131,43 +133,43 @@ class PolicyGradient(BaseAlgo):
     def _init_log(self) -> None:
         """Log info about epoch.
 
-        +-----------------------+-------------------------------------------------------------------------+
-        | Things to log         | Description                                                             |
-        +=======================+=========================================================================+
-        | Train/Epoch           | Current epoch.                                                          |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Metrics/EpCost        | Average cost of the epoch.                                              |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Metrics/EpRet         | Average return of the epoch.                                            |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Metrics/EpLen         | Average length of the epoch.                                            |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Values/reward         | Average value in :meth:`rollout` (from critic network) of the epoch.    |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Values/cost           | Average cost in :meth:`rollout` (from critic network) of the epoch.     |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Values/Adv            | Average reward advantage of the epoch.                                  |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Loss/Loss_pi          | Loss of the policy network.                                             |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Loss/Loss_cost_critic | Loss of the cost critic network.                                        |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Train/Entropy         | Entropy of the policy network.                                          |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Train/StopIters       | Number of iterations of the policy network.                             |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Train/PolicyRatio     | Ratio of the policy network.                                            |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Train/LR              | Learning rate of the policy network.                                    |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Misc/Seed             | Seed of the experiment.                                                 |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Misc/TotalEnvSteps    | Total steps of the experiment.                                          |
-        +-----------------------+-------------------------------------------------------------------------+
-        | Time                  | Total time.                                                             |
-        +-----------------------+-------------------------------------------------------------------------+
-        | FPS                   | Frames per second of the epoch.                                         |
-        +-----------------------+-------------------------------------------------------------------------+
+        +-----------------------+----------------------------------------------------------------------+
+        | Things to log         | Description                                                          |
+        +=======================+======================================================================+
+        | Train/Epoch           | Current epoch.                                                       |
+        +-----------------------+----------------------------------------------------------------------+
+        | Metrics/EpCost        | Average cost of the epoch.                                           |
+        +-----------------------+----------------------------------------------------------------------+
+        | Metrics/EpRet         | Average return of the epoch.                                         |
+        +-----------------------+----------------------------------------------------------------------+
+        | Metrics/EpLen         | Average length of the epoch.                                         |
+        +-----------------------+----------------------------------------------------------------------+
+        | Values/reward         | Average value in :meth:`rollout` (from critic network) of the epoch. |
+        +-----------------------+----------------------------------------------------------------------+
+        | Values/cost           | Average cost in :meth:`rollout` (from critic network) of the epoch.  |
+        +-----------------------+----------------------------------------------------------------------+
+        | Values/Adv            | Average reward advantage of the epoch.                               |
+        +-----------------------+----------------------------------------------------------------------+
+        | Loss/Loss_pi          | Loss of the policy network.                                          |
+        +-----------------------+----------------------------------------------------------------------+
+        | Loss/Loss_cost_critic | Loss of the cost critic network.                                     |
+        +-----------------------+----------------------------------------------------------------------+
+        | Train/Entropy         | Entropy of the policy network.                                       |
+        +-----------------------+----------------------------------------------------------------------+
+        | Train/StopIters       | Number of iterations of the policy network.                          |
+        +-----------------------+----------------------------------------------------------------------+
+        | Train/PolicyRatio     | Ratio of the policy network.                                         |
+        +-----------------------+----------------------------------------------------------------------+
+        | Train/LR              | Learning rate of the policy network.                                 |
+        +-----------------------+----------------------------------------------------------------------+
+        | Misc/Seed             | Seed of the experiment.                                              |
+        +-----------------------+----------------------------------------------------------------------+
+        | Misc/TotalEnvSteps    | Total steps of the experiment.                                       |
+        +-----------------------+----------------------------------------------------------------------+
+        | Time                  | Total time.                                                          |
+        +-----------------------+----------------------------------------------------------------------+
+        | FPS                   | Frames per second of the epoch.                                      |
+        +-----------------------+----------------------------------------------------------------------+
         """
         self._logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,

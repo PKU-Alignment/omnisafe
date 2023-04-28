@@ -33,8 +33,8 @@ class NaturalPG(PolicyGradient):
     """The Natural Policy Gradient algorithm.
 
     The Natural Policy Gradient algorithm is a policy gradient algorithm that uses the
-    `Fisher information matrix <https://en.wikipedia.org/wiki/Fisher_information>`_ to
-    approximate the Hessian matrix. The Fisher information matrix is the second-order derivative of the KL-divergence.
+    `Fisher information matrix <https://en.wikipedia.org/wiki/Fisher_information>`_ to approximate
+    the Hessian matrix. The Fisher information matrix is the second-order derivative of the KL-divergence.
 
     References:
         - Title: A Natural Policy Gradient
@@ -58,9 +58,9 @@ class NaturalPG(PolicyGradient):
         +---------------------+--------------------------------------------------------+
         | Misc/gradient_norm  | The gradient norm.                                     |
         +---------------------+--------------------------------------------------------+
-        | Misc/xHx            | :math:`xHx` in the original paper.                     |
+        | Misc/xHx            | :math:`x H x` in the original paper.                   |
         +---------------------+--------------------------------------------------------+
-        | Misc/H_inv_g        | :math:`H^{-1}g` in the original paper.                 |
+        | Misc/H_inv_g        | :math:`H^{-1} g` in the original paper.                |
         +---------------------+--------------------------------------------------------+
         """
         super()._init_log()
@@ -74,11 +74,11 @@ class NaturalPG(PolicyGradient):
     def _fvp(self, params: torch.Tensor) -> torch.Tensor:
         """Build the Hessian-vector product.
 
-        Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_ ,
-        which is the second-order derivative of the KL-divergence.
+        Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_ , which
+        is the second-order derivative of the KL-divergence.
 
-        The Hessian-vector product is approximated by the Fisher information matrix,
-        which is the second-order derivative of the KL-divergence.
+        The Hessian-vector product is approximated by the Fisher information matrix, which is the
+        second-order derivative of the KL-divergence.
 
         For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf .
 
@@ -86,7 +86,7 @@ class NaturalPG(PolicyGradient):
             params (torch.Tensor): The parameters of the actor network.
 
         Returns:
-            fisher_vector_product: The Fisher vector product.
+            The Fisher vector product.
         """
         self._actor_critic.actor.zero_grad()
         q_dist = self._actor_critic.actor(self._fvp_obs)
@@ -136,7 +136,7 @@ class NaturalPG(PolicyGradient):
 
         Raises:
             AssertionError: If :math:`x` is not finite.
-            AssertionError: If :math:`xHx` is not positive.
+            AssertionError: If :math:`x H x` is not positive.
             AssertionError: If :math:`\alpha` is not finite.
         """
         self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
@@ -177,17 +177,14 @@ class NaturalPG(PolicyGradient):
         r"""Update actor, critic.
 
         .. hint::
+            Here are some differences between NPG and Policy Gradient (PG): In PG, the actor network
+            and the critic network are updated together. When the KL divergence between the old
+            policy, and the new policy is larger than a threshold, the update is rejected together.
 
-            Here are some differences between NPG and Policy Gradient (PG):
-            In PG, the actor network and the critic network are updated together.
-            When the KL divergence between the old policy,
-            and the new policy is larger than a threshold, the update is rejected together.
-
-            In NPG, the actor network and the critic network are updated separately.
-            When the KL divergence between the old policy,
-            and the new policy is larger than a threshold,
-            the update of the actor network is rejected,
-            but the update of the critic network is still accepted.
+            In NPG, the actor network and the critic network are updated separately. When the KL
+            divergence between the old policy, and the new policy is larger than a threshold, the
+            update of the actor network is rejected, but the update of the critic network is still
+            accepted.
         """
         data = self._buf.get()
         obs, act, logp, target_value_r, target_value_c, adv_r, adv_c = (

@@ -44,12 +44,13 @@ class PPO(PolicyGradient):
         In Proximal Policy Optimization, the loss is defined as:
 
         .. math::
+
             L^{CLIP} = \mathbb{E}_{s_t \sim \rho_{\theta}}
             \left[ \min(r_t  A^{R}_{\pi_{\theta}}(s_t, a_t) ,
             \text{clip}(r_t, 1-\epsilon, 1+\epsilon)  A^{R}_{\pi_{\theta}}(s_t, a_t)  \right]
 
-        where :math:`r_t = \frac{\pi_\theta ^{'}(a_t|s_t)}{\pi_\theta(a_t|s_t)}`,
-        :math:`\epsilon` is the clip parameter, :math:`A^{R}_{\pi_{\theta}}(s_t, a_t)` is the advantage.
+        where :math:`r_t = \frac{\pi_\theta ^{'}(a_t|s_t)}{\pi_\theta(a_t|s_t)}`, :math:`\epsilon`
+        is the clip parameter, and :math:`A^{R}_{\pi_{\theta}}(s_t, a_t)` is the advantage.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
@@ -58,7 +59,7 @@ class PPO(PolicyGradient):
             adv (torch.Tensor): The ``advantage`` sampled from buffer.
 
         Returns:
-            loss: The loss of pi/actor.
+            The loss of pi/actor.
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)

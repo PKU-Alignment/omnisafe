@@ -61,9 +61,9 @@ class TRPO(NaturalPG):
         """TRPO performs `line-search <https://en.wikipedia.org/wiki/Line_search>`_ until constraint satisfaction.
 
         .. hint::
-            TRPO search around for a satisfied step of policy update to improve loss and reward performance.
-            The search is done by line-search, which is a way to find a step size that satisfies the constraint.
-            The constraint is the KL-divergence between the old policy and the new policy.
+            TRPO search around for a satisfied step of policy update to improve loss and reward performance. The search
+            is done by line-search, which is a way to find a step size that satisfies the constraint. The constraint is
+            the KL-divergence between the old policy and the new policy.
 
         Args:
             step_dir (torch.Tensor): The step direction.
