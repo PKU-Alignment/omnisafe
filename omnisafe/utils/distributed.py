@@ -30,8 +30,8 @@ from torch.distributed import ReduceOp
 def setup_distributed() -> None:
     """Setup distributed training environment.
 
-    Avoid slowdowns caused by each separate process's PyTorch, using more than
-    its fair share of CPU resources.
+    Avoid slowdowns caused by each separate process's PyTorch, using more than its fair share of CPU
+    resources.
     """
     old_num_threads = torch.get_num_threads()
     # decrease number of torch threads for MPI
