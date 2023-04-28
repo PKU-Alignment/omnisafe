@@ -73,13 +73,13 @@ class CPO(TRPO):
     ) -> tuple[torch.Tensor, int]:
         r"""Use line-search to find the step size that satisfies the constraint.
 
-        CPO uses line-search to find the step size that satisfies the constraint.
-        The constraint is defined as:
+        CPO uses line-search to find the step size that satisfies the constraint. The constraint is
+        defined as:
 
         .. math::
 
-            J^C(\theta + \alpha \delta) - J^C(\theta) \leq \max \{0, c\}\\
-            D_{KL}(\pi_{\theta}(\cdot|s) || \pi_{\theta + \alpha \delta}(\cdot|s)) \leq \delta_{KL}
+            J^C (\theta + \alpha \delta) - J^C (\theta) \leq \max \{ 0, c \} \\
+            D_{KL} (\pi_{\theta} (\cdot|s) || \pi_{\theta + \alpha \delta} (\cdot|s)) \leq \delta_{KL}
 
         where :math:`\delta_{KL}` is the constraint of KL divergence, :math:`\alpha` is the step size,
         :math:`c` is the violation of constraint.
@@ -96,7 +96,7 @@ class CPO(TRPO):
             loss_pi_before (float): The loss of the policy before the update.
             total_steps (int, optional): The total steps to search. Defaults to 15.
             decay (float, optional): The decay rate of the step size. Defaults to 0.8.
-            c (int, optional): The violation of constraint. Defaults to 0.
+            violation_c (int, optional): The violation of constraint. Defaults to 0.
             optim_case (int, optional): The optimization case. Defaults to 0.
 
         Returns:
@@ -192,11 +192,10 @@ class CPO(TRPO):
 
         .. math::
 
-            L = \mathbb{E}_{\pi} \left[ \frac{\pi^{'}(a|s)}{\pi(a|s)} A^C(s, a) \right]
+            L = \mathbb{E}_{\pi} \left[ \frac{\pi^{'} (a|s)}{\pi (a|s)} A^C (s, a) \right]
 
-        where :math:`A^C(s, a)` is the cost advantage,
-        :math:`\pi(a|s)` is the old policy,
-        :math:`\pi^{'}(a|s)` is the current policy.
+        where :math:`A^C (s, a)` is the cost advantage, :math:`\pi (a|s)` is the old policy,
+        and :math:`\pi^{'} (a|s)` is the current policy.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.

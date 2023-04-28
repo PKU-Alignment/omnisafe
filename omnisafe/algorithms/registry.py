@@ -48,7 +48,7 @@ class Registry:
         """Register a module.
 
         Args:
-            module_class (:obj:`nn.Module`): Module to be registered.
+            module_class (type): Module to be registered.
         """
         if not inspect.isclass(module_class):
             raise TypeError(f'module must be a class, but got {type(module_class)}')

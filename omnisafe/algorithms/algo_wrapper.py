@@ -38,7 +38,8 @@ class AlgoWrapper:
     Args:
         algo (str): The algorithm name.
         env_id (str): The environment id.
-        train_terminal_cfgs (dict[str, Any], optional): The configurations for training termination. Defaults to None.
+        train_terminal_cfgs (dict[str, Any], optional): The configurations for training termination.
+            Defaults to None.
         custom_cfgs (dict[str, Any], optional): The custom configurations. Defaults to None.
 
     Attributes:
@@ -74,8 +75,8 @@ class AlgoWrapper:
     def _init_config(self) -> Config:
         """Initialize config.
 
-        Initialize the configurations for the algorithm, following the order of
-        default configurations, custom configurations, and terminal configurations.
+        Initialize the configurations for the algorithm, following the order of default
+        configurations, custom configurations, and terminal configurations.
 
         Returns:
             The configurations for the algorithm.
@@ -176,7 +177,7 @@ class AlgoWrapper:
         """Plot the training curve.
 
         Args:
-            smooth (int): window size, for smoothing the curve.
+            smooth (int, optional): window size, for smoothing the curve. Defaults to 1.
 
         Raises:
             AssertionError: If the :meth:`learn` method has not been called.
@@ -200,8 +201,8 @@ class AlgoWrapper:
         """Agent Evaluation.
 
         Args:
-            num_episodes (int): number of episodes to evaluate.
-            cost_criteria (float): the cost criteria to evaluate.
+            num_episodes (int, optional): number of episodes to evaluate. Defaults to 10.
+            cost_criteria (float, optional): the cost criteria to evaluate. Defaults to 1.0.
 
         Raises:
             AssertionError: If the :meth:`learn` method has not been called.
@@ -226,12 +227,13 @@ class AlgoWrapper:
         """Evaluate and render some episodes.
 
         Args:
-            num_episodes (int): The number of episodes to render.
-            render_mode (str): The render mode, can be 'rgb_array', 'depth_array' or 'human'.
-            camera_name (str): the camera name, specify the camera which you use to capture
-                images.
-            width (int): The width of the rendered image.
-            height (int): The height of the rendered image.
+            num_episodes (int, optional): The number of episodes to render. Defaults to 10.
+            render_mode (str, optional): The render mode, can be 'rgb_array', 'depth_array' or
+                'human'. Defaults to 'rgb_array'.
+            camera_name (str, optional): the camera name, specify the camera which you use to
+                capture images. Defaults to 'track'.
+            width (int, optional): The width of the rendered image. Defaults to 256.
+            height (int, optional): The height of the rendered image. Defaults to 256.
 
         Raises:
             AssertionError: If the :meth:`learn` method has not been called.

@@ -19,6 +19,8 @@ from types import MappingProxyType
 
 from omnisafe.algorithms import off_policy, on_policy
 from omnisafe.algorithms.base_algo import BaseAlgo
+
+# Off-Policy Safe
 from omnisafe.algorithms.off_policy import DDPG, SAC, TD3, DDPGLag, SACLag, TD3Lag
 
 # On-Policy Safe
@@ -49,9 +51,6 @@ from omnisafe.algorithms.on_policy import (
 
 # Model-based Safe
 # from omnisafe.algorithms.model_based import CAP, MBPPOLag, SafeLOOP
-
-# Off-Policy Safe
-# from omnisafe.algorithms.off_policy import DDPG, SAC, SDDPG, TD3, DDPGLag, SACLag, TD3Lag
 
 
 ALGORITHMS = {

@@ -48,8 +48,7 @@ class PCPO(CPO):
     ) -> None:
         """Update policy network.
 
-        PCPO updates policy network using the conjugate gradient algorithm,
-        following the steps:
+        PCPO updates policy network using the conjugate gradient algorithm, following the steps:
 
         - Compute the gradient of the policy.
         - Compute the step direction.
