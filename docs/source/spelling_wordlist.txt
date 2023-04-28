@@ -438,3 +438,5 @@ CostUpdate
 AcceptanceStep
 FinalStepNorm
 xHx
+ReLU
+Softplus
