@@ -260,7 +260,7 @@ class Wrapper(CMDP):
         """Sample an action from the action space.
 
         Returns:
-            torch.Tensor: The sampled action.
+            The sampled action.
         """
         return self._env.sample_action()
 

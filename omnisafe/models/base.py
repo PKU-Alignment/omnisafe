@@ -26,12 +26,12 @@ from torch.distributions import Distribution
 from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
 
 
-class Actor(ABC, nn.Module):
+class Actor(nn.Module, ABC):
     """A abstract class for actor.
 
-    An actor approximates the policy function that maps observations to actions.
-    Actor is parameterized by a neural network that takes observations as input,
-    and outputs the mean and standard deviation of the action distribution.
+    An actor approximates the policy function that maps observations to actions. Actor is
+    parameterized by a neural network that takes observations as input, and outputs the mean and
+    standard deviation of the action distribution.
 
     .. note::
         You can use this class to implement your own actor by inheriting it.
@@ -77,22 +77,23 @@ class Actor(ABC, nn.Module):
     def _distribution(self, obs: torch.Tensor) -> Distribution:
         r"""Return the distribution of action.
 
-        An actor generates a distribution, which is used to sample actions during training.
-        When training, the mean and the variance of the distribution are used to calculate the loss.
-        When testing, the mean of the distribution is used directly as actions.
+        An actor generates a distribution, which is used to sample actions during training. When
+        training, the mean and the variance of the distribution are used to calculate the loss. When
+        testing, the mean of the distribution is used directly as actions.
 
         For example, if the action is continuous, the actor can generate a Gaussian distribution.
 
         .. math::
 
-            p(a | s) = N(a | \mu(s), \sigma(s))
+            p (a | s) = N (\mu (s), \sigma (s))
 
-        where :math:`\mu(s)` and :math:`\sigma(s)` are the mean and standard deviation of the distribution.
+        where :math:`\mu (s)` and :math:`\sigma (s)` are the mean and standard deviation of the
+        distribution.
 
         .. warning::
-            The distribution is a private method, which is only used to sample actions during training.
-            You should not use it directly in your code,
-            instead, you should use the public method ``predict`` to sample actions.
+            The distribution is a private method, which is only used to sample actions during
+            training. You should not use it directly in your code, instead, you should use the
+            public method :meth:`predict` to sample actions.
 
         Args:
             obs (torch.Tensor): Observation from environments.
@@ -119,23 +120,20 @@ class Actor(ABC, nn.Module):
 
         - ``deterministic`` = ``True`` or ``False``
 
-        When training the actor,
-        one important trick to avoid local minimum is to use stochastic actions,
-        which can simply be achieved by sampling actions from the distribution
-        (set ``deterministic`` = ``False``).
+        When training the actor, one important trick to avoid local minimum is to use stochastic
+        actions, which can simply be achieved by sampling actions from the distribution (set
+        ``deterministic=False``).
 
-        When testing the actor,
-        we want to know the actual action that the agent will take,
-        so we should use deterministic actions (set ``deterministic`` = ``True``).
+        When testing the actor, we want to know the actual action that the agent will take, so we
+        should use deterministic actions (set ``deterministic=True``).
 
         .. math::
 
-            L = -\mathbb{E}_{s \sim p(s)} [\log p(a | s) A^R (s, a)]
+            L = -\mathbb{E}_{s \sim p(s)} [ \log p (a | s) A^R (s, a) ]
 
-        where :math:`p(s)` is the distribution of observation,
-        :math:`p(a | s)` is the distribution of action,
-        and :math:`\log p(a | s)` is the log probability of action under the distribution.,
-        :math:`A^R (s, a)` is the advantage function.
+        where :math:`p (s)` is the distribution of observation, :math:`p (a | s)` is the
+        distribution of action, and :math:`\log p (a | s)` is the log probability of action under
+        the distribution., and :math:`A^R (s, a)` is the advantage function.
 
         Args:
             obs (torch.Tensor): Observation from environments.
@@ -146,23 +144,22 @@ class Actor(ABC, nn.Module):
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
         """Return the log probability of action under the distribution.
 
-        ``log_prob`` only can be called after calling ``predict`` or ``forward``.
+        :meth:`log_prob` only can be called after calling :meth:`predict` or :meth:`forward`.
 
         Args:
-            obs (torch.Tensor): Observation from environments.
-            act (torch.Tensor): action.
+            act (torch.Tensor): The action.
 
         Returns:
-            torch.Tensor: the log probability of action under the distribution.
+            The log probability of action under the distribution.
         """
 
 
-class Critic(ABC, nn.Module):
+class Critic(nn.Module, ABC):
     """A abstract class for critic.
 
-    A critic approximates the value function that maps observations to values.
-    Critic is parameterized by a neural network that takes observations as input,
-    (Q critic also takes actions as input) and outputs the value of the observation.
+    A critic approximates the value function that maps observations to values. Critic is
+    parameterized by a neural network that takes observations as input, (Q critic also takes actions
+    as input) and outputs the value of the observation.
 
     .. note::
         OmniSafe provides two types of critic:
