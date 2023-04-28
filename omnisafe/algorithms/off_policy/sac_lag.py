@@ -58,7 +58,7 @@ class SACLag(SAC):
         r"""Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
 
         Additionally, we update the Lagrange multiplier parameter,
-        by calling the :meth:`update_lagrange_multiplier()` method.
+        by calling the :meth:`update_lagrange_multiplier` method.
         """
         super()._update()
         Jc = self._logger.get_stats('Metrics/EpCost')[0]

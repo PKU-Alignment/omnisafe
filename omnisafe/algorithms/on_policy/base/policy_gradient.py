@@ -310,9 +310,9 @@ class PolicyGradient(BaseAlgo):
             +----------------+------------------------------------------------------------------+
 
 
-        -  Update value net by :meth:`_update_reward_critic()`.
-        -  Update cost net by :meth:`_update_cost_critic()`.
-        -  Update policy net by :meth:`_update_actor()`.
+        -  Update value net by :meth:`_update_reward_critic`.
+        -  Update cost net by :meth:`_update_cost_critic`.
+        -  Update policy net by :meth:`_update_actor`.
 
         The basic process of each update is as follows:
 
