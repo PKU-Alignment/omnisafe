@@ -45,7 +45,7 @@ class SimmerAdapter(SauteAdapter):
         - Title: Effects of Safety State Augmentation on Safe Exploration.
         - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
             David Mguni, Jun Wang, Haitham Bou-Ammar.
-        - URL: https://arxiv.org/abs/2202.06558
+        - URL: `Simmer <https://arxiv.org/pdf/2206.02675.pdf>`_
 
     Args:
         env_id (str): The environment id.
