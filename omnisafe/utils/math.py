@@ -153,7 +153,7 @@ class SafeTanhTransformer(TanhTransform):
 
 
 class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
-    r"""Creates a tanh-normal distribution.
+    r"""Create a tanh-normal distribution.
 
     .. math::
 

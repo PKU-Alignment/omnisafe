@@ -24,7 +24,7 @@ from omnisafe.typing import Activation, CriticType, InitFunction, OmnisafeSpace
 
 # pylint: disable-next=too-few-public-methods
 class CriticBuilder:
-    r"""Implementation of CriticBuilder.
+    """Implementation of CriticBuilder.
 
     .. note::
         A :class:`CriticBuilder` is a class for building a critic network.

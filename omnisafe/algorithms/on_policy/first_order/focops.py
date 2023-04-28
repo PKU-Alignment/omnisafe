@@ -48,7 +48,7 @@ class FOCOPS(PolicyGradient):
         self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
-        r"""Log the FOCOPS specific information.
+        """Log the FOCOPS specific information.
 
         +----------------------------+--------------------------+
         | Things to log              | Description              |

@@ -291,7 +291,7 @@ def __check_parallel_and_vectorized(configs: Config, algo_type: str) -> None:
 
 
 def __check_algo_configs(configs: Config, algo_type: str) -> None:
-    r"""Check algorithm configs.
+    """Check algorithm configs.
 
     This function is used to check the algorithm configs.
 

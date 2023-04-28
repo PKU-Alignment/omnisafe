@@ -61,7 +61,7 @@ class TRPOSaute(TRPO):
         )
 
     def _init_log(self) -> None:
-        r"""Log the TRPOSaute specific information.
+        """Log the TRPOSaute specific information.
 
         +------------------+-----------------------------------+
         | Things to log    | Description                       |

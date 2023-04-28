@@ -196,7 +196,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         min_and_max: bool = False,
         delta: bool = False,
     ) -> None:
-        r"""Register a key to the logger.
+        """Register a key to the logger.
 
         The logger can record the following data:
 
@@ -214,7 +214,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         Args:
             key (str): The name of the key.
             window_length (int, optional): The length of the window. Defaults to None.
-            min_and_max (bool, optional): Whether to record the min and max value. \\Defaults to False.
+            min_and_max (bool, optional): Whether to record the min and max value. Defaults to False.
             delta (bool, optional): Whether to record the delta value. Defaults to False.
         """
         assert key not in self._current_row, f'Key {key} has been registered'

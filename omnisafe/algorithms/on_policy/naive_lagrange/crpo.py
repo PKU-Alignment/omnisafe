@@ -38,7 +38,7 @@ class OnCRPO(PPO):
         self._cost_update: int = 0
 
     def _init_log(self) -> None:
-        r"""Log the CRPO specific information.
+        """Log the CRPO specific information.
 
         +-----------------+--------------------------------------------+
         | Things to log   | Description                                |
@@ -55,9 +55,9 @@ class OnCRPO(PPO):
     def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
         """Compute the advantage surrogate.
 
-        In CRPO algorithm, we first judge whether the cost is within the limit.
-        If the cost is within the limit, we use the advantage of the policy.
-        Otherwise, we use the advantage of the cost.
+        In CRPO algorithm, we first judge whether the cost is within the limit. If the cost is
+        within the limit, we use the advantage of the policy. Otherwise, we use the advantage of the
+        cost.
 
         Args:
             adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.

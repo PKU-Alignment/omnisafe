@@ -317,7 +317,7 @@ class StatisticsTools:
                 total_dict.update({idd: total_value})
 
     def variants(self, keys: list[str], vals: list[Any]) -> list[dict[str, Any]]:
-        r"""Makes a list of dict, where each dict is a valid config in the grid.
+        """Makes a list of dict, where each dict is a valid config in the grid.
 
         There is special handling for variant parameters whose names take
         the form

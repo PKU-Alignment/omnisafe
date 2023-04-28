@@ -33,14 +33,14 @@ def all_bools(vals: list[Any]) -> bool:
 
 
 def valid_str(vals: list[Any] | str) -> str:
-    r"""Convert a value or values to a string which could go in a path of file.
+    """Convert a value or values to a string which could go in a path of file.
 
     Partly based on `this gist`_.
 
     .. _`this gist`: https://gist.github.com/seanh/93666
 
     Args:
-        vals (list[Any] | str): Values to convert.
+        vals (list[Any] or str): Values to convert.
 
     Returns:
         Converted string.

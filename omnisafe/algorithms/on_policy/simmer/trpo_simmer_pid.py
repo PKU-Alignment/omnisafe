@@ -61,7 +61,7 @@ class TRPOSimmerPID(TRPO):
         )
 
     def _init_log(self) -> None:
-        r"""Log the TRPOSimmerPID specific information.
+        """Log the TRPOSimmerPID specific information.
 
         +------------------+-----------------------------------+
         | Things to log    | Description                       |
@@ -73,11 +73,7 @@ class TRPOSimmerPID(TRPO):
         self._logger.register_key('Metrics/EpBudget')
 
     def _update(self) -> None:
-        r"""Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
-
-        Args:
-            self (object): object of the class.
-        """
+        """Update actor, critic, as we used in the :class:`PolicyGradient` algorithm."""
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         self._env.control_budget(torch.as_tensor(Jc, dtype=torch.float32, device=self._device))
         super()._update()

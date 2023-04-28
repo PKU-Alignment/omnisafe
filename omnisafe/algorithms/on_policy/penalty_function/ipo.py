@@ -31,7 +31,7 @@ class IPO(PPO):
     """
 
     def _init_log(self) -> None:
-        r"""Log the IPO specific information.
+        """Log the IPO specific information.
 
         +---------------+--------------------------+
         | Things to log | Description              |

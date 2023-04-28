@@ -40,7 +40,7 @@ class CPPOPID(PPO):
         self._lagrange: PIDLagrangian = PIDLagrangian(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
-        r"""Log the CPPOPID specific information.
+        """Log the CPPOPID specific information.
 
         +----------------------------+------------------------------+
         | Things to log              | Description                  |

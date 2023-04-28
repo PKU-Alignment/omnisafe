@@ -34,7 +34,7 @@ class P3O(PPO):
     """
 
     def _init_log(self) -> None:
-        r"""Log the P3O specific information.
+        """Log the P3O specific information.
 
         +-------------------+-----------------------------------+
         | Things to log     | Description                       |
@@ -89,7 +89,7 @@ class P3O(PPO):
         adv_r: torch.Tensor,
         adv_c: torch.Tensor,
     ) -> None:
-        r"""Update policy network under a double for loop.
+        """Update policy network under a double for loop.
 
             The pseudo code is shown below:
 

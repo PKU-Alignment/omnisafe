@@ -61,7 +61,7 @@ class PPOSaute(PPO):
         )
 
     def _init_log(self) -> None:
-        r"""Log the PPOSaute specific information.
+        """Log the PPOSaute specific information.
 
         +------------------+-----------------------------------+
         | Things to log    | Description                       |

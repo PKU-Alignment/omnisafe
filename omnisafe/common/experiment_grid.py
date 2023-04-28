@@ -136,7 +136,7 @@ class ExperimentGrid:
         print('=' * self.div_line_width)
 
     def _default_shorthand(self, key: str) -> str:
-        r"""Get the default shorthand.
+        """Get the default shorthand.
 
         Create a default shorthand for the key, built from the first
         three letters of each colon-separated part.
@@ -167,7 +167,7 @@ class ExperimentGrid:
         shorthand: str | None = None,
         in_name: bool = False,
     ) -> None:
-        r"""Add a parameter (key) to the grid config, with potential values (vals).
+        """Add a parameter (key) to the grid config, with potential values (vals).
 
         By default, if a shorthand isn't given, one is automatically generated
         from the key using the first three letters of each colon-separated
@@ -201,7 +201,7 @@ class ExperimentGrid:
         self.in_names.append(in_name)
 
     def variant_name(self, variant: dict[str, Any]) -> str:
-        r"""Given a variant (dict of valid param/value pairs), make an exp_name.
+        """Given a variant (dict of valid param/value pairs), make an exp_name.
 
         A variant's name is constructed as the grid name (if you've given it
         one), plus param names (or shorthands if available) and values
@@ -326,7 +326,7 @@ class ExperimentGrid:
         return variants
 
     def variants(self) -> list[dict[str, Any]]:
-        r"""Makes a list of dict, where each dict is a valid config in the grid.
+        """Makes a list of dict, where each dict is a valid config in the grid.
 
         There is special handling for variant parameters whose names take
         the form ``'full:param:name'``.
@@ -395,7 +395,7 @@ class ExperimentGrid:
         is_test: bool = False,
         gpu_id: list[int] | None = None,
     ) -> None:
-        r"""Run each variant in the grid with function 'thunk'.
+        """Run each variant in the grid with function 'thunk'.
 
         Note: 'thunk' must be either a callable function, or a string. If it is
         a string, it must be the name of a parameter whose values are all

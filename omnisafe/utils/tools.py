@@ -300,7 +300,7 @@ def assert_with_exit(condition: bool, msg: str) -> None:
 
 
 def recursive_dict2json(dict_obj: dict[str, Any]) -> str:
-    r"""This function is used to recursively convert the dict to json.
+    """This function is used to recursively convert the dict to json.
 
     Args:
         dict_obj (dict[str, Any]): dict to be converted.

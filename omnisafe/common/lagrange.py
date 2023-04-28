@@ -20,7 +20,7 @@ import torch
 
 
 class Lagrange:
-    r"""Base class for Lagrangian-base Algorithms.
+    """Base class for Lagrangian-base Algorithms.
 
     This class implements the Lagrange multiplier update and the Lagrange loss.
 
@@ -98,7 +98,7 @@ class Lagrange:
         )
 
     def compute_lambda_loss(self, mean_ep_cost: float) -> torch.Tensor:
-        r"""Penalty loss for Lagrange multiplier.
+        """Penalty loss for Lagrange multiplier.
 
         .. note::
 
