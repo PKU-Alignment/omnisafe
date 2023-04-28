@@ -252,6 +252,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         GAE calculates the advantage using the following formula:
 
         .. math::
+
             A_t = \sum_{k=0}^{n-1} (\lambda \gamma)^k \delta_{t+k}
 
         where :math:`\delta_{t+k} = r_{t+k} + \gamma*V(s_{t+k+1}) - V(s_{t+k})`
@@ -270,6 +271,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         V-trace calculates the advantage using the following formula:
 
         .. math::
+
             A_t = \sum_{k=0}^{n-1} (\lambda \gamma)^k \delta_{t+k} +
             (\lambda \gamma)^n * \rho_{t+n} * (1 - d_{t+n}) * (V(x_{t+n}) - b_{t+n})
 
@@ -348,6 +350,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         r"""This function is used to calculate V-trace targets.
 
         .. math::
+
             A_t = \sum_{k=0}^{n-1} (\lambda \gamma)^k \delta_{t+k} +
             (\lambda \gamma)^n * \rho_{t+n} * (1 - d_{t+n}) * (V(x_{t+n}) - b_{t+n})
 

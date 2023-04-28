@@ -77,6 +77,7 @@ class CPO(TRPO):
         The constraint is defined as:
 
         .. math::
+
             J^C(\theta + \alpha \delta) - J^C(\theta) \leq \max \{0, c\}\\
             D_{KL}(\pi_{\theta}(\cdot|s) || \pi_{\theta + \alpha \delta}(\cdot|s)) \leq \delta_{KL}
 
@@ -190,6 +191,7 @@ class CPO(TRPO):
         Detailedly, we compute the loss of cost of policy cost from real cost.
 
         .. math::
+
             L = \mathbb{E}_{\pi} \left[ \frac{\pi^{'}(a|s)}{\pi(a|s)} A^C(s, a) \right]
 
         where :math:`A^C(s, a)` is the cost advantage,

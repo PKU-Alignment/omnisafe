@@ -201,6 +201,7 @@ class SAC(DDPG):
         The loss function in SAC is defined as:
 
         .. math::
+
             L = -Q^V (s, \pi (s)) + \alpha \log \pi (s)
 
         where :math:`Q^V` is the min value of two reward critic networks, and :math:`\pi` is the

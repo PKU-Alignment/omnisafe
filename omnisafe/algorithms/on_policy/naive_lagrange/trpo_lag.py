@@ -60,6 +60,7 @@ class TRPOLag(TRPO):
             policy as:
 
             .. math::
+
                 L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[
                     \frac{\pi_{\theta} (a_t|s_t)}{\pi_{\theta}^{old} (a_t|s_t)}
                     [ A^{R}_{\pi_{\theta}} (s_t, a_t) - \lambda A^{C}_{\pi_{\theta}} (s_t, a_t) ]
@@ -82,8 +83,11 @@ class TRPOLag(TRPO):
         TRPOLag uses the following surrogate loss:
 
         .. math::
-            L = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
-            - \lambda A^C_{\pi_{\theta}}(s, a)]
+
+            L = \frac{1}{1 + \lambda} [
+                A^{R}_{\pi_{\theta}} (s, a)
+                - \lambda A^C_{\pi_{\theta}} (s, a)
+            ]
 
         Args:
             adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.

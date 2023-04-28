@@ -85,6 +85,7 @@ class Actor(ABC, nn.Module):
         For example, if the action is continuous, the actor can generate a Gaussian distribution.
 
         .. math::
+
             p(a | s) = N(a | \mu(s), \sigma(s))
 
         where :math:`\mu(s)` and :math:`\sigma(s)` are the mean and standard deviation of the distribution.
@@ -129,6 +130,7 @@ class Actor(ABC, nn.Module):
         so we should use deterministic actions (set ``deterministic`` = ``True``).
 
         .. math::
+
             L = -\mathbb{E}_{s \sim p(s)} [\log p(a | s) A^R (s, a)]
 
         where :math:`p(s)` is the distribution of observation,

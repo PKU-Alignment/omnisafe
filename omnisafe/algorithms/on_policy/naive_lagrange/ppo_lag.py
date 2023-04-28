@@ -85,6 +85,7 @@ class PPOLag(PPO):
         PPOLag uses the following surrogate loss:
 
         .. math::
+
             L = \frac{1}{1 + \lambda} [
                 A^{R}_{\pi_{\theta}} (s, a)
                 - \lambda A^C_{\pi_{\theta}} (s, a)

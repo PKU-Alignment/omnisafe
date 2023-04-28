@@ -77,6 +77,7 @@ class TD3Lag(TD3):
         The loss function in TD3Lag is defined as:
 
         .. math::
+
             L = -Q^V (s, \pi (s)) + \lambda Q^C (s, \pi (s))
 
         where :math:`Q^V` is the value of reward critic network output, :math:`Q^C` is the value of

@@ -63,6 +63,7 @@ class RCPO(NaturalPG):
             the policy as:
 
             .. math::
+
                 L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[
                     \frac{\pi_{\theta} (a_t|s_t)}{\pi_{\theta}^{old} (a_t|s_t)}
                     [ A^{R} (s_t, a_t) - \lambda A^{C} (s_t, a_t) ]
@@ -85,6 +86,7 @@ class RCPO(NaturalPG):
         RCPO uses the following surrogate loss:
 
         .. math::
+
             L = \frac{1}{1 + \lambda} [
                 A^{R}_{\pi_{\theta}} (s, a)
                 - \lambda A^C_{\pi_{\theta}} (s, a)

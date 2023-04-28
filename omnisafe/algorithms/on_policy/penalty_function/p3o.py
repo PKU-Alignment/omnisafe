@@ -57,6 +57,7 @@ class P3O(PPO):
         Detailedly, we compute the loss of cost of policy cost from real cost.
 
         .. math::
+
             L = \mathbb{E}_{\pi} \left[ \frac{\pi^{'}(a|s)}{\pi(a|s)} A^{C}_{\pi_\theta}(s, a) \right]
 
         where :math:`A^{C}_{\pi_\theta}(s, a)` is the cost advantage,

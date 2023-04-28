@@ -60,6 +60,7 @@ class TRPOPID(TRPO):
             the :meth:`_loss_pi` method will return the loss of the policy as:
 
             .. math::
+
                 L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[ \frac{\pi_\theta(a_t|s_t)}{\pi_\theta^{old}(a_t|s_t)}
                 [A^{R}_{\pi_{\theta}}(s_t, a_t) - \lambda A^{C}_{\pi_{\theta}}(s_t, a_t)] \right]
 
@@ -80,6 +81,7 @@ class TRPOPID(TRPO):
         TRPOPID uses the following surrogate loss:
 
         .. math::
+
             L = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
             - \lambda A^C_{\pi_{\theta}}(s, a)]
 

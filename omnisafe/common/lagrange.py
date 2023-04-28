@@ -120,6 +120,7 @@ class Lagrange:
         penalty loss, which is defined as:
 
         .. math::
+
             \lambda ^{'} = \lambda + \eta * (J_c - J_c^*)
 
         where :math:`\lambda` is the Lagrange multiplier, :math:`\eta` is the
