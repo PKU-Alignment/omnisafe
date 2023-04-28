@@ -29,16 +29,16 @@ from omnisafe.utils.model import build_mlp_network
 class GaussianLearningActor(GaussianActor):
     """Implementation of GaussianLearningActor.
 
-    GaussianLearningActor is a Gaussian actor with a learnable standard deviation.
-    It is used in on-policy algorithms such as ``PPO``, ``TRPO`` and so on.
+    GaussianLearningActor is a Gaussian actor with a learnable standard deviation. It is used in
+    on-policy algorithms such as ``PPO``, ``TRPO`` and so on.
 
     Args:
         obs_space (OmnisafeSpace): Observation space.
         act_space (OmnisafeSpace): Action space.
-        hidden_sizes (list[int]): List of hidden layer sizes.
-        activation (Activation): Activation function.
-        weight_initialization_mode (InitFunction): Weight initialization mode.
-        shared (nn.Module): Shared module.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
     """
 
     _current_dist: Normal
@@ -65,8 +65,8 @@ class GaussianLearningActor(GaussianActor):
         """Get the distribution of the actor.
 
         .. warning::
-            This method is not supposed to be called by users.
-            You should call :meth:`forward` instead.
+            This method is not supposed to be called by users. You should call :meth:`forward`
+            instead.
 
         Args:
             obs (torch.Tensor): Observation from environments.
@@ -88,11 +88,11 @@ class GaussianLearningActor(GaussianActor):
 
         Args:
             obs (torch.Tensor): Observation from environments.
-            deterministic (bool): Whether to use deterministic policy.
+            deterministic (bool, optional): Whether to use deterministic policy. Defaults to False.
 
         Returns:
-            The mean of the distribution if ``deterministic`` is ``True``,
-            otherwise the sampled action.
+            The mean of the distribution if ``deterministic`` is ``True``, otherwise the sampled
+            action.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -131,7 +131,7 @@ class GaussianLearningActor(GaussianActor):
 
     @property
     def std(self) -> float:
-        """float: Standard deviation of the distribution."""
+        """Standard deviation of the distribution."""
         return torch.exp(self.log_std).mean().item()
 
     @std.setter

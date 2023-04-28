@@ -26,9 +26,8 @@ from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 class VectorOffPolicyBuffer(OffPolicyBuffer):
     """Vectorized on-policy buffer.
 
-    The vector-off-policy buffer is a vectorized version of the off-policy buffer.
-    It stores the data in a single tensor, and the data of each environment is
-    stored in a separate column.
+    The vector-off-policy buffer is a vectorized version of the off-policy buffer. It stores the
+    data in a single tensor, and the data of each environment is stored in a separate column.
 
     .. warning::
         The buffer only supports Box spaces.
@@ -40,7 +39,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         batch_size (int): The batch size of the buffer.
         num_envs (int): The number of environments.
         device (torch.device, optional): The device of the buffer. Defaults to
-            torch.device('cpu').
+            ``torch.device('cpu')``.
 
     Attributes:
         data (dict[str, torch.Tensor]): The data of the buffer.
@@ -100,7 +99,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
 
     @property
     def num_envs(self) -> int:
-        """int: The number of parallel environments."""
+        """The number of parallel environments."""
         return self._num_envs
 
     def add_field(self, name: str, shape: tuple[int, ...], dtype: torch.dtype) -> None:
@@ -114,7 +113,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
 
         Args:
             name (str): The name of the field.
-            shape (tuple[int, ...]): The shape of the field.
+            shape (tuple of int): The shape of the field.
             dtype (torch.dtype): The dtype of the field.
         """
         self.data[name] = torch.zeros(

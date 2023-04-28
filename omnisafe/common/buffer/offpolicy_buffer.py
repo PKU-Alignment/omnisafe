@@ -24,18 +24,18 @@ from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
 
 class OffPolicyBuffer(BaseBuffer):
-    """A ReplayBuffer for off_policy Algorithms.
+    r"""A ReplayBuffer for off_policy Algorithms.
 
     .. warning::
         The buffer only supports Box spaces.
 
     Compared to the base buffer, the off-policy buffer stores extra data:
 
-    +----------+-------------------------+---------------+----------------------------------------+
-    | Name     | Shape                   | Dtype         | Description                            |
-    +==========+=========================+===============+========================================+
-    | next_obs | (size, obs_space.shape) | torch.float32 | The next observation from environment. |
-    +----------+-------------------------+---------------+----------------------------------------+
+    +----------+---------------------------+---------------+----------------------------------------+
+    | Name     | Shape                     | Dtype         | Description                            |
+    +==========+===========================+===============+========================================+
+    | next_obs | (size, \*obs_space.shape) | torch.float32 | The next observation from environment. |
+    +----------+---------------------------+---------------+----------------------------------------+
 
     Args:
         obs_space (OmnisafeSpace): The observation space.
@@ -43,7 +43,7 @@ class OffPolicyBuffer(BaseBuffer):
         size (int): The size of the buffer.
         batch_size (int): The batch size of the buffer.
         device (torch.device, optional): The device of the buffer. Defaults to
-            torch.device('cpu').
+            ``torch.device('cpu')``.
 
     Attributes:
         data (dict[str, torch.Tensor]): The data stored in the buffer.
@@ -79,20 +79,20 @@ class OffPolicyBuffer(BaseBuffer):
 
     @property
     def max_size(self) -> int:
-        """int: Return the max size of the buffer."""
+        """Return the max size of the buffer."""
         return self._max_size
 
     @property
     def batch_size(self) -> int:
-        """int: Return the batch size of the buffer."""
+        """Return the batch size of the buffer."""
         return self._batch_size
 
     def store(self, **data: torch.Tensor) -> None:
         """Store data into the buffer.
 
         .. hint::
-            The ReplayBuffer is a circular buffer. When the buffer is full, the
-            oldest data will be overwritten.
+            The ReplayBuffer is a circular buffer. When the buffer is full, the oldest data will be
+            overwritten.
 
         Args:
             data (torch.Tensor): The data to be stored.

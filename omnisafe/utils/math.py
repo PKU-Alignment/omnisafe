@@ -185,22 +185,22 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
 
     @property
     def loc(self) -> torch.Tensor:
-        """torch.Tensor: The mean of the normal distribution."""
+        """The mean of the normal distribution."""
         return self.base_dist.mean
 
     @property
     def scale(self) -> torch.Tensor:
-        """torch.Tensor: The standard deviation of the normal distribution."""
+        """The standard deviation of the normal distribution."""
         return self.base_dist.stddev
 
     @property
     def mean(self) -> torch.Tensor:
-        """torch.Tensor: The mean of the tanh normal distribution."""
+        """The mean of the tanh normal distribution."""
         return SafeTanhTransformer()(self.base_dist.mean)
 
     @property
     def stddev(self) -> torch.Tensor:
-        """torch.Tensor: The standard deviation of the tanh normal distribution."""
+        """The standard deviation of the tanh normal distribution."""
         return self.base_dist.stddev
 
     def entropy(self) -> torch.Tensor:
@@ -213,5 +213,5 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
 
     @property
     def variance(self) -> torch.Tensor:
-        """torch.Tensor: The variance of the tanh normal distribution."""
+        """The variance of the tanh normal distribution."""
         return self.base_dist.variance

@@ -29,9 +29,10 @@ class ActorBuilder:
     Args:
         obs_space (OmnisafeSpace): Observation space.
         act_space (OmnisafeSpace): Action space.
-        hidden_sizes (list[int]): List of hidden layer sizes.
-        activation (Activation): Activation function.
-        weight_initialization_mode (InitFunction): Weight initialization mode.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
     """
 
     def __init__(

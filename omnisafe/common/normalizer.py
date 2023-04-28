@@ -62,17 +62,17 @@ class Normalizer(nn.Module):
 
     @property
     def shape(self) -> tuple[int, ...]:
-        """tuple[int, ...]: Return the shape of the normalize."""
+        """Return the shape of the normalize."""
         return self._shape
 
     @property
     def mean(self) -> torch.Tensor:
-        """torch.Tensor: Return the mean of the normalize."""
+        """Return the mean of the normalize."""
         return self._mean
 
     @property
     def std(self) -> torch.Tensor:
-        """torch.Tensor: Return the std of the normalize."""
+        """Return the std of the normalize."""
         return self._std
 
     def forward(self, data: torch.Tensor) -> torch.Tensor:
@@ -82,7 +82,7 @@ class Normalizer(nn.Module):
             data (torch.Tensor): raw data to be normalized.
 
         Returns:
-            normalized data: The normalized data.
+            The normalized data.
         """
         return self.normalize(data)
 
@@ -90,16 +90,15 @@ class Normalizer(nn.Module):
         """Normalize the data.
 
         .. hint::
-
             - If the data is the first data, the data will be used to initialize the mean and std.
             - If the data is not the first data, the data will be normalized by the mean and std.
             - Update the mean and std by the data.
 
         Args:
-            data: raw data to be normalized.
+            data (torch.Tensor): The raw data to be normalized.
 
         Returns:
-            normalized data: The normalized data.
+            The normalized data.
         """
         data = data.to(self._mean.device)
         self._push(data)
@@ -112,7 +111,7 @@ class Normalizer(nn.Module):
         """Update the mean and std by the raw_data.
 
         Args:
-            raw_data (torch.Tensor): raw data to be normalized.
+            raw_data (torch.Tensor): The raw data to be normalized.
         """
         if raw_data.shape == self._shape:
             raw_data = raw_data.unsqueeze(0)
@@ -149,7 +148,8 @@ class Normalizer(nn.Module):
 
         Args:
             state_dict (Mapping[str, Any]): The state_dict to be loaded.
-            strict (bool, optional): Whether to strictly enforce that the keys in :attr:`state_dict`
+            strict (bool, optional): Whether to strictly enforce that the keys in :attr:`state_dict`.
+                Defaults to True.
 
         Returns:
             The loaded normalizer.

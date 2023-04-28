@@ -52,13 +52,12 @@ from torch.utils.tensorboard.writer import SummaryWriter  # isort:skip
 class Logger:  # pylint: disable=too-many-instance-attributes
     """Implementation of the Logger.
 
-    A logger to record the training process.
-    It can record the training process to a file and print it to the console.
-    It can also record the training process to tensorboard.
+    A logger to record the training process. It can record the training process to a file and print
+    it to the console. It can also record the training process to tensorboard.
 
     The logger can record the following data:
 
-    .. code-block:: bash
+    .. code-block:: text
 
         ----------------------------------------------
         |       Name      |            Value         |
@@ -77,8 +76,8 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         seed (int, optional): The random seed. Defaults to 0.
         use_tensorboard (bool, optional): Whether to use tensorboard. Defaults to True.
         use_wandb (bool, optional): Whether to use wandb. Defaults to False.
-        config (Config, optional): The config. Defaults to None.
-        models (list[torch.nn.Module], optional): The models. Defaults to None.
+        config (Config or None, optional): The config. Defaults to None.
+        models (list[torch.nn.Module] or None, optional): The models. Defaults to None.
     """
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals
@@ -213,7 +212,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         Args:
             key (str): The name of the key.
-            window_length (int, optional): The length of the window. Defaults to None.
+            window_length (int or None, optional): The length of the window. Defaults to None.
             min_and_max (bool, optional): Whether to record the min and max value. Defaults to False.
             delta (bool, optional): Whether to record the delta value. Defaults to False.
         """
@@ -258,9 +257,9 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             The data stored in ``data`` will be updated by ``kwargs``.
 
         Args:
-            data (dict[str, int, float, np.ndarray or torch.Tensor], optional):
-            The data to be stored. Defaults to None.
-            **kwargs (int, float, np.ndarray or torch.Tensor): The data to be stored.
+            data (dict[str, int | float | np.ndarray | torch.Tensor] or None, optional): The data to
+                be stored. Defaults to None.
+            **kwargs (int, float, np.ndarray, or torch.Tensor): The data to be stored.
         """
         if data is not None:
             kwargs.update(data)
@@ -345,10 +344,11 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         Args:
             key (str): The key to be registered.
-            min_and_max (bool): Whether to record the min and max value of the key.
+            min_and_max (bool, optional): Whether to record the min and max value of the key.
+                Defaults to False.
 
         Returns:
-            mean value of the key or (mean, min, max, std) of the key.
+            The mean value of the key or (mean, min, max, std) of the key.
         """
         assert key in self._current_row, f'Key {key} has not been registered'
         vals = self._data[key]
@@ -369,12 +369,12 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
     @property
     def current_epoch(self) -> int:
-        """int: Return the current epoch."""
+        """Return the current epoch."""
         return self._epoch
 
     @property
     def log_dir(self) -> str:
-        """str: Return the log directory."""
+        """Return the log directory."""
         return self._log_dir
 
     def close(self) -> None:

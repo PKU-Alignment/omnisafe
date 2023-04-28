@@ -29,8 +29,8 @@ from omnisafe.envs.core import CMDP, Wrapper
 class TimeLimit(Wrapper):
     """Time limit wrapper for the environment.
 
-        .. warning::
-            The time limit wrapper only supports single environment.
+    .. warning::
+        The time limit wrapper only supports single environment.
 
     Examples:
         >>> env = TimeLimit(env, time_limit=100)
@@ -59,7 +59,7 @@ class TimeLimit(Wrapper):
             Additionally, the time step will be reset to 0.
 
         Args:
-            seed (int, optional): The seed for the environment. Defaults to None.
+            seed (int or None, optional): The seed for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.
@@ -138,9 +138,9 @@ class AutoReset(Wrapper):
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
-            If the episode is terminated, the environment will be reset.
-            The ``obs`` will be the first observation of the new episode.
-            And the true final observation will be stored in ``info['final_observation']``.
+            If the episode is terminated, the environment will be reset. The ``obs`` will be the
+            first observation of the new episode. And the true final observation will be stored in
+            ``info['final_observation']``.
 
         Args:
             action (torch.Tensor): The action from the agent or random.
@@ -176,13 +176,13 @@ class ObsNormalize(Wrapper):
 
     Examples:
         >>> env = ObsNormalize(env)
-        >>> norm = Normalizer(env.observation_space.shape) # load saved normalizer
+        >>> norm = Normalizer(env.observation_space.shape)  # load saved normalizer
         >>> env = ObsNormalize(env, norm)
 
     Args:
         env (CMDP): The environment to wrap.
         device (torch.device): The torch device to use.
-        norm (Normalizer, optional): The normalizer to use. Defaults to None.
+        norm (Normalizer or None, optional): The normalizer to use. Defaults to None.
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
@@ -239,7 +239,7 @@ class ObsNormalize(Wrapper):
         """Reset the environment and returns an initial observation.
 
         Args:
-            seed (Optional[int]): Seed for the environment.
+            seed (int or None, optional): Seed for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.
@@ -254,13 +254,13 @@ class ObsNormalize(Wrapper):
         """Save the observation normalizer.
 
         .. note::
-            The saved components will be stored in the wrapped environment.
-            If the environment is not wrapped, the saved components will be
-            empty dict. common wrappers are obs_normalize, reward_normalize,
-            and cost_normalize. When evaluating the saved model, the normalizer should be loaded.
+            The saved components will be stored in the wrapped environment. If the environment is
+            not wrapped, the saved components will be empty dict. common wrappers are obs_normalize,
+            reward_normalize, and cost_normalize. When evaluating the saved model, the normalizer
+            should be loaded.
 
         Returns:
-            self._env.save(): The saved components, that is the observation normalizer.
+            The saved components, that is the observation normalizer.
         """
         saved = super().save()
         saved['obs_normalizer'] = self._obs_normalizer
@@ -278,7 +278,7 @@ class RewardNormalize(Wrapper):
     Args:
         env (CMDP): The environment to wrap.
         device (torch.device): The torch device to use.
-        norm (Normalizer, optional): The normalizer to use. Defaults to None.
+        norm (Normalizer or None, optional): The normalizer to use. Defaults to None.
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
@@ -305,8 +305,8 @@ class RewardNormalize(Wrapper):
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
-            The reward will be normalized for agent training.
-            Then the original reward will be stored in ``info['original_reward']`` for logging.
+            The reward will be normalized for agent training. Then the original reward will be
+            stored in ``info['original_reward']`` for logging.
 
         Args:
             action (torch.Tensor): The action from the agent or random.
@@ -328,13 +328,12 @@ class RewardNormalize(Wrapper):
         """Save the reward normalizer.
 
         .. note::
-            The saved components will be stored in the wrapped environment.
-            If the environment is not wrapped, the saved components will be
-            empty dict. common wrappers are obs_normalize, reward_normalize,
-            and cost_normalize.
+            The saved components will be stored in the wrapped environment. If the environment is
+            not wrapped, the saved components will be empty dict. common wrappers are obs_normalize,
+            reward_normalize, and cost_normalize.
 
         Returns:
-            self._env.save(): The saved components, that is the reward normalizer.
+            The saved components, that is the reward normalizer.
         """
         saved = super().save()
         saved['reward_normalizer'] = self._reward_normalizer
@@ -352,7 +351,7 @@ class CostNormalize(Wrapper):
     Args:
         env (CMDP): The environment to wrap.
         device (torch.device): The torch device to use.
-        norm (Normalizer, optional): The normalizer to use. Defaults to None.
+        norm (Normalizer or None, optional): The normalizer to use. Defaults to None.
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
@@ -379,8 +378,8 @@ class CostNormalize(Wrapper):
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
-            The cost will be normalized for agent training.
-            Then the original reward will be stored in ``info['original_cost']`` for logging.
+            The cost will be normalized for agent training. Then the original reward will be stored
+            in ``info['original_cost']`` for logging.
 
         Args:
             action (torch.Tensor): The action from the agent or random.
@@ -402,13 +401,12 @@ class CostNormalize(Wrapper):
         """Save the cost normalizer.
 
         .. note::
-            The saved components will be stored in the wrapped environment.
-            If the environment is not wrapped, the saved components will be
-            empty dict. common wrappers are obs_normalize, reward_normalize,
-            and cost_normalize.
+            The saved components will be stored in the wrapped environment. If the environment is
+            not wrapped, the saved components will be empty dict. common wrappers are obs_normalize,
+            reward_normalize, and cost_normalize.
 
         Returns:
-            self._env.save(): The saved components, that is the cost normalizer.
+            The saved components, that is the cost normalizer.
         """
         saved = super().save()
         saved['cost_normalizer'] = self._cost_normalizer
@@ -563,7 +561,7 @@ class Unsqueeze(Wrapper):
             The vector information will be unsqueezed to (1, dim) for agent training.
 
         Args:
-            seed (int, optional): Set the seed for the environment(s
+            seed (int or None, optional): Set the seed for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.

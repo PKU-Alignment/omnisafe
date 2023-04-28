@@ -263,7 +263,7 @@ def recursive_check_config(
     Args:
         config (dict[str, Any]): The config to be checked.
         default_config (dict[str, Any]): The default config.
-        exclude_keys (tuple[str, ...], optional): The keys to be excluded. Defaults to ().
+        exclude_keys (tuple of str, optional): The keys to be excluded. Defaults to ().
 
     Raises:
         AssertionError: If the type of the value is not the same as the default value.

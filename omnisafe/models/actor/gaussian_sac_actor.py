@@ -35,10 +35,10 @@ class GaussianSACActor(Actor):
     Args:
         obs_space (OmnisafeSpace): Observation space.
         act_space (OmnisafeSpace): Action space.
-        hidden_sizes (list[int]): List of hidden layer sizes.
-        activation (Activation): Activation function.
-        weight_initialization_mode (InitFunction): Weight initialization mode.
-        shared (nn.Module): Shared module.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
     """
 
     _log2: torch.Tensor
@@ -68,8 +68,8 @@ class GaussianSACActor(Actor):
         """Get the distribution of the actor.
 
         .. warning::
-            This method is not supposed to be called by users.
-            You should call :meth:`forward` instead.
+            This method is not supposed to be called by users. You should call :meth:`forward`
+            instead.
 
         **Specifically, this method will clip the standard deviation to a range of [-20, 2].**
 
@@ -94,11 +94,11 @@ class GaussianSACActor(Actor):
 
         Args:
             obs (torch.Tensor): Observation from environments.
-            deterministic (bool): Whether to use deterministic policy.
+            deterministic (bool, optional): Whether to use deterministic policy. Defaults to False.
 
         Returns:
-            The mean of the distribution if ``deterministic`` is ``True``,
-            otherwise the sampled action.
+            The mean of the distribution if ``deterministic`` is ``True``, otherwise the sampled
+            action.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -129,14 +129,15 @@ class GaussianSACActor(Actor):
             You must call :meth:`forward` or :meth:`predict` before calling this method.
 
         .. note::
-            In this method, we will regularize the log probability of the action.
-            The regularization is as follows:
+            In this method, we will regularize the log probability of the action. The regularization
+            is as follows:
 
             .. math::
 
-                \log \pi(a|s) = \log \pi(a|s) - \sum_{i=1}^n (2 \log 2 - a_i - \log (1 + e^{-2 a_i}))
+                \log \pi (a|s) = \log \pi (a|s) - \sum_{i=1}^n (2 \log 2 - a_i - \log (1 + e^{-2 a_i}))
 
-            where :math:`a` is the action, :math:`s` is the observation, and :math:`n` is the dimension of the action.
+            where :math:`a` is the action, :math:`s` is the observation, and :math:`n` is the
+            dimension of the action.
 
         Args:
             act (torch.Tensor): Action.
@@ -169,7 +170,7 @@ class GaussianSACActor(Actor):
 
     @property
     def std(self) -> float:
-        """float: Standard deviation of the distribution."""
+        """Standard deviation of the distribution."""
         return self._current_dist.stddev.mean().item()
 
     @std.setter

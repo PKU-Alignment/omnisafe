@@ -27,33 +27,33 @@ from omnisafe.utils.math import discount_cumsum
 class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attributes
     """A buffer for storing trajectories experienced by an agent interacting with the environment.
 
-    Besides, The buffer also provides the functionality of calculating the advantages of state-action pairs,
-    ranging from ``GAE``, ``GAE-RTG`` ,``V-trace`` to ``Plain`` method.
+    Besides, The buffer also provides the functionality of calculating the advantages of
+    state-action pairs, ranging from ``GAE``, ``GAE-RTG`` ,``V-trace`` to ``Plain`` method.
 
     .. warning::
         The buffer only supports Box spaces.
 
     Compared to the base buffer, the on-policy buffer stores extra data:
 
-    +----------------+----------+---------------+----------------------------------------+
-    | Name           | Shape    | Dtype         | Shape                                  |
-    +================+==========+===============+========================================+
-    | discounted_ret | (size, ) | torch.float32 | The discounted sum of return.          |
-    +----------------+----------+---------------+----------------------------------------+
-    | value_r        | (size, ) | torch.float32 | The value estimated by reward critic.  |
-    +----------------+----------+---------------+----------------------------------------+
-    | value_c        | (size, ) | torch.float32 | The value estimated by cost critic.    |
-    +----------------+----------+---------------+----------------------------------------+
-    | adv_r          | (size, ) | torch.float32 | The advantage of the reward.           |
-    +----------------+----------+---------------+----------------------------------------+
-    | adv_c          | (size, ) | torch.float32 | The advantage of the cost.             |
-    +----------------+----------+---------------+----------------------------------------+
-    | target_value_r | (size, ) | torch.float32 | The target value of the reward critic. |
-    +----------------+----------+---------------+----------------------------------------+
-    | target_value_c | (size, ) | torch.float32 | The target value of the cost critic.   |
-    +----------------+----------+---------------+----------------------------------------+
-    | logp           | (size, ) | torch.float32 | The log probability of the action.     |
-    +----------------+----------+---------------+----------------------------------------+
+    +----------------+---------+---------------+----------------------------------------+
+    | Name           | Shape   | Dtype         | Shape                                  |
+    +================+=========+===============+========================================+
+    | discounted_ret | (size,) | torch.float32 | The discounted sum of return.          |
+    +----------------+---------+---------------+----------------------------------------+
+    | value_r        | (size,) | torch.float32 | The value estimated by reward critic.  |
+    +----------------+---------+---------------+----------------------------------------+
+    | value_c        | (size,) | torch.float32 | The value estimated by cost critic.    |
+    +----------------+---------+---------------+----------------------------------------+
+    | adv_r          | (size,) | torch.float32 | The advantage of the reward.           |
+    +----------------+---------+---------------+----------------------------------------+
+    | adv_c          | (size,) | torch.float32 | The advantage of the cost.             |
+    +----------------+---------+---------------+----------------------------------------+
+    | target_value_r | (size,) | torch.float32 | The target value of the reward critic. |
+    +----------------+---------+---------------+----------------------------------------+
+    | target_value_c | (size,) | torch.float32 | The target value of the cost critic.   |
+    +----------------+---------+---------------+----------------------------------------+
+    | logp           | (size,) | torch.float32 | The log probability of the action.     |
+    +----------------+---------+---------------+----------------------------------------+
 
     Args:
         obs_space (OmnisafeSpace): The observation space.
@@ -64,9 +64,12 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         lam_c (float): The lambda factor for calculating the advantages of the critic.
         advantage_estimator (AdvatageEstimator): The advantage estimator.
         penalty_coefficient (float, optional): The penalty coefficient. Defaults to 0.
-        standardized_adv_r (bool, optional): Whether to standardize the advantages of the actor. Defaults to False.
-        standardized_adv_c (bool, optional): Whether to standardize the advantages of the critic. Defaults to False.
-        device (torch.device, optional): The device to store the data. Defaults to torch.device('cpu').
+        standardized_adv_r (bool, optional): Whether to standardize the advantages of the actor.
+            Defaults to False.
+        standardized_adv_c (bool, optional): Whether to standardize the advantages of the critic.
+            Defaults to False.
+        device (torch.device, optional): The device to store the data. Defaults to
+            ``torch.device('cpu')``.
 
     Attributes:
         ptr (int): The pointer of the buffer.
@@ -120,12 +123,12 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
     @property
     def standardized_adv_r(self) -> bool:
-        """bool: Whether to standardize the advantages of the actor."""
+        """Whether to standardize the advantages of the actor."""
         return self._standardized_adv_r
 
     @property
     def standardized_adv_c(self) -> bool:
-        """bool: Whether to standardize the advantages of the critic."""
+        """Whether to standardize the advantages of the critic."""
         return self._standardized_adv_c
 
     def store(self, **data: torch.Tensor) -> None:
@@ -160,9 +163,9 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
         Args:
             last_value_r (torch.Tensor, optional): The value of the last state of the current path.
-            Defaults to torch.zeros(1).
+                Defaults to torch.zeros(1).
             last_value_c (torch.Tensor, optional): The value of the last state of the current path.
-            Defaults to torch.zeros(1).
+                Defaults to torch.zeros(1).
         """
         if last_value_r is None:
             last_value_r = torch.zeros(1, device=self._device)
@@ -203,11 +206,11 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         """Get the data in the buffer.
 
         .. hint::
-            We provide a trick to standardize the advantages of state-action pairs.
-            We calculate the mean and standard deviation of the advantages of state-action pairs
-            and then standardize the advantages of state-action pairs.
-            You can turn on this trick by setting the ``standardized_adv_r`` to ``True``.
-            The same trick is applied to the advantages of the cost.
+            We provide a trick to standardize the advantages of state-action pairs. We calculate the
+            mean and standard deviation of the advantages of state-action pairs and then standardize
+            the advantages of state-action pairs. You can turn on this trick by setting the
+            ``standardized_adv_r`` to ``True``. The same trick is applied to the advantages of the
+            cost.
 
         Returns:
             The data stored and calculated in the buffer.
@@ -243,47 +246,43 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         r"""Compute the estimated advantage.
 
         Three methods are supported:
+
         - GAE (Generalized Advantage Estimation)
 
-        GAE is a variance reduction method for the actor-critic algorithm.
-        It is proposed in the paper `High-Dimensional Continuous Control Using Generalized Advantage Estimation
-        <https://arxiv.org/abs/1506.02438>`_.
+            GAE is a variance reduction method for the actor-critic algorithm. It is proposed in the
+            paper `High-Dimensional Continuous Control Using Generalized Advantage Estimation <https://arxiv.org/abs/1506.02438>`_.
 
-        GAE calculates the advantage using the following formula:
+            GAE calculates the advantage using the following formula:
 
-        .. math::
+            .. math::
 
-            A_t = \sum_{k=0}^{n-1} (\lambda \gamma)^k \delta_{t+k}
+                A_t = \sum_{k=0}^{n-1} (\lambda \gamma)^k \delta_{t+k}
 
-        where :math:`\delta_{t+k} = r_{t+k} + \gamma*V(s_{t+k+1}) - V(s_{t+k})`
-        When :math:`\lambda =1`, GAE reduces to the Monte Carlo method,
-        which is unbiased but has high variance.
-        When :math:`\lambda =0`, GAE reduces to the TD(1) method,
-        which is biased but has low variance.
+            where :math:`\delta_{t+k} = r_{t+k} + \gamma*V(s_{t+k+1}) - V(s_{t+k})`. When
+            :math:`\lambda =1`, GAE reduces to the Monte Carlo method, which is unbiased but has high
+            variance. When :math:`\lambda =0`, GAE reduces to the TD(1) method, which is biased but has
+            low variance.
 
         - V-trace
 
-        V-trace is a variance reduction method for the actor-critic algorithm.
-        It is proposed in the paper
-        `IMPALA: Scalable Distributed Deep-RL with Importance Weighted Actor-Learner Architectures
-        <https://arxiv.org/abs/1802.01561>`_.
+            V-trace is a variance reduction method for the actor-critic algorithm. It is proposed in
+            the paper `IMPALA: Scalable Distributed Deep-RL with Importance Weighted Actor-Learner Architectures <https://arxiv.org/abs/1802.01561>`_.
 
-        V-trace calculates the advantage using the following formula:
+            V-trace calculates the advantage using the following formula:
 
-        .. math::
+            .. math::
 
-            A_t = \sum_{k=0}^{n-1} (\lambda \gamma)^k \delta_{t+k} +
-            (\lambda \gamma)^n * \rho_{t+n} * (1 - d_{t+n}) * (V(x_{t+n}) - b_{t+n})
+                A_t = \sum_{k=0}^{n-1} (\lambda \gamma)^k \delta_{t+k} +
+                    (\lambda \gamma)^n \rho_{t+n} (1 - d_{t+n}) (V(x_{t+n}) - b_{t+n})
 
-        where :math:`\delta_{t+k} = r_{t+k} + \gamma*V(s_{t+k+1}) - V(s_{t+k})`,
-        :math:`\rho_{t+k} =\frac{\pi(a_{t+k}|s_{t+k})}{b_{t+k}}`,
-        :math:`b_{t+k}` is the behavior policy,
-        and :math:`d_{t+k}` is the done flag.
+            where :math:`\delta_{t+k} = r_{t+k} + \gamma*V(s_{t+k+1}) - V(s_{t+k})`,
+            :math:`\rho_{t+k} = \frac{\pi(a_{t+k}|s_{t+k})}{b_{t+k}}`, :math:`b_{t+k}` is the
+            behavior policy, and :math:`d_{t+k}` is the done flag.
 
         - Plain
 
-        Plain method is the original actor-critic algorithm.
-        It is unbiased but has high variance.
+            Plain method is the original actor-critic algorithm. It is unbiased but has high
+            variance.
 
         Args:
             vals (torch.Tensor): The value of states.
@@ -296,7 +295,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
 
         Raises:
             NotImplementedError: If the advantage estimator is not supported.
-        """
+        """  # pylint: disable=line-too-long
         if self._advantage_estimator == 'gae':
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
             deltas = rewards[:-1] + self._gamma * values[1:] - values[:-1]
@@ -352,11 +351,10 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         .. math::
 
             A_t = \sum_{k=0}^{n-1} (\lambda \gamma)^k \delta_{t+k} +
-            (\lambda \gamma)^n * \rho_{t+n} * (1 - d_{t+n}) * (V(x_{t+n}) - b_{t+n})
+                (\lambda \gamma)^n \rho_{t+n} (1 - d_{t+n}) (V(x_{t+n}) - b_{t+n})
 
-        Calculate V-trace targets for off-policy actor-critic learning recursively.
-        For more details,
-        please refer to the paper: `Espeholt et al. 2018, IMPALA <https://arxiv.org/abs/1802.01561>`_.
+        Calculate V-trace targets for off-policy actor-critic learning recursively. For more
+        details, please refer to the paper: `Espeholt et al. 2018, IMPALA <https://arxiv.org/abs/1802.01561>`_.
 
         Args:
             policy_action_probs (torch.Tensor): Action probabilities of the policy.

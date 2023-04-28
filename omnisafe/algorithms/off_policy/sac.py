@@ -98,7 +98,7 @@ class SAC(DDPG):
 
     @property
     def _alpha(self) -> float:
-        """float: The value of alpha."""
+        """The value of alpha."""
         return self._log_alpha.exp().item()
 
     def _update_reward_critic(

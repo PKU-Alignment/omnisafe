@@ -322,9 +322,9 @@ class Plotter:
                 legend string for each one of those matches---unless you have
                 removed some of them as candidates via selection or exclusion
                 rules (below).)
-            xaxis (string): Pick what column from data is used for the x-axis.
+            xaxis (str): Pick what column from data is used for the x-axis.
                 Defaults to ``TotalEnvInteracts``.
-            value (strings): Pick what columns from data to graph on the y-axis.
+            value (str): Pick what columns from data to graph on the y-axis.
                 Submitting multiple values will produce multiple graphs. Defaults
                 to ``Performance``, which is not an actual output of any algorithm.
                 Instead, ``Performance`` refers to either ``AverageEpRet``, the
@@ -343,18 +343,18 @@ class Plotter:
                 a cost limit.
             smooth (int): Smooth data by averaging it over a fixed window. This
                 parameter says how wide the averaging window will be.
-            select (strings): Optional selection rule: the plotter will only show
+            select (str): Optional selection rule: the plotter will only show
                 curves from logdirs that contain all of these sub strings.
-            exclude (strings): Optional exclusion rule: plotter will only show
+            exclude (str): Optional exclusion rule: plotter will only show
                 curves from logdirs that do not contain these sub strings.
-            estimator (string): Optional way to specify how to aggregate data
+            estimator (str): Optional way to specify how to aggregate data
                 across multiple runs. Defaults to ``mean``.
-            save_dir (string): Optional way to specify where to save the plot.
+            save_dir (str): Optional way to specify where to save the plot.
                 Defaults to ``./``.
-            save_name (string): Optional way to specify the name of the plot.
+            save_name (str): Optional way to specify the name of the plot.
                 Defaults to ``None``, which means the plot will be saved with
                 the name of the first logdir.
-            save_format (string): Optional way to specify the format of the plot.
+            save_format (str): Optional way to specify the format of the plot.
                 Defaults to ``png``.
             show_image (bool): Optional flag. If set, the plot will be displayed
                 on screen. Defaults to ``False``.

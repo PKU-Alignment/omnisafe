@@ -25,12 +25,20 @@ import torch
 from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
 
+__all__ = [
+    'CMDP',
+    'Wrapper',
+    'env_register',
+    'support_envs',
+    'make',
+]
+
+
 class CMDP(ABC):
     """The core class of the environment.
 
-    The CMDP class is the core class of the environment. It defines the basic
-    interface of the environment. The environment should inherit from this class
-    and implement the abstract methods.
+    The CMDP class is the core class of the environment. It defines the basic interface of the
+    environment. The environment should inherit from this class and implement the abstract methods.
 
     Attributes:
         need_time_limit_wrapper (bool): Whether the environment need time limit wrapper.
@@ -52,7 +60,7 @@ class CMDP(ABC):
         """The supported environments.
 
         Returns:
-            List[str]: The supported environments.
+            The supported environments.
         """
         return cls._support_envs
 
@@ -65,27 +73,27 @@ class CMDP(ABC):
 
     @property
     def action_space(self) -> OmnisafeSpace:
-        """OmnisafeSpace: The action space of the environment."""
+        """The action space of the environment."""
         return self._action_space
 
     @property
     def observation_space(self) -> OmnisafeSpace:
-        """OmnisafeSpace: The observation space of the environment."""
+        """The observation space of the environment."""
         return self._observation_space
 
     @property
     def metadata(self) -> dict[str, Any]:
-        """dict[str, Any]: The metadata of the environment."""
+        """The metadata of the environment."""
         return self._metadata
 
     @property
     def num_envs(self) -> int:
-        """int: The number of parallel environments."""
+        """The number of parallel environments."""
         return self._num_envs
 
     @property
     def time_limit(self) -> int | None:
-        """None or int: The time limit of the environment."""
+        """The time limit of the environment."""
         return self._time_limit
 
     @abstractmethod
@@ -119,7 +127,7 @@ class CMDP(ABC):
         """Reset the environment and returns an initial observation.
 
         Args:
-            seed (Optional[int]): Seed for the environment.
+            seed (int or None): Seed for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.
@@ -139,7 +147,7 @@ class CMDP(ABC):
         """Sample an action from the action space.
 
         Returns:
-            torch.Tensor: The sampled action.
+            The sampled action.
         """
 
     @abstractmethod
@@ -147,20 +155,20 @@ class CMDP(ABC):
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
 
         Returns:
-            The render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
+            The render frames, we recommend to use `np.ndarray` which could construct video by
+            moviepy.
         """
 
     def save(self) -> dict[str, torch.nn.Module]:
         """Save the important components of the environment.
 
         .. note::
-            The saved components will be stored in the wrapped environment.
-            If the environment is not wrapped, the saved components will be
-            empty dict. common wrappers are obs_normalize, reward_normalize,
-            and cost_normalize.
+            The saved components will be stored in the wrapped environment. If the environment is
+            not wrapped, the saved components will be empty dict. common wrappers are obs_normalize,
+            reward_normalize, and cost_normalize.
 
         Returns:
-            self._env.save(): The saved components.
+            The saved components.
         """
         return {}
 
@@ -172,13 +180,13 @@ class CMDP(ABC):
 class Wrapper(CMDP):
     """The wrapper class of the environment.
 
-    The Wrapper class is the wrapper class of the environment. It defines the basic
-    interface of the environment wrapper. The environment wrapper should inherit
-    from this class and implement the abstract methods.
+    The Wrapper class is the wrapper class of the environment. It defines the basic interface of the
+    environment wrapper. The environment wrapper should inherit from this class and implement the
+    abstract methods.
 
     Args:
         env (CMDP): The environment.
-        device (torch.device): The device to use.
+        device (torch.device): The device to use. Defaults to ``torch.device('cpu')``.
 
     Attributes:
         _env (CMDP): The environment.
@@ -232,7 +240,7 @@ class Wrapper(CMDP):
         """Reset the environment and returns an initial observation.
 
         Args:
-            seed (Optional[int]): seed for the environment.
+            seed (int or None): Seed for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.
@@ -260,7 +268,8 @@ class Wrapper(CMDP):
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
 
         Returns:
-            The render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
+            The render frames, we recommend to use `np.ndarray` which could construct video by
+            moviepy.
         """
         return self._env.render()
 
@@ -268,13 +277,12 @@ class Wrapper(CMDP):
         """Save the important components of the environment.
 
         .. note::
-            The saved components will be stored in the wrapped environment.
-            If the environment is not wrapped, the saved components will be
-            empty dict. common wrappers are obs_normalize, reward_normalize,
-            and cost_normalize.
+            The saved components will be stored in the wrapped environment. If the environment is
+            not wrapped, the saved components will be empty dict. common wrappers are obs_normalize,
+            reward_normalize, and cost_normalize.
 
         Returns:
-            self._env.save(): The saved components.
+            The saved components.
         """
         return self._env.save()
 
@@ -286,14 +294,15 @@ class Wrapper(CMDP):
 class EnvRegister:
     """The environment register.
 
-    The EnvRegister is used to register the environment class. It provides the
-    method to get the environment class by the environment id.
+    The EnvRegister is used to register the environment class. It provides the method to get the
+    environment class by the environment id.
 
     Examples:
         >>> from omnisafe.envs.core import env_register
         >>> from cunstom_env import CustomEnv
         >>> @env_register
-        >>> class CustomEnv():
+        ... class CustomEnv:
+        ...     ...
     """
 
     def __init__(self) -> None:
@@ -307,7 +316,7 @@ class EnvRegister:
         """Register the environment class.
 
         Args:
-            env_class (Type[CMDP]): The environment class.
+            env_class (type[CMDP]): The environment class.
         """
         if not inspect.isclass(env_class):
             raise TypeError(f'{env_class} must be a class')
@@ -324,7 +333,7 @@ class EnvRegister:
         """Register the environment class.
 
         Args:
-            env_class (Type[CMDP]): The environment class.
+            env_class (type[CMDP]): The environment class.
 
         Returns:
             The environment class.
@@ -337,7 +346,7 @@ class EnvRegister:
 
         Args:
             env_id (str): The environment id.
-            class_name (Optional[str]): The environment class name.
+            class_name (str or None): The environment class name.
 
         Returns:
             The environment class.
@@ -374,7 +383,7 @@ def make(env_id: str, class_name: str | None = None, **kwargs: Any) -> CMDP:
 
     Args:
         env_id (str): The environment id.
-        class_name (Optional[str]): The environment class name.
+        class_name (str or None): The environment class name.
         **kwargs: the keyword arguments for the environment initialization.
 
     Returns:
@@ -382,12 +391,3 @@ def make(env_id: str, class_name: str | None = None, **kwargs: Any) -> CMDP:
     """
     env_class = ENV_REGISTRY.get_class(env_id, class_name)
     return env_class(env_id, **kwargs)
-
-
-__all__ = [
-    'CMDP',
-    'Wrapper',
-    'env_register',
-    'support_envs',
-    'make',
-]

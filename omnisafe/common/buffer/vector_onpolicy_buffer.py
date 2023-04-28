@@ -26,9 +26,8 @@ from omnisafe.utils import distributed
 class VectorOnPolicyBuffer(OnPolicyBuffer):
     """Vectorized on-policy buffer.
 
-    The vector-on-policy buffer is used to store the data from vector environments.
-    The data is stored in a list of on-policy buffers, each of which corresponds to
-    one environment.
+    The vector-on-policy buffer is used to store the data from vector environments. The data is
+    stored in a list of on-policy buffers, each of which corresponds to one environment.
 
     .. warning::
         The buffer only supports Box spaces.
@@ -45,7 +44,8 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         standardized_adv_r (bool): Whether to standardize the advantage for reward.
         standardized_adv_c (bool): Whether to standardize the advantage for cost.
         num_envs (int, optional): Number of environments. Defaults to 1.
-        device (torch.device, optional): Device to store the data. Defaults to torch.device('cpu').
+        device (torch.device, optional): Device to store the data. Defaults to
+            ``torch.device('cpu')``.
 
     Attributes:
         buffers (list[OnPolicyBuffer]): List of on-policy buffers.
@@ -90,15 +90,15 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
 
     @property
     def num_buffers(self) -> int:
-        """int: Number of buffers."""
+        """Number of buffers."""
         return self._num_buffers
 
     def store(self, **data: torch.Tensor) -> None:
         """Store data into the buffer.
 
         .. hint::
-            The data should be a list of tensors, each of which corresponds to one environment.
-            Then the data will be stored into the corresponding buffer.
+            The data should be a list of tensors, each of which corresponds to one environment. Then
+            the data will be stored into the corresponding buffer.
         """
         for i, buffer in enumerate(self.buffers):
             buffer.store(**{k: v[i] for k, v in data.items()})
@@ -114,11 +114,11 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         In vector-on-policy buffer, we get the data from each buffer and then concatenate them.
 
         .. hint::
-            We provide a trick to standardize the advantages of state-action pairs.
-            We calculate the mean and standard deviation of the advantages of state-action pairs
-            and then standardize the advantages of state-action pairs.
-            You can turn on this trick by setting the ``standardized_adv_r`` to ``True``.
-            The same trick is applied to the advantages of the cost.
+            We provide a trick to standardize the advantages of state-action pairs. We calculate the
+            mean and standard deviation of the advantages of state-action pairs and then standardize
+            the advantages of state-action pairs. You can turn on this trick by setting the
+            ``standardized_adv_r`` to ``True``. The same trick is applied to the advantages of the
+            cost.
         """
         self.buffers[idx].finish_path(last_value_r, last_value_c)
 
@@ -126,11 +126,11 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         """Get the data in the buffer.
 
         .. hint::
-            We provide a trick to standardize the advantages of state-action pairs.
-            We calculate the mean and standard deviation of the advantages of state-action pairs
-            and then standardize the advantages of state-action pairs.
-            You can turn on this trick by setting the ``standardized_adv_r`` to ``True``.
-            The same trick is applied to the advantages of the cost.
+            We provide a trick to standardize the advantages of state-action pairs. We calculate the
+            mean and standard deviation of the advantages of state-action pairs and then standardize
+            the advantages of state-action pairs. You can turn on this trick by setting the
+            ``standardized_adv_r`` to ``True``. The same trick is applied to the advantages of the
+            cost.
 
         Returns:
             The data stored and calculated in the buffer.

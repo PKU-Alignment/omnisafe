@@ -28,16 +28,16 @@ from omnisafe.utils.model import build_mlp_network
 class MLPActor(Actor):
     """Implementation of MLPActor.
 
-    MLPActor is a Gaussian actor with a learnable mean value.
-    It is used in off-policy algorithms such as ``DDPG``, ``TD3`` and so on.
+    MLPActor is a Gaussian actor with a learnable mean value. It is used in off-policy algorithms
+    such as ``DDPG``, ``TD3`` and so on.
 
     Args:
         obs_space (OmnisafeSpace): Observation space.
         act_space (OmnisafeSpace): Action space.
-        hidden_sizes (list[int]): List of hidden layer sizes.
-        activation (Activation): Activation function.
-        weight_initialization_mode (InitFunction): Weight initialization mode.
-        shared (nn.Module): Shared module.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
     """
 
     def __init__(
@@ -74,7 +74,7 @@ class MLPActor(Actor):
 
         Args:
             obs (torch.Tensor): Observation from environments.
-            deterministic (bool): Whether to use deterministic policy.
+            deterministic (bool, optional): Whether to use deterministic policy. Defaults to True.
         """
         action = self.net(obs)
         if deterministic:
@@ -85,7 +85,7 @@ class MLPActor(Actor):
 
     @property
     def noise(self) -> float:
-        """float: Noise of the action."""
+        """Noise of the action."""
         return self._noise
 
     @noise.setter
@@ -121,5 +121,5 @@ class MLPActor(Actor):
 
     @property
     def std(self) -> float:
-        """float: Standard deviation of the distribution."""
+        """Standard deviation of the distribution."""
         return self._noise

@@ -33,7 +33,8 @@ class SafetyGymnasiumEnv(CMDP):
     Args:
         env_id (str): Environment id.
         num_envs (int, optional): Number of environments. Defaults to 1.
-        device (torch.device, optional): Device to store the data. Defaults to 'cpu'.
+        device (torch.device, optional): Device to store the data. Defaults to
+            ``torch.device('cpu')``.
         **kwargs (Any): Other arguments.
 
     Attributes:
@@ -136,8 +137,9 @@ class SafetyGymnasiumEnv(CMDP):
 
         .. note::
             OmniSafe uses auto reset wrapper to reset the environment when the episode is
-            terminated. So the ``obs`` will be the first observation of the next episode.
-            And the true ``final_observation`` in ``info`` will be stored in the ``final_observation`` key of ``info``.
+            terminated. So the ``obs`` will be the first observation of the next episode. And the
+            true ``final_observation`` in ``info`` will be stored in the ``final_observation`` key
+            of ``info``.
 
         Args:
             action (torch.Tensor): Action to take.
@@ -176,7 +178,8 @@ class SafetyGymnasiumEnv(CMDP):
         """Reset the environment.
 
         Args:
-            seed (int, optional): Seed to reset the environment. Defaults to None.
+            seed (int or None, optional): Seed to reset the environment.
+                Defaults to None.
 
         Returns:
             observation: Agent's observation of the current environment.
@@ -197,7 +200,7 @@ class SafetyGymnasiumEnv(CMDP):
         """Sample a random action.
 
         Returns:
-            torch.Tensor: A random action.
+            A random action.
         """
         return torch.as_tensor(
             self._env.action_space.sample(),

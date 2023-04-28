@@ -24,12 +24,13 @@ from collections import deque
 class PIDLagrangian(abc.ABC):  # noqa: B024
     """PID version of Lagrangian.
 
-    Similar to the :class:`Lagrange` module, this module implements the PID version of the lagrangian method.
+    Similar to the :class:`Lagrange` module, this module implements the PID version of the
+    lagrangian method.
 
     .. note::
-        The PID-Lagrange is more general than the Lagrange, and can be used in any policy gradient algorithm.
-        As PID_Lagrange use the PID controller to control the lagrangian multiplier,
-        it is more stable than the naive Lagrange.
+        The PID-Lagrange is more general than the Lagrange, and can be used in any policy gradient
+        algorithm. As PID_Lagrange use the PID controller to control the lagrangian multiplier, it
+        is more stable than the naive Lagrange.
 
     Args:
         pid_kp (float): The proportional gain of the PID controller.
@@ -85,7 +86,7 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
 
     @property
     def lagrangian_multiplier(self) -> float:
-        """float: The lagrangian multiplier."""
+        """The lagrangian multiplier."""
         return self._cost_penalty
 
     def pid_update(self, ep_cost_avg: float) -> None:
@@ -98,7 +99,8 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
             \lambda_{t+1} = \lambda_t + (K_p e_p + K_i \int e_p dt + K_d \frac{d e_p}{d t}) \eta
 
         where :math:`e_p` is the error between the current episode cost and the cost limit,
-        :math:`K_p`, :math:`K_i`, :math:`K_d` are the PID parameters, and :math:`\eta` is the learning rate.
+        :math:`K_p`, :math:`K_i`, :math:`K_d` are the PID parameters, and :math:`\eta` is the
+        learning rate.
 
         Args:
             ep_cost_avg (float): The average cost of the current episode.

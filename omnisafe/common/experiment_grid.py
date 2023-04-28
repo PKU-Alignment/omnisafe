@@ -54,8 +54,10 @@ class ExperimentGrid:
         div_line_width (int): The width of the dividing line.
         name (str): Name of the experiment grid.
         default_shorthand (bool): Whether GridSearch provides default shorthands.
-        wait_defore_launch (int): Tells the GridSearch how many seconds to pause for before launching experiments.
-        foce_datastamp (bool): Whether to automatically insert a date and time stamp into the names of save directories.
+        wait_defore_launch (int): Tells the GridSearch how many seconds to pause for before
+            launching experiments.
+        foce_datastamp (bool): Whether to automatically insert a date and time stamp into the names
+            of save directories.
         log_dir (str): The directory for saving the logs.
     """
 
@@ -83,18 +85,17 @@ class ExperimentGrid:
     def print(self) -> None:
         """Print a helpful report about the experiment grid.
 
-        This function prints a helpful report about the experiment grid, including
-        the name of the experiment grid, the parameters being varied, and the
-        possible values for each parameter.
+        This function prints a helpful report about the experiment grid, including the name of the
+        experiment grid, the parameters being varied, and the possible values for each parameter.
 
         In Command Line:
 
-        .. code-block:: bash
+        .. code-block:: text
 
             ===================== ExperimentGrid [test] runs over parameters: =====================
             env_name                                [env]
             ['SafetyPointGoal1-v0', 'MountainCar-v0', 'Acrobot-v1']
-            algo                               [algo]
+            algo                                    [algo]
             ['SAC', 'DDPG', 'TD3']
             seed                                    [seed]
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -148,7 +149,7 @@ class ExperimentGrid:
             'env'
 
         Args:
-            key (string): Name of parameter.
+            key (str): Name of parameter.
 
         Returns:
             Shorthand of parameter.
@@ -169,9 +170,8 @@ class ExperimentGrid:
     ) -> None:
         """Add a parameter (key) to the grid config, with potential values (vals).
 
-        By default, if a shorthand isn't given, one is automatically generated
-        from the key using the first three letters of each colon-separated
-        term.
+        By default, if a shorthand isn't given, one is automatically generated from the key using
+        the first three letters of each colon-separated term.
 
         .. hint::
             This function is called in ``omnisafe/examples/benchmarks/run_experiment_grid.py``.
@@ -182,9 +182,9 @@ class ExperimentGrid:
             >>> add('seed', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
         Args:
-            key (string): Name of parameter.
+            key (str): Name of parameter.
             vals (list or object): Possible values for parameter.
-            shorthand (string, optional): Shorthand for parameter.
+            shorthand (str, optional): Shorthand for parameter.
             in_name (bool, optional): Whether to include this parameter in the experiment name.
         """
         assert isinstance(key, str), 'Key must be a string.'
@@ -203,22 +203,21 @@ class ExperimentGrid:
     def variant_name(self, variant: dict[str, Any]) -> str:
         """Given a variant (dict of valid param/value pairs), make an exp_name.
 
-        A variant's name is constructed as the grid name (if you've given it
-        one), plus param names (or shorthands if available) and values
-        separated by underscores.
+        A variant's name is constructed as the grid name (if you've given it one), plus param names
+        (or shorthands if available) and values separated by underscores.
 
         ..warning::
             if ``seed`` is a parameter, it is not included in the name.
 
         Examples:
             >>> variant_name({'env_id': 'SafetyPointGoal1-v0', 'algo': 'SAC', 'seed': 0})
-            exp_name = 'SafetyPointGoal1-v0_SAC_0'
+            'SafetyPointGoal1-v0_SAC_0'
 
         Args:
             variant (dict[str, Any]): Variant dictionary.
 
         Returns:
-            exp_name (string): Experiment name.
+            Experiment name.
         """
 
         def get_val(value: dict[str, Any], key: str) -> Any:
@@ -232,7 +231,7 @@ class ExperimentGrid:
 
             Args:
                 value (dict[str, Any]): Variant dictionary.
-                key (string): Key of variant dictionary.
+                key (str): Key of variant dictionary.
 
             Returns:
                 Value of variant dictionary.
@@ -276,8 +275,7 @@ class ExperimentGrid:
     def update_dict(self, total_dict: dict[str, Any], item_dict: dict[str, Any]) -> None:
         """Updater of multi-level dictionary.
 
-        This function is used to update the total dictionary with the item
-        dictionary.
+        This function is used to update the total dictionary with the item dictionary.
 
         Args:
             total_dict (dict[str, Any]): Total dictionary.
@@ -328,23 +326,21 @@ class ExperimentGrid:
     def variants(self) -> list[dict[str, Any]]:
         """Makes a list of dict, where each dict is a valid config in the grid.
 
-        There is special handling for variant parameters whose names take
-        the form ``'full:param:name'``.
+        There is special handling for variant parameters whose names take the form
+        ``'full:param:name'``.
 
-        The colons are taken to indicate that these parameters should
-        have a nested dict structure. eg, if there are two params,
+        The colons are taken to indicate that these parameters should have a nested dict structure.
+        For example, if there are two params,
 
-        .. hint::
-
-            ====================  ===
-            Key                   Val
-            ====================  ===
-            ``'base:param:a'``    1
-            ``'base:param:b'``    2
-            ``'base:param:c'``    3
-            ``'special:d'``       4
-            ``'special:e'``       5
-            ====================  ===
+        ====================  ===
+        Key                   Val
+        ====================  ===
+        ``'base:param:a'``    1
+        ``'base:param:b'``    2
+        ``'base:param:c'``    3
+        ``'special:d'``       4
+        ``'special:e'``       5
+        ====================  ===
 
         the variant dict will have the structure
 
@@ -397,27 +393,23 @@ class ExperimentGrid:
     ) -> None:
         """Run each variant in the grid with function 'thunk'.
 
-        Note: 'thunk' must be either a callable function, or a string. If it is
-        a string, it must be the name of a parameter whose values are all
-        callable functions.
+        Note: 'thunk' must be either a callable function, or a string. If it is a string, it must be
+        the name of a parameter whose values are all callable functions.
 
-        Uses ``call_experiment`` to actually launch each experiment, and gives
-        each variant a name using ``self.variant_name()``.
+        Uses ``call_experiment`` to actually launch each experiment, and gives each variant a name
+        using ``self.variant_name()``.
 
-        Maintenance note: the args for ExperimentGrid.run should track closely
-        to the args for call_experiment. However, ``seed`` is omitted because
-        we presume the user may add it as a parameter in the grid.
+        Maintenance note: the args for ExperimentGrid.run should track closely to the args for
+        ``call_experiment``. However, ``seed`` is omitted because we presume the user may add it as
+        a parameter in the grid.
 
         Args:
             thunk (Callable): Function to be called.
-            num_pool (int, optional): Number of processes to run in parallel.
-                Defaults to 1.
-            parent_dir (str, optional): Parent directory to save the experiment
-                results. Defaults to None.
-            is_test (bool, optional): Whether to run the experiment in test
-                mode. Defaults to False.
-            gpu_id (list[int], optional): List of GPU IDs to use. Defaults to
-                None.
+            num_pool (int, optional): Number of processes to run in parallel. Defaults to 1.
+            parent_dir (str or None, optional): Parent directory to save the experiment results.
+                Defaults to None.
+            is_test (bool, optional): Whether to run the experiment in test mode. Defaults to False.
+            gpu_id (list of int or None, optional): List of GPU IDs to use. Defaults to None.
         """
         if parent_dir is None:
             self.log_dir = os.path.join('./', 'exp-x', self.name)
@@ -484,7 +476,7 @@ class ExperimentGrid:
         """Save results to a file.
 
         Args:
-            exp_names (list[str]): List of experiment names.
+            exp_names (list of str): List of experiment names.
             variants (list[dict[str, Any]]): List of experiment variants.
             results (list): List of experiment results.
         """
@@ -555,12 +547,13 @@ class ExperimentGrid:
             `values` and `compare_num` cannot be set at the same time.
 
         Args:
-            parameter (str): name of parameter to analyze.
-            values (list[Any], optional): specific values of attribute,
-                if it is specified, will only compare values in it.
-            compare_num (int, optional): number of values to compare,
-                if it is specified, will combine any potential combination to compare.
-            cost_limit (float, optional): value for one line showed on graph to indicate cost.
+            parameter (str): Name of parameter to analyze.
+            values (list[Any] or None, optional): Specific values of attribute, if it is specified,
+                will only compare values in it. Defaults to None.
+            compare_num (int or None, optional): Number of values to compare, if it is specified,
+                will combine any potential combination to compare. Defaults to None.
+            cost_limit (float or None, optional): Value for one line showed on graph to indicate
+                cost. Defaults to None.
         """
         assert self._statistical_tools is not None, 'Please run run() first!'
         self._statistical_tools.load_source(self.log_dir)
@@ -570,8 +563,8 @@ class ExperimentGrid:
         """Agent Evaluation.
 
         Args:
-            num_episodes (int): number of episodes to evaluate.
-            cost_criteria (float): cost criteria for evaluation.
+            num_episodes (int, optional): Number of episodes to evaluate. Defaults to 10.
+            cost_criteria (float, optional): Cost criteria for evaluation. Defaults to 1.0.
         """
         assert self._evaluator is not None, 'Please run run() first!'
         param_dir = os.scandir(self.log_dir)
@@ -610,12 +603,13 @@ class ExperimentGrid:
         """Evaluate and render some episodes.
 
         Args:
-            num_episodes (int): number of episodes to render.
-            render_mode (str): render mode, can be 'rgb_array', 'depth_array' or 'human'.
-            camera_name (str): camera name, specify the camera which you use to capture
-                images.
-            width (int): width of the rendered image.
-            height (int): height of the rendered image.
+            num_episodes (int, optional): Number of episodes to render. Defaults to 10.
+            render_mode (str, optional): Render mode, can be 'rgb_array', 'depth_array' or 'human'.
+                Defaults to 'rgb_array'.
+            camera_name (str, optional): Camera name, specify the camera which you use to capture
+                images. Defaults to 'track'.
+            width (int, optional): The width of the rendered image. Defaults to 256.
+            height (int, optional): The height of the rendered image. Defaults to 256.
         """
         assert self._evaluator is not None, 'Please run run() first!'
         # pylint: disable-next=too-many-nested-blocks

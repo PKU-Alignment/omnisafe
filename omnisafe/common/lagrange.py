@@ -25,34 +25,33 @@ class Lagrange:
     This class implements the Lagrange multiplier update and the Lagrange loss.
 
     ..  note::
-
         Any traditional policy gradient algorithm can be converted to a Lagrangian-based algorithm
         by inheriting from this class and implementing the :meth:`_loss_pi` method.
 
     Examples:
         >>> from omnisafe.common.lagrange import Lagrange
         >>> def loss_pi(self, data):
-        >>>     # implement your own loss function here
-        >>>     return loss
+        ...     # implement your own loss function here
+        ...     return loss
 
-    You can also inherit this class to implement your own Lagrangian-based algorithm,
-    with any policy gradient method you like in ``omnisafe``.
+    You can also inherit this class to implement your own Lagrangian-based algorithm, with any
+    policy gradient method you like in ``omnisafe``.
 
     Examples:
         >>> from omnisafe.common.lagrange import Lagrange
         >>> class CustomAlgo:
-        >>>     def __init(self) -> None:
-        >>>         # initialize your own algorithm here
-        >>>         super().__init__()
-        >>>         # initialize the Lagrange multiplier
-        >>>         self.lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
+        ...     def __init(self) -> None:
+        ...         # initialize your own algorithm here
+        ...         super().__init__()
+        ...         # initialize the Lagrange multiplier
+        ...         self.lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     Args:
         cost_limit (float): The cost limit.
         lagrangian_multiplier_init (float): The initial value of the Lagrange multiplier.
         lambda_lr (float): The learning rate of the Lagrange multiplier.
         lambda_optimizer (str): The optimizer for the Lagrange multiplier.
-        lagrangian_upper_bound (float, optional): The upper bound of the Lagrange multiplier.
+        lagrangian_upper_bound (float or None, optional): The upper bound of the Lagrange multiplier.
             Defaults to None.
 
     Attributes:
@@ -101,9 +100,8 @@ class Lagrange:
         """Penalty loss for Lagrange multiplier.
 
         .. note::
-
-            ``mean_ep_cost`` obtained from: ``self.logger.get_stats('EpCosts')[0]``, which
-            are already averaged across MPI processes.
+            ``mean_ep_cost`` is obtained from ``self.logger.get_stats('EpCosts')[0]``, which is
+            already averaged across MPI processes.
 
         Args:
             mean_ep_cost (float): mean episode cost.
@@ -116,16 +114,14 @@ class Lagrange:
     def update_lagrange_multiplier(self, Jc: float) -> None:
         r"""Update Lagrange multiplier (lambda).
 
-        We update the Lagrange multiplier by minimizing the
-        penalty loss, which is defined as:
+        We update the Lagrange multiplier by minimizing the penalty loss, which is defined as:
 
         .. math::
 
-            \lambda ^{'} = \lambda + \eta * (J_c - J_c^*)
+            \lambda ^{'} = \lambda + \eta \cdot (J_c - J_c^*)
 
-        where :math:`\lambda` is the Lagrange multiplier, :math:`\eta` is the
-        learning rate, :math:`J_c` is the mean episode cost, and :math:`J_c^*` is
-        the cost limit.
+        where :math:`\lambda` is the Lagrange multiplier, :math:`\eta` is the learning rate,
+        :math:`J_c` is the mean episode cost, and :math:`J_c^*` is the cost limit.
 
         Args:
             Jc (float): mean episode cost.

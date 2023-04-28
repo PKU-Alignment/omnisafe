@@ -257,7 +257,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
     @property
     def fps(self) -> int:
-        """int: The fps of the environment.
+        """The fps of the environment.
 
         Raises:
             AssertionError: if the environment is not provided or created.
