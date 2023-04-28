@@ -36,6 +36,7 @@ class MLPActor(Actor):
         act_space (OmnisafeSpace): Action space.
         hidden_sizes (list of int): List of hidden layer sizes.
         activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        output_activation (Activation, optional): Output activation function. Defaults to ``'tanh'``.
         weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
             ``'kaiming_uniform'``.
     """

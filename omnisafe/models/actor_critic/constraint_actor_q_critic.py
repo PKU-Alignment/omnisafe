@@ -28,7 +28,7 @@ from omnisafe.utils.config import ModelConfig
 class ConstraintActorQCritic(ActorQCritic):
     """ConstraintActorQCritic is a wrapper around ActorCritic that adds a cost critic to the model.
 
-    In ``omnisafe``, we combine the actor and critic into one this class.
+    In OmniSafe, we combine the actor and critic into one this class.
 
     +-----------------+---------------------------------------------------+
     | Model           | Description                                       |
@@ -92,7 +92,7 @@ class ConstraintActorQCritic(ActorQCritic):
         """Update the target network with polyak averaging.
 
         Args:
-            tau: The polyak averaging factor.
+            tau (float): The polyak averaging factor.
         """
         super().polyak_update(tau)
         for target_param, param in zip(

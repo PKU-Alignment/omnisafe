@@ -73,8 +73,8 @@ class PCPO(CPO):
         loss_reward.backward()
         distributed.avg_grads(self._actor_critic.actor)
 
-        grad = -get_flat_gradients_from(self._actor_critic.actor)
-        x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
+        grads = -get_flat_gradients_from(self._actor_critic.actor)
+        x = conjugate_gradients(self._fvp, grads, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
         xHx = x.dot(self._fvp(x))
         H_inv_g = self._fvp(x)
@@ -88,16 +88,16 @@ class PCPO(CPO):
         loss_cost.backward()
         distributed.avg_grads(self._actor_critic.actor)
 
-        b_grad = get_flat_gradients_from(self._actor_critic.actor)
+        b_grads = get_flat_gradients_from(self._actor_critic.actor)
         ep_costs = self._logger.get_stats('Metrics/EpCost')[0] - self._cfgs.algo_cfgs.cost_limit
 
         self._logger.log(f'c = {ep_costs}')
-        self._logger.log(f'b^T b = {b_grad.dot(b_grad).item()}')
+        self._logger.log(f'b^T b = {b_grads.dot(b_grads).item()}')
 
-        p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
+        p = conjugate_gradients(self._fvp, b_grads, self._cfgs.algo_cfgs.cg_iters)
         q = xHx
-        r = grad.dot(p)
-        s = b_grad.dot(p)
+        r = grads.dot(p)
+        s = b_grads.dot(p)
 
         step_direction = (
             torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (q + 1e-8)) * H_inv_g
@@ -110,7 +110,7 @@ class PCPO(CPO):
 
         step_direction, accept_step = self._cpo_search_step(
             step_direction=step_direction,
-            grad=grad,
+            grads=grads,
             p_dist=p_dist,
             obs=obs,
             act=act,
@@ -138,8 +138,8 @@ class PCPO(CPO):
                 'Misc/FinalStepNorm': step_direction.norm().mean().item(),
                 'Misc/xHx': xHx.mean().item(),
                 'Misc/H_inv_g': x.norm().item(),  # H^-1 g
-                'Misc/gradient_norm': torch.norm(grad).mean().item(),
-                'Misc/cost_gradient_norm': torch.norm(b_grad).mean().item(),
+                'Misc/gradient_norm': torch.norm(grads).mean().item(),
+                'Misc/cost_gradient_norm': torch.norm(b_grads).mean().item(),
                 'Misc/Lambda_star': 1.0,
                 'Misc/Nu_star': 1.0,
                 'Misc/OptimCase': int(1),

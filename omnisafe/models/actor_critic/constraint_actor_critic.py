@@ -29,7 +29,7 @@ from omnisafe.utils.config import ModelConfig
 class ConstraintActorCritic(ActorCritic):
     """ConstraintActorCritic is a wrapper around ActorCritic that adds a cost critic to the model.
 
-    In ``omnisafe``, we combine the actor and critic into one this class.
+    In OmniSafe, we combine the actor and critic into one this class.
 
     +-----------------+-----------------------------------------------+
     | Model           | Description                                   |
@@ -93,8 +93,8 @@ class ConstraintActorCritic(ActorCritic):
             deterministic (bool): Whether to use deterministic policy.
 
         Returns:
-            action: The deterministic action if ``deterministic`` is True,
-            otherwise the action with Gaussian noise.
+            action: The deterministic action if ``deterministic`` is True, otherwise the action with
+                Gaussian noise.
             value_r: The reward value of the observation.
             value_c: The cost value of the observation.
             log_prob: The log probability of the action.
@@ -120,8 +120,8 @@ class ConstraintActorCritic(ActorCritic):
             deterministic (bool): Whether to use deterministic policy.
 
         Returns:
-            action: The deterministic action if ``deterministic`` is True,
-            otherwise the action with Gaussian noise.
+            action: The deterministic action if ``deterministic`` is True, otherwise the action with
+                Gaussian noise.
             value_r: The reward value of the observation.
             value_c: The cost value of the observation.
             log_prob: The log probability of the action.

@@ -57,7 +57,7 @@ class CPO(TRPO):
     def _cpo_search_step(
         self,
         step_direction: torch.Tensor,
-        grad: torch.Tensor,
+        grads: torch.Tensor,
         p_dist: torch.distributions.Distribution,
         obs: torch.Tensor,
         act: torch.Tensor,
@@ -107,7 +107,7 @@ class CPO(TRPO):
         # get and flatten parameters from pi-net
         theta_old = get_flat_params_from(self._actor_critic.actor)
         # reward improvement, g-flat as gradient of reward
-        expected_reward_improve = grad.dot(step_direction)
+        expected_reward_improve = grads.dot(step_direction)
 
         kl = torch.zeros(1)
         # while not within_trust_region and not finish all steps:
@@ -214,7 +214,7 @@ class CPO(TRPO):
     # pylint: disable=invalid-name
     def _determine_case(
         self,
-        b_grad: torch.Tensor,
+        b_grads: torch.Tensor,
         ep_costs: torch.Tensor,
         q: torch.Tensor,
         r: torch.Tensor,
@@ -234,7 +234,7 @@ class CPO(TRPO):
             A: The quadratic term of the quadratic approximation of the cost function.
             B: The linear term of the quadratic approximation of the cost function.
         """
-        if b_grad.dot(b_grad) <= 1e-6 and ep_costs < 0:
+        if b_grads.dot(b_grads) <= 1e-6 and ep_costs < 0:
             # feasible step and cost grad is zero: use plain TRPO update...
             A = torch.zeros(1)
             B = torch.zeros(1)
@@ -373,8 +373,8 @@ class CPO(TRPO):
         loss_reward.backward()
         distributed.avg_grads(self._actor_critic.actor)
 
-        grad = -get_flat_gradients_from(self._actor_critic.actor)
-        x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
+        grads = -get_flat_gradients_from(self._actor_critic.actor)
+        x = conjugate_gradients(self._fvp, grads, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
         xHx = x.dot(self._fvp(x))
         assert xHx.item() >= 0, 'xHx is negative'
@@ -387,16 +387,16 @@ class CPO(TRPO):
         loss_cost.backward()
         distributed.avg_grads(self._actor_critic.actor)
 
-        b_grad = get_flat_gradients_from(self._actor_critic.actor)
+        b_grads = get_flat_gradients_from(self._actor_critic.actor)
         ep_costs = self._logger.get_stats('Metrics/EpCost')[0] - self._cfgs.algo_cfgs.cost_limit
 
-        p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
+        p = conjugate_gradients(self._fvp, b_grads, self._cfgs.algo_cfgs.cg_iters)
         q = xHx
-        r = grad.dot(p)
-        s = b_grad.dot(p)
+        r = grads.dot(p)
+        s = b_grads.dot(p)
 
         optim_case, A, B = self._determine_case(
-            b_grad=b_grad,
+            b_grads=b_grads,
             ep_costs=ep_costs,
             q=q,
             r=r,
@@ -418,7 +418,7 @@ class CPO(TRPO):
 
         step_direction, accept_step = self._cpo_search_step(
             step_direction=step_direction,
-            grad=grad,
+            grads=grads,
             p_dist=p_dist,
             obs=obs,
             act=act,
@@ -448,8 +448,8 @@ class CPO(TRPO):
                 'Misc/FinalStepNorm': step_direction.norm().mean().item(),
                 'Misc/xHx': xHx.mean().item(),
                 'Misc/H_inv_g': x.norm().item(),  # H^-1 g
-                'Misc/gradient_norm': torch.norm(grad).mean().item(),
-                'Misc/cost_gradient_norm': torch.norm(b_grad).mean().item(),
+                'Misc/gradient_norm': torch.norm(grads).mean().item(),
+                'Misc/cost_gradient_norm': torch.norm(b_grads).mean().item(),
                 'Misc/Lambda_star': lambda_star.item(),
                 'Misc/Nu_star': nu_star.item(),
                 'Misc/OptimCase': int(optim_case),

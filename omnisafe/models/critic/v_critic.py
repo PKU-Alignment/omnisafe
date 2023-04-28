@@ -34,10 +34,11 @@ class VCritic(Critic):
     Args:
         obs_dim (int): Observation dimension.
         act_dim (int): Action dimension.
-        hidden_sizes (list[int]): Hidden layer sizes.
-        activation (Activation): Activation function.
-        weight_initialization_mode (InitFunction): Weight initialization mode.
-        shared (nn.Module): Shared network.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
+        num_critics (int, optional): Number of critics. Defaults to 1.
     """
 
     def __init__(

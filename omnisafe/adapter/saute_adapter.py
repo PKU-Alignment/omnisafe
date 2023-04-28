@@ -39,7 +39,7 @@ class SauteAdapter(OnPolicyAdapter):
         - If the safety state is greater than 0, the reward is the original reward.
         - If the safety state is less than 0, the reward is the unsafe reward (always 0 or less than 0).
 
-    ``omnisafe`` provides two implementations of Saute RL: :class:`PPOSaute` and :class:`TRPOSaute`.
+    OmniSafe provides two implementations of Saute RL: :class:`PPOSaute` and :class:`TRPOSaute`.
 
     References:
         - Title: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation

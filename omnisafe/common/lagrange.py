@@ -35,7 +35,7 @@ class Lagrange:
         ...     return loss
 
     You can also inherit this class to implement your own Lagrangian-based algorithm, with any
-    policy gradient method you like in ``omnisafe``.
+    policy gradient method you like in OmniSafe.
 
     Examples:
         >>> from omnisafe.common.lagrange import Lagrange

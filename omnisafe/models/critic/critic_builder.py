@@ -27,21 +27,22 @@ class CriticBuilder:
     """Implementation of CriticBuilder.
 
     .. note::
-        A :class:`CriticBuilder` is a class for building a critic network.
-        In ``omnisafe``, instead of building the critic network directly,
-        we build it by integrating various types of critic networks into the :class:`CriticBuilder`.
-        The advantage of this is that each type of critic has a uniform way of passing parameters.
-        This makes it easy for users to use existing critics,
-        and also facilitates the extension of new critic types.
+        A :class:`CriticBuilder` is a class for building a critic network. In OmniSafe, instead of
+        building the critic network directly, we build it by integrating various types of critic
+        networks into the :class:`CriticBuilder`. The advantage of this is that each type of critic
+        has a uniform way of passing parameters. This makes it easy for users to use existing
+        critics, and also facilitates the extension of new critic types.
 
     Args:
         obs_space (OmnisafeSpace): Observation space.
         act_space (OmnisafeSpace): Action space.
-        hidden_sizes (list[int]): Hidden sizes of the critic network.
-        activation (Activation): Activation function.
-        weight_initialization_mode (InitFunction): Weight initialization mode.
-        num_critics (int): Number of critics.
-        use_obs_encoder (bool): Whether to use observation encoder, only used in q critic.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
+        num_critics (int, optional): Number of critics. Defaults to 1.
+        use_obs_encoder (bool, optional): Whether to use observation encoder, only used in q critic.
+            Defaults to False.
     """
 
     # pylint: disable-next=too-many-arguments

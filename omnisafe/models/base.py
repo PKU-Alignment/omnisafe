@@ -39,11 +39,10 @@ class Actor(ABC, nn.Module):
     Args:
         obs_space (OmnisafeSpace): observation space.
         act_space (OmnisafeSpace): action space.
-        hidden_sizes (list[int]): hidden layer sizes.
-        activation (Activation): activation function.
-        weight_initialization_mode (InitFunction, optional): weight initialization mode.
-        Defaults to ``kaiming_uniform``.
-        shared (nn.Module, optional): shared module. Defaults to None.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
     """
 
     # pylint: disable-next=too-many-arguments
@@ -174,11 +173,13 @@ class Critic(ABC, nn.Module):
     Args:
         obs_space (OmnisafeSpace): observation space.
         act_space (OmnisafeSpace): action space.
-        hidden_sizes (list[int]): hidden layer sizes.
-        activation (Activation, optional): activation function. Defaults to 'relu'.
-        weight_initialization_mode (InitFunction, optional): weight initialization mode.
-                                                            Defaults to 'kaiming_uniform'.
-        shared (nn.Module, optional): shared module. Defaults to None.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
+        num_critics (int, optional): Number of critics. Defaults to 1.
+        use_obs_encoder (bool, optional): Whether to use observation encoder, only used in q critic.
+            Defaults to False.
     """
 
     # pylint: disable-next=too-many-arguments

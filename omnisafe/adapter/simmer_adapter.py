@@ -39,7 +39,7 @@ class SimmerAdapter(SauteAdapter):
         - If the safety state is greater than 0, the reward is the original reward.
         - If the safety state is less than 0, the reward is the unsafe reward (always 0 or less than 0).
 
-    ``omnisafe`` provides two implementations of Simmer RL: :class:`PPOSimmer` and :class:`TRPOSimmer`.
+    OmniSafe provides two implementations of Simmer RL: :class:`PPOSimmer` and :class:`TRPOSimmer`.
 
     References:
         - Title: Effects of Safety State Augmentation on Safe Exploration.

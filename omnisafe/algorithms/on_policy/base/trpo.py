@@ -48,7 +48,7 @@ class TRPO(NaturalPG):
     def _search_step_size(
         self,
         step_direction: torch.Tensor,
-        grad: torch.Tensor,
+        grads: torch.Tensor,
         p_dist: Distribution,
         obs: torch.Tensor,
         act: torch.Tensor,
@@ -86,7 +86,7 @@ class TRPO(NaturalPG):
         # Get old parameterized policy expression
         theta_old = get_flat_params_from(self._actor_critic.actor)
         # Change expected objective function gradient = expected_imrpove best this moment
-        expected_improve = grad.dot(step_direction)
+        expected_improve = grads.dot(step_direction)
 
         final_kl = 0.0
 
@@ -174,8 +174,8 @@ class TRPO(NaturalPG):
         loss.backward()
         distributed.avg_grads(self._actor_critic.actor)
 
-        grad = -get_flat_gradients_from(self._actor_critic.actor)
-        x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
+        grads = -get_flat_gradients_from(self._actor_critic.actor)
+        x = conjugate_gradients(self._fvp, grads, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
         xHx = torch.dot(x, self._fvp(x))
         assert xHx.item() >= 0, 'xHx is negative'
@@ -185,7 +185,7 @@ class TRPO(NaturalPG):
 
         step_direction, accept_step = self._search_step_size(
             step_direction=step_direction,
-            grad=grad,
+            grads=grads,
             p_dist=p_dist,
             obs=obs,
             act=act,
@@ -205,7 +205,7 @@ class TRPO(NaturalPG):
                 'Misc/Alpha': alpha.item(),
                 'Misc/FinalStepNorm': torch.norm(step_direction).mean().item(),
                 'Misc/xHx': xHx.item(),
-                'Misc/gradient_norm': torch.norm(grad).mean().item(),
+                'Misc/gradient_norm': torch.norm(grads).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
                 'Misc/AcceptanceStep': accept_step,
             },

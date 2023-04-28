@@ -33,7 +33,7 @@ from omnisafe.utils.config import ModelConfig
 class ActorQCritic(nn.Module):
     """Class for ActorQCritic.
 
-    In ``omnisafe``, we combine the actor and critic into one this class.
+    In OmniSafe, we combine the actor and critic into one this class.
 
     +-----------------+---------------------------------------------------+
     | Model           | Description                                       |
@@ -129,11 +129,11 @@ class ActorQCritic(nn.Module):
 
         Args:
             obs (torch.tensor): The observation.
-            deterministic (bool): Whether to use deterministic action. default: False.
+            deterministic (bool, optional): Whether to use deterministic action. Defaults to False.
 
         Returns:
-            action: The deterministic action if ``deterministic`` is True,
-            otherwise the action with Gaussian noise.
+            The deterministic action if ``deterministic`` is True, otherwise the action with
+            Gaussian noise.
         """
         with torch.no_grad():
             return self.actor.predict(obs, deterministic=deterministic)
@@ -143,7 +143,7 @@ class ActorQCritic(nn.Module):
 
         Args:
             obs (torch.tensor): The observation.
-            deterministic (bool): Whether to use deterministic action. default: False.
+            deterministic (bool, optional): Whether to use deterministic action. Defaults to False.
 
         Returns:
             The deterministic action if ``deterministic`` is True, otherwise the action with
@@ -155,7 +155,7 @@ class ActorQCritic(nn.Module):
         """Update the target network with polyak averaging.
 
         Args:
-            tau: The polyak averaging factor.
+            tau (float): The polyak averaging factor.
         """
         for param, target_param in zip(
             self.reward_critic.parameters(),

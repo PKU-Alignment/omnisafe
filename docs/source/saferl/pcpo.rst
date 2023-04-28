@@ -592,7 +592,7 @@ Documentation of algorithm specific functions
                 loss_cost.backward()
                 distributed.avg_grads(self._actor_critic.actor)
 
-                b_grad = get_flat_gradients_from(self._actor_critic.actor)
+                b_grads = get_flat_gradients_from(self._actor_critic.actor)
 
 
             (3) Build the Hessian-vector product based on an approximation of the KL-divergence, using ``conjugate_gradients``
@@ -600,10 +600,10 @@ Documentation of algorithm specific functions
             .. code-block:: python
                 :linenos:
 
-                p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
+                p = conjugate_gradients(self._fvp, b_grads, self._cfgs.algo_cfgs.cg_iters)
                 q = xHx
-                r = grad.dot(p)
-                s = b_grad.dot(p)
+                r = grads.dot(p)
+                s = b_grads.dot(p)
 
             (4) Determine step direction and apply SGD step after grads where set (By ``adjust_cpo_step_direction()``)
 
@@ -612,7 +612,7 @@ Documentation of algorithm specific functions
 
                 step_direction, accept_step = self._cpo_search_step(
                     step_direction=step_direction,
-                    grad=grad,
+                    grads=grads,
                     p_dist=p_dist,
                     obs=obs,
                     act=act,

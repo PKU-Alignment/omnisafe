@@ -148,8 +148,8 @@ class NaturalPG(PolicyGradient):
         loss.backward()
         distributed.avg_grads(self._actor_critic.actor)
 
-        grad = -get_flat_gradients_from(self._actor_critic.actor)
-        x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
+        grads = -get_flat_gradients_from(self._actor_critic.actor)
+        x = conjugate_gradients(self._fvp, grads, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
         xHx = torch.dot(x, self._fvp(x))
         assert xHx.item() >= 0, 'xHx is negative'
@@ -168,7 +168,7 @@ class NaturalPG(PolicyGradient):
                 'Misc/Alpha': alpha.item(),
                 'Misc/FinalStepNorm': torch.norm(step_direction).mean().item(),
                 'Misc/xHx': xHx.item(),
-                'Misc/gradient_norm': torch.norm(grad).mean().item(),
+                'Misc/gradient_norm': torch.norm(grads).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
             },
         )

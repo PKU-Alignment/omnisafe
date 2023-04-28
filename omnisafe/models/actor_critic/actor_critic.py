@@ -32,7 +32,7 @@ from omnisafe.utils.schedule import PiecewiseSchedule, Schedule
 class ActorCritic(nn.Module):
     """Class for ActorCritic.
 
-    In ``omnisafe``, we combine the actor and critic into one this class.
+    In OmniSafe, we combine the actor and critic into one this class.
 
     +-----------------+-----------------------------------------------+
     | Model           | Description                                   |
@@ -121,11 +121,11 @@ class ActorCritic(nn.Module):
 
         Args:
             obs (torch.tensor): The observation.
-            deterministic (bool): Whether to use deterministic action. default: False.
+            deterministic (bool, optional): Whether to use deterministic action. Defaults to False.
 
         Returns:
-            action: The deterministic action if ``deterministic`` is True,
-            otherwise the action with Gaussian noise.
+            action: The deterministic action if ``deterministic`` is True, otherwise the action with
+                Gaussian noise.
             value_r: The reward value of the observation.
             log_prob: The log probability of the action.
         """
@@ -144,11 +144,11 @@ class ActorCritic(nn.Module):
 
         Args:
             obs (torch.tensor): The observation.
-            deterministic (bool): Whether to use deterministic action. default: False.
+            deterministic (bool, optional): Whether to use deterministic action. Defaults to False.
 
         Returns:
-            action: The deterministic action if ``deterministic`` is True,
-            otherwise the action with Gaussian noise.
+            action: The deterministic action if ``deterministic`` is True, otherwise the action with
+                Gaussian noise.
             value_r: The reward value of the observation.
             log_prob: The log probability of the action.
         """
@@ -158,8 +158,8 @@ class ActorCritic(nn.Module):
         """Set the annealing mode for the actor.
 
         Args:
-            epochs (list[int]): The list of epochs.
-            std (list[float]): The list of standard deviation.
+            epochs (list of int): The list of epochs.
+            std (list of float): The list of standard deviation.
         """
         assert isinstance(
             self.actor,
