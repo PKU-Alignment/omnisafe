@@ -4,15 +4,14 @@ Vector and Martrix
 Introduction
 ------------
 `Reinforcement Learning <https://static.hlt.bme.hu/semantics/external/pages/deep_learning/en.wikipedia.org/wiki/Reinforcement_learning.html#:~:text=Reinforcement%20learning%20%28RL%29%20is%20an%20area%20of%20machine,as%20to%20maximize%20some%20notion%20of%20cumulative%20reward.>`__
-is one of the disciplines in machine learning that is more closely related to mathematics.
-**Safe Reinforcement Learning** is particularly close to mathematical theory,
-especially **Optimization Theory**.
+is one of the disciplines in machine learning that is more closely related to
+mathematics. **Safe Reinforcement Learning** is particularly close to
+mathematical theory, especially **Optimization Theory**.
 
-This section introduces the basic mathematical theory of Safe Reinforcement Learning.
-We will briefly introduce the following topics: Linear Algebra and Optimization Theory.
 
-If you are new to these mathematical theories in subsequent chapters, please refer back to this article.
-If this still does not solve your confusion, please refer to the more detailed introduction to mathematical theory.
+If you are new to these mathematical theories in subsequent chapters, please
+refer back to this article. If this still does not solve your confusion, please
+refer to the more detailed introduction to mathematical theory.
 
 Knowledge of Vector and Matrix
 ------------------------------
@@ -20,14 +19,16 @@ Knowledge of Vector and Matrix
 Vector Projection
 ~~~~~~~~~~~~~~~~~
 
-The projection of a vector :math:`\boldsymbol{y} \in \mathbb{R}^m` onto the span
-of :math:`\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}` (here we assume
-:math:`\boldsymbol{x}_i \in \mathbb{R}^m` )is the vector
-:math:`\boldsymbol{v} \in \operatorname{span}\left(\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}\right)`,
-such that :math:`\boldsymbol{v}` is as close as possible to :math:`\boldsymbol{y}`, as
-measured by the Euclidean norm :math:`\|\boldsymbol{v}-\boldsymbol{y}\|_2`. We denote
-the projection as
-:math:`\operatorname{Proj}\left(\boldsymbol{y} ;\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}\right)`
+The projection of a vector :math:`\boldsymbol{y} \in \mathbb{R}^m` onto the
+span of :math:`\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}` (here
+we assume :math:`\boldsymbol{x}_i \in \mathbb{R}^m` )is the vector
+:math:`\boldsymbol{v} \in \operatorname{span}\left(\left\{\boldsymbol{x}_1,
+\ldots, \boldsymbol{x}_n\right\}\right)`,
+such that :math:`\boldsymbol{v}` is as close as possible to :math:`\boldsymbol
+{y}`, as measured by the Euclidean norm
+:math:`\|\boldsymbol{v}-\boldsymbol{y}\|_2`. We denote the projection as
+:math:`\operatorname{Proj}\left(\boldsymbol {y} ;
+\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}\right)`
 and can define it formally as
 
 .. math:: \operatorname{Proj}\left(\boldsymbol{y} ;\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}\right)=\mathop{\arg\min}\limits_{\boldsymbol{v} \in \operatorname{span}\left(\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}\right)}\|\boldsymbol{y}-\boldsymbol{v}\|_2 .

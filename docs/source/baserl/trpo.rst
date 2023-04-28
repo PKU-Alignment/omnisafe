@@ -11,11 +11,10 @@ Quick Facts
     #. TRPO is an :bdg-info-line:`on-policy` algorithm.
     #. TRPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
     #. TRPO is an improvement work done based on:bdg-info-line:`NPG` .
-    #. TRPO is an important theoretical basis for :bdg-info-line:`CPO` .
+    #. TRPO is an important theoretical basis for :bdg-ref-info-line:`CPO <../saferl/cpo>` .
     #. An :bdg-ref-info-line:`API Documentation <trpoapi>`  is available for TRPO.
 
 ------
-
 
 TRPO Theorem
 ------------
@@ -23,16 +22,19 @@ TRPO Theorem
 Background
 ~~~~~~~~~~
 
-**Trust region policy optimization (TRPO)** is an iterative method for policy optimization that guarantees monotonic improvements.
-TRPO iteratively finds an excellent local approximation to the objective return and maximizes the approximated function.
-To ensure that the surrogate function is a good approximation,
-the new policy should be constrained within a trust region
-concerning the current policy, by applying KL divergence to measure the distance between two policies.
+**Trust region policy optimization (TRPO)** is an iterative method for policy
+optimization that guarantees monotonic improvements. TRPO iteratively finds an
+excellent local approximation to the objective return and maximizes the
+approximated function. The new policy should be constrained within a trust
+region concerning the current policy by applying KL divergence to measure the
+distance between the two policies to ensure the surrogate function is a good
+approximation.
 
-TRPO can be applied to comprehensive nonlinear policies such as neural networks.
-Based on **Natural Policy Gradient (NPG)**,
-TRPO uses methods like the conjugate gradient to avoid the expensive computational cost.
-Moreover, it also performs a line search to keep policy updating within the fixed KL divergence constraint.
+TRPO can be applied to comprehensive nonlinear policies such as neural
+networks. Based on **Natural Policy Gradient (NPG)**,, TRPO uses methods like
+the conjugate gradient to avoid the expensive computational cost. Moreover, it
+also performs a line search to keep policy updating within the fixed KL
+divergence constraint.
 
 .. grid:: 2
 
@@ -70,9 +72,10 @@ Moreover, it also performs a line search to keep policy updating within the fixe
 
 Performance difference over policies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In policy optimization, we want to make every update that guarantees the expected return increase monotonically.
-It is intuitive to construct the equation of expected return in the following form:
+In policy optimization, we want to make every update that monotonically
+guarantees the expected return increase.
+It is intuitive to construct the equation of expected return in the following
+form:
 
 .. math::
     :label: trpo-eq-1
@@ -80,9 +83,11 @@ It is intuitive to construct the equation of expected return in the following fo
     J^R(\pi') = J^R(\pi) + \{J^R(\pi') - J^R(\pi)\}
 
 
-To achieve monotonic improvements, we only need to consider :math:`\Delta = J^R(\pi') - J^R(\pi)` to be non-negative.
+To achieve monotonic improvements, we only need to consider
+:math:`\Delta = J^R(\pi') - J^R(\pi)` to be non-negative.
 
-As shown in **NPG**, the difference in performance between two policies :math:`\pi'` and :math:`\pi` can be expressed as
+As shown in **NPG**, the difference in performance between two policies
+:math:`\pi'` and :math:`\pi` can be expressed as
 
 .. _trpo-Theorem 1:
 
@@ -111,10 +116,11 @@ As shown in **NPG**, the difference in performance between two policies :math:`\
     +++
     The proof of the :bdg-info-line:`Theorem 1` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-:bdg-info-line:`Theorem 1` is intuitive as the expected discounted reward of :math:`\pi'` can be viewed as the expected discounted reward of :math:`\pi`,
+:bdg-info-line:`Theorem 1` is intuitive as the expected discounted reward of
+:math:`\pi'` can be viewed as the expected discounted reward of :math:`\pi`,
 and an extra advantage of :math:`\pi'` over :math:`\pi`.
-The latter term accounts for how much :math:`\pi'` can improve over :math:`\pi`,
-which is of our interest.
+The latter term accounts for how much :math:`\pi'`
+can improve over :math:`\pi`, which is of our interest.
 
 .. note::
 
@@ -131,13 +137,16 @@ which is of our interest.
         &=J^R(\pi)+\sum_s d_{\pi'}(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)
 
 
-This equation implies for any policy :math:`\pi'`, if it has a nonnegative expected advantage at every state :math:`s`, i.e.,
+This equation implies for any policy :math:`\pi'`, if it has a nonnegative
+expected advantage at every state :math:`s`, i.e.,
 :math:`\sum_a \pi'(a \mid s) A^R_{\pi}(s, a) \geq 0`,
 is guaranteed to increase the policy performance :math:`J`,
-or leave it constant in the case that the expected advantage is zero everywhere.
+or leave it constant in the case
+that the expected advantage is zero everywhere.
 However, in the approximate setting, it will typically be unavoidable,
 due to estimation and approximation errors,
-that there will be some states :math:`s` for which the expected advantage is negative, that is,
+that there will be some states :math:`s` for which the expected advantage is
+negative, that is,
 :math:`\sum_a \pi'(a \mid s) A^R_{\pi}(s, a)<0`.
 
 ------
@@ -145,9 +154,11 @@ that there will be some states :math:`s` for which the expected advantage is neg
 Surrogate function for the objective
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:eq:`trpo-eq-3` requires knowledge about future state distribution under :math:`\pi'`,
+:eq:`trpo-eq-3` requires knowledge about future state distribution under
+:math:`\pi'`,
 which is usually unknown and difficult to estimate.
-The complex dependency of :math:`d_{\pi'}(s)` on :math:`\pi'` makes :eq:`trpo-eq-3` difficult to optimize directly.
+The complex dependency of :math:`d_{\pi'}(s)` on :math:`\pi'` makes
+:eq:`trpo-eq-3` difficult to optimize directly.
 Instead, we introduce the following local approximation to :math:`J`:
 
 .. _`trpo-eq-4`:
@@ -159,7 +170,8 @@ Instead, we introduce the following local approximation to :math:`J`:
 
 
 Here we only replace :math:`d_{\pi'}` with :math:`d_\pi`.
-It has been proved that if the two policy :math:`\pi'` and :math:`\pi` are close enough,
+It has been proved that if the two policy :math:`\pi'` and :math:`\pi` are
+close enough,
 :math:`L_\pi(\pi')` can be considered as equivalent to :math:`J^R(\pi')`.
 
 .. _trpo-Corollary 1:
@@ -194,14 +206,20 @@ It has been proved that if the two policy :math:`\pi'` and :math:`\pi` are close
     +++
     The proof of the :bdg-info-line:`Corollary 1` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-:eq:`trpo-eq-6` implies that a sufficiently small step :math:`\pi_{\theta_0} \rightarrow \pi'` that improves :math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J`,
+:eq:`trpo-eq-6` implies that a sufficiently small step
+:math:`\pi_{\theta_0} \rightarrow \pi'` that improves
+:math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J`,
 but does not give us any guidance on how big of a step to take.
 
-To address this issue, **NPG** proposed a policy updating scheme called **conservative policy iteration(CPI)**,
-for which they could provide explicit lower bounds on the improvement of :math:`J`.
-To define the conservative policy iteration update, let :math:`\pi_{\mathrm{old}}` denote the current policy,
-and let :math:`\pi^{*}=\arg \max _{\pi^{*}} L_{\pi_{\text {old }}}\left(\pi^{*}\right)`.
-The new policy :math:`\pi_{\text {new }}` was defined to be the following mixture:
+To address this issue, **NPG** proposed a policy updating scheme called
+**conservative policy iteration(CPI)**,
+which could provide explicit lower bounds on the improvement of :math:`J`.
+To define the conservative policy iteration update,
+let :math:`\pi_{\mathrm{old}}` denote the current policy,
+and let
+:math:`\pi^{*}=\arg \max _{\pi^{*}} L_{\pi_{\text {old }}}\left(\pi^{*}\right)`.
+The new policy :math:`\pi_{\text {new }}`
+was defined to be the following mixture:
 
 .. math::
     :label: trpo-eq-7
@@ -220,7 +238,8 @@ Kakade and Langford derived the following lower bound:
     \text { where } &\epsilon=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right|
 
 
-However, the lower bound in :eq:`trpo-eq-8` only applies to mixture policies, so it needs to be extended to general policy cases.
+However, the lower bound in :eq:`trpo-eq-8` only applies to mixture policies,
+so it needs to be extended to general policy cases.
 
 ------
 
@@ -228,10 +247,14 @@ Monotonic Improvement Guarantee for General Stochastic Policies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Based on the theoretical guarantee :eq:`trpo-eq-16` in mixture policies case,
-TRPO extends the lower bound to general policies by replacing :math:`\alpha` with a distance measure between :math:`\pi` and :math:`\pi'`,
+TRPO extends the lower bound to general policies by replacing :math:`\alpha`
+with a distance measure between :math:`\pi` and :math:`\pi'`,
 and changing the constant :math:`\epsilon` appropriately.
-The chosen distance measurement is the total variation divergence (TV divergence),
-which is defined by :math:`D_{TV}(p \| q)=\frac{1}{2} \sum_i \left|p_i-q_i\right|` for discrete probability distributions :math:`p, q`.
+The chosen distance measurement is the total variation divergence
+(TV divergence),
+which is defined by
+:math:`D_{TV}(p \| q)=\frac{1}{2} \sum_i \left|p_i-q_i\right|`
+for discrete probability distributions :math:`p, q`.
 Define :math:`D_{\mathrm{TV}}^{\max }(\pi, \pi')` as
 
 .. math::
@@ -267,12 +290,15 @@ And the new bound is derived by introducing the :math:`\alpha`-coupling method.
     The proof of the :bdg-info-line:`Theorem 2` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
 The proof extends Kakade and Langford's result using the fact,
-that the random variables from two distributions with total variation divergence less than :math:`\alpha` can be coupled,
+that the random variables from two distributions with total variation
+divergence less than :math:`\alpha` can be coupled,
 so that they are equal with probability :math:`1-\alpha`.
 
-Next, we note the following relationship between the total variation divergence and the :math:`\mathrm{KL}` divergence:
+Next, we note the following relationship between the total variation divergence
+and the :math:`\mathrm{KL}` divergence:
 :math:`D_{\mathrm{TV}}(p \| q)^2 \leq D_{\mathrm{KL}}(p \| q)`.
-Let :math:`D_{\mathrm{KL}}^{\max }(\pi, \pi')=\max _s D_{\mathrm{KL}}(\pi(\cdot|s) \| \pi'(\cdot|s))`.
+Let
+:math:`D_{\mathrm{KL}}^{\max }(\pi, \pi')=\max _s D_{\mathrm{KL}}(\pi(\cdot|s) \| \pi'(\cdot|s))`.
 The following bound then follows directly from :bdg-info-line:`Theorem 2` :
 
 .. _`trpo-eq-11`:
@@ -284,11 +310,15 @@ The following bound then follows directly from :bdg-info-line:`Theorem 2` :
     & \quad \text { where } C=\frac{4 \epsilon \gamma}{(1-\gamma)^2}
 
 
-TRPO describes an approximate policy iteration scheme based on the policy improvement bound in :eq:`trpo-eq-11`.
+TRPO describes an approximate policy iteration scheme based on the policy
+improvement bound in :eq:`trpo-eq-11`.
 Note that for now, we assume exact evaluation of the advantage values :math:`A^R_{\pi}`.
 
-It follows from :eq:`trpo-eq-11` that TRPO is guaranteed to generate a monotonically improving sequence of policies :math:`J\left(\pi_0\right) \leq J\left(\pi_1\right) \leq J\left(\pi_2\right) \leq \cdots`.
-To see this, let :math:`M_i(\pi)=L_{\pi_i}(\pi)-C D_{\mathrm{KL}}^{\max }\left(\pi_i, \pi\right)`.
+It follows from :eq:`trpo-eq-11` that TRPO is guaranteed to generate a
+monotonically improving sequence of policies
+:math:`J\left(\pi_0\right) \leq J\left(\pi_1\right) \leq J\left(\pi_2\right) \leq \cdots`.
+To see this, let
+:math:`M_i(\pi)=L_{\pi_i}(\pi)-C D_{\mathrm{KL}}^{\max }\left(\pi_i, \pi\right)`.
 Then
 
 .. math::
@@ -299,7 +329,8 @@ Then
     J\left(\pi_{i+1}\right)-\eta\left(\pi_i\right)&\geq M_i\left(\pi_{i+1}\right)-M\left(\pi_i\right)
 
 
-Thus, by maximizing :math:`M_i` at each iteration, we guarantee that the true objective :math:`J` is non-decreasing.
+Thus, by maximizing :math:`M_i` at each iteration, we guarantee that the true
+objective :math:`J` is non-decreasing.
 
 .. _trust-region-policy-optimization-1:
 
@@ -311,9 +342,12 @@ Practical Implementation
 Approximately Solving the TRPO Update
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Until now, we present the iteration algorithm with theoretically guaranteed monotonic improvement for new policy over the current policy.
-However, in practice, when we consider policies in parameterized space :math:`\pi_{\theta}(a \mid s)`,
-the algorithm cannot work well. By plugging in the notation :math:`\theta`, our update step becomes
+Until now, we present the iteration algorithm with theoretically guaranteed
+monotonic improvement for new policy over the current policy.
+However, in practice, when we consider policies in parameterized space
+:math:`\pi_{\theta}(a \mid s)`,
+the algorithm cannot work well. By plugging in the notation :math:`\theta`, our
+update step becomes
 
 .. math::
     :label: trpo-eq-13
@@ -321,10 +355,14 @@ the algorithm cannot work well. By plugging in the notation :math:`\theta`, our 
     & L_{\theta_{old}}(\theta)-C D_{\mathrm{KL}}^{\max }(\theta_{old}, \theta) \\
 
 
-where :math:`C=\frac{4 \epsilon \gamma}{(1-\gamma)^2}`, and :math:`\theta_{old}, \theta` are short for :math:`\pi_{\theta_{old}}, \pi_{\theta}`.
-In practice, the penalty coefficient :math:`C` for KL divergence would produce a very small step size and the improvement would be too conservative.
+where :math:`C=\frac{4 \epsilon \gamma}{(1-\gamma)^2}`,
+and :math:`\theta_{old}, \theta`
+are short for :math:`\pi_{\theta_{old}}, \pi_{\theta}`.
+In practice, the penalty coefficient :math:`C` for KL divergence would produce
+a very small step size and the improvement would be too conservative.
 To allow larger step size, instead of penalty term on KL divergence,
-TRPO uses fixed KL divergence constraint to bound the distance between :math:`\pi_{\theta_{old}}` and :math:`\pi_{\theta}`:
+TRPO uses fixed KL divergence constraint to bound the distance between
+:math:`\pi_{\theta_{old}}` and :math:`\pi_{\theta}`:
 
 .. math::
     :label: trpo-eq-14
@@ -333,10 +371,12 @@ TRPO uses fixed KL divergence constraint to bound the distance between :math:`\p
     &\text{s.t. } \quad D_{\mathrm{KL}}^{\max }(\theta_{old}, \theta) \le \delta
 
 
-This problem imposes a constraint that the KL divergence is bounded at every point in the state space.
+This problem imposes a constraint that the KL divergence is bounded at every
+point in the state space.
 While it is motivated by the theory,
 this problem is impractical to solve due to a large number of constraints.
-Instead, TRPO uses a heuristic approximation that considers the average KL divergence:
+Instead, TRPO uses a heuristic approximation that considers the average KL
+divergence:
 
 .. math::
     :label: trpo-eq-15
@@ -345,7 +385,8 @@ Instead, TRPO uses a heuristic approximation that considers the average KL diver
     &\text{s.t. } \quad \bar{D}_{\mathrm{KL}}(\theta_{old}, \theta) \le \delta
 
 
-where :math:`\bar{D}_{\mathrm{KL}}:=\mathbb{E}_{s \sim \rho}\left[D_{\mathrm{KL}}\left(\pi_{\theta_1}(\cdot \mid s) \| \pi_{\theta_2}(\cdot \mid s)\right)\right]`
+where
+:math:`\bar{D}_{\mathrm{KL}}:=\mathbb{E}_{s \sim \rho}\left[D_{\mathrm{KL}}\left(\pi_{\theta_1}(\cdot \mid s) \| \pi_{\theta_2}(\cdot \mid s)\right)\right]`
 The method TRPO describes involves two steps:
 
 .. card::
@@ -845,7 +886,9 @@ Reference
 Appendix
 --------
 
-:bdg-ref-info-line:`Click here to jump to TRPO Theorem<trpo-Theorem 1>`  :bdg-ref-success-line:`Click here to jump to Code with OmniSafe<trpo-Code_with_OmniSafe>`
+:bdg-ref-info-line:`Click here to jump to TRPO Theorem<trpo-Theorem 1>`
+
+:bdg-ref-success-line:`Click here to jump to Code withOmniSafe<trpo-Code_with_OmniSafe>`
 
 .. _appendix-theorem1:
 
@@ -966,7 +1009,8 @@ Note that :math:`L_\pi` can be written as
 
 To bound the difference between :math:`J^R(\pi')` and :math:`L_\pi(\pi')`,
 we will bound the difference arising from each timestep.
-To do this, we first need to introduce a measure of how much :math:`\pi` and :math:`\pi'` agree.
+To do this, we first need to introduce a measure of how much :math:`\pi` and
+:math:`\pi'` agree.
 Specifically, we'll couple the policies,
 so that they define a joint distribution over pairs of actions.
 
@@ -981,8 +1025,10 @@ so that they define a joint distribution over pairs of actions.
     :math:`P(a \neq a'|s) \leq \alpha` for all s.
     :math:`\pi` and :math:`\pi'` will denote the marginal distributions of a and :math:`a'`, respectively.
 
-Computationally, :math:`\alpha`-coupling means that if we randomly choose a seed for our random number generator,
-and then we sample from each of :math:`\pi` and :math:`\pi'` after setting that seed,
+Computationally, :math:`\alpha`-coupling means that if we randomly choose a
+seed for our random number generator,
+and then we sample from each of :math:`\pi` and :math:`\pi'` after setting that
+seed,
 the results will agree for at least fraction :math:`1-\alpha` of seeds.
 
 .. tab-set::
@@ -1026,7 +1072,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
                 :label: trpo-eq-27
 
                 \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right|&\leq 2 \alpha \max _s \bar{A}^R(s) \\
-                &\leq& 4 \alpha\left(1-(1-\alpha)^t\right) \max _s\left|A^R_{\pi}(s, a)\right|
+                &\leq 4 \alpha\left(1-(1-\alpha)^t\right) \max _s\left|A^R_{\pi}(s, a)\right|
 
 
 .. tab-set::
@@ -1155,8 +1201,10 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
                 \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right| \leq 4 \alpha\left(1-(1-\alpha)^t\right) \max _{s, a}\left|A^R_{\pi}(s, a)\right|
 
 
-The preceding Lemma bounds the difference in expected advantage at each timestep :math:`t`.
-We can sum over time to bound the difference between :math:`J^R(\pi')` and :math:`L_\pi(\pi')`. Subtracting :eq:`trpo-eq-24` and :eq:`trpo-eq-25`,
+The preceding Lemma bounds the difference in expected advantage at each
+timestep :math:`t`.
+We can sum over time to bound the difference between :math:`J^R(\pi')` and
+:math:`L_\pi(\pi')`. Subtracting :eq:`trpo-eq-24` and :eq:`trpo-eq-25`,
 and defining :math:`\epsilon=\max _{s, a}\left|A^R_{\pi}(s, a)\right|`, we have
 
 .. _`trpo-eq-36`:
@@ -1172,7 +1220,8 @@ and defining :math:`\epsilon=\max _{s, a}\left|A^R_{\pi}(s, a)\right|`, we have
 
 
 Last, to replace :math:`\alpha` by the total variation divergence,
-we need to use the correspondence between TV divergence and coupled random variables:
+we need to use the correspondence between TV divergence and coupled random
+variables:
 
 .. note::
 
@@ -1191,6 +1240,8 @@ such that
 
     \max_s D_{\mathrm{TV}}(\pi(\cdot|s) \| \pi'(\cdot|s)) \leq \alpha
 
-then we can define an :math:`\alpha`-coupled policy pair :math:`(\pi, \pi')` with appropriate marginals.
-Taking :math:`\alpha=\max _s D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right) \leq \alpha` in :eq:`trpo-eq-37`,
-:bdg-info-line:`Theorem 2` follows.
+then we can define an :math:`\alpha`-coupled policy pair :math:`(\pi, \pi')`
+with appropriate marginals.
+Taking
+:math:`\alpha=\max _s D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right) \leq \alpha`
+in :eq:`trpo-eq-37`, :bdg-info-line:`Theorem 2` follows.

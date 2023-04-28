@@ -27,7 +27,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 .. note::
 
     This expression may be so complex that you won't immediately understand
-    what it means. Don't worry; we'll explain how it can be used to solve the constrained optimization problem in Problem :eq:`preknow-eq-1`.
+    what it means. Don't worry, we'll explain how it can be used to solve the constrained optimization problem in Problem :eq:`preknow-eq-1`.
 
 .. tab-set::
 
@@ -83,8 +83,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
             :math:`h_i(x)\le0` and :math:`\ell_j(x)=0`, thus
             :math:`L(x, u, v)=f(x)+\sum_{i=1}^m u_i h_i(x)+\sum_{j=1}^r v_j \ell_j(x)\le f(x)`.
             The last inequality becomes equality iff :math:`u_ih_i(x)=0, i=1,...,m`.
-            So, if :math:`x` is feasible, we obtain :math:`f(x)=\theta_p(x)`, where
-            the subscript :math:`p` denotes *primal problem*.
+            So, if :math:`x` is feasible, we obtain :math:`f(x)=\theta_p(x)`, where the subscript :math:`p` denotes *primal problem*.
 
     .. tab-item:: Proof of Lemma 2
       :sync: key2
@@ -161,15 +160,17 @@ problem, named as :math:`g^*`, satisfies:
 Strong and Week Duality
 -----------------------
 
-In the above introduction, we learned about the definition of primal and dual problems. You may find that the dual problem has a suitable property,
-that the dual problem is convex.
+In the above introduction, we learned about the definition of primal and dual
+problems. You may find that the dual problem has a suitable property,
+that it is convex.
 
 .. note::
 
     The naive idea is that since the dual problem is convex,
     that is, convenient to solve, can the solution of the primal problem be converted to the solution of the dual problem?
 
-We will discuss the weak and strong duality to show you the connection between the primal and dual problems.
+We will discuss the weak and strong duality to show you the connection between
+the primal and dual problems.
 
 .. tab-set::
 
@@ -183,7 +184,9 @@ We will discuss the weak and strong duality to show you the connection between t
             ^^^
             The Lagrangian dual problem yields a lower bound for the primal problem.
             It always holds true that :math:`f^*\ge g^*`. We define that as weak
-            duality. *Proof.* We have the definitions that:
+            duality.
+
+            We have the definitions that:
 
             .. math:: f^*=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max} \quad L(x, u, v) \quad g^*=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}}\quad L(x,u,v)
 
@@ -198,7 +201,7 @@ We will discuss the weak and strong duality to show you the connection between t
                 \end{aligned}
 
             The weak duality is intuitive because it simply takes a small step based
-            on the definition. However, it make little sense for us to solve Problem
+            on the definition. However, it makes little sense for us to solve Problem
             :eq:`preknow-eq-1`, because :math:`f^*\neq g^*`.
             So we will introduce strong duality and luckily, with that we can obtain
             :math:`f^*=g^*`.
@@ -232,6 +235,6 @@ In this section we introduce you to the Lagrange method, which converts
 the solution of a constrained optimization problem into a solution to an
 unconstrained optimization problem. We also introduce that under certain
 conditions, the solution of a complex primal problem can also be
-converted to a relatively simple solution of a dual problem. SafeRL's
+converted to a relatively simple solution of a dual problem. Safe RL
 algorithms are essentially solutions to constrained problems, so the
 Lagrange method is an important basis for many of these algorithms.

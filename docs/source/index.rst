@@ -16,16 +16,19 @@ Welcome To OmniSafe Tutorial
 .. image:: image/logo.png
     :scale: 45%
 
-Welcome to `OmniSafe <https://jmlr.org/papers/v16/garcia15a.html>`__ in Safe RL!
-OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learning, encompassing more than 40 different kinds of algorithms covering a multitude of SafeRL domains and delivering a new suite of testing environments.
+Welcome to `OmniSafe <https://jmlr.org/papers/v16/garcia15a.html>`_ in Safe RL!
+OmniSafe is a comprehensive and reliable benchmark for safe reinforcement
+learning (RL), encompassing more than 40 different kinds of algorithms covering
+a multitude of safe reinforcement learning (Safe RL) domains and delivering a
+new suite of testing environments.
 
 .. hint::
 
-    For beginners, it is necessary first to introduce you to Safe RL(Safe Reinforcement Learning).
-    *Safe Reinforcement Learning* can be defined as the learning agents that maximize the expectation of the return on problems, ensure reasonable system performance, 
-    and respect safety constraints during the learning and deployment processes.
+    For beginners, it is necessary first to introduce you to Safe RL.
+    **Safe Reinforcement Learning** can be defined as the process of learning policies that maximize the expectation of the return in problems
+    in which it is important to ensure reasonable system performance and/or respect safety constraints during the learning and/or deployment processes.
 
-**This tutorial is useful for reinforcement learning learners of many levels.**
+**This tutorial is useful for RL learners of roughly three levels.**
 
 .. grid:: 12 4 4 4
 
@@ -48,7 +51,7 @@ OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learni
 
         For Average Users
         ^^^^^^^^^^^^^^^^^
-        If you have a general understanding of RL algorithms but need to familiarize yourself with Safe RL, This tutorial introduces it so you can get started quickly.
+        If you have a general understanding of RL algorithms but need to familiarize yourself with Safe RL, this tutorial introduces it so you can get started quickly.
 
     .. grid-item-card::
         :class-item: sd-font-weight-bold
@@ -65,23 +68,32 @@ OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learni
 Why We Built This
 -----------------
 
-In recent years, `RL`_ (Reinforcement Learning) algorithms, especially `Deep RL`_ algorithms, have performed well in many tasks.
+In recent years, `RL`_ (Reinforcement Learning) algorithms,
+especially `Deep RL`_ algorithms, have performed well in many tasks.
 Examples include:
 
 - Achieving high scores on Atari games with only visual input.
 - Completing complex control tasks in high dimensions.
 - Beating human grandmasters at Go tournaments.
 
-However, in the process of policy updating by RL, the agents often learn **cheating or even dangerous behaviors** to improve their performance.
-Such an agent that can quickly achieve high scores but differs from our desired result.
-Therefore, Safe RL algorithms are dedicated to solving the problem of how to train an agent to learn to achieve the desired training goal without violating constraints simultaneously.
+However, in the process of policy updating by RL, the agents often learn
+**cheating or even dangerous behaviors** to improve their performance.
+
+Such an agent that can quickly achieve high scores but differs from our desired
+result.
+
+Therefore, Safe RL algorithms are dedicated to solving the problem of how to
+train an agent to achieve the desired training goal without violating
+constraints simultaneously.
 
 .. admonition:: However
     :class: warning
 
     Even experienced RL researchers have difficulty understanding Safe RL's algorithms in a short time and quickly programming their implementation.
 
-Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing both a **detailed and systematic introduction to the algorithm** and a **streamlined and robust code**.
+Therefore, OmniSafe will facilitate the subsequent study of Safe RL by
+providing both a **detailed and systematic introduction to the algorithm** and
+a **streamlined and robust code**.
 
 .. tab-set::
 
@@ -134,9 +146,9 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
             Robust Code
             ^^^^^^^^^^^
-            The OmniSafe tutorial gives a **code-level** introduction in each algorithm introduction, 
-            allowing learners new to Safe RL theory to understand how to connect algorithm ideas with code and providing Safe RL experts with unique insights into algorithm implementation.
-
+            The OmniSafe tutorial gives a **code-level** introduction in each algorithm introduction.
+            Learners new to Safe RL theory can understand how to connect algorithm ideas with code.
+            Experts can get unique insights into Safe RL from algorithm implementation.
 
 
 .. _`RL`: https://en.wikipedia.org/wiki/Reinforcement_learning
@@ -157,7 +169,7 @@ Code Design Principles
 
         Consistent and Inherited
         ^^^^^^^^^^^^^^^^^^^^^^^^
-        Our code has a complete logic system that allows you to understand the connection between each algorithm and the similarities together with differences.
+        Our code has a complete logic system that allows you to understand the connection between each algorithm.
         For example, if you understand the Policy Gradient algorithm, then you can learn the PPO algorithm by simply reading a new function and immediately grasping the code implementation of the PPO algorithm.
 
     .. grid-item-card::
@@ -169,9 +181,8 @@ Code Design Principles
         Robust and Readable
         ^^^^^^^^^^^^^^^^^^^^
         Our code can play the role of both a tutorial and a tool.
-        If you want to become familiar with algorithms' implementations in Safe RL, the highly readable code in OmniSafe can help you get started quickly.
-        You can see how each algorithm performs.
-        If you want to build your algorithms, OmniSafe's highly inherited code can also be an excellent tool!
+        If you want to learn algorithms' implementations in Safe RL, the highly readable code in OmniSafe can help you get started quickly.
+        You can see how each algorithm performs.If you want to build your algorithms, OmniSafe's highly inherited code can also be an excellent tool!
 
     .. grid-item-card::
         :class-item: sd-font-weight-bold
@@ -183,14 +194,22 @@ Code Design Principles
         ^^^^^^^^^^^^^^^^^^^^^^^^^^
         Unlike other code that relies on a large number of external libraries, OmniSafe minimizes the dependency on third-party libraries.
         This avoids shortening the life of the project due to iterative changes in third-party library code,
-        and also optimizes the user's experience in installing and using OmniSafe, 
+        and also optimizes the user's experience in installing and using OmniSafe,
         because they do not have to install lots of dependencies to run OmniSafe.
 
 Before Reading
 --------------
 
-Before you start having fun reading the OmniSafe tutorial, we want you to understand the usage of colors in this tutorial.
-In this tutorial, in general, the :bdg-info:`light blue boxes` indicate mathematically relevant derivations, including but not limited to :bdg-info-line:`Theorem`, :bdg-info-line:`Lemma`, :bdg-info-line:`Proposition`, :bdg-info-line:`Corollary`, and :bdg-info-line:`their proofs`, while the :bdg-success:`green boxes` indicate specifically :bdg-success-line:`implementations`, both :bdg-success-line:`theoretical` and :bdg-success-line:`code-based`.
+Before you start having fun reading the OmniSafe tutorial, we want you to
+understand the usage of colors in this tutorial.
+
+In this tutorial, in general, the :bdg-info:`light blue boxes` indicate
+mathematically relevant derivations, including but not limited to
+:bdg-info-line:`Theorem`, :bdg-info-line:`Lemma`, :bdg-info-line:`Proposition`,
+:bdg-info-line:`Corollary`, and :bdg-info-line:`their proofs`, while the
+:bdg-success:`green boxes` indicate specifically
+:bdg-success-line:`implementations`, both :bdg-success-line:`theoretical` and
+:bdg-success-line:`code-based`.
 We give an example below:
 
 .. dropdown:: Example of OmniSafe color usage styles (Click here)
@@ -291,14 +310,17 @@ We give an example below:
                         cd examples
                         python train_policy.py --algo CPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 
-You may not yet understand the above theory and the specific meaning of the code, but do not worry, we will make a detailed introduction later in the :doc:`../saferl/cpo` tutorial.
+You may not yet understand the above theory and the specific meaning of the
+code, but do not worry, we will make a detailed introduction later in the
+:doc:`../saferl/cpo` tutorial.
 
 Long-Term Support and Support History
 -------------------------------------
 
 **OmniSafe** is mainly developed by the SafeRL research team directed by `Prof. Yaodong Yang <https://github.com/orgs/OmniSafeAI/people/PKU-YYang>`_,
 Our SafeRL research team members include `Borong Zhang <https://github.com/muchvo>`_ , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiamg Ji <https://github.com/zmsn-2077>`_.
-If you have any questions in the process of using OmniSafe, or if you are willing to contribute to
+If you have any questions in the process of using OmniSafe, or if you are
+willing to contribute to
 this project, don't hesitate to ask your question on `the GitHub issue page <https://github.com/OmniSafeAI/omnisafe/issues/new/choose>`_, we will reply to you in 2-3 working days.
 
 ------
