@@ -454,7 +454,7 @@ Quick start
     :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
-    Run TRPO in Omnisafe
+    Run TRPO in OmniSafe
     ^^^
 
     Here are 3 ways to run TRPO in OmniSafe:

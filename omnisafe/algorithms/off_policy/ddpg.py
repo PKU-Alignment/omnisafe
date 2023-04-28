@@ -47,7 +47,8 @@ class DDPG(BaseAlgo):
     def _init_env(self) -> None:
         """Initialize the environment.
 
-        Omnisafe use :class:`omnisafe.adapter.OffPolicyAdapter` to adapt the environment to the algorithm.
+        OmniSafe use :class:`omnisafe.adapter.OffPolicyAdapter` to adapt the environment to this
+        algorithm.
 
         User can customize the environment by inheriting this function.
 
@@ -89,7 +90,7 @@ class DDPG(BaseAlgo):
     def _init_model(self) -> None:
         """Initialize the model.
 
-        Omnisafe use :class:`omnisafe.models.actor_critic.constraint_actor_q_critic.
+        OmniSafe use :class:`omnisafe.models.actor_critic.constraint_actor_q_critic.
         ConstraintActorQCritic` as the default model.
 
         User can customize the model by inheriting this function.

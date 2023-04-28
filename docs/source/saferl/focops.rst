@@ -409,7 +409,7 @@ Quick start
     :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
-    Run FOCOPS in Omnisafe
+    Run FOCOPS in OmniSafe
     ^^^
     Here are 3 ways to run FOCOPS in OmniSafe:
 

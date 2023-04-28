@@ -228,7 +228,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
 
             The above problem is essentially an optimization problem presented in TRPO, which can be completely solved using the method we introduced in the TRPO tutorial.
             +++
-            The Omnisafe code of the :bdg-success-line:`Implementation of Stage I` can be seen in the :bdg-success:`Code with Omnisafe`, click on this :bdg-success-line:`card` to jump to view.
+            The OmniSafe code of the :bdg-success-line:`Implementation of Stage I` can be seen in the :bdg-success:`Code with OmniSafe`, click on this :bdg-success-line:`card` to jump to view.
 
     .. tab-item:: Implementation of Stage 2
 
@@ -255,7 +255,7 @@ PCPO proposes that with a small step size :math:`\delta`, the reward function an
 
             where :math:`\boldsymbol{L}=\boldsymbol{I}` for :math:`L2` norm projection, and :math:`\boldsymbol{L}=\boldsymbol{H}` for KL divergence projection.
             +++
-            The Omnisafe code of the :bdg-success-line:`Implementation of Stage II` can be seen in the :bdg-success:`Code with Omnisafe`, click on this :bdg-success-line:`card` to jump to view.
+            The OmniSafe code of the :bdg-success-line:`Implementation of Stage II` can be seen in the :bdg-success:`Code with OmniSafe`, click on this :bdg-success-line:`card` to jump to view.
 
 PCPO solves :eq:`cpo-eq-4` and :eq:`pcpo-eq-5` using :bdg-success-line:`convex programming`, see detailed in :bdg-ref-success:`Appendix<convex-programming>`.
 
@@ -399,7 +399,7 @@ Quick start
     :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
-    Run PCPO in Omnisafe
+    Run PCPO in OmniSafe
     ^^^
     Here are 3 ways to run CPO in OmniSafe:
 

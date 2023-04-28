@@ -164,7 +164,7 @@ class Critic(ABC, nn.Module):
     (Q critic also takes actions as input) and outputs the value of the observation.
 
     .. note::
-        Omnisafe provides two types of critic:
+        OmniSafe provides two types of critic:
         Q critic (Input = ``observation`` + ``action`` , Output = ``value``),
         and V critic (Input = ``observation`` , Output = ``value``).
         You can also use this class to implement your own actor by inheriting it.

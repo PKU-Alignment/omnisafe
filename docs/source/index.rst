@@ -227,7 +227,7 @@ We give an example below:
         :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
-        Run CPO in Omnisafe
+        Run CPO in OmniSafe
         ^^^^^^^^^^^^^^^^^^^
         Here are 3 ways to run CPO in OmniSafe:
 

@@ -65,12 +65,12 @@ class CMDP(ABC):
 
     @property
     def action_space(self) -> OmnisafeSpace:
-        """OmniSafeSpace: The action space of the environment."""
+        """OmnisafeSpace: The action space of the environment."""
         return self._action_space
 
     @property
     def observation_space(self) -> OmnisafeSpace:
-        """OmniSafeSpace: The observation space of the environment."""
+        """OmnisafeSpace: The observation space of the environment."""
         return self._observation_space
 
     @property

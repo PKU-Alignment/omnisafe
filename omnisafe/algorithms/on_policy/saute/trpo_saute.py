@@ -37,7 +37,7 @@ class TRPOSaute(TRPO):
     def _init_env(self) -> None:
         """Initialize the environment.
 
-        Omnisafe use :class:`omnisafe.adapter.SauteAdapter` to adapt the environment to the algorithm.
+        OmniSafe use :class:`omnisafe.adapter.SauteAdapter` to adapt the environment to the algorithm.
 
         User can customize the environment by inheriting this function.
 

@@ -272,7 +272,7 @@ Quick start
     :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
-    Run PPOLag in Omnisafe
+    Run PPOLag in OmniSafe
     ^^^
     Here are 3 ways to run PPOLag in OmniSafe:
 
