@@ -1,4 +1,4 @@
-Base on-policy Algorithms
+Base On-policy Algorithms
 =========================
 
 .. currentmodule:: omnisafe.algorithms.on_policy

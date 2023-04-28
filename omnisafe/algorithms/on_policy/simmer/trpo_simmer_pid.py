@@ -43,7 +43,7 @@ class TRPOSimmerPID(TRPO):
 
         Examples:
             >>> def _init_env(self) -> None:
-            >>>    self._env = CustomAdapter()
+            ...     self._env = CustomAdapter()
         """
         self._env: SimmerAdapter = SimmerAdapter(
             self._env_id,

@@ -30,7 +30,7 @@ class DDPGLag(DDPG):
     References:
         - Title: Continuous control with deep reinforcement learning
         - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-        Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
+            Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
         - URL: `DDPG <https://arxiv.org/abs/1509.02971>`_
     """
 

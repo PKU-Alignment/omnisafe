@@ -33,7 +33,7 @@ class CUP(PPO):
     References:
         - Title: Constrained Update Projection Approach to Safe Policy Optimization
         - Authors: Long Yang, Jiaming Ji, Juntao Dai, Linrui Zhang, Binbin Zhou, Pengfei Li,
-                    Yaodong Yang, Gang Pan.
+            Yaodong Yang, Gang Pan.
         - URL: `CUP <https://arxiv.org/abs/2209.07089>`_
     """
 
