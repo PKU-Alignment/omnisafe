@@ -152,7 +152,7 @@ class Config(dict):
         """Convert Config to dictionary.
 
         Returns:
-            config_dict: The dictionary of Config.
+            The dictionary of Config.
         """
         config_dict: dict[str, Any] = {}
         for key, value in self.items():
@@ -166,7 +166,7 @@ class Config(dict):
         """Convert Config to json string.
 
         Returns:
-            json_file: The json string of Config.
+            The json string of Config.
         """
         return json.dumps(self.todict(), indent=4)
 
@@ -178,7 +178,7 @@ class Config(dict):
             config_dict (dict[str, Any]): The dictionary to be converted.
 
         Returns:
-            config: The algorithm config.
+            The algorithm config.
         """
         config = Config()
         for key, value in config_dict.items():
@@ -239,7 +239,7 @@ def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:
         algo_type (str): The algorithm type.
 
     Returns:
-        defaule_kwargs: The default kwargs.
+        The default kwargs.
     """
     path = os.path.dirname(os.path.abspath(__file__))
     cfg_path = os.path.join(path, '..', 'configs', algo_type, f'{algo}.yaml')

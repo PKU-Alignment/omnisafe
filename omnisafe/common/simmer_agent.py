@@ -141,7 +141,7 @@ class SimmerPIDAgent(BaseSimmerAgent):
             observation (torch.Tensor): The current observation.
 
         Returns:
-            action: The greedy action.
+            The greedy action.
         """
         # compute the error
         current_error = safety_budget - observation
@@ -194,6 +194,6 @@ class SimmerPIDAgent(BaseSimmerAgent):
             observation (torch.Tensor): The current observation.
 
         Returns:
-            action: The selected action.
+            The selected action.
         """
         return self.get_greedy_action(safety_budget, observation)

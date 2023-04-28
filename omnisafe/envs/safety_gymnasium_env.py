@@ -209,7 +209,7 @@ class SafetyGymnasiumEnv(CMDP):
         """Render the environment.
 
         Returns:
-            Any: Rendered image.
+            Rendered image.
         """
         return self._env.render()
 

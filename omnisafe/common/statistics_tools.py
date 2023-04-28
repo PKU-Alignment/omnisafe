@@ -184,7 +184,7 @@ class StatisticsTools:
             compare_num (int, optional): The number of values to compare. Defaults to None.
 
         Returns:
-            granph_paths: A list of graph paths.
+            A list of graph paths.
         """
         self.path_map_img_name = {}
         parameter_values_combination: list[tuple] = []
@@ -258,7 +258,7 @@ class StatisticsTools:
             value (Any): The value of the compressed key.
 
         Returns:
-            return_dict: The decompressed dict.
+            The decompressed dict.
         """
         keys_split = compressed_key.replace('-', '_').split(':')
         return_dict = {keys_split[-1]: value}
@@ -275,7 +275,7 @@ class StatisticsTools:
             vals (list[Any]): The values of the config.
 
         Returns:
-            variants: List of valid variants.
+            List of valid variants.
         """
         if len(keys) == 1:
             pre_variants: list[dict[str, Any]] = [{}]
@@ -352,7 +352,7 @@ class StatisticsTools:
             vals (list[Any]): The values of the config.
 
         Returns:
-            variants: List of valid and not duplicate variants.
+            List of valid and not duplicate variants.
         """
         flat_variants = self._variants(keys, vals)
 
@@ -376,7 +376,7 @@ class StatisticsTools:
             num_choosen (int): The number of elements to be combined.
 
         Returns:
-            Generator: The generator of the combined elements.
+            The generator of the combined elements.
         """
         if num_choosen == 1:
             for i in sequence:
@@ -396,7 +396,7 @@ class StatisticsTools:
             input_dict (dict[str, Any]): The input dictionary.
 
         Returns:
-            result: The list of all possible combinations of the values in a dictionary.
+            The list of all possible combinations of the values in a dictionary.
         """
         keys = list(input_dict.keys())
         values = list(input_dict.values())
@@ -419,7 +419,7 @@ class StatisticsTools:
             key (str): the key.
 
         Returns:
-            inner_config: the compressed value of the key.
+            The compressed value of the key.
         """
         inner_config = dictionary
         for k in key.split(':'):

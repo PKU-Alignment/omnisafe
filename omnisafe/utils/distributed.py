@@ -54,7 +54,7 @@ def get_rank() -> int:
         0
 
     Returns:
-        rank: The rank of calling process.
+        The rank of calling process.
     """
     if os.getenv('MASTER_ADDR') is None:
         return 0
@@ -65,7 +65,7 @@ def world_size() -> int:
     """Count active MPI processes.
 
     Returns:
-        size: The number of active MPI processes.
+        The number of active MPI processes.
     """
     if os.getenv('MASTER_ADDR') is None:
         return 1
@@ -100,7 +100,7 @@ def fork(
         bind_to_core (bool, optional): Defaults to False.
 
     Returns:
-        bool: Whether the current process is the parent process.
+        Whether the current process is the parent process.
     """
     backend = 'gloo' if device == 'cpu' else 'nccl'
     if os.getenv('MASTER_ADDR') is not None and os.getenv('IN_DIST') is None:

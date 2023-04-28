@@ -72,7 +72,7 @@ class GaussianLearningActor(GaussianActor):
             obs (torch.Tensor): Observation from environments.
 
         Returns:
-            Normal: The normal distribution of the mean and standard deviation from the actor.
+            The normal distribution of the mean and standard deviation from the actor.
         """
         mean = self.mean(obs)
         std = torch.exp(self.log_std)
@@ -107,7 +107,7 @@ class GaussianLearningActor(GaussianActor):
             obs (torch.Tensor): Observation from environments.
 
         Returns:
-            current_dist: The current distribution.
+            The current distribution.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -123,7 +123,7 @@ class GaussianLearningActor(GaussianActor):
             act (torch.Tensor): Action.
 
         Returns:
-            log_prob: Log probability of the action.
+            Log probability of the action.
         """
         assert self._after_inference, 'log_prob() should be called after predict() or forward()'
         self._after_inference = False

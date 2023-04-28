@@ -311,7 +311,7 @@ class DDPG(BaseAlgo):
         return ep_ret, ep_cost, ep_len
 
     def _update(self) -> None:
-        r"""Update actor, critic.
+        """Update actor, critic.
 
         -  Get the ``data`` from buffer
 

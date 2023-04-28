@@ -83,7 +83,7 @@ class VCritic(Critic):
             obs (torch.Tensor): Observations.
 
         Returns:
-            res: The V critic value of observation.
+            The V critic value of observation.
         """
         res = []
         for critic in self.net_lst:

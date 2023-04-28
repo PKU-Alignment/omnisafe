@@ -170,7 +170,7 @@ class Plotter:
             condition (str, optional): The condition label. Defaults to None.
 
         Returns:
-            datasets: The datasets.
+            The datasets.
 
         Raise:
             FileNotFoundError: If the config file is not found.
@@ -246,7 +246,7 @@ class Plotter:
             exclude (str, optional): exclude logdirs that contain this string. Defaults to None.
 
         Returns:
-            data: All the data stored in a list of DataFrames.
+            All the data stored in a list of DataFrames.
         """
         logdirs = []
         for logdir in all_logdirs:

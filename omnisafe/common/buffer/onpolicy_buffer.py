@@ -365,7 +365,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             c_bar (float, optional): The maximum value of clipped importance weights. Defaults to 1.0.
 
         Returns:
-            tuple: V-trace targets, shape=(batch_size, sequence_length)
+            V-trace targets, shape=(batch_size, sequence_length)
 
         Raises:
             AssertionError: If the input tensors are scalars.

@@ -147,7 +147,7 @@ class CMDP(ABC):
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
 
         Returns:
-            Any: The render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
+            The render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
         """
 
     def save(self) -> dict[str, torch.nn.Module]:
@@ -196,7 +196,7 @@ class Wrapper(CMDP):
             name (str): The attribute name.
 
         Returns:
-            Any: The attribute.
+            The attribute.
         """
         if name.startswith('_'):
             raise AttributeError(f'attempted to get missing private attribute {name}')
@@ -260,7 +260,7 @@ class Wrapper(CMDP):
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
 
         Returns:
-            Any: The render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
+            The render frames, we recommend to use `np.ndarray` which could construct video by moviepy.
         """
         return self._env.render()
 
@@ -327,7 +327,7 @@ class EnvRegister:
             env_class (Type[CMDP]): The environment class.
 
         Returns:
-            env_class: The environment class.
+            The environment class.
         """
         self._register(env_class)
         return env_class
@@ -340,7 +340,7 @@ class EnvRegister:
             class_name (Optional[str]): The environment class name.
 
         Returns:
-            env_class: The environment class.
+            The environment class.
         """
         if class_name is not None:
             assert class_name in self._class, f'{class_name} is not registered'
@@ -358,7 +358,7 @@ class EnvRegister:
         """The supported environments.
 
         Returns:
-            support_envs: The supported environments.
+            The supported environments.
         """
         return list({env_id for env_ids in self._support_envs.values() for env_id in env_ids})
 
@@ -378,7 +378,7 @@ def make(env_id: str, class_name: str | None = None, **kwargs: Any) -> CMDP:
         **kwargs: the keyword arguments for the environment initialization.
 
     Returns:
-        env_class: The environment class.
+        The environment class.
     """
     env_class = ENV_REGISTRY.get_class(env_id, class_name)
     return env_class(env_id, **kwargs)

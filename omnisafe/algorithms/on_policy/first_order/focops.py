@@ -93,7 +93,7 @@ class FOCOPS(PolicyGradient):
             adv (torch.Tensor): The ``advantage`` sampled from buffer.
 
         Returns:
-            loss: The loss of pi/actor.
+            The loss of pi/actor.
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)

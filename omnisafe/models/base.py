@@ -98,7 +98,7 @@ class Actor(ABC, nn.Module):
             obs (torch.Tensor): Observation from environments.
 
         Returns:
-            Distribution: the distribution of action.
+            The distribution of action.
         """
 
     @abstractmethod

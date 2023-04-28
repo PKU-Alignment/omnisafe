@@ -203,7 +203,7 @@ class CPO(TRPO):
             adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
 
         Returns:
-            loss: The loss of the cost performance.
+            The loss of the cost performance.
         """
         self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)

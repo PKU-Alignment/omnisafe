@@ -223,7 +223,7 @@ class PolicyGradient(BaseAlgo):
         self._logger.register_key('Time/FPS')
 
     def learn(self) -> tuple[float, float, int]:
-        r"""This is main function for algorithm update.
+        """This is main function for algorithm update.
 
         It is divided into the following steps:
 
@@ -288,14 +288,14 @@ class PolicyGradient(BaseAlgo):
         return ep_ret, ep_cost, ep_len
 
     def _update(self) -> None:
-        r"""Update actor, critic.
+        """Update actor, critic.
 
         -  Get the ``data`` from buffer
 
         .. hint::
 
             +----------------+------------------------------------------------------------------+
-            | obs            | ``observaion`` sampled from buffer.                              |
+            | obs            | ``observation`` sampled from buffer.                             |
             +================+==================================================================+
             | act            | ``action`` sampled from buffer.                                  |
             +----------------+------------------------------------------------------------------+
@@ -394,6 +394,7 @@ class PolicyGradient(BaseAlgo):
         Specifically, the loss function is defined as:
 
         .. math::
+
             L = \frac{1}{N} \sum_{i=1}^N (\hat{V} - V)^2
 
         where :math:`\hat{V}` is the predicted cost and :math:`V` is the target cost.
@@ -433,6 +434,7 @@ class PolicyGradient(BaseAlgo):
         Specifically, the loss function is defined as:
 
         .. math::
+
             L = \frac{1}{N} \sum_{i=1}^N (\hat{V} - V)^2
 
         where :math:`\hat{V}` is the predicted cost and :math:`V` is the target cost.
@@ -473,17 +475,17 @@ class PolicyGradient(BaseAlgo):
         adv_r: torch.Tensor,
         adv_c: torch.Tensor,
     ) -> None:
-        r"""Update policy network under a double for loop.
+        """Update policy network under a double for loop.
 
-            #. Compute the loss function.
-            #. Clip the gradient if ``use_max_grad_norm`` is ``True``.
-            #. Update the network by loss function.
+        #. Compute the loss function.
+        #. Clip the gradient if ``use_max_grad_norm`` is ``True``.
+        #. Update the network by loss function.
 
-            .. warning::
-                For some ``KL divergence`` based algorithms (e.g. TRPO, CPO, etc.),
-                the ``KL divergence`` between the old policy and the new policy is calculated.
-                And the ``KL divergence`` is used to determine whether the update is successful.
-                If the ``KL divergence`` is too large, the update will be terminated.
+        .. warning::
+            For some ``KL divergence`` based algorithms (e.g. TRPO, CPO, etc.),
+            the ``KL divergence`` between the old policy and the new policy is calculated.
+            And the ``KL divergence`` is used to determine whether the update is successful.
+            If the ``KL divergence`` is too large, the update will be terminated.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
@@ -518,7 +520,7 @@ class PolicyGradient(BaseAlgo):
             adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
 
         Returns:
-            adv: The ``reward_advantage`` used to update policy network.
+            The ``reward_advantage`` used to update policy network.
         """
         return adv_r
 
@@ -550,7 +552,7 @@ class PolicyGradient(BaseAlgo):
             adv (torch.Tensor): The ``advantage`` sampled from buffer.
 
         Returns:
-            loss: The loss of pi/actor.
+            The loss of pi/actor.
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)

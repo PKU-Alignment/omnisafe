@@ -71,7 +71,7 @@ def discount_cumsum(vector_x: torch.Tensor, discount: float) -> torch.Tensor:
         discount (float): discount factor.
 
     Returns:
-        vector_x: The discounted cumulative sum of vectors.
+        The discounted cumulative sum of vectors.
     """
     length = vector_x.shape[0]
     vector_x = vector_x.type(torch.float64)
@@ -111,7 +111,7 @@ def conjugate_gradients(
         eps (float): A small number to avoid dividing by zero.
 
     Returns:
-        vector_x: The vector :math:`x` in the equation :math:`Ax = b`.
+        The vector :math:`x` in the equation :math:`Ax = b`.
     """
     vector_x = torch.zeros_like(vector_b)
     vector_r = vector_b - fisher_product(vector_x)

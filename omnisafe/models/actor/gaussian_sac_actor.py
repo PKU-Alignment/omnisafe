@@ -77,7 +77,7 @@ class GaussianSACActor(Actor):
             obs (torch.Tensor): Observation from environments.
 
         Returns:
-            Normal: The normal distribution of the mean and standard deviation from the actor.
+            The normal distribution of the mean and standard deviation from the actor.
         """
         mean, log_std = self.net(obs).chunk(2, dim=-1)
         log_std = torch.clamp(log_std, min=-20, max=2)
@@ -116,7 +116,7 @@ class GaussianSACActor(Actor):
             obs (torch.Tensor): Observation from environments.
 
         Returns:
-            current_dist: The current distribution.
+            The current distribution.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -142,7 +142,7 @@ class GaussianSACActor(Actor):
             act (torch.Tensor): Action.
 
         Returns:
-            log_prob: Log probability of the action.
+            Log probability of the action.
         """
         assert self._after_inference, 'log_prob() should be called after predict() or forward()'
         self._after_inference = False

@@ -109,7 +109,7 @@ class Lagrange:
             mean_ep_cost (float): mean episode cost.
 
         Returns:
-            lambda_loss: penalty loss for Lagrange multiplier.
+            Penalty loss for Lagrange multiplier.
         """
         return -self.lagrangian_multiplier * (mean_ep_cost - self.cost_limit)
 

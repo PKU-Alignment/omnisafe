@@ -65,7 +65,7 @@ class ActorBuilder:
             actor_type (ActorType): Type of actor network, e.g. ``gaussian_learning``.
 
         Returns:
-            actor: Actor network, ranging from ``GaussianLearningActor``, ``GaussianSACActor`` to ``MLPActor``.
+            Actor network, ranging from ``GaussianLearningActor``, ``GaussianSACActor`` to ``MLPActor``.
 
         Raises:
             NotImplementedError: If the actor type is not implemented.

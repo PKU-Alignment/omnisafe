@@ -77,7 +77,7 @@ class CriticBuilder:
             critic_type (str): Critic type.
 
         Returns:
-            Critic: V-Critic or Q-Critic.
+            V-Critic or Q-Critic.
 
         Raises:
             NotImplementedError: If the critic type is not ``q`` or ``v``.

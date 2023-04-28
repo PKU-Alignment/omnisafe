@@ -80,24 +80,24 @@ class CUP(PPO):
     ) -> torch.Tensor:
         r"""Compute the performance of cost on this moment.
 
-        Detailedly, we compute the KL divergence between the current policy and the old policy,
-        the entropy of the current policy, and the ratio between the current policy and the old
-        policy.
+        We compute the KL divergence between the current policy and the old policy, the entropy of
+        the current policy, and the ratio between the current policy and the old policy.
 
         The loss of the cost performance is defined as:
 
         .. math::
-            L = \underset{a \sim \pi_{\theta}}{\mathbb{E}}[\lambda \frac{1 - \gamma \nu}{1 - \gamma}
-            \frac{\pi_\theta^{'}(a|s)}{\pi_\theta(a|s)} A^{C}_{\pi_{\theta}}
-            + KL(\pi_\theta^{'}(a|s)||\pi_\theta(a|s))]
 
-        where :math:`\lambda` is the Lagrange multiplier,
-        :math:`\frac{1 - \gamma \nu}{1 - \gamma}` is the coefficient value,
-        :math:`\pi_\theta^{'}(a_t|s_t)` is the current policy,
-        :math:`\pi_\theta(a_t|s_t)` is the old policy,
-        :math:`A^{C}_{\pi_{\theta}}` is the cost advantage,
-        :math:`KL(\pi_\theta^{'}(a_t|s_t)||\pi_\theta(a_t|s_t))` is the KL divergence between the
-        current policy and the old policy.
+            L = \underset{a \sim \pi_{\theta}}{\mathbb{E}} [
+                \lambda \frac{1 - \gamma \nu}{1 - \gamma}
+                    \frac{\pi_{\theta}^{'} (a|s)}{\pi_{\theta} (a|s)} A^{C}_{\pi_{\theta}}
+                + KL (\pi_{\theta}^{'} (a|s) || \pi_{\theta} (a|s))
+            ]
+
+        where :math:`\lambda` is the Lagrange multiplier, :math:`\frac{1 - \gamma \nu}{1 - \gamma}`
+        is the coefficient value, :math:`\pi_{\theta}^{'} (a_t|s_t)` is the current policy,
+        :math:`\pi_{\theta} (a_t|s_t)` is the old policy, :math:`A^{C}_{\pi_{\theta}}` is the cost
+        advantage, :math:`KL (\pi_{\theta}^{'} (a_t|s_t) || \pi_{\theta} (a_t|s_t))` is the KL
+        divergence between the current policy and the old policy.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
@@ -106,7 +106,7 @@ class CUP(PPO):
             adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
 
         Returns:
-            loss: The loss of the cost performance.
+            The loss of the cost performance.
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
@@ -138,13 +138,12 @@ class CUP(PPO):
 
             \lambda_{k+1} = \lambda_k + \eta (J^{C}_{\pi_\theta} - C)
 
-        where :math:`\lambda_k` is the Lagrange multiplier at iteration :math:`k`,
-        :math:`\eta` is the Lagrange multiplier learning rate,
-        :math:`J^{C}_{\pi_{\theta}}` is the cost of the current policy,
-        and :math:`C` is the cost limit.
+        where :math:`\lambda_k` is the Lagrange multiplier at iteration :math:`k`, :math:`\eta` is
+        the Lagrange multiplier learning rate, :math:`J^{C}_{\pi_{\theta}}` is the cost of the
+        current policy, and :math:`C` is the cost limit.
 
-        Then in each iteration of the policy update, CUP calculates current policy's
-        distribution, which used to calculate the policy loss.
+        Then in each iteration of the policy update, CUP calculates current policy's distribution,
+        which used to calculate the policy loss.
         """
         # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]

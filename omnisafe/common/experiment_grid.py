@@ -151,7 +151,7 @@ class ExperimentGrid:
             key (string): Name of parameter.
 
         Returns:
-            shorthand: Shorthand of parameter.
+            Shorthand of parameter.
         """
         valid_chars = f'{string.ascii_letters}{string.digits}'
 
@@ -235,7 +235,7 @@ class ExperimentGrid:
                 key (string): Key of variant dictionary.
 
             Returns:
-                value: Value of variant dictionary.
+                Value of variant dictionary.
             """
             print('value', value, 'key', key)
             if key in value:
@@ -304,7 +304,7 @@ class ExperimentGrid:
             vals (list[Any]): List of values.
 
         Returns:
-            variants: List of valid variants.
+            List of valid variants.
         """
         if len(keys) == 1:
             pre_variants: list[dict[str, Any]] = [{}]
@@ -365,7 +365,7 @@ class ExperimentGrid:
             }
 
         Returns:
-            variants: List of valid and not duplicate variants.
+            List of valid and not duplicate variants.
         """
         flat_variants = self._variants(self.keys, self.vals)
 

@@ -78,7 +78,7 @@ class AlgoWrapper:
         default configurations, custom configurations, and terminal configurations.
 
         Returns:
-            Config: The configurations for the algorithm.
+            The configurations for the algorithm.
 
         Raises:
             AssertionError: If the algorithm name is not in the supported algorithms.

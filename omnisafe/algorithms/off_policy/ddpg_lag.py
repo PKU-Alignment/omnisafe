@@ -88,7 +88,7 @@ class DDPGLag(DDPG):
             obs (torch.Tensor): The ``observation`` sampled from buffer.
 
         Returns:
-            loss: The loss of pi/actor.
+            The loss of pi/actor.
         """
         action = self._actor_critic.actor.predict(obs, deterministic=True)
         loss_r = -self._actor_critic.reward_critic(obs, action)[0]

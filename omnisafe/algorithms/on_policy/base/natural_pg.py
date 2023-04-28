@@ -174,7 +174,7 @@ class NaturalPG(PolicyGradient):
         )
 
     def _update(self) -> None:
-        r"""Update actor, critic.
+        """Update actor, critic.
 
         .. hint::
             Here are some differences between NPG and Policy Gradient (PG): In PG, the actor network
