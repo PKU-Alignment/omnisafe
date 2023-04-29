@@ -1,5 +1,5 @@
-Wrapper
-=======
+OmniSafe Wrapper
+================
 
 .. currentmodule:: omnisafe.envs.wrapper
 

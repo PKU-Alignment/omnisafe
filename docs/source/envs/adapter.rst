@@ -1,5 +1,5 @@
-Adapter
-=======
+OmniSafe Adapter
+================
 
 .. currentmodule:: omnisafe.adapter
 
@@ -43,5 +43,33 @@ Off Policy Adapter
     ^^^
 
     .. autoclass:: OffPolicyAdapter
+        :members:
+        :private-members:
+
+Saute Adapter
+-------------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: SauteAdapter
+        :members:
+        :private-members:
+
+Simmer Adapter
+--------------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: SimmerAdapter
         :members:
         :private-members:

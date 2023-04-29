@@ -8,11 +8,7 @@ The Lagrange Algorithms
     PPOLag
     TRPOLag
 
-
-
 .. _ppolagapi:
-
-
 
 PPOLag
 ------
@@ -44,8 +40,6 @@ TRPOLag
         :members:
         :private-members:
 
-
-
 CRPO
 ----
 
@@ -57,5 +51,55 @@ CRPO
     ^^^
 
     .. autoclass:: OnCRPO
+        :members:
+        :private-members:
+
+.. currentmodule:: omnisafe.algorithms.off_policy
+
+.. autosummary::
+
+    DDPGLag
+    TD3Lag
+    SACLag
+
+DDPGLag
+-------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: DDPGLag
+        :members:
+        :private-members:
+
+SACLag
+------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: SACLag
+        :members:
+        :private-members:
+
+TD3Lag
+------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: TD3Lag
         :members:
         :private-members:

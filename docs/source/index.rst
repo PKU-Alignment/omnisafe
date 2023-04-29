@@ -366,6 +366,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     :caption: base rl api
 
     baserlapi/on_policy
+    baserlapi/off_policy
 
 .. toctree::
     :hidden:
@@ -387,6 +388,8 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     common/lagrange
     common/normalizer
     common/logger
+    common/simmer_agent
+    common/stastics_tool
 
 .. toctree::
     :hidden:
@@ -398,6 +401,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     utils/math
     utils/model
     utils/tools
+    utils/plotter
 
 .. toctree::
     :hidden:

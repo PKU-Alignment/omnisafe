@@ -1,30 +1,16 @@
-OmniSafe Core Environment
-=========================
+Base Off-policy Algorithms
+==========================
 
-.. currentmodule:: omnisafe.envs.core
+.. currentmodule:: omnisafe.algorithms.off_policy
 
 .. autosummary::
 
-    CMDP
-    Wrapper
-    EnvRegister
+    DDPG
+    TD3
+    SAC
 
-CMDP
-----
-
-.. card::
-    :class-header: sd-bg-success sd-text-white
-    :class-card: sd-outline-success  sd-rounded-1
-
-    Documentation
-    ^^^
-
-    .. autoclass:: CMDP
-        :members:
-        :private-members:
-
-Wrapper
--------
+Deep Deterministic Policy Gradient
+----------------------------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -33,12 +19,13 @@ Wrapper
     Documentation
     ^^^
 
-    .. autoclass:: Wrapper
+    .. autoclass:: DDPG
         :members:
         :private-members:
 
-Make an environment
--------------------
+
+Twin Delayed DDPG
+-----------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -47,10 +34,20 @@ Make an environment
     Documentation
     ^^^
 
-    .. autoclass:: EnvRegister
+    .. autoclass:: TD3
         :members:
         :private-members:
 
+Soft Actor-Critic
+-----------------
 
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
 
-    .. autofunction:: make
+    Documentation
+    ^^^
+
+    .. autoclass:: SAC
+        :members:
+        :private-members:
