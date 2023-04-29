@@ -438,3 +438,7 @@ FinalStepNorm
 xHx
 ReLU
 Softplus
+inv
+TestEpCost
+TestEpRet
+TestEpLen

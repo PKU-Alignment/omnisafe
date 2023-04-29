@@ -1,10 +1,10 @@
-OmniSafe Stasitics Tools
-========================
+OmniSafe Statistics Tools
+=========================
 
 .. currentmodule:: omnisafe.common.statistics_tools
 
-Stasitics Tools
----------------
+Statistics Tools
+----------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
