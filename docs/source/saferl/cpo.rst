@@ -20,20 +20,25 @@ CPO Theorem
 Background
 ~~~~~~~~~~
 
-**Constrained policy optimization (CPO)** is a policy search algorithm for constrained reinforcement learning with
+**Constrained policy optimization (CPO)** is a policy search algorithm for
+constrained reinforcement learning with
 guarantees for near-constraint satisfaction at each iteration.
 Motivated by TRPO( :doc:`../baserl/trpo`).
-CPO develops surrogate functions to be good local approximations for objectives and constraints and easy to estimate using samples from current policy.
+CPO develops surrogate functions to be good local approximations for objectives
+and constraints and easy to estimate using samples from current policy.
 Moreover, it provides tighter bounds for policy search using trust regions.
 
 .. hint::
 
     CPO is the **first general-purpose policy search algorithm** for safe reinforcement learning with guarantees for near-constraint satisfaction at each iteration.
 
-CPO trains neural network policies for high-dimensional control while making guarantees about policy behavior throughout training.
-CPO aims to provide an approach for policy search in continuous CMDP.
-It uses the result from TRPO and NPG to derive a policy improvement step that guarantees both an increase in reward and satisfaction of constraints.
-Although CPO is slightly inferior in performance, it provides a solid theoretical foundation for solving constrained optimization problems in the field of safe reinforcement learning.
+CPO trains neural network policies for high-dimensional control while
+guaranteeing policy behavior throughout training. CPO aims to provide an
+approach for policy search in continuous CMDP. It uses the result from TRPO and
+NPG to derive a policy improvement step that guarantees both an increase in
+reward and satisfaction of constraints. Although CPO is slightly inferior in
+performance, it provides a solid theoretical foundation for solving constrained
+optimization problems in safe reinforcement learning.
 
 .. hint::
 
@@ -44,7 +49,8 @@ Although CPO is slightly inferior in performance, it provides a solid theoretica
 Optimization Objective
 ~~~~~~~~~~~~~~~~~~~~~~
 
-In the previous chapters, we introduced that TRPO solves the following optimization problems:
+In the previous chapters, we introduced that TRPO solves the following
+optimization problems:
 
 .. math::
     :label: cpo-eq-1
@@ -53,8 +59,13 @@ In the previous chapters, we introduced that TRPO solves the following optimizat
     \text{s.t.}\quad &D(\pi,\pi_k)\le\delta
 
 
-where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of parametrized policies with parameters :math:`\boldsymbol{\theta}`, and :math:`D` is some distance measure.
-In local policy search, we additionally require policy iterates to be feasible for the CMDP, so instead of optimizing over :math:`\Pi_{\boldsymbol{\theta}}`, CPO optimizes over :math:`\Pi_{\boldsymbol{\theta}} \cap \Pi_{C}`.
+where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of
+parametrized policies with parameters :math:`\boldsymbol{\theta}`, and
+:math:`D` is some distance measure.
+
+In local policy search, we additionally require policy iterates to be feasible
+for the CMDP, so instead of optimizing over :math:`\Pi_{\boldsymbol{\theta}}`,
+CPO optimizes over :math:`\Pi_{\boldsymbol{\theta}} \cap \Pi_{C}`.
 
 .. math::
     :label: cpo-eq-2
@@ -69,16 +80,24 @@ In local policy search, we additionally require policy iterates to be feasible f
 
     This update is difficult to implement because it requires evaluating the constraint functions to determine whether a proposed policy :math:`\pi` is feasible.
 
-CPO develops a principled approximation with a particular choice of :math:`D`, where the objective and constraints are replaced with surrogate functions.
-CPO proposes that with those surrogates, the update's worst-case performance and worst-case constraint violation can be bounded with values that depend on a hyperparameter of the algorithm.
+CPO develops a principled approximation with a particular choice of :math:`D`,
+where the objective and constraints are replaced with surrogate functions.
+
+CPO proposes that with those surrogates, the update's worst-case performance
+and worst-case constraint violation can be bounded with values that depend on a
+hyperparameter of the algorithm.
 
 ------
 
 Policy Performance Bounds
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-CPO presents the theoretical foundation for its approach, a new bound on the difference in returns between two arbitrary policies.
-The following :bdg-info-line:`Theorem 1` connects the difference in returns (or constraint costs) between two arbitrary policies to an average divergence between them.
+CPO presents the theoretical foundation for its approach, a new bound on the
+difference in returns between two arbitrary policies.
+
+The following :bdg-info-line:`Theorem 1` connects the difference in returns (or
+constraint costs) between two arbitrary policies to an average divergence
+between them.
 
 .. _Theorem 1:
 
@@ -113,7 +132,8 @@ The following :bdg-info-line:`Theorem 1` connects the difference in returns (or 
     +++
     The proof of the :bdg-info-line:`Theorem 1`` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-line:`Corollary 2`, :bdg-info-line:`Corollary 3` below:
+By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`,
+:bdg-info-line:`Corollary 2`, :bdg-info-line:`Corollary 3` below:
 
 .. _Corollary 1:
 
@@ -187,7 +207,8 @@ By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`, :bdg-info-
 Trust Region Methods
 ~~~~~~~~~~~~~~~~~~~~
 
-For parameterized stationary policy, trust region algorithms for reinforcement learning have policy updates of the following form:
+For parameterized stationary policy, trust region algorithms for reinforcement
+learning have policy updates of the following form:
 
 .. _cpo-eq-11:
 
@@ -199,10 +220,14 @@ For parameterized stationary policy, trust region algorithms for reinforcement l
 
 
 
-where :math:`\bar{D}_{K L}(\pi \| \pi_k)=\mathbb{E}_{s \sim \pi_k}[D_{K L}(\pi \| \pi_k)[s]]` and :math:`\delta \ge 0` is the step size.
-The set :math:`\left\{\pi_{\boldsymbol{\theta}} \in \Pi_{\boldsymbol{\theta}}: \bar{D}_{K L}\left(\pi \| \pi'\right) \leq \delta\right\}` is called trust region.
-The success motivation for this update is that,
-it approximates optimizing the lower bound on policy performance given in :bdg-info-line:`Corollary 1`, which would guarantee monotonic performance improvements.
+where
+:math:`\bar{D}_{K L}(\pi \| \pi_k)=\mathbb{E}_{s \sim \pi_k}[D_{K L}(\pi \| \pi_k)[s]]`
+and :math:`\delta \ge 0` is the step size.
+The set :math:`\left\{\pi_{\boldsymbol{\theta}} \in \Pi_{\boldsymbol{\theta}}: \bar{D}_{K L}\left(\pi \| \pi'\right) \leq \delta\right\}` is called trust
+region.
+The success motivation for this update is that it approximates optimizing the
+lower bound on policy performance given in :bdg-info-line:`Corollary 1`, which
+would guarantee monotonic performance improvements.
 
 .. _cpo-eq-12:
 
@@ -222,7 +247,10 @@ it approximates optimizing the lower bound on policy performance given in :bdg-i
 Worst Performance of CPO Update
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here we will introduce the propositions proposed by the CPO, one describes the worst-case performance degradation guarantee that depends on :math:`\delta`, and the other discusses the worst-case constraint violation in the CPO update.
+Here we will introduce the propositions proposed by the CPO, one describes the
+worst-case performance degradation guarantee that depends on :math:`\delta`,
+and the other discusses the worst-case constraint violation in the CPO update.
+
 
 .. tab-set::
 
@@ -264,15 +292,21 @@ Here we will introduce the propositions proposed by the CPO, one describes the w
 
             where :math:`\epsilon^{C_i}_{\pi_{k+1}}=\max _s\left|\mathbb{E}_{a \sim \pi_{k+1}}\left[A^{C_i}_{\pi_k}(s, a)\right]\right|`
 
+.. _Proposition 2:
+
 ------
 
 Summary
 ~~~~~~~
 
 We mainly introduce the essential inequalities in CPO.
-Based on those inequalities, CPO presents optimization problems that ultimately need to be solved and propose two proposition about the worst case in the CPO update.
+Based on those inequalities, CPO presents optimization problems that ultimately
+need to be solved and propose two proposition about the worst case in the CPO
+update.
 Next section, we will discuss how to solve this problem practically.
-It is expected that you may be confused when you first read these theoretical derivation processes, and we have given detailed proof of the above formulas in the appendix, which we believe you can understand by reading them a few times.
+It is expected that you may be confused when you first read these theoretical
+derivation processes, and we have given detailed proof of the above formulas in
+the appendix, which we believe you can understand by reading them a few times.
 
 ------
 
@@ -290,7 +324,7 @@ Practical Implementation
         Overview
         ^^^
         In this section, we show how CPO implements an approximation to the update :eq:`cpo-eq-10` that can be efficiently computed, even when optimizing policies with thousands of parameters.
-        To address the issue of approximation and sampling errors that arise in practice and the potential violations described by Proposition 2, CPO proposes to tighten the constraints by constraining the upper bounds of the extra costs instead of the extra costs themselves.
+        To address the issue of approximation and sampling errors that arise in practice and the potential violations described by :bdg-ref-info-line:`Proposition 2<Proposition 2>`, CPO proposes to tighten the constraints by constraining the upper bounds of the extra costs instead of the extra costs themselves.
 
     .. grid-item-card::
         :class-item: sd-font-weight-bold sd-fs-6
@@ -376,15 +410,19 @@ Like TRPO, CPO computes them approximately using the conjugate gradient method.
 Feasibility
 ~~~~~~~~~~~
 
-Due to approximation errors, CPO may take a bad step and produce an infeasible iterate :math:`\pi_k`.
-CPO recovers the update from an infeasible case by proposing an update to decrease the constraint value purely:
+Due to approximation errors, CPO may take the wrong step and produce an
+infeasible iterate :math:`\pi_k`. CPO recovers the update from an infeasible
+case by proposing an update to decrease the constraint value purely:
+
 
 .. math::
     :label: cpo-eq-16
 
     \boldsymbol{\theta}^*=\boldsymbol{\theta}_k-\sqrt{\frac{2 \delta}{b^T H^{-1} b}} H^{-1} b
 
-As before, this is followed by a line search. This approach is principled, because it uses the limiting search direction as the intersection of the trust region and the constraint region shrinks to zero.
+As before, this is followed by a line search. This approach is principled
+because it uses the limiting search direction as the intersection of the trust
+region and the constraint region shrinks to zero.
 
 ------
 
@@ -393,17 +431,25 @@ As before, this is followed by a line search. This approach is principled, becau
 Tightening Constraints via Cost Shaping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To build a factor of safety into the algorithm to minimize the chance of constraint violations, CPO chooses to constrain upper bounds on the original constraints,
-:math:`C_i^{+}`, instead of the original constraints themselves. CPO does this by cost shaping:
+To build a factor of safety into the algorithm to minimize the chance of
+constraint violations, CPO chooses to constrain upper bounds on the original
+constraints,
+:math:`C_i^{+}`, instead of the original constraints themselves. CPO does this
+by cost shaping:
 
 .. math::
     :label: cpo-eq-17
 
     C_i^{+}\left(s, a, s^{\prime}\right)=C_i\left(s, a, s^{\prime}\right)+\triangle_i\left(s, a, s^{\prime}\right)
 
-where :math:`\delta_i: S \times A \times S \rightarrow R_{+}`\  correlates in some useful way with :math:`C_i`.
-Because CPO has only one constraint, it partitions states into safe and unsafe states, and the agent suffers a safety cost of 1 for being in an unsafe state.
-CPO chooses :math:`\triangle` to be the probability of entering an unsafe state within a fixed time horizon, according to a learned model that is updated at each iteration.
+where :math:`\delta_i: S \times A \times S \rightarrow R_{+}`\  correlates in
+some useful way with :math:`C_i`.
+Because CPO has only one constraint, it partitions states into safe and unsafe
+states, and the agent suffers a safety cost of 1 for being in an unsafe state.
+
+CPO chooses :math:`\triangle` to be the probability of entering an unsafe state
+within a fixed time horizon, according to a learned model that is updated at
+each iteration.
 This choice confers the additional benefit of smoothing out sparse constraints.
 
 ------
@@ -913,8 +959,8 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
             .. math::
                 :label: cpo-eq-24
 
-               &J\left(\pi'\right)-J(\pi) \geq \frac{1}{1-\gamma}\left(L_{\pi, f}\left(\pi'\right)-2 \epsilon_f^{\pi'} D_{T V}\left(d_\pi \| d_{\pi^{\prime}}\right)\right) \\
-               &J\left(\pi^{\prime}\right)-J(\pi) \leq \frac{1}{1-\gamma}\left(L_{\pi, f}\left(\pi'\right)+2 \epsilon_f^{\pi'} D_{T V}\left(d_\pi \| d_{\pi'}\right)\right)
+                &J\left(\pi'\right)-J(\pi) \geq \frac{1}{1-\gamma}\left(L_{\pi, f}\left(\pi'\right)-2 \epsilon_f^{\pi'} D_{T V}\left(d_\pi \| d_{\pi^{\prime}}\right)\right) \\
+                &J\left(\pi^{\prime}\right)-J(\pi) \leq \frac{1}{1-\gamma}\left(L_{\pi, f}\left(\pi'\right)+2 \epsilon_f^{\pi'} D_{T V}\left(d_\pi \| d_{\pi'}\right)\right)
 
 
             where :math:`D_{T V}` is the total variational divergence. Furthermore, the bounds are tight when :math:`\pi^{\prime}=\pi`, and the LHS and RHS are identically zero.
@@ -930,7 +976,7 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
             ^^^
             The divergence between discounted future state visitation
             distributions, :math:`\Vert d_{\pi'}-d_\pi\Vert_1`, is bounded by an
-            average divergence of the policies :math:`\pi` and :math:`\pi` :
+            average divergence of the policies :math:`\pi` and :math:`\pi'` :
 
             .. math::
                 :label: cpo-eq-25
@@ -956,10 +1002,10 @@ That is, the initial state distribution, then :math:`d_\pi` can then be rewritte
             .. math::
                 :label: cpo-eq-26
 
-               G^{-1}-\bar{G}^{-1} &=\left(I-\gamma P_\pi\right)-\left(I-\gamma P_{\pi^{\prime}}\right) \\
-               G^{-1}-\bar{G}^{-1} &=\gamma \Delta \\
-               \bar{G}\left(G^{-1}-\bar{G}^{-1}\right) G &=\gamma \bar{G} \Delta G \\
-               \bar{G}-G &=\gamma \bar{G} \Delta G
+                G^{-1}-\bar{G}^{-1} &=\left(I-\gamma P_\pi\right)-\left(I-\gamma P_{\pi^{\prime}}\right) \\
+                G^{-1}-\bar{G}^{-1} &=\gamma \Delta \\
+                \bar{G}\left(G^{-1}-\bar{G}^{-1}\right) G &=\gamma \bar{G} \Delta G \\
+                \bar{G}-G &=\gamma \bar{G} \Delta G
 
             Thus, with :eq:`cpo-eq-21`
 
@@ -1020,8 +1066,9 @@ Begin with the bounds from :bdg-info-line:`Lemma 2` and bound the divergence by 
             .. math::
                 :label: cpo-eq-31
 
-                &<f,\left(I-\gamma P_\pi\right) d_\pi>=\left[\sum_s f(s) d_\pi(s)\right]-\\
-                &\left[\sum_{s^{\prime}} f\left(s^{\prime}\right) \gamma \sum_s \sum_a \pi(a \mid s) P\left(s^{\prime} \mid s, a\right) d_\pi(s)\right] \\
+                &<f,\left(I-\gamma P_\pi\right) d_\pi>\\
+                &=\left[\sum_s f(s) d_\pi(s)\right]-
+                \left[\sum_{s^{\prime}} f\left(s^{\prime}\right) \gamma \sum_s \sum_a \pi(a \mid s) P\left(s^{\prime} \mid s, a\right) d_\pi(s)\right] \\
                 &=\mathbb{E}_{s \sim d_\pi}[f(s)]-\mathbb{E}_{\tau \sim \pi}\left[\gamma f\left(s^{\prime}\right)\right]
 
             .. math::
@@ -1237,10 +1284,13 @@ Proof of Analytical Solution to LQCLP
     :math:`f_a\left(\lambda_a^*\right)>f_b\left(\lambda_b^*\right)` and
     :math:`\lambda = \lambda_b^*` otherwise, and
     :math:`\operatorname{Proj}(a, S)` is the projection of a point
-    :math:`x` on to a set :math:`S`. hint: the projection of a point
-    :math:`x \in \mathbb{R}` onto a convex segment of
-    :math:`\mathbb{R},[a, b]`, has value
-    :math:`\operatorname{Proj}(x,[a, b])=\max (a, \min (b, x))`.
+    :math:`x` on to a set :math:`S`.
+
+    .. hint::
+        the projection of a point
+        :math:`x \in \mathbb{R}` onto a convex segment of
+        :math:`\mathbb{R},[a, b]`, has value
+        :math:`\operatorname{Proj}(x,[a, b])=\max (a, \min (b, x))`.
 
 .. dropdown:: Proof for Theorem 2 (Click here)
     :color: info

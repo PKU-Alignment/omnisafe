@@ -22,23 +22,27 @@ Background
 ~~~~~~~~~~
 
 In the previous introduction of algorithms,
-we know that SafeRL mainly solves the constraint optimization problem of CMDP.
+we know that Safe RL mainly solves the constraint optimization problem of CMDP.
 
 .. hint::
 
     Constrained optimization problems tend to be more challenging than unconstrained optimization problems.
 
-Therefore, the natural idea is to convert a constrained optimization problem into an unconstrained optimization problem.
+Therefore, the natural idea is to convert a constrained optimization problem
+into an unconstrained optimization problem.
 Then solve it using classical optimization algorithms,
 such as stochastic gradient descent.
-Lagrangian Methods is a kind of method solving constraint problems that are widely used in machine learning.
+Lagrangian methods is a kind of method solving constraint problems that are
+widely used in machine learning.
 By using adaptive penalty coefficients to enforce constraints,
-Lagrangian methods convert the solution of a constrained optimization problem to the solution of an unconstrained optimization problem.
+Lagrangian methods convert the solution of a constrained optimization problem
+to the solution of an unconstrained optimization problem.
 In the :bdg-info-line:`section`, we will briefly introduce Lagrangian methods,
 and give corresponding implementations in **TRPO** and **PPO**.
 TRPO and PPO are the algorithms we introduced earlier,
 if you lack understanding of it, it doesn't matter.
-Please read the :doc:`TRPO tutorial<../baserl/trpo>` and :doc:`PPO tutorial<../baserl/ppo>` we wrote,
+Please read the :doc:`TRPO tutorial<../baserl/trpo>` and
+:doc:`PPO tutorial<../baserl/ppo>` we wrote,
 you will soon understand how it works.
 
 .. grid:: 2
@@ -241,7 +245,7 @@ Policy update
             where :math:`\eta_\lambda` is the learning rate of :math:`\lambda`.
 
             Ultimately, we only need to add the above two steps to the TRPO and PPO;
-            then we will get the TRPO-lag and the PPO-lag.
+            then we will get the TRPOLag and the PPOLag.
 
             .. attention::
                 :class: warning
@@ -260,7 +264,7 @@ Policy update
 Code with OmniSafe
 ~~~~~~~~~~~~~~~~~~
 
-Safe RL algorithms for :bdg-success-line:`TRPO`, :bdg-success-line:`PPO`, :bdg-success-line:`NPG`, :bdg-success-line:`DDPG`, :bdg-success-line:`SAC` and :bdg-success-line:`TD3` are currently implemented in omnisafe using Lagrangian methods.
+Safe RL algorithms for :bdg-success-line:`TRPO`, :bdg-success-line:`PPO`, :bdg-success-line:`NPG`, :bdg-success-line:`DDPG`, :bdg-success-line:`SAC` and :bdg-success-line:`TD3` are currently implemented in OmniSafe using Lagrangian methods.
 This section will explain how to deploy Lagrangian methods on PPO algorithms at the code level using PPOLag as an example.
 OmniSafe has :bdg-success:`Lagrange` as a separate module and you can easily deploy it on most RL algorithms.
 

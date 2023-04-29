@@ -24,9 +24,13 @@ Background
 benefits of :doc:`TRPO<trpo>`,
 However, it is much simpler to implement.
 PPO shares the same target as TRPO:
-How can we take as big as an improvement step on a policy update using the data
-we already have,
-without stepping so far that we accidentally cause performance collapse?
+
+.. note::
+    How can we take as big as an improvement step on a policy update using the data
+    we already have,
+    without stepping so far that we accidentally cause performance collapse?
+
+
 Instead of solving this problem with a complex second-order method as TRPO do,
 PPO use a few other tricks to keep new policies close to old.
 There are two primary PPO variants
@@ -154,7 +158,7 @@ PPO-Penalty performs the following steps in each policy update:
 
             Step I
             ^^^
-            Using several epochs of mini-batch SGD, optimize the KL-penalized objective shown as eq:`ppo-eq-3`,
+            Using several epochs of mini-batch SGD, optimize the KL-penalized objective shown as :eq:`ppo-eq-3`,
 
             .. math::
                 :label: ppo-eq-4
@@ -189,7 +193,7 @@ PPO-Clip
 ~~~~~~~~
 
 Let :math:`r(\theta)` denote the probability ratio
-:math:`r(\theta)=\frac{\pi_\theta(a \mid s)}{\pi \theta_{d d}(a \mid s)}`,
+:math:`r(\theta)=\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)}`,
 PPO-Clip rewrite the surrogate objective as:
 
 .. _ppo-eq-5:
@@ -199,13 +203,12 @@ PPO-Clip rewrite the surrogate objective as:
 
     L^{\mathrm{CLIP}}(\pi)=\mathbb{E}[\text{min} (r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a))]
 
+:math:`\varepsilon` is a small hyperparameter that roughly denotes how
+far away the new policy can go from the old. This is a very complex formula,
+and it's difficult to tell at first glance what it's doing or how it helps keep
+the new policy close to the old policy. To help you better understand the above
+expression,
 
-in which :math:`\varepsilon` is a (small) hyperparameter which roughly says how
-far away the new policy is allowed to go from the old.
-This is a very complex formula,
-and it's difficult to tell at first glance what it's doing,
-or how it helps keep the new policy close to the old policy.
-To help you better understand the above expression,
 let :math:`L(s, a, \theta)` denote
 :math:`\max [r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a)]`,
 we'll simplify the formula in two cases:
