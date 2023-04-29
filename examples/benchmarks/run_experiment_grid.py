@@ -14,31 +14,31 @@
 # ==============================================================================
 """Example of training a policy from exp-x config with OmniSafe."""
 
+from __future__ import annotations
+
 import os
 import sys
 import warnings
+from typing import Any
 
 import torch
 
 import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
-from omnisafe.typing import NamedTuple, Tuple
 
 
 def train(
     exp_id: str,
     algo: str,
     env_id: str,
-    custom_cfgs: NamedTuple,
-) -> Tuple[float, float, float]:
+    custom_cfgs: dict[str, Any],
+) -> tuple[float, float, int]:
     """Train a policy from exp-x config with OmniSafe.
-
     Args:
         exp_id (str): Experiment ID.
         algo (str): Algorithm to train.
         env_id (str): The name of test environment.
-        custom_cfgs (NamedTuple): Custom configurations.
-        num_threads (int, optional): Number of threads. Defaults to 6.
+        custom_cfgs (dict): Custom configurations.
     """
     terminal_log_name = 'terminal.log'
     error_log_name = 'error.log'

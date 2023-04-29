@@ -19,6 +19,7 @@ from copy import deepcopy
 from torch import optim
 
 from omnisafe.models.actor_critic.actor_q_critic import ActorQCritic
+from omnisafe.models.base import Critic
 from omnisafe.models.critic.critic_builder import CriticBuilder
 from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils.config import ModelConfig
@@ -27,42 +28,34 @@ from omnisafe.utils.config import ModelConfig
 class ConstraintActorQCritic(ActorQCritic):
     """ConstraintActorQCritic is a wrapper around ActorCritic that adds a cost critic to the model.
 
-    In ``omnisafe``, we combine the actor and critic into one this class.
+    In OmniSafe, we combine the actor and critic into one this class.
 
-        .. list-table::
+    +-----------------+---------------------------------------------------+
+    | Model           | Description                                       |
+    +=================+===================================================+
+    | Actor           | Input is observation. Output is action.           |
+    +-----------------+---------------------------------------------------+
+    | Reward Q Critic | Input is obs-action pair, Output is reward value. |
+    +-----------------+---------------------------------------------------+
+    | Cost Q Critic   | Input is obs-action pair. Output is cost value.   |
+    +-----------------+---------------------------------------------------+
 
-            *   -   Model
-                -   Description
-                -   Function
-            *   -   Actor
-                -   The policy network, input is observation, output is action.
-                    Choose the actor from the following options:
-                    :class:`MLPActor`, :class:`CategoricalActor`, :class:`GaussianAnnealingActor`,
-                    :class:`GaussianLearningActor`, :class:`GaussianStdNetActor`, :class:`MLPCholeskyActor`.
-                -   Choose the action based on the observation.
-            *   -   Reward Critic
-                -   The value network, input is observation,
-                    output is reward value.
-                    Choose the critic from the following options:
-                    :class:`QCritic`, :class:`VCritic`.
-                -   Estimate the reward value of the observation.
-            *   -   Cost Critic
-                -   The value network, input is observation,
-                    output is cost value.
-                    Choose the critic from the following options:
-                    :class:`QCritic`, :class:`VCritic`.
-                -   Estimate the cost value of the observation.
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        model_cfgs (ModelConfig): The model configurations.
+        epochs (int): The number of epochs.
 
-        Attributes:
-            actor (Actor): The actor network.
-            target_actor (Actor): The target actor network.
-            reward_critic (Critic): The critic network.
-            target_reward_critic (Critic): The target critic network.
-            cost_critic (Critic): The critic network.
-            target_cost_critic (Critic): The target critic network.
-            actor_optimizer (Optimizer): The optimizer for the actor network.
-            reward_critic_optimizer (Optimizer): The optimizer for the critic network.
-            std_schedule (Schedule): The schedule for the standard deviation of the Gaussian distribution.
+    Attributes:
+        actor (Actor): The actor network.
+        target_actor (Actor): The target actor network.
+        reward_critic (Critic): The critic network.
+        target_reward_critic (Critic): The target critic network.
+        cost_critic (Critic): The critic network.
+        target_cost_critic (Critic): The target critic network.
+        actor_optimizer (Optimizer): The optimizer for the actor network.
+        reward_critic_optimizer (Optimizer): The optimizer for the critic network.
+        std_schedule (Schedule): The schedule for the standard deviation of the Gaussian distribution.
     """
 
     def __init__(
@@ -72,9 +65,10 @@ class ConstraintActorQCritic(ActorQCritic):
         model_cfgs: ModelConfig,
         epochs: int,
     ) -> None:
-        """Initialize ConstraintActorCritic."""
+        """Initialize an instance of :class:`ConstraintActorQCritic`."""
         super().__init__(obs_space, act_space, model_cfgs, epochs)
-        self.cost_critic = CriticBuilder(
+
+        self.cost_critic: Critic = CriticBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.critic.hidden_sizes,
@@ -83,17 +77,23 @@ class ConstraintActorQCritic(ActorQCritic):
             num_critics=1,
             use_obs_encoder=False,
         ).build_critic('q')
-        self.target_cost_critic = deepcopy(self.cost_critic)
+        self.target_cost_critic: Critic = deepcopy(self.cost_critic)
         for param in self.target_cost_critic.parameters():
             param.requires_grad = False
         self.add_module('cost_critic', self.cost_critic)
-
-        self.cost_critic_optimizer = optim.Adam(
-            self.cost_critic.parameters(),
-            lr=model_cfgs.critic.lr,
-        )
+        if model_cfgs.critic.lr is not None:
+            self.cost_critic_optimizer: optim.Optimizer
+            self.cost_critic_optimizer = optim.Adam(
+                self.cost_critic.parameters(),
+                lr=model_cfgs.critic.lr,
+            )
 
     def polyak_update(self, tau: float) -> None:
+        """Update the target network with polyak averaging.
+
+        Args:
+            tau (float): The polyak averaging factor.
+        """
         super().polyak_update(tau)
         for target_param, param in zip(
             self.target_cost_critic.parameters(),

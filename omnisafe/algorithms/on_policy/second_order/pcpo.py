@@ -48,8 +48,7 @@ class PCPO(CPO):
     ) -> None:
         """Update policy network.
 
-        PCPO updates policy network using the conjugate gradient algorithm,
-        following the steps:
+        PCPO updates policy network using the conjugate gradient algorithm, following the steps:
 
         - Compute the gradient of the policy.
         - Compute the step direction.
@@ -59,23 +58,23 @@ class PCPO(CPO):
         Args:
             obs (torch.Tensor): The observation tensor.
             act (torch.Tensor): The action tensor.
-            log_p (torch.Tensor): The log probability of the action.
-            adv (torch.Tensor): The advantage tensor.
-            cost_adv (torch.Tensor): The cost advantage tensor.
+            logp (torch.Tensor): The log probability of the action.
+            adv_r (torch.Tensor): The reward advantage tensor.
+            adv_c (torch.Tensor): The cost advantage tensor.
         """
         # pylint: disable=invalid-name
         self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
-        loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
+        loss_reward = self._loss_pi(obs, act, logp, adv_r)
         loss_reward_before = distributed.dist_avg(loss_reward).item()
         p_dist = self._actor_critic.actor(obs)
 
         loss_reward.backward()
         distributed.avg_grads(self._actor_critic.actor)
 
-        grad = -get_flat_gradients_from(self._actor_critic.actor)
-        x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
+        grads = -get_flat_gradients_from(self._actor_critic.actor)
+        x = conjugate_gradients(self._fvp, grads, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
         xHx = x.dot(self._fvp(x))
         H_inv_g = self._fvp(x)
@@ -89,16 +88,16 @@ class PCPO(CPO):
         loss_cost.backward()
         distributed.avg_grads(self._actor_critic.actor)
 
-        b_grad = get_flat_gradients_from(self._actor_critic.actor)
+        b_grads = get_flat_gradients_from(self._actor_critic.actor)
         ep_costs = self._logger.get_stats('Metrics/EpCost')[0] - self._cfgs.algo_cfgs.cost_limit
 
         self._logger.log(f'c = {ep_costs}')
-        self._logger.log(f'b^T b = {b_grad.dot(b_grad).item()}')
+        self._logger.log(f'b^T b = {b_grads.dot(b_grads).item()}')
 
-        p = conjugate_gradients(self._fvp, b_grad, self._cfgs.algo_cfgs.cg_iters)
+        p = conjugate_gradients(self._fvp, b_grads, self._cfgs.algo_cfgs.cg_iters)
         q = xHx
-        r = grad.dot(p)
-        s = b_grad.dot(p)
+        r = grads.dot(p)
+        s = b_grads.dot(p)
 
         step_direction = (
             torch.sqrt(2 * self._cfgs.algo_cfgs.target_kl / (q + 1e-8)) * H_inv_g
@@ -111,7 +110,7 @@ class PCPO(CPO):
 
         step_direction, accept_step = self._cpo_search_step(
             step_direction=step_direction,
-            grad=grad,
+            grads=grads,
             p_dist=p_dist,
             obs=obs,
             act=act,
@@ -127,23 +126,20 @@ class PCPO(CPO):
         set_param_values_to_model(self._actor_critic.actor, theta_new)
 
         with torch.no_grad():
-            loss_reward, info = self._loss_pi(obs, act, logp, adv_r)
+            loss_reward = self._loss_pi(obs, act, logp, adv_r)
             loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
             loss = loss_reward + loss_cost
 
         self._logger.store(
             {
                 'Loss/Loss_pi': loss.item(),
-                'Train/Entropy': info['entropy'],
-                'Train/PolicyRatio': info['ratio'],
-                'Train/PolicyStd': info['std'],
                 'Misc/AcceptanceStep': accept_step,
                 'Misc/Alpha': alpha.item(),
                 'Misc/FinalStepNorm': step_direction.norm().mean().item(),
                 'Misc/xHx': xHx.mean().item(),
                 'Misc/H_inv_g': x.norm().item(),  # H^-1 g
-                'Misc/gradient_norm': torch.norm(grad).mean().item(),
-                'Misc/cost_gradient_norm': torch.norm(b_grad).mean().item(),
+                'Misc/gradient_norm': torch.norm(grads).mean().item(),
+                'Misc/cost_gradient_norm': torch.norm(b_grads).mean().item(),
                 'Misc/Lambda_star': 1.0,
                 'Misc/Nu_star': 1.0,
                 'Misc/OptimCase': int(1),

@@ -26,20 +26,26 @@ class PPOSaute(PPO):
     """The Saute version of the PPO algorithm.
 
     A simple combination of the Saute RL and the Proximal Policy Optimization algorithm.
+
+    References:
+        - Title: Saute RL: Almost Surely Safe Reinforcement Learning Using State Augmentation
+        - Authors: Aivar Sootla, Alexander I. Cowen-Rivers, Taher Jafferjee, Ziyan Wang,
+            David Mguni, Jun Wang, Haitham Bou-Ammar.
+        - URL: `PPOSaute <https://arxiv.org/abs/2202.06558>`_
     """
 
     def _init_env(self) -> None:
         """Initialize the environment.
 
-        Omnisafe use :class:`omnisafe.adapter.SauteAdapter` to adapt the environment to the algorithm.
+        OmniSafe uses :class:`omnisafe.adapter.SauteAdapter` to adapt the environment to the algorithm.
 
-        User can customize the environment by inheriting this function.
+        User can customize the environment by inheriting this method.
 
-        Example:
+        Examples:
             >>> def _init_env(self) -> None:
-            >>>    self._env = CustomAdapter()
+            ...     self._env = CustomAdapter()
         """
-        self._env = SauteAdapter(
+        self._env: SauteAdapter = SauteAdapter(
             self._env_id,
             self._cfgs.train_cfgs.vector_env_nums,
             self._seed,
@@ -48,21 +54,20 @@ class PPOSaute(PPO):
         assert (self._cfgs.algo_cfgs.steps_per_epoch) % (
             distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
         ) == 0, 'The number of steps per epoch is not divisible by the number of environments.'
-        self._steps_per_epoch = (
+        self._steps_per_epoch: int = (
             self._cfgs.algo_cfgs.steps_per_epoch
             // distributed.world_size()
             // self._cfgs.train_cfgs.vector_env_nums
         )
 
     def _init_log(self) -> None:
-        r"""Log the PPOSaute specific information.
+        """Log the PPOSaute specific information.
 
-        .. list-table::
-
-            *   -   Things to log
-                -   Description
-            *   -   ``Metrics/EpBudget``
-                -   The budget of the episode.
+        +------------------+-----------------------------------+
+        | Things to log    | Description                       |
+        +==================+===================================+
+        | Metrics/EpBudget | The safety budget of the episode. |
+        +------------------+-----------------------------------+
         """
         super()._init_log()
         self._logger.register_key('Metrics/EpBudget')

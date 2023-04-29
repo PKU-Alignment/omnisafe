@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of GaussianStdNetActor."""
+"""Implementation of GaussianLearningActor."""
 
 from __future__ import annotations
 
@@ -27,7 +27,21 @@ from omnisafe.utils.model import build_mlp_network
 
 # pylint: disable-next=too-many-instance-attributes
 class GaussianLearningActor(GaussianActor):
-    """Implementation of GaussianLearningActor."""
+    """Implementation of GaussianLearningActor.
+
+    GaussianLearningActor is a Gaussian actor with a learnable standard deviation. It is used in
+    on-policy algorithms such as ``PPO``, ``TRPO`` and so on.
+
+    Args:
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
+    """
+
+    _current_dist: Normal
 
     def __init__(
         self,
@@ -37,36 +51,28 @@ class GaussianLearningActor(GaussianActor):
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize GaussianLearningActor.
-
-        GaussianLearningActor is a Gaussian actor with a learnable standard deviation.
-        It is used in on-policy algorithms such as ``PPO``, ``TRPO`` and so on.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list): List of hidden layer sizes.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-            shared (nn.Module): Shared module.
-        """
+        """Initialize an instance of :class:`GaussianLearningActor`."""
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
-        self.mean = build_mlp_network(
+
+        self.mean: nn.Module = build_mlp_network(
             sizes=[self._obs_dim, *self._hidden_sizes, self._act_dim],
             activation=activation,
             weight_initialization_mode=weight_initialization_mode,
         )
-        self.log_std = nn.Parameter(torch.zeros(self._act_dim), requires_grad=True)
+        self.log_std: nn.Parameter = nn.Parameter(torch.zeros(self._act_dim), requires_grad=True)
 
-    def _distribution(self, obs: torch.Tensor) -> Distribution:
+    def _distribution(self, obs: torch.Tensor) -> Normal:
         """Get the distribution of the actor.
 
         .. warning::
-            This method is not supposed to be called by users.
-            You should call :meth:`forward` instead.
+            This method is not supposed to be called by users. You should call :meth:`forward`
+            instead.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
+
+        Returns:
+            The normal distribution of the mean and standard deviation from the actor.
         """
         mean = self.mean(obs)
         std = torch.exp(self.log_std)
@@ -81,8 +87,12 @@ class GaussianLearningActor(GaussianActor):
         - If ``deterministic`` is ``False``, the predicted action is sampled from the distribution.
 
         Args:
-            obs (torch.Tensor): Observation.
-            deterministic (bool): Whether to use deterministic policy.
+            obs (torch.Tensor): Observation from environments.
+            deterministic (bool, optional): Whether to use deterministic policy. Defaults to False.
+
+        Returns:
+            The mean of the distribution if ``deterministic`` is ``True``, otherwise the sampled
+            action.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -94,7 +104,10 @@ class GaussianLearningActor(GaussianActor):
         """Forward method.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
+
+        Returns:
+            The current distribution.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -108,6 +121,9 @@ class GaussianLearningActor(GaussianActor):
 
         Args:
             act (torch.Tensor): Action.
+
+        Returns:
+            Log probability of the action.
         """
         assert self._after_inference, 'log_prob() should be called after predict() or forward()'
         self._after_inference = False
@@ -115,19 +131,10 @@ class GaussianLearningActor(GaussianActor):
 
     @property
     def std(self) -> float:
-        """Get the standard deviation of the distribution."""
+        """Standard deviation of the distribution."""
         return torch.exp(self.log_std).mean().item()
 
     @std.setter
     def std(self, std: float) -> None:
-        """Set the standard deviation of the distribution.
-
-        .. hint::
-            This method is only used for annealing the standard deviation.
-            It can be called.
-
-        Args:
-            std (float): Standard deviation.
-        """
         device = self.log_std.device
         self.log_std.data.fill_(torch.log(torch.tensor(std, device=device)))

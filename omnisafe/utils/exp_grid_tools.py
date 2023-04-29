@@ -17,30 +17,34 @@
 from __future__ import annotations
 
 import string
+from typing import Any
 
 
-def all_bools(vals: list) -> bool:
-    """Check if all values are bools
+def all_bools(vals: list[Any]) -> bool:
+    """Check if all values are bools.
 
     Args:
-        vals: Values to check.
+        vals (list[Any]): Values to check.
+
+    Returns:
+        True if all values are bools, False otherwise.
     """
     return all(isinstance(v, bool) for v in vals)
 
 
-def valid_str(vals: list | str) -> str:
-    r"""Convert a value or values to a string which could go in a path of file.
+def valid_str(vals: list[Any] | str) -> str:
+    """Convert a value or values to a string which could go in a path of file.
 
     Partly based on `this gist`_.
 
     .. _`this gist`: https://gist.github.com/seanh/93666
 
     Args:
-        vals: Value or values to convert to a string.
-    """
-    if hasattr(vals, '__name__'):
-        return valid_str(vals.__name__)
+        vals (list[Any] or str): Values to convert.
 
+    Returns:
+        Converted string.
+    """
     if isinstance(vals, (list, tuple)):
         return '-'.join([valid_str(x) for x in vals])
 

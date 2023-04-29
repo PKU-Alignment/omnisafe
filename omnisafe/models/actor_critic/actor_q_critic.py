@@ -14,13 +14,17 @@
 # ==============================================================================
 """Implementation of ActorQCritic."""
 
+from __future__ import annotations
+
 from copy import deepcopy
 
 import torch
 from torch import nn, optim
-from torch.optim.lr_scheduler import ConstantLR, LinearLR, _LRScheduler
+from torch.optim.lr_scheduler import ConstantLR, LinearLR
 
+from omnisafe.models.actor import GaussianLearningActor, GaussianSACActor, MLPActor
 from omnisafe.models.actor.actor_builder import ActorBuilder
+from omnisafe.models.base import Critic
 from omnisafe.models.critic.critic_builder import CriticBuilder
 from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils.config import ModelConfig
@@ -29,24 +33,21 @@ from omnisafe.utils.config import ModelConfig
 class ActorQCritic(nn.Module):
     """Class for ActorQCritic.
 
-    In ``omnisafe``, we combine the actor and critic into one this class.
+    In OmniSafe, we combine the actor and critic into one this class.
 
-    .. list-table::
+    +-----------------+---------------------------------------------------+
+    | Model           | Description                                       |
+    +=================+===================================================+
+    | Actor           | Input is observation. Output is action.           |
+    +-----------------+---------------------------------------------------+
+    | Reward Q Critic | Input is obs-action pair. Output is reward value. |
+    +-----------------+---------------------------------------------------+
 
-        *   -   Model
-            -   Description
-            -   Function
-        *   -   Actor
-            -   The policy network, input is observation, output is action.
-                Choose the actor from the following options:
-                :class:`MLPActor`, :class:`GaussianSACActor`,
-                :class:`GaussianLearningActor`.
-            -   Choose the action based on the observation.
-        *   -   Value Critic
-            -   The value network, input is observation, output is reward value.
-                Choose the critic from the following options:
-                :class:`QCritic`, :class:`VCritic`.
-            -   Estimate the reward value of the observation.
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        model_cfgs (ModelConfig): The model configurations.
+        epochs (int): The number of epochs.
 
     Attributes:
         actor (Actor): The actor network.
@@ -66,16 +67,17 @@ class ActorQCritic(nn.Module):
         model_cfgs: ModelConfig,
         epochs: int,
     ) -> None:
-        """Initialize ActorQCritic."""
+        """Initialize an instance of :class:`ActorQCritic`."""
         super().__init__()
-        self.actor = ActorBuilder(
+
+        self.actor: GaussianLearningActor | GaussianSACActor | MLPActor = ActorBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.actor.hidden_sizes,
             activation=model_cfgs.actor.activation,
             weight_initialization_mode=model_cfgs.weight_initialization_mode,
         ).build_actor(actor_type=model_cfgs.actor_type)
-        self.reward_critic = CriticBuilder(
+        self.reward_critic: Critic = CriticBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.critic.hidden_sizes,
@@ -84,22 +86,28 @@ class ActorQCritic(nn.Module):
             num_critics=model_cfgs.critic.num_critics,
             use_obs_encoder=False,
         ).build_critic(critic_type='q')
-        self.target_reward_critic = deepcopy(self.reward_critic)
+        self.target_reward_critic: Critic = deepcopy(self.reward_critic)
         for param in self.target_reward_critic.parameters():
             param.requires_grad = False
-        self.target_actor = deepcopy(self.actor)
+        self.target_actor: GaussianLearningActor | GaussianSACActor | MLPActor = deepcopy(
+            self.actor,
+        )
         for param in self.target_actor.parameters():
             param.requires_grad = False
         self.add_module('actor', self.actor)
         self.add_module('reward_critic', self.reward_critic)
 
-        self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
-        self.reward_critic_optimizer = optim.Adam(
-            self.reward_critic.parameters(),
-            lr=model_cfgs.critic.lr,
-        )
+        if model_cfgs.actor.lr is not None:
+            self.actor_optimizer: optim.Optimizer
+            self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
+        if model_cfgs.critic.lr is not None:
+            self.reward_critic_optimizer: optim.Optimizer
+            self.reward_critic_optimizer = optim.Adam(
+                self.reward_critic.parameters(),
+                lr=model_cfgs.critic.lr,
+            )
 
-        self.actor_scheduler: _LRScheduler
+        self.actor_scheduler: LinearLR | ConstantLR
         if model_cfgs.linear_lr_decay:
             self.actor_scheduler = LinearLR(
                 self.actor_optimizer,
@@ -120,11 +128,12 @@ class ActorQCritic(nn.Module):
         """Choose the action based on the observation. used in rollout without gradient.
 
         Args:
-            obs: The observation.
-            deterministic: Whether to use deterministic action. default: False.
+            obs (torch.tensor): The observation.
+            deterministic (bool, optional): Whether to use deterministic action. Defaults to False.
 
         Returns:
-            The action, value_r, and log_prob.
+            The deterministic action if ``deterministic`` is True, otherwise the action with
+            Gaussian noise.
         """
         with torch.no_grad():
             return self.actor.predict(obs, deterministic=deterministic)
@@ -133,11 +142,12 @@ class ActorQCritic(nn.Module):
         """Choose the action based on the observation. used in training with gradient.
 
         Args:
-            obs: The observation.
-            deterministic: Whether to use deterministic action. default: False.
+            obs (torch.tensor): The observation.
+            deterministic (bool, optional): Whether to use deterministic action. Defaults to False.
 
         Returns:
-            The action, value_r, and log_prob.
+            The deterministic action if ``deterministic`` is True, otherwise the action with
+            Gaussian noise.
         """
         return self.step(obs, deterministic=deterministic)
 
@@ -145,7 +155,7 @@ class ActorQCritic(nn.Module):
         """Update the target network with polyak averaging.
 
         Args:
-            tau: The polyak averaging factor.
+            tau (float): The polyak averaging factor.
         """
         for param, target_param in zip(
             self.reward_critic.parameters(),

@@ -20,11 +20,34 @@ import torch
 from gymnasium.spaces import Box
 
 from omnisafe.common.buffer.offpolicy_buffer import OffPolicyBuffer
-from omnisafe.typing import OmnisafeSpace, cpu
+from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
 
 class VectorOffPolicyBuffer(OffPolicyBuffer):
-    """A VectorReplayBuffer for OffPolicy Algorithms."""
+    """Vectorized on-policy buffer.
+
+    The vector-off-policy buffer is a vectorized version of the off-policy buffer. It stores the
+    data in a single tensor, and the data of each environment is stored in a separate column.
+
+    .. warning::
+        The buffer only supports Box spaces.
+
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        size (int): The size of the buffer.
+        batch_size (int): The batch size of the buffer.
+        num_envs (int): The number of environments.
+        device (torch.device, optional): The device of the buffer. Defaults to
+            ``torch.device('cpu')``.
+
+    Attributes:
+        data (dict[str, torch.Tensor]): The data of the buffer.
+
+    Raises:
+        NotImplementedError: If the observation space or the action space is not Box.
+        NotImplementedError: If the action space or the action space is not Box.
+    """
 
     def __init__(  # pylint: disable=super-init-not-called,too-many-arguments
         self,
@@ -33,36 +56,15 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         size: int,
         batch_size: int,
         num_envs: int,
-        device: torch.device = cpu,
+        device: torch.device = DEVICE_CPU,
     ) -> None:
-        """Initialize the off policy buffer.
-
-        The vector-off-policy buffer is a vectorized version of the off-policy buffer.
-        It stores the data in a single tensor, and the data of each environment is
-        stored in a separate column.
-
-        .. warning::
-            The buffer only supports Box spaces.
-
-        Args:
-            obs_space (OmnisafeSpace): The observation space.
-            act_space (OmnisafeSpace): The action space.
-            size (int): The size of the buffer.
-            batch_size (int): The batch size of the buffer.
-            num_envs (int): The number of environments.
-            device (torch.device, optional): The device of the buffer. Defaults to
-                torch.device('cpu').
-
-        Attributes:
-            data (Dict[str, torch.Tensor]): The data of the buffer.
-            _ptr (int): The pointer of the buffer.
-            _size (int): The size of the buffer.
-            _max_size (int): The maximum size of the buffer.
-            _batch_size (int): The batch size of the buffer.
-            _num_envs (int): The number of environments.
-
-        """
-        self._num_envs = num_envs
+        """Initialize an instance of :class:`VectorOffPolicyBuffer`."""
+        self._num_envs: int = num_envs
+        self._ptr: int = 0
+        self._size: int = 0
+        self._max_size: int = size
+        self._batch_size: int = batch_size
+        self._device: torch.device = device
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros(
                 (size, num_envs, *obs_space.shape),
@@ -95,21 +97,15 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             'next_obs': next_obs_buf,
         }
 
-        self._ptr: int = 0
-        self._size: int = 0
-        self._max_size: int = size
-        self._batch_size: int = batch_size
-        self._device = device
-
     @property
     def num_envs(self) -> int:
-        """Return the number of environments."""
+        """The number of parallel environments."""
         return self._num_envs
 
-    def add_field(self, name: str, shape: tuple, dtype: torch.dtype):
+    def add_field(self, name: str, shape: tuple[int, ...], dtype: torch.dtype) -> None:
         """Add a field to the buffer.
 
-        Example:
+        Examples:
             >>> buffer = BaseBuffer(...)
             >>> buffer.add_field('new_field', (2, 3), torch.float32)
             >>> buffer.data['new_field'].shape
@@ -117,7 +113,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
 
         Args:
             name (str): The name of the field.
-            shape (tuple): The shape of the field.
+            shape (tuple of int): The shape of the field.
             dtype (torch.dtype): The dtype of the field.
         """
         self.data[name] = torch.zeros(
@@ -127,7 +123,11 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         )
 
     def sample_batch(self) -> dict[str, torch.Tensor]:
-        """Sample a batch from the buffer."""
+        """Sample a batch of data from the buffer.
+
+        Returns:
+            The sampled batch of data.
+        """
         idx = torch.randint(
             0,
             self._size,

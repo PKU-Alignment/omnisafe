@@ -301,7 +301,7 @@ Quick start
     :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
     :class-footer: sd-font-weight-bold
 
-    Run PPO in Omnisafe
+    Run PPO in OmniSafe
     ^^^^^^^^^^^^^^^^^^^
     Here are 3 ways to run PPO in OmniSafe:
 
@@ -373,7 +373,7 @@ Architecture of functions
 
 -  ``PPO.learn()``
 
-   - ``PPO._env.roll_out()``
+   - ``PPO._env.rollout()``
    - ``PPO._update()``
 
      - ``PPO._buf.get()``

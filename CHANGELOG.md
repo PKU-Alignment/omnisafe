@@ -69,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 
 - Support cuda by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#163](https://github.com/OmniSafeAI/omnisafe/pull/163).
-- Support command line interfaces for omnisafe by [@Borong Zhang](https://github.com/muchvo) in PR [#144](https://github.com/OmniSafeAI/omnisafe/pull/144).
+- Support command line interfaces for OmniSafe by [@Borong Zhang](https://github.com/muchvo) in PR [#144](https://github.com/OmniSafeAI/omnisafe/pull/144).
 - Refactor(wrapper): refactor the cuda setting by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#176](https://github.com/OmniSafeAI/omnisafe/pull/176).
 
 ### Fixes
@@ -225,7 +225,7 @@ PR [#97](https://github.com/OmniSafeAI/omnisafe/pull/97).
 - Chore: rename files and enable pylint by [@Borong Zhang](https://github.com/muchvo) in  PR [#39](https://github.com/OmniSafeAI/omnisafe/pull/39).
 #### Documentation
 
-- Retouch the formatting and add PPO docs for omnisafe by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#40](https://github.com/OmniSafeAI/omnisafe/pull/40).
+- Retouch the formatting and add PPO docs for OmniSafe by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#40](https://github.com/OmniSafeAI/omnisafe/pull/40).
 - Add Lagrangian method documentation by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#42](https://github.com/OmniSafeAI/omnisafe/pull/42).
 - Refactor(README): show the implemented algorithms in more detail by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#47](https://github.com/OmniSafeAI/omnisafe/pull/47).
 ### 2022-12-05 ~ 2022-12-11

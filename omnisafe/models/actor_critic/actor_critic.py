@@ -20,8 +20,9 @@ import torch
 from torch import nn, optim
 from torch.optim.lr_scheduler import ConstantLR, LinearLR
 
+from omnisafe.models.actor import GaussianLearningActor, GaussianSACActor, MLPActor
 from omnisafe.models.actor.actor_builder import ActorBuilder
-from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
+from omnisafe.models.base import Critic
 from omnisafe.models.critic.critic_builder import CriticBuilder
 from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils.config import ModelConfig
@@ -31,30 +32,29 @@ from omnisafe.utils.schedule import PiecewiseSchedule, Schedule
 class ActorCritic(nn.Module):
     """Class for ActorCritic.
 
-    In ``omnisafe``, we combine the actor and critic into one this class.
+    In OmniSafe, we combine the actor and critic into one this class.
 
-    .. list-table::
+    +-----------------+-----------------------------------------------+
+    | Model           | Description                                   |
+    +=================+===============================================+
+    | Actor           | Input is observation. Output is action.       |
+    +-----------------+-----------------------------------------------+
+    | Reward V Critic | Input is observation. Output is reward value. |
+    +-----------------+-----------------------------------------------+
 
-        *   -   Model
-            -   Description
-            -   Function
-        *   -   Actor
-            -   The policy network, input is observation, output is action.
-                Choose the actor from the following options:
-                :class:`MLPActor`, :class:`GaussianSACActor`,
-                :class:`GaussianLearningActor`.
-            -   Choose the action based on the observation.
-        *   -   Value Critic
-            -   The value network, input is observation, output is reward value.
-                Choose the critic from the following options:
-                :class:`QCritic`, :class:`VCritic`.
-            -   Estimate the reward value of the observation.
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        model_cfgs (ModelConfig): The model configurations.
+        epochs (int): The number of epochs.
 
     Attributes:
         actor (Actor): The actor network.
         reward_critic (Critic): The critic network.
         std_schedule (Schedule): The schedule for the standard deviation of the Gaussian distribution.
     """
+
+    std_schedule: Schedule
 
     # pylint: disable-next=too-many-arguments
     def __init__(
@@ -64,16 +64,17 @@ class ActorCritic(nn.Module):
         model_cfgs: ModelConfig,
         epochs: int,
     ) -> None:
-        """Initialize ActorCritic."""
+        """Initialize an instance of :class:`ActorCritic`."""
         super().__init__()
-        self.actor = ActorBuilder(
+
+        self.actor: GaussianLearningActor | GaussianSACActor | MLPActor = ActorBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.actor.hidden_sizes,
             activation=model_cfgs.actor.activation,
             weight_initialization_mode=model_cfgs.weight_initialization_mode,
         ).build_actor(actor_type=model_cfgs.actor_type)
-        self.reward_critic = CriticBuilder(
+        self.reward_critic: Critic = CriticBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.critic.hidden_sizes,
@@ -86,9 +87,10 @@ class ActorCritic(nn.Module):
         self.add_module('reward_critic', self.reward_critic)
 
         if model_cfgs.actor.lr is not None:
+            self.actor_optimizer: optim.Optimizer
             self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=model_cfgs.actor.lr)
         if model_cfgs.critic.lr is not None:
-            self.reward_critic_optimizer = optim.Adam(
+            self.reward_critic_optimizer: optim.Optimizer = optim.Adam(
                 self.reward_critic.parameters(),
                 lr=model_cfgs.critic.lr,
             )
@@ -110,17 +112,22 @@ class ActorCritic(nn.Module):
                     verbose=True,
                 )
 
-            self.std_schedule: Schedule
-
-    def step(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
+    def step(
+        self,
+        obs: torch.Tensor,
+        deterministic: bool = False,
+    ) -> tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in rollout without gradient.
 
         Args:
-            obs: The observation.
-            deterministic: Whether to use deterministic action. default: False.
+            obs (torch.tensor): The observation.
+            deterministic (bool, optional): Whether to use deterministic action. Defaults to False.
 
         Returns:
-            The action, value_r, and log_prob.
+            action: The deterministic action if ``deterministic`` is True, otherwise the action with
+                Gaussian noise.
+            value_r: The reward value of the observation.
+            log_prob: The log probability of the action.
         """
         with torch.no_grad():
             value_r = self.reward_critic(obs)
@@ -128,15 +135,22 @@ class ActorCritic(nn.Module):
             log_prob = self.actor.log_prob(act)
         return act, value_r[0], log_prob
 
-    def forward(self, obs: torch.Tensor, deterministic: bool = False) -> tuple[torch.Tensor, ...]:
+    def forward(
+        self,
+        obs: torch.Tensor,
+        deterministic: bool = False,
+    ) -> tuple[torch.Tensor, ...]:
         """Choose the action based on the observation. used in training with gradient.
 
         Args:
-            obs: The observation.
-            deterministic: Whether to use deterministic action. default: False.
+            obs (torch.tensor): The observation.
+            deterministic (bool, optional): Whether to use deterministic action. Defaults to False.
 
         Returns:
-            The action, value_r, and log_prob.
+            action: The deterministic action if ``deterministic`` is True, otherwise the action with
+                Gaussian noise.
+            value_r: The reward value of the observation.
+            log_prob: The log probability of the action.
         """
         return self.step(obs, deterministic=deterministic)
 
@@ -144,7 +158,8 @@ class ActorCritic(nn.Module):
         """Set the annealing mode for the actor.
 
         Args:
-            annealing: Whether to use annealing mode.
+            epochs (list of int): The list of epochs.
+            std (list of float): The list of standard deviation.
         """
         assert isinstance(
             self.actor,
@@ -159,7 +174,7 @@ class ActorCritic(nn.Module):
         """Set the annealing mode for the actor.
 
         Args:
-            epoch: The current epoch.
+            epoch (int): The current epoch.
         """
         assert isinstance(
             self.actor,

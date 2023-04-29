@@ -30,6 +30,15 @@ class VCritic(Critic):
     A V-function approximator that uses a multi-layer perceptron (MLP) to map observations to V-values.
     This class is an inherit class of :class:`Critic`.
     You can design your own V-function approximator by inheriting this class or :class:`Critic`.
+
+    Args:
+        obs_dim (int): Observation dimension.
+        act_dim (int): Action dimension.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
+        num_critics (int, optional): Number of critics. Defaults to 1.
     """
 
     def __init__(
@@ -41,16 +50,7 @@ class VCritic(Critic):
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
         num_critics: int = 1,
     ) -> None:
-        """Initialize the critic network.
-
-        Args:
-            obs_dim (int): Observation dimension.
-            act_dim (int): Action dimension.
-            hidden_sizes (list): Hidden layer sizes.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-            shared (nn.Module): Shared network.
-        """
+        """Initialize an instance of :class:`VCritic`."""
         super().__init__(
             obs_space,
             act_space,
@@ -60,7 +60,9 @@ class VCritic(Critic):
             num_critics,
             use_obs_encoder=False,
         )
-        self.net_lst: list[nn.Module] = []
+        self.net_lst: list[nn.Module]
+        self.net_lst = []
+
         for idx in range(self._num_critics):
             net = build_mlp_network(
                 sizes=[self._obs_dim, *self._hidden_sizes, 1],
@@ -80,6 +82,9 @@ class VCritic(Critic):
 
         Args:
             obs (torch.Tensor): Observations.
+
+        Returns:
+            The V critic value of observation.
         """
         res = []
         for critic in self.net_lst:

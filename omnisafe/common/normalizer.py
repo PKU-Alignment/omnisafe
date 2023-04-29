@@ -20,10 +20,11 @@ from typing import Any, Mapping
 
 import torch
 import torch.nn as nn
+from torch.nn.modules.module import _IncompatibleKeys
 
 
 class Normalizer(nn.Module):
-    """Calculate normalized raw_data from running mean and std
+    """Calculate normalized raw_data from running mean and std.
 
     References:
         - Title: Updating Formulae and a Pairwise Algorithm for Computing Sample Variances
@@ -31,8 +32,15 @@ class Normalizer(nn.Module):
         - URL: http://i.stanford.edu/pub/cstr/reports/cs/tr/79/773/CS-TR-79-773.pdf
     """
 
+    _mean: torch.Tensor  # running mean
+    _sumsq: torch.Tensor  # running sum of squares
+    _var: torch.Tensor  # running variance
+    _std: torch.Tensor  # running standard deviation
+    _count: torch.Tensor  # number of samples
+    _clip: torch.Tensor  # clip value
+
     def __init__(self, shape: tuple[int, ...], clip: float = 1e6) -> None:
-        """Initialize the normalize."""
+        """Initialize an instance of :class:`Normalizer`."""
         super().__init__()
         if shape == ():
             self.register_buffer('_mean', torch.tensor(0.0))
@@ -49,15 +57,8 @@ class Normalizer(nn.Module):
             self.register_buffer('_count', torch.tensor(0))
             self.register_buffer('_clip', clip * torch.ones(*shape))
 
-        self._mean: torch.Tensor  # running mean
-        self._sumsq: torch.Tensor  # running sum of squares
-        self._var: torch.Tensor  # running variance
-        self._std: torch.Tensor  # running standard deviation
-        self._count: torch.Tensor  # number of samples
-        self._clip: torch.Tensor  # clip value
-
-        self._shape = shape
-        self._first = True
+        self._shape: tuple[int, ...] = shape
+        self._first: bool = True
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -75,20 +76,29 @@ class Normalizer(nn.Module):
         return self._std
 
     def forward(self, data: torch.Tensor) -> torch.Tensor:
-        """Normalize the data."""
+        """Normalize the data.
+
+        Args:
+            data (torch.Tensor): raw data to be normalized.
+
+        Returns:
+            The normalized data.
+        """
         return self.normalize(data)
 
     def normalize(self, data: torch.Tensor) -> torch.Tensor:
         """Normalize the data.
 
         .. hint::
-
             - If the data is the first data, the data will be used to initialize the mean and std.
             - If the data is not the first data, the data will be normalized by the mean and std.
             - Update the mean and std by the data.
 
         Args:
-            data: raw data to be normalized.
+            data (torch.Tensor): The raw data to be normalized.
+
+        Returns:
+            The normalized data.
         """
         data = data.to(self._mean.device)
         self._push(data)
@@ -101,7 +111,7 @@ class Normalizer(nn.Module):
         """Update the mean and std by the raw_data.
 
         Args:
-            raw_data: raw data to be normalized.
+            raw_data (torch.Tensor): The raw data to be normalized.
         """
         if raw_data.shape == self._shape:
             raw_data = raw_data.unsqueeze(0)
@@ -129,6 +139,20 @@ class Normalizer(nn.Module):
         self._std = torch.sqrt(self._var)
         self._std = torch.max(self._std, 1e-2 * torch.ones_like(self._std))
 
-    def load_state_dict(self, state_dict: Mapping[str, Any], strict: bool = True):
+    def load_state_dict(
+        self,
+        state_dict: Mapping[str, Any],
+        strict: bool = True,
+    ) -> _IncompatibleKeys:
+        """Load the state_dict to the normalizer.
+
+        Args:
+            state_dict (Mapping[str, Any]): The state_dict to be loaded.
+            strict (bool, optional): Whether to strictly enforce that the keys in :attr:`state_dict`.
+                Defaults to True.
+
+        Returns:
+            The loaded normalizer.
+        """
         self._first = False
         return super().load_state_dict(state_dict, strict)

@@ -137,7 +137,6 @@ Heess
 mul
 logprob
 Tanh
-Eq
 chol
 xml
 xmls
@@ -400,7 +399,6 @@ cudnn
 Avp
 eps
 backends
-gae
 ret
 rtype
 param
@@ -425,3 +423,18 @@ bdg
 num
 gpu
 Stooke
+abspath
+Deque
+datasets
+ziping
+LagrangeMultiplier
+SecondStepStopIter
+SecondStepEntropy
+SecondStepPolicyRatio
+RewUpdate
+CostUpdate
+AcceptanceStep
+FinalStepNorm
+xHx
+ReLU
+Softplus

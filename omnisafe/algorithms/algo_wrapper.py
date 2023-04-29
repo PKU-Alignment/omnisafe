@@ -27,13 +27,31 @@ from omnisafe.algorithms.base_algo import BaseAlgo
 from omnisafe.envs import support_envs
 from omnisafe.evaluator import Evaluator
 from omnisafe.utils import distributed
-from omnisafe.utils.config import check_all_configs, get_default_kwargs_yaml
+from omnisafe.utils.config import Config, check_all_configs, get_default_kwargs_yaml
 from omnisafe.utils.plotter import Plotter
 from omnisafe.utils.tools import recursive_check_config
 
 
 class AlgoWrapper:
-    """Algo Wrapper for algo."""
+    """Algo Wrapper for algorithms.
+
+    Args:
+        algo (str): The algorithm name.
+        env_id (str): The environment id.
+        train_terminal_cfgs (dict[str, Any], optional): The configurations for training termination.
+            Defaults to None.
+        custom_cfgs (dict[str, Any], optional): The custom configurations. Defaults to None.
+
+    Attributes:
+        algo (str): The algorithm name.
+        env_id (str): The environment id.
+        train_terminal_cfgs (dict[str, Any]): The configurations for training termination.
+        custom_cfgs (dict[str, Any]): The custom configurations.
+        cfgs (Config): The configurations for the algorithm.
+        algo_type (str): The algorithm type.
+    """
+
+    algo_type: str
 
     def __init__(
         self,
@@ -42,22 +60,30 @@ class AlgoWrapper:
         train_terminal_cfgs: dict[str, Any] | None = None,
         custom_cfgs: dict[str, Any] | None = None,
     ) -> None:
-        self.algo = algo
-        self.env_id = env_id
+        """Initialize an instance of :class:`AlgoWrapper`."""
+        self.algo: str = algo
+        self.env_id: str = env_id
         # algo_type will set in _init_checks()
-        self.algo_type: str
-        self.agent: BaseAlgo
-
-        self.train_terminal_cfgs = train_terminal_cfgs
-        self.custom_cfgs = custom_cfgs
-        self._evaluator: Evaluator = None
-        self._plotter: Plotter = None
-        self.cfgs = self._init_config()
+        self.train_terminal_cfgs: dict[str, Any] | None = train_terminal_cfgs
+        self.custom_cfgs: dict[str, Any] | None = custom_cfgs
+        self._evaluator: Evaluator | None = None
+        self._plotter: Plotter | None = None
+        self.cfgs: Config = self._init_config()
         self._init_checks()
         self._init_algo()
 
-    def _init_config(self):
-        """Init config."""
+    def _init_config(self) -> Config:
+        """Initialize config.
+
+        Initialize the configurations for the algorithm, following the order of default
+        configurations, custom configurations, and terminal configurations.
+
+        Returns:
+            The configurations for the algorithm.
+
+        Raises:
+            AssertionError: If the algorithm name is not in the supported algorithms.
+        """
         assert (
             self.algo in ALGORITHMS['all']
         ), f"{self.algo} doesn't exist. Please choose from {ALGORITHMS['all']}."
@@ -99,8 +125,8 @@ class AlgoWrapper:
         )
         return cfgs
 
-    def _init_checks(self):
-        """Init checks."""
+    def _init_checks(self) -> None:
+        """Initial checks."""
         assert isinstance(self.algo, str), 'algo must be a string!'
         assert isinstance(self.cfgs.train_cfgs.parallel, int), 'parallel must be an integer!'
         assert self.cfgs.train_cfgs.parallel > 0, 'parallel must be greater than 0!'
@@ -108,11 +134,8 @@ class AlgoWrapper:
             self.env_id in support_envs()
         ), f"{self.env_id} doesn't exist. Please choose from {support_envs()}."
 
-    def _init_algo(self):
-        """Init algo."""
-        # Use number of physical cores as default.
-        # If also hardware threading CPUs should be used
-        # enable this by the use_number_of_threads=True
+    def _init_algo(self) -> None:
+        """Initialize the algorithm."""
         check_all_configs(self.cfgs, self.algo_type)
         device = self.cfgs.train_cfgs.device
         if device == 'cpu':
@@ -126,29 +149,38 @@ class AlgoWrapper:
         ):
             # Re-launches the current script with workers linked by MPI
             sys.exit()
-        self.agent = registry.get(self.algo)(
+        self.agent: BaseAlgo = registry.get(self.algo)(
             env_id=self.env_id,
             cfgs=self.cfgs,
         )
 
-    def learn(self):
-        """Agent Learning."""
+    def learn(self) -> tuple[float, float, int]:
+        """Agent learning.
+
+        Returns:
+            ep_ret: The episode return of the final episode.
+            ep_cost: The episode cost of the final episode.
+            ep_len: The episode length of the final episode.
+        """
         ep_ret, ep_cost, ep_len = self.agent.learn()
 
         self._init_statistical_tools()
 
-        return ep_ret, ep_len, ep_cost
+        return ep_ret, ep_cost, ep_len
 
-    def _init_statistical_tools(self):
-        """Init statistical tools."""
+    def _init_statistical_tools(self) -> None:
+        """Initialize statistical tools."""
         self._evaluator = Evaluator()
         self._plotter = Plotter()
 
-    def plot(self, smooth=1):
+    def plot(self, smooth: int = 1) -> None:
         """Plot the training curve.
 
         Args:
-            smooth (int): window size, for smoothing the curve.
+            smooth (int, optional): window size, for smoothing the curve. Defaults to 1.
+
+        Raises:
+            AssertionError: If the :meth:`learn` method has not been called.
         """
         assert self._plotter is not None, 'Please run learn() first!'
         self._plotter.make_plots(
@@ -165,12 +197,15 @@ class AlgoWrapper:
             self.agent.logger.log_dir,
         )
 
-    def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0):
+    def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0) -> None:
         """Agent Evaluation.
 
         Args:
-            num_episodes (int): number of episodes to evaluate.
-            cost_criteria (float): the cost criteria to evaluate.
+            num_episodes (int, optional): number of episodes to evaluate. Defaults to 10.
+            cost_criteria (float, optional): the cost criteria to evaluate. Defaults to 1.0.
+
+        Raises:
+            AssertionError: If the :meth:`learn` method has not been called.
         """
         assert self._evaluator is not None, 'Please run learn() first!'
         scan_dir = os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save'))
@@ -188,16 +223,20 @@ class AlgoWrapper:
         camera_name: str = 'track',
         width: int = 256,
         height: int = 256,
-    ):
+    ) -> None:
         """Evaluate and render some episodes.
 
         Args:
-            num_episodes (int): number of episodes to render.
-            render_mode (str): render mode, can be 'rgb_array', 'depth_array' or 'human'.
-            camera_name (str): camera name, specify the camera which you use to capture
-                images.
-            width (int): width of the rendered image.
-            height (int): height of the rendered image.
+            num_episodes (int, optional): The number of episodes to render. Defaults to 10.
+            render_mode (str, optional): The render mode, can be 'rgb_array', 'depth_array' or
+                'human'. Defaults to 'rgb_array'.
+            camera_name (str, optional): the camera name, specify the camera which you use to
+                capture images. Defaults to 'track'.
+            width (int, optional): The width of the rendered image. Defaults to 256.
+            height (int, optional): The height of the rendered image. Defaults to 256.
+
+        Raises:
+            AssertionError: If the :meth:`learn` method has not been called.
         """
         assert self._evaluator is not None, 'Please run learn() first!'
         scan_dir = os.scandir(os.path.join(self.agent.logger.log_dir, 'torch_save'))

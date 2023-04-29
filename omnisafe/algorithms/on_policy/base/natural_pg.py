@@ -20,7 +20,6 @@ from torch.utils.data import DataLoader, TensorDataset
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.policy_gradient import PolicyGradient
 from omnisafe.utils import distributed
-from omnisafe.utils.config import Config
 from omnisafe.utils.math import conjugate_gradients
 from omnisafe.utils.tools import (
     get_flat_gradients_from,
@@ -34,8 +33,8 @@ class NaturalPG(PolicyGradient):
     """The Natural Policy Gradient algorithm.
 
     The Natural Policy Gradient algorithm is a policy gradient algorithm that uses the
-    `Fisher information matrix <https://en.wikipedia.org/wiki/Fisher_information>`_ to
-    approximate the Hessian matrix. The Fisher information matrix is the second-order derivative of the KL-divergence.
+    `Fisher information matrix <https://en.wikipedia.org/wiki/Fisher_information>`_ to approximate
+    the Hessian matrix. The Fisher information matrix is the second-order derivative of the KL-divergence.
 
     References:
         - Title: A Natural Policy Gradient
@@ -43,35 +42,26 @@ class NaturalPG(PolicyGradient):
         - URL: `Natural PG <https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf>`_
     """
 
-    def __init__(self, env_id: str, cfgs: Config) -> None:
-        super().__init__(env_id, cfgs)
-
-        self._fvp_obs: torch.Tensor
+    _fvp_obs: torch.Tensor
 
     def _init_log(self) -> None:
         r"""Log the Natural Policy Gradient specific information.
 
-        .. list-table::
-
-            *   -   Things to log
-                -   Description
-            *   -   ``Misc/AcceptanceStep``
-                -   The acceptance step size.
-            *   -   ``Misc/Alpha``
-                -   :math:`\frac{\delta_{KL}}{xHx}` in original paper.
-                    where :math:`x` is the step direction, :math:`H` is the Hessian matrix,
-                    and :math:`\delta_{KL}` is the target KL divergence.
-            *   -   ``Misc/FinalStepNorm``
-                -   The final step norm.
-            *   -   ``Misc/gradient_norm``
-                -   The gradient norm.
-            *   -   ``Misc/xHx``
-                -   :math:`xHx` in original paper.
-            *   -   ``Misc/H_inv_g``
-                -   :math:`H^{-1}g` in original paper.
-
-        Args:
-            epoch (int): current epoch.
+        +---------------------+--------------------------------------------------------+
+        | Things to log       | Description                                            |
+        +=====================+========================================================+
+        | Misc/AcceptanceStep | The acceptance step size.                              |
+        +---------------------+--------------------------------------------------------+
+        | Misc/Alpha          | :math:`\frac{\delta_{KL}}{xHx}` in the original paper. |
+        +---------------------+--------------------------------------------------------+
+        | Misc/FinalStepNorm  | The final step norm.                                   |
+        +---------------------+--------------------------------------------------------+
+        | Misc/gradient_norm  | The gradient norm.                                     |
+        +---------------------+--------------------------------------------------------+
+        | Misc/xHx            | :math:`x H x` in the original paper.                   |
+        +---------------------+--------------------------------------------------------+
+        | Misc/H_inv_g        | :math:`H^{-1} g` in the original paper.                |
+        +---------------------+--------------------------------------------------------+
         """
         super()._init_log()
 
@@ -82,16 +72,21 @@ class NaturalPG(PolicyGradient):
         self._logger.register_key('Misc/H_inv_g')
 
     def _fvp(self, params: torch.Tensor) -> torch.Tensor:
-        """Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_
-        based on an approximation of the KL-divergence.
+        """Build the Hessian-vector product.
 
-        The Hessian-vector product is approximated by the Fisher information matrix,
-        which is the second-order derivative of the KL-divergence.
+        Build the `Hessian-vector product <https://en.wikipedia.org/wiki/Hessian_matrix>`_ , which
+        is the second-order derivative of the KL-divergence.
 
-        For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf
+        The Hessian-vector product is approximated by the Fisher information matrix, which is the
+        second-order derivative of the KL-divergence.
+
+        For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf .
 
         Args:
             params (torch.Tensor): The parameters of the actor network.
+
+        Returns:
+            The Fisher vector product.
         """
         self._actor_critic.actor.zero_grad()
         q_dist = self._actor_critic.actor(self._fvp_obs)
@@ -99,11 +94,19 @@ class NaturalPG(PolicyGradient):
             p_dist = self._actor_critic.actor(self._fvp_obs)
         kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
 
-        grads = torch.autograd.grad(kl, self._actor_critic.actor.parameters(), create_graph=True)  # type: ignore
+        grads = torch.autograd.grad(
+            kl,
+            tuple(self._actor_critic.actor.parameters()),
+            create_graph=True,
+        )
         flat_grad_kl = torch.cat([grad.view(-1) for grad in grads])
 
         kl_p = (flat_grad_kl * params).sum()
-        grads = torch.autograd.grad(kl_p, self._actor_critic.actor.parameters(), retain_graph=False)  # type: ignore
+        grads = torch.autograd.grad(
+            kl_p,
+            tuple(self._actor_critic.actor.parameters()),
+            retain_graph=False,
+        )
 
         flat_grad_grad_kl = torch.cat([grad.contiguous().view(-1) for grad in grads])
         distributed.avg_tensor(flat_grad_grad_kl)
@@ -123,7 +126,7 @@ class NaturalPG(PolicyGradient):
         adv_r: torch.Tensor,
         adv_c: torch.Tensor,
     ) -> None:
-        """Update policy network.
+        r"""Update policy network.
 
         Natural Policy Gradient (NPG) update policy network using the conjugate gradient algorithm,
         following the steps:
@@ -135,21 +138,26 @@ class NaturalPG(PolicyGradient):
         Args:
             obs (torch.Tensor): The observation tensor.
             act (torch.Tensor): The action tensor.
-            log_p (torch.Tensor): The log probability of the action.
-            adv (torch.Tensor): The advantage tensor.
-            cost_adv (torch.Tensor): The cost advantage tensor.
+            logp (torch.Tensor): The log probability of the action.
+            adv_r (torch.Tensor): The reward advantage tensor.
+            adv_c (torch.Tensor): The cost advantage tensor.
+
+        Raises:
+            AssertionError: If :math:`x` is not finite.
+            AssertionError: If :math:`x H x` is not positive.
+            AssertionError: If :math:`\alpha` is not finite.
         """
         self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
         adv = self._compute_adv_surrogate(adv_r, adv_c)
-        loss, info = self._loss_pi(obs, act, logp, adv)
+        loss = self._loss_pi(obs, act, logp, adv)
 
         loss.backward()
         distributed.avg_grads(self._actor_critic.actor)
 
-        grad = -get_flat_gradients_from(self._actor_critic.actor)
-        x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
+        grads = -get_flat_gradients_from(self._actor_critic.actor)
+        x = conjugate_gradients(self._fvp, grads, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
         xHx = torch.dot(x, self._fvp(x))
         assert xHx.item() >= 0, 'xHx is negative'
@@ -161,40 +169,30 @@ class NaturalPG(PolicyGradient):
         set_param_values_to_model(self._actor_critic.actor, theta_new)
 
         with torch.no_grad():
-            loss, info = self._loss_pi(obs, act, logp, adv)
+            loss = self._loss_pi(obs, act, logp, adv)
 
         self._logger.store(
             {
-                'Train/Entropy': info['entropy'],
-                'Train/PolicyRatio': info['ratio'],
-                'Train/PolicyStd': info['std'],
-                'Loss/Loss_pi': loss.mean().item(),
                 'Misc/Alpha': alpha.item(),
                 'Misc/FinalStepNorm': torch.norm(step_direction).mean().item(),
                 'Misc/xHx': xHx.item(),
-                'Misc/gradient_norm': torch.norm(grad).mean().item(),
+                'Misc/gradient_norm': torch.norm(grads).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
             },
         )
 
     def _update(self) -> None:
-        r"""Update actor, critic.
+        """Update actor, critic.
 
         .. hint::
+            Here are some differences between NPG and Policy Gradient (PG): In PG, the actor network
+            and the critic network are updated together. When the KL divergence between the old
+            policy, and the new policy is larger than a threshold, the update is rejected together.
 
-            Here are some differences between NPG and Policy Gradient (PG):
-            In PG, the actor network and the critic network are updated together.
-            When the KL divergence between the old policy,
-            and the new policy is larger than a threshold, the update is rejected together.
-
-            In NPG, the actor network and the critic network are updated separately.
-            When the KL divergence between the old policy,
-            and the new policy is larger than a threshold,
-            the update of the actor network is rejected,
-            but the update of the critic network is still accepted.
-
-        Args:
-            self (object): object of the class.
+            In NPG, the actor network and the critic network are updated separately. When the KL
+            divergence between the old policy, and the new policy is larger than a threshold, the
+            update of the actor network is rejected, but the update of the critic network is still
+            accepted.
         """
         data = self._buf.get()
         obs, act, logp, target_value_r, target_value_c, adv_r, adv_c = (

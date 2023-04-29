@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""tool_function_packages"""
+"""OmniSafe tools package."""
 
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ import json
 import os
 import random
 import sys
+from typing import Any
 
 import numpy as np
 import torch
@@ -29,18 +30,18 @@ import yaml
 from rich.console import Console
 from torch.version import cuda as cuda_version
 
-from omnisafe.typing import cpu
+from omnisafe.typing import DEVICE_CPU
 
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
     """This function is used to get the flattened parameters from the model.
 
     .. note::
-        Some algorithms need to get the flattened parameters from the model,
-        such as the :class:`TRPO` and :class:`CPO` algorithm.
-        In these algorithms, the parameters are flattened and then used to calculate the loss.
+        Some algorithms need to get the flattened parameters from the model, such as the
+        :class:`TRPO` and :class:`CPO` algorithm. In these algorithms, the parameters are flattened
+        and then used to calculate the loss.
 
-    Example:
+    Examples:
         >>> model = torch.nn.Linear(2, 2)
         >>> model.weight.data = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
         >>> get_flat_params_from(model)
@@ -48,6 +49,12 @@ def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
 
     Args:
         model (torch.nn.Module): model to be flattened.
+
+    Returns:
+        Flattened parameters.
+
+    Raises:
+        AssertionError: If no gradients were found in model parameters.
     """
     flat_params = []
     for _, param in model.named_parameters():
@@ -63,12 +70,18 @@ def get_flat_gradients_from(model: torch.nn.Module) -> torch.Tensor:
     """This function is used to get the flattened gradients from the model.
 
     .. note::
-        Some algorithms need to get the flattened gradients from the model,
-        such as the :class:`TRPO` and :class:`CPO` algorithm.
-        In these algorithms, the gradients are flattened and then used to calculate the loss.
+        Some algorithms need to get the flattened gradients from the model, such as the
+        :class:`TRPO` and :class:`CPO` algorithm. In these algorithms, the gradients are flattened
+        and then used to calculate the loss.
 
     Args:
-        model (torch.nn.Module): model to be flattened.
+        model (torch.nn.Module): The model to be flattened.
+
+    Returns:
+        Flattened gradients.
+
+    Raises:
+        AssertionError: If no gradients were found in model parameters.
     """
     grads = []
     for _, param in model.named_parameters():
@@ -83,10 +96,10 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
     """This function is used to set the parameters to the model.
 
     .. note::
-        Some algorithms (e.g. TRPO, CPO, etc.) need to set the parameters to the model,
-        instead of using the ``optimizer.step()``.
+        Some algorithms (e.g. TRPO, CPO, etc.) need to set the parameters to the model, instead of
+        using the ``optimizer.step()``.
 
-    Example:
+    Examples:
         >>> model = torch.nn.Linear(2, 2)
         >>> model.weight.data = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
         >>> vals = torch.tensor([1.0, 2.0, 3.0, 4.0])
@@ -96,8 +109,12 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
                 [3., 4.]])
 
     Args:
-        model (torch.nn.Module): model to be set.
-        vals (torch.Tensor): parameters to be set.
+        model (torch.nn.Module): The model to be set.
+        vals (torch.Tensor): The parameters to be set.
+
+    Raises:
+        AssertionError: If the instance of the parameters is not ``torch.Tensor``, or the lengths of
+            the parameters and the model parameters do not match.
     """
     assert isinstance(vals, torch.Tensor)
     i: int = 0
@@ -113,19 +130,21 @@ def set_param_values_to_model(model: torch.nn.Module, vals: torch.Tensor) -> Non
     assert i == len(vals), f'Lengths do not match: {i} vs. {len(vals)}'
 
 
-def seed_all(seed: int):
+def seed_all(seed: int) -> None:
     """This function is used to set the random seed for all the packages.
 
     .. hint::
-        To reproduce the results, you need to set the random seed for all the packages.
-        Including ``numpy``, ``random``, ``torch``, ``torch.cuda``, ``torch.backends.cudnn``.
+        To reproduce the results, you need to set the random seed for all the packages. Including
+        ``numpy``, ``random``, ``torch``, ``torch.cuda``, ``torch.backends.cudnn``.
 
     .. warning::
-        If you want to use the ``torch.backends.cudnn.benchmark`` or ``torch.backends.cudnn.
-        deterministic`` and your ``cuda`` version is over 10.2, you need to set the
-        ``CUBLAS_WORKSPACE_CONFIG`` and ``PYTHONHASHSEED`` environment variables.
-    """
+        If you want to use the ``torch.backends.cudnn.benchmark`` or ``torch.backends.cudnn.deterministic``
+        and your ``cuda`` version is over 10.2, you need to set the ``CUBLAS_WORKSPACE_CONFIG`` and
+        ``PYTHONHASHSEED`` environment variables.
 
+    Args:
+        seed (int): The random seed.
+    """
     os.environ['PYTHONHASHSEED'] = str(seed)
 
     random.seed(seed)
@@ -145,17 +164,20 @@ def seed_all(seed: int):
         pass
 
 
-def custom_cfgs_to_dict(key_list, value):
+def custom_cfgs_to_dict(key_list: str, value: Any) -> dict[str, Any]:
     """This function is used to convert the custom configurations to dict.
 
     .. note::
-        This function is used to convert the custom configurations to dict.
-        For example, if the custom configurations are ``train_cfgs:use_wandb`` and ``True``,
-        then the output dict will be ``{'train_cfgs': {'use_wandb': True}}``.
+        This function is used to convert the custom configurations to dict. For example, if the
+        custom configurations are ``train_cfgs:use_wandb`` and ``True``, then the output dict will
+        be ``{'train_cfgs': {'use_wandb': True}}``.
 
     Args:
-        key_list (list): list of keys.
-        value: value.
+        key_list (str): list of keys.
+        value (Any): value.
+
+    Returns:
+        The converted dict.
     """
     if value == 'True':
         value = True
@@ -178,8 +200,20 @@ def custom_cfgs_to_dict(key_list, value):
     return return_dict
 
 
-def update_dict(total_dict, item_dict):
-    """Updater of multi-level dictionary."""
+def update_dict(total_dict: dict[str, Any], item_dict: dict[str, Any]) -> None:
+    """Updater of multi-level dictionary.
+
+    Args:
+        total_dict (dict[str, Any]): The total dictionary.
+        item_dict (dict[str, Any]): The item dictionary.
+
+    Examples:
+        >>> total_dict = {'a': {'b': 1, 'c': 2}}
+        >>> item_dict = {'a': {'b': 3, 'd': 4}}
+        >>> update_dict(total_dict, item_dict)
+        >>> total_dict
+        {'a': {'b': 3, 'c': 2, 'd': 4}}
+    """
     for idd in item_dict:
         total_value = total_dict.get(idd)
         item_value = item_dict.get(idd)
@@ -194,15 +228,21 @@ def update_dict(total_dict, item_dict):
             total_dict.update({idd: total_value})
 
 
-def load_yaml(path) -> dict:
+def load_yaml(path: str) -> dict[str, Any]:
     """Get the default kwargs from ``yaml`` file.
 
     .. note::
-        This function search the ``yaml`` file by the algorithm name and environment name.
-        Make sure your new implemented algorithm or environment has the same name as the yaml file.
+        This function search the ``yaml`` file by the algorithm name and environment name. Make sure
+        your new implemented algorithm or environment has the same name as the yaml file.
 
     Args:
-        path (str): path of the ``yaml`` file.
+        path (str): The path of the ``yaml`` file.
+
+    Returns:
+        The default kwargs.
+
+    Raises:
+        AssertionError: If the ``yaml`` file is not found.
     """
     with open(path, encoding='utf-8') as file:
         try:
@@ -213,14 +253,23 @@ def load_yaml(path) -> dict:
     return kwargs
 
 
-def recursive_check_config(config, default_config, exclude_keys=()):
+def recursive_check_config(
+    config: dict[str, Any],
+    default_config: dict[str, Any],
+    exclude_keys: tuple[str, ...] = (),
+) -> None:
     """Check whether config is valid in default_config.
 
     Args:
-        config (dict): config to be checked.
-        default_config (dict): default config.
+        config (dict[str, Any]): The config to be checked.
+        default_config (dict[str, Any]): The default config.
+        exclude_keys (tuple of str, optional): The keys to be excluded. Defaults to ().
+
+    Raises:
+        AssertionError: If the type of the value is not the same as the default value.
+        KeyError: If the key is not in default_config.
     """
-    assert isinstance(config, dict) or config is None, 'custom_cfgs must be a dict!'
+    assert isinstance(config, dict), 'custom_cfgs must be a dict!'
     for key in config:
         if key not in default_config.keys() and key not in exclude_keys:
             raise KeyError(f'Invalid key: {key}')
@@ -228,12 +277,19 @@ def recursive_check_config(config, default_config, exclude_keys=()):
             recursive_check_config(config[key], default_config[key])
 
 
-def assert_with_exit(condition, msg) -> None:
+def assert_with_exit(condition: bool, msg: str) -> None:
     """Assert with message.
+
+    Examples:
+        >>> assert_with_exit(1 == 2, '1 must equal to 2')
+        AssertionError: 1 must equal to 2
 
     Args:
         condition (bool): condition to be checked.
         msg (str): message to be printed.
+
+    Raises:
+        AssertionError: If the condition is not satisfied.
     """
     try:
         assert condition
@@ -243,16 +299,22 @@ def assert_with_exit(condition, msg) -> None:
         sys.exit(1)
 
 
-def recursive_dict2json(dict_obj) -> str:
+def recursive_dict2json(dict_obj: dict[str, Any]) -> str:
     """This function is used to recursively convert the dict to json.
 
     Args:
-        dict_obj (dict): dict to be converted.
+        dict_obj (dict[str, Any]): dict to be converted.
+
+    Returns:
+        The converted json string.
+
+    Raises:
+        AssertionError: If the instance of the input is not ``dict``.
     """
     assert isinstance(dict_obj, dict), 'Input must be a dict.'
-    flat_dict = {}
+    flat_dict: dict[str, Any] = {}
 
-    def _flatten_dict(dict_obj, path=''):
+    def _flatten_dict(dict_obj: dict[str, Any] | Any, path: str = '') -> None:
         if isinstance(dict_obj, dict):
             for key, value in dict_obj.items():
                 _flatten_dict(value, path + key + ':')
@@ -263,11 +325,14 @@ def recursive_dict2json(dict_obj) -> str:
     return json.dumps(flat_dict, sort_keys=True).replace('"', "'")
 
 
-def hash_string(string) -> str:
+def hash_string(string: str) -> str:
     """This function is used to generate the folder name.
 
     Args:
         string (str): string to be hashed.
+
+    Returns:
+        The hashed string.
     """
     salt = b'\xf8\x99/\xe4\xe6J\xd8d\x1a\x9b\x8b\x98\xa2\x1d\xff3*^\\\xb1\xc1:e\x11M=PW\x03\xa5\\h'
     # convert string to bytes and add salt
@@ -278,27 +343,24 @@ def hash_string(string) -> str:
     return hash_object.hexdigest()
 
 
-def get_device(device: torch.device = cpu) -> torch.device:
+def get_device(device: torch.device | str | int = DEVICE_CPU) -> torch.device:
     """Retrieve PyTorch device.
 
-    It checks that the requested device is available first.
-    For now, it supports only cpu and cuda.
+    It checks that the requested device is available first. For now, it supports only cpu and cuda.
     By default, it tries to use the gpu.
 
     Args:
-        device (torch.device): device to be used.
+        device (torch.device, str, or int, optional): The device to use. Defaults to
+            ``torch.device('cpu')``.
 
     Returns:
-        torch.device: device to be used.
+        The device to use.
     """
-    # Cuda by default
-    if device == 'auto':
-        device = 'cuda'
     # Force conversion to torch.device
     device = torch.device(device)
 
     # Cuda not available
-    if device.type == torch.device('cuda').type and not torch.cuda.is_available():
+    if not torch.cuda.is_available() and device.type == torch.device('cuda').type:
         return torch.device('cpu')
 
     return device

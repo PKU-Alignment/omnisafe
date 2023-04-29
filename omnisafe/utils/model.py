@@ -25,8 +25,7 @@ from omnisafe.typing import Activation, InitFunction
 def initialize_layer(init_function: InitFunction, layer: nn.Linear) -> None:
     """Initialize the layer with the given initialization function.
 
-    The ``init_function`` can be chosen from:
-    ``kaiming_uniform``, ``xavier_normal``, ``glorot``,
+    The ``init_function`` can be chosen from: ``kaiming_uniform``, ``xavier_normal``, ``glorot``,
     ``xavier_uniform``, ``orthogonal``.
 
     Args:
@@ -50,11 +49,15 @@ def get_activation(
 ) -> type[nn.Identity] | type[nn.ReLU] | type[nn.Sigmoid] | type[nn.Softplus] | type[nn.Tanh]:
     """Get the activation function.
 
-    The ``activation`` can be chosen from:
-    ``identity``, ``relu``, ``sigmoid``, ``softplus``, ``tanh``.
+    The ``activation`` can be chosen from: ``identity``, ``relu``, ``sigmoid``, ``softplus``,
+    ``tanh``.
 
     Args:
         activation (Activation): The activation function.
+
+    Returns:
+        The activation function, ranging from ``nn.Identity``, ``nn.ReLU``, ``nn.Sigmoid``,
+        ``nn.Softplus`` to ``nn.Tanh``.
     """
     activations = {
         'identity': nn.Identity,
@@ -75,7 +78,7 @@ def build_mlp_network(
 ) -> nn.Module:
     """Build the MLP network.
 
-    Example:
+    Examples:
         >>> build_mlp_network([64, 64, 64], 'relu', 'tanh')
         Sequential(
             (0): Linear(in_features=64, out_features=64, bias=True)
@@ -87,10 +90,15 @@ def build_mlp_network(
         )
 
     Args:
-        sizes (List[int]): The sizes of the layers.
+        sizes (list of int): The sizes of the layers.
         activation (Activation): The activation function.
-        output_activation (Activation): The output activation function.
-        weight_initialization_mode (InitFunction): The initialization function.
+        output_activation (Activation, optional): The output activation function. Defaults to
+            ``identity``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
+
+    Returns:
+        The MLP network.
     """
     activation_fn = get_activation(activation)
     output_activation_fn = get_activation(output_activation)

@@ -170,32 +170,32 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v1``
 
 Off-Policy algorithms almost share the same hyperparameters, the share hyperparameters are listed below:
 
-| Hyperparameter | Value |
-| :------------: | :---: |
-|   ``batch_size``   |  256  |
-|    ``gamma``    |  0.99  |
-|    ``size``    |  1000000  |
-|    ``update_iters``    |  1  |
-|    ``step_per_sample``    |  1  |
-|    ``hidden_sizes``    |  [256, 256]  |
+|   Hyperparameter    |   Value    |
+| :-----------------: | :--------: |
+|   ``batch_size``    |    256     |
+|      ``gamma``      |    0.99    |
+|      ``size``       |  1000000   |
+|  ``update_iters``   |     1      |
+| ``step_per_sample`` |     1      |
+|  ``hidden_sizes``   | [256, 256] |
 
 However, there are some differences between the three algorithms. We list the differences below:
 
 
 ### TD3
 
-| Hyperparameter | Value |
-| :------------: | :---: |
-|   ``policy_noise``   |  0.2  |
-|    ``noise_clip``    |  0.5  |
-|    ``start_learning_steps``    |  25000  |
+|      Hyperparameter      | Value |
+| :----------------------: | :---: |
+|     ``policy_noise``     |  0.2  |
+|      ``noise_clip``      |  0.5  |
+| ``start_learning_steps`` | 25000 |
 
 ### SAC
 
-| Hyperparameter | Value |
-| :------------: | :---: |
-|   ``alpha``   |  0.2  |
-|    ``start_learning_steps``    |  5000  |
+|      Hyperparameter      | Value |
+| :----------------------: | :---: |
+|        ``alpha``         |  0.2  |
+| ``start_learning_steps`` | 5000  |
 
 
 ### Some Hints
@@ -218,74 +218,74 @@ If you find that other hyperparameters perform better, please feel free to open 
 
 ### DDPG(1M)
 
-| Environment | Reward (OmniSafe) | Cost (Omnisafe) |
-| :---------: | :-----------: | :-----------: |
+|         Environment          | Reward (OmniSafe)  |  Cost (OmniSafe)  |
+| :--------------------------: | :----------------: | :---------------: |
 |     SafetyAntVelocity-v1     | **1243.15±619.17** | **289.80±161.52** |
-| SafetyHalfCheetahVelocity-v1 | **9496.25±999.36** | **882.63±75.43** |
-|    SafetyHopperVelocity-v1   | **2369.89±932.39** | **673.36±278.33** |
-|   SafetyWalker2dVelocity-v1  | **1648.96±578.43** | **298.20±110.75** |
-|   SafetySwimmerVelocity-v1   | **101.63±57.55** | **507.16±152.13** |
-|   SafetyHumanoidVelocity-v1  | **3254.83±297.52** | **0.00±0.00** |
+| SafetyHalfCheetahVelocity-v1 | **9496.25±999.36** | **882.63±75.43**  |
+|   SafetyHopperVelocity-v1    | **2369.89±932.39** | **673.36±278.33** |
+|  SafetyWalker2dVelocity-v1   | **1648.96±578.43** | **298.20±110.75** |
+|   SafetySwimmerVelocity-v1   |  **101.63±57.55**  | **507.16±152.13** |
+|  SafetyHumanoidVelocity-v1   | **3254.83±297.52** |   **0.00±0.00**   |
 
 #### Hints for DDPG
 
 DDPG only have one Q-network to estimate the Q-value. So it is easy to overestimate the Q-value. In our experiments, we found that the ``gamma`` is important for DDPG. If ``gamma`` is too large, the Q-value will not be overestimated. So we set ``gamma`` to 0.99 in our experiments.
 
-| Environment | obs_normlize | rew_normlize | cost_normlize |
-| :---------: | :-----------: |  :-----------: |  :-----------: |
-|     SafetyAntVelocity-v1     | False | False | False |
-| SafetyHalfCheetahVelocity-v1 | False | False | False |
-|    SafetyHopperVelocity-v1   | False | False | False |
-|    SafetyHumanoidVelocity-v1 | **True** | **True** | False |
-|    SafetyWalker2dVelocity-v1 | False | False | False |
-|    SafetySwimmerVelocity-v1  | False | True | False |
+|         Environment          | obs_normlize | rew_normlize | cost_normlize |
+| :--------------------------: | :----------: | :----------: | :-----------: |
+|     SafetyAntVelocity-v1     |    False     |    False     |     False     |
+| SafetyHalfCheetahVelocity-v1 |    False     |    False     |     False     |
+|   SafetyHopperVelocity-v1    |    False     |    False     |     False     |
+|  SafetyHumanoidVelocity-v1   |   **True**   |   **True**   |     False     |
+|  SafetyWalker2dVelocity-v1   |    False     |    False     |     False     |
+|   SafetySwimmerVelocity-v1   |    False     |     True     |     False     |
 
 Please note that the ``cost_normlize`` make no sense for TD3, but work for TD3-Lag.
 
 ### TD3
 
-| Environment | Reward (OmniSafe) | Cost (Omnisafe) |
-| :---------: | :-----------: | :-----------: |
-|     SafetyAntVelocity-v1     | **5107.66±619.95** | **978.33±4.41** |
-| SafetyHalfCheetahVelocity-v1 | **8844.27±1812.2** | **981.43±1.08** |
-|    SafetyHopperVelocity-v1   | **3567.15±109.79** | **977.43±19.14** |
-|   SafetyWalker2dVelocity-v1  | **3962.93±355.76** | **904.83±21.69** |
-|   SafetySwimmerVelocity-v1   | **81.98±31.23** | **678.66±240.35** |
-|   SafetyHumanoidVelocity-v1  | **5245.66±674.81** | **0.00±0.00** |
+|         Environment          | Reward (OmniSafe)  |  Cost (OmniSafe)  |
+| :--------------------------: | :----------------: | :---------------: |
+|     SafetyAntVelocity-v1     | **5107.66±619.95** |  **978.33±4.41**  |
+| SafetyHalfCheetahVelocity-v1 | **8844.27±1812.2** |  **981.43±1.08**  |
+|   SafetyHopperVelocity-v1    | **3567.15±109.79** | **977.43±19.14**  |
+|  SafetyWalker2dVelocity-v1   | **3962.93±355.76** | **904.83±21.69**  |
+|   SafetySwimmerVelocity-v1   |  **81.98±31.23**   | **678.66±240.35** |
+|  SafetyHumanoidVelocity-v1   | **5245.66±674.81** |   **0.00±0.00**   |
 
 #### Hints for TD3
 
-| Environment | obs_normlize | rew_normlize | cost_normlize |
-| :---------: | :-----------: |  :-----------: |  :-----------: |
-|     SafetyAntVelocity-v1     | **True** | False | False |
-| SafetyHalfCheetahVelocity-v1 | False | False | False |
-|    SafetyHopperVelocity-v1   | False | False | False |
-|    SafetyHumanoidVelocity-v1 | False | False | False |
-|    SafetyWalker2dVelocity-v1 | False | False | False |
-|    SafetySwimmerVelocity-v1  | False | **True** | False |
+|         Environment          | obs_normlize | rew_normlize | cost_normlize |
+| :--------------------------: | :----------: | :----------: | :-----------: |
+|     SafetyAntVelocity-v1     |   **True**   |    False     |     False     |
+| SafetyHalfCheetahVelocity-v1 |    False     |    False     |     False     |
+|   SafetyHopperVelocity-v1    |    False     |    False     |     False     |
+|  SafetyHumanoidVelocity-v1   |    False     |    False     |     False     |
+|  SafetyWalker2dVelocity-v1   |    False     |    False     |     False     |
+|   SafetySwimmerVelocity-v1   |    False     |   **True**   |     False     |
 
 Please note that the ``cost_normlize`` make no sense for TD3, but work for TD3-Lag.
 
 ### SAC
 
-| Environment | Reward (OmniSafe) | Cost (Omnisafe) |
-| :---------: | :-----------: | :-----------: |
-|     SafetyAntVelocity-v1     | **6061.45±129.37** | **929.53±7.10** |
-| SafetyHalfCheetahVelocity-v1 | **10075.95±423.83** | **981.23±1.06** |
-|    SafetyHopperVelocity-v1   | **3386.41±89.95** | **992.76±0.16** |
-|   SafetyWalker2dVelocity-v1  | **4613.00±340.90** | **914.56±14.91** |
-|   SafetySwimmerVelocity-v1   | **44.80±3.65** | **376.50±152.89** |
-|   SafetyHumanoidVelocity-v1  | **5618.22±337.33** | **0.00±0.00** |
+|         Environment          |  Reward (OmniSafe)  |  Cost (OmniSafe)  |
+| :--------------------------: | :-----------------: | :---------------: |
+|     SafetyAntVelocity-v1     | **6061.45±129.37**  |  **929.53±7.10**  |
+| SafetyHalfCheetahVelocity-v1 | **10075.95±423.83** |  **981.23±1.06**  |
+|   SafetyHopperVelocity-v1    |  **3386.41±89.95**  |  **992.76±0.16**  |
+|  SafetyWalker2dVelocity-v1   | **4613.00±340.90**  | **914.56±14.91**  |
+|   SafetySwimmerVelocity-v1   |   **44.80±3.65**    | **376.50±152.89** |
+|  SafetyHumanoidVelocity-v1   | **5618.22±337.33**  |   **0.00±0.00**   |
 
 #### Hints for SAC
 
-| Environment | obs_normlize | rew_normlize | cost_normlize |
-| :---------: | :-----------: |  :-----------: |  :-----------: |
-|     SafetyAntVelocity-v1     | False | False | False |
-| SafetyHalfCheetahVelocity-v1 | False | False | False |
-|    SafetyHopperVelocity-v1   | False | False | False |
-|    SafetyHumanoidVelocity-v1 | False | False | False |
-|    SafetyWalker2dVelocity-v1 | False | False | False |
-|    SafetySwimmerVelocity-v1  | False | **True** | False |
+|         Environment          | obs_normlize | rew_normlize | cost_normlize |
+| :--------------------------: | :----------: | :----------: | :-----------: |
+|     SafetyAntVelocity-v1     |    False     |    False     |     False     |
+| SafetyHalfCheetahVelocity-v1 |    False     |    False     |     False     |
+|   SafetyHopperVelocity-v1    |    False     |    False     |     False     |
+|  SafetyHumanoidVelocity-v1   |    False     |    False     |     False     |
+|  SafetyWalker2dVelocity-v1   |    False     |    False     |     False     |
+|   SafetySwimmerVelocity-v1   |    False     |   **True**   |     False     |
 
 Please note that the ``cost_normlize`` make no sense for TD3, but work for TD3-Lag.

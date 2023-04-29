@@ -52,13 +52,12 @@ from torch.utils.tensorboard.writer import SummaryWriter  # isort:skip
 class Logger:  # pylint: disable=too-many-instance-attributes
     """Implementation of the Logger.
 
-    A logger to record the training process.
-    It can record the training process to a file and print it to the console.
-    It can also record the training process to tensorboard.
+    A logger to record the training process. It can record the training process to a file and print
+    it to the console. It can also record the training process to tensorboard.
 
     The logger can record the following data:
 
-    .. code-block:: bash
+    .. code-block:: text
 
         ----------------------------------------------
         |       Name      |            Value         |
@@ -69,6 +68,16 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         |  Metrics/EpRet  |            13.24         |
         |  Metrics/EpStd  |            0.12          |
         ----------------------------------------------
+
+    Args:
+        output_dir (str): The output directory.
+        exp_name (str): The experiment name.
+        output_fname (str, optional): The output file name. Defaults to 'progress.csv'.
+        seed (int, optional): The random seed. Defaults to 0.
+        use_tensorboard (bool, optional): Whether to use tensorboard. Defaults to True.
+        use_wandb (bool, optional): Whether to use wandb. Defaults to False.
+        config (Config or None, optional): The config. Defaults to None.
+        models (list[torch.nn.Module] or None, optional): The models. Defaults to None.
     """
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals
@@ -82,33 +91,21 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         config: Config | None = None,
         models: list[torch.nn.Module] | None = None,
     ) -> None:
-        """Initialize the logger.
-
-        Args:
-            output_dir: The directory to save the log file.
-            exp_name: The name of the experiment.
-            output_fname: The name of the log file.
-            seed: The random seed.
-            use_tensorboard: Whether to use tensorboard.
-            use_wandb: Whether to use wandb.
-            config: The config of the experiment.
-            models: The models to be saved.
-        """
+        """Initialize an instance of :class:`Logger`."""
         hms_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
         relpath = hms_time
 
         if seed is not None:
             relpath = f'seed-{str(seed).zfill(3)}-{relpath}'
 
-        self._hms_time = hms_time
-        self._log_dir = os.path.join(output_dir, exp_name, relpath)
-        self._maste_proc = get_rank() == 0
-        self._console = Console()
+        self._hms_time: str = hms_time
+        self._log_dir: str = os.path.join(output_dir, exp_name, relpath)
+        self._maste_proc: bool = get_rank() == 0
+        self._console: Console = Console()
 
-        self._output_file: TextIO
         if self._maste_proc:
             os.makedirs(self._log_dir, exist_ok=True)
-            self._output_file = open(  # noqa: SIM115 # pylint: disable=consider-using-with
+            self._output_file: TextIO = open(  # noqa: SIM115 # pylint: disable=consider-using-with
                 os.path.join(self._log_dir, output_fname),
                 encoding='utf-8',
                 mode='w',
@@ -128,10 +125,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         if config is not None:
             self.save_config(config)
-            self._config = config
+            self._config: Config = config
 
-        self._use_tensorboard = use_tensorboard
-        self._use_wandb = use_wandb
+        self._use_tensorboard: bool = use_tensorboard
+        self._use_wandb: bool = use_wandb
 
         if self._use_tensorboard and self._maste_proc:
             self._tensorboard_writer = SummaryWriter(log_dir=os.path.join(self._log_dir, 'tb'))
@@ -152,8 +149,8 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         Args:
             msg (str): The message to be logged.
-            color (int): The color of the message.
-            bold (bool): Whether to use bold font.
+            color (str, optional): The color of the message. Defaults to 'green'.
+            bold (bool, optional): Whether the message is bold. Defaults to False.
         """
         if self._maste_proc:
             style = ' '.join([color, 'bold' if bold else ''])
@@ -174,7 +171,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         """Setup the torch saver.
 
         Args:
-            what_to_save (dict): The dict of the things to be saved.
+            what_to_save (dict[str, Any]): The dict of the things to be saved.
         """
         self._what_to_save = what_to_save
 
@@ -214,11 +211,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             ----------------------------------------------------
 
         Args:
-            key (str): The key to be registered.
-            window_length (int): The window length for the key, \
-                if window_length is None, the key will be averaged in epoch.
-            min_and_max (bool): Whether to record the min and max value of the key.
-            delta (bool): Whether to record the delta value of the key.
+            key (str): The name of the key.
+            window_length (int or None, optional): The length of the window. Defaults to None.
+            min_and_max (bool, optional): Whether to record the min and max value. Defaults to False.
+            delta (bool, optional): Whether to record the delta value. Defaults to False.
         """
         assert key not in self._current_row, f'Key {key} has been registered'
         self._current_row[key] = 0
@@ -257,8 +253,13 @@ class Logger:  # pylint: disable=too-many-instance-attributes
     ) -> None:
         """Store the data to the logger.
 
+        .. note ::
+            The data stored in ``data`` will be updated by ``kwargs``.
+
         Args:
-            **kwargs: The data to be stored.
+            data (dict[str, int | float | np.ndarray | torch.Tensor] or None, optional): The data to
+                be stored. Defaults to None.
+            **kwargs (int, float, np.ndarray, or torch.Tensor): The data to be stored.
         """
         if data is not None:
             kwargs.update(data)
@@ -279,12 +280,10 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         The dumped data will be separated by the following steps:
 
         .. hint::
-
             - If the key is registered with window_length, the data will be averaged in the window.
             - Write the data to the csv file.
             - Write the data to the tensorboard.
             - Update the progress logger.
-
         """
         self._update_current_row()
         table = Table('Metrics', 'Value')
@@ -336,12 +335,20 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             if self._headers_windows[key] is None:
                 self._data[key] = []
 
-    def get_stats(self, key, min_and_max: bool = False) -> tuple[int | float, ...]:
+    def get_stats(
+        self,
+        key: str,
+        min_and_max: bool = False,
+    ) -> tuple[int | float, ...]:
         """Get the statistics of the key.
 
         Args:
             key (str): The key to be registered.
-            min_and_max (bool): Whether to record the min and max value of the key.
+            min_and_max (bool, optional): Whether to record the min and max value of the key.
+                Defaults to False.
+
+        Returns:
+            The mean value of the key or (mean, min, max, std) of the key.
         """
         assert key in self._current_row, f'Key {key} has not been registered'
         vals = self._data[key]

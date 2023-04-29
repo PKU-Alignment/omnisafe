@@ -35,53 +35,55 @@ from omnisafe.utils.config import Config
 
 
 class Evaluator:  # pylint: disable=too-many-instance-attributes
-    """This class includes common evaluation methods for safe RL algorithms."""
+    """This class includes common evaluation methods for safe RL algorithms.
+
+    Args:
+        env (CMDP or None, optional): The environment. Defaults to None.
+        actor (Actor or None, optional): The actor. Defaults to None.
+        render_mode (str, optional): The render mode. Defaults to 'rgb_array'.
+    """
+
+    _cfgs: Config
+    _save_dir: str
+    _model_name: str
 
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         env: CMDP | None = None,
         actor: Actor | None = None,
-        render_mode: str | None = None,
+        render_mode: str = 'rgb_array',
     ) -> None:
-        """Initialize the evaluator.
-
-        Args:
-            env (gymnasium.Env): the environment. if None, the environment will be created from the config.
-            pi (omnisafe.algos.models.actor.Actor): the policy. if None, the policy will be created from the config.
-            obs_normalize (omnisafe.algos.models.obs_normalize): the observation Normalize.
-        """
-        # set the attributes
-        self._env: CMDP = env
-        self._actor: Actor = actor
-
-        # used when load model from saved file.
-        self._cfgs: Config
-        self._save_dir: str
-        self._model_name: str
-
-        self._dividing_line = '\n' + '#' * 50 + '\n'
+        """Initialize an instance of :class:`Evaluator`."""
+        self._env: CMDP | None = env
+        self._actor: Actor | None = actor
+        self._dividing_line: str = '\n' + '#' * 50 + '\n'
 
         self.__set_render_mode(render_mode)
 
-    def __set_render_mode(self, render_mode: str):
+    def __set_render_mode(self, render_mode: str) -> None:
         """Set the render mode.
 
         Args:
-            play (bool): whether to play the video.
-            save_replay (bool): whether to save the video.
+            render_mode (str, optional): The render mode. Defaults to 'rgb_array'.
+
+        Raises:
+            NotImplementedError: If the render mode is not implemented.
         """
         # set the render mode
-        if render_mode in ['human', 'rgb_array', 'rgb_array_list', None]:
-            self._render_mode = render_mode
+        if render_mode in ['human', 'rgb_array', 'rgb_array_list']:
+            self._render_mode: str = render_mode
         else:
             raise NotImplementedError('The render mode is not implemented.')
 
-    def __load_cfgs(self, save_dir: str):
+    def __load_cfgs(self, save_dir: str) -> None:
         """Load the config from the save directory.
 
         Args:
-            save_dir (str): directory where the model is saved.
+            save_dir (str): Directory where the model is saved.
+
+        Raises:
+            FileNotFoundError: If the config file is not found.
         """
         cfg_path = os.path.join(save_dir, 'config.json')
         try:
@@ -93,12 +95,21 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             ) from error
         self._cfgs = Config.dict2config(kwargs)
 
-    def __load_model_and_env(self, save_dir: str, model_name: str, env_kwargs: dict[str, Any]):
+    def __load_model_and_env(
+        self,
+        save_dir: str,
+        model_name: str,
+        env_kwargs: dict[str, Any],
+    ) -> None:
         """Load the model from the save directory.
 
         Args:
-            save_dir (str): directory where the model is saved.
-            model_name (str): name of the model.
+            save_dir (str): Directory where the model is saved.
+            model_name (str): Name of the model.
+            env_kwargs (dict[str, Any]): Keyword arguments for the environment.
+
+        Raises:
+            FileNotFoundError: If the model is not found.
         """
         # load the saved model
         model_path = os.path.join(save_dir, 'torch_save', model_name)
@@ -142,17 +153,23 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         save_dir: str,
         model_name: str,
-        render_mode: str | None = None,
+        render_mode: str = 'rgb_array',
         camera_name: str | None = None,
         camera_id: int | None = None,
         width: int = 256,
         height: int = 256,
-    ):
+    ) -> None:
         """Load a saved model.
 
         Args:
-            save_dir (str): directory where the model is saved.
-            model_name (str): name of the model.
+            save_dir (str): The directory where the model is saved.
+            model_name (str): The name of the model.
+            render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array',
+                'rgb_array_list'. Defaults to 'rgb_array'.
+            camera_name (str or None, optional): The name of the camera. Defaults to None.
+            camera_id (int or None, optional): The id of the camera. Defaults to None.
+            width (int, optional): The width of the image. Defaults to 256.
+            height (int, optional): The height of the image. Defaults to 256.
         """
         # load the config
         self._save_dir = save_dir
@@ -160,8 +177,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         self.__load_cfgs(save_dir)
 
-        if render_mode is not None or self._render_mode is None:
-            self.__set_render_mode(render_mode)
+        self.__set_render_mode(render_mode)
 
         env_kwargs = {
             'env_id': self._cfgs['env_id'],
@@ -179,15 +195,18 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         num_episodes: int = 10,
         cost_criteria: float = 1.0,
-    ):
+    ) -> tuple[list[float], list[float]]:
         """Evaluate the agent for num_episodes episodes.
 
         Args:
-            num_episodes (int): number of episodes to evaluate the agent.
-            cost_criteria (float): the cost criteria for the evaluation.
+            num_episodes (int, optional): The number of episodes to evaluate. Defaults to 10.
+            cost_criteria (float, optional): The cost criteria. Defaults to 1.0.
 
         Returns:
-            (float, float, float): the average return, the average cost, and the average length of the episodes.
+            (episode_rewards, episode_costs): The episode rewards and costs.
+
+        Raises:
+            ValueError: If the environment and the policy are not provided or created.
         """
         if self._env is None or self._actor is None:
             raise ValueError(
@@ -228,9 +247,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         print(self._dividing_line)
         print('Evaluation results:')
-        print(f'Average episode reward: {np.mean(episode_rewards)}')
-        print(f'Average episode cost: {np.mean(episode_costs)}')
-        print(f'Average episode length: {np.mean(episode_lengths)}')
+        print(f'Average episode reward: {np.mean(a=episode_rewards)}')
+        print(f'Average episode cost: {np.mean(a=episode_costs)}')
+        print(f'Average episode length: {np.mean(a=episode_lengths)}')
         return (
             episode_rewards,
             episode_costs,
@@ -240,9 +259,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     def fps(self) -> int:
         """The fps of the environment.
 
-        Returns:
-            int: the fps.
+        Raises:
+            AssertionError: If the environment is not provided or created.
+            AtrributeError: If the fps is not found.
         """
+        assert (
+            self._env is not None
+        ), 'The environment must be provided or created before getting the fps.'
         try:
             fps = self._env.metadata['render_fps']
         except AttributeError:
@@ -257,14 +280,20 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         save_replay_path: str | None = None,
         max_render_steps: int = 2000,
         cost_criteria: float = 1.0,
-    ):  # pragma: no cover
+    ) -> None:  # pragma: no cover
         """Render the environment for one episode.
 
         Args:
-            seed (int): seed for the environment. If None, the environment will be reset with a random seed.
-            save_replay_path (str): path to save the replay. If None, no replay is saved.
+            num_episodes (int, optional): The number of episodes to render. Defaults to 1.
+            save_replay_path (str or None, optional): The path to save the replay video. Defaults to
+                None.
+            max_render_steps (int, optional): The maximum number of steps to render. Defaults to 2000.
+            cost_criteria (float, optional): The discount factor for the cost. Defaults to 1.0.
         """
-
+        assert (
+            self._env is not None
+        ), 'The environment must be provided or created before rendering.'
+        assert self._actor is not None, 'The policy must be provided or created before rendering.'
         if save_replay_path is None:
             save_replay_path = os.path.join(self._save_dir, 'video', self._model_name.split('.')[0])
         result_path = os.path.join(save_replay_path, 'result.txt')

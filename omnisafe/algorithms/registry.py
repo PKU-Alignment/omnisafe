@@ -14,7 +14,10 @@
 # ==============================================================================
 """Registry for algorithms."""
 
+from __future__ import annotations
+
 import inspect
+from typing import Any
 
 
 class Registry:
@@ -24,26 +27,28 @@ class Registry:
         name (str): Registry name.
     """
 
-    def __init__(self, name) -> None:
-        self._name = name
-        self._module_dict: dict = {}
+    def __init__(self, name: str) -> None:
+        """Initialize an instance of :class:`Registry`."""
+        self._name: str = name
+        self._module_dict: dict[str, type] = {}
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the name of the registry."""
         return self._name
 
-    def get(self, key):
+    def get(self, key: str) -> Any:
         """Get the class that has been registered under the given key."""
         res = self._module_dict.get(key)
         if res is None:
             raise KeyError(f'{key} is not in the {self.name} registry')
         return res
 
-    def _register_module(self, module_class):
+    def _register_module(self, module_class: type) -> None:
         """Register a module.
+
         Args:
-            module (:obj:`nn.Module`): Module to be registered.
+            module_class (type): Module to be registered.
         """
         if not inspect.isclass(module_class):
             raise TypeError(f'module must be a class, but got {type(module_class)}')
@@ -52,7 +57,7 @@ class Registry:
             raise KeyError(f'{module_name} is already registered in {self.name}')
         self._module_dict[module_name] = module_class
 
-    def register(self, cls):
+    def register(self, cls: type) -> type:
         """Register a module class."""
         self._register_module(cls)
         return cls

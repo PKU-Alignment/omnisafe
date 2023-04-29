@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import torch
 from gymnasium import spaces
@@ -27,8 +29,16 @@ from omnisafe.envs.core import CMDP, Wrapper
 class TimeLimit(Wrapper):
     """Time limit wrapper for the environment.
 
-    Example:
+    .. warning::
+        The time limit wrapper only supports single environment.
+
+    Examples:
         >>> env = TimeLimit(env, time_limit=100)
+
+    Args:
+        env (CMDP): The environment to wrap.
+        time_limit (int): The time limit for each episode.
+        device (torch.device): The torch device to use.
 
     Attributes:
         _time_limit (int): The time limit for each episode.
@@ -36,34 +46,24 @@ class TimeLimit(Wrapper):
     """
 
     def __init__(self, env: CMDP, time_limit: int, device: torch.device) -> None:
-        """Initialize the time limit wrapper.
-
-        .. warning::
-            The time limit wrapper only supports single environment.
-
-        Args:
-            env (CMDP): The environment to wrap.
-            time_limit (int): The time limit for each episode.
-        """
+        """Initialize an instance of :class:`TimeLimit`."""
         super().__init__(env=env, device=device)
-
         assert self.num_envs == 1, 'TimeLimit only supports single environment'
-
-        self._time_limit: int = time_limit
         self._time: int = 0
+        self._time_limit: int = time_limit
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
+    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment.
 
         .. note::
             Additionally, the time step will be reset to 0.
 
         Args:
-            seed (int, optional): The seed for the environment. Defaults to None.
+            seed (int or None, optional): The seed for the environment. Defaults to None.
 
         Returns:
-            observation (torch.Tensor): the initial observation of the space.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
         """
         self._time = 0
         return super().reset(seed)
@@ -71,22 +71,29 @@ class TimeLimit(Wrapper):
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
             Additionally, the time step will be increased by 1.
 
         Args:
-            action (torch.Tensor): action.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = super().step(action)
 
@@ -103,12 +110,16 @@ class TimeLimit(Wrapper):
 class AutoReset(Wrapper):
     """Auto reset the environment when the episode is terminated.
 
-    Example:
+    Examples:
         >>> env = AutoReset(env)
 
+    Args:
+        env (CMDP): The environment to wrap.
+        device (torch.device): The torch device to use.
     """
 
     def __init__(self, env: CMDP, device: torch.device) -> None:
+        """Initialize an instance of :class:`AutoReset`."""
         super().__init__(env=env, device=device)
 
         assert self.num_envs == 1, 'AutoReset only supports single environment'
@@ -116,24 +127,31 @@ class AutoReset(Wrapper):
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
-            If the episode is terminated, the environment will be reset.
-            The ``obs`` will be the first observation of the new episode.
-            And the true final observation will be stored in ``info['final_observation']``.
+            If the episode is terminated, the environment will be reset. The ``obs`` will be the
+            first observation of the new episode. And the true final observation will be stored in
+            ``info['final_observation']``.
 
         Args:
-            action (torch.Tensor): action.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = super().step(action)
 
@@ -156,18 +174,22 @@ class AutoReset(Wrapper):
 class ObsNormalize(Wrapper):
     """Normalize the observation.
 
-    Example:
+    Examples:
         >>> env = ObsNormalize(env)
-        >>> norm = Normalizer(env.observation_space.shape) # load saved normalizer
+        >>> norm = Normalizer(env.observation_space.shape)  # load saved normalizer
         >>> env = ObsNormalize(env, norm)
 
-    Attributes:
-        _obs_normalizer (Normalizer): The normalizer for the observation.
+    Args:
+        env (CMDP): The environment to wrap.
+        device (torch.device): The torch device to use.
+        norm (Normalizer or None, optional): The normalizer to use. Defaults to None.
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
+        """Initialize an instance of :class:`ObsNormalize`."""
         super().__init__(env=env, device=device)
         assert isinstance(self.observation_space, spaces.Box), 'Observation space must be Box'
+        self._obs_normalizer: Normalizer
 
         if norm is not None:
             self._obs_normalizer = norm.to(self._device)
@@ -177,22 +199,29 @@ class ObsNormalize(Wrapper):
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
             The observation and the ``info['final_observation']`` will be normalized.
 
         Args:
-            action (torch.Tensor): action.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = super().step(action)
         if 'final_observation' in info:
@@ -206,15 +235,15 @@ class ObsNormalize(Wrapper):
         obs = self._obs_normalizer.normalize(obs)
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
-        """Resets the environment and returns an initial observation.
+    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+        """Reset the environment and returns an initial observation.
 
         Args:
-            seed (Optional[int]): seed for the environment.
+            seed (int or None, optional): Seed for the environment. Defaults to None.
 
         Returns:
-            observation (torch.Tensor): the initial observation of the space.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
         """
         obs, info = super().reset(seed)
         info['original_obs'] = obs
@@ -222,13 +251,16 @@ class ObsNormalize(Wrapper):
         return obs, info
 
     def save(self) -> dict[str, torch.nn.Module]:
-        """Save the normalizer.
+        """Save the observation normalizer.
 
         .. note::
-            When evaluating the saved model, the normalizer should be loaded.
+            The saved components will be stored in the wrapped environment. If the environment is
+            not wrapped, the saved components will be empty dict. common wrappers are obs_normalize,
+            reward_normalize, and cost_normalize. When evaluating the saved model, the normalizer
+            should be loaded.
 
         Returns:
-            dict[str, torch.nn.Module]: The saved normalizer.
+            The saved components, that is the observation normalizer.
         """
         saved = super().save()
         saved['obs_normalizer'] = self._obs_normalizer
@@ -238,22 +270,22 @@ class ObsNormalize(Wrapper):
 class RewardNormalize(Wrapper):
     """Normalize the reward.
 
-    Example:
+    Examples:
         >>> env = RewardNormalize(env)
         >>> norm = Normalizer(()) # load saved normalizer
         >>> env = RewardNormalize(env, norm)
 
+    Args:
+        env (CMDP): The environment to wrap.
+        device (torch.device): The torch device to use.
+        norm (Normalizer or None, optional): The normalizer to use. Defaults to None.
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
-        """Initialize the reward normalizer.
-
-        Args:
-            env (CMDP): The environment to wrap.
-            norm (Optional[Normalizer], optional): The normalizer to use. Defaults to None.
-
-        """
+        """Initialize an instance of :class:`RewardNormalize`."""
         super().__init__(env=env, device=device)
+        self._reward_normalizer: Normalizer
+
         if norm is not None:
             self._reward_normalizer = norm.to(self._device)
         else:
@@ -262,24 +294,30 @@ class RewardNormalize(Wrapper):
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
-
         .. note::
-            The reward will be normalized for agent training.
-            Then the original reward will be stored in ``info['original_reward']`` for logging.
+            The reward will be normalized for agent training. Then the original reward will be
+            stored in ``info['original_reward']`` for logging.
 
         Args:
-            action (torch.Tensor): action.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = super().step(action)
         info['original_reward'] = reward
@@ -287,10 +325,15 @@ class RewardNormalize(Wrapper):
         return obs, reward, cost, terminated, truncated, info
 
     def save(self) -> dict[str, torch.nn.Module]:
-        """Save the normalizer.
+        """Save the reward normalizer.
+
+        .. note::
+            The saved components will be stored in the wrapped environment. If the environment is
+            not wrapped, the saved components will be empty dict. common wrappers are obs_normalize,
+            reward_normalize, and cost_normalize.
 
         Returns:
-            dict[str, torch.nn.Module]: The saved normalizer.
+            The saved components, that is the reward normalizer.
         """
         saved = super().save()
         saved['reward_normalizer'] = self._reward_normalizer
@@ -300,45 +343,54 @@ class RewardNormalize(Wrapper):
 class CostNormalize(Wrapper):
     """Normalize the cost.
 
-    Example:
+    Examples:
         >>> env = CostNormalize(env)
         >>> norm = Normalizer(()) # load saved normalizer
         >>> env = CostNormalize(env, norm)
+
+    Args:
+        env (CMDP): The environment to wrap.
+        device (torch.device): The torch device to use.
+        norm (Normalizer or None, optional): The normalizer to use. Defaults to None.
     """
 
     def __init__(self, env: CMDP, device: torch.device, norm: Normalizer | None = None) -> None:
-        """Initialize the cost normalizer.
-
-        Args:
-            env (CMDP): The environment to wrap.
-            norm (Normalizer, optional): The normalizer to use. Defaults to None.
-        """
+        """Initialize an instance of :class:`CostNormalize`."""
         super().__init__(env=env, device=device)
+        self._cost_normalizer: Normalizer
+
         if norm is not None:
-            self._obs_normalizer = norm.to(self._device)
+            self._cost_normalizer = norm.to(self._device)
         else:
             self._cost_normalizer = Normalizer((), clip=5).to(self._device)
 
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
-            The cost will be normalized for agent training.
-            Then the original reward will be stored in ``info['original_cost']`` for logging.
+            The cost will be normalized for agent training. Then the original reward will be stored
+            in ``info['original_cost']`` for logging.
 
         Args:
-            action (torch.Tensor): action.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = super().step(action)
         info['original_cost'] = cost
@@ -346,6 +398,16 @@ class CostNormalize(Wrapper):
         return obs, reward, cost, terminated, truncated, info
 
     def save(self) -> dict[str, torch.nn.Module]:
+        """Save the cost normalizer.
+
+        .. note::
+            The saved components will be stored in the wrapped environment. If the environment is
+            not wrapped, the saved components will be empty dict. common wrappers are obs_normalize,
+            reward_normalize, and cost_normalize.
+
+        Returns:
+            The saved components, that is the cost normalizer.
+        """
         saved = super().save()
         saved['cost_normalizer'] = self._cost_normalizer
         return saved
@@ -354,10 +416,16 @@ class CostNormalize(Wrapper):
 class ActionScale(Wrapper):
     """Scale the action space to a given range.
 
-    Example:
+    Examples:
         >>> env = ActionScale(env, low=-1, high=1)
         >>> env.action_space
         Box(-1.0, 1.0, (1,), float32)
+
+    Args:
+        env (CMDP): The environment to wrap.
+        device (torch.device): The device to use.
+        low (int or float): The lower bound of the action space.
+        high (int or float): The upper bound of the action space.
     """
 
     def __init__(
@@ -367,22 +435,16 @@ class ActionScale(Wrapper):
         low: int | float,
         high: int | float,
     ) -> None:
-        """Initialize the wrapper.
-
-        Args:
-            env: The environment to wrap.
-            low: The lower bound of the action space.
-            high: The upper bound of the action space.
-        """
+        """Initialize an instance of :class:`ActionScale`."""
         super().__init__(env=env, device=device)
         assert isinstance(self.action_space, spaces.Box), 'Action space must be Box'
 
-        self._old_min_action = torch.tensor(
+        self._old_min_action: torch.Tensor = torch.tensor(
             self.action_space.low,
             dtype=torch.float32,
             device=self._device,
         )
-        self._old_max_action = torch.tensor(
+        self._old_max_action: torch.Tensor = torch.tensor(
             self.action_space.high,
             dtype=torch.float32,
             device=self._device,
@@ -390,35 +452,50 @@ class ActionScale(Wrapper):
 
         min_action = np.zeros(self.action_space.shape, dtype=self.action_space.dtype) + low
         max_action = np.zeros(self.action_space.shape, dtype=self.action_space.dtype) + high
-        self._action_space = spaces.Box(
+        self._action_space: spaces.Box = spaces.Box(
             low=min_action,
             high=max_action,
             shape=self.action_space.shape,
-            dtype=self.action_space.dtype,  # type: ignore
+            dtype=self.action_space.dtype,  # type: ignore[arg-type]
         )
 
-        self._min_action = torch.tensor(min_action, dtype=torch.float32, device=self._device)
-        self._max_action = torch.tensor(max_action, dtype=torch.float32, device=self._device)
+        self._min_action: torch.Tensor = torch.tensor(
+            min_action,
+            dtype=torch.float32,
+            device=self._device,
+        )
+        self._max_action: torch.Tensor = torch.tensor(
+            max_action,
+            dtype=torch.float32,
+            device=self._device,
+        )
 
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
             The action will be scaled to the original range for agent training.
 
         Args:
-            action (torch.Tensor): action.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         action = self._old_min_action + (self._old_max_action - self._old_min_action) * (
             action - self._min_action
@@ -429,17 +506,12 @@ class ActionScale(Wrapper):
 class Unsqueeze(Wrapper):
     """Unsqueeze the observation, reward, cost, terminated, truncated and info.
 
-    Example:
+    Examples:
         >>> env = Unsqueeze(env)
     """
 
     def __init__(self, env: CMDP, device: torch.device) -> None:
-        """Initialize the wrapper.
-
-        Args:
-            env: The environment to wrap.
-            device: The device to use.
-        """
+        """Initialize an instance of :class:`Unsqueeze`."""
         super().__init__(env=env, device=device)
         assert self.num_envs == 1, 'Unsqueeze only works with single environment'
         assert isinstance(self.observation_space, spaces.Box), 'Observation space must be Box'
@@ -447,22 +519,29 @@ class Unsqueeze(Wrapper):
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         .. note::
             The vector information will be unsqueezed to (1, dim) for agent training.
 
         Args:
-            action (torch.Tensor): action.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         action = action.squeeze(0)
         obs, reward, cost, terminated, truncated, info = super().step(action)
@@ -475,18 +554,18 @@ class Unsqueeze(Wrapper):
 
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
-        """Resets the environment and returns a new observation.
+    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+        """Reset the environment and returns a new observation.
 
         .. note::
             The vector information will be unsqueezed to (1, dim) for agent training.
 
         Args:
-            seed (int): The seed to use for the environment.
+            seed (int or None, optional): Set the seed for the environment. Defaults to None.
 
         Returns:
-            observation (torch.Tensor): The initial observation of the space. Initial reward is assumed to be 0.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
         """
         obs, info = super().reset(seed)
         obs = obs.unsqueeze(0)

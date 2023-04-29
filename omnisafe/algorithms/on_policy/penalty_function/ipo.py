@@ -31,14 +31,13 @@ class IPO(PPO):
     """
 
     def _init_log(self) -> None:
-        r"""Log the IPO specific information.
+        """Log the IPO specific information.
 
-        .. list-table::
-
-            *   -   Things to log
-                -   Description
-            *   -   ``Misc/Penalty``
-                -   The penalty coefficient.
+        +---------------+--------------------------+
+        | Things to log | Description              |
+        +===============+==========================+
+        | Misc/Penalty  | The penalty coefficient. |
+        +---------------+--------------------------+
         """
         super()._init_log()
         self._logger.register_key('Misc/Penalty')
@@ -50,17 +49,20 @@ class IPO(PPO):
 
         .. math::
 
-            L = \mathbb{E}_{s_t \sim \pi_\theta} \left[
-                \frac{\pi_\theta^{'}(a_t|s_t)}{\pi_\theta(a_t|s_t)} A(s_t, a_t)
-                - \kappa \frac{J^{C}_{\pi_\theta}(s_t, a_t)}{C - J^{C}_{\pi_\theta}(s_t, a_t) + \epsilon}
+            L = \mathbb{E}_{s_t \sim \pi_{\theta}} \left[
+                \frac{\pi_{\theta}^{'} (a_t|s_t)}{\pi_{\theta} (a_t|s_t)} A (s_t, a_t)
+                - \kappa \frac{J^{C}_{\pi_{\theta}} (s_t, a_t)}{C - J^{C}_{\pi_{\theta}} (s_t, a_t) + \epsilon}
             \right]
 
         Where :math:`\kappa` is the penalty coefficient, :math:`C` is the cost limit,
-        :math:`\epsilon` is a small number to avoid division by zero.
+        and :math:`\epsilon` is a small number to avoid division by zero.
 
         Args:
-            adv (torch.Tensor): reward advantage
-            adv_c (torch.Tensor): cost advantage
+            adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
+
+        Returns:
+            The ``advantage`` combined with ``reward_advantage`` and ``cost_advantage``.
         """
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         penalty = self._cfgs.algo_cfgs.kappa / (self._cfgs.algo_cfgs.cost_limit - Jc + 1e-8)

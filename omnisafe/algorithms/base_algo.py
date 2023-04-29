@@ -18,6 +18,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+import torch
+
+from omnisafe.common.logger import Logger
 from omnisafe.utils import distributed
 from omnisafe.utils.config import Config
 from omnisafe.utils.tools import get_device, seed_all
@@ -26,16 +29,19 @@ from omnisafe.utils.tools import get_device, seed_all
 class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
     """Base class for all algorithms."""
 
+    _logger: Logger
+
     def __init__(self, env_id: str, cfgs: Config) -> None:
-        self._env_id = env_id
-        self._cfgs = cfgs
+        """Initialize an instance of :class:`BaseAlgo`."""
+        self._env_id: str = env_id
+        self._cfgs: Config = cfgs
 
         assert hasattr(cfgs, 'seed'), 'Please specify the seed in the config file.'
-        self._seed = int(cfgs.seed) + distributed.get_rank() * 1000
+        self._seed: int = int(cfgs.seed) + distributed.get_rank() * 1000
         seed_all(self._seed)
 
         assert hasattr(cfgs.train_cfgs, 'device'), 'Please specify the device in the config file.'
-        self._device = get_device(self._cfgs.train_cfgs.device)
+        self._device: torch.device = get_device(self._cfgs.train_cfgs.device)
 
         distributed.setup_distributed()
 
@@ -47,12 +53,12 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
         self._init_log()
 
     @property
-    def logger(self):
+    def logger(self) -> Logger:
         """Get the logger."""
         return self._logger  # pylint: disable=no-member
 
     @property
-    def cost_limit(self):
+    def cost_limit(self) -> float | None:
         """Get the cost limit."""
         return getattr(self._cfgs.algo_cfgs, '_cost_limit', None)
 
@@ -73,5 +79,5 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
         """Initialize the logger."""
 
     @abstractmethod
-    def learn(self) -> tuple[int | float, ...]:
+    def learn(self) -> tuple[float, float, int]:
         """Learn the policy."""
