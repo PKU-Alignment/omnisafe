@@ -1,5 +1,5 @@
-Notations
-=========
+Mathematical Notations
+======================
 
 Introduction
 ------------

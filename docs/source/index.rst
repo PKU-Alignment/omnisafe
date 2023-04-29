@@ -19,12 +19,10 @@ Welcome To OmniSafe Tutorial
 Welcome to `OmniSafe <https://jmlr.org/papers/v16/garcia15a.html>`_ in Safe RL!
 OmniSafe is a comprehensive and reliable benchmark for safe reinforcement
 learning (RL), encompassing more than 40 different kinds of algorithms covering
-a multitude of safe reinforcement learning (Safe RL) domains and delivering a
-new suite of testing environments.
+a multitude of safe reinforcement learning (Safe RL) domains.
 
 .. hint::
 
-    For beginners, it is necessary first to introduce you to Safe RL.
     **Safe Reinforcement Learning** can be defined as the process of learning policies that maximize the expectation of the return in problems
     in which it is important to ensure reasonable system performance and/or respect safety constraints during the learning and/or deployment processes.
 
@@ -317,7 +315,7 @@ code, but do not worry, we will make a detailed introduction later in the
 Long-Term Support and Support History
 -------------------------------------
 
-**OmniSafe** is mainly developed by the SafeRL research team directed by `Prof. Yaodong Yang <https://github.com/orgs/OmniSafeAI/people/PKU-YYang>`_,
+**OmniSafe** is mainly developed by the Safe RL research team directed by `Prof. Yaodong Yang <https://github.com/orgs/OmniSafeAI/people/PKU-YYang>`_,
 Our SafeRL research team members include `Borong Zhang <https://github.com/muchvo>`_ , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiamg Ji <https://github.com/zmsn-2077>`_.
 If you have any questions in the process of using OmniSafe, or if you are
 willing to contribute to
