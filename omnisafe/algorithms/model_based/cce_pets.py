@@ -15,6 +15,8 @@
 """Implementation of the Constrained Cross-Entropy algorithm."""
 from __future__ import annotations
 
+from gymnasium.spaces import Box
+
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base import PETS
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
@@ -27,7 +29,6 @@ class CCEPETS(PETS):
     """The Constrained Cross-Entropy (CCE) algorithm implementation based on PETS.
 
     References:
-
         - Title: Constrained Cross-Entropy Method for Safe Reinforcement Learning
         - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
         Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
@@ -36,21 +37,24 @@ class CCEPETS(PETS):
 
     def _init_model(self) -> None:
         """Initialize the dynamics model and the planner."""
-        if self._env.action_space is not None and len(self._env.action_space.shape) > 0:
-            self._action_dim = self._env.action_space.shape[0]
-        else:
-            # error handling for action dimension is none of shape of action less than 0
-            raise ValueError('Action dimension is None or less than 0')
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
         )
+        assert self._env.action_space is not None and isinstance(
+            self._env.action_space.shape,
+            tuple,
+        )
+        if isinstance(self._env.action_space, Box):
+            self._action_space = self._env.action_space
+        else:
+            raise NotImplementedError
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
-            action_shape=self._env.action_space.shape,
+            action_shape=self._action_space.shape,
             reward_size=1,
             cost_size=1,
             use_cost=True,
@@ -80,7 +84,7 @@ class CCEPETS(PETS):
             cost_limit=self._cfgs.algo_cfgs.cost_limit,
             device=self._device,
             dynamics_state_shape=self._dynamics_state_space.shape,
-            action_shape=self._env.action_space.shape,
+            action_shape=self._action_space.shape,
             action_max=1.0,
             action_min=-1.0,
         )

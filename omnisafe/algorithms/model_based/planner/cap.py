@@ -17,14 +17,15 @@ from __future__ import annotations
 
 import torch
 
+from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.cce import CCEPlanner
+from omnisafe.common.lagrange import Lagrange
 
 
 class CAPPlanner(CCEPlanner):
     """The planner of Conservative and Adaptive Penalty (CAP) algorithm.
 
     References:
-
         - Title: Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning
         - Authors: Yecheng Jason Ma, Andrew Shen, Osbert Bastani, Dinesh Jayaraman.
         - URL: `CAP <https://arxiv.org/abs/2112.07701>`_
@@ -32,26 +33,27 @@ class CAPPlanner(CCEPlanner):
 
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
-        dynamics,
-        num_models,
-        horizon,
-        num_iterations,
-        num_particles,
-        num_samples,
-        num_elites,
-        momentum,
-        epsilon,
-        init_var,
-        gamma,
-        cost_gamma,
-        cost_limit,
-        lagrange,
-        device,
-        dynamics_state_shape,
-        action_shape,
-        action_max,
-        action_min,
+        dynamics: EnsembleDynamicsModel,
+        num_models: int,
+        horizon: int,
+        num_iterations: int,
+        num_particles: int,
+        num_samples: int,
+        num_elites: int,
+        momentum: float,
+        epsilon: float,
+        init_var: float,
+        gamma: float,
+        device: torch.device,
+        dynamics_state_shape: tuple[int, ...],
+        action_shape: tuple[int, ...],
+        action_max: float,
+        action_min: float,
+        cost_gamma: float,
+        cost_limit: float,
+        lagrange: Lagrange,
     ) -> None:
+        """Initializes the planner of Conservative and Adaptive Penalty (CAP) algorithm."""
         super().__init__(
             dynamics,
             num_models,
@@ -64,13 +66,13 @@ class CAPPlanner(CCEPlanner):
             epsilon,
             init_var,
             gamma,
-            cost_gamma,
-            cost_limit,
             device,
             dynamics_state_shape,
             action_shape,
             action_max,
             action_min,
+            cost_gamma,
+            cost_limit,
         )
         self._lagrange = lagrange
 

@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 import time
-from typing import Callable
+from typing import Any, Callable
 
 import torch
 
@@ -73,8 +73,9 @@ class ModelBasedAdapter(
         num_envs: int,
         seed: int,
         cfgs: Config,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
+        """Initialize the model-based adapter."""
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id
@@ -91,7 +92,10 @@ class ModelBasedAdapter(
         )
         self._env.set_seed(seed)
         self._cfgs = cfgs
-        if hasattr(self._env, 'coordinate_observation_space'):
+        if hasattr(self._env, 'coordinate_observation_space') and hasattr(
+            self._env,
+            'lidar_observation_space',
+        ):
             self.coordinate_observation_space = self._env.coordinate_observation_space
             self.lidar_observation_space = self._env.lidar_observation_space
         else:
@@ -112,7 +116,7 @@ class ModelBasedAdapter(
         self._last_policy_update = 0
         self._last_eval = 0
 
-    def get_goal_flag_from_obs_tensor(self, obs):
+    def get_goal_flag_from_obs_tensor(self, obs: torch.Tensor) -> torch.Tensor | None:
         """Get goal flag from tensor observation.
 
         Args:
@@ -124,7 +128,7 @@ class ModelBasedAdapter(
             else None
         )
 
-    def get_cost_from_obs_tensor(self, obs):
+    def get_cost_from_obs_tensor(self, obs: torch.Tensor) -> torch.Tensor | None:
         """Get cost from tensor observation.
 
         Args:
@@ -136,7 +140,7 @@ class ModelBasedAdapter(
             else None
         )
 
-    def get_lidar_from_coordinate(self, obs):
+    def get_lidar_from_coordinate(self, obs: torch.Tensor) -> torch.Tensor | None:
         """Get lidar from numpy coordinate.
 
         Args:
@@ -148,7 +152,7 @@ class ModelBasedAdapter(
             else None
         )
 
-    def render(self, *args: str, **kwargs: int):
+    def render(self, *args: str, **kwargs: int) -> Any:
         """Render the environment.
 
         Args:
@@ -163,7 +167,7 @@ class ModelBasedAdapter(
         reward_normalize: bool = True,
         cost_normalize: bool = True,
         action_repeat: int = 1,
-    ):
+    ) -> None:
         """Wrapper the environment.
 
         .. hint::
@@ -195,6 +199,7 @@ class ModelBasedAdapter(
             obs_normalize (bool): Whether to normalize the observation.
             reward_normalize (bool): Whether to normalize the reward.
             cost_normalize (bool): Whether to normalize the cost.
+            action_repeat (int): The action repeat times.
         """
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
@@ -228,11 +233,6 @@ class ModelBasedAdapter(
     ) -> int:
         """Roll out the environment and store the data in the buffer.
 
-        .. warning::
-
-            As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,
-            so the final observation will be stored in ``info['final_observation']``.
-
         Args:
             current_step (int): Current training step.
             roll_out_step (int): Number of steps to roll out.
@@ -241,11 +241,11 @@ class ModelBasedAdapter(
             store_data_func (Callable): Function to store data.
             update_dynamics_func (Callable): Function to update dynamics.
             logger (Logger): Logger.
+            use_eval (bool): Whether to use evaluation.
             eval_func (Callable): Function to evaluate the agent.
             algo_reset_func (Callable): Function to reset the algorithm.
             update_actor_func (Callable): Function to update the actor.
         """
-
         epoch_start_time = time.time()
 
         update_actor_critic_time = 0.0
@@ -336,7 +336,6 @@ class ModelBasedAdapter(
         reward: torch.Tensor,
         cost: torch.Tensor,
         info: dict,
-        **kwargs,  # pylint: disable=unused-argument
     ) -> None:
         """Log value.
 
@@ -347,7 +346,7 @@ class ModelBasedAdapter(
         Args:
             reward (torch.Tensor): The reward.
             cost (torch.Tensor): The cost.
-            **kwargs: Other arguments.
+            info (dict): Information.
         """
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()

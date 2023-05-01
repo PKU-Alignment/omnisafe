@@ -15,6 +15,8 @@
 """Implementation of the Safe Learning Off-Policy with Online Planning algorithm."""
 from __future__ import annotations
 
+from gymnasium.spaces import Box
+
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.base.loop import LOOP
@@ -29,7 +31,6 @@ class SafeLOOP(LOOP):
     """The Safe Learning Off-Policy with Online Planning (SafeLOOP) algorithm.
 
     References:
-
         - Title: Learning Off-Policy with Online Planning
         - Authors: Harshit Sikchi, Wenxuan Zhou, David Held.
         - URL: `SafeLOOP <https://arxiv.org/abs/2008.10066>`_
@@ -37,20 +38,22 @@ class SafeLOOP(LOOP):
 
     def _init_model(self) -> None:
         """Initialize the dynamics model and the planner."""
-        if self._env.action_space is not None and len(self._env.action_space.shape) > 0:
-            self._action_dim = self._env.action_space.shape[0]
-        else:
-            # error handling for action dimension is none of shape of action less than 0
-            raise ValueError('Action dimension is None or less than 0')
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
         )
-
+        assert self._env.action_space is not None and isinstance(
+            self._env.action_space.shape,
+            tuple,
+        )
+        if isinstance(self._env.action_space, Box):
+            self._action_space = self._env.action_space
+        else:
+            raise NotImplementedError
         self._actor_critic = ConstraintActorQCritic(
             obs_space=self._dynamics_state_space,
-            act_space=self._env.action_space,
+            act_space=self._action_space,
             model_cfgs=self._cfgs.model_cfgs,
             epochs=self._epochs,
         ).to(self._device)
@@ -62,7 +65,7 @@ class SafeLOOP(LOOP):
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
-            action_shape=self._env.action_space.shape,
+            action_shape=self._action_space.shape,
             reward_size=1,
             cost_size=1,
             use_cost=True,
@@ -88,18 +91,18 @@ class SafeLOOP(LOOP):
             num_elites=self._cfgs.algo_cfgs.num_elites,
             mixture_coefficient=self._cfgs.algo_cfgs.mixture_coefficient,
             temperature=self._cfgs.algo_cfgs.temperature,
-            cost_temperature=self._cfgs.algo_cfgs.cost_temperature,
             momentum=self._cfgs.algo_cfgs.momentum,
             epsilon=self._cfgs.algo_cfgs.epsilon,
             init_var=self._cfgs.algo_cfgs.init_var,
             gamma=self._cfgs.algo_cfgs.gamma,
-            cost_gamma=self._cfgs.algo_cfgs.cost_gamma,
-            cost_limit=self._cfgs.algo_cfgs.cost_limit,
             device=self._device,
             dynamics_state_shape=self._dynamics_state_space.shape,
             action_shape=self._env.action_space.shape,
             action_max=1.0,
             action_min=-1.0,
+            cost_gamma=self._cfgs.algo_cfgs.cost_gamma,
+            cost_limit=self._cfgs.algo_cfgs.cost_limit,
+            cost_temperature=self._cfgs.algo_cfgs.cost_temperature,
         )
 
     def _init_log(self) -> None:

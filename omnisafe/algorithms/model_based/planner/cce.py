@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import torch
 
+from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.cem import CEMPlanner
 
 
@@ -24,7 +25,6 @@ class CCEPlanner(CEMPlanner):
     """The planner of Constrained Cross-Entropy (CCE) algorithm.
 
     References:
-
         - Title: Constrained Cross-Entropy Method for Safe Reinforcement Learning
         - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
         Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
@@ -33,25 +33,26 @@ class CCEPlanner(CEMPlanner):
 
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
-        dynamics,
-        num_models,
-        horizon,
-        num_iterations,
-        num_particles,
-        num_samples,
-        num_elites,
-        momentum,
-        epsilon,
-        init_var,
-        gamma,
-        cost_gamma,
-        cost_limit,
-        device,
-        dynamics_state_shape,
-        action_shape,
-        action_max,
-        action_min,
+        dynamics: EnsembleDynamicsModel,
+        num_models: int,
+        horizon: int,
+        num_iterations: int,
+        num_particles: int,
+        num_samples: int,
+        num_elites: int,
+        momentum: float,
+        epsilon: float,
+        init_var: float,
+        gamma: float,
+        device: torch.device,
+        dynamics_state_shape: tuple[int, ...],
+        action_shape: tuple[int, ...],
+        action_max: float,
+        action_min: float,
+        cost_gamma: float,
+        cost_limit: float,
     ) -> None:
+        """Initializes the planner of Constrained Cross-Entropy (CCE) algorithm."""
         super().__init__(
             dynamics,
             num_models,

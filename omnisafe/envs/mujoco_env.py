@@ -28,6 +28,7 @@ from omnisafe.typing import Box
 @env_register
 class MujocoEnv(CMDP):
     """Gymnasium Mujoco environment.
+
     Attributes:
         _support_envs (list[str]): List of supported environments.
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
@@ -52,7 +53,7 @@ class MujocoEnv(CMDP):
         env_id: str,
         num_envs: int = 1,
         device: str = 'cpu',
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Initialize the environment.
 
@@ -64,17 +65,7 @@ class MujocoEnv(CMDP):
         """
         super().__init__(env_id)
         self._env_id = env_id
-        if num_envs > 1:
-            # set healthy_reward=0.0 for removing the safety constraint in reward
-            self._env = gymnasium.vector.make(id=env_id, num_envs=num_envs, **kwargs)
-            assert isinstance(self._env.single_action_space, Box), 'Only support Box action space.'
-            assert isinstance(
-                self._env.single_observation_space,
-                Box,
-            ), 'Only support Box observation space.'
-            self._action_space = self._env.single_action_space
-            self._observation_space = self._env.single_observation_space
-        else:
+        if num_envs == 1:
             # set healthy_reward=0.0 for removing the safety constraint in reward
             self._env = gymnasium.make(id=env_id, autoreset=False, **kwargs)
             assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
@@ -84,6 +75,8 @@ class MujocoEnv(CMDP):
             ), 'Only support Box observation space.'
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
+        else:
+            raise NotImplementedError('Only support num_envs=1 now.')
         self._device = torch.device(device)
 
         self._num_envs = num_envs

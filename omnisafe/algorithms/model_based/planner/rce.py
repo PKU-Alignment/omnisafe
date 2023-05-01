@@ -24,7 +24,6 @@ class RCEPlanner(CCEPlanner):
     """The planner of Robust Cross Entropy (RCE) algorithm.
 
     References:
-
         - Title: Constrained Model-based Reinforcement Learning with Robust Cross-Entropy Method
         - Authors: Zuxin Liu, Hongyi Zhou, Baiming Chen, Sicheng Zhong, Martial Hebert, Ding Zhao.
         - URL: `RCE <https://arxiv.org/abs/2010.07968>`_

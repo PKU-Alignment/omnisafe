@@ -15,6 +15,8 @@
 """Implementation of the Robust Cross Entropy algorithm."""
 from __future__ import annotations
 
+from gymnasium.spaces import Box
+
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base import PETS
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
@@ -27,7 +29,6 @@ class RCEPETS(PETS):
     """The Robust Cross Entropy (RCE) algorithm implementation based on PETS.
 
     References:
-
         - Title: Constrained Model-based Reinforcement Learning with Robust Cross-Entropy Method
         - Authors: Zuxin Liu, Hongyi Zhou, Baiming Chen, Sicheng Zhong, Martial Hebert, Ding Zhao.
         - URL: `RCE <https://arxiv.org/abs/2010.07968>`_
@@ -35,21 +36,24 @@ class RCEPETS(PETS):
 
     def _init_model(self) -> None:
         """Initialize the dynamics model and the planner."""
-        if self._env.action_space is not None and len(self._env.action_space.shape) > 0:
-            self._action_dim = self._env.action_space.shape[0]
-        else:
-            # error handling for action dimension is none of shape of action less than 0
-            raise ValueError('Action dimension is None or less than 0')
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
         )
+        assert self._env.action_space is not None and isinstance(
+            self._env.action_space.shape,
+            tuple,
+        )
+        if isinstance(self._env.action_space, Box):
+            self._action_space = self._env.action_space
+        else:
+            raise NotImplementedError
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
-            action_shape=self._env.action_space.shape,
+            action_shape=self._action_space.shape,
             reward_size=1,
             cost_size=1,
             use_cost=True,
@@ -79,7 +83,7 @@ class RCEPETS(PETS):
             cost_limit=self._cfgs.algo_cfgs.cost_limit,
             device=self._device,
             dynamics_state_shape=self._dynamics_state_space.shape,
-            action_shape=self._env.action_space.shape,
+            action_shape=self._action_space.shape,
             action_max=1.0,
             action_min=-1.0,
         )

@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import numpy as np
+from gymnasium.spaces import Box
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base import PETS
@@ -30,7 +31,6 @@ class CAPPETS(PETS):
     """The Conservative and Adaptive Penalty (CAP) algorithm implementation based on PETS.
 
     References:
-
         - Title: Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning
         - Authors: Yecheng Jason Ma, Andrew Shen, Osbert Bastani, Dinesh Jayaraman.
         - URL: `CAP <https://arxiv.org/abs/2112.07701>`_
@@ -38,21 +38,25 @@ class CAPPETS(PETS):
 
     def _init_model(self) -> None:
         """Initialize the dynamics model and the planner."""
-        if self._env.action_space is not None and len(self._env.action_space.shape) > 0:
-            self._action_dim = self._env.action_space.shape[0]
-        else:
-            # error handling for action dimension is none of shape of action less than 0
-            raise ValueError('Action dimension is None or less than 0')
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
         )
+        assert self._env.action_space is not None and isinstance(
+            self._env.action_space.shape,
+            tuple,
+        )
+        if isinstance(self._env.action_space, Box):
+            self._action_space = self._env.action_space
+        else:
+            raise NotImplementedError
+
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
-            action_shape=self._env.action_space.shape,
+            action_shape=self._action_space.shape,
             reward_size=1,
             cost_size=1,
             use_cost=True,
@@ -80,21 +84,21 @@ class CAPPETS(PETS):
             epsilon=self._cfgs.algo_cfgs.epsilon,
             init_var=self._cfgs.algo_cfgs.init_var,
             gamma=self._cfgs.algo_cfgs.gamma,
-            cost_gamma=self._cfgs.algo_cfgs.cost_gamma,
-            cost_limit=self._cfgs.lagrange_cfgs.cost_limit,
-            lagrange=self._lagrange,
             device=self._device,
             dynamics_state_shape=self._dynamics_state_space.shape,
-            action_shape=self._env.action_space.shape,
+            action_shape=self._action_space.shape,
             action_max=1.0,
             action_min=-1.0,
+            lagrange=self._lagrange,
+            cost_gamma=self._cfgs.algo_cfgs.cost_gamma,
+            cost_limit=self._cfgs.lagrange_cfgs.cost_limit,
         )
 
         self._use_actor_critic = False
         self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
     def _init_log(self) -> None:
-        """Initialize the logger"""
+        """Initialize the logger."""
         super()._init_log()
         self._logger.register_key('Plan/feasible_num')
         self._logger.register_key('Plan/episode_costs_max')

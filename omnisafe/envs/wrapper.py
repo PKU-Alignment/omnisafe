@@ -520,17 +520,19 @@ class ActionRepeat(Wrapper):
 
         Args:
             env: The environment to wrap.
-            low: The lower bound of the action space.
-            high: The upper bound of the action space.
+            times: The number of times to repeat the action.
+            device: The device to use.
         """
         super().__init__(env=env, device=device)
         self._times = times
+        self._device = device
 
     def step(
         self,
         action: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
-        rewards, costs = 0.0, 0.0
+        """Run self._times timesteps of the environment's dynamics using the agent actions."""
+        rewards, costs = torch.tensor(0.0).to(self._device), torch.tensor(0.0).to(self._device)
         for _step, _ in enumerate(range(self._times)):
             obs, reward, cost, terminated, truncated, info = super().step(action)
             rewards += reward

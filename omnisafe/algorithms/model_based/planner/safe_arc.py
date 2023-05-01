@@ -17,7 +17,9 @@ from __future__ import annotations
 
 import torch
 
+from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
+from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 
 
 class SafeARCPlanner(ARCPlanner):
@@ -31,40 +33,38 @@ class SafeARCPlanner(ARCPlanner):
 
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
-        dynamics,
-        actor_critic,
-        num_models,
-        horizon,
-        num_iterations,
-        num_particles,
-        num_samples,
-        num_elites,
-        mixture_coefficient,
-        temperature,
-        cost_temperature,
-        momentum,
-        epsilon,
-        init_var,
-        gamma,
-        cost_gamma,
-        cost_limit,
-        device,
-        dynamics_state_shape,
-        action_shape,
-        action_max,
-        action_min,
+        dynamics: EnsembleDynamicsModel,
+        num_models: int,
+        horizon: int,
+        num_iterations: int,
+        num_particles: int,
+        num_samples: int,
+        num_elites: int,
+        momentum: float,
+        epsilon: float,
+        init_var: float,
+        gamma: float,
+        device: torch.device,
+        dynamics_state_shape: tuple,
+        action_shape: tuple,
+        action_max: float,
+        action_min: float,
+        actor_critic: ConstraintActorQCritic,
+        mixture_coefficient: float,
+        temperature: float,
+        cost_gamma: float,
+        cost_limit: float,
+        cost_temperature: float,
     ) -> None:
+        """Initializes the planner of Safe Actor Regularized Control (ARC) algorithm."""
         super().__init__(
             dynamics,
-            actor_critic,
             num_models,
             horizon,
             num_iterations,
             num_particles,
             num_samples,
             num_elites,
-            mixture_coefficient,
-            temperature,
             momentum,
             epsilon,
             init_var,
@@ -74,6 +74,9 @@ class SafeARCPlanner(ARCPlanner):
             action_shape,
             action_max,
             action_min,
+            actor_critic,
+            mixture_coefficient,
+            temperature,
         )
         self._cost_gamma = cost_gamma
         self._cost_limit = cost_limit
@@ -84,7 +87,7 @@ class SafeARCPlanner(ARCPlanner):
         self,
         elite_actions: torch.Tensor,
         elite_values: torch.Tensor,
-        use_cost_temperature: bool,
+        info: dict,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Update the mean and variance of the elite actions.
 
@@ -106,9 +109,10 @@ class SafeARCPlanner(ARCPlanner):
         assert (
             elite_actions.shape[1] == elite_values.shape[0]
         ), 'Number of action should be the same'
+        use_cost_temperature = info['Plan/feasible_num'] < self._num_elites
 
         max_value = elite_values.max(0)[0]
-        if use_cost_temperature:
+        if use_cost_temperature is True:
             score = torch.exp(self._cost_temperature * (elite_values - max_value))
         else:
             score = torch.exp(self._temperature * (elite_values - max_value))
@@ -246,7 +250,7 @@ class SafeARCPlanner(ARCPlanner):
             new_mean, new_var = self._update_mean_var(
                 elite_actions,
                 elite_values,
-                use_cost_temperature=(info['Plan/feasible_num'] < self._num_elites),
+                info,
             )
             # last_mean = self._momentum * last_mean + (1 - self._momentum) * new_mean
             last_mean = new_mean

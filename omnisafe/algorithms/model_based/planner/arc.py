@@ -17,12 +17,15 @@ from __future__ import annotations
 
 import torch
 
+from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
+from omnisafe.algorithms.model_based.planner.cem import CEMPlanner
+from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 
-class ARCPlanner:  # pylint: disable=too-many-instance-attributes
+
+class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
     """The planner of Actor Regularized Control (ARC) algorithm.
 
     References:
-
         - Title: Learning Off-Policy with Online Planning
         - Authors: Harshit Sikchi, Wenxuan Zhou, David Held.
         - URL: `ARC <https://arxiv.org/abs/2008.10066>`_
@@ -30,60 +33,53 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
 
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
-        dynamics,
-        actor_critic,
-        num_models,
-        horizon,
-        num_iterations,
-        num_particles,
-        num_samples,
-        num_elites,
-        mixture_coefficient,
-        temperature,
-        momentum,
-        epsilon,
-        init_var,
-        gamma,
-        device,
-        dynamics_state_shape,
-        action_shape,
-        action_max,
-        action_min,
+        dynamics: EnsembleDynamicsModel,
+        num_models: int,
+        horizon: int,
+        num_iterations: int,
+        num_particles: int,
+        num_samples: int,
+        num_elites: int,
+        momentum: float,
+        epsilon: float,
+        init_var: float,
+        gamma: float,
+        device: torch.device,
+        dynamics_state_shape: tuple,
+        action_shape: tuple,
+        action_max: float,
+        action_min: float,
+        actor_critic: ConstraintActorQCritic,
+        mixture_coefficient: float,
+        temperature: float,
     ) -> None:
+        """Initialize the planner of Actor Regularized Control (ARC) algorithm."""
         assert (
             num_samples + mixture_coefficient * num_samples
         ) > num_elites, 'The number of samples should be larger than the number of elites.'
-        self._dynamics = dynamics
+        super().__init__(
+            dynamics,
+            num_models,
+            horizon,
+            num_iterations,
+            num_particles,
+            num_samples,
+            num_elites,
+            momentum,
+            epsilon,
+            init_var,
+            gamma,
+            device,
+            dynamics_state_shape,
+            action_shape,
+            action_max,
+            action_min,
+        )
         self._actor_critic = actor_critic
-        self._num_models = num_models
-        self._horizon = horizon
-        self._num_iterations = num_iterations
-        self._num_particles = num_particles
-        self._num_samples = num_samples
-        self._num_elites = num_elites
         self._mixture_coefficient = mixture_coefficient
         self._actor_traj = int(self._mixture_coefficient * self._num_samples)
         self._num_action = self._actor_traj + self._num_samples
         self._temperature = temperature
-        self._momentum = momentum
-        self._epsilon = epsilon
-        self._dynamics_state_shape = dynamics_state_shape
-        self._action_shape = action_shape
-        self._action_max = action_max
-        self._action_min = action_min
-        self._gamma = gamma
-        self._device = device
-        self._action_sequence_mean = torch.zeros(
-            self._horizon,
-            *self._action_shape,
-            device=self._device,
-        )
-        self._init_var = init_var
-        self._action_sequence_var = init_var * torch.ones(
-            self._horizon,
-            *self._action_shape,
-            device=self._device,
-        )
 
     @torch.no_grad()
     def _act_from_last_gaus(self, last_mean: torch.Tensor, last_var: torch.Tensor) -> torch.Tensor:
@@ -234,12 +230,12 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
         return elite_values, elite_actions, info
 
     @torch.no_grad()
-    def _update_mean_var(  # pylint: disable=unused-argument
+    def _update_mean_var(
         self,
         elite_actions: torch.Tensor,
         elite_values: torch.Tensor,
-        use_cost_temperature: bool,
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+        info: dict,
+    ) -> tuple[torch.Tensor, torch.Tensor]:  # pylint: disable-next=unused-argument
         """Update the mean and variance of the elite actions.
 
         Args:
@@ -311,7 +307,7 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
             new_mean, new_var = self._update_mean_var(
                 elite_actions,
                 elite_values,
-                use_cost_temperature=False,
+                info,
             )
             last_mean = self._momentum * last_mean + (1 - self._momentum) * new_mean
             last_var = self._momentum * last_var + (1 - self._momentum) * new_var
@@ -326,7 +322,7 @@ class ARCPlanner:  # pylint: disable=too-many-instance-attributes
         self._action_sequence_mean = last_mean.clone()
         return last_mean[0].clone().unsqueeze(0), logger_info
 
-    def reset_planner(self):
+    def reset_planner(self) -> None:
         """Reset the planner."""
         self._action_sequence_mean = torch.zeros(
             self._horizon,

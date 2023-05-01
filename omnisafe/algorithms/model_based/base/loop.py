@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import torch
+from gymnasium.spaces import Box
 from torch import nn, optim
 from torch.nn.utils.clip_grad import clip_grad_norm_
 
@@ -35,27 +36,26 @@ class LOOP(PETS):
     """The Learning Off-Policy with Online Planning (LOOP) algorithm.
 
     References:
-
         - Title: Learning Off-Policy with Online Planning
         - Authors: Harshit Sikchi, Wenxuan Zhou, David Held.
         - URL: `LOOP <https://arxiv.org/abs/2008.10066>`_
     """
 
     def _init_model(self) -> None:
-        if self._env.action_space is not None and len(self._env.action_space.shape) > 0:
-            self._action_dim = self._env.action_space.shape[0]
-        else:
-            # error handling for action dimension is none of shape of action less than 0
-            raise ValueError('Action dimension is None or less than 0')
-        if self._env.action_space is not None:
-            self._action_dim = self._env.action_space.shape[0]
-
+        """Initialize the dynamics model and the planner."""
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
         )
-
+        assert self._env.action_space is not None and isinstance(
+            self._env.action_space.shape,
+            tuple,
+        )
+        if isinstance(self._env.action_space, Box):
+            self._action_space = self._env.action_space
+        else:
+            raise NotImplementedError
         self._actor_critic = ConstraintActorQCritic(
             obs_space=self._dynamics_state_space,
             act_space=self._env.action_space,
@@ -85,21 +85,21 @@ class LOOP(PETS):
         self._planner = ARCPlanner(
             dynamics=self._dynamics,
             actor_critic=self._actor_critic,
-            num_models=self._cfgs.dynamics_cfgs.num_ensemble,
-            horizon=self._cfgs.algo_cfgs.plan_horizon,
-            num_iterations=self._cfgs.algo_cfgs.num_iterations,
-            num_particles=self._cfgs.algo_cfgs.num_particles,
-            num_samples=self._cfgs.algo_cfgs.num_samples,
-            num_elites=self._cfgs.algo_cfgs.num_elites,
-            mixture_coefficient=self._cfgs.algo_cfgs.mixture_coefficient,
-            temperature=self._cfgs.algo_cfgs.temperature,
-            momentum=self._cfgs.algo_cfgs.momentum,
-            epsilon=self._cfgs.algo_cfgs.epsilon,
-            init_var=self._cfgs.algo_cfgs.init_var,
-            gamma=self._cfgs.algo_cfgs.gamma,
+            num_models=int(self._cfgs.dynamics_cfgs.num_ensemble),
+            horizon=int(self._cfgs.algo_cfgs.plan_horizon),
+            num_iterations=int(self._cfgs.algo_cfgs.num_iterations),
+            num_particles=int(self._cfgs.algo_cfgs.num_particles),
+            num_samples=int(self._cfgs.algo_cfgs.num_samples),
+            num_elites=int(self._cfgs.algo_cfgs.num_elites),
+            mixture_coefficient=float(self._cfgs.algo_cfgs.mixture_coefficient),
+            temperature=float(self._cfgs.algo_cfgs.temperature),
+            momentum=float(self._cfgs.algo_cfgs.momentum),
+            epsilon=float(self._cfgs.algo_cfgs.epsilon),
+            init_var=float(self._cfgs.algo_cfgs.init_var),
+            gamma=float(self._cfgs.algo_cfgs.gamma),
             device=self._device,
             dynamics_state_shape=self._dynamics_state_space.shape,
-            action_shape=self._env.action_space.shape,
+            action_shape=self._action_space.shape,
             action_max=1.0,
             action_min=-1.0,
         )
@@ -120,7 +120,7 @@ class LOOP(PETS):
             device=self._device,
         )
 
-    def _alpha_discount(self):
+    def _alpha_discount(self) -> None:
         """Alpha discount."""
         self._alpha *= self._alpha_gamma
 
@@ -165,9 +165,8 @@ class LOOP(PETS):
             self._logger.store(**info)
 
         assert action.shape == torch.Size(
-            [state.shape[0], self._action_dim],
+            [1, *self._action_space.shape],
         ), 'action shape should be [batch_size, action_dim]'
-
         info = {}
         return action, info
 
@@ -330,8 +329,7 @@ class LOOP(PETS):
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
-        """
-        Update cost critic using TD3 algorithm.
+        """Update cost critic using TD3 algorithm.
 
         Args:
             obs (torch.Tensor): current observation

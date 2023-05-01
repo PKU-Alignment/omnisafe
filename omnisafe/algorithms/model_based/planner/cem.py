@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import torch
 
+from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
+
 
 class CEMPlanner:  # pylint: disable=too-many-instance-attributes
     """The planner of  Cross-Entropy Method optimization (CEM) algorithm.
@@ -27,23 +29,24 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
 
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
-        dynamics,
-        num_models,
-        horizon,
-        num_iterations,
-        num_particles,
-        num_samples,
-        num_elites,
-        momentum,
-        epsilon,
-        init_var,
-        gamma,
-        device,
-        dynamics_state_shape,
-        action_shape,
-        action_max,
-        action_min,
+        dynamics: EnsembleDynamicsModel,
+        num_models: int,
+        horizon: int,
+        num_iterations: int,
+        num_particles: int,
+        num_samples: int,
+        num_elites: int,
+        momentum: float,
+        epsilon: float,
+        init_var: float,
+        gamma: float,
+        device: torch.device,
+        dynamics_state_shape: tuple[int, ...],
+        action_shape: tuple[int, ...],
+        action_max: float,
+        action_min: float,
     ) -> None:
+        """Initializes the planner of Cross-Entropy Method optimization (CEM) algorithm."""
         assert (
             num_samples * num_particles
         ) % num_models == 0, 'num_samples * num_elites should be divisible by num_models'
@@ -183,10 +186,11 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
         return elite_values, elite_actions, info
 
     @torch.no_grad()
-    def _update_mean_var(
+    def _update_mean_var(  # pylint: disable=unused-argument
         self,
         elite_actions: torch.Tensor,
         elite_values: torch.Tensor,
+        info: dict,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Update the mean and variance of the elite actions.
 
@@ -242,7 +246,7 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
 
             elite_values, elite_actions, info = self._select_elites(actions, traj)
             # [num_sample, 1]
-            new_mean, new_var = self._update_mean_var(elite_actions, elite_values)
+            new_mean, new_var = self._update_mean_var(elite_actions, elite_values, info)
             last_mean = self._momentum * last_mean + (1 - self._momentum) * new_mean
             last_var = self._momentum * last_var + (1 - self._momentum) * new_var
             current_iter += 1
@@ -256,7 +260,7 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
         self._action_sequence_mean = last_mean.clone()
         return last_mean[0].clone().unsqueeze(0), logger_info
 
-    def reset_planner(self):
+    def reset_planner(self) -> None:
         """Reset the planner."""
         self._action_sequence_mean = torch.zeros(
             self._horizon,

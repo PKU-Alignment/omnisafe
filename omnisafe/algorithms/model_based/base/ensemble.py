@@ -21,6 +21,7 @@ from __future__ import annotations
 import itertools
 from collections import defaultdict
 from functools import partial
+from typing import Callable
 
 import numpy as np
 import torch
@@ -28,17 +29,19 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
+from omnisafe.utils.config import Config
 
 
-def swish(data):
+def swish(data: torch.Tensor) -> torch.Tensor:
     """Transform data using sigmoid function."""
     return data * torch.sigmoid(data)
 
 
 class StandardScaler:
-    """Normalize data"""
+    """Normalize data."""
 
-    def __init__(self, device: str) -> None:
+    def __init__(self, device: torch.device) -> None:
+        """Initialize an instance of :class:`StandardScaler`."""
         self._mean = 0.0
         self._std = 1.0
         self._mean_t = torch.tensor(self._mean).to(device)
@@ -46,9 +49,7 @@ class StandardScaler:
         self._device = device
 
     def fit(self, data: torch.Tensor | np.ndarray) -> None:
-        """Runs two ops, one for assigning the mean of the data to the internal mean, and
-        another for assigning the standard deviation of the data to the internal standard deviation.
-        This function must be called within a 'with <session>.as_default()' block.
+        """Fits the scaler to the input data.
 
         Args:
             data (np.ndarray): A numpy array containing the input
@@ -74,10 +75,14 @@ class StandardScaler:
 
 
 def init_weights(layer: nn.Module) -> None:
-    """Initialize network weight"""
+    """Initialize network weight."""
 
-    def truncated_normal_init(weight, mean: float = 0.0, std: float = 0.01) -> torch.Tensor:
-        """Initialize network weight"""
+    def truncated_normal_init(
+        weight: torch.Tensor,
+        mean: float = 0.0,
+        std: float = 0.01,
+    ) -> torch.Tensor:
+        """Initialize network weight."""
         torch.nn.init.normal_(weight, mean=mean, std=std)
         while True:
             cond = torch.logical_or(weight < mean - 2 * std, weight > mean + 2 * std)
@@ -101,8 +106,7 @@ def unbatched_forward(
     input_data: torch.Tensor,
     index: int,
 ) -> torch.Tensor:
-    """Special forward for nn.Sequential modules which contain BatchedLinear layers,
-    for when we only want to use one of the models.
+    """Special forward for nn.Sequential modules which contain BatchedLinear layers we want to use.
 
     Args:
         layer (nn.Module|EnsembleFC): The layer to forward through.
@@ -142,6 +146,7 @@ class EnsembleFC(nn.Module):
         weight_decay: float = 0.0,
         bias: bool = True,
     ) -> None:
+        """Initialize network weight."""
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -166,18 +171,19 @@ class EnsembleModel(nn.Module):
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        state_size,
-        action_size,
-        reward_size,
-        cost_size,
-        ensemble_size,
-        predict_reward,
-        predict_cost=None,
-        hidden_size=200,
-        learning_rate=1e-3,
-        use_decay=False,
-        device='cpu',
+        device: torch.device,
+        state_size: int,
+        action_size: int,
+        reward_size: int,
+        cost_size: int,
+        ensemble_size: int,
+        predict_reward: bool,
+        predict_cost: bool | None = None,
+        hidden_size: int = 200,
+        learning_rate: float = 1e-3,
+        use_decay: bool = False,
     ) -> None:
+        """Initialize network weight."""
         super().__init__()
 
         self._state_size = state_size
@@ -288,9 +294,9 @@ class EnsembleModel(nn.Module):
             return mean.unsqueeze(0), logvar.unsqueeze(0)
         return mean.unsqueeze(0), var.unsqueeze(0)
 
-    def _get_decay_loss(self):
+    def _get_decay_loss(self) -> torch.Tensor:
         """Get decay loss."""
-        decay_loss = 0.0
+        decay_loss = torch.tensor(0.0).to(self._device)
         for layer in self.children():
             if isinstance(layer, EnsembleFC):
                 decay_loss += layer.weight_decay * torch.sum(torch.square(layer.weight)) / 2.0
@@ -327,10 +333,12 @@ class EnsembleModel(nn.Module):
             total_loss = torch.sum(mse_loss)
         return total_loss, mse_loss
 
-    def train_ensemble(self, loss):
+    def train_ensemble(self, loss: torch.Tensor) -> None:
         """Train the dynamics model."""
         self._optimizer.zero_grad()
-        loss += 0.01 * torch.sum(self.max_logvar) - 0.01 * torch.sum(self.min_logvar)
+        loss += 0.01 * torch.sum(torch.Tensor(self.max_logvar)) - 0.01 * torch.sum(
+            torch.Tensor(self.min_logvar),
+        )
         if self._use_decay:
             loss += self._get_decay_loss()
         loss.backward()
@@ -344,22 +352,23 @@ class EnsembleDynamicsModel:
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
-        model_cfgs,
-        device,
-        state_shape,
-        action_shape,
-        reward_size,
-        cost_size,
-        use_cost,
-        use_terminal,
-        use_var,
-        use_reward_critic,
-        use_cost_critic,
-        actor_critic=None,
-        rew_func=None,
-        cost_func=None,
-        terminal_func=None,
+        model_cfgs: Config,
+        device: torch.device,
+        state_shape: tuple[int, ...],
+        action_shape: tuple[int, ...],
+        reward_size: int,
+        cost_size: int,
+        use_cost: bool,
+        use_terminal: bool,
+        use_var: bool,
+        use_reward_critic: bool,
+        use_cost_critic: bool,
+        actor_critic: ConstraintActorQCritic | None = None,
+        rew_func: Callable | None = None,
+        cost_func: Callable | None = None,
+        terminal_func: Callable | None = None,
     ) -> None:
+        """Initialize the dynamics model."""
         self._num_ensemble = model_cfgs.num_ensemble
         self._elite_size = model_cfgs.elite_size
         self._predict_reward = model_cfgs.predict_reward
@@ -374,6 +383,7 @@ class EnsembleDynamicsModel:
         self._device = device
         self.elite_model_idxes = list(range(self._elite_size))
         self._ensemble_model = EnsembleModel(
+            device=self._device,
             state_size=self._state_size,
             action_size=self._action_size,
             reward_size=reward_size,
@@ -384,13 +394,12 @@ class EnsembleDynamicsModel:
             hidden_size=model_cfgs.hidden_size,
             learning_rate=1e-3,
             use_decay=model_cfgs.use_decay,
-            device=self._device,
         )
 
         self._ensemble_model.to(self._device)
         self._max_epoch_since_update = 5
         self._epochs_since_update = 0
-        self._snapshots = {i: (None, 1e10) for i in range(self._num_ensemble)}
+        self._snapshots = {i: (0, 1e10) for i in range(self._num_ensemble)}
 
         if self._predict_reward is False:
             assert rew_func is not None, 'rew_func should not be None'
@@ -430,7 +439,7 @@ class EnsembleDynamicsModel:
             holdout_ratio (float): The ratio of the data hold out for validation.
         """
         self._epochs_since_update = 0
-        self._snapshots = {i: (None, 1e10) for i in range(self._num_ensemble)}
+        self._snapshots = {i: (0, 1e10) for i in range(self._num_ensemble)}
 
         num_holdout = int(inputs.shape[0] * holdout_ratio)
         permutation = np.random.permutation(inputs.shape[0])
@@ -493,9 +502,9 @@ class EnsembleDynamicsModel:
 
         train_mse_losses = np.array(train_mse_losses).mean()
         val_mse_losses = np.array(val_losses).mean()
-        return train_mse_losses, val_mse_losses
+        return np.array(train_mse_losses), np.array(val_mse_losses)
 
-    def _save_best(self, epoch: int, holdout_losses: np.ndarray) -> bool:
+    def _save_best(self, epoch: int, holdout_losses: list) -> bool:
         """Save the best model."""
         updated = False
         for i, current_loss in enumerate(holdout_losses):
@@ -521,7 +530,9 @@ class EnsembleDynamicsModel:
             reward_start_dim = int(self._predict_cost) * self._cost_size
             reward_end_dim = reward_start_dim + self._reward_size
             return network_output[:, :, reward_start_dim:reward_end_dim]
-        return self._rew_func(network_output[:, :, self._state_start_dim :])
+        if self._rew_func is not None:
+            return self._rew_func(network_output[:, :, self._state_start_dim :])
+        raise ValueError('Reward function is not defined.')
 
     @torch.no_grad()
     def _compute_cost(
@@ -531,7 +542,9 @@ class EnsembleDynamicsModel:
         """Compute the cost from the network output."""
         if self._predict_cost:
             return network_output[:, :, : self._cost_size]
-        return self._cost_func(network_output[:, :, self._state_start_dim :])
+        if self._cost_func is not None:
+            return self._cost_func(network_output[:, :, self._state_start_dim :])
+        raise ValueError('Cost function is not defined.')
 
     @torch.no_grad()
     def _compute_terminal(
@@ -539,7 +552,9 @@ class EnsembleDynamicsModel:
         network_output: torch.Tensor,
     ) -> torch.Tensor:
         """Compute the terminal from the network output."""
-        return self._terminal_func(network_output[:, :, self._state_start_dim :])
+        if self._terminal_func is not None:
+            return self._terminal_func(network_output[:, :, self._state_start_dim :])
+        raise ValueError('Terminal function is not defined.')
 
     def _predict(
         self,
@@ -637,13 +652,21 @@ class EnsembleDynamicsModel:
             info['terminals'].append(self._compute_terminal(ensemble_samples))
         if self._use_var:
             info['vars'].append(ensemble_var)
-        if self._use_reward_critic:
+        if (
+            self._use_reward_critic
+            and self._actor_critic is not None
+            and hasattr(self._actor_critic, 'reward_critic')
+        ):
             reward_values = self._actor_critic.reward_critic(
                 states.reshape(-1, self._state_size),
                 actions.reshape(-1, self._action_size),
             )[0]
             info['values'].append(reward_values.reshape((*states.shape[:-1], 1)))
-        if self._use_cost_critic:
+        if (
+            self._use_cost_critic
+            and self._actor_critic is not None
+            and hasattr(self._actor_critic, 'cost_critic')
+        ):
             cost_values = self._actor_critic.cost_critic(
                 states.reshape(-1, self._state_size),
                 actions.reshape(-1, self._action_size),
@@ -659,7 +682,7 @@ class EnsembleDynamicsModel:
         actions: torch.Tensor | None = None,
         actor_critic: ConstraintActorQCritic | None = None,
         idx: int | None = None,
-    ) -> dict[str, list[torch.Tensor]]:
+    ) -> dict[str, torch.Tensor]:
         """Imagine the future states and rewards from the ensemble model.
 
         Args:
@@ -683,14 +706,17 @@ class EnsembleDynamicsModel:
             actions = actions[:, None, :, :].repeat([1, num_ensemble, 1, 1])
 
             # pylint: disable-next=unused-argument
-            def get_action(state, step):
+            def get_action(state: torch.Tensor, step: int) -> torch.Tensor:
+                assert actions is not None
                 return actions[step]
 
         else:
-            assert actor_critic is not None, 'Need to provide actions or actor_critic'
-
             # pylint: disable-next=unused-argument
-            def get_action(state, step):
+            def get_action(state: torch.Tensor, step: int) -> torch.Tensor:
+                assert actor_critic is not None and hasattr(
+                    actor_critic,
+                    'actor',
+                ), 'actor_critic must have an actor'
                 return actor_critic.actor.predict(state, deterministic=False)
 
         traj = defaultdict(list)

@@ -52,7 +52,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         env_id: str,
         num_envs: int = 1,
         device: str = 'cpu',
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Initialize the environment.
 
@@ -137,11 +137,11 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         )
 
     @property
-    def task(self):
+    def task(self) -> str:
         """Get the name of the task."""
         return self._task
 
-    def get_cost_from_obs_tensor(self, obs, is_binary=True):
+    def get_cost_from_obs_tensor(self, obs: torch.Tensor, is_binary: bool = True) -> torch.Tensor:
         """Get batch cost from batch observation.
 
         Args:
@@ -177,7 +177,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             cost = cost.reshape(obs.shape[0], obs.shape[1], 1)
         return cost
 
-    def get_goal_flag_from_obs_tensor(self, obs):
+    def get_goal_flag_from_obs_tensor(self, obs: torch.Tensor) -> torch.Tensor:
         """Get goal flag from batch observation.
 
         Args:
@@ -203,15 +203,15 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             goal_flat = goal_flat.reshape(obs.shape[0], obs.shape[1], 1)
         return goal_flat
 
-    def get_cost_from_obs(self, obs, is_binary, use_lidar):
+    def get_cost_from_obs(self, obs: np.ndarray, is_binary: bool, use_lidar: bool) -> np.ndarray:
         """Get batch cost from batch numpy observation.
 
-        args:
+        Args:
             obs (np.ndarray): Batch observation.
             is_binary (bool): Whether to use binary cost.
             use_lidar (bool): Whether to use lidar.
 
-        returns:
+        Returns:
             cost (np.ndarray): Batch cost.
         """
         assert not torch.is_tensor(obs), 'obs should be numpy array'
@@ -243,7 +243,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             cost = np.where(cost >= 1, 1.0, 0.0)
         return cost
 
-    def get_lidar_from_coordinate(self, obs):
+    def get_lidar_from_coordinate(self, obs: np.ndarray) -> torch.Tensor:
         """Get lidar observation.
 
         Args:
@@ -272,7 +272,12 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         obs_vec = torch.as_tensor(obs_vec, dtype=torch.float32, device=self._device).unsqueeze(0)
         return obs_vec
 
-    def _ego_xy(self, robot_matrix, robot_pos, pos):
+    def _ego_xy(
+        self,
+        robot_matrix: list,
+        robot_pos: np.ndarray,
+        pos: np.ndarray,
+    ) -> np.ndarray:
         """Return the egocentric XY vector to a position from the robot.
 
         Args:
@@ -295,12 +300,11 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
     def _obs_lidar_pseudo(
         self,
-        robot_matrix,
-        robot_pos,
-        positions,
-    ):  # pylint: disable=too-many-locals
-        '''
-        Return a robot-centric lidar observation of a list of positions.
+        robot_matrix: list,
+        robot_pos: np.ndarray,
+        positions: list,
+    ) -> np.ndarray:  # pylint: disable=too-many-locals
+        """Return a robot-centric lidar observation of a list of positions.
 
         Lidar is a set of bins around the robot (divided evenly in a circle).
         The detection directions are exclusive and exhaustive for a full 360 view.
@@ -326,10 +330,8 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
         Returns:
             lidar_observation (np.ndarray): lidar observation.
-        '''
+        """
         obs = np.zeros(self._num_lidar_bin)
-        lidar_exp_gain = 1.0
-        lidar_alias = True
         for pos in positions:
             pos = np.asarray(pos)
             if pos.shape == (3,):
@@ -342,21 +344,17 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             bin_size = (np.pi * 2) / self._num_lidar_bin
             sensor_bin = int(angle / bin_size)
             bin_angle = bin_size * sensor_bin
-            if self._max_lidar_dist is None:
-                sensor = np.exp(-lidar_exp_gain * dist)
-            else:
-                sensor = max(0, self._max_lidar_dist - dist) / self._max_lidar_dist
+            sensor = max(0, self._max_lidar_dist - dist) / self._max_lidar_dist
             obs[sensor_bin] = max(obs[sensor_bin], sensor)
             # Aliasing
-            if lidar_alias:
-                alias = (angle - bin_angle) / bin_size
-                assert (
-                    0 <= alias <= 1
-                ), f'bad alias {alias}, dist {dist}, angle {angle}, bin {sensor_bin}'
-                bin_plus = (sensor_bin + 1) % self._num_lidar_bin
-                bin_minus = (sensor_bin - 1) % self._num_lidar_bin
-                obs[bin_plus] = max(obs[bin_plus], alias * sensor)
-                obs[bin_minus] = max(obs[bin_minus], (1 - alias) * sensor)
+            alias = (angle - bin_angle) / bin_size
+            assert (
+                0 <= alias <= 1
+            ), f'bad alias {alias}, dist {dist}, angle {angle}, bin {sensor_bin}'
+            bin_plus = (sensor_bin + 1) % self._num_lidar_bin
+            bin_minus = (sensor_bin - 1) % self._num_lidar_bin
+            obs[bin_plus] = max(obs[bin_plus], alias * sensor)
+            obs[bin_minus] = max(obs[bin_minus], (1 - alias) * sensor)
         return obs
 
     def _get_flat_coordinate(self, coordinate_obs: dict) -> np.ndarray:
@@ -375,8 +373,8 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         return flat_obs
 
     def _get_coordinate_sensor(self) -> dict:
-        """
-        Return the coordinate observation and sensor observation.
+        """Return the coordinate observation and sensor observation.
+
         We will ignore the z-axis coordinates in every poses.
         The returned obs coordinates are all in the robot coordinates.
 

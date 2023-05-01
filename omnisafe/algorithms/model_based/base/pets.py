@@ -21,6 +21,7 @@ from typing import Any
 
 import numpy as np
 import torch
+from gymnasium.spaces import Box
 from gymnasium.utils.save_video import save_video
 from matplotlib import pylab
 
@@ -39,7 +40,6 @@ class PETS(BaseAlgo):
     """The Probabilistic Ensembles with Trajectory Sampling (PETS) algorithm.
 
     References:
-
         - Title: Deep Reinforcement Learning in a Handful of Trials using Probabilistic Dynamics Models
         - Authors: Kurtland Chua, Roberto Calandra, Rowan McAllister, Sergey Levine.
         - URL: `PETS <https://arxiv.org/abs/1805.12114>`_
@@ -59,21 +59,20 @@ class PETS(BaseAlgo):
 
     def _init_model(self) -> None:
         """Initialize dynamics model and planner."""
-        if self._env.action_space is not None and len(self._env.action_space.shape) > 0:
-            self._action_dim = self._env.action_space.shape[0]
-        else:
-            # error handling for action dimension is none of shape of action less than 0
-            raise ValueError('Action dimension is None or less than 0')
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
         )
+        if isinstance(self._env.action_space, Box):
+            self._action_space = self._env.action_space
+        else:
+            raise NotImplementedError
         self._dynamics = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
-            action_shape=self._env.action_space.shape,
+            action_shape=self._action_space.shape,
             reward_size=1,
             cost_size=1,
             use_cost=False,
@@ -89,23 +88,22 @@ class PETS(BaseAlgo):
 
         self._planner = CEMPlanner(
             dynamics=self._dynamics,
-            num_models=self._cfgs.dynamics_cfgs.num_ensemble,
-            horizon=self._cfgs.algo_cfgs.plan_horizon,
-            num_iterations=self._cfgs.algo_cfgs.num_iterations,
-            num_particles=self._cfgs.algo_cfgs.num_particles,
-            num_samples=self._cfgs.algo_cfgs.num_samples,
-            num_elites=self._cfgs.algo_cfgs.num_elites,
-            momentum=self._cfgs.algo_cfgs.momentum,
-            epsilon=self._cfgs.algo_cfgs.epsilon,
-            init_var=self._cfgs.algo_cfgs.init_var,
-            gamma=self._cfgs.algo_cfgs.gamma,
+            num_models=int(self._cfgs.dynamics_cfgs.num_ensemble),
+            horizon=int(self._cfgs.algo_cfgs.plan_horizon),
+            num_iterations=int(self._cfgs.algo_cfgs.num_iterations),
+            num_particles=int(self._cfgs.algo_cfgs.num_particles),
+            num_samples=int(self._cfgs.algo_cfgs.num_samples),
+            num_elites=int(self._cfgs.algo_cfgs.num_elites),
+            momentum=float(self._cfgs.algo_cfgs.momentum),
+            epsilon=float(self._cfgs.algo_cfgs.epsilon),
+            init_var=float(self._cfgs.algo_cfgs.init_var),
+            gamma=float(self._cfgs.algo_cfgs.gamma),
             device=self._device,
             dynamics_state_shape=self._dynamics_state_space.shape,
-            action_shape=self._env.action_space.shape,
+            action_shape=self._action_space.shape,
             action_max=1.0,
             action_min=-1.0,
         )
-
         self._use_actor_critic = False
         self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
@@ -118,7 +116,7 @@ class PETS(BaseAlgo):
             batch_size=self._cfgs.dynamics_cfgs.batch_size,
             device=self._device,
         )
-        env_kwargs = {
+        env_kwargs: dict[str, Any] = {
             'render_mode': 'rgb_array',
             'camera_name': 'track',
         }
@@ -182,11 +180,18 @@ class PETS(BaseAlgo):
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
-    def learn(self) -> tuple[int | float, ...]:
-        """This is main function for algorithm update, divided into the following steps:
+    def learn(self) -> tuple[float, float, int]:
+        """This is main function for algorithm update.
 
+        It is divided into the following steps:
         - :meth:`rollout`: collect interactive data from environment.
+        - :meth:`update`: perform actor/critic updates.
         - :meth:`log`: epoch/update information for visualization and terminal log print.
+
+        Returns:
+            ep_ret: average episode return in final epoch.
+            ep_cost: average episode cost in final epoch.
+            ep_len: average episode length in final epoch.
         """
         self._logger.log('INFO: Start training')
         start_time = time.time()
@@ -224,7 +229,7 @@ class PETS(BaseAlgo):
 
         ep_ret = self._logger.get_stats('Metrics/EpRet')[0]
         ep_cost = self._logger.get_stats('Metrics/EpCost')[0]
-        ep_len = self._logger.get_stats('Metrics/EpLen')[0]
+        ep_len = int(self._logger.get_stats('Metrics/EpLen')[0])
         self._logger.close()
 
         return ep_ret, ep_cost, ep_len
@@ -232,19 +237,19 @@ class PETS(BaseAlgo):
     def _algo_reset(
         self,
         current_step: int,  # pylint: disable=unused-argument
-    ):
+    ) -> None:
         ...
 
     def _update_policy(
         self,
         current_step: int,  # pylint: disable=unused-argument
-    ):
+    ) -> None:
         ...
 
     def _update_dynamics_model(
         self,
         current_step: int,  # pylint: disable=unused-argument
-    ):
+    ) -> None:
         """Update dynamics.
 
         Args:
@@ -282,7 +287,7 @@ class PETS(BaseAlgo):
             },
         )
 
-    def _update_epoch(self):
+    def _update_epoch(self) -> None:
         ...
 
     def _select_action(  # pylint: disable=unused-argument
@@ -291,7 +296,7 @@ class PETS(BaseAlgo):
         state: torch.Tensor,
         env: ModelBasedAdapter,
     ) -> tuple[torch.Tensor, dict]:
-        """Action selection."
+        """Action selection.
 
         Args:
             current_step (int): current step.
@@ -309,7 +314,7 @@ class PETS(BaseAlgo):
             action, info = self._planner.output_action(state)
             self._logger.store(**info)
         assert action.shape == torch.Size(
-            [1, self._action_dim],
+            [1, *self._action_space.shape],
         ), 'action shape should be [batch_size, action_dim]'
         info = {}
         return action, info
