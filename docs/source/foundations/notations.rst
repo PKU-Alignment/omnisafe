@@ -4,11 +4,12 @@ Mathematical Notations
 Introduction
 ------------
 In this section, we will introduce the notations used in this tutorial.
-In Reinforcement Learning, we often use the following two basic notations:
+In reinforcement learning, we often use the following two basic notations:
 **Linear Algebra** and **Constrained Markov Decision Processes**.
 Make sure you are familiar with this section before you start.
-You can return to this section any time you are puzzled by some notations
-in the following chapters.
+When you read the formulas in the following chapters,
+if you don't know the meaning of a certain mathematical symbol,
+please refer to the notations in this chapter.
 
 Linear Algebra
 --------------
@@ -249,3 +250,4 @@ References
 
 -  `Constrained Markov Decision Processes <https://www.semanticscholar.org/paper/Constrained-Markov-Decision-Processes-Altman/3cc2608fd77b9b65f5bd378e8797b2ab1b8acde7>`__
 -  `Markov Decision Processes <https://dl.acm.org/doi/book/10.5555/551283>`__
+-  `Convex Optimization <https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf>`__`

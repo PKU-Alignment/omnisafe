@@ -44,7 +44,7 @@ Train policy
 
 
 .. hint::
-    The above command will train a policy with PPO algorithm, and the total training steps is 1024. The vector environment number is 1, which means that the training process will use 1 CPU core. The ``algo_cfgs:steps_per_epoch`` is the update cycle of the PPO algorithm, which means that the policy will be updated every 512 steps.
+    The above command will train a policy with PPO algorithm, and the total training steps is 1024. The vector environment number is 1. The ``algo_cfgs:steps_per_epoch`` is the update cycle of the PPO algorithm, which means that the policy will be updated every 512 steps.
 
 Customize Configuration
 -----------------------

@@ -106,7 +106,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 Dual Problem
 ------------
 
-Given a Lagrangian, we define its Lagrange dual function as:
+Given a Lagrangian multiplier, we define its Lagrange dual function as:
 
 .. math:: \theta_d(u,v)=\underset{x}{\text{min}}\quad L(x,u,v)
 
