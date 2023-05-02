@@ -27,7 +27,14 @@ from gymnasium.spaces import Box
 from gymnasium.utils.save_video import save_video
 
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
-from omnisafe.algorithms.model_based.planner import CEMPlanner
+from omnisafe.algorithms.model_based.planner import (
+    ARCPlanner,
+    CAPPlanner,
+    CCEPlanner,
+    CEMPlanner,
+    RCEPlanner,
+    SafeARCPlanner,
+)
 from omnisafe.common import Normalizer
 from omnisafe.envs.core import CMDP, make
 from omnisafe.envs.wrapper import ActionRepeat, ActionScale, ObsNormalize, TimeLimit
@@ -57,7 +64,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         actor: Actor | None = None,
         actor_critic: ConstraintActorCritic | ConstraintActorQCritic | None = None,
         dynamics: EnsembleDynamicsModel | None = None,
-        planner: CEMPlanner | None = None,
+        planner: CEMPlanner
+        | ARCPlanner
+        | SafeARCPlanner
+        | CCEPlanner
+        | CAPPlanner
+        | RCEPlanner
+        | None = None,
         render_mode: str = 'rgb_array',
     ) -> None:
         """Initialize an instance of :class:`Evaluator`."""
