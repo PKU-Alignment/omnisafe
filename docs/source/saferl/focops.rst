@@ -85,9 +85,9 @@ optimization problems:
 .. math::
     :label: focops-eq-1
 
-    &\pi_{k+1}=\arg \max _{\pi \in \Pi_{\boldsymbol{\theta}}} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\\
-    \text{s.t.} \quad &J^{C_i}\left(\pi_k\right) \leq d_i-\frac{1}{1-\gamma} \mathbb{E}_{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C_i}_{\pi_k}(s, a)\right] \quad \forall i  \\
-    &\bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta
+    \pi_{k+1}&=\arg \max _{\pi \in \Pi_{\boldsymbol{\theta}}} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\\
+    \text{s.t.} \quad J^{C_i}\left(\pi_k\right) &\leq d_i-\frac{1}{1-\gamma} \mathbb{E}_{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C_i}_{\pi_k}(s, a)\right] \quad \forall i  \\
+    \bar{D}_{K L}\left(\pi \| \pi_k\right) &\leq \delta
 
 
 where :math:`\prod_{\theta}\subseteq\prod` denotes the parametrized policies
@@ -142,9 +142,9 @@ In the first stage, FOCOPS rewrites :eq:`focops-eq-1`  as below:
 .. math::
     :label: focops-eq-2
 
-    &\pi^*=\arg \max _{\pi \in \Pi} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\\
-    \text{s.t.} \quad & J^{C}\left(\pi_k\right) \leq d-\frac{1}{1-\gamma} \mathbb{E}{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C}_{\pi_k}(s, a)\right] \quad  \\
-    & \bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta
+    \pi^* &=\arg \max _{\pi \in \Pi} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\\
+    \text{s.t.} \quad  J^{C}\left(\pi_k\right) &\leq d-\frac{1}{1-\gamma} \mathbb{E}{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C}_{\pi_k}(s, a)\right] \quad  \\
+    \bar{D}_{K L}\left(\pi \| \pi_k\right) & \leq \delta
 
 
 These problems are only slightly different from :eq:`focops-eq-1` , that is,

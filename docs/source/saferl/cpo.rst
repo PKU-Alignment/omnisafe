@@ -70,9 +70,9 @@ CPO optimizes over :math:`\Pi_{\boldsymbol{\theta}} \cap \Pi_{C}`.
 .. math::
     :label: cpo-eq-2
 
-    & \pi_{k+1} = \arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
-    \text{s.t.} \quad & D(\pi,\pi_k)\le\delta\\
-    & J^{C_i}(\pi)\le d_i\quad i=1,...m
+    \pi_{k+1} &= \arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
+    \text{s.t.} \quad  D(\pi,\pi_k) &\le\delta\\
+    J^{C_i}(\pi) &\le d_i\quad i=1,...m
 
 
 
@@ -234,9 +234,9 @@ would guarantee monotonic performance improvements.
 .. math::
     :label: cpo-eq-10
 
-    &\pi_{k+1}=\arg \max _{\pi \in \Pi_{\boldsymbol{\theta}}} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\\
-    \text{s.t.} \quad &J^{C_i}\left(\pi_k\right) \leq d_i-\frac{1}{1-\gamma} \mathbb{E}_{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C_i}_{\pi_k}(s, a)\right] \quad \forall i  \\
-    &\bar{D}_{K L}\left(\pi \| \pi_k\right) \leq \delta
+    \pi_{k+1}&=\arg \max _{\pi \in \Pi_{\boldsymbol{\theta}}} \mathbb{E}_{\substack{s \sim d_{\pi_k}\\a \sim \pi}}[A^R_{\pi_k}(s, a)]\\
+    \text{s.t.} \quad J^{C_i}\left(\pi_k\right) &\leq d_i-\frac{1}{1-\gamma} \mathbb{E}_{\substack{s \sim d_{\pi_k} \\ a \sim \pi}}\left[A^{C_i}_{\pi_k}(s, a)\right] \quad \forall i  \\
+    \bar{D}_{K L}\left(\pi \| \pi_k\right) &\leq \delta
 
 
 .. hint::

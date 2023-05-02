@@ -84,8 +84,8 @@ optimization problems:
 .. math::
     :label: ppo-eq-1
 
-    &\pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
-    \text{s.t.}\quad&D(\pi,\pi_k)\le\delta
+    & \pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
+    \text{s.t.}\quad & D(\pi,\pi_k)\le\delta
 
 
 where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of
@@ -102,8 +102,8 @@ Finally, TRPO rewrites Problem :eq:`ppo-eq-1` as:
 .. math::
     :label: ppo-eq-2
 
-    &\underset{\theta}{\max} L_{\theta_{old}}(\theta)  \\
-    \text{s.t. } \quad& \bar{D}_{\mathrm{KL}}(\theta_{old}, \theta) \le \delta
+    \underset{\theta}{\max} \quad & L_{\theta_{old}}(\theta)  \\
+    \text{s.t. } \quad & \bar{D}_{\mathrm{KL}}(\theta_{old}, \theta) \le \delta
 
 
 where

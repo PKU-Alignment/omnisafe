@@ -110,9 +110,9 @@ The final optimization goals are as follows:
 
 .. math::
 
-    &\pi_{k+1}=\arg \max _{\pi \in \Pi_\theta} J^R(\pi) \\
-    \text { s.t. } ~~ &J^{\mathcal{C}}(\pi) \leq d \\
-    &D\left(\pi, \pi_k\right) \leq \delta
+    \pi_{k+1}&=\arg \max _{\pi \in \Pi_\theta} J^R(\pi) \\
+    \text { s.t. } ~~ J^{\mathcal{C}}(\pi) &\leq d \\
+    D\left(\pi, \pi_k\right) &\leq \delta
 
 
 where :math:`D` is some distance measure and :math:`\delta` is the step size.

@@ -49,9 +49,9 @@ In the previous chapters, you learned that CPO solves the following optimization
 .. math::
     :label: pcpo-eq-1
 
-    &\pi_{k+1} = \arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
-    \text{s.t.}\quad&D(\pi,\pi_k)\le\delta\\
-    &J^{C_i}(\pi)\le d_i\quad i=1,...m
+    \pi_{k+1} &= \arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
+    \text{s.t.}\quad D(\pi,\pi_k) & \le\delta\\
+    J^{C_i}(\pi) &\le d_i\quad i=1,...m
 
 
 where :math:`\Pi_{\theta}\subseteq\Pi` denotes the set of parametrized policies

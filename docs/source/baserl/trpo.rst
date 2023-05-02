@@ -234,8 +234,8 @@ Kakade and Langford derived the following lower bound:
 .. math::
     :label: trpo-eq-8
 
-    &J\left(\pi_{\text {new }}\right)  \geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{2 \epsilon \gamma}{(1-\gamma)^2} \alpha^2  \\
-    \text { where } &\epsilon=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right|
+    J\left(\pi_{\text {new }}\right)  &\geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{2 \epsilon \gamma}{(1-\gamma)^2} \alpha^2  \\
+    \text { where } \epsilon &=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right|
 
 
 However, the lower bound in :eq:`trpo-eq-8` only applies to mixture policies,
@@ -283,8 +283,8 @@ And the new bound is derived by introducing the :math:`\alpha`-coupling method.
     .. math::
         :label: trpo-eq-10
 
-        &J\left(\pi_{\text {new }}\right)  \geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{4 \epsilon \gamma}{(1-\gamma)^2} \alpha^2 \\
-        \text { where } &\epsilon=\max _{s, a}\left|A^R_{\pi}(s, a)\right|
+        J\left(\pi_{\text {new }}\right)  &\geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{4 \epsilon \gamma}{(1-\gamma)^2} \alpha^2 \\
+        \text { where } \epsilon &=\max _{s, a}\left|A^R_{\pi}(s, a)\right|
 
     +++
     The proof of the :bdg-info-line:`Theorem 2` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
@@ -306,8 +306,8 @@ The following bound then follows directly from :bdg-info-line:`Theorem 2` :
 .. math::
     :label: trpo-eq-11
 
-    & J^R(\pi') \geq L_\pi(\pi')-C D_{\mathrm{KL}}^{\max }(\pi, \pi') \\
-    & \quad \text { where } C=\frac{4 \epsilon \gamma}{(1-\gamma)^2}
+    J^R(\pi') & \geq L_\pi(\pi')-C D_{\mathrm{KL}}^{\max }(\pi, \pi') \\
+    \quad \text { where } C &=\frac{4 \epsilon \gamma}{(1-\gamma)^2}
 
 
 TRPO describes an approximate policy iteration scheme based on the policy
@@ -367,8 +367,8 @@ TRPO uses fixed KL divergence constraint to bound the distance between
 .. math::
     :label: trpo-eq-14
 
-    &\underset{\theta}{\max} L_{\theta_{old}}(\theta) \\
-    &\text{s.t. } \quad D_{\mathrm{KL}}^{\max }(\theta_{old}, \theta) \le \delta
+    \underset{\theta}{\max}\quad  &L_{\theta_{old}}(\theta) \\
+    \text{s.t. } \quad &D_{\mathrm{KL}}^{\max }(\theta_{old}, \theta) \le \delta
 
 
 This problem imposes a constraint that the KL divergence is bounded at every
@@ -381,8 +381,8 @@ divergence:
 .. math::
     :label: trpo-eq-15
 
-    &\underset{\theta}{\max} L_{\theta_{old}}(\theta) \label{eq:maxklconst} \\
-    &\text{s.t. } \quad \bar{D}_{\mathrm{KL}}(\theta_{old}, \theta) \le \delta
+    \underset{\theta}{\max}\quad  &L_{\theta_{old}}(\theta) \label{eq:maxklconst} \\
+    \text{s.t. } \quad &\bar{D}_{\mathrm{KL}}(\theta_{old}, \theta) \le \delta
 
 
 where
