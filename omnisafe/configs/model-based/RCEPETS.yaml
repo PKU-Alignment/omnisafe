@@ -19,7 +19,7 @@ defaults:
   # training configurations
   train_cfgs:
     # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
-    device: cpu
+    device: cuda:0
     # number of threads for torch
     torch_threads: 16
     # total number of steps to train
@@ -30,42 +30,40 @@ defaults:
     parallel: 1
   # dynamics configurations
   dynamics_cfgs:
-    # Number of network for ensemble model
+    # number of network for ensemble model
     num_ensemble: 5
     # output size for ensemble model
     elite_size: 5
-    # Size of hidden layers
+    # size of hidden layers
     hidden_size: 200
-    # Whether use decay loss
+    # whether use decay loss
     use_decay: True
-    # Whether predict reward
+    # whether predict reward
     predict_reward: True
-    # Whether predict reward
+    # whether predict reward
     predict_cost: False
-    # Training batch size of dynamics
+    # training batch size of dynamics
     batch_size: 256
-    # Training max epoch of dynamics
+    # training max epoch of dynamics
     max_epoch: 5
-  # evaluation configurations
-  evaluation_cfgs:
-    # Whether evaluation
-    use_eval: True
-    # evaluation cycle
-    eval_cycle: 10000
-    # evaluation episode
-    num_episode: 1
-
-  # algorithm configurations
-  algo_cfgs:
-    # number of steps to update the policy
-    steps_per_epoch: 20000
-    # Tolerance of constraint violation
-    cost_limit: 1.0
-    # Number of action repetition
-    action_repeat: 5
-    # Planning hoirzon
+    # the reward size for dynamics prediction
+    reward_size: 1
+    # the cost size for dynamics prediction
+    cost_size: 1
+    # whether compute cost during dynamics imagination
+    use_cost: True
+    # whether compute cost during dynamics imagination
+    use_terminal: False
+    # whether use variance for dynamics imagination
+    use_var: False
+    # whether use reward critic for dynamics imagination
+    use_reward_critic: False
+    # whether use cost critic for dynamics imagination
+    use_cost_critic: False
+  planner_cfgs:
+    # planning hoirzon
     plan_horizon: 7
-    # Planning iteration
+    # planning iteration
     num_iterations: 5
     # the number of particle in plannnig
     num_particles: 20
@@ -79,9 +77,25 @@ defaults:
     epsilon: 0.001
     # the initial variance of planning
     init_var: 4
+  # evaluation configurations
+  evaluation_cfgs:
+    # whether evaluation
+    use_eval: True
+    # evaluation cycle
+    eval_cycle: 10000
+    # evaluation episode
+    num_episode: 1
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 20000
+    # tolerance of constraint violation
+    cost_limit: 1.0
+    # number of action repetition
+    action_repeat: 5
     # update cycle to dynamics
     update_dynamics_cycle: 1200
-    # Actor perdorm random action before `start_learning_steps` steps
+    # actor perdorm random action before `start_learning_steps` steps
     start_learning_steps: 10000
     # normalize reward
     reward_normalize: False
@@ -103,7 +117,7 @@ defaults:
     # use tensorboard for logging
     use_tensorboard: True
     # save model frequency
-    save_model_freq: 100
+    save_model_freq: 5
     # save logger path
     log_dir: "./runs"
     # save model path
@@ -114,6 +128,7 @@ SafetyAntVelocity-v1:
   algo_cfgs:
     action_repeat: 1
     cost_limit: 1
+  planner_cfgs:
     plan_horizon: 16
     init_var: 0.1
   dynamics_cfgs:
@@ -122,6 +137,7 @@ SafetyHopperVelocity-v1:
   algo_cfgs:
     action_repeat: 1
     cost_limit: 1
+  planner_cfgs:
     plan_horizon: 16
     init_var: 0.1
   dynamics_cfgs:
@@ -130,6 +146,7 @@ SafetyHumanoidVelocity-v1:
   algo_cfgs:
     action_repeat: 1
     cost_limit: 1
+  planner_cfgs:
     plan_horizon: 16
     init_var: 0.1
   dynamics_cfgs:
@@ -138,6 +155,7 @@ SafetyWalker2dVelocity-v1:
   algo_cfgs:
     action_repeat: 1
     cost_limit: 1
+  planner_cfgs:
     plan_horizon: 16
     init_var: 0.1
   dynamics_cfgs:
@@ -146,6 +164,7 @@ SafetyHalfCheetahVelocity-v1:
   algo_cfgs:
     action_repeat: 1
     cost_limit: 1
+  planner_cfgs:
     plan_horizon: 16
     init_var: 0.1
   dynamics_cfgs:
@@ -154,6 +173,7 @@ SafetySwimmerVelocity-v1:
   algo_cfgs:
     action_repeat: 1
     cost_limit: 1
+  planner_cfgs:
     plan_horizon: 16
     init_var: 0.1
   dynamics_cfgs:

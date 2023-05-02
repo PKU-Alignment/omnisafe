@@ -73,13 +73,6 @@ class PETS(BaseAlgo):
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
             action_shape=self._action_space.shape,
-            reward_size=1,
-            cost_size=1,
-            use_cost=False,
-            use_terminal=False,
-            use_var=False,
-            use_reward_critic=False,
-            use_cost_critic=False,
             actor_critic=None,
             rew_func=None,
             cost_func=None,
@@ -88,21 +81,14 @@ class PETS(BaseAlgo):
 
         self._planner = CEMPlanner(
             dynamics=self._dynamics,
-            num_models=int(self._cfgs.dynamics_cfgs.num_ensemble),
-            horizon=int(self._cfgs.algo_cfgs.plan_horizon),
-            num_iterations=int(self._cfgs.algo_cfgs.num_iterations),
-            num_particles=int(self._cfgs.algo_cfgs.num_particles),
-            num_samples=int(self._cfgs.algo_cfgs.num_samples),
-            num_elites=int(self._cfgs.algo_cfgs.num_elites),
-            momentum=float(self._cfgs.algo_cfgs.momentum),
-            epsilon=float(self._cfgs.algo_cfgs.epsilon),
-            init_var=float(self._cfgs.algo_cfgs.init_var),
+            planner_cfgs=self._cfgs.planner_cfgs,
             gamma=float(self._cfgs.algo_cfgs.gamma),
-            device=self._device,
+            cost_gamma=float(self._cfgs.algo_cfgs.cost_gamma),
             dynamics_state_shape=self._dynamics_state_space.shape,
             action_shape=self._action_space.shape,
             action_max=1.0,
             action_min=-1.0,
+            device=self._device,
         )
         self._use_actor_critic = False
         self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
@@ -140,16 +126,6 @@ class PETS(BaseAlgo):
             config=self._cfgs,
         )
 
-        what_to_save: dict[str, Any] = {}
-        # Set up model saving
-        what_to_save = {
-            'dynamics': self._dynamics,
-        }
-        if self._cfgs.algo_cfgs.obs_normalize:
-            obs_normalizer = self._env.save()['obs_normalizer']
-            what_to_save['obs_normalizer'] = obs_normalizer
-        self._logger.setup_torch_saver(what_to_save)
-        self._logger.torch_save()
         self._logger.register_key('Train/Epoch')
         self._logger.register_key('TotalEnvSteps')
         self._logger.register_key('Metrics/EpRet', window_length=50)
@@ -179,6 +155,20 @@ class PETS(BaseAlgo):
             self._logger.register_key('Time/Eval')
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
+        self._save_model()
+
+    def _save_model(self) -> None:
+        """Save the model."""
+        what_to_save: dict[str, Any] = {}
+        # Set up model saving
+        what_to_save = {
+            'dynamics': self._dynamics.ensemble_model,
+        }
+        if self._cfgs.algo_cfgs.obs_normalize:
+            obs_normalizer = self._env.save()['obs_normalizer']
+            what_to_save['obs_normalizer'] = obs_normalizer
+        self._logger.setup_torch_saver(what_to_save)
+        self._logger.torch_save()
 
     def learn(self) -> tuple[float, float, int]:
         """This is main function for algorithm update.

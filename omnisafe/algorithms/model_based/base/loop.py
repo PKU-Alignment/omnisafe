@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 from gymnasium.spaces import Box
 from torch import nn, optim
@@ -69,13 +71,6 @@ class LOOP(PETS):
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
             action_shape=self._env.action_space.shape,
-            reward_size=1,
-            cost_size=1,
-            use_cost=False,
-            use_terminal=False,
-            use_var=False,
-            use_reward_critic=True,
-            use_cost_critic=False,
             actor_critic=self._actor_critic,
             rew_func=None,
             cost_func=None,
@@ -84,24 +79,15 @@ class LOOP(PETS):
         self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
         self._planner = ARCPlanner(
             dynamics=self._dynamics,
-            actor_critic=self._actor_critic,
-            num_models=int(self._cfgs.dynamics_cfgs.num_ensemble),
-            horizon=int(self._cfgs.algo_cfgs.plan_horizon),
-            num_iterations=int(self._cfgs.algo_cfgs.num_iterations),
-            num_particles=int(self._cfgs.algo_cfgs.num_particles),
-            num_samples=int(self._cfgs.algo_cfgs.num_samples),
-            num_elites=int(self._cfgs.algo_cfgs.num_elites),
-            mixture_coefficient=float(self._cfgs.algo_cfgs.mixture_coefficient),
-            temperature=float(self._cfgs.algo_cfgs.temperature),
-            momentum=float(self._cfgs.algo_cfgs.momentum),
-            epsilon=float(self._cfgs.algo_cfgs.epsilon),
-            init_var=float(self._cfgs.algo_cfgs.init_var),
+            planner_cfgs=self._cfgs.planner_cfgs,
             gamma=float(self._cfgs.algo_cfgs.gamma),
-            device=self._device,
+            cost_gamma=float(self._cfgs.algo_cfgs.cost_gamma),
             dynamics_state_shape=self._dynamics_state_space.shape,
             action_shape=self._action_space.shape,
             action_max=1.0,
             action_min=-1.0,
+            device=self._device,
+            actor_critic=self._actor_critic,
         )
 
     def _init(self) -> None:
@@ -139,6 +125,21 @@ class LOOP(PETS):
             # log information about cost critic
             self._logger.register_key('Loss/Loss_cost_critic', delta=True)
             self._logger.register_key('Value/cost_critic')
+
+    def _save_model(self) -> None:
+        """Save the model."""
+        what_to_save: dict[str, Any] = {}
+        # Set up model saving
+        what_to_save = {
+            'dynamics': self._dynamics.ensemble_model,
+            'actor_critic': self._actor_critic,
+        }
+        if self._cfgs.algo_cfgs.obs_normalize:
+            obs_normalizer = self._env.save()['obs_normalizer']
+            what_to_save['obs_normalizer'] = obs_normalizer
+        self._logger.setup_torch_saver(what_to_save)
+        # self._logger.planner_save()
+        self._logger.torch_save()
 
     def _select_action(  # pylint: disable=unused-argument
         self,

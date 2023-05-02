@@ -28,7 +28,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
+from omnisafe.models.actor_critic import ConstraintActorCritic, ConstraintActorQCritic
 from omnisafe.utils.config import Config
 
 
@@ -356,14 +356,7 @@ class EnsembleDynamicsModel:
         device: torch.device,
         state_shape: tuple[int, ...],
         action_shape: tuple[int, ...],
-        reward_size: int,
-        cost_size: int,
-        use_cost: bool,
-        use_terminal: bool,
-        use_var: bool,
-        use_reward_critic: bool,
-        use_cost_critic: bool,
-        actor_critic: ConstraintActorQCritic | None = None,
+        actor_critic: ConstraintActorCritic | ConstraintActorQCritic | None = None,
         rew_func: Callable | None = None,
         cost_func: Callable | None = None,
         terminal_func: Callable | None = None,
@@ -375,54 +368,77 @@ class EnsembleDynamicsModel:
         self._predict_cost = model_cfgs.predict_cost
         self._batch_size = model_cfgs.batch_size
         self._max_epoch_since_update = model_cfgs.max_epoch
-        self._model_list: list[int] = []
+
+        self._reward_size = model_cfgs.reward_size
+        self._cost_size = model_cfgs.cost_size
+        self._use_cost = model_cfgs.use_cost
+        self._use_terminal = model_cfgs.use_terminal
+        self._use_var = model_cfgs.use_var
+        self._use_reward_critic = model_cfgs.use_reward_critic
+        self._use_cost_critic = model_cfgs.use_cost_critic
+
+        self._device = device
+
         self._state_size = state_shape[0]
         self._action_size = action_shape[0]
-        self._reward_size = reward_size
-        self._cost_size = cost_size
-        self._device = device
+
+        self._rew_func = rew_func
+        self._cost_func = cost_func
+        self._terminal_func = terminal_func
+
+        self._actor_critic = actor_critic
+
+        self._model_list: list[int] = []
+
         self.elite_model_idxes = list(range(self._elite_size))
         self._ensemble_model = EnsembleModel(
             device=self._device,
             state_size=self._state_size,
             action_size=self._action_size,
-            reward_size=reward_size,
-            cost_size=cost_size,
-            ensemble_size=model_cfgs.num_ensemble,
+            reward_size=self._reward_size,
+            cost_size=self._cost_size,
+            ensemble_size=self._num_ensemble,
             predict_reward=model_cfgs.predict_reward,
             predict_cost=model_cfgs.predict_cost,
             hidden_size=model_cfgs.hidden_size,
             learning_rate=1e-3,
             use_decay=model_cfgs.use_decay,
         )
-
         self._ensemble_model.to(self._device)
+
         self._max_epoch_since_update = 5
         self._epochs_since_update = 0
         self._snapshots = {i: (0, 1e10) for i in range(self._num_ensemble)}
 
         if self._predict_reward is False:
             assert rew_func is not None, 'rew_func should not be None'
-        if use_cost is True and self._predict_cost is False:
+        if self._use_cost is True and self._predict_cost is False:
             assert cost_func is not None, 'cost_func should not be None'
             assert (
                 cost_func(torch.zeros((1, self._state_size)).to(self._device)) is not None
             ), 'cost_func should return cost'
-        if use_terminal is True:
+        if self._use_terminal is True:
             assert terminal_func is not None, 'terminal_func should not be None'
-        self._rew_func = rew_func
-        self._cost_func = cost_func
-        self._terminal_func = terminal_func
+
         self._state_start_dim = (
             int(self._predict_reward) * self._reward_size
             + int(self._predict_cost) * self._cost_size
         )
-        self._use_cost = use_cost
-        self._use_terminal = use_terminal
-        self._use_var = use_var
-        self._use_reward_critic = use_reward_critic
-        self._use_cost_critic = use_cost_critic
-        self._actor_critic = actor_critic
+
+    @property
+    def ensemble_model(self) -> EnsembleModel:
+        """Return the ensemble model."""
+        return self._ensemble_model
+
+    @property
+    def num_models(self) -> int:
+        """Return the number of ensemble."""
+        return self._num_ensemble
+
+    @property
+    def state_size(self) -> int:
+        """Return the state size."""
+        return self._state_size
 
     # pylint: disable-next=too-many-locals, too-many-arguments
     def train(

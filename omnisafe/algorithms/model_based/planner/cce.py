@@ -15,10 +15,13 @@
 """Model Predictive Control Planner of the Constrained Cross-Entropy algorithm."""
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.cem import CEMPlanner
+from omnisafe.utils.config import Config
 
 
 class CCEPlanner(CEMPlanner):
@@ -34,45 +37,30 @@ class CCEPlanner(CEMPlanner):
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
         dynamics: EnsembleDynamicsModel,
-        num_models: int,
-        horizon: int,
-        num_iterations: int,
-        num_particles: int,
-        num_samples: int,
-        num_elites: int,
-        momentum: float,
-        epsilon: float,
-        init_var: float,
+        planner_cfgs: Config,
         gamma: float,
-        device: torch.device,
+        cost_gamma: float,
         dynamics_state_shape: tuple[int, ...],
         action_shape: tuple[int, ...],
         action_max: float,
         action_min: float,
-        cost_gamma: float,
-        cost_limit: float,
+        device: torch.device,
+        **kwargs: Any,
     ) -> None:
         """Initializes the planner of Constrained Cross-Entropy (CCE) algorithm."""
         super().__init__(
             dynamics,
-            num_models,
-            horizon,
-            num_iterations,
-            num_particles,
-            num_samples,
-            num_elites,
-            momentum,
-            epsilon,
-            init_var,
+            planner_cfgs,
             gamma,
-            device,
+            cost_gamma,
             dynamics_state_shape,
             action_shape,
             action_max,
             action_min,
+            device,
+            **kwargs,
         )
-        self._cost_gamma = cost_gamma
-        self._cost_limit = cost_limit
+        self._cost_limit: float = kwargs['cost_limit']
 
     @torch.no_grad()
     def _select_elites(

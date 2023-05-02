@@ -15,9 +15,12 @@
 """Model Predictive Control Planner of Cross-Entropy Method optimization algorithm."""
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
+from omnisafe.utils.config import Config
 
 
 class CEMPlanner:  # pylint: disable=too-many-instance-attributes
@@ -30,54 +33,51 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
         dynamics: EnsembleDynamicsModel,
-        num_models: int,
-        horizon: int,
-        num_iterations: int,
-        num_particles: int,
-        num_samples: int,
-        num_elites: int,
-        momentum: float,
-        epsilon: float,
-        init_var: float,
+        planner_cfgs: Config,
         gamma: float,
-        device: torch.device,
+        cost_gamma: float,
         dynamics_state_shape: tuple[int, ...],
         action_shape: tuple[int, ...],
         action_max: float,
         action_min: float,
+        device: torch.device,
+        **kwargs: Any,
     ) -> None:
         """Initializes the planner of Cross-Entropy Method optimization (CEM) algorithm."""
         assert (
-            num_samples * num_particles
-        ) % num_models == 0, 'num_samples * num_elites should be divisible by num_models'
-        assert num_samples > num_elites, 'num_samples should be greater than num_elites'
-        assert num_particles % num_models == 0, 'num_particles should be divisible by num_models'
+            planner_cfgs.num_samples * planner_cfgs.num_particles
+        ) % dynamics.num_models == 0, 'num_samples * num_elites should be divisible by num_models'
+        assert (
+            planner_cfgs.num_samples > planner_cfgs.num_elites
+        ), 'num_samples should be greater than num_elites'
         self._dynamics = dynamics
-        self._num_models = num_models
-        self._horizon = horizon
-        self._num_iterations = num_iterations
-        self._num_particles = num_particles
-        self._num_samples = num_samples
-        self._num_elites = num_elites
-        self._momentum = momentum
-        self._epsilon = epsilon
+        self._num_models = dynamics.num_models
+        self._horizon = planner_cfgs.plan_horizon
+        self._num_iterations = planner_cfgs.num_iterations
+        self._num_particles = planner_cfgs.num_particles
+        self._num_samples = planner_cfgs.num_samples
+        self._num_elites = planner_cfgs.num_elites
+        self._momentum = planner_cfgs.momentum
+        self._epsilon = planner_cfgs.epsilon
         self._dynamics_state_shape = dynamics_state_shape
         self._action_shape = action_shape
         self._action_max = action_max
         self._action_min = action_min
         self._gamma = gamma
+        self._cost_gamma = cost_gamma
         self._device = device
         self._action_sequence_mean = torch.zeros(
             self._horizon,
             *self._action_shape,
             device=self._device,
         )
-        self._init_var = init_var
-        self._action_sequence_var = init_var * torch.ones(
+        self._init_var = planner_cfgs.init_var
+        self._action_sequence_var = self._init_var * torch.ones(
             self._horizon,
             *self._action_shape,
             device=self._device,
         )
+        self.kwargs = kwargs
 
     @torch.no_grad()
     def _act_from_last_gaus(self, last_mean: torch.Tensor, last_var: torch.Tensor) -> torch.Tensor:
@@ -122,6 +122,9 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
             states (torch.Tensor): Repeated states.
             actions (torch.Tensor): Repeated actions.
         """
+        assert (
+            self._num_particles % self._num_models == 0
+        ), 'num_particles should be divisible by num_models'
         assert action.shape == torch.Size(
             [self._horizon, self._num_samples, *self._action_shape],
         ), 'Input action dimension should be equal to (self._num_samples, self._action_shape)'

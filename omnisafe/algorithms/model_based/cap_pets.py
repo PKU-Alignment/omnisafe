@@ -15,6 +15,8 @@
 """Implementation of the Conservative and Adaptive Penalty algorithm."""
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from gymnasium.spaces import Box
 
@@ -57,13 +59,6 @@ class CAPPETS(PETS):
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
             action_shape=self._action_space.shape,
-            reward_size=1,
-            cost_size=1,
-            use_cost=True,
-            use_terminal=False,
-            use_var=True,
-            use_reward_critic=False,
-            use_cost_critic=False,
             actor_critic=None,
             rew_func=None,
             cost_func=self._env.get_cost_from_obs_tensor,
@@ -74,24 +69,16 @@ class CAPPETS(PETS):
 
         self._planner = CAPPlanner(
             dynamics=self._dynamics,
-            num_models=self._cfgs.dynamics_cfgs.num_ensemble,
-            horizon=self._cfgs.algo_cfgs.plan_horizon,
-            num_iterations=self._cfgs.algo_cfgs.num_iterations,
-            num_particles=self._cfgs.algo_cfgs.num_particles,
-            num_samples=self._cfgs.algo_cfgs.num_samples,
-            num_elites=self._cfgs.algo_cfgs.num_elites,
-            momentum=self._cfgs.algo_cfgs.momentum,
-            epsilon=self._cfgs.algo_cfgs.epsilon,
-            init_var=self._cfgs.algo_cfgs.init_var,
-            gamma=self._cfgs.algo_cfgs.gamma,
-            device=self._device,
+            planner_cfgs=self._cfgs.planner_cfgs,
+            gamma=float(self._cfgs.algo_cfgs.gamma),
+            cost_gamma=float(self._cfgs.algo_cfgs.cost_gamma),
             dynamics_state_shape=self._dynamics_state_space.shape,
             action_shape=self._action_space.shape,
             action_max=1.0,
             action_min=-1.0,
-            lagrange=self._lagrange,
-            cost_gamma=self._cfgs.algo_cfgs.cost_gamma,
+            device=self._device,
             cost_limit=self._cfgs.lagrange_cfgs.cost_limit,
+            lagrange=self._lagrange.lagrangian_multiplier,
         )
 
         self._use_actor_critic = False
@@ -108,6 +95,21 @@ class CAPPETS(PETS):
         self._logger.register_key('Plan/var_penalty_max')
         self._logger.register_key('Plan/var_penalty_mean')
         self._logger.register_key('Plan/var_penalty_min')
+
+    def _save_model(self) -> None:
+        """Save the model."""
+        what_to_save: dict[str, Any] = {}
+        # Set up model saving
+        what_to_save = {
+            'dynamics': self._dynamics.ensemble_model,
+            'lagrangian_multiplier': self._lagrange.lagrangian_multiplier,
+        }
+        if self._cfgs.algo_cfgs.obs_normalize:
+            obs_normalizer = self._env.save()['obs_normalizer']
+            what_to_save['obs_normalizer'] = obs_normalizer
+        self._logger.setup_torch_saver(what_to_save)
+        # self._logger.planner_save()
+        self._logger.torch_save()
 
     def _update_epoch(self) -> None:
         # note that logger already uses MPI statistics across all processes..

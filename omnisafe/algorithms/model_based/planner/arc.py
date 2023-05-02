@@ -15,11 +15,14 @@
 """Model Predictive Control Planner of the Actor Regularized Control (ARC) algorithm."""
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.cem import CEMPlanner
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
+from omnisafe.utils.config import Config
 
 
 class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
@@ -34,52 +37,37 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
         dynamics: EnsembleDynamicsModel,
-        num_models: int,
-        horizon: int,
-        num_iterations: int,
-        num_particles: int,
-        num_samples: int,
-        num_elites: int,
-        momentum: float,
-        epsilon: float,
-        init_var: float,
+        planner_cfgs: Config,
         gamma: float,
-        device: torch.device,
-        dynamics_state_shape: tuple,
-        action_shape: tuple,
+        cost_gamma: float,
+        dynamics_state_shape: tuple[int, ...],
+        action_shape: tuple[int, ...],
         action_max: float,
         action_min: float,
-        actor_critic: ConstraintActorQCritic,
-        mixture_coefficient: float,
-        temperature: float,
+        device: torch.device,
+        **kwargs: Any,
     ) -> None:
         """Initialize the planner of Actor Regularized Control (ARC) algorithm."""
-        assert (
-            num_samples + mixture_coefficient * num_samples
-        ) > num_elites, 'The number of samples should be larger than the number of elites.'
         super().__init__(
             dynamics,
-            num_models,
-            horizon,
-            num_iterations,
-            num_particles,
-            num_samples,
-            num_elites,
-            momentum,
-            epsilon,
-            init_var,
+            planner_cfgs,
             gamma,
-            device,
+            cost_gamma,
             dynamics_state_shape,
             action_shape,
             action_max,
             action_min,
+            device,
+            **kwargs,
         )
-        self._actor_critic = actor_critic
-        self._mixture_coefficient = mixture_coefficient
+        self._actor_critic: ConstraintActorQCritic = kwargs['actor_critic']
+        self._mixture_coefficient: float = planner_cfgs.mixture_coefficient
+        self._temperature: float = planner_cfgs.temperature
         self._actor_traj = int(self._mixture_coefficient * self._num_samples)
         self._num_action = self._actor_traj + self._num_samples
-        self._temperature = temperature
+        assert (
+            self._num_samples + self._mixture_coefficient * self._num_samples
+        ) > self._num_elites, 'The number of samples should be larger than the number of elites.'
 
     @torch.no_grad()
     def _act_from_last_gaus(self, last_mean: torch.Tensor, last_var: torch.Tensor) -> torch.Tensor:

@@ -15,11 +15,13 @@
 """Model Predictive Control Planner of the Conservative and Adaptive Penalty algorithm."""
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.cce import CCEPlanner
-from omnisafe.common.lagrange import Lagrange
+from omnisafe.utils.config import Config
 
 
 class CAPPlanner(CCEPlanner):
@@ -34,47 +36,30 @@ class CAPPlanner(CCEPlanner):
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
         dynamics: EnsembleDynamicsModel,
-        num_models: int,
-        horizon: int,
-        num_iterations: int,
-        num_particles: int,
-        num_samples: int,
-        num_elites: int,
-        momentum: float,
-        epsilon: float,
-        init_var: float,
+        planner_cfgs: Config,
         gamma: float,
-        device: torch.device,
+        cost_gamma: float,
         dynamics_state_shape: tuple[int, ...],
         action_shape: tuple[int, ...],
         action_max: float,
         action_min: float,
-        cost_gamma: float,
-        cost_limit: float,
-        lagrange: Lagrange,
+        device: torch.device,
+        **kwargs: Any,
     ) -> None:
         """Initializes the planner of Conservative and Adaptive Penalty (CAP) algorithm."""
         super().__init__(
             dynamics,
-            num_models,
-            horizon,
-            num_iterations,
-            num_particles,
-            num_samples,
-            num_elites,
-            momentum,
-            epsilon,
-            init_var,
+            planner_cfgs,
             gamma,
-            device,
+            cost_gamma,
             dynamics_state_shape,
             action_shape,
             action_max,
             action_min,
-            cost_gamma,
-            cost_limit,
+            device,
+            **kwargs,
         )
-        self._lagrange = lagrange
+        self._lagrange: torch.Tensor = kwargs['lagrange']
 
     @torch.no_grad()
     def _select_elites(  # pylint: disable=too-many-locals
@@ -133,7 +118,7 @@ class CAPPlanner(CCEPlanner):
             costs.shape,
         )
         # cost_penalty: [horizon, num_gaussian_traj*particle]
-        costs += self._lagrange.lagrangian_multiplier * var_penalty
+        costs += self._lagrange * var_penalty
 
         costs = costs.reshape(self._horizon, self._num_particles, self._num_samples, 1)
         sum_horizon_costs = torch.sum(costs, dim=0)

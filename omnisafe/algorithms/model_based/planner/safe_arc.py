@@ -15,11 +15,13 @@
 """Model Predictive Control Planner of the Safe Actor Regularized Control algorithm."""
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
-from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
+from omnisafe.utils.config import Config
 
 
 class SafeARCPlanner(ARCPlanner):
@@ -34,53 +36,31 @@ class SafeARCPlanner(ARCPlanner):
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments
         self,
         dynamics: EnsembleDynamicsModel,
-        num_models: int,
-        horizon: int,
-        num_iterations: int,
-        num_particles: int,
-        num_samples: int,
-        num_elites: int,
-        momentum: float,
-        epsilon: float,
-        init_var: float,
+        planner_cfgs: Config,
         gamma: float,
-        device: torch.device,
-        dynamics_state_shape: tuple,
-        action_shape: tuple,
+        cost_gamma: float,
+        dynamics_state_shape: tuple[int, ...],
+        action_shape: tuple[int, ...],
         action_max: float,
         action_min: float,
-        actor_critic: ConstraintActorQCritic,
-        mixture_coefficient: float,
-        temperature: float,
-        cost_gamma: float,
-        cost_limit: float,
-        cost_temperature: float,
+        device: torch.device,
+        **kwargs: Any,
     ) -> None:
         """Initializes the planner of Safe Actor Regularized Control (ARC) algorithm."""
         super().__init__(
             dynamics,
-            num_models,
-            horizon,
-            num_iterations,
-            num_particles,
-            num_samples,
-            num_elites,
-            momentum,
-            epsilon,
-            init_var,
+            planner_cfgs,
             gamma,
-            device,
+            cost_gamma,
             dynamics_state_shape,
             action_shape,
             action_max,
             action_min,
-            actor_critic,
-            mixture_coefficient,
-            temperature,
+            device,
+            **kwargs,
         )
-        self._cost_gamma = cost_gamma
-        self._cost_limit = cost_limit
-        self._cost_temperature = cost_temperature
+        self._cost_limit: float = kwargs['cost_limit']
+        self._cost_temperature: float = planner_cfgs.cost_temperature
 
     @torch.no_grad()
     def _update_mean_var(
