@@ -115,6 +115,7 @@ class ModelBasedAdapter(
         self._last_dynamics_update = 0
         self._last_policy_update = 0
         self._last_eval = 0
+        self._first_log = False
 
     def get_goal_flag_from_obs_tensor(self, obs: torch.Tensor) -> torch.Tensor | None:
         """Get goal flag from tensor observation.
@@ -250,12 +251,12 @@ class ModelBasedAdapter(
 
         update_actor_critic_time = 0.0
         update_dynamics_time = 0.0
-        if eval_func is not None:
+        if use_eval:
             eval_time = 0.0
 
         epoch_steps = 0
 
-        while epoch_steps < roll_out_step:
+        while epoch_steps < roll_out_step and current_step < self._cfgs.train_cfgs.total_steps:
             action, action_info = act_func(current_step, self._current_obs, self._env)
             next_state, reward, cost, terminated, truncated, info = self.step(action)
             epoch_steps += info['num_step']
@@ -316,12 +317,15 @@ class ModelBasedAdapter(
                 self._last_eval = current_step
                 eval_time += time.time() - eval_start
 
+        if not self._first_log or current_step >= self._cfgs.train_cfgs.total_steps:
+            self._log_metrics(logger)
+
         epoch_time = time.time() - epoch_start_time
         logger.store(**{'Time/Epoch': epoch_time})
         logger.store(**{'Time/UpdateDynamics': update_dynamics_time})
         roll_out_time = epoch_time - update_dynamics_time
 
-        if eval_func is not None:
+        if use_eval:
             logger.store(**{'Time/Eval': eval_time})
             roll_out_time -= eval_time
 
@@ -358,6 +362,7 @@ class ModelBasedAdapter(
         Args:
             logger (Logger): Logger.
         """
+        self._first_log = True
         logger.store(
             **{
                 'Metrics/EpRet': self._ep_ret,

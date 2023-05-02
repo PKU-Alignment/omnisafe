@@ -52,10 +52,10 @@ class PETS(BaseAlgo):
             self._seed,
             self._cfgs,
         )
-        assert int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.steps_per_epoch == 0
         self._total_steps = int(self._cfgs.train_cfgs.total_steps)
         self._steps_per_epoch = int(self._cfgs.algo_cfgs.steps_per_epoch)
         self._epochs = self._total_steps // self._cfgs.algo_cfgs.steps_per_epoch
+        print(f'Total steps: {self._total_steps}, epochs: {self._epochs}')
 
     def _init_model(self) -> None:
         """Initialize dynamics model and planner."""
