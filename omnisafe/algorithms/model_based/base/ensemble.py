@@ -137,7 +137,6 @@ class EnsembleFC(nn.Module):
     ensemble_size: int
     weight: torch.Tensor
 
-    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         in_features: int,
@@ -224,7 +223,6 @@ class EnsembleModel(nn.Module):
         self._device = device
         self.scaler = StandardScaler(self._device)
 
-    # pylint: disable-next=too-many-locals
     def forward(
         self,
         data: torch.Tensor | np.ndarray,
