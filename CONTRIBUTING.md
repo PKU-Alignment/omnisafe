@@ -82,7 +82,7 @@ y (type1, type2, or type3): Variable description.
 Please document each function/method and [type](https://google.github.io/pytype/user_guide.html) them using the following template, which is similar to the [PyTorch Docstring]():
 
 ```python
-def my_function(arg1: type1, arg2: type2) -> returntype:
+def my_function(arg1: type1, arg2: type2, my_var: int = 1) -> returntype:
     """Short description of the function.
 
     (Optional) Long description of the function or example usage.
@@ -92,8 +92,7 @@ def my_function(arg1: type1, arg2: type2) -> returntype:
         ...
 
     Returns:
-        return_var (int, optional): Variable description.
-        ...
+        Variable description.
     """
     ...
     return my_variable
