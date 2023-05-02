@@ -25,7 +25,7 @@ repos:
       - id: debug-statements
       - id: double-quote-string-fixer
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.263
+    rev: v0.0.264
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -61,9 +61,9 @@ repos:
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.4
     hooks:
-    - id: codespell
-      additional_dependencies: [".[toml]"]
-      exclude: |
+      - id: codespell
+        additional_dependencies: [".[toml]"]
+        exclude: |
           (?x)(
             ^docs/source/spelling_wordlist.txt$
           )
