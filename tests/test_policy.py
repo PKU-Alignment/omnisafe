@@ -33,9 +33,9 @@ saute_policy = ['TRPOSaute', 'PPOSaute']
 simmer_policy = ['TRPOSimmerPID', 'PPOSimmerPID']
 pid_lagrange_policy = ['TRPOPID', 'CPPOPID']
 early_terminated_policy = ['TRPOEarlyTerminated', 'PPOEarlyTerminated']
+
 # saute_policy = ['PPOSaute', 'PPOLagSaute']
 # simmer_policy = ['PPOSimmerQ', 'PPOLagSimmerQ', 'PPOSimmerPid', 'PPOLagSimmerPid']
-# model_based_policy = ['MBPPOLag', 'SafeLOOP', 'CAP']
 model_cfgs = {
     'linear_lr_decay': True,
     'actor': {
@@ -180,6 +180,96 @@ def test_render():
     agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
     agent.render(num_episodes=1, render_mode='rgb_array')
+
+
+@helpers.parametrize(algo=['PETS', 'CCEPETS', 'CAPPETS', 'RCEPETS'])
+def test_cem_based(algo):
+    """Test model_based algorithms."""
+    env_id = 'Simple-v0'
+
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 200,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'obs_normalize': True,
+            'steps_per_epoch': 100,
+            'action_repeat': 1,
+            'update_dynamics_cycle': 100,
+            'start_learning_steps': 3,
+        },
+        'dynamics_cfgs': {
+            'num_ensemble': 5,
+            'batch_size': 10,
+            'max_epoch': 1,
+            'predict_cost': True,
+        },
+        'planner_cfgs': {
+            'plan_horizon': 2,
+            'num_particles': 5,
+            'num_samples': 10,
+            'num_elites': 5,
+        },
+        'evaluation_cfgs': {
+            'use_eval': True,
+            'eval_cycle': 100,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+    }
+    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
+
+
+@helpers.parametrize(algo=['LOOP', 'SafeLOOP'])
+def test_loop(algo):
+    """Test model_based algorithms."""
+    env_id = 'Simple-v0'
+
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 200,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'obs_normalize': True,
+            'use_cost': True,
+            'steps_per_epoch': 100,
+            'action_repeat': 1,
+            'update_dynamics_cycle': 100,
+            'update_policy_cycle': 100,
+            'update_policy_iters': 1,
+            'start_learning_steps': 3,
+            'policy_batch_size': 10,
+        },
+        'planner_cfgs': {
+            'plan_horizon': 2,
+            'num_particles': 5,
+            'num_samples': 10,
+            'num_elites': 5,
+        },
+        'dynamics_cfgs': {
+            'num_ensemble': 5,
+            'batch_size': 10,
+            'max_epoch': 1,
+            'predict_cost': True,
+        },
+        'evaluation_cfgs': {
+            'use_eval': True,
+            'eval_cycle': 100,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+    }
+    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
 
 
 @helpers.parametrize(algo=off_policy)

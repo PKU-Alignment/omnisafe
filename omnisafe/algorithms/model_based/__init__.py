@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Adapter for the environment and the algorithm."""
+"""Model-Based algorithms."""
 
-from omnisafe.adapter.early_terminated_adapter import EarlyTerminatedAdapter
-from omnisafe.adapter.modelbased_adapter import ModelBasedAdapter
-from omnisafe.adapter.offpolicy_adapter import OffPolicyAdapter
-from omnisafe.adapter.online_adapter import OnlineAdapter
-from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
-from omnisafe.adapter.saute_adapter import SauteAdapter
+from omnisafe.algorithms.model_based import base
+from omnisafe.algorithms.model_based.base import LOOP, PETS
+from omnisafe.algorithms.model_based.cap_pets import CAPPETS
+from omnisafe.algorithms.model_based.cce_pets import CCEPETS
+from omnisafe.algorithms.model_based.rce_pets import RCEPETS
+from omnisafe.algorithms.model_based.safeloop import SafeLOOP
+
+
+__all__ = [
+    *base.__all__,
+    'CAPPETS',
+    'CCEPETS',
+    'SafeLOOP',
+    'RCEPETS',
+]

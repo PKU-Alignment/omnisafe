@@ -503,6 +503,47 @@ class ActionScale(Wrapper):
         return super().step(action)
 
 
+class ActionRepeat(Wrapper):
+    """Repeat ab action given times.
+
+    Example:
+        >>> env = ActionRepeat(env, times=3)
+    """
+
+    def __init__(
+        self,
+        env: CMDP,
+        times: int,
+        device: torch.device,
+    ) -> None:
+        """Initialize the wrapper.
+
+        Args:
+            env: The environment to wrap.
+            times: The number of times to repeat the action.
+            device: The device to use.
+        """
+        super().__init__(env=env, device=device)
+        self._times = times
+        self._device = device
+
+    def step(
+        self,
+        action: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+        """Run self._times timesteps of the environment's dynamics using the agent actions."""
+        rewards, costs = torch.tensor(0.0).to(self._device), torch.tensor(0.0).to(self._device)
+        for _step, _ in enumerate(range(self._times)):
+            obs, reward, cost, terminated, truncated, info = super().step(action)
+            rewards += reward
+            costs += cost
+            goal_met = info.get('goal_met', False)
+            if terminated or truncated or goal_met:
+                break
+        info['num_step'] = _step + 1
+        return obs, rewards, costs, terminated, truncated, info
+
+
 class Unsqueeze(Wrapper):
     """Unsqueeze the observation, reward, cost, terminated, truncated and info.
 
