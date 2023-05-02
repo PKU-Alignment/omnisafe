@@ -128,8 +128,7 @@ make mypy
 Codestyle check with `black`, `isort` and `flake8`:
 
 ```bash
-make py-format
-make flake8
+make format
 ```
 
 To run `pre-commit` beforce commit:
