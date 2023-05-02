@@ -89,3 +89,45 @@ def test_experiment_grid():
     eg.analyze('algo')
     # eg.render(num_episodes=1, render_mode='rgb_array', width=256, height=256)
     eg.evaluate(num_episodes=1)
+
+
+def test_modelbased_experiment_grid():
+    """Test experiment grid."""
+    eg = ExperimentGrid(exp_name='Test_experiment_grid_modelbased')
+
+    # Set the environments.
+    mujoco_envs = ['SafetyPointGoal1-v0-modelbased']
+
+    # Set the algorithms.
+    eg.add('env_id', mujoco_envs)
+
+    eg.add('algo', ['LOOP'])
+    eg.add('train_cfgs:total_steps', [1024])
+    eg.add('train_cfgs:vector_env_nums', [1])
+    eg.add('train_cfgs:torch_threads', [1])
+    eg.add('algo_cfgs:obs_normalize', [False])
+    eg.add('algo_cfgs:steps_per_epoch', [1000])
+    eg.add('algo_cfgs:action_repeat', [10])
+    eg.add('algo_cfgs:update_dynamics_cycle', [2000])
+    eg.add('algo_cfgs:update_policy_cycle', [2000])
+    eg.add('algo_cfgs:update_policy_iters', [1])
+    eg.add('algo_cfgs:start_learning_steps', [3])
+    eg.add('algo_cfgs:policy_batch_size', [1])
+    eg.add('dynamics_cfgs:num_ensemble', [5])
+    eg.add('dynamics_cfgs:batch_size', [1])
+    eg.add('dynamics_cfgs:max_epoch', [1])
+    eg.add('dynamics_cfgs:predict_cost', [False])
+    eg.add('planner_cfgs:plan_horizon', [2])
+    eg.add('planner_cfgs:num_particles', [5])
+    eg.add('planner_cfgs:num_samples', [10])
+    eg.add('planner_cfgs:num_elites', [5])
+    eg.add('evaluation_cfgs:use_eval', [False])
+    eg.add('logger_cfgs:use_wandb', [False])
+    eg.add('seed', [0])
+    # total experiment num must can be divided by num_pool
+    # meanwhile, users should decide this value according to their machine
+    eg.run(train, num_pool=1)
+
+    eg.analyze('algo')
+    # eg.render(num_episodes=1, render_mode='rgb_array', width=256, height=256)
+    eg.evaluate(num_episodes=1)
