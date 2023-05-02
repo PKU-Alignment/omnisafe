@@ -32,7 +32,7 @@ cd omnisafe/
 2. Install OmniSafe in develop mode, with support for building the docs and running tests:
 
 ```bash
-pip install -e .
+pip install -e .[docs,tests,extra]
 ```
 
 ## Codestyle
@@ -44,6 +44,8 @@ We are using [black codestyle](https://github.com/psf/black) (max line length of
 Please document each function/method and [type](https://google.github.io/pytype/user_guide.html) them using the following template, which is similar to the [PyTorch docs style]:
 
 Similar to the standard PyTorch Style docstring formatting rules, the following guidelines should be followed for docstring types (docstring types are the type information contained in the round brackets after the variable name):
+
+- If Python Version is less than `3.10`, you need to add `from __future__ import annotations`.
 
 - The `Callable`, `Any`, `Iterable`, `Iterator`, `Generator` types should have their first letter capitalized.
 
