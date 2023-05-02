@@ -173,7 +173,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     epochs=1,
                 )
             if self._actor_critic is not None:
-                self._actor_critic.load_state_dict(model_params['ac'])
+                self._actor_critic.load_state_dict(model_params['actor_critic'])
                 self._actor_critic.to('cpu')
             self._dynamics = EnsembleDynamicsModel(
                 model_cfgs=self._cfgs.dynamics_cfgs,
