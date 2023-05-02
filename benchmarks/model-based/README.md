@@ -1,7 +1,8 @@
 # OmniSafe's Navigation Benchmark on Model-based Algorithms
 
 OmniSafe's navigation Benchmark evaluated the performance of OmniSafe algorithm implementations in 2 environments from the Safety-Gymnasium task suite For each algorithm and environment supported, we provide:
-- Default hyperparameters used for the benchmark and scripts to reproduce the results
+
+- Default hyperparameters used for the benchmark and scripts to reproduce the results.
 - A comparison of performance or code-level details with other open-source implementations or classic papers.
 - Graphs and raw data that can be used for research purposes, - Log details obtained during training
 - Some hints on how to fine-tune the algorithm for optimal results.
@@ -62,6 +63,7 @@ python run_experiment_grid.py
 
 You can set the path of ``examples/benchmarks/experimrnt_grid.py`` :
 example:
+
 ```python
 path ='/home/username/omnisafe/omnisafe/examples/benchmarks/exp-x/Model-Based-Benchmarks'
 ```
@@ -74,7 +76,6 @@ python analyze_experiment_results.py
 ```
 
 ## Example benchmark
-
 
 <center>
     <img style="border-radius: 0.3125em;
@@ -121,29 +122,27 @@ Moreover, No policy-guided like pets need the high ``plan_horizon``, and policy-
 
 If you find that other hyperparameters perform better, please feel free to open an issue or pull request.
 
-
 | Algorithm | action_repeat | init_var | plan_horizon |
-| :---------: | :-----------: |  :-----------: |  :-----------: |
-|     PETS    | 5 | 4.0 | 7 |
-| LOOP | 5 | 0.01 | 7 |
-| SafeLOOP | 5 | 0.075 | 7 |
-|     CCEPETS    | 5 | 4.0 | 7 |
-|     CAPPETS    | 5 | 4.0 | 7 |
-|     RCEPETS    | 5 | 4.0 | 7 |
+| :-------: | :-----------: | :------: | :----------: |
+|   PETS    |       5       |   4.0    |      7       |
+|   LOOP    |       5       |   0.01   |      7       |
+| SafeLOOP  |       5       |  0.075   |      7       |
+|  CCEPETS  |       5       |   4.0    |      7       |
+|  CAPPETS  |       5       |   4.0    |      7       |
+|  RCEPETS  |       5       |   4.0    |      7       |
 
 However, there are some differences between these algorithms. We list the differences below:
 
 ### LOOP
 
-| Environment | temperature |
-| :---------: | :-----------: |
-|     SafetyPointGoal1-v0    | 10.0 |
-|     SafetyCarGoal1-v0    | 10.0 |
-
+|     Environment     | temperature |
+| :-----------------: | :---------: |
+| SafetyPointGoal1-v0 |    10.0     |
+|  SafetyCarGoal1-v0  |    10.0     |
 
 ### SafeLOOP
 
-| Environment | temperature | cost_temperature |
-| :---------: | :-----------: |  :-----------: |
-|     SafetyPointGoal1-v0    | 10.0 | 100.0 |
-|     SafetyCarGoal1-v0    | 10.0 | 100.0 |
+|     Environment     | temperature | cost_temperature |
+| :-----------------: | :---------: | :--------------: |
+| SafetyPointGoal1-v0 |    10.0     |      100.0       |
+|  SafetyCarGoal1-v0  |    10.0     |      100.0       |
