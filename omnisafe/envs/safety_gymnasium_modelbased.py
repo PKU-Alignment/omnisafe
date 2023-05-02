@@ -52,6 +52,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         env_id: str,
         num_envs: int = 1,
         device: str = 'cpu',
+        use_lidar: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize the environment.
@@ -60,9 +61,11 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             env_id (str): Environment id.
             num_envs (int, optional): Number of environments. Defaults to 1.
             device (torch.device, optional): Device to store the data. Defaults to 'cpu'.
+            use_lidar (bool, optional): Whether to use lidar observation. Defaults to False.
             **kwargs: Other arguments.
         """
         super().__init__(env_id)
+        self._use_lidar = use_lidar
         if num_envs == 1:
             self._env = safety_gymnasium.make(
                 id=env_id.replace('-modelbased', ''),
@@ -70,7 +73,6 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
                 **kwargs,
             )
             self._action_space = self._env.action_space
-            self._observation_space = self._env.observation_space
         else:
             raise NotImplementedError
 
@@ -121,7 +123,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         self._max_lidar_dist = 3
         self.hazards_size = 0.2
         self.goal_size = 0.3
-        self.original_observation_space = self.observation_space
+        self.original_observation_space = self._env.observation_space
         self.coordinate_observation_space = gymnasium.spaces.Box(
             -np.inf,
             np.inf,
@@ -135,6 +137,10 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             (self.get_lidar_from_coordinate(flat_coordinate_obs).shape[0],),
             dtype=np.float32,
         )
+        if self._use_lidar:
+            self._observation_space = self.lidar_observation_space
+        else:
+            self._observation_space = self.coordinate_observation_space
 
     @property
     def task(self) -> str:
