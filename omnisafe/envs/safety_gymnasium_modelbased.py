@@ -401,7 +401,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         ]  # list of shape (2,) ndarray
 
         # append obs to the dict
-        for sensor in self._xyz_sensors:  # Explicitly listed sensors
+        for sensor in self._xyz_sensors:  # explicitly listed sensors
             if sensor == 'accelerometer':
                 obs[sensor] = self._env.task.agent.get_sensor(sensor)[:1]  # only x axis matters
             elif sensor == 'ballquat_rear':
