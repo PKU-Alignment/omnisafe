@@ -160,7 +160,7 @@ class PETS(BaseAlgo):
     def _save_model(self) -> None:
         """Save the model."""
         what_to_save: dict[str, Any] = {}
-        # Set up model saving
+        # set up model saving
         what_to_save = {
             'dynamics': self._dynamics.ensemble_model,
         }
@@ -204,7 +204,7 @@ class PETS(BaseAlgo):
                 # update something per epoch
                 # e.g. update lagrange multiplier
                 self._update_epoch()
-            # Evaluate episode
+            # evaluate episode
             self._logger.store(
                 **{
                     'Train/Epoch': epoch,
@@ -477,7 +477,7 @@ class PETS(BaseAlgo):
         pylab.plot(input2, target2, 'b-', label='true')
         pylab.xlabel('Step')
         pylab.ylabel(name)
-        pylab.xticks(np.arange(0, np.array(pred_state).shape[0], 50))  # Set the axis numbers
+        pylab.xticks(np.arange(0, np.array(pred_state).shape[0], 50))  # set the axis numbers
         if name == 'reward':
             pylab.yticks(np.arange(0, 3, 0.2))
         else:
@@ -486,7 +486,7 @@ class PETS(BaseAlgo):
             loc=3,
             borderaxespad=2.0,
             bbox_to_anchor=(0.7, 0.7),
-        )  # Sets the position of that box for what each line is
+        )  # set the position of that box for what each line is
         pylab.grid()  # draw grid
         pylab.savefig(
             os.path.join(

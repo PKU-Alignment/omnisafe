@@ -93,7 +93,7 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
             self._action_min,
             self._action_max,
         )
-        actions.clamp_(min=self._action_min, max=self._action_max)  # Clip action range
+        actions.clamp_(min=self._action_min, max=self._action_max)  # clip action range
         return actions
 
     @torch.no_grad()

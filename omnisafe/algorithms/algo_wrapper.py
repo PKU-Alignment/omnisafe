@@ -154,7 +154,7 @@ class AlgoWrapper:
             self.cfgs.train_cfgs.parallel,
             device=self.cfgs.train_cfgs.device,
         ):
-            # Re-launches the current script with workers linked by MPI
+            # re-launches the current script with workers linked by MPI
             sys.exit()
         self.agent: BaseAlgo = registry.get(self.algo)(
             env_id=self.env_id,

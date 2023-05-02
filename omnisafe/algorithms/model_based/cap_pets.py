@@ -99,7 +99,7 @@ class CAPPETS(PETS):
     def _save_model(self) -> None:
         """Save the model."""
         what_to_save: dict[str, Any] = {}
-        # Set up model saving
+        # set up model saving
         what_to_save = {
             'dynamics': self._dynamics.ensemble_model,
             'lagrangian_multiplier': self._lagrange.lagrangian_multiplier,

@@ -83,7 +83,7 @@ class ModelBasedAdapter(
 
         self._env = make(env_id, num_envs=num_envs, device=cfgs.train_cfgs.device, **kwargs)
 
-        # Wrap the environment, use the action repeat in model-based setting.
+        # wrap the environment, use the action repeat in model-based setting.
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,

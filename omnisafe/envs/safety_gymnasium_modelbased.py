@@ -299,7 +299,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         robot_3vec = robot_pos
         robot_mat = robot_matrix
 
-        pos_3vec = np.concatenate([pos, [0]])  # Add a zero z-coordinate
+        pos_3vec = np.concatenate([pos, [0]])  # add a zero z-coordinate
         robot_3vec = np.concatenate([robot_3vec, [0]])
         world_3vec = pos_3vec - robot_3vec
         return np.matmul(world_3vec, robot_mat)[:2]
@@ -393,13 +393,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
         robot_pos = self._env.task.agent.pos
         goal_pos = self._env.task.goal.pos
-        # vases_pos_list = self._env.task.vases.pos  # list of shape (3,) ndarray
         hazards_pos_list = self._env.task.hazards.pos  # list of shape (3,) ndarray
-        # ego_goal_pos = self._env.task._ego_xy(goal_pos[:2])
-        # [self._env.task._ego_xy(pos[:2]) for pos in vases_pos_list]  # list of shape (2,) ndarray
-        # ego_hazards_pos_list = [
-        #     self._env.task._ego_xy(pos[:2]) for pos in hazards_pos_list
-        # ]  # list of shape (2,) ndarray
 
         ego_goal_pos = self._ego_xy(robot_matrix, robot_pos[:2], goal_pos[:2])
         ego_hazards_pos_list = [

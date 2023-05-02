@@ -129,7 +129,7 @@ class LOOP(PETS):
     def _save_model(self) -> None:
         """Save the model."""
         what_to_save: dict[str, Any] = {}
-        # Set up model saving
+        # set up model saving
         what_to_save = {
             'dynamics': self._dynamics.ensemble_model,
             'actor_critic': self._actor_critic,
@@ -138,7 +138,6 @@ class LOOP(PETS):
             obs_normalizer = self._env.save()['obs_normalizer']
             what_to_save['obs_normalizer'] = obs_normalizer
         self._logger.setup_torch_saver(what_to_save)
-        # self._logger.planner_save()
         self._logger.torch_save()
 
     def _select_action(  # pylint: disable=unused-argument
@@ -162,7 +161,6 @@ class LOOP(PETS):
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
         else:
             action, info = self._planner.output_action(state)
-            # action = self._actor_critic.actor.predict(state, deterministic=False).detach()
             self._logger.store(**info)
 
         assert action.shape == torch.Size(
@@ -196,8 +194,8 @@ class LOOP(PETS):
                     self._update_cost_critic(obs, act, cost, done, next_obs)
 
                 if self._update_count % self._cfgs.algo_cfgs.policy_delay == 0:
-                    # Freeze Q-network so you don't waste computational effort
-                    # computing gradients for it during the policy learning step.
+                    # freeze Q-network so you don't waste computational effort
+                    # computing gradients for it during the policy learning step
                     for param in self._actor_critic.reward_critic.parameters():
                         param.requires_grad = False
                     if self._cfgs.algo_cfgs.use_cost:
@@ -206,7 +204,7 @@ class LOOP(PETS):
 
                     self._update_actor(obs)
 
-                    # Unfreeze Q-network so you can optimize it at next DDPG step.
+                    # unfreeze Q-network so you can optimize it at next DDPG step.
                     for param in self._actor_critic.reward_critic.parameters():
                         param.requires_grad = True
                     if self._cfgs.algo_cfgs.use_cost:
@@ -250,8 +248,9 @@ class LOOP(PETS):
         done = terminated or truncated
         goal_met = False if 'goal_met' not in info.keys() else info['goal_met']
         if not done and not goal_met:
-            # pylint: disable-next=line-too-long
-            # if goal_met == true, Current goal position is not related to the last goal position, this huge transition will confuse the dynamics model.
+            # when goal_met == true:
+            # current goal position is not related to the last goal position,
+            # this huge transition will confuse the dynamics model.
             self._dynamics_buf.store(
                 obs=state,
                 act=action,
@@ -334,13 +333,10 @@ class LOOP(PETS):
 
         Args:
             obs (torch.Tensor): current observation
-            act (torch.Tensor): current action
+            action (torch.Tensor): current action
             cost (torch.Tensor): current cost
             done (torch.Tensor): current done signal
             next_obs (torch.Tensor): next observation
-
-        Returns:
-            None
         """
         with torch.no_grad():
             next_action = self._actor_critic.actor.predict(next_obs, deterministic=True)

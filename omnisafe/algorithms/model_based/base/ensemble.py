@@ -322,7 +322,7 @@ class EnsembleModel(nn.Module):
         assert len(mean.shape) == len(logvar.shape) == len(labels.shape) == 3
         inv_var = torch.exp(-logvar)
         if inc_var_loss:
-            # Average over batch and dim, sum over ensembles.
+            # average over batch and dim, sum over ensembles.
             mse_loss = torch.mean(torch.mean(torch.pow(mean - labels, 2) * inv_var, dim=-1), dim=-1)
             var_loss = torch.mean(torch.mean(logvar, dim=-1), dim=-1)
             total_loss = torch.sum(mse_loss) + torch.sum(var_loss)
