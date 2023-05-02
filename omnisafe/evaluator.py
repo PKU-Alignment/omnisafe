@@ -164,7 +164,14 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 device=torch.device('cpu'),
                 times=self._cfgs['algo_cfgs']['action_repeat'],
             )
-        if self._cfgs['algo'] in ['LOOP', 'SafeLOOP', 'PETS', 'CAPPETS', 'RCEPETS', 'CCEPETS']:
+        if hasattr(self._cfgs, 'algo') and self._cfgs['algo'] in [
+            'LOOP',
+            'SafeLOOP',
+            'PETS',
+            'CAPPETS',
+            'RCEPETS',
+            'CCEPETS',
+        ]:
             dynamics_state_space = (
                 self._env.coordinate_observation_space
                 if self._env.coordinate_observation_space is not None
