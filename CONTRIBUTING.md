@@ -39,7 +39,7 @@ pip install -e .[docs,tests,extra]
 
 We are using [black codestyle](https://github.com/psf/black) (max line length of 127 characters) together with [isort](https://github.com/timothycrosley/isort) to sort the imports.
 
-**Please run `make format`** to reformat your code. You can check the codestyle using `make check-codestyle` and `make lint`.
+**Please run `make format`** to reformat your code. You can check the codestyle using `make lint`.
 
 Please document each function/method and [type](https://google.github.io/pytype/user_guide.html) them using the following template, which is similar to the [PyTorch docs style]:
 
