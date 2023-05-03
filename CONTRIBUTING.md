@@ -27,7 +27,7 @@ git clone https://github.com/OmniSafeAI/omnisafe
 cd omnisafe/
 ```
 
-1. Install OmniSafe in develop mode, with support for building the docs and running tests:
+2. Install OmniSafe in develop mode, with support for building the docs and running tests:
 
 ```bash
 pip install -e .[docs,tests,extra]
