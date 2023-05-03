@@ -150,7 +150,7 @@ make spelling
 
 ## Changelog and Documentation
 
-Please do not forget to update the [CHANGELOG.md](https://github.com/OmniSafeAI/omnisafe/blob/main/CHANGELOG.md) and add documentation if needed.
+Please do not forget to update the [CHANGELOG.md](https://github.com/OmniSafeAI/omnisafe/blob/HEAD/CHANGELOG.md) and add documentation if needed.
 You should add your username next to each changelog entry that you added. If this is your first contribution, please add your username at the bottom too.
 
 Credits: this contributing guide is based on the [PyTorch](https://github.com/pytorch/pytorch/).
