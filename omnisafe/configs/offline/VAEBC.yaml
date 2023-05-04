@@ -30,6 +30,8 @@ defaults:
     evaluate_epoisodes: 10
     # parallel, offline only supports 1
     parallel: 1
+    # vector_env_nums, offline only supports 1
+    vector_env_nums: 1
   # algorithm configurations
   algo_cfgs:
     # batch size
