@@ -51,6 +51,8 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
     - [Offline Safe](#offline-safe)
     - [Others](#others)
   - [Examples](#examples)
+    - [Algorithms Registry](#algorithms-registry)
+    - [Supported Environments](#supported-environments)
     - [Try with CLI](#try-with-cli)
 - [Getting Started](#getting-started)
   - [Important Hints](#important-hints)
@@ -172,7 +174,7 @@ cd examples
 python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 ```
 
-**algo:**
+#### Algorithms Registry
 <table>
 <thead>
   <tr>
@@ -253,7 +255,9 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
 </tbody>
 </table>
 
-**env-id:** Environment id in [Safety Gymnasium](https://www.safety-gymnasium.com/), here a list of envs that safety-gymnasium supports.
+#### Supported Environments
+
+Environment id in [Safety Gymnasium](https://www.safety-gymnasium.com/), here a list of envs that safety-gymnasium supports.
 
 <table border="1">
 <thead>
@@ -290,8 +294,6 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
 </table>
 
 More information about environments, please refer to [Safety Gymnasium](https://www.safety-gymnasium.com/)
-
-**parallel:** `Number of parallels`
 
 #### Try with CLI
 
