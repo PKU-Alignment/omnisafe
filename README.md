@@ -41,9 +41,9 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
 
 - [🚀Quick Start🚀](#quick-start)
   - [🔥Installation🔥](#installation)
-    - [Prerequisites](#prerequisites)
-    - [Install from source](#install-from-source)
-    - [Install from PyPI](#install-from-pypi)
+    - [🚣Prerequisites](#prerequisites)
+    - [✨Install from source](#install-from-source)
+    - [✨Install from PyPI](#install-from-pypi)
 - [Implemented Algorithms](#implemented-algorithms)
   - [Latest SafeRL Papers](#latest-saferl-papers)
   - [List of Algorithms](#list-of-algorithms)
@@ -67,13 +67,13 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
 
 ### 🔥Installation🔥
 
-#### Prerequisites
+#### 🚣Prerequisites
 
 OmniSafe requires Python 3.8+ and PyTorch 1.10+.
 
 > We support and test for Python 3.8, 3.9, 3.10 on Linux. Meanwhile, we also support M1 and M2 versions of macOS. We will accept PRs related to Windows, but do not officially support it.
 
-#### Install from source
+#### ✨Install from source
 
 ```bash
 # Clone the repo
@@ -88,7 +88,7 @@ conda activate omnisafe
 pip install -e .
 ```
 
-#### Install from PyPI
+#### ✨Install from PyPI
 
 OmniSafe is hosted in [![PyPI](https://img.shields.io/pypi/v/omnisafe?label=pypi&logo=pypi)](https://pypi.org/project/omnisafe) / ![Status](https://img.shields.io/pypi/status/omnisafe?label=status).
 
