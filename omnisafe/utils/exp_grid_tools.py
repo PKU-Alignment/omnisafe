@@ -23,7 +23,6 @@ from typing import Any
 
 import omnisafe
 from omnisafe.typing import Tuple
-from omnisafe.utils.config import Config
 
 
 def all_bools(vals: list[Any]) -> bool:
@@ -65,8 +64,8 @@ def train(
     exp_id: str,
     algo: str,
     env_id: str,
-    custom_cfgs: Config,
-) -> Tuple[float, float, float]:
+    custom_cfgs: dict[str, Any],
+) -> Tuple[float, float, int]:
     """Train a policy from exp-x config with OmniSafe.
 
     Args:
@@ -74,7 +73,6 @@ def train(
         algo (str): Algorithm to train.
         env_id (str): The name of test environment.
         custom_cfgs (Config): Custom configurations.
-        num_threads (int, optional): Number of threads. Defaults to 6.
     """
     terminal_log_name = 'terminal.log'
     error_log_name = 'error.log'
