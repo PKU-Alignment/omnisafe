@@ -30,8 +30,6 @@
 
 --------------------------------------------------------------------------------
 
-**This library is currently under heavy development - if you have suggestions on the API or use-cases you'd like to be covered, please open a GitHub issue or reach out. We'd love to hear about how you're using the library.**
-
 OmniSafe is an infrastructural framework designed to accelerate safe reinforcement learning (RL) research by providing a comprehensive and reliable benchmark for safe RL algorithms.
 The field of RL has great potential to benefit the society, and safety concerns are a significant issue, and RL algorithms have raised concerns about unintended harm or unsafe behavior.
 Safe RL intends to develop algorithms that minimize the risk of unintended harm or unsafe behavior, but there is currently a lack of commonly recognized safe RL algorithm benchmarks.
