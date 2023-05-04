@@ -84,25 +84,18 @@ class AlgoWrapper:
         Raises:
             AssertionError: If the algorithm name is not in the supported algorithms.
         """
-    def _init_config(self):  # pylint: disable=too-many-branches
-        """Init config."""
         assert (
             self.algo in ALGORITHMS['all']
         ), f"{self.algo} doesn't exist. Please choose from {ALGORITHMS['all']}."
         self.algo_type = ALGORITHM2TYPE.get(self.algo, '')
-        if self.algo_type in ['model-based'] and self.train_terminal_cfgs is not None:
+        if self.algo_type in ['model-based', 'offline'] and self.train_terminal_cfgs is not None:
             assert (
                 self.train_terminal_cfgs['parallel'] == 1
-            ), 'model-based only support parallel==1!'
+            ), 'model-based and offline only support parallel==1!'
             assert (
                 self.train_terminal_cfgs['vector_env_nums'] == 1
-            ), 'model-based only support vector_env_nums==1!'
-        if self.algo_type is None or self.algo_type == '':
-            raise ValueError(f'{self.algo} is not supported!')
-        if self.algo_type in ['off-policy', 'model-based'] and self.train_terminal_cfgs is not None:
-            assert (
-                self.train_terminal_cfgs['parallel'] == 1
-            ), 'off-policy or model-based only support parallel==1!'
+            ), 'model-based and offline only support vector_env_nums==1!'
+
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations
@@ -113,8 +106,7 @@ class AlgoWrapper:
             if 'algo' in self.custom_cfgs:
                 self.custom_cfgs.pop('algo')
             # validate the keys of custom configuration
-            if self.algo_type != 'offline':
-                recursive_check_config(self.custom_cfgs, cfgs)
+            recursive_check_config(self.custom_cfgs, cfgs)
             # update the cfgs from custom configurations
             cfgs.recurisve_update(self.custom_cfgs)
             # save configurations specified in current experiment
@@ -126,15 +118,8 @@ class AlgoWrapper:
                 self.train_terminal_cfgs.pop('env_id')
             if 'algo' in self.train_terminal_cfgs:
                 self.train_terminal_cfgs.pop('algo')
-
-            if self.algo_type == 'offline':
-                if 'vector_env_nums' in self.train_terminal_cfgs:
-                    self.train_terminal_cfgs.pop('vector_env_nums')
-                cfgs.train_cfgs.recurisve_update({'parallel': 1})
-
-            if self.algo_type != 'offline':
-                # validate the keys of train_terminal_cfgs configuration
-                recursive_check_config(self.train_terminal_cfgs, cfgs.train_cfgs)
+            # validate the keys of train_terminal_cfgs configuration
+            recursive_check_config(self.train_terminal_cfgs, cfgs.train_cfgs)
             # update the cfgs.train_cfgs from train_terminal configurations
             cfgs.train_cfgs.recurisve_update(self.train_terminal_cfgs)
             # save configurations specified in current experiment
@@ -146,18 +131,13 @@ class AlgoWrapper:
         cfgs.train_cfgs.recurisve_update(
             {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.steps_per_epoch},
         )
-        if self.algo_type != 'offline':
-            cfgs.train_cfgs.recurisve_update(
-                {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.update_cycle},
-            )
         return cfgs
 
     def _init_checks(self) -> None:
         """Initial checks."""
         assert isinstance(self.algo, str), 'algo must be a string!'
-        if self.algo_type != 'offline':
-            assert isinstance(self.cfgs.train_cfgs.parallel, int), 'parallel must be an integer!'
-            assert self.cfgs.train_cfgs.parallel > 0, 'parallel must be greater than 0!'
+        assert isinstance(self.cfgs.train_cfgs.parallel, int), 'parallel must be an integer!'
+        assert self.cfgs.train_cfgs.parallel > 0, 'parallel must be greater than 0!'
         assert (
             self.env_id in support_envs()
         ), f"{self.env_id} doesn't exist. Please choose from {support_envs()}."

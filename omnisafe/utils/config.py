@@ -264,10 +264,9 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
         configs (Config): The configs to be checked.
         algo_type (str): The algorithm type.
     """
-    # check algo configs
     __check_algo_configs(configs.algo_cfgs, algo_type)
-    __check_logger_configs(configs.logger_cfgs, algo_type)
     __check_parallel_and_vectorized(configs, algo_type)
+    __check_logger_configs(configs.logger_cfgs)
 
 
 def __check_parallel_and_vectorized(configs: Config, algo_type: str) -> None:
@@ -279,10 +278,10 @@ def __check_parallel_and_vectorized(configs: Config, algo_type: str) -> None:
         configs (Config): The configs to be checked.
         algo_type (str): The algorithm type.
     """
-    if algo_type in {'off-policy', 'model-based'}:
+    if algo_type in {'off-policy', 'model-based', 'offline'}:
         assert (
             configs.train_cfgs.parallel == 1
-        ), 'off-policy or model-based only support parallel==1!'
+        ), 'off-policy, offline and model-based only support parallel==1!'
     if configs.algo in ['PPOEarlyTerminated', 'TRPOEarlyTerminated']:
         assert (
             configs.train_cfgs.vector_env_nums == 1
@@ -385,21 +384,19 @@ def __check_algo_configs(configs: Config, algo_type: str) -> None:
         assert isinstance(configs.use_cost, bool), 'penalty_coef must be bool'
 
 
-def __check_logger_configs(configs: Config, algo_type: str) -> None:
+def __check_logger_configs(configs: Config) -> None:
     """Check logger configs.
 
     Args:
         configs (Config): The configs to be checked.
         algo_type (str): The algorithm type.
     """
-    if algo_type == 'on-policy':
-        assert isinstance(configs.use_wandb, bool) and isinstance(
-            configs.wandb_project,
-            str,
-        ), 'use_wandb and wandb_project must be bool and string'
-        assert isinstance(configs.use_tensorboard, bool), 'use_tensorboard must be bool'
-        assert isinstance(configs.save_model_freq, int) and isinstance(
-            configs.window_lens,
-            int,
-        ), 'save_model_freq and window_lens must be int'
-        assert isinstance(configs.log_dir, str), 'log_dir must be string'
+    assert isinstance(configs.use_wandb, bool) and isinstance(
+        configs.wandb_project,
+        str,
+    ), 'use_wandb and wandb_project must be bool and string'
+    assert isinstance(configs.use_tensorboard, bool), 'use_tensorboard must be bool'
+    assert isinstance(configs.save_model_freq, int), 'save_model_freq must be int'
+    if window_lens := configs.get('window_lens'):
+        assert isinstance(window_lens, int), 'window_lens must be int'
+    assert isinstance(configs.log_dir, str), 'log_dir must be string'
