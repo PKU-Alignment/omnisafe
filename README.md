@@ -44,12 +44,7 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
     - [👀Prerequisites👀](#prerequisites)
     - [✨Install from source✨](#install-from-source)
     - [✨Install from PyPI✨](#install-from-pypi)
-- [Implemented Algorithms](#implemented-algorithms)
-    - [On-Policy Safe](#on-policy-safe)
-    - [Off-Policy Safe](#off-policy-safe)
-    - [Model-Based Safe](#model-based-safe)
-    - [Offline Safe](#offline-safe)
-    - [Others](#others)
+- [🍪Implemented Algorithms🍪](#implemented-algorithms)
   - [Examples](#examples)
     - [Algorithms Registry](#algorithms-registry)
     - [Supported Environments](#supported-environments)
@@ -96,7 +91,7 @@ OmniSafe is hosted in [![PyPI](https://img.shields.io/pypi/v/omnisafe?label=pypi
 pip install omnisafe
 ```
 
-## Implemented Algorithms
+## 🍪Implemented Algorithms🍪
 
 <details>
 <summary><b><big>Latest SafeRL Papers</big></b></summary>
@@ -116,7 +111,7 @@ pip install omnisafe
 <details>
 <summary><b><big>List of Algorithms</big></b></summary>
 
-#### On-Policy Safe
+<summary><b><big>On Policy SafeRL</big></b></summary>
 
 - [X] [The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
 - [X] [The Lagrange version of TRPO (TRPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
@@ -129,7 +124,7 @@ pip install omnisafe
 - [X] **[ICML 2021]** [CRPO: A New Approach for Safe Reinforcement Learning with Convergence Guarantee](https://arxiv.org/abs/2011.05869)
 - [x] **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning(P3O)](https://arxiv.org/pdf/2205.11814.pdf)
 
-#### Off-Policy Safe
+<summary><b><big>Off Policy SafeRL</big></b></summary>
 
 - [X] The Lagrange version of TD3 (TD3-Lag)
 - [X] The Lagrange version of DDPG (DDPG-Lag)
@@ -138,7 +133,7 @@ pip install omnisafe
 - [X] **[ICML 2019]** [Lyapunov-based Safe Policy Optimization for Continuous Control (SDDPG-modular)](https://arxiv.org/abs/1901.10031)
 - [ ] **[ICML 2022]** [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
 
-#### Model-Based Safe
+<summary><b><big>Model-Based Safe</big></b></summary>
 
 - [ ] **[NeurIPS 2021]** [Safe Reinforcement Learning by Imagining the Near Future (SMBPO)](https://arxiv.org/abs/2202.07789)
 - [X] **[CoRL 2021 (Oral)]** [Learning Off-Policy with Online Planning (SafeLOOP)](https://arxiv.org/abs/2008.10066)
@@ -148,7 +143,7 @@ pip install omnisafe
 - [X] **[ICML 2022 Workshop]** [Constrained Model-based Reinforcement Learning with Robust Cross-Entropy Method (RCE)](https://arxiv.org/abs/2010.07968)
 - [X] **[NeurIPS 2018]** [Constrained Cross-Entropy Method for Safe Reinforcement Learning (CCE)](https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html)
 
-#### Offline Safe
+<summary><b><big>Offline Safe</big></b></summary>
 
 - [X] [The Lagrange version of BCQ (BCQ-Lag)](https://arxiv.org/abs/1812.02900)
 - [X] [The Constrained version of CRR (C-CRR)](https://proceedings.neurips.cc/paper/2020/hash/588cb956d6bbe67078f29f8de420a13d-Abstract.html)
@@ -156,7 +151,7 @@ pip install omnisafe
 - [ ] **[ICLR 2022 (Spotlight)]** [COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation](https://arxiv.org/abs/2204.08957?context=cs.AI)
 - [ ] **[ICML 2022]** [Constrained Offline Policy Optimization (COPO)](https://proceedings.mlr.press/v162/polosky22a.html)
 
-#### Others
+<summary><b><big>Others</big></b></summary>
 
 - [X] [Safe Exploration in Continuous Action Spaces (Safety Layer)](https://arxiv.org/abs/1801.08757)
 - [ ] **[RA-L 2021]** [Recovery RL: Safe Reinforcement Learning with Learned Recovery Zones](https://arxiv.org/abs/2010.15920)
