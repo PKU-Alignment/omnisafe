@@ -41,17 +41,16 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
 
 - [🚀Quick Start🚀](#quick-start)
   - [🔥Installation🔥](#installation)
-    - [�Prerequisites👀](#prerequisites)
+    - [👀Prerequisites👀](#prerequisites)
     - [✨Install from source✨](#install-from-source)
     - [✨Install from PyPI✨](#install-from-pypi)
 - [Implemented Algorithms](#implemented-algorithms)
-  - [Latest SafeRL Papers](#latest-saferl-papers)
-  - [List of Algorithms](#list-of-algorithms)
     - [On-Policy Safe](#on-policy-safe)
     - [Off-Policy Safe](#off-policy-safe)
     - [Model-Based Safe](#model-based-safe)
     - [Offline Safe](#offline-safe)
     - [Others](#others)
+- [](#)
   - [Examples](#examples)
     - [Try with CLI](#try-with-cli)
 - [Getting Started](#getting-started)
@@ -98,9 +97,8 @@ pip install omnisafe
 
 ## Implemented Algorithms
 
-The supported interface algorithms currently include:
-
-### Latest SafeRL Papers
+<details>
+<summary><b><big>Latest SafeRL Papers</big></b></summary>
 
 - **[AAAI 2023]** Augmented Proximal Policy Optimization for Safe Reinforcement Learning (APPO)
 - **[NeurIPS 2022]** [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089)
@@ -112,7 +110,10 @@ The supported interface algorithms currently include:
 - **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LA-MBDA)](https://arxiv.org/abs/2201.09802)
 - **[AAAI 2022]** [Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
 
-### List of Algorithms
+</details>
+
+<details>
+<summary><b><big>List of Algorithms</big></b></summary>
 
 #### On-Policy Safe
 
@@ -161,8 +162,8 @@ The supported interface algorithms currently include:
 - [X] **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
 - [X] **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration](https://arxiv.org/abs/2206.02675)
 
+</details>
 --------------------------------------------------------------------------------
-
 
 ### Examples
 
