@@ -45,7 +45,7 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
     - [✨Install from source✨](#install-from-source)
     - [✨Install from PyPI✨](#install-from-pypi)
 - [🍪Implemented Algorithms🍪](#implemented-algorithms)
-  - [Examples](#examples)
+  - [🍩Examples🍩](#examples)
     - [Algorithms Registry](#algorithms-registry)
     - [Supported Environments](#supported-environments)
     - [Try with CLI](#try-with-cli)
@@ -162,7 +162,7 @@ pip install omnisafe
 
 --------------------------------------------------------------------------------
 
-### Examples
+### 🍩Examples🍩
 
 ```bash
 cd examples
