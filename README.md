@@ -39,36 +39,36 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
 
 ### Table of Contents  <!-- omit in toc --> <!-- markdownlint-disable heading-increment -->
 
-- [🚀Quick Start🚀](#quick-start)
-  - [🔥Installation🔥](#installation)
-    - [👀Prerequisites👀](#prerequisites)
-    - [✨Install from source✨](#install-from-source)
-    - [✨Install from PyPI✨](#install-from-pypi)
-- [🍪Implemented Algorithms🍪](#implemented-algorithms)
+- [🚀Quick Start](#quick-start)
+  - [🔥Installation](#installation)
+    - [👀Prerequisites](#prerequisites)
+    - [✨Install from source](#install-from-source)
+    - [✨Install from PyPI](#install-from-pypi)
+- [🍪Implemented Algorithms](#implemented-algorithms)
   - [🍩Examples🍩](#examples)
     - [Algorithms Registry](#algorithms-registry)
     - [Supported Environments](#supported-environments)
-    - [Try with CLI](#try-with-cli)
-- [Getting Started](#getting-started)
-  - [Important Hints](#important-hints)
-  - [Quickstart: Colab on the Cloud](#quickstart-colab-on-the-cloud)
-- [Changelog](#changelog)
-- [The OmniSafe Team](#the-omnisafe-team)
-- [License](#license)
+    - [🚢Try with CLI](#try-with-cli)
+- [🍷Getting Started](#getting-started)
+  - [🥢Important Hints](#important-hints)
+  - [🍴Quickstart: Colab on the Cloud](#quickstart-colab-on-the-cloud)
+- [🔖Changelog](#changelog)
+- [⚓The OmniSafe Team](#the-omnisafe-team)
+- [📖License](#license)
 
 --------------------------------------------------------------------------------
 
-## 🚀Quick Start🚀
+## 🚀Quick Start
 
-### 🔥Installation🔥
+### 🔥Installation
 
-#### 👀Prerequisites👀
+#### 👀Prerequisites
 
 OmniSafe requires Python 3.8+ and PyTorch 1.10+.
 
 > We support and test for Python 3.8, 3.9, 3.10 on Linux. Meanwhile, we also support M1 and M2 versions of macOS. We will accept PRs related to Windows, but do not officially support it.
 
-#### ✨Install from source✨
+#### ✨Install from source
 
 ```bash
 # Clone the repo
@@ -83,7 +83,7 @@ conda activate omnisafe
 pip install -e .
 ```
 
-#### ✨Install from PyPI✨
+#### ✨Install from PyPI
 
 OmniSafe is hosted in [![PyPI](https://img.shields.io/pypi/v/omnisafe?label=pypi&logo=pypi)](https://pypi.org/project/omnisafe) / ![Status](https://img.shields.io/pypi/status/omnisafe?label=status).
 
@@ -91,7 +91,7 @@ OmniSafe is hosted in [![PyPI](https://img.shields.io/pypi/v/omnisafe?label=pypi
 pip install omnisafe
 ```
 
-## 🍪Implemented Algorithms🍪
+## 🍪Implemented Algorithms
 
 <details>
 <summary><b><big>Latest SafeRL Papers</big></b></summary>
@@ -290,7 +290,7 @@ Environment id in [Safety Gymnasium](https://www.safety-gymnasium.com/), here a 
 
 More information about environments, please refer to [Safety Gymnasium](https://www.safety-gymnasium.com/)
 
-#### Try with CLI
+#### 🚢Try with CLI
 
 **A video example**
 
@@ -319,13 +319,13 @@ omnisafe train-config ./saved_source/train_config.yaml
 
 --------------------------------------------------------------------------------
 
-## Getting Started
+## 🍷Getting Started
 
-### Important Hints
+### 🥢Important Hints
 
 - `train_cfgs:torch_threads` is especially important for training speed, and is varying with users' machine, this value shouldn't be too small or too large.
 
-### Quickstart: Colab on the Cloud
+### 🍴Quickstart: Colab on the Cloud
 
 Explore OmniSafe easily and quickly through a series of colab notebooks:
 
@@ -338,16 +338,16 @@ If you are interested in translating the tutorial into a new language or improvi
 
 --------------------------------------------------------------------------------
 
-## Changelog
+## 🔖Changelog
 
 See [CHANGELOG.md](https://github.com/OmniSafeAI/omnisafe/blob/main/CHANGELOG.md).
 
-## The OmniSafe Team
+## ⚓The OmniSafe Team
 
 OmniSafe is mainly developed by the SafeRL research team directed by Prof. [Yaodong Yang](https://github.com/orgs/OmniSafeAI/people/PKU-YYang).
 Our SafeRL research team members include [Borong Zhang](https://github.com/muchvo), [Jiayi Zhou](https://github.com/Gaiejj), [JTao Dai](https://github.com/calico-1226), [Weidong Huang](https://github.com/hdadong), [Ruiyang Sun](https://github.com/rockmagma02), [Xuehai Pan](https://github.com/XuehaiPan) and [Jiaming Ji](https://github.com/zmsn-2077).
 If you have any questions in the process of using omnisafe, don't hesitate to ask your questions on [the GitHub issue page](https://github.com/OmniSafeAI/omnisafe/issues/new/choose), we will reply to you in 2-3 working days.
 
-## License
+## 📖License
 
 OmniSafe is released under Apache License 2.0.
