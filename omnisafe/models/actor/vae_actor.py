@@ -46,7 +46,6 @@ class VAE(Actor):
             activation (Activation): Activation function.
             weight_initialization_mode (InitFunction): Weight initialization mode.
         """
-
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
         self._latent_dim = self._act_dim * 2
 
@@ -90,6 +89,7 @@ class VAE(Actor):
         raise NotImplementedError
 
     def forward(self, obs: torch.Tensor) -> Distribution:
+        """Predict action from observation."""
         raise NotImplementedError
 
     def predict(  # pylint: disable=unused-argument
@@ -101,4 +101,5 @@ class VAE(Actor):
         return self.decode(obs)
 
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
+        """Predict action from observation."""
         raise NotImplementedError

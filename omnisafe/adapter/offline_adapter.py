@@ -35,6 +35,13 @@ class OfflineAdapter:
         seed: int,
         cfgs: Config,
     ) -> None:
+        """Initialize Offline Adapter.
+
+        Args:
+            env_id (str): the id of the environment.
+            seed (int): the seed for the environment.
+            cfgs (Config): the configuration for the environment.
+        """
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id

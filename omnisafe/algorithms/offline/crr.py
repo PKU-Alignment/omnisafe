@@ -28,7 +28,7 @@ from omnisafe.models.critic.critic_builder import CriticBuilder
 
 @registry.register
 class CRR(BaseOffline):
-    """Critic Regularized Regression
+    """Critic Regularized Regression.
 
     References:
         - Title: Critic Regularized Regression
@@ -88,7 +88,7 @@ class CRR(BaseOffline):
     def _train(
         self,
         batch: Tuple[torch.Tensor, ...],
-    ):
+    ) -> None:
         obs, action, reward, _, next_obs, done = batch
 
         self._update_reward_critic(obs, action, reward, next_obs, done)
@@ -163,7 +163,7 @@ class CRR(BaseOffline):
             },
         )
 
-    def _polyak_update(self):
+    def _polyak_update(self) -> None:
         for target_param, param in zip(
             self._target_reward_critic.parameters(),
             self._reward_critic.parameters(),

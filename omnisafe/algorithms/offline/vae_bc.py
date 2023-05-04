@@ -67,7 +67,7 @@ class VAEBC(BaseOffline):
     def _train(
         self,
         batch: Tuple[torch.Tensor, ...],
-    ):
+    ) -> None:
         obs, act, _, _, _, _ = batch
 
         recon_loss, kl_loss = self._actor.loss(obs, act)

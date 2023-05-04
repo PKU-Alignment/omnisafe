@@ -14,22 +14,25 @@
 # ==============================================================================
 """Offline dataset for offline algorithms."""
 
+from __future__ import annotations
+
 import hashlib
 import os
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
 
 import gdown
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 
+from omnisafe.typing import DEVICE_CPU
+
 
 @dataclass
 class OfflineMeta:
     """Meta information of the offline dataset."""
 
-    episode_length: Optional[int]
+    episode_length: int | None
     url: str
     sha256sum: str
 
@@ -37,7 +40,7 @@ class OfflineMeta:
 class OfflineDataset(Dataset):
     """A dataset for offline algorithms."""
 
-    _name_to_metadata: Dict[str, OfflineMeta] = {
+    _name_to_metadata: dict[str, OfflineMeta] = {
         'SafetyPointCircle1-v0_mixed_0.5': OfflineMeta(
             url='https://drive.google.com/file/d/1CNHoC70kVIE0wP4VoYy0EH4DmdExGCqM/view?usp=share_link',
             sha256sum='c33e9b102524b26a7466fd542a3e9e925bc5a7eb8a9fdc4a0dc15443819748fd',
@@ -49,12 +52,11 @@ class OfflineDataset(Dataset):
     def __init__(  # pylint: disable=too-many-branches
         self,
         dataset_name: str,
-        batch_size=256,
-        gpu_threshold=1024,
-        device='cuda',
+        batch_size: int = 256,
+        gpu_threshold: int = 1024,
+        device: torch.device = DEVICE_CPU,
     ) -> None:
         """Initialize the dataset."""
-
         if os.path.exists(dataset_name) and dataset_name.endswith('.npz'):
             # Load data from local .npz file
             try:
@@ -133,12 +135,14 @@ class OfflineDataset(Dataset):
         self._length = len(self.obs)
 
     def __len__(self) -> int:
+        """Return the length of the dataset."""
         return self._length
 
     def __getitem__(
         self,
-        idx,
-    ) -> Tuple[torch.Tensor, ...]:
+        idx: int,
+    ) -> tuple[torch.Tensor, ...]:
+        """Get a single sample from the dataset."""
         if self._pre_transfer:
             return (
                 self.obs[idx],
@@ -160,9 +164,8 @@ class OfflineDataset(Dataset):
 
     def sample(
         self,
-    ) -> Tuple[torch.Tensor, ...]:
+    ) -> tuple[torch.Tensor, ...]:
         """Sample a batch of data from the dataset."""
-
         indices = torch.randint(low=0, high=len(self), size=(self._batch_size,), dtype=torch.int64)
         batch_obs = self.obs[indices]
         batch_action = self.action[indices]
@@ -190,12 +193,11 @@ class OfflineDatasetWithInit(OfflineDataset):
     def __init__(  # pylint: disable=too-many-branches, super-init-not-called
         self,
         dataset_name: str,
-        batch_size=256,
-        gpu_threshold=1024,
-        device='cuda',
+        batch_size: int = 256,
+        gpu_threshold: int = 1024,
+        device: torch.device = DEVICE_CPU,
     ) -> None:
         """Initialize the dataset."""
-
         if os.path.exists(dataset_name) and dataset_name.endswith('.npz'):
             # Load data from local .npz file
             try:
@@ -294,12 +296,14 @@ class OfflineDatasetWithInit(OfflineDataset):
         self._length = len(self.obs)
 
     def __len__(self) -> int:
+        """Return the length of the dataset."""
         return self._length
 
     def __getitem__(
         self,
-        idx,
-    ) -> Tuple[torch.Tensor, ...]:
+        idx: int,
+    ) -> tuple[torch.Tensor, ...]:
+        """Get a single sample from the dataset."""
         if self._pre_transfer:
             return (
                 self.obs[idx],
@@ -323,9 +327,8 @@ class OfflineDatasetWithInit(OfflineDataset):
 
     def sample(
         self,
-    ) -> Tuple[torch.Tensor, ...]:
+    ) -> tuple[torch.Tensor, ...]:
         """Sample a batch of data from the dataset."""
-
         indices = torch.randint(low=0, high=len(self), size=(self._batch_size,), dtype=torch.int64)
         batch_obs = self.obs[indices]
         batch_action = self.action[indices]

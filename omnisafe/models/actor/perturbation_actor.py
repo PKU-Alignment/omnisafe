@@ -45,7 +45,6 @@ class PerturbationActor(Actor):
             activation (Activation): Activation function.
             weight_initialization_mode (InitFunction): Weight initialization mode.
         """
-
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
 
         self.vae = VAE(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
@@ -68,6 +67,7 @@ class PerturbationActor(Actor):
         self._phi = torch.nn.Parameter(torch.tensor(phi, device=self._phi.device))
 
     def predict(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
+        """Predict action from observation."""
         act = self.vae.predict(obs, deterministic)
         perturbation = self.perturbation(torch.cat([obs, act], dim=-1))
         return act + self._phi * perturbation
@@ -76,7 +76,9 @@ class PerturbationActor(Actor):
         raise NotImplementedError
 
     def forward(self, obs: torch.Tensor) -> Distribution:
+        """Predict action from observation."""
         raise NotImplementedError
 
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
+        """Predict action from observation."""
         raise NotImplementedError

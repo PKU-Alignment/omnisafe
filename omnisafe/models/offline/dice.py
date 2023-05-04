@@ -37,6 +37,16 @@ class ObsDecoder(nn.Module):
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
         out_dim: int = 1,
     ) -> None:
+        """Initialize decoder.
+
+        Args:
+            obs_space (OmnisafeSpace): Observation space.
+            act_space (OmnisafeSpace): Action space.
+            hidden_sizes (list): List of hidden layer sizes.
+            activation (Activation): Activation function.
+            weight_initialization_mode (InitFunction): Weight initialization mode.
+            out_dim (int): Output dimension.
+        """
         nn.Module.__init__(self)
 
         if isinstance(obs_space, spaces.Box) and len(obs_space.shape) == 1:

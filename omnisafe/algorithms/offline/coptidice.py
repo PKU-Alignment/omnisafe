@@ -28,8 +28,7 @@ from omnisafe.models.offline import ObsDecoder
 
 @registry.register
 class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
-    """COptiDICE: COptiDICE: Offline Constrained Reinforcement Learning via
-        Stationary Distribution Correction Estimation
+    """COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation.
 
     References:
         - Title: COptiDICE: Offline Constrained Reinforcement Learning via Stationary
@@ -133,7 +132,7 @@ class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
     def _train(
         self,
         batch: Tuple[torch.Tensor, ...],
-    ):
+    ) -> None:
         obs, action, reward, cost, next_obs, done, init_obs = batch
 
         # train nu, chi, lamb, tau
@@ -151,7 +150,7 @@ class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
         done: torch.Tensor,
         next_obs: torch.Tensor,
         init_obs: torch.Tensor,
-    ):
+    ) -> None:
         batch_size = obs.shape[0]
 
         nu = self._nu_net.forward(obs)
@@ -224,7 +223,7 @@ class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
         cost: torch.Tensor,
         done: torch.Tensor,
         next_obs: torch.Tensor,
-    ):
+    ) -> None:
         self._actor.predict(obs)
         logp = self._actor.log_prob(act)
 
@@ -247,11 +246,11 @@ class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
 
     def _advantage(
         self,
-        rewrad,
-        cost,
-        done,
-        nu,
-        nu_next,
+        rewrad: torch.Tensor,
+        cost: torch.Tensor,
+        done: torch.Tensor,
+        nu: torch.Tensor,
+        nu_next: torch.Tensor,
     ) -> torch.Tensor:  # pylint: disable=too-many-arguments
         return (
             rewrad
@@ -260,7 +259,7 @@ class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
             - nu
         )
 
-    def _w_sa(self, adv):
+    def _w_sa(self, adv: torch.Tensor) -> torch.Tensor:
         return nn.functional.relu(self._fn_inv(adv / self._cfgs.algo_cfgs.alpha))
 
     @staticmethod
@@ -269,26 +268,26 @@ class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
     ) -> Tuple[Callable[[torch.Tensor], torch.Tensor], Callable[[torch.Tensor], torch.Tensor]]:
         if fn_type == 'kl':
 
-            def fn(x):
+            def fn(x: torch.Tensor) -> torch.Tensor:
                 return x * torch.log(x + 1e-10)
 
-            def fn_inv(x):
+            def fn_inv(x: torch.Tensor) -> torch.Tensor:
                 return torch.exp(x - 1)
 
         elif fn_type == 'softchi':
 
-            def fn(x):
+            def fn(x: torch.Tensor) -> torch.Tensor:
                 return torch.where(x < 1, x * (torch.log(x + 1e-10) - 1) + 1, 0.5 * (x - 1) ** 2)
 
-            def fn_inv(x):
+            def fn_inv(x: torch.Tensor) -> torch.Tensor:
                 return torch.where(x < 0, torch.exp(torch.min(x, torch.zeros_like(x))), x + 1)
 
         elif fn_type == 'chisquare':
 
-            def fn(x):
+            def fn(x: torch.Tensor) -> torch.Tensor:
                 return 0.5 * (x - 1) ** 2
 
-            def fn_inv(x):
+            def fn_inv(x: torch.Tensor) -> torch.Tensor:
                 return x + 1
 
         return fn, fn_inv

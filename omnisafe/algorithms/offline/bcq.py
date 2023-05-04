@@ -172,7 +172,7 @@ class BCQ(BaseOffline):
             },
         )
 
-    def _polyak_update(self):
+    def _polyak_update(self) -> None:
         for target_param, param in zip(
             self._target_reward_critic.parameters(),
             self._reward_critic.parameters(),

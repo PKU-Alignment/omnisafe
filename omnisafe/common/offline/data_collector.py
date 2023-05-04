@@ -65,7 +65,6 @@ class OfflineDataCollector:
             size (int): The total number of data to collect.
             env_name (str): The name of the environment.
         """
-
         self._size = size
         self._env_name = env_name
 
@@ -99,7 +98,6 @@ class OfflineDataCollector:
             model_name (str): The name of the model.
             size (int): The number of data to collect from this agent.
         """
-
         cfg_path = os.path.join(save_dir, 'config.json')
         try:
             with open(cfg_path, encoding='utf-8') as file:
@@ -122,7 +120,7 @@ class OfflineDataCollector:
             obs_normalizer.load_state_dict(model_params['obs_normalizer'])
         else:
 
-            def obs_normalizer(x):
+            def obs_normalizer(x: torch.Tensor) -> torch.Tensor:
                 return x
 
         actor_type = cfgs['model_cfgs']['actor_type']
@@ -144,13 +142,12 @@ class OfflineDataCollector:
 
         self.agents.append(OfflineAgent(agent_step, size))
 
-    def collect(self, save_dir):
+    def collect(self, save_dir: str) -> None:
         """Collect data from the registered agents.
 
         Args:
             save_dir (str): The directory to save the collected data.
         """
-
         # check each agent's size
         total_size = 0
         for agent in self.agents:
@@ -163,9 +160,7 @@ class OfflineDataCollector:
         progress_bar = tqdm(total=self._size, desc='Collecting data...')
 
         for agent in self.agents:
-            ep_ret, ep_cost, ep_len = 0.0, 0.0, 0.0
-            single_ep_len = 0
-            episode_num = 0
+            ep_ret, ep_cost, ep_len, single_ep_len, episode_num = 0.0, 0.0, 0.0, 0.0, 0.0
 
             obs, _ = self._env.reset()
             for _ in range(agent.size):

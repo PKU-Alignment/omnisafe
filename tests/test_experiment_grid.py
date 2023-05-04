@@ -14,6 +14,7 @@
 # ==============================================================================
 """Test experiment grid"""
 
+import os
 
 from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.utils.exp_grid_tools import train

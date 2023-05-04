@@ -26,7 +26,7 @@ if __name__ == '__main__':
         '--algo',
         type=str,
         metavar='ALGO',
-        default='PPOLag',
+        default='CAPPETS',
         help='algorithm to train',
         choices=omnisafe.ALGORITHMS['all'],
     )

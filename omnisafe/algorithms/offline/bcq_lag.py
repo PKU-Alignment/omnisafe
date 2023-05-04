@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of BCQ-Lag"""
+"""Implementation of BCQ-Lag."""
 
 from copy import deepcopy
 from typing import Tuple
@@ -71,7 +71,7 @@ class BCQLag(BCQ):
     def _train(
         self,
         batch: Tuple[torch.Tensor, ...],
-    ):
+    ) -> None:
         obs, action, reward, cost, next_obs, done = batch
 
         self._update_reward_critic(obs, action, reward, next_obs, done)
@@ -87,7 +87,7 @@ class BCQLag(BCQ):
         cost: torch.Tensor,
         next_obs: torch.Tensor,
         done: torch.Tensor,
-    ):
+    ) -> None:
         with torch.no_grad():
             # sample action form the actor
             next_obs_repeat = torch.repeat_interleave(
@@ -161,7 +161,7 @@ class BCQLag(BCQ):
             },
         )
 
-    def _polyak_update(self):
+    def _polyak_update(self) -> None:
         super()._polyak_update()
         for target_param, param in zip(
             self._target_cost_critic.parameters(),

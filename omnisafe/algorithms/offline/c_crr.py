@@ -72,7 +72,7 @@ class CCRR(CRR):
     def _train(
         self,
         batch: Tuple[torch.Tensor, ...],
-    ):
+    ) -> None:
         obs, action, reward, cost, next_obs, done = batch
 
         self._update_reward_critic(obs, action, reward, next_obs, done)
@@ -88,7 +88,7 @@ class CCRR(CRR):
         cost: torch.Tensor,
         next_obs: torch.Tensor,
         done: torch.Tensor,
-    ):
+    ) -> None:
         with torch.no_grad():
             next_action = self._actor.predict(next_obs, deterministic=False)
             qr1_target, qr2_target = self._target_reward_critic(next_obs, next_action)
@@ -175,7 +175,7 @@ class CCRR(CRR):
             },
         )
 
-    def _polyak_update(self):
+    def _polyak_update(self) -> None:
         super()._polyak_update()
         for target_param, param in zip(
             self._target_cost_critic.parameters(),

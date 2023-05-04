@@ -14,9 +14,10 @@
 # ==============================================================================
 """Implementation of a basic algorithm framework for offline algorithms."""
 
+from __future__ import annotations
+
 import time
 from abc import abstractmethod
-from typing import Tuple, Union
 
 import torch
 
@@ -32,6 +33,12 @@ class BaseOffline(BaseAlgo):
     """Base class for offline algorithms."""
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
+        """Initialize Base Offline Algorithm.
+
+        Args:
+            env_id (str): the id of the environment.
+            cfgs (Config): the configuration for the algorithm.
+        """
         super().__init__(env_id, cfgs)
 
         self._actor: Actor
@@ -70,6 +77,7 @@ class BaseOffline(BaseAlgo):
         self._logger.register_key('TotalSteps')
 
     def learn(self) -> tuple[float, float, int]:
+        """Learn the policy."""
         self._logger.log('Start training ...')
 
         start_time = time.time()
@@ -112,8 +120,8 @@ class BaseOffline(BaseAlgo):
     @abstractmethod
     def _train(
         self,
-        batch: Tuple[torch.Tensor, ...],
-    ):
+        batch: tuple[torch.Tensor, ...],
+    ) -> None:
         """Train the model."""
 
     def _evaluate(self) -> None:
