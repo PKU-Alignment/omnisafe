@@ -173,96 +173,82 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
 ```
 
 **algo:**
-<style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg .tg-mn8v{background-color:#9b9b9b;border-color:inherit;font-weight:bold;text-align:center;vertical-align:top}
-.tg .tg-baqh{text-align:center;vertical-align:top}
-.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
-.tg .tg-uca5{text-align:left;text-decoration:underline;vertical-align:top}
-.tg .tg-3xi5{background-color:#ffffff;border-color:inherit;text-align:center;vertical-align:top}
-.tg .tg-uog8{border-color:inherit;text-align:left;text-decoration:underline;vertical-align:top}
-.tg .tg-0lax{text-align:left;vertical-align:top}
-</style>
-<table class="tg">
+<table>
 <thead>
   <tr>
-    <th class="tg-mn8v">Domains</th>
-    <th class="tg-mn8v">Types</th>
-    <th class="tg-mn8v">Algorithms Registry</th>
+    <th>Domains</th>
+    <th>Types</th>
+    <th>Algorithms Registry</th>
   </tr>
 </thead>
 <tbody>
   <tr>
-    <td class="tg-3xi5" rowspan="4">On Policy</td>
-    <td class="tg-c3ow" rowspan="2">Primal Dual</td>
-    <td class="tg-uog8">TRPOLag; PPOLag; PDO; RCPO; OnCRPO</td>
+    <td rowspan="4">On Policy</td>
+    <td rowspan="2">Primal Dual</td>
+    <td>TRPOLag; PPOLag; PDO; RCPO; OnCRPO</td>
   </tr>
   <tr>
-    <td class="tg-uca5">TRPOPIDLag; PPOPIDLag;CPPOPID</td>
+    <td>TRPOPIDLag; PPOPIDLag;CPPOPID</td>
   </tr>
   <tr>
-    <td class="tg-c3ow">Convex Optimization</td>
-    <td class="tg-uog8"><span style="font-weight:400;font-style:normal">CPO; PCPO; </span>FOCOPS; CUP</td>
+    <td>Convex Optimization</td>
+    <td><span style="font-weight:400;font-style:normal">CPO; PCPO; </span>FOCOPS; CUP</td>
   </tr>
   <tr>
-    <td class="tg-c3ow">Penalty Function</td>
-    <td class="tg-uog8">IPO; P3O</td>
+    <td>Penalty Function</td>
+    <td>IPO; P3O</td>
   </tr>
   <tr>
-    <td class="tg-baqh" rowspan="2">Off Policy</td>
-    <td class="tg-baqh" rowspan="2">Primal-Dual</td>
-    <td class="tg-uca5">SACLAG; DDPGLag; TD3LAG</td>
+    <td rowspan="2">Off Policy</td>
+    <td rowspan="2">Primal-Dual</td>
+    <td>SACLAG; DDPGLag; TD3LAG</td>
   </tr>
   <tr>
-    <td class="tg-uca5"><span style="font-weight:400;font-style:normal">SACPIDLag; TD3PIDLag; DDPGPIDLag; CVPO</span></td>
+    <td><span style="font-weight:400;font-style:normal">SACPIDLag; TD3PIDLag; DDPGPIDLag; CVPO</span></td>
   </tr>
   <tr>
-    <td class="tg-baqh" rowspan="3">Model-based</td>
-    <td class="tg-baqh">Online Plan</td>
-    <td class="tg-uca5">SafeLOOP; CCEPETS; RCEPETS</td>
+    <td rowspan="3">Model-based</td>
+    <td>Online Plan</td>
+    <td>SafeLOOP; CCEPETS; RCEPETS</td>
   </tr>
   <tr>
-    <td class="tg-baqh"><span style="font-weight:400;font-style:normal">Pessimistic Estimate</span></td>
-    <td class="tg-uca5">LA-MBDA; CAPPETS</td>
+    <td><span style="font-weight:400;font-style:normal">Pessimistic Estimate</span></td>
+    <td>LA-MBDA; CAPPETS</td>
   </tr>
   <tr>
-    <td class="tg-baqh">Imaginary Train</td>
-    <td class="tg-uca5">SMBPO; MBPPOLag</td>
+    <td>Imaginary Train</td>
+    <td>SMBPO; MBPPOLag</td>
   </tr>
   <tr>
-    <td class="tg-baqh" rowspan="2">Control</td>
-    <td class="tg-baqh">Recovery/ Optimal Layer</td>
-    <td class="tg-uca5">SafetyLayer; RecoveryRL</td>
+    <td rowspan="2">Control</td>
+    <td>Recovery/ Optimal Layer</td>
+    <td>SafetyLayer; RecoveryRL</td>
   </tr>
   <tr>
-    <td class="tg-baqh">Lyapunov</td>
-    <td class="tg-uca5">SPPO; SPPOM</td>
+    <td>Lyapunov</td>
+    <td>SPPO; SPPOM</td>
   </tr>
   <tr>
-    <td class="tg-baqh" rowspan="2">Offline</td>
-    <td class="tg-baqh">Q-Learning Based</td>
-    <td class="tg-uca5">BCQLag; C-CRR</td>
+    <td rowspan="2">Offline</td>
+    <td>Q-Learning Based</td>
+    <td>BCQLag; C-CRR</td>
   </tr>
   <tr>
-    <td class="tg-baqh">DICE Based</td>
-    <td class="tg-uca5">COptDICE</td>
+    <td>DICE Based</td>
+    <td>COptDICE</td>
   </tr>
   <tr>
-    <td class="tg-baqh" rowspan="3">Other Formulation MDP</td>
-    <td class="tg-baqh">ET-MDP</td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">PPO</span>EarlyTerminated; TRPOEarlyTerminated</td>
+    <td rowspan="3">Other Formulation MDP</td>
+    <td>ET-MDP</td>
+    <td><span style="font-weight:400;font-style:normal">PPO</span>EarlyTerminated; TRPOEarlyTerminated</td>
   </tr>
   <tr>
-    <td class="tg-baqh">SauteRL</td>
-    <td class="tg-uca5">PPOSaute; TRPOSaute</td>
+    <td>SauteRL</td>
+    <td>PPOSaute; TRPOSaute</td>
   </tr>
   <tr>
-    <td class="tg-baqh">SimmerRL</td>
-    <td class="tg-uca5"><span style="font-weight:400;font-style:normal">PPOSimmerPID; TRPOSimmerPID</span></td>
+    <td>SimmerRL</td>
+    <td><span style="font-weight:400;font-style:normal">PPOSimmerPID; TRPOSimmerPID</span></td>
   </tr>
 </tbody>
 </table>
