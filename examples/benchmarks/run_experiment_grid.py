@@ -15,7 +15,6 @@
 """Example of training a policy from exp-x config with OmniSafe."""
 
 import warnings
-from typing import Any
 
 import torch
 

@@ -91,7 +91,7 @@ class StatisticsTools:
         cost_limit: float | None = None,
         smooth: int = 1,
         show_image: bool = False,
-    ):
+    ) -> None:
         """Draw graph.
 
         Args:

@@ -17,7 +17,7 @@
 
 import os
 import warnings
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import numpy as np
 import torch
@@ -419,7 +419,7 @@ def analyze_grid(
         False,
         help='whether to show the images in GUI windows',
     ),
-):
+) -> None:
     """Statistics tools for experiment grid.
 
     Just specify in the name of the parameter of which value you want to compare, then you can just
@@ -433,6 +433,7 @@ def analyze_grid(
         compare_num (int): Number of values to compare, if it is specified, will combine any
             potential combination to compare
         cost_limit (float): The cost limit.
+        show_image (bool): Whether to show the images in GUI windows.
     """
     tools = StatisticsTools()
     tools.load_source(path)
