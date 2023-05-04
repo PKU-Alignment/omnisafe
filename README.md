@@ -45,9 +45,9 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
     - [✨Install from source](#install-from-source)
     - [✨Install from PyPI](#install-from-pypi)
 - [🍪Implemented Algorithms](#implemented-algorithms)
-  - [🍩Examples🍩](#examples)
-    - [Algorithms Registry](#algorithms-registry)
-    - [Supported Environments](#supported-environments)
+  - [🍩Examples](#examples)
+    - [🏠Algorithms Registry](#algorithms-registry)
+    - [☁️Supported Environments](#️supported-environments)
     - [🚢Try with CLI](#try-with-cli)
 - [🍷Getting Started](#getting-started)
   - [🥢Important Hints](#important-hints)
@@ -162,14 +162,14 @@ pip install omnisafe
 
 --------------------------------------------------------------------------------
 
-### 🍩Examples🍩
+### 🍩Examples
 
 ```bash
 cd examples
 python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
 ```
 
-#### Algorithms Registry
+#### 🏠Algorithms Registry
 <table>
 <thead>
   <tr>
@@ -250,7 +250,7 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
 </tbody>
 </table>
 
-#### Supported Environments
+#### ☁️Supported Environments
 
 Environment id in [Safety Gymnasium](https://www.safety-gymnasium.com/), here a list of envs that safety-gymnasium supports.
 
