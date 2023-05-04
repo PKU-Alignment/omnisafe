@@ -39,6 +39,11 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
 
 ### Table of Contents  <!-- omit in toc --> <!-- markdownlint-disable heading-increment -->
 
+- [🚀Quick Start🚀](#quick-start)
+  - [🔥Installation🔥](#installation)
+    - [Prerequisites](#prerequisites)
+    - [Install from source](#install-from-source)
+    - [Install from PyPI](#install-from-pypi)
 - [Implemented Algorithms](#implemented-algorithms)
   - [Latest SafeRL Papers](#latest-saferl-papers)
   - [List of Algorithms](#list-of-algorithms)
@@ -47,10 +52,6 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
     - [Model-Based Safe](#model-based-safe)
     - [Offline Safe](#offline-safe)
     - [Others](#others)
-- [Installation](#installation)
-  - [Prerequisites](#prerequisites)
-    - [Install from source](#install-from-source)
-    - [Install from PyPI](#install-from-pypi)
   - [Examples](#examples)
     - [Try with CLI](#try-with-cli)
 - [Getting Started](#getting-started)
@@ -61,6 +62,39 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
 - [License](#license)
 
 --------------------------------------------------------------------------------
+
+## 🚀Quick Start🚀
+
+### 🔥Installation🔥
+
+#### Prerequisites
+
+OmniSafe requires Python 3.8+ and PyTorch 1.10+.
+
+> We support and test for Python 3.8, 3.9, 3.10 on Linux. Meanwhile, we also support M1 and M2 versions of macOS. We will accept PRs related to Windows, but do not officially support it.
+
+#### Install from source
+
+```bash
+# Clone the repo
+git clone https://github.com/OmniSafeAI/omnisafe
+cd omnisafe
+
+# Create a conda environment
+conda env create --file conda-recipe.yaml
+conda activate omnisafe
+
+# Install omnisafe
+pip install -e .
+```
+
+#### Install from PyPI
+
+OmniSafe is hosted in [![PyPI](https://img.shields.io/pypi/v/omnisafe?label=pypi&logo=pypi)](https://pypi.org/project/omnisafe) / ![Status](https://img.shields.io/pypi/status/omnisafe?label=status).
+
+```bash
+pip install omnisafe
+```
 
 ## Implemented Algorithms
 
@@ -129,36 +163,6 @@ The supported interface algorithms currently include:
 
 --------------------------------------------------------------------------------
 
-## Installation
-
-### Prerequisites
-
-OmniSafe requires Python 3.8+ and PyTorch 1.10+.
-
-> We support and test for Python 3.8, 3.9, 3.10 on Linux. Meanwhile, we also support M1 and M2 versions of macOS. We will accept PRs related to Windows, but do not officially support it.
-
-#### Install from source
-
-```bash
-# Clone the repo
-git clone https://github.com/OmniSafeAI/omnisafe
-cd omnisafe
-
-# Create a conda environment
-conda env create --file conda-recipe.yaml
-conda activate omnisafe
-
-# Install omnisafe
-pip install -e .
-```
-
-#### Install from PyPI
-
-OmniSafe is hosted in [![PyPI](https://img.shields.io/pypi/v/omnisafe?label=pypi&logo=pypi)](https://pypi.org/project/omnisafe) / ![Status](https://img.shields.io/pypi/status/omnisafe?label=status).
-
-```bash
-pip install omnisafe
-```
 
 ### Examples
 
