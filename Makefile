@@ -116,7 +116,7 @@ ruff-fix: ruff-install
 	$(PYTHON) -m ruff check . --fix --exit-non-zero-on-fix
 
 mypy: mypy-install
-	$(PYTHON) -m mypy $(PROJECT_PATH)
+	$(PYTHON) -m mypy $(PROJECT_PATH) --install-types --non-interactive
 
 pre-commit: pre-commit-install
 	$(PYTHON) -m pre_commit run --all-files
@@ -142,9 +142,7 @@ clean-docs:
 
 # Utility functions
 
-# TODO: add mypy when ready
-# TODO: add docstyle when ready
-lint: ruff flake8 py-format pylint addlicense spelling
+lint: ruff flake8 py-format mypy pylint addlicense docstyle spelling
 
 format: py-format-install ruff-install addlicense-install
 	$(PYTHON) -m isort --project $(PROJECT_NAME) $(PYTHON_FILES)

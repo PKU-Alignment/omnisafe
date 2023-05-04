@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implementation of the Soft Actor-Critic algorithm."""
 
-
 import torch
 from torch import nn, optim
 from torch.nn.utils.clip_grad import clip_grad_norm_
@@ -23,7 +22,6 @@ from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.ddpg import DDPG
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils import distributed
-from omnisafe.utils.config import Config
 
 
 @registry.register
@@ -37,13 +35,25 @@ class SAC(DDPG):
         - URL: `SAC <https://arxiv.org/abs/1801.01290>`_
     """
 
-    def __init__(self, env_id: str, cfgs: Config) -> None:
-        super().__init__(env_id, cfgs)
-        self._log_alpha: torch.Tensor
-        self._alpha_optimizer: optim.Optimizer
-        self._target_entropy: float
+    _log_alpha: torch.Tensor
+    _alpha_optimizer: optim.Optimizer
+    _target_entropy: float
 
     def _init_model(self) -> None:
+        """Initialize the model.
+
+        OmniSafe uses :class:`omnisafe.models.actor_critic.constraint_actor_q_critic.ConstraintActorQCritic`
+        as the default model.
+
+        User can customize the model by inheriting this method.
+
+        .. note::
+            The ``num_critics`` in ``critic`` configuration must be 2.
+
+        Examples:
+            >>> def _init_model(self) -> None:
+            ...     self._actor_critic = CustomActorQCritic()
+        """
         self._cfgs.model_cfgs.critic['num_critics'] = 2
         self._actor_critic = ConstraintActorQCritic(
             obs_space=self._env.observation_space,
@@ -53,6 +63,18 @@ class SAC(DDPG):
         ).to(self._device)
 
     def _init(self) -> None:
+        """The initialization of the algorithm.
+
+        User can define the initialization of the algorithm by inheriting this method.
+
+        Examples:
+            >>> def _init(self) -> None:
+            ...     super()._init()
+            ...     self._buffer = CustomBuffer()
+            ...     self._model = CustomModel()
+
+        In SAC, we need to initialize the ``log_alpha`` and ``alpha_optimizer``.
+        """
         super()._init()
         if self._cfgs.algo_cfgs.auto_alpha:
             self._target_entropy = -torch.prod(torch.Tensor(self._env.action_space.shape)).item()
@@ -76,6 +98,7 @@ class SAC(DDPG):
 
     @property
     def _alpha(self) -> float:
+        """The value of alpha."""
         return self._log_alpha.exp().item()
 
     def _update_reward_critic(
@@ -86,6 +109,21 @@ class SAC(DDPG):
         done: torch.Tensor,
         next_obs: torch.Tensor,
     ) -> None:
+        """Update reward critic.
+
+        - Sample the target action by target actor.
+        - Get the target Q value by target critic.
+        - Use the minimum target Q value to update reward critic.
+        - Add the entropy loss to reward critic.
+        - Log useful information.
+
+        Args:
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            action (torch.Tensor): The ``action`` sampled from buffer.
+            reward (torch.Tensor): The ``reward`` sampled from buffer.
+            done (torch.Tensor): The ``terminated`` sampled from buffer.
+            next_obs (torch.Tensor): The ``next observation`` sampled from buffer.
+        """
         with torch.no_grad():
             next_action = self._actor_critic.actor.predict(next_obs, deterministic=False)
             next_logp = self._actor_critic.actor.log_prob(next_action)
@@ -127,6 +165,11 @@ class SAC(DDPG):
         self,
         obs: torch.Tensor,
     ) -> None:
+        """Update actor and alpha if ``auto_alpha`` is True.
+
+        Args:
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+        """
         super()._update_actor(obs)
 
         if self._cfgs.algo_cfgs.auto_alpha:
@@ -153,12 +196,30 @@ class SAC(DDPG):
         self,
         obs: torch.Tensor,
     ) -> torch.Tensor:
+        r"""Computing ``pi/actor`` loss.
+
+        The loss function in SAC is defined as:
+
+        .. math::
+
+            L = -Q^V (s, \pi (s)) + \alpha \log \pi (s)
+
+        where :math:`Q^V` is the min value of two reward critic networks, and :math:`\pi` is the
+        policy network, and :math:`\alpha` is the temperature parameter.
+
+        Args:
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+
+        Returns:
+            The loss of pi/actor.
+        """
         action = self._actor_critic.actor.predict(obs, deterministic=False)
         log_prob = self._actor_critic.actor.log_prob(action)
         q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
         return (self._alpha * log_prob - torch.min(q1_value_r, q2_value_r)).mean()
 
     def _log_when_not_update(self) -> None:
+        """Log default value when not update."""
         super()._log_when_not_update()
         self._logger.store(
             {

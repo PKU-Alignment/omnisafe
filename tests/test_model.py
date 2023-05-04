@@ -58,7 +58,7 @@ def test_critic(
     q_critic = builder.build_critic(critic_type='q')
     v_critic = builder.build_critic(critic_type='v')
     with pytest.raises(NotImplementedError):
-        builder.build_critic(critic_type='invalid')  # type: ignore
+        builder.build_critic(critic_type='invalid')
 
     out1 = q_critic(obs, act)[0]
     out2 = v_critic(obs)[0]
@@ -95,15 +95,15 @@ def test_actor(
     actor_sac = builder.build_actor(actor_type='gaussian_sac')
     actor_mlp = builder.build_actor(actor_type='mlp')
     with pytest.raises(NotImplementedError):
-        builder.build_actor(actor_type='invalid')  # type: ignore
+        builder.build_actor(actor_type='invalid')
 
     _ = actor_learning(obs)
     action = actor_learning.predict(obs, deterministic)
     assert action.shape == torch.Size([act_dim]), f'actor output shape is {action.shape}'
     logp = actor_learning.log_prob(action)
     assert logp.shape == torch.Size([]), f'actor log_prob shape is {logp.shape}'
-    actor_learning.std = 0.9  # type: ignore
-    assert (actor_learning.std - 0.9) < 1e-4, f'actor std is {actor_learning.std}'  # type: ignore
+    actor_learning.std = 0.9
+    assert (actor_learning.std - 0.9) < 1e-4, f'actor std is {actor_learning.std}'
 
     _ = actor_sac(obs)
     action = actor_sac.predict(obs, deterministic)
@@ -111,8 +111,8 @@ def test_actor(
     logp = actor_sac.log_prob(action)
     assert logp.shape == torch.Size([]), f'actor log_prob shape is {logp.shape}'
     with pytest.raises(NotImplementedError):
-        actor_sac.std = 0.9  # type: ignore
-    assert isinstance(actor_sac.std, float), f'actor std is {actor_sac.std}'  # type: ignore
+        actor_sac.std = 0.9
+    assert isinstance(actor_sac.std, float), f'actor std is {actor_sac.std}'
 
     action = actor_mlp.predict(obs, deterministic)
     actor_mlp.noise = 0.1

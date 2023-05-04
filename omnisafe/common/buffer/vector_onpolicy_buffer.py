@@ -19,12 +19,37 @@ from __future__ import annotations
 import torch
 
 from omnisafe.common.buffer.onpolicy_buffer import OnPolicyBuffer
-from omnisafe.typing import AdvatageEstimator, OmnisafeSpace, cpu
+from omnisafe.typing import DEVICE_CPU, AdvatageEstimator, OmnisafeSpace
 from omnisafe.utils import distributed
 
 
 class VectorOnPolicyBuffer(OnPolicyBuffer):
-    """Vectorized on-policy buffer."""
+    """Vectorized on-policy buffer.
+
+    The vector-on-policy buffer is used to store the data from vector environments. The data is
+    stored in a list of on-policy buffers, each of which corresponds to one environment.
+
+    .. warning::
+        The buffer only supports Box spaces.
+
+    Args:
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
+        size (int): Size of the buffer.
+        gamma (float): Discount factor.
+        lam (float): Lambda for GAE.
+        lam_c (float): Lambda for GAE for cost.
+        advantage_estimator (AdvatageEstimator): Advantage estimator.
+        penalty_coefficient (float): Penalty coefficient.
+        standardized_adv_r (bool): Whether to standardize the advantage for reward.
+        standardized_adv_c (bool): Whether to standardize the advantage for cost.
+        num_envs (int, optional): Number of environments. Defaults to 1.
+        device (torch.device, optional): Device to store the data. Defaults to
+            ``torch.device('cpu')``.
+
+    Attributes:
+        buffers (list[OnPolicyBuffer]): List of on-policy buffers.
+    """
 
     def __init__(  # pylint: disable=super-init-not-called,too-many-arguments
         self,
@@ -39,44 +64,16 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         standardized_adv_r: bool,
         standardized_adv_c: bool,
         num_envs: int = 1,
-        device: torch.device = cpu,
+        device: torch.device = DEVICE_CPU,
     ) -> None:
-        """Initialize the vector-on-policy buffer.
+        """Initialize an instance of :class:`VectorOnPolicyBuffer`."""
+        self._num_buffers: int = num_envs
+        self._standardized_adv_r: bool = standardized_adv_r
+        self._standardized_adv_c: bool = standardized_adv_c
 
-        The vector-on-policy buffer is used to store the data from vector environments.
-        The data is stored in a list of on-policy buffers, each of which corresponds to
-        one environment.
-
-        .. warning::
-            The buffer only supports Box spaces.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            size (int): Size of the buffer.
-            gamma (float): Discount factor.
-            lam (float): Lambda for GAE.
-            lam_c (float): Lambda for GAE for cost.
-            advantage_estimator (AdvatageEstimator): Advantage estimator.
-            penalty_coefficient (float): Penalty coefficient.
-            standardized_adv_r (bool): Whether to standardize the advantage for reward.
-            standardized_adv_c (bool): Whether to standardize the advantage for cost.
-            num_envs (int, optional): Number of environments. Defaults to 1.
-            device (torch.device, optional): Device to store the data. Defaults to torch.device('cpu').
-
-        Attributes:
-            buffers (List[OnPolicyBuffer]): List of on-policy buffers.
-            _num_buffers (int): Number of buffers.
-            _standardized_adv_r (bool): Whether to standardize the advantage for reward.
-            _standardized_adv_c (bool): Whether to standardize the advantage for cost.
-
-        """
-        self._num_buffers = num_envs
-        self._standardized_adv_r = standardized_adv_r
-        self._standardized_adv_c = standardized_adv_c
         if num_envs < 1:
             raise ValueError('num_envs must be greater than 0.')
-        self.buffers = [
+        self.buffers: list[OnPolicyBuffer] = [
             OnPolicyBuffer(
                 obs_space=obs_space,
                 act_space=act_space,
@@ -93,16 +90,15 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
 
     @property
     def num_buffers(self) -> int:
-        """Get the number of buffers."""
+        """Number of buffers."""
         return self._num_buffers
 
     def store(self, **data: torch.Tensor) -> None:
         """Store data into the buffer.
 
         .. hint::
-            The data should be a list of tensors, each of which corresponds to one environment.
-            Then the data will be stored into the corresponding buffer.
-
+            The data should be a list of tensors, each of which corresponds to one environment. Then
+            the data will be stored into the corresponding buffer.
         """
         for i, buffer in enumerate(self.buffers):
             buffer.store(**{k: v[i] for k, v in data.items()})
@@ -118,18 +114,27 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         In vector-on-policy buffer, we get the data from each buffer and then concatenate them.
 
         .. hint::
-
-            We provide a trick to standardize the advantages of state-action pairs.
-            We calculate the mean and standard deviation of the advantages of state-action pairs
-            and then standardize the advantages of state-action pairs.
-            You can turn on this trick by setting the ``standardized_adv_r`` to ``True``.
-            The same trick is applied to the advantages of the cost.
-
+            We provide a trick to standardize the advantages of state-action pairs. We calculate the
+            mean and standard deviation of the advantages of state-action pairs and then standardize
+            the advantages of state-action pairs. You can turn on this trick by setting the
+            ``standardized_adv_r`` to ``True``. The same trick is applied to the advantages of the
+            cost.
         """
         self.buffers[idx].finish_path(last_value_r, last_value_c)
 
     def get(self) -> dict[str, torch.Tensor]:
-        """Get the data from the buffer."""
+        """Get the data in the buffer.
+
+        .. hint::
+            We provide a trick to standardize the advantages of state-action pairs. We calculate the
+            mean and standard deviation of the advantages of state-action pairs and then standardize
+            the advantages of state-action pairs. You can turn on this trick by setting the
+            ``standardized_adv_r`` to ``True``. The same trick is applied to the advantages of the
+            cost.
+
+        Returns:
+            The data stored and calculated in the buffer.
+        """
         data_pre = {k: [v] for k, v in self.buffers[0].get().items()}
         for buffer in self.buffers[1:]:
             for k, v in buffer.get().items():

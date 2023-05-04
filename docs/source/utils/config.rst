@@ -16,7 +16,7 @@ OmniSafe Config
 Config
 ------
 
-OmniSafe use yaml file to store all the configurations. The configuration file is stored in ``omnisafe/configs``. The configuration file is divided into several parts.
+OmniSafe uses yaml file to store all the configurations. The configuration file is stored in ``omnisafe/configs``. The configuration file is divided into several parts.
 
 Take ``PPOLag`` as an example, the configuration file is as follows:
 

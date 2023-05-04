@@ -1,4 +1,4 @@
-# Dockerfile for omnisafe
+# Dockerfile for OmniSafe
 #
 #   $ docker build --target base --tag omnisafe:latest .
 #

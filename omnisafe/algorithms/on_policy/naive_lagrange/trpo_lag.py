@@ -34,40 +34,39 @@ class TRPOLag(TRPO):
         The TRPOLag algorithm uses a Lagrange multiplier to balance the cost and reward.
         """
         super()._init()
-        self._lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
+        self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
-        r"""Log the TRPOLag specific information.
+        """Log the TRPOLag specific information.
 
-        .. list-table::
-
-            *   -   Things to log
-                -   Description
-            *   -   ``Metrics/LagrangeMultiplier``
-                -   The Lagrange multiplier.
+        +----------------------------+--------------------------+
+        | Things to log              | Description              |
+        +============================+==========================+
+        | Metrics/LagrangeMultiplier | The Lagrange multiplier. |
+        +----------------------------+--------------------------+
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier', min_and_max=True)
 
     def _update(self) -> None:
-        r"""Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
+        r"""Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
 
-        Additionally, we update the Lagrange multiplier parameter,
-        by calling the :meth:`update_lagrange_multiplier()` method.
+        Additionally, we update the Lagrange multiplier parameter by calling the
+        :meth:`update_lagrange_multiplier` method.
 
         .. note::
-            The :meth:`_loss_pi()` is defined in the :class:`PolicyGradient` algorithm.
-            When a lagrange multiplier is used,
-            the :meth:`_loss_pi()` method will return the loss of the policy as:
+            The :meth:`_loss_pi` is defined in the :class:`PolicyGradient` algorithm. When a
+            lagrange multiplier is used, the :meth:`_loss_pi` method will return the loss of the
+            policy as:
 
             .. math::
-                L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[ \frac{\pi_\theta(a_t|s_t)}{\pi_\theta^{old}(a_t|s_t)}
-                [A^{R}_{\pi_{\theta}}(s_t, a_t) - \lambda A^{C}_{\pi_{\theta}}(s_t, a_t)] \right]
+
+                L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[
+                    \frac{\pi_{\theta} (a_t|s_t)}{\pi_{\theta}^{old} (a_t|s_t)}
+                    [ A^{R}_{\pi_{\theta}} (s_t, a_t) - \lambda A^{C}_{\pi_{\theta}} (s_t, a_t) ]
+                \right]
 
             where :math:`\lambda` is the Lagrange multiplier parameter.
-
-        Args:
-            self (object): object of the class.
         """
         # note that logger already uses MPI statistics across all processes..
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
@@ -81,15 +80,21 @@ class TRPOLag(TRPO):
     def _compute_adv_surrogate(self, adv_r: torch.Tensor, adv_c: torch.Tensor) -> torch.Tensor:
         r"""Compute surrogate loss.
 
-        PPOLag uses the following surrogate loss:
+        TRPOLag uses the following surrogate loss:
 
         .. math::
-            L = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
-            - \lambda A^C_{\pi_{\theta}}(s, a)]
+
+            L = \frac{1}{1 + \lambda} [
+                A^{R}_{\pi_{\theta}} (s, a)
+                - \lambda A^C_{\pi_{\theta}} (s, a)
+            ]
 
         Args:
-            adv (torch.Tensor): reward advantage
-            cost_adv (torch.Tensor): cost advantage
+            adv_r (torch.Tensor): The ``reward_advantage`` sampled from buffer.
+            adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
+
+        Returns:
+            The ``advantage`` combined with ``reward_advantage`` and ``cost_advantage``.
         """
         penalty = self._lagrange.lagrangian_multiplier.item()
         return (adv_r - penalty * adv_c) / (1 + penalty)

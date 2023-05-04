@@ -26,7 +26,20 @@ from omnisafe.utils.model import build_mlp_network
 
 # pylint: disable-next=too-many-instance-attributes
 class MLPActor(Actor):
-    """Implementation of MLPActor."""
+    """Implementation of MLPActor.
+
+    MLPActor is a Gaussian actor with a learnable mean value. It is used in off-policy algorithms
+    such as ``DDPG``, ``TD3`` and so on.
+
+    Args:
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        output_activation (Activation, optional): Output activation function. Defaults to ``'tanh'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
+    """
 
     def __init__(
         self,
@@ -37,24 +50,16 @@ class MLPActor(Actor):
         output_activation: Activation = 'tanh',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize MLPActor.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list): List of hidden layer sizes.
-            activation (Activation): Activation function.
-            output_activation (Activation): Output activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-        """
+        """Initialize an instance of :class:`MLPActor`."""
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
-        self.net = build_mlp_network(
+
+        self.net: torch.nn.Module = build_mlp_network(
             sizes=[self._obs_dim, *self._hidden_sizes, self._act_dim],
             activation=activation,
             output_activation=output_activation,
             weight_initialization_mode=weight_initialization_mode,
         )
-        self._noise = 0.1
+        self._noise: float = 0.1
 
     def predict(
         self,
@@ -69,8 +74,8 @@ class MLPActor(Actor):
         - If ``deterministic`` is ``False``, the predicted action is sampled from the distribution.
 
         Args:
-            obs (torch.Tensor): Observation.
-            deterministic (bool): Whether to use deterministic policy.
+            obs (torch.Tensor): Observation from environments.
+            deterministic (bool, optional): Whether to use deterministic policy. Defaults to True.
         """
         action = self.net(obs)
         if deterministic:
@@ -81,7 +86,7 @@ class MLPActor(Actor):
 
     @property
     def noise(self) -> float:
-        """Get the action noise."""
+        """Noise of the action."""
         return self._noise
 
     @noise.setter
@@ -94,7 +99,28 @@ class MLPActor(Actor):
         raise NotImplementedError
 
     def forward(self, obs: torch.Tensor) -> Distribution:
+        """Forward method implementation.
+
+        Args:
+            obs (torch.Tensor): Observation from environments.
+
+        Returns:
+            The distribution of the action.
+        """
         return self._distribution(obs)
 
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
+        """Log probability of the action.
+
+        Args:
+            act (torch.Tensor): Action tensor.
+
+        Raises:
+            NotImplementedError: The method is not implemented.
+        """
         raise NotImplementedError
+
+    @property
+    def std(self) -> float:
+        """Standard deviation of the distribution."""
+        return self._noise

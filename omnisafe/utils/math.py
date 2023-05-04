@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the algo utils."""
+"""Implementation of the math utils."""
 
 from __future__ import annotations
 
-from typing import Callable
+from typing import Any, Callable
 
 import torch
 from torch.distributions import Normal, TanhTransform, TransformedDistribution, constraints
@@ -25,13 +25,16 @@ from torch.distributions import Normal, TanhTransform, TransformedDistribution, 
 def get_transpose(tensor: torch.Tensor) -> torch.Tensor:
     """Transpose the last two dimensions of a tensor.
 
-    Example:
+    Examples:
         >>> tensor = torch.rand(2, 3, 4)
         >>> get_transpose(tensor).shape
         torch.Size([2, 4, 3])
 
     Args:
-        tensor: torch.Tensor
+        tensor(torch.Tensor): The tensor to transpose.
+
+    Returns:
+        Transposed tensor.
     """
     return tensor.transpose(dim0=-2, dim1=-1)
 
@@ -39,95 +42,105 @@ def get_transpose(tensor: torch.Tensor) -> torch.Tensor:
 def get_diagonal(tensor: torch.Tensor) -> torch.Tensor:
     """Get the diagonal of the last two dimensions of a tensor.
 
-    Example:
+    Examples:
         >>> tensor = torch.rand(2, 3, 4)
         >>> get_diagonal(tensor).shape
         torch.Size([2, 3])
 
     Args:
-        tensor: torch.Tensor
+        tensor (torch.Tensor): The tensor to get the diagonal from.
+
+    Returns:
+        Diagonal part of the tensor.
     """
     return tensor.diagonal(dim1=-2, dim2=-1).sum(-1)
 
 
-def discount_cumsum(x_vector: torch.Tensor, discount: float) -> torch.Tensor:
+def discount_cumsum(vector_x: torch.Tensor, discount: float) -> torch.Tensor:
     """Compute the discounted cumulative sum of vectors.
 
-    Example:
-        >>> x_vector = torch.arange(1, 5)
-        >>> x_vector
+    Examples:
+        >>> vector_x = torch.arange(1, 5)
+        >>> vector_x
         tensor([1, 2, 3, 4])
-        >>> discount_cumsum(x_vector, 0.9)
+        >>> discount_cumsum(vector_x, 0.9)
         tensor([4.00, 3.90, 3.00, 1.00])
 
     Args:
-        x_vector (torch.Tensor): shape (B, T).
-        discount (float): discount factor.
+        vector_x (torch.Tensor): A sequence of shape (B, T).
+        discount (float): The discount factor.
+
+    Returns:
+        The discounted cumulative sum of vectors.
     """
-    length = x_vector.shape[0]
-    x_vector = x_vector.type(torch.float64)
-    cumsum = x_vector[-1]
+    length = vector_x.shape[0]
+    vector_x = vector_x.type(torch.float64)
+    cumsum = vector_x[-1]
     for idx in reversed(range(length - 1)):
-        cumsum = x_vector[idx] + discount * cumsum
-        x_vector[idx] = cumsum
-    return x_vector
+        cumsum = vector_x[idx] + discount * cumsum
+        vector_x[idx] = cumsum
+    return vector_x
 
 
+# pylint: disable-next=too-many-locals
 def conjugate_gradients(
-    Avp: Callable[[torch.Tensor], torch.Tensor],
-    b_vector: torch.Tensor,
+    fisher_product: Callable[[torch.Tensor], torch.Tensor],
+    vector_b: torch.Tensor,
     num_steps: int = 10,
     residual_tol: float = 1e-10,
     eps: float = 1e-6,
-):  # pylint: disable=invalid-name,too-many-locals
+) -> torch.Tensor:
     """Implementation of Conjugate gradient algorithm.
 
-    Conjugate gradient algorithm is used to solve the linear system of equations :math:`Ax = b`.
+    Conjugate gradient algorithm is used to solve the linear system of equations :math:`A x = b`.
     The algorithm is described in detail in the paper `Conjugate Gradient Method`_.
 
     .. _Conjugate Gradient Method: https://en.wikipedia.org/wiki/Conjugate_gradient_method
 
     .. note::
-        Increasing ``num_steps`` will lead to a more accurate approximation
-        to :math:`A^{-1} b`, and possibly slightly-improved performance,
-        but at the cost of slowing things down.
-        Also probably don't play with this hyperparameter.
+        Increasing ``num_steps`` will lead to a more accurate approximation to :math:`A^{-1} b`, and
+        possibly slightly-improved performance, but at the cost of slowing things down. Also
+        probably don't play with this hyperparameter.
 
     Args:
-        Avp (Callable[[torch.Tensor], torch.Tensor]):  Fisher information matrix vector product.
-        b_vector (torch.Tensor): The vector :math:`b` in the equation :math:`Ax = b`.
-        num_steps (int): The number of steps to run the algorithm for.
-        residual_tol (float): The tolerance for the residual.
-        eps (float): A small number to avoid dividing by zero.
-    """
+        fisher_product (Callable[[torch.Tensor], torch.Tensor]): Fisher information matrix vector
+            product.
+        vector_b (torch.Tensor): The vector :math:`b` in the equation :math:`A x = b`.
+        num_steps (int, optional): The number of steps to run the algorithm for. Defaults to 10.
+        residual_tol (float, optional): The tolerance for the residual. Defaults to 1e-10.
+        eps (float, optional): A small number to avoid dividing by zero. Defaults to 1e-6.
 
-    x = torch.zeros_like(b_vector)
-    r = b_vector - Avp(x)
-    p = r.clone()
-    rdotr = torch.dot(r, r)
+    Returns:
+        The vector :math:`x` in the equation :math:`A x = b`.
+    """
+    vector_x = torch.zeros_like(vector_b)
+    vector_r = vector_b - fisher_product(vector_x)
+    vector_p = vector_r.clone()
+    rdotr = torch.dot(vector_r, vector_r)
 
     for _ in range(num_steps):
-        z = Avp(p)
-        alpha = rdotr / (torch.dot(p, z) + eps)
-        x += alpha * p
-        r -= alpha * z
-        new_rdotr = torch.dot(r, r)
+        vector_z = fisher_product(vector_p)
+        alpha = rdotr / (torch.dot(vector_p, vector_z) + eps)
+        vector_x += alpha * vector_p
+        vector_r -= alpha * vector_z
+        new_rdotr = torch.dot(vector_r, vector_r)
         if torch.sqrt(new_rdotr) < residual_tol:
             break
-        mu = new_rdotr / (rdotr + eps)
-        p = r + mu * p
+        vector_mu = new_rdotr / (rdotr + eps)
+        vector_p = vector_r + vector_mu * vector_p
         rdotr = new_rdotr
-    return x
+    return vector_x
 
 
 class SafeTanhTransformer(TanhTransform):
     """Safe Tanh Transformer.
 
-    This transformer is used to avoid the error caused by the input of tanh function
-    being too large or too small.
+    This transformer is used to avoid the error caused by the input of tanh function being too large
+    or too small.
     """
 
-    def _call(self, x: torch.Tensor) -> torch.Tensor:
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        """Apply the transform to the input."""
         return torch.clamp(torch.tanh(x), min=-0.999999, max=0.999999)
 
     def _inverse(self, y: torch.Tensor) -> torch.Tensor:
@@ -140,8 +153,7 @@ class SafeTanhTransformer(TanhTransform):
 
 
 class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
-    r"""
-    Creates a tanh-normal distribution.
+    r"""Create a tanh-normal distribution.
 
     .. math::
 
@@ -149,55 +161,53 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
 
         Y = tanh(X) \sim TanhNormal(loc, scale)
 
-    Example::
-
+    Examples:
         >>> m = TanhNormal(torch.tensor([0.0]), torch.tensor([1.0]))
         >>> m.sample()  # tanh-normal distributed with mean=0 and stddev=1
         tensor([-0.7616])
 
     Args:
-        loc (float or Tensor): mean of the underlying normal distribution
-        scale (float or Tensor): standard deviation of the underlying normal distribution
+        loc (float or Tensor): The mean of the underlying normal distribution.
+        scale (float or Tensor): The standard deviation of the underlying normal distribution.
     """
 
     arg_constraints = {'loc': constraints.real, 'scale': constraints.positive}
-    support = constraints.real
-    has_rsample = True
 
-    def __init__(self, loc, scale, validate_args=None) -> None:
-        base_dist = Normal(loc, scale, validate_args=validate_args)
-        super().__init__(base_dist, SafeTanhTransformer(), validate_args=validate_args)
+    def __init__(self, loc: torch.Tensor, scale: torch.Tensor) -> None:
+        """Initialize an instance of :class:`TanhNormal`."""
+        base_dist = Normal(loc, scale)
+        super().__init__(base_dist, SafeTanhTransformer())
 
-    def expand(self, batch_shape, instance=None):
+    def expand(self, batch_shape: tuple[int, ...], instance: Any | None = None) -> TanhNormal:
         """Expand the distribution."""
         new = self._get_checked_instance(TanhNormal, instance)
         return super().expand(batch_shape, new)
 
     @property
-    def loc(self):
-        """The loc of the tanh normal distribution."""
-        return self.base_dist.loc
+    def loc(self) -> torch.Tensor:
+        """The mean of the normal distribution."""
+        return self.base_dist.mean
 
     @property
-    def scale(self):
-        """The scale of the tanh normal distribution."""
-        return self.base_dist.scale
+    def scale(self) -> torch.Tensor:
+        """The standard deviation of the normal distribution."""
+        return self.base_dist.stddev
 
     @property
-    def mean(self):
+    def mean(self) -> torch.Tensor:
         """The mean of the tanh normal distribution."""
         return SafeTanhTransformer()(self.base_dist.mean)
 
     @property
-    def stddev(self):
-        """The stddev of the tanh normal distribution."""
+    def stddev(self) -> torch.Tensor:
+        """The standard deviation of the tanh normal distribution."""
         return self.base_dist.stddev
 
-    def entropy(self):
+    def entropy(self) -> torch.Tensor:
         """The entropy of the tanh normal distribution."""
         return self.base_dist.entropy()
 
     @property
-    def variance(self):
+    def variance(self) -> torch.Tensor:
         """The variance of the tanh normal distribution."""
         return self.base_dist.variance

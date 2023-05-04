@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 from rich.progress import track
 
@@ -31,23 +33,16 @@ class OnPolicyAdapter(OnlineAdapter):
 
     :class:`OnPolicyAdapter` is used to adapt the environment to the on-policy training.
 
-
     Args:
         env_id (str): The environment id.
         num_envs (int): The number of environments.
         seed (int): The random seed.
         cfgs (Config): The configuration.
-
-    Attributes:
-        _env_id (str): The environment id.
-        _env (CMDP): The environment.
-        _cfgs (Config): The configuration.
-        _device (torch.device): The device.
-        _ep_ret (torch.Tensor): The episode return.
-        _ep_cost (torch.Tensor): The episode cost.
-        _ep_len (torch.Tensor): The episode length.
-
     """
+
+    _ep_ret: torch.Tensor
+    _ep_cost: torch.Tensor
+    _ep_len: torch.Tensor
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -56,32 +51,29 @@ class OnPolicyAdapter(OnlineAdapter):
         seed: int,
         cfgs: Config,
     ) -> None:
+        """Initialize an instance of :class:`OnPolicyAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
-
-        self._ep_ret: torch.Tensor
-        self._ep_cost: torch.Tensor
-        self._ep_len: torch.Tensor
         self._reset_log()
 
-    def roll_out(  # pylint: disable=too-many-locals
+    def rollout(  # pylint: disable=too-many-locals
         self,
         steps_per_epoch: int,
         agent: ConstraintActorCritic,
         buffer: VectorOnPolicyBuffer,
         logger: Logger,
     ) -> None:
-        """Roll out the environment and store the data in the buffer.
+        """Rollout the environment and store the data in the buffer.
 
         .. warning::
-
             As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,
             so the final observation will be stored in ``info['final_observation']``.
 
         Args:
             steps_per_epoch (int): Number of steps per epoch.
-            agent (ConstraintActorCritic): Agent.
-            buf (VectorOnPolicyBuffer): Buffer.
-            logger (Logger): Logger.
+            agent (ConstraintActorCritic): Constraint actor-critic, including actor , reward critic
+                and cost critic.
+            buffer (VectorOnPolicyBuffer): Vector on-policy buffer.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
         """
         self._reset_log()
 
@@ -113,6 +105,8 @@ class OnPolicyAdapter(OnlineAdapter):
             epoch_end = step >= steps_per_epoch - 1
             for idx, (done, time_out) in enumerate(zip(terminated, truncated)):
                 if epoch_end or done or time_out:
+                    last_value_r = torch.zeros(1)
+                    last_value_c = torch.zeros(1)
                     if not done:
                         if epoch_end:
                             logger.log(
@@ -125,9 +119,6 @@ class OnPolicyAdapter(OnlineAdapter):
                             )
                         last_value_r = last_value_r.unsqueeze(0)
                         last_value_c = last_value_c.unsqueeze(0)
-                    else:
-                        last_value_r = torch.zeros(1)
-                        last_value_c = torch.zeros(1)
 
                     if done or time_out:
                         self._log_metrics(logger, idx)
@@ -143,8 +134,7 @@ class OnPolicyAdapter(OnlineAdapter):
         self,
         reward: torch.Tensor,
         cost: torch.Tensor,
-        info: dict,
-        **kwargs,  # pylint: disable=unused-argument
+        info: dict[str, Any],
     ) -> None:
         """Log value.
 
@@ -153,19 +143,19 @@ class OnPolicyAdapter(OnlineAdapter):
             be stored in ``info['original_reward']`` and ``info['original_cost']``.
 
         Args:
-            reward (torch.Tensor): The reward.
-            cost (torch.Tensor): The cost.
-            **kwargs: Other arguments.
+            reward (torch.Tensor): The immediate step reward.
+            cost (torch.Tensor): The immediate step cost.
+            info (dict[str, Any]): Some information logged by the environment.
         """
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()
         self._ep_len += 1
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
-        """Log metrics.
+        """Log metrics, including ``EpRet``, ``EpCost``, ``EpLen``.
 
         Args:
-            logger (Logger): Logger.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
             idx (int): The index of the environment.
         """
         logger.store(
@@ -177,10 +167,11 @@ class OnPolicyAdapter(OnlineAdapter):
         )
 
     def _reset_log(self, idx: int | None = None) -> None:
-        """Reset log.
+        """Reset the episode return, episode cost and episode length.
 
         Args:
-            idx (int | None): The index of the environment.
+            idx (int or None, optional): The index of the environment. Defaults to None
+                (single environment).
         """
         if idx is None:
             self._ep_ret = torch.zeros(self._env.num_envs)

@@ -15,6 +15,7 @@
 """Adapter for the environment and the algorithm."""
 
 from omnisafe.adapter.early_terminated_adapter import EarlyTerminatedAdapter
+from omnisafe.adapter.modelbased_adapter import ModelBasedAdapter
 from omnisafe.adapter.offpolicy_adapter import OffPolicyAdapter
 from omnisafe.adapter.online_adapter import OnlineAdapter
 from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter

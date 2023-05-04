@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Environments in the Safety Gymnasium."""
+"""Environments in the Safety-Gymnasium."""
 
 from __future__ import annotations
 
@@ -23,20 +23,28 @@ import safety_gymnasium
 import torch
 
 from omnisafe.envs.core import CMDP, env_register
-from omnisafe.typing import Box, cpu
+from omnisafe.typing import DEVICE_CPU, Box
 
 
 @env_register
 class SafetyGymnasiumEnv(CMDP):
     """Safety Gymnasium Environment.
 
+    Args:
+        env_id (str): Environment id.
+        num_envs (int, optional): Number of environments. Defaults to 1.
+        device (torch.device, optional): Device to store the data. Defaults to
+            ``torch.device('cpu')``.
+        **kwargs (Any): Other arguments.
+
     Attributes:
-        _support_envs (list[str]): List of supported environments.
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
 
-    _support_envs = [
+    need_auto_reset_wrapper: bool = False
+    need_time_limit_wrapper: bool = False
+    _support_envs: list[str] = [
         'SafetyPointGoal0-v0',
         'SafetyPointGoal1-v0',
         'SafetyPointGoal2-v0',
@@ -80,25 +88,18 @@ class SafetyGymnasiumEnv(CMDP):
         'SafetyAntVelocity-v1',
         'SafetyHumanoidVelocity-v1',
     ]
-    need_auto_reset_wrapper = False
-    need_time_limit_wrapper = False
 
     def __init__(
         self,
         env_id: str,
         num_envs: int = 1,
-        device: torch.device = cpu,
-        **kwargs,
+        device: torch.device = DEVICE_CPU,
+        **kwargs: Any,
     ) -> None:
-        """Initialize the environment.
-
-        Args:
-            env_id (str): Environment id.
-            num_envs (int, optional): Number of environments. Defaults to 1.
-            device (torch.device, optional): Device to store the data. Defaults to 'cpu'.
-            **kwargs: Other arguments.
-        """
+        """Initialize an instance of :class:`SafetyGymnasiumEnv`."""
         super().__init__(env_id)
+        self._num_envs = num_envs
+        self._device = torch.device(device)
         if num_envs > 1:
             self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
             assert isinstance(self._env.single_action_space, Box), 'Only support Box action space.'
@@ -109,6 +110,8 @@ class SafetyGymnasiumEnv(CMDP):
             self._action_space = self._env.single_action_space
             self._observation_space = self._env.single_observation_space
         else:
+            self.need_time_limit_wrapper = True
+            self.need_auto_reset_wrapper = True
             self._env = safety_gymnasium.make(id=env_id, autoreset=True, **kwargs)
             assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
             assert isinstance(
@@ -117,33 +120,37 @@ class SafetyGymnasiumEnv(CMDP):
             ), 'Only support Box observation space.'
             self._action_space = self._env.action_space
             self._observation_space = self._env.observation_space
-
-        self._num_envs = num_envs
         self._metadata = self._env.metadata
-        self._device = torch.device(device)
 
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Step the environment.
 
         .. note::
-
-            OmniSafe use auto reset wrapper to reset the environment when the episode is
-            terminated. So the ``obs`` will be the first observation of the next episode.
-            And the true ``final_observation`` in ``info`` will be stored in the ``final_observation`` key of ``info``.
+            OmniSafe uses auto reset wrapper to reset the environment when the episode is
+            terminated. So the ``obs`` will be the first observation of the next episode. And the
+            true ``final_observation`` in ``info`` will be stored in the ``final_observation`` key
+            of ``info``.
 
         Args:
             action (torch.Tensor): Action to take.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs, reward, cost, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy(),
@@ -167,15 +174,16 @@ class SafetyGymnasiumEnv(CMDP):
 
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
+    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment.
 
         Args:
-            seed (int, optional): Seed to reset the environment. Defaults to None.
+            seed (int or None, optional): Seed to reset the environment.
+                Defaults to None.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: Agent's observation of the current environment.
+            info: Some information logged by the environment.
         """
         obs, info = self._env.reset(seed=seed)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
@@ -192,7 +200,7 @@ class SafetyGymnasiumEnv(CMDP):
         """Sample a random action.
 
         Returns:
-            torch.Tensor: A random action.
+            A random action.
         """
         return torch.as_tensor(
             self._env.action_space.sample(),
@@ -204,7 +212,7 @@ class SafetyGymnasiumEnv(CMDP):
         """Render the environment.
 
         Returns:
-            Any: Rendered environment.
+            Rendered image.
         """
         return self._env.render()
 

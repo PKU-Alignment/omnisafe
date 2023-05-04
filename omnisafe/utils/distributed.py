@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""torch.distributed for multi-processing"""
+"""Tools of torch.distributed for multi-processing."""
 
 from __future__ import annotations
 
@@ -28,8 +28,10 @@ from torch.distributed import ReduceOp
 
 
 def setup_distributed() -> None:
-    """Avoid slowdowns caused by each separate process's PyTorch,
-    using more than its fair share of CPU resources.
+    """Setup distributed training environment.
+
+    Avoid slowdowns caused by each separate process's PyTorch, using more than its fair share of CPU
+    resources.
     """
     old_num_threads = torch.get_num_threads()
     # decrease number of torch threads for MPI
@@ -46,11 +48,13 @@ def setup_distributed() -> None:
 def get_rank() -> int:
     """Get rank of calling process.
 
-    Example:
+    Examples:
         >>> # In process 0
         >>> get_rank()
         0
 
+    Returns:
+        The rank of calling process.
     """
     if os.getenv('MASTER_ADDR') is None:
         return 0
@@ -58,16 +62,20 @@ def get_rank() -> int:
 
 
 def world_size() -> int:
-    """Count active MPI processes."""
+    """Count active MPI processes.
+
+    Returns:
+        The number of active MPI processes.
+    """
     if os.getenv('MASTER_ADDR') is None:
         return 1
     return dist.get_world_size()
 
 
 reduce = dist.reduce
-allreduce = dist.all_reduce
+all_reduce = dist.all_reduce
 gather = dist.gather
-allgather = dist.all_gather
+all_gather = dist.all_gather
 broadcast = dist.broadcast
 scatter = dist.scatter
 
@@ -79,18 +87,15 @@ def fork(
 ) -> bool:
     """The entrance of multi-processing.
 
-    Re-launches the current script with workers linked by MPI.
-    Also, terminates the original process that launched it.
-    Taken almost without modification from the Baselines function of the
+    Re-launches the current script with workers linked by MPI. Also, terminates the original process
+    that launched it. Taken almost without modification from the Baselines function of the
     `same name <https://github.com/openai/baselines/blob/master/baselines/common/mpi_fork.py>`_.
 
-    .. note::
-
-        Usage: if ``mpi_fork(n)`` : ``sys.exit()``
-
     Args:
-        parallel (int): number of processes to launch.
-        bind_to_core (bool, optional): Defaults to False.
+        parallel (int): The number of processes to launch.
+        device (str, optional): The device to be used. Defaults to 'cpu'.
+        manual_args (list of str or None, optional): The arguments to be passed to the new
+            processes. Defaults to None.
     """
     backend = 'gloo' if device == 'cpu' else 'nccl'
     if os.getenv('MASTER_ADDR') is not None and os.getenv('IN_DIST') is None:
@@ -126,11 +131,10 @@ def fork(
 def avg_tensor(value: torch.Tensor) -> None:
     """Average a torch tensor over MPI processes.
 
-    Since torch and numpy share same memory space,
-    tensors of dim > 0 can be be manipulated through call by reference,
-    scalars must be assigned.
+    Since torch and numpy share same memory space, tensors of dim > 0 can be be manipulated through
+    call by reference, scalars must be assigned.
 
-    Example:
+    Examples:
         >>> # In process 0
         >>> x = torch.tensor(1.0)
         >>> # In process 1
@@ -140,7 +144,7 @@ def avg_tensor(value: torch.Tensor) -> None:
         tensor(1.5)
 
     Args:
-        value (torch.Tensor): value to be averaged.
+        value (torch.Tensor): The value to be averaged.
     """
     assert isinstance(value, torch.Tensor)
     if world_size() > 1:
@@ -153,10 +157,9 @@ def avg_grads(module: torch.nn.Module) -> None:
     """Average contents of gradient buffers across MPI processes.
 
     .. note::
-
         This function only works when the training is multi-processing.
 
-    Example:
+    Examples:
         >>> # In process 0
         >>> x = torch.tensor(1.0, requires_grad=True)
         >>> y = x ** 2
@@ -174,7 +177,7 @@ def avg_grads(module: torch.nn.Module) -> None:
         tensor(3.)
 
     Args:
-        module (torch.nn.Module): module to be averaged.
+        module (torch.nn.Module): The module in which grad need to be averaged.
     """
     if world_size() > 1:
         for parameter in module.parameters():
@@ -188,10 +191,9 @@ def sync_params(module: torch.nn.Module) -> None:
     """Sync all parameters of module across all MPI processes.
 
     .. note::
-
         This function only works when the training is multi-processing.
 
-    Example:
+    Examples:
         >>> # In process 0
         >>> model = torch.nn.Linear(1, 1)
         >>> model.weight.data = torch.tensor([[1.]])
@@ -207,7 +209,7 @@ def sync_params(module: torch.nn.Module) -> None:
         tensor([[1.]])
 
     Args:
-        module (torch.nn.Module): module to be synchronized.
+        module (torch.nn.Module): The module to be synchronized.
     """
     if world_size() > 1:
         for parameter in module.parameters():
@@ -218,7 +220,7 @@ def sync_params(module: torch.nn.Module) -> None:
 def avg_params(module: torch.nn.Module) -> None:
     """Average contents of all parameters across MPI processes.
 
-    Example:
+    Examples:
         >>> # In process 0
         >>> model = torch.nn.Linear(1, 1)
         >>> model.weight.data = torch.tensor([[1.]])
@@ -234,7 +236,7 @@ def avg_params(module: torch.nn.Module) -> None:
         tensor([[1.5]])
 
     Args:
-        module (torch.nn.Module): module to be averaged.
+        module (torch.nn.Module): The module in which parameters need to be averaged.
     """
     if world_size() > 1:
         for parameter in module.parameters():
@@ -246,15 +248,19 @@ def avg_params(module: torch.nn.Module) -> None:
 def dist_avg(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     """Average a tensor over distributed processes.
 
-    Example:
+    Examples:
+        >>> # In process 0
+        >>> x = torch.tensor(1.0)
+        >>> # In process 1
+        >>> x = torch.tensor(2.0)
+        >>> dist_avg(x)
+        tensor(1.5)
 
-    >>> # In process 0
-    >>> x = torch.tensor(1.0)
-    >>> # In process 1
-    >>> x = torch.tensor(2.0)
-    >>> dist_avg(x)
-    tensor(1.5)
+    Args:
+        value (np.ndarray, torch.Tensor, int, or float): value to be averaged.
 
+    Returns:
+        Averaged tensor.
     """
     return dist_sum(value) / world_size()
 
@@ -262,7 +268,7 @@ def dist_avg(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
 def dist_max(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     """Determine global maximum of tensor over distributed processes.
 
-    Example:
+    Examples:
         >>> # In process 0
         >>> x = torch.tensor(1.0)
         >>> # In process 1
@@ -270,6 +276,11 @@ def dist_max(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
         >>> dist_max(x)
         tensor(2.)
 
+    Args:
+        value (np.ndarray, torch.Tensor, int, or float): value to be find max value.
+
+    Returns:
+        Maximum tensor.
     """
     return dist_op(value, ReduceOp.MAX)
 
@@ -277,7 +288,7 @@ def dist_max(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
 def dist_min(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     """Determine global minimum of tensor over distributed processes.
 
-    Example:
+    Examples:
         >>> # In process 0
         >>> x = torch.tensor(1.0)
         >>> # In process 1
@@ -285,6 +296,11 @@ def dist_min(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
         >>> dist_min(x)
         tensor(1.)
 
+    Args:
+        value (np.ndarray, torch.Tensor, int, or float): value to be find min value.
+
+    Returns:
+        Minimum tensor.
     """
     return dist_op(value, ReduceOp.MIN)
 
@@ -292,7 +308,7 @@ def dist_min(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
 def dist_sum(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     """Sum a tensor over distributed processes.
 
-    Example:
+    Examples:
         >>> # In process 0
         >>> x = torch.tensor(1.0)
         >>> # In process 1
@@ -300,6 +316,11 @@ def dist_sum(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
         >>> dist_sum(x)
         tensor(3.)
 
+    Args:
+        value (np.ndarray, torch.Tensor, int, or float): The value to be summed.
+
+    Returns:
+        Summed tensor.
     """
     return dist_op(value, ReduceOp.SUM)
 
@@ -308,19 +329,21 @@ def dist_op(value: np.ndarray | torch.Tensor | int | float, operation: Any) -> t
     """Multi-processing operation.
 
     .. note::
-
-        The operation can be ``ReduceOp.SUM``, ``ReduceOp.MAX``, ``ReduceOp.MIN``.
-        corresponding to :meth:`mpi_sum`, :meth:`mpi_max`, :meth:`mpi_min`, respectively.
+        The operation can be ``ReduceOp.SUM``, ``ReduceOp.MAX``, ``ReduceOp.MIN``. corresponding to
+        :meth:`dist_sum`, :meth:`dist_max`, :meth:`dist_min`, respectively.
 
     Args:
-        value (torch.Tensor): value to be operated.
+        value (np.ndarray, torch.Tensor, int, or float): The value to be operated.
         operation (ReduceOp): operation type.
+
+    Returns:
+        Operated (SUM, MAX, MIN) tensor.
     """
     if world_size() == 1:
         return torch.as_tensor(value, dtype=torch.float32)
     value_, scalar = ([value], True) if np.isscalar(value) else (value, False)
     value = torch.as_tensor(value_, dtype=torch.float32)
-    allreduce(value, op=operation)
+    all_reduce(value, op=operation)
     return value[0] if scalar else value
 
 
@@ -330,7 +353,7 @@ def dist_statistics_scalar(
 ) -> tuple[torch.Tensor, ...]:
     """Get mean/std and optional min/max of scalar x across MPI processes.
 
-    Example:
+    Examples:
         >>> # In process 0
         >>> x = torch.tensor(1.0)
         >>> # In process 1
@@ -339,8 +362,12 @@ def dist_statistics_scalar(
         (tensor(1.5), tensor(0.5))
 
     Args:
-        value (torch.Tensor): value to be operated.
-        with_min_and_max (bool): whether to return min and max.
+        value (torch.Tensor): Value to be operated.
+        with_min_and_max (bool, optional): whether to return min and max. Defaults to False.
+
+    Returns:
+        The (mean, std) or (mean, std, min, max) of the input tensor, depends on the value of
+        ``with_min_and_max``.
     """
     global_sum = dist_sum(torch.sum(value))
     global_n = dist_sum(len(value))

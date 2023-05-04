@@ -48,7 +48,7 @@ class TRPO(NaturalPG):
     def _search_step_size(
         self,
         step_direction: torch.Tensor,
-        grad: torch.Tensor,
+        grads: torch.Tensor,
         p_dist: Distribution,
         obs: torch.Tensor,
         act: torch.Tensor,
@@ -61,10 +61,9 @@ class TRPO(NaturalPG):
         """TRPO performs `line-search <https://en.wikipedia.org/wiki/Line_search>`_ until constraint satisfaction.
 
         .. hint::
-
-            TRPO search around for a satisfied step of policy update to improve loss and reward performance.
-            The search is done by line-search, which is a way to find a step size that satisfies the constraint.
-            The constraint is the KL-divergence between the old policy and the new policy.
+            TRPO search around for a satisfied step of policy update to improve loss and reward performance. The search
+            is done by line-search, which is a way to find a step size that satisfies the constraint. The constraint is
+            the KL-divergence between the old policy and the new policy.
 
         Args:
             step_dir (torch.Tensor): The step direction.
@@ -74,17 +73,20 @@ class TRPO(NaturalPG):
             act (torch.Tensor): The action.
             logp (torch.Tensor): The log probability of the action.
             adv (torch.Tensor): The advantage.
-            cost_adv (torch.Tensor): The cost advantage.
+            adv_c (torch.Tensor): The cost advantage.
             loss_pi_before (float): The loss of the policy before the update.
             total_steps (int, optional): The total steps to search. Defaults to 15.
             decay (float, optional): The decay rate of the step size. Defaults to 0.8.
+
+        Returns:
+            The tuple of final update direction and acceptance step size.
         """
         # How far to go in a single update
         step_frac = 1.0
         # Get old parameterized policy expression
         theta_old = get_flat_params_from(self._actor_critic.actor)
         # Change expected objective function gradient = expected_imrpove best this moment
-        expected_improve = grad.dot(step_direction)
+        expected_improve = grads.dot(step_direction)
 
         final_kl = 0.0
 
@@ -96,12 +98,12 @@ class TRPO(NaturalPG):
             set_param_values_to_model(self._actor_critic.actor, new_theta)
 
             with torch.no_grad():
-                loss, _ = self._loss_pi(obs, act, logp, adv)
+                loss = self._loss_pi(obs, act, logp, adv)
                 # compute KL distance between new and old policy
                 q_dist = self._actor_critic.actor(obs)
                 # KL-distance of old p-dist and new q-dist, applied in KLEarlyStopping
                 kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
-                kl = distributed.dist_avg(kl)
+                kl = distributed.dist_avg(kl).mean().item()
             # real loss improve: old policy loss - new policy loss
             loss_improve = loss_before - loss.item()
             # average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)
@@ -158,22 +160,22 @@ class TRPO(NaturalPG):
             obs (torch.Tensor): The observation tensor.
             act (torch.Tensor): The action tensor.
             logp (torch.Tensor): The log probability of the action.
-            adv_r (torch.Tensor): The advantage tensor.
+            adv_r (torch.Tensor): The reward advantage tensor.
             adv_c (torch.Tensor): The cost advantage tensor.
         """
         self._fvp_obs = obs[:: self._cfgs.algo_cfgs.fvp_sample_freq]
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
         adv = self._compute_adv_surrogate(adv_r, adv_c)
-        loss, info = self._loss_pi(obs, act, logp, adv)
+        loss = self._loss_pi(obs, act, logp, adv)
         loss_before = distributed.dist_avg(loss).item()
         p_dist = self._actor_critic.actor(obs)
 
         loss.backward()
         distributed.avg_grads(self._actor_critic.actor)
 
-        grad = -get_flat_gradients_from(self._actor_critic.actor)
-        x = conjugate_gradients(self._fvp, grad, self._cfgs.algo_cfgs.cg_iters)
+        grads = -get_flat_gradients_from(self._actor_critic.actor)
+        x = conjugate_gradients(self._fvp, grads, self._cfgs.algo_cfgs.cg_iters)
         assert torch.isfinite(x).all(), 'x is not finite'
         xHx = torch.dot(x, self._fvp(x))
         assert xHx.item() >= 0, 'xHx is negative'
@@ -183,7 +185,7 @@ class TRPO(NaturalPG):
 
         step_direction, accept_step = self._search_step_size(
             step_direction=step_direction,
-            grad=grad,
+            grads=grads,
             p_dist=p_dist,
             obs=obs,
             act=act,
@@ -196,18 +198,14 @@ class TRPO(NaturalPG):
         set_param_values_to_model(self._actor_critic.actor, theta_new)
 
         with torch.no_grad():
-            loss, info = self._loss_pi(obs, act, logp, adv)
+            loss = self._loss_pi(obs, act, logp, adv)
 
         self._logger.store(
             {
-                'Train/Entropy': info['entropy'],
-                'Train/PolicyRatio': info['ratio'],
-                'Train/PolicyStd': info['std'],
-                'Loss/Loss_pi': loss.mean().item(),
                 'Misc/Alpha': alpha.item(),
                 'Misc/FinalStepNorm': torch.norm(step_direction).mean().item(),
                 'Misc/xHx': xHx.item(),
-                'Misc/gradient_norm': torch.norm(grad).mean().item(),
+                'Misc/gradient_norm': torch.norm(grads).mean().item(),
                 'Misc/H_inv_g': x.norm().item(),
                 'Misc/AcceptanceStep': accept_step,
             },

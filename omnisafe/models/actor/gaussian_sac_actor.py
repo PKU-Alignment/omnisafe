@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import torch
 from torch import nn
-from torch.distributions import Distribution, Normal
+from torch.distributions import Normal
 
 from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
@@ -27,7 +27,22 @@ from omnisafe.utils.model import build_mlp_network
 
 
 class GaussianSACActor(Actor):
-    """Implementation of GaussianSACActor."""
+    """Implementation of GaussianSACActor.
+
+    GaussianSACActor is a Gaussian actor with a learnable standard deviation network.
+    It is used in ``SAC``, and other off-line or model-based algorithms related to ``SAC``.
+
+    Args:
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
+    """
+
+    _log2: torch.Tensor
+    _current_dist: Normal
 
     def __init__(
         self,
@@ -37,21 +52,10 @@ class GaussianSACActor(Actor):
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize GaussianSACActor.
-
-        GaussianSACActor is a Gaussian actor with a learnable standard deviation network.
-        It is used in ``SAC``, and other off-line or model-based algorithms related to ``SAC``.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list): List of hidden layer sizes.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-            shared (nn.Module): Shared module.
-        """
+        """Initialize an instance of :class:`GaussianSACActor`."""
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
-        self.net = build_mlp_network(
+
+        self.net: nn.Module = build_mlp_network(
             sizes=[self._obs_dim, *self._hidden_sizes, self._act_dim * 2],
             activation=activation,
             weight_initialization_mode=weight_initialization_mode,
@@ -59,20 +63,21 @@ class GaussianSACActor(Actor):
 
         self._current_raw_action: torch.Tensor | None = None
         self.register_buffer('_log2', torch.log(torch.tensor(2.0)))
-        self._log2: torch.Tensor
 
-    def _distribution(self, obs: torch.Tensor) -> Distribution:
+    def _distribution(self, obs: torch.Tensor) -> Normal:
         """Get the distribution of the actor.
 
         .. warning::
-
-            This method is not supposed to be called by users.
-            You should call :meth:`forward` instead.
+            This method is not supposed to be called by users. You should call :meth:`forward`
+            instead.
 
         **Specifically, this method will clip the standard deviation to a range of [-20, 2].**
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
+
+        Returns:
+            The normal distribution of the mean and standard deviation from the actor.
         """
         mean, log_std = self.net(obs).chunk(2, dim=-1)
         log_std = torch.clamp(log_std, min=-20, max=2)
@@ -88,8 +93,12 @@ class GaussianSACActor(Actor):
         - If ``deterministic`` is ``False``, the predicted action is sampled from the distribution.
 
         Args:
-            obs (torch.Tensor): Observation.
-            deterministic (bool): Whether to use deterministic policy.
+            obs (torch.Tensor): Observation from environments.
+            deterministic (bool, optional): Whether to use deterministic policy. Defaults to False.
+
+        Returns:
+            The mean of the distribution if ``deterministic`` is ``True``, otherwise the sampled
+            action.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -100,11 +109,14 @@ class GaussianSACActor(Actor):
 
         return torch.tanh(action)
 
-    def forward(self, obs: torch.Tensor) -> Distribution:
+    def forward(self, obs: torch.Tensor) -> TanhNormal:
         """Forward method.
 
         Args:
-            obs (torch.Tensor): Observation.
+            obs (torch.Tensor): Observation from environments.
+
+        Returns:
+            The current distribution.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -117,18 +129,21 @@ class GaussianSACActor(Actor):
             You must call :meth:`forward` or :meth:`predict` before calling this method.
 
         .. note::
-
-            In this method, we will regularize the log probability of the action.
-            The regularization is as follows:
+            In this method, we will regularize the log probability of the action. The regularization
+            is as follows:
 
             .. math::
 
-                \log \pi(a|s) = \log \pi(a|s) - \sum_{i=1}^n (2 \log 2 - a_i - \log (1 + e^{-2 a_i}))
+                \log \pi (a|s) = \log \pi (a|s) - \sum_{i=1}^n (2 \log 2 - a_i - \log (1 + e^{-2 a_i}))
 
-            where :math:`a` is the action, :math:`s` is the observation, and :math:`n` is the dimension of the action.
+            where :math:`a` is the action, :math:`s` is the observation, and :math:`n` is the
+            dimension of the action.
 
         Args:
             act (torch.Tensor): Action.
+
+        Returns:
+            Log probability of the action.
         """
         assert self._after_inference, 'log_prob() should be called after predict() or forward()'
         self._after_inference = False
@@ -155,7 +170,7 @@ class GaussianSACActor(Actor):
 
     @property
     def std(self) -> float:
-        """Get the standard deviation of the normal distribution."""
+        """Standard deviation of the distribution."""
         return self._current_dist.stddev.mean().item()
 
     @std.setter

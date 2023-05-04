@@ -16,9 +16,11 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 
-from omnisafe.envs.core import make, support_envs
+from omnisafe.envs.core import CMDP, make, support_envs
 from omnisafe.envs.wrapper import (
     ActionScale,
     AutoReset,
@@ -30,25 +32,28 @@ from omnisafe.envs.wrapper import (
 )
 from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils.config import Config
+from omnisafe.utils.tools import get_device
 
 
 class OnlineAdapter:
     """Online Adapter for OmniSafe.
 
-    Online Adapter is used to adapt the environment to the online training.
+    OmniSafe is a framework for safe reinforcement learning. It is designed to be compatible with
+    any existing RL algorithms. The online adapter is used to adapt the environment to the
+    framework.
+
+    OmniSafe provides a set of adapters to adapt the environment to the framework.
+
+    - OnPolicyAdapter: Adapt the environment to the on-policy framework.
+    - OffPolicyAdapter: Adapt the environment to the off-policy framework.
+    - SauteAdapter: Adapt the environment to the SAUTE framework.
+    - SimmerAdapter: Adapt the environment to the SIMMER framework.
 
     Args:
         env_id (str): The environment id.
-        num_envs (int): The number of environments.
+        num_envs (int): The number of parallel environments.
         seed (int): The random seed.
         cfgs (Config): The configuration.
-
-    Attributes:
-        _env_id (str): The environment id.
-        _env (CMDP): The environment.
-        _cfgs (Config): The configuration.
-        _device (torch.device): The device.
-
     """
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -58,33 +63,15 @@ class OnlineAdapter:
         seed: int,
         cfgs: Config,
     ) -> None:
-        """Initialize the online adapter.
-
-        OmniSafe is a framework for safe reinforcement learning. It is designed to be
-        compatible with any existing RL algorithms. The online adapter is used
-        to adapt the environment to the framework.
-
-        OmniSafe provides a set of adapters to adapt the environment to the framework.
-
-        - OnPolicyAdapter: Adapt the environment to the on-policy framework.
-        - OffPolicyAdapter: Adapt the environment to the off-policy framework.
-        - SauteAdapter: Adapt the environment to the SAUTE framework.
-        - SimmerAdapter: Adapt the environment to the SIMMER framework.
-
-        Args:
-            env_id (str): The environment id.
-            num_envs (int): The number of environments.
-            seed (int): The random seed.
-            cfgs (Config): The configuration.
-        """
+        """Initialize an instance of :class:`OnlineAdapter`."""
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
-        self._cfgs = cfgs
-        self._device = cfgs.train_cfgs.device
+        self._cfgs: Config = cfgs
+        self._device: torch.device = get_device(cfgs.train_cfgs.device)
+        self._env_id: str = env_id
+        self._env: CMDP = make(env_id, num_envs=num_envs, device=self._device)
+        self._eval_env: CMDP = make(env_id, num_envs=1, device=self._device)
 
-        self._env_id = env_id
-        self._env = make(env_id, num_envs=num_envs, device=self._device)
-        self._eval_env = make(env_id, num_envs=1, device=self._device)
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
@@ -99,36 +86,35 @@ class OnlineAdapter:
         obs_normalize: bool = True,
         reward_normalize: bool = True,
         cost_normalize: bool = True,
-    ):
+    ) -> None:
         """Wrapper the environment.
 
         .. hint::
-
             OmniSafe supports the following wrappers:
 
-            .. list-table::
+        +-----------------+--------------------------------------------------------+
+        | Wrapper         | Description                                            |
+        +=================+========================================================+
+        | TimeLimit       | Limit the time steps of the environment.               |
+        +-----------------+--------------------------------------------------------+
+        | AutoReset       | Reset the environment when the episode is done.        |
+        +-----------------+--------------------------------------------------------+
+        | ObsNormalize    | Normalize the observation.                             |
+        +-----------------+--------------------------------------------------------+
+        | RewardNormalize | Normalize the reward.                                  |
+        +-----------------+--------------------------------------------------------+
+        | CostNormalize   | Normalize the cost.                                    |
+        +-----------------+--------------------------------------------------------+
+        | ActionScale     | Scale the action.                                      |
+        +-----------------+--------------------------------------------------------+
+        | Unsqueeze       | Unsqueeze the step result for single environment case. |
+        +-----------------+--------------------------------------------------------+
 
-                *   -   Wrapper
-                    -   Description
-                *   -   TimeLimit
-                    -   Limit the time steps of the environment.
-                *   -   AutoReset
-                    -   Reset the environment when the episode is done.
-                *   -   ObsNormalize
-                    -   Normalize the observation.
-                *   -   RewardNormalize
-                    -   Normalize the reward.
-                *   -   CostNormalize
-                    -   Normalize the cost.
-                *   -   ActionScale
-                    -   Scale the action.
-                *   -   Unsqueeze
-                    -   Unsqueeze the step result for single environment case.
 
         Args:
-            obs_normalize (bool): Whether to normalize the observation.
-            reward_normalize (bool): Whether to normalize the reward.
-            cost_normalize (bool): Whether to normalize the cost.
+            obs_normalize (bool, optional): Whether to normalize the observation. Defaults to True.
+            reward_normalize (bool, optional): Whether to normalize the reward. Defaults to True.
+            cost_normalize (bool, optional): Whether to normalize the cost. Defaults to True.
         """
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, time_limit=1000, device=self._device)
@@ -151,56 +137,58 @@ class OnlineAdapter:
 
     @property
     def action_space(self) -> OmnisafeSpace:
-        """The action space of the environment.
-        Returns:
-            OmnisafeSpace: the action space.
-        """
+        """The action space of the environment."""
         return self._env.action_space
 
     @property
     def observation_space(self) -> OmnisafeSpace:
-        """The observation space of the environment.
-
-        Returns:
-            OmnisafeSpace: the observation space.
-        """
+        """The observation space of the environment."""
         return self._env.observation_space
 
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
-            action (torch.Tensor): action.
+            action (torch.Tensor): The action from the agent or random.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         return self._env.step(action)
 
-    def reset(self) -> tuple[torch.Tensor, dict]:
-        """Resets the environment and returns an initial observation.
-
-        Args:
-            seed (Optional[int]): seed for the environment.
+    def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
+        """Reset the environment and returns an initial observation.
 
         Returns:
-            observation (torch.Tensor): the initial observation of the space.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
         """
         return self._env.reset()
 
     def save(self) -> dict[str, torch.nn.Module]:
-        """Save the environment.
+        """Save the important components of the environment.
+
+        .. note::
+            The saved components will be stored in the wrapped environment. If the environment is
+            not wrapped, the saved components will be an empty dict. common wrappers are
+            ``obs_normalize``, ``reward_normalize``, and ``cost_normalize``.
 
         Returns:
-            Dict[str, torch.nn.Module]: the saved environment.
+            The saved components of environment, e.g., ``obs_normalizer``.
         """
         return self._env.save()

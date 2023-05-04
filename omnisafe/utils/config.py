@@ -27,10 +27,9 @@ from omnisafe.utils.tools import load_yaml
 class Config(dict):
     """Config class for storing hyperparameters.
 
-    OmniSafe uses a Config class to store all hyperparameters.
-    OmniSafe store hyperparameters in a yaml file and load them into a Config object.
-    Then the Config class will check the hyperparameters are valid,
-    then pass them to the algorithm class.
+    OmniSafe uses a Config class to store all hyperparameters. OmniSafe store hyperparameters in a
+    yaml file and load them into a Config object. Then the Config class will check the
+    hyperparameters are valid, then pass them to the algorithm class.
 
     Attributes:
         seed (int): Random seed.
@@ -79,6 +78,9 @@ class Config(dict):
         normalize_cost (bool): Whether to normalize cost.
         max_len (int): Maximum length.
         num_threads (int): Number of threads.
+
+    Args:
+        **kwargs (Any): Keyword arguments to set config.
     """
 
     seed: int
@@ -127,7 +129,7 @@ class Config(dict):
     num_threads: int
 
     def __init__(self, **kwargs: Any) -> None:
-        """Initialize Config."""
+        """Initialize an instance of :class:`Config`."""
         for key, value in kwargs.items():
             if isinstance(value, dict):
                 self[key] = Config.dict2config(value)
@@ -145,9 +147,13 @@ class Config(dict):
         """Set attribute."""
         self[name] = value
 
-    def todict(self) -> dict:
-        """Convert Config to dictionary."""
-        config_dict = {}
+    def todict(self) -> dict[str, Any]:
+        """Convert Config to dictionary.
+
+        Returns:
+            The dictionary of Config.
+        """
+        config_dict: dict[str, Any] = {}
         for key, value in self.items():
             if isinstance(value, Config):
                 config_dict[key] = value.todict()
@@ -156,15 +162,22 @@ class Config(dict):
         return config_dict
 
     def tojson(self) -> str:
-        """Convert Config to json string."""
+        """Convert Config to json string.
+
+        Returns:
+            The json string of Config.
+        """
         return json.dumps(self.todict(), indent=4)
 
     @staticmethod
-    def dict2config(config_dict: dict) -> Config:
+    def dict2config(config_dict: dict[str, Any]) -> Config:
         """Convert dictionary to Config.
 
         Args:
-            config_dict (dict): dictionary to be converted.
+            config_dict (dict[str, Any]): The dictionary to be converted.
+
+        Returns:
+            The algorithm config.
         """
         config = Config()
         for key, value in config_dict.items():
@@ -178,7 +191,7 @@ class Config(dict):
         """Recursively update args.
 
         Args:
-            update_args (Dict[str, Any]): args to be updated.
+            update_args (dict[str, Any]): Args to be updated.
         """
         for key, value in self.items():
             if key in update_args:
@@ -216,12 +229,16 @@ def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:
     """Get the default kwargs from ``yaml`` file.
 
     .. note::
-        This function search the ``yaml`` file by the algorithm name and environment name.
-        Make sure your new implemented algorithm or environment has the same name as the yaml file.
+        This function search the ``yaml`` file by the algorithm name and environment name. Make
+        sure your new implemented algorithm or environment has the same name as the yaml file.
 
     Args:
-        algo (str): algorithm name.
-        env_id (str): environment name.
+        algo (str): The algorithm name.
+        env_id (str): The environment name.
+        algo_type (str): The algorithm type.
+
+    Returns:
+        The default kwargs.
     """
     path = os.path.dirname(os.path.abspath(__file__))
     cfg_path = os.path.join(path, '..', 'configs', algo_type, f'{algo}.yaml')
@@ -244,10 +261,9 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
     This function is used to check the configs.
 
     Args:
-        configs (dict): configs to be checked.
-        algo_type (str): algorithm type.
+        configs (Config): The configs to be checked.
+        algo_type (str): The algorithm type.
     """
-
     # check algo configs
     __check_algo_configs(configs.algo_cfgs, algo_type)
     __check_logger_configs(configs.logger_cfgs, algo_type)
@@ -260,8 +276,8 @@ def __check_parallel_and_vectorized(configs: Config, algo_type: str) -> None:
     This function is used to check the parallel and vectorized configs.
 
     Args:
-        configs (dict): configs to be checked.
-        algo_type (str): algorithm type.
+        configs (Config): The configs to be checked.
+        algo_type (str): The algorithm type.
     """
     if algo_type in {'off-policy', 'model-based'}:
         assert (
@@ -273,14 +289,12 @@ def __check_parallel_and_vectorized(configs: Config, algo_type: str) -> None:
         ), 'PPOEarlyTerminated or TRPOEarlyTerminated only support vector_env_nums == 1!'
 
 
-def __check_algo_configs(configs: Config, algo_type) -> None:
-    r"""Check algorithm configs.
-
+def __check_algo_configs(configs: Config, algo_type: str) -> None:
+    """Check algorithm configs.
 
     This function is used to check the algorithm configs.
 
     .. note::
-
         - ``update_iters`` must be greater than 0 and must be int.
         - ``steps_per_epoch`` must be greater than 0 and must be int.
         - ``batch_size`` must be greater than 0 and must be int.
@@ -304,8 +318,8 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
         - ``standardized_cost_adv`` must be bool.
 
     Args:
-        configs (Config): configs to be checked.
-        algo_type (str): algorithm type.
+        configs (Config): The configs to be checked.
+        algo_type (str): The algorithm type.
     """
     if algo_type == 'on-policy':
         assert (
@@ -371,8 +385,13 @@ def __check_algo_configs(configs: Config, algo_type) -> None:
         assert isinstance(configs.use_cost, bool), 'penalty_coef must be bool'
 
 
-def __check_logger_configs(configs: Config, algo_type) -> None:
-    """Check logger configs."""
+def __check_logger_configs(configs: Config, algo_type: str) -> None:
+    """Check logger configs.
+
+    Args:
+        configs (Config): The configs to be checked.
+        algo_type (str): The algorithm type.
+    """
     if algo_type == 'on-policy':
         assert isinstance(configs.use_wandb, bool) and isinstance(
             configs.wandb_project,

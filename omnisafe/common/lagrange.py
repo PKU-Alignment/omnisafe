@@ -14,36 +14,53 @@
 # ==============================================================================
 """Implementation of Lagrange."""
 
+from __future__ import annotations
+
 import torch
 
 
 class Lagrange:
-    r"""Base class for Lagrangian-base Algorithms.
+    """Base class for Lagrangian-base Algorithms.
 
     This class implements the Lagrange multiplier update and the Lagrange loss.
 
     ..  note::
-
         Any traditional policy gradient algorithm can be converted to a Lagrangian-based algorithm
         by inheriting from this class and implementing the :meth:`_loss_pi` method.
 
-    Example:
+    Examples:
         >>> from omnisafe.common.lagrange import Lagrange
         >>> def loss_pi(self, data):
-        >>>     # implement your own loss function here
-        >>>     return loss
+        ...     # implement your own loss function here
+        ...     return loss
 
-    You can also inherit this class to implement your own Lagrangian-based algorithm,
-    with any policy gradient method you like in ``omnisafe``.
+    You can also inherit this class to implement your own Lagrangian-based algorithm, with any
+    policy gradient method you like in OmniSafe.
 
-    Example:
+    Examples:
         >>> from omnisafe.common.lagrange import Lagrange
         >>> class CustomAlgo:
-        >>>     def __init(self) -> None:
-        >>>         # initialize your own algorithm here
-        >>>         super().__init__()
-        >>>         # initialize the Lagrange multiplier
-        >>>         self.lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
+        ...     def __init(self) -> None:
+        ...         # initialize your own algorithm here
+        ...         super().__init__()
+        ...         # initialize the Lagrange multiplier
+        ...         self.lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
+
+    Args:
+        cost_limit (float): The cost limit.
+        lagrangian_multiplier_init (float): The initial value of the Lagrange multiplier.
+        lambda_lr (float): The learning rate of the Lagrange multiplier.
+        lambda_optimizer (str): The optimizer for the Lagrange multiplier.
+        lagrangian_upper_bound (float or None, optional): The upper bound of the Lagrange multiplier.
+            Defaults to None.
+
+    Attributes:
+        cost_limit (float): The cost limit.
+        lambda_lr (float): The learning rate of the Lagrange multiplier.
+        lagrangian_upper_bound (float, optional): The upper bound of the Lagrange multiplier.
+            Defaults to None.
+        lagrangian_multiplier (torch.nn.Parameter): The Lagrange multiplier.
+        lambda_range_projection (torch.nn.ReLU): The projection function for the Lagrange multiplier.
     """
 
     # pylint: disable-next=too-many-arguments
@@ -53,26 +70,26 @@ class Lagrange:
         lagrangian_multiplier_init: float,
         lambda_lr: float,
         lambda_optimizer: str,
-        lagrangian_upper_bound=None,
+        lagrangian_upper_bound: float | None = None,
     ) -> None:
-        """Initialize Lagrange multiplier."""
-        self.cost_limit = cost_limit
-        self.lambda_lr = lambda_lr
-        self.lagrangian_upper_bound = lagrangian_upper_bound
+        """Initialize an instance of :class:`Lagrange`."""
+        self.cost_limit: float = cost_limit
+        self.lambda_lr: float = lambda_lr
+        self.lagrangian_upper_bound: float | None = lagrangian_upper_bound
 
         init_value = max(lagrangian_multiplier_init, 1e-5)
-        self.lagrangian_multiplier = torch.nn.Parameter(
+        self.lagrangian_multiplier: torch.nn.Parameter = torch.nn.Parameter(
             torch.as_tensor(init_value),
             requires_grad=True,
         )
-        self.lambda_range_projection = torch.nn.ReLU()
+        self.lambda_range_projection: torch.nn.ReLU = torch.nn.ReLU()
         # fetch optimizer from PyTorch optimizer package
         assert hasattr(
             torch.optim,
             lambda_optimizer,
         ), f'Optimizer={lambda_optimizer} not found in torch.'
         torch_opt = getattr(torch.optim, lambda_optimizer)
-        self.lambda_optimizer = torch_opt(
+        self.lambda_optimizer: torch.optim.Optimizer = torch_opt(
             [
                 self.lagrangian_multiplier,
             ],
@@ -80,30 +97,31 @@ class Lagrange:
         )
 
     def compute_lambda_loss(self, mean_ep_cost: float) -> torch.Tensor:
-        r"""Penalty loss for Lagrange multiplier.
+        """Penalty loss for Lagrange multiplier.
 
         .. note::
-
-            ``mean_ep_cost`` obtained from: ``self.logger.get_stats('EpCosts')[0]``, which
-            are already averaged across MPI processes.
+            ``mean_ep_cost`` is obtained from ``self.logger.get_stats('EpCosts')[0]``, which is
+            already averaged across MPI processes.
 
         Args:
             mean_ep_cost (float): mean episode cost.
+
+        Returns:
+            Penalty loss for Lagrange multiplier.
         """
         return -self.lagrangian_multiplier * (mean_ep_cost - self.cost_limit)
 
     def update_lagrange_multiplier(self, Jc: float) -> None:
         r"""Update Lagrange multiplier (lambda).
 
-        Detailedly speaking, we update the Lagrange multiplier by minimizing the
-        penalty loss, which is defined as:
+        We update the Lagrange multiplier by minimizing the penalty loss, which is defined as:
 
         .. math::
-            \lambda ^{'} = \lambda + \eta * (J_c - J_c^*)
 
-        where :math:`\lambda` is the Lagrange multiplier, :math:`\eta` is the
-        learning rate, :math:`J_c` is the mean episode cost, and :math:`J_c^*` is
-        the cost limit.
+            \lambda ^{'} = \lambda + \eta \cdot (J_c - J_c^*)
+
+        where :math:`\lambda` is the Lagrange multiplier, :math:`\eta` is the learning rate,
+        :math:`J_c` is the mean episode cost, and :math:`J_c^*` is the cost limit.
 
         Args:
             Jc (float): mean episode cost.

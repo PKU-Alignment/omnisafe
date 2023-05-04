@@ -26,62 +26,86 @@ import torch
 from gymnasium.spaces import Box
 from gymnasium.utils.save_video import save_video
 
+from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
+from omnisafe.algorithms.model_based.planner import (
+    ARCPlanner,
+    CAPPlanner,
+    CCEPlanner,
+    CEMPlanner,
+    RCEPlanner,
+    SafeARCPlanner,
+)
 from omnisafe.common import Normalizer
 from omnisafe.envs.core import CMDP, make
-from omnisafe.envs.wrapper import ActionScale, ObsNormalize, TimeLimit
+from omnisafe.envs.wrapper import ActionRepeat, ActionScale, ObsNormalize, TimeLimit
 from omnisafe.models.actor import ActorBuilder
+from omnisafe.models.actor_critic import ConstraintActorCritic, ConstraintActorQCritic
 from omnisafe.models.base import Actor
 from omnisafe.utils.config import Config
 
 
 class Evaluator:  # pylint: disable=too-many-instance-attributes
-    """This class includes common evaluation methods for safe RL algorithms."""
+    """This class includes common evaluation methods for safe RL algorithms.
+
+    Args:
+        env (CMDP or None, optional): The environment. Defaults to None.
+        actor (Actor or None, optional): The actor. Defaults to None.
+        render_mode (str, optional): The render mode. Defaults to 'rgb_array'.
+    """
+
+    _cfgs: Config
+    _save_dir: str
+    _model_name: str
 
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         env: CMDP | None = None,
         actor: Actor | None = None,
-        render_mode: str | None = None,
+        actor_critic: ConstraintActorCritic | ConstraintActorQCritic | None = None,
+        dynamics: EnsembleDynamicsModel | None = None,
+        planner: CEMPlanner
+        | ARCPlanner
+        | SafeARCPlanner
+        | CCEPlanner
+        | CAPPlanner
+        | RCEPlanner
+        | None = None,
+        render_mode: str = 'rgb_array',
     ) -> None:
-        """Initialize the evaluator.
-
-        Args:
-            env (gymnasium.Env): the environment. if None, the environment will be created from the config.
-            pi (omnisafe.algos.models.actor.Actor): the policy. if None, the policy will be created from the config.
-            obs_normalize (omnisafe.algos.models.obs_normalize): the observation Normalize.
-        """
-        # set the attributes
-        self._env: CMDP = env
-        self._actor: Actor = actor
-
-        # used when load model from saved file.
-        self._cfgs: Config
-        self._save_dir: str
-        self._model_name: str
-
-        self._dividing_line = '\n' + '#' * 50 + '\n'
+        """Initialize an instance of :class:`Evaluator`."""
+        self._env: CMDP | None = env
+        self._actor: Actor | None = actor
+        self._actor_critic: ConstraintActorCritic | ConstraintActorQCritic | None = actor_critic
+        self._dynamics: EnsembleDynamicsModel | None = dynamics
+        self._planner = planner
+        self._dividing_line: str = '\n' + '#' * 50 + '\n'
 
         self.__set_render_mode(render_mode)
 
-    def __set_render_mode(self, render_mode: str):
+    def __set_render_mode(self, render_mode: str) -> None:
         """Set the render mode.
 
         Args:
-            play (bool): whether to play the video.
-            save_replay (bool): whether to save the video.
+            render_mode (str, optional): The render mode. Defaults to 'rgb_array'.
+
+        Raises:
+            NotImplementedError: If the render mode is not implemented.
         """
         # set the render mode
-        if render_mode in ['human', 'rgb_array', 'rgb_array_list', None]:
-            self._render_mode = render_mode
+        if render_mode in ['human', 'rgb_array', 'rgb_array_list']:
+            self._render_mode: str = render_mode
         else:
             raise NotImplementedError('The render mode is not implemented.')
 
-    def __load_cfgs(self, save_dir: str):
+    def __load_cfgs(self, save_dir: str) -> None:
         """Load the config from the save directory.
 
         Args:
-            save_dir (str): directory where the model is saved.
+            save_dir (str): Directory where the model is saved.
+
+        Raises:
+            FileNotFoundError: If the config file is not found.
         """
         cfg_path = os.path.join(save_dir, 'config.json')
         try:
@@ -93,12 +117,22 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             ) from error
         self._cfgs = Config.dict2config(kwargs)
 
-    def __load_model_and_env(self, save_dir: str, model_name: str, env_kwargs: dict[str, Any]):
+    # pylint: disable-next=too-many-branches
+    def __load_model_and_env(
+        self,
+        save_dir: str,
+        model_name: str,
+        env_kwargs: dict[str, Any],
+    ) -> None:
         """Load the model from the save directory.
 
         Args:
-            save_dir (str): directory where the model is saved.
-            model_name (str): name of the model.
+            save_dir (str): Directory where the model is saved.
+            model_name (str): Name of the model.
+            env_kwargs (dict[str, Any]): Keyword arguments for the environment.
+
+        Raises:
+            FileNotFoundError: If the model is not found.
         """
         # load the saved model
         model_path = os.path.join(save_dir, 'torch_save', model_name)
@@ -124,35 +158,144 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             self._env = TimeLimit(self._env, device=torch.device('cpu'), time_limit=1000)
         self._env = ActionScale(self._env, device=torch.device('cpu'), low=-1.0, high=1.0)
 
-        actor_type = self._cfgs['model_cfgs']['actor_type']
-        pi_cfg = self._cfgs['model_cfgs']['actor']
-        weight_initialization_mode = self._cfgs['model_cfgs']['weight_initialization_mode']
-        actor_builder = ActorBuilder(
-            obs_space=observation_space,
-            act_space=action_space,
-            hidden_sizes=pi_cfg['hidden_sizes'],
-            activation=pi_cfg['activation'],
-            weight_initialization_mode=weight_initialization_mode,
-        )
-        self._actor = actor_builder.build_actor(actor_type)
-        self._actor.load_state_dict(model_params['pi'])
+        if hasattr(self._cfgs['algo_cfgs'], 'action_repeat'):
+            self._env = ActionRepeat(
+                self._env,
+                device=torch.device('cpu'),
+                times=self._cfgs['algo_cfgs']['action_repeat'],
+            )
+        if hasattr(self._cfgs, 'algo') and self._cfgs['algo'] in [
+            'LOOP',
+            'SafeLOOP',
+            'PETS',
+            'CAPPETS',
+            'RCEPETS',
+            'CCEPETS',
+        ]:
+            dynamics_state_space = (
+                self._env.coordinate_observation_space
+                if self._env.coordinate_observation_space is not None
+                else self._env.observation_space
+            )
+            assert self._env.action_space is not None and isinstance(
+                self._env.action_space.shape,
+                tuple,
+            )
+            if isinstance(self._env.action_space, Box):
+                action_space = self._env.action_space
+            else:
+                raise NotImplementedError
+            if self._cfgs['algo'] in ['LOOP', 'SafeLOOP']:
+                self._actor_critic = ConstraintActorQCritic(
+                    obs_space=dynamics_state_space,
+                    act_space=action_space,
+                    model_cfgs=self._cfgs.model_cfgs,
+                    epochs=1,
+                )
+            if self._actor_critic is not None:
+                self._actor_critic.load_state_dict(model_params['actor_critic'])
+                self._actor_critic.to('cpu')
+            self._dynamics = EnsembleDynamicsModel(
+                model_cfgs=self._cfgs.dynamics_cfgs,
+                device=torch.device('cpu'),
+                state_shape=dynamics_state_space.shape,
+                action_shape=action_space.shape,
+                actor_critic=self._actor_critic,
+                rew_func=None,
+                cost_func=self._env.get_cost_from_obs_tensor,
+                terminal_func=None,
+            )
+            self._dynamics.ensemble_model.load_state_dict(model_params['dynamics'])
+            self._dynamics.ensemble_model.to('cpu')
+            if self._cfgs['algo'] in ['CCEPETS', 'RCEPETS', 'SafeLOOP']:
+                algo_to_planner = {
+                    'CCEPETS': (
+                        'CCEPlanner',
+                        {'cost_limit': self._cfgs['algo_cfgs']['cost_limit']},
+                    ),
+                    'RCEPETS': (
+                        'RCEPlanner',
+                        {'cost_limit': self._cfgs['algo_cfgs']['cost_limit']},
+                    ),
+                    'SafeLOOP': (
+                        'SafeARCPlanner',
+                        {
+                            'cost_limit': self._cfgs['algo_cfgs']['cost_limit'],
+                            'actor_critic': self._actor_critic,
+                        },
+                    ),
+                }
+            elif self._cfgs['algo'] in ['PETS', 'LOOP']:
+                algo_to_planner = {
+                    'PETS': ('CEMPlanner', {}),
+                    'LOOP': ('ARCPlanner', {'actor_critic': self._actor_critic}),
+                }
+            elif self._cfgs['algo'] in ['CAPPETS']:
+                lagrange: torch.nn.Parameter = torch.nn.Parameter(
+                    model_params['lagrangian_multiplier'].to('cpu'),
+                    requires_grad=False,
+                )
+                algo_to_planner = {
+                    'CAPPETS': (
+                        'CAPPlanner',
+                        {
+                            'cost_limit': self._cfgs['lagrange_cfgs']['cost_limit'],
+                            'lagrange': lagrange,
+                        },
+                    ),
+                }
+            planner_name = algo_to_planner[self._cfgs['algo']][0]
+            planner_special_cfgs = algo_to_planner[self._cfgs['algo']][1]
+            planner_cls = globals()[f'{planner_name}']
+            self._planner = planner_cls(
+                dynamics=self._dynamics,
+                planner_cfgs=self._cfgs.planner_cfgs,
+                gamma=float(self._cfgs.algo_cfgs.gamma),
+                cost_gamma=float(self._cfgs.algo_cfgs.cost_gamma),
+                dynamics_state_shape=dynamics_state_space.shape,
+                action_shape=action_space.shape,
+                action_max=1.0,
+                action_min=-1.0,
+                device='cpu',
+                **planner_special_cfgs,
+            )
+
+        else:
+            actor_type = self._cfgs['model_cfgs']['actor_type']
+            pi_cfg = self._cfgs['model_cfgs']['actor']
+            weight_initialization_mode = self._cfgs['model_cfgs']['weight_initialization_mode']
+            actor_builder = ActorBuilder(
+                obs_space=observation_space,
+                act_space=action_space,
+                hidden_sizes=pi_cfg['hidden_sizes'],
+                activation=pi_cfg['activation'],
+                weight_initialization_mode=weight_initialization_mode,
+            )
+            self._actor = actor_builder.build_actor(actor_type)
+            self._actor.load_state_dict(model_params['pi'])
 
     # pylint: disable-next=too-many-locals
     def load_saved(
         self,
         save_dir: str,
         model_name: str,
-        render_mode: str | None = None,
+        render_mode: str = 'rgb_array',
         camera_name: str | None = None,
         camera_id: int | None = None,
         width: int = 256,
         height: int = 256,
-    ):
+    ) -> None:
         """Load a saved model.
 
         Args:
-            save_dir (str): directory where the model is saved.
-            model_name (str): name of the model.
+            save_dir (str): The directory where the model is saved.
+            model_name (str): The name of the model.
+            render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array',
+                'rgb_array_list'. Defaults to 'rgb_array'.
+            camera_name (str or None, optional): The name of the camera. Defaults to None.
+            camera_id (int or None, optional): The id of the camera. Defaults to None.
+            width (int, optional): The width of the image. Defaults to 256.
+            height (int, optional): The height of the image. Defaults to 256.
         """
         # load the config
         self._save_dir = save_dir
@@ -160,8 +303,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         self.__load_cfgs(save_dir)
 
-        if render_mode is not None or self._render_mode is None:
-            self.__set_render_mode(render_mode)
+        self.__set_render_mode(render_mode)
 
         env_kwargs = {
             'env_id': self._cfgs['env_id'],
@@ -179,17 +321,20 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         num_episodes: int = 10,
         cost_criteria: float = 1.0,
-    ):
+    ) -> tuple[list[float], list[float]]:
         """Evaluate the agent for num_episodes episodes.
 
         Args:
-            num_episodes (int): number of episodes to evaluate the agent.
-            cost_criteria (float): the cost criteria for the evaluation.
+            num_episodes (int, optional): The number of episodes to evaluate. Defaults to 10.
+            cost_criteria (float, optional): The cost criteria. Defaults to 1.0.
 
         Returns:
-            (float, float, float): the average return, the average cost, and the average length of the episodes.
+            (episode_rewards, episode_costs): The episode rewards and costs.
+
+        Raises:
+            ValueError: If the environment and the policy are not provided or created.
         """
-        if self._env is None or self._actor is None:
+        if self._env is None or (self._actor is None and self._planner is None):
             raise ValueError(
                 'The environment and the policy must be provided or created before evaluating the agent.',
             )
@@ -205,10 +350,21 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             done = False
             while not done:
                 with torch.no_grad():
-                    act = self._actor.predict(
-                        torch.as_tensor(obs, dtype=torch.float32),
-                        deterministic=False,
-                    )
+                    if self._actor is not None:
+                        act = self._actor.predict(
+                            obs,
+                            deterministic=False,
+                        )
+                    elif self._planner is not None:
+                        act = self._planner.output_action(
+                            obs.unsqueeze(0).to('cpu'),
+                        )[
+                            0
+                        ].squeeze(0)
+                    else:
+                        raise ValueError(
+                            'The policy must be provided or created before evaluating the agent.',
+                        )
                 obs, rew, cost, terminated, truncated, _ = self._env.step(act)
 
                 ep_ret += rew.item()
@@ -228,9 +384,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         print(self._dividing_line)
         print('Evaluation results:')
-        print(f'Average episode reward: {np.mean(episode_rewards)}')
-        print(f'Average episode cost: {np.mean(episode_costs)}')
-        print(f'Average episode length: {np.mean(episode_lengths)}')
+        print(f'Average episode reward: {np.mean(a=episode_rewards)}')
+        print(f'Average episode cost: {np.mean(a=episode_costs)}')
+        print(f'Average episode length: {np.mean(a=episode_lengths)}')
         return (
             episode_rewards,
             episode_costs,
@@ -240,9 +396,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     def fps(self) -> int:
         """The fps of the environment.
 
-        Returns:
-            int: the fps.
+        Raises:
+            AssertionError: If the environment is not provided or created.
+            AtrributeError: If the fps is not found.
         """
+        assert (
+            self._env is not None
+        ), 'The environment must be provided or created before getting the fps.'
         try:
             fps = self._env.metadata['render_fps']
         except AttributeError:
@@ -257,14 +417,22 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         save_replay_path: str | None = None,
         max_render_steps: int = 2000,
         cost_criteria: float = 1.0,
-    ):  # pragma: no cover
+    ) -> None:  # pragma: no cover
         """Render the environment for one episode.
 
         Args:
-            seed (int): seed for the environment. If None, the environment will be reset with a random seed.
-            save_replay_path (str): path to save the replay. If None, no replay is saved.
+            num_episodes (int, optional): The number of episodes to render. Defaults to 1.
+            save_replay_path (str or None, optional): The path to save the replay video. Defaults to
+                None.
+            max_render_steps (int, optional): The maximum number of steps to render. Defaults to 2000.
+            cost_criteria (float, optional): The discount factor for the cost. Defaults to 1.0.
         """
-
+        assert (
+            self._env is not None
+        ), 'The environment must be provided or created before rendering.'
+        assert (
+            self._actor is not None or self._planner is not None
+        ), 'The policy or planner must be provided or created before rendering.'
         if save_replay_path is None:
             save_replay_path = os.path.join(self._save_dir, 'video', self._model_name.split('.')[0])
         result_path = os.path.join(save_replay_path, 'result.txt')
@@ -292,7 +460,21 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 not done and step <= max_render_steps
             ):  # a big number to make sure the episode will end
                 with torch.no_grad():
-                    act = self._actor.predict(obs, deterministic=False)
+                    if self._actor is not None:
+                        act = self._actor.predict(
+                            obs,
+                            deterministic=False,
+                        )
+                    elif self._planner is not None:
+                        act = self._planner.output_action(
+                            obs.unsqueeze(0).to('cpu'),
+                        )[
+                            0
+                        ].squeeze(0)
+                    else:
+                        raise ValueError(
+                            'The policy must be provided or created before evaluating the agent.',
+                        )
                 obs, rew, cost, terminated, truncated, _ = self._env.step(act)
                 step += 1
                 done = bool(terminated or truncated)

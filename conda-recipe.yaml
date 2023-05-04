@@ -15,7 +15,7 @@
 #
 # Create virtual environment with command:
 #
-#   $ CONDA_OVERRIDE_CUDA=11.6 conda env create --file conda-recipe.yaml
+#   $ CONDA_OVERRIDE_CUDA=11.7 conda env create --file conda-recipe.yaml
 #
 
 name: omnisafe

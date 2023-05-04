@@ -24,16 +24,25 @@ from omnisafe.typing import Activation, CriticType, InitFunction, OmnisafeSpace
 
 # pylint: disable-next=too-few-public-methods
 class CriticBuilder:
-    """Implementation of CriticBuilder
+    """Implementation of CriticBuilder.
 
     .. note::
+        A :class:`CriticBuilder` is a class for building a critic network. In OmniSafe, instead of
+        building the critic network directly, we build it by integrating various types of critic
+        networks into the :class:`CriticBuilder`. The advantage of this is that each type of critic
+        has a uniform way of passing parameters. This makes it easy for users to use existing
+        critics, and also facilitates the extension of new critic types.
 
-        A :class:`CriticBuilder` is a class for building a critic network.
-        In ``omnisafe``, instead of building the critic network directly,
-        we build it by integrating various types of critic networks into the :class:`CriticBuilder`.
-        The advantage of this is that each type of critic has a uniform way of passing parameters.
-        This makes it easy for users to use existing critics,
-        and also facilitates the extension of new critic types.
+    Args:
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
+        num_critics (int, optional): Number of critics. Defaults to 1.
+        use_obs_encoder (bool, optional): Whether to use observation encoder, only used in q critic.
+            Defaults to False.
     """
 
     # pylint: disable-next=too-many-arguments
@@ -47,24 +56,14 @@ class CriticBuilder:
         num_critics: int = 1,
         use_obs_encoder: bool = False,
     ) -> None:
-        """Initialize CriticBuilder.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            hidden_sizes (List[int]): Hidden sizes of the critic network.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-            num_critics (int): Number of critics.
-            use_obs_encoder (bool): Whether to use observation encoder, only used in q critic.
-        """
-        self._obs_space = obs_space
-        self._act_space = act_space
-        self._weight_initialization_mode = weight_initialization_mode
-        self._activation = activation
-        self._hidden_sizes = hidden_sizes
-        self._num_critics = num_critics
-        self._use_obs_encoder = use_obs_encoder
+        """Initialize an instance of :class:`CriticBuilder`."""
+        self._obs_space: OmnisafeSpace = obs_space
+        self._act_space: OmnisafeSpace = act_space
+        self._weight_initialization_mode: InitFunction = weight_initialization_mode
+        self._activation: Activation = activation
+        self._hidden_sizes: list[int] = hidden_sizes
+        self._num_critics: int = num_critics
+        self._use_obs_encoder: bool = use_obs_encoder
 
     def build_critic(
         self,
@@ -77,6 +76,12 @@ class CriticBuilder:
 
         Args:
             critic_type (str): Critic type.
+
+        Returns:
+            V-Critic or Q-Critic.
+
+        Raises:
+            NotImplementedError: If the critic type is not ``q`` or ``v``.
         """
         if critic_type == 'q':
             return QCritic(

@@ -18,25 +18,37 @@ from __future__ import annotations
 
 import abc
 from collections import deque
-from typing import Deque
 
 
 # pylint: disable-next=too-few-public-methods,too-many-instance-attributes
 class PIDLagrangian(abc.ABC):  # noqa: B024
-    """Abstract base class for Lagrangian-base Algorithms.
+    """PID version of Lagrangian.
 
-    Similar to the :class:`Lagrange` module, this module implements the PID version of the lagrangian method.
+    Similar to the :class:`Lagrange` module, this module implements the PID version of the
+    lagrangian method.
 
     .. note::
-        The PID-Lagrange is more general than the Lagrange, and can be used in any policy gradient algorithm.
-        As PID_Lagrange use the PID controller to control the lagrangian multiplier,
-        it is more stable than the naive Lagrange.
+        The PID-Lagrange is more general than the Lagrange, and can be used in any policy gradient
+        algorithm. As PID_Lagrange use the PID controller to control the lagrangian multiplier, it
+        is more stable than the naive Lagrange.
+
+    Args:
+        pid_kp (float): The proportional gain of the PID controller.
+        pid_ki (float): The integral gain of the PID controller.
+        pid_kd (float): The derivative gain of the PID controller.
+        pid_d_delay (int): The delay of the derivative term.
+        pid_delta_p_ema_alpha (float): The exponential moving average alpha of the delta_p.
+        pid_delta_d_ema_alpha (float): The exponential moving average alpha of the delta_d.
+        sum_norm (bool): Whether to use the sum norm.
+        diff_norm (bool): Whether to use the diff norm.
+        penalty_max (int): The maximum penalty.
+        lagrangian_multiplier_init (float): The initial value of the lagrangian multiplier.
+        cost_limit (float): The cost limit.
 
     References:
-
-    - Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
-    - Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
-    - URL: `PID Lagrange <https://arxiv.org/abs/2007.03964>`_
+        - Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
+        - Authors: Joshua Achiam, David Held, Aviv Tamar, Pieter Abbeel.
+        - URL: `PID Lagrange <https://arxiv.org/abs/2007.03964>`_
     """
 
     # pylint: disable-next=too-many-arguments
@@ -52,55 +64,43 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
         diff_norm: bool,
         penalty_max: int,
         lagrangian_multiplier_init: float,
-        cost_limit: int,
+        cost_limit: float,
     ) -> None:
-        """Initialize PIDLagrangian.
-
-        Args:
-            pid_kp: The proportional gain of the PID controller.
-            pid_ki: The integral gain of the PID controller.
-            pid_kd: The derivative gain of the PID controller.
-            pid_d_delay: The delay of the derivative term of the PID controller.
-            pid_delta_p_ema_alpha: The exponential moving average alpha of the proportional term of the PID controller.
-            pid_delta_d_ema_alpha: The exponential moving average alpha of the derivative term of the PID controller.
-            sum_norm: Whether to normalize the sum of the cost.
-            diff_norm: Whether to normalize the difference of the cost.
-            penalty_max: The maximum penalty.
-            lagrangian_multiplier_init: The initial value of the lagrangian multiplier.
-            cost_limit: The cost limit.
-        """
-        self._pid_kp = pid_kp
-        self._pid_ki = pid_ki
-        self._pid_kd = pid_kd
+        """Initialize an instance of :class:`PIDLagrangian`."""
+        self._pid_kp: float = pid_kp
+        self._pid_ki: float = pid_ki
+        self._pid_kd: float = pid_kd
         self._pid_d_delay = pid_d_delay
-        self._pid_delta_p_ema_alpha = pid_delta_p_ema_alpha
-        self._pid_delta_d_ema_alpha = pid_delta_d_ema_alpha
-        self._penalty_max = penalty_max
-        self._sum_norm = sum_norm
-        self._diff_norm = diff_norm
-        self._pid_i = lagrangian_multiplier_init
-        self._cost_ds: Deque[float] = deque(maxlen=self._pid_d_delay)
-        self._cost_ds.append(0)
-        self._delta_p: float = 0
-        self._cost_d: float = 0
+        self._pid_delta_p_ema_alpha: float = pid_delta_p_ema_alpha
+        self._pid_delta_d_ema_alpha: float = pid_delta_d_ema_alpha
+        self._penalty_max: int = penalty_max
+        self._sum_norm: bool = sum_norm
+        self._diff_norm: bool = diff_norm
+        self._pid_i: float = lagrangian_multiplier_init
+        self._cost_ds: deque[float] = deque(maxlen=self._pid_d_delay)
+        self._cost_ds.append(0.0)
+        self._delta_p: float = 0.0
+        self._cost_d: float = 0.0
         self._cost_limit: float = cost_limit
-        self._cost_penalty: float = 0
+        self._cost_penalty: float = 0.0
 
     @property
     def lagrangian_multiplier(self) -> float:
-        """Return the current value of the lagrangian multiplier."""
+        """The lagrangian multiplier."""
         return self._cost_penalty
 
     def pid_update(self, ep_cost_avg: float) -> None:
         r"""Update the PID controller.
 
-        Detailedly, PID controller update the lagrangian multiplier following the next equation:
+        PID controller update the lagrangian multiplier following the next equation:
 
         .. math::
+
             \lambda_{t+1} = \lambda_t + (K_p e_p + K_i \int e_p dt + K_d \frac{d e_p}{d t}) \eta
 
         where :math:`e_p` is the error between the current episode cost and the cost limit,
-        :math:`K_p`, :math:`K_i`, :math:`K_d` are the PID parameters, and :math:`\eta` is the learning rate.
+        :math:`K_p`, :math:`K_i`, :math:`K_d` are the PID parameters, and :math:`\eta` is the
+        learning rate.
 
         Args:
             ep_cost_avg (float): The average cost of the current episode.

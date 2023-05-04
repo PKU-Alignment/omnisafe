@@ -40,7 +40,7 @@ AdvatageEstimator = Literal['gae', 'gae-rtg', 'vtrace', 'plain']
 InitFunction = Literal['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal']
 CriticType = Literal['v', 'q']
 ActorType = Literal['gaussian_learning', 'gaussian_sac', 'mlp']
-cpu = torch.device('cpu')
+DEVICE_CPU = torch.device('cpu')
 
 
 __all__ = [
@@ -60,5 +60,5 @@ __all__ = [
     'OmnisafeSpace',
     'RenderFrame',
     'Device',
-    'cpu',
+    'DEVICE_CPU',
 ]

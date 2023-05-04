@@ -152,12 +152,6 @@ ignore = [
     # too long docstring due to long example blocks
     "E501",
     "W505",
-    # TODO: Remove this four ignores
-    # ANN001: missing type annotation for function argument
-    # ANN003: missing type annotation for `**kwargs`
-    # ANN201: missing return type annotation for public function
-    # ANN202: missing return type annotation for private function
-    "ANN001","ANN003","ANN201","ANN202",
     # ANN101: missing type annotation for `self` in method
     # ANN102: missing type annotation for `cls` in classmethod
     "ANN101",

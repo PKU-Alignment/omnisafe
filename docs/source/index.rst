@@ -55,8 +55,8 @@ OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learni
         :class-card: sd-outline-primary  sd-rounded-1
         :columns: 12 6 6 4
 
-        For Master
-        ^^^^^^^^^^
+        For Experts
+        ^^^^^^^^^^^
         If you are already an expert in the field of RL, you can also gain new insights from our systematic introduction to Safe RL algorithms.
         Also, this tutorial will allow you to design your algorithms using OmniSafe quickly.
 
@@ -227,7 +227,7 @@ We give an example below:
         :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
         :class-footer: sd-font-weight-bold
 
-        Run CPO in Omnisafe
+        Run CPO in OmniSafe
         ^^^^^^^^^^^^^^^^^^^
         Here are 3 ways to run CPO in OmniSafe:
 
