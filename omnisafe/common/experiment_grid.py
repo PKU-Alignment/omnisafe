@@ -555,7 +555,7 @@ class ExperimentGrid:
                 will combine any potential combination to compare. Defaults to None.
             cost_limit (float or None, optional): Value for one line showed on graph to indicate
                 cost. Defaults to None.
-            show_image (bool): Wheather to show graph image in GUI windows.
+            show_image (bool): Whether to show graph image in GUI windows.
         """
         assert self._statistical_tools is not None, 'Please run run() first!'
         self._statistical_tools.load_source(self.log_dir)

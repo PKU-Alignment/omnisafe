@@ -101,7 +101,7 @@ class StatisticsTools:
             compare_num (int or None, optional): The number of values to compare. Defaults to None.
             cost_limit (float or None, optional): The cost limit of the experiment. Defaults to None.
             smooth (int, optional): The smooth window size. Defaults to 1.
-            show_image (bool): Wheather to show graph image in GUI windows.
+            show_image (bool): Whether to show graph image in GUI windows.
 
         .. note::
             `values` and `compare_num` cannot be set at the same time.
