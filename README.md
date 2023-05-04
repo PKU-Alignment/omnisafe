@@ -50,7 +50,6 @@ Researchers can use OmniSafe to conduct experiments and verify their ideas, ensu
     - [Model-Based Safe](#model-based-safe)
     - [Offline Safe](#offline-safe)
     - [Others](#others)
-- [](#)
   - [Examples](#examples)
     - [Try with CLI](#try-with-cli)
 - [Getting Started](#getting-started)
@@ -163,6 +162,7 @@ pip install omnisafe
 - [X] **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration](https://arxiv.org/abs/2206.02675)
 
 </details>
+
 --------------------------------------------------------------------------------
 
 ### Examples
