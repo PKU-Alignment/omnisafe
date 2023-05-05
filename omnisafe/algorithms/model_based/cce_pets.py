@@ -42,6 +42,10 @@ class CCEPETS(PETS):
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
         )
+        assert self._dynamics_state_space is not None and isinstance(
+            self._dynamics_state_space.shape,
+            tuple,
+        )
         assert self._env.action_space is not None and isinstance(
             self._env.action_space.shape,
             tuple,

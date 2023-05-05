@@ -42,11 +42,11 @@ class StandardScaler:
 
     def __init__(self, device: torch.device) -> None:
         """Initialize an instance of :class:`StandardScaler`."""
-        self._mean = 0.0
-        self._std = 1.0
-        self._mean_t = torch.tensor(self._mean).to(device)
-        self._std_t = torch.tensor(self._std).to(device)
-        self._device = device
+        self._mean: float = 0.0
+        self._std: float = 1.0
+        self._mean_t: torch.Tensor = torch.tensor(self._mean).to(device)
+        self._std_t: torch.Tensor = torch.tensor(self._std).to(device)
+        self._device: torch.device = device
 
     def fit(self, data: torch.Tensor | np.ndarray) -> None:
         """Fits the scaler to the input data.
@@ -63,7 +63,7 @@ class StandardScaler:
     def transform(self, data: torch.Tensor | np.ndarray) -> torch.Tensor | np.ndarray:
         """Transforms the input matrix data using the parameters of this scaler.
 
-        Arguments:
+        Args:
             data (torch.Tensor|np.ndarray): A numpy array containing the input
 
         Returns:
@@ -169,6 +169,9 @@ class EnsembleFC(nn.Module):
 class EnsembleModel(nn.Module):
     """Ensemble dynamics model."""
 
+    max_logvar: torch.Tensor
+    min_logvar: torch.Tensor
+
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
@@ -179,7 +182,7 @@ class EnsembleModel(nn.Module):
         cost_size: int,
         ensemble_size: int,
         predict_reward: bool,
-        predict_cost: bool | None = None,
+        predict_cost: bool = False,
         hidden_size: int = 200,
         learning_rate: float = 1e-3,
         use_decay: bool = False,
@@ -187,31 +190,31 @@ class EnsembleModel(nn.Module):
         """Initialize network weight."""
         super().__init__()
 
-        self._state_size = state_size
-        self._reward_size = reward_size
-        self._cost_size = cost_size
-        self._predict_reward = predict_reward
-        self._predict_cost = predict_cost
+        self._state_size: int = state_size
+        self._reward_size: int = reward_size
+        self._cost_siz: int = cost_size
+        self._predict_reward: bool = predict_reward
+        self._predict_cost: bool = predict_cost
 
-        self._output_dim = state_size
+        self._output_dim: int = state_size
         if predict_reward:
             self._output_dim += reward_size
         if predict_cost:
             self._output_dim += cost_size
 
-        self._hidden_size = hidden_size
-        self._use_decay = use_decay
+        self._hidden_size: int = hidden_size
+        self._use_decay: bool = use_decay
 
-        self._nn1 = EnsembleFC(
+        self._nn1: EnsembleFC = EnsembleFC(
             state_size + action_size,
             hidden_size,
             ensemble_size,
             weight_decay=0.000025,
         )
-        self._nn2 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.00005)
-        self._nn3 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
-        self._nn4 = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
-        self._nn5 = EnsembleFC(
+        self._nn2: EnsembleFC = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.00005)
+        self._nn3: EnsembleFC = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
+        self._nn4: EnsembleFC = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
+        self._nn5: EnsembleFC = EnsembleFC(
             hidden_size,
             self._output_dim * 2,
             ensemble_size,
@@ -220,10 +223,10 @@ class EnsembleModel(nn.Module):
 
         self.register_buffer('max_logvar', (torch.ones((1, self._output_dim)).float() / 2))
         self.register_buffer('min_logvar', (-torch.ones((1, self._output_dim)).float() * 10))
-        self._optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
+        self._optimizer:torch.optim.Adam = torch.optim.Adam(self.parameters(), lr=learning_rate)
         self.apply(init_weights)
-        self._device = device
-        self.scaler = StandardScaler(self._device)
+        self._device: torch.device = device
+        self.scaler: StandardScaler = StandardScaler(self._device)
 
     def forward(
         self,
@@ -357,41 +360,41 @@ class EnsembleDynamicsModel:
         state_shape: tuple[int, ...],
         action_shape: tuple[int, ...],
         actor_critic: ConstraintActorCritic | ConstraintActorQCritic | None = None,
-        rew_func: Callable | None = None,
-        cost_func: Callable | None = None,
-        terminal_func: Callable | None = None,
+        rew_func: Callable[[torch.Tensor], torch.Tensor] | None = None,
+        cost_func: Callable[[torch.Tensor], torch.Tensor] | None = None,
+        terminal_func: Callable[[torch.Tensor], torch.Tensor] | None = None,
     ) -> None:
         """Initialize the dynamics model."""
-        self._num_ensemble = model_cfgs.num_ensemble
-        self._elite_size = model_cfgs.elite_size
-        self._predict_reward = model_cfgs.predict_reward
-        self._predict_cost = model_cfgs.predict_cost
-        self._batch_size = model_cfgs.batch_size
-        self._max_epoch_since_update = model_cfgs.max_epoch
+        self._num_ensemble: int = model_cfgs.num_ensemble
+        self._elite_size: int = model_cfgs.elite_size
+        self._predict_reward: bool = model_cfgs.predict_reward
+        self._predict_cost: bool = model_cfgs.predict_cost
+        self._batch_size: int = model_cfgs.batch_size
+        self._max_epoch_since_update: int = model_cfgs.max_epoch
 
-        self._reward_size = model_cfgs.reward_size
-        self._cost_size = model_cfgs.cost_size
-        self._use_cost = model_cfgs.use_cost
-        self._use_terminal = model_cfgs.use_terminal
-        self._use_var = model_cfgs.use_var
-        self._use_reward_critic = model_cfgs.use_reward_critic
-        self._use_cost_critic = model_cfgs.use_cost_critic
+        self._reward_size: int = model_cfgs.reward_size
+        self._cost_size: int = model_cfgs.cost_size
+        self._use_cost: bool = model_cfgs.use_cost
+        self._use_terminal: bool = model_cfgs.use_terminal
+        self._use_var: bool = model_cfgs.use_var
+        self._use_reward_critic: bool = model_cfgs.use_reward_critic
+        self._use_cost_critic: bool = model_cfgs.use_cost_critic
 
-        self._device = device
+        self._device: torch.device = device
 
-        self._state_size = state_shape[0]
-        self._action_size = action_shape[0]
+        self._state_size: int = state_shape[0]
+        self._action_size: int = action_shape[0]
 
-        self._rew_func = rew_func
-        self._cost_func = cost_func
-        self._terminal_func = terminal_func
+        self._rew_func: Callable[[torch.Tensor], torch.Tensor] | None = rew_func
+        self._cost_func: Callable[[torch.Tensor], torch.Tensor] | None = cost_func
+        self._terminal_func: Callable[[torch.Tensor], torch.Tensor] | None = terminal_func
 
-        self._actor_critic = actor_critic
+        self._actor_critic: ConstraintActorCritic | ConstraintActorQCritic | None = actor_critic
 
         self._model_list: list[int] = []
 
-        self.elite_model_idxes = list(range(self._elite_size))
-        self._ensemble_model = EnsembleModel(
+        self.elite_model_idxes: list[int] = list(range(self._elite_size))
+        self._ensemble_model: EnsembleModel = EnsembleModel(
             device=self._device,
             state_size=self._state_size,
             action_size=self._action_size,
@@ -405,10 +408,8 @@ class EnsembleDynamicsModel:
             use_decay=model_cfgs.use_decay,
         )
         self._ensemble_model.to(self._device)
-
-        self._max_epoch_since_update = 5
-        self._epochs_since_update = 0
-        self._snapshots = {i: (0, 1e10) for i in range(self._num_ensemble)}
+        self._epochs_since_update: int = 0
+        self._snapshots: dict[int, tuple[int, float]] = {i: (0, 1e10) for i in range(self._num_ensemble)}
 
         if self._predict_reward is False:
             assert rew_func is not None, 'rew_func should not be None'

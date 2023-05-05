@@ -13,16 +13,19 @@
 # limitations under the License.
 # ==============================================================================
 """Model-based Adapter for OmniSafe."""
+
 from __future__ import annotations
 
 import time
 from typing import Any, Callable
 
 import torch
+from gymnasium.spaces import Box
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
 from omnisafe.common.logger import Logger
-from omnisafe.envs.core import make, support_envs
+from omnisafe.envs.core import make, support_envs, CMDP
+from omnisafe.envs.safety_gymnasium_modelbased import SafetyGymnasiumModelBased
 from omnisafe.envs.wrapper import (
     ActionRepeat,
     ActionScale,
@@ -34,11 +37,10 @@ from omnisafe.envs.wrapper import (
     Unsqueeze,
 )
 from omnisafe.utils.config import Config
+from omnisafe.utils.tools import get_device
 
 
-class ModelBasedAdapter(
-    OnlineAdapter,
-):  # pylint: disable=too-many-instance-attributes,super-init-not-called
+class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-attributes,super-init-not-called
     """Model Based Adapter for OmniSafe.
 
     :class:`ModelBasedAdapter` is used to adapt the environment to the model-based training.
@@ -49,7 +51,6 @@ class ModelBasedAdapter(
         num_envs (int): The number of environments.
         seed (int): The random seed.
         cfgs (Config): The configuration.
-        kwargs(dict): The other keyword arguments.
 
     Attributes:
         _env_id (str): The environment id.
@@ -67,21 +68,28 @@ class ModelBasedAdapter(
         task (str): The task. eg. The task of SafetyPointGoal-v0 is 'goal'
     """
 
+    coordinate_observation_space: Box | None
+    lidar_observation_space: Box | None
+    task: str | None
+    _ep_ret: torch.Tensor
+    _ep_cost: torch.Tensor
+    _ep_len: torch.Tensor
+    _current_obs: torch.Tensor
+
     def __init__(  # pylint: disable=too-many-arguments
         self,
         env_id: str,
         num_envs: int,
         seed: int,
         cfgs: Config,
-        **kwargs: Any,
     ) -> None:
         """Initialize the model-based adapter."""
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
-        self._env_id = env_id
-        self._device = cfgs.train_cfgs.device
+        self._env_id: str = env_id
+        self._device: torch.device = get_device(cfgs.train_cfgs.device)
 
-        self._env = make(env_id, num_envs=num_envs, device=cfgs.train_cfgs.device, **kwargs)
+        self._env: CMDP = make(env_id, num_envs=num_envs, device=cfgs.train_cfgs.device)
 
         # wrap the environment, use the action repeat in model-based setting.
         self._wrapper(
@@ -91,7 +99,7 @@ class ModelBasedAdapter(
             action_repeat=cfgs.algo_cfgs.action_repeat,
         )
         self._env.set_seed(seed)
-        self._cfgs = cfgs
+        self._cfgs: Config = cfgs
         if hasattr(self._env, 'coordinate_observation_space') and hasattr(
             self._env,
             'lidar_observation_space',
@@ -106,16 +114,13 @@ class ModelBasedAdapter(
         else:
             self.task = None
 
-        self._ep_ret: torch.Tensor
-        self._ep_cost: torch.Tensor
-        self._ep_len: torch.Tensor
         self._current_obs, _ = self.reset()
-        self._max_ep_len = 1000
+        self._max_ep_len: int = 1000
         self._reset_log()
-        self._last_dynamics_update = 0
-        self._last_policy_update = 0
-        self._last_eval = 0
-        self._first_log = False
+        self._last_dynamics_update: int = 0
+        self._last_policy_update: int = 0
+        self._last_eval: int = 0
+        self._first_log: bool = False
 
     def get_cost_from_obs_tensor(self, obs: torch.Tensor) -> torch.Tensor | None:
         """Get cost from tensor observation.
@@ -126,7 +131,7 @@ class ModelBasedAdapter(
         return (
             self._env.get_cost_from_obs_tensor(obs)
             if hasattr(self._env, 'get_cost_from_obs_tensor')
-            else None
+            else torch.zeros(1)
         )
 
     def get_lidar_from_coordinate(self, obs: torch.Tensor) -> torch.Tensor | None:
@@ -327,7 +332,7 @@ class ModelBasedAdapter(
         self,
         reward: torch.Tensor,
         cost: torch.Tensor,
-        info: dict,
+        info: dict[str, Any],
     ) -> None:
         """Log value.
 
@@ -336,9 +341,9 @@ class ModelBasedAdapter(
             be stored in ``info['original_reward']`` and ``info['original_cost']``.
 
         Args:
-            reward (torch.Tensor): The reward.
-            cost (torch.Tensor): The cost.
-            info (dict): Information.
+            reward (torch.Tensor): The immediate step reward.
+            cost (torch.Tensor): The immediate step cost.
+            info (dict[str, Any]): Some information logged by the environment.
         """
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()
@@ -352,7 +357,7 @@ class ModelBasedAdapter(
         """
         self._first_log = True
         logger.store(
-            **{
+            {
                 'Metrics/EpRet': self._ep_ret,
                 'Metrics/EpCost': self._ep_cost,
                 'Metrics/EpLen': self._ep_len,

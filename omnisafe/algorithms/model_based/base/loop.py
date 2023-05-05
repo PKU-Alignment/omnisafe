@@ -23,6 +23,7 @@ from gymnasium.spaces import Box
 from torch import nn, optim
 from torch.nn.utils.clip_grad import clip_grad_norm_
 
+from omnisafe.typing import OmnisafeSpace
 from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
@@ -43,12 +44,20 @@ class LOOP(PETS):
         - URL: `LOOP <https://arxiv.org/abs/2008.10066>`_
     """
 
+    _log_alpha: torch.Tensor
+    _alpha_optimizer: optim.Optimizer
+    _target_entropy: float
+
     def _init_model(self) -> None:
         """Initialize the dynamics model and the planner."""
-        self._dynamics_state_space = (
+        self._dynamics_state_space: OmnisafeSpace = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
+        )
+        assert self._dynamics_state_space is not None and isinstance(
+            self._dynamics_state_space.shape,
+            tuple,
         )
         assert self._env.action_space is not None and isinstance(
             self._env.action_space.shape,
@@ -58,15 +67,15 @@ class LOOP(PETS):
             self._action_space = self._env.action_space
         else:
             raise NotImplementedError
-        self._actor_critic = ConstraintActorQCritic(
+        self._actor_critic: ConstraintActorQCritic = ConstraintActorQCritic(
             obs_space=self._dynamics_state_space,
             act_space=self._env.action_space,
             model_cfgs=self._cfgs.model_cfgs,
             epochs=self._epochs,
         ).to(self._device)
-        self._use_actor_critic = True
-        self._update_count = 0
-        self._dynamics = EnsembleDynamicsModel(
+        self._use_actor_critic: bool = True
+        self._update_count: int = 0
+        self._dynamics: EnsembleDynamicsModel = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
@@ -77,7 +86,7 @@ class LOOP(PETS):
             terminal_func=None,
         )
         self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
-        self._planner = ARCPlanner(
+        self._planner: ARCPlanner = ARCPlanner(
             dynamics=self._dynamics,
             planner_cfgs=self._cfgs.planner_cfgs,
             gamma=float(self._cfgs.algo_cfgs.gamma),
@@ -92,9 +101,6 @@ class LOOP(PETS):
 
     def _init(self) -> None:
         super()._init()
-        self._log_alpha: torch.Tensor
-        self._alpha_optimizer: optim.Optimizer
-        self._target_entropy: float
 
         self._alpha = self._cfgs.algo_cfgs.alpha
         self._alpha_gamma = self._cfgs.algo_cfgs.alpha_gamma
@@ -140,6 +146,7 @@ class LOOP(PETS):
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
 
+    # TODO: unused info
     def _select_action(  # pylint: disable=unused-argument
         self,
         current_step: int,

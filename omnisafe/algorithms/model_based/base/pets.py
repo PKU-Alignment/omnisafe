@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 import torch
@@ -32,7 +32,7 @@ from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.cem import CEMPlanner
 from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.common.logger import Logger
-
+from omnisafe.typing import OmnisafeSpace
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
@@ -46,29 +46,36 @@ class PETS(BaseAlgo):
     """
 
     def _init_env(self) -> None:
-        self._env = ModelBasedAdapter(
+        self._env: ModelBasedAdapter = ModelBasedAdapter(
             self._env_id,
             1,
             self._seed,
             self._cfgs,
         )
-        self._total_steps = int(self._cfgs.train_cfgs.total_steps)
-        self._steps_per_epoch = int(self._cfgs.algo_cfgs.steps_per_epoch)
-        self._epochs = self._total_steps // self._cfgs.algo_cfgs.steps_per_epoch
-        print(f'Total steps: {self._total_steps}, epochs: {self._epochs}')
+        self._total_steps: int = int(self._cfgs.train_cfgs.total_steps)
+        self._steps_per_epoch: int = int(self._cfgs.algo_cfgs.steps_per_epoch)
+        self._epochs: int = self._total_steps // self._cfgs.algo_cfgs.steps_per_epoch
 
     def _init_model(self) -> None:
         """Initialize dynamics model and planner."""
-        self._dynamics_state_space = (
+        self._dynamics_state_space: OmnisafeSpace = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
+        )
+        assert self._dynamics_state_space is not None and isinstance(
+            self._dynamics_state_space.shape,
+            tuple,
+        )
+        assert self._env.action_space is not None and isinstance(
+            self._env.action_space.shape,
+            tuple,
         )
         if isinstance(self._env.action_space, Box):
             self._action_space = self._env.action_space
         else:
             raise NotImplementedError
-        self._dynamics = EnsembleDynamicsModel(
+        self._dynamics: EnsembleDynamicsModel = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
@@ -79,7 +86,7 @@ class PETS(BaseAlgo):
             terminal_func=None,
         )
 
-        self._planner = CEMPlanner(
+        self._planner: CEMPlanner = CEMPlanner(
             dynamics=self._dynamics,
             planner_cfgs=self._cfgs.planner_cfgs,
             gamma=float(self._cfgs.algo_cfgs.gamma),
@@ -90,12 +97,12 @@ class PETS(BaseAlgo):
             action_min=-1.0,
             device=self._device,
         )
-        self._use_actor_critic = False
-        self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
+        self._use_actor_critic: bool = False
+        self._update_dynamics_cycle: int = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
     def _init(self) -> None:
         """Initialize the algorithm."""
-        self._dynamics_buf = OffPolicyBuffer(
+        self._dynamics_buf: OffPolicyBuffer = OffPolicyBuffer(
             obs_space=self._dynamics_state_space,
             act_space=self._env.action_space,
             size=self._cfgs.train_cfgs.total_steps,
@@ -106,7 +113,7 @@ class PETS(BaseAlgo):
             'render_mode': 'rgb_array',
             'camera_name': 'track',
         }
-        self._eval_env = ModelBasedAdapter(
+        self._eval_env:  ModelBasedAdapter = ModelBasedAdapter(
             self._env_id,
             1,
             self._seed,
@@ -226,19 +233,16 @@ class PETS(BaseAlgo):
 
     def _algo_reset(
         self,
-        current_step: int,  # pylint: disable=unused-argument
     ) -> None:
         ...
 
     def _update_policy(
         self,
-        current_step: int,  # pylint: disable=unused-argument
     ) -> None:
         ...
 
     def _update_dynamics_model(
         self,
-        current_step: int,  # pylint: disable=unused-argument
     ) -> None:
         """Update dynamics.
 
@@ -250,6 +254,7 @@ class PETS(BaseAlgo):
         reward = self._dynamics_buf.data['reward'][: self._dynamics_buf.size]
         cost = self._dynamics_buf.data['cost'][: self._dynamics_buf.size]
         next_state = self._dynamics_buf.data['next_obs'][: self._dynamics_buf.size, :]
+        # TODO: puzzle
         delta_state = next_state - state
         if torch.is_tensor(delta_state):
             inputs = torch.cat((state, action), -1)
@@ -284,14 +289,12 @@ class PETS(BaseAlgo):
         self,
         current_step: int,
         state: torch.Tensor,
-        env: ModelBasedAdapter,
-    ) -> tuple[torch.Tensor, dict]:
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Action selection.
 
         Args:
             current_step (int): current step.
             state (torch.Tensor): current state.
-            env (ModelBasedAdapter): environment.
 
         Returns:
             action (torch.Tensor): action.
@@ -311,8 +314,6 @@ class PETS(BaseAlgo):
 
     def _store_real_data(  # pylint: disable=too-many-arguments,unused-argument
         self,
-        current_step: int,
-        ep_len: int,
         state: torch.Tensor,
         action: torch.Tensor,
         reward: torch.Tensor,
@@ -321,7 +322,6 @@ class PETS(BaseAlgo):
         truncated: torch.Tensor,
         next_state: torch.Tensor,
         info: dict,
-        action_info: dict,
     ) -> None:  # pylint: disable=too-many-arguments
         """Store real data in buffer.
 

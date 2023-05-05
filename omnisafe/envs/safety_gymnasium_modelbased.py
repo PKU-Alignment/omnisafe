@@ -24,6 +24,7 @@ import safety_gymnasium
 import torch
 
 from omnisafe.envs.core import CMDP, env_register
+from omnisafe.typing import Box, OmnisafeSpace
 
 
 @env_register
@@ -72,6 +73,11 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
                 autoreset=False,
                 **kwargs,
             )
+            assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
+            assert isinstance(
+                self._env.observation_space,
+                Box,
+            ), 'Only support Box observation space.'
             self._action_space = self._env.action_space
         else:
             raise NotImplementedError
@@ -80,10 +86,10 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
         self._num_envs = num_envs
         self._metadata = self._env.metadata
-        self._constraints = ['hazards']  # gremlins, vase, buttons
-        self._xyz_sensors = ['velocimeter', 'accelerometer']
-        self._angle_sensors = ['gyro', 'magnetometer']
-        self._flatten_order = (
+        self._constraints: list[str] = ['hazards']  # gremlins, vase, buttons
+        self._xyz_sensors: list[str] = ['velocimeter', 'accelerometer']
+        self._angle_sensors: list[str] = ['gyro', 'magnetometer']
+        self._flatten_order: list[str] = (
             self._xyz_sensors
             + self._angle_sensors
             + ['goal']
@@ -91,21 +97,21 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             + ['robot_m']
             + ['robot']
         )
-        self._base_state = self._xyz_sensors + self._angle_sensors
-        self._task = 'Goal'
+        self._base_state: list[str] = self._xyz_sensors + self._angle_sensors
+        self._task: str = 'Goal'
         self._env.reset()
-        self.goal_position = self._env.task.goal.pos
-        self.robot_position = self._env.task.agent.pos
-        self.hazards_position = self._env.task.hazards.pos
-        self.goal_distance = self._dist_xy(self.robot_position, self.goal_position)
+        self.goal_position: np.ndarray = self._env.task.goal.pos
+        self.robot_position: np.ndarray = self._env.task.agent.pos
+        self.hazards_position: np.ndarray = self._env.task.hazards.pos
+        self.goal_distance: float = self._dist_xy(self.robot_position, self.goal_position)
 
-        coordinate_sensor_obs = self._get_coordinate_sensor()
-        self._coordinate_obs_size = sum(
+        coordinate_sensor_obs: dict[str, Any] = self._get_coordinate_sensor()
+        self._coordinate_obs_size: int = sum(
             np.prod(i.shape) for i in list(coordinate_sensor_obs.values())
         )
-        offset = 0
-        self.key_to_slice = {}
-        self.key_to_slice_tensor = {}
+        offset: int = 0
+        self.key_to_slice: dict[str, slice] = {}
+        self.key_to_slice_tensor: dict[str, torch.Tensor] = {}
 
         for k in self._flatten_order:
             k_size = np.prod(coordinate_sensor_obs[k].shape)
@@ -113,31 +119,31 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             self.key_to_slice_tensor[k] = torch.arange(offset, offset + k_size)
 
             offset += k_size
-        self._base_state_size = sum(
+        self._base_state_size: int = sum(
             np.prod(coordinate_sensor_obs[k].shape) for k in list(self._base_state)
         )
         self.key_to_slice['base_state'] = slice(0, self._base_state_size)
         self.key_to_slice_tensor['base_state'] = torch.arange(0, self._base_state_size)
 
-        self._num_lidar_bin = 16
-        self._max_lidar_dist = 3
-        self.hazards_size = 0.2
-        self.goal_size = 0.3
-        self.original_observation_space = self._env.observation_space
-        self.coordinate_observation_space = gymnasium.spaces.Box(
+        self._num_lidar_bin: int = 16
+        self._max_lidar_dist: int = 3
+        self.hazards_size: float = 0.2
+        self.goal_size: float = 0.3
+        self.original_observation_space: OmnisafeSpace = self._env.observation_space
+        self.coordinate_observation_space: OmnisafeSpace = gymnasium.spaces.Box(
             -np.inf,
             np.inf,
             (self._coordinate_obs_size,),
             dtype=np.float32,
         )
         flat_coordinate_obs = self._get_flat_coordinate(coordinate_sensor_obs)
-        self.lidar_observation_space = gymnasium.spaces.Box(
+        self.lidar_observation_space: OmnisafeSpace = gymnasium.spaces.Box(
             -np.inf,
             np.inf,
             (self.get_lidar_from_coordinate(flat_coordinate_obs).shape[0],),
             dtype=np.float32,
         )
-        if self._use_lidar:
+        if self._use_lidar: 
             self._observation_space = self.lidar_observation_space
         else:
             self._observation_space = self.coordinate_observation_space
@@ -198,9 +204,9 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         first_row = [robot_matrix_x, robot_matrix_y, 0]
         second_row = [-robot_matrix_y, robot_matrix_x, 0]
         third_row = [0, 0, 1]
-        robot_matrix = [first_row, second_row, third_row]
+        robot_matrix = np.array([first_row, second_row, third_row])
         robot_pos = obs[self.key_to_slice['robot']]
-        hazards_lidar_vec = self._obs_lidar_pseudo(robot_matrix, robot_pos, self.hazards_position)
+        hazards_lidar_vec = self._obs_lidar_pseudo(robot_matrix, robot_pos, [self.hazards_position])
 
         goal_lidar_vec = self._obs_lidar_pseudo(robot_matrix, robot_pos, [self.goal_position])
         base_state_vec = obs[self.key_to_slice['base_state']]
@@ -214,7 +220,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
     def _ego_xy(
         self,
-        robot_matrix: list,
+        robot_matrix: np.ndarray,
         robot_pos: np.ndarray,
         pos: np.ndarray,
     ) -> np.ndarray:
@@ -240,9 +246,9 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
     def _obs_lidar_pseudo(
         self,
-        robot_matrix: list,
+        robot_matrix: np.ndarray,
         robot_pos: np.ndarray,
-        positions: list,
+        positions: list[np.ndarray],
     ) -> np.ndarray:  # pylint: disable=too-many-locals
         """Return a robot-centric lidar observation of a list of positions.
 
@@ -297,7 +303,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             obs[bin_minus] = max(obs[bin_minus], (1 - alias) * sensor)
         return obs
 
-    def _get_flat_coordinate(self, coordinate_obs: dict) -> np.ndarray:
+    def _get_flat_coordinate(self, coordinate_obs: dict[str, Any]) -> np.ndarray:
         """Get the flattened obs.
 
         Args:
@@ -306,20 +312,21 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         Returns:
             flat_obs (np.ndarray): flattened observation.
         """
+        assert self.coordinate_observation_space.shape is not None, 'Bad coordinate_observation_space'
         flat_obs = np.zeros(self.coordinate_observation_space.shape[0])
         for k in self._flatten_order:
             idx = self.key_to_slice[k]
             flat_obs[idx] = coordinate_obs[k].flat
         return flat_obs
 
-    def _get_coordinate_sensor(self) -> dict:
+    def _get_coordinate_sensor(self) -> dict[str, Any]:
         """Return the coordinate observation and sensor observation.
 
         We will ignore the z-axis coordinates in every poses.
         The returned obs coordinates are all in the robot coordinates.
 
         Returns:
-            coordinate_obs (dict): coordinate observation.
+            coordinate_obs (dict[str, Any]): coordinate observation.
         """
         obs = {}
         robot_matrix = self._env.task.agent.mat
@@ -360,8 +367,8 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
     def _dist_xy(
         self,
-        pos1: np.ndarray | list,
-        pos2: np.ndarray | list,
+        pos1: np.ndarray | list[np.ndarray],
+        pos2: np.ndarray | list[np.ndarray],
     ) -> float:
         """Return the distance from the robot to an XY position.
 
@@ -383,7 +390,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
         """Step the environment.
 
         .. note::
@@ -401,7 +408,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             cost (torch.Tensor): amount of cost returned after previous action.
             terminated (torch.Tensor): whether the episode has ended.
             truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            info (dict[str, Any]): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
         obs_original, reward, cost, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy(),
@@ -440,7 +447,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
+    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment.
 
         Args:
