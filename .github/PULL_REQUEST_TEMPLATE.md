@@ -1,4 +1,4 @@
-## Description
+# Description
 
 Describe your changes in detail.
 
@@ -18,12 +18,6 @@ What types of changes does your code introduce? Put an `x` in all the boxes that
 - [ ] New feature (non-breaking change which adds core functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to change)
 - [ ] Documentation (update in the documentation)
-
-## Implemented Tasks
-
-- [ ] Subtask 1
-- [ ] Subtask 2
-- [ ] Subtask 3
 
 ## Checklist
 
