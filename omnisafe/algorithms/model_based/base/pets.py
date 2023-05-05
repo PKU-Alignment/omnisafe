@@ -170,7 +170,7 @@ class PETS(BaseAlgo):
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
 
-    def learn(self) -> tuple[float, float, int]:
+    def learn(self) -> tuple[float, float, float]:
         """This is main function for algorithm update.
 
         It is divided into the following steps:
@@ -219,7 +219,7 @@ class PETS(BaseAlgo):
 
         ep_ret = self._logger.get_stats('Metrics/EpRet')[0]
         ep_cost = self._logger.get_stats('Metrics/EpCost')[0]
-        ep_len = int(self._logger.get_stats('Metrics/EpLen')[0])
+        ep_len = self._logger.get_stats('Metrics/EpLen')[0]
         self._logger.close()
 
         return ep_ret, ep_cost, ep_len

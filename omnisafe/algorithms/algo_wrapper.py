@@ -162,7 +162,7 @@ class AlgoWrapper:
             cfgs=self.cfgs,
         )
 
-    def learn(self) -> tuple[float, float, int]:
+    def learn(self) -> tuple[float, float, float]:
         """Agent learning.
 
         Returns:
