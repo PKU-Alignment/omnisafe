@@ -37,6 +37,24 @@ class CRR(BaseOffline):
     """
 
     def _init_log(self) -> None:
+        """Log the CRR specific information.
+
+        +-------------------------+----------------------------------------------------+
+        | Things to log           | Description                                        |
+        +=========================+====================================================+
+        | Loss/Loss_reward_critic | Loss of the reward critic.                         |
+        +-------------------------+----------------------------------------------------+
+        | Loss/Loss_actor         | Loss of the actor network.                         |
+        +-------------------------+----------------------------------------------------+
+        | Qr/data_Qr              | Average Q value of offline data.                   |
+        +-------------------------+----------------------------------------------------+
+        | Qr/target_Qr            | Average Q value of next_obs and next_action.       |
+        +-------------------------+----------------------------------------------------+
+        | Qr/current_Qr           | Average Q value of obs and agent predicted action. |
+        +-------------------------+----------------------------------------------------+
+        | Train/PolicyStd         | Standard deviation of the policy.                  |
+        +-------------------------+----------------------------------------------------+
+        """
         super()._init_log()
         what_to_save: Dict[str, Any] = {
             'actor': self._actor,

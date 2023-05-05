@@ -36,6 +36,18 @@ class VAEBC(BaseOffline):
     """
 
     def _init_log(self) -> None:
+        """Log the VAE-BC specific information.
+
+        +-------------------------+----------------------------------------------------+
+        | Things to log           | Description                                        |
+        +=========================+====================================================+
+        | Loss/Loss_vae           | Loss of VAE network                                |
+        +-------------------------+----------------------------------------------------+
+        | Loss/Loss_recon         | Reconstruction loss of VAE network                 |
+        +-------------------------+----------------------------------------------------+
+        | Loss/Loss_kl            | KL loss of VAE network                             |
+        +-------------------------+----------------------------------------------------+
+        """
         super()._init_log()
         what_to_save: Dict[str, Any] = {
             'vae': self._actor,

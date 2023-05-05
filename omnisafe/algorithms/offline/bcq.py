@@ -37,6 +37,28 @@ class BCQ(BaseOffline):
     """
 
     def _init_log(self) -> None:
+        """Log the BCQ specific information.
+
+        +-------------------------+----------------------------------------------------+
+        | Things to log           | Description                                        |
+        +=========================+====================================================+
+        | Loss/Loss_vae           | Loss of VAE network                                |
+        +-------------------------+----------------------------------------------------+
+        | Loss/Loss_recon         | Reconstruction loss of VAE network                 |
+        +-------------------------+----------------------------------------------------+
+        | Loss/Loss_kl            | KL loss of VAE network                             |
+        +-------------------------+----------------------------------------------------+
+        | Loss/Loss_actor         | Loss of the actor network.                         |
+        +-------------------------+----------------------------------------------------+
+        | Loss/Loss_reward_critic | Loss of the reward critic.                         |
+        +-------------------------+----------------------------------------------------+
+        | Qr/data_Qr              | Average Q value of offline data.                   |
+        +-------------------------+----------------------------------------------------+
+        | Qr/target_Qr            | Average Q value of next_obs and next_action.       |
+        +-------------------------+----------------------------------------------------+
+        | Qr/current_Qr           | Average Q value of obs and agent predicted action. |
+        +-------------------------+----------------------------------------------------+
+        """
         super()._init_log()
         what_to_save: Dict[str, Any] = {
             'actor': self._actor,

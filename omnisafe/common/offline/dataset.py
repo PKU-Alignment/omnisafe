@@ -56,7 +56,16 @@ class OfflineDataset(Dataset):
         gpu_threshold: int = 1024,
         device: torch.device = DEVICE_CPU,
     ) -> None:
-        """Initialize the dataset."""
+        """Initialize the dataset.
+
+        Args:
+            dataset_name: The name of the dataset. could be one of the following:
+                - 'SafetyPointCircle1-v0_mixed_0.5'
+                - some local .npz file
+            batch_size: The batch size of the dataset.
+            gpu_threshold: The threshold of size(MB) of the dataset to be loaded on GPU.
+            device: The device to load the dataset.
+        """
         if os.path.exists(dataset_name) and dataset_name.endswith('.npz'):
             # Load data from local .npz file
             try:
@@ -142,7 +151,14 @@ class OfflineDataset(Dataset):
         self,
         idx: int,
     ) -> tuple[torch.Tensor, ...]:
-        """Get a single sample from the dataset."""
+        """Get a single sample from the dataset.
+
+        Args:
+            idx: The index of the sample.
+
+        Returns:
+            A tuple of tensors containing the sample.
+        """
         if self._pre_transfer:
             return (
                 self.obs[idx],
@@ -197,7 +213,16 @@ class OfflineDatasetWithInit(OfflineDataset):
         gpu_threshold: int = 1024,
         device: torch.device = DEVICE_CPU,
     ) -> None:
-        """Initialize the dataset."""
+        """Initialize the dataset.
+
+        Args:
+            dataset_name: The name of the dataset. could be one of the following:
+                - 'SafetyPointCircle1-v0_mixed_0.5'
+                - some local .npz file
+            batch_size: The batch size of the dataset.
+            gpu_threshold: The threshold of size(MB) of the dataset to be loaded on GPU.
+            device: The device to load the dataset.
+        """
         if os.path.exists(dataset_name) and dataset_name.endswith('.npz'):
             # Load data from local .npz file
             try:
@@ -303,7 +328,14 @@ class OfflineDatasetWithInit(OfflineDataset):
         self,
         idx: int,
     ) -> tuple[torch.Tensor, ...]:
-        """Get a single sample from the dataset."""
+        """Get a single sample from the dataset.
+
+        Args:
+            idx: The index of the sample.
+
+        Returns:
+            A tuple of tensors containing the sample.
+        """
         if self._pre_transfer:
             return (
                 self.obs[idx],

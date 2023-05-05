@@ -461,3 +461,5 @@ Doina
 JHeess
 Jost
 Autoencoder
+Qc
+Qr

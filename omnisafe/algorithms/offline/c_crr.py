@@ -37,6 +37,22 @@ class CCRR(CRR):
     """
 
     def _init_log(self) -> None:
+        """Log the C-CRR specific information.
+
+        +----------------------------+---------------------------------------------------------+
+        | Things to log              | Description                                             |
+        +============================+=========================================================+
+        | Loss/Loss_cost_critic      | Loss of the cost critic.                                |
+        +----------------------------+---------------------------------------------------------+
+        | Qc/data_Qc                 | Average cost Q value of offline data.                   |
+        +----------------------------+---------------------------------------------------------+
+        | Qc/target_Qc               | Average cost Q value of next_obs and next_action.       |
+        +----------------------------+---------------------------------------------------------+
+        | Qc/current_Qc              | Average cost Q value of obs and agent predicted action. |
+        +----------------------------+---------------------------------------------------------+
+        | Metrics/LagrangeMultiplier | The Lagrange multiplier.                                |
+        +----------------------------+---------------------------------------------------------+
+        """
         super()._init_log()
 
         self._logger.register_key('Loss/Loss_cost_critic')

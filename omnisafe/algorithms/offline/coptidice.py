@@ -46,6 +46,32 @@ class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
         self._fn, self._fn_inv = self._get_f_divergence_fn(self._cfgs.algo_cfgs.fn_type)
 
     def _init_log(self) -> None:
+        """Log the COptiDICE specific information.
+
+        +----------------------------+--------------------------------------------+
+        | Things to log              | Description                                |
+        +============================+============================================+
+        | Loss/Loss_actor            | Loss of the actor network.                 |
+        +----------------------------+--------------------------------------------+
+        | Loss/Loss_Nu               | Loss of the Nu network, used in CoptiDICE. |
+        +----------------------------+--------------------------------------------+
+        | Loss/Loss_chi              | Loss of the chi network, used in COptiDICE.|
+        +----------------------------+--------------------------------------------+
+        | Loss/Loss_lamb             | Loss of the lambda multiplier.             |
+        +----------------------------+--------------------------------------------+
+        | Loss/Loss_Tau              | Loss of the Tau network, used in COptiDICE.|
+        +----------------------------+--------------------------------------------+
+        | Train/CostUB               | Cost up-bound                              |
+        +----------------------------+--------------------------------------------+
+        | Train/KL_divergence        | kl_divergence used in CotpiDICE.           |
+        +----------------------------+--------------------------------------------+
+        | Train/tau                  | :math:`tau` used in COptiDICE.             |
+        +----------------------------+--------------------------------------------+
+        | Metrics/LagrangeMultiplier | The Lagrange multiplier.                   |
+        +----------------------------+--------------------------------------------+
+        | Metrics/PolicyStd          | The standard deviation of the policy.      |
+        +----------------------------+--------------------------------------------+
+        """
         super()._init_log()
         what_to_save: Dict[str, Any] = {
             'actor': self._actor,

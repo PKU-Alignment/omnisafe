@@ -20,6 +20,9 @@ from types import MappingProxyType
 from omnisafe.algorithms import model_based, off_policy, offline, on_policy
 from omnisafe.algorithms.base_algo import BaseAlgo
 
+# Model-based Safe
+from omnisafe.algorithms.model_based import CAPPETS, CCEPETS, LOOP, PETS, RCEPETS, SafeLOOP
+
 # Off-Policy Safe
 from omnisafe.algorithms.off_policy import DDPG, SAC, TD3, DDPGLag, SACLag, TD3Lag
 
@@ -50,10 +53,6 @@ from omnisafe.algorithms.on_policy import (
     TRPOSaute,
     TRPOSimmerPID,
 )
-
-
-# Model-based Safe
-# from omnisafe.algorithms.model_based import CAP, MBPPOLag, SafeLOOP
 
 
 ALGORITHMS = {

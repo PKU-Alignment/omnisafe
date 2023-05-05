@@ -33,12 +33,7 @@ class BaseOffline(BaseAlgo):
     """Base class for offline algorithms."""
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
-        """Initialize Base Offline Algorithm.
-
-        Args:
-            env_id (str): the id of the environment.
-            cfgs (Config): the configuration for the algorithm.
-        """
+        """Initialize an instance of :class:`BaseOffline`."""
         super().__init__(env_id, cfgs)
 
         self._actor: Actor
@@ -55,6 +50,30 @@ class BaseOffline(BaseAlgo):
         self._env = OfflineAdapter(self._env_id, self._seed, self._cfgs)
 
     def _init_log(self) -> None:
+        """Log info each epoch.
+
+        +----------------+--------------------------------+
+        | Things to log  | Description                    |
+        +================+================================+
+        | Metrics/EpCost | Average cost of the epoch.     |
+        +-------------------------------------------------+
+        | Metrics/EpRet  | Average return of the epoch.   |
+        +-------------------------------------------------+
+        | Metrics/EpLen  | Average length of the epoch.   |
+        +-------------------------------------------------+
+        | Time/Total     | Total time.                    |
+        +-------------------------------------------------+
+        | Time/Epoch     | Time in each epoch.            |
+        +-------------------------------------------------+
+        | Time/Update    | Update time in each epoch.     |
+        +-------------------------------------------------+
+        | Time/Evaluate  | Evaluate time in each epoch.   |
+        +-------------------------------------------------+
+        | Train/Epoch    | Current epoch.                 |
+        +-------------------------------------------------+
+        | TotalSteps     | Total steps of the experiment. |
+        +-------------------------------------------------+
+        """
         self._logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,
             exp_name=self._cfgs.exp_name + f'-{self._cfgs.train_cfgs.dataset}',
