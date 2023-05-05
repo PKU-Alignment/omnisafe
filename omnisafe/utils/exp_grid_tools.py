@@ -65,7 +65,7 @@ def train(
     algo: str,
     env_id: str,
     custom_cfgs: dict[str, Any],
-) -> Tuple[float, float, int]:
+) -> Tuple[float, float, float]:
     """Train a policy from exp-x config with OmniSafe.
 
     Args:
