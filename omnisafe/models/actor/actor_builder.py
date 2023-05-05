@@ -56,7 +56,7 @@ class ActorBuilder:
     def build_actor(
         self,
         actor_type: ActorType,
-    ) -> GaussianLearningActor | GaussianSACActor | MLPActor:
+    ) -> GaussianLearningActor | GaussianSACActor | MLPActor | VAE | PerturbationActor:
         """Build actor network.
 
         Currently, we support the following actor types:

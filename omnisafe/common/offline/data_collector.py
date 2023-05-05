@@ -120,7 +120,7 @@ class OfflineDataCollector:
             obs_normalizer.load_state_dict(model_params['obs_normalizer'])
         else:
 
-            def obs_normalizer(x: torch.Tensor) -> torch.Tensor:
+            def obs_normalizer(x: torch.Tensor) -> torch.Tensor:  # type: ignore
                 return x
 
         actor_type = cfgs['model_cfgs']['actor_type']

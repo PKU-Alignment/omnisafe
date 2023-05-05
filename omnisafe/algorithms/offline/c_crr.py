@@ -61,6 +61,10 @@ class CCRR(CRR):
             .to(self._device)
         )
         self._target_cost_critic = deepcopy(self._cost_critic)
+        assert isinstance(
+            self._cfgs.model_cfgs.critic.lr,
+            float,
+        ), 'The learning rate must be a float number.'
         self._cost_critic_optimizer = optim.Adam(
             self._cost_critic.parameters(),
             lr=self._cfgs.model_cfgs.critic.lr,

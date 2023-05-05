@@ -62,6 +62,10 @@ class CRR(BaseOffline):
             .build_actor('gaussian_learning')
             .to(self._device)
         )
+        assert isinstance(
+            self._cfgs.model_cfgs.actor.lr,
+            float,
+        ), 'The learning rate must be a float number.'
         self._actor_optimizer = optim.Adam(
             self._actor.parameters(),
             lr=self._cfgs.model_cfgs.actor.lr,
@@ -80,6 +84,10 @@ class CRR(BaseOffline):
             .to(self._device)
         )
         self._target_reward_critic = deepcopy(self._reward_critic)
+        assert isinstance(
+            self._cfgs.model_cfgs.critic.lr,
+            float,
+        ), 'The learning rate must be a float number.'
         self._reward_critic_optimizer = optim.Adam(
             self._reward_critic.parameters(),
             lr=self._cfgs.model_cfgs.critic.lr,

@@ -62,6 +62,10 @@ class BCQ(BaseOffline):
             weight_initialization_mode=self._cfgs.model_cfgs.weight_initialization_mode,
         ).to(self._device)
         self._actor.phi = self._cfgs.algo_cfgs.phi
+        assert isinstance(
+            self._cfgs.model_cfgs.actor.lr,
+            float,
+        ), 'The learning rate of actor must be a float number.'
         self._actor_optimizer = optim.Adam(
             self._actor.perturbation.parameters(),
             lr=self._cfgs.model_cfgs.actor.lr,
@@ -84,6 +88,10 @@ class BCQ(BaseOffline):
             .to(self._device)
         )
         self._target_reward_critic = deepcopy(self._reward_critic)
+        assert isinstance(
+            self._cfgs.model_cfgs.critic.lr,
+            float,
+        ), 'The learning rate of actor must be a float number.'
         self._reward_critic_optimizer = optim.Adam(
             self._reward_critic.parameters(),
             lr=self._cfgs.model_cfgs.critic.lr,

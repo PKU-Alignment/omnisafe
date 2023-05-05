@@ -76,6 +76,10 @@ class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
             .build_actor('gaussian_learning')
             .to(self._device)
         )
+        assert isinstance(
+            self._cfgs.model_cfgs.actor.lr,
+            float,
+        ), 'The learning rate must be a float number.'
         self._actor_optimizer = optim.Adam(
             self._actor.parameters(),
             lr=self._cfgs.model_cfgs.actor.lr,
@@ -238,7 +242,7 @@ class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
         self._actor_optimizer.step()
 
         self.logger.store(
-            **{
+            {
                 'Loss/Loss_actor': policy_loss.item(),
                 'Train/PolicyStd': self._actor.std,
             },
