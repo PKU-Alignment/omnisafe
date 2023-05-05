@@ -441,6 +441,7 @@ def test_offline(algo):
         },
         'algo_cfgs': {
             'batch_size': 10,
+            'steps_per_epoch': 2,
         },
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)

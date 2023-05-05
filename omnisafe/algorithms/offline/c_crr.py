@@ -44,7 +44,6 @@ class CCRR(CRR):
         self._logger.register_key('Qc/target_Qc')
         self._logger.register_key('Qc/current_Qc')
         self._logger.register_key('Metrics/LagrangeMultiplier')
-        self._logger.register_key('Train/PolicyStd')
 
     def _init_model(self) -> None:
         super()._init_model()
