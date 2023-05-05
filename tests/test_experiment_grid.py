@@ -91,7 +91,6 @@ def test_modelbased_experiment_grid():
 
 def teardown_module():
     """teardown_module."""
-
     base_path = os.path.dirname(os.path.abspath(__file__))
 
     # remove exp-x folder

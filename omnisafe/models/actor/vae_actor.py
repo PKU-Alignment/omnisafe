@@ -26,7 +26,19 @@ from omnisafe.utils.model import build_mlp_network
 
 
 class VAE(Actor):
-    """Class for VAE."""
+    """Class for VAE.
+
+    VAE is a variational auto-encoder. It is used in offline algorithms such as ``BCQ`` and so on.
+
+    Args:
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
+        hidden_sizes (list): List of hidden layer sizes.
+        latent_dim (Optional[int]): Latent dimension, if None, latent_dim = act_dim * 2.
+        activation (Activation): Activation function.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
+    """
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -36,16 +48,7 @@ class VAE(Actor):
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize VAE.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list): List of hidden layer sizes.
-            latent_dim (Optional[int]): Latent dimension, if None, latent_dim = act_dim * 2.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-        """
+        """Initialize an instance of :class:`VAE`."""
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
         self._latent_dim = self._act_dim * 2
 
@@ -63,21 +66,44 @@ class VAE(Actor):
         self.add_module('decoder', self._decoder)
 
     def encode(self, obs: torch.Tensor, act: torch.Tensor) -> Normal:
-        """Encode observation to latent space."""
+        """Encode observation to latent distribution.
+
+        Args:
+            obs (torch.Tensor): Observation.
+            act (torch.Tensor): Action.
+
+        Returns:
+            Normal: Latent distribution.
+        """
         latent = self._encoder(torch.cat([obs, act], dim=-1))
         mean, log_std = torch.chunk(latent, 2, dim=-1)
         log_std = torch.clamp(log_std, min=-20, max=2)
         return Normal(mean, log_std.exp())
 
     def decode(self, obs: torch.Tensor, latent: Optional[torch.Tensor] = None) -> torch.Tensor:
-        """Decode latent space to action."""
+        """Decode latent vector to action.
+
+        When ``latent`` is None, sample latent vector from standard normal distribution.
+
+        Args:
+            obs (torch.Tensor): Observation.
+            latent (Optional[torch.Tensor], optional): Latent vector. Defaults to None.
+
+        Returns:
+            torch.Tensor: Action.
+        """
         if latent is None:
             latent = Normal(0, 1).sample([obs.shape[0], self._latent_dim]).to(obs.device)
 
         return self._decoder(torch.cat([obs, latent], dim=-1))
 
     def loss(self, obs: torch.Tensor, act: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Compute loss for VAE."""
+        """Compute loss for VAE.
+
+        Args:
+            obs (torch.Tensor): Observation.
+            act (torch.Tensor): Action.
+        """
         dist = self.encode(obs, act)
         latent = dist.rsample()
         pred_act = self.decode(obs, latent)
@@ -89,7 +115,7 @@ class VAE(Actor):
         raise NotImplementedError
 
     def forward(self, obs: torch.Tensor) -> Distribution:
-        """Predict action from observation."""
+        """Forward is not used in this method, it is just for compatibility."""
         raise NotImplementedError
 
     def predict(  # pylint: disable=unused-argument
@@ -97,9 +123,20 @@ class VAE(Actor):
         obs: torch.Tensor,
         deterministic: bool = False,
     ) -> torch.Tensor:
-        """Predict action from observation."""
+        """Predict the action given observation.
+
+        deterministic if not used in VAE model. VAE actor's default behavior is stochastic,
+        sampling from the latent standard normal distribution.
+
+        Args:
+            obs (torch.Tensor): Observation from environments.
+            deterministic (bool, optional): Whether to use deterministic policy. Defaults to False.
+
+        Returns:
+            torch.Tensor: Predicted action.
+        """
         return self.decode(obs)
 
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
-        """Predict action from observation."""
+        """log_prob is not used in this method, it is just for compatibility."""
         raise NotImplementedError

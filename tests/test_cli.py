@@ -114,7 +114,6 @@ def test_analyze_grid():
 
 def teardown_module():
     """teardown_module."""
-
     # remove the train_dict folder
     path = os.path.join(base_path, './train_dict')
     if os.path.exists(path):

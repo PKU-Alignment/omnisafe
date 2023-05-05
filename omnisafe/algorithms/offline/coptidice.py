@@ -23,7 +23,7 @@ from omnisafe.algorithms import registry
 from omnisafe.algorithms.offline.base import BaseOffline
 from omnisafe.common.offline.dataset import OfflineDatasetWithInit
 from omnisafe.models.actor.actor_builder import ActorBuilder
-from omnisafe.models.offline import ObsDecoder
+from omnisafe.models.offline import ObsEncoder
 
 
 @registry.register
@@ -85,7 +85,7 @@ class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
             lr=self._cfgs.model_cfgs.actor.lr,
         )
 
-        self._nu_net = ObsDecoder(
+        self._nu_net = ObsEncoder(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
             hidden_sizes=self._cfgs.model_cfgs.nu.hidden_sizes,
@@ -98,7 +98,7 @@ class COptiDICE(BaseOffline):  # pylint: disable=too-many-instance-attributes
             lr=self._cfgs.model_cfgs.nu.lr,
         )
 
-        self._chi_net = ObsDecoder(
+        self._chi_net = ObsEncoder(
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
             hidden_sizes=self._cfgs.model_cfgs.chi.hidden_sizes,

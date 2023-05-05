@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of model DICE algo family."""
+"""Implementation of model in DICE algo family."""
 
 from __future__ import annotations
 
@@ -24,8 +24,22 @@ from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
 from omnisafe.utils.model import build_mlp_network
 
 
-class ObsDecoder(nn.Module):
-    """Abstract base class for observation decoder."""
+class ObsEncoder(nn.Module):
+    """Implementation of observation encoder.
+
+    Observation encoder is used to encode observation into a latent vector.
+    It is similar to the QCritic, but the output dimension is not limited to 1.
+    DICE-based algorithms often use the network like this to encode observation.
+
+    Args:
+        obs_space (OmnisafeSpace): observation space.
+        act_space (OmnisafeSpace): action space.
+        hidden_sizes (list of int): List of hidden layer sizes.
+        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
+        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
+            ``'kaiming_uniform'``.
+        out_dim (int, optional): Output dimension. Defaults to 1.
+    """
 
     # pylint: disable-next=too-many-arguments
     def __init__(
@@ -37,16 +51,7 @@ class ObsDecoder(nn.Module):
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
         out_dim: int = 1,
     ) -> None:
-        """Initialize decoder.
-
-        Args:
-            obs_space (OmnisafeSpace): Observation space.
-            act_space (OmnisafeSpace): Action space.
-            hidden_sizes (list): List of hidden layer sizes.
-            activation (Activation): Activation function.
-            weight_initialization_mode (InitFunction): Weight initialization mode.
-            out_dim (int): Output dimension.
-        """
+        """Initialize an instance of :class:`ObsEncoder`."""
         nn.Module.__init__(self)
 
         if isinstance(obs_space, spaces.Box) and len(obs_space.shape) == 1:
@@ -70,13 +75,12 @@ class ObsDecoder(nn.Module):
         )
 
     def forward(self, obs: torch.Tensor) -> torch.Tensor:
-        """Forward pass.
+        """Forward function.
+
+        When ``out_dim`` is 1, the output is squeezed to remove the last dimension.
 
         Args:
             obs (torch.Tensor): Observation.
-
-        Returns:
-            torch.Tensor: Decoded observation.
         """
         if self._out_dim == 1:
             return self.net(obs).squeeze(-1)

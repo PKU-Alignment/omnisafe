@@ -508,7 +508,6 @@ def test_std_anealing():
 
 def teardown_module():
     """teardown_module."""
-
     # remove runs folder
     current_path = os.path.dirname(os.path.abspath(__file__))
     runs_path = os.path.join(current_path, 'runs')

@@ -27,7 +27,21 @@ from omnisafe.utils.config import Config
 
 
 class OfflineAdapter:
-    """Offline Adapter for OmniSafe."""
+    """Offline Adapter for OmniSafe.
+
+    :class:`OfflineAdapter` is used to adapt the environment to the offline training.
+
+    .. note::
+        Technically, Offline training doesn't need env to interact with the agent.
+        However, to visualize the performance of the agent when training,
+        we still need instantiate a environment to evaluate the agent.
+        OfflineAdapter provide an important interface ``evaluate`` to test the agent.
+
+    Args:
+        env_id (str): The environment id.
+        seed (int): The random seed.
+        cfgs (Config): The configuration.
+    """
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -35,13 +49,7 @@ class OfflineAdapter:
         seed: int,
         cfgs: Config,
     ) -> None:
-        """Initialize Offline Adapter.
-
-        Args:
-            env_id (str): the id of the environment.
-            seed (int): the seed for the environment.
-            cfgs (Config): the configuration for the environment.
-        """
+        """Initialize a instance of :class:`OfflineAdapter`."""
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
         self._env_id = env_id
@@ -57,31 +65,40 @@ class OfflineAdapter:
 
     @property
     def action_space(self) -> OmnisafeSpace:
-        """The action space of the environment.
-
-        Returns:
-            OmnisafeSpace: the action space.
-        """
+        """The action space of the environment."""
         return self._env.action_space
 
     @property
     def observation_space(self) -> OmnisafeSpace:
-        """The observation space of the environment.
-
-        Returns:
-            OmnisafeSpace: the observation space.
-        """
+        """The observation space of the environment."""
         return self._env.observation_space
 
     def step(
         self,
         actions: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
-        """Take a step in the environment."""
+        """Run one timestep of the environment's dynamics using the agent actions.
+
+        Args:
+            action (torch.Tensor): The action from the agent or random.
+
+        Returns:
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
+        """
         return self._env.step(actions)
 
     def reset(self) -> Tuple[torch.Tensor, Dict]:
-        """Reset the environment."""
+        """Reset the environment and returns an initial observation.
+
+        Returns:
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
+        """
         return self._env.reset()
 
     def evaluate(
