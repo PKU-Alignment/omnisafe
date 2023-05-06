@@ -22,19 +22,21 @@ TRPO Theorem
 Background
 ~~~~~~~~~~
 
-**Trust region policy optimization (TRPO)** is an iterative method for policy
-optimization that guarantees monotonic improvements. TRPO iteratively finds an
-excellent local approximation to the objective return and maximizes the
-approximated function. The new policy should be constrained within a trust
-region concerning the current policy by applying KL divergence to measure the
-distance between the two policies to ensure the surrogate function is a good
+**Trust region policy optimization (TRPO)** is an iterative method for
+optimizing policies in reinforcement learning that ensures monotonic
+improvements. It works by iteratively finding a good local approximation of the
+objective return and maximizing the approximated function. However, the new
+policy should be constrained within a trust region relative to the current
+policy, which is achieved by using KL divergence to measure the distance
+between the two policies and ensure that the surrogate function is a good
 approximation.
 
-TRPO can be applied to comprehensive nonlinear policies such as neural
-networks. Based on **Natural Policy Gradient (NPG)**,, TRPO uses methods like
-the conjugate gradient to avoid the expensive computational cost. Moreover, it
-also performs a line search to keep policy updating within the fixed KL
-divergence constraint.
+TRPO is well-suited for optimizing comprehensive nonlinear policies such as
+neural networks. It is based on the **Natural Policy Gradient (NPG)** method,
+which uses techniques like conjugate gradient to avoid expensive computational
+costs. Additionally, TRPO performs a line search to ensure that policy updates
+remain within the fixed KL divergence constraint.
+
 
 .. grid:: 2
 
@@ -72,10 +74,11 @@ divergence constraint.
 
 Performance difference over policies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-In policy optimization, we want to make every update that monotonically
-guarantees the expected return increase.
-It is intuitive to construct the equation of expected return in the following
-form:
+
+In policy optimization, our goal is to ensure that each update results in a
+monotonic increase in expected return. To achieve this, we typically construct
+the equation for expected return in a particular form, which is intuitive and
+easy to work with:
 
 .. math::
     :label: trpo-eq-1
@@ -154,7 +157,7 @@ negative, that is,
 Surrogate function for the objective
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:eq:`trpo-eq-3` requires knowledge about future state distribution under
+:eq:`trpo-eq-3` requires information about future state distribution under
 :math:`\pi'`,
 which is usually unknown and difficult to estimate.
 The complex dependency of :math:`d_{\pi'}(s)` on :math:`\pi'` makes
@@ -550,7 +553,7 @@ Quick start
         .. tab-item:: Terminal config style
 
             We use ``train_policy.py`` as the entrance file. You can train the agent with TRPO simply using ``train_policy.py``, with arguments about TRPO and environments does the training.
-            For example, to run TRPO in SafetyPointGoal1-v0 , with 1 torch thread and seed 0, you can use the following command:
+            For example, to run TRPO in SafetyPointGoal1-v0 , with 1 torch thread, seed 0 and single environment, you can use the following command:
 
             .. code-block:: bash
                 :linenos:
@@ -595,11 +598,11 @@ Documentation of algorithm specific functions
 
             trpo._fvp()
             ^^^
-            TRPO algorithm Builds the Hessian-vector product instead of the full Hessian matrix based on an approximation of the KL-divergence,
+            TRPO algorithm builds the Hessian-vector product instead of the full Hessian matrix based on an approximation of the KL-divergence,
             flowing the next steps:
 
             (1) Calculate the KL divergence between two policy.
-                Note that ``self.ac.pi`` denotes the actor :math:`\pi` and ``kl`` denotes the KL divergence.
+                Note that ``self._actor_critic.actor`` denotes the actor :math:`\pi` and ``kl`` denotes the KL divergence.
 
             .. code-block:: python
                 :linenos:
@@ -616,11 +619,19 @@ Documentation of algorithm specific functions
             .. code-block:: python
                 :linenos:
 
-                grads = torch.autograd.grad(kl, self._actor_critic.actor.parameters(), create_graph=True)
+                grads = torch.autograd.grad(
+                    kl,
+                    tuple(self._actor_critic.actor.parameters()),
+                    create_graph=True,
+                )
                 flat_grad_kl = torch.cat([grad.view(-1) for grad in grads])
 
                 kl_p = (flat_grad_kl * params).sum()
-                grads = torch.autograd.grad(kl_p, self._actor_critic.actor.parameters(), retain_graph=False)
+                grads = torch.autograd.grad(
+                    kl_p,
+                    tuple(self._actor_critic.actor.parameters()),
+                    retain_graph=False,
+                )
 
             (3) return the Hessian-vector product.
 
@@ -650,10 +661,10 @@ Documentation of algorithm specific functions
             .. code-block:: python
                 :linenos:
 
-                x = torch.zeros_like(b_vector)
-                r = b_vector - Fvp(x)
-                p = r.clone()
-                rdotr = torch.dot(r, r)
+                vector_x = torch.zeros_like(vector_b)
+                vector_r = vector_b - fisher_product(vector_x)
+                vector_p = vector_r.clone()
+                rdotr = torch.dot(vector_r, vector_r)
 
             (2) Performs ``n_step`` conjugate gradient.
 
@@ -661,17 +672,17 @@ Documentation of algorithm specific functions
                 :linenos:
 
                 for _ in range(num_steps):
-                    z = Avp(p)
-                    alpha = rdotr / (torch.dot(p, z) + eps)
-                    x += alpha * p
-                    r -= alpha * z
-                    new_rdotr = torch.dot(r, r)
+                    vector_z = fisher_product(vector_p)
+                    alpha = rdotr / (torch.dot(vector_p, vector_z) + eps)
+                    vector_x += alpha * vector_p
+                    vector_r -= alpha * vector_z
+                    new_rdotr = torch.dot(vector_r, vector_r)
                     if torch.sqrt(new_rdotr) < residual_tol:
                         break
-                    mu = new_rdotr / (rdotr + eps)
-                    p = r + mu * p
+                    vector_mu = new_rdotr / (rdotr + eps)
+                    vector_p = vector_r + vector_mu * vector_p
                     rdotr = new_rdotr
-                return x
+                return vector_x
 
             (3) Return the solution of :math:`x` without computing :math:`x=H^{-1}g`.
 

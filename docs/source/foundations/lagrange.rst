@@ -25,9 +25,9 @@ We define its Lagrangian as:
 Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
 .. note::
-
-    This expression may be so complex that you won't immediately understand
-    what it means. Don't worry, we'll explain how it can be used to solve the constrained optimization problem in Problem :eq:`preknow-eq-1`.
+    This expression may appear complex and difficult to understand at first
+    glance. However, we will provide a detailed explanation of how it can be
+    utilized to solve the constrained optimization problem presented in Problem :eq:`preknow-eq-1`.
 
 .. tab-set::
 
@@ -100,7 +100,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
             :math:`\theta_p(x)\rightarrow +\infty` as :math:`u_i\rightarrow +\infty`
             or :math:`v_jh_j(x)\rightarrow +\infty`. So in total, if :math:`f^*`
             violates the constraints, it will not be the optimal value of the primal
-            problem. Thus we obtain :math:`f^*=\underset{x}{\text{min}}\quad \theta_p(x)`
+            problem. Thus we obtain :math:`f^*=\underset{x}{\text{min}}\theta_p(x)`
             if :math:`f^*` is the optimal value of the primal problem.
 
 Dual Problem
@@ -126,7 +126,7 @@ define its Lagrange dual problem as:
 
 From the definitions we easily obtain that the optimal value of the dual
 problem, named as :math:`g^*`, satisfies:
-:math:`g^*=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}}\quad L(x,u,v)`.
+:math:`g^*=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}}L(x,u,v)`.
 
 .. grid:: 2
 
@@ -160,17 +160,19 @@ problem, named as :math:`g^*`, satisfies:
 Strong and Week Duality
 -----------------------
 
-In the above introduction, we learned about the definition of primal and dual
-problems. You may find that the dual problem has a suitable property,
-that it is convex.
+In the previous section, we learned about the definition of primal and dual
+problems. You may have noticed that the dual problem has a useful property, it
+is convex.
 
 .. note::
 
-    The naive idea is that since the dual problem is convex,
-    that is, convenient to solve, can the solution of the primal problem be converted to the solution of the dual problem?
+    The natural question that arises is whether the solution to the primal
+    problem can be obtained by solving the dual problem, since the latter is
+    easier to solve.
 
-We will discuss the weak and strong duality to show you the connection between
-the primal and dual problems.
+To answer this question, we need to understand the concepts of weak and strong
+duality. These concepts will allow us to establish a connection between the
+primal and dual problems.
 
 .. tab-set::
 
@@ -231,10 +233,10 @@ the primal and dual problems.
 Summary
 -------
 
-In this section we introduce you to the Lagrange method, which converts
-the solution of a constrained optimization problem into a solution to an
-unconstrained optimization problem. We also introduce that under certain
-conditions, the solution of a complex primal problem can also be
-converted to a relatively simple solution of a dual problem. Safe RL
-algorithms are essentially solutions to constrained problems, so the
-Lagrange method is an important basis for many of these algorithms.
+This section introduces the Lagrange method, a powerful tool that allows us to
+convert a constrained optimization problem into an unconstrained optimization
+problem. In addition, under certain conditions, the solution of a complex
+primal problem can be converted to a relatively simple solution of a dual
+problem. Safe RL algorithms are essentially solutions to constrained problems,
+so understanding the Lagrange method is crucial to understanding many of these
+algorithms.

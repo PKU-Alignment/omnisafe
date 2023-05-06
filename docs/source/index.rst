@@ -17,8 +17,8 @@ Welcome To OmniSafe Tutorial
     :scale: 45%
 
 Welcome to `OmniSafe <https://jmlr.org/papers/v16/garcia15a.html>`_ in Safe RL!
-OmniSafe is a comprehensive and reliable benchmark for safe reinforcement
-learning (RL), encompassing more than 40 different kinds of algorithms covering
+OmniSafe is a comprehensive and dependable benchmark for safe reinforcement
+learning (RL), including over 40 different types of algorithms, covering
 a multitude of safe reinforcement learning (Safe RL) domains.
 
 .. hint::
@@ -39,7 +39,7 @@ a multitude of safe reinforcement learning (Safe RL) domains.
 
         For Beginners
         ^^^^^^^^^^^^^
-        If you are a beginner in machine learning with only some simple knowledge of linear algebra and probability theory, you can start with the mathematical fundamentals section of this tutorial.
+        If you have only basic knowledge of linear algebra and probability theory and are new to machine learning, we recommend starting with the mathematical fundamentals section of this tutorial.
 
     .. grid-item-card::
         :class-item: sd-font-weight-bold
@@ -59,39 +59,41 @@ a multitude of safe reinforcement learning (Safe RL) domains.
 
         For Experts
         ^^^^^^^^^^^
-        If you are already an expert in the field of RL, you can also gain new insights from our systematic introduction to Safe RL algorithms.
-        Also, this tutorial will allow you to design your algorithms using OmniSafe quickly.
+        If you are already an expert in the field of RL, our tutorial can still offer you new insights with its systematic introduction to Safe RL algorithms. Furthermore, it will enable you to quickly design your own algorithms using OmniSafe.
 
 
 Why We Built This
 -----------------
 
 In recent years, `RL`_ (Reinforcement Learning) algorithms,
-especially `Deep RL`_ algorithms, have performed well in many tasks.
-Examples include:
+especially `Deep RL`_ algorithms, have demonstrated remarkable performance in
+various tasks.
+Notable examples include:
 
-- Achieving high scores on Atari games with only visual input.
+- Achieving high scores on Atari games using only visual input.
 - Completing complex control tasks in high dimensions.
 - Beating human grandmasters at Go tournaments.
 
-However, in the process of policy updating by RL, the agents often learn
+However, during the policy updating process in RL, agents often learn to
 **cheating or even dangerous behaviors** to improve their performance.
 
-Such an agent that can quickly achieve high scores but differs from our desired
-result.
+Such agents may achieve high scores quickly but may not align with the desired
+outcome.
 
-Therefore, Safe RL algorithms are dedicated to solving the problem of how to
-train an agent to achieve the desired training goal without violating
-constraints simultaneously.
+Therefore, Safe RL algorithms aim to address the challenge of training agents
+to achieve the desired training goal without violating any constraints or
+safety requirements.
 
 .. admonition:: However
     :class: warning
 
-    Even experienced RL researchers have difficulty understanding Safe RL's algorithms in a short time and quickly programming their implementation.
+    Even researchers with experience in RL may find it challenging to
+    understand the algorithms of Safe RL quickly and program their
+    implementation efficiently.
 
-Therefore, OmniSafe will facilitate the subsequent study of Safe RL by
-providing both a **detailed and systematic introduction to the algorithm** and
-a **streamlined and robust code**.
+To address this issue, OmniSafe aims to provide a comprehensive and systematic
+introduction to Safe RL algorithms, along with streamlined and robust code,
+making it easier for researchers to delve into Safe RL.
 
 .. tab-set::
 
@@ -105,8 +107,11 @@ a **streamlined and robust code**.
 
             Puzzling Math
             ^^^^^^^^^^^^^
-            Safe RL algorithms are a class of algorithms built on a rigorous mathematical system.
-            These algorithms have a detailed theoretical derivation, but they lack a unified symbolic system, which makes it difficult for beginners to learn them systematically and comprehensively.
+            Safe RL algorithms are a class of algorithms that are based on a
+            rigorous mathematical foundation. Although these algorithms have
+            detailed theoretical derivations, they lack a unified symbolic
+            system, which can make it difficult for beginners to learn them
+            systematically and comprehensively.
 
     .. tab-item:: Problem II
         :sync: key2
@@ -118,7 +123,12 @@ a **streamlined and robust code**.
 
             Hard-to-find Codes
             ^^^^^^^^^^^^^^^^^^
-            Most of the existing Safe RL algorithms **do not have open-source code**, making it difficult for beginners to grasp the ideas of the algorithms at the code level, and researchers suffer from incorrect implementations, unfair comparisons, and misleading conclusions.
+            Most of the existing Safe RL algorithms do not have **open-source**
+            code available, which makes it difficult for beginners to
+            understand the algorithms at the code level. Furthermore,
+            researchers may encounter issues such as incorrect implementations,
+            unfair comparisons, and misleading conclusions, which could have
+            been avoided with open-source code.
 
 .. tab-set::
 
@@ -132,7 +142,9 @@ a **streamlined and robust code**.
 
             Friendly Math
             ^^^^^^^^^^^^^
-            OmniSafe tutorial provides a **unified and standardized notation system** that allows beginners to learn the theory of Safe RL algorithms completely and systematically.
+            OmniSafe tutorial offers a **standardized notation system** that
+            enables beginners to acquire a complete and systematic
+            understanding of the theory behind Safe RL algorithms.
 
     .. tab-item:: Solution II
         :sync: key2
@@ -144,9 +156,12 @@ a **streamlined and robust code**.
 
             Robust Code
             ^^^^^^^^^^^
-            The OmniSafe tutorial gives a **code-level** introduction in each algorithm introduction.
-            Learners new to Safe RL theory can understand how to connect algorithm ideas with code.
-            Experts can get unique insights into Safe RL from algorithm implementation.
+            The OmniSafe tutorial provides **a comprehensive introduction** to
+            each algorithm, including a detailed explanation of the code
+            implementation. Beginners can easily understand the connection
+            between the algorithmic concepts and the code, while experts can
+            gain valuable insights into Safe RL by studying the code-level
+            details of each algorithm.
 
 
 .. _`RL`: https://en.wikipedia.org/wiki/Reinforcement_learning
@@ -167,8 +182,10 @@ Code Design Principles
 
         Consistent and Inherited
         ^^^^^^^^^^^^^^^^^^^^^^^^
-        Our code has a complete logic system that allows you to understand the connection between each algorithm.
-        For example, if you understand the Policy Gradient algorithm, then you can learn the PPO algorithm by simply reading a new function and immediately grasping the code implementation of the PPO algorithm.
+        Our code follows a comprehensive and logical system, enabling users to
+        understand the interconnection between each algorithm. For instance, if
+        one comprehends the Policy Gradient algorithm, they can quickly grasp
+        the code implementation of the PPO algorithm by reading a new function.
 
     .. grid-item-card::
         :class-item: sd-font-weight-bold
@@ -178,9 +195,13 @@ Code Design Principles
 
         Robust and Readable
         ^^^^^^^^^^^^^^^^^^^^
-        Our code can play the role of both a tutorial and a tool.
-        If you want to learn algorithms' implementations in Safe RL, the highly readable code in OmniSafe can help you get started quickly.
-        You can see how each algorithm performs.If you want to build your algorithms, OmniSafe's highly inherited code can also be an excellent tool!
+        Our code not only serves as a tutorial but also as a practical tool.
+        For those who want to learn about the implementation of Safe RL
+        algorithms, the highly readable code in OmniSafe provides an easy and
+        quick way to get started. Users can observe how each algorithm performs
+        and gain insights into their implementation. Moreover, for those who
+        want to develop their algorithms, OmniSafe's **highly modular and
+        reusable** code can be an excellent resource.
 
     .. grid-item-card::
         :class-item: sd-font-weight-bold
@@ -190,10 +211,11 @@ Code Design Principles
 
         Long-lived
         ^^^^^^^^^^^^^^^^^^^^^^^^^^
-        Unlike other code that relies on a large number of external libraries, OmniSafe minimizes the dependency on third-party libraries.
-        This avoids shortening the life of the project due to iterative changes in third-party library code,
-        and also optimizes the user's experience in installing and using OmniSafe,
-        because they do not have to install lots of dependencies to run OmniSafe.
+        Unlike other codes that heavily rely on external libraries, OmniSafe
+        minimizes its dependency on third-party libraries. This design
+        prevents the project from becoming obsolete due to changes in the
+        third-party library code, and optimizes the user experience by reducing
+        the number of dependencies that need to be installed to run OmniSafe.
 
 Before Reading
 --------------

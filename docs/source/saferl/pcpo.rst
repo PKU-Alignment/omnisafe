@@ -21,30 +21,34 @@ PCPO Theorem
 Background
 ~~~~~~~~~~
 
-**Projection-Based Constrained Policy Optimization (PCPO)** is an iterative
-method for optimizing policy in a two-stage process: the first stage performs a
-local reward improvement update. In contrast, the second stage reconciles any
-constraint violation by projecting the policy back onto the constraint set.
+**Projection-Based Constrained Policy Optimization (PCPO)** is a two-stage
+iterative method for optimizing policies. The first stage involves a local
+reward improvement update, while the second stage reconciles any constraint
+violation by projecting the policy back onto the constraint set.
 
-PCPO is an improvement work based on **CPO** (:doc:`../saferl/cpo`). It
-provides a lower bound on reward improvement and an upper bound on constraint
-violation for each policy update, just like CPO. PCPO further characterizes the
-convergence of PCPO based on two metrics: :math:`L2` norm and :math:`KL`
-divergence.
-In a word, PCPO is a CPO-based algorithm dedicated to solving the problem of
-learning control policies that optimize a reward function while satisfying
-constraints due to considerations of safety, fairness, or other costs.
+PCPO is an improvement work based on **CPO** (:doc:`../saferl/cpo`),
+which also provides lower bounds on reward improvement and upper bounds on
+constraint violation.
+
+In addition to these guarantees, PCPO characterizes its convergence based on
+two metrics: :math:`L2` norm and :math:`KL` divergence. It is designed to
+address the challenge of learning control policies that optimize a reward
+function while satisfying constraints, which is important for ensuring safety,
+fairness, or other considerations.
 
 .. hint::
 
-    If you have not previously learned the CPO type of algorithm, to facilitate your complete understanding of the PCPO algorithm ideas introduced in this section, we strongly recommend that you read this article after reading the CPO tutorial (:doc:`./cpo`) we wrote.
+    If you are new to the CPO family of algorithms, we recommend reading CPO
+    tutorial (:doc:`./cpo`) to fully understand the concepts
+    introduced in this section.
 
 ------
 
 Optimization Objective
 ~~~~~~~~~~~~~~~~~~~~~~
 
-In the previous chapters, you learned that CPO solves the following optimization problems:
+In the previous chapters, you learned that CPO solves the following
+optimization problems:
 
 .. math::
     :label: pcpo-eq-1
@@ -56,9 +60,12 @@ In the previous chapters, you learned that CPO solves the following optimization
 
 where :math:`\Pi_{\theta}\subseteq\Pi` denotes the set of parametrized policies
 with parameters :math:`\theta`, and :math:`D` is some distance measure.
-In local policy search for CMDPs, we additionally require policy iterates to be feasible for the CMDP, so instead of optimizing over :math:`\Pi_{\theta}`, PCPO optimizes over :math:`\Pi_{\theta}\cap\Pi_{C}`.
+In local policy search for CMDPs, we additionally require policy iterates to be
+feasible, so instead of optimizing over :math:`\Pi_{\theta}`, PCPO optimizes
+over :math:`\Pi_{\theta}\cap\Pi_{C}`.
 Next, we will introduce you to how PCPO solves the above optimization problems.
-For you to have a clearer understanding, we hope that you will read the next section with the following questions:
+For you to have a clearer understanding, we hope that you will read the next
+section with the following questions:
 
 .. card::
     :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
@@ -80,7 +87,7 @@ Two-stage Policy Update
 PCPO performs policy updates in **two stages**. The first stage
 is :bdg-ref-info-line:`Reward Improvement Stage<two stage update>`,
 which maximizes reward using a trust region optimization method without
-constraints. This might result in a new intermediate policy that fails to
+constraints. This might results in a new intermediate policy that fails to
 satisfy the constraints. The second stage,
 named :bdg-ref-info-line:`Projection Stage<two stage update>`,
 reconciles the constraint violation (if any) by projecting the policy back onto
@@ -101,7 +108,7 @@ completes the two-stage update.
 
             Reward Improvement Stage
             ^^^
-            First, PCPO optimizes the reward function by maximizing the reward advantage function :math:`A_{\pi}(s,a)` subject to :math:`KL`-Divergence constraint.
+            First, PCPO optimizes the reward function by maximizing the reward advantage function :math:`A^R_{\pi}(s,a)` subject to :math:`KL`-Divergence constraint.
             This constraints the intermediate policy :math:`\pi_{k+\frac12}` to be within a :math:`\delta`-neighborhood of :math:`\pi_{k}`:
 
             .. math::
@@ -168,7 +175,7 @@ the constraint, PCPO provides worst-case performance bound respectively.
             Worst-case Bound on Updating Constraint-satisfying Policies
             ^^^
             Define :math:`\epsilon_{\pi_{k+1}}^{R}\doteq \max\limits_{s}\big|\mathbb{E}_{a\sim\pi_{k+1}}[A^{R}_{\pi_{k}}(s,a)]\big|`, and :math:`\epsilon_{\pi_{k+1}}^{C}\doteq \max\limits_{s}\big|\mathbb{E}_{a\sim\pi_{k+1}}[A^{C}_{\pi_{k}}(s,a)]\big|`.
-            If the current policy :math:`\pi_k` satisfies the constraint, then under :math:`KL` divergence projection, the lower bound on reward improvement, and upper bound on constraint violation for each policy update are
+            If the current policy :math:`\pi_k` satisfies the constraint, then under :math:`KL` divergence projection, the lower bound on reward improvement, and upper bounds on constraint violation for each policy update are
 
             .. math::
                 :label: pcpo-eq-4
@@ -214,12 +221,12 @@ Practical Implementation
 Implementation of a Two-stage Update
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For a large neural network policy with hundreds of thousands of parameters,
+For a large neural network policy with thousands of parameters,
 directly solving for the PCPO update in :eq:`pcpo-eq-2` and :eq:`pcpo-eq-3` is
 impractical due to the computational cost.
 PCPO proposes that with a small step size :math:`\delta`, the reward function
-and constraints and the :math:`KL` divergence constraint in the reward
-improvement step can be approximated with a first-order expansion, while the KL
+and the :math:`KL` divergence constraint in the reward improvement step can
+be approximated with a first-order expansion, while the KL
 divergence measure in the projection step can also be approximated with a
 second-order expansion.
 
@@ -498,7 +505,7 @@ Quick start
         .. tab-item:: Terminal config style
 
             We use ``train_policy.py`` as the entrance file. You can train the agent with PCPO simply using ``train_policy.py``, with arguments about PCPO and environments does the training.
-            For example, to run PCPO in SafetyPointGoal1-v0 , with 1 torch thread and seed 0, you can use the following command:
+            For example, to run PCPO in SafetyPointGoal1-v0 , with 1 torch thread, seed 0 and single environment, you can use the following command:
 
             .. code-block:: bash
                 :linenos:

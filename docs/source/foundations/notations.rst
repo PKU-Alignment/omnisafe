@@ -3,13 +3,14 @@ Mathematical Notations
 
 Introduction
 ------------
-In this section, we will introduce the notations used in this tutorial.
-In reinforcement learning, we often use the following two basic notations:
-**Linear Algebra** and **Constrained Markov Decision Processes**.
-Make sure you are familiar with this section before you start.
-When you read the formulas in the following chapters,
-if you don't know the meaning of a certain mathematical symbol,
-please refer to the notations in this chapter.
+
+In this section, we will provide an introduction to the notations used
+throughout this tutorial. In reinforcement learning, two fundamental notations
+are commonly used: **linear algebra** and **constrained Markov decision
+processes**. It is essential to familiarize yourself with these notations
+before proceeding. When reading formulas in the following chapters, if you come
+across a mathematical symbol whose meaning you're unsure of, refer to the
+notations introduced in this chapter.
 
 Linear Algebra
 --------------
@@ -25,9 +26,10 @@ Linear Algebra
 
             Vector
             ^^^
-            A vector is an ordered finite list of numbers.
-            Typically, vectors are written as vertical arrays surrounded by square brackets,
-            as in the following example:
+            A vector is a mathematical object representing a quantity that has
+            both magnitude and direction. It is an ordered finite list of
+            numbers that can be written as a vertical array surrounded by
+            square brackets, as shown in the following example:
 
             .. math::
 
@@ -54,9 +56,10 @@ Linear Algebra
 
             Matrix
             ^^^
-            Matrix, mathematical term. In mathematics, a matrix is a collection of complex or real numbers arranged in a rectangular array.
-
-            Similarly, we use a bold capital letter to denote matrix, e.g.,
+            *Matrix* is a mathematical term that refers to a collection of
+            numbers, whether real or complex, arranged in a rectangular array.
+            In this tutorial, we will use bold capital letters to denote
+            matrices, such as the following example:
             :math:`\mathbf{A}=(a_{i,j})\in\mathbb{R}^{m\times n}`, and its :math:`(i,j)^{\text{th}}` element denoted as
 
             .. math:: \mathbf{A}[i,j]=:a_{i,j},
@@ -66,10 +69,7 @@ Linear Algebra
 Constrained Markov Decision Processes
 -------------------------------------
 
-For the convenience of reference, we list key notations that have be used.
-
-
-A **Reinforcement Learning (RL)** problem is often formulated as
+A **Reinforcement Learning (RL)** problem is typically formulated as
 Infinite-horizon Discounted **Markov Decision Process (MDP)**.
 
 It is a tuple
@@ -250,4 +250,4 @@ References
 
 -  `Constrained Markov Decision Processes <https://www.semanticscholar.org/paper/Constrained-Markov-Decision-Processes-Altman/3cc2608fd77b9b65f5bd378e8797b2ab1b8acde7>`__
 -  `Markov Decision Processes <https://dl.acm.org/doi/book/10.5555/551283>`__
--  `Convex Optimization <https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf>`__`
+-  `Convex Optimization <https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf>`__

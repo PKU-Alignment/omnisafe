@@ -20,20 +20,23 @@ PPO Theorem
 Background
 ~~~~~~~~~~
 
+**Proximal Policy Optimization(PPO)** is a reinforcement learning algorithm
+that inherits some of the benefits of :doc:`TRPO<trpo>`, but is much simpler to
+implement.
+
 **Proximal Policy Optimization(PPO)** is an RL algorithm inheriting some of the
 benefits of :doc:`TRPO<trpo>`,
 However, it is much simpler to implement.
-PPO shares the same target as TRPO:
+PPO shares the same goal as TRPO:
 
 .. note::
-    How can we take as big as an improvement step on a policy update using the data
-    we already have,
-    without stepping so far that we accidentally cause performance collapse?
+    How can we take the largest possible improvement step on a policy update
+    using the available data, without stepping too far and causing performance
+    collapse?
 
-
-Instead of solving this problem with a complex second-order method as TRPO do,
-PPO use a few other tricks to keep new policies close to old.
-There are two primary PPO variants
+However, instead of using a complex second-order method like TRPO, PPO uses a
+few tricks to keep the new policies close to the old ones. There are two
+primary variants of PPO:
 :bdg-ref-info-line:`PPO-Penalty<PPO-Penalty>` and
 :bdg-ref-info-line:`PPO-Clip<PPO-Clip>`.
 
@@ -92,10 +95,11 @@ where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of
 parameterized policies with parameters :math:`\boldsymbol{\theta}`, and
 :math:`D` is some distance measure.
 
-The problem that TRPO needs to solve is finding a suitable update direction
-and update step so that updating the actor can improve the performance without
-being too different from the original actor.
-Finally, TRPO rewrites Problem :eq:`ppo-eq-1` as:
+
+The problem that TRPO aims to solve is to find an appropriate direction and
+step size for updating the actor in order to improve performance without
+deviating too far from the original actor. To achieve this, TRPO reformulates
+Problem :eq:`ppo-eq-1` as:
 
 .. _ppo-eq-2:
 
@@ -135,17 +139,15 @@ unconstrained optimization problem:
 
     \max _\theta \mathbb{E}[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)-\beta D_{K L}[\pi_{\theta_{old}}(* \mid s), \pi_\theta(* \mid s)]]
 
+However, experiments have shown that simply choosing a fixed penalty
+coefficient :math:`\beta` and optimizing the penalized objective :eq:`ppo-eq-3`
+with SGD (stochastic gradient descent) is not sufficient. Therefore, TRPO
+abandoned this method.
 
-However, experiments show that it is not sufficient to simply choose a fixed
-penalty coefficient :math:`\beta` and optimize the penalized objective
-:eq:`ppo-eq-3` with SGD(stochastic gradient descent),
-so finally TRPO abandoned this method.
-
-PPO-Penalty uses an approach named ``Adaptive KL Penalty Coefficient`` to solve
-the above problem, thus making :eq:`ppo-eq-3` perform well in the experiment.
-In the simplest implementation of this algorithm,
-PPO-Penalty performs the following steps in each policy update:
-
+PPO-Penalty uses an approach called ``Adaptive KL Penalty Coefficient`` to
+address this problem and improve the performance of :eq:`ppo-eq-3` in
+experiments. In the simplest implementation of this algorithm, PPO-Penalty
+performs the following steps in each policy update:
 
 .. grid:: 2
 
@@ -249,13 +251,13 @@ Generalized Advantage Estimation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One style of policy gradient implementation, popularized in and well-suited for
-use with recurrent neural networks,
-runs the policy for :math:`T` timesteps (where :math:`T` is much less than the
-episode length), and uses the collected samples for an update.
-This style requires an advantage estimator that does not look beyond timestep
-:math:`T`.
-This section will be concerned with producing an accurate estimate
-:math:`\hat{A}_{\pi}(s,a)`.
+use with recurrent neural networks, runs the policy for :math:`T`
+timesteps (where :math:`T` is much less than the episode length), and uses the
+collected samples for an update. This style requires an advantage estimator
+that does not look beyond timestep :math:`T`. This section will focus on
+producing an accurate estimate of the advantage function
+:math:`\hat{A}_{\pi}(s,a)` using only information
+from the current trajectory up to timestep :math:`T`.
 
 Define :math:`\delta^V=r_t+\gamma V(s_{t+1})-V(s)` as the TD residual of
 :math:`V` with discount :math:`\gamma`.
@@ -276,7 +278,7 @@ We can consider :math:`\hat{A}_{\pi}^{(k)}` to be an estimator of the advantage
 function.
 
 .. hint::
-    The bias generally becomes smaller as :math:`k arrow +\infty`,
+    The bias generally becomes smaller as :math:`k \arrow +\infty`,
     since the term :math:`\gamma^k V(s_{t+k})` becomes more heavily discounted.
     Taking :math:`k \rightarrow +\infty`, we get:
 
@@ -389,7 +391,7 @@ Quick start
         .. tab-item:: Terminal config style
 
             We use ``train_policy.py`` as the entrance file. You can train the agent with PPO simply using ``train_policy.py``, with arguments about PPO and environments does the training.
-            For example, to run PPO in SafetyPointGoal1-v0 , with 1 torch thread and seed 0, you can use the following command:
+            For example, to run PPO in SafetyPointGoal1-v0 , with 1 torch thread, seed 0 and single environment, you can use the following command:
 
             .. code-block:: bash
                 :linenos:
@@ -412,8 +414,8 @@ Architecture of functions
 
      - ``PPO._buf.get()``
      - ``PPO.update_lagrange_multiplier(ep_costs)``
-     - ``PPO._update_actor``
-     - ``PPO._update_reward_critic``
+     - ``PPO._update_actor()``
+     - ``PPO._update_reward_critic()``
 
 ------
 
@@ -431,7 +433,7 @@ Documentation of algorithm specific functions
 
             ppo._loss_pi()
             ^^^
-            Compute the loss of Actor ``actor``, flowing the next steps:
+            Compute the loss of ``actor``, flowing the next steps:
 
             (1) Get the policy importance sampling ratio.
 
@@ -455,17 +457,7 @@ Documentation of algorithm specific functions
                 loss = -torch.min(ratio * adv, ratio_cliped * adv).mean()
                 loss -= self._cfgs.algo_cfgs.entropy_coef * distribution.entropy().mean()
 
-
-            (3) Log useful information.
-
-            .. code-block:: python
-                :linenos:
-
-                entropy = distribution.entropy().mean().item()
-                info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
-                return loss, info
-
-            (4) Return the loss of Actor ``actor`` and useful information.
+            (3) Return the loss of ``actor``.
 
 ------
 
