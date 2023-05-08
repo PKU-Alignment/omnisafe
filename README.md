@@ -36,11 +36,11 @@ Safe RL intends to develop algorithms that minimize the risk of unintended harm 
 
 The key feature of OmniSafe:
 
-- Highly Modular Framework OmniSafe presents a highly modular framework, incorporating an extensive collection of over 40 algorithms tailored for safe reinforcement learning across diverse domains. The framework achieves versatility through the utilization of algorithm-level abstraction and API interfaces, employing two distinctive design components: Adapter and Wrapper.
+- `Highly Modular Framework.` OmniSafe presents a highly modular framework, incorporating an extensive collection of over 40 algorithms tailored for safe reinforcement learning across diverse domains. The framework achieves versatility through the utilization of algorithm-level abstraction and API interfaces, employing two distinctive design components: Adapter and Wrapper.
 
-- High-performance parallel computing acceleration. OmniSafe not only supports environment-level asynchronous parallelism but also incorporates agent asynchronous learning. By harnessing the capabilities of `Torch.distributed`, OmniSafe accelerates the learning process of algorithms by creating unique agents within individual threads.
+- `High-performance parallel computing acceleration.` OmniSafe not only supports environment-level asynchronous parallelism but also incorporates agent asynchronous learning. By harnessing the capabilities of `Torch.distributed`, OmniSafe accelerates the learning process of algorithms by creating unique agents within individual threads.
 
-- Fostering the Growth of SafeRL Learning Communities. OmniSafe stands as the inaugural unified learning framework in the realm of safe reinforcement learning. The platform offers exhaustive API documentation, encompassing user guides elucidating both fundamental and advanced features, illustrative examples, and best practices for algorithm parameter selection and result monitoring.
+- `Fostering the Growth of SafeRL Learning Communities.` OmniSafe stands as the inaugural unified learning framework in the realm of safe reinforcement learning. The platform offers exhaustive API documentation, encompassing user guides elucidating both fundamental and advanced features, illustrative examples, and best practices for algorithm parameter selection and result monitoring.
 
 --------------------------------------------------------------------------------
 
