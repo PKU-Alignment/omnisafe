@@ -33,7 +33,7 @@
 OmniSafe is an infrastructural framework designed to accelerate safe reinforcement learning (RL) research by providing a comprehensive and reliable benchmark for safe RL algorithms.
 Safe RL intends to develop algorithms that minimize the risk of unintended harm or unsafe behavior.
 
-The key feature of OmniSafe:
+The key features of OmniSafe:
 
 - `Highly Modular Framework.` OmniSafe presents a highly modular framework, incorporating an extensive collection of over 40 algorithms tailored for safe reinforcement learning across diverse domains. The framework achieves versatility through the utilization of algorithm-level abstraction and API interfaces, employing two distinctive design components: Adapter and Wrapper.
 
