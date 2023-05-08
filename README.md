@@ -41,6 +41,8 @@ The key features of OmniSafe:
 
 - `Fostering the Growth of SafeRL Learning Communities.` OmniSafe stands as the inaugural unified learning framework in the realm of safe reinforcement learning. The platform offers exhaustive API documentation, encompassing user guides elucidating both fundamental and advanced features, illustrative examples, and best practices for algorithm parameter selection and result monitoring.
 
+![Train video](./images/train.gif)
+
 --------------------------------------------------------------------------------
 
 ### Table of Contents  <!-- omit in toc --> <!-- markdownlint-disable heading-increment -->
