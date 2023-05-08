@@ -301,8 +301,6 @@ More information about environments, please refer to [Safety Gymnasium](https://
 
 **A video example**
 
-![Segmentfault](https://github.com/OmniSafeAI/omnisafe/blob/main/images/CLI_example.svg)
-
 ```bash
 pip install omnisafe
 
