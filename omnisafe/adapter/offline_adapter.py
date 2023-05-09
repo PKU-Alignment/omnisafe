@@ -14,7 +14,7 @@
 # ==============================================================================
 """Offline Adapter for OmniSafe."""
 
-from typing import Dict, Tuple
+from typing import Any
 
 import torch
 
@@ -24,6 +24,7 @@ from omnisafe.envs.wrapper import ActionScale, TimeLimit
 from omnisafe.models.base import Actor
 from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils.config import Config
+from omnisafe.utils.tools import get_device
 
 
 class OfflineAdapter:
@@ -55,7 +56,7 @@ class OfflineAdapter:
         self._env_id = env_id
         self._env = make(env_id, num_envs=1, device=cfgs.train_cfgs.device)
         self._cfgs = cfgs
-        self._device = cfgs.train_cfgs.device
+        self._device = get_device(cfgs.train_cfgs.device)
 
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, 1000, device=self._device)
@@ -76,7 +77,7 @@ class OfflineAdapter:
     def step(
         self,
         actions: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         Args:
@@ -92,7 +93,7 @@ class OfflineAdapter:
         """
         return self._env.step(actions)
 
-    def reset(self) -> Tuple[torch.Tensor, Dict]:
+    def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment and returns an initial observation.
 
         Returns:
@@ -130,7 +131,7 @@ class OfflineAdapter:
                 done = torch.logical_or(terminated, truncated)
 
             logger.store(
-                **{
+                {
                     'Metrics/EpRet': ep_ret,
                     'Metrics/EpCost': ep_cost,
                     'Metrics/EpLen': ep_len,
