@@ -75,6 +75,21 @@ class OfflineDataset(Dataset):
             sha256sum='100112f33eb06769747b80f78b4cc7f7bb1c76c5d270567d42d4adaf322369c9',
             episode_length=500,
         ),
+        'SafetyPointRun0-v0-mixed-beta0.5': OfflineMeta(
+            url='https://drive.google.com/file/d/1sfIZN6Dww0ONgDPZZ3jxdcMsZKQBDH8N/view?usp=sharing',
+            sha256sum='97299a7fbe8c439fd0cbdaca02af079f6ecf048b5c1c71d70649bb0ce08992e5',
+            episode_length=500,
+        ),
+        'SafetyPointRun0-v0-mixed-beta0.25': OfflineMeta(
+            url='https://drive.google.com/file/d/1WfZTQojhWRPsBLHZqiD-yQjwtJX1UYLW/view?usp=sharing',
+            sha256sum='f3d8f217e03f8fdb48022ff45ed10533c5429831265adadb97c68c7b95d11c62',
+            episode_length=500,
+        ),
+        'SafetyPointRun0-v0-mixed-beta0.75': OfflineMeta(
+            url='https://drive.google.com/file/d/1Nwc_zmUUNIJ80qhE-qe_7MCMv0zE-tDG/view?usp=sharing',
+            sha256sum='e8f1ba69a29456b4e593bf2524f3fd436a1918edfe16a4ec98d18aaab70d719b',
+            episode_length=500,
+        ),
     }
     _default_download_dir = '~/.cache/omnisafe/datasets/'
 
