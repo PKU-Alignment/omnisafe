@@ -33,13 +33,13 @@
 OmniSafe is an infrastructural framework designed to accelerate safe reinforcement learning (RL) research by providing a comprehensive and reliable benchmark for safe RL algorithms, out-of-box modular toolkits for researchers.
 SafeRL intends to develop algorithms that minimize the risk of unintended harm or unsafe behavior.
 
-The key features of OmniSafe:
+OmniSafe stands as the inaugural unified learning framework in the realm of safe reinforcement learning, aiming to foster the Growth of SafeRL Learning Community. The key features of OmniSafe:
 
 - `Highly Modular Framework.` OmniSafe presents a highly modular framework, incorporating an extensive collection of tens of algorithms tailored for safe reinforcement learning across diverse domains. The framework achieves versatility through the utilization of algorithm-level abstraction and API interfaces, employing two distinctive design components: Adapter and Wrapper.
 
 - `High-performance parallel computing acceleration.` OmniSafe not only supports environment-level asynchronous parallelism but also incorporates agent asynchronous learning. By harnessing the capabilities of Torch.distributed, OmniSafe accelerates the learning process of algorithms by creating unique agents within individual threads.
 
-- `Fostering the Growth of SafeRL Learning Community.` OmniSafe stands as the inaugural unified learning framework in the realm of safe reinforcement learning. The platform offers exhaustive API documentation, encompassing user guides elucidating both fundamental and advanced features, illustrative examples, and best practices for algorithm parameter selection and result monitoring.
+- `Out-of-box toolkits.` OmniSafe offers customizable toolkits for tasks like training, benchmarking, analyzing, and rendering. [Tutorials](https://github.com/OmniSafeAI/omnisafe#getting-started) and user-friendly [APIs](https://omnisafe.readthedocs.io/en/latest/baserlapi/on_policy.html) make it easy for beginners and average users, while advanced researchers can enhance their efficiency without complex code.
 
 ![Train video](./images/train.gif)
 
