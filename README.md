@@ -295,7 +295,7 @@ Environment id in [Safety Gymnasium](https://www.safety-gymnasium.com/), here a 
 </tbody>
 </table>
 
-More information about environments, please refer to [Safety Gymnasium](https://www.safety-gymnasium.com/)
+More information about environments, please refer to [Safety-Gymnasium](https://www.safety-gymnasium.com/).
 
 #### 🚢Try with CLI
 
