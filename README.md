@@ -299,8 +299,6 @@ More information about environments, please refer to [Safety Gymnasium](https://
 
 #### 🚢Try with CLI
 
-**A video example**
-
 ```bash
 pip install omnisafe
 
