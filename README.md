@@ -37,9 +37,9 @@ OmniSafe stands as the inaugural unified learning framework in the realm of safe
 
 - **Highly Modular Framework.** OmniSafe presents a highly modular framework, incorporating an extensive collection of tens of algorithms tailored for safe reinforcement learning across diverse domains. The framework achieves versatility through the utilization of algorithm-level abstraction and API interfaces, employing two distinctive design components: Adapter and Wrapper.
 
-- `High-performance parallel computing acceleration.` OmniSafe not only supports environment-level asynchronous parallelism but also incorporates agent asynchronous learning. By harnessing the capabilities of Torch.distributed, OmniSafe accelerates the learning process of algorithms by creating unique agents within individual threads.
+- **High-performance parallel computing acceleration.** OmniSafe not only supports environment-level asynchronous parallelism but also incorporates agent asynchronous learning. By harnessing the capabilities of Torch.distributed, OmniSafe accelerates the learning process of algorithms by creating unique agents within individual threads.
 
-- `Out-of-box toolkits.` OmniSafe offers customizable toolkits for tasks like training, benchmarking, analyzing, and rendering. [Tutorials](https://github.com/OmniSafeAI/omnisafe#getting-started) and user-friendly [APIs](https://omnisafe.readthedocs.io/en/latest/baserlapi/on_policy.html) make it easy for beginners and average users, while advanced researchers can enhance their efficiency without complex code.
+- **Out-of-box toolkits.** OmniSafe offers customizable toolkits for tasks like training, benchmarking, analyzing, and rendering. [Tutorials](https://github.com/OmniSafeAI/omnisafe#getting-started) and user-friendly [APIs](https://omnisafe.readthedocs.io/en/latest/baserlapi/on_policy.html) make it easy for beginners and average users, while advanced researchers can enhance their efficiency without complex code.
 
 ![Train video](https://github-production-user-asset-6210df.s3.amazonaws.com/73586554/237139607-d1e6f413-aa2c-4f68-b8ee-08a4361493a0.gif)
 
