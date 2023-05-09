@@ -192,7 +192,7 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
     <td>TRPOLag; PPOLag; PDO; RCPO; OnCRPO</td>
   </tr>
   <tr>
-    <td>TRPOPIDLag; PPOPIDLag;CPPOPID</td>
+    <td>TRPOPIDLag; PPOPIDLag; CPPOPID</td>
   </tr>
   <tr>
     <td>Convex Optimization</td>
@@ -259,7 +259,7 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
 
 #### ☁️Supported Environments
 
-Environment id in [Safety Gymnasium](https://www.safety-gymnasium.com/), here a list of envs that safety-gymnasium supports.
+Environment id in [Safety-Gymnasium](https://www.safety-gymnasium.com/), here a list of envs that safety-gymnasium supports.
 
 <table border="1">
 <thead>
