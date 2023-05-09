@@ -32,18 +32,47 @@ from omnisafe.typing import DEVICE_CPU
 class OfflineMeta:
     """Meta information of the offline dataset."""
 
-    episode_length: int | None
     url: str
     sha256sum: str
+    episode_length: int | None = None
 
 
 class OfflineDataset(Dataset):
     """A dataset for offline algorithms."""
 
     _name_to_metadata: dict[str, OfflineMeta] = {
-        'SafetyPointCircle1-v0_mixed_0.5': OfflineMeta(
-            url='https://drive.google.com/file/d/1CNHoC70kVIE0wP4VoYy0EH4DmdExGCqM/view?usp=share_link',
-            sha256sum='c33e9b102524b26a7466fd542a3e9e925bc5a7eb8a9fdc4a0dc15443819748fd',
+        'SafetyPointCircle1-v0-mixed-beta0.5': OfflineMeta(
+            url='https://drive.google.com/file/d/17q2-T1o01GNM3rBmLP52kRTojYS1ePTX/view?usp=sharing',
+            sha256sum='354a762a4fba372c497a0c84e3405863c192406ff754b18eea51a036f47cd5ba',
+            episode_length=500,
+        ),
+        'SafetyPointCircle1-v0-mixed-beta0.25': OfflineMeta(
+            url='https://drive.google.com/file/d/1KqDfQ-oxgT4xjM0wu-g-DFWrltSk96kw/view?usp=sharing',
+            sha256sum='6004adf1833289bcbb57028c049fb49d24c59a246db2f632af480b410c09b640',
+            episode_length=500,
+        ),
+        'SafetyPointCircle1-v0-mixed-beta0.75': OfflineMeta(
+            url='https://drive.google.com/file/d/107is9vhByAdEyv4vLzJU_4YczlS88QGb/view?usp=sharing',
+            sha256sum='57d0162b2713bf8d9e93a7fe6123ad354177611aae0a2d3733555ec5335fddc4',
+            episode_length=500,
+        ),
+        'SafetyAntVelocity-v4-1m-beta0.5': OfflineMeta(
+            url='https://drive.google.com/file/d/1IFWIAoBKUL-8roziDzh2zC_EZUkHPg_F/view?usp=sharing',
+            sha256sum='02776103f9bd9a0fa182d228bb57ca8233519180b4d6d1b40e30257e8fdb4b6d',
+        ),
+        'SafetyCarCircle1-v0-mixed-beta0.5': OfflineMeta(
+            url='https://drive.google.com/file/d/1sxhSmR4TrAYjbaeWyOyTIzIV4OoHTfhN/view?usp=sharing',
+            sha256sum='46ab456c2782aef89a2f5b1328b4b40430c0e94f4a9019a672d05538d68f9c30',
+            episode_length=500,
+        ),
+        'SafetyCarCircle1-v0-mixed-beta0.25': OfflineMeta(
+            url='https://drive.google.com/file/d/1Nq4T911gqXECm6iYkME4Clfu9rNQznn9/view?usp=sharing',
+            sha256sum='3805fcc5efb55ba4b1610735fa1cb9aadb15f9d8997b9d179163e283a99a6712',
+            episode_length=500,
+        ),
+        'SafetyCarCircle1-v0-mixed-beta0.75': OfflineMeta(
+            url='https://drive.google.com/file/d/1NEyQt6YW9HeZrX3Cs0Eox_u5hGclsHfs/view?usp=sharing',
+            sha256sum='100112f33eb06769747b80f78b4cc7f7bb1c76c5d270567d42d4adaf322369c9',
             episode_length=500,
         ),
     }
