@@ -35,7 +35,7 @@ Safe RL intends to develop algorithms that minimize the risk of unintended harm 
 
 The key features of OmniSafe:
 
-- `Highly Modular Framework.` OmniSafe presents a highly modular framework, incorporating an extensive collection of over 40 algorithms tailored for safe reinforcement learning across diverse domains. The framework achieves versatility through the utilization of algorithm-level abstraction and API interfaces, employing two distinctive design components: Adapter and Wrapper.
+- `Highly Modular Framework.` OmniSafe presents a highly modular framework, incorporating an extensive collection of tens of algorithms tailored for safe reinforcement learning across diverse domains. The framework achieves versatility through the utilization of algorithm-level abstraction and API interfaces, employing two distinctive design components: Adapter and Wrapper.
 
 - `High-performance parallel computing acceleration.` OmniSafe not only supports environment-level asynchronous parallelism but also incorporates agent asynchronous learning. By harnessing the capabilities of Torch.distributed, OmniSafe accelerates the learning process of algorithms by creating unique agents within individual threads.
 
