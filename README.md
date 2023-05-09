@@ -39,7 +39,7 @@ The key features of OmniSafe:
 
 - `High-performance parallel computing acceleration.` OmniSafe not only supports environment-level asynchronous parallelism but also incorporates agent asynchronous learning. By harnessing the capabilities of Torch.distributed, OmniSafe accelerates the learning process of algorithms by creating unique agents within individual threads.
 
-- `Fostering the Growth of SafeRL Learning Communities.` OmniSafe stands as the inaugural unified learning framework in the realm of safe reinforcement learning. The platform offers exhaustive API documentation, encompassing user guides elucidating both fundamental and advanced features, illustrative examples, and best practices for algorithm parameter selection and result monitoring.
+- `Fostering the Growth of SafeRL Learning Community.` OmniSafe stands as the inaugural unified learning framework in the realm of safe reinforcement learning. The platform offers exhaustive API documentation, encompassing user guides elucidating both fundamental and advanced features, illustrative examples, and best practices for algorithm parameter selection and result monitoring.
 
 ![Train video](./images/train.gif)
 
