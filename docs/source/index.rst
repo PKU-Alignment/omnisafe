@@ -32,7 +32,6 @@ a multitude of safe reinforcement learning (Safe RL) domains.
 
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
         :class-card: sd-outline-success  sd-rounded-1
         :columns: 12 6 6 4
@@ -42,24 +41,23 @@ a multitude of safe reinforcement learning (Safe RL) domains.
         If you have only basic knowledge of linear algebra and probability theory and are new to machine learning, we recommend starting with the mathematical fundamentals section of this tutorial.
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-info sd-text-white sd-font-weight-bold
         :class-card: sd-outline-info  sd-rounded-1
         :columns: 12 6 6 4
 
         For Average Users
         ^^^^^^^^^^^^^^^^^
-        If you have a general understanding of RL algorithms but need to familiarize yourself with Safe RL, this tutorial introduces it so you can get started quickly.
+        If you have a general understanding of RL algorithms but need to familiarize yourself with Safe RL, 
+        this tutorial introduces some classic Safe RL algorithms to you so you can get started quickly.
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
         :class-card: sd-outline-primary  sd-rounded-1
         :columns: 12 6 6 4
 
         For Experts
         ^^^^^^^^^^^
-        If you are already an expert in the field of RL, our tutorial can still offer you new insights with its systematic introduction to Safe RL algorithms. Furthermore, it will enable you to quickly design your own algorithms using OmniSafe.
+        If you are already an expert in the field of RL, our tutorial can still offer you new insights with its systematic introduction to Safe RL algorithms. Furthermore, it will enable you to quickly design your own algorithms.
 
 
 Why We Built This
@@ -175,7 +173,6 @@ Code Design Principles
 
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
         :class-card: sd-outline-success  sd-rounded-1
         :columns: 12 5 5 4
@@ -188,7 +185,6 @@ Code Design Principles
         the code implementation of the PPO algorithm by reading a new function.
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-info sd-text-white sd-font-weight-bold
         :class-card: sd-outline-info  sd-rounded-1
         :columns: 12 5 5 4
@@ -198,13 +194,11 @@ Code Design Principles
         Our code not only serves as a tutorial but also as a practical tool.
         For those who want to learn about the implementation of Safe RL
         algorithms, the highly readable code in OmniSafe provides an easy and
-        quick way to get started. Users can observe how each algorithm performs
-        and gain insights into their implementation. Moreover, for those who
+        quick way to get started. For those who
         want to develop their algorithms, OmniSafe's **highly modular and
         reusable** code can be an excellent resource.
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
         :class-card: sd-outline-primary  sd-rounded-1
         :columns: 12 5 5 4
