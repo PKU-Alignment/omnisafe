@@ -1,6 +1,6 @@
 # OmniSafe's Mujoco Velocity Benchmark on Offline Algorithms
 
-OmniSafe's Mujoco Velocity Benchmark evaluated the performance of OmniSafe's offline algorithm implementations in SafetyPointRun, SafetyPointCirlce, SafetyCarRun, SafetyCarCircle from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
+OmniSafe's Mujoco Velocity Benchmark evaluated the performance of OmniSafe's offline algorithm implementations in SafetyPointCirlce, SafetyPointCirlce from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
 
 - Default hyperparameters used for the benchmark and scripts to reproduce the results.
 - A comparison of performance or code-level details with other open-source implementations or classic papers.
@@ -100,16 +100,32 @@ python plot.py --log-dir ALGODIR
 
 ## Example benchmark
 
-<center>
-    <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/Ant.png">
-    <br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">SafetyAntVelocity-v1(1e6)</div>
-</center>
+### SafetyPointCircle1-v0($\beta = 0.25$)
+
+| Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
+| :--------: | :---------------: | :-------------: |
+|   VAE-BC   |    43.66±0.90     |  109.86±13.24   |
+|   C-CRR    |    45.48±0.87     |  127.30±12.60   |
+|   BCQLag   |    43.31±0.76     |  113.39±12.81   |
+| COptiDICE  |    40.68±0.93     |   67.11±13.15   |
+
+### SafetyPointCircle1-v0($\beta = 0.50$)
+
+| Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
+| :--------: | :---------------: | :-------------: |
+|   VAE-BC   |    42.84±1.36     |   62.34±14.84   |
+|   C-CRR    |    45.99±1.36     |   97.20±13.57   |
+|   BCQLag   |    44.68±1.97     |   95.06±33.07   |
+| COptiDICE  |    39.55±1.39     |   53.87±13.27   |
+
+### SafetyPointCircle1-v0($\beta = 0.75$)
+
+| Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
+| :--------: | :---------------: | :-------------: |
+|   VAE-BC   |    40.23±0.75     |   41.25±10.12   |
+|   C-CRR    |    40.66±0.88     |   49.90±10.81   |
+|   BCQLag   |    42.94±1.04     |   85.37±23.41   |
+| COptiDICE  |    40.98±0.89     |   70.40±12.14   |
 
 ## Some Insights
 
