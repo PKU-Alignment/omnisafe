@@ -196,7 +196,7 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
     <td>TRPOLag; PPOLag; PDO; RCPO; OnCRPO</td>
   </tr>
   <tr>
-    <td>TRPOPIDLag; PPOPIDLag; CPPOPID</td>
+    <td>TRPOPID; CPPOPID</td>
   </tr>
   <tr>
     <td>Convex Optimization</td>
