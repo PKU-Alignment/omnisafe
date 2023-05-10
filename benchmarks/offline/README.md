@@ -127,6 +127,34 @@ python plot.py --log-dir ALGODIR
 |   BCQLag   |    42.94±1.04     |   85.37±23.41   |
 | COptiDICE  |    40.98±0.89     |   70.40±12.14   |
 
+### SafetyCarCircle1-v0($\beta = 0.25$)
+
+| Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
+| :--------: | :---------------: | :-------------: |
+|   VAE-BC   |    19.62±0.28     |   150.54±7.63   |
+|   C-CRR    |    18.53±0.45     |  122.63±13.14   |
+|   BCQLag   |    18.88±0.61     |  125.44±15.68   |
+| COptiDICE  |    17.25±0.37     |   90.86±10.75   |
+
+### SafetyCarCircle1-v0($\beta = 0.50$)
+
+| Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
+| :--------: | :---------------: | :-------------: |
+|   VAE-BC   |    18.69±0.33     |  125.97±10.36   |
+|   C-CRR    |    17.24±0.43     |   89.47±11.55   |
+|   BCQLag   |    18.14±0.96     |  108.07±20.70   |
+| COptiDICE  |    16.38±0.43     |   70.54±12.36   |
+
+### SafetyCarCircle1-v0($\beta = 0.75$)
+
+| Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
+| :--------: | :---------------: | :-------------: |
+|   VAE-BC   |    17.31±0.33     |   85.53±11.33   |
+|   C-CRR    |    15.74±0.42     |   48.38±10.31   |
+|   BCQLag   |    17.10±0.84     |   77.54±14.07   |
+| COptiDICE  |    15.58±0.37     |   49.42±8.699   |
+
+
 ## Some Insights
 
 1. The Lagrange method is widely recognized as the simplest approach for implementing safe algorithms. However, its efficacy is limited in offline settings. This is due to the fact that the q-critic, which is based on TD-learning, cannot ensure the absolute accuracy of the q value. Since the policy relies on the q value, relative accuracy is sufficient for learning the appropriate state. However, for the Lagrange-based algorithm to acquire meaningful Lagrange multipliers, it requires q values that are absolutely accurate.
