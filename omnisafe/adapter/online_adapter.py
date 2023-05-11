@@ -46,6 +46,7 @@ class OnlineAdapter:
 
     - OnPolicyAdapter: Adapt the environment to the on-policy framework.
     - OffPolicyAdapter: Adapt the environment to the off-policy framework.
+    - OfflineAdapter: Adapt the environment to the offline framework.
     - SauteAdapter: Adapt the environment to the SAUTE framework.
     - SimmerAdapter: Adapt the environment to the SIMMER framework.
 

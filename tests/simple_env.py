@@ -35,9 +35,9 @@ class SimpleEnv(CMDP):
     need_auto_reset_wrapper = True
     need_time_limit_wrapper = True
     _num_envs = 1
-    _count = 0
 
     def __init__(self, env_id: str, **kwargs) -> None:
+        self._count = 0
         self._observation_space = spaces.Box(low=-1.0, high=1.0, shape=(3,))
         self._action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,))
 

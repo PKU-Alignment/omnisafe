@@ -1,13 +1,14 @@
 # OmniSafe's Mujoco Velocity Benchmark on On-Policy Algorithms
 
-OmniSafe's Mujoco Velocity Benchmark evaluated the performance of OmniSafe algorithm implementations in 6 environments from the Safety-Gymnasium task suite For each algorithm and environment supported, we provide:
+OmniSafe's Mujoco Velocity Benchmark evaluated the performance of OmniSafe algorithm implementations in 6 environments from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
+
 - Default hyperparameters used for the benchmark and scripts to reproduce the results
 - A comparison of performance or code-level details with other open-source implementations or classic papers.
-- Graphs and raw data that can be used for research purposes, - Log details obtained during training
+- Graphs and raw data that can be used for research purposes
+- Log details obtained during training
 - Some hints on how to fine-tune the algorithm for optimal results.
 
 Supported algorithms are listed below:
-
 **First-Order**
 
 - **[NIPS 1999]** [Policy Gradient(PG)](https://papers.nips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf)
@@ -91,7 +92,7 @@ Then you can compare different algorithms in ``SafetyHopperVelocity-v1`` environ
 Logs is saved in `examples/benchmarks/runs` and can be monitored with tensorboard or wandb.
 
 ```bash
-$ tensorboard --logdir examples/benchmarks/runs
+tensorboard --logdir examples/benchmarks/runs
 ```
 
 After the experiment is finished, you can use the following command to generate the video of the trained agent:
@@ -100,6 +101,7 @@ After the experiment is finished, you can use the following command to generate 
 cd examples
 python evaluate_saved_policy.py
 ```
+
 Please note that before you evaluate, please set the ``LOG_DIR`` in ``evaluate_saved_policy.py``.
 
 For example, if I train ``PPOLag`` in ``SafetyHumanoidVelocity-v1``
@@ -406,7 +408,6 @@ For example, if I train ``PPOLag`` in ``SafetyHumanoidVelocity-v1``
     color: #999;
     padding: 2px;">SafetyCarButton2-v0(1e7)</div>
 </center>
-
 
 ## Experiment Analysis
 

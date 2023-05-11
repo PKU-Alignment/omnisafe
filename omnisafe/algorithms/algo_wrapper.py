@@ -88,13 +88,14 @@ class AlgoWrapper:
             self.algo in ALGORITHMS['all']
         ), f"{self.algo} doesn't exist. Please choose from {ALGORITHMS['all']}."
         self.algo_type = ALGORITHM2TYPE.get(self.algo, '')
-        if self.algo_type in ['model-based'] and self.train_terminal_cfgs is not None:
+        if self.algo_type in ['model-based', 'offline'] and self.train_terminal_cfgs is not None:
             assert (
                 self.train_terminal_cfgs['parallel'] == 1
-            ), 'model-based only support parallel==1!'
+            ), 'model-based and offline only support parallel==1!'
             assert (
                 self.train_terminal_cfgs['vector_env_nums'] == 1
-            ), 'model-based only support vector_env_nums==1!'
+            ), 'model-based and offline only support vector_env_nums==1!'
+
         cfgs = get_default_kwargs_yaml(self.algo, self.env_id, self.algo_type)
 
         # update the cfgs from custom configurations
@@ -161,7 +162,7 @@ class AlgoWrapper:
             cfgs=self.cfgs,
         )
 
-    def learn(self) -> tuple[float, float, int]:
+    def learn(self) -> tuple[float, float, float]:
         """Agent learning.
 
         Returns:

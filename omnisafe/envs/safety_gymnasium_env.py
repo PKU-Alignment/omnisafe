@@ -87,6 +87,8 @@ class SafetyGymnasiumEnv(CMDP):
         'SafetyWalker2dVelocity-v1',
         'SafetyAntVelocity-v1',
         'SafetyHumanoidVelocity-v1',
+        'SafetyPointRun0-v0',
+        'SafetyCarRun0-v0',
     ]
 
     def __init__(

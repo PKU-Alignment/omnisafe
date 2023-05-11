@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "safety-gymnasium >= 0.1.0",
+    "safety-gymnasium >= 0.2.0",
     "torch >= 1.10.0",
     "numpy >= 1.20.0",
     "tensorboard >= 2.8.0",
@@ -37,6 +37,7 @@ dependencies = [
     "seaborn >= 0.12.2",
     "pandas >=  1.5.3",
     "matplotlib >= 3.7.1",
+    "gdown >= 4.6.0"
 ]
 dynamic = ["version", "entry-points"]
 

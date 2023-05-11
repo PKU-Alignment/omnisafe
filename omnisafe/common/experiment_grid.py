@@ -385,7 +385,7 @@ class ExperimentGrid:
     # pylint: disable-next=too-many-locals
     def run(
         self,
-        thunk: Callable[[str, str, str, dict[str, Any]], tuple[float, float, int]],
+        thunk: Callable[[str, str, str, dict[str, Any]], tuple[float, float, float]],
         num_pool: int = 1,
         parent_dir: str | None = None,
         is_test: bool = False,

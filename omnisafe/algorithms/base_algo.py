@@ -79,5 +79,5 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
         """Initialize the logger."""
 
     @abstractmethod
-    def learn(self) -> tuple[float, float, int]:
+    def learn(self) -> tuple[float, float, float]:
         """Learn the policy."""
