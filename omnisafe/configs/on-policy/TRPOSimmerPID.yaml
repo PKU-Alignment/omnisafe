@@ -23,11 +23,11 @@ defaults:
     # number of threads for torch
     torch_threads: 16
     # number of vectorized environments
-    vector_env_nums: 2
+    vector_env_nums: 1
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
-    total_steps: 1000000
+    total_steps: 10000000
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy

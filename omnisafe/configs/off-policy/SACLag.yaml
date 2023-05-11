@@ -43,7 +43,7 @@ defaults:
     # normalize reward
     reward_normalize: False
     # normalize cost
-    cost_normalize: False
+    cost_normalize: True
     # normalize observation
     obs_normalize: False
     # max gradient norm
@@ -121,6 +121,6 @@ defaults:
     # Initial value of lagrangian multiplier
     lagrangian_multiplier_init: 0.001
     # Learning rate of lagrangian multiplier
-    lambda_lr: 0.001
+    lambda_lr: 0.00001
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"

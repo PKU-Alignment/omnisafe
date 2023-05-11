@@ -23,15 +23,15 @@ defaults:
     # number of threads for torch
     torch_threads: 16
     # number of vectorized environments
-    vector_env_nums: 2
+    vector_env_nums: 1
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
-    total_steps: 1024000
+    total_steps: 10000000
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 2048
+    steps_per_epoch: 20000
     # number of iterations to update the policy
     update_iters: 10
     # batch size for each iteration
@@ -64,8 +64,6 @@ defaults:
     lam: 0.95
     # lambda for cost gae
     lam_c: 0.95
-    # clip ratio
-    clip: 0.2
     # advantage estimation method, options: gae, retrace
     adv_estimation_method: gae
     # standardize reward advantage
@@ -136,23 +134,3 @@ defaults:
     lambda_lr: 0.035
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
-
-SafetyHopperVelocity-v1:
-  # algorithm configurations
-  algo_cfgs:
-    # normalize reward
-    reward_normalize: False
-    # normalize cost
-    cost_normalize: True
-    # normalize observation
-    obs_normalize: True
-
-SafetyWalker2dVelocity-v1:
-  # algorithm configurations
-  algo_cfgs:
-    # normalize reward
-    reward_normalize: False
-    # normalize cost
-    cost_normalize: True
-    # normalize observation
-    obs_normalize: True

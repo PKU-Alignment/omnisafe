@@ -27,11 +27,11 @@ defaults:
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
-    total_steps: 1024000
+    total_steps: 10000000
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 2048
+    steps_per_epoch: 20000
     # number of iterations to update the policy
     update_iters: 40
     # batch size for each iteration
