@@ -102,6 +102,17 @@ python plot.py --log-dir ALGODIR
 
 ### SafetyPointCircle1-v0($\beta = 0.25$)
 
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/SafetyPointCircle1-v0-0.25.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyPointCircle1-v0(beta=0.25)</div>
+</center>
+
 | Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
 | :--------: | :---------------: | :-------------: |
 |   VAE-BC   |    43.66±0.90     |  109.86±13.24   |
@@ -110,6 +121,17 @@ python plot.py --log-dir ALGODIR
 | COptiDICE  |    40.68±0.93     |   67.11±13.15   |
 
 ### SafetyPointCircle1-v0($\beta = 0.50$)
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/SafetyPointCircle1-v0-0.5.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyPointCircle1-v0(beta=0.5)</div>
+</center>
 
 | Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
 | :--------: | :---------------: | :-------------: |
@@ -120,6 +142,17 @@ python plot.py --log-dir ALGODIR
 
 ### SafetyPointCircle1-v0($\beta = 0.75$)
 
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/SafetyPointCircle1-v0-0.75.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyPointCircle1-v0(beta=0.75))</div>
+</center>
+
 | Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
 | :--------: | :---------------: | :-------------: |
 |   VAE-BC   |    40.23±0.75     |   41.25±10.12   |
@@ -128,6 +161,17 @@ python plot.py --log-dir ALGODIR
 | COptiDICE  |    40.98±0.89     |   70.40±12.14   |
 
 ### SafetyCarCircle1-v0($\beta = 0.25$)
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/SafetCarCircle1-v0-0.25.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyCarCircle1-v0(beta=0.25)</div>
+</center>
 
 | Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
 | :--------: | :---------------: | :-------------: |
@@ -138,6 +182,17 @@ python plot.py --log-dir ALGODIR
 
 ### SafetyCarCircle1-v0($\beta = 0.50$)
 
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/SafetyCarCircle1-v0-0.5.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyCarCircle1-v0(beta=0.5)</div>
+</center>
+
 | Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
 | :--------: | :---------------: | :-------------: |
 |   VAE-BC   |    18.69±0.33     |  125.97±10.36   |
@@ -146,6 +201,17 @@ python plot.py --log-dir ALGODIR
 | COptiDICE  |    16.38±0.43     |   70.54±12.36   |
 
 ### SafetyCarCircle1-v0($\beta = 0.75$)
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
+    src="./benchmarks/SafetyCarCircle1-v0-0.75.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">SafetyCarCircle1-v0(beta=0.75)</div>
+</center>
 
 | Algorithms | Reward (OmniSafe) | Cost (OmniSafe) |
 | :--------: | :---------------: | :-------------: |

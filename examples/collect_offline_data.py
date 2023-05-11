@@ -18,16 +18,16 @@ from omnisafe.common.offline.data_collector import OfflineDataCollector
 
 
 # please change agent path and env name
-env_name = 'SafetyPointCircle1-v0'
-size = 2_000_000
-agents = [
+ENV_NAME = 'SafetyPointCircle1-v0'
+SIZE = 2_000_000
+AGENTS = [
     ('./runs/PPO', 'epoch-500', 1_000_000),
     ('./runs/PPOLag', 'epoch-500', 1_000_000),
 ]
-save_dir = './data'
+SAVE_DIR = './data'
 
 if __name__ == '__main__':
-    col = OfflineDataCollector(size, env_name)
-    for agent, model_name, num in agents:
+    col = OfflineDataCollector(SIZE, ENV_NAME)
+    for agent, model_name, num in AGENTS:
         col.register_agent(agent, model_name, num)
-    col.collect(save_dir)
+    col.collect(SAVE_DIR)
