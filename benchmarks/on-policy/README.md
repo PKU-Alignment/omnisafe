@@ -1953,7 +1953,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps
     </table>
 </details>
 
@@ -2024,7 +2024,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.2:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.2:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps
     </table>
 </details>
 
@@ -2118,7 +2118,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.3:</b> Training curves in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.3:</b> Training curves in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps
     </table>
 </details>
 
@@ -2191,7 +2191,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 2.1:</b> Training curves of second order algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 2.1:</b> Training curves of second order algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps
     </table>
 </details>
 
@@ -2262,7 +2262,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 2.2:</b>  Training curves of second order algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 2.2:</b>  Training curves of second order algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps
     </table>
 </details>
 
@@ -2356,7 +2356,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 2.3:</b> Training curves of second order algorithms in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 2.3:</b> Training curves of second order algorithms in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps
     </table>
 </details>
 
@@ -2429,7 +2429,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 3.1:</b> Training curves of Saute MDP algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps
     </table>
 </details>
 
@@ -2500,7 +2500,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.2:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 3.2:</b> Training curves of Saute MDP algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps
     </table>
 </details>
 
@@ -2594,7 +2594,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.3:</b> Training curves in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 3.3:</b> Training curves of Saute MDP algorithms in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps
     </table>
 </details>
 
@@ -2667,7 +2667,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 4.1:</b> Training curves of Simmer MDP algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps
     </table>
 </details>
 
@@ -2738,7 +2738,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.2:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 4.2:</b> Training curves of Simmer MDP algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps
     </table>
 </details>
 
@@ -2832,7 +2832,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.3:</b> Training curves in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 4.3:</b> Training curves of Simmer MDP algorithms in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps
     </table>
 </details>
 
@@ -2905,7 +2905,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 5.1:</b> Training curves of PID-Lagrangian algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps
     </table>
 </details>
 
@@ -2976,7 +2976,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.2:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 5.2:</b> Training curves of PID-Lagrangian algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps
     </table>
 </details>
 
@@ -3070,7 +3070,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.3:</b> Training curves in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 5.3:</b> Training curves of PID-Lagrangian algorithms in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps.
     </table>
 </details>
 
@@ -3143,7 +3143,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 6.1:</b> Training curves of early terminated MDP algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e6 steps.
     </table>
 </details>
 
@@ -3214,7 +3214,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.2:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 6.2:</b> Training curves of early terminated MDP algorithms in Safety-Gymnasium MuJoCo Velocity environments within 1e7 steps.
     </table>
 </details>
 
@@ -3308,7 +3308,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         </td>
     </tr>
     </table>
-    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1.3:</b> Training curves in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a>. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+    <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 6.3:</b> Training curves of early terminated MDP algorithms in Safety-Gymnasium MuJoCo Navigation environments within 1e7 steps.
     </table>
 </details>
 
