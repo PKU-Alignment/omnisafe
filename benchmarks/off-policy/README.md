@@ -403,10 +403,10 @@ class="math inline">±</span> 8.95</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"></td>
-<td colspan="2"
+<td colspan="3"
 style="text-align: center;"><strong>DDPGLag</strong></td>
-<td colspan="2" style="text-align: center;"><strong>TD3Lag</strong></td>
-<td colspan="2" style="text-align: center;"><strong>SACLag</strong></td>
+<td colspan="3" style="text-align: center;"><strong>TD3Lag</strong></td>
+<td colspan="3" style="text-align: center;"><strong>SACLag</strong></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><strong>Environment</strong></td>
