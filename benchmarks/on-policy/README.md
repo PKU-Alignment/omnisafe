@@ -243,12 +243,13 @@ class="math inline">±</span> 1832.83</td>
 <td style="text-align: center;">3304.35 <span
 class="math inline">±</span> 706.13</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"></td>
-<td colspan="3" style="text-align: center;"><strong>Natural
-PG</strong></td>
-<td colspan="3" style="text-align: center;"><strong>TRPO</strong></td>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th colspan="3" style="text-align: center;"><strong>NaturalPG</strong></th>
+<th colspan="3" style="text-align: center;"><strong>TRPO</strong></th>
 </tr>
+</thead>
 <tr class="odd">
 <td style="text-align: left;"><strong>Environment</strong></td>
 <td style="text-align: center;"><strong>OmniSafe (Ours)</strong></td>
@@ -680,14 +681,15 @@ class="math inline">±</span> 30.59</td>
 <td style="text-align: center;">166.6 <span class="math inline">±</span>
 111.21</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"></td>
-<td colspan="2" style="text-align: center;"><strong>RCPO</strong></td>
-<td colspan="2"
-style="text-align: center;"><strong>TRPOLag</strong></td>
-<td colspan="2" style="text-align: center;"><strong>PPOLag</strong></td>
-<td colspan="2" style="text-align: center;"><strong>P3O</strong></td>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th colspan="2" style="text-align: center;"><strong>RCPO</strong></th>
+<th colspan="2" style="text-align: center;"><strong>TRPOLag</strong></th>
+<th colspan="2" style="text-align: center;"><strong>PPOLag</strong></th>
+<th colspan="2" style="text-align: center;"><strong>P3O</strong></th>
 </tr>
+</thead>
 <tr class="odd">
 <td style="text-align: left;"><strong>Environment</strong></td>
 <td style="text-align: center;"><strong>Reward</strong></td>
@@ -979,13 +981,15 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 <td style="text-align: center;">28.5 <span class="math inline">±</span>
 49.79</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"></td>
-<td colspan="2" style="text-align: center;"><strong>CUP</strong></td>
-<td colspan="2" style="text-align: center;"><strong>PCPO</strong></td>
-<td colspan="2" style="text-align: center;"><strong>FOCOPS</strong></td>
-<td colspan="2" style="text-align: center;"><strong>CPO</strong></td>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th colspan="2" style="text-align: center;"><strong>CUP</strong></th>
+<th colspan="2" style="text-align: center;"><strong>PCPO</strong></th>
+<th colspan="2" style="text-align: center;"><strong>FOCOPS</strong></th>
+<th colspan="2" style="text-align: center;"><strong>CPO</strong></th>
 </tr>
+</thead>
 <tr class="odd">
 <td style="text-align: left;"><strong>Environment</strong></td>
 <td style="text-align: center;"><strong>Reward</strong></td>
@@ -1277,17 +1281,15 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 <td style="text-align: center;">48.92 <span class="math inline">±</span>
 17.79</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"></td>
-<td colspan="2"
-style="text-align: center;"><strong>PPOSaute</strong></td>
-<td colspan="2"
-style="text-align: center;"><strong>TRPOSaute</strong></td>
-<td colspan="2"
-style="text-align: center;"><strong>PPOSimmerPID</strong></td>
-<td colspan="2"
-style="text-align: center;"><strong>TRPOSimmerPID</strong></td>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th colspan="2" style="text-align: center;"><strong>PPOSaute</strong></th>
+<th colspan="2" style="text-align: center;"><strong>TRPOSaute</strong></th>
+<th colspan="2" style="text-align: center;"><strong>PPOSimmerPID</strong></th>
+<th colspan="2" style="text-align: center;"><strong>TRPOSimmerPID</strong></th>
 </tr>
+</thead>
 <tr class="odd">
 <td style="text-align: left;"><strong>Environment</strong></td>
 <td style="text-align: center;"><strong>Reward</strong></td>
@@ -1579,16 +1581,13 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 <td style="text-align: center;">6.70 <span class="math inline">±</span>
 4.74</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"></td>
-<td colspan="2"
-style="text-align: center;"><strong>CPPOPID</strong></td>
-<td colspan="2"
-style="text-align: center;"><strong>TRPOPID</strong></td>
-<td colspan="2"
-style="text-align: center;"><strong>PPOEarlyTerminated</strong></td>
-<td colspan="2"
-style="text-align: center;"><strong>TRPOEarlyTerminated</strong></td>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th colspan="2" style="text-align: center;"><strong>CPPOPID</strong></th>
+<th colspan="2" style="text-align: center;"><strong>TRPOPID</strong></th>
+<th colspan="2" style="text-align: center;"><strong>PPOEarlyTerminated</strong></th>
+<th colspan="2" style="text-align: center;"><strong>TRPOEarlyTerminated</strong></th>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><strong>Environment</strong></td>
