@@ -401,13 +401,14 @@ class="math inline">±</span> 232.06</td>
 <td style="text-align: center;">877.70 <span
 class="math inline">±</span> 8.95</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"></td>
-<td colspan="3"
-style="text-align: center;"><strong>DDPGLag</strong></td>
-<td colspan="3" style="text-align: center;"><strong>TD3Lag</strong></td>
-<td colspan="3" style="text-align: center;"><strong>SACLag</strong></td>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th colspan="2" style="text-align: center;"><strong>DDPGLag</strong></th>
+<th colspan="2" style="text-align: center;"><strong>TD3Lag</strong></th>
+<th colspan="2" style="text-align: center;"><strong>SACLag</strong></th>
 </tr>
+</thead>
 <tr class="odd">
 <td style="text-align: left;"><strong>Environment</strong></td>
 <td style="text-align: center;"><strong>Reward</strong></td>
