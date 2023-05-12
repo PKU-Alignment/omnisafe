@@ -108,18 +108,6 @@ learning algorithms. Such as DDPG, TD3 and SAC. The performance table is provide
 well-established open-source implementations, specifically [Tianshou](https://github.com/thu-ml/tianshou) and
 [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3).
 
-<style>
-table {
-  border-collapse: collapse;
-}
-
-caption {
-  caption-side: bottom;
-  text-align: justify;
-  text-justify: distribute-all-lines;
-}
-</style>
-
 <table id="compare_off_policy">
 <thead>
 <tr class="header">

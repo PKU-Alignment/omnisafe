@@ -82,17 +82,6 @@ Serving as a reliable SafeRL baseline, OmniSafe offers performance insights for 
 
 ### Performance Table
 
-<style>
-table {
-  border-collapse: collapse;
-}
-caption {
-  caption-side: bottom;
-  text-align: justify;
-  text-justify: distribute-all-lines;
-}
-</style>
-
 <table id="performance_model_based">
 <thead>
 <tr class="header">

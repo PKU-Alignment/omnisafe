@@ -158,17 +158,6 @@ For example, if I train ``PPOLag`` in ``SafetyHumanoidVelocity-v1``
 In an effort to ascertain the credibility of OmniSafe ’s algorithmic implementation, a com-parative assessment was conducted, juxtaposing the performance of classical reinforcement learning algorithms. Such as Policy Gradient, Natural Policy Gradient, TRPO and PPO. The performance table is provided in <a
 href="#compare_on_policy">Table 1</a>. with well-established open-source implementations, specifically [Tianshou](https://github.com/thu-ml/tianshou) and [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3).
 
-<style>
-table {
-  border-collapse: collapse;
-}
-caption {
-  caption-side: bottom;
-  text-align: justify;
-  text-justify: distribute-all-lines;
-}
-</style>
-
 <table id="compare_on_policy">
 <thead>
 <tr class="header">
