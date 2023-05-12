@@ -158,6 +158,17 @@ For example, if I train ``PPOLag`` in ``SafetyHumanoidVelocity-v1``
 In an effort to ascertain the credibility of OmniSafe ’s algorithmic implementation, a com-parative assessment was conducted, juxtaposing the performance of classical reinforcement learning algorithms. Such as Policy Gradient, Natural Policy Gradient, TRPO and PPO. The performance table is provided in <a
 href="#compare_on_policy">Table 1</a>. with well-established open-source implementations, specifically [Tianshou](https://github.com/thu-ml/tianshou) and [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3).
 
+<style>
+table {
+  border-collapse: collapse;
+}
+caption {
+  caption-side: bottom;
+  text-align: justify;
+  text-justify: distribute-all-lines;
+}
+</style>
+
 <table id="compare_on_policy">
 <thead>
 <tr class="header">
@@ -388,18 +399,6 @@ class="math inline">±</span> 760.93</strong></td>
 </tbody>
   <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 1:</b> The performance of OmniSafe classic on-policy algorithms, which was evaluated about published baselines within the Safety-Gymnasium MuJoCo Velocity environments. Experimental outcomes, comprising mean and standard deviation, were derived from 10 assessment iterations encompassing multiple random seeds. A noteworthy distinction lies in the fact that Stable-Baselines3 employs distinct parameters tailored to each environment, while OmniSafe maintains a consistent parameter set across all environments.</p></caption>
 </table>
-
-<style>
-table {
-  border-collapse: collapse;
-}
-
-caption {
-  caption-side: bottom;
-  text-align: justify;
-  text-justify: distribute-all-lines;
-}
-</style>
 
 ### Safe Reinforcement Learning Algorithms
 

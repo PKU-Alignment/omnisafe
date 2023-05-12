@@ -86,7 +86,6 @@ Serving as a reliable SafeRL baseline, OmniSafe offers performance insights for 
 table {
   border-collapse: collapse;
 }
-
 caption {
   caption-side: bottom;
   text-align: justify;
