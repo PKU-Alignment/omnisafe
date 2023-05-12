@@ -36,8 +36,7 @@ simmer_policy = ['TRPOSimmerPID', 'PPOSimmerPID']
 pid_lagrange_policy = ['TRPOPID', 'CPPOPID']
 early_terminated_policy = ['TRPOEarlyTerminated', 'PPOEarlyTerminated']
 offline_policy = ['BCQ', 'BCQLag', 'CRR', 'CCRR', 'COptiDICE', 'VAEBC']
-# saute_policy = ['PPOSaute', 'PPOLagSaute']
-# simmer_policy = ['PPOSimmerQ', 'PPOLagSimmerQ', 'PPOSimmerPid', 'PPOLagSimmerPid']
+
 model_cfgs = {
     'linear_lr_decay': True,
     'actor': {
@@ -170,16 +169,34 @@ def test_render():
             'torch_threads': 4,
         },
         'algo_cfgs': {
+            'obs_normalize': True,
             'steps_per_epoch': 100,
-            'update_iters': 2,
+            'action_repeat': 1,
+            'update_dynamics_cycle': 100,
+            'start_learning_steps': 3,
+        },
+        'dynamics_cfgs': {
+            'num_ensemble': 5,
+            'batch_size': 10,
+            'max_epoch': 1,
+            'predict_cost': True,
+        },
+        'planner_cfgs': {
+            'plan_horizon': 2,
+            'num_particles': 5,
+            'num_samples': 10,
+            'num_elites': 5,
+        },
+        'evaluation_cfgs': {
+            'use_eval': True,
+            'eval_cycle': 100,
         },
         'logger_cfgs': {
             'use_wandb': False,
             'save_model_freq': 1,
         },
-        'model_cfgs': model_cfgs,
     }
-    agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
+    agent = omnisafe.Agent('PETS', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
     agent.render(num_episodes=1, render_mode='rgb_array')
 

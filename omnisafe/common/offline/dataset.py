@@ -114,7 +114,7 @@ class OfflineDataset(Dataset):
             # Load data from local .npz file
             try:
                 data = np.load(dataset_name)
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:  # noqa: BLE001 # pragma: no cover 
                 raise ValueError(f'Failed to load data from {dataset_name}') from e
 
         else:

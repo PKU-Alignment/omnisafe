@@ -117,18 +117,6 @@ class ModelBasedAdapter(
         self._last_eval = 0
         self._first_log = False
 
-    def get_goal_flag_from_obs_tensor(self, obs: torch.Tensor) -> torch.Tensor | None:
-        """Get goal flag from tensor observation.
-
-        Args:
-            obs (torch.Tensor): The observation.
-        """
-        return (
-            self._env.get_goal_flag_from_obs_tensor(obs)
-            if hasattr(self._env, 'get_goal_flag_from_obs_tensor')
-            else None
-        )
-
     def get_cost_from_obs_tensor(self, obs: torch.Tensor) -> torch.Tensor | None:
         """Get cost from tensor observation.
 
