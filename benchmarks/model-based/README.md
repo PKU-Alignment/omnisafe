@@ -193,7 +193,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
 <table id="curve_model_based">
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/SafetyCarGoal1-v0-modelbased.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/model-based/benchmarks/SafetyCarGoal1-v0-modelbased.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetyCarGoal1-v0
@@ -202,7 +202,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
   </tr>
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/SafetyPointGoal1-v0-modelbased.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/model-based/benchmarks/SafetyPointGoal1-v0-modelbased.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetyPointGoal1-v0

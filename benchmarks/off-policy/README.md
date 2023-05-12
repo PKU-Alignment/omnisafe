@@ -512,16 +512,16 @@ class="math inline">±</span> 300.43</td>
 <table id="curve_off_policy">
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/Ant.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/offpolicy_ant_1e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyHumanoidVelocity-v1
+        SafetyAntVelocity-v1
       </div>
     </td>
   </tr>
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/Halfcheetah.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/offpolicy_halfcheetah_1e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetyHalfcheetahVelocity-v1
@@ -530,7 +530,7 @@ class="math inline">±</span> 300.43</td>
   </tr>
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/Hopper.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/offpolicy_hopper_1e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetyHopperVelocity-v1
@@ -539,7 +539,7 @@ class="math inline">±</span> 300.43</td>
   </tr>
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/Humanoid.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/offpolicy_humanoid_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetyHumanoidVelocity-v1
@@ -548,7 +548,7 @@ class="math inline">±</span> 300.43</td>
   </tr>
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/Walker2d.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/offpolicy_walker2d_1e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetyWalker2dVelocity-v1
@@ -557,7 +557,7 @@ class="math inline">±</span> 300.43</td>
   </tr>
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/Swimmer.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/offpolicy_swimmer_1e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetySwimmerVelocity-v1
