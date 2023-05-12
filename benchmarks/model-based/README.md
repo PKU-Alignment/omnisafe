@@ -76,29 +76,153 @@ cd examples
 python analyze_experiment_results.py
 ```
 
-## Example benchmark
+## OmniSafe Benchmark
 
-<center>
-    <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/SafetyCarGoal1-v0-modelbased.png">
-    <br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">SafetyCarGoal1-v0-modelbased</div>
-</center>
+Serving as a reliable SafeRL baseline, OmniSafe offers performance insights for SafeRL algorithms within the Safety-Gymnasium environment. The results of OmniSafe are presented in <a href="#performance_model_based">Table 1</a> and <a href="#curve_model_based">Figure 1</a>.
 
-<center>
-    <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/SafetyPointGoal1-v0-modelbased.png">
-    <br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">SafetyPointGoal1-v0-modelbased</div>
-</center>
+### Performance Table
+
+<style>
+table {
+  border-collapse: collapse;
+}
+
+caption {
+  caption-side: bottom;
+  text-align: justify;
+  text-justify: distribute-all-lines;
+}
+</style>
+
+<table id="performance_model_based">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th colspan="2" style="text-align: center;"><strong>PETS</strong></th>
+<th colspan="2" style="text-align: center;"><strong>LOOP</strong></th>
+<th colspan="2"
+style="text-align: center;"><strong>SafeLOOP</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Environment</strong></td>
+<td style="text-align: center;"><strong>Reward</strong></td>
+<td style="text-align: center;"><strong>Cost</strong></td>
+<td style="text-align: center;"><strong>Reward</strong></td>
+<td style="text-align: center;"><strong>Cost</strong></td>
+<td style="text-align: center;"><strong>Reward</strong></td>
+<td style="text-align: center;"><strong>Cost</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyCarGoal1-v0</span></td>
+<td style="text-align: center;">33.07 <span class="math inline">±</span>
+1.33</td>
+<td style="text-align: center;">61.20 <span class="math inline">±</span>
+7.23</td>
+<td style="text-align: center;">25.41 <span class="math inline">±</span>
+1.23</td>
+<td style="text-align: center;">62.64 <span class="math inline">±</span>
+8.34</td>
+<td style="text-align: center;">22.09 <span class="math inline">±</span>
+0.30</td>
+<td style="text-align: center;">0.16 <span class="math inline">±</span>
+0.15</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyPointGoal1-v0</span></td>
+<td style="text-align: center;">27.66 <span class="math inline">±</span>
+0.07</td>
+<td style="text-align: center;">49.16 <span class="math inline">±</span>
+2.69</td>
+<td style="text-align: center;">25.08 <span class="math inline">±</span>
+1.47</td>
+<td style="text-align: center;">55.23 <span class="math inline">±</span>
+2.64</td>
+<td style="text-align: center;">22.94 <span class="math inline">±</span>
+0.72</td>
+<td style="text-align: center;">0.04 <span class="math inline">±</span>
+0.07</td>
+</tr>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th colspan="2" style="text-align: center;"><strong>CCEPETS</strong></th>
+<th colspan="2" style="text-align: center;"><strong>RCEPETS</strong></th>
+<th colspan="2"
+style="text-align: center;"><strong>CAPPETS</strong></th>
+</tr>
+</thead>
+<tr class="odd">
+<td style="text-align: left;"><strong>Environment</strong></td>
+<td style="text-align: center;"><strong>Reward</strong></td>
+<td style="text-align: center;"><strong>Cost</strong></td>
+<td style="text-align: center;"><strong>Reward</strong></td>
+<td style="text-align: center;"><strong>Cost</strong></td>
+<td style="text-align: center;"><strong>Reward</strong></td>
+<td style="text-align: center;"><strong>Cost</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyCarGoal1-v0</span></td>
+<td style="text-align: center;">27.60 <span class="math inline">±</span>
+1.21</td>
+<td style="text-align: center;">1.03 <span class="math inline">±</span>
+0.29</td>
+<td style="text-align: center;">29.08 <span class="math inline">±</span>
+1.63</td>
+<td style="text-align: center;">1.02 <span class="math inline">±</span>
+0.88</td>
+<td style="text-align: center;">23.33 <span class="math inline">±</span>
+6.34</td>
+<td style="text-align: center;">0.48 <span class="math inline">±</span>
+0.17</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyPointGoal1-v0</span></td>
+<td style="text-align: center;">24.98 <span class="math inline">±</span>
+0.05</td>
+<td style="text-align: center;">1.87 <span class="math inline">±</span>
+1.27</td>
+<td style="text-align: center;">25.39 <span class="math inline">±</span>
+0.28</td>
+<td style="text-align: center;">2.46 <span class="math inline">±</span>
+0.58</td>
+<td style="text-align: center;">9.45 <span class="math inline">±</span>
+8.62</td>
+<td style="text-align: center;">0.64 <span class="math inline">±</span>
+0.77</td>
+</tr>
+</tbody>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 1:</b> The performance of OmniSafe model-based algorithms, encompassing both reward and cost, was assessed within the Safety-Gymnasium environments. It is crucial to highlight that all model-based algorithms underwent evaluation following 1e6 training steps.</p></caption>
+</table>
+
+### Performance Curves
+
+<table id="curve_model_based">
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/SafetyCarGoal1-v0-modelbased.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyCarGoal1-v0
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="./benchmarks/SafetyPointGoal1-v0-modelbased.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyPointGoal1-v0
+      </div>
+    </td>
+  </tr>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments, covering classical  reinforcement learning algorithms and safe learning algorithms mentioned in <a href="#performance_model_based">Table 1</a> and safe reinforcement learning algorithms. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+</table>
 
 ## Some Hints
 

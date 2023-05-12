@@ -1,10 +1,9 @@
-# OmniSafe's Mujoco Velocity Benchmark on On-Policy Algorithms
+# OmniSafe's Safety-Gymnasium Benchmark on On-Policy Algorithms
 
-OmniSafe's Mujoco Velocity Benchmark evaluated the performance of OmniSafe algorithm implementations in 6 environments from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
-
+OmniSafe's Safety-Gymnasium Benchmark evaluated the performance of OmniSafe algorithm implementations in **14 environments** from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
 - Default hyperparameters used for the benchmark and scripts to reproduce the results
 - A comparison of performance or code-level details with other open-source implementations or classic papers.
-- Graphs and raw data that can be used for research purposes
+- Graphs and raw data that can be used for research purposes.
 - Log details obtained during training
 - Some hints on how to fine-tune the algorithm for optimal results.
 
@@ -27,6 +26,25 @@ Supported algorithms are listed below:
 - **[ICML 2017]** [Proximal Constrained Policy Optimization (PCPO)](https://proceedings.mlr.press/v70/achiam17a)
 - **[ICLR 2019]** [Reward Constrained Policy Optimization (RCPO)](https://openreview.net/forum?id=SkfrvsA9FX)
 
+**Saute RL**
+
+- **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
+
+**Simmer**
+
+- **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration (Simmer)](https://arxiv.org/abs/2206.02675)
+
+**PID-Lagrangian**
+
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods](https://arxiv.org/abs/2007.03964)
+
+**Early Terminated MDP**
+
+- **[Pre-Print]** [Safe Exploration by Solving Early Terminated MDP](https://arxiv.org/pdf/2107.04200.pdf)
+
+
+
+
 ## Safety-Gymnasium
 
 We highly recommend using ``safety-gymnasium`` to run the following experiments. To install, in a linux machine, type:
@@ -48,8 +66,20 @@ if __name__ == '__main__':
     naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
     first_order_policy = ['CUP', 'FOCOPS', 'P3O']
     second_order_policy = ['CPO', 'PCPO']
+    saute_policy = ['PPOSaute', 'TRPOSaute']
+    simmer_policy = ['PPOSimmerPID', 'TRPOSimmerPID']
+    early_mdp_policy = ['PPOEarlyTerminated', 'TRPOEarlyTerminated']
 
-    eg.add('algo', base_policy + naive_lagrange_policy + first_order_policy + second_order_policy)
+    eg.add(
+        'algo',
+        base_policy +
+        naive_lagrange_policy +
+        first_order_policy +
+        second_order_policy +
+        saute_policy +
+        simmer_policy +
+        early_mdp_policy
+    )
 
     # you can use wandb to monitor the experiment.
     eg.add('logger_cfgs:use_wandb', [False])
@@ -107,7 +137,7 @@ Please note that before you evaluate, please set the ``LOG_DIR`` in ``evaluate_s
 For example, if I train ``PPOLag`` in ``SafetyHumanoidVelocity-v1``
 
 ```python
-    LOG_DIR = '~/omnisafe/examples/runs/PPOLag-<SafetyHumanoidVelocity-v1>/seed-000-2023-03-07-20-25-48'
+    LOG_DIR = '~/omnisafe/examples/runs/PPOLag-<SafetyHumanoidVelocity-v1>/seed-000'
     play = True
     save_replay = True
     if __name__ == '__main__':
@@ -3316,15 +3346,37 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 
 ### Hyperparameters
 
+**We are continuously improving performance for first-order algorithms and finding better hyperparameters and will release an ultimate version as soon as possible. Meanwhile, we are happy to receive any advice from users, feel free for opening PRs or issues.**
+
 #### First-Order Methods Specific Hyperparameters
 
-**We are continuously improving performance for first-order algorithms and finding better hyperparameters and will release an ultimate version as soon as possible. Meanwhile, we are happy to receive any advice from users, feel free for opening PRs or issues.**
+- ``algo_cfgs:kl_early_stop``: Whether to use early stop for KL divergence. In the first-order methods, this parameter is set to ``True``. If the KL divergence is too large, we will stop the line search and use the previous step size.
 
 #### Second-Order Methods Specific Hyperparameters
 
 - ``algo_cfgs:kl_early_stop``: Whether to use early stop for KL divergence. In the second-order methods, we use line search to find the proper step size. If the KL divergence is too large, we will stop the line search and use the previous step size. So we always set this hyperparameter to ``False``.
 
 - ``model_cfgs:actor:lr``: The learning rate of the actor network. The second-order methods use the actor network update the policy by directly setting the parameters of the policy network. So we do not need to set the learning rate of the policy network, which is set to ``None``.
+
+#### Saute RL Methods Specific Hyperparameters
+`saute_gamma`In the experiment we found that ``saute_gamma`` impacts the performance of Saute RL methods. We found that 0.999 is a good value for this hyperparameter.
+
+#### Simmer RL Methods Specific Hyperparameters
+
+- ``saute_gamma``: Since the Simmer RL methods are based on Saute RL methods, we also set ``saute_gamma`` to 0.999.
+- ``control_cfgs``: The control parameters of the Simmer RL methods. While Simmer uses a PID controller to control the safety budget, and PID is known as a parameter-sensitive controller. So we need to tune the control parameters (`Kp`, `Ki` and `Kd`) for different environments. We have done some experiments to find relatively good control parameters for each environment, that is the ``control_cfgs`` in the ``omnisafe/configs/on_policy``.
+
+#### PID-Lagrangian Methods Specific Hyperparameters
+
+PID-Lagrangian methods use a PID controller to control the lagrangian multiplier, The ``pid_kp``, ``pid_kd`` and ``pid_ki`` count for the proportional gain, derivative gain and integral gain of the PID controller respectively. As PID-Lagrangian methods use a PID controller to control the lagrangian multiplier, the hyperparameters of the PID controller are important for the performance of the algorithm.
+
+- ``pid_kp``: The proportional gain of the PID controller,  which determines how much the output responds to changes in the error signal. If the ``pid_kp`` is too large, the lagrangian multiplier will oscillate and the performance will be bad. If the ``pid_kp`` is too small, the lagrangian multiplier will update slowly and the performance will also be bad. We have done some experiments to find relatively good ``pid_kp`` for each environment, and we found that 0.1 is a good value for this hyperparameter.
+- ``pid_kd``: The derivative gain of the PID controller, which determines how much the output responds to changes in the error signal. If the ``pid_kd`` is too large, the lagrangian multiplier may be too sensitive to noise or changes in the ``ep_costs`` signal, leading to instability or oscillations. If the ``pid_kd`` is too small, the lagrangian multiplier may not respond quickly or accurately enough to changes in the ``ep_costs``. We have done some experiments to find relatively good ``pid_kd`` for each environment, and we found that 0.01 is a good value for this hyperparameter.
+- ``pid_ki``: The integral gain of the PID controller, which determines the controller's ability to eliminate the steady-state error by integrating the `ep_cost` signal over time. If the ``pid_ki`` is too large, the system may become too responsive to small errors. We have done some experiments to find relatively good ``pid_kd`` for each environment, and we found that 0.01 is a good value for this hyperparameter.
+
+#### Early Terminated MDP Methods Specific Hyperparameters
+
+- `vector_num_envs`: Though vectorized environments can speed up the training process, we found that the early terminated MDP will reset all the environments when one of the agents violates the safety constraint. So we set `vector_num_envs` to 1 in the early terminated MDP methods.
 
 ### Some Hints
 

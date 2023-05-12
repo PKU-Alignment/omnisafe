@@ -209,10 +209,10 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
   <tr>
     <td rowspan="2">Off Policy</td>
     <td rowspan="2">Primal-Dual</td>
-    <td>SACLAG; DDPGLag; TD3LAG</td>
+    <td>SACLag; DDPGLag; TD3Lag</td>
   </tr>
   <tr>
-    <td><span style="font-weight:400;font-style:normal">SACPIDLag; TD3PIDLag; DDPGPIDLag; CVPO</span></td>
+    <td><span style="font-weight:400;font-style:normal">SACPID; TD3PID; DDPGPID; CVPO</span></td>
   </tr>
   <tr>
     <td rowspan="3">Model-based</td>
