@@ -53,7 +53,7 @@ def train(  # pylint: disable=too-many-arguments
         help='number of paralleled progress for calculations.',
     ),
     total_steps: int = typer.Option(
-        1638400,
+        10000000,
         help='total number of steps to train for algorithm',
     ),
     device: str = typer.Option(
@@ -61,7 +61,7 @@ def train(  # pylint: disable=too-many-arguments
         help='device to use for training',
     ),
     vector_env_nums: int = typer.Option(
-        16,
+        1,
         help='number of vector envs to use for training',
     ),
     torch_threads: int = typer.Option(

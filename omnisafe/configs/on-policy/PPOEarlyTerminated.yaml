@@ -76,6 +76,8 @@ defaults:
     penalty_coef: 0.0
     # use cost
     use_cost: False
+    # Tolerance of constraint violation
+    cost_limit: 25.0
   # logger configurations
   logger_cfgs:
     # use wandb for logging
