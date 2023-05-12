@@ -18,7 +18,7 @@ Linear Algebra
 .. grid:: 2
 
     .. grid-item::
-        :columns: 12 6 6 6
+        :columns: 12 6 6 7
 
         .. card::
             :class-header: sd-bg-info sd-text-white sd-font-weight-bold
@@ -29,7 +29,7 @@ Linear Algebra
             A vector is a mathematical object representing a quantity that has
             both magnitude and direction. It is an ordered finite list of
             numbers that can be written as a vertical array surrounded by
-            square brackets, as shown in the following example:
+            square brackets.
 
             .. math::
 

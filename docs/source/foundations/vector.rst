@@ -22,9 +22,9 @@ Vector Projection
 
 The projection of a vector :math:`\boldsymbol{y} \in \mathbb{R}^m` onto the
 span of :math:`\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}` (here
-we assume :math:`\boldsymbol{x}_i \in \mathbb{R}^m` )is the vector
-:math:`\boldsymbol{v} \in \operatorname{span}\left(\left\{\boldsymbol{x}_1,
-\ldots, \boldsymbol{x}_n\right\}\right)`,
+we assume :math:`\boldsymbol{x}_i \in \mathbb{R}^m` and denote :math:`\operatorname{span}(\{\boldsymbol{x}_1,
+\ldots, \boldsymbol{x}_n\})` as  :math:`\boldsymbol{X}` ) is the vector
+:math:`\boldsymbol{v} \in \boldsymbol{X}`,
 such that :math:`\boldsymbol{v}` is as close as possible to :math:`\boldsymbol
 {y}`, as measured by the Euclidean norm
 :math:`\|\boldsymbol{v}-\boldsymbol{y}\|_2`. We denote the projection as
@@ -32,7 +32,7 @@ such that :math:`\boldsymbol{v}` is as close as possible to :math:`\boldsymbol
 \left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}\right)`
 and can define it formally as
 
-.. math:: \operatorname{Proj}\left(\boldsymbol{y} ;\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}\right)=\mathop{\arg\min}\limits_{\boldsymbol{v} \in \operatorname{span}\left(\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}\right)}\|\boldsymbol{y}-\boldsymbol{v}\|_2 .
+.. math:: \operatorname{Proj}(\boldsymbol{y} ;\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\})=\mathop{\arg\min}\limits_{\boldsymbol{v} \in \boldsymbol{X}}\|\boldsymbol{y}-\boldsymbol{v}\|_2 .
 
 Given a full rank matrix :math:`\mathbf{A} \in \mathbb{R}^{m \times n}`
 with :math:`m \geq n`, we can define the projection of a vector

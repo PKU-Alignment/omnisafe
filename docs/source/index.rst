@@ -18,7 +18,7 @@ Welcome To OmniSafe Tutorial
 
 Welcome to `OmniSafe <https://jmlr.org/papers/v16/garcia15a.html>`_ in Safe RL!
 OmniSafe is a comprehensive and dependable benchmark for safe reinforcement
-learning (RL), including over 40 different types of algorithms, covering
+learning (RL), including different types of algorithms, covering
 a multitude of safe reinforcement learning (Safe RL) domains.
 
 .. hint::
@@ -47,7 +47,7 @@ a multitude of safe reinforcement learning (Safe RL) domains.
 
         For Average Users
         ^^^^^^^^^^^^^^^^^
-        If you have a general understanding of RL algorithms but need to familiarize yourself with Safe RL, 
+        If you have a general understanding of RL algorithms but need to familiarize yourself with Safe RL,
         this tutorial introduces some classic Safe RL algorithms to you so you can get started quickly.
 
     .. grid-item-card::
@@ -68,9 +68,10 @@ especially `Deep RL`_ algorithms, have demonstrated remarkable performance in
 various tasks.
 Notable examples include:
 
-- Achieving high scores on Atari games using only visual input.
-- Completing complex control tasks in high dimensions.
-- Beating human grandmasters at Go tournaments.
+.. hint::
+    - Achieving high scores on Atari games using only visual input.
+    - Completing complex control tasks in high dimensions.
+    - Beating human grandmasters at Go tournaments.
 
 However, during the policy updating process in RL, agents often learn to
 **cheating or even dangerous behaviors** to improve their performance.

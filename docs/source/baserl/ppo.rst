@@ -43,7 +43,7 @@ primary variants of PPO:
 .. grid:: 2
 
     .. grid-item::
-        :columns: 12 6 6 6
+        :columns: 12 6 6 5
 
         .. card::
             :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
@@ -185,7 +185,7 @@ performs the following steps in each policy update:
 
             If :math:`d>d_{\text {targ }} \times 1.5, \beta \leftarrow \beta * 2`
 
-The updated :math:`\beta` is used for the next policy update.
+            The updated :math:`\beta` is used for the next policy update.
 
 ------
 
@@ -278,7 +278,7 @@ We can consider :math:`\hat{A}_{\pi}^{(k)}` to be an estimator of the advantage
 function.
 
 .. hint::
-    The bias generally becomes smaller as :math:`k \arrow +\infty`,
+    The bias generally becomes smaller as :math:`k \rightarrow +\infty`,
     since the term :math:`\gamma^k V(s_{t+k})` becomes more heavily discounted.
     Taking :math:`k \rightarrow +\infty`, we get:
 
