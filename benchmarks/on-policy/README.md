@@ -3396,7 +3396,7 @@ The Lagrangian method often has the phenomenon of unstable updates and easy over
 | -----------| ------------| ------ |
 |`lagrangian_multiplier_init`|Initial value of lagrangian multiplier|0.001|
 |`lambda_lr`|Learning rate of lagrangian multiplier|0.035|
-|`lambda_optimizer`|Type of lagrangian optimizer|"Adam"|
+|`lambda_optimizer`|Type of lagrangian optimizer|`Adam`|
 
 
 
