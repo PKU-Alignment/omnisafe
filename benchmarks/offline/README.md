@@ -105,7 +105,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/SafetyPointCircle1-v0-0.25.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetyPointCircle1-v0-0.25.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -125,7 +125,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/SafetyPointCircle1-v0-0.5.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetyPointCircle1-v0-0.5.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -145,7 +145,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/SafetyPointCircle1-v0-0.75.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetyPointCircle1-v0-0.75.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -165,7 +165,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/SafetCarCircle1-v0-0.25.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetCarCircle1-v0-0.25.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -185,7 +185,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/SafetyCarCircle1-v0-0.5.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetyCarCircle1-v0-0.5.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -205,7 +205,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="./benchmarks/SafetyCarCircle1-v0-0.75.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetyCarCircle1-v0-0.75.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
