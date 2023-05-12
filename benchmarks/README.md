@@ -1,6 +1,6 @@
-# OmniSafe's Mujoco Velocity Benchmark on SafeRL algorithms
+# OmniSafe's Safety-Gymnasium Benchmark on SafeRL algorithms
 
-The OmniSafe Mujoco Velocity Benchmark assesses the efficacy of OmniSafe's SafeRL algorithms in six environments from the Safety-Gymnasium task suite. For each supported algorithm and environment, we offer default hyperparameters utilized during the benchmark, as well as scripts to replicate the results. Additionally, we provide performance comparisons and code-level details with other open-source implementations or classic papers. Our package includes graphs and raw data that can be used for research purposes, along with log details from training. Finally, we offer hints on fine-tuning the algorithm for optimal results.
+The OmniSafe Safety-Gymnasium Benchmark assesses the efficacy of OmniSafe's SafeRL algorithms in several environments from the Safety-Gymnasium task suite. For each supported algorithm and environment, we offer default hyperparameters utilized during the benchmark, as well as scripts to replicate the results. Additionally, we provide performance comparisons and code-level details with other open-source implementations or classic papers. Our package includes graphs and raw data that can be used for research purposes, along with log details from training. Finally, we offer hints on fine-tuning the algorithm for optimal results.
 
 ## On-Policy
 ### Supported Algorithms
@@ -23,12 +23,55 @@ The OmniSafe Mujoco Velocity Benchmark assesses the efficacy of OmniSafe's SafeR
 - **[ICML 2017]** [Proximal Constrained Policy Optimization (PCPO)](https://proceedings.mlr.press/v70/achiam17a)
 - **[ICLR 2019]** [Reward Constrained Policy Optimization (RCPO)](https://openreview.net/forum?id=SkfrvsA9FX)
 
+
+**Saute RL**
+
+- **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (PPOSaute, TRPOSaute)](https://arxiv.org/abs/2202.06558)
+
+**Simmer**
+
+- **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration (PPOSimmerPID, TRPOSimmerPID)](https://arxiv.org/abs/2206.02675)
+
+**PID-Lagrangian**
+
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods(CPPOPID, TRPOPID)](https://arxiv.org/abs/2007.03964)
+
+**Early Terminated MDP**
+
+- **[Pre-Print 2021]** [Safe Exploration by Solving Early Terminated MDP(PPOEarlyTerminated, TRPOEarlyTerminated)](https://arxiv.org/pdf/2107.04200.pdf)
+
 > **More details can be refer to [On Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/on-policy/README.md).**
 
 ## Off-Policy
+
 ### Supported Algorithms
-- [Deep Deterministic Policy Gradient (DDPG)](https://arxiv.org/pdf/1509.02971.pdf)
-- [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
-- [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
+
+- **[ICLR 2016]** [Deep Deterministic Policy Gradient (DDPG)](https://arxiv.org/pdf/1509.02971.pdf)
+- **[ICML 2018]** [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
+- **[ICML 2018]** [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
+- [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
+- [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
+- [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
+
 
 > **More details can be refer to [Off Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/off-policy/README.md).**
+
+## Model-Based
+
+- **[NeurIPS 2001]** [Deep Reinforcement Learning in a Handful of Trials using Probabilistic Dynamics Models (PETS))](https://arxiv.org/abs/1805.12114)
+- **[CoRL 2021]** [Learning Off-Policy with Online Planning (LOOP and SafeLOOP)](https://arxiv.org/abs/2008.10066)
+- **[AAAI 2022]** [Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
+- **[ICML 2022 Workshop]** [Constrained Model-based Reinforcement Learning with Robust Cross-Entropy Method (RCE)](https://arxiv.org/abs/2010.07968)
+- **[NeurIPS 2018]** [Constrained Cross-Entropy Method for Safe Reinforcement Learning (CCE)](https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html)
+
+> **More details can be refer to [Off Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/model-based/README.md).**
+
+## Offline
+
+- **[ICML 2019]** [Batch-Constrained deep Q-learning(BCQ)](https://arxiv.org/pdf/1812.02900.pdf)
+- [The Lagrange version of BCQ (BCQ-Lag)](https://arxiv.org/pdf/1812.02900.pdf)
+- **[NeurIPS 2020]** [Critic Regularized Regression](https://proceedings.neurips.cc//paper/2020/file/588cb956d6bbe67078f29f8de420a13d-Paper.pdf)
+- [The Constrained version of CRR (C-CRR)](https://proceedings.neurips.cc/paper/2020/hash/588cb956d6bbe67078f29f8de420a13d-Abstract.html)
+- **[ICLR 2022 (Spotlight)]** [COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation](https://arxiv.org/abs/2204.08957?context=cs.AI)
+
+> **More details can be refer to [Off Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/offline/README.md).**

@@ -7,12 +7,13 @@ OmniSafe's Mujoco Velocity Benchmark evaluated the performance of OmniSafe algor
 - Some hints on how to fine-tune the algorithm for optimal results.
 
 Supported algorithms are listed below:
-- [Deep Deterministic Policy Gradient (DDPG)](https://arxiv.org/pdf/1509.02971.pdf)
-- [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
-- [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
-- [DDPGLag](https://cdn.openai.com/safexp-short.pdf)
-- [TD3Lag](https://cdn.openai.com/safexp-short.pdf)
-- [SACLag](https://cdn.openai.com/safexp-short.pdf)
+
+- **[ICLR 2016]** [Deep Deterministic Policy Gradient (DDPG)](https://arxiv.org/pdf/1509.02971.pdf)
+- **[ICML 2018]** [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
+- **[ICML 2018]** [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
+- [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
+- [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
+- [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
 
 ## Safety-Gymnasium
 
@@ -29,13 +30,23 @@ You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
     eg = ExperimentGrid(exp_name='Off-Policy-Velocity')
 
     # set up the algorithms.
-    off_policy = ['DDPG', 'SAC', 'TD3']
+    off_policy = ['DDPG', 'SAC', 'TD3', 'DDPGLag', 'TD3Lag', 'SACLag']
     eg.add('algo', off_policy)
 
     # you can use wandb to monitor the experiment.
     eg.add('logger_cfgs:use_wandb', [False])
     # you can use tensorboard to monitor the experiment.
     eg.add('logger_cfgs:use_tensorboard', [True])
+
+    # Set the device.
+    avaliable_gpus = list(range(torch.cuda.device_count()))
+    gpu_id = [0, 1, 2, 3]
+    # if you want to use CPU, please set gpu_id = None
+    # gpu_id = None
+
+    if not set(gpu_id).issubset(avaliable_gpus):
+        warnings.warn('The GPU ID is not available, use CPU instead.', stacklevel=1)
+        gpu_id = None
 
     # set up the environment.
     eg.add('env_id', [
@@ -47,7 +58,7 @@ You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
         'SafetyHumanoidVelocity-v1'
         ])
     eg.add('seed', [0, 5, 10, 15, 20])
-    eg.run(train, num_pool=5)
+    eg.run(train, num_pool=5, gpu_id=gpu_id)
 ```
 
 After that, you can run the following command to run the benchmark:
@@ -84,7 +95,7 @@ Please note that before you evaluate, please set the ``LOG_DIR`` in ``evaluate_s
 For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v1``
 
 ```python
-    LOG_DIR = '~/omnisafe/examples/runs/DDPG-<SSafetyHumanoidVelocity-v1>/seed-000-2023-03-07-20-25-48'
+    LOG_DIR = '~/omnisafe/examples/runs/DDPG-<SSafetyHumanoidVelocity-v1>/seed-000'
     play = True
     save_replay = True
     if __name__ == '__main__':
@@ -102,9 +113,8 @@ For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v1``
 
 ### Classic Reinforcement Learning Algorithms
 
-In an effort to ascertain the credibility of OmniSafe ’s algorithmic implementation, a com-
-parative assessment was conducted, juxtaposing the performance of classical reinforcement
-learning algorithms. Such as DDPG, TD3 and SAC. The performance table is provided in <a href="#compare_off_policy">Table 1</a>. with
+In an effort to ascertain the credibility of OmniSafe ’s algorithmic implementation, a com-parative assessment was conducted, juxtaposing the performance of classical reinforcement
+learning algorithms, such as DDPG, TD3 and SAC. The performance table is provided in <a href="#compare_off_policy">Table 1</a>, with
 well-established open-source implementations, specifically [Tianshou](https://github.com/thu-ml/tianshou) and
 [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3).
 
@@ -570,6 +580,8 @@ class="math inline">±</span> 300.43</td>
 ## Experiment Analysis
 
 ### Hyperparameters
+
+**We are continuously improving performance for first-order algorithms and finding better hyperparameters and will release an ultimate version as soon as possible. Meanwhile, we are happy to receive any advice from users, feel free for opening PRs or issues.**
 
 Off-Policy algorithms almost share the same hyperparameters, the share hyperparameters are listed below:
 

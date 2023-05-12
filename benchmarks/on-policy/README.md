@@ -8,10 +8,11 @@ OmniSafe's Safety-Gymnasium Benchmark evaluated the performance of OmniSafe algo
 - Some hints on how to fine-tune the algorithm for optimal results.
 
 Supported algorithms are listed below:
+
 **First-Order**
 
 - **[NIPS 1999]** [Policy Gradient(PG)](https://papers.nips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf)
-- [Proximal Policy Optimization (PPO)](https://arxiv.org/pdf/1707.06347.pdf)
+- **[Pre-Print 2017]**[Proximal Policy Optimization (PPO)](https://arxiv.org/pdf/1707.06347.pdf)
 - [The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
 - **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning(P3O)]( https://arxiv.org/pdf/2205.11814.pdf)
 - **[NeurIPS 2020]** [First Order Constrained Optimization in Policy Space (FOCOPS)](https://arxiv.org/abs/2002.06506)
@@ -28,19 +29,19 @@ Supported algorithms are listed below:
 
 **Saute RL**
 
-- **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
+- **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (PPOSaute, TRPOSaute)](https://arxiv.org/abs/2202.06558)
 
 **Simmer**
 
-- **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration (Simmer)](https://arxiv.org/abs/2206.02675)
+- **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration (PPOSimmerPID, TRPOSimmerPID)](https://arxiv.org/abs/2206.02675)
 
 **PID-Lagrangian**
 
-- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods](https://arxiv.org/abs/2007.03964)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods(CPPOPID, TRPOPID)](https://arxiv.org/abs/2007.03964)
 
 **Early Terminated MDP**
 
-- **[Pre-Print]** [Safe Exploration by Solving Early Terminated MDP](https://arxiv.org/pdf/2107.04200.pdf)
+- **[Pre-Print 2021]** [Safe Exploration by Solving Early Terminated MDP(PPOEarlyTerminated, TRPOEarlyTerminated)](https://arxiv.org/pdf/2107.04200.pdf)
 
 
 
@@ -86,6 +87,16 @@ if __name__ == '__main__':
     # you can use tensorboard to monitor the experiment.
     eg.add('logger_cfgs:use_tensorboard', [True])
 
+    # Set the device.
+    avaliable_gpus = list(range(torch.cuda.device_count()))
+    gpu_id = [0, 1, 2, 3]
+    # if you want to use CPU, please set gpu_id = None
+    # gpu_id = None
+
+    if not set(gpu_id).issubset(avaliable_gpus):
+        warnings.warn('The GPU ID is not available, use CPU instead.', stacklevel=1)
+        gpu_id = None
+
     # set up the environment.
     eg.add('env_id', [
         'SafetyHopperVelocity-v1',
@@ -99,7 +110,7 @@ if __name__ == '__main__':
 
     # total experiment num must can be divided by num_pool
     # meanwhile, users should decide this value according to their machine
-    eg.run(train, num_pool=5)
+    eg.run(train, num_pool=5, gpu_id=gpu_id)
 ```
 
 After that, you can run the following command to run the benchmark:
@@ -132,7 +143,7 @@ cd examples
 python evaluate_saved_policy.py
 ```
 
-Please note that before you evaluate, please set the ``LOG_DIR`` in ``evaluate_saved_policy.py``.
+Please note that before you evaluate, set the ``LOG_DIR`` in ``evaluate_saved_policy.py``.
 
 For example, if I train ``PPOLag`` in ``SafetyHumanoidVelocity-v1``
 
@@ -154,8 +165,7 @@ For example, if I train ``PPOLag`` in ``SafetyHumanoidVelocity-v1``
 ## OmniSafe Benchmark
 
 ### Classic Reinforcement Learning Algorithms
-
-In an effort to ascertain the credibility of OmniSafe ’s algorithmic implementation, a com-parative assessment was conducted, juxtaposing the performance of classical reinforcement learning algorithms. Such as Policy Gradient, Natural Policy Gradient, TRPO and PPO. The performance table is provided in <a
+To ascertain the credibility of OmniSafe ’s algorithmic implementation, a comparative assessment was conducted, juxtaposing the performance of classical reinforcement learning algorithms. Such as Policy Gradient, Natural Policy Gradient, TRPO and PPO. The performance table is provided in <a
 href="#compare_on_policy">Table 1</a>. with well-established open-source implementations, specifically [Tianshou](https://github.com/thu-ml/tianshou) and [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3).
 
 <table id="compare_on_policy">
@@ -391,7 +401,7 @@ class="math inline">±</span> 760.93</strong></td>
 
 ### Safe Reinforcement Learning Algorithms
 
-Serving as a reliable SafeRL baseline, OmniSafe offers performance insights for SafeRL algorithms within the Safety-Gymnasium environment. The results of OmniSafe are presented in <a href="#performance_on_policy">Table 2</a> and the training curves in the following sections (Please click the triangle button to see the training curves).
+Serving as a reliable SafeRL baseline, OmniSafe offers performance insights for SafeRL algorithms within the Safety-Gymnasium environment. The results of OmniSafe are presented in <a href="#performance_on_policy">Table 2</a> and the training curves are in the following sections (Please click the triangle button to see the training curves).
 
 #### Performance Table
 
@@ -3338,11 +3348,11 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 
 #### First-Order Methods Specific Hyperparameters
 
-- ``algo_cfgs:kl_early_stop``: Whether to use early stop for KL divergence. In the first-order methods, this parameter is set to ``True``. If the KL divergence is too large, we will stop the line search and use the previous step size.
+- ``algo_cfgs:kl_early_stop``: Whether to use the `early stop` trick for KL divergence. In first-order methods, this parameter is set to ``True``. If the KL divergence is too large, we will stop the line search and use the previous step size.
 
 #### Second-Order Methods Specific Hyperparameters
 
-- ``algo_cfgs:kl_early_stop``: Whether to use early stop for KL divergence. In the second-order methods, we use line search to find the proper step size. If the KL divergence is too large, we will stop the line search and use the previous step size. So we always set this hyperparameter to ``False``.
+- ``algo_cfgs:kl_early_stop``: Whether to use early stop for KL divergence. In the second-order methods, we use line search to find the proper step size. If the KL divergence is too large, we will stop the line search and use the previous step size. So it is not necessary to use the ``early stop`` trick for KL divergence in the second-order methods. We set ``kl_early_stop=False`` in the second-order methods.
 
 - ``model_cfgs:actor:lr``: The learning rate of the actor network. The second-order methods use the actor network update the policy by directly setting the parameters of the policy network. So we do not need to set the learning rate of the policy network, which is set to ``None``.
 
@@ -3356,11 +3366,11 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 
 #### PID-Lagrangian Methods Specific Hyperparameters
 
-PID-Lagrangian methods use a PID controller to control the lagrangian multiplier, The ``pid_kp``, ``pid_kd`` and ``pid_ki`` count for the proportional gain, derivative gain and integral gain of the PID controller respectively. As PID-Lagrangian methods use a PID controller to control the lagrangian multiplier, the hyperparameters of the PID controller are important for the performance of the algorithm.
+PID-Lagrangian methods use a PID controller to control the lagrangian multiplier, The `pid_kp`, `pid_kd` and `pid_ki` count for the proportional gain, derivative gain and integral gain of the PID controller respectively. As PID-Lagrangian methods use a PID controller to control the lagrangian multiplier, the hyperparameters of the PID controller are important for the performance of the algorithm.
 
-- ``pid_kp``: The proportional gain of the PID controller,  which determines how much the output responds to changes in the error signal. If the ``pid_kp`` is too large, the lagrangian multiplier will oscillate and the performance will be bad. If the ``pid_kp`` is too small, the lagrangian multiplier will update slowly and the performance will also be bad. We have done some experiments to find relatively good ``pid_kp`` for each environment, and we found that 0.1 is a good value for this hyperparameter.
-- ``pid_kd``: The derivative gain of the PID controller, which determines how much the output responds to changes in the error signal. If the ``pid_kd`` is too large, the lagrangian multiplier may be too sensitive to noise or changes in the ``ep_costs`` signal, leading to instability or oscillations. If the ``pid_kd`` is too small, the lagrangian multiplier may not respond quickly or accurately enough to changes in the ``ep_costs``. We have done some experiments to find relatively good ``pid_kd`` for each environment, and we found that 0.01 is a good value for this hyperparameter.
-- ``pid_ki``: The integral gain of the PID controller, which determines the controller's ability to eliminate the steady-state error by integrating the `ep_cost` signal over time. If the ``pid_ki`` is too large, the system may become too responsive to small errors. We have done some experiments to find relatively good ``pid_kd`` for each environment, and we found that 0.01 is a good value for this hyperparameter.
+- `pid_kp`: The proportional gain of the PID controller determines how much the output responds to changes in the `ep_costs` signal. If the `pid_kp` is too large, the lagrangian multiplier will oscillate and the performance will be bad. If the `pid_kp` is too small, the lagrangian multiplier will update slowly and the performance will also be bad. We have done some experiments to find relatively good `pid_kp` for each environment, and we found that 0.1 is a good value for this hyperparameter.
+- `pid_kd`: The derivative gain of the PID controller determines how much the output responds to changes in the `ep_costs` signal. If the `pid_kd` is too large, the lagrangian multiplier may be too sensitive to noise or changes in the `ep_costs` signal, leading to instability or oscillations. If the `pid_kd` is too small, the lagrangian multiplier may not respond quickly or accurately enough to changes in the `ep_costs`. We have done some experiments to find relatively good `pid_kd` for each environment, and we found that 0.01 is a good value for this hyperparameter.
+- `pid_ki`: The integral gain of the PID controller determines the controller's ability to eliminate the steady-state error, by integrating the `ep_costs` signal over time. If the `pid_ki` is too large, the lagrangian multiplier may become too responsive to small errors. We have done some experiments to find relatively good `pid_kd` for each environment, and we found that 0.01 is a good value for this hyperparameter.
 
 #### Early Terminated MDP Methods Specific Hyperparameters
 
@@ -3380,7 +3390,16 @@ In experiments, we found that the ``obs_normlize=True`` always performs better t
 
 Importantly, we found that the ``rew_normlize=True`` not always performs better than ``rew_normlize=False``, especially in the ``SafetyHopperVelocity-v1`` and ``SafetyWalker2dVelocity`` environment.
 
-The Lagrangian method often has the phenomenon of unstable update and easy overshoot。 We found that with ``cost_normlize=True``, the Lagrangian method can update more stable and avoid overshoot to some degree. So we set ``cost_normlize=True`` in the Lagrangian method.
+The Lagrangian method often has the phenomenon of unstable updates and easy overshoot. We found that the following Lagrangian multiplier parameters is suitable.
+
+| Parameters | Descriptions| Values |
+| -----------| ------------| ------ |
+|`lagrangian_multiplier_init`|Initial value of lagrangian multiplier|0.001|
+|`lambda_lr`|Learning rate of lagrangian multiplier|0.035|
+|`lambda_optimizer`|Type of lagrangian optimizer|"Adam"|
+
+
+
 
 Besides, the hyperparameter ``train_cfgs:torch_num_threads`` is also important. on-policy algorithms always use more time to update policy than to sample data. So we use ``torch_num_threads`` to speed up the update process.
 
