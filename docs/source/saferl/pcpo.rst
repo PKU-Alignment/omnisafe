@@ -326,7 +326,7 @@ For each policy update:
 
                     Question
                     ^^^
-                    Is using a linear approximation to the constraint set enough to ensure constraint satisfaction since the real constraint set is maybe non-convex?
+                    Is using a linear approximation to the constraint set enough to ensure constraint satisfaction?
 
             .. tab-item:: Question II
                 :sync: key2

@@ -41,7 +41,7 @@ remain within the fixed KL divergence constraint.
 .. grid:: 2
 
     .. grid-item::
-        :columns: 12 6 6 6
+        :columns: 12 6 6 5
 
         .. card::
             :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
@@ -49,7 +49,7 @@ remain within the fixed KL divergence constraint.
 
             Problems of NPG
             ^^^
-            -  It is very difficult to calculate the entire Hessian matrix directly.
+            -  It is very difficult to calculate the Hessian matrix directly.
 
             -  Error introduced by Taylor expansion because of the fixed step length.
 
@@ -405,7 +405,7 @@ The method TRPO describes involves two steps:
 .. grid:: 2
 
     .. grid-item::
-      :columns: 12 6 6 6
+      :columns: 12 6 6 5
 
       .. card::
          :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
@@ -415,9 +415,9 @@ The method TRPO describes involves two steps:
          ^^^
          -  It is prohibitively costly to form the full Hessian matrix.
 
-         -  How to compute the maximal step length such that the KL divergence is satisfied.
+         -  How to compute the maximal step length such that the KL divergence is satisfied ?
 
-         -  How to ensure improvement of the surrogate objective and satisfaction of the KL divergence.
+         -  How to ensure improvement of the surrogate objective and satisfaction of the KL divergence ?
     .. grid-item::
       :columns: 12 6 6 6
 
