@@ -90,6 +90,16 @@ class OfflineDataset(Dataset):
             sha256sum='e8f1ba69a29456b4e593bf2524f3fd436a1918edfe16a4ec98d18aaab70d719b',
             episode_length=500,
         ),
+        'SafetyPointGoal1-v0_data_test': OfflineMeta(
+            url='https://drive.google.com/file/d/1JPJ127bWM_Tdej0AEGoFAqFFG9mWtzsN/view?usp=share_link',
+            sha256sum='417b580cd4ef8f05a66d54c5d996b35a23a0e6c8ff8bae06807313a638df2dc6',
+            episode_length=1,
+        ),
+        'SafetyPointGoal1-v0_data_init_test': OfflineMeta(
+            url='https://drive.google.com/file/d/1WlfkoUvWuFUYVMlGwi_EdGO914oWndpV/view?usp=share_link',
+            sha256sum='fce6cc1fd0c294a8b66397f2f5276c9e7055821ded1f3a6e58e491eb342b1fbe',
+            episode_length=1,
+        ),
     }
     _default_download_dir = '~/.cache/omnisafe/datasets/'
 
@@ -114,7 +124,7 @@ class OfflineDataset(Dataset):
             # Load data from local .npz file
             try:
                 data = np.load(dataset_name)
-            except Exception as e:  # noqa: BLE001 # pragma: no cover 
+            except Exception as e:  # noqa: BLE001
                 raise ValueError(f'Failed to load data from {dataset_name}') from e
 
         else:

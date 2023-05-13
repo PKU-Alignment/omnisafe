@@ -140,14 +140,30 @@ def test_train(
     env_id='SafetyHalfCheetahVelocity-v1',
 ):
     """Test train."""
-    eg = ExperimentGrid(exp_name=exp_name)
-    eg.add('algo', [algo])
-    eg.add('env_id', [env_id])
-    eg.add('logger_cfgs:use_wandb', [False])
-    eg.add('algo_cfgs:steps_per_epoch', [512])
-    eg.add('train_cfgs:total_steps', [1024, 2048])
-    eg.add('train_cfgs:vector_env_nums', [1])
-    eg.run(train, num_pool=1, is_test=True)
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 200,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'steps_per_epoch': 100,
+            'update_iters': 2,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+            'log_dir':'saved_log'
+        },
+    }
+    train(
+        exp_id=exp_name,
+        algo=algo,
+        env_id=env_id,
+        custom_cfgs=custom_cfgs,
+    )
+    # delete the saved data
+    os.system(f'rm -rf saved_log')
 
 
 @helpers.parametrize(

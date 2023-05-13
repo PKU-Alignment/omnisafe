@@ -242,6 +242,7 @@ def test_cem_based(algo):
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
+    agent.render()
 
 
 @helpers.parametrize(algo=['LOOP', 'SafeLOOP'])

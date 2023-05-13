@@ -13,12 +13,14 @@
 # limitations under the License.
 # ==============================================================================
 """Test offline module."""
-
+from __future__ import annotations
 import os
 
-from omnisafe.common.offline.data_collector import OfflineDataCollector
-from omnisafe.common.offline.dataset import OfflineDataset
 import torch
+
+from omnisafe.common.offline.data_collector import OfflineDataCollector
+from omnisafe.common.offline.dataset import OfflineDataset, OfflineDatasetWithInit
+
 
 def test_data_collector():
     env_name = 'SafetyPointGoal1-v0'
@@ -42,28 +44,13 @@ def test_data_collector():
     for agent, model_name, num in agents:
         col.register_agent(agent, model_name, num)
     col.collect(save_dir)
+    # delete the saved data
+    os.system(f'rm -rf {save_dir}')
 
-def test_offline_dataset():
-    not_a_dir = 'not_a_dir'
-    base_dir = os.path.dirname(__file__)
-    save_dir = os.path.join(base_dir, 'saved_data')
-    data_path = os.path.join(save_dir, 'SafetyPointGoal1-v0_data.npz')
-    dataset = OfflineDataset(
-        dataset_name=data_path,
-        gpu_threshold=1.0,
-    )
-    dataset_transfered = OfflineDataset(
-        dataset_name=data_path,
-        gpu_threshold=99999,
-    )
+
+
+def check_dataset(dataset: OfflineDataset|OfflineDatasetWithInit):
     (obs, action, reward, cost, next_obs, done) = dataset.sample()
-    assert isinstance(obs, torch.Tensor) and obs.shape == torch.Size([256, 60])
-    assert isinstance(next_obs, torch.Tensor) and next_obs.shape == torch.Size([256, 60])
-    assert isinstance(action, torch.Tensor) and action.shape == torch.Size([256, 2])
-    assert isinstance(reward, torch.Tensor) and reward.shape == torch.Size([256, 1])
-    assert isinstance(cost, torch.Tensor) and cost.shape == torch.Size([256, 1])
-    assert isinstance(done, torch.Tensor) and done.shape == torch.Size([256, 1])
-    (obs, action, reward, cost, next_obs, done) = dataset_transfered.sample()
     assert isinstance(obs, torch.Tensor) and obs.shape == torch.Size([256, 60])
     assert isinstance(next_obs, torch.Tensor) and next_obs.shape == torch.Size([256, 60])
     assert isinstance(action, torch.Tensor) and action.shape == torch.Size([256, 2])
@@ -77,12 +64,49 @@ def test_offline_dataset():
     assert isinstance(reward, torch.Tensor) and reward.shape == torch.Size([1])
     assert isinstance(cost, torch.Tensor) and cost.shape == torch.Size([1])
     assert isinstance(done, torch.Tensor) and done.shape == torch.Size([1])
-    (obs, action, reward, cost, next_obs, done) = dataset_transfered[0]
+
+def check_init_dataset(dataset: OfflineDataset|OfflineDatasetWithInit):
+    (obs, action, reward, cost, next_obs, done, init_obs) = dataset.sample()
+    assert isinstance(obs, torch.Tensor) and obs.shape == torch.Size([256, 60])
+    assert isinstance(next_obs, torch.Tensor) and next_obs.shape == torch.Size([256, 60])
+    assert isinstance(action, torch.Tensor) and action.shape == torch.Size([256, 2])
+    assert isinstance(reward, torch.Tensor) and reward.shape == torch.Size([256, 1])
+    assert isinstance(cost, torch.Tensor) and cost.shape == torch.Size([256, 1])
+    assert isinstance(done, torch.Tensor) and done.shape == torch.Size([256, 1])
+    assert isinstance(init_obs, torch.Tensor) and init_obs.shape == torch.Size([256, 60])
+    (obs, action, reward, cost, next_obs, done, init_obs) = dataset[0]
     assert isinstance(obs, torch.Tensor) and obs.shape == torch.Size([60])
     assert isinstance(next_obs, torch.Tensor) and next_obs.shape == torch.Size([60])
     assert isinstance(action, torch.Tensor) and action.shape == torch.Size([2])
     assert isinstance(reward, torch.Tensor) and reward.shape == torch.Size([1])
     assert isinstance(cost, torch.Tensor) and cost.shape == torch.Size([1])
     assert isinstance(done, torch.Tensor) and done.shape == torch.Size([1])
+    assert isinstance(init_obs, torch.Tensor) and init_obs.shape == torch.Size([60])
+
+def test_url_link():
+    dataset = OfflineDataset(
+        dataset_name='SafetyPointGoal1-v0_data_test',
+        gpu_threshold=0.0,
+    )
+    dataset_transfered = OfflineDataset(
+        dataset_name='SafetyPointGoal1-v0_data_test',
+        gpu_threshold=99999.9,
+    )
+    dataset_init = OfflineDatasetWithInit(
+        dataset_name='SafetyPointGoal1-v0_data_init_test',
+        gpu_threshold=0.0,
+    )
+    dataset_init_transfered = OfflineDatasetWithInit(
+        dataset_name='SafetyPointGoal1-v0_data_init_test',
+        gpu_threshold=99999.9,
+    )
+    check_dataset(dataset=dataset)
+    check_dataset(dataset=dataset_transfered)
+    check_init_dataset(dataset=dataset_init)
+    check_init_dataset(dataset=dataset_init_transfered)
     # delete the saved data
-    os.system(f'rm -rf {save_dir}')
+
+    os.system(f'rm -rf ./~')
+
+if __name__ == '__main__':
+    test_url_link()
