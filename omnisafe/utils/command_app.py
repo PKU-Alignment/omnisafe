@@ -161,6 +161,7 @@ def train(  # pylint: disable=too-many-arguments
             console.print('failed to evaluate model', style='red bold')
             console.print(Exception, style='red bold')
 
+
 @app.command()
 def benchmark(
     exp_name: str = typer.Argument(

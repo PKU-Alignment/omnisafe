@@ -412,4 +412,3 @@ class LOOP(PETS):
         log_prob = self._actor_critic.actor.log_prob(action)
         q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
         return (self._alpha * log_prob - torch.min(q1_value_r, q2_value_r)).mean()
-

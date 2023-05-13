@@ -309,4 +309,3 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
         logger_info.update(info)
         self._action_sequence_mean = last_mean.clone()
         return last_mean[0].clone().unsqueeze(0), logger_info
-

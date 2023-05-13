@@ -37,7 +37,13 @@ from omnisafe.utils.math import (
 )
 from omnisafe.utils.model import get_activation, initialize_layer
 from omnisafe.utils.schedule import ConstantSchedule, PiecewiseSchedule
-from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dict, load_yaml, recursive_check_config
+from omnisafe.utils.tools import (
+    assert_with_exit,
+    custom_cfgs_to_dict,
+    load_yaml,
+    recursive_check_config,
+    update_dict,
+)
 
 
 def test_update_dict():
@@ -211,10 +217,12 @@ def teardown_module():
     # remove png
     os.system(f'rm -rf {current_path}/algo--*.png')
 
+
 def test_load_yaml():
     not_a_path = 'not_a_path'
     with pytest.raises(FileNotFoundError):
         load_yaml(not_a_path)
+
 
 def test_recursive_check_config():
     config = {'a': 1, 'b': {'c': 2, 'd': {'e': 3}}, 'not_exist': 1}

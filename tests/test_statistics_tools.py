@@ -14,8 +14,9 @@
 # ==============================================================================
 """Test analyzing policies trained by exp-x with OmniSafe."""
 
-from omnisafe.common.statistics_tools import StatisticsTools
 import pytest
+
+from omnisafe.common.statistics_tools import StatisticsTools
 
 
 def test_statistics_tools():

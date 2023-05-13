@@ -65,6 +65,7 @@ def check_dataset(dataset: OfflineDataset | OfflineDatasetWithInit):
     assert isinstance(cost, torch.Tensor) and cost.shape == torch.Size([1])
     assert isinstance(done, torch.Tensor) and done.shape == torch.Size([1])
 
+
 def check_init_dataset(dataset: OfflineDataset | OfflineDatasetWithInit):
     (obs, action, reward, cost, next_obs, done, init_obs) = dataset.sample()
     assert isinstance(obs, torch.Tensor) and obs.shape == torch.Size([256, 60])
@@ -82,6 +83,7 @@ def check_init_dataset(dataset: OfflineDataset | OfflineDatasetWithInit):
     assert isinstance(cost, torch.Tensor) and cost.shape == torch.Size([1])
     assert isinstance(done, torch.Tensor) and done.shape == torch.Size([1])
     assert isinstance(init_obs, torch.Tensor) and init_obs.shape == torch.Size([60])
+
 
 def test_url_link():
     dataset = OfflineDataset(
@@ -107,4 +109,3 @@ def test_url_link():
     # delete the saved data
 
     os.system('rm -rf ./~')
-

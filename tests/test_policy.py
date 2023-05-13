@@ -158,6 +158,7 @@ def test_assertion_error():
         custom_cfgs = [1, 2, 3]
         agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
 
+
 def test_render():
     """Test render image"""
     env_id = 'Simple-v0'
@@ -180,6 +181,8 @@ def test_render():
     agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
     agent.render(num_episodes=1, render_mode='rgb_array')
+
+
 @helpers.parametrize(algo=['PETS', 'CCEPETS', 'CAPPETS', 'RCEPETS'])
 def test_cem_based(algo):
     """Test model_based algorithms."""
@@ -446,8 +449,9 @@ def test_offline(algo):
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
 
+
 @helpers.parametrize(
-    fn_type=['softchi', 'chisquare']
+    fn_type=['softchi', 'chisquare'],
 )
 def test_coptidice(fn_type):
     """Test coptidice algorithms."""
@@ -467,6 +471,7 @@ def test_coptidice(fn_type):
     }
     agent = omnisafe.Agent('COptiDICE', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
+
 
 @helpers.parametrize(algo=['PPO', 'SAC', 'PPOLag'])
 def test_workflow_for_training(algo):

@@ -15,10 +15,18 @@
 """Test ensemble"""
 
 from __future__ import annotations
-from omnisafe.algorithms.model_based.base.ensemble import StandardScaler, unbatched_forward, EnsembleFC, EnsembleModel
-import torch
+
 import numpy as np
+import torch
 import torch.nn as nn
+
+from omnisafe.algorithms.model_based.base.ensemble import (
+    EnsembleFC,
+    EnsembleModel,
+    StandardScaler,
+    unbatched_forward,
+)
+
 
 def test_standard_scaler():
     standard_scaler = StandardScaler(device='cpu')
@@ -27,10 +35,12 @@ def test_standard_scaler():
     assert isinstance(standard_scaler.transform(numpy_input), np.ndarray)
     assert isinstance(standard_scaler.transform(torch_input), torch.Tensor)
 
+
 def test_unbatched_forward():
     layer = nn.Linear(10, 10)
     torch_input = torch.rand(10, 10)
     assert isinstance(unbatched_forward(layer, torch_input, 0), torch.Tensor)
+
 
 def test_ensemble_fc():
     ensemble_fc = EnsembleFC(
@@ -42,6 +52,7 @@ def test_ensemble_fc():
     )
     torch_input = torch.rand(10, 10, 10)
     assert isinstance(ensemble_fc(torch_input), torch.Tensor)
+
 
 def test_enemble_model():
     ensemble_model = EnsembleModel(
@@ -58,13 +69,13 @@ def test_enemble_model():
     mean, var = ensemble_model(numpy_state)
     assert isinstance(mean, torch.Tensor)
     assert isinstance(var, torch.Tensor)
-    mean, log_var = ensemble_model(numpy_state, ret_log_var = True)
+    mean, log_var = ensemble_model(numpy_state, ret_log_var=True)
     assert isinstance(mean, torch.Tensor)
     assert isinstance(log_var, torch.Tensor)
     numpy_state = np.random.rand(1, 10, 10)
     mean, var = ensemble_model.forward_idx(numpy_state, idx_model=0)
     assert isinstance(mean, torch.Tensor)
     assert isinstance(var, torch.Tensor)
-    mean, log_var = ensemble_model.forward_idx(numpy_state, idx_model=0, ret_log_var = True)
+    mean, log_var = ensemble_model.forward_idx(numpy_state, idx_model=0, ret_log_var=True)
     assert isinstance(mean, torch.Tensor)
     assert isinstance(log_var, torch.Tensor)
