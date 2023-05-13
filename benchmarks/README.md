@@ -56,7 +56,7 @@ The OmniSafe Safety-Gymnasium Benchmark assesses the efficacy of OmniSafe's Safe
 
 > **More details can be refer to [Off Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/off-policy/README.md).**
 
-## Model-Based
+## Model-based
 
 - **[NeurIPS 2001]** [Deep Reinforcement Learning in a Handful of Trials using Probabilistic Dynamics Models (PETS))](https://arxiv.org/abs/1805.12114)
 - **[CoRL 2021]** [Learning Off-Policy with Online Planning (LOOP and SafeLOOP)](https://arxiv.org/abs/2008.10066)
@@ -64,7 +64,7 @@ The OmniSafe Safety-Gymnasium Benchmark assesses the efficacy of OmniSafe's Safe
 - **[ICML 2022 Workshop]** [Constrained Model-based Reinforcement Learning with Robust Cross-Entropy Method (RCE)](https://arxiv.org/abs/2010.07968)
 - **[NeurIPS 2018]** [Constrained Cross-Entropy Method for Safe Reinforcement Learning (CCE)](https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html)
 
-> **More details can be refer to [Off Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/model-based/README.md).**
+> **More details can be refer to [Model-based Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/model-based/README.md).**
 
 ## Offline
 
@@ -74,4 +74,4 @@ The OmniSafe Safety-Gymnasium Benchmark assesses the efficacy of OmniSafe's Safe
 - [The Constrained version of CRR (C-CRR)](https://proceedings.neurips.cc/paper/2020/hash/588cb956d6bbe67078f29f8de420a13d-Abstract.html)
 - **[ICLR 2022 (Spotlight)]** [COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation](https://arxiv.org/abs/2204.08957?context=cs.AI)
 
-> **More details can be refer to [Off Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/offline/README.md).**
+> **More details can be refer to [Offline Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/offline/README.md).**
