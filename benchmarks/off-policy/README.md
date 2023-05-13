@@ -593,7 +593,7 @@ Off-Policy algorithms almost share the same hyperparameters, the share hyperpara
 |      `gamma`      |    0.99    |
 |      `size`       |  1000000   |
 |  `update_iters`   |     1      |
-|  `update_circle`   |     1      |
+|  `update_cycle`   |     1      |
 |  `hidden_sizes`   | [256, 256] |
 
 However, there are some differences between the three algorithms. We list the differences below:
