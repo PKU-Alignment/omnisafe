@@ -35,7 +35,7 @@ saute_policy = ['TRPOSaute', 'PPOSaute']
 simmer_policy = ['TRPOSimmerPID', 'PPOSimmerPID']
 pid_lagrange_policy = ['TRPOPID', 'CPPOPID']
 early_terminated_policy = ['TRPOEarlyTerminated', 'PPOEarlyTerminated']
-offline_policy = ['BCQ', 'BCQLag', 'CRR', 'CCRR', 'COptiDICE', 'VAEBC']
+offline_policy = ['BCQ', 'BCQLag', 'CRR', 'CCRR', 'VAEBC']
 
 model_cfgs = {
     'linear_lr_decay': True,
@@ -158,7 +158,6 @@ def test_assertion_error():
         custom_cfgs = [1, 2, 3]
         agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
 
-
 def test_render():
     """Test render image"""
     env_id = 'Simple-v0'
@@ -169,38 +168,18 @@ def test_render():
             'torch_threads': 4,
         },
         'algo_cfgs': {
-            'obs_normalize': True,
             'steps_per_epoch': 100,
-            'action_repeat': 1,
-            'update_dynamics_cycle': 100,
-            'start_learning_steps': 3,
-        },
-        'dynamics_cfgs': {
-            'num_ensemble': 5,
-            'batch_size': 10,
-            'max_epoch': 1,
-            'predict_cost': True,
-        },
-        'planner_cfgs': {
-            'plan_horizon': 2,
-            'num_particles': 5,
-            'num_samples': 10,
-            'num_elites': 5,
-        },
-        'evaluation_cfgs': {
-            'use_eval': True,
-            'eval_cycle': 100,
+            'update_iters': 2,
         },
         'logger_cfgs': {
             'use_wandb': False,
             'save_model_freq': 1,
         },
+        'model_cfgs': model_cfgs,
     }
-    agent = omnisafe.Agent('PETS', env_id, custom_cfgs=custom_cfgs)
+    agent = omnisafe.Agent('PPO', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
     agent.render(num_episodes=1, render_mode='rgb_array')
-
-
 @helpers.parametrize(algo=['PETS', 'CCEPETS', 'CAPPETS', 'RCEPETS'])
 def test_cem_based(algo):
     """Test model_based algorithms."""
@@ -208,7 +187,7 @@ def test_cem_based(algo):
 
     custom_cfgs = {
         'train_cfgs': {
-            'total_steps': 200,
+            'total_steps': 300,
             'vector_env_nums': 1,
             'torch_threads': 4,
         },
@@ -217,7 +196,7 @@ def test_cem_based(algo):
             'steps_per_epoch': 100,
             'action_repeat': 1,
             'update_dynamics_cycle': 100,
-            'start_learning_steps': 3,
+            'start_learning_steps': 100,
         },
         'dynamics_cfgs': {
             'num_ensemble': 5,
@@ -266,6 +245,8 @@ def test_loop(algo):
             'update_policy_iters': 1,
             'start_learning_steps': 3,
             'policy_batch_size': 10,
+            'use_critic_norm': True,
+            'max_grad_norm': True,
         },
         'planner_cfgs': {
             'plan_horizon': 2,
@@ -465,6 +446,27 @@ def test_offline(algo):
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
 
+@helpers.parametrize(
+    fn_type=['softchi', 'chisquare']
+)
+def test_coptidice(fn_type):
+    """Test coptidice algorithms."""
+    env_id = 'Simple-v0'
+    dataset = os.path.join(os.path.dirname(__file__), 'saved_source', 'Simple-v0.npz')
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 4,
+            'torch_threads': 4,
+            'dataset': dataset,
+        },
+        'algo_cfgs': {
+            'batch_size': 10,
+            'steps_per_epoch': 2,
+            'fn_type': fn_type,
+        },
+    }
+    agent = omnisafe.Agent('COptiDICE', env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
 
 @helpers.parametrize(algo=['PPO', 'SAC', 'PPOLag'])
 def test_workflow_for_training(algo):

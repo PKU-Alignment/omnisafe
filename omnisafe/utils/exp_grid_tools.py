@@ -84,21 +84,23 @@ def train(
     print(f'exp-x: {exp_id} is training...')
     if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
         os.makedirs(custom_cfgs['logger_cfgs']['log_dir'], exist_ok=True)
-    with open(os.path.join(
-        f'{custom_cfgs["logger_cfgs"]["log_dir"]}',
-        terminal_log_name
+    with open(
+        os.path.join(
+            f'{custom_cfgs["logger_cfgs"]["log_dir"]}',
+            terminal_log_name,
         ),
         'w',
         encoding='utf-8',
-        ) as f_out:
+    ) as f_out:
         sys.stdout = f_out
-        with open(os.path.join(
-            f'{custom_cfgs["logger_cfgs"]["log_dir"]}',
-            error_log_name
+        with open(
+            os.path.join(
+                f'{custom_cfgs["logger_cfgs"]["log_dir"]}',
+                error_log_name,
             ),
             'w',
             encoding='utf-8',
-            ) as f_error:
+        ) as f_error:
             sys.stderr = f_error
             agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
             reward, cost, ep_len = agent.learn()

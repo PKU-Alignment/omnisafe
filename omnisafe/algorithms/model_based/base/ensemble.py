@@ -160,7 +160,9 @@ class EnsembleFC(nn.Module):
     def forward(self, input_data: torch.Tensor) -> torch.Tensor:
         """Forward pass."""
         w_times_x = torch.bmm(input_data, self.weight)
-        return torch.add(w_times_x, self.bias[:, None, :])  # w times x + b
+        if self.bias is not None:
+            return torch.add(w_times_x, self.bias[:, None, :])  # w times x + b
+        return w_times_x
 
 
 # pylint: disable-next=too-many-instance-attributes

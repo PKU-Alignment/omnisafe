@@ -62,7 +62,7 @@ class SimpleEnv(CMDP):
         cost = 10000 * torch.as_tensor(random.random())
         termiated = torch.as_tensor(random.random() > 0.9)
         truncated = torch.as_tensor(self._count > 10)
-        return obs, reward, cost, termiated, truncated, {}
+        return obs, reward, cost, termiated, truncated, {'final_observation': obs}
 
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
         if seed is not None:

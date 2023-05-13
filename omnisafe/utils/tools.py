@@ -247,8 +247,8 @@ def load_yaml(path: str) -> dict[str, Any]:
     with open(path, encoding='utf-8') as file:
         try:
             kwargs = yaml.load(file, Loader=yaml.FullLoader)  # noqa: S506
-        except yaml.YAMLError as exc:
-            raise AssertionError(f'{path} error: {exc}') from exc
+        except FileNotFoundError as exc:
+            raise FileNotFoundError(f'{path} error: {exc}') from exc
 
     return kwargs
 

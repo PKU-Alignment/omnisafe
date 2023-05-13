@@ -14,6 +14,7 @@
 # ==============================================================================
 """Test offline module."""
 from __future__ import annotations
+
 import os
 
 import torch
@@ -48,8 +49,7 @@ def test_data_collector():
     os.system(f'rm -rf {save_dir}')
 
 
-
-def check_dataset(dataset: OfflineDataset|OfflineDatasetWithInit):
+def check_dataset(dataset: OfflineDataset | OfflineDatasetWithInit):
     (obs, action, reward, cost, next_obs, done) = dataset.sample()
     assert isinstance(obs, torch.Tensor) and obs.shape == torch.Size([256, 60])
     assert isinstance(next_obs, torch.Tensor) and next_obs.shape == torch.Size([256, 60])
@@ -65,7 +65,7 @@ def check_dataset(dataset: OfflineDataset|OfflineDatasetWithInit):
     assert isinstance(cost, torch.Tensor) and cost.shape == torch.Size([1])
     assert isinstance(done, torch.Tensor) and done.shape == torch.Size([1])
 
-def check_init_dataset(dataset: OfflineDataset|OfflineDatasetWithInit):
+def check_init_dataset(dataset: OfflineDataset | OfflineDatasetWithInit):
     (obs, action, reward, cost, next_obs, done, init_obs) = dataset.sample()
     assert isinstance(obs, torch.Tensor) and obs.shape == torch.Size([256, 60])
     assert isinstance(next_obs, torch.Tensor) and next_obs.shape == torch.Size([256, 60])
@@ -106,7 +106,5 @@ def test_url_link():
     check_init_dataset(dataset=dataset_init_transfered)
     # delete the saved data
 
-    os.system(f'rm -rf ./~')
+    os.system('rm -rf ./~')
 
-if __name__ == '__main__':
-    test_url_link()

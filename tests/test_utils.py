@@ -24,7 +24,6 @@ from torch import nn
 from torch.distributions import Normal
 
 import helpers
-from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.typing import Activation, InitFunction
 from omnisafe.utils.config import Config, check_all_configs, get_default_kwargs_yaml
 from omnisafe.utils.distributed import fork
@@ -38,7 +37,7 @@ from omnisafe.utils.math import (
 )
 from omnisafe.utils.model import get_activation, initialize_layer
 from omnisafe.utils.schedule import ConstantSchedule, PiecewiseSchedule
-from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dict
+from omnisafe.utils.tools import assert_with_exit, custom_cfgs_to_dict, update_dict, load_yaml, recursive_check_config
 
 
 def test_update_dict():
@@ -153,7 +152,7 @@ def test_train(
         'logger_cfgs': {
             'use_wandb': False,
             'save_model_freq': 1,
-            'log_dir':'saved_log'
+            'log_dir': 'saved_log',
         },
     }
     train(
@@ -163,7 +162,7 @@ def test_train(
         custom_cfgs=custom_cfgs,
     )
     # delete the saved data
-    os.system(f'rm -rf saved_log')
+    os.system('rm -rf saved_log')
 
 
 @helpers.parametrize(
@@ -211,3 +210,14 @@ def teardown_module():
 
     # remove png
     os.system(f'rm -rf {current_path}/algo--*.png')
+
+def test_load_yaml():
+    not_a_path = 'not_a_path'
+    with pytest.raises(FileNotFoundError):
+        load_yaml(not_a_path)
+
+def test_recursive_check_config():
+    config = {'a': 1, 'b': {'c': 2, 'd': {'e': 3}}, 'not_exist': 1}
+    default_config = {'a': 1, 'b': {'c': 2, 'd': {'e': 3, 'f': 4}}}
+    with pytest.raises(KeyError):
+        recursive_check_config(config, default_config)

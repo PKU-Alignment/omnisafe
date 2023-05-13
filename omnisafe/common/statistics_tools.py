@@ -162,7 +162,7 @@ class StatisticsTools:
                     save_name=save_name,
                     show_image=show_image,
                 )
-            except Exception:  # noqa # pylint: disable=broad-except
+            except Exception:  # noqa # pragma: no cover # pylint: disable=broad-except
                 print(
                     f'Cannot generate graph for {save_name[:5] + str(decompressed_img_name_cfgs)}',
                 )
