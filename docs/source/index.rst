@@ -234,7 +234,7 @@ We give an example below:
 
     .. card::
         :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-1
+        :class-card: sd-outline-info  sd-rounded-1
         :class-footer: sd-font-weight-bold
         :link: cards-clickable
         :link-type: ref
@@ -297,18 +297,19 @@ We give an example below:
                     env_id = 'SafetyPointGoal1-v0'
                     custom_cfgs = {
                         'train_cfgs': {
-                            'total_steps': 1024000,
+                            'total_steps': 10000000,
                             'vector_env_nums': 1,
                             'parallel': 1,
                         },
                         'algo_cfgs': {
-                            'steps_per_epoch': 2048,
-                            'update_iters': 1,
+                            'steps_per_epoch': 20000,
                         },
                         'logger_cfgs': {
                             'use_wandb': False,
+                            'use_tensorboard': True,
                         },
                     }
+
                     agent = omnisafe.Agent('CPO', env_id, custom_cfgs=custom_cfgs)
                     agent.learn()
 
