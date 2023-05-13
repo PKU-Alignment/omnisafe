@@ -385,7 +385,7 @@ class ExperimentGrid:
     # pylint: disable-next=too-many-locals
     def run(
         self,
-        thunk: Callable[[str, str, str, dict[str, Any]], tuple[float, float, int]],
+        thunk: Callable[[str, str, str, dict[str, Any]], tuple[float, float, float]],
         num_pool: int = 1,
         parent_dir: str | None = None,
         is_test: bool = False,
@@ -540,6 +540,7 @@ class ExperimentGrid:
         values: list[Any] | None = None,
         compare_num: int | None = None,
         cost_limit: float | None = None,
+        show_image: bool = False,
     ) -> None:
         """Analyze the experiment results.
 
@@ -554,10 +555,17 @@ class ExperimentGrid:
                 will combine any potential combination to compare. Defaults to None.
             cost_limit (float or None, optional): Value for one line showed on graph to indicate
                 cost. Defaults to None.
+            show_image (bool): Whether to show graph image in GUI windows.
         """
         assert self._statistical_tools is not None, 'Please run run() first!'
         self._statistical_tools.load_source(self.log_dir)
-        self._statistical_tools.draw_graph(parameter, values, compare_num, cost_limit)
+        self._statistical_tools.draw_graph(
+            parameter,
+            values,
+            compare_num,
+            cost_limit,
+            show_image=show_image,
+        )
 
     def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0) -> None:
         """Agent Evaluation.

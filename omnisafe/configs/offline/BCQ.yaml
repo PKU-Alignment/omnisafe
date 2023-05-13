@@ -1,0 +1,82 @@
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+defaults:
+  # seed for random number generator
+  seed: 0
+  # training configurations
+  train_cfgs:
+    # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
+    device: cpu
+    # number of threads for torch
+    torch_threads: 16
+    # total number of steps to train
+    total_steps: 1000000
+    # dataset name
+    dataset: SafetyPointCircle1-v0_mixed_0.5
+    # evaluate_epoisodes
+    evaluate_epoisodes: 10
+    # parallel, offline only supports 1
+    parallel: 1
+    # vector_env_nums, offline only supports 1
+    vector_env_nums: 1
+  # algorithm configurations
+  algo_cfgs:
+    # gamma used in RL
+    gamma: 0.99
+    # batch size
+    batch_size: 256
+    # step per epoch, algo will log and eval every epoch
+    steps_per_epoch: 1000
+    # phi used in BCQ
+    phi: 0.05
+    # sample action numbers when update critic
+    sampled_action_num: 10
+    # minimum weighting when compute Q, Q = w * min(q1, q2) + (1 - w) * max(q1, q2)
+    minimum_weighting: 0.75
+    # The soft update coefficient
+    polyak: 0.005
+  # logger configurations
+  logger_cfgs:
+    # use wandb for logging
+    use_wandb: False
+    # wandb project name
+    wandb_project: omnisafe
+    # use tensorboard for logging
+    use_tensorboard: True
+    # save model frequency
+    save_model_freq: 100
+    # save logger path
+    log_dir: "./runs"
+  # model configurations
+  model_cfgs:
+    # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
+    weight_initialization_mode: "kaiming_uniform"
+    # actor's cfgs
+    actor:
+      # Size of hidden layers
+      hidden_sizes: [256, 256, 256]
+      # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+      activation: relu
+      # Learning rate of model
+      lr: 0.001
+    # critic's cfgs
+    critic:
+      # Size of hidden layers
+      hidden_sizes: [256, 256, 256]
+      # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+      activation: relu
+      # Learning rate of model
+      lr: 0.001

@@ -26,9 +26,9 @@ from typing import Any, Deque, TextIO
 import numpy as np
 import torch
 import wandb
-from rich import print  # pylint: disable=redefined-builtin
-from rich.console import Console
-from rich.table import Table
+from rich import print  # pylint: disable=redefined-builtin,wrong-import-order
+from rich.console import Console  # pylint: disable=wrong-import-order
+from rich.table import Table  # pylint: disable=wrong-import-order
 
 from omnisafe.utils.config import Config
 from omnisafe.utils.distributed import dist_statistics_scalar, get_rank
@@ -247,9 +247,9 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
     def store(
         self,
-        data: dict[str, int | float | np.ndarray | torch.Tensor] | None = None,
+        data: dict[str, Any] | None = None,
         /,
-        **kwargs: int | float | np.ndarray | torch.Tensor,
+        **kwargs: Any,
     ) -> None:
         """Store the data to the logger.
 

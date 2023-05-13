@@ -20,7 +20,13 @@ import torch
 from torch import nn, optim
 from torch.optim.lr_scheduler import ConstantLR, LinearLR
 
-from omnisafe.models.actor import GaussianLearningActor, GaussianSACActor, MLPActor
+from omnisafe.models.actor import (
+    VAE,
+    GaussianLearningActor,
+    GaussianSACActor,
+    MLPActor,
+    PerturbationActor,
+)
 from omnisafe.models.actor.actor_builder import ActorBuilder
 from omnisafe.models.base import Critic
 from omnisafe.models.critic.critic_builder import CriticBuilder
@@ -67,13 +73,15 @@ class ActorCritic(nn.Module):
         """Initialize an instance of :class:`ActorCritic`."""
         super().__init__()
 
-        self.actor: GaussianLearningActor | GaussianSACActor | MLPActor = ActorBuilder(
+        self.actor: GaussianLearningActor | GaussianSACActor | MLPActor | VAE | PerturbationActor = ActorBuilder(
             obs_space=obs_space,
             act_space=act_space,
             hidden_sizes=model_cfgs.actor.hidden_sizes,
             activation=model_cfgs.actor.activation,
             weight_initialization_mode=model_cfgs.weight_initialization_mode,
-        ).build_actor(actor_type=model_cfgs.actor_type)
+        ).build_actor(
+            actor_type=model_cfgs.actor_type,
+        )
         self.reward_critic: Critic = CriticBuilder(
             obs_space=obs_space,
             act_space=act_space,

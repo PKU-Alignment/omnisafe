@@ -90,6 +90,7 @@ class StatisticsTools:
         compare_num: int | None = None,
         cost_limit: float | None = None,
         smooth: int = 1,
+        show_image: bool = False,
     ) -> None:
         """Draw graph.
 
@@ -100,6 +101,7 @@ class StatisticsTools:
             compare_num (int or None, optional): The number of values to compare. Defaults to None.
             cost_limit (float or None, optional): The cost limit of the experiment. Defaults to None.
             smooth (int, optional): The smooth window size. Defaults to 1.
+            show_image (bool): Whether to show graph image in GUI windows.
 
         .. note::
             `values` and `compare_num` cannot be set at the same time.
@@ -158,11 +160,13 @@ class StatisticsTools:
                     None,
                     'mean',
                     save_name=save_name,
+                    show_image=show_image,
                 )
-            except RuntimeError:
+            except Exception:  # noqa # pylint: disable=broad-except
                 print(
                     f'Cannot generate graph for {save_name[:5] + str(decompressed_img_name_cfgs)}',
                 )
+                print(Exception)
 
     def make_config_groups(
         self,

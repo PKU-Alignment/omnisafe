@@ -1,0 +1,178 @@
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+defaults:
+  # seed for random number generator
+  seed: 0
+  # training configurations
+  train_cfgs:
+    # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
+    device: cpu
+    # number of threads for torch
+    torch_threads: 16
+    # total number of steps to train
+    total_steps: 1000000
+    # number of vectorized environments
+    vector_env_nums: 1
+    # number of parallel agent, similar to a3c
+    parallel: 1
+  # dynamics configurations
+  dynamics_cfgs:
+    # number of network for ensemble model
+    num_ensemble: 5
+    # output size for ensemble model
+    elite_size: 5
+    # size of hidden layers
+    hidden_size: 200
+    # whether use decay loss
+    use_decay: True
+    # whether predict reward
+    predict_reward: True
+    # whether predict reward
+    predict_cost: False
+    # training batch size of dynamics
+    batch_size: 256
+    # training max epoch of dynamics
+    max_epoch: 5
+    # the reward size for dynamics prediction
+    reward_size: 1
+    # the cost size for dynamics prediction
+    cost_size: 1
+    # whether compute cost during dynamics imagination
+    use_cost: True
+    # whether compute cost during dynamics imagination
+    use_terminal: False
+    # whether use variance for dynamics imagination
+    use_var: False
+    # whether use reward critic for dynamics imagination
+    use_reward_critic: False
+    # whether use cost critic for dynamics imagination
+    use_cost_critic: False
+  planner_cfgs:
+    # planning hoirzon
+    plan_horizon: 7
+    # planning iteration
+    num_iterations: 5
+    # the number of particle in plannnig
+    num_particles: 20
+    # the number of action sample in planning
+    num_samples: 512
+    # the number of candidate action in planning
+    num_elites: 64
+    # the momentum coefficients for the mean and variance update in planning
+    momentum: 0.1
+    # the var threshold in planning
+    epsilon: 0.001
+    # the initial variance of planning
+    init_var: 4
+  # evaluation configurations
+  evaluation_cfgs:
+    # whether evaluation
+    use_eval: True
+    # evaluation cycle
+    eval_cycle: 10000
+    # evaluation episode
+    num_episode: 1
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 20000
+    # tolerance of constraint violation
+    cost_limit: 1.0
+    # number of action repetition
+    action_repeat: 5
+    # update cycle to dynamics
+    update_dynamics_cycle: 1200
+    # actor perdorm random action before `start_learning_steps` steps
+    start_learning_steps: 10000
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: False
+    # reward discount factor
+    gamma: 0.99
+    # cost discount factor
+    cost_gamma: 1.0
+  # logger configurations
+  logger_cfgs:
+    # use wandb for logging
+    use_wandb: False
+    # wandb project name
+    wandb_project: omnisafe
+    # use tensorboard for logging
+    use_tensorboard: True
+    # save model frequency
+    save_model_freq: 5
+    # save logger path
+    log_dir: "./runs"
+    # save model path
+    window_lens: 100
+
+SafetyAntVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+  planner_cfgs:
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True
+SafetyHopperVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+  planner_cfgs:
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True
+SafetyHumanoidVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+  planner_cfgs:
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True
+SafetyWalker2dVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+  planner_cfgs:
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True
+SafetyHalfCheetahVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+  planner_cfgs:
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True
+SafetySwimmerVelocity-v1:
+  algo_cfgs:
+    action_repeat: 1
+    cost_limit: 1
+  planner_cfgs:
+    plan_horizon: 16
+    init_var: 0.1
+  dynamics_cfgs:
+    predict_cost: True

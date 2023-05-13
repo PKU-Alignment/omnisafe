@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import os
-import sys
 
 import pytest
 import torch
@@ -25,11 +24,11 @@ from torch import nn
 from torch.distributions import Normal
 
 import helpers
-import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
 from omnisafe.typing import Activation, InitFunction
 from omnisafe.utils.config import Config, check_all_configs, get_default_kwargs_yaml
 from omnisafe.utils.distributed import fork
+from omnisafe.utils.exp_grid_tools import train
 from omnisafe.utils.math import (
     SafeTanhTransformer,
     TanhNormal,
@@ -135,44 +134,6 @@ def test_math():
     assert torch.allclose(tanh.inv(random_tensor), torch.atanh(random_tensor))
 
 
-def train(
-    exp_id: str,
-    algo: str,
-    env_id: str,
-    custom_cfgs: Config,
-    num_threads: int = 6,
-) -> tuple[float, float, float]:
-    """Train a policy from exp-x config with OmniSafe.
-    Args:
-        exp_id (str): Experiment ID.
-        algo (str): Algorithm to train.
-        env_id (str): The name of test environment.
-        custom_cfgs (NamedTuple): Custom configurations.
-        num_threads (int, optional): Number of threads. Defaults to 6.
-    """
-    torch.set_num_threads(num_threads)
-    sys.stdout = sys.__stdout__
-    sys.stderr = sys.__stderr__
-    print(f'exp-x: {exp_id} is training...')
-    USE_REDIRECTION = True
-    if USE_REDIRECTION:
-        if not os.path.exists(custom_cfgs['data_dir']):
-            os.makedirs(custom_cfgs['data_dir'], exist_ok=True)
-        sys.stdout = open(  # noqa: SIM115
-            f'{custom_cfgs["data_dir"]}terminal.log',
-            'w',
-            encoding='utf-8',
-        )
-        sys.stderr = open(  # noqa: SIM115
-            f'{custom_cfgs["data_dir"]}error.log',
-            'w',
-            encoding='utf-8',
-        )
-    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
-    reward, cost, ep_len = agent.learn()
-    return reward, cost, ep_len
-
-
 def test_train(
     exp_name='make_test_exp_grid',
     algo='CPO',
@@ -217,3 +178,20 @@ def test_schedule():
     piece = PiecewiseSchedule(endpoints, outside_value=0)
     assert piece.value(1) == 0.5
     assert piece.value(100) == 0
+
+
+def teardown_module():
+    """teardown_module."""
+    # remove runs folder
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    runs_path = os.path.join(current_path, 'runs')
+    if os.path.exists(runs_path):
+        os.system(f'rm -rf {runs_path}')
+
+    # remove exp-x folder
+    exp_x_path = os.path.join(current_path, 'exp-x')
+    if os.path.exists(exp_x_path):
+        os.system(f'rm -rf {exp_x_path}')
+
+    # remove png
+    os.system(f'rm -rf {current_path}/algo--*.png')

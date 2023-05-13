@@ -14,61 +14,16 @@
 # ==============================================================================
 """Example of training a policy from exp-x config with OmniSafe."""
 
-from __future__ import annotations
-
-import os
-import sys
 import warnings
-from typing import Any
 
 import torch
 
-import omnisafe
 from omnisafe.common.experiment_grid import ExperimentGrid
-
-
-def train(
-    exp_id: str,
-    algo: str,
-    env_id: str,
-    custom_cfgs: dict[str, Any],
-) -> tuple[float, float, int]:
-    """Train a policy from exp-x config with OmniSafe.
-    Args:
-        exp_id (str): Experiment ID.
-        algo (str): Algorithm to train.
-        env_id (str): The name of test environment.
-        custom_cfgs (dict): Custom configurations.
-    """
-    terminal_log_name = 'terminal.log'
-    error_log_name = 'error.log'
-    if 'seed' in custom_cfgs:
-        terminal_log_name = f'seed{custom_cfgs["seed"]}_{terminal_log_name}'
-        error_log_name = f'seed{custom_cfgs["seed"]}_{error_log_name}'
-    sys.stdout = sys.__stdout__
-    sys.stderr = sys.__stderr__
-    print(f'exp-x: {exp_id} is training...')
-    if not os.path.exists(custom_cfgs['logger_cfgs']['log_dir']):
-        os.makedirs(custom_cfgs['logger_cfgs']['log_dir'], exist_ok=True)
-    # pylint: disable-next=consider-using-with
-    sys.stdout = open(  # noqa: SIM115
-        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', terminal_log_name),
-        'w',
-        encoding='utf-8',
-    )
-    # pylint: disable-next=consider-using-with
-    sys.stderr = open(  # noqa: SIM115
-        os.path.join(f'{custom_cfgs["logger_cfgs"]["log_dir"]}', error_log_name),
-        'w',
-        encoding='utf-8',
-    )
-    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
-    reward, cost, ep_len = agent.learn()
-    return reward, cost, ep_len
+from omnisafe.utils.exp_grid_tools import train
 
 
 if __name__ == '__main__':
-    eg = ExperimentGrid(exp_name='Safety_Gymnasium_Goal')
+    eg = ExperimentGrid(exp_name='Benchmark_Safety_Velocity')
 
     # Set the algorithms.
     base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']

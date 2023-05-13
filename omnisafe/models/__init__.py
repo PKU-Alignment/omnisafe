@@ -18,6 +18,9 @@ from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.actor.gaussian_actor import GaussianActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
+from omnisafe.models.actor.mlp_actor import MLPActor
+from omnisafe.models.actor.perturbation_actor import PerturbationActor
+from omnisafe.models.actor.vae_actor import VAE
 from omnisafe.models.actor_critic.actor_critic import ActorCritic
 from omnisafe.models.actor_critic.actor_q_critic import ActorQCritic
 from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
