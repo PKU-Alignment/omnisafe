@@ -81,6 +81,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self._planner = planner
         self._dividing_line: str = '\n' + '#' * 50 + '\n'
 
+        self._cfgs: Config
+        self._save_dir: str
+        self._model_name: str
+        self._safety_budget: torch.Tensor
+        self._safety_obs = torch.ones(1)
+        self._cost_count: torch.zeros(1)
         self.__set_render_mode(render_mode)
 
     def __set_render_mode(self, render_mode: str) -> None:
@@ -146,7 +152,14 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         observation_space = self._env.observation_space
         action_space = self._env.action_space
-
+        if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
+            self._safety_budget = (
+                self._cfgs.algo_cfgs.safety_budget
+                * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
+                / (1 - self._cfgs.algo_cfgs.saute_gamma)
+                / self._cfgs.algo_cfgs.max_ep_len
+                * torch.ones(1)
+            )
         assert isinstance(observation_space, Box), 'The observation space must be Box.'
         assert isinstance(action_space, Box), 'The action space must be Box.'
 
@@ -261,6 +274,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             )
 
         else:
+            if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
+                observation_space = Box(
+                    low=-np.inf,
+                    high=np.inf,
+                    shape=(observation_space.shape[0] + 1,),
+                )
             actor_type = self._cfgs['model_cfgs']['actor_type']
             pi_cfg = self._cfgs['model_cfgs']['actor']
             weight_initialization_mode = self._cfgs['model_cfgs']['weight_initialization_mode']
@@ -345,15 +364,18 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         for episode in range(num_episodes):
             obs, _ = self._env.reset()
+            self._safety_obs = torch.ones(1)
             ep_ret, ep_cost, length = 0.0, 0.0, 0.0
 
             done = False
             while not done:
+                if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
+                    obs = torch.cat([obs, self._safety_obs], dim=-1)
                 with torch.no_grad():
                     if self._actor is not None:
                         act = self._actor.predict(
                             obs,
-                            deterministic=False,
+                            deterministic=True,
                         )
                     elif self._planner is not None:
                         act = self._planner.output_action(
@@ -366,9 +388,14 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                             'The policy must be provided or created before evaluating the agent.',
                         )
                 obs, rew, cost, terminated, truncated, _ = self._env.step(act)
+                if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
+                    self._safety_obs -= cost.unsqueeze(-1) / self._safety_budget
+                    self._safety_obs /= self._cfgs.algo_cfgs.saute_gamma
 
                 ep_ret += rew.item()
                 ep_cost += (cost_criteria**length) * cost.item()
+                if 'EarlyTerminated' in self._cfgs['algo'] and ep_cost >= 25.0:
+                    terminated = True
                 length += 1
 
                 done = bool(terminated or truncated)
@@ -453,17 +480,20 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         episode_lengths: list[float] = []
 
         for episode_idx in range(num_episodes):
+            self._safety_obs = torch.ones(1)
             step = 0
             done = False
             ep_ret, ep_cost, length = 0.0, 0.0, 0.0
             while (
                 not done and step <= max_render_steps
             ):  # a big number to make sure the episode will end
+                if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
+                    obs = torch.cat([obs, self._safety_obs], dim=-1)
                 with torch.no_grad():
                     if self._actor is not None:
                         act = self._actor.predict(
                             obs,
-                            deterministic=False,
+                            deterministic=True,
                         )
                     elif self._planner is not None:
                         act = self._planner.output_action(
@@ -476,10 +506,15 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                             'The policy must be provided or created before evaluating the agent.',
                         )
                 obs, rew, cost, terminated, truncated, _ = self._env.step(act)
+                if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
+                    self._safety_obs -= cost.unsqueeze(-1) / self._safety_budget
+                    self._safety_obs /= self._cfgs.algo_cfgs.saute_gamma
                 step += 1
                 done = bool(terminated or truncated)
                 ep_ret += rew.item()
                 ep_cost += (cost_criteria**length) * cost.item()
+                if 'EarlyTerminated' in self._cfgs['algo'] and ep_cost >= 25.0:
+                    terminated = True
                 length += 1
 
                 if self._render_mode == 'rgb_array':

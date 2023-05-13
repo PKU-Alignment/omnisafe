@@ -1639,10 +1639,10 @@ class="math inline">±</span> 146.78</td>
 class="math inline">±</span> 139.67</td>
 <td style="text-align: center;">15.22 <span class="math inline">±</span>
 3.68</td>
-<td style="text-align: center;">1016.99 <span
-class="math inline">±</span> 421.61</td>
-<td style="text-align: center;">8.58 <span class="math inline">±</span>
-2.96</td>
+<td style="text-align: center;">2801.53 <span
+class="math inline">±</span> 19.66</td>
+<td style="text-align: center;">0.23 <span class="math inline">±</span>
+0.09</td>
 <td style="text-align: center;">3052.63 <span
 class="math inline">±</span> 58.41</td>
 <td style="text-align: center;">0.40 <span class="math inline">±</span>
@@ -1659,10 +1659,10 @@ class="math inline">±</span> 398.52</td>
 class="math inline">±</span> 190.84</td>
 <td style="text-align: center;">11.16 <span class="math inline">±</span>
 9.80</td>
-<td style="text-align: center;">1523.30 <span
-class="math inline">±</span> 376.24</td>
-<td style="text-align: center;">25.00 <span class="math inline">±</span>
-0.00</td>
+<td style="text-align: center;">2447.25 <span
+class="math inline">±</span> 346.84</td>
+<td style="text-align: center;">3.47 <span class="math inline">±</span>
+4.90</td>
 <td style="text-align: center;">2555.70 <span
 class="math inline">±</span> 368.17</td>
 <td style="text-align: center;">0.06 <span class="math inline">±</span>
@@ -1679,10 +1679,10 @@ class="math inline">±</span> 10.21</td>
 class="math inline">±</span> 646.71</td>
 <td style="text-align: center;">18.76 <span class="math inline">±</span>
 8.93</td>
-<td style="text-align: center;">1604.88 <span
-class="math inline">±</span> 30.96</td>
-<td style="text-align: center;">8.60 <span class="math inline">±</span>
-6.13</td>
+<td style="text-align: center;">1643.39 <span
+class="math inline">±</span> 2.58</td>
+<td style="text-align: center;">0.77 <span class="math inline">±</span>
+0.26</td>
 <td style="text-align: center;">1646.47 <span
 class="math inline">±</span> 49.95</td>
 <td style="text-align: center;">0.42 <span class="math inline">±</span>
@@ -1699,10 +1699,10 @@ class="math inline">±</span> 55.70</td>
 class="math inline">±</span> 254.06</td>
 <td style="text-align: center;">7.38 <span class="math inline">±</span>
 11.34</td>
-<td style="text-align: center;">713.10 <span
-class="math inline">±</span> 134.34</td>
-<td style="text-align: center;">5.06 <span class="math inline">±</span>
-3.49</td>
+<td style="text-align: center;">6321.45 <span
+class="math inline">±</span> 35.73</td>
+<td style="text-align: center;">0.00 <span class="math inline">±</span>
+0.00</td>
 <td style="text-align: center;">6332.14 <span
 class="math inline">±</span> 89.86</td>
 <td style="text-align: center;">0.00 <span class="math inline">±</span>
@@ -1719,10 +1719,10 @@ class="smallcaps">SafetySwimmerVelocity-v1</span></td>
 46.52</td>
 <td style="text-align: center;">20.48 <span class="math inline">±</span>
 9.13</td>
-<td style="text-align: center;">47.29 <span class="math inline">±</span>
-4.07</td>
-<td style="text-align: center;">25.00 <span class="math inline">±</span>
-0.00</td>
+<td style="text-align: center;">33.02 <span class="math inline">±</span>
+7.26</td>
+<td style="text-align: center;">24.23 <span class="math inline">±</span>
+0.54</td>
 <td style="text-align: center;">39.24 <span class="math inline">±</span>
 5.01</td>
 <td style="text-align: center;">23.20 <span class="math inline">±</span>
