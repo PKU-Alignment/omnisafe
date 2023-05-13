@@ -190,7 +190,7 @@ def test_cem_based(algo):
 
     custom_cfgs = {
         'train_cfgs': {
-            'total_steps': 300,
+            'total_steps': 200,
             'vector_env_nums': 1,
             'torch_threads': 4,
         },
@@ -199,7 +199,7 @@ def test_cem_based(algo):
             'steps_per_epoch': 100,
             'action_repeat': 1,
             'update_dynamics_cycle': 100,
-            'start_learning_steps': 100,
+            'start_learning_steps': 3,
         },
         'dynamics_cfgs': {
             'num_ensemble': 5,
