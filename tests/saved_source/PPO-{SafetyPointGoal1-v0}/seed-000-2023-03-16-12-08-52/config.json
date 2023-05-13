@@ -70,5 +70,6 @@
         }
     },
     "exp_name": "PPO-(SafetyPointGoal1-v0)",
-    "env_id": "SafetyPointGoal1-v0"
+    "env_id": "SafetyPointGoal1-v0",
+    "algo": "PPO"
 }

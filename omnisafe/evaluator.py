@@ -56,6 +56,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     _cfgs: Config
     _save_dir: str
     _model_name: str
+    _cost_count: torch.Tensor
 
     # pylint: disable-next=too-many-arguments
     def __init__(
@@ -81,12 +82,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self._planner = planner
         self._dividing_line: str = '\n' + '#' * 50 + '\n'
 
-        self._cfgs: Config
-        self._save_dir: str
-        self._model_name: str
         self._safety_budget: torch.Tensor
         self._safety_obs = torch.ones(1)
-        self._cost_count: torch.zeros(1)
+        self._cost_count = torch.zeros(1)
         self.__set_render_mode(render_mode)
 
     def __set_render_mode(self, render_mode: str) -> None:
@@ -395,7 +393,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 ep_ret += rew.item()
                 ep_cost += (cost_criteria**length) * cost.item()
                 if 'EarlyTerminated' in self._cfgs['algo'] and ep_cost >= 25.0:
-                    terminated = True
+                    terminated = torch.as_tensor(True)
                 length += 1
 
                 done = bool(terminated or truncated)
@@ -514,7 +512,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 ep_ret += rew.item()
                 ep_cost += (cost_criteria**length) * cost.item()
                 if 'EarlyTerminated' in self._cfgs['algo'] and ep_cost >= 25.0:
-                    terminated = True
+                    terminated = torch.as_tensor(True)
                 length += 1
 
                 if self._render_mode == 'rgb_array':
