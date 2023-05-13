@@ -48,7 +48,7 @@ Supported algorithms are listed below:
 
 ## Safety-Gymnasium
 
-We highly recommend using ``safety-gymnasium`` to run the following experiments. To install, in a linux machine, type:
+We highly recommend using `safety-gymnasium` to run the following experiments. To install, in a linux machine, type:
 
 ```bash
 pip install safety_gymnasium
@@ -56,7 +56,7 @@ pip install safety_gymnasium
 
 ## Run the Benchmark
 
-You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
+You can set the main function of `examples/benchmarks/experimrnt_grid.py` as:
 
 ```python
 if __name__ == '__main__':
@@ -127,8 +127,8 @@ cd examples
 python plot.py --log-dir ALGODIR
 ```
 
-e.g. ALGODIR can be ``examples/runs/SafetyHopperVelocity-v1``.
-Then you can compare different algorithms in ``SafetyHopperVelocity-v1`` environments.
+e.g. ALGODIR can be `examples/runs/SafetyHopperVelocity-v1`.
+Then you can compare different algorithms in `SafetyHopperVelocity-v1` environments.
 
 Logs is saved in `examples/benchmarks/runs` and can be monitored with tensorboard or wandb.
 
@@ -143,9 +143,9 @@ cd examples
 python evaluate_saved_policy.py
 ```
 
-Please note that before you evaluate, set the ``LOG_DIR`` in ``evaluate_saved_policy.py``.
+Please note that before you evaluate, set the `LOG_DIR` in `evaluate_saved_policy.py`.
 
-For example, if I train ``PPOLag`` in ``SafetyHumanoidVelocity-v1``
+For example, if I train `PPOLag` in `SafetyHumanoidVelocity-v1`
 
 ```python
     LOG_DIR = '~/omnisafe/examples/runs/PPOLag-<SafetyHumanoidVelocity-v1>/seed-000'
@@ -3348,29 +3348,41 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 
 #### First-Order Methods Specific Hyperparameters
 
-- ``algo_cfgs:kl_early_stop``: Whether to use the `early stop` trick for KL divergence. In first-order methods, this parameter is set to ``True``. If the KL divergence is too large, we will stop the line search and use the previous step size.
+- `algo_cfgs:kl_early_stop`: Whether to use the `early stop` trick for KL divergence. In first-order methods, this parameter is set to `True`. If the KL divergence is too large, we will stop the line search and use the previous step size.
 
 #### Second-Order Methods Specific Hyperparameters
 
-- ``algo_cfgs:kl_early_stop``: Whether to use early stop for KL divergence. In the second-order methods, we use line search to find the proper step size. If the KL divergence is too large, we will stop the line search and use the previous step size. So it is not necessary to use the ``early stop`` trick for KL divergence in the second-order methods. We set ``kl_early_stop=False`` in the second-order methods.
+- `algo_cfgs:kl_early_stop`: Whether to use early stop for KL divergence. In the second-order methods, we use line search to find the proper step size. If the KL divergence is too large, we will stop the line search and use the previous step size. So it is not necessary to use the `early stop` trick for KL divergence in the second-order methods. We set `kl_early_stop=False` in the second-order methods.
 
-- ``model_cfgs:actor:lr``: The learning rate of the actor network. The second-order methods use the actor network update the policy by directly setting the parameters of the policy network. So we do not need to set the learning rate of the policy network, which is set to ``None``.
+- `model_cfgs:actor:lr`: The learning rate of the actor network. The second-order methods use the actor network update the policy by directly setting the parameters of the policy network. So we do not need to set the learning rate of the policy network, which is set to `None`.
+
+You may find that in some environments, Natural PG performs nearly the same as TRPO. This is because, in the Mujoco
+Velocity environment series, the TRPO search update step size is always 1. Additionally, since all algorithms were
+tested under the same random seed, there is an occurrence of TRPO and Natural PG training curves overlapping.
 
 #### Saute RL Methods Specific Hyperparameters
-`saute_gamma`In the experiment we found that ``saute_gamma`` impacts the performance of Saute RL methods. We found that 0.999 is a good value for this hyperparameter.
+- `saute_gamma`: In the experiment we found that `saute_gamma` impacts the performance of Saute RL methods. We found that 0.999 is a good value for this hyperparameter.
 
 #### Simmer RL Methods Specific Hyperparameters
 
-- ``saute_gamma``: Since the Simmer RL methods are based on Saute RL methods, we also set ``saute_gamma`` to 0.999.
-- ``control_cfgs``: The control parameters of the Simmer RL methods. While Simmer uses a PID controller to control the safety budget, and PID is known as a parameter-sensitive controller. So we need to tune the control parameters (`Kp`, `Ki` and `Kd`) for different environments. We have done some experiments to find relatively good control parameters for each environment, that is the ``control_cfgs`` in the ``omnisafe/configs/on_policy``.
+- `saute_gamma`: Since the Simmer RL methods are based on Saute RL methods, we also set `saute_gamma` to 0.999.
+- `control_cfgs`: The control parameters of the Simmer RL methods. While Simmer uses a PID controller to control the safety budget, and PID is known as a parameter-sensitive controller. So we need to tune the control parameters (`Kp`, `Ki` and `Kd`) for different environments. We have done some experiments to find relatively good control parameters for each environment, that is the `control_cfgs` in the `omnisafe/configs/on_policy`.
 
 #### PID-Lagrangian Methods Specific Hyperparameters
 
 PID-Lagrangian methods use a PID controller to control the lagrangian multiplier, The `pid_kp`, `pid_kd` and `pid_ki` count for the proportional gain, derivative gain and integral gain of the PID controller respectively. As PID-Lagrangian methods use a PID controller to control the lagrangian multiplier, the hyperparameters of the PID controller are important for the performance of the algorithm.
 
-- `pid_kp`: The proportional gain of the PID controller determines how much the output responds to changes in the `ep_costs` signal. If the `pid_kp` is too large, the lagrangian multiplier will oscillate and the performance will be bad. If the `pid_kp` is too small, the lagrangian multiplier will update slowly and the performance will also be bad. We have done some experiments to find relatively good `pid_kp` for each environment, and we found that 0.1 is a good value for this hyperparameter.
-- `pid_kd`: The derivative gain of the PID controller determines how much the output responds to changes in the `ep_costs` signal. If the `pid_kd` is too large, the lagrangian multiplier may be too sensitive to noise or changes in the `ep_costs` signal, leading to instability or oscillations. If the `pid_kd` is too small, the lagrangian multiplier may not respond quickly or accurately enough to changes in the `ep_costs`. We have done some experiments to find relatively good `pid_kd` for each environment, and we found that 0.01 is a good value for this hyperparameter.
-- `pid_ki`: The integral gain of the PID controller determines the controller's ability to eliminate the steady-state error, by integrating the `ep_costs` signal over time. If the `pid_ki` is too large, the lagrangian multiplier may become too responsive to small errors. We have done some experiments to find relatively good `pid_kd` for each environment, and we found that 0.01 is a good value for this hyperparameter.
+- `pid_kp`: The proportional gain of the PID controller, determines how much the output responds to changes in the `ep_costs` signal. If the `pid_kp` is too large, the lagrangian multiplier will oscillate and the performance will be bad. If the `pid_kp` is too small, the lagrangian multiplier will update slowly and the performance will also be bad.
+- `pid_kd`: The derivative gain of the PID controller, determines how much the output responds to changes in the `ep_costs` signal. If the `pid_kd` is too large, the lagrangian multiplier may be too sensitive to noise or changes in the `ep_costs` signal, leading to instability or oscillations. If the `pid_kd` is too small, the lagrangian multiplier may not respond quickly or accurately enough to changes in the `ep_costs`.
+- `pid_ki`: The integral gain of the PID controller, determines the controller's ability to eliminate the steady-state error, by integrating the `ep_costs` signal over time. If the `pid_ki` is too large, the lagrangian multiplier may become too responsive to small errors.
+
+We have done some experiments to find relatively good `pid_kp`, `pid_ki`, and `pid_kd` for all environments, and we found that the following value is a good value for this hyperparameter.
+
+| Parameters | Descriptions| Values |
+| -----------| ------------| ------ |
+|`pid_kp`|The proportional gain of the PID controller|0.1|
+|`pid_ki`|The derivative gain of the PID controller|0.01|
+|`pid_kd`|The integral gain of the PID controller|0.01|
 
 #### Early Terminated MDP Methods Specific Hyperparameters
 
@@ -3378,19 +3390,21 @@ PID-Lagrangian methods use a PID controller to control the lagrangian multiplier
 
 ### Some Hints
 
-In our experiments, we found that somehyperparameters are important for the performance of the algorithm:
+In our experiments, we found that some hyperparameters are important for the performance of the algorithm:
 
-- ``obs_normlize``: Whether to normalize the observation.
-- ``rew_normlize``: Whether to normalize the reward.
-- ``cost_normlize``: Whether to normalize the cost.
+- `obs_normlize`: Whether to normalize the observation.
+- `rew_normlize`: Whether to normalize the reward.
+- `cost_normlize`: Whether to normalize the cost.
 
-We have done some experiments to show the effect of these hyperparameters, and we log the best configuration for each algorithm in each environment. You can check it in the ``omnisafe/configs/on_policy``.
+We have done some experiments to show the effect of these hyperparameters, and we log the best configuration for each algorithm in each environment. You can check it in the `omnisafe/configs/on_policy`.
 
-In experiments, we found that the ``obs_normlize=True`` always performs better than ``obs_normlize=False`` in the second-order methods. That means the reward would increase quicker if we normalize the observation. So we set ``obs_normlize=True`` in almost all the second-order methods.
+In experiments, we found that the `obs_normlize=True` always performs better than `obs_normlize=False` in the second-order methods. That means the reward would increase quicker if we normalize the observation. So we set `obs_normlize=True` in almost all the second-order methods.
 
-Importantly, we found that the ``rew_normlize=True`` not always performs better than ``rew_normlize=False``, especially in the ``SafetyHopperVelocity-v1`` and ``SafetyWalker2dVelocity`` environment.
+Importantly, we found that the `rew_normlize=True` does not always perform better than `rew_normlize=False`, especially in the `SafetyHopperVelocity-v1` and `SafetyWalker2dVelocity` environment.
 
-The Lagrangian method often has the phenomenon of unstable updates and easy overshoot. We found that the following Lagrangian multiplier parameters is suitable.
+**So, by default, we only set `obs_normlize=True` in all of OmniSafe on-policy algorithms**
+
+The Lagrangian method often has the phenomenon of unstable updates and easy overshoot. We found that the following Lagrangian multiplier parameters are suitable.
 
 | Parameters | Descriptions| Values |
 | -----------| ------------| ------ |
@@ -3398,11 +3412,8 @@ The Lagrangian method often has the phenomenon of unstable updates and easy over
 |`lambda_lr`|Learning rate of lagrangian multiplier|0.035|
 |`lambda_optimizer`|Type of lagrangian optimizer|`Adam`|
 
+Besides, the hyperparameter `train_cfgs:torch_num_threads` is also important. on-policy algorithms always use more time to update policy than to sample data. So we use `torch_num_threads` to speed up the update process.
 
-
-
-Besides, the hyperparameter ``train_cfgs:torch_num_threads`` is also important. on-policy algorithms always use more time to update policy than to sample data. So we use ``torch_num_threads`` to speed up the update process.
-
-This hyperparamter depens on the number of CPU cores. We set it to 8 in our experiments. You can set it to some other porper value according to your CPU cores.
+This hyperparamter depens on the number of CPU cores. We set it to 8 in our experiments. You can set it to some other proper value according to your CPU cores.
 
 If you find that other hyperparameters perform better, please feel free to open an issue or pull request.

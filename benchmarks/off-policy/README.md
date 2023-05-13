@@ -17,14 +17,14 @@ Supported algorithms are listed below:
 
 ## Safety-Gymnasium
 
-We highly recommend using ``safety-gymnasium`` to run the following experiments. To install, in a linux machine, type:
+We highly recommend using `safety-gymnasium` to run the following experiments. To install, in a linux machine, type:
 
 ```bash
 pip install safety_gymnasium
 ```
 
 ## Run the Benchmark
-You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
+You can set the main function of `examples/benchmarks/experimrnt_grid.py` as:
 
 ```python
     eg = ExperimentGrid(exp_name='Off-Policy-Velocity')
@@ -75,10 +75,10 @@ cd examples
 python plot.py --log-dir ALGODIR
 ```
 
-e.g. ALGODIR can be ``examples/runs/SafetyHopperVelocity-v1``.
-Then you can compare different algorithms in ``SafetyHopperVelocity-v1`` environments.
+e.g. ALGODIR can be `examples/runs/SafetyHopperVelocity-v1`.
+Then you can compare different algorithms in `SafetyHopperVelocity-v1` environments.
 
-Logs is saved in `examples/benchmarks/runs` and can be monitored with tensorboard or wandb.
+Logs are saved in `examples/benchmarks/runs` and can be monitored with tensorboard or wandb.
 
 ```bash
 $ tensorboard --logdir examples/benchmarks/runs
@@ -90,9 +90,9 @@ After the experiment is finished, you can use the following command to generate 
 cd examples
 python evaluate_saved_policy.py
 ```
-Please note that before you evaluate, please set the ``LOG_DIR`` in ``evaluate_saved_policy.py``.
+Please note that before you evaluate, please set the `LOG_DIR` in `evaluate_saved_policy.py`.
 
-For example, if I train ``DDPG`` in ``SafetyHumanoidVelocity-v1``
+For example, if I train `DDPG` in `SafetyHumanoidVelocity-v1`
 
 ```python
     LOG_DIR = '~/omnisafe/examples/runs/DDPG-<SSafetyHumanoidVelocity-v1>/seed-000'
@@ -588,56 +588,55 @@ Off-Policy algorithms almost share the same hyperparameters, the share hyperpara
 
 |   Hyperparameter    |   Value    |
 | :-----------------: | :--------: |
-|   ``batch_size``    |    256     |
-|      ``gamma``      |    0.99    |
-|      ``size``       |  1000000   |
-|  ``update_iters``   |     1      |
-| ``step_per_sample`` |     1      |
-|  ``hidden_sizes``   | [256, 256] |
+|   `batch_size`    |    256     |
+|      `gamma`      |    0.99    |
+|      `size`       |  1000000   |
+|  `update_iters`   |     1      |
+|  `update_circle`   |     1      |
+|  `hidden_sizes`   | [256, 256] |
 
 However, there are some differences between the three algorithms. We list the differences below:
-
 
 ### TD3
 
 |      Hyperparameter      | Value |
 | :----------------------: | :---: |
-|     ``policy_noise``     |  0.2  |
-|      ``noise_clip``      |  0.5  |
-| ``start_learning_steps`` | 25000 |
+|     `policy_noise`     |  0.2  |
+|      `noise_clip`      |  0.5  |
+| `start_learning_steps` | 25000 |
 
 ### SAC
 
 |      Hyperparameter      | Value |
 | :----------------------: | :---: |
-|        ``alpha``         |  0.2  |
-| ``start_learning_steps`` | 5000  |
+|        `alpha`         |  0.2  |
+| `start_learning_steps` | 5000  |
 
 ### Lagragian
 
-The lagrangian version of off-policy algorithms share the same set of
+The lagrangian versions of off-policy algorithms share the same set of
 lagrangian hyperparameters. The hyperparameters are listed below:
 
 |      Hyperparameter      | Value |
 | :----------------------: | :---: |
-| ``cost_limit`` | 25.0  |
-| ``lagrangian_multiplier_init`` | 0.001  |
-| ``lambda_lr`` | 0.00001  |
-| ``lambda_optimizer`` | Adam |
+| `cost_limit` | 25.0  |
+| `lagrangian_multiplier_init` | 0.001  |
+| `lambda_lr` | 0.00001  |
+| `lambda_optimizer` | Adam |
 
 ### Some Hints
 
 In our experiments, we found that some hyperparameters are important for the performance of the algorithm:
 
-- ``obs_normlize``: Whether to normalize the observation.
-- ``rew_normlize``: Whether to normalize the reward.
-- ``cost_normlize``: Whether to normalize the cost.
+- `obs_normlize`: Whether to normalize the observation.
+- `rew_normlize`: Whether to normalize the reward.
+- `cost_normlize`: Whether to normalize the cost.
 
-We have done some experiments to show the effect of these hyperparameters, and we log the best configuration for each algorithm in each environment. You can check it in the ``omnisafe/configs/off_policy``.
+We have done some experiments to show the effect of these hyperparameters, and we log the best configuration for each algorithm in each environment. You can check it in the `omnisafe/configs/off_policy`.
 
-Generally, we recommend not to normalize the observation and reward, but not the cost.
+Generally, we recommend not normalizing the observation and reward, but not the cost.
 
-Besides, the hyperparameter ``train_cfgs:torch_num_threads`` is also important. Off-policy algorithms always use more time to update policy than to sample data. So we use ``torch_num_threads`` to speed up the update process.
+Besides, the hyperparameter `train_cfgs:torch_num_threads` is also important. Off-policy algorithms always use more time to update policy than to sample data. So we use `torch_num_threads` to speed up the update process.
 
 This hyperparamter depens on the number of CPU cores. We set it to 8 in our experiments. You can set it to some other porper value according to your CPU cores.
 
