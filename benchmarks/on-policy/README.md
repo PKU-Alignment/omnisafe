@@ -1,10 +1,10 @@
 # OmniSafe's Safety-Gymnasium Benchmark on On-Policy Algorithms
 
-OmniSafe's Safety-Gymnasium Benchmark evaluated the performance of OmniSafe algorithm implementations in **14 environments** from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
-- Default hyperparameters used for the benchmark and scripts to reproduce the results
+OmniSafe's Safety-Gymnasium Benchmark evaluated the performance of OmniSafe algorithm implementations in several environments from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
+- Default hyperparameters used for the benchmark and scripts to reproduce the results.
 - A comparison of performance or code-level details with other open-source implementations or classic papers.
 - Graphs and raw data that can be used for research purposes.
-- Log details obtained during training
+- Log details obtained during training.
 - Some hints on how to fine-tune the algorithm for optimal results.
 
 Supported algorithms are listed below:

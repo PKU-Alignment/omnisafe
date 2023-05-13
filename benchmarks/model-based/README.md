@@ -209,12 +209,12 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       </div>
     </td>
   </tr>
-  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments, covering classical  reinforcement learning algorithms and safe learning algorithms mentioned in <a href="#performance_model_based">Table 1</a> and safe reinforcement learning algorithms. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1:</b> Training curves in Safety-Gymnasium environments, covering classical reinforcement learning algorithms and safe learning algorithms mentioned in <a href="#performance_model_based">Table 1</a>.</p></caption>
 </table>
 
 ## Some Hints
 
-In our experiments, we found that somehyperparameters are important for the performance of the algorithm:
+In our experiments, we found that some hyperparameters are important for the performance of the algorithm:
 
 - ``action_repeat``: The time of action repeat.
 - ``init_var``: The initial variance of gaussian distribution for sampling actions.

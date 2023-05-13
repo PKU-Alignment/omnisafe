@@ -1,9 +1,10 @@
 # OmniSafe's Mujoco Velocity Benchmark on Off-Policy Algorithms
 
 OmniSafe's Mujoco Velocity Benchmark evaluated the performance of OmniSafe algorithm implementations in 6 environments from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
-- Default hyperparameters used for the benchmark and scripts to reproduce the results
+- Default hyperparameters used for the benchmark and scripts to reproduce the results.
 - A comparison of performance or code-level details with other open-source implementations or classic papers.
-- Graphs and raw data that can be used for research purposes, - Log details obtained during training
+- Graphs and raw data that can be used for research purposes.
+- Log details obtained during training.
 - Some hints on how to fine-tune the algorithm for optimal results.
 
 Supported algorithms are listed below:
@@ -574,7 +575,7 @@ class="math inline">±</span> 300.43</td>
       </div>
     </td>
   </tr>
-  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a> and safe reinforcement learning algorithms. The rewards are obtained from the 1e6 steps interaction.</p></caption>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a> and safe reinforcement learning algorithms.</p></caption>
 </table>
 
 
