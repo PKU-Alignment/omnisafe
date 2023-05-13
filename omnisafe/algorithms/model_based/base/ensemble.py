@@ -162,7 +162,7 @@ class EnsembleFC(nn.Module):
         w_times_x = torch.bmm(input_data, self.weight)
         if self.bias is not None:
             return torch.add(w_times_x, self.bias[:, None, :])  # w times x + b
-        return w_times_x
+        return w_times_x # type: ignore
 
 
 # pylint: disable-next=too-many-instance-attributes
