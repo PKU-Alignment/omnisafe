@@ -49,7 +49,7 @@ You can set the main function of `examples/benchmarks/experimrnt_grid.py` as:
         warnings.warn('The GPU ID is not available, use CPU instead.', stacklevel=1)
         gpu_id = None
 
-    # set up the environment.
+    # set up the environments.
     eg.add('env_id', [
         'SafetyHopperVelocity-v1',
         'SafetyWalker2dVelocity-v1',
@@ -280,7 +280,7 @@ class="math inline">±</span> 795.48</td>
 ### Safe Reinforcement Learning Algorithms
 
 Serving as a reliable SafeRL baseline, OmniSafe offers performance insights for SafeRL
-algorithms within the Safety-Gymnasium environment. The results of OmniSafe are
+algorithms within the Safety-Gymnasium environments. The results of OmniSafe are
 presented in <a href="#performance_off_policy">Table 2</a> and <a href="#curve_off_policy">Figure 1</a>.
 
 #### Performance Table
@@ -583,7 +583,7 @@ class="math inline">±</span> 300.43</td>
 
 ### Hyperparameters
 
-**We are continuously improving performance for first-order algorithms and finding better hyperparameters and will release an ultimate version as soon as possible. Meanwhile, we are happy to receive any advice from users, feel free for opening PRs or issues.**
+**We are **continuously improving the performance for off-policy algorithms and finding better hyperparameters. So we are happy to receive any advice from users, feel free for opening PRs or issues.**
 
 Off-Policy algorithms almost share the same hyperparameters, the share hyperparameters are listed below:
 
@@ -635,10 +635,16 @@ In our experiments, we found that some hyperparameters are important for the per
 
 We have done some experiments to show the effect of these hyperparameters, and we log the best configuration for each algorithm in each environment. You can check it in the `omnisafe/configs/off_policy`.
 
-Generally, we recommend not normalizing the observation and reward, but not the cost.
+Generally, we recommend:
+
+|      Hyperparameter      | Value |
+| :----------------------: | :---: |
+| `obs_normalize`   |  `False`  |
+| `reward_normalize`|  `False`  |
+| `cost_normalize`  | `True` |
 
 Besides, the hyperparameter `train_cfgs:torch_num_threads` is also important. Off-policy algorithms always use more time to update policy than to sample data. So we use `torch_num_threads` to speed up the update process.
 
-This hyperparamter depens on the number of CPU cores. We set it to 8 in our experiments. You can set it to some other porper value according to your CPU cores.
+This hyperparamter depens on the number of CPU cores. We set it to 8 in our experiments. You can set it to some other proper value according to your CPU cores.
 
 If you find that other hyperparameters perform better, please feel free to open an issue or pull request.

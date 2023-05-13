@@ -87,7 +87,7 @@ if __name__ == '__main__':
     # you can use tensorboard to monitor the experiment.
     eg.add('logger_cfgs:use_tensorboard', [True])
 
-    # Set the device.
+    # set the device.
     avaliable_gpus = list(range(torch.cuda.device_count()))
     gpu_id = [0, 1, 2, 3]
     # if you want to use CPU, please set gpu_id = None
@@ -401,7 +401,7 @@ class="math inline">±</span> 760.93</strong></td>
 
 ### Safe Reinforcement Learning Algorithms
 
-Serving as a reliable SafeRL baseline, OmniSafe offers performance insights for SafeRL algorithms within the Safety-Gymnasium environment. The results of OmniSafe are presented in <a href="#performance_on_policy">Table 2</a> and the training curves are in the following sections (Please click the triangle button to see the training curves).
+Serving as a reliable SafeRL `baseline`, OmniSafe offers performance insights for SafeRL algorithms within the Safety-Gymnasium environment. The results of OmniSafe are presented in <a href="#performance_on_policy">Table 2</a> and the training curves are in the following sections (Please click the triangle button to see the training curves).
 
 #### Performance Table
 

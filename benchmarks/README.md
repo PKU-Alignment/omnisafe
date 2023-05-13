@@ -34,11 +34,11 @@ The OmniSafe Safety-Gymnasium Benchmark assesses the efficacy of OmniSafe's Safe
 
 **PID-Lagrangian**
 
-- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods(CPPOPID, TRPOPID)](https://arxiv.org/abs/2007.03964)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (CPPOPID, TRPOPID)](https://arxiv.org/abs/2007.03964)
 
 **Early Terminated MDP**
 
-- **[Pre-Print 2021]** [Safe Exploration by Solving Early Terminated MDP(PPOEarlyTerminated, TRPOEarlyTerminated)](https://arxiv.org/pdf/2107.04200.pdf)
+- **[Pre-Print 2021]** [Safe Exploration by Solving Early Terminated MDP (PPOEarlyTerminated, TRPOEarlyTerminated)](https://arxiv.org/pdf/2107.04200.pdf)
 
 > **More details can be refer to [On Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/on-policy/README.md).**
 

@@ -274,8 +274,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         else:
             if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
                 observation_space = Box(
-                    low=-np.inf,
-                    high=np.inf,
+                    low=np.hstack((observation_space.low, -np.inf)),
+                    high=np.hstack((observation_space.high, np.inf)),
                     shape=(observation_space.shape[0] + 1,),
                 )
             actor_type = self._cfgs['model_cfgs']['actor_type']
