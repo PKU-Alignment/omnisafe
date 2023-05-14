@@ -37,11 +37,11 @@ Supported algorithms are listed below:
 
 **PID-Lagrangian**
 
-- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods(CPPOPID, TRPOPID)](https://arxiv.org/abs/2007.03964)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (CPPOPID, TRPOPID)](https://arxiv.org/abs/2007.03964)
 
 **Early Terminated MDP**
 
-- **[Pre-Print 2021]** [Safe Exploration by Solving Early Terminated MDP(PPOEarlyTerminated, TRPOEarlyTerminated)](https://arxiv.org/pdf/2107.04200.pdf)
+- **[Pre-Print 2021]** [Safe Exploration by Solving Early Terminated MDP (PPOEarlyTerminated, TRPOEarlyTerminated)](https://arxiv.org/pdf/2107.04200.pdf)
 
 
 
@@ -89,9 +89,14 @@ if __name__ == '__main__':
 
     # set the device.
     avaliable_gpus = list(range(torch.cuda.device_count()))
-    gpu_id = [0, 1, 2, 3]
+    # if you want to use GPU, please set gpu_id like follows
+    # gpu_id = [0, 1, 2, 3]
     # if you want to use CPU, please set gpu_id = None
-    # gpu_id = None
+    # we recommends using CPU to obtain results as consistent 
+    # as possible with our publicly available results, 
+    # since the performance of all on-policy algorithms 
+    # in OmniSafe is tested on CPU.
+    gpu_id = None
 
     if not set(gpu_id).issubset(avaliable_gpus):
         warnings.warn('The GPU ID is not available, use CPU instead.', stacklevel=1)
@@ -128,7 +133,7 @@ python plot.py --log-dir ALGODIR
 ```
 
 e.g. ALGODIR can be `examples/runs/SafetyHopperVelocity-v1`.
-Then you can compare different algorithms in `SafetyHopperVelocity-v1` environments.
+Then you can compare different algorithms in `SafetyHopperVelocity-v1` environment.
 
 Logs is saved in `examples/benchmarks/runs` and can be monitored with tensorboard or wandb.
 
@@ -148,18 +153,18 @@ Please note that before you evaluate, set the `LOG_DIR` in `evaluate_saved_polic
 For example, if I train `PPOLag` in `SafetyHumanoidVelocity-v1`
 
 ```python
-    LOG_DIR = '~/omnisafe/examples/runs/PPOLag-<SafetyHumanoidVelocity-v1>/seed-000'
-    play = True
-    save_replay = True
-    if __name__ == '__main__':
-        evaluator = omnisafe.Evaluator(play=play, save_replay=save_replay)
-        for item in os.scandir(os.path.join(LOG_DIR, 'torch_save')):
-            if item.is_file() and item.name.split('.')[-1] == 'pt':
-                evaluator.load_saved(
-                    save_dir=LOG_DIR, model_name=item.name, camera_name='track', width=256, height=256
-                )
-                evaluator.render(num_episodes=1)
-                evaluator.evaluate(num_episodes=1)
+LOG_DIR = '~/omnisafe/examples/runs/PPOLag-<SafetyHumanoidVelocity-v1>/seed-000'
+play = True
+save_replay = True
+if __name__ == '__main__':
+    evaluator = omnisafe.Evaluator(play=play, save_replay=save_replay)
+    for item in os.scandir(os.path.join(LOG_DIR, 'torch_save')):
+        if item.is_file() and item.name.split('.')[-1] == 'pt':
+            evaluator.load_saved(
+                save_dir=LOG_DIR, model_name=item.name, camera_name='track', width=256, height=256
+            )
+            evaluator.render(num_episodes=1)
+            evaluator.evaluate(num_episodes=1)
 ```
 
 ## OmniSafe Benchmark
@@ -197,7 +202,7 @@ class="math inline">±</span> 127.55</td>
 <td style="text-align: center;">- <span class="math inline">±</span>
 -</td>
 <td style="text-align: center;"><strong>4295.96 <span
-class="math inline">±</span> 658.2</strong>|</td>
+class="math inline">±</span> 658.2</strong></td>
 <td style="text-align: center;">2607.48 <span
 class="math inline">±</span> 1415.78</td>
 <td style="text-align: center;">1780.61 <span

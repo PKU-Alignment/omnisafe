@@ -40,7 +40,7 @@ You can set the main function of `examples/benchmarks/experimrnt_grid.py` as:
     # you can use tensorboard to monitor the experiment.
     eg.add('logger_cfgs:use_tensorboard', [True])
 
-    # Set the device.
+    # set the device.
     avaliable_gpus = list(range(torch.cuda.device_count()))
     gpu_id = [0, 1, 2, 3]
     # if you want to use CPU, please set gpu_id = None
@@ -78,12 +78,12 @@ python plot.py --log-dir ALGODIR
 ```
 
 e.g. ALGODIR can be `examples/runs/SafetyHopperVelocity-v1`.
-Then you can compare different algorithms in `SafetyHopperVelocity-v1` environments.
+Then you can compare different algorithms in `SafetyHopperVelocity-v1` environment.
 
 Logs are saved in `examples/benchmarks/runs` and can be monitored with tensorboard or wandb.
 
 ```bash
-$ tensorboard --logdir examples/benchmarks/runs
+tensorboard --logdir examples/benchmarks/runs
 ```
 
 After the experiment is finished, you can use the following command to generate the video of the trained agent:
@@ -97,18 +97,18 @@ Please note that before you evaluate, please set the `LOG_DIR` in `evaluate_save
 For example, if I train `DDPG` in `SafetyHumanoidVelocity-v1`
 
 ```python
-    LOG_DIR = '~/omnisafe/examples/runs/DDPG-<SSafetyHumanoidVelocity-v1>/seed-000'
-    play = True
-    save_replay = True
-    if __name__ == '__main__':
-        evaluator = omnisafe.Evaluator(play=play, save_replay=save_replay)
-        for item in os.scandir(os.path.join(LOG_DIR, 'torch_save')):
-            if item.is_file() and item.name.split('.')[-1] == 'pt':
-                evaluator.load_saved(
-                    save_dir=LOG_DIR, model_name=item.name, camera_name='track', width=256, height=256
-                )
-                evaluator.render(num_episodes=1)
-                evaluator.evaluate(num_episodes=1)
+LOG_DIR = '~/omnisafe/examples/runs/DDPG-<SSafetyHumanoidVelocity-v1>/seed-000'
+play = True
+save_replay = True
+if __name__ == '__main__':
+    evaluator = omnisafe.Evaluator(play=play, save_replay=save_replay)
+    for item in os.scandir(os.path.join(LOG_DIR, 'torch_save')):
+        if item.is_file() and item.name.split('.')[-1] == 'pt':
+            evaluator.load_saved(
+                save_dir=LOG_DIR, model_name=item.name, camera_name='track', width=256, height=256
+            )
+            evaluator.render(num_episodes=1)
+            evaluator.evaluate(num_episodes=1)
 ```
 
 ## OmniSafe Benchmark
@@ -249,8 +249,8 @@ class="math inline">±</span> 131.69</td>
 1.23</td>
 <td style="text-align: center;">44.34 <span class="math inline">±</span>
 2.01</td>
-<td style="text-align: center;">247.33 <span
-class="math inline">±</span> 122.02</td>
+<td style="text-align: center;"><strong>247.33<span
+class="math inline">±</span> 122.02</strong></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
@@ -513,7 +513,7 @@ class="math inline">±</span> 300.43</td>
 32.30</td>
 </tr>
 </tbody>
-  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 2:</b> The performance of OmniSafe off-policy algorithms, encompassing both reward and cost, was assessed within the Safety-Gymnasium environments. During experimentation, it was observed that off-policy algorithms did not violate safety constraints in SafetyHumanoidVeloicty-v1. This observation suggests that the agent may not have fully learned to run within 1e6 steps; consequently, the 3e6 results were utilized in off-policy SafetyHumanoidVeloicty-v1. With this exception in consideration, all off-policy algorithms were evaluated after 1e6 training steps.</p></caption>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 2:</b> The performance of OmniSafe off-policy algorithms, encompassing both reward and cost, was assessed within the Safety-Gymnasium environments. During experimentation, it was observed that off-policy algorithms did not violate safety constraints in SafetyHumanoidVeloicty-v1. This observation suggests that the agent may not have fully learned to run within 1e6 steps; Consequently, the 3e6 results were utilized in off-policy SafetyHumanoidVeloicty-v1. With this exception in consideration, all off-policy algorithms were evaluated after 1e6 training steps.</p></caption>
 </table>
 
 
@@ -582,7 +582,7 @@ class="math inline">±</span> 300.43</td>
 
 ### Hyperparameters
 
-**We are **continuously improving the performance for off-policy algorithms and finding better hyperparameters. So we are happy to receive any advice from users, feel free for opening PRs or issues.**
+**We are continuously improving the performance of off-policy algorithms and finding better hyperparameters. So we are happy to receive any advice from users, feel free for opening PRs or issues.**
 
 Off-Policy algorithms almost share the same hyperparameters, the share hyperparameters are listed below:
 
@@ -650,4 +650,4 @@ If you find that other hyperparameters perform better, please feel free to open 
 
 <div id="1"></div>
 
-[1] This paper is [safety-gym](https://openai.com/research/safety-gym) original paper. Its public code base [safety-starter-agents](https://github.com/openai/safety-starter-agents) implemented `SACLag` but does not report it in the paper.  We can not find the source of `DDPGLag `and `TD3Lag`. However, this paper introduced lagrangian methods and it implemented `SACLag`, so We also use it as a source of `DDPGLag` and `TD3Lag`.
+[1] This paper is [safety-gym](https://openai.com/research/safety-gym) original paper. Its public code base [safety-starter-agents](https://github.com/openai/safety-starter-agents) implemented `SACLag` but does not report it in the paper.  We can not find the source of `DDPGLag` and `TD3Lag`. However, this paper introduced lagrangian methods and it implemented `SACLag`, so We also use it as a source of `DDPGLag` and `TD3Lag`.
