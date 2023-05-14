@@ -1,16 +1,16 @@
 # OmniSafe's Safety-Gymnasium Benchmark on SafeRL algorithms
 
-The OmniSafe Safety-Gymnasium Benchmark assesses the efficacy of OmniSafe's SafeRL algorithms in several environments from the Safety-Gymnasium task suite. For each supported algorithm and environment, we offer default hyperparameters utilized during the benchmark, as well as scripts to replicate the results. Additionally, we provide performance comparisons and code-level details with other open-source implementations or classic papers. Our package includes graphs and raw data that can be used for research purposes, along with log details from training. Finally, we offer hints on fine-tuning the algorithm for optimal results.
+The OmniSafe Safety-Gymnasium Benchmark evaluates the effectiveness of OmniSafe's SafeRL algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) task suite. We provide default hyperparameters used during the benchmark and scripts for replicating the results for each supported algorithm and environment. Furthermore, we compare the performance and code-level details with other open-source implementations or classic papers. Our package includes graphs, raw data, and training log details that can be used for research purposes. Additionally, we provide tips on fine-tuning the algorithm for optimal results. Overall, our benchmark offers a comprehensive evaluation of OmniSafe's SafeRL algorithms with detailed information and resources for further research.
 
 ## On-Policy
 ### Supported Algorithms
 
 **First-Order**
 
-- **[NIPS 1999]** [Policy Gradient(PG)](https://papers.nips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf)
-- [Proximal Policy Optimization (PPO)](https://arxiv.org/pdf/1707.06347.pdf)
-- [The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
-- **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning(P3O)]( https://arxiv.org/pdf/2205.11814.pdf)
+- **[NIPS 1999]** [Policy Gradient (PG)](https://papers.nips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf)
+- **[Preprint 2017]** [Proximal Policy Optimization (PPO)](https://arxiv.org/pdf/1707.06347.pdf)
+- **[Preprint 2019]** [The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
+- **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning (P3O)]( https://arxiv.org/pdf/2205.11814.pdf)
 - **[NeurIPS 2020]** [First Order Constrained Optimization in Policy Space (FOCOPS)](https://arxiv.org/abs/2002.06506)
 - **[NeurIPS 2022]**  [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089)
 
@@ -18,7 +18,7 @@ The OmniSafe Safety-Gymnasium Benchmark assesses the efficacy of OmniSafe's Safe
 
 - **[NeurIPS 2001]** [A Natural Policy Gradient (NaturalPG))](https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf)
 - **[PMLR 2015]** [Trust Region Policy Optimization (TRPO)](https://arxiv.org/abs/1502.05477)
-- [The Lagrange version of TRPO (TRPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]**  [The Lagrange version of TRPO (TRPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
 - **[ICML 2017]** [Constrained Policy Optimization (CPO)](https://proceedings.mlr.press/v70/achiam17a)
 - **[ICML 2017]** [Proximal Constrained Policy Optimization (PCPO)](https://proceedings.mlr.press/v70/achiam17a)
 - **[ICLR 2019]** [Reward Constrained Policy Optimization (RCPO)](https://openreview.net/forum?id=SkfrvsA9FX)
@@ -38,7 +38,7 @@ The OmniSafe Safety-Gymnasium Benchmark assesses the efficacy of OmniSafe's Safe
 
 **Early Terminated MDP**
 
-- **[Pre-Print 2021]** [Safe Exploration by Solving Early Terminated MDP (PPOEarlyTerminated, TRPOEarlyTerminated)](https://arxiv.org/pdf/2107.04200.pdf)
+- **[Preprint 2021]** [Safe Exploration by Solving Early Terminated MDP (PPOEarlyTerminated, TRPOEarlyTerminated)](https://arxiv.org/pdf/2107.04200.pdf)
 
 > **More details can be refer to [On Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/on-policy/README.md).**
 
@@ -49,9 +49,10 @@ The OmniSafe Safety-Gymnasium Benchmark assesses the efficacy of OmniSafe's Safe
 - **[ICLR 2016]** [Deep Deterministic Policy Gradient (DDPG)](https://arxiv.org/pdf/1509.02971.pdf)
 - **[ICML 2018]** [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
 - **[ICML 2018]** [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
-- [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
-- [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
-- [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
+
 
 
 > **More details can be refer to [Off Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/off-policy/README.md).**
@@ -75,3 +76,7 @@ The OmniSafe Safety-Gymnasium Benchmark assesses the efficacy of OmniSafe's Safe
 - **[ICLR 2022 (Spotlight)]** [COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation](https://arxiv.org/abs/2204.08957?context=cs.AI)
 
 > **More details can be refer to [Offline Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/offline/README.md).**
+
+<div id="1"></div>
+
+[1] This paper is [safety-gym](https://openai.com/research/safety-gym) original paper. Its public code base [safety-starter-agents](https://github.com/openai/safety-starter-agents) implemented `SACLag` but does not report it in the paper.  We can not find the source of `DDPGLag` and `TD3Lag`. However, this paper introduced lagrangian methods and it implemented `SACLag`, so We also use it as a source of `DDPGLag` and `TD3Lag`.

@@ -1,6 +1,6 @@
 # OmniSafe's Safety-Gymnasium Benchmark on On-Policy Algorithms
 
-OmniSafe's Safety-Gymnasium Benchmark evaluated the performance of OmniSafe algorithm implementations in several environments from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
+The OmniSafe Safety-Gymnasium Benchmark for on-policy algorithms evaluates the effectiveness of OmniSafe's on-policy algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) task suite. For each algorithm and environment supported, we provide:
 - Default hyperparameters used for the benchmark and scripts to reproduce the results.
 - A comparison of performance or code-level details with other open-source implementations.
 - Graphs and raw data that can be used for research purposes.
@@ -12,7 +12,7 @@ Supported algorithms are listed below:
 **First-Order**
 
 - **[NIPS 1999]** [Policy Gradient(PG)](https://papers.nips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf)
-- **[Pre-Print 2017]**[Proximal Policy Optimization (PPO)](https://arxiv.org/pdf/1707.06347.pdf)
+- **[Preprint 2017]**[Proximal Policy Optimization (PPO)](https://arxiv.org/pdf/1707.06347.pdf)
 - [The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
 - **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning (P3O)]( https://arxiv.org/pdf/2205.11814.pdf)
 - **[NeurIPS 2020]** [First Order Constrained Optimization in Policy Space (FOCOPS)](https://arxiv.org/abs/2002.06506)
@@ -41,7 +41,7 @@ Supported algorithms are listed below:
 
 **Early Terminated MDP**
 
-- **[Pre-Print 2021]** [Safe Exploration by Solving Early Terminated MDP (PPOEarlyTerminated, TRPOEarlyTerminated)](https://arxiv.org/pdf/2107.04200.pdf)
+- **[Preprint 2021]** [Safe Exploration by Solving Early Terminated MDP (PPOEarlyTerminated, TRPOEarlyTerminated)](https://arxiv.org/pdf/2107.04200.pdf)
 
 
 

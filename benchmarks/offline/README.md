@@ -1,6 +1,6 @@
-# OmniSafe's Mujoco Velocity Benchmark on Offline Algorithms
+# OmniSafe's Navigation Benchmark on Offline Algorithms
 
-OmniSafe's Mujoco Velocity Benchmark evaluated the performance of OmniSafe's offline algorithm implementations in SafetyPointCirlce, SafetyPointCirlce from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
+The OmniSafe Safety-Gymnasium Benchmark for offline algorithms evaluates the effectiveness of OmniSafe's offline algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) task suite. For each algorithm and environment supported, we provide:
 
 - Default hyperparameters used for the benchmark and scripts to reproduce the results.
 - Graphs and raw data that can be used for research purposes.
@@ -104,7 +104,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetyPointCircle1-v0-0.25.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/offline/benchmarks/SafetyPointCircle1-v0-0.25.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -124,7 +124,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetyPointCircle1-v0-0.5.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/offline/benchmarks/SafetyPointCircle1-v0-0.5.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -144,7 +144,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetyPointCircle1-v0-0.75.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/offline/benchmarks/SafetyPointCircle1-v0-0.75.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -164,7 +164,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetCarCircle1-v0-0.25.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/offline/benchmarks/SafetCarCircle1-v0-0.25.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -184,7 +184,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetyCarCircle1-v0-0.5.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/offline/benchmarks/SafetyCarCircle1-v0-0.5.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -204,7 +204,7 @@ python plot.py --log-dir ALGODIR
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/tree/main/offline/benchmarks/SafetyCarCircle1-v0-0.75.png">
+    src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/offline/benchmarks/SafetyCarCircle1-v0-0.75.png">
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;

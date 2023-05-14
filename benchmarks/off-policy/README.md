@@ -1,6 +1,6 @@
 # OmniSafe's Mujoco Velocity Benchmark on Off-Policy Algorithms
 
-OmniSafe's Mujoco Velocity Benchmark evaluated the performance of OmniSafe algorithm implementations in 6 environments from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
+The OmniSafe Mujoco Velocity Benchmark for off-policy algorithms evaluates the effectiveness of OmniSafe's off-policy algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) Mujoco Velocity task suite. For each algorithm and environment supported, we provide:
 
 - Default hyperparameters used for the benchmark and scripts to reproduce the results.
 - A comparison of performance or code-level details with other open-source implementations.
@@ -13,10 +13,9 @@ Supported algorithms are listed below:
 - **[ICLR 2016]** [Deep Deterministic Policy Gradient (DDPG)](https://arxiv.org/pdf/1509.02971.pdf)
 - **[ICML 2018]** [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
 - **[ICML 2018]** [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
-- [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)[<sup>1</sup>](#1)
-- [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
-- [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
-
+- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
 
 ## Safety-Gymnasium
 
