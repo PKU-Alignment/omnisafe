@@ -2,7 +2,7 @@
 
 OmniSafe's Safety-Gymnasium Benchmark evaluated the performance of OmniSafe algorithm implementations in several environments from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
 - Default hyperparameters used for the benchmark and scripts to reproduce the results.
-- A comparison of performance or code-level details with other open-source implementations or classic papers.
+- A comparison of performance or code-level details with other open-source implementations.
 - Graphs and raw data that can be used for research purposes.
 - Log details obtained during training.
 - Some hints on how to fine-tune the algorithm for optimal results.
@@ -14,7 +14,7 @@ Supported algorithms are listed below:
 - **[NIPS 1999]** [Policy Gradient(PG)](https://papers.nips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf)
 - **[Pre-Print 2017]**[Proximal Policy Optimization (PPO)](https://arxiv.org/pdf/1707.06347.pdf)
 - [The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
-- **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning(P3O)]( https://arxiv.org/pdf/2205.11814.pdf)
+- **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning (P3O)]( https://arxiv.org/pdf/2205.11814.pdf)
 - **[NeurIPS 2020]** [First Order Constrained Optimization in Policy Space (FOCOPS)](https://arxiv.org/abs/2002.06506)
 - **[NeurIPS 2022]**  [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089)
 
@@ -1744,10 +1744,10 @@ class="math inline">±</span> 1300.69</td>
 class="math inline">±</span> 980.56</td>
 <td style="text-align: center;">9.60 <span class="math inline">±</span>
 8.94</td>
-<td style="text-align: center;">1456.64 <span
-class="math inline">±</span> 1147.43</td>
-<td style="text-align: center;">21.54 <span class="math inline">±</span>
-8.83</td>
+<td style="text-align: center;">2195.57 <span
+class="math inline">±</span> 1046.29</td>
+<td style="text-align: center;">7.63 <span class="math inline">±</span>
+10.44</td>
 <td style="text-align: center;">2079.64 <span
 class="math inline">±</span> 1028.73</td>
 <td style="text-align: center;">13.74 <span class="math inline">±</span>
@@ -1764,14 +1764,14 @@ class="smallcaps">SafetyCarGoal1-v0</span></td>
 1.31</td>
 <td style="text-align: center;">28.92 <span class="math inline">±</span>
 7.66</td>
-<td style="text-align: center;">24.87 <span class="math inline">±</span>
-1.84</td>
-<td style="text-align: center;">25.00 <span class="math inline">±</span>
-0.00</td>
-<td style="text-align: center;">37.54 <span class="math inline">±</span>
-1.44</td>
-<td style="text-align: center;">25.00 <span class="math inline">±</span>
-0.00</td>
+<td style="text-align: center;">17.92 <span class="math inline">±</span>
+1.54</td>
+<td style="text-align: center;">21.60 <span class="math inline">±</span>
+0.83</td>
+<td style="text-align: center;">22.09 <span class="math inline">±</span>
+3.07</td>
+<td style="text-align: center;">17.97 <span class="math inline">±</span>
+1.35</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
@@ -1784,12 +1784,12 @@ class="smallcaps">SafetyCarButton1-v0</span></td>
 0.49</td>
 <td style="text-align: center;">15.24 <span class="math inline">±</span>
 17.01</td>
-<td style="text-align: center;">7.94 <span class="math inline">±</span>
-3.32</td>
+<td style="text-align: center;">4.47 <span class="math inline">±</span>
+1.12</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>
 0.00</td>
-<td style="text-align: center;">10.17 <span class="math inline">±</span>
-1.11</td>
+<td style="text-align: center;">4.34 <span class="math inline">±</span>
+0.72</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>
 0.00</td>
 </tr>
@@ -1804,14 +1804,14 @@ class="smallcaps">SafetyCarGoal2-v0</span></td>
 1.20</td>
 <td style="text-align: center;">17.43 <span class="math inline">±</span>
 12.13</td>
-<td style="text-align: center;">13.55 <span class="math inline">±</span>
-4.59</td>
+<td style="text-align: center;">6.59 <span class="math inline">±</span>
+0.58</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>
 0.00</td>
-<td style="text-align: center;">20.98 <span class="math inline">±</span>
-6.28</td>
-<td style="text-align: center;">25.00 <span class="math inline">±</span>
-0.00</td>
+<td style="text-align: center;">7.12 <span class="math inline">±</span>
+4.06</td>
+<td style="text-align: center;">23.37 <span class="math inline">±</span>
+1.35</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
@@ -1824,12 +1824,12 @@ class="smallcaps">SafetyCarButton2-v0</span></td>
 4.03</td>
 <td style="text-align: center;">27.90 <span class="math inline">±</span>
 6.37</td>
-<td style="text-align: center;">7.92 <span class="math inline">±</span>
-3.72</td>
+<td style="text-align: center;">4.86 <span class="math inline">±</span>
+1.57</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>
 0.00</td>
-<td style="text-align: center;">15.64 <span class="math inline">±</span>
-7.92</td>
+<td style="text-align: center;">5.07 <span class="math inline">±</span>
+1.24</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>
 0.00</td>
 </tr>
@@ -1844,14 +1844,14 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
 3.94</td>
 <td style="text-align: center;">21.38 <span class="math inline">±</span>
 6.96</td>
-<td style="text-align: center;">19.49 <span class="math inline">±</span>
-5.42</td>
-<td style="text-align: center;">25.00 <span class="math inline">±</span>
-0.00</td>
-<td style="text-align: center;">28.90 <span class="math inline">±</span>
-1.00</td>
-<td style="text-align: center;">25.00 <span class="math inline">±</span>
-0.00</td>
+<td style="text-align: center;">16.03 <span class="math inline">±</span>
+8.60</td>
+<td style="text-align: center;">19.17 <span class="math inline">±</span>
+9.42</td>
+<td style="text-align: center;">16.31 <span class="math inline">±</span>
+6.99</td>
+<td style="text-align: center;">22.10 <span class="math inline">±</span>
+6.13</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
@@ -1864,12 +1864,12 @@ class="smallcaps">SafetyPointButton1-v0</span></td>
 1.43</td>
 <td style="text-align: center;">27.90 <span class="math inline">±</span>
 13.27</td>
-<td style="text-align: center;">12.37 <span class="math inline">±</span>
-7.95</td>
-<td style="text-align: center;">25.00 <span class="math inline">±</span>
-0.00</td>
-<td style="text-align: center;">32.41 <span class="math inline">±</span>
-9.68</td>
+<td style="text-align: center;">7.48 <span class="math inline">±</span>
+8.47</td>
+<td style="text-align: center;">24.27 <span class="math inline">±</span>
+3.95</td>
+<td style="text-align: center;">9.52 <span class="math inline">±</span>
+7.86</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>
 0.00</td>
 </tr>
@@ -1884,12 +1884,12 @@ class="smallcaps">SafetyPointGoal2-v0</span></td>
 1.43</td>
 <td style="text-align: center;">23.50 <span class="math inline">±</span>
 11.17</td>
-<td style="text-align: center;">13.55 <span class="math inline">±</span>
-4.59</td>
+<td style="text-align: center;">6.09 <span class="math inline">±</span>
+5.03</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>
 0.00</td>
-<td style="text-align: center;">14.53 <span class="math inline">±</span>
-3.37</td>
+<td style="text-align: center;">8.62 <span class="math inline">±</span>
+7.13</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>
 0.00</td>
 </tr>
@@ -1904,12 +1904,12 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 1.00</td>
 <td style="text-align: center;">30.00 <span class="math inline">±</span>
 9.50</td>
-<td style="text-align: center;">10.44 <span class="math inline">±</span>
-2.77</td>
+<td style="text-align: center;">6.94 <span class="math inline">±</span>
+4.47</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>
 0.00</td>
-<td style="text-align: center;">27.94 <span class="math inline">±</span>
-11.20</td>
+<td style="text-align: center;">8.35 <span class="math inline">±</span>
+10.44</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>
 0.00</td>
 </tr>
@@ -1920,7 +1920,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 #### First Order Algorithms
 
 <details>
-<summary><b><big>1e6 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e6 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -1991,7 +1991,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e7 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2062,7 +2062,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Navigation Result</big></b></summary>
+<summary><b><big>1e7 Steps Navigation Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2158,7 +2158,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 #### Second Order Algorithms
 
 <details>
-<summary><b><big>1e6 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e6 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2229,7 +2229,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e7 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2300,7 +2300,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Navigation Result</big></b></summary>
+<summary><b><big>1e7 Steps Navigation Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2396,7 +2396,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 #### Saute Algorithms
 
 <details>
-<summary><b><big>1e6 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e6 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2467,7 +2467,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e7 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2538,7 +2538,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Navigation Result</big></b></summary>
+<summary><b><big>1e7 Steps Navigation Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2634,7 +2634,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 #### Simmer Algorithms
 
 <details>
-<summary><b><big>1e6 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e6 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2705,7 +2705,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e7 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2776,7 +2776,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Navigation Result</big></b></summary>
+<summary><b><big>1e7 Steps Navigation Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2872,7 +2872,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 #### PID-Lagrangian Algorithms
 
 <details>
-<summary><b><big>1e6 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e6 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -2943,7 +2943,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e7 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -3014,7 +3014,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Navigation Result</big></b></summary>
+<summary><b><big>1e7 Steps Navigation Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -3110,7 +3110,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 #### Early Terminated MDP Algorithms
 
 <details>
-<summary><b><big>1e6 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e6 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -3181,7 +3181,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Velocity Result</big></b></summary>
+<summary><b><big>1e7 Steps Velocity Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -3252,7 +3252,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 </details>
 
 <details>
-<summary><b><big>1e7 Steps Navigation Result</big></b></summary>
+<summary><b><big>1e7 Steps Navigation Results</big></b></summary>
     <table>
     <tr>
         <td style="text-align:center">
@@ -3397,15 +3397,15 @@ We have done some experiments to find relatively good `pid_kp`, `pid_ki`, and `p
 
 In our experiments, we found that some hyperparameters are important for the performance of the algorithm:
 
-- `obs_normlize`: Whether to normalize the observation.
-- `rew_normlize`: Whether to normalize the reward.
-- `cost_normlize`: Whether to normalize the cost.
+- `obs_normalize`: Whether to normalize the observation.
+- `reward_normalize`: Whether to normalize the reward.
+- `cost_normalize`: Whether to normalize the cost.
 
 We have done some experiments to show the effect of these hyperparameters, and we log the best configuration for each algorithm in each environment. You can check it in the `omnisafe/configs/on_policy`.
 
-In experiments, we found that the `obs_normlize=True` always performs better than `obs_normlize=False` in the second-order methods. That means the reward would increase quicker if we normalize the observation. So we set `obs_normlize=True` in almost all the second-order methods.
+In experiments, we found that the `obs_normalize=True` always performs better than `obs_normalize=False` in the second-order methods. That means the reward would increase quicker if we normalize the observation. So we set `obs_normalize=True` in almost all the second-order methods.
 
-Importantly, we found that the `rew_normlize=True` does not always perform better than `rew_normlize=False`, especially in the `SafetyHopperVelocity-v1` and `SafetyWalker2dVelocity` environment.
+Importantly, we found that the `reward_normalize=True` does not always perform better than `reward_normalize=False`, especially in the `SafetyHopperVelocity-v1` and `SafetyWalker2dVelocity` environment.
 
 **To improve the overall performance stability, we use the following unified setting in all of OmniSafe on-policy algorithms**
 

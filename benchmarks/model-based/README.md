@@ -3,7 +3,6 @@
 OmniSafe's navigation Benchmark evaluated the performance of OmniSafe algorithm implementations in 2 environments from the Safety-Gymnasium task suite For each algorithm and environment supported, we provide:
 
 - Default hyperparameters used for the benchmark and scripts to reproduce the results.
-- A comparison of performance or code-level details with other open-source implementations or classic papers.
 - Graphs and raw data that can be used for research purposes.
 - Log details obtained during training.
 - Some hints on how to fine-tune the algorithm for optimal results.
@@ -78,7 +77,7 @@ python analyze_experiment_results.py
 
 ## OmniSafe Benchmark
 
-To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. It should be noted that all data is procured under the constraint of `cost_limit=25.00`. The results are presented in <a href="#performance_model_based">Table 1</a> and <a href="#curve_model_based">Figure 1</a>.
+To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. It should be noted that all data is procured under the constraint of `cost_limit=1.00`. The results are presented in <a href="#performance_model_based">Table 1</a> and <a href="#curve_model_based">Figure 1</a>.
 
 ### Performance Table
 

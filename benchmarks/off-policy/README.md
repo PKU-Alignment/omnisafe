@@ -1,8 +1,9 @@
 # OmniSafe's Mujoco Velocity Benchmark on Off-Policy Algorithms
 
 OmniSafe's Mujoco Velocity Benchmark evaluated the performance of OmniSafe algorithm implementations in 6 environments from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
+
 - Default hyperparameters used for the benchmark and scripts to reproduce the results.
-- A comparison of performance or code-level details with other open-source implementations or classic papers.
+- A comparison of performance or code-level details with other open-source implementations.
 - Graphs and raw data that can be used for research purposes.
 - Log details obtained during training.
 - Some hints on how to fine-tune the algorithm for optimal results.
@@ -628,9 +629,9 @@ lagrangian hyperparameters. The hyperparameters are listed below:
 
 In our experiments, we found that some hyperparameters are important for the performance of the algorithm:
 
-- `obs_normlize`: Whether to normalize the observation.
-- `rew_normlize`: Whether to normalize the reward.
-- `cost_normlize`: Whether to normalize the cost.
+- `obs_normalize`: Whether to normalize the observation.
+- `reward_normalize`: Whether to normalize the reward.
+- `cost_normalize`: Whether to normalize the cost.
 
 We have done some experiments to show the effect of these hyperparameters, and we log the best configuration for each algorithm in each environment. You can check it in the `omnisafe/configs/off_policy`.
 

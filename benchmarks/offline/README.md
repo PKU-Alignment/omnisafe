@@ -3,7 +3,6 @@
 OmniSafe's Mujoco Velocity Benchmark evaluated the performance of OmniSafe's offline algorithm implementations in SafetyPointCirlce, SafetyPointCirlce from the Safety-Gymnasium task suite. For each algorithm and environment supported, we provide:
 
 - Default hyperparameters used for the benchmark and scripts to reproduce the results.
-- A comparison of performance or code-level details with other open-source implementations or classic papers.
 - Graphs and raw data that can be used for research purposes.
 - Log details obtained during training.
 - Some hints on how to fine-tune the algorithm for optimal results.
