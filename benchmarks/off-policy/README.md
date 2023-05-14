@@ -12,9 +12,10 @@ Supported algorithms are listed below:
 - **[ICLR 2016]** [Deep Deterministic Policy Gradient (DDPG)](https://arxiv.org/pdf/1509.02971.pdf)
 - **[ICML 2018]** [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
 - **[ICML 2018]** [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
-- [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
+- [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)[<sup>1</sup>](#1)
 - [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
 - [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
+
 
 ## Safety-Gymnasium
 
@@ -279,7 +280,7 @@ class="math inline">±</span> 795.48</td>
 
 ### Safe Reinforcement Learning Algorithms
 
-To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. The results are presented in <a href="#performance_off_policy">Table 2</a> and <a href="#curve_off_policy">Figure 1</a>.
+To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. It should be noted that all data is procured under the constraint of `cost_limit=25.00`. The results are presented in <a href="#performance_off_policy">Table 2</a> and <a href="#curve_off_policy">Figure 1</a>.
 
 #### Performance Table
 
@@ -646,3 +647,7 @@ Besides, the hyperparameter `train_cfgs:torch_num_threads` is also important. Of
 This hyperparamter depens on the number of CPU cores. We set it to 8 in our experiments. You can set it to some other proper value according to your CPU cores.
 
 If you find that other hyperparameters perform better, please feel free to open an issue or pull request.
+
+<div id="1"></div>
+
+[1] This paper is [safety-gym](https://openai.com/research/safety-gym) original paper. Its public code base [safety-starter-agents](https://github.com/openai/safety-starter-agents) implemented `SACLag` but does not report it in the paper.  We can not find the source of `DDPGLag `and `TD3Lag`. However, this paper introduced lagrangian methods and it implemented `SACLag`, so We also use it as a source of `DDPGLag` and `TD3Lag`.
