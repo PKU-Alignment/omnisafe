@@ -1,4 +1,4 @@
-# OmniSafe's Navigation Benchmark on Offline Algorithms
+# OmniSafe's Safety-Gymnasium Benchmark for Offline Algorithms
 
 The OmniSafe Safety-Gymnasium Benchmark for offline algorithms evaluates the effectiveness of OmniSafe's offline algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) task suite. For each algorithm and environment supported, we provide:
 

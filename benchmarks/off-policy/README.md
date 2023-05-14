@@ -1,4 +1,4 @@
-# OmniSafe's Mujoco Velocity Benchmark on Off-Policy Algorithms
+# OmniSafe's Mujoco Velocity Benchmark for Off-Policy Algorithms
 
 The OmniSafe Mujoco Velocity Benchmark for off-policy algorithms evaluates the effectiveness of OmniSafe's off-policy algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) Mujoco Velocity task suite. For each algorithm and environment supported, we provide:
 
@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
 ### Classic Reinforcement Learning Algorithms
 
-In an effort to ascertain the credibility of OmniSafe ’s algorithmic implementation, a com-parative assessment was conducted, juxtaposing the performance of classical reinforcement
+In an effort to ascertain the credibility of OmniSafe ’s algorithmic implementation, a comparative assessment was conducted, juxtaposing the performance of classical reinforcement
 learning algorithms, such as DDPG, TD3 and SAC. The performance table is provided in <a href="#compare_off_policy">Table 1</a>, with
 well-established open-source implementations, specifically [Tianshou](https://github.com/thu-ml/tianshou) and
 [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3).
@@ -275,7 +275,7 @@ class="math inline">±</span> 274.43</strong></td>
 class="math inline">±</span> 795.48</td>
 </tr>
 </tbody>
-  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 1:</b> The performance of OmniSafe off-policy algorithms, which was evaluated about published baselines within the Safety-Gymnasium MuJoCo Velocity environments. Experimental outcomes, comprising mean and standard deviation, were derived from 10 assessment iterations encompassing multiple random seeds. A noteworthy distinction lies in the fact that Stable-Baselines3 employs distinct parameters tailored to each environment, while OmniSafe maintains a consistent parameter set across all environments.</p></caption>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 1:</b> The performance of OmniSafe, which was evaluated in relation to published baselines within the Safety-Gymnasium MuJoCo Velocity environments. Experimental outcomes, comprising mean and standard deviation, were derived from 10 assessment iterations encompassing multiple random seeds. A noteworthy distinction lies in the fact that Stable-Baselines3 employs distinct parameters tailored to each environment, while OmniSafe maintains a consistent parameter set across all environments.</p></caption>
 </table>
 
 ### Safe Reinforcement Learning Algorithms
@@ -597,7 +597,7 @@ Off-Policy algorithms almost share the same hyperparameters, the share hyperpara
 
 However, there are some differences between the three algorithms. We list the differences below:
 
-### TD3
+#### TD3
 
 |      Hyperparameter      | Value |
 | :----------------------: | :---: |
@@ -605,7 +605,7 @@ However, there are some differences between the three algorithms. We list the di
 |      `noise_clip`      |  0.5  |
 | `start_learning_steps` | 25000 |
 
-### SAC
+#### SAC
 
 |      Hyperparameter      | Value |
 | :----------------------: | :---: |
@@ -642,9 +642,7 @@ Generally, we recommend:
 | `reward_normalize`|  `False`  |
 | `cost_normalize`  | `True` |
 
-Besides, the hyperparameter `train_cfgs:torch_num_threads` is also important. Off-policy algorithms always use more time to update policy than to sample data. So we use `torch_num_threads` to speed up the update process.
-
-This hyperparamter depens on the number of CPU cores. We set it to 8 in our experiments. You can set it to some other proper value according to your CPU cores.
+Besides, the hyperparameter `torch_num_threads` in `train_cfgs` is also important. In a single training session, a larger value for `torch_num_threads` often means faster training speed. However, we found in experiments that setting `torch_num_threads` too high can cause resource contention between parallel training sessions, resulting in slower overall experiment speed. In the configs file, we set the default value for `torch_num_threads` to 16, which ensures faster training speed for a single session. If you need to launch multiple training sessions in parallel, please consider your device configuration. For example, if your computing resources have a total of 32 physical cores and you are launching 16 training scripts in parallel, do not set `torch_num_threads` to a value greater than 4.
 
 If you find that other hyperparameters perform better, please feel free to open an issue or pull request.
 

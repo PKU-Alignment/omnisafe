@@ -1,4 +1,4 @@
-# OmniSafe's Safety-Gymnasium Benchmark on On-Policy Algorithms
+# OmniSafe's Safety-Gymnasium Benchmark for On-Policy Algorithms
 
 The OmniSafe Safety-Gymnasium Benchmark for on-policy algorithms evaluates the effectiveness of OmniSafe's on-policy algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) task suite. For each algorithm and environment supported, we provide:
 - Default hyperparameters used for the benchmark and scripts to reproduce the results.
@@ -401,7 +401,7 @@ class="math inline">±</span> 961.74</td>
 class="math inline">±</span> 760.93</strong></td>
 </tr>
 </tbody>
-  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 1:</b> The performance of OmniSafe classic on-policy algorithms, which was evaluated about published baselines within the Safety-Gymnasium MuJoCo Velocity environments. Experimental outcomes, comprising mean and standard deviation, were derived from 10 assessment iterations encompassing multiple random seeds. A noteworthy distinction lies in the fact that Stable-Baselines3 employs distinct parameters tailored to each environment, while OmniSafe maintains a consistent parameter set across all environments.</p></caption>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 1:</b>The performance of OmniSafe, which was evaluated in relation to published baselines within the Safety-Gymnasium MuJoCo Velocity environments. Experimental outcomes, comprising mean and standard deviation, were derived from 10 assessment iterations encompassing multiple random seeds. A noteworthy distinction lies in the fact that Stable-Baselines3 employs distinct parameters tailored to each environment, while OmniSafe maintains a consistent parameter set across all environments.</p></caption>
 </table>
 
 ### Safe Reinforcement Learning Algorithms
@@ -3349,7 +3349,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 
 ### Hyperparameters
 
-**We are continuously improving performance for first-order algorithms and finding better hyperparameters and will release an ultimate version as soon as possible. Meanwhile, we are happy to receive any advice from users, feel free for opening PRs or issues.**
+**We are continuously improving performance for on-policy algorithms and finding better hyperparameters. Therefore, we are happy to receive any advice from users, feel free for opening PRs or issues.**
 
 #### First-Order Methods Specific Hyperparameters
 
@@ -3371,7 +3371,14 @@ tested under the same series of random seeds, there is an occurrence of TRPO and
 #### Simmer RL Methods Specific Hyperparameters
 
 - `saute_gamma`: Since the Simmer RL methods are based on Saute RL methods, we also set `saute_gamma` to 0.999.
-- `control_cfgs`: The control parameters of the Simmer RL methods. While Simmer uses a PID controller to control the safety budget, and PID is known as a parameter-sensitive controller. So we need to tune the control parameters (`Kp`, `Ki` and `Kd`) for different environments. We have done some experiments to find relatively good control parameters for each environment, that is the `control_cfgs` in the `omnisafe/configs/on_policy`.
+- `control_cfgs`: The control parameters of the Simmer RL methods. While Simmer uses a PID controller to control the safety budget, and PID is known as a parameter-sensitive controller. So we need to tune the control parameters (`Kp`, `Ki` and `Kd`) for different environments. We have done some experiments to find relatively good control parameters for each environment, that is:
+
+| Parameters | Descriptions| Values |
+| -----------| ------------| ------ |
+|`kp`|The proportional gain of the PID controller|1.0|
+|`ki`|The derivative gain of the PID controller|0.001|
+|`kd`|The integral gain of the PID controller|0.01|
+|`polyak`|The learning rate for soft update|0.995|
 
 #### PID-Lagrangian Methods Specific Hyperparameters
 
@@ -3393,6 +3400,17 @@ We have done some experiments to find relatively good `pid_kp`, `pid_ki`, and `p
 
 - `vector_num_envs`: Though vectorized environments can speed up the training process, we found that the early terminated MDP will reset all the environments when one of the agents violates the safety constraint. So we set `vector_num_envs` to 1 in the early terminated MDP methods.
 
+### Lagragian
+
+The lagrangian versions of on-policy algorithms share the same set of lagrangian hyperparameters (Except for PID-Lagrangian). The hyperparameters are listed below:
+
+|      Hyperparameter      | Value |
+| :----------------------: | :---: |
+| `cost_limit` | 25.0  |
+| `lagrangian_multiplier_init` | 0.001  |
+| `lambda_lr` | 0.035  |
+| `lambda_optimizer` | Adam |
+
 ### Some Hints
 
 In our experiments, we found that some hyperparameters are important for the performance of the algorithm:
@@ -3403,9 +3421,9 @@ In our experiments, we found that some hyperparameters are important for the per
 
 We have done some experiments to show the effect of these hyperparameters, and we log the best configuration for each algorithm in each environment. You can check it in the `omnisafe/configs/on_policy`.
 
-In experiments, we found that the `obs_normalize=True` always performs better than `obs_normalize=False` in the second-order methods. That means the reward would increase quicker if we normalize the observation. So we set `obs_normalize=True` in almost all the second-order methods.
+In experiments, we found that the `obs_normalize=True` always performs better than `obs_normalize=False` in on-policy algorithms. That means the reward would increase quicker if we normalize the observation. So we set `obs_normalize=True` in almost all on-policy algorithms.
 
-Importantly, we found that the `reward_normalize=True` does not always perform better than `reward_normalize=False`, especially in the `SafetyHopperVelocity-v1` and `SafetyWalker2dVelocity` environment.
+Importantly, we found that the `reward_normalize=True` does not always perform better than `reward_normalize=False`, especially in the `SafetyHopperVelocity-v1` and `SafetyWalker2dVelocity` environments.
 
 **To improve the overall performance stability, we use the following unified setting in all of OmniSafe on-policy algorithms**
 
@@ -3423,8 +3441,6 @@ The Lagrangian method often has the phenomenon of unstable updates and easy over
 |`lambda_lr`|Learning rate of lagrangian multiplier|0.035|
 |`lambda_optimizer`|Type of lagrangian optimizer|`Adam`|
 
-Besides, the hyperparameter `train_cfgs:torch_num_threads` is also important. on-policy algorithms always use more time to update policy than to sample data. So we use `torch_num_threads` to speed up the update process.
-
-This hyperparamter depens on the number of CPU cores. We set it to 8 in our experiments. You can set it to some other proper value according to your CPU cores.
+Besides, the hyperparameter `torch_num_threads` in `train_cfgs` is also important. In a single training session, a larger value for `torch_num_threads` often means faster training speed. However, we found in experiments that setting `torch_num_threads` too high can cause resource contention between parallel training sessions, resulting in slower overall experiment speed. In the configs file, we set the default value for `torch_num_threads` to 16, which ensures faster training speed for a single session. If you need to launch multiple training sessions in parallel, please consider your device configuration. For example, if your computing resources have a total of 32 physical cores and you are launching 16 training scripts in parallel, do not set `torch_num_threads` to a value greater than 4.
 
 If you find that other hyperparameters perform better, please feel free to open an issue or pull request.
