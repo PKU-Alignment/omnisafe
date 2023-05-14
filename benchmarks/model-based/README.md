@@ -78,7 +78,7 @@ python analyze_experiment_results.py
 
 ## OmniSafe Benchmark
 
-Serving as a reliable SafeRL baseline, OmniSafe offers performance insights for SafeRL algorithms within the Safety-Gymnasium environment. The results of OmniSafe are presented in <a href="#performance_model_based">Table 1</a> and <a href="#curve_model_based">Figure 1</a>.
+To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. The results are presented in <a href="#performance_model_based">Table 1</a> and <a href="#curve_model_based">Figure 1</a>.
 
 ### Performance Table
 

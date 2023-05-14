@@ -279,9 +279,7 @@ class="math inline">±</span> 795.48</td>
 
 ### Safe Reinforcement Learning Algorithms
 
-Serving as a reliable SafeRL baseline, OmniSafe offers performance insights for SafeRL
-algorithms within the Safety-Gymnasium environments. The results of OmniSafe are
-presented in <a href="#performance_off_policy">Table 2</a> and <a href="#curve_off_policy">Figure 1</a>.
+To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. The results are presented in <a href="#performance_off_policy">Table 2</a> and <a href="#curve_off_policy">Figure 1</a>.
 
 #### Performance Table
 
