@@ -92,9 +92,9 @@ if __name__ == '__main__':
     # if you want to use GPU, please set gpu_id like follows
     # gpu_id = [0, 1, 2, 3]
     # if you want to use CPU, please set gpu_id = None
-    # we recommends using CPU to obtain results as consistent 
-    # as possible with our publicly available results, 
-    # since the performance of all on-policy algorithms 
+    # we recommends using CPU to obtain results as consistent
+    # as possible with our publicly available results,
+    # since the performance of all on-policy algorithms
     # in OmniSafe is tested on CPU.
     gpu_id = None
 
@@ -3353,17 +3353,17 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 
 #### First-Order Methods Specific Hyperparameters
 
-- `algo_cfgs:kl_early_stop`: Whether to use the `early stop` trick for KL divergence. In first-order methods, this parameter is set to `True`. If the KL divergence is too large, we will stop the line search and use the previous step size.
+- `algo_cfgs:kl_early_stop`: Whether to use the `early stop` trick for KL divergence. In first-order methods, this parameter is set to `True`. If the KL divergence is too large, we will stop the updating iteration.
 
 #### Second-Order Methods Specific Hyperparameters
 
 - `algo_cfgs:kl_early_stop`: Whether to use early stop for KL divergence. In the second-order methods, we use line search to find the proper step size. If the KL divergence is too large, we will stop the line search and use the previous step size. So it is not necessary to use the `early stop` trick for KL divergence in the second-order methods. We set `kl_early_stop=False` in the second-order methods.
 
-- `model_cfgs:actor:lr`: The learning rate of the actor network. The second-order methods use the actor network update the policy by directly setting the parameters of the policy network. So we do not need to set the learning rate of the policy network, which is set to `None`.
+- `model_cfgs:actor:lr`: The learning rate of the policy network. The second-order methods update the policy by directly setting the parameters. So we just set the learning rate of the policy network to `None`.
 
 You may find that in some environments, Natural PG performs nearly the same as TRPO. This is because, in the Mujoco
 Velocity environment series, the TRPO search update step size is always 1. Additionally, since all algorithms were
-tested under the same random seed, there is an occurrence of TRPO and Natural PG training curves overlapping.
+tested under the same series of random seeds, there is an occurrence of TRPO and Natural PG training curves overlapping.
 
 #### Saute RL Methods Specific Hyperparameters
 - `saute_gamma`: In the experiment we found that `saute_gamma` impacts the performance of Saute RL methods. We found that 0.999 is a good value for this hyperparameter.
@@ -3407,7 +3407,13 @@ In experiments, we found that the `obs_normlize=True` always performs better tha
 
 Importantly, we found that the `rew_normlize=True` does not always perform better than `rew_normlize=False`, especially in the `SafetyHopperVelocity-v1` and `SafetyWalker2dVelocity` environment.
 
-**So, by default, we only set `obs_normlize=True` in all of OmniSafe on-policy algorithms**
+**To improve the overall performance stability, we use the following unified setting in all of OmniSafe on-policy algorithms**
+
+|      Hyperparameter      | Value |
+| :----------------------: | :---: |
+| `obs_normalize`   | `True` |
+| `reward_normalize`|  `False`  |
+| `cost_normalize`  |  `False`  |
 
 The Lagrangian method often has the phenomenon of unstable updates and easy overshoot. We found that the following Lagrangian multiplier parameters are suitable.
 
