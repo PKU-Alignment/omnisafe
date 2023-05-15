@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
 ### Classic Reinforcement Learning Algorithms
 
-In an effort to ascertain the credibility of OmniSafe ’s algorithmic implementation, a comparative assessment was conducted, juxtaposing the performance of classical reinforcement
+In an effort to ascertain the credibility of OmniSafe’s algorithmic implementation, a comparative assessment was conducted, juxtaposing the performance of classical reinforcement
 learning algorithms, such as DDPG, TD3 and SAC. The performance table is provided in <a href="#compare_off_policy">Table 1</a>, with
 well-established open-source implementations, specifically [Tianshou](https://github.com/thu-ml/tianshou) and
 [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3).
@@ -612,7 +612,7 @@ However, there are some differences between the three algorithms. We list the di
 |        `alpha`         |  0.2  |
 | `start_learning_steps` | 5000  |
 
-### Lagragian
+### Lagrangian
 
 The lagrangian versions of off-policy algorithms share the same set of
 lagrangian hyperparameters. The hyperparameters are listed below:
@@ -632,7 +632,7 @@ In our experiments, we found that some hyperparameters are important for the per
 - `reward_normalize`: Whether to normalize the reward.
 - `cost_normalize`: Whether to normalize the cost.
 
-We have done some experiments to show the effect of these hyperparameters, and we log the best configuration for each algorithm in each environment. You can check it in the `omnisafe/configs/off_policy`.
+We have done some experiments to show the effect of these hyperparameters, and we log the best configuration for each algorithm to conquer all environments. You can check out the `omnisafe/configs/off_policy`.
 
 Generally, we recommend:
 
@@ -646,6 +646,6 @@ Besides, the hyperparameter `torch_num_threads` in `train_cfgs` is also importan
 
 If you find that other hyperparameters perform better, please feel free to open an issue or pull request.
 
-<div id="1"></div>
+<a id="1"></a>
 
-[1] This paper is [safety-gym](https://openai.com/research/safety-gym) original paper. Its public code base [safety-starter-agents](https://github.com/openai/safety-starter-agents) implemented `SACLag` but does not report it in the paper.  We can not find the source of `DDPGLag` and `TD3Lag`. However, this paper introduced lagrangian methods and it implemented `SACLag`, so We also use it as a source of `DDPGLag` and `TD3Lag`.
+[1] This paper is [safety-gym](https://openai.com/research/safety-gym) original paper. Its public code base [safety-starter-agents](https://github.com/openai/safety-starter-agents) implemented `SACLag` but does not report it in the paper.  We can not find the source of `DDPGLag` and `TD3Lag`. However, this paper introduced lagrangian methods and it implemented `SACLag`, so we also use it as a source of `DDPGLag` and `TD3Lag`.

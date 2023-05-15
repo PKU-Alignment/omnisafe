@@ -11,7 +11,7 @@ Supported algorithms are listed below:
 
 **First-Order**
 
-- **[NIPS 1999]** [Policy Gradient(PG)](https://papers.nips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf)
+- **[NIPS 1999]** [Policy Gradient (PG)](https://papers.nips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf)
 - **[Preprint 2017]**[Proximal Policy Optimization (PPO)](https://arxiv.org/pdf/1707.06347.pdf)
 - [The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
 - **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning (P3O)]( https://arxiv.org/pdf/2205.11814.pdf)
@@ -86,6 +86,10 @@ if __name__ == '__main__':
     eg.add('logger_cfgs:use_wandb', [False])
     # you can use tensorboard to monitor the experiment.
     eg.add('logger_cfgs:use_tensorboard', [True])
+
+	# if you want to reproduce results of 1e6, using
+	# eg.add('algo_cfgs:steps_per_epoch', [2048])
+	# eg.add('train_cfgs:total_steps', [2048 * 500])
 
     # set the device.
     avaliable_gpus = list(range(torch.cuda.device_count()))

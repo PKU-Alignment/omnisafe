@@ -1,6 +1,6 @@
 # OmniSafe's Navigation Benchmark for Model-based Algorithms
 
-The OmniSafe Navigation Benchmark for model-based algorithms evaluates the effectiveness of OmniSafe's model-based algorithms across two different environments. from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) task suite. For each algorithm and environment supported, we provide:
+The OmniSafe Navigation Benchmark for model-based algorithms evaluates the effectiveness of OmniSafe's model-based algorithms across two different environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) task suite. For each algorithm and environment supported, we provide:
 
 - Default hyperparameters used for the benchmark and scripts to reproduce the results.
 - Graphs and raw data that can be used for research purposes.
