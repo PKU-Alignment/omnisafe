@@ -77,6 +77,6 @@ The OmniSafe Safety-Gymnasium Benchmark evaluates the effectiveness of OmniSafe'
 
 > **More details can be refer to [Offline Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/offline/README.md).**
 
-<div id="1"></div>
+<a id="1"></a>
 
 [1] This paper is [safety-gym](https://openai.com/research/safety-gym) original paper. Its public code base [safety-starter-agents](https://github.com/openai/safety-starter-agents) implemented `SACLag` but does not report it in the paper.  We can not find the source of `DDPGLag` and `TD3Lag`. However, this paper introduced lagrangian methods and it implemented `SACLag`, so We also use it as a source of `DDPGLag` and `TD3Lag`.
