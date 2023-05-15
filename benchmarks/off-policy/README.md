@@ -46,7 +46,7 @@ You can set the main function of `examples/benchmarks/experimrnt_grid.py` as:
     # if you want to use CPU, please set gpu_id = None
     # gpu_id = None
 
-    if not set(gpu_id).issubset(avaliable_gpus):
+    if gpu_id and not set(gpu_id).issubset(avaliable_gpus):
         warnings.warn('The GPU ID is not available, use CPU instead.', stacklevel=1)
         gpu_id = None
 
@@ -642,7 +642,7 @@ Generally, we recommend:
 | `reward_normalize`|  `False`  |
 | `cost_normalize`  | `True` |
 
-Besides, the hyperparameter `torch_num_threads` in `train_cfgs` is also important. In a single training session, a larger value for `torch_num_threads` often means faster training speed. However, we found in experiments that setting `torch_num_threads` too high can cause resource contention between parallel training sessions, resulting in slower overall experiment speed. In the configs file, we set the default value for `torch_num_threads` to 16, which ensures faster training speed for a single session. If you need to launch multiple training sessions in parallel, please consider your device configuration. For example, if your computing resources have a total of 32 physical cores and you are launching 16 training scripts in parallel, do not set `torch_num_threads` to a value greater than 4.
+Besides, the hyperparameter `torch_num_threads` in `train_cfgs` is also important. In a single training session, a larger value for `torch_num_threads` often means faster training speed. However, we found in experiments that setting `torch_num_threads` too high can cause resource contention between parallel training sessions, resulting in slower overall experiment speed. In the configs file, we set the default value for `torch_num_threads` to 16, which ensures faster training speed for a single session. If you need to launch multiple training sessions in parallel, please consider your device configuration. For example, suppose your CPU has two physical threads per core and has a total of 32 cores, if you are launching 16 training scripts in parallel, you had better not set `torch_num_threads` to a value greater than 4.
 
 If you find that other hyperparameters perform better, please feel free to open an issue or pull request.
 
