@@ -2,7 +2,7 @@
 
 The OmniSafe Safety-Gymnasium Benchmark for on-policy algorithms evaluates the effectiveness of OmniSafe's on-policy algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) task suite. For each algorithm and environment supported, we provide:
 - Default hyperparameters used for the benchmark and scripts to reproduce the results.
-- A comparison of performance or code-level details with other open-source implementations.
+- A comparison of performance with other open-source implementations.
 - Graphs and raw data that can be used for research purposes.
 - Log details obtained during training.
 - Some hints on how to fine-tune the algorithm for optimal results.
