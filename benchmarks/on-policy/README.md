@@ -87,9 +87,9 @@ if __name__ == '__main__':
     # you can use tensorboard to monitor the experiment.
     eg.add('logger_cfgs:use_tensorboard', [True])
 
-	# if you want to reproduce results of 1e6, using
-	# eg.add('algo_cfgs:steps_per_epoch', [2048])
-	# eg.add('train_cfgs:total_steps', [2048 * 500])
+    # if you want to reproduce results of 1e6, using
+    # eg.add('algo_cfgs:steps_per_epoch', [2048])
+    # eg.add('train_cfgs:total_steps', [2048 * 500])
 
     # set the device.
     avaliable_gpus = list(range(torch.cuda.device_count()))
