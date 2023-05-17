@@ -393,7 +393,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: base rl api
+    :caption: base rl algorithms api
 
     baserlapi/on_policy
     baserlapi/off_policy
@@ -401,7 +401,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: safe rl api
+    :caption: safe rl algorithms api
 
     saferlapi/first_order
     saferlapi/second_order
