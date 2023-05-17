@@ -16,7 +16,7 @@ Welcome To OmniSafe Tutorial
 .. image:: image/logo.png
     :scale: 45%
 
-Welcome to `OmniSafe <https://jmlr.org/papers/v16/garcia15a.html>`_ in Safe RL!
+Welcome to `OmniSafe <https://github.com/PKU-Alignment/omnisafe>`_ in Safe RL!
 OmniSafe is a comprehensive and dependable benchmark for safe reinforcement
 learning (RL), including different types of algorithms, covering
 a multitude of safe reinforcement learning (Safe RL) domains.
@@ -375,7 +375,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: base rl algorithm
+    :caption: base rl algorithms
 
     baserl/trpo
     baserl/ppo
@@ -383,7 +383,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: safe rl algorithm
+    :caption: safe rl algorithms
 
     saferl/cpo
     saferl/pcpo
