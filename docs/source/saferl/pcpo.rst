@@ -249,7 +249,7 @@ second-order expansion.
 
             :math:`a\doteq\nabla_\theta\underset{\substack{s\sim d_{\pi_k}a\sim \pi}}{\mathbb{E}}[A_{\pi_k}^{C}(s,a)]` is the gradient of the cost advantage function,
 
-            where :math:`\boldsymbol{H}_{i,j}\doteq \frac{\partial^2 \underset{s\sim d^{\pi_{k}}}{\mathbb{E}}\big[KL(\pi ||\pi_{k})[s]\big]}{\partial \theta_j\partial \theta_j}` is the Hessian of the :math:`KL` divergence constraint (:math:`\boldsymbol{H}` is also called the Fisher information matrix. It is symmetric positive semi-definite), :math:`b\doteq J^{C}(\pi_k)-d` is the constraint violation of the policy :math:`\pi_{k}`, and :math:`\theta` is the parameter of the policy. PCPO linearize the objective function at :math:`\pi_k` subject to second order approximation of the :math:`KL` divergence constraint to obtain the following updates:
+            where :math:`\boldsymbol{H}_{i,j}\doteq \frac{\partial^2 \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[KL(\pi ||\pi_{k})[s]\big]}{\partial \theta_j\partial \theta_j}` is the Hessian of the :math:`KL` divergence constraint (:math:`\boldsymbol{H}` is also called the Fisher information matrix. It is symmetric positive semi-definite), :math:`b\doteq J^{C}(\pi_k)-d` is the constraint violation of the policy :math:`\pi_{k}`, and :math:`\theta` is the parameter of the policy. PCPO linearize the objective function at :math:`\pi_k` subject to second order approximation of the :math:`KL` divergence constraint to obtain the following updates:
 
             .. math::
                 :label: pcpo-eq-6
@@ -632,7 +632,7 @@ Configs
             Train Configs
             ^^^
 
-            - device (str): Device to use for training, options: ``cpu``, ``cuda``,``cuda:0``, etc.
+            - device (str): Device to use for training, options: ``cpu``, ``cuda``, ``cuda:0``, etc.
             - torch_threads (int): Number of threads to use for PyTorch.
             - total_steps (int): Total number of steps to train the agent.
             - parallel (int): Number of parallel agents, similar to A3C.
@@ -768,12 +768,12 @@ We then prove the main theorem for the worst-case performance degradation.
 
             Lemma 1
             ^^^
-            If the current policy :math:`\pi_{k}` satisfies the constraint, the constraint set is closed and convex, and the :math:`KL` divergence constraint for the first step is :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`, where :math:`\delta` is the step size in the reward improvement step, then under :math:`KL` divergence projection, we have
+            If the current policy :math:`\pi_{k}` satisfies the constraint, the constraint set is closed and convex, and the :math:`KL` divergence constraint for the first step is :math:`\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`, where :math:`\delta` is the step size in the reward improvement step, then under :math:`KL` divergence projection, we have
 
             .. math::
                 :label: pcpo-eq-11
 
-                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big]\leq \delta.
+                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big]\leq \delta.
 
 
     .. tab-item:: Lemma 2
@@ -786,13 +786,13 @@ We then prove the main theorem for the worst-case performance degradation.
 
             Lemma 2
             ^^^
-            If the current policy :math:`\pi_{k}` violates the constraint, the constraint set is closed and convex, the :math:`KL` divergence constraint for the first step is :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`.
+            If the current policy :math:`\pi_{k}` violates the constraint, the constraint set is closed and convex, the :math:`KL` divergence constraint for the first step is :math:`\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`.
             where :math:`\delta` is the step size in the reward improvement step, then under the :math:`KL` divergence projection, we have
 
             .. math::
                 :label: pcpo-eq-12
 
-                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big]\leq \delta+{b^+}^2\alpha_\mathrm{KL},
+                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big]\leq \delta+{b^+}^2\alpha_\mathrm{KL},
 
             where :math:`\alpha_\mathrm{KL} \doteq \frac{1}{2a^T\boldsymbol{H}^{-1}a}`, :math:`a` is the gradient of the cost advantage function, :math:`\boldsymbol{H}` is the Hessian of the :math:`KL` divergence constraint, and :math:`b^+\doteq\max(0,J^{C}(\pi_k)-h)`.
 
@@ -816,13 +816,13 @@ We then prove the main theorem for the worst-case performance degradation.
                 :label: pcpo-eq-13
 
 
-                &\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k} ||\pi_{k+\frac{1}{2}})[s]\big]\geq
-                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k}||\pi_{k+1})[s]\big] \\
+                &\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k} ||\pi_{k+\frac{1}{2}})[s]\big]\geq
+                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k}||\pi_{k+1})[s]\big] \\
                 &+
-                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k+\frac{1}{2}})[s]\big]\\
+                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k+\frac{1}{2}})[s]\big]\\
                 &\Rightarrow\delta\geq
-                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k} ||\pi_{k+\frac{1}{2}})[s]\big]\geq
-                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k}||\pi_{k+1})[s]\big].
+                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k} ||\pi_{k+\frac{1}{2}})[s]\big]\geq
+                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k}||\pi_{k+1})[s]\big].
 
 
             The derivation uses the fact that :math:`KL` divergence is always greater than zero.
@@ -833,8 +833,8 @@ We then prove the main theorem for the worst-case performance degradation.
                 :label: pcpo-eq-14
 
                 \delta\geq
-                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\geq
-                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1}||\pi_{k})[s]\big].
+                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\geq
+                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1}||\pi_{k})[s]\big].
 
     .. tab-item:: Proof of Lemma 2
       :sync: key2
@@ -851,9 +851,9 @@ We then prove the main theorem for the worst-case performance degradation.
             .. math::
                 :label: pcpo-eq-15
 
-                L^{\pi_k}=\{\pi~|~J^{C}(\pi_{k})+ \mathbb{E}_{\substack{s\sim d^{\pi_{k}}\\ a\sim \pi}}[A_{\pi_k}^{C}(s,a)]\leq J^{C}(\pi_{k})\}.
+                L^{\pi_k}=\{\pi~|~J^{C}(\pi_{k})+ \mathbb{E}_{\substack{s\sim d_{\pi_{k}}\\ a\sim \pi}}[A_{\pi_k}^{C}(s,a)]\leq J^{C}(\pi_{k})\}.
 
-            This implies that the current policy :math:`\pi_k` lies in :math:`L^{\pi_k}`, and :math:`\pi_{k+\frac{1}{2}}` is projected onto the constraint set: :math:`\{\pi~|~J^{C}(\pi_{k})+ \mathbb{E}_{\substack{s\sim d^{\pi_{k}}\\ a\sim \pi}}[A_{\pi_k}^{C}(s,a)]\leq h\}`.
+            This implies that the current policy :math:`\pi_k` lies in :math:`L^{\pi_k}`, and :math:`\pi_{k+\frac{1}{2}}` is projected onto the constraint set: :math:`\{\pi~|~J^{C}(\pi_{k})+ \mathbb{E}_{\substack{s\sim d_{\pi_{k}}\\ a\sim \pi}}[A_{\pi_k}^{C}(s,a)]\leq h\}`.
             Next, we define the policy :math:`\pi_{k+1}^l` as the projection of :math:`\pi_{k+\frac{1}{2}}` onto :math:`L^{\pi_k}`.
 
             For these three polices :math:`\pi_k, \pi_{k+1}` and :math:`\pi_{k+1}^l`, with :math:`\varphi(x)\doteq\sum_i x_i\log x_i`, we have
@@ -861,25 +861,25 @@ We then prove the main theorem for the worst-case performance degradation.
             .. math::
                 :label: pcpo-eq-16
 
-                \delta &\geq  \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1}^l ||\pi_{k})[s]\big]
-                \\&=\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big] -\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]\\
-                &+\mathbb{E}_{s\sim d^{\pi_{k}}}\big[(\nabla\varphi(\pi_k)-\nabla\varphi(\pi_{k+1}^{l}))^T(\pi_{k+1}-\pi_{k+1}^l)[s]\big] \nonumber \\
+                \delta &\geq  \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1}^l ||\pi_{k})[s]\big]
+                \\&=\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big] -\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]\\
+                &+\mathbb{E}_{s\sim d_{\pi_{k}}}\big[(\nabla\varphi(\pi_k)-\nabla\varphi(\pi_{k+1}^{l}))^T(\pi_{k+1}-\pi_{k+1}^l)[s]\big] \nonumber \\
 
 
 
-                \Rightarrow \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k})[s]\big]&\leq \delta + \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]\\
-                &- \mathbb{E}_{s\sim d^{\pi_{k}}}\big[(\nabla\varphi(\pi_k)-\nabla\varphi(\pi_{k+1}^{l}))^T(\pi_{k+1}-\pi_{k+1}^l)[s]\big].
+                \Rightarrow \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k})[s]\big]&\leq \delta + \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]\\
+                &- \mathbb{E}_{s\sim d_{\pi_{k}}}\big[(\nabla\varphi(\pi_k)-\nabla\varphi(\pi_{k+1}^{l}))^T(\pi_{k+1}-\pi_{k+1}^l)[s]\big].
 
 
-            The inequality :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1}^l ||\pi_{k})[s]\big]\leq\delta` comes from that :math:`\pi_{k}` and :math:`\pi_{k+1}^l` are in :math:`L^{\pi_k}`, and :bdg-info-line:`Lemma 1`.
+            The inequality :math:`\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1}^l ||\pi_{k})[s]\big]\leq\delta` comes from that :math:`\pi_{k}` and :math:`\pi_{k+1}^l` are in :math:`L^{\pi_k}`, and :bdg-info-line:`Lemma 1`.
 
-            If the constraint violation of the current policy :math:`\pi_k` is small, :math:`b^+` is small, :math:`\mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]` can be approximated by the second order expansion.
+            If the constraint violation of the current policy :math:`\pi_k` is small, :math:`b^+` is small, :math:`\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]` can be approximated by the second order expansion.
             By the update rule in :eq:`pcpo-eq-5`, we have
 
             .. math::
                 :label: pcpo-eq-17
 
-                \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k+1}^l)[s]\big] &\approx \frac{1}{2}(\theta_{k+1}-\theta_{k+1}^l)^{T}\boldsymbol{H}(\theta_{k+1}-\theta_{k+1}^l)\\
+                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k+1}^l)[s]\big] &\approx \frac{1}{2}(\theta_{k+1}-\theta_{k+1}^l)^{T}\boldsymbol{H}(\theta_{k+1}-\theta_{k+1}^l)\\
                 &=\frac{1}{2} \Big(\frac{b^+}{a^T\boldsymbol{H}^{-1}a}\boldsymbol{H}^{-1}a\Big)^T\boldsymbol{H}\Big(\frac{b^+}{a^T\boldsymbol{H}^{-1}a}\boldsymbol{H}^{-1}a\Big)\\
                 &=\frac{{b^+}^2}{2a^T\boldsymbol{H}^{-1}a}\\
                 &={b^+}^2\alpha_\mathrm{KL},
@@ -891,7 +891,7 @@ We then prove the main theorem for the worst-case performance degradation.
             Thus, the third term in :eq:`pcpo-eq-8` can be eliminated.
 
             Combining :eq:`pcpo-eq-8` and :eq:`pcpo-eq-13`, we have :math:`[
-            \mathbb{E}_{s\sim d^{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1}||\pi_{k})[s]\big]\leq \delta+{b^+}^2\alpha_\mathrm{KL}.]`
+            \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1}||\pi_{k})[s]\big]\leq \delta+{b^+}^2\alpha_\mathrm{KL}.]`
 
 
 Now we use :bdg-info-line:`Lemma 2` to prove the :bdg-info-line:`Theorem 2`.
@@ -915,7 +915,7 @@ Proof of Analytical Solution to PCPO
     .. math::
         :label: pcpo-eq-18
 
-        \theta_{k+\frac{1}{2}} = &\underset{\theta}{\arg\,min}\quad g^{T}(\theta-\theta_{k}) \\
+        \theta_{k+\frac{1}{2}} = &\underset{\theta}{\arg \min}\quad g^{T}(\theta-\theta_{k}) \\
         \text{s.t.}\quad&\frac{1}{2}(\theta-\theta_{k})^{T}\boldsymbol{H}(\theta-\theta_{k})\leq \delta,
 
 
@@ -924,7 +924,7 @@ Proof of Analytical Solution to PCPO
     .. math::
         :label: pcpo-eq-19
 
-        \theta_{k+1} = &\underset{\theta}{\arg\,min}\quad \frac{1}{2}(\theta-{\theta}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\theta-{\theta}_{k+\frac{1}{2}}) \\
+        \theta_{k+1} = &\underset{\theta}{\arg \min}\quad \frac{1}{2}(\theta-{\theta}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\theta-{\theta}_{k+\frac{1}{2}}) \\
         \text{s.t.}\quad &a^{T}(\theta-\theta_{k})+b\leq 0,
 
 
@@ -942,7 +942,7 @@ Proof of Analytical Solution to PCPO
 
     .. dropdown:: Proof of Analytical Solution to PCPO (Click here)
         :color: info
-        :class-body: sd-border-{3}
+        :class-body: sd-outline-info
 
         For the first problem, since :math:`\boldsymbol{H}` is the Fisher Information matrix, which automatically guarantees it is positive semi-definite.
         Hence it is a convex program with quadratic inequality constraints.
@@ -1035,11 +1035,11 @@ We have the following :bdg-info-line:`Lemma 3` to characterize the projection an
     Lemma 3
     ^^^
     For any :math:`\theta`, :math:`\theta^{*}=\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)` if and only if :math:`(\theta-\theta^*)^T\boldsymbol{L}(\theta'-\theta^*)\leq0, \forall\theta'\in\mathcal{C}`,
-    where :math:`\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)\doteq \underset{\theta' \in \mathrm{C}}{\arg\,min}||\theta-\theta'||^2_{\boldsymbol{L}}` and :math:`\boldsymbol{L}=\boldsymbol{H}` if using the :math:`KL` divergence projection, and :math:`\boldsymbol{L}=\boldsymbol{I}` if using the :math:`L2` norm projection.
+    where :math:`\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)\doteq \underset{\theta' \in \mathrm{C}}{\arg \min}||\theta-\theta'||^2_{\boldsymbol{L}}` and :math:`\boldsymbol{L}=\boldsymbol{H}` if using the :math:`KL` divergence projection, and :math:`\boldsymbol{L}=\boldsymbol{I}` if using the :math:`L2` norm projection.
 
     .. dropdown:: Proof of Lemma 3 (Click here)
         :color: info
-        :class-body: sd-border-{3}
+        :class-body: sd-outline-info
 
         :math:`(\Rightarrow)` Let
         :math:`\theta^{*}=\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)`

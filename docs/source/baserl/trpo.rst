@@ -214,7 +214,7 @@ which could provide explicit lower bounds on the improvement of :math:`J^R`.
 To define the conservative policy iteration update,
 let :math:`\pi_{\mathrm{old}}` denote the current policy,
 and let
-:math:`\pi^{*}=\underset{\pi^{*}}{\arg \max} L_{\pi_{\text {old }}}\left(\pi^{*}\right)`.
+:math:`\pi^{*}=\arg \underset{\pi^{*}}{\max} L_{\pi_{\text {old }}}\left(\pi^{*}\right)`.
 The new policy :math:`\pi_{\text {new }}`
 was defined to be the following mixture:
 
@@ -313,7 +313,7 @@ Note that for now, we assume exact evaluation of the advantage values :math:`A^R
 
 It follows from :eq:`trpo-eq-11` that TRPO is guaranteed to generate a
 monotonically improving sequence of policies
-:math:`J^R\left(\pi_0\right) \leq J^R\left(\pi_1\right) \leq J^R\left(\pi_2\right) \leq \cdots`.
+:math:`J^R\left(\pi_0\right) \leq J^R\left(\pi_1\right) \leq J^R\left(\pi_2\right) \leq \cdots \leq J^R\left(\pi_n\right)`.
 To see this, let
 :math:`M_i(\pi)=L_{\pi_i}(\pi)-C D_{\mathrm{KL}}^{\max }\left(\pi_i, \pi\right)`.
 Then
@@ -914,7 +914,7 @@ Proof of Theorem 1 (Difference between two arbitrary policies)
     .. math::
         :label: trpo-eq-16
 
-        \mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t A^R_{\pi}\left(s_t, a_t\right)\right] &=\mathbb{E}_{\tau \sim \pi'}\left[\sum _ { t = 0 } ^ { \infty } \gamma ^ { t } \left(r\left(s_t\right)+\gamma V_{\pi}\left(s_{t+1}\right)-V_{\pi}\left(s_{t} \right)\right) \right] \\
+        \mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t A^R_{\pi}\left(s_t, a_t\right)\right] &=\mathbb{E}_{\tau \sim \pi'}\left[\sum _ { t = 0 } ^ { \infty } \gamma ^ { t } \left(r\left(s_t\right)+\gamma V^{R}_{\pi}\left(s_{t+1}\right)-V^{R}_{\pi}\left(s_{t} \right)\right) \right] \\
         &=\mathbb{E}_{\tau \sim \pi'}\left[-V^R_{\pi}\left(s_0\right)+\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right] \\
         &=-\mathbb{E}_{s_0}\left[V^R_{\pi}\left(s_0\right)\right]+\mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right] \\
         &=-J^R(\pi)+J^R(\pi')
@@ -1248,5 +1248,5 @@ such that
 then we can define an :math:`\alpha`-coupled policy pair :math:`(\pi, \pi')`
 with appropriate marginals.
 Taking
-:math:`\alpha=\max _s D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right)`
+:math:`\alpha=\underset{s}{\max} D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right)`
 in :eq:`trpo-eq-37`, :bdg-info-line:`Theorem 2` follows.
