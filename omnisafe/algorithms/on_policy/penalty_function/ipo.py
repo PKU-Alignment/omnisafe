@@ -62,7 +62,7 @@ class IPO(PPO):
             adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
 
         Returns:
-            The ``advantage`` combined with ``reward_advantage`` and ``cost_advantage``.
+            The advantage function combined with reward and cost.
         """
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         penalty = self._cfgs.algo_cfgs.kappa / (self._cfgs.algo_cfgs.cost_limit - Jc + 1e-8)
