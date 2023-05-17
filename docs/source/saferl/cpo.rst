@@ -24,7 +24,7 @@ Background
 reinforcement learning that guarantees near-constraint satisfaction at each
 iteration. It builds upon the ideas of TRPO( :doc:`../baserl/trpo`)
 to construct surrogate functions that approximate the objectives and
-constraints, and are easy to estimate using samples from the current policy.
+constraints, and is easy to estimate using samples from the current policy.
 CPO provides tighter bounds for policy search using trust regions, making it
 the first general-purpose policy search algorithm for safe RL.
 
@@ -42,7 +42,7 @@ optimization problems in safe RL.
 
 .. hint::
 
-    CPO is very complex in terms of implementation, but omnisafe provides a highly readable code implementation to help you get up to speed quickly.
+    CPO is very complex in terms of implementation, but OmniSafe provides a highly readable code implementation to help you get up to speed quickly.
 
 ------
 

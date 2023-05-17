@@ -33,7 +33,7 @@ between the two policies.
 TRPO is well-suited for optimizing comprehensive nonlinear policies such as
 neural networks. It is based on the **Natural Policy Gradient (NPG)** method,
 which uses conjugate gradient to avoid expensive computational
-costs. Furthermore, TRPO incorporates a line search mechanism to ensure that policy updates adhere to the predetermined KL divergence constraint.
+costs. Furthermore, TRPO incorporates a line search mechanism to ensure that updated policy adhere to the predetermined KL divergence constraint.
 
 .. grid:: 2
 
@@ -108,9 +108,6 @@ As shown in **NPG**, the difference in performance between two policies
 
             J^R(\pi') = J^R(\pi) + \mathbb{E}_{\tau \sim \pi'}[\sum_{t=0}^{\infty} \gamma^t A^R_{\pi}(s_t,a_t)]
 
-
-    where this expectation is taken over trajectories :math:`\tau=(s_0, a_0, s_1,\\ a_1, \cdots)`,
-    and the notation :math:`\mathbb{E}_{\tau \sim \pi'}[\cdots]` indicates that actions are sampled from :math:`\pi'` to generate :math:`\tau`.
     where this expectation is taken over trajectories :math:`\tau=(s_0, a_0, s_1,\\ a_1, \cdots)`,
     and the notation :math:`\mathbb{E}_{\tau \sim \pi'}[\cdots]` indicates that actions are sampled from :math:`\pi'` to generate :math:`\tau`.
     +++
@@ -140,7 +137,7 @@ can improve over :math:`\pi`, which is of our interest.
 This equation implies for any policy :math:`\pi'`, if it has a nonnegative
 expected advantage at every state :math:`s`, i.e.,
 :math:`\sum_a \pi'(a \mid s) A^R_{\pi}(s, a) \geq 0`,
-is guaranteed to increase the policy performance :math:`J`,
+is guaranteed to increase the policy performance :math:`J^R`,
 or leave it constant in the case
 that the expected advantage is zero everywhere.
 However, in the approximate setting, it will typically be unavoidable,
@@ -159,7 +156,7 @@ Surrogate function for the objective
 which is usually unknown and difficult to estimate.
 The complex dependency of :math:`d_{\pi'}(s)` on :math:`\pi'` makes
 :eq:`trpo-eq-3` difficult to optimize directly.
-Instead, we introduce the following local approximation to :math:`J`:
+Instead, we introduce the following local approximation to :math:`J^R`:
 
 .. _`trpo-eq-4`:
 
@@ -187,7 +184,7 @@ close enough,
     ^^^
     Formally, suppose a parameterized policy :math:`\pi_\theta`,
     where :math:`\pi_\theta(a \mid s)` is a differentiable function of the parameter vector :math:`\theta`,
-    then :math:`L_\pi` matches :math:`J` to first order (see **NPG**).
+    then :math:`L_\pi` matches :math:`J^R` to first order (see **NPG**).
     That is, for any parameter value :math:`\theta_0`,
 
     .. math::
@@ -208,12 +205,12 @@ close enough,
 
 :eq:`trpo-eq-6` implies that a sufficiently small step
 :math:`\pi_{\theta_0} \rightarrow \pi'` that improves
-:math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J`,
+:math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J^R`,
 but does not give us any guidance on how big of a step to take.
 
 To address this issue, **NPG** proposed a policy updating scheme called
 **conservative policy iteration(CPI)**,
-which could provide explicit lower bounds on the improvement of :math:`J`.
+which could provide explicit lower bounds on the improvement of :math:`J^R`.
 To define the conservative policy iteration update,
 let :math:`\pi_{\mathrm{old}}` denote the current policy,
 and let
@@ -316,7 +313,7 @@ Note that for now, we assume exact evaluation of the advantage values :math:`A^R
 
 It follows from :eq:`trpo-eq-11` that TRPO is guaranteed to generate a
 monotonically improving sequence of policies
-:math:`J\left(\pi_0\right) \leq J\left(\pi_1\right) \leq J\left(\pi_2\right) \leq \cdots`.
+:math:`J^R\left(\pi_0\right) \leq J^R\left(\pi_1\right) \leq J^R\left(\pi_2\right) \leq \cdots`.
 To see this, let
 :math:`M_i(\pi)=L_{\pi_i}(\pi)-C D_{\mathrm{KL}}^{\max }\left(\pi_i, \pi\right)`.
 Then
@@ -330,7 +327,7 @@ Then
 
 
 Thus, by maximizing :math:`M_i` at each iteration, we guarantee that the true
-objective :math:`J` is non-decreasing.
+objective :math:`J^R` is non-decreasing.
 
 .. _trust-region-policy-optimization-1:
 
