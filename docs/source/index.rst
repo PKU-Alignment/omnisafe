@@ -17,9 +17,7 @@ Welcome To OmniSafe Tutorial
     :scale: 45%
 
 Welcome to `OmniSafe <https://github.com/PKU-Alignment/omnisafe>`_ in Safe RL!
-OmniSafe is a comprehensive and dependable benchmark for safe reinforcement
-learning (RL), including different types of algorithms, covering
-a multitude of safe reinforcement learning (Safe RL) domains.
+OmniSafe is an infrastructural framework designed to accelerate safe reinforcement learning (RL) research. It provides a comprehensive and reliable benchmark for safe RL algorithms, and also an out-of-box modular toolkit for researchers. SafeRL intends to develop algorithms that minimize the risk of unintended harm or unsafe behavior.
 
 .. hint::
 
@@ -141,7 +139,7 @@ making it easier for researchers to delve into Safe RL.
 
             Friendly Math
             ^^^^^^^^^^^^^
-            OmniSafe tutorial offers a **standardized notation system** that
+            The OmniSafe tutorial offers a **standardized notation system** that
             enables beginners to acquire a complete and systematic
             understanding of the theory behind Safe RL algorithms.
 
@@ -215,7 +213,7 @@ Code Design Principles
 Before Reading
 --------------
 
-Before you start having fun reading the OmniSafe tutorial, we want you to
+Before you start reading the OmniSafe tutorial, we want you to
 understand the usage of colors in this tutorial.
 
 In this tutorial, in general, the :bdg-info:`light blue boxes` indicate
@@ -348,7 +346,7 @@ Long-Term Support and Support History
 -------------------------------------
 
 **OmniSafe** is mainly developed by the Safe RL research team directed by `Prof. Yaodong Yang <https://github.com/PKU-YYang>`_,
-Our SafeRL research team members include `Borong Zhang <https://github.com/muchvo>`_ , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiamg Ji <https://github.com/zmsn-2077>`_.
+Our SafeRL research team members include `Borong Zhang <https://github.com/muchvo>`_ , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiaming Ji <https://github.com/zmsn-2077>`_.
 If you have any questions in the process of using OmniSafe, or if you are
 willing to contribute to
 this project, don't hesitate to ask your question on `the GitHub issue page <https://github.com/PKU-Alignment/omnisafe/issues/new/choose>`_, we will reply to you in 2-3 working days.
