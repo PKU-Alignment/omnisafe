@@ -741,7 +741,7 @@ Configs
             Train Configs
             ^^^
 
-            - device (str): Device to use for training, options: ``cpu``, ``cuda``,``cuda:0``, etc.
+            - device (str): Device to use for training, options: ``cpu``, ``cuda``, ``cuda:0``, etc.
             - torch_threads (int): Number of threads to use for PyTorch.
             - total_steps (int): Total number of steps to train the agent.
             - parallel (int): Number of parallel agents, similar to A3C.

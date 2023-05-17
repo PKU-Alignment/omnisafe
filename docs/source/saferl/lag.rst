@@ -157,8 +157,8 @@ thus making infeasible solutions sub-optimal.
 
         The Lagrangian method is a **two-step** process.
 
-        #. First, we solve the unconstrained problem :ref:`(3)<lag-eq-3>` to find a feasible solution :math:`\theta^*`
-        #. Then, we increase the penalty coefficient :math:`\lambda` until the constraint is satisfied.
+        - First, we solve the unconstrained problem :ref:`(3)<lag-eq-3>` to find a feasible solution :math:`\theta^*`
+        - Then, we increase the penalty coefficient :math:`\lambda` until the constraint is satisfied.
 
         The final solution is :math:`\left(\theta^*, \lambda^*\right)`.
         The goal is to find a saddle point :math:`\left(\theta^*\left(\lambda^*\right), \lambda^*\right)` of the Problem :ref:`(1)<lag-eq-1>`,
@@ -432,7 +432,7 @@ Configs
             Train Configs
             ^^^
 
-            - device (str): Device to use for training, options: ``cpu``, ``cuda``,``cuda:0``, etc.
+            - device (str): Device to use for training, options: ``cpu``, ``cuda``, ``cuda:0``, etc.
             - torch_threads (int): Number of threads to use for PyTorch.
             - total_steps (int): Total number of steps to train the agent.
             - parallel (int): Number of parallel agents, similar to A3C.
