@@ -324,7 +324,7 @@ We give an example below:
                         :linenos:
 
                         cd examples
-                        python train_policy.py --algo CPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
+                        python train_policy.py --algo CPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 10000000 --device cpu --vector-env-nums 1 --torch-threads 1
 
 You may not yet understand the above theory and the specific meaning of the
 code, but do not worry, we will make a detailed introduction later in the

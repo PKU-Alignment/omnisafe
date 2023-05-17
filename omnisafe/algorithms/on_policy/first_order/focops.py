@@ -135,7 +135,7 @@ class FOCOPS(PolicyGradient):
             adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
 
         Returns:
-            The ``advantage`` combined with ``reward_advantage`` and ``cost_advantage``.
+            The advantage function combined with reward and cost.
         """
         return (adv_r - self._lagrange.lagrangian_multiplier * adv_c) / (
             1 + self._lagrange.lagrangian_multiplier

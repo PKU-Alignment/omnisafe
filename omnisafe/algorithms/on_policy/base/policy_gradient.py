@@ -520,7 +520,7 @@ class PolicyGradient(BaseAlgo):
             adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
 
         Returns:
-            The ``reward_advantage`` used to update policy network.
+            The adavantage function of reward to update policy network.
         """
         return adv_r
 

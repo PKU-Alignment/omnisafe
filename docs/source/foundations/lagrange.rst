@@ -62,7 +62,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
 
 
-                f^*=\underset{x}{\text{min}}\quad \theta_p(x)=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max} \quad L(x, u, v)
+                f^*=\underset{x}{\text{min}} \theta_p(x)=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max}  L(x, u, v)
 
 
 .. tab-set::
@@ -108,7 +108,7 @@ Dual Problem
 
 Given a Lagrangian multiplier, we define its Lagrange dual function as:
 
-.. math:: \theta_d(u,v)=\underset{x}{\text{min}}\quad L(x,u,v)
+.. math:: \theta_d(u,v)=\underset{x}{\text{min}} L(x,u,v)
 
 where the subscription :math:`d` denotes the dual problem. It is worth
 mentioning that the infimum here does not require :math:`x` to be taken
@@ -151,7 +151,7 @@ problem, named as :math:`g^*`, satisfies:
             Proof of Lemma 3
             ^^^
             By definition,
-            :math:`\theta_d(u,v)=\underset{x}{\text{min}}\quad L(x,u,v)` can be viewed as
+            :math:`\theta_d(u,v)=\underset{x}{\text{min}} L(x,u,v)` can be viewed as
             point-wise infimum of affine functions of :math:`u` and :math:`v`, thus
             is concave. :math:`u \geq 0` is affine constraints. Hence dual problem
             is a concave maximization problem, which is a convex optimization
@@ -190,16 +190,16 @@ primal and dual problems.
 
             We have the definitions that:
 
-            .. math:: f^*=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max} \quad L(x, u, v) \quad g^*=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}}\quad L(x,u,v)
+            .. math:: f^*=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max}  L(x, u, v) \quad g^*=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}} L(x,u,v)
 
             Then:
 
             .. math::
 
                 \begin{aligned}
-                    g^*&=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}}\quad L(x,u,v)=\underset{x}{\text{min}}\quad L(x,u^*,v^*)\nonumber\\
-                    &\le L(x^*,u^*,v^*)\le \underset{u\ge 0,v}{\text{max}}\quad L(x^*,u,v)\nonumber\\
-                    &=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max} \quad L(x, u, v)=f^*\nonumber
+                    g^*&=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}} L(x,u,v)=\underset{x}{\text{min}} L(x,u^*,v^*)\nonumber\\
+                    &\le L(x^*,u^*,v^*)\le \underset{u\ge 0,v}{\text{max}} L(x^*,u,v)\nonumber\\
+                    &=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max}  L(x, u, v)=f^*\nonumber
                 \end{aligned}
 
             The weak duality is intuitive because it simply takes a small step based

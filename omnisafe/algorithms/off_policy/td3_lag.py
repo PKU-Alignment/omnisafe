@@ -80,8 +80,8 @@ class TD3Lag(TD3):
 
             L = -Q^V (s, \pi (s)) + \lambda Q^C (s, \pi (s))
 
-        where :math:`Q^V` is the value of reward critic network output, :math:`Q^C` is the value of
-        cost critic network, and :math:`\pi` is the policy network.
+        where :math:`Q^V` is the min value of two reward critic networks outputs, :math:`Q^C` is the
+        value of cost critic network, and :math:`\pi` is the policy network.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
