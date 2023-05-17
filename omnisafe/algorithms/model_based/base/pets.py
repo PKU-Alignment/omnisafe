@@ -194,9 +194,9 @@ class PETS(BaseAlgo):
         start_time = time.time()
         current_step = 0
         for epoch in range(self._epochs):
-            current_step = self._env.roll_out(
+            current_step = self._env.rollout(
                 current_step=current_step,
-                roll_out_step=self._steps_per_epoch,
+                rollout_step=self._steps_per_epoch,
                 use_actor_critic=self._use_actor_critic,
                 act_func=self._select_action,
                 store_data_func=self._store_real_data,

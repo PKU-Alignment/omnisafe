@@ -138,7 +138,7 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
         """Get lidar from numpy coordinate.
 
         Args:
-            obs (np.ndarray): The observation.
+            obs (torch.Tensor): The observation.
         """
         return (
             self._env.get_lidar_from_coordinate(obs)
@@ -146,12 +146,12 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
             else None
         )
 
-    def render(self, *args: str, **kwargs: int) -> Any:
+    def render(self, *args: str, **kwargs: Any) -> Any:
         """Render the environment.
 
         Args:
             args (str): The arguments.
-            kwargs (int): The keyword arguments.
+            kwargs (Any): The keyword arguments.
         """
         return self._env.render(*args, **kwargs)
 
@@ -211,10 +211,10 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
 
-    def roll_out(  # pylint: disable=too-many-arguments,too-many-locals
+    def rollout(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         current_step: int,
-        roll_out_step: int,
+        rollout_step: int,
         use_actor_critic: bool,
         act_func: Callable,
         store_data_func: Callable,
@@ -229,7 +229,7 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
 
         Args:
             current_step (int): Current training step.
-            roll_out_step (int): Number of steps to roll out.
+            rollout_step (int): Number of steps to roll out.
             use_actor_critic (bool): Whether to use actor-critic.
             act_func (Callable): Function to get action.
             store_data_func (Callable): Function to store data.
@@ -249,7 +249,7 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
 
         epoch_steps = 0
 
-        while epoch_steps < roll_out_step and current_step < self._cfgs.train_cfgs.total_steps:
+        while epoch_steps < rollout_step and current_step < self._cfgs.train_cfgs.total_steps:
             action, action_info = act_func(current_step, self._current_obs, self._env)
             next_state, reward, cost, terminated, truncated, info = self.step(action)
             epoch_steps += info['num_step']
@@ -316,16 +316,16 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
         epoch_time = time.time() - epoch_start_time
         logger.store(**{'Time/Epoch': epoch_time})
         logger.store(**{'Time/UpdateDynamics': update_dynamics_time})
-        roll_out_time = epoch_time - update_dynamics_time
+        rollout_time = epoch_time - update_dynamics_time
 
         if use_eval:
             logger.store(**{'Time/Eval': eval_time})
-            roll_out_time -= eval_time
+            rollout_time -= eval_time
 
         if use_actor_critic:
             logger.store(**{'Time/UpdateActorCritic': update_actor_critic_time})
-            roll_out_time -= update_actor_critic_time
-        logger.store(**{'Time/Rollout': roll_out_time})
+            rollout_time -= update_actor_critic_time
+        logger.store(**{'Time/Rollout': rollout_time})
         return current_step
 
     def _log_value(

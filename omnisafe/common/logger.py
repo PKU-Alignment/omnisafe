@@ -249,7 +249,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self,
         data: dict[str, Any] | None = None,
         /,
-        **kwargs: Any,
+        **kwargs: Any | float | np.ndarray | torch.Tensor,
     ) -> None:
         """Store the data to the logger.
 

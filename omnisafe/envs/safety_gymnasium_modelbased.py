@@ -193,10 +193,10 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         """Get lidar observation.
 
         Args:
-            obs (np.ndarray): observation.
+            obs (torch.Tensor): observation.
 
         Returns:
-            lidar_obs (np.ndarray): lidar observation.
+            lidar_obs (torch.Tensor): lidar observation.
         """
         robot_matrix_x_y = obs[self.key_to_slice['robot_m']]
         robot_matrix_x = robot_matrix_x_y[0]
@@ -310,7 +310,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             coordinate_obs: dict of coordinate and sensor observations.
 
         Returns:
-            flat_obs (np.ndarray): flattened observation.
+            flat_obs (torch.Tensor): flattened observation.
         """
         assert self.coordinate_observation_space.shape is not None, 'Bad coordinate_observation_space'
         flat_obs = np.zeros(self.coordinate_observation_space.shape[0])
