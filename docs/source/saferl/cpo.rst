@@ -10,7 +10,7 @@ Quick Facts
 
     #. CPO is an :bdg-info-line:`on-policy` algorithm.
     #. CPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
-    #. CPO can be thought of as being :bdg-info-line:`TRPO in SafeRL areas` .
+    #. CPO can be thought of as being :bdg-info-line:`TRPO in Safe RL areas` .
     #. The OmniSafe implementation of CPO support :bdg-info-line:`parallelization`.
     #. An :bdg-ref-info-line:`API Documentation <cpoapi>` is available for CPO.
 
