@@ -91,10 +91,7 @@ where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of
 parameterized policies with parameters :math:`\boldsymbol{\theta}`, and
 :math:`D` is some distance measure.
 
-
-The problem that TRPO aims to solve is to find an appropriate direction and
-step size for updating the actor in order to improve performance without
-deviating too far from the original actor. To achieve this, TRPO reformulates
+TRPO tackles the challenge of determining the appropriate direction and step size for actor updates, aiming to improve performance while minimizing deviations from the original actor. To achieve this, TRPO reformulates
 Problem :eq:`ppo-eq-1` as:
 
 .. _ppo-eq-2:
@@ -115,7 +112,7 @@ You may still have a question: Why are we using :math:`\hat{A}` instead of
 :math:`A`.
 This is a trick named **generalized advantage estimator** (:math:`\text{GAE}`).
 Almost all advanced reinforcement learning algorithms use :math:`\text{GAE}`
-technique to estimate more efficiently :math:`A`.
+technique to estimate more efficient advantage :math:`A`.
 :math:`\hat{A}` is the :math:`\text{GAE}` version of :math:`A`.
 
 ------
@@ -143,7 +140,7 @@ abandoned this method.
 PPO-Penalty uses an approach called ``Adaptive KL Penalty Coefficient`` to
 address this problem and improve the performance of :eq:`ppo-eq-3` in
 experiments. In the simplest implementation of this algorithm, PPO-Penalty
-performs the following steps in each policy update:
+performs the following steps in each policy update iteration:
 
 .. grid:: 2
 
@@ -201,11 +198,7 @@ PPO-Clip rewrite the surrogate objective as:
 
     L^{\mathrm{CLIP}}(\pi)=\mathbb{E}[\text{min} (r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a))]
 
-:math:`\varepsilon` is a small hyperparameter that roughly denotes how
-far away the new policy can go from the old. This is a very complex formula,
-and it's difficult to tell at first glance what it's doing or how it helps keep
-the new policy close to the old policy. To help you better understand the above
-expression,
+The hyperparameter :math:`\varepsilon` represents a small value that approximately indicates the allowable distance between the new policy and the old policy. The formula involved in this context is quite intricate, making it challenging to comprehend its purpose or how it contributes to maintaining the proximity between the new and old policies. To facilitate a clearer understanding of the aforementioned expression,
 
 let :math:`L(s, a, \theta)` denote
 :math:`\max [r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a)]`,
@@ -252,7 +245,7 @@ timesteps (where :math:`T` is much less than the episode length), and uses the
 collected samples for an update. This style requires an advantage estimator
 that does not look beyond timestep :math:`T`. This section will focus on
 producing an accurate estimate of the advantage function
-:math:`\hat{A}_{\pi}(s,a)` using only information
+:math:`\hat{A}_{\pi}(s,a)` (Equals to :math:`\hat{A}^{R}_{\pi}(s,a)` since only reward is considered here, same as the following.) using only information
 from the current trajectory up to timestep :math:`T`.
 
 Define :math:`\delta^V=r_t+\gamma V(s_{t+1})-V(s)` as the TD residual of

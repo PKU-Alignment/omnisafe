@@ -88,9 +88,10 @@ Optimization Objective
 
 As we mentioned in the previous chapters, the optimization problem of CMDPs can be expressed as follows:
 
-.. _`lag-eq-1`:
 
 .. math::
+    :label: lag-eq-1
+    
 
     \max_{\pi \in \Pi_\theta} &J^R(\pi) \\
     \text {s.t.}~~& J^{\mathcal{C}}(\pi) \leq d
@@ -106,9 +107,9 @@ constraints on the differences between old and new policies should also be added
 To solve this constrained problem, please read the :doc:`TRPO tutorial<../baserl/trpo>`.
 The final optimization goals are as follows:
 
-.. _`lag-eq-2`:
 
 .. math::
+    :label: lag-eq-2
 
     \pi_{k+1}&=\arg \max _{\pi \in \Pi_\theta} J^R(\pi) \\
     \text { s.t. } ~~ J^{\mathcal{C}}(\pi) &\leq d \\
@@ -141,15 +142,14 @@ thus making infeasible solutions sub-optimal.
     ^^^
     Given a CMDP, the unconstrained problem can be written as:
 
-    .. _`lag-eq-3`:
-
     .. math::
+        :label: lag-eq-3
 
         \min _{\lambda \geq 0} \max _\theta G(\lambda, \theta)=\min _{\lambda \geq 0} \max _\theta [J^R(\pi)-\lambda J^C(\pi)]
 
 
     where :math:`G` is the Lagrangian and :math:`\lambda \geq 0` is the Lagrange multiplier (a penalty coefficient).
-    Notice, as :math:`\lambda` increases, the solution to the Problem :ref:`(1)<lag-eq-1>` converges to that of the Problem :ref:`(3)<lag-eq-3>`.
+    Notice, as :math:`\lambda` increases, the solution to the Problem :eq:`lag-eq-1` converges to that of the Problem :eq:`lag-eq-3`.
     +++
     The theorem base of :bdg-info:`Theorem 1` can be found in :bdg-info-line:`Lagrange Duality`, click this card to jump to view.
 
@@ -157,11 +157,11 @@ thus making infeasible solutions sub-optimal.
 
         The Lagrangian method is a **two-step** process.
 
-        - First, we solve the unconstrained problem :ref:`(3)<lag-eq-3>` to find a feasible solution :math:`\theta^*`
+        - First, we solve the unconstrained problem :eq:`lag-eq-3` to find a feasible solution :math:`\theta^*`
         - Then, we increase the penalty coefficient :math:`\lambda` until the constraint is satisfied.
 
         The final solution is :math:`\left(\theta^*, \lambda^*\right)`.
-        The goal is to find a saddle point :math:`\left(\theta^*\left(\lambda^*\right), \lambda^*\right)` of the Problem :ref:`(1)<lag-eq-1>`,
+        The goal is to find a saddle point :math:`\left(\theta^*\left(\lambda^*\right), \lambda^*\right)` of the Problem :eq:`lag-eq-1`,
         which is a feasible solution. (A feasible solution of the CMDP is a solution which satisfies :math:`J^C(\pi) \leq d` )
 
 ------
@@ -202,7 +202,7 @@ Policy update
             ^^^
             Previously, in TRPO and PPO, we used to have the agent sample a series of data from the environment,
             and at the end of the episode, use this data to update the agent several times,
-            as described in Problem :ref:`(2)<lag-eq-2>`.
+            as described in Problem :eq:`lag-eq-2`.
             With the addition of the Lagrange method,
             we need to make a change to the original surrogate function, as it is shown below:
 

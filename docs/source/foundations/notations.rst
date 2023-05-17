@@ -87,17 +87,17 @@ where:
 
    -  :math:`\mathcal{A}` is a finite set of actions;
 
-   -  :math:`\mathbb{P}(\cdot|\cdot,\cdot)` is the transition
+   -  :math:`\mathbb{P}(\cdot|\cdot,\cdot)` are the transition
       probability distribution,
       :math:`\mathcal{S}\times\mathcal{A}\times\mathcal{S}\rightarrow[0,1]`;
 
-   -  :math:`\mu` is the distribution of the initial state :math:`s_0`,
+   -  :math:`\mu` are the distribution of the initial state :math:`s_0`,
       :math:`\mathcal{S} \rightarrow \mathbb{R}` ;
 
-   -  :math:`r` is the reward function,
+   -  :math:`r` are the reward function,
       :math:`\mathcal{S} \rightarrow \mathbb{R}`;
 
-   -  :math:`\gamma\in(0,1)` is the discount factor.
+   -  :math:`\gamma\in(0,1)` are the discount factor.
 
 A stationary parameterized policy :math:`\pi_{\theta}` is a probability
 distribution defined on :math:`\mathcal{S}\times\mathcal{A}`,
@@ -117,9 +117,9 @@ we use :math:`\pi` to represent :math:`\pi_{\theta}`.
 
             Markov Decision Processes
             ^^^
-            Let :math:`J(\pi)` denote its expected discounted reward,
+            Let :math:`J^R(\pi)` denote its expected discounted reward,
 
-            .. math:: J(\pi) \doteq \mathbb{E}_{\tau \sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right],
+            .. math:: J^R(\pi) \doteq \mathbb{E}_{\tau \sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right],
 
             Here :math:`\tau` denotes a trajectory :math:`(s_0, a_0, s_1, ...)`,
             and :math:`\tau \sim \pi` is shorthand for indicating that the distribution over trajectories depends on a stationary parameterized policy
@@ -197,7 +197,7 @@ we use :math:`\pi` to represent :math:`\pi_{\theta}`.
 
                \begin{aligned}
                   \label{def:problem-setting}
-                  \pi^{*}=\arg\max_{\pi_\theta \in\Pi_{C}} J(\pi_{\theta}).
+                  \pi^{*}=\arg\max_{\pi_\theta \in\Pi_{C}} J^R(\pi_{\theta}).
                \end{aligned}
 
             Respectively we have:
@@ -219,30 +219,30 @@ To summarize all of the above notation, we show the following table,
 
 - :math:`\tau` is a trajectory that consist of
   :math:`\left(s_0, a_0, s_1, a_1, \cdots\right)`
-- :math:`\pi_{\theta}, \theta` is a stationary parameterized policy
+- :math:`\pi_{\theta},~  \theta` is a stationary parameterized policy
   :math:`\pi_{\theta}` is a probability distribution defined on
   :math:`\mathcal{S}\times\mathcal{A}`, :math:`\pi_{\theta}(a|s)`
   denotes the probability of playing :math:`a` in state :math:`s`.
-- :math:`J^R(\pi_{\theta}),~ J^R(\theta)` is the expected discounted reward
+- :math:`J^R(\pi_{\theta}),~ J^R(\theta)` are the expected discounted reward
   over trajectories, depending on a stationary parameterized policy
   :math:`\pi_{\theta}` or a stationary parameterized policy
   :math:`\pi_{\theta}`.
-- :math:`J^{C}(\pi_{\theta}),~ J^{C}(\theta)` is the
+- :math:`J^{C}(\pi_{\theta}),~ J^{C}(\theta)` are the
   expected discounted cost over trajectories, depending on a stationary
   parameterized policy :math:`\pi_{\theta}` or a stationary parameterized
   policy :math:`\pi_{\theta}`.
-- :math:`Q_{\pi_{\theta}}^{R}, Q_{\theta}^{R}` is the state action value
+- :math:`Q_{\pi_{\theta}}^{R},~ Q_{\theta}^{R}` are the state action value
   function for reward.
-- :math:`Q_{\pi_{\theta}}^{C_i}, Q_{\theta}^{C_i}` is the
+- :math:`Q_{\pi_{\theta}}^{C_i},~  Q_{\theta}^{C_i}` are the
   state action value function for cost.
-- :math:`V_{\pi_{\theta}}^{R}, V_{\theta}^{R}`
-  is the value function for reward.
-- :math:`V_{\pi_{\theta}}^{C_i}, V_{\theta}^{C_i}`
-  is the value function for cost.
-- :math:`A_{\pi_{\theta}}^{R}, A_{\theta}^{R}` is the advantage function for
+- :math:`V_{\pi_{\theta}}^{R},~  V_{\theta}^{R}`
+  are the value function for reward.
+- :math:`V_{\pi_{\theta}}^{C_i},~  V_{\theta}^{C_i}`
+  are the value function for cost.
+- :math:`A_{\pi_{\theta}}^{R},~  A_{\theta}^{R}` are the advantage function for
   reward.
-- :math:`A_{\pi_{\theta}}^{C_i}, A_{\theta}^{C_i}`
-  is the advantage function for cost.
+- :math:`A_{\pi_{\theta}}^{C_i},~  A_{\theta}^{C_i}`
+  are the advantage function for cost.
 
 
 References

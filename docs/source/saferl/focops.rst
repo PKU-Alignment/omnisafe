@@ -61,11 +61,11 @@ disadvantages below:
 
 FOCOPS mainly includes the following contributions:
 
-It provides a **two-stage policy update** to optimize the current policy. Next,
-it gives the practical implementation for solving the two-stage policy update.
-Finally, FOCOPS provides rigorous derivative proofs for the above theories, as
-detailed in the :bdg-ref-info:`Appendix<focops-appendix>` to this tutorial. One
-suggested reading order is CPO(:doc:`../saferl/cpo`),
+- Provides a **two-stage policy update** to optimize the current policy.
+- Gives the practical implementation for solving the two-stage policy update.
+- Offers rigorous derivative proofs for the above theories, as detailed in the :bdg-ref-info:`Appendix<focops-appendix>` to this tutorial. 
+
+One suggested reading order is CPO(:doc:`../saferl/cpo`),
 PCPO(:doc:`../saferl/pcpo`), then FOCOPS. If you have yet to read the PCPO, it
 does not matter. It will only affect your reading experience a little.
 Nevertheless, be sure to read this article after reading the CPO tutorial we
@@ -339,21 +339,6 @@ primal-dual gradient methods. With strong duality, the optimal
 applying gradient descent w.r.t :math:`\nu` to minimize
 :math:`L(\pi^*,\lambda,\nu)`, we obtain:
 
-So in this section, we will introduce you to how FOCOPS practically implements
-its algorithm purpose.
-In practice, though hyperparameter sweeps, FOCOPS found that a fixed
-:math:`\lambda` provides good results, which means the value of :math:`\lambda`
-does not have to be updated.
-However, :math:`\nu` needs to be continuously adapted during training to ensure
-cost-constraint satisfaction.
-FOCOPS appeals to an intuitive heuristic for determining :math:`\nu` based on
-primal-dual gradient methods.
-With strong duality, the optimal :math:`\lambda^*` and :math:`\nu^*` minimizes
-the dual function :eq:`focops-eq-4` which then be denoted as
-:math:`L(\pi^*,\lambda,\nu)`.
-By applying gradient descent w.r.t :math:`\nu` to minimize
-:math:`L(\pi^*,\lambda,\nu)`, we obtain:
-
 .. card::
     :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
     :class-card: sd-outline-info  sd-rounded-1
@@ -377,7 +362,7 @@ By applying gradient descent w.r.t :math:`\nu` to minimize
 
 The last term in the gradient expression in :eq:`focops-eq-9` cannot be
 evaluated since we do not have access to :math:`\pi^*`.
-Since :math:`\pi_{\theta_k}` and :math:`\pi^*` are 'close', it is reasonable to
+Since :math:`\pi_{\theta_k}` and :math:`\pi^*` are close, it is reasonable to
 assume that :math:`E_{s \sim d_{\pi_k}, a \sim \pi^*}\left[A^R_{\pi_{\theta_k}}(s, a)\right] \approx E_{s \sim d_{\pi_k}, a \sim \pi_{\theta_k}}\left[A^R_{\pi_{\theta_k}}(s, a)\right]=0`.
 In practice, this term can be set to zero, which gives the updated term:
 
@@ -783,12 +768,12 @@ Proof for Theorem 1
     Since :math:`J^{C}(\pi_{\theta_k})` is a constant w.r.t :math:`\pi`, constraint :eq:`focops-eq-2` is linear.
     Constraint :eq:`focops-eq-2` can be rewritten as :math:`\sum_s d_{\pi_{\theta_k}}(s) D_{\mathrm{KL}}\left(\pi \| \pi_{\theta_k}\right)[s] \leq \delta`.
     The :math:`KL` divergence is convex w.r.t its first argument.
-    Hence Constraint :eq:`focops-eq-2`, a linear combination of convex functions, is also convex.
-    Since :math:`\pi_{\theta_k}` satisfies Constraint :eq:`focops-eq-2` also satisfies Constraint :eq:`focops-eq-2`, therefore Slater's constraint qualification holds, and strong duality holds.
+    Hence constraint :eq:`focops-eq-2`, a linear combination of convex functions, is also convex.
+    Since :math:`\pi_{\theta_k}` satisfies constraint :eq:`focops-eq-2` also satisfies constraint :eq:`focops-eq-2`, therefore Slater's constraint qualification holds, and strong duality holds.
 
 .. dropdown:: Proof of Theorem 1 (Click here)
     :color: info
-    :class-body: sd-border-{3}
+    :class-body: sd-outline-info
 
     Based on :bdg-info-line:`Lemma 1` the optimal value of the :eq:`focops-eq-2`  :math:`p^*` can be solved by solving the corresponding dual problem.
     Let
@@ -879,7 +864,7 @@ Proof for Theorem 1
     .. math::
         :label: focops-eq-19
 
-        p^*=\underset{\lambda,\nu\ge0}{min}\lambda\delta+\nu\tilde{b}+\lambda\underset{\substack{s \sim d_{\theta_{\theta_k}} \\
+        p^*=\underset{\lambda,\nu\ge0}{\min}\lambda\delta+\nu\tilde{b}+\lambda\underset{\substack{s \sim d_{\theta_{\theta_k}} \\
         a \sim \pi^*}}{\mathbb{E}}[logZ_{\lambda,\nu}(s)]
 
 ------
@@ -909,7 +894,7 @@ Proof of Corollary
                 =&H\left(\pi_\theta, \pi^*\right)[s]-H\left(\pi_\theta\right)[s]
 
 
-            where :math:`H\left(\pi_\theta\right)[s]` is the entropy and :math:`H\left(\pi_\theta, \pi^*\right)[s]` is the cross-entropy under state :math: 's`.
+            where :math:`H\left(\pi_\theta\right)[s]` is the entropy and :math:`H\left(\pi_\theta, \pi^*\right)[s]` is the cross-entropy under state :math:`s`.
             The above is the basic mathematical knowledge in information theory, which you can get in any information theory textbook.
             We expand the cross entropy term, which gives us the following:
 

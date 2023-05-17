@@ -33,14 +33,13 @@ constraint violation.
 In addition to these guarantees, PCPO characterizes its convergence based on
 two metrics: :math:`L2` norm and :math:`KL` divergence. It is designed to
 address the challenge of learning control policies that optimize a reward
-function while satisfying constraints, which is important for ensuring safety,
-fairness, or other considerations.
+function while satisfying constraints.
 
 .. hint::
 
     If you are new to the CPO family of algorithms, we recommend reading CPO
     tutorial (:doc:`./cpo`) to fully understand the concepts
-    introduced in this section.
+    introduced in this chapter.
 
 ------
 
@@ -84,7 +83,7 @@ section with the following questions:
 Two-stage Policy Update
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-PCPO performs policy updates in **two stages**. The first stage
+PCPO updates policy in **two stages**. The first stage
 is :bdg-ref-info-line:`Reward Improvement Stage<two stage update>`,
 which maximizes reward using a trust region optimization method without
 constraints. This might results in a new intermediate policy that fails to
@@ -135,19 +134,18 @@ completes the two-stage update.
             .. math::
                 :label: pcpo-eq-3
 
-                &\pi_{k+1}=\underset{\pi}{\arg\min}\quad D(\pi,\pi_{k+\frac12})\\
+                &\pi_{k+1}=\underset{\pi}{\arg\min} D(\pi,\pi_{k+\frac12})\\
                 \text{s.t.}\quad &J^C\left(\pi_k\right)+\underset{\substack{s \sim d_{\pi_k} , a \sim \pi}}{\mathbb{E}}\left[A^C_{\pi_k}(s, a)\right] \leq d
 
-
-The :bdg-ref-info-line:`Projection Stage<two stage update>` ensures that the
-constraint-satisfying policy
-:math:`\pi_{k+1}` is close to :math:`\pi_{k+\frac{1}{2}}`.
-The :bdg-ref-info-line:`Reward Improvement Stage<two stage update>` ensures
-that the agent's updates are in the direction of maximizing rewards, so as not
-to violate the step size of distance measure :math:`D`.
-:bdg-ref-info-line:`Projection Stage<two stage update>` causes the agent to
-update in the direction of satisfying the constraint while avoiding crossing
-:math:`D` as much as possible.
+The :bdg-ref-info-line:`Projection Stage<two stage update>` guarantees that the 
+constraint-satisfying policy :math:`\pi_{k+1}`, remains in close proximity to 
+:math:`\pi_{k+\frac{1}{2}}`. On the other hand, 
+The :bdg-ref-info-line:`Reward Improvement Stage<two stage update>` ensures 
+that the agent's updates aim to maximize rewards without violating the step 
+size or the distance measure :math:`D`. 
+The :bdg-ref-info-line:`Projection Stage<two stage update>` prompts the agent 
+to update its policy in a direction that satisfies the constraint while
+not across :math:`D`.
 
 ------
 
@@ -378,7 +376,7 @@ direction**, leading to a difference in reward improvement.
 These two projections converge to different stationary points with different
 convergence rates related to the smallest and largest singular values of the
 Fisher information matrix shown in :bdg-info-line:`Theorem 3`.
-PCPO assumes that: PCPO minimizes the negative reward objective function
+PCPO assumes that: When policy tries to minimize the negative reward objective function
 :math:`f: \mathbb{R}^n \rightarrow \mathbb{R}` .
 The function :math:`f` is :math:`L`-smooth and twice continuously
 differentiable over the closed and convex constraint set :math:`\mathcal{C}`.
@@ -416,7 +414,7 @@ differentiable over the closed and convex constraint set :math:`\mathcal{C}`.
     +++
     The proof of the :bdg-info-line:`Theorem 3` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-:bdg-info-line:`Theorem 3` shows that in the stationary point :math:`g` is a
+:bdg-info-line:`Theorem 3` shows that in the stationary point, :math:`g` is a
 line that points to the opposite direction of :math:`a`.
 
 Further, the improvement of the objective value is affected by the singular
@@ -428,10 +426,9 @@ And the objective of :math:`L2` norm projection decreases when
 :math:`\eta<\frac{2}{L},` implying that condition number of
 :math:`\boldsymbol{H}` is upper bounded:
 :math:`\frac{\sigma_\mathrm{max}(\boldsymbol{H})}{\sigma_\mathrm{min}(\boldsymbol{H})}<\frac{2||g||^2_2}{L^2\delta}`.
-Observing the singular values of the Fisher information matrix allows us to
-adaptively choose the appropriate projection and hence achieve objective
-improvement.
-In the supplemental material, we further use an example to compare the
+By observing the singular values of the Fisher information matrix, we can dynamically select the suitable projection, enabling us to achieve objective improvement.
+
+In the Appendix, we further use an example to compare the
 optimization trajectories and stationary points of :math:`KL` divergence and
 :math:`L2` norm projections.
 
@@ -753,7 +750,7 @@ Appendix
 Proof of Theorem 2
 ~~~~~~~~~~~~~~~~~~
 
-To prove the policy performance bound when the current policy is infeasible (constraint-violating), we first prove two lemmas of the :math:`KL` divergence between :math:`\pi_{k}` and :math:`\pi_{k+1}` for the :math:`KL` divergence projection.
+To prove the policy performance bound when the current policy is infeasible (constraint-violating), we first prove two lemmas of the :math:`KL` divergence between :math:`\pi_{k}` and :math:`\pi_{k+1}`.
 We then prove the main theorem for the worst-case performance degradation.
 
 .. tab-set::
@@ -915,7 +912,7 @@ Proof of Analytical Solution to PCPO
     .. math::
         :label: pcpo-eq-18
 
-        \theta_{k+\frac{1}{2}} = &\underset{\theta}{\arg \min}\quad g^{T}(\theta-\theta_{k}) \\
+        \theta_{k+\frac{1}{2}} = &\underset{\theta}{\arg \min} g^{T}(\theta-\theta_{k}) \\
         \text{s.t.}\quad&\frac{1}{2}(\theta-\theta_{k})^{T}\boldsymbol{H}(\theta-\theta_{k})\leq \delta,
 
 
@@ -924,7 +921,7 @@ Proof of Analytical Solution to PCPO
     .. math::
         :label: pcpo-eq-19
 
-        \theta_{k+1} = &\underset{\theta}{\arg \min}\quad \frac{1}{2}(\theta-{\theta}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\theta-{\theta}_{k+\frac{1}{2}}) \\
+        \theta_{k+1} = &\underset{\theta}{\arg \min} \frac{1}{2}(\theta-{\theta}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\theta-{\theta}_{k+\frac{1}{2}}) \\
         \text{s.t.}\quad &a^{T}(\theta-\theta_{k})+b\leq 0,
 
 
@@ -944,8 +941,7 @@ Proof of Analytical Solution to PCPO
         :color: info
         :class-body: sd-outline-info
 
-        For the first problem, since :math:`\boldsymbol{H}` is the Fisher Information matrix, which automatically guarantees it is positive semi-definite.
-        Hence it is a convex program with quadratic inequality constraints.
+        For the first problem, since :math:`\boldsymbol{H}` is the Fisher Information matrix, which automatically guarantees it is positive semi-definite, it is a convex program with quadratic inequality constraints.
         Hence if the primal problem has a feasible point, then Slater's condition is satisfied and strong duality holds.
         Let :math:`\theta^{*}` and :math:`\lambda^*` denote the solutions to the primal and dual problems, respectively.
         In addition, the primal objective function is continuously differentiable.
@@ -1218,7 +1214,3 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
                 &=\sigma_\mathrm{min}(\boldsymbol{H})||g||^2_2\nonumber\\
                 \Rightarrow&\sigma_\mathrm{min}(\boldsymbol{H})>\frac{L^2\delta}{2||g||^2_2}.
                 \label{eqnarray}
-
-
-
-            By the definition of the condition number and :eq:`pcpo-eq-33`, we have

@@ -72,10 +72,10 @@ costs. Furthermore, TRPO incorporates a line search mechanism to ensure that upd
 Performance difference over policies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In policy optimization, our goal is to ensure that each update results in a
-monotonic increase in expected return. To achieve this, we typically construct
-the equation for expected return in a particular form, which is intuitive and
-easy to work with:
+In policy optimization, our objective is to ensure that every update leads to a 
+consistent improvement in the expected return. To accomplish this, we usually 
+formulate the equation for expected return in a specific format that is both 
+intuitive and straightforward to manipulate.
 
 .. math::
     :label: trpo-eq-1
@@ -106,7 +106,7 @@ As shown in **NPG**, the difference in performance between two policies
     .. math::
         :label: trpo-eq-2
 
-            J^R(\pi') = J^R(\pi) + \mathbb{E}_{\tau \sim \pi'}[\sum_{t=0}^{\infty} \gamma^t A^R_{\pi}(s_t,a_t)]
+            J^R(\pi') = J^R(\pi) + \mathbb{E}_{\tau \sim \pi'}[\sum_{t=0}^{\infty} \gamma^t A^{R}_{\pi}(s_t,a_t)]
 
     where this expectation is taken over trajectories :math:`\tau=(s_0, a_0, s_1,\\ a_1, \cdots)`,
     and the notation :math:`\mathbb{E}_{\tau \sim \pi'}[\cdots]` indicates that actions are sampled from :math:`\pi'` to generate :math:`\tau`.
@@ -129,14 +129,14 @@ can improve over :math:`\pi`, which is of our interest.
         :label: trpo-eq-3
 
         \label{equation: performance in discount visit density}
-        J^R(\pi') &=J^R(\pi)+\sum_{t=0}^{\infty} \sum_s P\left(s_t=s \mid \pi'\right) \sum_a \pi' (a \mid s) \gamma^t A^R_{\pi}(s, a) \\
-        &=J^R(\pi)+\sum_s \sum_{t=0}^{\infty} \gamma^t P\left(s_t=s \mid \pi' \right) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a) \\
-        &=J^R(\pi)+\sum_s d_{\pi'}(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)
+        J^R(\pi') &=J^R(\pi)+\sum_{t=0}^{\infty} \sum_s P\left(s_t=s \mid \pi'\right) \sum_a \pi' (a \mid s) \gamma^t A^{R}_{\pi}(s, a) \\
+        &=J^R(\pi)+\sum_s \sum_{t=0}^{\infty} \gamma^t P\left(s_t=s \mid \pi' \right) \sum_a \pi'(a \mid s) A^{R}_{\pi}(s, a) \\
+        &=J^R(\pi)+\sum_s d_{\pi'}(s) \sum_a \pi'(a \mid s) A^{R}_{\pi}(s, a)
 
 
 This equation implies for any policy :math:`\pi'`, if it has a nonnegative
 expected advantage at every state :math:`s`, i.e.,
-:math:`\sum_a \pi'(a \mid s) A^R_{\pi}(s, a) \geq 0`,
+:math:`\sum_a \pi'(a \mid s) A^{R}_{\pi}(s, a) \geq 0`,
 is guaranteed to increase the policy performance :math:`J^R`,
 or leave it constant in the case
 that the expected advantage is zero everywhere.
@@ -144,7 +144,7 @@ However, in the approximate setting, it will typically be unavoidable,
 due to estimation and approximation errors,
 that there will be some states :math:`s` for which the expected advantage is
 negative, that is,
-:math:`\sum_a \pi'(a \mid s) A^R_{\pi}(s, a)<0`.
+:math:`\sum_a \pi'(a \mid s) A^{R}_{\pi}(s, a)<0`.
 
 ------
 
@@ -163,7 +163,7 @@ Instead, we introduce the following local approximation to :math:`J^R`:
 .. math::
     :label: trpo-eq-4
 
-    L_\pi(\pi')=J^R(\pi)+\sum_s d_\pi(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)
+    L_\pi(\pi')=J^R(\pi)+\sum_s d_\pi(s) \sum_a \pi'(a \mid s) A^{R}_{\pi}(s, a)
 
 
 Here we only replace :math:`d_{\pi'}` with :math:`d_\pi`.
@@ -204,7 +204,7 @@ close enough,
     The proof of the :bdg-info-line:`Corollary 1` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
 :eq:`trpo-eq-6` implies that a sufficiently small step
-:math:`\pi_{\theta_0} \rightarrow \pi'` that improves
+:math:`\pi_{\theta_0} \rightarrow \pi'` improving
 :math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J^R`,
 but does not give us any guidance on how big of a step to take.
 
@@ -232,7 +232,7 @@ Kakade and Langford derived the following lower bound:
     :label: trpo-eq-8
 
     J^R\left(\pi_{\text {new }}\right)  &\geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{2 \epsilon \gamma}{(1-\gamma)^2} \alpha^2  \\
-    \text { where } \epsilon &=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right|
+    \text { where } \epsilon &=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^{R}_{\pi}(s, a)\right]\right|
 
 
 However, the lower bound in :eq:`trpo-eq-8` only applies to mixture policies,
@@ -281,7 +281,7 @@ And the new bound is derived by introducing the :math:`\alpha`-coupling method.
         :label: trpo-eq-10
 
         J^{R}\left(\pi_{\text {new }}\right)  &\geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{4 \epsilon \gamma}{(1-\gamma)^2} \alpha^2 \\
-        \text { where } \epsilon &=\max _{s, a}\left|A^R_{\pi}(s, a)\right|
+        \text { where } \epsilon &=\max _{s, a}\left|A^{R}_{\pi}(s, a)\right|
 
     +++
     The proof of the :bdg-info-line:`Theorem 2` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
@@ -308,7 +308,7 @@ The following bound then follows directly from :bdg-info-line:`Theorem 2` :
 
 TRPO describes an approximate policy iteration scheme based on the policy
 improvement bound in :eq:`trpo-eq-11`.
-Note that for now, we assume exact evaluation of the advantage values :math:`A^R_{\pi}`.
+Note that for now, we assume exact evaluation of the advantage values :math:`A^{R}_{\pi}`.
 
 It follows from :eq:`trpo-eq-11` that TRPO is guaranteed to generate a
 monotonically improving sequence of policies
@@ -905,7 +905,7 @@ Proof of Theorem 1 (Difference between two arbitrary policies)
 
     Proof of Theorem 1
     ^^^
-    First note that :math:`A^R_{\pi}(s, a)=\mathbb{E}_{s' \sim \mathbb{P}\left(s^{\prime} \mid s, a\right)}\left[r(s)+\gamma V^R_{\pi}\left(s^{\prime}\right)-V^R_{\pi}(s)\right]`.
+    First note that :math:`A^{R}_{\pi}(s, a)=\mathbb{E}_{s' \sim \mathbb{P}\left(s^{\prime} \mid s, a\right)}\left[r(s)+\gamma V^R_{\pi}\left(s^{\prime}\right)-V^R_{\pi}(s)\right]`.
     Therefore,
 
     .. _`trpo-eq-15`:
@@ -913,7 +913,7 @@ Proof of Theorem 1 (Difference between two arbitrary policies)
     .. math::
         :label: trpo-eq-16
 
-        \mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t A^R_{\pi}\left(s_t, a_t\right)\right] &=\mathbb{E}_{\tau \sim \pi'}\left[\sum _ { t = 0 } ^ { \infty } \gamma ^ { t } \left(r\left(s_t\right)+\gamma V^{R}_{\pi}\left(s_{t+1}\right)-V^{R}_{\pi}\left(s_{t} \right)\right) \right] \\
+        \mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t A^{R}_{\pi}\left(s_t, a_t\right)\right] &=\mathbb{E}_{\tau \sim \pi'}\left[\sum _ { t = 0 } ^ { \infty } \gamma ^ { t } \left(r\left(s_t\right)+\gamma V^{R}_{\pi}\left(s_{t+1}\right)-V^{R}_{\pi}\left(s_{t} \right)\right) \right] \\
         &=\mathbb{E}_{\tau \sim \pi'}\left[-V^R_{\pi}\left(s_0\right)+\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right] \\
         &=-\mathbb{E}_{s_0}\left[V^R_{\pi}\left(s_0\right)\right]+\mathbb{E}_{\tau \sim \pi'}\left[\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right] \\
         &=-J^R(\pi)+J^R(\pi')
@@ -935,7 +935,7 @@ Proof of Corollary 1
         :label: trpo-eq-17
 
         & L_{\pi_{\theta_0}}\left(\pi_{\theta_0}\right)=J^{R}\left(\pi_{\theta_0}\right)\quad \\
-        \text{since}~~ &\sum_s \rho_\pi(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)=0.
+        \text{since}~~ &\sum_s \rho_\pi(s) \sum_a \pi'(a \mid s) A^{R}_{\pi}(s, a)=0.
 
     Now :eq:`trpo-eq-4` can be written as follows:
 
@@ -992,7 +992,7 @@ Define :math:`\bar{A}^R(s)` to be the expected advantage of :math:`\pi'` over :m
 .. math::
     :label: trpo-eq-23
 
-    \bar{A}^R(s)=\mathbb{E}_{a \sim \pi^{'}(\cdot \mid s)}\left[A^R_{\pi}(s, a)\right]
+    \bar{A}^R(s)=\mathbb{E}_{a \sim \pi^{'}(\cdot \mid s)}\left[A^{R}_{\pi}(s, a)\right]
 
 
 :bdg-info-line:`Theorem 1` can be written as follows:
@@ -1016,7 +1016,7 @@ we will bound the difference arising from each timestep.
 To do this, we first need to introduce a measure of how much :math:`\pi` and
 :math:`\pi'` agree.
 Specifically, we'll couple the policies,
-so that they define a joint distribution over pairs of actions.
+so that define a joint distribution over pairs of actions.
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
@@ -1055,7 +1055,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             .. math::
                 :label: trpo-eq-26
 
-                |\bar{A}^R(s)| \leq 2 \alpha \max _{s, a}\left|A^R_{\pi}(s, a)\right|
+                |\bar{A}^R(s)| \leq 2 \alpha \max _{s, a}\left|A^{R}_{\pi}(s, a)\right|
 
 
 
@@ -1076,7 +1076,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
                 :label: trpo-eq-27
 
                 \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right|&\leq 2 \alpha \max _s \bar{A}^R(s) \\
-                &\leq 4 \alpha\left(1-(1-\alpha)^t\right) \max _s\left|A^R_{\pi}(s, a)\right|
+                &\leq 4 \alpha\left(1-(1-\alpha)^t\right) \max _s\left|A^{R}_{\pi}(s, a)\right|
 
 
 .. tab-set::
@@ -1097,9 +1097,9 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             .. math::
                 :label: trpo-eq-28
 
-                \bar{A}^R(s) &= \mathbb{E}_{\tilde{a} \sim \tilde{\pi}}\left[A^R_{\pi}(s, \tilde{a})\right] - \mathbb{E}_{a \sim \pi}\left[A^R_{\pi}(s, a)\right] \\
-                &=\mathbb{E}_{(a, \tilde{a}) \sim(\pi, \tilde{\pi})}\left[A^R_{\pi}(s, \tilde{a})-A^R_{\pi}(s, a)\right]\\
-                &= P(a \neq \tilde{a} \mid s) \mathbb{E}_{(a, \tilde{a}) \sim(\pi, \tilde{\pi}) \mid a \neq \tilde{a}}\left[A^R_{\pi}(s, \tilde{a})-A^R_{\pi}(s, a)\right]
+                \bar{A}^R(s) &= \mathbb{E}_{\tilde{a} \sim \tilde{\pi}}\left[A^{R}_{\pi}(s, \tilde{a})\right] - \mathbb{E}_{a \sim \pi}\left[A^{R}_{\pi}(s, a)\right] \\
+                &=\mathbb{E}_{(a, \tilde{a}) \sim(\pi, \tilde{\pi})}\left[A^{R}_{\pi}(s, \tilde{a})-A^{R}_{\pi}(s, a)\right]\\
+                &= P(a \neq \tilde{a} \mid s) \mathbb{E}_{(a, \tilde{a}) \sim(\pi, \tilde{\pi}) \mid a \neq \tilde{a}}\left[A^{R}_{\pi}(s, \tilde{a})-A^{R}_{\pi}(s, a)\right]
 
 
             So,
@@ -1107,7 +1107,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             .. math::
                 :label: trpo-eq-29
 
-                |\bar{A}^R(s)|  \leq \alpha \cdot 2 \max _{s, a}\left|A^R_{\pi}(s, a)\right|
+                |\bar{A}^R(s)|  \leq \alpha \cdot 2 \max _{s, a}\left|A^{R}_{\pi}(s, a)\right|
 
 
     .. tab-item:: Proof of Lemma 2
@@ -1192,7 +1192,7 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
 
                 &\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
                 & \leq\left|\mathbb{E}_{s_t \sim \pi' \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right|+\left|\mathbb{E}_{s_t \sim \pi \mid n_t>0}\left[\bar{A}^R\left(s_t\right)\right]\right| \\
-                & \leq 4 \alpha \max _{s, a}\left|A^R_{\pi}(s, a)\right|
+                & \leq 4 \alpha \max _{s, a}\left|A^{R}_{\pi}(s, a)\right|
                 \label{equation: abs performance bound nt geq 0}
 
 
@@ -1202,14 +1202,14 @@ the results will agree for at least fraction :math:`1-\alpha` of seeds.
             .. math::
                 :label: trpo-eq-36
 
-                \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right| \leq 4 \alpha\left(1-(1-\alpha)^t\right) \max _{s, a}\left|A^R_{\pi}(s, a)\right|
+                \left|\mathbb{E}_{s_t \sim \pi'}\left[\bar{A}^R\left(s_t\right)\right]-\mathbb{E}_{s_t \sim \pi}\left[\bar{A}^R\left(s_t\right)\right]\right| \leq 4 \alpha\left(1-(1-\alpha)^t\right) \max _{s, a}\left|A^{R}_{\pi}(s, a)\right|
 
 
 The preceding Lemma bounds the difference in expected advantage at each
 timestep :math:`t`.
 We can sum over time to bound the difference between :math:`J^R(\pi')` and
 :math:`L_\pi(\pi')`. Subtracting :eq:`trpo-eq-24` and :eq:`trpo-eq-25`,
-and defining :math:`\epsilon=\max _{s, a}\left|A^R_{\pi}(s, a)\right|`, we have
+and defining :math:`\epsilon=\max _{s, a}\left|A^{R}_{\pi}(s, a)\right|`, we have
 
 .. _`trpo-eq-36`:
 

@@ -121,7 +121,7 @@ define its Lagrange dual problem as:
 
    \begin{array}{rl}
    \underset{u,v}{\max}& \theta_d(u, v) \\
-   \text { s.t. } & u \geq 0
+   \text {s.t.} & u \geq 0
    \end{array}\nonumber
 
 From the definitions we easily obtain that the optimal value of the dual
