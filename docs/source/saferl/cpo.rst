@@ -130,7 +130,7 @@ between them.
 
     Furthermore, the bounds are tight (when :math:`\pi=\pi^{\prime}`, all three expressions are identically zero).
     +++
-    The proof of the :bdg-info-line:`Theorem 1`` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
+    The proof of the :bdg-info-line:`Theorem 1` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
 By picking :math:`f=V_\pi`, we obtain a :bdg-info-line:`Corollary 1`,
 :bdg-info-line:`Corollary 2`, :bdg-info-line:`Corollary 3` below:
