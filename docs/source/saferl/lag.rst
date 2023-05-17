@@ -91,7 +91,7 @@ As we mentioned in the previous chapters, the optimization problem of CMDPs can 
 
 .. math::
     :label: lag-eq-1
-    
+
 
     \max_{\pi \in \Pi_\theta} &J^R(\pi) \\
     \text {s.t.}~~& J^{\mathcal{C}}(\pi) \leq d

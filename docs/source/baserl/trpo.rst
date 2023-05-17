@@ -72,9 +72,9 @@ costs. Furthermore, TRPO incorporates a line search mechanism to ensure that upd
 Performance difference over policies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In policy optimization, our objective is to ensure that every update leads to a 
-consistent improvement in the expected return. To accomplish this, we usually 
-formulate the equation for expected return in a specific format that is both 
+In policy optimization, our objective is to ensure that every update leads to a
+consistent improvement in the expected return. To accomplish this, we usually
+formulate the equation for expected return in a specific format that is both
 intuitive and straightforward to manipulate.
 
 .. math::

@@ -63,7 +63,7 @@ FOCOPS mainly includes the following contributions:
 
 - Provides a **two-stage policy update** to optimize the current policy.
 - Gives the practical implementation for solving the two-stage policy update.
-- Offers rigorous derivative proofs for the above theories, as detailed in the :bdg-ref-info:`Appendix<focops-appendix>` to this tutorial. 
+- Offers rigorous derivative proofs for the above theories, as detailed in the :bdg-ref-info:`Appendix<focops-appendix>` to this tutorial.
 
 One suggested reading order is CPO(:doc:`../saferl/cpo`),
 PCPO(:doc:`../saferl/pcpo`), then FOCOPS. If you have yet to read the PCPO, it
