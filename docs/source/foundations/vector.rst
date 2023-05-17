@@ -1,24 +1,8 @@
 Vector and Martrix
 ==================
 
-Introduction
-------------
-
-`Reinforcement learning <https://static.hlt.bme.hu/semantics/external/pages/deep_learning/en.wikipedia.org/wiki/Reinforcement_learning.html#:~:text=Reinforcement%20learning%20%28RL%29%20is%20an%20area%20of%20machine,as%20to%20maximize%20some%20notion%20of%20cumulative%20reward.>`__
-is a machine learning discipline that is closely related to mathematics,
-particularly Optimization Theory. **Safe reinforcement learning** is
-particularly closely tied to mathematical theory.
-
-If you are new to the mathematical theories discussed in subsequent chapters,
-please refer back to this article. If this does not resolve your confusion,
-please refer to the more detailed introduction to mathematical theory provided
-in this tutorial.
-
-Knowledge of Vector and Matrix
-------------------------------
-
 Vector Projection
-~~~~~~~~~~~~~~~~~
+-----------------
 
 The projection of a vector :math:`\boldsymbol{y} \in \mathbb{R}^m` onto the
 span of :math:`\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}` (here
@@ -43,7 +27,7 @@ follows:
 
 
 Norms
-~~~~~
+-----
 
 .. tab-set::
 

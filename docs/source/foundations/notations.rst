@@ -43,7 +43,7 @@ Linear Algebra
                \in \mathbb{R}^n
 
             Usually, we use a bold lowercase letter to denote a vector (e.g.
-            :math:`\boldsymbol{a}=(a_1,a_2,\cdots,\boldsymbol{a}_n)\in\mathbb{R}^{n}`), and its
+            :math:`\boldsymbol{a}=(a_1,a_2,\cdots,a_n)\in\mathbb{R}^{n}`), and its
             :math:`i^{th}` element written as
             :math:`\boldsymbol{a}[i]=:\boldsymbol{a}_{i},~~1\leq i\leq n.`
 
@@ -74,7 +74,7 @@ Infinite-horizon Discounted **Markov Decision Process (MDP)**.
 
 It is a tuple
 :math:`\mathcal{M}=\{\mathcal{S}, \mathcal{A}, \mathbb{P}, r, \mu, \gamma\}`,
-where
+where:
 
 .. card::
    :class-header: sd-bg-info  sd-text-white sd-font-weight-bold
@@ -142,11 +142,11 @@ we use :math:`\pi` to represent :math:`\pi_{\theta}`.
 
             Let :math:`\mathbb{P}_{\pi}\left(s'\mid s\right)` denote one-step state transition probability from :math:`s` to :math:`s'` by executing :math:`\pi`,
 
-            .. math:: \mathbb{P}_{\pi}\left(s'\mid s\right)=\sum_{a\in\mathbb{A}}\pi\left(a\mid s\right) \mathbb{P}_{\pi}\left(s'\mid s,a\right).
+            .. math:: \mathbb{P}_{\pi}\left(s'\mid s\right)=\sum_{a\in\mathcal{A}}\pi\left(a\mid s\right) \mathbb{P}_{\pi}\left(s'\mid s,a\right).
 
             Then for any initial state :math:`s_0 \sim \mu`, we have
 
-            .. math:: \mathbb{P}_{\pi}\left(s_t=s\mid s_0\right)=\sum_{s'\in\mathbb{S}} \mathbb{P}_{\pi}\left(s_t=s\mid s_{t-1}=s'\right)\mathbb{P}_{\pi}\left(s_{t-1}=s'\mid s_0\right),
+            .. math:: \mathbb{P}_{\pi}\left(s_t=s\mid s_0\right)=\sum_{s'\in\mathcal{S}} \mathbb{P}_{\pi}\left(s_t=s\mid s_{t-1}=s'\right)\mathbb{P}_{\pi}\left(s_{t-1}=s'\mid s_0\right),
 
             where :math:`s_0 \sim \mu` and the actions are chosen according to :math:`\pi`.
 
@@ -218,7 +218,7 @@ we use :math:`\pi` to represent :math:`\pi_{\theta}`.
 To summarize all of the above notation, we show the following table,
 
 - :math:`\tau` is a trajectory that consist of
-  :math:`\left(s_0, a_0, s_1, a_0, \cdots\right)`
+  :math:`\left(s_0, a_0, s_1, a_1, \cdots\right)`
 - :math:`\pi_{\theta}, \theta` is a stationary parameterized policy
   :math:`\pi_{\theta}` is a probability distribution defined on
   :math:`\mathcal{S}\times\mathcal{A}`, :math:`\pi_{\theta}(a|s)`

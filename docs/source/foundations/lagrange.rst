@@ -240,3 +240,8 @@ primal problem can be converted to a relatively simple solution of a dual
 problem. Safe RL algorithms are essentially solutions to constrained problems,
 so understanding the Lagrange method is crucial to understanding many of these
 algorithms.
+
+References
+----------
+
+- `Convex Optimization <https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf>`__
