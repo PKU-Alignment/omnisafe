@@ -24,19 +24,16 @@ Background
 
 **Trust region policy optimization (TRPO)** is an iterative method for
 optimizing policies in reinforcement learning that ensures monotonic
-improvements. It works by iteratively finding a good local approximation of the
+improvements. It works by iteratively finding a local approximation of the
 objective return and maximizing the approximated function. However, the new
 policy should be constrained within a trust region relative to the current
 policy, which is achieved by using KL divergence to measure the distance
-between the two policies and ensure that the surrogate function is a good
-approximation.
+between the two policies.
 
 TRPO is well-suited for optimizing comprehensive nonlinear policies such as
 neural networks. It is based on the **Natural Policy Gradient (NPG)** method,
-which uses techniques like conjugate gradient to avoid expensive computational
-costs. Additionally, TRPO performs a line search to ensure that policy updates
-remain within the fixed KL divergence constraint.
-
+which uses conjugate gradient to avoid expensive computational
+costs. Furthermore, TRPO incorporates a line search mechanism to ensure that policy updates adhere to the predetermined KL divergence constraint.
 
 .. grid:: 2
 
