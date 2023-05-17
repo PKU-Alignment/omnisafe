@@ -91,7 +91,7 @@ constraints. This might results in a new intermediate policy that fails to
 satisfy the constraints. The second stage,
 named :bdg-ref-info-line:`Projection Stage<two stage update>`,
 reconciles the constraint violation (if any) by projecting the policy back onto
-the constraint set, i.e., choosing the procedure in the constraint set that is
+the constraint set, choosing the procedure in the constraint set that is
 closest to the selected intermediate policy. Next, we will describe how PCPO
 completes the two-stage update.
 

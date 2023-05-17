@@ -214,7 +214,7 @@ which could provide explicit lower bounds on the improvement of :math:`J^R`.
 To define the conservative policy iteration update,
 let :math:`\pi_{\mathrm{old}}` denote the current policy,
 and let
-:math:`\pi^{*}=\arg \max _{\pi^{*}} L_{\pi_{\text {old }}}\left(\pi^{*}\right)`.
+:math:`\pi^{*}=\underset{\pi^{*}}{\arg \max} L_{\pi_{\text {old }}}\left(\pi^{*}\right)`.
 The new policy :math:`\pi_{\text {new }}`
 was defined to be the following mixture:
 
@@ -384,7 +384,7 @@ divergence:
 
 where
 :math:`\bar{D}_{\mathrm{KL}}:=\mathbb{E}_{s \sim \rho}\left[D_{\mathrm{KL}}\left(\pi_{\theta_1}(\cdot \mid s) \| \pi_{\theta_2}(\cdot \mid s)\right)\right]`
-The method TRPO describes involves two steps:
+.The method TRPO describes involves two steps:
 
 .. card::
     :class-header: sd-bg-success sd-text-white sd-font-weight-bold
@@ -471,8 +471,8 @@ The method TRPO describes involves two steps:
                 The term :math:`s^THs` is an intermediate result produced by the conjugate gradient algorithm.
 
             To meet the constraints, TRPO uses line search algorithm to compute the final step length.
-            Detailedly, TRPO performs the line search on the objective :math:`L_{\theta_{\text {old }}}(\theta)-\mathcal{X}\left[\bar{D}_{\text {KL }}\left(\theta_{\text {old }}, \theta\right) \leq \delta\right]`, where :math:`\mathcal{X}[\ldots]` equals zero,
-            when its argument is true and :math:`+\infty` when it is false.
+            Detailedly, TRPO performs the line search on the objective :math:`L_{\theta_{\text {old }}}(\theta)-\mathcal{X}\left[\bar{D}_{\text {KL }}\left(\theta_{\text {old }}, \theta\right) \leq \delta\right]`, where :math:`\mathcal{X}[\ldots]` equals to :math:`0`,
+            when its argument is true, and :math:`+\infty` when it is false.
             Starting with the maximal value of the step length :math:`\beta` computed in the previous paragraph,
             TRPO shrinks :math:`\beta` exponentially until the objective improves. Without this line search,
             the algorithm occasionally computes large steps that cause a catastrophic degradation of performance.
@@ -943,7 +943,7 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-18
 
-        J^{R}\left(\pi^{'}_{\theta}\right) = J^{R}(\pi_{\theta_0}) + \sum_s d_{\pi^{'}_{\theta}}(s) \sum_a \pi^{'}_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)
+        J^{R}\left(\pi^{'}_{\theta}\right) = J^{R}(\pi_{\theta_0}) + \sum_s d_{\pi^{'}_{\theta}}(s) \sum_a \pi^{'}_{\theta}(a|s) A^{R}_{\pi_{\theta_0}}(s,a)
 
     So,
 
@@ -952,11 +952,11 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-19
 
-        \nabla_{\theta} J^{R}(\pi_{\theta})|_{\theta = \theta_0} &= J^{R}(\pi_{\theta_0}) + \sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)+\sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a) \\
-        &= J^{R}(\pi_{\theta_0}) + \sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)
+        \nabla_{\theta} J^{R}(\pi_{\theta})|_{\theta = \theta_0} &= J^{R}(\pi_{\theta_0}) + \sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A^{R}_{\pi_{\theta_0}}(s,a)+\sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A^{R}_{\pi_{\theta_0}}(s,a) \\
+        &= J^{R}(\pi_{\theta_0}) + \sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A^{R}_{\pi_{\theta_0}}(s,a)
 
     .. note::
-        :math:`\sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)=0`
+        :math:`\sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A^{R}_{\pi_{\theta_0}}(s,a)=0`
 
     Meanwhile,
 
@@ -965,14 +965,14 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-20
 
-        L_{\pi_{\theta_0}}(\pi_{\theta})=J^{R}(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)
+        L_{\pi_{\theta_0}}(\pi_{\theta})=J^{R}(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \pi_{\theta}(a \mid s) A^{R}_{\pi_{\theta_0}}(s, a)
 
     So,
 
     .. math::
         :label: trpo-eq-21
 
-        \nabla L_{\pi_{\theta_0}}(\pi_{\theta}) | _{\theta = \theta_0}=J^{R}(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \nabla \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)
+        \nabla L_{\pi_{\theta_0}}(\pi_{\theta}) | _{\theta = \theta_0}=J^{R}(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \nabla \pi_{\theta}(a \mid s) A^{R}_{\pi_{\theta_0}}(s, a)
 
 
     Combine :eq:`trpo-eq-19`  and
@@ -1248,5 +1248,5 @@ such that
 then we can define an :math:`\alpha`-coupled policy pair :math:`(\pi, \pi')`
 with appropriate marginals.
 Taking
-:math:`\alpha=\max _s D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right) \leq \alpha`
+:math:`\alpha=\max _s D_{T V}\left(\pi(\cdot \mid s) \| \pi'(\cdot \mid s)\right)`
 in :eq:`trpo-eq-37`, :bdg-info-line:`Theorem 2` follows.
