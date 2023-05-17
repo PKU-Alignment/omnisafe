@@ -20,7 +20,7 @@ PPO Theorem
 Background
 ~~~~~~~~~~
 
-**Proximal Policy Optimization(PPO)** is an RL algorithm inheriting some of the
+**Proximal Policy Optimization(PPO)** is a reinforcement learning algorithm inheriting some of the
 benefits of :doc:`TRPO<trpo>`,
 However, it is much simpler to implement.
 PPO shares the same goal as TRPO:

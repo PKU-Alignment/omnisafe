@@ -61,7 +61,7 @@ disadvantages below:
 
 FOCOPS mainly includes the following contributions:
 
-It provides a **two-stage policy update** to optimize the current Policy. Next,
+It provides a **two-stage policy update** to optimize the current policy. Next,
 it gives the practical implementation for solving the two-stage policy update.
 Finally, FOCOPS provides rigorous derivative proofs for the above theories, as
 detailed in the :bdg-ref-info:`Appendix<focops-appendix>` to this tutorial. One
@@ -128,7 +128,7 @@ approach summarized below:
     ^^^
     -  Given policy :math:`\pi_{\theta_k}`, find an optimal update policy :math:`\pi^*` by solving the optimization problem from :eq:`focops-eq-1` in the non-parameterized policy space.
 
-    -  Project the Policy found in the previous step back into the parameterized policy space :math:`\Pi_{\theta}` by solving for the closest policy :math:`\pi_{\theta}\in\Pi_{\theta}` to :math:`\pi^*`, to obtain :math:`\pi_{\theta_{k+1}}`.
+    -  Project the policy found in the previous step back into the parameterized policy space :math:`\Pi_{\theta}` by solving for the closest policy :math:`\pi_{\theta}\in\Pi_{\theta}` to :math:`\pi^*`, to obtain :math:`\pi_{\theta_{k+1}}`.
 
 ------
 
@@ -148,7 +148,7 @@ In the first stage, FOCOPS rewrites :eq:`focops-eq-1`  as below:
 
 
 These problems are only slightly different from :eq:`focops-eq-1` , that is,
-the parameter of interest is now the non-parameterized Policy :math:`\pi` and
+the parameter of interest is now the non-parameterized policy :math:`\pi` and
 not the policy parameter :math:`\theta`.
 Then FOCOPS provides a solution as follows:
 
@@ -400,13 +400,13 @@ appear to reduce performance greatly.
 Practically, :math:`J^C(\pi_{\theta_k})` can be estimated via Monte Carlo
 methods using trajectories collected from :math:`\pi_{\theta_k}`.
 Using the update rule :eq:`focops-eq-10`, FOCOPS performs one update step on
-:math:`\nu` before updating the Policy parameters :math:`\theta`.
+:math:`\nu` before updating the policy parameters :math:`\theta`.
 A per-state acceptance indicator function :math:`I\left(s_j\right)^n:=\mathbf{1}_{D_{\mathrm{KL}}\left(\pi_\theta \| \pi_{\theta_k}\right)\left[s_j\right] \leq \delta}` is added to :eq:`focops-eq-7`,
 in order better to enforce the accuracy for the first-order purposed method.
 
 .. hint::
 
-    Here :math:`N` is the number of samples collected by Policy :math:`\pi_{\theta_k}`, :math:`\hat A` and :math:`\hat A^C` are estimates of the advantage functions (for the return and cost) obtained from critic networks.
+    Here :math:`N` is the number of samples collected by policy :math:`\pi_{\theta_k}`, :math:`\hat A` and :math:`\hat A^C` are estimates of the advantage functions (for the return and cost) obtained from critic networks.
     The advantage functions are obtained using the Generalized Advantage Estimator (GAE).
     Note that FOCOPS only requires first-order methods (gradient descent) and is thus extremely simple to implement.
 
@@ -431,7 +431,7 @@ experiment.
             Analysis of :math:`\lambda`
             ^^^
             In :eq:`focops-eq-3`, note that as :math:`\lambda \rightarrow 0`, :math:`\pi^*` approaches a greedy policy;
-            as :math:`\lambda` increases, the Policy becomes more exploratory.
+            as :math:`\lambda` increases, the policy becomes more exploratory.
             Therefore :math:`\lambda` is similar to the temperature term used in maximum entropy reinforcement learning,
             which has been shown to produce good results when fixed during training.
             In practice, FOCOPS finds that its algorithm reaches the best performance when the :math:`\lambda` is fixed.

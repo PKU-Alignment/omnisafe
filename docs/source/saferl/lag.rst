@@ -37,7 +37,7 @@ widely used in machine learning.
 By using adaptive penalty coefficients to enforce constraints,
 Lagrangian methods convert the solution of a constrained optimization problem
 to the solution of an unconstrained optimization problem.
-In the :bdg-info-line:`section`, we will briefly introduce Lagrangian methods,
+In this section, we will briefly introduce Lagrangian methods,
 and give corresponding implementations in **TRPO** and **PPO**.
 TRPO and PPO are the algorithms we introduced earlier,
 if you lack understanding of it, it doesn't matter.
