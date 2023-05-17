@@ -535,76 +535,6 @@ Architecture of functions
 
 ------
 
-Documentation of basic functions
-""""""""""""""""""""""""""""""""
-
-.. card-carousel:: 3
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        env.rollout()
-        ^^^
-        Collect data and store it to experience buffer.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        pcpo.update()
-        ^^^
-        Update actor, critic, running statistics
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        pcpo.buf.get()
-        ^^^
-        Call this at the end of an epoch to get all of the data from the buffer
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        pcpo._update_actor
-        ^^^
-        Update policy network in 5 kinds of optimization case
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        pcpo._update_reward_critic
-        ^^^
-        Update Critic network for estimating reward.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        pcpo._update_cost_critic
-        ^^^
-        Update Critic network for estimating cost.
-
-    .. card::
-        :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-        :class-footer: sd-font-weight-bold
-
-        pcpo.log()
-        ^^^
-        Get the training log and show the performance of the algorithm
-
-------
-
 Documentation of algorithm specific functions
 """""""""""""""""""""""""""""""""""""""""""""
 
@@ -1107,7 +1037,6 @@ We have the following :bdg-info-line:`Lemma 3` to characterize the projection an
     For any :math:`\theta`, :math:`\theta^{*}=\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)` if and only if :math:`(\theta-\theta^*)^T\boldsymbol{L}(\theta'-\theta^*)\leq0, \forall\theta'\in\mathcal{C}`,
     where :math:`\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)\doteq \underset{\theta' \in \mathrm{C}}{\arg\,min}||\theta-\theta'||^2_{\boldsymbol{L}}` and :math:`\boldsymbol{L}=\boldsymbol{H}` if using the :math:`KL` divergence projection, and :math:`\boldsymbol{L}=\boldsymbol{I}` if using the :math:`L2` norm projection.
 
-    +++
     .. dropdown:: Proof of Lemma 3 (Click here)
         :color: info
         :class-body: sd-border-{3}
