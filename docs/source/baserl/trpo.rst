@@ -286,16 +286,15 @@ And the new bound is derived by introducing the :math:`\alpha`-coupling method.
     +++
     The proof of the :bdg-info-line:`Theorem 2` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-The proof extends Kakade and Langford's result using the fact,
-that the random variables from two distributions with total variation
+The proof extends Kakade and Langford's result. Using the fact that the random variables from two distributions with total variation
 divergence less than :math:`\alpha` can be coupled,
 so that they are equal with probability :math:`1-\alpha`.
 
 Next, we note the following relationship between the total variation divergence
 and the :math:`\mathrm{KL}` divergence:
-:math:`D_{\mathrm{TV}}(p \| q)^2 \leq D_{\mathrm{KL}}(p \| q)`.
+:math:`[D_{\mathrm{TV}}(p \| q)]^2 \leq D_{\mathrm{KL}}(p \| q)`.
 Let
-:math:`D_{\mathrm{KL}}^{\max }(\pi, \pi')=\max _s D_{\mathrm{KL}}(\pi(\cdot|s) \| \pi'(\cdot|s))`.
+:math:`D_{\mathrm{KL}}^{\max }(\pi, \pi')=\underset{s}{\max} D_{\mathrm{KL}}(\pi(\cdot|s) \| \pi'(\cdot|s))`.
 The following bound then follows directly from :bdg-info-line:`Theorem 2` :
 
 .. _`trpo-eq-11`:
@@ -465,7 +464,7 @@ where
             TRPO next needs to compute the appropriate step length to ensure improvement of the surrogate objective and satisfaction of the KL divergence constraint.
             First, TRPO computes the maximal step length :math:`\beta` such that :math:`\beta+\theta s` will satisfy the KL divergence constraint.
             To do this, let :math:`\delta=\bar{D}_{\mathrm{KL}} \approx \frac{1}{2}(\beta s)^T H(\beta s)=\frac{1}{2} \beta^2 s^T A s`.
-            From this, we obtain :math:`\beta=\sqrt{2 \delta / s^T H s}`.
+            Finally, we obtain :math:`\beta=\sqrt{2 \delta / s^T H s}`.
 
             .. hint::
                 The term :math:`s^THs` is an intermediate result produced by the conjugate gradient algorithm.
