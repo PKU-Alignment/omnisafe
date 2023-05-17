@@ -63,6 +63,7 @@ The key features of OmniSafe:
   - [Important Hints](#important-hints)
   - [Quickstart: Colab on the Cloud](#quickstart-colab-on-the-cloud)
 - [Changelog](#changelog)
+- [Citing OmniSafe](#citing-omnisafe)
 - [The OmniSafe Team](#the-omnisafe-team)
 - [License](#license)
 
@@ -352,6 +353,19 @@ If you are interested in translating the tutorial into a new language or improvi
 ## Changelog
 
 See [CHANGELOG.md](https://github.com/OmniSafeAI/omnisafe/blob/main/CHANGELOG.md).
+
+## Citing OmniSafe
+
+If you find OmniSafe useful or use OmniSafe in your research, please cite it in your publications.
+
+```bibtex
+@article{omnisafe,
+  title   = {OmniSafe: An Infrastructure for Accelerating Safe Reinforcement Learning Research},
+  author  = {Jiaming Ji, Jiayi Zhou, Borong Zhang, Juntao Dai, Xuehai Pan, Ruiyang Sun, Weidong Huang, Yiran Geng, Mickel Liu, Yaodong Yang},
+  journal = {arXiv preprint arXiv:2305.09304},
+  year    = {2023}
+}
+```
 
 ## The OmniSafe Team
 

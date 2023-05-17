@@ -330,6 +330,20 @@ You may not yet understand the above theory and the specific meaning of the
 code, but do not worry, we will make a detailed introduction later in the
 :doc:`../saferl/cpo` tutorial.
 
+Citing OmniSafe
+---------------
+
+If you find OmniSafe useful or use OmniSafe in your research, please cite it in your publications.
+
+.. code-block:: bibtex
+
+    @article{omnisafe,
+      title   = {OmniSafe: An Infrastructure for Accelerating Safe Reinforcement Learning Research},
+      author  = {Jiaming Ji, Jiayi Zhou, Borong Zhang, Juntao Dai, Xuehai Pan, Ruiyang Sun, Weidong Huang, Yiran Geng, Mickel Liu, Yaodong Yang},
+      journal = {arXiv preprint arXiv:2305.09304},
+      year    = {2023}
+    }
+
 Long-Term Support and Support History
 -------------------------------------
 
