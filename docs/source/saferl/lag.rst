@@ -350,9 +350,9 @@ Architecture of functions
 
      - ``PPOLag._buf.get()``
      - ``PPOLag.update_lagrange_multiplier(ep_costs)``
-     - ``PPOLag._update_actor``
-     - ``PPOLag._update_cost_critic``
-     - ``PPOLag._update_reward_critic``
+     - ``PPOLag._update_actor()``
+     - ``PPOLag._update_cost_critic()``
+     - ``PPOLag._update_reward_critic()``
 
 ------
 
