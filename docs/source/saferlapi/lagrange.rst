@@ -1,5 +1,5 @@
-The Lagrange Algorithms
-=======================
+Lagrange Algorithms
+===================
 
 .. currentmodule:: omnisafe.algorithms.on_policy
 

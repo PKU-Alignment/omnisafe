@@ -409,7 +409,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: common
+    :caption: common api
 
     common/buffer
     common/exp_grid
@@ -422,7 +422,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: utils
+    :caption: utils api
 
     utils/config
     utils/distributed
@@ -434,7 +434,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: models
+    :caption: models api
 
     model/actor
     model/critic
@@ -443,7 +443,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: envs
+    :caption: envs api
 
     envs/core
     envs/wrapper
