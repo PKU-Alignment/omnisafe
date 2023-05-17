@@ -22,7 +22,7 @@ Background
 
 **Proximal Policy Optimization(PPO)** is a reinforcement learning algorithm inheriting some of the
 benefits of :doc:`TRPO<trpo>`,
-However, it is much simpler to implement.
+however, it is much simpler to implement.
 PPO shares the same goal as TRPO:
 
 .. note::
@@ -105,7 +105,7 @@ Problem :eq:`ppo-eq-1` as:
 
 where
 :math:`L_{\theta_{old}}(\theta)= \frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)`,
-Moreover, :math:`\hat{A}_{\pi}(s, a)` is an estimator of the advantage function
+moreover, :math:`\hat{A}_{\pi}(s, a)` is an estimator of the advantage function
 given :math:`s` and  :math:`a`.
 
 You may still have a question: Why are we using :math:`\hat{A}` instead of

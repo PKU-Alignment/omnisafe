@@ -140,7 +140,7 @@ completes the two-stage update.
 The :bdg-ref-info-line:`Projection Stage<two stage update>` guarantees that the
 constraint-satisfying policy :math:`\pi_{k+1}`, remains in close proximity to
 :math:`\pi_{k+\frac{1}{2}}`. On the other hand,
-The :bdg-ref-info-line:`Reward Improvement Stage<two stage update>` ensures
+the :bdg-ref-info-line:`Reward Improvement Stage<two stage update>` ensures
 that the agent's updates aim to maximize rewards without violating the step
 size or the distance measure :math:`D`.
 The :bdg-ref-info-line:`Projection Stage<two stage update>` prompts the agent

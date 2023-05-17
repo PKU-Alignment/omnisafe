@@ -225,8 +225,8 @@ Policy update
 
             Lagrange multiplier update
             ^^^
-            After all rounds of policy updates to the agent are complete, We will
-            perform an update on the Lagrange multiplier that is:
+            After all rounds of policy updates to the agent are complete, we
+            will perform an update on the Lagrange multiplier, that is:
 
             .. math::
 
@@ -250,7 +250,7 @@ Policy update
             .. attention::
                 :class: warning
 
-                In practice, We often need to manually set the initial value of as well as the learning rate.
+                In practice, we often need to manually set the initial value of as well as the learning rate.
                 Unfortunately, Lagrange algorithms are algorithms that **are sensitive to hyperparameter selection**.
 
                 - If the initial value of :math:`\lambda` or learning rate is chosen to be large,

@@ -77,7 +77,7 @@ However, during the policy updating process in RL, agents often learn to
 Such agents may achieve high scores quickly but may not align with the desired
 outcome.
 
-Therefore, Safe RL algorithms aim to address the challenge of training agents
+Therefore, safe RL algorithms aim to address the challenge of training agents
 to achieve the desired training goal without violating any constraints or
 safety requirements.
 
@@ -346,7 +346,7 @@ Long-Term Support and Support History
 -------------------------------------
 
 **OmniSafe** is mainly developed by the Safe RL research team directed by `Prof. Yaodong Yang <https://github.com/PKU-YYang>`_,
-Our Safe RL research team members include `Borong Zhang <https://github.com/muchvo>`_ , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiaming Ji <https://github.com/zmsn-2077>`_.
+our Safe RL research team members include `Borong Zhang <https://github.com/muchvo>`_ , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiaming Ji <https://github.com/zmsn-2077>`_.
 If you have any questions in the process of using OmniSafe, or if you are
 willing to contribute to
 this project, don't hesitate to ask your question on `the GitHub issue page <https://github.com/PKU-Alignment/omnisafe/issues/new/choose>`_, we will reply to you in 2-3 working days.
