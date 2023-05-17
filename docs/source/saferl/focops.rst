@@ -171,7 +171,7 @@ Then FOCOPS provides a solution as follows:
     .. math::
         :label: focops-eq-3
 
-        \pi^*(a \mid s)=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)
+        \pi^*(a \mid s)=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)
 
     where :math:`Z_{\lambda,\nu}(s)` is the partition function which ensures :eq:`focops-eq-3` is a valid probability distribution, :math:`\lambda` and :math:`\nu` are solutions to the optimization problem:
 
@@ -237,7 +237,7 @@ by solving :eq:`focops-eq-3` and :eq:`focops-eq-4`.
             .. math::
                 :label: focops-eq-5
 
-                J^C\left(\pi^*\right) \leq d+\frac{\sqrt{2 \delta} \gamma \epsilon_C^{\pi^*}}{(1-\gamma)^2}
+                J^C\left(\pi^*\right) \leq d+\frac{\sqrt{2 \delta} \gamma \epsilon_{\pi^*}^C}{(1-\gamma)^2}
 
             where :math:`\epsilon^C_{\pi^*}=\max _s\left|\mathbb{E}_{a \sim \pi}\left[A^C_{\pi_{\theta_k}}(s, a)\right]\right|`.
 
@@ -296,7 +296,7 @@ The first-order methods are also used to minimize this loss function:
         :label: focops-eq-8
 
         \nabla_\theta D_{K L}\left(\pi_\theta \| \pi^*\right)[s] &=\nabla_\theta D_{K L}\left(\pi_\theta \| \pi_{\theta_k}\right)[s] \\
-        & -\frac{1}{\lambda} \underset{a \sim \pi_{\theta_k}}{\mathbb{E}}\left[\frac{\nabla_\theta \pi_\theta(a \mid s)}{\pi_{\theta_k}(a \mid s)}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]
+        & -\frac{1}{\lambda} \underset{a \sim \pi_{\theta_k}}{\mathbb{E}}\left[\frac{\nabla_\theta \pi_\theta(a \mid s)}{\pi_{\theta_k}(a \mid s)}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]
 
     +++
     The proof of the :bdg-info-line:`Corollary 1` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
@@ -370,7 +370,7 @@ By applying gradient descent w.r.t :math:`\nu` to minimize
     .. math::
         :label: focops-eq-9
 
-        \frac{\partial L\left(\pi^*, \lambda, \nu\right)}{\partial \nu}=\tilde{b}-\underset{\substack{s \sim d_{\pi^*} \\ a \sim \pi^*}}{\mathbb{E}}\left[A_{\pi_{\theta_k}}(s, a)\right]
+        \frac{\partial L\left(\pi^*, \lambda, \nu\right)}{\partial \nu}=\tilde{b}-\underset{\substack{s \sim d_{\pi^*} \\ a \sim \pi^*}}{\mathbb{E}}\left[A^R_{\pi_{\theta_k}}(s, a)\right]
 
     +++
     The proof of the :bdg-success-line:`Corollary 2` can be seen in the :bdg-success:`Appendix`, click on this :bdg-success-line:`card` to jump to view.
@@ -378,7 +378,7 @@ By applying gradient descent w.r.t :math:`\nu` to minimize
 The last term in the gradient expression in :eq:`focops-eq-9` cannot be
 evaluated since we do not have access to :math:`\pi^*`.
 Since :math:`\pi_{\theta_k}` and :math:`\pi^*` are 'close', it is reasonable to
-assume that :math:`E_{s \sim d_{\pi_k}, a \sim \pi^*}\left[A_{\pi_{\theta_k}}(s, a)\right] \approx E_{s \sim d_{\pi_k}, a \sim \pi_{\theta_k}}\left[A_{\pi_{\theta_k}}(s, a)\right]=0`.
+assume that :math:`E_{s \sim d_{\pi_k}, a \sim \pi^*}\left[A^R_{\pi_{\theta_k}}(s, a)\right] \approx E_{s \sim d_{\pi_k}, a \sim \pi_{\theta_k}}\left[A^R_{\pi_{\theta_k}}(s, a)\right]=0`.
 In practice, this term can be set to zero, which gives the updated term:
 
 .. _`focops-eq-13`:
@@ -798,7 +798,7 @@ Proof for Theorem 1
 
         L(\pi, \lambda, \nu)=\lambda \delta+\nu \tilde{b}+\underset{s \sim d_{\pi_{\theta_k}}}{\mathbb{E}}\left[A^{lag}-\lambda D_{\mathrm{KL}}\left(\pi \| \pi_{\theta_k}\right)[s]\right]\nonumber
 
-    where :math:`A^{lag}=\underset{a \sim \pi(\cdot \mid s)}{\mathbb{E}}\left[A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right]`.
+    where :math:`A^{lag}=\underset{a \sim \pi(\cdot \mid s)}{\mathbb{E}}\left[A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right]`.
     Therefore.
 
     .. _`focops-eq-15`:
@@ -830,7 +830,7 @@ Proof for Theorem 1
     .. math::
         :label: focops-eq-14
 
-        G(\pi)=\sum_a \pi(a \mid s)[A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)
+        G(\pi)=\sum_a \pi(a \mid s)[A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)
         -\lambda(\log \pi(a \mid s)-\log \pi_{\theta_k}(a \mid s))+\zeta]-1
 
 
@@ -842,7 +842,7 @@ Proof for Theorem 1
     .. math::
         :label: focops-eq-15
 
-        \frac{\partial G}{\partial \pi(a \mid s)}=A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi(a \mid s)+1-\log \pi_{\theta_k}(a \mid s)\right)+\zeta
+        \frac{\partial G}{\partial \pi(a \mid s)}=A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi(a \mid s)+1-\log \pi_{\theta_k}(a \mid s)\right)+\zeta
 
 
     Setting :eq:`focops-eq-15` to zero and rearranging the term, we obtain:
@@ -850,7 +850,7 @@ Proof for Theorem 1
     .. math::
         :label: focops-eq-16
 
-        \pi(a \mid s)=\pi_{\theta_k}(a \mid s) \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)+\frac{\zeta}{\lambda}+1\right)
+        \pi(a \mid s)=\pi_{\theta_k}(a \mid s) \exp \left(\frac{1}{\lambda}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)+\frac{\zeta}{\lambda}+1\right)
 
     We chose :math:`\zeta` so that :math:`\sum_a \pi(a \mid s)=1` and rewrite :math:`\zeta / \lambda+1` as :math:`Z_{\lambda, \nu}(s)`.
     We find that the optimal solution :math:`\pi^*` to :eq:`focops-eq-13` takes the form
@@ -858,7 +858,7 @@ Proof for Theorem 1
     .. math::
         :label: focops-eq-17
 
-        \pi^*(a \mid s)=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)
+        \pi^*(a \mid s)=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)
 
     Then we obtain:
 
@@ -866,10 +866,10 @@ Proof for Theorem 1
         :label: focops-eq-18
 
         &\underset{\substack{s \sim d_{\theta_{\theta_k}} \\
-        a \sim \pi^*}}{\mathbb{E}}\left[A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi^*(a \mid s)-\log \pi_{\theta_k}(a \mid s)\right)\right] \\
+        a \sim \pi^*}}{\mathbb{E}}\left[A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi^*(a \mid s)-\log \pi_{\theta_k}(a \mid s)\right)\right] \\
         = &\underset{\substack{s \sim d_{\pi_{\theta_k}} \\
-        a \sim \pi^*}}{\mathbb{E}}\left[A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi_{\theta_k}(a \mid s)-\log Z_{\lambda, \nu}(s)\right.\right. \\
-        &\left.\left. + \frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)-\log \pi_{\theta_k}(a \mid s)\right)\right]\\
+        a \sim \pi^*}}{\mathbb{E}}\left[A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)-\lambda\left(\log \pi_{\theta_k}(a \mid s)-\log Z_{\lambda, \nu}(s)\right.\right. \\
+        &\left.\left. + \frac{1}{\lambda}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)-\log \pi_{\theta_k}(a \mid s)\right)\right]\\
         = &\lambda\underset{\substack{s \sim d_{\theta_{\theta_k}} \\
         a \sim \pi^*}}{\mathbb{E}}[logZ_{\lambda,\nu}(s)]\nonumber
 
@@ -918,8 +918,8 @@ Proof of Corollary
 
                 &H\left(\pi_\theta, \pi^*\right)[s]\\
                 &=-\sum_a \pi_\theta(a \mid s) \log \pi^*(a \mid s) \\
-                &=-\sum_a \pi_\theta(a \mid s) \log \left(\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left[\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]\right) \\
-                &=-\sum_a \pi_\theta(a \mid s) \log \pi_{\theta_k}(a \mid s)+\log Z_{\lambda, \nu}(s)-\frac{1}{\lambda} \sum_a \pi_\theta(a \mid s)\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)
+                &=-\sum_a \pi_\theta(a \mid s) \log \left(\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left[\frac{1}{\lambda}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]\right) \\
+                &=-\sum_a \pi_\theta(a \mid s) \log \pi_{\theta_k}(a \mid s)+\log Z_{\lambda, \nu}(s)-\frac{1}{\lambda} \sum_a \pi_\theta(a \mid s)\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)
 
 
             We then subtract the entropy term to recover the :math:`KL` divergence:
@@ -927,7 +927,7 @@ Proof of Corollary
             .. math::
                 :label: focops-eq-22
 
-                &D_{\mathrm{KL}}\left(\pi_\theta \| \pi^*\right)[s]=D_{\mathrm{KL}}\left(\pi_\theta \| \pi_{\theta_k}\right)[s]+\log Z_{\lambda, \nu}(s)-\\&\frac{1}{\lambda} \underset{a \sim \pi_{\theta_k}(\cdot \mid s)}{\mathbb{E}}\left[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_k}(a \mid s)}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]\nonumber
+                &D_{\mathrm{KL}}\left(\pi_\theta \| \pi^*\right)[s]=D_{\mathrm{KL}}\left(\pi_\theta \| \pi_{\theta_k}\right)[s]+\log Z_{\lambda, \nu}(s)-\\&\frac{1}{\lambda} \underset{a \sim \pi_{\theta_k}(\cdot \mid s)}{\mathbb{E}}\left[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_k}(a \mid s)}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]\nonumber
 
 
             In the last equality, we applied importance sampling to rewrite the expectation w.r.t. :math:`\pi_{\theta_k}`.
@@ -936,7 +936,7 @@ Proof of Corollary
             .. math::
                 :label: focops-eq-23
 
-                &\nabla_\theta D_{\mathrm{KL}}\left(\pi_\theta \| \pi^*\right)[s]=\nabla_\theta D_{\mathrm{KL}}\left(\pi_\theta \| \pi_{\theta_k}\right)[s]\\&-\frac{1}{\lambda} \underset{a \sim \pi_{\theta_k}(\cdot \mid s)}{\mathbb{E}}\left[\frac{\nabla_\theta \pi_\theta(a \mid s)}{\pi_{\theta_k}(a \mid s)}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]\nonumber
+                &\nabla_\theta D_{\mathrm{KL}}\left(\pi_\theta \| \pi^*\right)[s]=\nabla_\theta D_{\mathrm{KL}}\left(\pi_\theta \| \pi_{\theta_k}\right)[s]\\&-\frac{1}{\lambda} \underset{a \sim \pi_{\theta_k}(\cdot \mid s)}{\mathbb{E}}\left[\frac{\nabla_\theta \pi_\theta(a \mid s)}{\pi_{\theta_k}(a \mid s)}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right]\nonumber
 
 
    .. tab-item:: Proof of Corollary 2
@@ -962,8 +962,8 @@ Proof of Corollary
             .. math::
                 :label: focops-eq-25
 
-                \frac{\partial \pi^*(a \mid s)}{\partial \nu} &=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}^2(s)}\left[Z_{\lambda, \nu}(s) \frac{\partial}{\partial \nu} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)\right.\\
-                &\left.-\exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu}\right] \\
+                \frac{\partial \pi^*(a \mid s)}{\partial \nu} &=\frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}^2(s)}\left[Z_{\lambda, \nu}(s) \frac{\partial}{\partial \nu} \exp \left(\frac{1}{\lambda}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right)\right.\\
+                &\left.-\exp \left(\frac{1}{\lambda}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu}\right] \\
                 &=-\frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \pi^*(a \mid s)-\pi^*(a \mid s) \frac{\partial \log Z_{\lambda, \nu}(s)}{\partial \nu}\nonumber
 
 
@@ -989,9 +989,9 @@ Proof of Corollary
             .. math::
                 :label: focops-eq-27
 
-                \frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu} &=\frac{\partial}{\partial \nu} \sum_a \pi_{\theta_k}(a \mid s) \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \\
-                &=\sum_a-\pi_{\theta_k}(a \mid s) \frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \\
-                &=\sum_a-\frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) Z_{\lambda, \nu}(s) \\
+                \frac{\partial Z_{\lambda, \nu}(s)}{\partial \nu} &=\frac{\partial}{\partial \nu} \sum_a \pi_{\theta_k}(a \mid s) \exp \left(\frac{1}{\lambda}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \\
+                &=\sum_a-\pi_{\theta_k}(a \mid s) \frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \exp \left(\frac{1}{\lambda}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) \\
+                &=\sum_a-\frac{A^C_{\pi_{\theta_k}}(s, a)}{\lambda} \frac{\pi_{\theta_k}(a \mid s)}{Z_{\lambda, \nu}(s)} \exp \left(\frac{1}{\lambda}\left(A^R_{\pi_{\theta_k}}(s, a)-\nu A^C_{\pi_{\theta_k}}(s, a)\right)\right) Z_{\lambda, \nu}(s) \\
                 &=-\frac{Z_{\lambda, \nu}(s)}{\lambda} \underset{a \sim \pi^*(\cdot \mid s)}{\mathbb{E}}\left[A^C_{\pi_{\theta_k}}(s, a)\right]
 
 

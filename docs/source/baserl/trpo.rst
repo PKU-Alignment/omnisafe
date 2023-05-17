@@ -231,7 +231,7 @@ Kakade and Langford derived the following lower bound:
 .. math::
     :label: trpo-eq-8
 
-    J\left(\pi_{\text {new }}\right)  &\geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{2 \epsilon \gamma}{(1-\gamma)^2} \alpha^2  \\
+    J^R\left(\pi_{\text {new }}\right)  &\geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{2 \epsilon \gamma}{(1-\gamma)^2} \alpha^2  \\
     \text { where } \epsilon &=\max _s\left|\mathbb{E}_{a \sim \pi^{*}(a \mid s)}\left[A^R_{\pi}(s, a)\right]\right|
 
 
@@ -280,7 +280,7 @@ And the new bound is derived by introducing the :math:`\alpha`-coupling method.
     .. math::
         :label: trpo-eq-10
 
-        J\left(\pi_{\text {new }}\right)  &\geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{4 \epsilon \gamma}{(1-\gamma)^2} \alpha^2 \\
+        J^{R}\left(\pi_{\text {new }}\right)  &\geq L_{\pi_{\text {old }}}\left(\pi_{\text {new }}\right)-\frac{4 \epsilon \gamma}{(1-\gamma)^2} \alpha^2 \\
         \text { where } \epsilon &=\max _{s, a}\left|A^R_{\pi}(s, a)\right|
 
     +++
@@ -321,9 +321,9 @@ Then
 .. math::
     :label: trpo-eq-12
 
-    J\left(\pi_{i+1}\right) &\geq M_i\left(\pi_{i+1}\right) \\
-    J\left(\pi_i\right)&=M_i\left(\pi_i\right), \text { therefore, } \\
-    J\left(\pi_{i+1}\right)-\eta\left(\pi_i\right)&\geq M_i\left(\pi_{i+1}\right)-M\left(\pi_i\right)
+    J^{R}\left(\pi_{i+1}\right) &\geq M_i\left(\pi_{i+1}\right) \\
+    J^{R}\left(\pi_i\right)&=M_i\left(\pi_i\right), \text { therefore, } \\
+    J^{R}\left(\pi_{i+1}\right)-\eta\left(\pi_i\right)&\geq M_i\left(\pi_{i+1}\right)-M\left(\pi_i\right)
 
 
 Thus, by maximizing :math:`M_i` at each iteration, we guarantee that the true
@@ -935,7 +935,7 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-17
 
-        & L_{\pi_{\theta_0}}\left(\pi_{\theta_0}\right)=J\left(\pi_{\theta_0}\right)\quad \\
+        & L_{\pi_{\theta_0}}\left(\pi_{\theta_0}\right)=J^{R}\left(\pi_{\theta_0}\right)\quad \\
         \text{since}~~ &\sum_s \rho_\pi(s) \sum_a \pi'(a \mid s) A^R_{\pi}(s, a)=0.
 
     Now :eq:`trpo-eq-4` can be written as follows:
@@ -943,7 +943,7 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-18
 
-        J\left(\pi^{'}_{\theta}\right) = J(\pi_{\theta_0}) + \sum_s d_{\pi^{'}_{\theta}}(s) \sum_a \pi^{'}_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)
+        J^{R}\left(\pi^{'}_{\theta}\right) = J^{R}(\pi_{\theta_0}) + \sum_s d_{\pi^{'}_{\theta}}(s) \sum_a \pi^{'}_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)
 
     So,
 
@@ -952,8 +952,8 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-19
 
-        \nabla_{\theta} J(\pi_{\theta})|_{\theta = \theta_0} &= J(\pi_{\theta_0}) + \sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)+\sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a) \\
-        &= J(\pi_{\theta_0}) + \sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)
+        \nabla_{\theta} J^{R}(\pi_{\theta})|_{\theta = \theta_0} &= J^{R}(\pi_{\theta_0}) + \sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)+\sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a) \\
+        &= J^{R}(\pi_{\theta_0}) + \sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)
 
     .. note::
         :math:`\sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A_{\pi_{\theta_0}}(s,a)=0`
@@ -965,14 +965,14 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-20
 
-        L_{\pi_{\theta_0}}(\pi_{\theta})=J(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)
+        L_{\pi_{\theta_0}}(\pi_{\theta})=J^{R}(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)
 
     So,
 
     .. math::
         :label: trpo-eq-21
 
-        \nabla L_{\pi_{\theta_0}}(\pi_{\theta}) | _{\theta = \theta_0}=J(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \nabla \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)
+        \nabla L_{\pi_{\theta_0}}(\pi_{\theta}) | _{\theta = \theta_0}=J^{R}(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \nabla \pi_{\theta}(a \mid s) A_{\pi_{\theta_0}}(s, a)
 
 
     Combine :eq:`trpo-eq-19`  and
@@ -981,7 +981,7 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-22
 
-        \left.\nabla_\theta L_{\pi_{\theta_0}}\left(\pi_\theta\right)\right|_{\theta=\theta_0}=\left.\nabla_\theta J\left(\pi_\theta\right)\right|_{\theta=\theta_0}
+        \left.\nabla_\theta L_{\pi_{\theta_0}}\left(\pi_\theta\right)\right|_{\theta=\theta_0}=\left.\nabla_\theta J^{R}\left(\pi_\theta\right)\right|_{\theta=\theta_0}
 
 .. _appendix-theorem2:
 
