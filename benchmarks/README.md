@@ -40,7 +40,7 @@ The OmniSafe Safety-Gymnasium Benchmark evaluates the effectiveness of OmniSafe'
 
 - **[Preprint 2021]** [Safe Exploration by Solving Early Terminated MDP (PPOEarlyTerminated, TRPOEarlyTerminated)](https://arxiv.org/pdf/2107.04200.pdf)
 
-> **More details can be refer to [On Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/on-policy/README.md).**
+> **More details can be refer to [On Policy Experiment](https://github.com/PKU-Alignment/omnisafe/tree/main/benchmarks/on-policy/README.md).**
 
 ## Off-Policy
 
@@ -49,13 +49,13 @@ The OmniSafe Safety-Gymnasium Benchmark evaluates the effectiveness of OmniSafe'
 - **[ICLR 2016]** [Deep Deterministic Policy Gradient (DDPG)](https://arxiv.org/pdf/1509.02971.pdf)
 - **[ICML 2018]** [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
 - **[ICML 2018]** [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
-- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
-- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
-- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
 
 
 
-> **More details can be refer to [Off Policy Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/off-policy/README.md).**
+> **More details can be refer to [Off Policy Experiment](https://github.com/PKU-Alignment/omnisafe/tree/main/benchmarks/off-policy/README.md).**
 
 ## Model-based
 
@@ -65,7 +65,7 @@ The OmniSafe Safety-Gymnasium Benchmark evaluates the effectiveness of OmniSafe'
 - **[ICML 2022 Workshop]** [Constrained Model-based Reinforcement Learning with Robust Cross-Entropy Method (RCE)](https://arxiv.org/abs/2010.07968)
 - **[NeurIPS 2018]** [Constrained Cross-Entropy Method for Safe Reinforcement Learning (CCE)](https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html)
 
-> **More details can be refer to [Model-based Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/model-based/README.md).**
+> **More details can be refer to [Model-based Experiment](https://github.com/PKU-Alignment/omnisafe/tree/main/benchmarks/model-based/README.md).**
 
 ## Offline
 
@@ -75,8 +75,6 @@ The OmniSafe Safety-Gymnasium Benchmark evaluates the effectiveness of OmniSafe'
 - [The Constrained version of CRR (C-CRR)](https://proceedings.neurips.cc/paper/2020/hash/588cb956d6bbe67078f29f8de420a13d-Abstract.html)
 - **[ICLR 2022 (Spotlight)]** [COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation](https://arxiv.org/abs/2204.08957?context=cs.AI)
 
-> **More details can be refer to [Offline Experiment](https://github.com/OmniSafeAI/omnisafe/tree/main/benchmarks/offline/README.md).**
+> **More details can be refer to [Offline Experiment](https://github.com/PKU-Alignment/omnisafe/tree/main/benchmarks/offline/README.md).**
 
-<a id="1"></a>
-
-[1] This paper is [safety-gym](https://openai.com/research/safety-gym) original paper. Its public code base [safety-starter-agents](https://github.com/openai/safety-starter-agents) implemented `SACLag` but does not report it in the paper.  We can not find the source of `DDPGLag` and `TD3Lag`. However, this paper introduced lagrangian methods and it implemented `SACLag`, so we also use it as a source of `DDPGLag` and `TD3Lag`.
+<a name="footnote1">[1]</a>  This paper is [safety-gym](https://openai.com/research/safety-gym) original paper. Its public code base [safety-starter-agents](https://github.com/openai/safety-starter-agents) implemented `SACLag` but does not report it in the paper.  We can not find the source of `DDPGLag` and `TD3Lag`. However, this paper introduced lagrangian methods and it implemented `SACLag`, so we also use it as a source of `DDPGLag` and `TD3Lag`.
