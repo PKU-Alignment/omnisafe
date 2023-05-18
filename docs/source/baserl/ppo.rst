@@ -1,5 +1,5 @@
-Proximal Policy Optimization Algorithms
-=======================================
+Proximal Policy Optimization
+============================
 
 Quick Facts
 -----------
@@ -10,7 +10,7 @@ Quick Facts
 
     #. PPO is an :bdg-info-line:`on-policy` algorithm.
     #. PPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
-    #. PPO can be thought of as being a simple implementation of :bdg-info-line:`TRPO` .
+    #. PPO can be thought of as being a simple implementation of :bdg-ref-info-line:`TRPO <trpo>`  .
     #. The OmniSafe implementation of PPO support :bdg-info-line:`parallelization`.
     #. An :bdg-ref-info-line:`API Documentation <ppoapi>` is available for PPO.
 
@@ -20,19 +20,26 @@ PPO Theorem
 Background
 ~~~~~~~~~~
 
-**Proximal Policy Optimization(PPO)** is an RL algorithm inheriting some of the benefits of :doc:`trpo<trpo>`,
-However, it is much simpler to implement.
-PPO shares the same target as TRPO:
-How can we take as big as an improvement step on a policy update using the data we already have,
-without stepping so far that we accidentally cause performance collapse?
-Instead of solving this problem with a complex second-order method as TRPO do,
-PPO use a few other tricks to keep new policies close to old.
-There are two primary PPO variants :bdg-ref-info-line:`PPO-Penalty<PPO-Penalty>` and bdg-ref-info-line:`PPO-Clip<PPO-Clip>`.
+**Proximal Policy Optimization(PPO)** is a reinforcement learning algorithm inheriting some of the
+benefits of :doc:`TRPO<trpo>`,
+however, it is much simpler to implement.
+PPO shares the same goal as TRPO:
+
+.. note::
+    How can we take the largest possible improvement step on a policy update
+    using the available data, without stepping too far and causing performance
+    collapse?
+
+However, instead of using a complex second-order method like TRPO, PPO uses a
+few tricks to keep the new policies close to the old ones. There are two
+primary variants of PPO:
+:bdg-ref-info-line:`PPO-Penalty<PPO-Penalty>` and
+:bdg-ref-info-line:`PPO-Clip<PPO-Clip>`.
 
 .. grid:: 2
 
     .. grid-item::
-        :columns: 12 6 6 6
+        :columns: 12 6 6 5
 
         .. card::
             :class-header: sd-bg-warning sd-text-white sd-font-weight-bold
@@ -68,37 +75,44 @@ There are two primary PPO variants :bdg-ref-info-line:`PPO-Penalty<PPO-Penalty>`
 Optimization Objective
 ~~~~~~~~~~~~~~~~~~~~~~
 
-In the previous chapters, we introduced that TRPO solves the following optimization problems:
+In the previous chapters, we introduced that TRPO solves the following
+optimization problems:
 
 .. _ppo-eq-1:
 
 .. math::
     :label: ppo-eq-1
 
-    &\pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
-    \text{s.t.}\quad&D(\pi,\pi_k)\le\delta
+    & \pi_{k+1}=\arg\max_{\pi \in \Pi_{\boldsymbol{\theta}}}J^R(\pi)\\
+    \text{s.t.}\quad & D(\pi,\pi_k)\le\delta
 
 
-where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of parameterized policies with parameters :math:`\boldsymbol{\theta}`, and :math:`D` is some distance measure.
-The problem that TRPO needs to solve is how to find a suitable update direction and update step,
-so that updating the actor can improve the performance without being too different from the original actor.
-Finally, TRPO rewrites Problem :eq:`ppo-eq-1` as:
+where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of
+parameterized policies with parameters :math:`\boldsymbol{\theta}`, and
+:math:`D` is some distance measure.
+
+TRPO tackles the challenge of determining the appropriate direction and step size for actor updates, aiming to improve performance while minimizing deviations from the original actor. To achieve this, TRPO reformulates
+Problem :eq:`ppo-eq-1` as:
 
 .. _ppo-eq-2:
 
 .. math::
     :label: ppo-eq-2
 
-    &\underset{\theta}{\max} L_{\theta_{old}}(\theta)  \\
-    &\text{s.t. } \quad \bar{D}_{\mathrm{KL}}(\theta_{old}, \theta) \le \delta
+    \underset{\theta}{\max} \quad & L_{\theta_{old}}(\theta)  \\
+    \text{s.t. } \quad & \bar{D}_{\mathrm{KL}}(\theta_{old}, \theta) \le \delta
 
 
-where :math:`L_{\theta_{old}}(\theta)= \frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)`,
-Moreover,:math:`\hat{A}_{\pi}(s, a)` is an estimator of the advantage function given :math:`s` and  :math:`a`.
+where
+:math:`L_{\theta_{old}}(\theta)= \frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)`,
+moreover, :math:`\hat{A}_{\pi}(s, a)` is an estimator of the advantage function
+given :math:`s` and  :math:`a`.
 
-You may still have a question: Why are we using :math:`\hat{A}` instead of :math:`A`.
+You may still have a question: Why are we using :math:`\hat{A}` instead of
+:math:`A`.
 This is a trick named **generalized advantage estimator** (:math:`\text{GAE}`).
-Almost all advanced reinforcement learning algorithms use :math:`\text{GAE}` technique to estimate more efficiently:math:`A`.
+Almost all advanced reinforcement learning algorithms use :math:`\text{GAE}`
+technique to estimate more efficient advantage :math:`A`.
 :math:`\hat{A}` is the :math:`\text{GAE}` version of :math:`A`.
 
 ------
@@ -108,7 +122,8 @@ Almost all advanced reinforcement learning algorithms use :math:`\text{GAE}` tec
 PPO-Penalty
 ~~~~~~~~~~~
 
-TRPO suggests using a penalty instead of a constraint to solve the unconstrained optimization problem:
+TRPO suggests using a penalty instead of a constraint to solve the
+unconstrained optimization problem:
 
 .. _ppo-eq-3:
 
@@ -117,15 +132,15 @@ TRPO suggests using a penalty instead of a constraint to solve the unconstrained
 
     \max _\theta \mathbb{E}[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)-\beta D_{K L}[\pi_{\theta_{old}}(* \mid s), \pi_\theta(* \mid s)]]
 
+However, experiments have shown that simply choosing a fixed penalty
+coefficient :math:`\beta` and optimizing the penalized objective :eq:`ppo-eq-3`
+with SGD (stochastic gradient descent) is not sufficient. Therefore, TRPO
+abandoned this method.
 
-However, experiments show that it is not sufficient to simply choose a fixed penalty coefficient :math:`\beta` and optimize the penalized objective :eq:`ppo-eq-3` with SGD(stochastic gradient descent),
-so finally TRPO abandoned this method.
-
-PPO-Penalty uses an approach named Adaptive KL Penalty Coefficient to solve the above problem,
-thus making :eq:`ppo-eq-3` perform well in the experiment.
-In the simplest implementation of this algorithm,
-PPO-Penalty performs the following steps in each policy update:
-
+PPO-Penalty uses an approach called ``Adaptive KL Penalty Coefficient`` to
+address this problem and improve the performance of :eq:`ppo-eq-3` in
+experiments. In the simplest implementation of this algorithm, PPO-Penalty
+performs the following steps in each policy update iteration:
 
 .. grid:: 2
 
@@ -138,13 +153,13 @@ PPO-Penalty performs the following steps in each policy update:
 
             Step I
             ^^^
-            Using several epochs of mini-batch SGD, optimize the KL-penalized objective shown as eq:`ppo-eq-3`,
+            Using several epochs of mini-batch SGD, optimize the KL-penalized objective shown as :eq:`ppo-eq-3`,
 
             .. math::
                 :label: ppo-eq-4
 
-                L^{\mathrm{KLPEN}}(\theta)&=&\hat{\mathbb{E}}[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)\\
-                &-&\beta D_{K L}[\pi_{\theta_{old}}(* \mid s), \pi_\theta(* \mid s)]]
+                L^{\mathrm{KLPEN}}(\theta)&=\hat{\mathbb{E}}[\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)\\
+                &-\beta D_{K L}[\pi_{\theta_{old}}(* \mid s), \pi_\theta(* \mid s)]]
 
 
 
@@ -163,7 +178,7 @@ PPO-Penalty performs the following steps in each policy update:
 
             If :math:`d>d_{\text {targ }} \times 1.5, \beta \leftarrow \beta * 2`
 
-The updated :math:`\beta` is used for the next policy update.
+            The updated :math:`\beta` is used for the next policy update.
 
 ------
 
@@ -172,7 +187,8 @@ The updated :math:`\beta` is used for the next policy update.
 PPO-Clip
 ~~~~~~~~
 
-Let :math:`r(\theta)` denote the probability ratio :math:`r(\theta)=\frac{\pi_\theta(a \mid s)}{\pi \theta_{d d}(a \mid s)}`,
+Let :math:`r(\theta)` denote the probability ratio
+:math:`r(\theta)=\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)}`,
 PPO-Clip rewrite the surrogate objective as:
 
 .. _ppo-eq-5:
@@ -182,13 +198,10 @@ PPO-Clip rewrite the surrogate objective as:
 
     L^{\mathrm{CLIP}}(\pi)=\mathbb{E}[\text{min} (r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a))]
 
+The hyperparameter :math:`\varepsilon` represents a small value that approximately indicates the allowable distance between the new policy and the old policy. The formula involved in this context is quite intricate, making it challenging to comprehend its purpose or how it contributes to maintaining the proximity between the new and old policies. To facilitate a clearer understanding of the aforementioned expression,
 
-in which :math:`\varepsilon` is a (small) hyperparameter which roughly says how far away the new policy is allowed to go from the old.
-This is a very complex formula,
-and it's difficult to tell at first glance what it's doing,
-or how it helps keep the new policy close to the old policy.
-To help you better understand the above expression,
-let :math:`L(s, a, \theta)` denote :math:`\max [r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a)]`,
+let :math:`L(s, a, \theta)` denote
+:math:`\max [r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a)]`,
 we'll simplify the formula in two cases:
 
 .. card::
@@ -214,7 +227,8 @@ we'll simplify the formula in two cases:
         L(s, a, \theta)=\max (r(\theta),(1+\varepsilon)) \hat{A}_{\pi}(s, a)
 
 With the above clipped surrogate function and :eq:`ppo-eq-5`,
-PPO-Clip can guarantee the new policy would not update so far away from the old.
+PPO-Clip can guarantee the new policy
+would not update so far away from the old.
 In the experiment, PPO-Clip performs better than PPO-Penalty.
 
 ------
@@ -225,13 +239,19 @@ Practical Implementation
 Generalized Advantage Estimation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One style of policy gradient implementation, popularized in and well-suited for use with recurrent neural networks,
-runs the policy for :math:`T` timesteps (where :math:`T` is much less than the episode length), and uses the collected samples for an update.
-This style requires an advantage estimator that does not look beyond timestep :math:`T`.
-This section will be concerned with producing an accurate estimate :math:`\hat{A}_{\pi}(s,a)`.
+One style of policy gradient implementation, popularized in and well-suited for
+use with recurrent neural networks, runs the policy for :math:`T`
+timesteps (where :math:`T` is much less than the episode length), and uses the
+collected samples for an update. This style requires an advantage estimator
+that does not look beyond timestep :math:`T`. This section will focus on
+producing an accurate estimate of the advantage function
+:math:`\hat{A}_{\pi}(s,a)` (Equals to :math:`\hat{A}^{R}_{\pi}(s,a)` since only reward is considered here, same as the following.) using only information
+from the current trajectory up to timestep :math:`T`.
 
-Define :math:`\delta^V=r_t+\gamma V(s_{t+1})-V(s)` as the TD residual of :math:`V` with discount :math:`\gamma`.
-Next, let us consider taking the sum of :math:`k` of these :math:`\delta` terms, which we will denote by :math:`\hat{A}_{\pi}^{(k)}`.
+Define :math:`\delta^V=r_t+\gamma V(s_{t+1})-V(s)` as the TD residual of
+:math:`V` with discount :math:`\gamma`.
+Next, let us consider taking the sum of :math:`k` of these :math:`\delta`
+terms, which we will denote by :math:`\hat{A}_{\pi}^{(k)}`.
 
 .. math::
     :label: ppo-eq-8
@@ -243,10 +263,11 @@ Next, let us consider taking the sum of :math:`k` of these :math:`\delta` terms,
     \hat{A}_{\pi}^{(k)}:=\sum_{l=0}^{k-1} \gamma^l \delta_{t+l}^V =-V(s_t)+r_t+\gamma r_{t+1}+\cdots+\gamma^{k-1} r_{t+k-1}+\gamma^k V(s_{t+k})
     \end{array}
 
-We can consider :math:`\hat{A}_{\pi}^{(k)}` to be an estimator of the advantage function.
+We can consider :math:`\hat{A}_{\pi}^{(k)}` to be an estimator of the advantage
+function.
 
 .. hint::
-    The bias generally becomes smaller as :math:`k arrow +\infty`,
+    The bias generally becomes smaller as :math:`k \rightarrow +\infty`,
     since the term :math:`\gamma^k V(s_{t+k})` becomes more heavily discounted.
     Taking :math:`k \rightarrow +\infty`, we get:
 
@@ -258,7 +279,9 @@ We can consider :math:`\hat{A}_{\pi}^{(k)}` to be an estimator of the advantage 
 
     which is simply the empirical returns minus the value function baseline.
 
-The generalized advantage estimator :math:`\text{GAE}(\gamma,\lambda)` is defined as the exponentially-weighted average of these :math:`k`-step estimators:
+The generalized advantage estimator :math:`\text{GAE}(\gamma,\lambda)` is
+defined as the exponentially-weighted average of these :math:`k`-step
+estimators:
 
 .. _ppo-eq-6:
 
@@ -272,7 +295,8 @@ The generalized advantage estimator :math:`\text{GAE}(\gamma,\lambda)` is define
     &= \sum_{l=0}^{\infty}(\gamma \lambda)^l \delta_{t+l}^V
 
 
-There are two notable special cases of this formula, obtained by setting :math:`\lambda =0` and :math:`\lambda =1`.
+There are two notable special cases of this formula, obtained by setting
+:math:`\lambda =0` and :math:`\lambda =1`.
 
 .. math::
     :label: ppo-eq-11
@@ -287,7 +311,8 @@ There are two notable special cases of this formula, obtained by setting :math:`
     :math:`\text{GAE}(\gamma,0)` is TD-based method with low variance,
     but it suffers from bias.
 
-The generalized advantage estimator for :math:`0\le\lambda\le1` makes a compromise between bias and variance,
+The generalized advantage estimator for :math:`0\le\lambda\le1` makes a
+compromise between bias and variance,
 controlled by parameter :math:`\lambda`.
 
 Code with OmniSafe
@@ -335,16 +360,16 @@ Quick start
                 env_id = 'SafetyPointGoal1-v0'
                 custom_cfgs = {
                     'train_cfgs': {
-                        'total_steps': 1024000,
+                        'total_steps': 10000000,
                         'vector_env_nums': 1,
                         'parallel': 1,
                     },
                     'algo_cfgs': {
-                        'steps_per_epoch': 2048,
-                        'update_iters': 1,
+                        'steps_per_epoch': 20000,
                     },
                     'logger_cfgs': {
                         'use_wandb': False,
+                        'use_tensorboard': True,
                     },
                 }
 
@@ -355,13 +380,13 @@ Quick start
         .. tab-item:: Terminal config style
 
             We use ``train_policy.py`` as the entrance file. You can train the agent with PPO simply using ``train_policy.py``, with arguments about PPO and environments does the training.
-            For example, to run PPO in SafetyPointGoal1-v0 , with 1 torch thread and seed 0, you can use the following command:
+            For example, to run PPO in SafetyPointGoal1-v0 , with 1 torch thread, seed 0 and single environment, you can use the following command:
 
             .. code-block:: bash
                 :linenos:
 
                 cd examples
-                python train_policy.py --algo PPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
+                python train_policy.py --algo PPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 10000000 --device cpu --vector-env-nums 1 --torch-threads 1
 
 ------
 
@@ -378,8 +403,8 @@ Architecture of functions
 
      - ``PPO._buf.get()``
      - ``PPO.update_lagrange_multiplier(ep_costs)``
-     - ``PPO._update_actor``
-     - ``PPO._update_reward_critic``
+     - ``PPO._update_actor()``
+     - ``PPO._update_reward_critic()``
 
 ------
 
@@ -397,7 +422,7 @@ Documentation of algorithm specific functions
 
             ppo._loss_pi()
             ^^^
-            Compute the loss of Actor ``actor``, flowing the next steps:
+            Compute the loss of ``actor``, flowing the next steps:
 
             (1) Get the policy importance sampling ratio.
 
@@ -421,17 +446,7 @@ Documentation of algorithm specific functions
                 loss = -torch.min(ratio * adv, ratio_cliped * adv).mean()
                 loss -= self._cfgs.algo_cfgs.entropy_coef * distribution.entropy().mean()
 
-
-            (3) Log useful information.
-
-            .. code-block:: python
-                :linenos:
-
-                entropy = distribution.entropy().mean().item()
-                info = {'entropy': entropy, 'ratio': ratio.mean().item(), 'std': std}
-                return loss, info
-
-            (4) Return the loss of Actor ``actor`` and useful information.
+            (3) Return the loss of ``actor``.
 
 ------
 
@@ -450,7 +465,7 @@ Configs
             Train Configs
             ^^^
 
-            - device (str): Device to use for training, options: ``cpu``, ``cuda``,``cuda:0``, etc.
+            - device (str): Device to use for training, options: ``cpu``, ``cuda``, ``cuda:0``, etc.
             - torch_threads (int): Number of threads to use for PyTorch.
             - total_steps (int): Total number of steps to train the agent.
             - parallel (int): Number of parallel agents, similar to A3C.

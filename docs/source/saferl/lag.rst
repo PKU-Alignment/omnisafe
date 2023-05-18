@@ -22,23 +22,27 @@ Background
 ~~~~~~~~~~
 
 In the previous introduction of algorithms,
-we know that SafeRL mainly solves the constraint optimization problem of CMDP.
+we know that Safe RL mainly solves the constraint optimization problem of CMDP.
 
 .. hint::
 
     Constrained optimization problems tend to be more challenging than unconstrained optimization problems.
 
-Therefore, the natural idea is to convert a constrained optimization problem into an unconstrained optimization problem.
+Therefore, the natural idea is to convert a constrained optimization problem
+into an unconstrained optimization problem.
 Then solve it using classical optimization algorithms,
 such as stochastic gradient descent.
-Lagrangian Methods is a kind of method solving constraint problems that are widely used in machine learning.
+Lagrangian methods is a kind of method solving constraint problems that are
+widely used in machine learning.
 By using adaptive penalty coefficients to enforce constraints,
-Lagrangian methods convert the solution of a constrained optimization problem to the solution of an unconstrained optimization problem.
-In the :bdg-info-line:`section`, we will briefly introduce Lagrangian methods,
+Lagrangian methods convert the solution of a constrained optimization problem
+to the solution of an unconstrained optimization problem.
+In this section, we will briefly introduce Lagrangian methods,
 and give corresponding implementations in **TRPO** and **PPO**.
 TRPO and PPO are the algorithms we introduced earlier,
 if you lack understanding of it, it doesn't matter.
-Please read the :doc:`TRPO tutorial<../baserl/trpo>` and :doc:`PPO tutorial<../baserl/ppo>` we wrote,
+Please read the :doc:`TRPO tutorial<../baserl/trpo>` and
+:doc:`PPO tutorial<../baserl/ppo>` we wrote,
 you will soon understand how it works.
 
 .. grid:: 2
@@ -84,9 +88,10 @@ Optimization Objective
 
 As we mentioned in the previous chapters, the optimization problem of CMDPs can be expressed as follows:
 
-.. _`lag-eq-1`:
 
 .. math::
+    :label: lag-eq-1
+
 
     \max_{\pi \in \Pi_\theta} &J^R(\pi) \\
     \text {s.t.}~~& J^{\mathcal{C}}(\pi) \leq d
@@ -102,13 +107,13 @@ constraints on the differences between old and new policies should also be added
 To solve this constrained problem, please read the :doc:`TRPO tutorial<../baserl/trpo>`.
 The final optimization goals are as follows:
 
-.. _`lag-eq-2`:
 
 .. math::
+    :label: lag-eq-2
 
-    &\pi_{k+1}=\arg \max _{\pi \in \Pi_\theta} J^R(\pi) \\
-    \text { s.t. } ~~ &J^{\mathcal{C}}(\pi) \leq d \\
-    &D\left(\pi, \pi_k\right) \leq \delta
+    \pi_{k+1}&=\arg \max _{\pi \in \Pi_\theta} J^R(\pi) \\
+    \text { s.t. } ~~ J^{\mathcal{C}}(\pi) &\leq d \\
+    D\left(\pi, \pi_k\right) &\leq \delta
 
 
 where :math:`D` is some distance measure and :math:`\delta` is the step size.
@@ -137,15 +142,14 @@ thus making infeasible solutions sub-optimal.
     ^^^
     Given a CMDP, the unconstrained problem can be written as:
 
-    .. _`lag-eq-3`:
-
     .. math::
+        :label: lag-eq-3
 
         \min _{\lambda \geq 0} \max _\theta G(\lambda, \theta)=\min _{\lambda \geq 0} \max _\theta [J^R(\pi)-\lambda J^C(\pi)]
 
 
     where :math:`G` is the Lagrangian and :math:`\lambda \geq 0` is the Lagrange multiplier (a penalty coefficient).
-    Notice, as :math:`\lambda` increases, the solution to the Problem :ref:`(1)<lag-eq-1>` converges to that of the Problem :ref:`(3)<lag-eq-3>`.
+    Notice, as :math:`\lambda` increases, the solution to the Problem :eq:`lag-eq-1` converges to that of the Problem :eq:`lag-eq-3`.
     +++
     The theorem base of :bdg-info:`Theorem 1` can be found in :bdg-info-line:`Lagrange Duality`, click this card to jump to view.
 
@@ -153,11 +157,11 @@ thus making infeasible solutions sub-optimal.
 
         The Lagrangian method is a **two-step** process.
 
-        #. First, we solve the unconstrained problem :ref:`(3)<lag-eq-3>` to find a feasible solution :math:`\theta^*`
-        #. Then, we increase the penalty coefficient :math:`\lambda` until the constraint is satisfied.
+        - First, we solve the unconstrained problem :eq:`lag-eq-3` to find a feasible solution :math:`\theta^*`
+        - Then, we increase the penalty coefficient :math:`\lambda` until the constraint is satisfied.
 
         The final solution is :math:`\left(\theta^*, \lambda^*\right)`.
-        The goal is to find a saddle point :math:`\left(\theta^*\left(\lambda^*\right), \lambda^*\right)` of the Problem :ref:`(1)<lag-eq-1>`,
+        The goal is to find a saddle point :math:`\left(\theta^*\left(\lambda^*\right), \lambda^*\right)` of the Problem :eq:`lag-eq-1`,
         which is a feasible solution. (A feasible solution of the CMDP is a solution which satisfies :math:`J^C(\pi) \leq d` )
 
 ------
@@ -198,7 +202,7 @@ Policy update
             ^^^
             Previously, in TRPO and PPO, we used to have the agent sample a series of data from the environment,
             and at the end of the episode, use this data to update the agent several times,
-            as described in Problem :ref:`(2)<lag-eq-2>`.
+            as described in Problem :eq:`lag-eq-2`.
             With the addition of the Lagrange method,
             we need to make a change to the original surrogate function, as it is shown below:
 
@@ -221,8 +225,8 @@ Policy update
 
             Lagrange multiplier update
             ^^^
-            After all rounds of policy updates to the agent are complete, We will
-            perform an update on the Lagrange multiplier that is:
+            After all rounds of policy updates to the agent are complete, we
+            will perform an update on the Lagrange multiplier, that is:
 
             .. math::
 
@@ -241,12 +245,12 @@ Policy update
             where :math:`\eta_\lambda` is the learning rate of :math:`\lambda`.
 
             Ultimately, we only need to add the above two steps to the TRPO and PPO;
-            then we will get the TRPO-lag and the PPO-lag.
+            then we will get the TRPOLag and the PPOLag.
 
             .. attention::
                 :class: warning
 
-                In practice, We often need to manually set the initial value of as well as the learning rate.
+                In practice, we often need to manually set the initial value of as well as the learning rate.
                 Unfortunately, Lagrange algorithms are algorithms that **are sensitive to hyperparameter selection**.
 
                 - If the initial value of :math:`\lambda` or learning rate is chosen to be large,
@@ -260,7 +264,7 @@ Policy update
 Code with OmniSafe
 ~~~~~~~~~~~~~~~~~~
 
-Safe RL algorithms for :bdg-success-line:`TRPO`, :bdg-success-line:`PPO`, :bdg-success-line:`NPG`, :bdg-success-line:`DDPG`, :bdg-success-line:`SAC` and :bdg-success-line:`TD3` are currently implemented in omnisafe using Lagrangian methods.
+Safe RL algorithms for :bdg-success-line:`TRPO`, :bdg-success-line:`PPO`, :bdg-success-line:`NPG`, :bdg-success-line:`DDPG`, :bdg-success-line:`SAC` and :bdg-success-line:`TD3` are currently implemented in OmniSafe using Lagrangian methods.
 This section will explain how to deploy Lagrangian methods on PPO algorithms at the code level using PPOLag as an example.
 OmniSafe has :bdg-success:`Lagrange` as a separate module and you can easily deploy it on most RL algorithms.
 
@@ -306,16 +310,16 @@ Quick start
                 env_id = 'SafetyPointGoal1-v0'
                 custom_cfgs = {
                     'train_cfgs': {
-                        'total_steps': 1024000,
+                        'total_steps': 10000000,
                         'vector_env_nums': 1,
                         'parallel': 1,
                     },
                     'algo_cfgs': {
-                        'steps_per_epoch': 2048,
-                        'update_iters': 1,
+                        'steps_per_epoch': 20000,
                     },
                     'logger_cfgs': {
                         'use_wandb': False,
+                        'use_tensorboard': True,
                     },
                 }
 
@@ -326,13 +330,13 @@ Quick start
         .. tab-item:: Terminal config style
 
             We use ``train_policy.py`` as the entrance file. You can train the agent with PPOLag simply using ``train_policy.py``, with arguments about PPOLag and environments does the training.
-            For example, to run PPOLag in SafetyPointGoal1-v0 , with 1 torch thread and seed 0, you can use the following command:
+            For example, to run PPOLag in SafetyPointGoal1-v0 , with 1 torch thread, seed 0 and single environment, you can use the following command:
 
             .. code-block:: bash
                 :linenos:
 
                 cd examples
-                python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
+                python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 10000000 --device cpu --vector-env-nums 1 --torch-threads 1
 
 ------
 
@@ -346,70 +350,9 @@ Architecture of functions
 
      - ``PPOLag._buf.get()``
      - ``PPOLag.update_lagrange_multiplier(ep_costs)``
-     - ``PPOLag._update_actor``
-     - ``PPOLag._update_cost_critic``
-     - ``PPOLag._update_reward_critic``
-
-------
-
-Documentation of algorithm specific functions
-"""""""""""""""""""""""""""""""""""""""""""""
-
-.. currentmodule:: omnisafe.algos
-
-.. tab-set::
-
-    .. tab-item:: PPOLag._compute_adv_surrogate()
-
-        .. card::
-            :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-            :class-footer: sd-font-weight-bold
-
-            PPOLag._compute_adv_surrogate()
-            ^^^
-            Compute the loss of the policy network.
-
-            PPOLag uses the following surrogate loss:
-
-            .. math::
-                L = \frac{1}{1 + \lambda} [A^{R}_{\pi_{\theta}}(s, a)
-                - \lambda A^C_{\pi_{\theta}}(s, a)]
-
-            .. code-block:: python
-                :linenos:
-
-                penalty = self._lagrange.lagrangian_multiplier.item()
-                return (adv_r - penalty * adv_c) / (1 + penalty)
-
-
-    .. tab-item:: PPOLag._update()
-
-        .. card::
-            :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-success  sd-rounded-1 sd-font-weight-bold
-            :class-footer: sd-font-weight-bold
-
-            PPOLag._update()
-            ^^^
-            Update actor, critic, running statistics as we used in the :class:`PolicyGradient` algorithm.
-
-            Additionally, we update the Lagrange multiplier parameter,
-            by calling the :meth:`_update_lagrange_multiplier` method.
-
-            .. hint::
-                ``Jc`` obtained from: ``self._logger.get_stats('Metrics/EpCost')[0]``
-                are already averaged across MPI processes.
-
-            .. code-block:: python
-                :linenos:
-
-                # note that logger already uses MPI statistics across all processes..
-                Jc = self._logger.get_stats('Metrics/EpCost')[0]
-                # first update Lagrange multiplier parameter
-                self._lagrange.update_lagrange_multiplier(Jc)
-                # then update the policy and value function
-                super()._update()
+     - ``PPOLag._update_actor()``
+     - ``PPOLag._update_cost_critic()``
+     - ``PPOLag._update_reward_critic()``
 
 ------
 
@@ -428,7 +371,7 @@ Configs
             Train Configs
             ^^^
 
-            - device (str): Device to use for training, options: ``cpu``, ``cuda``,``cuda:0``, etc.
+            - device (str): Device to use for training, options: ``cpu``, ``cuda``, ``cuda:0``, etc.
             - torch_threads (int): Number of threads to use for PyTorch.
             - total_steps (int): Total number of steps to train the agent.
             - parallel (int): Number of parallel agents, similar to A3C.

@@ -15,7 +15,7 @@ Quick Facts
     #. You can run an evaluation by running :bdg-info-line:`omnisafe eval` .
     #. You can get some helps by running :bdg-info-line:`omnisafe help` .
 
-Train policy
+Train Policy
 ------------
 
 .. card::
@@ -40,11 +40,11 @@ Train policy
 
     .. raw:: html
 
-        <script async id="asciicast-inh7PHnvoAZCi88CeGY1EpRe9" src="https://asciinema.org/a/inh7PHnvoAZCi88CeGY1EpRe9.js"></script>
+        <script async id="asciicast-uIyP6qDCDn48GaqD5HcVJ5W69" src="https://asciinema.org/a/uIyP6qDCDn48GaqD5HcVJ5W69.js"></script>
 
 
 .. hint::
-    The above command will train a policy with PPO algorithm, and the total training steps is 1024. The vector environment number is 1, which means that the training process will use 1 CPU core. The ``algo_cfgs:steps_per_epoch`` is the update cycle of the PPO algorithm, which means that the policy will be updated every 512 steps.
+    The above command will train a policy with PPO algorithm, and the total training steps is 1024. The vector environment number is 1. The ``algo_cfgs:steps_per_epoch`` is the update cycle of the PPO algorithm, which means that the policy will be updated every 512 steps.
 
 Customize Configuration
 -----------------------
@@ -66,7 +66,7 @@ Customize Configuration
 
     .. raw:: html
 
-        <script async id="asciicast-qCptIXhxYB2MWEytijrriVhUm" src="https://asciinema.org/a/qCptIXhxYB2MWEytijrriVhUm.js"></script>
+        <script async id="asciicast-A73Xfx6ORXsM90oeDsiIPsTcs" src="https://asciinema.org/a/A73Xfx6ORXsM90oeDsiIPsTcs.js"></script>
 
 .. hint::
     The above command will use a configuration file `train_config.yaml <https://github.com/OmniSafeAI/omnisafe/blob/main/tests/saved_source/train_config.yaml>`_ in the `saved_source <https://github.com/OmniSafeAI/omnisafe/tree/main/tests/saved_source>`_ directory to train policy. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the algorithm in this file.
@@ -90,10 +90,11 @@ Run Benchmark
 
     .. raw:: html
 
-        <script async id="asciicast-gg6edB7OWiFENACpQzpfgFRx6" src="https://asciinema.org/a/gg6edB7OWiFENACpQzpfgFRx6.js"></script>
+        <script async id="asciicast-ihiUgyhcuORNcTfhPmnrwSqMQ" src="https://asciinema.org/a/ihiUgyhcuORNcTfhPmnrwSqMQ.js"></script>
 
 .. hint::
-    The above command will run a benchmark with 2 CPU threads. The configuration file `benchmark_config.yaml <https://github.com/OmniSafeAI/omnisafe/blob/main/tests/saved_source/benchmark_config.yaml>`_ is in the `saved_source <https://github.com/OmniSafeAI/omnisafe/tree/main/tests/saved_source>`_ directory. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the benchmark in this file.
+    The above command will run a benchmark with 2 parallel process.
+    The configuration file `benchmark_config.yaml <https://github.com/OmniSafeAI/omnisafe/blob/main/tests/saved_source/benchmark_config.yaml>`_ is in the `saved_source <https://github.com/OmniSafeAI/omnisafe/tree/main/tests/saved_source>`_ directory. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the benchmark in this file.
 
 Run Evaluation
 --------------
@@ -114,10 +115,11 @@ Run Evaluation
 
     .. raw:: html
 
-        <script async id="asciicast-UbRWY6EI6Nl7R27Lk3Rpk4HI5" src="https://asciinema.org/a/UbRWY6EI6Nl7R27Lk3Rpk4HI5.js"></script>
+        <script async id="asciicast-9FaFsgysPX0NZWk6NQFinEKAZ" src="https://asciinema.org/a/9FaFsgysPX0NZWk6NQFinEKAZ.js"></script>
 
 .. hint::
-    The above command will run an evaluation with 2 CPU threads. The model parameters is in the `saved_source <https://github.com/OmniSafeAI/omnisafe/tree/main/tests/saved_source>`_ directory.
+    The above command will run an evaluation for a trained policy.
+    The model parameters is in the `saved_source <https://github.com/OmniSafeAI/omnisafe/tree/main/tests/saved_source>`_ directory.
 
 Get Help
 --------
@@ -138,7 +140,7 @@ Get Help
 
     .. raw:: html
 
-        <script async id="asciicast-xQZ6RBafyXonZEqbVQ3htLPJT" src="https://asciinema.org/a/xQZ6RBafyXonZEqbVQ3htLPJT.js"></script>
+        <script async id="asciicast-P7e3KEsJa6gqywSqSUrYOkXqh" src="https://asciinema.org/a/P7e3KEsJa6gqywSqSUrYOkXqh.js"></script>
 
 .. hint::
     The above command will show the help information of OmniSafe,

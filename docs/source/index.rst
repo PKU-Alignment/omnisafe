@@ -16,71 +16,81 @@ Welcome To OmniSafe Tutorial
 .. image:: image/logo.png
     :scale: 45%
 
-Welcome to `OmniSafe <https://jmlr.org/papers/v16/garcia15a.html>`__ in Safe RL!
-OmniSafe is a comprehensive and reliable benchmark for safe reinforcement learning, encompassing more than 20 different kinds of algorithms covering a multitude of SafeRL domains and delivering a new suite of testing environments.
+Welcome to `OmniSafe <https://github.com/PKU-Alignment/omnisafe>`_ in Safe RL!
+OmniSafe is an infrastructural framework designed to accelerate safe reinforcement learning (RL) research. It provides a comprehensive and reliable benchmark for safe RL algorithms, and also an out-of-box modular toolkit for researchers. Safe RL intends to develop algorithms that minimize the risk of unintended harm or unsafe behavior.
 
 .. hint::
 
-    For beginners, it is necessary first to introduce you to Safe RL(Safe Reinforcement Learning).
-    *Safe Reinforcement Learning* can be defined as the learning agents that maximize the expectation of the return on problems, ensure reasonable system performance, and respect safety constraints during the learning and deployment processes.
+    **Safe Reinforcement Learning** can be defined as the process of learning policies that maximize the expectation of the return in problems
+    in which it is important to ensure reasonable system performance and/or respect safety constraints during the learning and/or deployment processes.
 
-**This tutorial is useful for reinforcement learning learners of many levels.**
+**This tutorial is useful for RL learners of roughly three levels.**
 
 .. grid:: 12 4 4 4
 
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
         :class-card: sd-outline-success  sd-rounded-1
         :columns: 12 6 6 4
 
         For Beginners
         ^^^^^^^^^^^^^
-        If you are a beginner in machine learning with only some simple knowledge of linear algebra and probability theory, you can start with the mathematical fundamentals section of this tutorial.
+        If you have only basic knowledge of linear algebra and probability theory and are new to machine learning, we recommend starting with the mathematical fundamentals section of this tutorial.
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-info sd-text-white sd-font-weight-bold
         :class-card: sd-outline-info  sd-rounded-1
         :columns: 12 6 6 4
 
         For Average Users
         ^^^^^^^^^^^^^^^^^
-        If you have a general understanding of RL algorithms but need to familiarize yourself with Safe RL, This tutorial introduces it so you can get started quickly.
+        If you have a general understanding of RL algorithms but need to familiarize yourself with Safe RL,
+        this tutorial introduces some classic Safe RL algorithms to you so you can get started quickly.
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
         :class-card: sd-outline-primary  sd-rounded-1
         :columns: 12 6 6 4
 
         For Experts
         ^^^^^^^^^^^
-        If you are already an expert in the field of RL, you can also gain new insights from our systematic introduction to Safe RL algorithms.
-        Also, this tutorial will allow you to design your algorithms using OmniSafe quickly.
+        If you are already an expert in the field of RL, our tutorial can still offer you new insights with its systematic introduction to Safe RL algorithms. Furthermore, it will enable you to quickly design your own algorithms.
 
 
 Why We Built This
 -----------------
 
-In recent years, `RL`_ (Reinforcement Learning) algorithms, especially `Deep RL`_ algorithms, have performed well in many tasks.
-Examples include:
+In recent years, `RL`_ (Reinforcement Learning) algorithms,
+especially `Deep RL`_ algorithms, have demonstrated remarkable performance in
+various tasks.
+Notable examples include:
 
-- Achieving high scores on Atari games with only visual input.
-- Completing complex control tasks in high dimensions.
-- Beating human grandmasters at Go tournaments.
+.. hint::
+    - Achieving high scores on Atari games using only visual input.
+    - Completing complex control tasks in high dimensions.
+    - Beating human grandmasters at Go tournaments.
 
-However, in the process of strategy updating by RL, the agents often learn **cheating or even dangerous behaviors** to improve their performance.
-Such an agent that can quickly achieve high scores differs from our desired result.
-Therefore, Safe RL algorithms are dedicated to solving the problem of how to train an agent to learn to achieve the desired training goal without violating constraints simultaneously.
+However, during the policy updating process in RL, agents often learn to
+**cheating or even dangerous behaviors** to improve their performance.
+
+Such agents may achieve high scores quickly but may not align with the desired
+outcome.
+
+Therefore, safe RL algorithms aim to address the challenge of training agents
+to achieve the desired training goal without violating any constraints or
+safety requirements.
 
 .. admonition:: However
     :class: warning
 
-    Even experienced RL researchers have difficulty understanding Safe RL's algorithms in a short time and quickly programming their implementation.
+    Even researchers with experience in RL may find it challenging to
+    understand the algorithms of Safe RL quickly and program their
+    implementation efficiently.
 
-Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing both a **detailed and systematic introduction to the algorithm** and a **streamlined and robust code**.
+To address this issue, OmniSafe aims to provide a comprehensive and systematic
+introduction to Safe RL algorithms, along with streamlined and robust code,
+making it easier for researchers to delve into Safe RL.
 
 .. tab-set::
 
@@ -94,8 +104,11 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
             Puzzling Math
             ^^^^^^^^^^^^^
-            Safe RL algorithms are a class of algorithms built on a rigorous mathematical system.
-            These algorithms have a detailed theoretical derivation, but they lack a unified symbolic system, which makes it difficult for beginners to learn them systematically and comprehensively.
+            Safe RL algorithms are a class of algorithms that are based on a
+            rigorous mathematical foundation. Although these algorithms have
+            detailed theoretical derivations, they lack a unified symbolic
+            system, which can make it difficult for beginners to learn them
+            systematically and comprehensively.
 
     .. tab-item:: Problem II
         :sync: key2
@@ -107,7 +120,12 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
             Hard-to-find Codes
             ^^^^^^^^^^^^^^^^^^
-            Most of the existing Safe RL algorithms **do not have open-source code**, making it difficult for beginners to grasp the ideas of the algorithms at the code level, and researchers suffer from incorrect implementations, unfair comparisons, and misleading conclusions.
+            Most of the existing Safe RL algorithms do not have **open-source**
+            code available, which makes it difficult for beginners to
+            understand the algorithms at the code level. Furthermore,
+            researchers may encounter issues such as incorrect implementations,
+            unfair comparisons, and misleading conclusions, which could have
+            been avoided with open-source code.
 
 .. tab-set::
 
@@ -121,7 +139,9 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
             Friendly Math
             ^^^^^^^^^^^^^
-            OmniSafe tutorial provides a **unified and standardized notation system** that allows beginners to learn the theory of Safe RL algorithms completely and systematically.
+            The OmniSafe tutorial offers a **standardized notation system** that
+            enables beginners to acquire a complete and systematic
+            understanding of the theory behind Safe RL algorithms.
 
     .. tab-item:: Solution II
         :sync: key2
@@ -133,8 +153,12 @@ Therefore, OmniSafe will facilitate the subsequent study of Safe RL by providing
 
             Robust Code
             ^^^^^^^^^^^
-            OmniSafe tutorial gives a **code-level** introduction in each algorithm introduction, allowing learners who are new to Safe RL theory to understand how to relate algorithmic ideas to code and give experts in the field of Safe RL new insights into algorithm implementation.
-
+            The OmniSafe tutorial provides **a comprehensive introduction** to
+            each algorithm, including a detailed explanation of the code
+            implementation. Beginners can easily understand the connection
+            between the algorithmic concepts and the code, while experts can
+            gain valuable insights into Safe RL by studying the code-level
+            details of each algorithm.
 
 
 .. _`RL`: https://en.wikipedia.org/wiki/Reinforcement_learning
@@ -148,45 +172,57 @@ Code Design Principles
 
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-success sd-text-white sd-font-weight-bold
         :class-card: sd-outline-success  sd-rounded-1
         :columns: 12 5 5 4
 
         Consistent and Inherited
         ^^^^^^^^^^^^^^^^^^^^^^^^
-        Our code has a complete logic system that allows you to understand the connection between each algorithm and the similarities together with differences.
-        For example, if you understand the Policy Gradient algorithm, then you can learn the PPO algorithm by simply reading a new function and immediately grasping the code implementation of the PPO algorithm.
+        Our code follows a comprehensive and logical system, enabling users to
+        understand the interconnection between each algorithm. For instance, if
+        one comprehends the Policy Gradient algorithm, they can quickly grasp
+        the code implementation of the PPO algorithm by reading a new function.
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-info sd-text-white sd-font-weight-bold
         :class-card: sd-outline-info  sd-rounded-1
         :columns: 12 5 5 4
 
         Robust and Readable
         ^^^^^^^^^^^^^^^^^^^^
-        Our code can play the role of both a tutorial and a tool.
-        If you still need to become familiar with algorithms' implementations in Safe RL, the highly readable code in OmniSafe can help you get started quickly.
-        You can see how each algorithm performs.
-        If you want to build your algorithms, OmniSafe's highly robust code can also be an excellent tool!
+        Our code not only serves as a tutorial but also as a practical tool.
+        For those who want to learn about the implementation of Safe RL
+        algorithms, the highly readable code in OmniSafe provides an easy and
+        quick way to get started. For those who
+        want to develop their algorithms, OmniSafe's **highly modular and
+        reusable** code can be an excellent resource.
 
     .. grid-item-card::
-        :class-item: sd-font-weight-bold
         :class-header: sd-bg-primary sd-text-white sd-font-weight-bold
         :class-card: sd-outline-primary  sd-rounded-1
         :columns: 12 5 5 4
 
         Long-lived
         ^^^^^^^^^^^^^^^^^^^^^^^^^^
-        Unlike other code that relies on a large number of external libraries, OmniSafe minimizes the dependency on third-party libraries.
-        This avoids shortening the life of the project due to iterative changes in third-party library code and also optimizes the user's experience in installing and using OmniSafe, because they do not have to install lots of dependencies to run OmniSafe.
+        Unlike other codes that heavily rely on external libraries, OmniSafe
+        minimizes its dependency on third-party libraries. This design
+        prevents the project from becoming obsolete due to changes in the
+        third-party library code, and optimizes the user experience by reducing
+        the number of dependencies that need to be installed to run OmniSafe.
 
 Before Reading
 --------------
 
-Before you start having fun reading the OmniSafe tutorial, we want you to understand the usage of colors in this tutorial.
-In this tutorial, in general, the :bdg-info:`light blue boxes` indicate mathematically relevant derivations, including but not limited to :bdg-info-line:`Theorem`, :bdg-info-line:`Lemma`, :bdg-info-line:`Proposition`, :bdg-info-line:`Corollary`, and :bdg-info-line:`their proofs`, while the :bdg-success:`green boxes` indicate specifically :bdg-success-line:`implementations`, both :bdg-success-line:`theoretical` and :bdg-success-line:`code-based`.
+Before you start reading the OmniSafe tutorial, we want you to
+understand the usage of colors in this tutorial.
+
+In this tutorial, in general, the :bdg-info:`light blue boxes` indicate
+mathematically relevant derivations, including but not limited to
+:bdg-info-line:`Theorem`, :bdg-info-line:`Lemma`, :bdg-info-line:`Proposition`,
+:bdg-info-line:`Corollary`, and :bdg-info-line:`their proofs`, while the
+:bdg-success:`green boxes` indicate specifically
+:bdg-success-line:`implementations`, both :bdg-success-line:`theoretical` and
+:bdg-success-line:`code-based`.
 We give an example below:
 
 .. dropdown:: Example of OmniSafe color usage styles (Click here)
@@ -196,7 +232,7 @@ We give an example below:
 
     .. card::
         :class-header: sd-bg-info sd-text-white sd-font-weight-bold
-        :class-card: sd-outline-success  sd-rounded-1
+        :class-card: sd-outline-info  sd-rounded-1
         :class-footer: sd-font-weight-bold
         :link: cards-clickable
         :link-type: ref
@@ -259,18 +295,19 @@ We give an example below:
                     env_id = 'SafetyPointGoal1-v0'
                     custom_cfgs = {
                         'train_cfgs': {
-                            'total_steps': 1024000,
+                            'total_steps': 10000000,
                             'vector_env_nums': 1,
                             'parallel': 1,
                         },
                         'algo_cfgs': {
-                            'steps_per_epoch': 2048,
-                            'update_iters': 1,
+                            'steps_per_epoch': 20000,
                         },
                         'logger_cfgs': {
                             'use_wandb': False,
+                            'use_tensorboard': True,
                         },
                     }
+
                     agent = omnisafe.Agent('CPO', env_id, custom_cfgs=custom_cfgs)
                     agent.learn()
 
@@ -285,9 +322,11 @@ We give an example below:
                         :linenos:
 
                         cd examples
-                        python train_policy.py --algo CPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
+                        python train_policy.py --algo CPO --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 10000000 --device cpu --vector-env-nums 1 --torch-threads 1
 
-You may not yet understand the above theory and the specific meaning of the code, but do not worry, we will make a detailed introduction later in the :doc:`../saferl/cpo` tutorial.
+You may not yet understand the above theory and the specific meaning of the
+code, but do not worry, we will make a detailed introduction later in the
+:doc:`../saferl/cpo` tutorial.
 
 Citing OmniSafe
 ---------------
@@ -306,10 +345,11 @@ If you find OmniSafe useful or use OmniSafe in your research, please cite it in 
 Long-Term Support and Support History
 -------------------------------------
 
-**OmniSafe** is mainly developed by the SafeRL research team directed by `Prof. Yaodong Yang <https://github.com/orgs/OmniSafeAI/people/PKU-YYang>`_,
-Our SafeRL research team members include `Borong Zhang <https://github.com/muchvo>`_ , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiamg Ji <https://github.com/zmsn-2077>`_.
-If you have any questions in the process of using OmniSafe, or if you are willing to contribute to
-this project, don't hesitate to ask your question on `the GitHub issue page <https://github.com/OmniSafeAI/omnisafe/issues/new/choose>`_, we will reply to you in 2-3 working days.
+**OmniSafe** is mainly developed by the Safe RL research team directed by `Prof. Yaodong Yang <https://github.com/PKU-YYang>`_,
+our Safe RL research team members include `Borong Zhang <https://github.com/muchvo>`_ , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiaming Ji <https://github.com/zmsn-2077>`_.
+If you have any questions in the process of using OmniSafe, or if you are
+willing to contribute to
+this project, don't hesitate to ask your question on `the GitHub issue page <https://github.com/PKU-Alignment/omnisafe/issues/new/choose>`_, we will reply to you in 2-3 working days.
 
 ------
 
@@ -333,7 +373,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: base rl algorithm
+    :caption: base rl algorithms
 
     baserl/trpo
     baserl/ppo
@@ -341,7 +381,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 3
-    :caption: safe rl algorithm
+    :caption: safe rl algorithms
 
     saferl/cpo
     saferl/pcpo
@@ -351,14 +391,15 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: base rl api
+    :caption: base rl algorithms api
 
     baserlapi/on_policy
+    baserlapi/off_policy
 
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: safe rl api
+    :caption: safe rl algorithms api
 
     saferlapi/first_order
     saferlapi/second_order
@@ -368,29 +409,32 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: common
+    :caption: common api
 
     common/buffer
     common/exp_grid
     common/lagrange
     common/normalizer
     common/logger
+    common/simmer_agent
+    common/stastics_tool
 
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: utils
+    :caption: utils api
 
     utils/config
     utils/distributed
     utils/math
     utils/model
     utils/tools
+    utils/plotter
 
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: models
+    :caption: models api
 
     model/actor
     model/critic
@@ -399,7 +443,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: envs
+    :caption: envs api
 
     envs/core
     envs/wrapper

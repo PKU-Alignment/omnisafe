@@ -64,7 +64,7 @@ class OnCRPO(PPO):
             adv_c (torch.Tensor): The ``cost_advantage`` sampled from buffer.
 
         Returns:
-            The ``advantage`` chosen from ``reward_advantage`` and ``cost_advantage``.
+            The advantage function chosen from reward and cost.
         """
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         if Jc <= self._cfgs.algo_cfgs.cost_limit + self._cfgs.algo_cfgs.distance:
