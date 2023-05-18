@@ -13,20 +13,20 @@ Supported algorithms are listed below:
 - **[ICLR 2016]** [Deep Deterministic Policy Gradient (DDPG)](https://arxiv.org/pdf/1509.02971.pdf)
 - **[ICML 2018]** [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
 - **[ICML 2018]** [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
-- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
-- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
-- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of DDPG (DDPGLag)](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of TD3 (TD3Lag)](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of SAC (SACLag)](https://cdn.openai.com/safexp-short.pdf)
 
 ## Safety-Gymnasium
 
-We highly recommend using `safety-gymnasium` to run the following experiments. To install, in a linux machine, type:
+We highly recommend using **Safety-Gymnasium** to run the following experiments. To install, in a linux machine, type:
 
 ```bash
 pip install safety_gymnasium
 ```
 
 ## Run the Benchmark
-You can set the main function of `examples/benchmarks/experimrnt_grid.py` as:
+You can set the main function of `examples/benchmarks/experiment_grid.py` as:
 
 ```python
     eg = ExperimentGrid(exp_name='Off-Policy-Velocity')
@@ -97,7 +97,7 @@ Please note that before you evaluate, please set the `LOG_DIR` in `evaluate_save
 For example, if I train `DDPG` in `SafetyHumanoidVelocity-v1`
 
 ```python
-LOG_DIR = '~/omnisafe/examples/runs/DDPG-<SSafetyHumanoidVelocity-v1>/seed-000'
+LOG_DIR = '~/omnisafe/examples/runs/DDPG-<SafetyHumanoidVelocity-v1>/seed-000'
 play = True
 save_replay = True
 if __name__ == '__main__':

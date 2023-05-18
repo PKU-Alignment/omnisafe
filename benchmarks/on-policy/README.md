@@ -14,7 +14,7 @@ Supported algorithms are listed below:
 
 - **[NIPS 1999]** [Policy Gradient (PG)](https://papers.nips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf)
 - **[Preprint 2017]**[Proximal Policy Optimization (PPO)](https://arxiv.org/pdf/1707.06347.pdf)
-- [The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
+- [The Lagrange version of PPO (PPOLag)](https://cdn.openai.com/safexp-short.pdf)
 - **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning (P3O)]( https://arxiv.org/pdf/2205.11814.pdf)
 - **[NeurIPS 2020]** [First Order Constrained Optimization in Policy Space (FOCOPS)](https://arxiv.org/abs/2002.06506)
 - **[NeurIPS 2022]**  [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089)
@@ -23,7 +23,7 @@ Supported algorithms are listed below:
 
 - **[NeurIPS 2001]** [A Natural Policy Gradient (NaturalPG))](https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf)
 - **[PMLR 2015]** [Trust Region Policy Optimization (TRPO)](https://arxiv.org/abs/1502.05477)
-- [The Lagrange version of TRPO (TRPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
+- [The Lagrange version of TRPO (TRPOLag)](https://cdn.openai.com/safexp-short.pdf)
 - **[ICML 2017]** [Constrained Policy Optimization (CPO)](https://proceedings.mlr.press/v70/achiam17a)
 - **[ICML 2017]** [Proximal Constrained Policy Optimization (PCPO)](https://proceedings.mlr.press/v70/achiam17a)
 - **[ICLR 2019]** [Reward Constrained Policy Optimization (RCPO)](https://openreview.net/forum?id=SkfrvsA9FX)
@@ -49,7 +49,7 @@ Supported algorithms are listed below:
 
 ## Safety-Gymnasium
 
-We highly recommend using `safety-gymnasium` to run the following experiments. To install, in a linux machine, type:
+We highly recommend using **Safety-Gymnasium** to run the following experiments. To install, in a linux machine, type:
 
 ```bash
 pip install safety_gymnasium
@@ -57,7 +57,7 @@ pip install safety_gymnasium
 
 ## Run the Benchmark
 
-You can set the main function of `examples/benchmarks/experimrnt_grid.py` as:
+You can set the main function of `examples/benchmarks/experiment_grid.py` as:
 
 ```python
 if __name__ == '__main__':
@@ -3410,7 +3410,7 @@ We have done some experiments to find relatively good `pid_kp`, `pid_ki`, and `p
 
 - `vector_num_envs`: Though vectorized environments can speed up the training process, we found that the early terminated MDP will reset all the environments when one of the agents violates the safety constraint. So we set `vector_num_envs` to 1 in the early terminated MDP methods.
 
-### Lagragian
+#### Lagragian
 
 The lagrangian versions of on-policy algorithms share the same set of lagrangian hyperparameters (Except for PID-Lagrangian). The hyperparameters are listed below:
 

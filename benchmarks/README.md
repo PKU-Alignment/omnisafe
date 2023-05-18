@@ -9,7 +9,7 @@ The OmniSafe Safety-Gymnasium Benchmark evaluates the effectiveness of OmniSafe'
 
 - **[NIPS 1999]** [Policy Gradient (PG)](https://papers.nips.cc/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf)
 - **[Preprint 2017]** [Proximal Policy Optimization (PPO)](https://arxiv.org/pdf/1707.06347.pdf)
-- **[Preprint 2019]** [The Lagrange version of PPO (PPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]** [The Lagrange version of PPO (PPOLag)](https://cdn.openai.com/safexp-short.pdf)
 - **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning (P3O)]( https://arxiv.org/pdf/2205.11814.pdf)
 - **[NeurIPS 2020]** [First Order Constrained Optimization in Policy Space (FOCOPS)](https://arxiv.org/abs/2002.06506)
 - **[NeurIPS 2022]**  [Constrained Update Projection Approach to Safe Policy Optimization (CUP)](https://arxiv.org/abs/2209.07089)
@@ -18,7 +18,7 @@ The OmniSafe Safety-Gymnasium Benchmark evaluates the effectiveness of OmniSafe'
 
 - **[NeurIPS 2001]** [A Natural Policy Gradient (NaturalPG))](https://proceedings.neurips.cc/paper/2001/file/4b86abe48d358ecf194c56c69108433e-Paper.pdf)
 - **[PMLR 2015]** [Trust Region Policy Optimization (TRPO)](https://arxiv.org/abs/1502.05477)
-- **[Preprint 2019]**  [The Lagrange version of TRPO (TRPO-Lag)](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]**  [The Lagrange version of TRPO (TRPOLag)](https://cdn.openai.com/safexp-short.pdf)
 - **[ICML 2017]** [Constrained Policy Optimization (CPO)](https://proceedings.mlr.press/v70/achiam17a)
 - **[ICML 2017]** [Proximal Constrained Policy Optimization (PCPO)](https://proceedings.mlr.press/v70/achiam17a)
 - **[ICLR 2019]** [Reward Constrained Policy Optimization (RCPO)](https://openreview.net/forum?id=SkfrvsA9FX)
@@ -49,11 +49,9 @@ The OmniSafe Safety-Gymnasium Benchmark evaluates the effectiveness of OmniSafe'
 - **[ICLR 2016]** [Deep Deterministic Policy Gradient (DDPG)](https://arxiv.org/pdf/1509.02971.pdf)
 - **[ICML 2018]** [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
 - **[ICML 2018]** [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
-- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
-- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
-- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
-
-
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of DDPG (DDPGLag)](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of TD3 (TD3Lag)](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of SAC (SACLag)](https://cdn.openai.com/safexp-short.pdf)
 
 > **More details can be refer to [Off Policy Experiment](https://github.com/PKU-Alignment/omnisafe/tree/main/benchmarks/off-policy/README.md).**
 

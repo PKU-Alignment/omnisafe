@@ -17,7 +17,7 @@ Supported algorithms are listed below:
 
 ## Safety-Gymnasium
 
-We highly recommend using ``safety-gymnasium`` to run the following experiments. To install, in a linux machine, type:
+We highly recommend using **Safety-Gymnasium** to run the following experiments. To install, in a linux machine, type:
 
 ```bash
 pip install safety_gymnasium
@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
 ## Run the Benchmark
 
-You can set the main function of ``examples/benchmarks/experimrnt_grid.py`` as:
+You can set the main function of ``examples/benchmarks/experiment_grid.py`` as:
 
 ```python
 if __name__ == '__main__':
