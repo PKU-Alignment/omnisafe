@@ -1,11 +1,12 @@
 # OmniSafe's Safety-Gymnasium Benchmark for On-Policy Algorithms
 
-The OmniSafe Safety-Gymnasium Benchmark for on-policy algorithms evaluates the effectiveness of OmniSafe's on-policy algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) task suite. For each algorithm and environment supported, we provide:
-- Default hyperparameters used for the benchmark and scripts to reproduce the results.
-- A comparison of performance with other open-source implementations.
-- Graphs and raw data that can be used for research purposes.
-- Log details obtained during training.
-- Some hints on how to fine-tune the algorithm for optimal results.
+The OmniSafe Safety-Gymnasium Benchmark for on-policy algorithms evaluates the effectiveness of OmniSafe's on-policy algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) task suite. For each supported algorithm and environment, we offer the following:
+
+- Default hyperparameters used for the benchmark and scripts that enable result replication.
+- Performance comparison with other open-source implementations.
+- Graphs and raw data that can be utilized for research purposes.
+- Detailed logs obtained during training.
+- Suggestions and hints on fine-tuning the algorithm for achieving optimal results.
 
 Supported algorithms are listed below:
 
@@ -87,13 +88,18 @@ if __name__ == '__main__':
     # you can use tensorboard to monitor the experiment.
     eg.add('logger_cfgs:use_tensorboard', [True])
 
-    # if you want to reproduce results of 1e6, using
+    # the default configs here are as follows:
+    # eg.add('algo_cfgs:steps_per_epoch', [20000])
+    # eg.add('train_cfgs:total_steps', [20000 * 500])
+    # which can reproduce results of 1e7 steps.
+
+    # if you want to reproduce results of 1e6 steps, using
     # eg.add('algo_cfgs:steps_per_epoch', [2048])
     # eg.add('train_cfgs:total_steps', [2048 * 500])
 
     # set the device.
     avaliable_gpus = list(range(torch.cuda.device_count()))
-    # if you want to use GPU, please set gpu_id like follows
+    # if you want to use GPU, please set gpu_id like follows:
     # gpu_id = [0, 1, 2, 3]
     # if you want to use CPU, please set gpu_id = None
     # we recommends using CPU to obtain results as consistent
@@ -117,8 +123,8 @@ if __name__ == '__main__':
         ])
     eg.add('seed', [0, 5, 10, 15, 20])
 
-    # total experiment num must can be divided by num_pool
-    # meanwhile, users should decide this value according to their machine
+    # total experiment num must can be divided by num_pool.
+    # meanwhile, users should decide this value according to their machine.
     eg.run(train, num_pool=5, gpu_id=gpu_id)
 ```
 
@@ -142,7 +148,7 @@ Then you can compare different algorithms in `SafetyHopperVelocity-v1` environme
 Logs is saved in `examples/benchmarks/runs` and can be monitored with tensorboard or wandb.
 
 ```bash
-tensorboard --logdir examples/benchmarks/runs
+tensorboard --logdir examples/benchmarks/exp-x
 ```
 
 After the experiment is finished, you can use the following command to generate the video of the trained agent:
@@ -3353,7 +3359,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 
 ### Hyperparameters
 
-**We are continuously improving performance for on-policy algorithms and finding better hyperparameters. Therefore, we are happy to receive any advice from users, feel free for opening PRs or issues.**
+**We are continuously improving performance for on-policy algorithms and finding better hyperparameters. So we are happy to receive any advice from users, feel free for opening an [issue](https://github.com/PKU-Alignment/omnisafe/issues/new/choose) or [pull request](https://github.com/PKU-Alignment/omnisafe/pulls).**
 
 #### First-Order Methods Specific Hyperparameters
 
@@ -3361,21 +3367,21 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 
 #### Second-Order Methods Specific Hyperparameters
 
-- `algo_cfgs:kl_early_stop`: Whether to use early stop for KL divergence. In the second-order methods, we use line search to find the proper step size. If the KL divergence is too large, we will stop the line search and use the previous step size. So it is not necessary to use the `early stop` trick for KL divergence in the second-order methods. We set `kl_early_stop=False` in the second-order methods.
+- `algo_cfgs:kl_early_stop`: Whether to use early stop for KL divergence. In second-order methods, we use line search to find the proper step size. If the KL divergence is too large, we will stop the line search and use the previous step size. So it is not necessary to use the `early stop` trick for KL divergence in second-order methods. We set `kl_early_stop=False` in second-order methods.
 
-- `model_cfgs:actor:lr`: The learning rate of the policy network. The second-order methods update the policy by directly setting the parameters. So we just set the learning rate of the policy network to `None`.
+- `model_cfgs:actor:lr`: The learning rate of the policy network. Second-order methods update the policy by directly setting the parameters. So we just set the learning rate of the policy network to `None`.
 
 You may find that in some environments, Natural PG performs nearly the same as TRPO. This is because, in the Mujoco
 Velocity environment series, the TRPO search update step size is always 1. Additionally, since all algorithms were
 tested under the same series of random seeds, there is an occurrence of TRPO and Natural PG training curves overlapping.
 
 #### Saute RL Methods Specific Hyperparameters
-- `saute_gamma`: In the experiment we found that `saute_gamma` impacts the performance of Saute RL methods. We found that 0.999 is a good value for this hyperparameter.
+- `saute_gamma`: In the experiment we found that `saute_gamma` impacts the performance of Saute RL methods a lot. We found that 0.999 is a good value for this hyperparameter.
 
 #### Simmer RL Methods Specific Hyperparameters
 
 - `saute_gamma`: Since the Simmer RL methods are based on Saute RL methods, we also set `saute_gamma` to 0.999.
-- `control_cfgs`: The control parameters of the Simmer RL methods. While Simmer uses a PID controller to control the safety budget, and PID is known as a parameter-sensitive controller. So we need to tune the control parameters (`Kp`, `Ki` and `Kd`) for different environments. We have done some experiments to find relatively good control parameters for each environment, that is:
+- `control_cfgs`: The controller parameters of the Simmer RL methods. While Simmer uses a PID controller to control the safety budget, and PID is known as a parameter-sensitive controller. So we need to tune the control parameters (`Kp`, `Ki` and `Kd`) for different environments. We have done some experiments to find control parameters generally suitable for all environments, that is:
 
 | Parameters | Descriptions| Values |
 | -----------| ------------| ------ |
@@ -3390,7 +3396,7 @@ PID-Lagrangian methods use a PID controller to control the lagrangian multiplier
 
 - `pid_kp`: The proportional gain of the PID controller, determines how much the output responds to changes in the `ep_costs` signal. If the `pid_kp` is too large, the lagrangian multiplier will oscillate and the performance will be bad. If the `pid_kp` is too small, the lagrangian multiplier will update slowly and the performance will also be bad.
 - `pid_kd`: The derivative gain of the PID controller, determines how much the output responds to changes in the `ep_costs` signal. If the `pid_kd` is too large, the lagrangian multiplier may be too sensitive to noise or changes in the `ep_costs` signal, leading to instability or oscillations. If the `pid_kd` is too small, the lagrangian multiplier may not respond quickly or accurately enough to changes in the `ep_costs`.
-- `pid_ki`: The integral gain of the PID controller, determines the controller's ability to eliminate the steady-state error, by integrating the `ep_costs` signal over time. If the `pid_ki` is too large, the lagrangian multiplier may become too responsive to small errors.
+- `pid_ki`: The integral gain of the PID controller, determines the controller's ability to eliminate the steady-state error, by integrating the `ep_costs` signal over time. If the `pid_ki` is too large, the lagrangian multiplier may become too responsive to errors before.
 
 We have done some experiments to find relatively good `pid_kp`, `pid_ki`, and `pid_kd` for all environments, and we found that the following value is a good value for this hyperparameter.
 
@@ -3425,7 +3431,7 @@ In our experiments, we found that some hyperparameters are important for the per
 
 We have done some experiments to show the effect of these hyperparameters, and we log the best configuration for each algorithm in each environment. You can check it in the `omnisafe/configs/on_policy`.
 
-In experiments, we found that the `obs_normalize=True` always performs better than `obs_normalize=False` in on-policy algorithms. That means the reward would increase quicker if we normalize the observation. So we set `obs_normalize=True` in almost all on-policy algorithms.
+In experiments, we found that the `obs_normalize=True` always performs better than `obs_normalize=False` in on-policy algorithms. That means the reward would increase quicker while the safety constraint also maintained if we normalize the observation. So we set `obs_normalize=True` in almost all on-policy algorithms.
 
 Importantly, we found that the `reward_normalize=True` does not always perform better than `reward_normalize=False`, especially in the `SafetyHopperVelocity-v1` and `SafetyWalker2dVelocity` environments.
 
@@ -3437,14 +3443,6 @@ Importantly, we found that the `reward_normalize=True` does not always perform b
 | `reward_normalize`|  `False`  |
 | `cost_normalize`  |  `False`  |
 
-The Lagrangian method often has the phenomenon of unstable updates and easy overshoot. We found that the following Lagrangian multiplier parameters are suitable.
+Besides, the hyperparameter `torch_num_threads` in `train_cfgs` is also important. In a single training session, a larger value for `torch_num_threads` often means faster training speed. However, we found in experiments that setting `torch_num_threads` too high can cause resource contention between parallel training sessions, resulting in slower overall experiment speed. In the configs file, we set the default value for `torch_num_threads` to 16, which ensures faster training speed for a single session. If you need to launch multiple training sessions in parallel, please consider your device configuration. For example, suppose your CPU has 2 physical threads per core and has a total of 32 cores, if you are launching 16 training scripts in parallel, you had better not set `torch_num_threads` to a value greater than 4.
 
-| Parameters | Descriptions| Values |
-| -----------| ------------| ------ |
-|`lagrangian_multiplier_init`|Initial value of lagrangian multiplier|0.001|
-|`lambda_lr`|Learning rate of lagrangian multiplier|0.035|
-|`lambda_optimizer`|Type of lagrangian optimizer|`Adam`|
-
-Besides, the hyperparameter `torch_num_threads` in `train_cfgs` is also important. In a single training session, a larger value for `torch_num_threads` often means faster training speed. However, we found in experiments that setting `torch_num_threads` too high can cause resource contention between parallel training sessions, resulting in slower overall experiment speed. In the configs file, we set the default value for `torch_num_threads` to 16, which ensures faster training speed for a single session. If you need to launch multiple training sessions in parallel, please consider your device configuration. For example, suppose your CPU has two physical threads per core and has a total of 32 cores, if you are launching 16 training scripts in parallel, you had better not set `torch_num_threads` to a value greater than 4.
-
-If you find that other hyperparameters perform better, please feel free to open an issue or pull request.
+If you find that other hyperparameters perform better, please feel free to open an [issue](https://github.com/PKU-Alignment/omnisafe/issues/new/choose) or [pull request](https://github.com/PKU-Alignment/omnisafe/pulls).
