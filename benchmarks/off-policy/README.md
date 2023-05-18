@@ -1,21 +1,21 @@
 # OmniSafe's Mujoco Velocity Benchmark for Off-Policy Algorithms
 
-The OmniSafe Mujoco Velocity Benchmark for off-policy algorithms evaluates the effectiveness of OmniSafe's off-policy algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) Mujoco Velocity task suite. For each algorithm and environment supported, we provide:
+The OmniSafe Mujoco Velocity Benchmark for off-policy algorithms evaluates the effectiveness of OmniSafe's off-policy algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) Mujoco Velocity task suite. For each supported algorithm and environment, we offer the following:
 
-- Default hyperparameters used for the benchmark and scripts to reproduce the results.
-- A comparison of performance with other open-source implementations.
-- Graphs and raw data that can be used for research purposes.
-- Log details obtained during training.
-- Some hints on how to fine-tune the algorithm for optimal results.
+- Default hyperparameters used for the benchmark and scripts that enable result replication.
+- Performance comparison with other open-source implementations.
+- Graphs and raw data that can be utilized for research purposes.
+- Detailed logs obtained during training.
+- Suggestions and hints on fine-tuning the algorithm for achieving optimal results.
 
 Supported algorithms are listed below:
 
 - **[ICLR 2016]** [Deep Deterministic Policy Gradient (DDPG)](https://arxiv.org/pdf/1509.02971.pdf)
 - **[ICML 2018]** [Twin Delayed DDPG (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
 - **[ICML 2018]** [Soft Actor-Critic (SAC)](https://arxiv.org/pdf/1812.05905.pdf)
-- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
-- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
-- **[Preprint 2019][<sup>1</sup>](#1)** [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of DDPG](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of TD3](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of SAC](https://cdn.openai.com/safexp-short.pdf)
 
 ## Safety-Gymnasium
 
@@ -148,7 +148,7 @@ class="smallcaps">SafetyAntVelocity-v1</span></td>
 <td style="text-align: center;">860.86 <span
 class="math inline">±</span> 198.03</td>
 <td style="text-align: center;">308.60 <span
-class="math inline">±</span> 318.6</td>
+class="math inline">±</span> 318.60</td>
 <td style="text-align: center;"><strong>2654.58 <span
 class="math inline">±</span> 1738.21</strong></td>
 <td style="text-align: center;">5246.86 <span
@@ -159,9 +159,9 @@ class="math inline">±</span> 224.69</strong></td>
 class="math inline">±</span> 1456.81</td>
 <td style="text-align: center;">5456.31 <span
 class="math inline">±</span> 156.04</td>
-<td style="text-align: center;"><strong>6012.3 <span
+<td style="text-align: center;"><strong>6012.30 <span
 class="math inline">±</span> 102.64</strong></td>
-<td style="text-align: center;">2404.5 <span
+<td style="text-align: center;">2404.50 <span
 class="math inline">±</span> 1152.65</td>
 </tr>
 <tr class="odd">
@@ -192,7 +192,7 @@ class="smallcaps">SafetyHopperVelocity-v1</span></td>
 <td style="text-align: center;">1462.56 <span
 class="math inline">±</span> 591.14</td>
 <td style="text-align: center;">2018.97 <span
-class="math inline">±</span> 1045.2</td>
+class="math inline">±</span> 1045.20</td>
 <td style="text-align: center;"><strong>2214.06 <span
 class="math inline">±</span> 1219.57</strong></td>
 <td style="text-align: center;"><strong>3404.41 <span
@@ -220,14 +220,14 @@ class="math inline">±</span> 2299.68</strong></td>
 <td style="text-align: center;"><strong>5798.01 <span
 class="math inline">±</span> 160.7</strong>2</td>
 <td style="text-align: center;">3838.06 <span
-class="math inline">±</span> 1832.9</td>
+class="math inline">±</span> 1832.90</td>
 <td style="text-align: center;">3511.06 <span
 class="math inline">±</span> 2214.12</td>
 <td style="text-align: center;"><strong>6039.77 <span
 class="math inline">±</span> 167.82</strong></td>
 <td style="text-align: center;">5424.55 <span
 class="math inline">±</span> 118.52</td>
-<td style="text-align: center;">2713.6 <span
+<td style="text-align: center;">2713.60 <span
 class="math inline">±</span> 2256.89</td>
 </tr>
 <tr class="even">
@@ -236,7 +236,7 @@ class="smallcaps">SafetySwimmerVelocity-v1</span></td>
 <td style="text-align: center;">139.39 <span
 class="math inline">±</span> 11.74</td>
 <td style="text-align: center;">138.98 <span
-class="math inline">±</span> 8.6</td>
+class="math inline">±</span> 8.60</td>
 <td style="text-align: center;"><strong>210.40 <span
 class="math inline">±</span> 148.01</strong></td>
 <td style="text-align: center;"><strong>98.39 <span
@@ -249,7 +249,7 @@ class="math inline">±</span> 131.69</td>
 1.23</td>
 <td style="text-align: center;">44.34 <span class="math inline">±</span>
 2.01</td>
-<td style="text-align: center;"><strong>247.33<span
+<td style="text-align: center;"><strong>247.33 <span
 class="math inline">±</span> 122.02</strong></td>
 </tr>
 <tr class="odd">
@@ -346,8 +346,8 @@ class="math inline">±</span> 220.05</td>
 class="math inline">±</span> 82.57</td>
 <td style="text-align: center;">973.80 <span
 class="math inline">±</span> 4.92</td>
-<td style="text-align: center;">3435.70 <span
-class="math inline">±</span> 52.48</td>
+<td style="text-align: center;">3537.70 <span
+class="math inline">±</span> 32.23</td>
 <td style="text-align: center;">975.23 <span
 class="math inline">±</span> 2.39</td>
 </tr>
@@ -374,12 +374,12 @@ class="smallcaps">SafetySwimmerVelocity-v1</span></td>
 class="math inline">±</span> 11.74</td>
 <td style="text-align: center;">200.53 <span
 class="math inline">±</span> 43.28</td>
-<td style="text-align: center;">90.10 <span class="math inline">±</span>
-29.01</td>
+<td style="text-align: center;">98.39 <span class="math inline">±</span>
+32.28</td>
 <td style="text-align: center;">115.27 <span
 class="math inline">±</span> 44.90</td>
-<td style="text-align: center;">44.30 <span class="math inline">±</span>
-0.49</td>
+<td style="text-align: center;">46.44 <span class="math inline">±</span>
+1.23</td>
 <td style="text-align: center;">40.97 <span class="math inline">±</span>
 0.47</td>
 </tr>
@@ -399,6 +399,7 @@ class="math inline">±</span> 232.06</td>
 <td style="text-align: center;">877.70 <span
 class="math inline">±</span> 8.95</td>
 </tr>
+</tbody>
 <thead>
 <tr class="header">
 <th style="text-align: left;"></th>
@@ -582,9 +583,9 @@ class="math inline">±</span> 300.43</td>
 
 ### Hyperparameters
 
-**We are continuously improving the performance of off-policy algorithms and finding better hyperparameters. So we are happy to receive any advice from users, feel free for opening PRs or issues.**
+**We are continuously improving the performance of off-policy algorithms and finding better hyperparameters. So we are happy to receive any advice from users, feel free for opening an [issue](https://github.com/PKU-Alignment/omnisafe/issues/new/choose) or [pull request](https://github.com/PKU-Alignment/omnisafe/pulls).**
 
-Off-Policy algorithms almost share the same hyperparameters, the share hyperparameters are listed below:
+Off-policy algorithms almost share the same hyperparameters, which are listed below:
 
 |   Hyperparameter    |   Value    |
 | :-----------------: | :--------: |
@@ -615,7 +616,7 @@ However, there are some differences between the three algorithms. We list the di
 ### Lagrangian
 
 The lagrangian versions of off-policy algorithms share the same set of
-lagrangian hyperparameters. The hyperparameters are listed below:
+lagrangian hyperparameters, which are listed below:
 
 |      Hyperparameter      | Value |
 | :----------------------: | :---: |
@@ -644,8 +645,6 @@ Generally, we recommend:
 
 Besides, the hyperparameter `torch_num_threads` in `train_cfgs` is also important. In a single training session, a larger value for `torch_num_threads` often means faster training speed. However, we found in experiments that setting `torch_num_threads` too high can cause resource contention between parallel training sessions, resulting in slower overall experiment speed. In the configs file, we set the default value for `torch_num_threads` to 16, which ensures faster training speed for a single session. If you need to launch multiple training sessions in parallel, please consider your device configuration. For example, suppose your CPU has two physical threads per core and has a total of 32 cores, if you are launching 16 training scripts in parallel, you had better not set `torch_num_threads` to a value greater than 4.
 
-If you find that other hyperparameters perform better, please feel free to open an issue or pull request.
+If you find that other hyperparameters perform better, please feel free to open an [issue](https://github.com/PKU-Alignment/omnisafe/issues/new/choose) or [pull request](https://github.com/PKU-Alignment/omnisafe/pulls).
 
-<a id="1"></a>
-
-[1] This paper is [safety-gym](https://openai.com/research/safety-gym) original paper. Its public code base [safety-starter-agents](https://github.com/openai/safety-starter-agents) implemented `SACLag` but does not report it in the paper.  We can not find the source of `DDPGLag` and `TD3Lag`. However, this paper introduced lagrangian methods and it implemented `SACLag`, so we also use it as a source of `DDPGLag` and `TD3Lag`.
+<a name="footnote1">[1]</a>  This paper is [safety-gym](https://openai.com/research/safety-gym) original paper. Its public code base [safety-starter-agents](https://github.com/openai/safety-starter-agents) implemented `SACLag` but does not report it in the paper.  We can not find the source of `DDPGLag` and `TD3Lag`. However, this paper introduced lagrangian methods and it implemented `SACLag`, so we also use it as a source of `DDPGLag` and `TD3Lag`.
