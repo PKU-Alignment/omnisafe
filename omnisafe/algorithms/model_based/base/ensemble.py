@@ -48,11 +48,11 @@ class StandardScaler:
         self._std_t: torch.Tensor = torch.tensor(self._std).to(device)
         self._device: torch.device = device
 
-    def fit(self, data: torch.Tensor | np.ndarray) -> None:
+    def fit(self, data: np.ndarray) -> None:
         """Fits the scaler to the input data.
 
         Args:
-            data (np.ndarray): A numpy array containing the input
+            data (np.ndarray): A numpy array or torch Tensor containing the input
         """
         self._mean = np.mean(data, axis=0, keepdims=True)
         self._std = np.std(data, axis=0, keepdims=True)
@@ -60,17 +60,15 @@ class StandardScaler:
         self._mean_t = torch.FloatTensor(self._mean).to(self._device)
         self._std_t = torch.FloatTensor(self._std).to(self._device)
 
-    def transform(self, data: torch.Tensor | np.ndarray) -> torch.Tensor | np.ndarray:
+    def transform(self, data: torch.Tensor) -> torch.Tensor:
         """Transforms the input matrix data using the parameters of this scaler.
 
         Args:
-            data (torch.Tensor|np.ndarray): A numpy array containing the input
+            data (torch.Tensor): A numpy array containing the input
 
         Returns:
-            transformed_data (torch.Tensor|np.ndarray): The transformed data.
+            transformed_data (torch.Tensor): The transformed data.
         """
-        if torch.is_tensor(data):
-            return (data - self._mean_t) / self._std_t
         return (data - self._mean) / self._std
 
 
@@ -131,11 +129,11 @@ def unbatched_forward(
 class EnsembleFC(nn.Module):
     """Ensemble fully connected network."""
 
-    _constants_ = ['in_features', 'out_features']
+    _constants_: list[str]
     in_features: int
     out_features: int
     ensemble_size: int
-    weight: torch.Tensor
+    weight: nn.Parameter
 
     def __init__(
         self,
@@ -147,6 +145,7 @@ class EnsembleFC(nn.Module):
     ) -> None:
         """Initialize network weight."""
         super().__init__()
+        self._constants_ = ['in_features', 'out_features']
         self.in_features = in_features
         self.out_features = out_features
         self.ensemble_size = ensemble_size
@@ -211,9 +210,15 @@ class EnsembleModel(nn.Module):
             ensemble_size,
             weight_decay=0.000025,
         )
-        self._nn2: EnsembleFC = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.00005)
-        self._nn3: EnsembleFC = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
-        self._nn4: EnsembleFC = EnsembleFC(hidden_size, hidden_size, ensemble_size, weight_decay=0.000075)
+        self._nn2: EnsembleFC = EnsembleFC(
+            hidden_size, hidden_size, ensemble_size, weight_decay=0.00005
+        )
+        self._nn3: EnsembleFC = EnsembleFC(
+            hidden_size, hidden_size, ensemble_size, weight_decay=0.000075
+        )
+        self._nn4: EnsembleFC = EnsembleFC(
+            hidden_size, hidden_size, ensemble_size, weight_decay=0.000075
+        )
         self._nn5: EnsembleFC = EnsembleFC(
             hidden_size,
             self._output_dim * 2,
@@ -223,7 +228,7 @@ class EnsembleModel(nn.Module):
 
         self.register_buffer('max_logvar', (torch.ones((1, self._output_dim)).float() / 2))
         self.register_buffer('min_logvar', (-torch.ones((1, self._output_dim)).float() * 10))
-        self._optimizer:torch.optim.Adam = torch.optim.Adam(self.parameters(), lr=learning_rate)
+        self._optimizer: torch.optim.Adam = torch.optim.Adam(self.parameters(), lr=learning_rate)
         self.apply(init_weights)
         self._device: torch.device = device
         self.scaler: StandardScaler = StandardScaler(self._device)
@@ -243,10 +248,12 @@ class EnsembleModel(nn.Module):
             mean (torch.Tensor): Mean of the next state, reward, cost.
             logvar or var (torch.Tensor): Log variance of the next state, reward, cost.
         """
-        if not torch.is_tensor(data):
-            data = torch.tensor(data, dtype=torch.float32, device=self._device)
-        data = self.scaler.transform(data)
-        nn1_output = swish(self._nn1(data))
+        if isinstance(data, torch.Tensor):
+            data_t = data
+        else:
+            data_t = torch.tensor(data, dtype=torch.float32, device=self._device)
+        data_t = self.scaler.transform(data_t)
+        nn1_output = swish(self._nn1(data_t))
         nn2_output = swish(self._nn2(nn1_output))
         nn3_output = swish(self._nn3(nn2_output))
         nn4_output = swish(self._nn4(nn3_output))
@@ -279,11 +286,13 @@ class EnsembleModel(nn.Module):
             logvar or var (torch.Tensor): Log variance of the next state, reward, cost.
         """
         assert data.shape[0] == 1
-        if not torch.is_tensor(data):
-            data = torch.tensor(data, dtype=torch.float32, device=self._device)
-        data = self.scaler.transform(data[0])
+        if isinstance(data, torch.Tensor):
+            data_t = data
+        else:
+            data_t = torch.tensor(data, dtype=torch.float32, device=self._device)
+        data_t = self.scaler.transform(data_t[0])
         unbatched_forward_fn = partial(unbatched_forward, index=idx_model)
-        nn1_output = swish(unbatched_forward_fn(self._nn1, data))
+        nn1_output = swish(unbatched_forward_fn(self._nn1, data_t))
         nn2_output = swish(unbatched_forward_fn(self._nn2, nn1_output))
         nn3_output = swish(unbatched_forward_fn(self._nn3, nn2_output))
         nn4_output = swish(unbatched_forward_fn(self._nn4, nn3_output))
@@ -409,7 +418,9 @@ class EnsembleDynamicsModel:
         )
         self._ensemble_model.to(self._device)
         self._epochs_since_update: int = 0
-        self._snapshots: dict[int, tuple[int, float]] = {i: (0, 1e10) for i in range(self._num_ensemble)}
+        self._snapshots: dict[int, tuple[int, float]] = {
+            i: (0, 1e10) for i in range(self._num_ensemble)
+        }
 
         if self._predict_reward is False:
             assert rew_func is not None, 'rew_func should not be None'
@@ -467,8 +478,9 @@ class EnsembleDynamicsModel:
         holdout_inputs, holdout_labels = inputs[:num_holdout], labels[:num_holdout]
         self._ensemble_model.scaler.fit(train_inputs)
 
+        train_mse_losses = []
+        val_losses = []
         for epoch in itertools.count():
-            train_mse_losses = []
             # training
             train_idx = np.vstack(
                 [np.random.permutation(train_inputs.shape[0]) for _ in range(self._num_ensemble)],
@@ -509,8 +521,10 @@ class EnsembleDynamicsModel:
                     )
                     holdout_mse_losses = holdout_mse_losses.detach().cpu().numpy()
                     val_losses_list.append(holdout_mse_losses)
-            val_losses = np.array(val_losses_list)
-            val_losses = np.sum(val_losses, axis=0) / (_len_valid + 1)
+            val_losses.append(
+                np.sum(np.array(val_losses_list), axis=0)
+                / (int(holdout_inputs.shape[0] / val_batch_size) + 1)
+            )
             sorted_loss_idx = np.argsort(val_losses)
             self.elite_model_idxes = sorted_loss_idx[: self._elite_size].tolist()
             break_train = self._save_best(epoch, val_losses)

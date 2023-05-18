@@ -24,8 +24,7 @@ from gymnasium.spaces import Box
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
 from omnisafe.common.logger import Logger
-from omnisafe.envs.core import make, support_envs, CMDP
-from omnisafe.envs.safety_gymnasium_modelbased import SafetyGymnasiumModelBased
+from omnisafe.envs.core import CMDP, make, support_envs
 from omnisafe.envs.wrapper import (
     ActionRepeat,
     ActionScale,
@@ -40,7 +39,9 @@ from omnisafe.utils.config import Config
 from omnisafe.utils.tools import get_device
 
 
-class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-attributes,super-init-not-called
+class ModelBasedAdapter(
+    OnlineAdapter
+):  # pylint: disable=too-many-instance-attributes,super-init-not-called
     """Model Based Adapter for OmniSafe.
 
     :class:`ModelBasedAdapter` is used to adapt the environment to the model-based training.
@@ -216,14 +217,26 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
         current_step: int,
         rollout_step: int,
         use_actor_critic: bool,
-        act_func: Callable,
-        store_data_func: Callable,
-        update_dynamics_func: Callable,
+        act_func: Callable[[int, torch.Tensor], tuple[torch.Tensor, dict[str, Any]]],
+        store_data_func: Callable[
+            [
+                torch.Tensor,
+                torch.Tensor,
+                torch.Tensor,
+                torch.Tensor,
+                torch.Tensor,
+                torch.Tensor,
+                torch.Tensor,
+                dict[str, Any],
+            ],
+            None,
+        ],
+        update_dynamics_func: Callable[[], None],
         logger: Logger,
         use_eval: bool,
-        eval_func: Callable,
-        algo_reset_func: Callable,
-        update_actor_func: Callable,
+        eval_func: Callable[[int, bool], None],
+        algo_reset_func: Callable[[], None],
+        update_actor_func: Callable[[int], None],
     ) -> int:
         """Roll out the environment and store the data in the buffer.
 
@@ -250,15 +263,13 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
         epoch_steps = 0
 
         while epoch_steps < rollout_step and current_step < self._cfgs.train_cfgs.total_steps:
-            action, action_info = act_func(current_step, self._current_obs, self._env)
+            action, action_info = act_func(current_step, self._current_obs)
             next_state, reward, cost, terminated, truncated, info = self.step(action)
             epoch_steps += info['num_step']
             current_step += info['num_step']
             self._log_value(reward=reward, cost=cost, info=info)
 
             store_data_func(
-                current_step,
-                self._ep_len,
                 self._current_obs,
                 action,
                 reward,
@@ -267,7 +278,6 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
                 truncated,
                 next_state,
                 info,
-                action_info,
             )
             self._current_obs = next_state
             if terminated or truncated:
@@ -275,7 +285,7 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
                 self._reset_log()
                 self._current_obs, _ = self.reset()
                 if algo_reset_func is not None:
-                    algo_reset_func(current_step)
+                    algo_reset_func()
             if (
                 current_step % self._cfgs.algo_cfgs.update_dynamics_cycle
                 < self._cfgs.algo_cfgs.action_repeat
@@ -283,7 +293,7 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
                 >= self._cfgs.algo_cfgs.update_dynamics_cycle
             ):
                 update_dynamics_start = time.time()
-                update_dynamics_func(current_step)
+                update_dynamics_func()
                 self._last_dynamics_update = current_step
                 update_dynamics_time += time.time() - update_dynamics_start
 
@@ -303,10 +313,10 @@ class ModelBasedAdapter(OnlineAdapter):  # pylint: disable=too-many-instance-att
                 use_eval
                 and current_step % self._cfgs.evaluation_cfgs.eval_cycle
                 < self._cfgs.algo_cfgs.action_repeat
-                and current_step - self._last_eval >= self._cfgs.evaluation_cfgs.eval_cycle
+                and current_step - self._last_eval >= self._cfgs.evaluation_cfgs.eval_cycl
             ):
                 eval_start = time.time()
-                eval_func(current_step)
+                eval_func(current_step, True)
                 self._last_eval = current_step
                 eval_time += time.time() - eval_start
 

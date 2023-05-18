@@ -67,7 +67,7 @@ class SafeARCPlanner(ARCPlanner):
         self,
         elite_actions: torch.Tensor,
         elite_values: torch.Tensor,
-        info: dict,
+        info: dict[str, int | float],
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Update the mean and variance of the elite actions.
 
@@ -111,7 +111,7 @@ class SafeARCPlanner(ARCPlanner):
         self,
         actions: torch.Tensor,
         traj: dict,
-    ) -> tuple[torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, float]]:
         """Select elites from the sampled actions.
 
         Args:
@@ -194,7 +194,7 @@ class SafeARCPlanner(ARCPlanner):
         return elite_values, elite_actions, info
 
     @torch.no_grad()
-    def output_action(self, state: torch.Tensor) -> tuple[torch.Tensor, dict]:
+    def output_action(self, state: torch.Tensor) -> tuple[torch.Tensor, dict[str, int | float]]:
         """Output the action given the state.
 
         Args:
@@ -214,6 +214,7 @@ class SafeARCPlanner(ARCPlanner):
 
         current_iter = 0
         actions_actor = self._act_from_actor(state)
+        info: dict[str, int | float] = {}
         while current_iter < self._num_iterations and last_var.max() > self._epsilon:
             actions_gauss = self._act_from_last_gaus(last_mean=last_mean, last_var=last_var)
             actions = torch.cat([actions_gauss, actions_actor], dim=1)

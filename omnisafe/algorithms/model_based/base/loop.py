@@ -23,14 +23,13 @@ from gymnasium.spaces import Box
 from torch import nn, optim
 from torch.nn.utils.clip_grad import clip_grad_norm_
 
-from omnisafe.typing import OmnisafeSpace
-from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.base.pets import PETS
 from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
 from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
+from omnisafe.typing import OmnisafeSpace
 
 
 @registry.register
@@ -151,7 +150,6 @@ class LOOP(PETS):
         self,
         current_step: int,
         state: torch.Tensor,
-        env: ModelBasedAdapter,
     ) -> tuple[torch.Tensor, dict]:
         """Select action.
 
@@ -225,8 +223,6 @@ class LOOP(PETS):
 
     def _store_real_data(  # pylint: disable=too-many-arguments,unused-argument
         self,
-        current_step: int,
-        ep_len: int,
         state: torch.Tensor,
         action: torch.Tensor,
         reward: torch.Tensor,
@@ -234,8 +230,7 @@ class LOOP(PETS):
         terminated: torch.Tensor,
         truncated: torch.Tensor,
         next_state: torch.Tensor,
-        info: dict,
-        action_info: dict,
+        info: dict[str, Any],
     ) -> None:  # pylint: disable=too-many-arguments
         """Store real data in buffer.
 

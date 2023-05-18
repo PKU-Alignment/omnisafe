@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Model Predictive Control Planner of the Conservative and Adaptive Penalty algorithm."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -66,7 +67,7 @@ class CAPPlanner(CCEPlanner):
         self,
         actions: torch.Tensor,
         traj: dict,
-    ) -> tuple[torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, float]]:
         """Select elites from the sampled actions.
 
         Args:

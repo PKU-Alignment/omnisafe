@@ -143,7 +143,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             (self.get_lidar_from_coordinate(flat_coordinate_obs).shape[0],),
             dtype=np.float32,
         )
-        if self._use_lidar: 
+        if self._use_lidar:
             self._observation_space = self.lidar_observation_space
         else:
             self._observation_space = self.coordinate_observation_space
@@ -312,7 +312,9 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         Returns:
             flat_obs (torch.Tensor): flattened observation.
         """
-        assert self.coordinate_observation_space.shape is not None, 'Bad coordinate_observation_space'
+        assert (
+            self.coordinate_observation_space.shape is not None
+        ), 'Bad coordinate_observation_space'
         flat_obs = np.zeros(self.coordinate_observation_space.shape[0])
         for k in self._flatten_order:
             idx = self.key_to_slice[k]
@@ -390,7 +392,9 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
+    ) -> tuple[
+        torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]
+    ]:
         """Step the environment.
 
         .. note::

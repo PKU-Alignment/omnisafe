@@ -34,6 +34,7 @@ from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.typing import OmnisafeSpace
 
+
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
 class PETS(BaseAlgo):
@@ -113,14 +114,14 @@ class PETS(BaseAlgo):
             'render_mode': 'rgb_array',
             'camera_name': 'track',
         }
-        self._eval_env:  ModelBasedAdapter = ModelBasedAdapter(
+        self._eval_env: ModelBasedAdapter = ModelBasedAdapter(
             self._env_id,
             1,
             self._seed,
             self._cfgs,
             **env_kwargs,
         )
-        self._eval_fn = self._evaluation_single_step
+        self._eval_fn: Callable[[int, bool], None] = self._evaluation_single_step
 
     def _init_log(self) -> None:
         """Initialize logger."""
@@ -166,9 +167,8 @@ class PETS(BaseAlgo):
 
     def _save_model(self) -> None:
         """Save the model."""
-        what_to_save: dict[str, Any] = {}
         # set up model saving
-        what_to_save = {
+        what_to_save: dict[str, Any] = {
             'dynamics': self._dynamics.ensemble_model,
         }
         if self._cfgs.algo_cfgs.obs_normalize:
@@ -213,7 +213,7 @@ class PETS(BaseAlgo):
                 self._update_epoch()
             # evaluate episode
             self._logger.store(
-                **{
+                {
                     'Train/Epoch': epoch,
                     'TotalEnvSteps': current_step,
                     'Time/Total': time.time() - start_time,
@@ -238,6 +238,7 @@ class PETS(BaseAlgo):
 
     def _update_policy(
         self,
+        current_step: int,
     ) -> None:
         ...
 
@@ -254,22 +255,18 @@ class PETS(BaseAlgo):
         reward = self._dynamics_buf.data['reward'][: self._dynamics_buf.size]
         cost = self._dynamics_buf.data['cost'][: self._dynamics_buf.size]
         next_state = self._dynamics_buf.data['next_obs'][: self._dynamics_buf.size, :]
-        # TODO: puzzle
         delta_state = next_state - state
-        if torch.is_tensor(delta_state):
-            inputs = torch.cat((state, action), -1)
-            inputs = torch.reshape(inputs, (inputs.shape[0], -1))
+        assert isinstance(delta_state, torch.Tensor), 'delta_state should be torch.Tensor'
+        inputs = torch.cat((state, action), -1)
+        inputs = torch.reshape(inputs, (inputs.shape[0], -1))
 
-            labels = torch.reshape(delta_state, (delta_state.shape[0], -1))
-            if self._cfgs.dynamics_cfgs.predict_reward:
-                labels = torch.cat(((torch.reshape(reward, (reward.shape[0], -1))), labels), -1)
-            if self._cfgs.dynamics_cfgs.predict_cost:
-                labels = torch.cat(((torch.reshape(cost, (cost.shape[0], -1))), labels), -1)
-            inputs = inputs.cpu().detach().numpy()
-            labels = labels.cpu().detach().numpy()
-        assert not torch.is_tensor(inputs) and not torch.is_tensor(
-            labels,
-        ), 'inputs and labels should be numpy array'
+        labels = torch.reshape(delta_state, (delta_state.shape[0], -1))
+        if self._cfgs.dynamics_cfgs.predict_reward:
+            labels = torch.cat(((torch.reshape(reward, (reward.shape[0], -1))), labels), -1)
+        if self._cfgs.dynamics_cfgs.predict_cost:
+            labels = torch.cat(((torch.reshape(cost, (cost.shape[0], -1))), labels), -1)
+        inputs = inputs.cpu().detach().numpy()
+        labels = labels.cpu().detach().numpy()
         train_mse_losses, val_mse_losses = self._dynamics.train(
             inputs,
             labels,
@@ -321,7 +318,7 @@ class PETS(BaseAlgo):
         terminated: torch.Tensor,
         truncated: torch.Tensor,
         next_state: torch.Tensor,
-        info: dict,
+        info: dict[str, Any],
     ) -> None:  # pylint: disable=too-many-arguments
         """Store real data in buffer.
 
@@ -379,7 +376,7 @@ class PETS(BaseAlgo):
                 print(f'Eval Episode Return: {ep_ret} \t Cost: {ep_cost}')
                 save_replay_path = os.path.join(self._logger.log_dir, 'video-pic')
                 self._logger.store(
-                    **{
+                    {
                         'EvalMetrics/EpRet': ep_ret,
                         'EvalMetrics/EpCost': ep_cost,
                         'EvalMetrics/EpLen': ep_len,
@@ -419,7 +416,7 @@ class PETS(BaseAlgo):
                 num_episode += 1
                 if num_episode == self._cfgs.evaluation_cfgs.num_episode:
                     break
-            action, _ = self._select_action(current_step, obs, self._eval_env)
+            action, _ = self._select_action(current_step, obs)
 
             idx = np.random.choice(self._dynamics.elite_model_idxes, size=1)[0]
             traj = self._dynamics.imagine(
@@ -453,8 +450,8 @@ class PETS(BaseAlgo):
         self,
         timestep: int,
         num_episode: int,
-        pred_state: list,
-        true_state: list,
+        pred_state: list[float],
+        true_state: list[float],
         save_replay_path: str = './',
         name: str = 'reward',
     ) -> None:
