@@ -65,12 +65,13 @@ if __name__ == '__main__':
 
     # set up the algorithms.
     base_policy = ['PolicyGradient', 'NaturalPG', 'TRPO', 'PPO']
-    naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO', 'OnCRPO', 'PDO']
+    naive_lagrange_policy = ['PPOLag', 'TRPOLag', 'RCPO']
     first_order_policy = ['CUP', 'FOCOPS', 'P3O']
     second_order_policy = ['CPO', 'PCPO']
     saute_policy = ['PPOSaute', 'TRPOSaute']
     simmer_policy = ['PPOSimmerPID', 'TRPOSimmerPID']
-    early_mdp_policy = ['PPOEarlyTerminated', 'TRPOEarlyTerminated']
+    pid_policy = ['CPPOPID', 'TRPOPID']
+    early_mdp_policy = ['PPOEarlyTerminated', 'TRPOEarlyTerminated'】
 
     eg.add(
         'algo',
@@ -80,6 +81,7 @@ if __name__ == '__main__':
         second_order_policy +
         saute_policy +
         simmer_policy +
+        pid_policy +
         early_mdp_policy
     )
 
