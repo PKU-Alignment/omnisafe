@@ -48,7 +48,7 @@ if __name__ == '__main__':
     # if you want to use CPU, please set gpu_id = None
     # gpu_id = None
 
-    if not set(gpu_id).issubset(avaliable_gpus):
+    if gpu_id and not set(gpu_id).issubset(avaliable_gpus):
         warnings.warn('The GPU ID is not available, use CPU instead.', stacklevel=1)
         gpu_id = None
 

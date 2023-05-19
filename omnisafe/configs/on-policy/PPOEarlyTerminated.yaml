@@ -27,17 +27,17 @@ defaults:
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
-    total_steps: 1024000
+    total_steps: 10000000
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 2048
+    steps_per_epoch: 20000
     # number of iterations to update the policy
-    update_iters: 10
+    update_iters: 40
     # batch size for each iteration
-    batch_size: 128
+    batch_size: 64
     # target kl divergence
-    target_kl: 0.01
+    target_kl: 0.02
     # entropy coefficient
     entropy_coef: 0.0
     # normalize reward
@@ -47,7 +47,7 @@ defaults:
     # normalize observation
     obs_normalize: True
     # early stop when kl divergence is bigger than target kl
-    kl_early_stop: False
+    kl_early_stop: True
     # use max gradient norm
     use_max_grad_norm: True
     # max gradient norm
@@ -64,6 +64,8 @@ defaults:
     lam: 0.95
     # lambda for cost gae
     lam_c: 0.95
+    # clip ratio
+    clip: 0.2
     # advantage estimation method, options: gae, retrace
     adv_estimation_method: gae
     # standardize reward advantage
@@ -74,18 +76,8 @@ defaults:
     penalty_coef: 0.0
     # use cost
     use_cost: False
-    # Damping value for conjugate gradient
-    cg_damping: 0.1
-    # Number of conjugate gradient iterations
-    cg_iters: 15
-    # Subsampled observation
-    fvp_obs: None
-    # The sub-sampling rate of the observation
-    fvp_sample_freq: 1
     # Tolerance of constraint violation
     cost_limit: 25.0
-    # clip ratio
-    clip: 0.2
   # logger configurations
   logger_cfgs:
     # use wandb for logging
@@ -107,7 +99,7 @@ defaults:
     # actor type, options: gaussian, gaussian_learning
     actor_type: gaussian_learning
     # linear learning rate decay
-    linear_lr_decay: False
+    linear_lr_decay: True
     # exploration noise anneal
     exploration_noise_anneal: False
     # std upper bound, and lower bound

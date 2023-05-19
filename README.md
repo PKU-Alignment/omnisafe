@@ -39,7 +39,10 @@ The key features of OmniSafe:
 
 - **Highly Modular Framework.** OmniSafe presents a highly modular framework, incorporating an extensive collection of tens of algorithms tailored for safe reinforcement learning across diverse domains. This framework is versatile due to its abstraction of various algorithm types and well-designed API, using the Adapter and Wrapper design components to bridge gaps and enable seamless interactions between different components. This design allows for easy extension and customization, making it a powerful tool for developers working with different types of algorithms.
 
-- **High-performance parallel computing acceleration.** OmniSafe not only supports environment-level asynchronous parallelism but also incorporates agent asynchronous learning. By harnessing the capabilities of `torch.distributed`, OmniSafe accelerates the learning process of algorithms by creating unique agents within individual threads.
+- **High-performance parallel computing acceleration.**
+
+By harnessing the capabilities of `torch.distributed`, OmniSafe accelerates the learning process of algorithms
+with process parallelism. This enables OmniSafe not only to support environment-level asynchronous parallelism but also incorporates agent asynchronous learning. This methodology bolsters training stability and expedites the training process via the deployment of a parallel exploration mechanism. The integration of agent asynchronous learning in OmniSafe underscores its commitment to providing a versatile and robust platform for advancing SafeRL research.
 
 - **Out-of-box toolkits.** OmniSafe offers customizable toolkits for tasks like training, benchmarking, analyzing, and rendering. [Tutorials](https://github.com/OmniSafeAI/omnisafe#getting-started) and user-friendly [APIs](https://omnisafe.readthedocs.io/en/latest/baserlapi/on_policy.html) make it easy for beginners and average users, while advanced researchers can enhance their efficiency without complex code.
 
@@ -210,10 +213,10 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
   <tr>
     <td rowspan="2">Off Policy</td>
     <td rowspan="2">Primal-Dual</td>
-    <td>SACLAG; DDPGLag; TD3LAG</td>
+    <td>SACLag; DDPGLag; TD3Lag</td>
   </tr>
   <tr>
-    <td><span style="font-weight:400;font-style:normal">SACPIDLag; TD3PIDLag; DDPGPIDLag; CVPO</span></td>
+    <td><span style="font-weight:400;font-style:normal">SACPID; TD3PID; DDPGPID; CVPO</span></td>
   </tr>
   <tr>
     <td rowspan="3">Model-based</td>
