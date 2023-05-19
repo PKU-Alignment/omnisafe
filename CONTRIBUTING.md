@@ -5,11 +5,11 @@ If you are interested in contributing to OmniSafe, your contributions will fall 
 1. You want to propose a new Feature and implement it
     - Create an issue about your intended feature, and we shall discuss the design and implementation. Once we agree that the plan looks good, go ahead and implement it.
 2. You want to implement a feature or bug-fix for an outstanding issue
-    - Look at the outstanding issues here: <https://github.com/OmniSafeAI/omnisafe/issues>.
+    - Look at the outstanding issues here: <https://github.com/PKU-Alignment/omnisafe/issues>.
     - Pick an issue or feature and comment on the task that you want to work on this feature.
     - If you need more context on a particular issue, please ask and we shall provide.
 
-Once you finish implementing a feature or bug-fix, please send a Pull Request to <https://github.com/OmniSafeAI/omnisafe>.
+Once you finish implementing a feature or bug-fix, please send a Pull Request to <https://github.com/PKU-Alignment/omnisafe>.
 
 If you are not familiar with creating a Pull Request, here are some guides:
 
@@ -23,7 +23,7 @@ To develop OmniSafe on your machine, here are some tips:
 1. Clone a copy of OmniSafe from GitHub:
 
 ```bash
-git clone https://github.com/OmniSafeAI/omnisafe
+git clone https://github.com/PKU-Alignment/omnisafe
 cd omnisafe/
 ```
 
@@ -156,7 +156,7 @@ make spelling
 ## Changelog and Documentation
 
 Please do not forget to update the
-[CHANGELOG.md](https://github.com/OmniSafeAI/omnisafe/blob/HEAD/CHANGELOG.md) and add documentation if needed.
+[CHANGELOG.md](https://github.com/PKU-Alignment/omnisafe/blob/HEAD/CHANGELOG.md) and add documentation if needed.
 You should add your username next to each changelog entry that you added. If this is your first contribution, please add your username at the bottom too.
 
 Credits: this contributing guide is based on the [PyTorch](https://github.com/pytorch/pytorch/).

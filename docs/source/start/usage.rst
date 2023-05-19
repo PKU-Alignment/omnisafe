@@ -69,7 +69,7 @@ Customize Configuration
         <script async id="asciicast-A73Xfx6ORXsM90oeDsiIPsTcs" src="https://asciinema.org/a/A73Xfx6ORXsM90oeDsiIPsTcs.js"></script>
 
 .. hint::
-    The above command will use a configuration file `train_config.yaml <https://github.com/OmniSafeAI/omnisafe/blob/main/tests/saved_source/train_config.yaml>`_ in the `saved_source <https://github.com/OmniSafeAI/omnisafe/tree/main/tests/saved_source>`_ directory to train policy. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the algorithm in this file.
+    The above command will use a configuration file `train_config.yaml <https://github.com/PKU-Alignment/omnisafe/blob/main/tests/saved_source/train_config.yaml>`_ in the `saved_source <https://github.com/PKU-Alignment/omnisafe/tree/main/tests/saved_source>`_ directory to train policy. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the algorithm in this file.
 
 Run Benchmark
 -------------
@@ -94,7 +94,7 @@ Run Benchmark
 
 .. hint::
     The above command will run a benchmark with 2 parallel process.
-    The configuration file `benchmark_config.yaml <https://github.com/OmniSafeAI/omnisafe/blob/main/tests/saved_source/benchmark_config.yaml>`_ is in the `saved_source <https://github.com/OmniSafeAI/omnisafe/tree/main/tests/saved_source>`_ directory. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the benchmark in this file.
+    The configuration file `benchmark_config.yaml <https://github.com/PKU-Alignment/omnisafe/blob/main/tests/saved_source/benchmark_config.yaml>`_ is in the `saved_source <https://github.com/PKU-Alignment/omnisafe/tree/main/tests/saved_source>`_ directory. We have provided an example showing the file layer of the configuration file. You can customize the configuration of the benchmark in this file.
 
 Run Evaluation
 --------------
@@ -119,7 +119,7 @@ Run Evaluation
 
 .. hint::
     The above command will run an evaluation for a trained policy.
-    The model parameters is in the `saved_source <https://github.com/OmniSafeAI/omnisafe/tree/main/tests/saved_source>`_ directory.
+    The model parameters is in the `saved_source <https://github.com/PKU-Alignment/omnisafe/tree/main/tests/saved_source>`_ directory.
 
 Get Help
 --------

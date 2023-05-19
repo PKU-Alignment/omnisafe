@@ -21,7 +21,7 @@ import csv
 import os
 import time
 from collections import deque
-from typing import Any, Deque, TextIO
+from typing import Any, TextIO
 
 import numpy as np
 import torch
@@ -117,7 +117,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self._epoch: int = 0
         self._first_row: bool = True
         self._what_to_save: dict[str, Any] | None = None
-        self._data: dict[str, Deque[int | float] | list[int | float]] = {}
+        self._data: dict[str, deque[int | float] | list[int | float]] = {}
         self._headers_windows: dict[str, int | None] = {}
         self._headers_minmax: dict[str, bool] = {}
         self._headers_delta: dict[str, bool] = {}
