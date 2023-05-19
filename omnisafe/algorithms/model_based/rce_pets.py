@@ -53,7 +53,7 @@ class RCEPETS(PETS):
             self._action_space = self._env.action_space
         else:
             raise NotImplementedError
-        self._dynamics = EnsembleDynamicsModel(
+        self._dynamics: EnsembleDynamicsModel = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
@@ -64,7 +64,7 @@ class RCEPETS(PETS):
             terminal_func=None,
         )
 
-        self._planner = RCEPlanner(
+        self._planner: RCEPlanner = RCEPlanner(
             dynamics=self._dynamics,
             planner_cfgs=self._cfgs.planner_cfgs,
             gamma=float(self._cfgs.algo_cfgs.gamma),
@@ -77,8 +77,8 @@ class RCEPETS(PETS):
             cost_limit=self._cfgs.algo_cfgs.cost_limit,
         )
 
-        self._use_actor_critic = False
-        self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
+        self._use_actor_critic: bool = False
+        self._update_dynamics_cycle: int = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
     def _init_log(self) -> None:
         """Initialize the logger."""

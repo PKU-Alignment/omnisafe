@@ -21,6 +21,7 @@ from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base import PETS
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner.cce import CCEPlanner
+from omnisafe.typing import OmnisafeSpace
 
 
 @registry.register
@@ -37,7 +38,7 @@ class CCEPETS(PETS):
 
     def _init_model(self) -> None:
         """Initialize the dynamics model and the planner."""
-        self._dynamics_state_space = (
+        self._dynamics_state_space: OmnisafeSpace = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
@@ -54,7 +55,7 @@ class CCEPETS(PETS):
             self._action_space = self._env.action_space
         else:
             raise NotImplementedError
-        self._dynamics = EnsembleDynamicsModel(
+        self._dynamics: EnsembleDynamicsModel = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
@@ -65,7 +66,7 @@ class CCEPETS(PETS):
             terminal_func=None,
         )
 
-        self._planner = CCEPlanner(
+        self._planner: CCEPlanner = CCEPlanner(
             dynamics=self._dynamics,
             planner_cfgs=self._cfgs.planner_cfgs,
             gamma=float(self._cfgs.algo_cfgs.gamma),
@@ -78,8 +79,8 @@ class CCEPETS(PETS):
             cost_limit=self._cfgs.algo_cfgs.cost_limit,
         )
 
-        self._use_actor_critic = False
-        self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
+        self._use_actor_critic: bool = False
+        self._update_dynamics_cycle: int = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
     def _init_log(self) -> None:
         """Initialize the logger keys for the CCE algorithm."""

@@ -161,7 +161,7 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
     def _select_elites(
         self,
         actions: torch.Tensor,
-        traj: dict,
+        traj: dict[str, torch.Tensor],
     ) -> tuple[torch.Tensor, torch.Tensor, dict[str, float]]:
         """Select elites from the sampled actions.
 

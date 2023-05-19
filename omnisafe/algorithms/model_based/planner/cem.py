@@ -144,8 +144,8 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
     def _select_elites(
         self,
         actions: torch.Tensor,
-        traj: dict,
-    ) -> tuple[torch.Tensor, torch.Tensor, dict]:
+        traj: dict[str, torch.Tensor],
+    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, float]]:
         """Select elites from the sampled actions.
 
         Args:
@@ -237,6 +237,7 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
         last_mean[-1] = self._action_sequence_mean[-1].clone()
 
         current_iter = 0
+        info: dict[str, float | int] = {}
         while current_iter < self._num_iterations:
             actions = self._act_from_last_gaus(last_mean=last_mean, last_var=last_var)
             # [horizon, num_sample, action_shape]

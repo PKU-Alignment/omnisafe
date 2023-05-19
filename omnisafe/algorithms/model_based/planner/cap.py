@@ -66,7 +66,7 @@ class CAPPlanner(CCEPlanner):
     def _select_elites(  # pylint: disable=too-many-locals
         self,
         actions: torch.Tensor,
-        traj: dict,
+        traj: dict[str, torch.Tensor],
     ) -> tuple[torch.Tensor, torch.Tensor, dict[str, float]]:
         """Select elites from the sampled actions.
 

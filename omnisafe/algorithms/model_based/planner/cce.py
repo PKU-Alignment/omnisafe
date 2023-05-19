@@ -66,8 +66,8 @@ class CCEPlanner(CEMPlanner):
     def _select_elites(
         self,
         actions: torch.Tensor,
-        traj: dict,
-    ) -> tuple[torch.Tensor, torch.Tensor, dict]:
+        traj: dict[str, torch.Tensor],
+    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, float]]:
         """Select elites from the sampled actions.
 
         Args:

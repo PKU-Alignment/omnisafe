@@ -16,6 +16,8 @@
 # original version doesn't validate model error batch-wise and is highly memory intensive.
 # ==============================================================================
 """The Dynamics Model of MBPO and PETS."""
+
+
 from __future__ import annotations
 
 import itertools
@@ -52,7 +54,7 @@ class StandardScaler:
         """Fits the scaler to the input data.
 
         Args:
-            data (np.ndarray): A numpy array or torch Tensor containing the input
+            data (np.ndarray): A numpy array containing the input.
         """
         self._mean = np.mean(data, axis=0, keepdims=True)
         self._std = np.std(data, axis=0, keepdims=True)

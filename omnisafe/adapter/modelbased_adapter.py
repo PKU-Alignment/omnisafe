@@ -169,26 +169,25 @@ class ModelBasedAdapter(
 
             OmniSafe supports the following wrappers:
 
-            .. list-table::
-
-                *   -   Wrapper
-                    -   Description
-                *   -   TimeLimit
-                    -   Limit the time steps of the environment.
-                *   -   AutoReset
-                    -   Reset the environment when the episode is done.
-                *   -   ObsNormalize
-                    -   Normalize the observation.
-                *   -   RewardNormalize
-                    -   Normalize the reward.
-                *   -   CostNormalize
-                    -   Normalize the cost.
-                *   -   ActionScale
-                    -   Scale the action.
-                *   -   ActionRepeat
-                    -   Repeat the action.
-                *   -   Unsqueeze
-                    -   Unsqueeze the step result for single environment case.
+            +-----------------+--------------------------------------------------------+
+            | Wrapper         | Description                                            |
+            +=================+========================================================+
+            | TimeLimit       | Limit the time steps of the environment.               |
+            +-----------------+--------------------------------------------------------+
+            | AutoReset       | Reset the environment when the episode is done.        |
+            +-----------------+--------------------------------------------------------+
+            | ObsNormalize    | Normalize the observation.                             |
+            +-----------------+--------------------------------------------------------+
+            | RewardNormalize | Normalize the reward.                                  |
+            +-----------------+--------------------------------------------------------+
+            | CostNormalize   | Normalize the cost.                                    |
+            +-----------------+--------------------------------------------------------+
+            | ActionScale     | Scale the action.                                      |
+            +-----------------+--------------------------------------------------------+
+            | ActionRepeat    | Repeat the action.                                     |
+            +-----------------+--------------------------------------------------------+
+            | Unsqueeze       | Unsqueeze the step result for single environment case. |
+            +-----------------+--------------------------------------------------------+
 
         Args:
             obs_normalize (bool): Whether to normalize the observation.
@@ -374,12 +373,8 @@ class ModelBasedAdapter(
             },
         )
 
-    def _reset_log(self, idx: int | None = None) -> None:  # pylint: disable=unused-argument
-        """Reset log.
-
-        Args:
-            idx (int | None): The index of the environment.
-        """
+    def _reset_log(self) -> None:
+        """Reset log."""
         self._ep_ret = torch.zeros(1)
         self._ep_cost = torch.zeros(1)
         self._ep_len = torch.zeros(1)
