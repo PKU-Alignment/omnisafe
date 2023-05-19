@@ -40,7 +40,7 @@ from omnisafe.utils.tools import get_device
 
 
 class ModelBasedAdapter(
-    OnlineAdapter
+    OnlineAdapter,
 ):  # pylint: disable=too-many-instance-attributes,super-init-not-called
     """Model Based Adapter for OmniSafe.
 

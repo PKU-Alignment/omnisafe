@@ -22,8 +22,8 @@ from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.base.loop import LOOP
 from omnisafe.algorithms.model_based.planner.safe_arc import SafeARCPlanner
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
-from omnisafe.utils import distributed
 from omnisafe.typing import OmnisafeSpace
+from omnisafe.utils import distributed
 
 
 @registry.register
@@ -64,8 +64,8 @@ class SafeLOOP(LOOP):
         ).to(self._device)
         if distributed.world_size() > 1:
             distributed.sync_params(self._actor_critic)
-        self._use_actor_critic:bool = True
-        self._update_count:int = 0
+        self._use_actor_critic: bool = True
+        self._update_count: int = 0
         self._dynamics: EnsembleDynamicsModel = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,

@@ -213,13 +213,22 @@ class EnsembleModel(nn.Module):
             weight_decay=0.000025,
         )
         self._nn2: EnsembleFC = EnsembleFC(
-            hidden_size, hidden_size, ensemble_size, weight_decay=0.00005
+            hidden_size,
+            hidden_size,
+            ensemble_size,
+            weight_decay=0.00005,
         )
         self._nn3: EnsembleFC = EnsembleFC(
-            hidden_size, hidden_size, ensemble_size, weight_decay=0.000075
+            hidden_size,
+            hidden_size,
+            ensemble_size,
+            weight_decay=0.000075,
         )
         self._nn4: EnsembleFC = EnsembleFC(
-            hidden_size, hidden_size, ensemble_size, weight_decay=0.000075
+            hidden_size,
+            hidden_size,
+            ensemble_size,
+            weight_decay=0.000075,
         )
         self._nn5: EnsembleFC = EnsembleFC(
             hidden_size,
@@ -525,7 +534,7 @@ class EnsembleDynamicsModel:
                     val_losses_list.append(holdout_mse_losses)
             val_losses.append(
                 np.sum(np.array(val_losses_list), axis=0)
-                / (int(holdout_inputs.shape[0] / val_batch_size) + 1)
+                / (int(holdout_inputs.shape[0] / val_batch_size) + 1),
             )
             sorted_loss_idx = np.argsort(val_losses)
             self.elite_model_idxes = sorted_loss_idx[: self._elite_size].tolist()
