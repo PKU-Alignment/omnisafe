@@ -372,7 +372,7 @@ If you find OmniSafe useful or use OmniSafe in your research, please cite it in 
 
 ## The OmniSafe Team
 
-OmniSafe is mainly developed by the SafeRL research team directed by Prof. [Yaodong Yang](https://github.com/orgs/PKU-Alignment/people/PKU-YYang).
+OmniSafe is mainly developed by the SafeRL research team directed by Prof. [Yaodong Yang](https://github.com/PKU-YYang).
 Our SafeRL research team members include [Borong Zhang](https://github.com/muchvo), [Jiayi Zhou](https://github.com/Gaiejj), [JTao Dai](https://github.com/calico-1226), [Weidong Huang](https://github.com/hdadong), [Ruiyang Sun](https://github.com/rockmagma02), [Xuehai Pan](https://github.com/XuehaiPan) and [Jiaming Ji](https://github.com/zmsn-2077).
 If you have any questions in the process of using OmniSafe, don't hesitate to ask your questions on [the GitHub issue page](https://github.com/PKU-Alignment/omnisafe/issues/new/choose), we will reply to you in 2-3 working days.
 
