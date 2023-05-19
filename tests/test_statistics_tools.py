@@ -14,6 +14,8 @@
 # ==============================================================================
 """Test analyzing policies trained by exp-x with OmniSafe."""
 
+import pytest
+
 from omnisafe.common.statistics_tools import StatisticsTools
 
 
@@ -29,3 +31,6 @@ def test_statistics_tools():
     # but the two mode can not be used at the same time.
     st.draw_graph('algo', None, 1)
     st.draw_graph('algo', ['PolicyGradient'], None)
+    not_a_path = 'not_a_path'
+    with pytest.raises(SystemExit):
+        st.load_source(not_a_path)

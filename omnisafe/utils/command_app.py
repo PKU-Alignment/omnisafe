@@ -145,18 +145,21 @@ def train(  # pylint: disable=too-many-arguments
     if plot:
         try:
             agent.plot(smooth=1)
-        except RuntimeError:
+        except Exception:  # noqa # pragma: no cover # pylint: disable=broad-except
             console.print('failed to plot data', style='red bold')
+            console.print(Exception, style='red bold')
     if render:
         try:
             agent.render(num_episodes=10, render_mode='rgb_array', width=256, height=256)
-        except RuntimeError:
+        except Exception:  # noqa # pragma: no cover # pylint: disable=broad-except
             console.print('failed to render model', style='red bold')
+            console.print(Exception, style='red bold')
     if evaluate:
         try:
             agent.evaluate(num_episodes=10)
-        except RuntimeError:
+        except Exception:  # noqa # pragma: no cover # pylint: disable=broad-except
             console.print('failed to evaluate model', style='red bold')
+            console.print(Exception, style='red bold')
 
 
 @app.command()

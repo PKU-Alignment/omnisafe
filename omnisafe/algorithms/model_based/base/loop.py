@@ -412,20 +412,3 @@ class LOOP(PETS):
         log_prob = self._actor_critic.actor.log_prob(action)
         q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
         return (self._alpha * log_prob - torch.min(q1_value_r, q2_value_r)).mean()
-
-    def _log_when_not_update(self) -> None:
-        """Log when not update."""
-        self._logger.store(
-            **{
-                'Loss/Loss_reward_critic': 0.0,
-                'Loss/Loss_pi': 0.0,
-                'Value/reward_critic': 0.0,
-            },
-        )
-        if self._cfgs.algo_cfgs.use_cost:
-            self._logger.store(
-                **{
-                    'Loss/Loss_cost_critic': 0.0,
-                    'Value/cost_critic': 0.0,
-                },
-            )

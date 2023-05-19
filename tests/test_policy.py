@@ -35,9 +35,8 @@ saute_policy = ['TRPOSaute', 'PPOSaute']
 simmer_policy = ['TRPOSimmerPID', 'PPOSimmerPID']
 pid_lagrange_policy = ['TRPOPID', 'CPPOPID']
 early_terminated_policy = ['TRPOEarlyTerminated', 'PPOEarlyTerminated']
-offline_policy = ['BCQ', 'BCQLag', 'CRR', 'CCRR', 'COptiDICE', 'VAEBC']
-# saute_policy = ['PPOSaute', 'PPOLagSaute']
-# simmer_policy = ['PPOSimmerQ', 'PPOLagSimmerQ', 'PPOSimmerPid', 'PPOLagSimmerPid']
+offline_policy = ['BCQ', 'BCQLag', 'CRR', 'CCRR', 'VAEBC']
+
 model_cfgs = {
     'linear_lr_decay': True,
     'actor': {
@@ -225,6 +224,7 @@ def test_cem_based(algo):
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
+    agent.render()
 
 
 @helpers.parametrize(algo=['LOOP', 'SafeLOOP'])
@@ -248,6 +248,8 @@ def test_loop(algo):
             'update_policy_iters': 1,
             'start_learning_steps': 3,
             'policy_batch_size': 10,
+            'use_critic_norm': True,
+            'max_grad_norm': True,
         },
         'planner_cfgs': {
             'plan_horizon': 2,
@@ -445,6 +447,29 @@ def test_offline(algo):
         },
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
+
+
+@helpers.parametrize(
+    fn_type=['softchi', 'chisquare'],
+)
+def test_coptidice(fn_type):
+    """Test coptidice algorithms."""
+    env_id = 'Simple-v0'
+    dataset = os.path.join(os.path.dirname(__file__), 'saved_source', 'Simple-v0.npz')
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 4,
+            'torch_threads': 4,
+            'dataset': dataset,
+        },
+        'algo_cfgs': {
+            'batch_size': 10,
+            'steps_per_epoch': 2,
+            'fn_type': fn_type,
+        },
+    }
+    agent = omnisafe.Agent('COptiDICE', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
 
 

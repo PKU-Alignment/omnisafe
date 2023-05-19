@@ -24,6 +24,7 @@ import torch
 from gymnasium import spaces
 
 from omnisafe.envs.core import CMDP, env_register
+from omnisafe.typing import OmnisafeSpace
 
 
 @env_register
@@ -35,11 +36,21 @@ class SimpleEnv(CMDP):
     need_auto_reset_wrapper = True
     need_time_limit_wrapper = True
     _num_envs = 1
+    _coordinate_observation_space: OmnisafeSpace
 
     def __init__(self, env_id: str, **kwargs) -> None:
         self._count = 0
         self._observation_space = spaces.Box(low=-1.0, high=1.0, shape=(3,))
         self._action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,))
+        self._coordinate_observation_space = spaces.Box(low=-1.0, high=1.0, shape=(3,))
+
+    @property
+    def get_cost_from_obs_tensor(self) -> None:
+        return None
+
+    @property
+    def coordinate_observation_space(self) -> OmnisafeSpace:
+        return self._coordinate_observation_space
 
     def step(
         self,
@@ -51,7 +62,7 @@ class SimpleEnv(CMDP):
         cost = 10000 * torch.as_tensor(random.random())
         termiated = torch.as_tensor(random.random() > 0.9)
         truncated = torch.as_tensor(self._count > 10)
-        return obs, reward, cost, termiated, truncated, {}
+        return obs, reward, cost, termiated, truncated, {'final_observation': obs}
 
     def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
         if seed is not None:
