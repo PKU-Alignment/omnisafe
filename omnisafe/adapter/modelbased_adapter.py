@@ -126,7 +126,7 @@ class ModelBasedAdapter(
         self._last_eval: int = 0
         self._first_log: bool = False
 
-    def get_cost_from_obs_tensor(self, obs: torch.Tensor) -> torch.Tensor | None:
+    def get_cost_from_obs_tensor(self, obs: torch.Tensor) -> torch.Tensor:
         """Get cost from tensor observation.
 
         Args:
