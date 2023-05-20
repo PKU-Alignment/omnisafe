@@ -83,6 +83,7 @@ class ModelBasedAdapter(
         num_envs: int,
         seed: int,
         cfgs: Config,
+        **env_kwargs: Any,
     ) -> None:
         """Initialize the model-based adapter."""
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
@@ -90,7 +91,9 @@ class ModelBasedAdapter(
         self._env_id: str = env_id
         self._device: torch.device = get_device(cfgs.train_cfgs.device)
 
-        self._env: CMDP = make(env_id, num_envs=num_envs, device=cfgs.train_cfgs.device)
+        self._env: CMDP = make(
+            env_id, num_envs=num_envs, device=cfgs.train_cfgs.device, **env_kwargs
+        )
 
         # wrap the environment, use the action repeat in model-based setting.
         self._wrapper(
@@ -312,7 +315,7 @@ class ModelBasedAdapter(
                 use_eval
                 and current_step % self._cfgs.evaluation_cfgs.eval_cycle
                 < self._cfgs.algo_cfgs.action_repeat
-                and current_step - self._last_eval >= self._cfgs.evaluation_cfgs.eval_cycl
+                and current_step - self._last_eval >= self._cfgs.evaluation_cfgs.eval_cycle
             ):
                 eval_start = time.time()
                 eval_func(current_step, True)

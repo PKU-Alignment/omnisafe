@@ -102,7 +102,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         self._env.reset()
         self.goal_position: np.ndarray = self._env.task.goal.pos
         self.robot_position: np.ndarray = self._env.task.agent.pos
-        self.hazards_position: np.ndarray = self._env.task.hazards.pos
+        self.hazards_position: list[np.ndarray] = self._env.task.hazards.pos
         self.goal_distance: float = self._dist_xy(self.robot_position, self.goal_position)
 
         coordinate_sensor_obs: dict[str, Any] = self._get_coordinate_sensor()
@@ -199,14 +199,14 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             lidar_obs (torch.Tensor): lidar observation.
         """
         robot_matrix_x_y = obs[self.key_to_slice['robot_m']]
-        robot_matrix_x = robot_matrix_x_y[0]
-        robot_matrix_y = robot_matrix_x_y[1]
-        first_row = [robot_matrix_x, robot_matrix_y, 0]
-        second_row = [-robot_matrix_y, robot_matrix_x, 0]
-        third_row = [0, 0, 1]
-        robot_matrix = np.array([first_row, second_row, third_row])
+        robot_matrix_x = float(robot_matrix_x_y[0])
+        robot_matrix_y = float(robot_matrix_x_y[1])
+        first_row = [robot_matrix_x, robot_matrix_y, 0.0]
+        second_row = [-robot_matrix_y, robot_matrix_x, 0.0]
+        third_row = [0.0, 0.0, 1.0]
+        robot_matrix = [first_row, second_row, third_row]
         robot_pos = obs[self.key_to_slice['robot']]
-        hazards_lidar_vec = self._obs_lidar_pseudo(robot_matrix, robot_pos, [self.hazards_position])
+        hazards_lidar_vec = self._obs_lidar_pseudo(robot_matrix, robot_pos, self.hazards_position)
 
         goal_lidar_vec = self._obs_lidar_pseudo(robot_matrix, robot_pos, [self.goal_position])
         base_state_vec = obs[self.key_to_slice['base_state']]
@@ -220,7 +220,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
     def _ego_xy(
         self,
-        robot_matrix: np.ndarray,
+        robot_matrix: list[list[float]],
         robot_pos: np.ndarray,
         pos: np.ndarray,
     ) -> np.ndarray:
@@ -246,7 +246,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
     def _obs_lidar_pseudo(
         self,
-        robot_matrix: np.ndarray,
+        robot_matrix: list[list[float]],
         robot_pos: np.ndarray,
         positions: list[np.ndarray],
     ) -> np.ndarray:  # pylint: disable=too-many-locals

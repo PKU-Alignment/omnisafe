@@ -71,6 +71,8 @@ class StandardScaler:
         Returns:
             transformed_data (torch.Tensor): The transformed data.
         """
+        if torch.is_tensor(data):
+            return (data - self._mean_t) / self._std_t
         return (data - self._mean) / self._std
 
 
@@ -428,6 +430,7 @@ class EnsembleDynamicsModel:
             use_decay=model_cfgs.use_decay,
         )
         self._ensemble_model.to(self._device)
+        self._max_epoch_since_update = 5
         self._epochs_since_update: int = 0
         self._snapshots: dict[int, tuple[int, float]] = {
             i: (0, 1e10) for i in range(self._num_ensemble)
@@ -532,13 +535,13 @@ class EnsembleDynamicsModel:
                     )
                     holdout_mse_losses = holdout_mse_losses.detach().cpu().numpy()
                     val_losses_list.append(holdout_mse_losses)
-            val_losses.append(
-                np.sum(np.array(val_losses_list), axis=0)
-                / (int(holdout_inputs.shape[0] / val_batch_size) + 1),
+            current_loss = np.sum(np.array(val_losses_list), axis=0) / (
+                int(holdout_inputs.shape[0] / val_batch_size) + 1
             )
-            sorted_loss_idx = np.argsort(val_losses)
+            val_losses.append(current_loss)
+            sorted_loss_idx = np.argsort(current_loss)
             self.elite_model_idxes = sorted_loss_idx[: self._elite_size].tolist()
-            break_train = self._save_best(epoch, val_losses)
+            break_train = self._save_best(epoch, current_loss)
             if break_train:
                 break
 
