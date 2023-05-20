@@ -286,7 +286,7 @@ class PETS(BaseAlgo):
         self,
         current_step: int,
         state: torch.Tensor,
-    ) -> tuple[torch.Tensor, dict[str, Any]]:
+    ) -> torch.Tensor:
         """Action selection.
 
         Args:
@@ -306,8 +306,7 @@ class PETS(BaseAlgo):
         assert action.shape == torch.Size(
             [1, *self._action_space.shape],
         ), 'action shape should be [batch_size, action_dim]'
-        info = {}
-        return action, info
+        return action
 
     def _store_real_data(  # pylint: disable=too-many-arguments,unused-argument
         self,
@@ -416,7 +415,7 @@ class PETS(BaseAlgo):
                 num_episode += 1
                 if num_episode == self._cfgs.evaluation_cfgs.num_episode:
                     break
-            action, _ = self._select_action(current_step, obs)
+            action = self._select_action(current_step, obs)
 
             idx = np.random.choice(self._dynamics.elite_model_idxes, size=1)[0]
             traj = self._dynamics.imagine(

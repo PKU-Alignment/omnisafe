@@ -145,12 +145,11 @@ class LOOP(PETS):
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
 
-    # TODO: unused info
     def _select_action(  # pylint: disable=unused-argument
         self,
         current_step: int,
         state: torch.Tensor,
-    ) -> tuple[torch.Tensor, dict]:
+    ) -> torch.Tensor:
         """Select action.
 
         Args:
@@ -171,8 +170,7 @@ class LOOP(PETS):
         assert action.shape == torch.Size(
             [1, *self._action_space.shape],
         ), 'action shape should be [batch_size, action_dim]'
-        info = {}
-        return action, info
+        return action
 
     def _update_policy(self, current_step: int) -> None:
         """Update policy.

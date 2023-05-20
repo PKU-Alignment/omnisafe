@@ -14,11 +14,13 @@
 # ==============================================================================
 """Model-based Adapter for OmniSafe."""
 
+
 from __future__ import annotations
 
 import time
 from typing import Any, Callable
 
+import numpy as np
 import torch
 from gymnasium.spaces import Box
 
@@ -92,7 +94,10 @@ class ModelBasedAdapter(
         self._device: torch.device = get_device(cfgs.train_cfgs.device)
 
         self._env: CMDP = make(
-            env_id, num_envs=num_envs, device=cfgs.train_cfgs.device, **env_kwargs
+            env_id,
+            num_envs=num_envs,
+            device=cfgs.train_cfgs.device,
+            **env_kwargs,
         )
 
         # wrap the environment, use the action repeat in model-based setting.
@@ -138,11 +143,11 @@ class ModelBasedAdapter(
             else torch.zeros(1)
         )
 
-    def get_lidar_from_coordinate(self, obs: torch.Tensor) -> torch.Tensor | None:
+    def get_lidar_from_coordinate(self, obs: np.ndarray) -> torch.Tensor | None:
         """Get lidar from numpy coordinate.
 
         Args:
-            obs (torch.Tensor): The observation.
+            obs (np.ndarray): The observation.
         """
         return (
             self._env.get_lidar_from_coordinate(obs)
@@ -219,7 +224,7 @@ class ModelBasedAdapter(
         current_step: int,
         rollout_step: int,
         use_actor_critic: bool,
-        act_func: Callable[[int, torch.Tensor], tuple[torch.Tensor, dict[str, Any]]],
+        act_func: Callable[[int, torch.Tensor], torch.Tensor],
         store_data_func: Callable[
             [
                 torch.Tensor,

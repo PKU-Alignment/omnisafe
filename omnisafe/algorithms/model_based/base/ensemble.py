@@ -71,9 +71,7 @@ class StandardScaler:
         Returns:
             transformed_data (torch.Tensor): The transformed data.
         """
-        if torch.is_tensor(data):
-            return (data - self._mean_t) / self._std_t
-        return (data - self._mean) / self._std
+        return (data - self._mean_t) / self._std_t
 
 
 def init_weights(layer: nn.Module) -> None:
