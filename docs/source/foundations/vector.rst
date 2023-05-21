@@ -6,7 +6,8 @@ Vector Projection
 
 The projection of a vector :math:`\boldsymbol{y} \in \mathbb{R}^m` onto the
 span of :math:`\left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}` (here
-we assume :math:`\boldsymbol{x}_i \in \mathbb{R}^m` and denote :math:`\operatorname{span}(\{\boldsymbol{x}_1,
+we assume :math:`\boldsymbol{x}_i \in \mathbb{R}^m` and denote
+:math:`\operatorname{span}(\{\boldsymbol{x}_1,
 \ldots, \boldsymbol{x}_n\})` as  :math:`\boldsymbol{X}` ) is the vector
 :math:`\boldsymbol{v} \in \boldsymbol{X}`,
 such that :math:`\boldsymbol{v}` is as close as possible to :math:`\boldsymbol
@@ -16,14 +17,14 @@ such that :math:`\boldsymbol{v}` is as close as possible to :math:`\boldsymbol
 \left\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\right\}\right)`
 and can define it formally as
 
-.. math:: \operatorname{Proj}(\boldsymbol{y} ;\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\})=\mathop{\arg\min}\limits_{\boldsymbol{v} \in \boldsymbol{X}}\|\boldsymbol{y}-\boldsymbol{v}\|_2 .
+.. math:: \operatorname{Proj}(\boldsymbol{y} ;\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_n\})=\mathop{\arg\min}\limits_{\boldsymbol{v} \in \boldsymbol{X}}\|\boldsymbol{y}-\boldsymbol{v}\|_2
 
 Given a full rank matrix :math:`\mathbf{A} \in \mathbb{R}^{m \times n}`
 with :math:`m \geq n`, we can define the projection of a vector
 :math:`\boldsymbol{y} \in \mathbb{R}^m` onto the range of :math:`\mathbf{A}` as
 follows:
 
-.. math:: \operatorname{Proj}(\boldsymbol{y} ; \mathbf{A})=\mathop{\arg\min}\limits_{\boldsymbol{v} \in \mathcal{R}(\mathbf{A})}\|\boldsymbol{v}-\boldsymbol{y}\|_2=\mathbf{A}\left(\mathbf{A}^{\top} \mathbf{A}\right)^{-1} \mathbf{A}^{\top} \boldsymbol{y} .
+.. math:: \operatorname{Proj}(\boldsymbol{y} ; \mathbf{A})=\mathop{\arg\min}\limits_{\boldsymbol{v} \in \mathcal{R}(\mathbf{A})}\|\boldsymbol{v}-\boldsymbol{y}\|_2=\mathbf{A}\left(\mathbf{A}^{\top} \mathbf{A}\right)^{-1} \mathbf{A}^{\top} \boldsymbol{y}
 
 
 Norms
@@ -65,13 +66,13 @@ Norms
                :math:`\|\boldsymbol{x}\|_p=\left(\sum_{i=1}^n\left|x_i\right|^p\right)^{1 / p}`,
                for :math:`p \geq 1`.
 
+            -  **Max-norm:** :math:`\|x\|_{\infty}=\max _i\left|x_i\right|`.
+
             -  **2-norm:** :math:`\|\boldsymbol{x}\|_2=\sqrt{\sum_{i=1}^n x_i^2}`, also
                called Euclidean norm. Note that
                :math:`\|\boldsymbol{x}\|_2^2=\boldsymbol{x}^{\top} \boldsymbol{x}`.
 
             -  **1-norm:** :math:`\|\boldsymbol{x}\|_1=\sum_{i=1}^n\left|x_i\right|`.
-
-            -  **Max-norm:** :math:`\|x\|_{\infty}=\max _i\left|x_i\right|`.
 
             -  **0-norm:**
                :math:`\|\boldsymbol{x}\|_0=\sum_{i=1}^n \mathbb{I}\left(\left|x_i\right|>0\right)`.
@@ -89,7 +90,7 @@ Norms
 
             Introduction of Matrix Norm
             ^^^
-            Suppose we think of a matrix
+            Suppose a matrix
             :math:`\mathbf{A} \in \mathbb{R}^{m \times n}` as defining a linear
             function :math:`f(\boldsymbol{x})=\mathbf{A} \boldsymbol{x}`. We define the induced norm
             of :math:`\mathbf{A}` as the maximum amount by which :math:`f` can

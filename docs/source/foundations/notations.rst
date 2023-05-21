@@ -119,34 +119,34 @@ we use :math:`\pi` to represent :math:`\pi_{\theta}`.
             ^^^
             Let :math:`J^R(\pi)` denote its expected discounted reward,
 
-            .. math:: J^R(\pi) \doteq \mathbb{E}_{\tau \sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right],
+            .. math:: J^R(\pi) \doteq \mathbb{E}_{\tau \sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t r\left(s_t\right)\right]
 
             Here :math:`\tau` denotes a trajectory :math:`(s_0, a_0, s_1, ...)`,
             and :math:`\tau \sim \pi` is shorthand for indicating that the distribution over trajectories depends on a stationary parameterized policy
             :math:`\pi_{\theta}`: :math:`s_0 \sim \mu`,
             :math:`a_t \sim \pi(\cdot|s_t)`,
             :math:`s_{t+1} \sim \mathbb{P}(\cdot | s_t, a_t)`.
-            Meanwhile, let :math:`R(\tau)` denote the discounted return of a trajectory.
+            Meanwhile, let :math:`R(\tau)` denote the discounted return of a trajectory. :math:`R(\tau) = \sum_{t=0}^{\infty} \gamma^t r(s_t)`
 
             The state action value function
 
-            .. math:: Q^R_{\pi} \left(s, a\right) \doteq \mathbb{E}_{\tau \sim \pi}\left[ R(\tau) | s_0 = s, a_0 = a \right].
+            .. math:: Q^R_{\pi} \left(s, a\right) \doteq \mathbb{E}_{\tau \sim \pi}\left[ R(\tau) | s_0 = s, a_0 = a \right]
 
             The value function
 
-            .. math:: V^R_{\pi}\left(s\right) \doteq \mathbb{E}_{\tau \sim \pi}\left[R(\tau) | s_0 = s\right].
+            .. math:: V^R_{\pi}\left(s\right) \doteq \mathbb{E}_{\tau \sim \pi}\left[R(\tau) | s_0 = s\right]
 
             And the advantage function
 
-            .. math:: A^R_{\pi}(s, a) \doteq Q^R_{\pi}(s, a)-V^R_{\pi}(s).
+            .. math:: A^R_{\pi}(s, a) \doteq Q^R_{\pi}(s, a)-V^R_{\pi}(s)
 
             Let :math:`\mathbb{P}_{\pi}\left(s'\mid s\right)` denote one-step state transition probability from :math:`s` to :math:`s'` by executing :math:`\pi`,
 
-            .. math:: \mathbb{P}_{\pi}\left(s'\mid s\right)=\sum_{a\in\mathcal{A}}\pi\left(a\mid s\right) \mathbb{P}_{\pi}\left(s'\mid s,a\right).
+            .. math:: \mathbb{P}_{\pi}\left(s'\mid s\right)=\sum_{a\in\mathcal{A}}\pi\left(a\mid s\right) \mathbb{P}_{\pi}\left(s'\mid s,a\right)
 
             Then for any initial state :math:`s_0 \sim \mu`, we have
 
-            .. math:: \mathbb{P}_{\pi}\left(s_t=s\mid s_0\right)=\sum_{s'\in\mathcal{S}} \mathbb{P}_{\pi}\left(s_t=s\mid s_{t-1}=s'\right)\mathbb{P}_{\pi}\left(s_{t-1}=s'\mid s_0\right),
+            .. math:: \mathbb{P}_{\pi}\left(s_t=s\mid s_0\right)=\sum_{s'\in\mathcal{S}} \mathbb{P}_{\pi}\left(s_t=s\mid s_{t-1}=s'\right)\mathbb{P}_{\pi}\left(s_{t-1}=s'\mid s_0\right)
 
             where :math:`s_0 \sim \mu` and the actions are chosen according to :math:`\pi`.
 
@@ -156,7 +156,7 @@ we use :math:`\pi` to represent :math:`\pi_{\theta}`.
 
                \begin{aligned}
                   d_{\boldsymbol{\pi}}(s)&=\sum_{t=0}^{\infty} \gamma^t \mathbb{P}_{\pi}\left(s_t=s \mid s_0\right)\\
-                  &=\mathbb{P}\left(s_0=s\right)+\gamma \mathbb{P}\left(s_1=s\mid s_0\right)+\gamma^2 \mathbb{P}\left(s_2=s\mid s_0\right)+\cdots.
+                  &=\mathbb{P}\left(s_0=s\right)+\gamma \mathbb{P}\left(s_1=s\mid s_0\right)+\gamma^2 \mathbb{P}\left(s_2=s\mid s_0\right)+\cdots
                \end{aligned}
 
     .. tab-item:: To CMDP
@@ -180,7 +180,7 @@ we use :math:`\pi` to represent :math:`\pi_{\theta}`.
             .. math::
 
                \begin{aligned}
-                  J^{C_i}(\pi) = \mathbb{E}_{\tau \sim \pi}[\sum_{t=0}^{\infty} \gamma^t C_i(s_t, a_t, s_{t+1})].
+                  J^{C_i}(\pi) = \mathbb{E}_{\tau \sim \pi}[\sum_{t=0}^{\infty} \gamma^t C_i(s_t, a_t, s_{t+1})]
                \end{aligned}
 
             So, the feasible set of stationary parameterized policies for CMDP is
@@ -197,30 +197,30 @@ we use :math:`\pi` to represent :math:`\pi_{\theta}`.
 
                \begin{aligned}
                   \label{def:problem-setting}
-                  \pi^{*}=\arg\max_{\pi_\theta \in\Pi_{C}} J^R(\pi_{\theta}).
+                  \pi^{*}=\arg\max_{\pi_\theta \in\Pi_{C}} J^R(\pi_{\theta})
                \end{aligned}
 
             Respectively we have:
 
             The state action value function
 
-            .. math:: Q^{C}_{\pi} \left(s, a\right) \doteq \mathbb{E}_{\tau \sim \pi}\left[ C(\tau) | s_0 = s, a_0 = a \right].
+            .. math:: Q^{C}_{\pi} \left(s, a\right) \doteq \mathbb{E}_{\tau \sim \pi}\left[ C(\tau) | s_0 = s, a_0 = a \right]
 
             The value function
 
-            .. math:: V^{C}_{\pi}\left(s\right) \doteq \mathbb{E}_{\tau \sim \pi}\left[C(\tau) | s_0 = s\right].
+            .. math:: V^{C}_{\pi}\left(s\right) \doteq \mathbb{E}_{\tau \sim \pi}\left[C(\tau) | s_0 = s\right]
 
             And the advantage function
 
-            .. math:: A^{C}_{\pi}(s, a) \doteq Q^{C}_{\pi}(s, a)-V^{C}_{\pi}(s).
+            .. math:: A^{C}_{\pi}(s, a) \doteq Q^{C}_{\pi}(s, a)-V^{C}_{\pi}(s)
 
 
 To summarize all of the above notation, we show the following table,
 
 - :math:`\tau` is a trajectory that consist of
   :math:`\left(s_0, a_0, s_1, a_1, \cdots\right)`
-- :math:`\pi_{\theta},~  \theta` is a stationary parameterized policy
-  :math:`\pi_{\theta}` is a probability distribution defined on
+- :math:`\pi_{\theta}` or :math:`\theta` is a stationary parameterized policy
+  which is a probability distribution defined on
   :math:`\mathcal{S}\times\mathcal{A}`, :math:`\pi_{\theta}(a|s)`
   denotes the probability of playing :math:`a` in state :math:`s`.
 - :math:`J^R(\pi_{\theta}),~ J^R(\theta)` are the expected discounted reward

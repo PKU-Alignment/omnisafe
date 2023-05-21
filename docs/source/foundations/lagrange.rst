@@ -13,12 +13,12 @@ Consider a general optimization problem (called as the primal problem):
 .. math::
     :label: preknow-eq-1
 
-    \underset{x}{\text{min}} & f(x) \\
+    \underset{x}{\min} & f(x) \\
     \text { s.t. } & h_i(x) \leq 0, i=1, \cdots, m \\
     & \ell_j(x)=0, j=1, \cdots, r
 
 
-We define its Lagrangian as:
+We define its Lagrangian dual version as:
 
 .. math:: L(x, u, v)=f(x)+\sum_{i=1}^m u_i h_i(x)+\sum_{j=1}^r v_j \ell_j(x)
 
@@ -62,7 +62,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
 
 
 
-                f^*=\underset{x}{\text{min}} \theta_p(x)=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max}  L(x, u, v)
+                f^*=\underset{x}{\min} \theta_p(x)=\underset{x}{\min}\underset{u \geq 0, v}{\max}  L(x, u, v)
 
 
 .. tab-set::
@@ -100,7 +100,7 @@ Lagrange multipliers :math:`u \in \mathbb{R}^m, v \in \mathbb{R}^r`.
             :math:`\theta_p(x)\rightarrow +\infty` as :math:`u_i\rightarrow +\infty`
             or :math:`v_jh_j(x)\rightarrow +\infty`. So in total, if :math:`f^*`
             violates the constraints, it will not be the optimal value of the primal
-            problem. Thus we obtain :math:`f^*=\underset{x}{\text{min}}\theta_p(x)`
+            problem. Thus we obtain :math:`f^*=\underset{x}{\min}\theta_p(x)`
             if :math:`f^*` is the optimal value of the primal problem.
 
 Dual Problem
@@ -108,7 +108,7 @@ Dual Problem
 
 Given a Lagrangian multiplier, we define its Lagrange dual function as:
 
-.. math:: \theta_d(u,v)=\underset{x}{\text{min}} L(x,u,v)
+.. math:: \theta_d(u,v)=\underset{x}{\min} L(x,u,v)
 
 where the subscription :math:`d` denotes the dual problem. It is worth
 mentioning that the infimum here does not require :math:`x` to be taken
@@ -122,11 +122,11 @@ define its Lagrange dual problem as:
    \begin{array}{rl}
    \underset{u,v}{\max}& \theta_d(u, v) \\
    \text {s.t.} & u \geq 0
-   \end{array}\nonumber
+   \end{array}
 
 From the definitions we easily obtain that the optimal value of the dual
 problem, named as :math:`g^*`, satisfies:
-:math:`g^*=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}}L(x,u,v)`.
+:math:`g^*=\underset{u\ge0,v}{\max}\underset{x}{\min}L(x,u,v)`.
 
 .. grid:: 2
 
@@ -151,7 +151,7 @@ problem, named as :math:`g^*`, satisfies:
             Proof of Lemma 3
             ^^^
             By definition,
-            :math:`\theta_d(u,v)=\underset{x}{\text{min}} L(x,u,v)` can be viewed as
+            :math:`\theta_d(u,v)=\underset{x}{\min} L(x,u,v)` can be viewed as
             point-wise infimum of affine functions of :math:`u` and :math:`v`, thus
             is concave. :math:`u \geq 0` is affine constraints. Hence dual problem
             is a concave maximization problem, which is a convex optimization
@@ -190,16 +190,16 @@ primal and dual problems.
 
             We have the definitions that:
 
-            .. math:: f^*=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max}  L(x, u, v) \quad g^*=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}} L(x,u,v)
+            .. math:: f^*=\underset{x}{\min}\underset{u \geq 0, v}{\max}  L(x, u, v) \quad g^*=\underset{u\ge0,v}{\max}\underset{x}{\min} L(x,u,v)
 
             Then:
 
             .. math::
 
                 \begin{aligned}
-                    g^*&=\underset{u\ge0,v}{\text{max}}\underset{x}{\text{min}} L(x,u,v)=\underset{x}{\text{min}} L(x,u^*,v^*)\nonumber\\
-                    &\le L(x^*,u^*,v^*)\le \underset{u\ge 0,v}{\text{max}} L(x^*,u,v)\nonumber\\
-                    &=\underset{x}{\text{min}}\underset{u \geq 0, v}{\max}  L(x, u, v)=f^*\nonumber
+                    g^*&=\underset{u\ge0,v}{\max}\underset{x}{\min} L(x,u,v)=\underset{x}{\min} L(x,u^*,v^*)\nonumber\\
+                    &\le L(x^*,u^*,v^*)\le \underset{u\ge 0,v}{\max} L(x^*,u,v)\nonumber\\
+                    &=\underset{x}{\min}\underset{u \geq 0, v}{\max}  L(x, u, v)=f^*\nonumber
                 \end{aligned}
 
             The weak duality is intuitive because it simply takes a small step based
