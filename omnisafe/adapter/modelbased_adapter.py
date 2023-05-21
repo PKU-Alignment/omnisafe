@@ -54,6 +54,13 @@ class ModelBasedAdapter(
         seed (int): The random seed.
         cfgs (Config): The configuration.
 
+    Keyword Args:
+        render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'. Defaults to 'rgb_array'.
+        camera_name (str, optional): The camera name.
+        camera_id (int, optional): The camera id.
+        width (int, optional): The width of the rendered image. Defaults to 256.
+        height (int, optional): The height of the rendered image. Defaults to 256.
+
     Attributes:
         coordinate_observation_space (OmnisafeSpace): The coordinate observation space.
         lidar_observation_space (OmnisafeSpace): The lidar observation space.

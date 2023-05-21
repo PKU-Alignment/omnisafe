@@ -314,7 +314,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         """Get the flattened obs.
 
         Args:
-            coordinate_obs (dict[str, Any]): dict of coordinate and sensor observations.
+            coordinate_obs (dict[str, Any]): The dict of coordinate and sensor observations.
 
         Returns:
             flat_obs: The flattened observation.
@@ -335,7 +335,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         The returned obs coordinates are all in the robot coordinates.
 
         Returns:
-            coordinate_obs: coordinate observation.
+            coordinate_obs: The coordinate observation.
         """
         obs = {}
         robot_matrix = self._env.task.agent.mat
