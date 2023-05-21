@@ -14,6 +14,7 @@
 # ==============================================================================
 """Model Predictive Control Planner of the Conservative and Adaptive Penalty algorithm."""
 
+
 from __future__ import annotations
 
 from typing import Any

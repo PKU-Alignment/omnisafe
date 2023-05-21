@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Conservative and Adaptive Penalty algorithm."""
+
+
 from __future__ import annotations
 
 from typing import Any

@@ -601,7 +601,7 @@ class EnsembleDynamicsModel:
                 [np.random.permutation(holdout_inputs.shape[0]) for _ in range(self._num_ensemble)],
             )
             val_batch_size = 512
-            val_losses_list: list[float] = []
+            val_losses_list = []
             for start_pos in range(0, holdout_inputs.shape[0], val_batch_size):
                 with torch.no_grad():
                     idx = val_idx[:, start_pos : start_pos + val_batch_size]
@@ -618,7 +618,7 @@ class EnsembleDynamicsModel:
                         inc_var_loss=False,
                     )
                     holdout_mse_losses = holdout_mse_losses.detach().cpu().numpy()
-                    val_losses_list.append(float(holdout_mse_losses))
+                    val_losses_list.append(holdout_mse_losses)
             current_loss = np.sum(np.array(val_losses_list), axis=0) / (
                 int(holdout_inputs.shape[0] / val_batch_size) + 1
             )
@@ -668,7 +668,7 @@ class EnsembleDynamicsModel:
             network_output (torch.Tensor): The output of the network.
 
         Returns:
-            reward (torch.Tensor): The reward, from the network output or the reward function.
+            reward: The reward, from the network output or the reward function.
 
         Raises:
             ValueError: If the reward function is not defined.
@@ -692,7 +692,7 @@ class EnsembleDynamicsModel:
             network_output (torch.Tensor): The output of the network.
 
         Returns:
-            cost (torch.Tensor): The cost, from the network output or the cost function.
+            cost: The cost, from the network output or the cost function.
 
         Raises:
             ValueError: If the cost function is not defined.
@@ -714,7 +714,7 @@ class EnsembleDynamicsModel:
             network_output (torch.Tensor): The output of the network.
 
         Returns:
-            terminal (torch.Tensor): The terminal, from the network output or the terminal function.
+            terminal: The terminal signal, from the network output or the terminal function.
 
         Raises:
             ValueError: If the terminal function is not defined.

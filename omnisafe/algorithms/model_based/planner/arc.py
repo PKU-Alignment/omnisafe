@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Model Predictive Control Planner of the Actor Regularized Control (ARC) algorithm."""
+
+
 from __future__ import annotations
 
 from typing import Any

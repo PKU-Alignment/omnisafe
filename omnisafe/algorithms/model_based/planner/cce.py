@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Model Predictive Control Planner of the Constrained Cross-Entropy algorithm."""
+
+
 from __future__ import annotations
 
 from typing import Any
