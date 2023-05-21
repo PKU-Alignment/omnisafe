@@ -241,7 +241,7 @@ class PETS(BaseAlgo):
 
     def _update_policy(
         self,
-        current_step: int,
+        current_step: int,  # pylint: disable=unused-argument
     ) -> None:
         ...
 
