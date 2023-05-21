@@ -75,9 +75,9 @@ class CCEPlanner(CEMPlanner):
             traj (dict): Trajectory dictionary.
 
         Returns:
-            elites_value (torch.Tensor): Value of the elites.
-            elites_action (torch.Tensor): Action of the elites.
-            info (dict): Dictionary containing the information of elites value and action.
+            elites_value: The value of the elites.
+            elites_action: The action of the elites.
+            info: The dictionary containing the information of elites value and action.
         """
         rewards = traj['rewards']
         costs = traj['costs']

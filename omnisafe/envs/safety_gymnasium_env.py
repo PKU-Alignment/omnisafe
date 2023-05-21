@@ -35,7 +35,13 @@ class SafetyGymnasiumEnv(CMDP):
         num_envs (int, optional): Number of environments. Defaults to 1.
         device (torch.device, optional): Device to store the data. Defaults to
             ``torch.device('cpu')``.
-        **kwargs (Any): Other arguments.
+
+    Keyword Args:
+        render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'. Defaults to 'rgb_array'.
+        camera_name (str, optional): The camera name.
+        camera_id (int, optional): The camera id.
+        width (int, optional): The width of the rendered image. Defaults to 256.
+        height (int, optional): The height of the rendered image. Defaults to 256.
 
     Attributes:
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.

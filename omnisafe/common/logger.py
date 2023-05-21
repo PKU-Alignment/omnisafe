@@ -259,7 +259,9 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         Args:
             data (dict[str, int | float | np.ndarray | torch.Tensor] or None, optional): The data to
                 be stored. Defaults to None.
-            **kwargs (int, float, np.ndarray, or torch.Tensor): The data to be stored.
+
+        Keyword Args:
+            kwargs (int, float, np.ndarray, or torch.Tensor): The data to be stored.
         """
         if data is not None:
             kwargs.update(data)

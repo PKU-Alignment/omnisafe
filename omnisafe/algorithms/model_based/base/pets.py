@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Probabilistic Ensembles with Trajectory Sampling algorithm."""
+
+
 from __future__ import annotations
 
 import os
@@ -181,14 +183,15 @@ class PETS(BaseAlgo):
         """This is main function for algorithm update.
 
         It is divided into the following steps:
+
         - :meth:`rollout`: collect interactive data from environment.
         - :meth:`update`: perform actor/critic updates.
         - :meth:`log`: epoch/update information for visualization and terminal log print.
 
         Returns:
-            ep_ret: average episode return in final epoch.
-            ep_cost: average episode cost in final epoch.
-            ep_len: average episode length in final epoch.
+            ep_ret: Average episode return in final epoch.
+            ep_cost: Average episode cost in final epoch.
+            ep_len: Average episode length in final epoch.
         """
         self._logger.log('INFO: Start training')
         start_time = time.time()
@@ -245,11 +248,7 @@ class PETS(BaseAlgo):
     def _update_dynamics_model(
         self,
     ) -> None:
-        """Update dynamics.
-
-        Args:
-            current_step (int): current step.
-        """
+        """Update dynamics."""
         state = self._dynamics_buf.data['obs'][: self._dynamics_buf.size, :]
         action = self._dynamics_buf.data['act'][: self._dynamics_buf.size, :]
         reward = self._dynamics_buf.data['reward'][: self._dynamics_buf.size]
@@ -287,15 +286,14 @@ class PETS(BaseAlgo):
         current_step: int,
         state: torch.Tensor,
     ) -> torch.Tensor:
-        """Action selection.
+        """Select action.
 
         Args:
-            current_step (int): current step.
-            state (torch.Tensor): current state.
+            current_step (int): The current step.
+            state (torch.Tensor): The current state.
 
         Returns:
-            action (torch.Tensor): action.
-            info (dict): information.
+            The selected action.
         """
         assert state.shape[0] == 1, 'state shape should be [1, state_dim]'
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
@@ -322,17 +320,14 @@ class PETS(BaseAlgo):
         """Store real data in buffer.
 
         Args:
-            current_step (int): current step.
-            ep_len (int): episode length.
-            state (torch.Tensor): current state.
-            action (torch.Tensor): action.
-            reward (torch.Tensor): reward.
-            cost (torch.Tensor): cost.
-            terminated (torch.Tensor): terminated.
-            truncated (torch.Tensor): truncated.
-            next_state (torch.Tensor): next state.
-            info (dict): information.
-            action_info (dict): action information.
+            state (torch.Tensor): The state from the environment.
+            action (torch.Tensor): The action from the agent.
+            reward (torch.Tensor): The reward signal from the environment.
+            cost (torch.Tensor): The cost signal from the environment.
+            terminated (torch.Tensor): The terminated signal from the environment.
+            truncated (torch.Tensor): The truncated signal from the environment.
+            next_state (torch.Tensor): The next state from the environment.
+            info (dict[str, Any]): The information from the environment.
         """
         done = terminated or truncated
         goal_met = False if 'goal_met' not in info.keys() else info['goal_met']
@@ -356,9 +351,8 @@ class PETS(BaseAlgo):
         """Evaluation dynamics model single step.
 
         Args:
-            current_step (int): current step.
-            use_real_input (bool): use real input or not.
-
+            current_step (int): The current step.
+            use_real_input (bool): Whether to use real input or not.
         """
         obs, _ = self._eval_env.reset()
         obs_dynamics = obs
@@ -457,12 +451,12 @@ class PETS(BaseAlgo):
         """Draw a curve of the predicted value and the ground true value.
 
         Args:
-            timestep (int): current step.
-            num_episode (int): number of episodes.
-            pred_state (list): predicted state.
-            true_state (list): true state.
-            save_replay_path (str): save replay path.
-            name (str): name of the curve.
+            timestep (int): The current step.
+            num_episode (int): The number of episodes.
+            pred_state (list[float]): The predicted state.
+            true_state (list[float]): The true state.
+            save_replay_path (str): The save replay path.
+            name (str): The name of the curve.
         """
         target1 = list(pred_state)
         target2 = list(true_state)

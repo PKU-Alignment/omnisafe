@@ -46,8 +46,7 @@ class ModelBasedAdapter(
 ):  # pylint: disable=too-many-instance-attributes,super-init-not-called
     """Model Based Adapter for OmniSafe.
 
-    :class:`ModelBasedAdapter` is used to adapt the environment to the model-based training.
-
+    :class:`ModelBasedAdapter` is used to adapt the environment to the model-based training. It trains a world model to provide data for algorithms training.
 
     Args:
         env_id (str): The environment id.
@@ -56,16 +55,6 @@ class ModelBasedAdapter(
         cfgs (Config): The configuration.
 
     Attributes:
-        _env_id (str): The environment id.
-        _device (torch.device): The device.
-        _env (CMDP): The environment.
-        _cfgs (Config): The configuration.
-        _ep_ret (torch.Tensor): The episode return.
-        _ep_cost (torch.Tensor): The episode cost.
-        _ep_len (torch.Tensor): The episode length.
-        _last_dynamics_update (float): The last time of dynamics update.
-        _last_policy_update (float): The last time of policy update.
-        _last_eval (float): The last time of evaluation.
         coordinate_observation_space (OmnisafeSpace): The coordinate observation space.
         lidar_observation_space (OmnisafeSpace): The lidar observation space.
         task (str): The task. eg. The task of SafetyPointGoal-v0 is 'goal'
@@ -135,7 +124,7 @@ class ModelBasedAdapter(
         """Get cost from tensor observation.
 
         Args:
-            obs (torch.Tensor): The observation.
+            obs (torch.Tensor): The tensor version of observation.
         """
         return (
             self._env.get_cost_from_obs_tensor(obs)
@@ -160,7 +149,13 @@ class ModelBasedAdapter(
 
         Args:
             args (str): The arguments.
-            kwargs (Any): The keyword arguments.
+
+        Keyword Args:
+            render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'. Defaults to 'rgb_array'.
+            camera_name (str, optional): The camera name.
+            camera_id (int, optional): The camera id.
+            width (int, optional): The width of the rendered image. Defaults to 256.
+            height (int, optional): The height of the rendered image. Defaults to 256.
         """
         return self._env.render(*args, **kwargs)
 
@@ -251,14 +246,14 @@ class ModelBasedAdapter(
             current_step (int): Current training step.
             rollout_step (int): Number of steps to roll out.
             use_actor_critic (bool): Whether to use actor-critic.
-            act_func (Callable): Function to get action.
-            store_data_func (Callable): Function to store data.
-            update_dynamics_func (Callable): Function to update dynamics.
-            logger (Logger): Logger.
+            act_func (Callable[[int, torch.Tensor], torch.Tensor]): Function to get action.
+            store_data_func (Callable[[torch.Tensor, ..., dict[str, Any], ],None, ]): Function to store data.
+            update_dynamics_func (Callable[[], None]): Function to update dynamics.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
             use_eval (bool): Whether to use evaluation.
-            eval_func (Callable): Function to evaluate the agent.
-            algo_reset_func (Callable): Function to reset the algorithm.
-            update_actor_func (Callable): Function to update the actor.
+            eval_func (Callable[[int, bool], None]): Function to evaluate the agent.
+            algo_reset_func (Callable[[], None]): Function to reset the algorithm.
+            update_actor_func (Callable[[int], None]): Function to update the actor.
         """
         epoch_start_time = time.time()
 
@@ -270,7 +265,7 @@ class ModelBasedAdapter(
         epoch_steps = 0
 
         while epoch_steps < rollout_step and current_step < self._cfgs.train_cfgs.total_steps:
-            action, action_info = act_func(current_step, self._current_obs)
+            action = act_func(current_step, self._current_obs)
             next_state, reward, cost, terminated, truncated, info = self.step(action)
             epoch_steps += info['num_step']
             current_step += info['num_step']
@@ -370,7 +365,7 @@ class ModelBasedAdapter(
         """Log metrics.
 
         Args:
-            logger (Logger): Logger.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
         """
         self._first_log = True
         logger.store(

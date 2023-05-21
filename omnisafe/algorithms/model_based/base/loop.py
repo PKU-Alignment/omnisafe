@@ -153,13 +153,11 @@ class LOOP(PETS):
         """Select action.
 
         Args:
-            current_step (int): current step
-            state (torch.Tensor): current state
-            env (ModelBasedAdapter): environment
+            current_step (int): The current step.
+            state (torch.Tensor): The current state.
 
         Returns:
-            action (torch.Tensor): action
-            action_info (dict): action information
+            The selected action.
         """
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
@@ -233,17 +231,14 @@ class LOOP(PETS):
         """Store real data in buffer.
 
         Args:
-            current_step (int): current step
-            ep_len (int): episode length
-            state (torch.Tensor): current state
-            action (torch.Tensor): action
-            reward (torch.Tensor): reward
-            cost (torch.Tensor): cost
-            terminated (torch.Tensor): terminated
-            truncated (torch.Tensor): truncated
-            next_state (torch.Tensor): next state
-            info (dict): information
-            action_info (dict): action information
+            state (torch.Tensor): The state from the environment.
+            action (torch.Tensor): The action from the agent.
+            reward (torch.Tensor): The reward signal from the environment.
+            cost (torch.Tensor): The cost signal from the environment.
+            terminated (torch.Tensor): The terminated signal from the environment.
+            truncated (torch.Tensor): The truncated signal from the environment.
+            next_state (torch.Tensor): The next state from the environment.
+            info (dict[str, Any]): The information from the environment.
         """
         done = terminated or truncated
         goal_met = False if 'goal_met' not in info.keys() else info['goal_met']
@@ -280,11 +275,11 @@ class LOOP(PETS):
         """Update reward critic using Soft Actor-Critic.
 
         Args:
-            obs (torch.Tensor): observation
-            action (torch.Tensor): action
-            reward (torch.Tensor): reward
-            done (torch.Tensor): done
-            next_obs (torch.Tensor): next observation
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            action (torch.Tensor): The ``action`` sampled from buffer.
+            reward (torch.Tensor): The ``reward`` sampled from buffer.
+            done (torch.Tensor): The ``terminated`` sampled from buffer.
+            next_obs (torch.Tensor): The ``next observation`` sampled from buffer.
         """
         self._actor_critic.reward_critic_optimizer.zero_grad()
 
@@ -332,11 +327,11 @@ class LOOP(PETS):
         """Update cost critic using TD3 algorithm.
 
         Args:
-            obs (torch.Tensor): current observation
-            action (torch.Tensor): current action
-            cost (torch.Tensor): current cost
-            done (torch.Tensor): current done signal
-            next_obs (torch.Tensor): next observation
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            action (torch.Tensor): The ``action`` sampled from buffer.
+            cost (torch.Tensor): The ``cost`` sampled from buffer.
+            done (torch.Tensor): The ``terminated`` sampled from buffer.
+            next_obs (torch.Tensor): The ``next observation`` sampled from buffer.
         """
         with torch.no_grad():
             next_action = self._actor_critic.actor.predict(next_obs, deterministic=True)
@@ -373,7 +368,7 @@ class LOOP(PETS):
         """Update actor using Soft Actor-Critic algorithm.
 
         Args:
-            obs (torch.Tensor): observation
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
         """
         self._actor_critic.actor_optimizer.zero_grad()
         loss = self._loss_pi(obs)
@@ -400,10 +395,22 @@ class LOOP(PETS):
         self,
         obs: torch.Tensor,
     ) -> torch.Tensor:
-        """Compute loss for actor using Soft Actor-Critic algorithm.
+        r"""Computing ``pi/actor`` loss.
+
+        The loss function in SAC is defined as:
+
+        .. math::
+
+            L = -Q^V (s, \pi (s)) + \alpha \log \pi (s)
+
+        where :math:`Q^V` is the min value of two reward critic networks, and :math:`\pi` is the
+        policy network, and :math:`\alpha` is the temperature parameter.
 
         Args:
-            obs (torch.Tensor): observation
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+
+        Returns:
+            The loss of pi/actor.
         """
         action = self._actor_critic.actor.predict(
             obs,

@@ -102,7 +102,9 @@ class Plotter:
             value (str, optional): The y-axis label. Defaults to 'Rewards'.
             condition (str, optional): The condition label. Defaults to 'Condition1'.
             smooth (int, optional): The smoothing window size. Defaults to 1.
-            **kwargs (Any): Additional arguments.
+
+        Keyword Args:
+            kwargs: Other keyword arguments for ``sns.lineplot``.
         """
         if smooth > 1:
             y = np.ones(smooth)

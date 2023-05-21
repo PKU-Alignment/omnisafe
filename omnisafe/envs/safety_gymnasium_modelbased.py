@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Environments in the Safety Gymnasium."""
+"""World model of the Safety Gymnasium."""
+
 
 from __future__ import annotations
 
@@ -63,7 +64,13 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             num_envs (int, optional): Number of environments. Defaults to 1.
             device (torch.device, optional): Device to store the data. Defaults to 'cpu'.
             use_lidar (bool, optional): Whether to use lidar observation. Defaults to False.
-            **kwargs: Other arguments.
+
+        Keyword Args:
+            render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'. Defaults to 'rgb_array'.
+            camera_name (str, optional): The camera name.
+            camera_id (int, optional): The camera id.
+            width (int, optional): The width of the rendered image. Defaults to 256.
+            height (int, optional): The height of the rendered image. Defaults to 256.
         """
         super().__init__(env_id)
         self._use_lidar = use_lidar
@@ -150,7 +157,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
     @property
     def task(self) -> str:
-        """Get the name of the task."""
+        """The name of the task."""
         return self._task
 
     def get_cost_from_obs_tensor(self, obs: torch.Tensor, is_binary: bool = True) -> torch.Tensor:
@@ -161,7 +168,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             is_binary (bool, optional): Whether to use binary cost. Defaults to True.
 
         Returns:
-            cost (torch.Tensor): Batch cost.
+            cost: Batch cost.
         """
         assert torch.is_tensor(obs), 'obs must be tensor'
         hazards_key = self.key_to_slice_tensor['hazards']
@@ -193,10 +200,10 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         """Get lidar observation.
 
         Args:
-            obs (torch.Tensor): observation.
+            obs (np.ndarray): The observation.
 
         Returns:
-            lidar_obs (torch.Tensor): lidar observation.
+            lidar_obs: The lidar observation.
         """
         robot_matrix_x_y = obs[self.key_to_slice['robot_m']]
         robot_matrix_x = float(robot_matrix_x_y[0])
@@ -227,12 +234,12 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         """Return the egocentric XY vector to a position from the robot.
 
         Args:
-            robot_matrix (np.ndarray): 3x3 rotation matrix.
+            robot_matrix (list[list[float]]): 3x3 rotation matrix.
             robot_pos (np.ndarray): 2D robot position.
             pos (np.ndarray): 2D position.
 
         Returns:
-            2D_egocentric_vector (np.ndarray): 2D egocentric vector.
+            2D_egocentric_vector: The 2D egocentric vector.
         """
         assert pos.shape == (2,), f'Bad pos {pos}'
         assert robot_pos.shape == (2,), f'Bad robot_pos {robot_pos}'
@@ -270,12 +277,12 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             - constant size observation with variable numbers of objects
 
         Args:
-            robot_matrix (np.ndarray): 3x3 rotation matrix.
+            robot_matrix (list[list[float]]): 3x3 rotation matrix.
             robot_pos (np.ndarray): 2D robot position.
-            positions (np.ndarray): 2D positions.
+            positions (list[np.ndarray]): 2D positions.
 
         Returns:
-            lidar_observation (np.ndarray): lidar observation.
+            lidar_observation: The lidar observation.
         """
         obs = np.zeros(self._num_lidar_bin)
         for pos in positions:
@@ -307,10 +314,10 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         """Get the flattened obs.
 
         Args:
-            coordinate_obs: dict of coordinate and sensor observations.
+            coordinate_obs (dict[str, Any]): dict of coordinate and sensor observations.
 
         Returns:
-            flat_obs (torch.Tensor): flattened observation.
+            flat_obs: The flattened observation.
         """
         assert (
             self.coordinate_observation_space.shape is not None
@@ -328,7 +335,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         The returned obs coordinates are all in the robot coordinates.
 
         Returns:
-            coordinate_obs (dict[str, Any]): coordinate observation.
+            coordinate_obs: coordinate observation.
         """
         obs = {}
         robot_matrix = self._env.task.agent.mat
@@ -375,11 +382,11 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         """Return the distance from the robot to an XY position.
 
         Args:
-            pos1 (np.ndarray | list): The first position.
-            pos2 (np.ndarray | list): The second position.
+            pos1 (np.ndarray | list[np.ndarray]): The first position.
+            pos2 (np.ndarray | list[np.ndarray]): The second position.
 
         Returns:
-            distance (float): The distance between the two positions.
+            distance: The distance between the two positions.
         """
         pos1 = np.asarray(pos1)
         pos2 = np.asarray(pos2)
@@ -412,12 +419,12 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             action (torch.Tensor): Action to take.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (dict[str, Any]): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
         """
         obs_original, reward, cost, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy(),
@@ -463,8 +470,8 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             seed (int, optional): Seed to reset the environment. Defaults to None.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
         """
         obs_original, info = self._env.reset(seed=seed)
         if self._task == 'Goal':
@@ -493,7 +500,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         """Sample a random action.
 
         Returns:
-            torch.Tensor: A random action.
+            The sampled action.
         """
         return torch.as_tensor(
             self._env.action_space.sample(),
@@ -505,7 +512,8 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         """Render the environment.
 
         Returns:
-            Any: Rendered environment.
+            The render frames, we recommend to use `np.ndarray` which could construct video by
+            moviepy.
         """
         return self._env.render()
 

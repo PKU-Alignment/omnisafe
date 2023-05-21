@@ -78,7 +78,7 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
             last_var (torch.Tensor): Last variance of the gaussian distribution.
 
         Returns:
-            Sample actions (torch.Tensor): Sampled actions from the last gaussian distribution.
+            Sample actions: Sampled actions from the last gaussian distribution.
         """
         constrained_std = torch.sqrt(last_var)
         actions = torch.clamp(
@@ -101,10 +101,10 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
         """Sample actions from the actor.
 
         Args:
-            state (torch.Tensor): Current state.
+            state (torch.Tensor): The current state.
 
         Returns:
-            Sample actions (torch.Tensor): Sampled actions from the actor.
+            Sample actions: Sampled actions from the actor.
         """
         assert state.shape == torch.Size(
             [1, *self._dynamics_state_shape],
@@ -135,12 +135,12 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
         """Repeat the state for num_repeat * action.shape[0] times and action for num_repeat times.
 
         Args:
-            state (torch.Tensor): Current state.
-            action (torch.Tensor): Sampled actions.
+            state (torch.Tensor): The current state.
+            action (torch.Tensor): The sampled actions.
 
         Returns:
-            states (torch.Tensor): Repeated states.
-            actions (torch.Tensor): Repeated actions.
+            states: The repeated states.
+            actions: The repeated actions.
         """
         assert action.shape == torch.Size(
             [self._horizon, self._num_action, *self._action_shape],
@@ -170,9 +170,9 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
             traj (dict): Trajectory dictionary.
 
         Returns:
-            elites_value (torch.Tensor): Value of the elites.
-            elites_action (torch.Tensor): Action of the elites.
-            info (dict): Dictionary containing the information of elites value and action.
+            elites_value: The value of the elites.
+            elites_action: The action of the elites.
+            info: The dictionary containing the information of elites value and action.
         """
         rewards = traj['rewards']
         values = traj['values']
@@ -227,13 +227,13 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
         """Update the mean and variance of the elite actions.
 
         Args:
-            elite_actions (torch.Tensor): Elite actions.
-            elite_values (torch.Tensor): Elite values.
-            kwargs (dict): Keyword arguments.
+            elite_actions (torch.Tensor): The elite actions.
+            elite_values (torch.Tensor): The elite values.
+            info (dict[str, int | float]): The dictionary containing the information of the elite values and actions.
 
         Returns:
-            new_mean (torch.Tensor): New mean of the elite actions.
-            new_var (torch.Tensor): New variance of the elite actions.
+            new_mean: The new mean of the elite actions.
+            new_var: The new variance of the elite actions.
         """
         assert (
             elite_actions.shape[0] == self._horizon
@@ -266,8 +266,8 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
             state (torch.Tensor): State of the environment.
 
         Returns:
-            action (torch.Tensor): Action of the environment.
-            logger_info (dict): Dictionary containing the information of the action.
+            action: The action of the agent.
+            logger_info: The dictionary containing the information of the action.
         """
         assert state.shape == torch.Size(
             [1, *self._dynamics_state_shape],
