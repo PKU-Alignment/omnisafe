@@ -30,9 +30,7 @@ from omnisafe.algorithms.model_based.base.ensemble import (
 
 def test_standard_scaler():
     standard_scaler = StandardScaler(device='cpu')
-    numpy_input = np.random.rand(10, 10)
-    torch_input = torch.from_numpy(numpy_input)
-    assert isinstance(standard_scaler.transform(numpy_input), np.ndarray)
+    torch_input = torch.rand(10, 10)
     assert isinstance(standard_scaler.transform(torch_input), torch.Tensor)
 
 

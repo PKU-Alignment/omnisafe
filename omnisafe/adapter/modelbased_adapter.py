@@ -46,7 +46,8 @@ class ModelBasedAdapter(
 ):  # pylint: disable=too-many-instance-attributes,super-init-not-called
     """Model Based Adapter for OmniSafe.
 
-    :class:`ModelBasedAdapter` is used to adapt the environment to the model-based training. It trains a world model to provide data for algorithms training.
+    :class:`ModelBasedAdapter` is used to adapt the environment to the model-based training.
+    It trains a world model to provide data for algorithms training.
 
     Args:
         env_id (str): The environment id.
@@ -158,7 +159,8 @@ class ModelBasedAdapter(
             args (str): The arguments.
 
         Keyword Args:
-            render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'. Defaults to 'rgb_array'.
+            render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'.
+                Defaults to 'rgb_array'.
             camera_name (str, optional): The camera name.
             camera_id (int, optional): The camera id.
             width (int, optional): The width of the rendered image. Defaults to 256.

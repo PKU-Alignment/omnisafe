@@ -447,10 +447,13 @@ class EnsembleDynamicsModel:
         device (torch.device): The device to use.
         state_shape (tuple[int, ...]): The shape of the state.
         action_shape (tuple[int, ...]): The shape of the action.
-        actor_critic (ConstraintActorCritic | ConstraintActorQCritic | None, optional): The actor critic model. Defaults to None.
+        actor_critic (ConstraintActorCritic | ConstraintActorQCritic | None, optional): The actor critic model.
+            Defaults to None.
         rew_func (Callable[[torch.Tensor], torch.Tensor] | None, optional): The reward function. Defaults to None.
-        cost_func (Callable[[torch.Tensor], torch.Tensor] | None, optional): The cost function. Defaults to None.
-        terminal_func (Callable[[torch.Tensor], torch.Tensor] | None, optional): The terminal function. Defaults to None.
+        cost_func (Callable[[torch.Tensor], torch.Tensor] | None, optional): The cost function.
+            Defaults to None.
+        terminal_func (Callable[[torch.Tensor], torch.Tensor] | None, optional): The terminal function.
+            Defaults to None.
 
     Attributes:
         elite_model_idxes (list[int]): The index of the elite models.
