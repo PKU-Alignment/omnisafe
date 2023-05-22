@@ -39,11 +39,10 @@ Lagrangian methods convert the solution of a constrained optimization problem
 to the solution of an unconstrained optimization problem.
 In this section, we will briefly introduce Lagrangian methods,
 and give corresponding implementations in **TRPO** and **PPO**.
-TRPO and PPO are the algorithms we introduced earlier,
-if you lack understanding of it, it doesn't matter.
-Please read the :doc:`TRPO tutorial<../baserl/trpo>` and
-:doc:`PPO tutorial<../baserl/ppo>` we wrote,
-you will soon understand how it works.
+TRPO and PPO are the algorithms we introduced earlier.
+If you lack understanding of it, it doesn't matter.
+Please refer to the :doc:`TRPO tutorial<../baserl/trpo>` and
+:doc:`PPO tutorial<../baserl/ppo>`.
 
 .. grid:: 2
 
@@ -73,7 +72,7 @@ you will soon understand how it works.
 
             Problems of Lagrangian Methods
             ^^^
-            -  Different hyper-parameters need to be set for different tasks.
+            -  Different hyperparameters need to be set for different tasks.
 
             -  Not necessarily valid for all tasks.
 
@@ -93,15 +92,15 @@ As we mentioned in the previous chapters, the optimization problem of CMDPs can 
     :label: lag-eq-1
 
 
-    \max_{\pi \in \Pi_\theta} &J^R(\pi) \\
+    \max_{\pi \in \Pi_{\boldsymbol{\theta}}} &J^R(\pi) \\
     \text {s.t.}~~& J^{\mathcal{C}}(\pi) \leq d
 
 
-where :math:`\Pi_\theta \subseteq \Pi` denotes the set of parametrized policies with parameters :math:`\theta`.
+where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of parametrized policies with parameters :math:`{\boldsymbol{\theta}}`.
 In local policy search for CMDPs,
 we additionally require policy iterates to be feasible for the CMDP,
-so instead of optimizing over :math:`\Pi_\theta`,
-algorithm should optimize over :math:`\Pi_\theta \cap \Pi_C`.
+so instead of optimizing over :math:`\Pi_{\boldsymbol{\theta}}`,
+algorithm should optimize over :math:`\Pi_{\boldsymbol{\theta}} \cap \Pi_C`.
 Specifically, for the TRPO and PPO algorithms,
 constraints on the differences between old and new policies should also be added.
 To solve this constrained problem, please read the :doc:`TRPO tutorial<../baserl/trpo>`.
@@ -111,7 +110,7 @@ The final optimization goals are as follows:
 .. math::
     :label: lag-eq-2
 
-    \pi_{k+1}&=\arg \max _{\pi \in \Pi_\theta} J^R(\pi) \\
+    \pi_{k+1}&=\arg \max _{\pi \in \Pi_{\boldsymbol{\theta}}} J^R(\pi) \\
     \text { s.t. } ~~ J^{\mathcal{C}}(\pi) &\leq d \\
     D\left(\pi, \pi_k\right) &\leq \delta
 
@@ -126,7 +125,7 @@ Lagrangian Method Theorem
 Lagrangian methods
 ~~~~~~~~~~~~~~~~~~
 
-Constrained MDPs are often solved using the Lagrange methods.
+Constrained MDP (CMDP) are often solved using the Lagrange methods.
 In Lagrange methods, the CMDP is converted into an equivalent unconstrained problem.
 In addition to the objective, a penalty term is added for infeasibility,
 thus making infeasible solutions sub-optimal.
@@ -145,7 +144,7 @@ thus making infeasible solutions sub-optimal.
     .. math::
         :label: lag-eq-3
 
-        \min _{\lambda \geq 0} \max _\theta G(\lambda, \theta)=\min _{\lambda \geq 0} \max _\theta [J^R(\pi)-\lambda J^C(\pi)]
+        \min _{\lambda \geq 0} \max _{\boldsymbol{\theta}} G(\lambda, {\boldsymbol{\theta}})=\min _{\lambda \geq 0} \max _{\boldsymbol{\theta}} [J^R(\pi)-\lambda J^C(\pi)]
 
 
     where :math:`G` is the Lagrangian and :math:`\lambda \geq 0` is the Lagrange multiplier (a penalty coefficient).
@@ -157,11 +156,11 @@ thus making infeasible solutions sub-optimal.
 
         The Lagrangian method is a **two-step** process.
 
-        - First, we solve the unconstrained problem :eq:`lag-eq-3` to find a feasible solution :math:`\theta^*`
+        - First, we solve the unconstrained problem :eq:`lag-eq-3` to find a feasible solution :math:`{\boldsymbol{\theta}}^*`
         - Then, we increase the penalty coefficient :math:`\lambda` until the constraint is satisfied.
 
-        The final solution is :math:`\left(\theta^*, \lambda^*\right)`.
-        The goal is to find a saddle point :math:`\left(\theta^*\left(\lambda^*\right), \lambda^*\right)` of the Problem :eq:`lag-eq-1`,
+        The final solution is :math:`\left({\boldsymbol{\theta}}^*, \lambda^*\right)`.
+        The goal is to find a saddle point :math:`\left({\boldsymbol{\theta}}^*\left(\lambda^*\right), \lambda^*\right)` of the Problem :eq:`lag-eq-1`,
         which is a feasible solution. (A feasible solution of the CMDP is a solution which satisfies :math:`J^C(\pi) \leq d` )
 
 ------
@@ -169,9 +168,12 @@ thus making infeasible solutions sub-optimal.
 Practical Implementation
 ------------------------
 
-intuitively, we train the agent to maximize the reward in the classical strategy gradient descent algorithm.
-If a particular action :math:`a` in state :math:`s` can bring a relatively higher reward,
-we increase the probability that the agent will choose action :math:`a` under :math:`s`,
+Intuitively, we train the agent to maximize the reward in the classical
+strategy gradient descent algorithm.
+If a particular action :math:`a` in state :math:`s` can bring a relatively
+higher reward,
+we increase the probability that the agent will choose action :math:`a` under
+:math:`s`,
 and conversely, we will reduce this probability.
 
 .. hint::
@@ -184,7 +186,8 @@ and conversely, we will reduce this probability.
       If the agent violates fewer constraints, the penalty coefficient will gradually decrease,
       and conversely, it will gradually increase.
 
-Next we will introduce the specific implementation of the Lagrange method in the TRPO and PPO algorithms.
+Next we will introduce the specific implementation of the Lagrange method in
+the TRPO and PPO algorithms.
 
 Policy update
 ~~~~~~~~~~~~~
@@ -195,7 +198,7 @@ Policy update
 
         .. card::
             :class-header: sd-bg-success sd-text-white sd-font-weight-bold
-            :class-card: sd-outline-info  sd-rounded-1
+            :class-card: sd-outline-success  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Surrogate function update
@@ -208,7 +211,7 @@ Policy update
 
             .. math::
 
-                \max _{\pi \in \prod_\theta}[J^R(\pi)-\lambda J^C(\pi)] \\
+                \max _{\pi \in \prod_{\boldsymbol{\theta}}}[J^R(\pi)-\lambda J^C(\pi)] \\
                 \text { s.t. } D\left(\pi, \pi_k\right) \leq \delta
 
 
@@ -220,7 +223,7 @@ Policy update
 
         .. card::
             :class-header: sd-bg-success  sd-text-white sd-font-weight-bold
-            :class-card:  sd-outline-info  sd-rounded-1
+            :class-card:  sd-outline-success  sd-rounded-1
             :class-footer: sd-font-weight-bold
 
             Lagrange multiplier update
@@ -234,7 +237,7 @@ Policy update
                 \text { s.t. } \lambda \geq 0
 
 
-            Specifically, on the :math:`k^{t h}` update, the above align is often
+            Specifically, on the :math:`k^{t h}` update, the above equation is often
             written as below in the actual calculation process:
 
             .. math::

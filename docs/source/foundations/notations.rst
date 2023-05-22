@@ -99,12 +99,12 @@ where:
 
    -  :math:`\gamma\in(0,1)` are the discount factor.
 
-A stationary parameterized policy :math:`\pi_{\theta}` is a probability
+A stationary parameterized policy :math:`\pi_{{\boldsymbol{\theta}}}` is a probability
 distribution defined on :math:`\mathcal{S}\times\mathcal{A}`,
-:math:`\pi_{\theta}(a|s)` denotes the probability of
+:math:`\pi_{{\boldsymbol{\theta}}}(a|s)` denotes the probability of
 playing :math:`a` in state :math:`s`.
 With explicit notation dropped to reduce clutter,
-we use :math:`\pi` to represent :math:`\pi_{\theta}`.
+we use :math:`\pi` to represent :math:`\pi_{{\boldsymbol{\theta}}}`.
 
 .. tab-set::
 
@@ -123,7 +123,7 @@ we use :math:`\pi` to represent :math:`\pi_{\theta}`.
 
             Here :math:`\tau` denotes a trajectory :math:`(s_0, a_0, s_1, ...)`,
             and :math:`\tau \sim \pi` is shorthand for indicating that the distribution over trajectories depends on a stationary parameterized policy
-            :math:`\pi_{\theta}`: :math:`s_0 \sim \mu`,
+            :math:`\pi_{{\boldsymbol{\theta}}}`: :math:`s_0 \sim \mu`,
             :math:`a_t \sim \pi(\cdot|s_t)`,
             :math:`s_{t+1} \sim \mathbb{P}(\cdot | s_t, a_t)`.
             Meanwhile, let :math:`R(\tau)` denote the discounted return of a trajectory. :math:`R(\tau) = \sum_{t=0}^{\infty} \gamma^t r(s_t)`
@@ -188,7 +188,7 @@ we use :math:`\pi` to represent :math:`\pi_{\theta}`.
             .. math::
 
                \begin{aligned}
-                  \Pi_{C} \doteq \{ \pi_{\theta} \in \Pi~:~\forall~i, ~ J^{C_i}(\pi) \leq d_i \}
+                  \Pi_{C} \doteq \{ \pi_{{\boldsymbol{\theta}}} \in \Pi~:~\forall~i, ~ J^{C_i}(\pi) \leq d_i \}
                \end{aligned}
 
             The goal of CMDP is to find the optimal policy :math:`\pi^{*}`:
@@ -197,7 +197,7 @@ we use :math:`\pi` to represent :math:`\pi_{\theta}`.
 
                \begin{aligned}
                   \label{def:problem-setting}
-                  \pi^{*}=\arg\max_{\pi_\theta \in\Pi_{C}} J^R(\pi_{\theta})
+                  \pi^{*}=\arg\max_{\pi_{\boldsymbol{\theta}} \in\Pi_{C}} J^R(\pi_{{\boldsymbol{\theta}}})
                \end{aligned}
 
             Respectively we have:
@@ -219,29 +219,29 @@ To summarize all of the above notation, we show the following table,
 
 - :math:`\tau` is a trajectory that consist of
   :math:`\left(s_0, a_0, s_1, a_1, \cdots\right)`
-- :math:`\pi_{\theta}` or :math:`\theta` is a stationary parameterized policy
+- :math:`\pi_{{\boldsymbol{\theta}}}` or :math:`{\boldsymbol{\theta}}` is a stationary parameterized policy
   which is a probability distribution defined on
-  :math:`\mathcal{S}\times\mathcal{A}`, :math:`\pi_{\theta}(a|s)`
+  :math:`\mathcal{S}\times\mathcal{A}`, :math:`\pi_{{\boldsymbol{\theta}}}(a|s)`
   denotes the probability of playing :math:`a` in state :math:`s`.
-- :math:`J^R(\pi_{\theta}),~ J^R(\theta)` are the expected discounted reward
+- :math:`J^R(\pi_{{\boldsymbol{\theta}}}),~ J^R({\boldsymbol{\theta}})` are the expected discounted reward
   over trajectories, depending on a stationary parameterized policy
-  :math:`\pi_{\theta}` or a stationary parameterized policy
-  :math:`\pi_{\theta}`.
-- :math:`J^{C}(\pi_{\theta}),~ J^{C}(\theta)` are the
+  :math:`\pi_{{\boldsymbol{\theta}}}` or a stationary parameterized policy
+  :math:`\pi_{{\boldsymbol{\theta}}}`.
+- :math:`J^{C}(\pi_{{\boldsymbol{\theta}}}),~ J^{C}({\boldsymbol{\theta}})` are the
   expected discounted cost over trajectories, depending on a stationary
-  parameterized policy :math:`\pi_{\theta}` or a stationary parameterized
-  policy :math:`\pi_{\theta}`.
-- :math:`Q_{\pi_{\theta}}^{R},~ Q_{\theta}^{R}` are the state action value
+  parameterized policy :math:`\pi_{{\boldsymbol{\theta}}}` or a stationary parameterized
+  policy :math:`\pi_{{\boldsymbol{\theta}}}`.
+- :math:`Q_{\pi_{{\boldsymbol{\theta}}}}^{R},~ Q_{{\boldsymbol{\theta}}}^{R}` are the state action value
   function for reward.
-- :math:`Q_{\pi_{\theta}}^{C_i},~  Q_{\theta}^{C_i}` are the
+- :math:`Q_{\pi_{{\boldsymbol{\theta}}}}^{C_i},~  Q_{{\boldsymbol{\theta}}}^{C_i}` are the
   state action value function for cost.
-- :math:`V_{\pi_{\theta}}^{R},~  V_{\theta}^{R}`
+- :math:`V_{\pi_{{\boldsymbol{\theta}}}}^{R},~  V_{{\boldsymbol{\theta}}}^{R}`
   are the value function for reward.
-- :math:`V_{\pi_{\theta}}^{C_i},~  V_{\theta}^{C_i}`
+- :math:`V_{\pi_{{\boldsymbol{\theta}}}}^{C_i},~  V_{{\boldsymbol{\theta}}}^{C_i}`
   are the value function for cost.
-- :math:`A_{\pi_{\theta}}^{R},~  A_{\theta}^{R}` are the advantage function for
+- :math:`A_{\pi_{{\boldsymbol{\theta}}}}^{R},~  A_{{\boldsymbol{\theta}}}^{R}` are the advantage function for
   reward.
-- :math:`A_{\pi_{\theta}}^{C_i},~  A_{\theta}^{C_i}`
+- :math:`A_{\pi_{{\boldsymbol{\theta}}}}^{C_i},~  A_{{\boldsymbol{\theta}}}^{C_i}`
   are the advantage function for cost.
 
 
