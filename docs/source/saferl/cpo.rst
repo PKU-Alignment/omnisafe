@@ -464,7 +464,7 @@ CPO does this by cost shaping:
 
     C_i^{+}\left(s, a, s^{\prime}\right)=C_i\left(s, a, s^{\prime}\right)+\triangle_i\left(s, a, s^{\prime}\right)
 
-where 
+where
 :math:`\delta_i: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \rightarrow R_{+}`
 correlates in
 some useful way with :math:`C_i`.

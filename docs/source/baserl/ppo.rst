@@ -577,14 +577,3 @@ References
 
 - `Trust Region Policy Optimization <https://arxiv.org/abs/1502.05477>`__
 - `Proximal Policy Optimization Algorithms <https://arxiv.org/pdf/1707.06347.pdf>`__
-
-
-\underset{a\sim\pi_{k+1}}{\mathbb{E}}
-\underset{\tau \sim \pi}{\mathbb{E}}
-\underset{\tau \sim \pi^{\prime}}{\mathbb{E}}
-\underset{\substack{a \sim \pi' \\ s' \sim P}}{\mathbb{E}}
-\underset{\substack{s \sim d_{\pi} \\ a \sim \pi^{\prime} \\ s^{\prime} \sim P}}{\mathbb{E}}
-\underset{s \sim d_{\pi}}{\mathbb{E}}
-\mathbb{E}_{s\sim d_{\pi_{k}}}
-\underset{s\sim d_{\pi_{k}}}{\mathbb{E}}
-\underset{a \sim \pi}{\mathbb{E}}

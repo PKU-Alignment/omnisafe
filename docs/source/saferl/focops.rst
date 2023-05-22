@@ -364,7 +364,7 @@ applying gradient descent w.r.t :math:`\nu` to minimize
 
 The last term in the gradient expression in :eq:`focops-eq-9` cannot be
 evaluated since we do not have access to :math:`\pi^*`.
-Since :math:`\pi_{{\boldsymbol{\theta}}_k}` and :math:`\pi^*` are close, it is reasonable to 
+Since :math:`\pi_{{\boldsymbol{\theta}}_k}` and :math:`\pi^*` are close, it is reasonable to
 assume that :math:`\underset{\substack{s \sim d_{\pi_k}\\ a \sim \pi^*}}{\mathbb{E}}\left[A^R_{\pi_{{\boldsymbol{\theta}}_k}}(s, a)\right] \approx \underset{\substack{s \sim d_{\pi_k}\\ a \sim \pi_{{\boldsymbol{\theta}}_k}}}{\mathbb{E}}\left[A^R_{\pi_{{\boldsymbol{\theta}}_k}}(s, a)\right]=0`.
 In practice, this term can be set to zero, which gives the updated term:
 
