@@ -56,7 +56,8 @@ class ModelBasedAdapter(
         cfgs (Config): The configuration.
 
     Keyword Args:
-        render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'. Defaults to 'rgb_array'.
+        render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'.
+            Defaults to 'rgb_array'.
         camera_name (str, optional): The camera name.
         camera_id (int, optional): The camera id.
         width (int, optional): The width of the rendered image. Defaults to 256.
