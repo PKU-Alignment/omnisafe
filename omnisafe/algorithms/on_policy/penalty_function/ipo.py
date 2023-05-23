@@ -49,7 +49,7 @@ class IPO(PPO):
 
         .. math::
 
-            L = \mathbb{E}_{s_t \sim \pi_{\theta}} \left[
+            L = -\underset{s_t \sim \rho_{\theta}}{\mathbb{E}} \left[
                 \frac{\pi_{\theta}^{'} (a_t|s_t)}{\pi_{\theta} (a_t|s_t)} A (s_t, a_t)
                 - \kappa \frac{J^{C}_{\pi_{\theta}} (s_t, a_t)}{C - J^{C}_{\pi_{\theta}} (s_t, a_t) + \epsilon}
             \right]

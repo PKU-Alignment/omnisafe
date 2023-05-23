@@ -28,7 +28,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
     """A buffer for storing trajectories experienced by an agent interacting with the environment.
 
     Besides, The buffer also provides the functionality of calculating the advantages of
-    state-action pairs, ranging from ``GAE``, ``GAE-RTG`` ,``V-trace`` to ``Plain`` method.
+    state-action pairs, ranging from ``GAE``, ``GAE-RTG`` , ``V-trace`` to ``Plain`` method.
 
     .. warning::
         The buffer only supports Box spaces.

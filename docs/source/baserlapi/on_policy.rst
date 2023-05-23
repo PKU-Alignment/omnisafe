@@ -26,7 +26,6 @@ Policy Gradient
         :private-members:
 
 
-
 Natural Policy Gradient
 -----------------------
 

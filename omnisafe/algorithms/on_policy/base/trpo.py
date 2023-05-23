@@ -41,6 +41,14 @@ class TRPO(NaturalPG):
     """
 
     def _init_log(self) -> None:
+        """Log the Trust Region Policy Optimization specific information.
+
+        +---------------------+-----------------------------+
+        | Things to log       | Description                 |
+        +=====================+=============================+
+        | Misc/AcceptanceStep | The acceptance step size.   |
+        +---------------------+-----------------------------+
+        """
         super()._init_log()
         self._logger.register_key('Misc/AcceptanceStep')
 

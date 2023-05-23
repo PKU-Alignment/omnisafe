@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Policy Gradient algorithm."""
+"""Implementation of the Base algorithms."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
     _logger: Logger
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
-        """Initialize an instance of :class:`BaseAlgo`."""
+        """Initialize an instance of algorithm."""
         self._env_id: str = env_id
         self._cfgs: Config = cfgs
 

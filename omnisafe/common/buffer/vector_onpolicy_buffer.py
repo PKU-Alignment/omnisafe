@@ -94,12 +94,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         return self._num_buffers
 
     def store(self, **data: torch.Tensor) -> None:
-        """Store data into the buffer.
-
-        .. hint::
-            The data should be a list of tensors, each of which corresponds to one environment. Then
-            the data will be stored into the corresponding buffer.
-        """
+        """Store vectorized data into vectorized buffer."""
         for i, buffer in enumerate(self.buffers):
             buffer.store(**{k: v[i] for k, v in data.items()})
 
@@ -112,25 +107,17 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         """Get the data in the buffer.
 
         In vector-on-policy buffer, we get the data from each buffer and then concatenate them.
-
-        .. hint::
-            We provide a trick to standardize the advantages of state-action pairs. We calculate the
-            mean and standard deviation of the advantages of state-action pairs and then standardize
-            the advantages of state-action pairs. You can turn on this trick by setting the
-            ``standardized_adv_r`` to ``True``. The same trick is applied to the advantages of the
-            cost.
         """
         self.buffers[idx].finish_path(last_value_r, last_value_c)
 
     def get(self) -> dict[str, torch.Tensor]:
         """Get the data in the buffer.
 
-        .. hint::
-            We provide a trick to standardize the advantages of state-action pairs. We calculate the
-            mean and standard deviation of the advantages of state-action pairs and then standardize
-            the advantages of state-action pairs. You can turn on this trick by setting the
-            ``standardized_adv_r`` to ``True``. The same trick is applied to the advantages of the
-            cost.
+        We provide a trick to standardize the advantages of state-action pairs. We calculate the
+        mean and standard deviation of the advantages of state-action pairs and then standardize
+        the advantages of state-action pairs. You can turn on this trick by setting the
+        ``standardized_adv_r`` to ``True``. The same trick is applied to the advantages of the
+        cost.
 
         Returns:
             The data stored and calculated in the buffer.

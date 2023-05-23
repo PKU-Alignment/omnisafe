@@ -80,7 +80,7 @@ class NaturalPG(PolicyGradient):
         The Hessian-vector product is approximated by the Fisher information matrix, which is the
         second-order derivative of the KL-divergence.
 
-        For details see John Schulman's PhD thesis (pp. 40) http://joschu.net/docs/thesis.pdf .
+        For details see `John Schulman's PhD thesis (pp. 40) <http://joschu.net/docs/thesis.pdf>`_ .
 
         Args:
             params (torch.Tensor): The parameters of the actor network.

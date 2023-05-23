@@ -537,7 +537,7 @@ class PolicyGradient(BaseAlgo):
 
         .. math::
 
-            L = -\mathbb{E}_{s_t \sim \rho_{\theta}} [
+            L = -\underset{s_t \sim \rho_{\theta}}{\mathbb{E}} [
                 \sum_{t=0}^T ( \frac{\pi^{'}_{\theta}(a_t|s_t)}{\pi_{\theta}(a_t|s_t)} )
                  A^{R}_{\pi_{\theta}}(s_t, a_t)
             ]
@@ -549,7 +549,7 @@ class PolicyGradient(BaseAlgo):
             obs (torch.Tensor): The ``observation`` sampled from buffer.
             act (torch.Tensor): The ``action`` sampled from buffer.
             logp (torch.Tensor): The ``log probability`` of action sampled from buffer.
-            adv (torch.Tensor): The ``advantage`` sampled from buffer.
+            adv (torch.Tensor): The ``advantage`` processed. ``reward_advantage`` here.
 
         Returns:
             The loss of pi/actor.
