@@ -70,7 +70,7 @@ class VAE(Actor):
 
         Args:
             obs (torch.Tensor): Observation.
-            act (torch.Tensor): Action.
+            act (torch.Tensor): Action from :meth:`predict` or :meth:`forward` .
 
         Returns:
             Normal: Latent distribution.
@@ -102,7 +102,7 @@ class VAE(Actor):
 
         Args:
             obs (torch.Tensor): Observation.
-            act (torch.Tensor): Action.
+            act (torch.Tensor): Action from :meth:`predict` or :meth:`forward` .
         """
         dist = self.encode(obs, act)
         latent = dist.rsample()

@@ -118,10 +118,10 @@ class Lagrange:
 
         .. math::
 
-            \lambda ^{'} = \lambda + \eta \cdot (J_c - J_c^*)
+            \lambda ^{'} = \lambda + \eta \cdot (J_C - J_C^*)
 
         where :math:`\lambda` is the Lagrange multiplier, :math:`\eta` is the learning rate,
-        :math:`J_c` is the mean episode cost, and :math:`J_c^*` is the cost limit.
+        :math:`J_C` is the mean episode cost, and :math:`J_C^*` is the cost limit.
 
         Args:
             Jc (float): mean episode cost.

@@ -26,7 +26,7 @@ then your ``run_experiment_grid.py`` file could look like this:
         eg.add('algo_cfgs:batch_size', [32, 64, 128])
         eg.add('logger_cfgs:use_wandb', [False])
         eg.add('seed', [0])
-        # total experiment num must can be divided by num_pool
+        # total experiment num is better to be divisible by num_pool
         # meanwhile, users should decide this value according to their machine
         eg.run(train, num_pool=6, gpu_id=None)
 
@@ -42,7 +42,7 @@ When the experiment is running, you can check it at ``omnisafe/examples/benchmar
 Each experiment will be named with a hash value.
 which encode different set of parameters.
 In this example we set 6 kinds of parameters, that is 2 ``algorithms`` \* 3 ``batch_size``,
-so 6 hash values will be generated, which denotes 6 different set of parameters.
+so 6 hash values will be generated, which denotes 6 different sets of parameters.
 
 In this example, they are:
 
@@ -76,10 +76,9 @@ file as follows:
         st.draw_graph(parameter='algo_cfgs:batch_size', values=None, compare_num=3, cost_limit=None, show_image=True)
 
 Then 2 images will be generated in the ``~/omnisafe/examples/`` directory.
-Each image named with the hash value of the experiment.
+Each image would be named with the hash value of the experiment.
 If you want to compare the performance of different parameters,
 you can refer to the hash value in the experiment directory.
-
 
 Statistics Tools
 ----------------

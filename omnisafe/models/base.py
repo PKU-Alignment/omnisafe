@@ -27,7 +27,7 @@ from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
 
 
 class Actor(nn.Module, ABC):
-    """A abstract class for actor.
+    """An abstract class for actor.
 
     An actor approximates the policy function that maps observations to actions. Actor is
     parameterized by a neural network that takes observations as input, and outputs the mean and
@@ -129,7 +129,7 @@ class Actor(nn.Module, ABC):
 
         .. math::
 
-            L = -\mathbb{E}_{s \sim p(s)} [ \log p (a | s) A^R (s, a) ]
+            L = -\underset{s \sim p(s)}{\mathbb{E}}[ \log p (a | s) A^R (s, a) ]
 
         where :math:`p (s)` is the distribution of observation, :math:`p (a | s)` is the
         distribution of action, and :math:`\log p (a | s)` is the log probability of action under
@@ -137,7 +137,7 @@ class Actor(nn.Module, ABC):
 
         Args:
             obs (torch.Tensor): Observation from environments.
-            deterministic (bool, optional): whether to predict deterministic action. Defaults to False.
+            deterministic (bool, optional): Whether to predict deterministic action. Defaults to False.
         """
 
     @abstractmethod
@@ -155,11 +155,11 @@ class Actor(nn.Module, ABC):
 
 
 class Critic(nn.Module, ABC):
-    """A abstract class for critic.
+    """An abstract class for critic.
 
     A critic approximates the value function that maps observations to values. Critic is
     parameterized by a neural network that takes observations as input, (Q critic also takes actions
-    as input) and outputs the value of the observation.
+    as input) and outputs the value estimated.
 
     .. note::
         OmniSafe provides two types of critic:
@@ -168,8 +168,8 @@ class Critic(nn.Module, ABC):
         You can also use this class to implement your own actor by inheriting it.
 
     Args:
-        obs_space (OmnisafeSpace): observation space.
-        act_space (OmnisafeSpace): action space.
+        obs_space (OmnisafeSpace): Observation space.
+        act_space (OmnisafeSpace): Action space.
         hidden_sizes (list of int): List of hidden layer sizes.
         activation (Activation, optional): Activation function. Defaults to ``'relu'``.
         weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to

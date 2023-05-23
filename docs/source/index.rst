@@ -426,6 +426,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     common/logger
     common/simmer_agent
     common/stastics_tool
+    common/offline_data
 
 .. toctree::
     :hidden:
@@ -449,6 +450,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     model/actor_critic
     model/modelbased_model
     model/modelbased_planner
+    model/offline
 
 .. toctree::
     :hidden:

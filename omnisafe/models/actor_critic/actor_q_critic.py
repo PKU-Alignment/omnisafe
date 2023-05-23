@@ -136,12 +136,12 @@ class ActorQCritic(nn.Module):
         """Choose the action based on the observation. used in rollout without gradient.
 
         Args:
-            obs (torch.tensor): The observation.
+            obs (torch.tensor): The observation from environments.
             deterministic (bool, optional): Whether to use deterministic action. Defaults to False.
 
         Returns:
-            The deterministic action if ``deterministic`` is True, otherwise the action with
-            Gaussian noise.
+            The deterministic action if deterministic is True.
+            Action with noise other wise.
         """
         with torch.no_grad():
             return self.actor.predict(obs, deterministic=deterministic)
@@ -150,12 +150,12 @@ class ActorQCritic(nn.Module):
         """Choose the action based on the observation. used in training with gradient.
 
         Args:
-            obs (torch.tensor): The observation.
+            obs (torch.tensor): The observation from environments.
             deterministic (bool, optional): Whether to use deterministic action. Defaults to False.
 
         Returns:
-            The deterministic action if ``deterministic`` is True, otherwise the action with
-            Gaussian noise.
+            The deterministic action if deterministic is True.
+            Action with noise other wise.
         """
         return self.step(obs, deterministic=deterministic)
 

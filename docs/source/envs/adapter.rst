@@ -28,6 +28,21 @@ Online Adapter
         :members:
         :private-members:
 
+Offline Adapter
+---------------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: OfflineAdapter
+        :members:
+        :private-members:
+
+
 On Policy Adapter
 -----------------
 

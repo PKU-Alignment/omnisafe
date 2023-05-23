@@ -113,7 +113,7 @@ class MLPActor(Actor):
         """Log probability of the action.
 
         Args:
-            act (torch.Tensor): Action tensor.
+            act (torch.Tensor): Action from :meth:`predict` or :meth:`forward`  tensor.
 
         Raises:
             NotImplementedError: The method is not implemented.

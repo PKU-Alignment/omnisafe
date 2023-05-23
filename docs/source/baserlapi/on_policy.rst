@@ -10,7 +10,6 @@ Base On-policy Algorithms
     TRPO
     PPO
 
-
 Policy Gradient
 ---------------
 
@@ -40,11 +39,7 @@ Natural Policy Gradient
         :members:
         :private-members:
 
-
-
-
 .. _trpoapi:
-
 
 Trust Region Policy Optimization
 --------------------------------
