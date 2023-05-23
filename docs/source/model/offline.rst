@@ -3,8 +3,8 @@ OmniSafe Offline Model
 
 .. currentmodule:: omnisafe.models.offline.dice
 
-Obsevation Encoder
-------------------
+Observation Encoder
+-------------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
