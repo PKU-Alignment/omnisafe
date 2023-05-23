@@ -89,10 +89,10 @@ addlicense-install: go-install
 
 # Tests
 
-pytest: test-install
-	cd tests && $(PYTHON) -c 'import $(PROJECT_NAME)' && \
+pytest: pytest-install
+	cd tests && $(PYTHON) -c 'import $(PROJECT_PATH)' && \
 	$(PYTHON) -m pytest --verbose --color=yes --durations=0 \
-		--cov="$(PROJECT_NAME)" --cov-config=.coveragerc --cov-report=xml --cov-report=term-missing \
+		--cov="$(PROJECT_PATH)" --cov-config=.coveragerc --cov-report=xml --cov-report=term-missing \
 		$(PYTESTOPTS) .
 
 test: pytest
@@ -106,7 +106,7 @@ flake8: flake8-install
 	$(PYTHON) -m flake8 --count --show-source --statistics
 
 py-format: py-format-install
-	$(PYTHON) -m isort --project $(PROJECT_NAME) --check $(PYTHON_FILES) && \
+	$(PYTHON) -m isort --project $(PROJECT_PATH) --check $(PYTHON_FILES) && \
 	$(PYTHON) -m black --check $(PYTHON_FILES) tutorials
 
 ruff: ruff-install
@@ -145,7 +145,7 @@ clean-docs:
 lint: ruff flake8 py-format mypy pylint addlicense docstyle spelling
 
 format: py-format-install ruff-install addlicense-install
-	$(PYTHON) -m isort --project $(PROJECT_NAME) $(PYTHON_FILES)
+	$(PYTHON) -m isort --project $(PROJECT_PATH) $(PYTHON_FILES)
 	$(PYTHON) -m black $(PYTHON_FILES) tutorials
 	$(PYTHON) -m ruff check . --fix --exit-zero
 	addlicense -c $(COPYRIGHT) -ignore tests/coverage.xml -l apache -y 2022-$(shell date +"%Y") $(SOURCE_FOLDERS)
