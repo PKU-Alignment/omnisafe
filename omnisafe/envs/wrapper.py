@@ -504,7 +504,7 @@ class ActionScale(Wrapper):
 
 
 class ActionRepeat(Wrapper):
-    """Repeat ab action given times.
+    """Repeat action given times.
 
     Example:
         >>> env = ActionRepeat(env, times=3)
@@ -530,8 +530,20 @@ class ActionRepeat(Wrapper):
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
-        """Run self._times timesteps of the environment's dynamics using the agent actions."""
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
+        """Run self._times timesteps of the environment's dynamics using the agent actions.
+        
+        Args:
+            action (torch.Tensor): The action from the agent or random.
+            
+        Returns:
+            observation: The agent's observation of the current environment.
+            reward: The amount of reward returned after previous action.
+            cost: The amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Some information logged by the environment.
+        """
         rewards, costs = torch.tensor(0.0).to(self._device), torch.tensor(0.0).to(self._device)
         for _step, _ in enumerate(range(self._times)):
             obs, reward, cost, terminated, truncated, info = super().step(action)

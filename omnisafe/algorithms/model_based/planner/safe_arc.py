@@ -119,7 +119,7 @@ class SafeARCPlanner(ARCPlanner):
 
         Args:
             actions (torch.Tensor): Sampled actions.
-            traj (dict): Trajectory dictionary.
+            traj (dict[str, torch.Tensor]): Trajectory dictionary.
 
         Returns:
             elites_value: The value of the elites.

@@ -1,21 +1,10 @@
-OmniSafe Adapter
-================
+OmniSafe Model-based Planner
+============================
 
-.. currentmodule:: omnisafe.adapter
+.. currentmodule:: omnisafe.algorithms.model_based.planner
 
-OmniSafe provides a set of adapters to adapt the environment to the framework.
-
-.. autosummary::
-
-    OnlineAdapter
-    OnPolicyAdapter
-    OffPolicyAdapter
-    SauteAdapter
-    SimmerAdapter
-    ModelBasedAdapter
-
-Online Adapter
---------------
+ARC Planner
+-----------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -24,12 +13,12 @@ Online Adapter
     Documentation
     ^^^
 
-    .. autoclass:: OnlineAdapter
+    .. autoclass:: ARCPlanner
         :members:
         :private-members:
 
-On Policy Adapter
------------------
+CAP Planner
+-----------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -38,12 +27,12 @@ On Policy Adapter
     Documentation
     ^^^
 
-    .. autoclass:: OnPolicyAdapter
+    .. autoclass:: CAPPlanner
         :members:
         :private-members:
 
-Off Policy Adapter
-------------------
+CCE Planner
+-----------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -52,12 +41,12 @@ Off Policy Adapter
     Documentation
     ^^^
 
-    .. autoclass:: OffPolicyAdapter
+    .. autoclass:: CCEPlanner
         :members:
         :private-members:
 
-Saute Adapter
--------------
+CEM Planner
+-----------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -66,12 +55,12 @@ Saute Adapter
     Documentation
     ^^^
 
-    .. autoclass:: SauteAdapter
+    .. autoclass:: CEMPlanner
         :members:
         :private-members:
 
-Simmer Adapter
---------------
+RCE Planner
+-----------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -80,12 +69,13 @@ Simmer Adapter
     Documentation
     ^^^
 
-    .. autoclass:: SimmerAdapter
+    .. autoclass:: RCEPlanner
         :members:
         :private-members:
 
-Model-based Adapter
--------------------
+
+SafeARC Planner
+---------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -94,6 +84,6 @@ Model-based Adapter
     Documentation
     ^^^
 
-    .. autoclass:: ModelBasedAdapter
+    .. autoclass:: SafeARCPlanner
         :members:
         :private-members:

@@ -98,6 +98,19 @@ Action Scale
         :members:
         :private-members:
 
+Action Repeat
+-------------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: ActionRepeat
+        :members:
+        :private-members:
 
 Unsqueeze Wrapper
 -----------------

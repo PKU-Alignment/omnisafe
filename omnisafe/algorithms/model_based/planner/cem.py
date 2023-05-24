@@ -29,6 +29,9 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
     """The planner of  Cross-Entropy Method optimization (CEM) algorithm.
 
     References:
+        - Title: Sample-efficient Cross-Entropy Method for Real-time Planning
+        - Authors: Cristina Pinneri, Shambhuraj Sawant, Sebastian Blaes, Jan Achterhold, 
+            Joerg Stueckler, Michal Rolinek, Georg Martius
         - URL: `A good description of CEM <https://arxiv.org/pdf/2008.06389.pdf>`_
     """
 
@@ -90,7 +93,7 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
             last_var (torch.Tensor): Last variance of the gaussian distribution.
 
         Returns:
-            Sample actions: Sampled actions from the last gaussian distribution.
+            sampled actions: Sampled actions from the last gaussian distribution.
         """
         constrained_std = torch.sqrt(last_var)
         actions = torch.clamp(
@@ -152,7 +155,7 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
 
         Args:
             actions (torch.Tensor): Sampled actions.
-            traj (dict): Trajectory dictionary.
+            traj (dict[str, torch.Tensor]): Trajectory dictionary.
 
         Returns:
             elites_value: The value of the elites.

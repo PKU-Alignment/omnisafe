@@ -31,8 +31,8 @@ class CCEPlanner(CEMPlanner):
 
     References:
         - Title: Constrained Cross-Entropy Method for Safe Reinforcement Learning
-        - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-        Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
+        - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, 
+            Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
         - URL: `CCE <https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html>`_
     """
 
@@ -74,7 +74,7 @@ class CCEPlanner(CEMPlanner):
 
         Args:
             actions (torch.Tensor): Sampled actions.
-            traj (dict): Trajectory dictionary.
+            traj (dict[str, torch.Tensor]): Trajectory dictionary.
 
         Returns:
             elites_value: The value of the elites.

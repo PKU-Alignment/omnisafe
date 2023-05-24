@@ -395,6 +395,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
 
     baserlapi/on_policy
     baserlapi/off_policy
+    baserlapi/model_based
 
 .. toctree::
     :hidden:
@@ -405,6 +406,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     saferlapi/second_order
     saferlapi/lagrange
     saferlapi/penalty_function
+    saferlapi/model_based
 
 .. toctree::
     :hidden:
@@ -439,6 +441,8 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     model/actor
     model/critic
     model/actor_critic
+    model/modelbased_model
+    model/modelbased_planner
 
 .. toctree::
     :hidden:
@@ -448,6 +452,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     envs/core
     envs/wrapper
     envs/safety_gymnasium
+    envs/mujoco_env
     envs/adapter
 
 

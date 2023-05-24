@@ -80,7 +80,7 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
             last_var (torch.Tensor): Last variance of the gaussian distribution.
 
         Returns:
-            Sample actions: Sampled actions from the last gaussian distribution.
+            sampled actions: Sampled actions from the last gaussian distribution.
         """
         constrained_std = torch.sqrt(last_var)
         actions = torch.clamp(
@@ -106,7 +106,7 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
             state (torch.Tensor): The current state.
 
         Returns:
-            Sample actions: Sampled actions from the actor.
+            sampled actions: Sampled actions from the actor.
         """
         assert state.shape == torch.Size(
             [1, *self._dynamics_state_shape],
@@ -169,7 +169,7 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
 
         Args:
             actions (torch.Tensor): Sampled actions.
-            traj (dict): Trajectory dictionary.
+            traj (dict[str, torch.Tensor]): Trajectory dictionary.
 
         Returns:
             elites_value: The value of the elites.
