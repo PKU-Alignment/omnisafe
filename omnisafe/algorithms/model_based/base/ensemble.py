@@ -96,7 +96,7 @@ def init_weights(layer: nn.Module) -> None:
         """Initialize network weight.
 
         Args:
-            weight (torch.Tensor): The weight to initialize.
+            weight (torch.Tensor): The weight to be initialized.
             mean (float): The mean of the normal distribution.
             std (float): The standard deviation of the normal distribution.
 
@@ -157,7 +157,7 @@ class EnsembleFC(nn.Module):
         in_features (int): The number of input features.
         out_features (int): The number of output features.
         ensemble_size (int): The number of models in the ensemble.
-        weight_decay (float): The weight decay.
+        weight_decay (float): The decaying factor.
         bias (bool): Whether to use bias.
 
     Attributes:
@@ -258,7 +258,7 @@ class EnsembleModel(nn.Module):
 
         self._state_size: int = state_size
         self._reward_size: int = reward_size
-        self._cost_siz: int = cost_size
+        self._cost_size: int = cost_size
         self._predict_reward: bool = predict_reward
         self._predict_cost: bool = predict_cost
 

@@ -56,7 +56,7 @@ class ModelBasedAdapter(
         cfgs (Config): The configuration.
 
     Keyword Args:
-        render_mode (str, optional): The render mode, ranging from 'human', 'rgb_array', 'rgb_array_list'.
+        render_mode (str, optional): The render mode ranges from 'human' to 'rgb_array' and 'rgb_array_list'.
             Defaults to 'rgb_array'.
         camera_name (str, optional): The camera name.
         camera_id (int, optional): The camera id.
@@ -257,7 +257,7 @@ class ModelBasedAdapter(
             rollout_step (int): Number of steps to roll out.
             use_actor_critic (bool): Whether to use actor-critic.
             act_func (Callable[[int, torch.Tensor], torch.Tensor]): Function to get action.
-            store_data_func (Callable[[torch.Tensor, ..., dict[str, Any], ],None, ]): Function to store data.
+            store_data_func (Callable[[torch.Tensor, ..., dict[str, Any], ], None,]): Function to store data.
             update_dynamics_func (Callable[[], None]): Function to update dynamics.
             logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
             use_eval (bool): Whether to use evaluation.

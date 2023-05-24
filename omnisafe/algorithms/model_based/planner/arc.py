@@ -269,7 +269,7 @@ class ARCPlanner(CEMPlanner):  # pylint: disable=too-many-instance-attributes
 
         Returns:
             action: The action of the agent.
-            logger_info: The dictionary containing the information of the action.
+            info: The dictionary containing the information of the action.
         """
         assert state.shape == torch.Size(
             [1, *self._dynamics_state_shape],

@@ -513,7 +513,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         """Render the environment.
 
         Returns:
-            The render frames, we recommend to use `np.ndarray` which could construct video by
+            The rendered frames, we recommend using `np.ndarray` which could construct video by
             moviepy.
         """
         return self._env.render()

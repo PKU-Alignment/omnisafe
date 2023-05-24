@@ -509,7 +509,7 @@ class PETS(BaseAlgo):
             num_episode (int): The number of episodes.
             pred_state (list[float]): The predicted state.
             true_state (list[float]): The true state.
-            save_replay_path (str): The save replay path.
+            save_replay_path (str): The path for saving replay.
             name (str): The name of the curve.
         """
         target1 = list(pred_state)
