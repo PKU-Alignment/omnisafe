@@ -102,7 +102,7 @@ class SafeLOOP(LOOP):
 
     def _init_log(self) -> None:
         """Initialize the logger keys for the algorithm.
-        
+
         +----------------------------+-------------------------------+
         | Things to log              | Description                   |
         +============================+===============================+

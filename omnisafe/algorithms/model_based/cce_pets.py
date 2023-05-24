@@ -40,7 +40,7 @@ class CCEPETS(PETS):
 
     def _init_model(self) -> None:
         """Initialize the dynamics model and the planner.
-        
+
         CCEPETS uses following models:
 
         - dynamics model: to predict the next state and the cost.
@@ -92,7 +92,7 @@ class CCEPETS(PETS):
 
     def _init_log(self) -> None:
         """Initialize the logger keys for the CCE algorithm.
-        
+
         +----------------------------+-------------------------------+
         | Things to log              | Description                   |
         +============================+===============================+

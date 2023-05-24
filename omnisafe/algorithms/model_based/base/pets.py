@@ -292,14 +292,12 @@ class PETS(BaseAlgo):
         self,
     ) -> None:
         """Reset the algorithm."""
-        ...
 
     def _update_policy(
         self,
         current_step: int,  # pylint: disable=unused-argument
     ) -> None:
-        """Update policy"""
-        ...
+        """Update policy."""
 
     def _update_dynamics_model(
         self,

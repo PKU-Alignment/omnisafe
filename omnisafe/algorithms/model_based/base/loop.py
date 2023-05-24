@@ -50,7 +50,7 @@ class LOOP(PETS):
 
     def _init_model(self) -> None:
         """Initialize the dynamics model and the planner.
-        
+
         LOOP uses following models:
 
         - dynamics model: to predict the next state and the cost.
@@ -442,7 +442,7 @@ class LOOP(PETS):
         - Get the loss of actor.
         - Update actor by loss.
         - Log useful information.
-        
+
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
         """
