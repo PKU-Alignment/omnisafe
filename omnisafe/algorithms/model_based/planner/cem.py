@@ -30,7 +30,7 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
 
     References:
         - Title: Sample-efficient Cross-Entropy Method for Real-time Planning
-        - Authors: Cristina Pinneri, Shambhuraj Sawant, Sebastian Blaes, Jan Achterhold, 
+        - Authors: Cristina Pinneri, Shambhuraj Sawant, Sebastian Blaes, Jan Achterhold,
             Joerg Stueckler, Michal Rolinek, Georg Martius
         - URL: `CEM <https://arxiv.org/pdf/2008.06389.pdf>`_
     """

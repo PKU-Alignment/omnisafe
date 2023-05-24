@@ -530,12 +530,19 @@ class ActionRepeat(Wrapper):
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Run self._times timesteps of the environment's dynamics using the agent actions.
-        
+
         Args:
             action (torch.Tensor): The action from the agent or random.
-            
+
         Returns:
             observation: The agent's observation of the current environment.
             reward: The amount of reward returned after previous action.
