@@ -31,7 +31,7 @@ class CCEPlanner(CEMPlanner):
 
     References:
         - Title: Constrained Cross-Entropy Method for Safe Reinforcement Learning
-        - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess, 
+        - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
             Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
         - URL: `CCE <https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html>`_
     """
