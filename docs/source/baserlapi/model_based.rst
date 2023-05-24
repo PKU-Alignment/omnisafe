@@ -4,8 +4,8 @@ Base Model-based Algorithms
 .. currentmodule:: omnisafe.algorithms.model_based.base
 
 
-Learning Off-Policy with Online Planning
-----------------------------------------
+LOOP
+----
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -18,8 +18,8 @@ Learning Off-Policy with Online Planning
         :members:
         :private-members:
 
-Probabilistic Ensembles with Trajectory Sampling
-------------------------------------------------
+PETS
+----
 
 .. card::
     :class-header: sd-bg-success sd-text-white

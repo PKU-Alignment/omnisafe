@@ -32,7 +32,7 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
         - Title: Sample-efficient Cross-Entropy Method for Real-time Planning
         - Authors: Cristina Pinneri, Shambhuraj Sawant, Sebastian Blaes, Jan Achterhold, 
             Joerg Stueckler, Michal Rolinek, Georg Martius
-        - URL: `A good description of CEM <https://arxiv.org/pdf/2008.06389.pdf>`_
+        - URL: `CEM <https://arxiv.org/pdf/2008.06389.pdf>`_
     """
 
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments

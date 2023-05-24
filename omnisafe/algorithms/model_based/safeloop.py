@@ -40,7 +40,13 @@ class SafeLOOP(LOOP):
     """
 
     def _init_model(self) -> None:
-        """Initialize the dynamics model and the planner."""
+        """Initialize the dynamics model and the planner.
+
+        SafeLOOP uses following models:
+
+        - dynamics model: to predict the next state and the cost.
+        - planner: to generate the action.
+        """
         self._dynamics_state_space: OmnisafeSpace = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
@@ -95,7 +101,20 @@ class SafeLOOP(LOOP):
         )
 
     def _init_log(self) -> None:
-        """Initialize the logger keys for the algorithm."""
+        """Initialize the logger keys for the algorithm.
+        
+        +----------------------------+-------------------------------+
+        | Things to log              | Description                   |
+        +============================+===============================+
+        | Plan/feasible_num          | The number of feasible plans. |
+        +----------------------------+-------------------------------+
+        | Plan/episode_costs_max     | The maximum planning cost.    |
+        +----------------------------+-------------------------------+
+        | Plan/episode_costs_mean    | The mean planning cost.       |
+        +----------------------------+-------------------------------+
+        | Plan/episode_costs_min     | The minimum planning cost.    |
+        +----------------------------+-------------------------------+
+        """
         super()._init_log()
         self._logger.register_key('Plan/feasible_num')
         self._logger.register_key('Plan/episode_costs_max')

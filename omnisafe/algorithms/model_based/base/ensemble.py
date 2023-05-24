@@ -233,7 +233,6 @@ class EnsembleModel(nn.Module):
         max_logvar (torch.Tensor): The maximum log variance.
         min_logvar (torch.Tensor): The minimum log variance.
         scaler (StandardScaler): The scaler.
-
     """
 
     max_logvar: torch.Tensor
@@ -319,7 +318,7 @@ class EnsembleModel(nn.Module):
 
         Args:
             data (torch.Tensor): Input data.
-            ret_log_var (bool): Whether to return the log variance.
+            ret_log_var (bool, optional): Whether to return the log variance, defaults to False.
 
         Returns:
             mean: Mean of the next state, reward, cost.

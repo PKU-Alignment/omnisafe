@@ -126,7 +126,61 @@ class PETS(BaseAlgo):
         self._eval_fn: Callable[[int, bool], None] = self._evaluation_single_step
 
     def _init_log(self) -> None:
-        """Initialize logger."""
+        """Initialize logger.
+
+        +---------------------------+-------------------------------------------------+
+        | Things to log             | Description                                     |
+        +===========================+=================================================+
+        | Train/Epoch               | Current epoch.                                  |
+        +---------------------------+-------------------------------------------------+
+        | TotalEnvSteps             | Total steps of the experiment.                  |
+        +---------------------------+-------------------------------------------------+
+        | Metrics/EpRet             | Average return of the epoch.                    |
+        +---------------------------+-------------------------------------------------+
+        | Metrics/EpCost            | Average cost of the epoch.                      |
+        +---------------------------+-------------------------------------------------+
+        | Metrics/EpLen             | Average length of the epoch.                    |
+        +---------------------------+-------------------------------------------------+
+        | EvalMetrics/EpRet         | Average episode return in evaluation.           |
+        +---------------------------+-------------------------------------------------+
+        | EvalMetrics/EpCost        | Average episode cost in evaluation.             |
+        +---------------------------+-------------------------------------------------+
+        | EvalMetrics/EpLen         | Average episode length in evaluation.           |
+        +---------------------------+-------------------------------------------------+
+        | Loss/DynamicsTrainMseLoss | The training loss of dynamics model.            |
+        +---------------------------+-------------------------------------------------+
+        | Loss/DynamicsValMseLoss   | The validation loss of dynamics model.          |
+        +---------------------------+-------------------------------------------------+
+        | Plan/iter                 | The number of iterations in the planner.        |
+        +---------------------------+-------------------------------------------------+
+        | Plan/last_var_mean        | The mean of the last variance in the planner.   |
+        +---------------------------+-------------------------------------------------+
+        | Plan/last_var_max         | The max of the last variance in the planner.    |
+        +---------------------------+-------------------------------------------------+
+        | Plan/last_var_min         | The min of the last variance in the planner.    |
+        +---------------------------+-------------------------------------------------+
+        | Plan/episode_returns_max  | The max of the episode returns in the planner.  |
+        +---------------------------+-------------------------------------------------+
+        | Plan/episode_returns_mean | The mean of the episode returns in the planner. |
+        +---------------------------+-------------------------------------------------+
+        | Plan/episode_returns_min  | The min of the episode returns in the planner.  |
+        +---------------------------+-------------------------------------------------+
+        | Time/Total                | The total time of the algorithm.                |
+        +---------------------------+-------------------------------------------------+
+        | Time/Rollout              | The time of the rollout.                        |
+        +---------------------------+-------------------------------------------------+
+        | Time/UpdateActorCritic    | The time of the actor-critic update.            |
+        +---------------------------+-------------------------------------------------+
+        | Time/Eval                 | The time of the evaluation.                     |
+        +---------------------------+-------------------------------------------------+
+        | Time/Epoch                | The time of the epoch.                          |
+        +---------------------------+-------------------------------------------------+
+        | Time/FPS                  | The FPS of the algorithm.                       |
+        +---------------------------+-------------------------------------------------+
+        | Time/UpdateDynamics       | The time of the dynamics update.                |
+        +---------------------------+-------------------------------------------------+
+
+        """
         self._logger = Logger(
             output_dir=self._cfgs.logger_cfgs.log_dir,
             exp_name=self._cfgs.exp_name,
@@ -237,18 +291,20 @@ class PETS(BaseAlgo):
     def _algo_reset(
         self,
     ) -> None:
+        """Reset the algorithm."""
         ...
 
     def _update_policy(
         self,
         current_step: int,  # pylint: disable=unused-argument
     ) -> None:
+        """Update policy"""
         ...
 
     def _update_dynamics_model(
         self,
     ) -> None:
-        """Update dynamics."""
+        """Update dynamics model."""
         state = self._dynamics_buf.data['obs'][: self._dynamics_buf.size, :]
         action = self._dynamics_buf.data['act'][: self._dynamics_buf.size, :]
         reward = self._dynamics_buf.data['reward'][: self._dynamics_buf.size]

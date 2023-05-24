@@ -49,7 +49,14 @@ class LOOP(PETS):
     _target_entropy: float
 
     def _init_model(self) -> None:
-        """Initialize the dynamics model and the planner."""
+        """Initialize the dynamics model and the planner.
+        
+        LOOP uses following models:
+
+        - dynamics model: to predict the next state and the cost.
+        - actor_critic: to predict the action and the value.
+        - planner: to generate the action.
+        """
         self._dynamics_state_space: OmnisafeSpace = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
@@ -100,6 +107,16 @@ class LOOP(PETS):
         )
 
     def _init(self) -> None:
+        """The initialization of the algorithm.
+
+        User can define the initialization of the algorithm by inheriting this method.
+
+        Examples:
+            >>> def _init(self) -> None:
+            ...     super()._init()
+            ...     self._buffer = CustomBuffer()
+            ...     self._model = CustomModel()
+        """
         super()._init()
 
         self._alpha = self._cfgs.algo_cfgs.alpha
@@ -117,7 +134,24 @@ class LOOP(PETS):
         self._alpha *= self._alpha_gamma
 
     def _init_log(self) -> None:
-        """Initialize logger."""
+        """Initialize logger.
+
+        +-------------------------+----------------------------------------------------------------------+
+        | Things to log           | Description                                                          |
+        +=========================+======================================================================+
+        | Value/alpha             | The value of alpha.                                                  |
+        +-------------------------+----------------------------------------------------------------------+
+        | Values/reward_critic    | Average value in :meth:`rollout` (from critic network) of the epoch. |
+        +-------------------------+----------------------------------------------------------------------+
+        | Values/cost_critic      | Average cost in :meth:`rollout` (from critic network) of the epoch.  |
+        +-------------------------+----------------------------------------------------------------------+
+        | Loss/Loss_cost_critic   | Loss of the cost critic network.                                     |
+        +-------------------------+----------------------------------------------------------------------+
+        | Loss/Loss_reward_critic | Loss of the cost critic network.                                     |
+        +-------------------------+----------------------------------------------------------------------+
+        | Loss/Loss_pi            | Loss of the policy network.                                          |
+        +-------------------------+----------------------------------------------------------------------+
+        """
         super()._init_log()
         self._logger.register_key('Value/alpha')
         # log information about actor
@@ -174,8 +208,37 @@ class LOOP(PETS):
     def _update_policy(self, current_step: int) -> None:
         """Update policy.
 
+        -  Get the ``data`` from buffer
+
+        .. note::
+
+            +----------+---------------------------------------+
+            | obs      | ``observaion`` stored in buffer.      |
+            +==========+=======================================+
+            | act      | ``action`` stored in buffer.          |
+            +----------+---------------------------------------+
+            | reward   | ``reward`` stored in buffer.          |
+            +----------+---------------------------------------+
+            | cost     | ``cost`` stored in buffer.            |
+            +----------+---------------------------------------+
+            | next_obs | ``next observaion`` stored in buffer. |
+            +----------+---------------------------------------+
+            | done     | ``terminated`` stored in buffer.      |
+            +----------+---------------------------------------+
+
+        -  Update value net by :meth:`_update_reward_critic`.
+        -  Update cost net by :meth:`_update_cost_critic`.
+        -  Update policy net by :meth:`_update_actor`.
+
+        The basic process of each update is as follows:
+
+        #. Get the mini-batch data from buffer.
+        #. Get the loss of network.
+        #. Update the network by loss.
+        #. Repeat steps 2, 3 until the ``update_policy_iters`` times.
+
         Args:
-            current_step (int): current step
+            current_step (int): The current step.
         """
         if current_step >= self._cfgs.algo_cfgs.start_learning_steps:
             for _step in range(self._cfgs.algo_cfgs.update_policy_iters):
@@ -275,6 +338,10 @@ class LOOP(PETS):
     ) -> None:
         """Update reward critic using Soft Actor-Critic.
 
+        - Get the TD loss of reward critic.
+        - Update critic network by loss.
+        - Log useful information.
+
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
             action (torch.Tensor): The ``action`` sampled from buffer.
@@ -327,6 +394,10 @@ class LOOP(PETS):
     ) -> None:
         """Update cost critic using TD3 algorithm.
 
+        - Get the TD loss of cost critic.
+        - Update critic network by loss.
+        - Log useful information.
+
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
             action (torch.Tensor): The ``action`` sampled from buffer.
@@ -368,6 +439,10 @@ class LOOP(PETS):
     ) -> None:
         """Update actor using Soft Actor-Critic algorithm.
 
+        - Get the loss of actor.
+        - Update actor by loss.
+        - Log useful information.
+        
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
         """

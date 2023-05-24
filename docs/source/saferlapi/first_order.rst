@@ -8,9 +8,7 @@ First Order Algorithms
     FOCOPS
     CUP
 
-
 .. _focopsapi:
-
 
 FOCOPS
 ------
