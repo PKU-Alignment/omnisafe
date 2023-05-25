@@ -73,7 +73,9 @@ class SimmerAdapter(SauteAdapter):
             / self._cfgs.algo_cfgs.max_ep_len
             * torch.ones(num_envs, 1)
         ).to(self._device)
-        self._rel_safety_budget: torch.Tensor = (self._safety_budget / self._upper_budget).to(self._device)
+        self._rel_safety_budget: torch.Tensor = (self._safety_budget / self._upper_budget).to(
+            self._device
+        )
 
         assert isinstance(self._env.observation_space, Box), 'Observation space must be Box'
         self._observation_space: Box = Box(
