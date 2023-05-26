@@ -1,6 +1,6 @@
-# OmniSafe's Mujoco Velocity Benchmark for Off-Policy Algorithms
+# OmniSafe's Safety-Gymnasium Benchmark for Off-Policy Algorithms
 
-The OmniSafe Mujoco Velocity Benchmark for off-policy algorithms evaluates the effectiveness of OmniSafe's off-policy algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) Mujoco Velocity task suite. For each supported algorithm and environment, we offer the following:
+The OmniSafe Safety-Gymnasium Benchmark for off-policy algorithms evaluates the effectiveness of OmniSafe's off-policy algorithms across multiple environments from the [Safety-Gymnasium](https://github.com/PKU-Alignment/safety-gymnasium) task suite. For each supported algorithm and environment, we offer the following:
 
 - Default hyperparameters used for the benchmark and scripts that enable result replication.
 - Performance comparison with other open-source implementations.
@@ -16,6 +16,9 @@ Supported algorithms are listed below:
 - **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of DDPG (DDPGLag)](https://cdn.openai.com/safexp-short.pdf)
 - **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of TD3 (TD3Lag)](https://cdn.openai.com/safexp-short.pdf)
 - **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of SAC (SACLag)](https://cdn.openai.com/safexp-short.pdf)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (DDPGPID)](https://arxiv.org/abs/2007.03964)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (TD3PID)](https://arxiv.org/abs/2007.03964)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (SACPID)](https://arxiv.org/abs/2007.03964)
 
 ## Safety-Gymnasium
 
@@ -29,16 +32,25 @@ pip install safety_gymnasium
 You can set the main function of `examples/benchmarks/experiment_grid.py` as:
 
 ```python
-    eg = ExperimentGrid(exp_name='Off-Policy-Velocity')
+    eg = ExperimentGrid(exp_name='Off-Policy-Benchmarks')
 
     # set up the algorithms.
-    off_policy = ['DDPG', 'SAC', 'TD3', 'DDPGLag', 'TD3Lag', 'SACLag']
+    off_policy = ['DDPG', 'SAC', 'TD3', 'DDPGLag', 'TD3Lag', 'SACLag', 'DDPGPID', 'TD3PID', 'SACPID']
     eg.add('algo', off_policy)
 
     # you can use wandb to monitor the experiment.
     eg.add('logger_cfgs:use_wandb', [False])
     # you can use tensorboard to monitor the experiment.
     eg.add('logger_cfgs:use_tensorboard', [True])
+
+    # the default configs here are as follows:
+    # eg.add('algo_cfgs:steps_per_epoch', [2000])
+    # eg.add('train_cfgs:total_steps', [2000 * 500])
+    # which can reproduce results of 1e6 steps.
+
+    # if you want to reproduce results of 3e6 steps, using
+    # eg.add('algo_cfgs:steps_per_epoch', [2000])
+    # eg.add('train_cfgs:total_steps', [2000 * 1500])
 
     # set the device.
     avaliable_gpus = list(range(torch.cuda.device_count()))
@@ -625,6 +637,24 @@ lagrangian hyperparameters, which are listed below:
 | `lambda_lr` | 0.00001  |
 | `lambda_optimizer` | Adam |
 
+### Learning Rate
+
+### PID-Lagrangian
+
+PID-Lagrangian methods use a PID controller to control the lagrangian multiplier, The `pid_kp`, `pid_kd` and `pid_ki` count for the proportional gain, derivative gain and integral gain of the PID controller respectively. As PID-Lagrangian methods use a PID controller to control the lagrangian multiplier, the hyperparameters of the PID controller are important for the performance of the algorithm.
+
+- `pid_kp`: The proportional gain of the PID controller, determines how much the output responds to changes in the `ep_costs` signal. If the `pid_kp` is too large, the lagrangian multiplier will oscillate and the performance will be bad. If the `pid_kp` is too small, the lagrangian multiplier will update slowly and the performance will also be bad.
+- `pid_kd`: The derivative gain of the PID controller, determines how much the output responds to changes in the `ep_costs` signal. If the `pid_kd` is too large, the lagrangian multiplier may be too sensitive to noise or changes in the `ep_costs` signal, leading to instability or oscillations. If the `pid_kd` is too small, the lagrangian multiplier may not respond quickly or accurately enough to changes in the `ep_costs`.
+- `pid_ki`: The integral gain of the PID controller, determines the controller's ability to eliminate the steady-state error, by integrating the `ep_costs` signal over time. If the `pid_ki` is too large, the lagrangian multiplier may become too responsive to errors before.
+
+We have done some experiments to find relatively good `pid_kp`, `pid_ki`, and `pid_kd` for all environments, and we found that the following value is a good value for this hyperparameter.
+
+| Parameters | Descriptions| Values |
+| -----------| ------------| ------ |
+|`pid_kp`|The proportional gain of the PID controller|0.000001|
+|`pid_ki`|The derivative gain of the PID controller|0.0000001|
+|`pid_kd`|The integral gain of the PID controller|0.0000001|
+
 ### Some Hints
 
 In our experiments, we found that some hyperparameters are important for the performance of the algorithm:
@@ -642,6 +672,30 @@ Generally, we recommend:
 | `obs_normalize`   |  `False`  |
 | `reward_normalize`|  `False`  |
 | `cost_normalize`  | `True` |
+
+for Velocity tasks such as:
+
+- `SafetyAntVelocity-v1`
+- `SafetyHalfCheetahVelocity-v1`
+- `SafetyHopperVelocity-v1`
+- `SafetyHumanoidVelocity-v1`
+- `SafetyWalker2dVelocity-v1`
+- `SafetySwimmerVelocity-v1`
+
+Then:
+
+|      Hyperparameter      | Value |
+| :----------------------: | :---: |
+| `obs_normalize`   |  `False`  |
+| `reward_normalize`|  `False`  |
+| `cost_normalize`  | `False` |
+
+for Navigation tasks such as:
+
+- `SafetyCarCircle1-v0`
+- `SafetyCarGoal1-v0`
+- `SafetyPointCircle1-v0`
+- `SafetyPointGoal1-v0`
 
 Besides, the hyperparameter `torch_num_threads` in `train_cfgs` is also important. In a single training session, a larger value for `torch_num_threads` often means faster training speed. However, we found in experiments that setting `torch_num_threads` too high can cause resource contention between parallel training sessions, resulting in slower overall experiment speed. In the configs file, we set the default value for `torch_num_threads` to 16, which ensures faster training speed for a single session. If you need to launch multiple training sessions in parallel, please consider your device configuration. For example, suppose your CPU has 2 physical threads per core and has a total of 32 cores, if you are launching 16 training scripts in parallel, you had better not set `torch_num_threads` to a value greater than 4.
 
