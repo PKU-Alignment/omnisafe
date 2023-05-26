@@ -67,7 +67,7 @@ class SauteAdapter(OnPolicyAdapter):
             / (1 - self._cfgs.algo_cfgs.saute_gamma)
             / self._cfgs.algo_cfgs.max_ep_len
             * torch.ones(num_envs, 1)
-        )
+        ).to(self._device)
 
         assert isinstance(self._env.observation_space, Box), 'Observation space must be Box'
         self._observation_space: Box = Box(
@@ -120,7 +120,7 @@ class SauteAdapter(OnPolicyAdapter):
             info: Some information logged by the environment.
         """
         obs, info = self._env.reset()
-        self._safety_obs = torch.ones(self._env.num_envs, 1)
+        self._safety_obs = torch.ones(self._env.num_envs, 1).to(self._device)
         obs = self._augment_obs(obs)
         return obs, info
 
@@ -236,7 +236,7 @@ class SauteAdapter(OnPolicyAdapter):
         """
         super()._reset_log(idx)
         if idx is None:
-            self._ep_budget = torch.zeros(self._env.num_envs)
+            self._ep_budget = torch.zeros(self._env.num_envs).to(self._device)
         else:
             self._ep_budget[idx] = 0
 

@@ -458,6 +458,8 @@ class ExperimentGrid:
             hashed_exp_name = var['env_id'][:30] + '---' + hash_string(exp_name)
             exp_names.append(':'.join((hashed_exp_name[:5], exp_name)))
             exp_log_dir = os.path.join(self.log_dir, hashed_exp_name, '')
+            if not var.get('logger_cfgs'):
+                var['logger_cfgs'] = {'log_dir': './exp'}
             var['logger_cfgs'].update({'log_dir': exp_log_dir})
             self.save_same_exps_config(exp_log_dir, var)
             results.append(pool.submit(thunk, str(idx), var['algo'], var['env_id'], var))

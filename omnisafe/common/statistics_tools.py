@@ -219,7 +219,8 @@ class StatisticsTools:
         # value of parameter is determined above
         group_config.pop(parameter)
         # seed is not a parameter
-        group_config.pop('seed')
+        if 'seed' in group_config:
+            group_config.pop('seed')
         if 'train_cfgs' in group_config:
             group_config['train_cfgs'].pop('device', None)
         # combine all possible combinations of other parameters

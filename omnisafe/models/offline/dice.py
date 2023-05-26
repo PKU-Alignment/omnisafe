@@ -69,7 +69,7 @@ class ObsEncoder(nn.Module):
         self.activation = activation
         self.hidden_sizes = hidden_sizes
         self.net = build_mlp_network(
-            [self._obs_dim, *list(hidden_sizes)] + [self._out_dim],
+            [self._obs_dim, *list(hidden_sizes), self._out_dim],
             activation=activation,
             weight_initialization_mode=weight_initialization_mode,
         )
