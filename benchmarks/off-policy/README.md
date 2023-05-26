@@ -292,7 +292,7 @@ class="math inline">±</span> 795.48</td>
 
 ### Safe Reinforcement Learning Algorithms
 
-To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. It should be noted that all data is procured under the constraint of `cost_limit=25.00`. The results are presented in <a href="#performance_off_policy">Table 2</a> and <a href="#curve_off_policy">Figure 1</a>.
+To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. It should be noted that all data is procured under the constraint of `cost_limit=25.00`. The results are presented in <a href="#performance_off_policy">Table 2</a> and <a href="#curve_off_base">Figure 1</a>.
 
 #### Performance Table
 
@@ -532,10 +532,10 @@ class="math inline">±</span> 300.43</td>
 
 #### Performance Curves
 
-<table id="curve_off_policy">
+<table id="curve_off_base">
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/offpolicy_ant_1e6.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_ant_1e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetyAntVelocity-v1
@@ -544,7 +544,7 @@ class="math inline">±</span> 300.43</td>
   </tr>
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/offpolicy_halfcheetah_1e6.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_halfcheetah_1e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetyHalfCheetahVelocity-v1
@@ -553,7 +553,7 @@ class="math inline">±</span> 300.43</td>
   </tr>
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/offpolicy_hopper_1e6.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_hopper_1e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetyHopperVelocity-v1
@@ -562,7 +562,7 @@ class="math inline">±</span> 300.43</td>
   </tr>
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/offpolicy_humanoid_3e6.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_humanoid_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetyHumanoidVelocity-v1
@@ -571,7 +571,7 @@ class="math inline">±</span> 300.43</td>
   </tr>
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/offpolicy_swimmer_1e6.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_swimmer_1e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetySwimmerVelocity-v1
@@ -580,7 +580,43 @@ class="math inline">±</span> 300.43</td>
   </tr>
   <tr>
     <td style="text-align:center">
-      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/offpolicy_walker2d_1e6.png">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_walker2d_1e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_carcircle1_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_cargoal1_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_pointcircle1_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_pointgoal1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
         SafetyWalker2dVelocity-v1
@@ -590,6 +626,193 @@ class="math inline">±</span> 300.43</td>
   <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a> and safe reinforcement learning algorithms.</p></caption>
 </table>
 
+<table id="curve_off_lag">
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_ant_1e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyAntVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_halfcheetah_1e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyHalfCheetahVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_hopper_1e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyHopperVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_humanoid_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyHumanoidVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_swimmer_1e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetySwimmerVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_walker2d_1e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_carcircle1_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_cargoal1_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_pointcircle1_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_pointgoal1_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 2:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments, covering lagrangian reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a> and safe reinforcement learning algorithms.</p></caption>
+</table>
+
+<table id="curve_off_pid">
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_ant_1e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyAntVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_halfcheetah_1e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyHalfCheetahVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_hopper_1e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyHopperVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_humanoid_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyHumanoidVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_swimmer_1e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetySwimmerVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_walker2d_1e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_carcircle1_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_cargoal1_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_pointcircle1_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align:center">
+      <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_pointgoal1_3e6.png">
+      <br>
+      <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+        SafetyWalker2dVelocity-v1
+      </div>
+    </td>
+  </tr>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 3:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments, covering pid-lagrangian reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a> and safe reinforcement learning algorithms.</p></caption>
+</table>
 
 ## Experiment Analysis
 
@@ -638,6 +861,8 @@ lagrangian hyperparameters, which are listed below:
 | `lambda_optimizer` | Adam |
 
 ### Learning Rate
+
+In our experiments, we found that in the Navigation task, when the actor learning rate (`actor:lr`) is too large, the value of the `cost_critic` decreases rapidly, even becoming negative. We attribute this phenomenon to the fact that compared to estimating rewards, cost is relatively sparse and more difficult to estimate accurately. When the `actor:lr` is too large, the cost_critic becomes highly susceptible to the actor's influence, leading to an inaccurate estimation of the cost and subsequently affecting the actor's updates. Therefore, we attempted to decrease the `actor:lr` and achieved a promising performance as a result.
 
 ### PID-Lagrangian
 
