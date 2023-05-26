@@ -237,6 +237,7 @@ class DDPG(BaseAlgo):
         start_time = time.time()
         step = 0
         for epoch in range(self._epochs):
+            self._epoch = epoch
             rollout_time = 0.0
             update_time = 0.0
             epoch_time = time.time()
@@ -271,11 +272,6 @@ class DDPG(BaseAlgo):
                     self._log_when_not_update()
                 update_time += time.time() - update_start
 
-            self._env.eval_policy(
-                episode=2,
-                agent=self._actor_critic,
-                logger=self._logger,
-            )
 
             self._logger.store({'Time/Update': update_time})
             self._logger.store({'Time/Rollout': rollout_time})

@@ -101,7 +101,7 @@ defaults:
       # Activation function
       activation: relu
       # The learning rate of Actor network
-      lr: 0.0003
+      lr: 0.0001
     # Configuration of Critic network
     critic:
       # The number of critic networks
@@ -114,16 +114,30 @@ defaults:
       lr: 0.0003
   # lagrangian configurations
   lagrange_cfgs:
+    # The Kp of PID controller
+    pid_kp: 0.000001
+    # The Ki of PID controller
+    pid_ki: 0.0000001
+    # The Kd of PID controller
+    pid_kd: 0.0000001
+    #The delay of PID controller
+    pid_d_delay: 10
+    # The exponential moving average alpha of the proportional term of the PID controller.
+    pid_delta_p_ema_alpha: 0.95
+    # The exponential moving average alpha of the derivative term of the PID controller.
+    pid_delta_d_ema_alpha: 0.95
+    # Whether to normalize the sum of the cost.
+    sum_norm: True
+    # Whether to normalize the derivate of the cost.
+    diff_norm: False
     # Tolerance of constraint violation
     cost_limit: 25.0
+    # The max penalty coefficient
+    penalty_max: 100.0
     # Initial value of lagrangian multiplier
     lagrangian_multiplier_init: 0.001
-    # Learning rate of lagrangian multiplier
-    lambda_lr: 0.00001
-    # Type of lagrangian optimizer
-    lambda_optimizer: "Adam"
 
-SafetyCarGoal1-v0: 
+SafetyCarCircle1-v0:
   # algorithm configurations
   algo_cfgs:
     # normalize cost
@@ -140,16 +154,14 @@ SafetyCarGoal1-v0:
       lr: 0.001
   # lagrangian configurations
   lagrange_cfgs:
-    # Tolerance of constraint violation
-    cost_limit: 25.0
-    # Initial value of lagrangian multiplier
-    lagrangian_multiplier_init: 0.000
-    # Learning rate of lagrangian multiplier
-    lambda_lr: 0.0000005
-    # Type of lagrangian optimizer
-    lambda_optimizer: "Adam"
+    # The Kp of PID controller
+    pid_kp: 0.0000005
+    # The Ki of PID controller
+    pid_ki: 0.00000001
+    # The Kd of PID controller
+    pid_kd: 0.00000001
 
-SafetyPointGoal1-v0: 
+SafetyCarGoal1-v0:
   # algorithm configurations
   algo_cfgs:
     # normalize cost
@@ -166,16 +178,14 @@ SafetyPointGoal1-v0:
       lr: 0.001
   # lagrangian configurations
   lagrange_cfgs:
-    # Tolerance of constraint violation
-    cost_limit: 25.0
-    # Initial value of lagrangian multiplier
-    lagrangian_multiplier_init: 0.000
-    # Learning rate of lagrangian multiplier
-    lambda_lr: 0.0000005
-    # Type of lagrangian optimizer
-    lambda_optimizer: "Adam"
+    # The Kp of PID controller
+    pid_kp: 0.0000005
+    # The Ki of PID controller
+    pid_ki: 0.00000001
+    # The Kd of PID controller
+    pid_kd: 0.00000001
 
-SafetyCarCircle1-v0: 
+SafetyPointCircle1-v0:
   # algorithm configurations
   algo_cfgs:
     # normalize cost
@@ -192,16 +202,14 @@ SafetyCarCircle1-v0:
       lr: 0.001
   # lagrangian configurations
   lagrange_cfgs:
-    # Tolerance of constraint violation
-    cost_limit: 25.0
-    # Initial value of lagrangian multiplier
-    lagrangian_multiplier_init: 0.000
-    # Learning rate of lagrangian multiplier
-    lambda_lr: 0.0000005
-    # Type of lagrangian optimizer
-    lambda_optimizer: "Adam"
+    # The Kp of PID controller
+    pid_kp: 0.0000005
+    # The Ki of PID controller
+    pid_ki: 0.00000001
+    # The Kd of PID controller
+    pid_kd: 0.00000001
 
-SafetyPointCircle1-v0: 
+SafetyPointGoal1-v0:
   # algorithm configurations
   algo_cfgs:
     # normalize cost
@@ -218,11 +226,9 @@ SafetyPointCircle1-v0:
       lr: 0.001
   # lagrangian configurations
   lagrange_cfgs:
-    # Tolerance of constraint violation
-    cost_limit: 25.0
-    # Initial value of lagrangian multiplier
-    lagrangian_multiplier_init: 0.000
-    # Learning rate of lagrangian multiplier
-    lambda_lr: 0.0000005
-    # Type of lagrangian optimizer
-    lambda_optimizer: "Adam"
+    # The Kp of PID controller
+    pid_kp: 0.0000005
+    # The Ki of PID controller
+    pid_ki: 0.00000001
+    # The Kd of PID controller
+    pid_kd: 0.00000001
