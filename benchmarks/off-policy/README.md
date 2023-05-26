@@ -292,7 +292,7 @@ class="math inline">±</span> 795.48</td>
 
 ### Safe Reinforcement Learning Algorithms
 
-To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. It should be noted that all data is procured under the constraint of `cost_limit=25.00`. The results are presented in <a href="#performance_off_policy">Table 2</a> and <a href="#curve_off_base">Figure 1</a>.
+To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. It should be noted that all data is procured under the constraint of `cost_limit=25.00`. The results are presented in <a href="#performance_off_policy">Table 2</a>, <a href="#curve_off_base">Figure 1</a>, <a href="#curve_off_lag">Figure 2</a>, <a href="#curve_off_pid">Figure 3</a>.
 
 #### Performance Table
 
