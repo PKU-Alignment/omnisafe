@@ -195,9 +195,9 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
 </thead>
 <tbody>
   <tr>
-    <td rowspan="4">On Policy</td>
+    <td rowspan="5">On Policy</td>
     <td rowspan="2">Primal Dual</td>
-    <td>TRPOLag; PPOLag; PDO; RCPO; OnCRPO</td>
+    <td>TRPOLag; PPOLag; PDO; RCPO</td>
   </tr>
   <tr>
     <td>TRPOPID; CPPOPID</td>
@@ -211,12 +211,16 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
     <td>IPO; P3O</td>
   </tr>
   <tr>
+    <td>Primal</td>
+    <td>OnCRPO</td>
+  </tr>
+  <tr>
     <td rowspan="2">Off Policy</td>
     <td rowspan="2">Primal-Dual</td>
     <td>SACLag; DDPGLag; TD3Lag</td>
   </tr>
   <tr>
-    <td><span style="font-weight:400;font-style:normal">SACPID; TD3PID; DDPGPID; CVPO</span></td>
+    <td><span style="font-weight:400;font-style:normal">SACPID; TD3PID; DDPGPID</span></td>
   </tr>
   <tr>
     <td rowspan="3">Model-based</td>

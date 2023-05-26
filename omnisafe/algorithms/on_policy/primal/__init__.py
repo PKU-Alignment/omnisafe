@@ -15,3 +15,8 @@
 """Primal algorithms."""
 
 from omnisafe.algorithms.on_policy.primal.crpo import OnCRPO
+
+
+__all__ = [
+    'OnCRPO',
+]
