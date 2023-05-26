@@ -165,7 +165,13 @@ class DDPG(BaseAlgo):
         +-------------------------+----------------------------------------------------------------------+
         | Misc/TotalEnvSteps      | Total steps of the experiment.                                       |
         +-------------------------+----------------------------------------------------------------------+
-        | Time                    | Total time.                                                          |
+        | Time/Total              | Total time.                                                          |
+        +-------------------------+----------------------------------------------------------------------+
+        | Time/Rollout            | Rollout time.                                                        |
+        +-------------------------+----------------------------------------------------------------------+
+        | Time/Update             | Update time.                                                         |
+        +-------------------------+----------------------------------------------------------------------+
+        | Time/Eavluate           | Evaluate time.                                                       |
         +-------------------------+----------------------------------------------------------------------+
         | FPS                     | Frames per second of the epoch.                                      |
         +-------------------------+----------------------------------------------------------------------+
@@ -216,6 +222,7 @@ class DDPG(BaseAlgo):
         self._logger.register_key('Time/Total')
         self._logger.register_key('Time/Rollout')
         self._logger.register_key('Time/Update')
+        self._logger.register_key('Time/Evaluate')
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
 
@@ -272,9 +279,17 @@ class DDPG(BaseAlgo):
                     self._log_when_not_update()
                 update_time += time.time() - update_start
 
+            eval_start = time.time()
+            self._env.eval_policy(
+                episode=1,
+                agent=self._actor_critic,
+                logger=self._logger,
+            )
+            eval_time += time.time() - eval_start
 
             self._logger.store({'Time/Update': update_time})
             self._logger.store({'Time/Rollout': rollout_time})
+            self._logger.store({'Time/Evaluate': eval_time})
 
             if (
                 step > self._cfgs.algo_cfgs.start_learning_steps
