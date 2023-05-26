@@ -52,6 +52,9 @@ The OmniSafe Safety-Gymnasium Benchmark evaluates the effectiveness of OmniSafe'
 - **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of DDPG (DDPGLag)](https://cdn.openai.com/safexp-short.pdf)
 - **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of TD3 (TD3Lag)](https://cdn.openai.com/safexp-short.pdf)
 - **[Preprint 2019]<sup>[[1]](#footnote1)</sup>** [The Lagrangian version of SAC (SACLag)](https://cdn.openai.com/safexp-short.pdf)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (DDPGPID)](https://arxiv.org/abs/2007.03964)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (TD3PID)](https://arxiv.org/abs/2007.03964)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (SACPID)](https://arxiv.org/abs/2007.03964)
 
 > **More details can be refer to [Off Policy Experiment](https://github.com/PKU-Alignment/omnisafe/tree/main/benchmarks/off-policy/README.md).**
 

@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ class Lagrange:
         self.lambda_lr: float = lambda_lr
         self.lagrangian_upper_bound: float | None = lagrangian_upper_bound
 
-        init_value = max(lagrangian_multiplier_init, 1e-5)
+        init_value = max(lagrangian_multiplier_init, 0.0)
         self.lagrangian_multiplier: torch.nn.Parameter = torch.nn.Parameter(
             torch.as_tensor(init_value),
             requires_grad=True,

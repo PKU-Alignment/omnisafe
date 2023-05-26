@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Basic Model Based Reinforcement Learning algorithms."""
+"""Primal algorithms."""
 
-from omnisafe.algorithms.model_based.base.loop import LOOP
-from omnisafe.algorithms.model_based.base.pets import PETS
+from omnisafe.algorithms.on_policy.primal.crpo import OnCRPO
 
 
-__all__ = ['LOOP', 'PETS']
+__all__ = [
+    'OnCRPO',
+]

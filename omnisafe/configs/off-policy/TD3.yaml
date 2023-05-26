@@ -110,3 +110,51 @@ defaults:
       activation: relu
       # The learning rate of Critic network
       lr: 0.0003
+
+SafetyPointGoal1-v0:
+  # model configurations
+  model_cfgs:
+    # Configuration of Actor network
+    actor:
+      # The learning rate of Actor network
+      lr: 0.000005
+    # Configuration of Critic network
+    critic:
+      # The learning rate of Critic network
+      lr: 0.001
+
+SafetyCarGoal1-v0:
+  # model configurations
+  model_cfgs:
+    # Configuration of Actor network
+    actor:
+      # The learning rate of Actor network
+      lr: 0.000005
+    # Configuration of Critic network
+    critic:
+      # The learning rate of Critic network
+      lr: 0.001
+
+SafetyPointCircle1-v0:
+  # model configurations
+  model_cfgs:
+    # Configuration of Actor network
+    actor:
+      # The learning rate of Actor network
+      lr: 0.000005
+    # Configuration of Critic network
+    critic:
+      # The learning rate of Critic network
+      lr: 0.001
+
+SafetyCarCircle1-v0:
+  # model configurations
+  model_cfgs:
+    # Configuration of Actor network
+    actor:
+      # The learning rate of Actor network
+      lr: 0.000005
+    # Configuration of Critic network
+    critic:
+      # The learning rate of Critic network
+      lr: 0.001

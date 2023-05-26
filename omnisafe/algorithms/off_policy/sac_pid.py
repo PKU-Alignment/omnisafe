@@ -12,43 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the Lagrangian version of Soft Actor-Critic algorithm."""
+"""Implementation of the SACPID (PID version of SACLag) algorithm."""
 
 
 import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.sac import SAC
-from omnisafe.common.lagrange import Lagrange
+from omnisafe.common.pid_lagrange import PIDLagrangian
 
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
-class SACLag(SAC):
-    """The Lagrangian version of Soft Actor-Critic (SAC) algorithm.
+class SACPID(SAC):
+    """The SACPID (PID version of SACLag) algorithm.
 
     References:
-        - Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
-        - Authors: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine.
-        - URL: `SAC <https://arxiv.org/abs/1801.01290>`_
+        - Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
+        - Authors: Adam Stooke, Joshua Achiam, Pieter Abbeel.
+        - URL: `SACPID <https://arxiv.org/abs/2007.03964>`_
     """
 
     def _init(self) -> None:
-        """The initialization of the algorithm.
+        """The initialization of the SACPID algorithm.
 
-        Here we additionally initialize the Lagrange multiplier.
+        The SACPID algorithm uses a PID-Lagrange multiplier to balance the cost and reward.
         """
         super()._init()
-        self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
+        self._lagrange: PIDLagrangian = PIDLagrangian(**self._cfgs.lagrange_cfgs)
 
     def _init_log(self) -> None:
-        """Log the SACLag specific information.
+        """Log the SACPID specific information.
 
-        +----------------------------+--------------------------+
-        | Things to log              | Description              |
-        +============================+==========================+
-        | Metrics/LagrangeMultiplier | The Lagrange multiplier. |
-        +----------------------------+--------------------------+
+        +----------------------------+------------------------------+
+        | Things to log              | Description                  |
+        +============================+==============================+
+        | Metrics/LagrangeMultiplier | The PID-Lagrange multiplier. |
+        +----------------------------+------------------------------+
         """
         super()._init_log()
         self._logger.register_key('Metrics/LagrangeMultiplier')
@@ -57,15 +57,15 @@ class SACLag(SAC):
         """Update actor, critic, as we used in the :class:`PolicyGradient` algorithm.
 
         Additionally, we update the Lagrange multiplier parameter by calling the
-        :meth:`update_lagrange_multiplier` method.
+        :meth:`pid_update` method.
         """
         super()._update()
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
         if self._epoch > self._cfgs.algo_cfgs.warmup_epochs:
-            self._lagrange.update_lagrange_multiplier(Jc)
+            self._lagrange.pid_update(Jc)
         self._logger.store(
             {
-                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
+                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier,
             },
         )
 
@@ -75,7 +75,7 @@ class SACLag(SAC):
     ) -> torch.Tensor:
         r"""Computing ``pi/actor`` loss.
 
-        The loss function in SACLag is defined as:
+        The loss function in SACPID is defined as:
 
         .. math::
 
@@ -95,14 +95,14 @@ class SACLag(SAC):
         loss_q_r_1, loss_q_r_2 = self._actor_critic.reward_critic(obs, action)
         loss_r = self._alpha * log_prob - torch.min(loss_q_r_1, loss_q_r_2)
         loss_q_c = self._actor_critic.cost_critic(obs, action)[0]
-        loss_c = self._lagrange.lagrangian_multiplier.item() * loss_q_c
+        loss_c = self._lagrange.lagrangian_multiplier * loss_q_c
 
-        return (loss_r + loss_c).mean() / (1 + self._lagrange.lagrangian_multiplier.item())
+        return (loss_r + loss_c).mean() / (1 + self._lagrange.lagrangian_multiplier)
 
     def _log_when_not_update(self) -> None:
         super()._log_when_not_update()
         self._logger.store(
             {
-                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier.data.item(),
+                'Metrics/LagrangeMultiplier': self._lagrange.lagrangian_multiplier,
             },
         )

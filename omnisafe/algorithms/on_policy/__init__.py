@@ -1,4 +1,4 @@
-# Copyright 2022-2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ from omnisafe.algorithms.on_policy import (
     naive_lagrange,
     penalty_function,
     pid_lagrange,
+    primal,
     saute,
     second_order,
     simmer,
@@ -28,9 +29,10 @@ from omnisafe.algorithms.on_policy import (
 from omnisafe.algorithms.on_policy.base import PPO, TRPO, NaturalPG, PolicyGradient
 from omnisafe.algorithms.on_policy.early_terminated import PPOEarlyTerminated, TRPOEarlyTerminated
 from omnisafe.algorithms.on_policy.first_order import CUP, FOCOPS
-from omnisafe.algorithms.on_policy.naive_lagrange import PDO, RCPO, OnCRPO, PPOLag, TRPOLag
+from omnisafe.algorithms.on_policy.naive_lagrange import PDO, RCPO, PPOLag, TRPOLag
 from omnisafe.algorithms.on_policy.penalty_function import IPO, P3O
 from omnisafe.algorithms.on_policy.pid_lagrange import CPPOPID, TRPOPID
+from omnisafe.algorithms.on_policy.primal import OnCRPO
 from omnisafe.algorithms.on_policy.saute import PPOSaute, TRPOSaute
 from omnisafe.algorithms.on_policy.second_order import CPO, PCPO
 from omnisafe.algorithms.on_policy.simmer import PPOSimmerPID, TRPOSimmerPID
@@ -41,6 +43,7 @@ __all__ = [
     *early_terminated.__all__,
     *first_order.__all__,
     *naive_lagrange.__all__,
+    *primal.__all__,
     *penalty_function.__all__,
     *pid_lagrange.__all__,
     *saute.__all__,
