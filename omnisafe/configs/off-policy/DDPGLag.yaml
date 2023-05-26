@@ -119,7 +119,7 @@ defaults:
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
 
-SafetyCarGoal1-v0: 
+SafetyCarGoal1-v0:
   # model configurations
   model_cfgs:
     # Configuration of Actor network
@@ -141,7 +141,7 @@ SafetyCarGoal1-v0:
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
 
-SafetyPointGoal1-v0: 
+SafetyPointGoal1-v0:
   # model configurations
   model_cfgs:
     # Configuration of Actor network
@@ -163,7 +163,7 @@ SafetyPointGoal1-v0:
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
 
-SafetyCarCircle1-v0: 
+SafetyCarCircle1-v0:
   # model configurations
   model_cfgs:
     # Configuration of Actor network
@@ -185,7 +185,7 @@ SafetyCarCircle1-v0:
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
 
-SafetyPointCircle1-v0: 
+SafetyPointCircle1-v0:
   # model configurations
   model_cfgs:
     # Configuration of Actor network

@@ -285,7 +285,7 @@ class DDPG(BaseAlgo):
                 agent=self._actor_critic,
                 logger=self._logger,
             )
-            eval_time += time.time() - eval_start
+            eval_time = time.time() - eval_start
 
             self._logger.store({'Time/Update': update_time})
             self._logger.store({'Time/Rollout': rollout_time})

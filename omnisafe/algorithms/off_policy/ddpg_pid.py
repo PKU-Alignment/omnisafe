@@ -61,7 +61,7 @@ class DDPGPID(DDPG):
         """
         super()._update()
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
-        if self._epoch>self._cfgs.algo_cfgs.warmup_epochs:
+        if self._epoch > self._cfgs.algo_cfgs.warmup_epochs:
             self._lagrange.pid_update(Jc)
         self._logger.store(
             {
@@ -93,8 +93,7 @@ class DDPGPID(DDPG):
         action = self._actor_critic.actor.predict(obs, deterministic=True)
         loss_r = -self._actor_critic.reward_critic(obs, action)[0]
         loss_c = (
-            self._lagrange.lagrangian_multiplier
-            * self._actor_critic.cost_critic(obs, action)[0]
+            self._lagrange.lagrangian_multiplier * self._actor_critic.cost_critic(obs, action)[0]
         )
         return (loss_r + loss_c).mean() / (1 + self._lagrange.lagrangian_multiplier)
 

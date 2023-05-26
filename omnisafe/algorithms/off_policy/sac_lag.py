@@ -61,7 +61,7 @@ class SACLag(SAC):
         """
         super()._update()
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
-        if self._epoch>self._cfgs.algo_cfgs.warmup_epochs:
+        if self._epoch > self._cfgs.algo_cfgs.warmup_epochs:
             self._lagrange.update_lagrange_multiplier(Jc)
         self._logger.store(
             {

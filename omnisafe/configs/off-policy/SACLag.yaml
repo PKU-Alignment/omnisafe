@@ -127,7 +127,7 @@ defaults:
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
 
-SafetyCarGoal1-v0: 
+SafetyCarGoal1-v0:
   # algorithm configurations
   algo_cfgs:
     # The value of alpha
@@ -155,7 +155,7 @@ SafetyCarGoal1-v0:
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
 
-SafetyPointGoal1-v0: 
+SafetyPointGoal1-v0:
   # algorithm configurations
   algo_cfgs:
     # The value of alpha
@@ -183,7 +183,7 @@ SafetyPointGoal1-v0:
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
 
-SafetyCarCircle1-v0: 
+SafetyCarCircle1-v0:
   # algorithm configurations
   algo_cfgs:
     # The value of alpha
@@ -211,7 +211,7 @@ SafetyCarCircle1-v0:
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
 
-SafetyPointCircle1-v0: 
+SafetyPointCircle1-v0:
   # algorithm configurations
   algo_cfgs:
     # The value of alpha

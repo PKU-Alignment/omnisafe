@@ -19,7 +19,6 @@ import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.sac import SAC
-from omnisafe.common.lagrange import Lagrange
 from omnisafe.common.pid_lagrange import PIDLagrangian
 
 
@@ -62,7 +61,7 @@ class SACPID(SAC):
         """
         super()._update()
         Jc = self._logger.get_stats('Metrics/EpCost')[0]
-        if self._epoch>self._cfgs.algo_cfgs.warmup_epochs:
+        if self._epoch > self._cfgs.algo_cfgs.warmup_epochs:
             self._lagrange.pid_update(Jc)
         self._logger.store(
             {

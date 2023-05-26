@@ -118,7 +118,7 @@ SafetyPointGoal1-v0:
     critic:
       # The learning rate of Critic network
       lr: 0.001
-  
+
 SafetyCarGoal1-v0:
   # model configurations
   model_cfgs:
