@@ -13,16 +13,20 @@
 # limitations under the License.
 # ==============================================================================
 """Model-based Adapter for OmniSafe."""
+
+
 from __future__ import annotations
 
 import time
 from typing import Any, Callable
 
+import numpy as np
 import torch
+from gymnasium.spaces import Box
 
 from omnisafe.adapter.online_adapter import OnlineAdapter
 from omnisafe.common.logger import Logger
-from omnisafe.envs.core import make, support_envs
+from omnisafe.envs.core import CMDP, make, support_envs
 from omnisafe.envs.wrapper import (
     ActionRepeat,
     ActionScale,
@@ -34,6 +38,7 @@ from omnisafe.envs.wrapper import (
     Unsqueeze,
 )
 from omnisafe.utils.config import Config
+from omnisafe.utils.tools import get_device
 
 
 class ModelBasedAdapter(
@@ -42,30 +47,35 @@ class ModelBasedAdapter(
     """Model Based Adapter for OmniSafe.
 
     :class:`ModelBasedAdapter` is used to adapt the environment to the model-based training.
-
+    It trains a world model to provide data for algorithms training.
 
     Args:
         env_id (str): The environment id.
         num_envs (int): The number of environments.
         seed (int): The random seed.
         cfgs (Config): The configuration.
-        kwargs(dict): The other keyword arguments.
+
+    Keyword Args:
+        render_mode (str, optional): The render mode ranges from 'human' to 'rgb_array' and 'rgb_array_list'.
+            Defaults to 'rgb_array'.
+        camera_name (str, optional): The camera name.
+        camera_id (int, optional): The camera id.
+        width (int, optional): The width of the rendered image. Defaults to 256.
+        height (int, optional): The height of the rendered image. Defaults to 256.
 
     Attributes:
-        _env_id (str): The environment id.
-        _device (torch.device): The device.
-        _env (CMDP): The environment.
-        _cfgs (Config): The configuration.
-        _ep_ret (torch.Tensor): The episode return.
-        _ep_cost (torch.Tensor): The episode cost.
-        _ep_len (torch.Tensor): The episode length.
-        _last_dynamics_update (float): The last time of dynamics update.
-        _last_policy_update (float): The last time of policy update.
-        _last_eval (float): The last time of evaluation.
         coordinate_observation_space (OmnisafeSpace): The coordinate observation space.
         lidar_observation_space (OmnisafeSpace): The lidar observation space.
         task (str): The task. eg. The task of SafetyPointGoal-v0 is 'goal'
     """
+
+    coordinate_observation_space: Box | None
+    lidar_observation_space: Box | None
+    task: str | None
+    _ep_ret: torch.Tensor
+    _ep_cost: torch.Tensor
+    _ep_len: torch.Tensor
+    _current_obs: torch.Tensor
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -73,15 +83,20 @@ class ModelBasedAdapter(
         num_envs: int,
         seed: int,
         cfgs: Config,
-        **kwargs: Any,
+        **env_kwargs: Any,
     ) -> None:
         """Initialize the model-based adapter."""
         assert env_id in support_envs(), f'Env {env_id} is not supported.'
 
-        self._env_id = env_id
-        self._device = cfgs.train_cfgs.device
+        self._env_id: str = env_id
+        self._device: torch.device = get_device(cfgs.train_cfgs.device)
 
-        self._env = make(env_id, num_envs=num_envs, device=cfgs.train_cfgs.device, **kwargs)
+        self._env: CMDP = make(
+            env_id,
+            num_envs=num_envs,
+            device=cfgs.train_cfgs.device,
+            **env_kwargs,
+        )
 
         # wrap the environment, use the action repeat in model-based setting.
         self._wrapper(
@@ -91,7 +106,7 @@ class ModelBasedAdapter(
             action_repeat=cfgs.algo_cfgs.action_repeat,
         )
         self._env.set_seed(seed)
-        self._cfgs = cfgs
+        self._cfgs: Config = cfgs
         if hasattr(self._env, 'coordinate_observation_space') and hasattr(
             self._env,
             'lidar_observation_space',
@@ -106,30 +121,27 @@ class ModelBasedAdapter(
         else:
             self.task = None
 
-        self._ep_ret: torch.Tensor
-        self._ep_cost: torch.Tensor
-        self._ep_len: torch.Tensor
         self._current_obs, _ = self.reset()
-        self._max_ep_len = 1000
+        self._max_ep_len: int = 1000
         self._reset_log()
-        self._last_dynamics_update = 0
-        self._last_policy_update = 0
-        self._last_eval = 0
-        self._first_log = False
+        self._last_dynamics_update: int = 0
+        self._last_policy_update: int = 0
+        self._last_eval: int = 0
+        self._first_log: bool = False
 
-    def get_cost_from_obs_tensor(self, obs: torch.Tensor) -> torch.Tensor | None:
+    def get_cost_from_obs_tensor(self, obs: torch.Tensor) -> torch.Tensor:
         """Get cost from tensor observation.
 
         Args:
-            obs (torch.Tensor): The observation.
+            obs (torch.Tensor): The tensor version of observation.
         """
         return (
             self._env.get_cost_from_obs_tensor(obs)
             if hasattr(self._env, 'get_cost_from_obs_tensor')
-            else None
+            else torch.zeros(1)
         )
 
-    def get_lidar_from_coordinate(self, obs: torch.Tensor) -> torch.Tensor | None:
+    def get_lidar_from_coordinate(self, obs: np.ndarray) -> torch.Tensor | None:
         """Get lidar from numpy coordinate.
 
         Args:
@@ -141,12 +153,19 @@ class ModelBasedAdapter(
             else None
         )
 
-    def render(self, *args: str, **kwargs: int) -> Any:
+    def render(self, *args: str, **kwargs: Any) -> Any:
         """Render the environment.
 
         Args:
             args (str): The arguments.
-            kwargs (int): The keyword arguments.
+
+        Keyword Args:
+            render_mode (str, optional): The render mode, ranging from ``human``, ``rgb_array``, ``rgb_array_list``.
+                Defaults to ``rgb_array``.
+            camera_name (str, optional): The camera name.
+            camera_id (int, optional): The camera id.
+            width (int, optional): The width of the rendered image. Defaults to 256.
+            height (int, optional): The height of the rendered image. Defaults to 256.
         """
         return self._env.render(*args, **kwargs)
 
@@ -163,26 +182,25 @@ class ModelBasedAdapter(
 
             OmniSafe supports the following wrappers:
 
-            .. list-table::
-
-                *   -   Wrapper
-                    -   Description
-                *   -   TimeLimit
-                    -   Limit the time steps of the environment.
-                *   -   AutoReset
-                    -   Reset the environment when the episode is done.
-                *   -   ObsNormalize
-                    -   Normalize the observation.
-                *   -   RewardNormalize
-                    -   Normalize the reward.
-                *   -   CostNormalize
-                    -   Normalize the cost.
-                *   -   ActionScale
-                    -   Scale the action.
-                *   -   ActionRepeat
-                    -   Repeat the action.
-                *   -   Unsqueeze
-                    -   Unsqueeze the step result for single environment case.
+            +-----------------+--------------------------------------------------------+
+            | Wrapper         | Description                                            |
+            +=================+========================================================+
+            | TimeLimit       | Limit the time steps of the environment.               |
+            +-----------------+--------------------------------------------------------+
+            | AutoReset       | Reset the environment when the episode is done.        |
+            +-----------------+--------------------------------------------------------+
+            | ObsNormalize    | Normalize the observation.                             |
+            +-----------------+--------------------------------------------------------+
+            | RewardNormalize | Normalize the reward.                                  |
+            +-----------------+--------------------------------------------------------+
+            | CostNormalize   | Normalize the cost.                                    |
+            +-----------------+--------------------------------------------------------+
+            | ActionScale     | Scale the action.                                      |
+            +-----------------+--------------------------------------------------------+
+            | ActionRepeat    | Repeat the action.                                     |
+            +-----------------+--------------------------------------------------------+
+            | Unsqueeze       | Unsqueeze the step result for single environment case. |
+            +-----------------+--------------------------------------------------------+
 
         Args:
             obs_normalize (bool): Whether to normalize the observation.
@@ -206,34 +224,46 @@ class ModelBasedAdapter(
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
 
-    def roll_out(  # pylint: disable=too-many-arguments,too-many-locals
+    def rollout(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         current_step: int,
-        roll_out_step: int,
+        rollout_step: int,
         use_actor_critic: bool,
-        act_func: Callable,
-        store_data_func: Callable,
-        update_dynamics_func: Callable,
+        act_func: Callable[[int, torch.Tensor], torch.Tensor],
+        store_data_func: Callable[
+            [
+                torch.Tensor,
+                torch.Tensor,
+                torch.Tensor,
+                torch.Tensor,
+                torch.Tensor,
+                torch.Tensor,
+                torch.Tensor,
+                dict[str, Any],
+            ],
+            None,
+        ],
+        update_dynamics_func: Callable[[], None],
         logger: Logger,
         use_eval: bool,
-        eval_func: Callable,
-        algo_reset_func: Callable,
-        update_actor_func: Callable,
+        eval_func: Callable[[int, bool], None],
+        algo_reset_func: Callable[[], None],
+        update_actor_func: Callable[[int], None],
     ) -> int:
         """Roll out the environment and store the data in the buffer.
 
         Args:
             current_step (int): Current training step.
-            roll_out_step (int): Number of steps to roll out.
+            rollout_step (int): Number of steps to roll out.
             use_actor_critic (bool): Whether to use actor-critic.
-            act_func (Callable): Function to get action.
-            store_data_func (Callable): Function to store data.
-            update_dynamics_func (Callable): Function to update dynamics.
-            logger (Logger): Logger.
+            act_func (Callable[[int, torch.Tensor], torch.Tensor]): Function to get action.
+            store_data_func (Callable[[torch.Tensor, ..., dict[str, Any], ], None,]): Function to store data.
+            update_dynamics_func (Callable[[], None]): Function to update dynamics.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
             use_eval (bool): Whether to use evaluation.
-            eval_func (Callable): Function to evaluate the agent.
-            algo_reset_func (Callable): Function to reset the algorithm.
-            update_actor_func (Callable): Function to update the actor.
+            eval_func (Callable[[int, bool], None]): Function to evaluate the agent.
+            algo_reset_func (Callable[[], None]): Function to reset the algorithm.
+            update_actor_func (Callable[[int], None]): Function to update the actor.
         """
         epoch_start_time = time.time()
 
@@ -244,16 +274,14 @@ class ModelBasedAdapter(
 
         epoch_steps = 0
 
-        while epoch_steps < roll_out_step and current_step < self._cfgs.train_cfgs.total_steps:
-            action, action_info = act_func(current_step, self._current_obs, self._env)
+        while epoch_steps < rollout_step and current_step < self._cfgs.train_cfgs.total_steps:
+            action = act_func(current_step, self._current_obs)
             next_state, reward, cost, terminated, truncated, info = self.step(action)
             epoch_steps += info['num_step']
             current_step += info['num_step']
             self._log_value(reward=reward, cost=cost, info=info)
 
             store_data_func(
-                current_step,
-                self._ep_len,
                 self._current_obs,
                 action,
                 reward,
@@ -262,7 +290,6 @@ class ModelBasedAdapter(
                 truncated,
                 next_state,
                 info,
-                action_info,
             )
             self._current_obs = next_state
             if terminated or truncated:
@@ -270,7 +297,7 @@ class ModelBasedAdapter(
                 self._reset_log()
                 self._current_obs, _ = self.reset()
                 if algo_reset_func is not None:
-                    algo_reset_func(current_step)
+                    algo_reset_func()
             if (
                 current_step % self._cfgs.algo_cfgs.update_dynamics_cycle
                 < self._cfgs.algo_cfgs.action_repeat
@@ -278,7 +305,7 @@ class ModelBasedAdapter(
                 >= self._cfgs.algo_cfgs.update_dynamics_cycle
             ):
                 update_dynamics_start = time.time()
-                update_dynamics_func(current_step)
+                update_dynamics_func()
                 self._last_dynamics_update = current_step
                 update_dynamics_time += time.time() - update_dynamics_start
 
@@ -301,7 +328,7 @@ class ModelBasedAdapter(
                 and current_step - self._last_eval >= self._cfgs.evaluation_cfgs.eval_cycle
             ):
                 eval_start = time.time()
-                eval_func(current_step)
+                eval_func(current_step, True)
                 self._last_eval = current_step
                 eval_time += time.time() - eval_start
 
@@ -311,23 +338,23 @@ class ModelBasedAdapter(
         epoch_time = time.time() - epoch_start_time
         logger.store(**{'Time/Epoch': epoch_time})
         logger.store(**{'Time/UpdateDynamics': update_dynamics_time})
-        roll_out_time = epoch_time - update_dynamics_time
+        rollout_time = epoch_time - update_dynamics_time
 
         if use_eval:
             logger.store(**{'Time/Eval': eval_time})
-            roll_out_time -= eval_time
+            rollout_time -= eval_time
 
         if use_actor_critic:
             logger.store(**{'Time/UpdateActorCritic': update_actor_critic_time})
-            roll_out_time -= update_actor_critic_time
-        logger.store(**{'Time/Rollout': roll_out_time})
+            rollout_time -= update_actor_critic_time
+        logger.store(**{'Time/Rollout': rollout_time})
         return current_step
 
     def _log_value(
         self,
         reward: torch.Tensor,
         cost: torch.Tensor,
-        info: dict,
+        info: dict[str, Any],
     ) -> None:
         """Log value.
 
@@ -336,9 +363,9 @@ class ModelBasedAdapter(
             be stored in ``info['original_reward']`` and ``info['original_cost']``.
 
         Args:
-            reward (torch.Tensor): The reward.
-            cost (torch.Tensor): The cost.
-            info (dict): Information.
+            reward (torch.Tensor): The immediate step reward.
+            cost (torch.Tensor): The immediate step cost.
+            info (dict[str, Any]): Some information logged by the environment.
         """
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()
@@ -348,23 +375,19 @@ class ModelBasedAdapter(
         """Log metrics.
 
         Args:
-            logger (Logger): Logger.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
         """
         self._first_log = True
         logger.store(
-            **{
+            {
                 'Metrics/EpRet': self._ep_ret,
                 'Metrics/EpCost': self._ep_cost,
                 'Metrics/EpLen': self._ep_len,
             },
         )
 
-    def _reset_log(self, idx: int | None = None) -> None:  # pylint: disable=unused-argument
-        """Reset log.
-
-        Args:
-            idx (int | None): The index of the environment.
-        """
+    def _reset_log(self) -> None:
+        """Reset log."""
         self._ep_ret = torch.zeros(1)
         self._ep_cost = torch.zeros(1)
         self._ep_len = torch.zeros(1)

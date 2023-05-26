@@ -155,7 +155,7 @@ class CMDP(ABC):
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
 
         Returns:
-            The render frames, we recommend to use `np.ndarray` which could construct video by
+            The rendered frames, we recommend using `np.ndarray` which could construct video by
             moviepy.
         """
 
@@ -268,7 +268,7 @@ class Wrapper(CMDP):
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
 
         Returns:
-            The render frames, we recommend to use `np.ndarray` which could construct video by
+            The rendered frames, we recommend using `np.ndarray` which could construct video by
             moviepy.
         """
         return self._env.render()
@@ -384,7 +384,14 @@ def make(env_id: str, class_name: str | None = None, **kwargs: Any) -> CMDP:
     Args:
         env_id (str): The environment id.
         class_name (str or None): The environment class name.
-        **kwargs: the keyword arguments for the environment initialization.
+
+    Keyword Args:
+        render_mode (str, optional): The render mode ranges from 'human' to 'rgb_array' and 'rgb_array_list'.
+            Defaults to 'rgb_array'.
+        camera_name (str, optional): The camera name.
+        camera_id (int, optional): The camera id.
+        width (int, optional): The width of the rendered image. Defaults to 256.
+        height (int, optional): The height of the rendered image. Defaults to 256.
 
     Returns:
         The environment class.

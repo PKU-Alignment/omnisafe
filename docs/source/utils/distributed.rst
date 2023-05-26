@@ -20,7 +20,6 @@ OmniSafe Distributed
     dist_op
     dist_statistics_scalar
 
-
 Set up distributed training
 ---------------------------
 

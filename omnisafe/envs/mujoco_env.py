@@ -30,7 +30,6 @@ class MujocoEnv(CMDP):
     """Gymnasium Mujoco environment.
 
     Attributes:
-        _support_envs (list[str]): List of supported environments.
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
@@ -61,7 +60,14 @@ class MujocoEnv(CMDP):
             env_id (str): Environment id.
             num_envs (int, optional): Number of environments. Defaults to 1.
             device (torch.device, optional): Device to store the data. Defaults to 'cpu'.
-            **kwargs: Other arguments.
+
+        Keyword Args:
+            render_mode (str, optional): The render mode, ranging from ``human``, ``rgb_array``, ``rgb_array_list``.
+                Defaults to ``rgb_array``.
+            camera_name (str, optional): The camera name.
+            camera_id (int, optional): The camera id.
+            width (int, optional): The width of the rendered image. Defaults to 256.
+            height (int, optional): The height of the rendered image. Defaults to 256.
         """
         super().__init__(env_id)
         self._env_id = env_id
@@ -85,7 +91,14 @@ class MujocoEnv(CMDP):
     def step(
         self,
         action: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        dict[str, Any],
+    ]:
         """Step the environment.
 
         .. note::
@@ -98,12 +111,12 @@ class MujocoEnv(CMDP):
             action (torch.Tensor): Action to take.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            reward (torch.Tensor): amount of reward returned after previous action.
-            cost (torch.Tensor): amount of cost returned after previous action.
-            terminated (torch.Tensor): whether the episode has ended.
-            truncated (torch.Tensor): whether the episode has been truncated due to a time limit.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: Agent's observation of the current environment.
+            reward: Amount of reward returned after previous action.
+            cost: Amount of cost returned after previous action.
+            terminated: Whether the episode has ended.
+            truncated: Whether the episode has been truncated due to a time limit.
+            info: Auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
         obs, reward, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy(),
@@ -135,8 +148,8 @@ class MujocoEnv(CMDP):
             seed (int, optional): Seed to reset the environment. Defaults to None.
 
         Returns:
-            observation (torch.Tensor): agent's observation of the current environment.
-            info (Dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning).
+            observation: Agent's observation of the current environment.
+            info: Auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
         obs, info = self._env.reset(seed=seed)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
@@ -153,7 +166,7 @@ class MujocoEnv(CMDP):
         """Sample a random action.
 
         Returns:
-            torch.Tensor: A random action.
+            A random action.
         """
         return torch.as_tensor(
             self._env.action_space.sample(),
@@ -165,7 +178,7 @@ class MujocoEnv(CMDP):
         """Render the environment.
 
         Returns:
-            Any: Rendered environment.
+            Rendered environment.
         """
         return self._env.render()
 

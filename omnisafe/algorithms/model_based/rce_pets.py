@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Robust Cross Entropy algorithm."""
+
+
 from __future__ import annotations
 
 from gymnasium.spaces import Box
@@ -35,11 +37,21 @@ class RCEPETS(PETS):
     """
 
     def _init_model(self) -> None:
-        """Initialize the dynamics model and the planner."""
+        """Initialize the dynamics model and the planner.
+
+        RCEPETS uses following models:
+
+        - dynamics model: to predict the next state and the cost.
+        - planner: to generate the action.
+        """
         self._dynamics_state_space = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
+        )
+        assert self._dynamics_state_space is not None and isinstance(
+            self._dynamics_state_space.shape,
+            tuple,
         )
         assert self._env.action_space is not None and isinstance(
             self._env.action_space.shape,
@@ -49,7 +61,7 @@ class RCEPETS(PETS):
             self._action_space = self._env.action_space
         else:
             raise NotImplementedError
-        self._dynamics = EnsembleDynamicsModel(
+        self._dynamics: EnsembleDynamicsModel = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
@@ -60,7 +72,7 @@ class RCEPETS(PETS):
             terminal_func=None,
         )
 
-        self._planner = RCEPlanner(
+        self._planner: RCEPlanner = RCEPlanner(
             dynamics=self._dynamics,
             planner_cfgs=self._cfgs.planner_cfgs,
             gamma=float(self._cfgs.algo_cfgs.gamma),
@@ -73,11 +85,26 @@ class RCEPETS(PETS):
             cost_limit=self._cfgs.algo_cfgs.cost_limit,
         )
 
-        self._use_actor_critic = False
-        self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
+        self._use_actor_critic: bool = False
+        self._update_dynamics_cycle: int = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
     def _init_log(self) -> None:
-        """Initialize the logger."""
+        """Initialize the logger.
+
+        +----------------------------+-------------------------------+
+        | Things to log              | Description                   |
+        +============================+===============================+
+        | Plan/feasible_num          | The number of feasible plans. |
+        +----------------------------+-------------------------------+
+        | Plan/episode_costs_max     | The maximum planning cost.    |
+        +----------------------------+-------------------------------+
+        | Plan/episode_costs_mean    | The mean planning cost.       |
+        +----------------------------+-------------------------------+
+        | Plan/episode_costs_min     | The minimum planning cost.    |
+        +----------------------------+-------------------------------+
+        | Metrics/LagrangeMultiplier | The lagrange multiplier.      |
+        +----------------------------+-------------------------------+
+        """
         super()._init_log()
         self._logger.register_key('Plan/feasible_num')
         self._logger.register_key('Plan/episode_costs_max')

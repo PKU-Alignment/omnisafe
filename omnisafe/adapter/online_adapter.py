@@ -42,14 +42,6 @@ class OnlineAdapter:
     any existing RL algorithms. The online adapter is used to adapt the environment to the
     framework.
 
-    OmniSafe provides a set of adapters to adapt the environment to the framework.
-
-    - OnPolicyAdapter: Adapt the environment to the on-policy framework.
-    - OffPolicyAdapter: Adapt the environment to the off-policy framework.
-    - OfflineAdapter: Adapt the environment to the offline framework.
-    - SauteAdapter: Adapt the environment to the SAUTE framework.
-    - SimmerAdapter: Adapt the environment to the SIMMER framework.
-
     Args:
         env_id (str): The environment id.
         num_envs (int): The number of parallel environments.

@@ -1,21 +1,10 @@
-OmniSafe Adapter
-================
+OmniSafe Model-based Model
+==========================
 
-.. currentmodule:: omnisafe.adapter
+.. currentmodule:: omnisafe.algorithms.model_based.base.ensemble
 
-OmniSafe provides a set of adapters to adapt the environment to the framework.
-
-.. autosummary::
-
-    OnlineAdapter
-    OnPolicyAdapter
-    OffPolicyAdapter
-    SauteAdapter
-    SimmerAdapter
-    ModelBasedAdapter
-
-Online Adapter
---------------
+Standard Scaler
+---------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -24,11 +13,11 @@ Online Adapter
     Documentation
     ^^^
 
-    .. autoclass:: OnlineAdapter
+    .. autoclass:: StandardScaler
         :members:
         :private-members:
 
-On Policy Adapter
+Initialize Weight
 -----------------
 
 .. card::
@@ -38,12 +27,10 @@ On Policy Adapter
     Documentation
     ^^^
 
-    .. autoclass:: OnPolicyAdapter
-        :members:
-        :private-members:
+    .. autofunction:: init_weights
 
-Off Policy Adapter
-------------------
+Unbatched Forward
+-----------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -52,12 +39,10 @@ Off Policy Adapter
     Documentation
     ^^^
 
-    .. autoclass:: OffPolicyAdapter
-        :members:
-        :private-members:
+    .. autofunction:: unbatched_forward
 
-Saute Adapter
--------------
+Ensemble Fully-Connected Layer
+------------------------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -66,11 +51,11 @@ Saute Adapter
     Documentation
     ^^^
 
-    .. autoclass:: SauteAdapter
+    .. autoclass:: EnsembleFC
         :members:
         :private-members:
 
-Simmer Adapter
+Ensemble Model
 --------------
 
 .. card::
@@ -80,12 +65,13 @@ Simmer Adapter
     Documentation
     ^^^
 
-    .. autoclass:: SimmerAdapter
+    .. autoclass:: EnsembleModel
         :members:
         :private-members:
 
-Model-based Adapter
--------------------
+
+Ensemble Dynamics Model
+-----------------------
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -94,6 +80,6 @@ Model-based Adapter
     Documentation
     ^^^
 
-    .. autoclass:: ModelBasedAdapter
+    .. autoclass:: EnsembleDynamicsModel
         :members:
         :private-members:

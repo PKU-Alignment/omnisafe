@@ -16,3 +16,19 @@ Safety Gymnasium Interface
     .. autoclass:: SafetyGymnasiumEnv
         :members:
         :private-members:
+
+.. currentmodule:: omnisafe.envs.safety_gymnasium_modelbased
+
+Safety Gymnasium World Model
+----------------------------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: SafetyGymnasiumModelBased
+        :members:
+        :private-members:

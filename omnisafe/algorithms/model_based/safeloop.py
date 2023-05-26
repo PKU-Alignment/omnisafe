@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Safe Learning Off-Policy with Online Planning algorithm."""
+
+
 from __future__ import annotations
 
 from gymnasium.spaces import Box
@@ -22,6 +24,7 @@ from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.base.loop import LOOP
 from omnisafe.algorithms.model_based.planner.safe_arc import SafeARCPlanner
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
+from omnisafe.typing import OmnisafeSpace
 from omnisafe.utils import distributed
 
 
@@ -37,11 +40,21 @@ class SafeLOOP(LOOP):
     """
 
     def _init_model(self) -> None:
-        """Initialize the dynamics model and the planner."""
-        self._dynamics_state_space = (
+        """Initialize the dynamics model and the planner.
+
+        SafeLOOP uses following models:
+
+        - dynamics model: to predict the next state and the cost.
+        - planner: to generate the action.
+        """
+        self._dynamics_state_space: OmnisafeSpace = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
+        )
+        assert self._dynamics_state_space is not None and isinstance(
+            self._dynamics_state_space.shape,
+            tuple,
         )
         assert self._env.action_space is not None and isinstance(
             self._env.action_space.shape,
@@ -51,7 +64,7 @@ class SafeLOOP(LOOP):
             self._action_space = self._env.action_space
         else:
             raise NotImplementedError
-        self._actor_critic = ConstraintActorQCritic(
+        self._actor_critic: ConstraintActorQCritic = ConstraintActorQCritic(
             obs_space=self._dynamics_state_space,
             act_space=self._action_space,
             model_cfgs=self._cfgs.model_cfgs,
@@ -59,9 +72,9 @@ class SafeLOOP(LOOP):
         ).to(self._device)
         if distributed.world_size() > 1:
             distributed.sync_params(self._actor_critic)
-        self._use_actor_critic = True
-        self._update_count = 0
-        self._dynamics = EnsembleDynamicsModel(
+        self._use_actor_critic: bool = True
+        self._update_count: int = 0
+        self._dynamics: EnsembleDynamicsModel = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
@@ -71,9 +84,9 @@ class SafeLOOP(LOOP):
             cost_func=self._env.get_cost_from_obs_tensor,
             terminal_func=None,
         )
-        self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
+        self._update_dynamics_cycle: int = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
 
-        self._planner = SafeARCPlanner(
+        self._planner: SafeARCPlanner = SafeARCPlanner(
             dynamics=self._dynamics,
             planner_cfgs=self._cfgs.planner_cfgs,
             gamma=float(self._cfgs.algo_cfgs.gamma),
@@ -88,7 +101,20 @@ class SafeLOOP(LOOP):
         )
 
     def _init_log(self) -> None:
-        """Initialize the logger keys for the algorithm."""
+        """Initialize the logger keys for the algorithm.
+
+        +----------------------------+-------------------------------+
+        | Things to log              | Description                   |
+        +============================+===============================+
+        | Plan/feasible_num          | The number of feasible plans. |
+        +----------------------------+-------------------------------+
+        | Plan/episode_costs_max     | The maximum planning cost.    |
+        +----------------------------+-------------------------------+
+        | Plan/episode_costs_mean    | The mean planning cost.       |
+        +----------------------------+-------------------------------+
+        | Plan/episode_costs_min     | The minimum planning cost.    |
+        +----------------------------+-------------------------------+
+        """
         super()._init_log()
         self._logger.register_key('Plan/feasible_num')
         self._logger.register_key('Plan/episode_costs_max')

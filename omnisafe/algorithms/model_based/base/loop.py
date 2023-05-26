@@ -14,6 +14,7 @@
 # ==============================================================================
 """Implementation of the Learning Off-Policy with Online Planning algorithm."""
 
+
 from __future__ import annotations
 
 from typing import Any
@@ -23,13 +24,13 @@ from gymnasium.spaces import Box
 from torch import nn, optim
 from torch.nn.utils.clip_grad import clip_grad_norm_
 
-from omnisafe.adapter import ModelBasedAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.base.pets import PETS
 from omnisafe.algorithms.model_based.planner.arc import ARCPlanner
 from omnisafe.common.buffer import OffPolicyBuffer
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
+from omnisafe.typing import OmnisafeSpace
 
 
 @registry.register
@@ -43,12 +44,27 @@ class LOOP(PETS):
         - URL: `LOOP <https://arxiv.org/abs/2008.10066>`_
     """
 
+    _log_alpha: torch.Tensor
+    _alpha_optimizer: optim.Optimizer
+    _target_entropy: float
+
     def _init_model(self) -> None:
-        """Initialize the dynamics model and the planner."""
-        self._dynamics_state_space = (
+        """Initialize the dynamics model and the planner.
+
+        LOOP uses following models:
+
+        - dynamics model: to predict the next state and the cost.
+        - actor_critic: to predict the action and the value.
+        - planner: to generate the action.
+        """
+        self._dynamics_state_space: OmnisafeSpace = (
             self._env.coordinate_observation_space
             if self._env.coordinate_observation_space is not None
             else self._env.observation_space
+        )
+        assert self._dynamics_state_space is not None and isinstance(
+            self._dynamics_state_space.shape,
+            tuple,
         )
         assert self._env.action_space is not None and isinstance(
             self._env.action_space.shape,
@@ -58,15 +74,15 @@ class LOOP(PETS):
             self._action_space = self._env.action_space
         else:
             raise NotImplementedError
-        self._actor_critic = ConstraintActorQCritic(
+        self._actor_critic: ConstraintActorQCritic = ConstraintActorQCritic(
             obs_space=self._dynamics_state_space,
             act_space=self._env.action_space,
             model_cfgs=self._cfgs.model_cfgs,
             epochs=self._epochs,
         ).to(self._device)
-        self._use_actor_critic = True
-        self._update_count = 0
-        self._dynamics = EnsembleDynamicsModel(
+        self._use_actor_critic: bool = True
+        self._update_count: int = 0
+        self._dynamics: EnsembleDynamicsModel = EnsembleDynamicsModel(
             model_cfgs=self._cfgs.dynamics_cfgs,
             device=self._device,
             state_shape=self._dynamics_state_space.shape,
@@ -77,7 +93,7 @@ class LOOP(PETS):
             terminal_func=None,
         )
         self._update_dynamics_cycle = int(self._cfgs.algo_cfgs.update_dynamics_cycle)
-        self._planner = ARCPlanner(
+        self._planner: ARCPlanner = ARCPlanner(
             dynamics=self._dynamics,
             planner_cfgs=self._cfgs.planner_cfgs,
             gamma=float(self._cfgs.algo_cfgs.gamma),
@@ -91,10 +107,17 @@ class LOOP(PETS):
         )
 
     def _init(self) -> None:
+        """The initialization of the algorithm.
+
+        User can define the initialization of the algorithm by inheriting this method.
+
+        Examples:
+            >>> def _init(self) -> None:
+            ...     super()._init()
+            ...     self._buffer = CustomBuffer()
+            ...     self._model = CustomModel()
+        """
         super()._init()
-        self._log_alpha: torch.Tensor
-        self._alpha_optimizer: optim.Optimizer
-        self._target_entropy: float
 
         self._alpha = self._cfgs.algo_cfgs.alpha
         self._alpha_gamma = self._cfgs.algo_cfgs.alpha_gamma
@@ -111,7 +134,24 @@ class LOOP(PETS):
         self._alpha *= self._alpha_gamma
 
     def _init_log(self) -> None:
-        """Initialize logger."""
+        """Initialize logger.
+
+        +-------------------------+----------------------------------------------------------------------+
+        | Things to log           | Description                                                          |
+        +=========================+======================================================================+
+        | Value/alpha             | The value of alpha.                                                  |
+        +-------------------------+----------------------------------------------------------------------+
+        | Values/reward_critic    | Average value in :meth:`rollout` (from critic network) of the epoch. |
+        +-------------------------+----------------------------------------------------------------------+
+        | Values/cost_critic      | Average cost in :meth:`rollout` (from critic network) of the epoch.  |
+        +-------------------------+----------------------------------------------------------------------+
+        | Loss/Loss_cost_critic   | Loss of the cost critic network.                                     |
+        +-------------------------+----------------------------------------------------------------------+
+        | Loss/Loss_reward_critic | Loss of the cost critic network.                                     |
+        +-------------------------+----------------------------------------------------------------------+
+        | Loss/Loss_pi            | Loss of the policy network.                                          |
+        +-------------------------+----------------------------------------------------------------------+
+        """
         super()._init_log()
         self._logger.register_key('Value/alpha')
         # log information about actor
@@ -144,18 +184,15 @@ class LOOP(PETS):
         self,
         current_step: int,
         state: torch.Tensor,
-        env: ModelBasedAdapter,
-    ) -> tuple[torch.Tensor, dict]:
+    ) -> torch.Tensor:
         """Select action.
 
         Args:
-            current_step (int): current step
-            state (torch.Tensor): current state
-            env (ModelBasedAdapter): environment
+            current_step (int): The current step.
+            state (torch.Tensor): The current state.
 
         Returns:
-            action (torch.Tensor): action
-            action_info (dict): action information
+            The selected action.
         """
         if current_step < self._cfgs.algo_cfgs.start_learning_steps:
             action = torch.tensor(self._env.action_space.sample()).to(self._device).unsqueeze(0)
@@ -166,14 +203,42 @@ class LOOP(PETS):
         assert action.shape == torch.Size(
             [1, *self._action_space.shape],
         ), 'action shape should be [batch_size, action_dim]'
-        info = {}
-        return action, info
+        return action
 
     def _update_policy(self, current_step: int) -> None:
         """Update policy.
 
+        -  Get the ``data`` from buffer
+
+        .. note::
+
+            +----------+---------------------------------------+
+            | obs      | ``observaion`` stored in buffer.      |
+            +==========+=======================================+
+            | act      | ``action`` stored in buffer.          |
+            +----------+---------------------------------------+
+            | reward   | ``reward`` stored in buffer.          |
+            +----------+---------------------------------------+
+            | cost     | ``cost`` stored in buffer.            |
+            +----------+---------------------------------------+
+            | next_obs | ``next observaion`` stored in buffer. |
+            +----------+---------------------------------------+
+            | done     | ``terminated`` stored in buffer.      |
+            +----------+---------------------------------------+
+
+        -  Update value net by :meth:`_update_reward_critic`.
+        -  Update cost net by :meth:`_update_cost_critic`.
+        -  Update policy net by :meth:`_update_actor`.
+
+        The basic process of each update is as follows:
+
+        #. Get the mini-batch data from buffer.
+        #. Get the loss of network.
+        #. Update the network by loss.
+        #. Repeat steps 2, 3 until the ``update_policy_iters`` times.
+
         Args:
-            current_step (int): current step
+            current_step (int): The current step.
         """
         if current_step >= self._cfgs.algo_cfgs.start_learning_steps:
             for _step in range(self._cfgs.algo_cfgs.update_policy_iters):
@@ -218,8 +283,6 @@ class LOOP(PETS):
 
     def _store_real_data(  # pylint: disable=too-many-arguments,unused-argument
         self,
-        current_step: int,
-        ep_len: int,
         state: torch.Tensor,
         action: torch.Tensor,
         reward: torch.Tensor,
@@ -227,23 +290,19 @@ class LOOP(PETS):
         terminated: torch.Tensor,
         truncated: torch.Tensor,
         next_state: torch.Tensor,
-        info: dict,
-        action_info: dict,
+        info: dict[str, Any],
     ) -> None:  # pylint: disable=too-many-arguments
         """Store real data in buffer.
 
         Args:
-            current_step (int): current step
-            ep_len (int): episode length
-            state (torch.Tensor): current state
-            action (torch.Tensor): action
-            reward (torch.Tensor): reward
-            cost (torch.Tensor): cost
-            terminated (torch.Tensor): terminated
-            truncated (torch.Tensor): truncated
-            next_state (torch.Tensor): next state
-            info (dict): information
-            action_info (dict): action information
+            state (torch.Tensor): The state from the environment.
+            action (torch.Tensor): The action from the agent.
+            reward (torch.Tensor): The reward signal from the environment.
+            cost (torch.Tensor): The cost signal from the environment.
+            terminated (torch.Tensor): The terminated signal from the environment.
+            truncated (torch.Tensor): The truncated signal from the environment.
+            next_state (torch.Tensor): The next state from the environment.
+            info (dict[str, Any]): The information from the environment.
         """
         done = terminated or truncated
         goal_met = False if 'goal_met' not in info.keys() else info['goal_met']
@@ -279,12 +338,16 @@ class LOOP(PETS):
     ) -> None:
         """Update reward critic using Soft Actor-Critic.
 
+        - Get the TD loss of reward critic.
+        - Update critic network by loss.
+        - Log useful information.
+
         Args:
-            obs (torch.Tensor): observation
-            action (torch.Tensor): action
-            reward (torch.Tensor): reward
-            done (torch.Tensor): done
-            next_obs (torch.Tensor): next observation
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            action (torch.Tensor): The ``action`` sampled from buffer.
+            reward (torch.Tensor): The ``reward`` sampled from buffer.
+            done (torch.Tensor): The ``terminated`` sampled from buffer.
+            next_obs (torch.Tensor): The ``next observation`` sampled from buffer.
         """
         self._actor_critic.reward_critic_optimizer.zero_grad()
 
@@ -331,12 +394,16 @@ class LOOP(PETS):
     ) -> None:
         """Update cost critic using TD3 algorithm.
 
+        - Get the TD loss of cost critic.
+        - Update critic network by loss.
+        - Log useful information.
+
         Args:
-            obs (torch.Tensor): current observation
-            action (torch.Tensor): current action
-            cost (torch.Tensor): current cost
-            done (torch.Tensor): current done signal
-            next_obs (torch.Tensor): next observation
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+            action (torch.Tensor): The ``action`` sampled from buffer.
+            cost (torch.Tensor): The ``cost`` sampled from buffer.
+            done (torch.Tensor): The ``terminated`` sampled from buffer.
+            next_obs (torch.Tensor): The ``next observation`` sampled from buffer.
         """
         with torch.no_grad():
             next_action = self._actor_critic.actor.predict(next_obs, deterministic=True)
@@ -372,8 +439,12 @@ class LOOP(PETS):
     ) -> None:
         """Update actor using Soft Actor-Critic algorithm.
 
+        - Get the loss of actor.
+        - Update actor by loss.
+        - Log useful information.
+
         Args:
-            obs (torch.Tensor): observation
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
         """
         self._actor_critic.actor_optimizer.zero_grad()
         loss = self._loss_pi(obs)
@@ -400,10 +471,22 @@ class LOOP(PETS):
         self,
         obs: torch.Tensor,
     ) -> torch.Tensor:
-        """Compute loss for actor using Soft Actor-Critic algorithm.
+        r"""Computing ``pi/actor`` loss.
+
+        The loss function in SAC is defined as:
+
+        .. math::
+
+            L = -Q^V (s, \pi (s)) + \alpha \log \pi (s)
+
+        where :math:`Q^V` is the min value of two reward critic networks, and :math:`\pi` is the
+        policy network, and :math:`\alpha` is the temperature parameter.
 
         Args:
-            obs (torch.Tensor): observation
+            obs (torch.Tensor): The ``observation`` sampled from buffer.
+
+        Returns:
+            The loss of pi/actor.
         """
         action = self._actor_critic.actor.predict(
             obs,

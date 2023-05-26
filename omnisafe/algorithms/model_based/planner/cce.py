@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Model Predictive Control Planner of the Constrained Cross-Entropy algorithm."""
+
+
 from __future__ import annotations
 
 from typing import Any
@@ -30,7 +32,7 @@ class CCEPlanner(CEMPlanner):
     References:
         - Title: Constrained Cross-Entropy Method for Safe Reinforcement Learning
         - Authors: Timothy P. Lillicrap, Jonathan J. Hunt, Alexander Pritzel, Nicolas Heess,
-        Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
+            Tom Erez, Yuval Tassa, David Silver, Daan Wierstra.
         - URL: `CCE <https://proceedings.neurips.cc/paper/2018/hash/34ffeb359a192eb8174b6854643cc046-Abstract.html>`_
     """
 
@@ -66,18 +68,18 @@ class CCEPlanner(CEMPlanner):
     def _select_elites(
         self,
         actions: torch.Tensor,
-        traj: dict,
-    ) -> tuple[torch.Tensor, torch.Tensor, dict]:
+        traj: dict[str, torch.Tensor],
+    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, float]]:
         """Select elites from the sampled actions.
 
         Args:
             actions (torch.Tensor): Sampled actions.
-            traj (dict): Trajectory dictionary.
+            traj (dict[str, torch.Tensor]): Trajectory dictionary.
 
         Returns:
-            elites_value (torch.Tensor): Value of the elites.
-            elites_action (torch.Tensor): Action of the elites.
-            info (dict): Dictionary containing the information of elites value and action.
+            elites_value: The value of the elites.
+            elites_action: The action of the elites.
+            info: The dictionary containing the information of elites value and action.
         """
         rewards = traj['rewards']
         costs = traj['costs']

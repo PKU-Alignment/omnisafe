@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Model Predictive Control Planner of Cross-Entropy Method optimization algorithm."""
+
+
 from __future__ import annotations
 
 from typing import Any
@@ -27,7 +29,10 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
     """The planner of  Cross-Entropy Method optimization (CEM) algorithm.
 
     References:
-        - URL: `A good description of CEM <https://arxiv.org/pdf/2008.06389.pdf>`_
+        - Title: Sample-efficient Cross-Entropy Method for Real-time Planning
+        - Authors: Cristina Pinneri, Shambhuraj Sawant, Sebastian Blaes, Jan Achterhold,
+            Joerg Stueckler, Michal Rolinek, Georg Martius
+        - URL: `CEM <https://arxiv.org/pdf/2008.06389.pdf>`_
     """
 
     def __init__(  # pylint: disable=too-many-locals, too-many-arguments
@@ -88,7 +93,7 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
             last_var (torch.Tensor): Last variance of the gaussian distribution.
 
         Returns:
-            Sample actions (torch.Tensor): Sampled actions from the last gaussian distribution.
+            sampled actions: Sampled actions from the last gaussian distribution.
         """
         constrained_std = torch.sqrt(last_var)
         actions = torch.clamp(
@@ -115,12 +120,12 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
         """Repeat the state for num_repeat * action.shape[0] times and action for num_repeat times.
 
         Args:
-            state (torch.Tensor): Current state.
-            action (torch.Tensor): Sampled actions.
+            state (torch.Tensor): The current state.
+            action (torch.Tensor): The sampled actions.
 
         Returns:
-            states (torch.Tensor): Repeated states.
-            actions (torch.Tensor): Repeated actions.
+            states: The repeated states.
+            actions: The repeated actions.
         """
         assert (
             self._num_particles % self._num_models == 0
@@ -144,18 +149,18 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
     def _select_elites(
         self,
         actions: torch.Tensor,
-        traj: dict,
-    ) -> tuple[torch.Tensor, torch.Tensor, dict]:
+        traj: dict[str, torch.Tensor],
+    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, float]]:
         """Select elites from the sampled actions.
 
         Args:
             actions (torch.Tensor): Sampled actions.
-            traj (dict): Trajectory dictionary.
+            traj (dict[str, torch.Tensor]): Trajectory dictionary.
 
         Returns:
-            elites_value (torch.Tensor): Value of the elites.
-            elites_action (torch.Tensor): Action of the elites.
-            info (dict): Dictionary containing the information of elites value and action.
+            elites_value: The value of the elites.
+            elites_action: The action of the elites.
+            info: The dictionary containing the information of elites value and action.
         """
         rewards = traj['rewards']
         assert actions.shape == torch.Size(
@@ -193,17 +198,18 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
         self,
         elite_actions: torch.Tensor,
         elite_values: torch.Tensor,
-        info: dict,
+        info: dict[str, int | float],
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Update the mean and variance of the elite actions.
 
         Args:
-            elite_actions (torch.Tensor): Elite actions.
-            elite_values (torch.Tensor): Elite values.
+            elite_actions (torch.Tensor): The elite actions.
+            elite_values (torch.Tensor): The elite values.
+            info (dict[str, int | float]): The dictionary containing the information of the elite values and actions.
 
         Returns:
-            new_mean (torch.Tensor): New mean of the elite actions.
-            new_var (torch.Tensor): New variance of the elite actions.
+            new_mean: The new mean of the elite actions.
+            new_var: The new variance of the elite actions.
         """
         assert elite_actions.shape == torch.Size(
             [self._horizon, self._num_elites, *self._action_shape],
@@ -225,8 +231,8 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
             state (torch.Tensor): State of the environment.
 
         Returns:
-            action (torch.Tensor): Action of the environment.
-            logger_info (dict): Dictionary containing the information of the action.
+            action: The action of the agent.
+            info: The dictionary containing the information of the action.
         """
         assert state.shape == torch.Size(
             [1, *self._dynamics_state_shape],
@@ -237,6 +243,7 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
         last_mean[-1] = self._action_sequence_mean[-1].clone()
 
         current_iter = 0
+        info: dict[str, float | int] = {}
         while current_iter < self._num_iterations:
             actions = self._act_from_last_gaus(last_mean=last_mean, last_var=last_var)
             # [horizon, num_sample, action_shape]

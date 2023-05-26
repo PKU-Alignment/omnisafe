@@ -79,8 +79,8 @@ class Config(dict):
         max_len (int): Maximum length.
         num_threads (int): Number of threads.
 
-    Args:
-        **kwargs (Any): Keyword arguments to set config.
+    Keyword Args:
+        kwargs (Any): keyword arguments to set the attributes.
     """
 
     seed: int

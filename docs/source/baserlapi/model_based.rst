@@ -1,17 +1,11 @@
-First Order Algorithms
-======================
+Base Model-based Algorithms
+===========================
 
-.. currentmodule:: omnisafe.algorithms.on_policy
+.. currentmodule:: omnisafe.algorithms.model_based.base
 
-.. autosummary::
 
-    FOCOPS
-    CUP
-
-.. _focopsapi:
-
-FOCOPS
-------
+LOOP
+----
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -20,12 +14,12 @@ FOCOPS
     Documentation
     ^^^
 
-    .. autoclass:: FOCOPS
+    .. autoclass:: LOOP
         :members:
         :private-members:
 
-CUP
----
+PETS
+----
 
 .. card::
     :class-header: sd-bg-success sd-text-white
@@ -34,6 +28,6 @@ CUP
     Documentation
     ^^^
 
-    .. autoclass:: CUP
+    .. autoclass:: PETS
         :members:
         :private-members:

@@ -232,9 +232,9 @@ class PolicyGradient(BaseAlgo):
         - :meth:`log`: epoch/update information for visualization and terminal log print.
 
         Returns:
-            ep_ret: average episode return in final epoch.
-            ep_cost: average episode cost in final epoch.
-            ep_len: average episode length in final epoch.
+            ep_ret: Average episode return in final epoch.
+            ep_cost: Average episode cost in final epoch.
+            ep_len: Average episode length in final epoch.
         """
         start_time = time.time()
         self._logger.log('INFO: Start training')
