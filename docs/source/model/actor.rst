@@ -40,8 +40,6 @@ Actor Builder
         :members:
         :private-members:
 
-
-
 Gaussian Actor
 --------------
 
@@ -55,8 +53,6 @@ Gaussian Actor
     .. autoclass:: GaussianActor
         :members:
         :private-members:
-
-
 
 Gaussian Learning Actor
 -----------------------
@@ -72,8 +68,6 @@ Gaussian Learning Actor
         :members:
         :private-members:
 
-
-
 Gaussian SAC Actor
 -----------------------
 
@@ -85,5 +79,33 @@ Gaussian SAC Actor
     ^^^
 
     .. autoclass:: GaussianSACActor
+        :members:
+        :private-members:
+
+Perturbation Actor
+------------------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: PerturbationActor
+        :members:
+        :private-members:
+
+VAE Actor
+---------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: VAE
         :members:
         :private-members:

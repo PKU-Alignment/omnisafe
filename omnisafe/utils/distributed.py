@@ -28,7 +28,7 @@ from torch.distributed import ReduceOp
 
 
 def setup_distributed() -> None:
-    """Setup distributed training environment.
+    """Setup the distributed training environment.
 
     Avoid slowdowns caused by each separate process's PyTorch, using more than its fair share of CPU
     resources.
@@ -46,7 +46,7 @@ def setup_distributed() -> None:
 
 
 def get_rank() -> int:
-    """Get rank of calling process.
+    """Get the rank of calling process.
 
     Examples:
         >>> # In process 0
@@ -85,7 +85,7 @@ def fork(
     device: str = 'cpu',
     manual_args: list[str] | None = None,
 ) -> bool:
-    """The entrance of multi-processing.
+    """The entrance method of multi-processing.
 
     Re-launches the current script with workers linked by MPI. Also, terminates the original process
     that launched it. Taken almost without modification from the Baselines function of the
@@ -351,7 +351,7 @@ def dist_statistics_scalar(
     value: torch.Tensor,
     with_min_and_max: bool = False,
 ) -> tuple[torch.Tensor, ...]:
-    """Get mean/std and optional min/max of scalar x across MPI processes.
+    r"""Get mean/std and optional min/max of scalar x across MPI processes.
 
     Examples:
         >>> # In process 0
@@ -366,8 +366,7 @@ def dist_statistics_scalar(
         with_min_and_max (bool, optional): whether to return min and max. Defaults to False.
 
     Returns:
-        The (mean, std) or (mean, std, min, max) of the input tensor, depends on the value of
-        ``with_min_and_max``.
+        A tuple of the [mean, std] or [mean, std, min, max] of the input tensor.
     """
     global_sum = dist_sum(torch.sum(value))
     global_n = dist_sum(len(value))

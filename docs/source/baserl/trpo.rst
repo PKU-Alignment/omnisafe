@@ -9,8 +9,7 @@ Quick Facts
     :class-body: sd-font-weight-bold
 
     #. TRPO is an :bdg-info-line:`on-policy` algorithm.
-    #. TRPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
-    #. TRPO is an improvement work done based on:bdg-info-line:`NPG` .
+    #. TRPO is an improvement work done based on :bdg-info-line:`NPG` .
     #. TRPO is an important theoretical basis for :bdg-ref-info-line:`CPO <../saferl/cpo>` .
     #. An :bdg-ref-info-line:`API Documentation <trpoapi>`  is available for TRPO.
 
@@ -25,15 +24,16 @@ Background
 **Trust region policy optimization (TRPO)** is an iterative method for
 optimizing policies in reinforcement learning that ensures monotonic
 improvements. It works by iteratively finding a local approximation of the
-objective return and maximizing the approximated function. However, the new
-policy should be constrained within a trust region relative to the current
+objective return and maximizing the approximated function. TRPO guarantees that
+the new policy is constrained within a trust region relative to the current
 policy, which is achieved by using KL divergence to measure the distance
 between the two policies.
 
 TRPO is well-suited for optimizing comprehensive nonlinear policies such as
 neural networks. It is based on the **Natural Policy Gradient (NPG)** method,
 which uses conjugate gradient to avoid expensive computational
-costs. Furthermore, TRPO incorporates a line search mechanism to ensure that updated policy adhere to the predetermined KL divergence constraint.
+costs. Furthermore, TRPO incorporates a line search mechanism to ensure
+that updated policy adhere to the predetermined KL divergence constraint.
 
 .. grid:: 2
 
@@ -87,7 +87,7 @@ To achieve monotonic improvements, we only need to consider
 :math:`\Delta = J^R(\pi') - J^R(\pi)` to be non-negative.
 
 As shown in **NPG**, the difference in performance between two policies
-:math:`\pi'` and :math:`\pi` can be expressed as
+:math:`\pi'` and :math:`\pi` can be expressed as:
 
 .. _trpo-Theorem 1:
 
@@ -137,12 +137,12 @@ can improve over :math:`\pi`, which is of our interest.
 This equation implies for any policy :math:`\pi'`, if it has a nonnegative
 expected advantage at every state :math:`s`, i.e.,
 :math:`\sum_a \pi'(a \mid s) A^{R}_{\pi}(s, a) \geq 0`,
-is guaranteed to increase the policy performance :math:`J^R`,
+it is guaranteed to increase the policy performance :math:`J^R`,
 or leave it constant in the case
 that the expected advantage is zero everywhere.
 However, in the approximate setting, it will typically be unavoidable,
 due to estimation and approximation errors,
-that there will be some states :math:`s` for which the expected advantage is
+that there will be some states :math:`s` in which the expected advantage is
 negative, that is,
 :math:`\sum_a \pi'(a \mid s) A^{R}_{\pi}(s, a)<0`.
 
@@ -182,15 +182,15 @@ close enough,
 
     Corollary 1 (Performance Difference Bound)
     ^^^
-    Formally, suppose a parameterized policy :math:`\pi_\theta`,
-    where :math:`\pi_\theta(a \mid s)` is a differentiable function of the parameter vector :math:`\theta`,
+    Formally, suppose a parameterized policy :math:`\pi_{\boldsymbol{\theta}}`,
+    where :math:`\pi_{\boldsymbol{\theta}}(a \mid s)` is a differentiable function of the parameter vector :math:`{\boldsymbol{\theta}}`,
     then :math:`L_\pi` matches :math:`J^R` to first order (see **NPG**).
-    That is, for any parameter value :math:`\theta_0`,
+    That is, for any parameter value :math:`{\boldsymbol{\theta}}_0`, we have:
 
     .. math::
         :label: trpo-eq-5
 
-        L_{\pi_{\theta_0}}\left(\pi_{\theta_0}\right)=J^R\left(\pi_{\theta_0}\right)
+        L_{\pi_{{\boldsymbol{\theta}}_0}}\left(\pi_{{\boldsymbol{\theta}}_0}\right)=J^R\left(\pi_{{\boldsymbol{\theta}}_0}\right)
 
 
     .. _`trpo-eq-6`:
@@ -198,15 +198,16 @@ close enough,
     .. math::
         :label: trpo-eq-6
 
-        \nabla_\theta L_{\pi_{\theta_0}}\left(\pi_\theta\right)|_{\theta=\theta_0}=\left.\nabla_\theta J^R\left(\pi_\theta\right)\right|_{\theta=\theta_0}
+        \nabla_{\boldsymbol{\theta}} L_{\pi_{{\boldsymbol{\theta}}_0}}\left(\pi_{\boldsymbol{\theta}}\right)|_{{\boldsymbol{\theta}}={\boldsymbol{\theta}}_0}=\left.\nabla_{\boldsymbol{\theta}} J^R\left(\pi_{\boldsymbol{\theta}}\right)\right|_{{\boldsymbol{\theta}}={\boldsymbol{\theta}}_0}
 
     +++
     The proof of the :bdg-info-line:`Corollary 1` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
 :eq:`trpo-eq-6` implies that a sufficiently small step
-:math:`\pi_{\theta_0} \rightarrow \pi'` improving
-:math:`L_{\pi_{\theta_{\text {old }}}}` will also improve :math:`J^R`,
-but does not give us any guidance on how big of a step to take.
+:math:`\pi_{{\boldsymbol{\theta}}_0} \rightarrow \pi'` improving
+:math:`L_{\pi_{{\boldsymbol{\theta}}_{\text {old }}}}` will also improve :math:`J^R`,
+but does not provide explicit guidance on determining the appropriate step size
+for policy updates.
 
 To address this issue, **NPG** proposed a policy updating scheme called
 **conservative policy iteration(CPI)**,
@@ -286,9 +287,10 @@ And the new bound is derived by introducing the :math:`\alpha`-coupling method.
     +++
     The proof of the :bdg-info-line:`Theorem 2` can be seen in the :bdg-ref-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
-The proof extends Kakade and Langford's result. Using the fact that the random variables from two distributions with total variation
+The proof extends Kakade and Langford's result. Given the fact that the random
+variables from two distributions with total variation
 divergence less than :math:`\alpha` can be coupled,
-so that they are equal with probability :math:`1-\alpha`.
+we easily obtain that they are equal with probability :math:`1-\alpha`.
 
 Next, we note the following relationship between the total variation divergence
 and the :math:`\mathrm{KL}` divergence:
@@ -341,30 +343,30 @@ Approximately Solving the TRPO Update
 Until now, we present the iteration algorithm with theoretically guaranteed
 monotonic improvement for new policy over the current policy.
 However, in practice, when we consider policies in parameterized space
-:math:`\pi_{\theta}(a \mid s)`,
-the algorithm cannot work well. By plugging in the notation :math:`\theta`, our
+:math:`\pi_{{\boldsymbol{\theta}}}(a \mid s)`,
+the algorithm cannot work well. By plugging in the notation :math:`{\boldsymbol{\theta}}`, our
 update step becomes
 
 .. math::
     :label: trpo-eq-13
 
-    & L_{\theta_{old}}(\theta)-C D_{\mathrm{KL}}^{\max }(\theta_{old}, \theta) \\
+    & L_{{\boldsymbol{\theta}}_{old}}({\boldsymbol{\theta}})-C D_{\mathrm{KL}}^{\max }({\boldsymbol{\theta}}_{old}, {\boldsymbol{\theta}}) \\
 
 
 where :math:`C=\frac{4 \epsilon \gamma}{(1-\gamma)^2}`,
-and :math:`\theta_{old}, \theta`
-are short for :math:`\pi_{\theta_{old}}, \pi_{\theta}`.
+and :math:`{\boldsymbol{\theta}}_{old}, {\boldsymbol{\theta}}`
+are short for :math:`\pi_{{\boldsymbol{\theta}}_{old}}, \pi_{{\boldsymbol{\theta}}}`.
 In practice, the penalty coefficient :math:`C` for KL divergence would produce
 a very small step size and the improvement would be too conservative.
 To allow larger step size, instead of penalty term on KL divergence,
 TRPO uses fixed KL divergence constraint to bound the distance between
-:math:`\pi_{\theta_{old}}` and :math:`\pi_{\theta}`:
+:math:`\pi_{{\boldsymbol{\theta}}_{old}}` and :math:`\pi_{{\boldsymbol{\theta}}}`:
 
 .. math::
     :label: trpo-eq-14
 
-    \underset{\theta}{\max}\quad  &L_{\theta_{old}}(\theta) \\
-    \text{s.t. } \quad &D_{\mathrm{KL}}^{\max }(\theta_{old}, \theta) \le \delta
+    \underset{{\boldsymbol{\theta}}}{\max}\quad  &L_{{\boldsymbol{\theta}}_{old}}({\boldsymbol{\theta}}) \\
+    \text{s.t. } \quad &D_{\mathrm{KL}}^{\max }({\boldsymbol{\theta}}_{old}, {\boldsymbol{\theta}}) \le \delta
 
 
 This problem imposes a constraint that the KL divergence is bounded at every
@@ -377,12 +379,12 @@ divergence:
 .. math::
     :label: trpo-eq-15
 
-    \underset{\theta}{\max}\quad  &L_{\theta_{old}}(\theta) \label{eq:maxklconst} \\
-    \text{s.t. } \quad &\bar{D}_{\mathrm{KL}}(\theta_{old}, \theta) \le \delta
+    \underset{{\boldsymbol{\theta}}}{\max}\quad  &L_{{\boldsymbol{\theta}}_{old}}({\boldsymbol{\theta}}) \label{eq:maxklconst} \\
+    \text{s.t. } \quad &\bar{D}_{\mathrm{KL}}({\boldsymbol{\theta}}_{old}, {\boldsymbol{\theta}}) \le \delta
 
 
 where
-:math:`\bar{D}_{\mathrm{KL}}:=\mathbb{E}_{s \sim \rho}\left[D_{\mathrm{KL}}\left(\pi_{\theta_1}(\cdot \mid s) \| \pi_{\theta_2}(\cdot \mid s)\right)\right]`
+:math:`\bar{D}_{\mathrm{KL}}:=\mathbb{E}_{s \sim \rho}\left[D_{\mathrm{KL}}\left(\pi_{{\boldsymbol{\theta}}_1}(\cdot \mid s) \| \pi_{{\boldsymbol{\theta}}_2}(\cdot \mid s)\right)\right]`
 .The method TRPO describes involves two steps:
 
 .. card::
@@ -391,9 +393,9 @@ where
 
     Two Steps For TRPO Update
     ^^^
-    (1) Compute a search direction, using a linear approximation to the objective and quadratic approximation to the constraint.
+    -  Compute a search direction, using a linear approximation to the objective and quadratic approximation to the constraint.
 
-    (2) Perform a line search in that direction, ensuring that we improve the nonlinear objective while satisfying the nonlinear constraint.
+    -  Perform a line search in the specified direction, ensuring both improvement of the nonlinear objective and satisfaction of the nonlinear constraint.
 
 .. grid:: 2
 
@@ -441,10 +443,10 @@ where
             ^^^
             TRPO approximately computes the search direction by solving the equation :math:`Hx=g`,
             where :math:`H` is the Fisher information matrix, i.e.,
-            the quadratic approximation to the KL divergence constraint :math:`\bar{D}_{\mathrm{KL}}\left(\theta_{\text {old }}, \theta\right) \approx \frac{1}{2}\left(\theta-\theta_{\text {old }}\right)^T H\left(\theta-\theta_{\text {old }}\right)`,
-            where :math:`H_{i j}=\frac{\partial}{\partial \theta_i} \frac{\partial}{\partial \theta_j} \bar{D}_{\mathrm{KL}}\left(\theta_{\text {old }}, \theta\right)` (according to the definition of matrix :math:`H`).
+            the quadratic approximation to the KL divergence constraint :math:`\bar{D}_{\mathrm{KL}}\left({\boldsymbol{\theta}}_{\text {old }}, {\boldsymbol{\theta}}\right) \approx \frac{1}{2}\left({\boldsymbol{\theta}}-{\boldsymbol{\theta}}_{\text {old }}\right)^T H\left({\boldsymbol{\theta}}-{\boldsymbol{\theta}}_{\text {old }}\right)`,
+            where :math:`H_{i j}=\frac{\partial}{\partial {\boldsymbol{\theta}}_i} \frac{\partial}{\partial {\boldsymbol{\theta}}_j} \bar{D}_{\mathrm{KL}}\left({\boldsymbol{\theta}}_{\text {old }}, {\boldsymbol{\theta}}\right)` (according to the definition of matrix :math:`H`).
             It is very difficult to calculate the entire :math:`H` or :math:`H^{-1}` directly,
-            so TRPO uses conjugate gradient algorithm to approximately solve the equation :math:`Hx=g` without forming this full matrix.
+            so TRPO uses the conjugate gradient algorithm to approximately solve the equation :math:`Hx=g` without forming this full matrix.
             +++
             The implementation of :bdg-success-line:`Computing the Fisher-Vector Product` can be seen in the :bdg-success:`Code with OmniSafe`, click on this :bdg-success-line:`card` to jump to view.
 
@@ -461,8 +463,8 @@ where
             Computing The Final Update Step
             ^^^
             Having computed the search direction :math:`s\approx H^{-1}g`,
-            TRPO next needs to compute the appropriate step length to ensure improvement of the surrogate objective and satisfaction of the KL divergence constraint.
-            First, TRPO computes the maximal step length :math:`\beta` such that :math:`\beta+\theta s` will satisfy the KL divergence constraint.
+            TRPO next needs to compute the appropriate step to ensure improvement of the surrogate objective and satisfaction of the KL divergence constraint.
+            First, TRPO computes the maximal step length :math:`\beta` such that :math:`\beta+{\boldsymbol{\theta}} s` will satisfy the KL divergence constraint.
             To do this, let :math:`\delta=\bar{D}_{\mathrm{KL}} \approx \frac{1}{2}(\beta s)^T H(\beta s)=\frac{1}{2} \beta^2 s^T A s`.
             Finally, we obtain :math:`\beta=\sqrt{2 \delta / s^T H s}`.
 
@@ -470,7 +472,7 @@ where
                 The term :math:`s^THs` is an intermediate result produced by the conjugate gradient algorithm.
 
             To meet the constraints, TRPO uses line search algorithm to compute the final step length.
-            Detailedly, TRPO performs the line search on the objective :math:`L_{\theta_{\text {old }}}(\theta)-\mathcal{X}\left[\bar{D}_{\text {KL }}\left(\theta_{\text {old }}, \theta\right) \leq \delta\right]`, where :math:`\mathcal{X}[\ldots]` equals to :math:`0`,
+            Detailedly, TRPO performs the line search on the objective :math:`L_{{\boldsymbol{\theta}}_{\text {old }}}({\boldsymbol{\theta}})-\mathcal{X}\left[\bar{D}_{\text {KL }}\left({\boldsymbol{\theta}}_{\text {old }}, {\boldsymbol{\theta}}\right) \leq \delta\right]`, where :math:`\mathcal{X}[\ldots]` equals to :math:`0`,
             when its argument is true, and :math:`+\infty` when it is false.
             Starting with the maximal value of the step length :math:`\beta` computed in the previous paragraph,
             TRPO shrinks :math:`\beta` exponentially until the objective improves. Without this line search,
@@ -607,7 +609,7 @@ Documentation of algorithm specific functions
                 kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
 
             (2) Use ``torch.autograd.grad()`` to compute the Hessian-vector product.
-                Please note that in line 4, we compute the gradient of ``kl_p`` (The product of the Jacobian of KL divergence and :math:`g`) instead of ``grads`` (The Jacobian of KL divergence)
+                Please note that in we compute the gradient of ``kl_p`` (The product of the Jacobian of KL divergence and :math:`g`) instead of ``grads`` (The Jacobian of KL divergence)
 
             .. code-block:: python
                 :linenos:
@@ -934,7 +936,7 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-17
 
-        & L_{\pi_{\theta_0}}\left(\pi_{\theta_0}\right)=J^{R}\left(\pi_{\theta_0}\right)\quad \\
+        & L_{\pi_{{\boldsymbol{\theta}}_0}}\left(\pi_{{\boldsymbol{\theta}}_0}\right)=J^{R}\left(\pi_{{\boldsymbol{\theta}}_0}\right)\quad \\
         \text{since}~~ &\sum_s \rho_\pi(s) \sum_a \pi'(a \mid s) A^{R}_{\pi}(s, a)=0.
 
     Now :eq:`trpo-eq-4` can be written as follows:
@@ -942,7 +944,7 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-18
 
-        J^{R}\left(\pi^{'}_{\theta}\right) = J^{R}(\pi_{\theta_0}) + \sum_s d_{\pi^{'}_{\theta}}(s) \sum_a \pi^{'}_{\theta}(a|s) A^{R}_{\pi_{\theta_0}}(s,a)
+        J^{R}\left(\pi^{'}_{{\boldsymbol{\theta}}}\right) = J^{R}(\pi_{{\boldsymbol{\theta}}_0}) + \sum_s d_{\pi^{'}_{{\boldsymbol{\theta}}}}(s) \sum_a \pi^{'}_{{\boldsymbol{\theta}}}(a|s) A^{R}_{\pi_{{\boldsymbol{\theta}}_0}}(s,a)
 
     So,
 
@@ -951,11 +953,11 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-19
 
-        \nabla_{\theta} J^{R}(\pi_{\theta})|_{\theta = \theta_0} &= J^{R}(\pi_{\theta_0}) + \sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A^{R}_{\pi_{\theta_0}}(s,a)+\sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A^{R}_{\pi_{\theta_0}}(s,a) \\
-        &= J^{R}(\pi_{\theta_0}) + \sum_s d_{\pi_{\theta}}(s) \sum_a \nabla \pi_{\theta}(a|s) A^{R}_{\pi_{\theta_0}}(s,a)
+        \nabla_{{\boldsymbol{\theta}}} J^{R}(\pi_{{\boldsymbol{\theta}}})|_{{\boldsymbol{\theta}} = {\boldsymbol{\theta}}_0} &= J^{R}(\pi_{{\boldsymbol{\theta}}_0}) + \sum_s \nabla d_{\pi_{{\boldsymbol{\theta}}}}(s) \sum_a \pi_{{\boldsymbol{\theta}}}(a|s) A^{R}_{\pi_{{\boldsymbol{\theta}}_0}}(s,a)+\sum_s d_{\pi_{{\boldsymbol{\theta}}}}(s) \sum_a \nabla \pi_{{\boldsymbol{\theta}}}(a|s) A^{R}_{\pi_{{\boldsymbol{\theta}}_0}}(s,a) \\
+        &= J^{R}(\pi_{{\boldsymbol{\theta}}_0}) + \sum_s d_{\pi_{{\boldsymbol{\theta}}}}(s) \sum_a \nabla \pi_{{\boldsymbol{\theta}}}(a|s) A^{R}_{\pi_{{\boldsymbol{\theta}}_0}}(s,a)
 
     .. note::
-        :math:`\sum_s \nabla d_{\pi_{\theta}}(s) \sum_a \pi_{\theta}(a|s) A^{R}_{\pi_{\theta_0}}(s,a)=0`
+        :math:`\sum_s \nabla d_{\pi_{{\boldsymbol{\theta}}}}(s) \sum_a \pi_{{\boldsymbol{\theta}}}(a|s) A^{R}_{\pi_{{\boldsymbol{\theta}}}}(s,a)=0`
 
     Meanwhile,
 
@@ -964,14 +966,14 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-20
 
-        L_{\pi_{\theta_0}}(\pi_{\theta})=J^{R}(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \pi_{\theta}(a \mid s) A^{R}_{\pi_{\theta_0}}(s, a)
+        L_{\pi_{{\boldsymbol{\theta}}_0}}(\pi_{{\boldsymbol{\theta}}})=J^{R}(\pi_{{\boldsymbol{\theta}}_0})+\sum_s d_{\pi_{{\boldsymbol{\theta}}_0}}(s) \sum_a \pi_{{\boldsymbol{\theta}}}(a \mid s) A^{R}_{\pi_{{\boldsymbol{\theta}}_0}}(s, a)
 
     So,
 
     .. math::
         :label: trpo-eq-21
 
-        \nabla L_{\pi_{\theta_0}}(\pi_{\theta}) | _{\theta = \theta_0}=J^{R}(\pi_{\theta_0})+\sum_s d_{\pi_{\theta_0}}(s) \sum_a \nabla \pi_{\theta}(a \mid s) A^{R}_{\pi_{\theta_0}}(s, a)
+        \nabla L_{\pi_{{\boldsymbol{\theta}}_0}}(\pi_{{\boldsymbol{\theta}}}) | _{{\boldsymbol{\theta}} = {\boldsymbol{\theta}}_0}=J^{R}(\pi_{{\boldsymbol{\theta}}_0})+\sum_s d_{\pi_{{\boldsymbol{\theta}}_0}}(s) \sum_a \nabla \pi_{{\boldsymbol{\theta}}}(a \mid s) A^{R}_{\pi_{{\boldsymbol{\theta}}_0}}(s, a)
 
 
     Combine :eq:`trpo-eq-19`  and
@@ -980,14 +982,15 @@ Proof of Corollary 1
     .. math::
         :label: trpo-eq-22
 
-        \left.\nabla_\theta L_{\pi_{\theta_0}}\left(\pi_\theta\right)\right|_{\theta=\theta_0}=\left.\nabla_\theta J^{R}\left(\pi_\theta\right)\right|_{\theta=\theta_0}
+        \left.\nabla_{\boldsymbol{\theta}} L_{\pi_{{\boldsymbol{\theta}}_0}}\left(\pi_{\boldsymbol{\theta}}\right)\right|_{{\boldsymbol{\theta}}={\boldsymbol{\theta}}_0}=\left.\nabla_{\boldsymbol{\theta}} J^{R}\left(\pi_{\boldsymbol{\theta}}\right)\right|_{{\boldsymbol{\theta}}={\boldsymbol{\theta}}_0}
 
 .. _appendix-theorem2:
 
 Proof of Theorem 2 (Difference between two arbitrary policies)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Define :math:`\bar{A}^R(s)` to be the expected advantage of :math:`\pi'` over :math:`\pi` at :math:`s`,
+Define :math:`\bar{A}^R(s)` as the expected advantage of :math:`\pi'` over
+:math:`\pi` at :math:`s`,
 
 .. math::
     :label: trpo-eq-23
@@ -1012,7 +1015,7 @@ Note that :math:`L_\pi` can be written as
 
 
 To bound the difference between :math:`J^R(\pi')` and :math:`L_\pi(\pi')`,
-we will bound the difference arising from each timestep.
+we need to bound the difference arising from each timestep.
 To do this, we first need to introduce a measure of how much :math:`\pi` and
 :math:`\pi'` agree.
 Specifically, we'll couple the policies,

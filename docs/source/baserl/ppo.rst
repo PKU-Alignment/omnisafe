@@ -9,7 +9,6 @@ Quick Facts
     :class-body: sd-font-weight-bold
 
     #. PPO is an :bdg-info-line:`on-policy` algorithm.
-    #. PPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
     #. PPO can be thought of as being a simple implementation of :bdg-ref-info-line:`TRPO <trpo>`  .
     #. The OmniSafe implementation of PPO support :bdg-info-line:`parallelization`.
     #. An :bdg-ref-info-line:`API Documentation <ppoapi>` is available for PPO.
@@ -20,15 +19,16 @@ PPO Theorem
 Background
 ~~~~~~~~~~
 
-**Proximal Policy Optimization(PPO)** is a reinforcement learning algorithm inheriting some of the
-benefits of :doc:`TRPO<trpo>`,
-however, it is much simpler to implement.
+**Proximal Policy Optimization(PPO)** is a reinforcement learning algorithm
+inheriting some of the
+benefits of :doc:`TRPO<trpo>`.
+However, it is much simpler to implement.
 PPO shares the same goal as TRPO:
 
 .. note::
-    How can we take the largest possible improvement step on a policy update
+    Take the largest possible improvement step on a policy update
     using the available data, without stepping too far and causing performance
-    collapse?
+    collapse.
 
 However, instead of using a complex second-order method like TRPO, PPO uses a
 few tricks to keep the new policies close to the old ones. There are two
@@ -64,7 +64,7 @@ primary variants of PPO:
             ^^^
             - Using ``clip`` method to make the difference between the two strategies less significant.
 
-            - Using the :math:`\text{GAE}` method to process data.
+            - Using the :math:`\text{GAE}` method to process advantage function.
 
             - Simple to implement.
 
@@ -91,7 +91,9 @@ where :math:`\Pi_{\boldsymbol{\theta}} \subseteq \Pi` denotes the set of
 parameterized policies with parameters :math:`\boldsymbol{\theta}`, and
 :math:`D` is some distance measure.
 
-TRPO tackles the challenge of determining the appropriate direction and step size for actor updates, aiming to improve performance while minimizing deviations from the original actor. To achieve this, TRPO reformulates
+TRPO tackles the challenge of determining the appropriate direction and step
+size for policy updates, aiming to improve performance while minimizing
+deviations from the original policy. To achieve this, TRPO reformulates
 Problem :eq:`ppo-eq-1` as:
 
 .. _ppo-eq-2:
@@ -104,8 +106,9 @@ Problem :eq:`ppo-eq-1` as:
 
 
 where
-:math:`L_{\theta_{old}}(\theta)= \frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}_\pi(s, a)`,
-moreover, :math:`\hat{A}_{\pi}(s, a)` is an estimator of the advantage function
+:math:`L_{\theta_{old}}(\theta)= \frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)} \hat{A}^{R}_\pi(s, a)`,
+moreover, :math:`\hat{A}^{R}_{\pi}(s, a)` is an estimator of the advantage
+function
 given :math:`s` and  :math:`a`.
 
 You may still have a question: Why are we using :math:`\hat{A}` instead of
@@ -122,8 +125,8 @@ technique to estimate more efficient advantage :math:`A`.
 PPO-Penalty
 ~~~~~~~~~~~
 
-TRPO suggests using a penalty instead of a constraint to solve the
-unconstrained optimization problem:
+TRPO has advocated using a penalty method to transform constrained problems
+into unconstrained ones for solving:
 
 .. _ppo-eq-3:
 
@@ -189,7 +192,7 @@ PPO-Clip
 
 Let :math:`r(\theta)` denote the probability ratio
 :math:`r(\theta)=\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{old}}(a \mid s)}`,
-PPO-Clip rewrite the surrogate objective as:
+PPO-Clip rewrites the surrogate objective as:
 
 .. _ppo-eq-5:
 
@@ -198,7 +201,12 @@ PPO-Clip rewrite the surrogate objective as:
 
     L^{\mathrm{CLIP}}(\pi)=\mathbb{E}[\text{min} (r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a))]
 
-The hyperparameter :math:`\varepsilon` represents a small value that approximately indicates the allowable distance between the new policy and the old policy. The formula involved in this context is quite intricate, making it challenging to comprehend its purpose or how it contributes to maintaining the proximity between the new and old policies. To facilitate a clearer understanding of the aforementioned expression,
+The hyperparameter :math:`\varepsilon` represents a small value that
+approximately indicates the allowable distance between the new and the
+old policy. The formula involved in this context is quite intricate, making it
+challenging to comprehend its purpose or how it contributes to maintaining the
+proximity between the new and old policies. To facilitate a clearer
+understanding of the aforementioned expression,
 
 let :math:`L(s, a, \theta)` denote
 :math:`\max [r(\theta) \hat{A}_{\pi}(s, a), \text{clip}(r(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{\pi}(s, a)]`,

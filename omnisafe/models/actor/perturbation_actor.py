@@ -65,7 +65,7 @@ class PerturbationActor(Actor):
 
     @property
     def phi(self) -> float:
-        """Return phi. which is the maximum perturbation."""
+        """Return phi, which is the maximum perturbation."""
         return self._phi.item()
 
     @phi.setter

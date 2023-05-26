@@ -91,8 +91,7 @@ class GaussianLearningActor(GaussianActor):
             deterministic (bool, optional): Whether to use deterministic policy. Defaults to False.
 
         Returns:
-            The mean of the distribution if ``deterministic`` is ``True``, otherwise the sampled
-            action.
+            The mean of the distribution if deterministic is True, otherwise the sampled action.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -120,7 +119,7 @@ class GaussianLearningActor(GaussianActor):
             You must call :meth:`forward` or :meth:`predict` before calling this method.
 
         Args:
-            act (torch.Tensor): Action.
+            act (torch.Tensor): Action from :meth:`predict` or :meth:`forward` .
 
         Returns:
             Log probability of the action.

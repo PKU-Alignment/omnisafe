@@ -218,10 +218,11 @@ class SafetyGymnasiumEnv(CMDP):
         )
 
     def render(self) -> Any:
-        """Render the environment.
+        """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
 
         Returns:
-            Rendered image.
+            The render frames: we recommend to use `np.ndarray`
+                which could construct video by moviepy.
         """
         return self._env.render()
 

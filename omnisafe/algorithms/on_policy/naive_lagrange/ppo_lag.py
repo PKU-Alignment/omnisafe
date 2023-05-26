@@ -62,7 +62,7 @@ class PPOLag(PPO):
 
             .. math::
 
-                L_{\pi} = \mathbb{E}_{s_t \sim \rho_{\pi}} \left[
+                L_{\pi} = -\underset{s_t \sim \rho_{\theta}}{\mathbb{E}} \left[
                     \frac{\pi_{\theta} (a_t|s_t)}{\pi_{\theta}^{old}(a_t|s_t)}
                     [ A^{R}_{\pi_{\theta}} (s_t, a_t) - \lambda A^{C}_{\pi_{\theta}} (s_t, a_t) ]
                 \right]

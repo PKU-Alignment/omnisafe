@@ -10,7 +10,7 @@ Quick Facts
 
     #. PCPO is an :bdg-info-line:`on-policy` algorithm.
     #. PCPO can be used for environments with both :bdg-info-line:`discrete` and :bdg-info-line:`continuous` action spaces.
-    #. PCPO is an improvement work done based on:bdg-info-line:`CPO` .
+    #. PCPO is an improvement work done based on :bdg-info-line:`CPO` .
     #. The OmniSafe implementation of PCPO support :bdg-success-line:`parallelization`.
     #. An :bdg-ref-info-line:`API Documentation <pcpoapi>` is available for PCPO.
 
@@ -57,11 +57,11 @@ optimization problems:
     J^{C_i}(\pi) &\le d_i\quad i=1,...m
 
 
-where :math:`\Pi_{\theta}\subseteq\Pi` denotes the set of parametrized policies
-with parameters :math:`\theta`, and :math:`D` is some distance measure.
+where :math:`\Pi_{\boldsymbol{\theta}}\subseteq\Pi` denotes the set of parametrized policies
+with parameters :math:`\boldsymbol{\theta}`, and :math:`D` is some distance measure.
 In local policy search for CMDPs, we additionally require policy iterates to be
-feasible, so instead of optimizing over :math:`\Pi_{\theta}`, PCPO optimizes
-over :math:`\Pi_{\theta}\cap\Pi_{C}`.
+feasible, so instead of optimizing over :math:`\Pi_{\boldsymbol{\theta}}`, PCPO optimizes
+over :math:`\Pi_{\boldsymbol{\theta}}\cap\Pi_{C}`.
 Next, we will introduce you to how PCPO solves the above optimization problems.
 For you to have a clearer understanding, we hope that you will read the next
 section with the following questions:
@@ -113,7 +113,7 @@ completes the two-stage update.
             .. math::
                 :label: pcpo-eq-2
 
-                &\pi_{k+\frac12}=\underset{\pi}{\arg\max}\underset{s\sim d_{\pi_k}, a\sim\pi}{\mathbb{E}}[A^R_{\pi_k}(s,a)]\\
+                &\pi_{k+\frac12}=\arg\underset{\pi}{\max}\underset{\substack{s\sim d_{\pi_k}\\ a\sim\pi}}{\mathbb{E}}[A^R_{\pi_k}(s,a)]\\
                 \text{s.t.}\quad &\underset{s\sim d_{\pi_k}}{\mathbb{E}}[D_{KL}(\pi||\pi_k)[s]]\le\delta\nonumber
 
 
@@ -134,15 +134,15 @@ completes the two-stage update.
             .. math::
                 :label: pcpo-eq-3
 
-                &\pi_{k+1}=\underset{\pi}{\arg\min} D(\pi,\pi_{k+\frac12})\\
-                \text{s.t.}\quad &J^C\left(\pi_k\right)+\underset{\substack{s \sim d_{\pi_k} , a \sim \pi}}{\mathbb{E}}\left[A^C_{\pi_k}(s, a)\right] \leq d
+                &\pi_{k+1}=\arg\underset{\pi}{\min} D(\pi,\pi_{k+\frac12})\\
+                \text{s.t.}\quad &J^C\left(\pi_k\right)+\underset{\substack{s\sim d_{\pi_k}\\ a\sim\pi}}{\mathbb{E}}\left[A^C_{\pi_k}(s, a)\right] \leq d
 
 The :bdg-ref-info-line:`Projection Stage<two stage update>` guarantees that the
-constraint-satisfying policy :math:`\pi_{k+1}`, remains in close proximity to
+constraint-satisfying policy :math:`\pi_{k+1}` remains in close proximity to
 :math:`\pi_{k+\frac{1}{2}}`. On the other hand,
 the :bdg-ref-info-line:`Reward Improvement Stage<two stage update>` ensures
-that the agent's updates aim to maximize rewards without violating the step
-size or the distance measure :math:`D`.
+that the agent's updates aim to maximize rewards without violating the distance
+measure :math:`D`.
 The :bdg-ref-info-line:`Projection Stage<two stage update>` prompts the agent
 to update its policy in a direction that satisfies the constraint while
 not across :math:`D`.
@@ -172,8 +172,8 @@ the constraint, PCPO provides worst-case performance bound respectively.
 
             Worst-case Bound on Updating Constraint-satisfying Policies
             ^^^
-            Define :math:`\epsilon_{\pi_{k+1}}^{R}\doteq \max\limits_{s}\big|\mathbb{E}_{a\sim\pi_{k+1}}[A^{R}_{\pi_{k}}(s,a)]\big|`, and :math:`\epsilon_{\pi_{k+1}}^{C}\doteq \max\limits_{s}\big|\mathbb{E}_{a\sim\pi_{k+1}}[A^{C}_{\pi_{k}}(s,a)]\big|`.
-            If the current policy :math:`\pi_k` satisfies the constraint, then under :math:`KL` divergence projection, the lower bound on reward improvement, and upper bounds on constraint violation for each policy update are
+            Define :math:`\epsilon_{\pi_{k+1}}^{R}\doteq \max\limits_{s}\big|\underset{a\sim\pi_{k+1}}{\mathbb{E}}[A^{R}_{\pi_{k}}(s,a)]\big|`, and :math:`\epsilon_{\pi_{k+1}}^{C}\doteq \max\limits_{s}\big|\underset{a\sim\pi_{k+1}}{\mathbb{E}}[A^{C}_{\pi_{k}}(s,a)]\big|`.
+            If the current policy :math:`\pi_k` satisfies the constraint, then under :math:`KL` divergence projection, the lower bound on reward improvement, and upper bound on constraint violation for each policy update are
 
             .. math::
                 :label: pcpo-eq-4
@@ -197,7 +197,7 @@ the constraint, PCPO provides worst-case performance bound respectively.
 
             Worst-case Bound on Updating Constraint-violating Policies
             ^^^
-            Define :math:`\epsilon_{\pi_{k+1}}^{R}\doteq \max\limits_{s}\big|\mathbb{E}_{a\sim\pi_{k+1}}[A^{R}_{\pi_{k}}(s,a)]\big|`, :math:`\epsilon_{\pi_{k+1}}^{C}\doteq \max\limits_{s}\big|\mathbb{E}_{a\sim\pi_{k+1}}[A^{C}_{\pi_{k}}(s,a)]\big|`, :math:`b^{+}\doteq \max(0,J^{C}(\pi_k)-d),` and :math:`\alpha_{KL} \doteq \frac{1}{2a^T\boldsymbol{H}^{-1}a},` where :math:`a` is the gradient of the cost advantage function and :math:`\boldsymbol{H}` is the Hessian of the :math:`KL` divergence constraint.
+            Define :math:`\epsilon_{\pi_{k+1}}^{R}\doteq \max\limits_{s}\big|\underset{a\sim\pi_{k+1}}{\mathbb{E}}[A^{R}_{\pi_{k}}(s,a)]\big|`, :math:`\epsilon_{\pi_{k+1}}^{C}\doteq \max\limits_{s}\big|\underset{a\sim\pi_{k+1}}{\mathbb{E}}[A^{C}_{\pi_{k}}(s,a)]\big|`, :math:`b^{+}\doteq \max(0,J^{C}(\pi_k)-d),` and :math:`\alpha_{KL} \doteq \frac{1}{2a^T\boldsymbol{H}^{-1}a},` where :math:`a` is the gradient of the cost advantage function and :math:`\boldsymbol{H}` is the Hessian of the :math:`KL` divergence constraint.
             If the current policy :math:`\pi_k` violates the constraint, then under :math:`KL` divergence projection, the lower bound on reward improvement and the upper bound on constraint violation for each policy update are
 
             .. math::
@@ -243,17 +243,17 @@ second-order expansion.
             ^^^
             Define:
 
-            :math:`g\doteq\nabla_\theta\underset{\substack{s\sim d_{\pi_k}a\sim \pi}}{\mathbb{E}}[A_{\pi_k}^{R}(s,a)]` is the gradient of the reward advantage function,
+            :math:`g\doteq\nabla_\boldsymbol{\theta}\underset{\substack{s\sim d_{\pi_k} \\ a\sim \pi}}{\mathbb{E}}[A_{\pi_k}^{R}(s,a)]` is the gradient of the reward advantage function,
 
-            :math:`a\doteq\nabla_\theta\underset{\substack{s\sim d_{\pi_k}a\sim \pi}}{\mathbb{E}}[A_{\pi_k}^{C}(s,a)]` is the gradient of the cost advantage function,
+            :math:`a\doteq\nabla_\boldsymbol{\theta}\underset{\substack{s\sim d_{\pi_k} \\ a\sim \pi}}{\mathbb{E}}[A_{\pi_k}^{C}(s,a)]` is the gradient of the cost advantage function,
 
-            where :math:`\boldsymbol{H}_{i,j}\doteq \frac{\partial^2 \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[KL(\pi ||\pi_{k})[s]\big]}{\partial \theta_j\partial \theta_j}` is the Hessian of the :math:`KL` divergence constraint (:math:`\boldsymbol{H}` is also called the Fisher information matrix. It is symmetric positive semi-definite), :math:`b\doteq J^{C}(\pi_k)-d` is the constraint violation of the policy :math:`\pi_{k}`, and :math:`\theta` is the parameter of the policy. PCPO linearize the objective function at :math:`\pi_k` subject to second order approximation of the :math:`KL` divergence constraint to obtain the following updates:
+            where :math:`\boldsymbol{H}_{i,j}\doteq \frac{\partial^2 \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[KL(\pi ||\pi_{k})[s]\big]}{\partial \boldsymbol{\theta}_j\partial \boldsymbol{\theta}_j}` is the Hessian of the :math:`KL` divergence constraint (:math:`\boldsymbol{H}` is also called the Fisher information matrix. It is symmetric positive semi-definite), :math:`b\doteq J^{C}(\pi_k)-d` is the constraint violation of the policy :math:`\pi_{k}`, and :math:`\boldsymbol{\theta}` is the parameter of the policy. PCPO linearize the objective function at :math:`\pi_k` subject to second order approximation of the :math:`KL` divergence constraint to obtain the following updates:
 
             .. math::
                 :label: pcpo-eq-6
 
-                &\theta_{k+\frac{1}{2}} = \underset{\theta}{\arg\max}g^{T}(\theta-\theta_k)  \\
-                \text{s.t.}\quad &\frac{1}{2}(\theta-\theta_{k})^{T}\boldsymbol{H}(\theta-\theta_k)\le \delta . \label{eq:update1}
+                &\boldsymbol{\theta}_{k+\frac{1}{2}} =\arg \underset{\boldsymbol{\theta}}{\max}g^{T}(\boldsymbol{\theta}-\boldsymbol{\theta}_k)  \\
+                \text{s.t.}\quad &\frac{1}{2}(\boldsymbol{\theta}-\boldsymbol{\theta}_{k})^{T}\boldsymbol{H}(\boldsymbol{\theta}-\boldsymbol{\theta}_k)\le \delta . \label{eq:update1}
 
 
             The above problem is essentially an optimization problem presented in TRPO, which can be completely solved using the method we introduced in the TRPO tutorial.
@@ -279,8 +279,8 @@ second-order expansion.
             .. math::
                 :label: pcpo-eq-7
 
-                &\theta_{k+1} =\underset{\theta}{\arg\min}\frac{1}{2}(\theta-{\theta}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\theta-{\theta}_{k+\frac{1}{2}})\\
-                \text{s.t.}\quad & a^{T}(\theta-\theta_{k})+b\leq 0
+                &\boldsymbol{\theta}_{k+1} =\arg \underset{\boldsymbol{\theta}}{\min}\frac{1}{2}(\boldsymbol{\theta}-{\boldsymbol{\theta}}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\boldsymbol{\theta}-{\boldsymbol{\theta}}_{k+\frac{1}{2}})\\
+                \text{s.t.}\quad & a^{T}(\boldsymbol{\theta}-\boldsymbol{\theta}_{k})+b\leq 0
 
 
             where :math:`\boldsymbol{L}=\boldsymbol{I}` for :math:`L2` norm projection, and :math:`\boldsymbol{L}=\boldsymbol{H}` for :math:`KL` divergence projection.
@@ -298,7 +298,7 @@ For each policy update:
 .. math::
     :label: pcpo-eq-8
 
-    \theta_{k+1}=\theta_{k}+\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g
+    \boldsymbol{\theta}_{k+1}=\boldsymbol{\theta}_{k}+\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g
     -\max\left(0,\frac{\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}a^{T}\boldsymbol{H}^{-1}g+b}{a^T\boldsymbol{L}^{-1}a}\right)\boldsymbol{L}^{-1}a
 
 
@@ -379,7 +379,7 @@ Fisher information matrix shown in :bdg-info-line:`Theorem 3`.
 PCPO assumes that: When policy tries to minimize the negative reward objective function
 :math:`f: \mathbb{R}^n \rightarrow \mathbb{R}` .
 The function :math:`f` is :math:`L`-smooth and twice continuously
-differentiable over the closed and convex constraint set :math:`\mathcal{C}`.
+differentiable over the closed and convex constraint set.
 
 .. _Theorem 3:
 
@@ -401,7 +401,7 @@ differentiable over the closed and convex constraint set :math:`\mathcal{C}`.
     .. math::
         :label: pcpo-eq-9
 
-        f(\theta_{k+1})\leq f(\theta_{k})+||\theta_{k+1}-\theta_{k}||^2_{-\frac{1}{\eta}\boldsymbol{H}+\frac{L}{2}\boldsymbol{I}}.
+        f(\boldsymbol{\theta}_{k+1})\leq f(\boldsymbol{\theta}_{k})+||\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k}||^2_{-\frac{1}{\eta}\boldsymbol{H}+\frac{L}{2}\boldsymbol{I}}.
 
     PCPO with :math:`L2`  norm projection converges to a stationary point either inside the constraint set or in the boundary of the constraint set.
     In the latter case, the Lagrangian constraint :math:`\boldsymbol{H}^{-1}g=-\alpha a, \alpha\geq0` holds.
@@ -410,7 +410,7 @@ differentiable over the closed and convex constraint set :math:`\mathcal{C}`.
     .. math::
         :label: pcpo-eq-10
 
-        f(\theta_{k+1})\leq f(\theta_{k})+(\frac{L}{2}-\frac{1}{\eta})||\theta_{k+1}-\theta_{k}||^2_2.
+        f(\boldsymbol{\theta}_{k+1})\leq f(\boldsymbol{\theta}_{k})+(\frac{L}{2}-\frac{1}{\eta})||\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k}||^2_2.
     +++
     The proof of the :bdg-info-line:`Theorem 3` can be seen in the :bdg-info:`Appendix`, click on this :bdg-info-line:`card` to jump to view.
 
@@ -750,7 +750,9 @@ Appendix
 Proof of Theorem 2
 ~~~~~~~~~~~~~~~~~~
 
-To prove the policy performance bound when the current policy is infeasible (constraint-violating), we first prove two lemmas of the :math:`KL` divergence between :math:`\pi_{k}` and :math:`\pi_{k+1}`.
+To prove the policy performance bound when the current policy is infeasible
+(constraint-violating), we first prove two lemmas of the :math:`KL` divergence
+between :math:`\pi_{k}` and :math:`\pi_{k+1}`.
 We then prove the main theorem for the worst-case performance degradation.
 
 .. tab-set::
@@ -765,12 +767,12 @@ We then prove the main theorem for the worst-case performance degradation.
 
             Lemma 1
             ^^^
-            If the current policy :math:`\pi_{k}` satisfies the constraint, the constraint set is closed and convex, and the :math:`KL` divergence constraint for the first step is :math:`\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`, where :math:`\delta` is the step size in the reward improvement step, then under :math:`KL` divergence projection, we have
+            If the current policy :math:`\pi_{k}` satisfies the constraint, the constraint set is closed and convex, and the :math:`KL` divergence constraint for the first step is :math:`\underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`, where :math:`\delta` is the step size in the reward improvement step, then under :math:`KL` divergence projection, we have
 
             .. math::
                 :label: pcpo-eq-11
 
-                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big]\leq \delta.
+                \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big]\leq \delta.
 
 
     .. tab-item:: Lemma 2
@@ -783,13 +785,13 @@ We then prove the main theorem for the worst-case performance degradation.
 
             Lemma 2
             ^^^
-            If the current policy :math:`\pi_{k}` violates the constraint, the constraint set is closed and convex, the :math:`KL` divergence constraint for the first step is :math:`\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`.
+            If the current policy :math:`\pi_{k}` violates the constraint, the constraint set is closed and convex, the :math:`KL` divergence constraint for the first step is :math:`\underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\leq \delta`.
             where :math:`\delta` is the step size in the reward improvement step, then under the :math:`KL` divergence projection, we have
 
             .. math::
                 :label: pcpo-eq-12
 
-                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big]\leq \delta+{b^+}^2\alpha_\mathrm{KL},
+                \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big]\leq \delta+{b^+}^2\alpha_\mathrm{KL},
 
             where :math:`\alpha_\mathrm{KL} \doteq \frac{1}{2a^T\boldsymbol{H}^{-1}a}`, :math:`a` is the gradient of the cost advantage function, :math:`\boldsymbol{H}` is the Hessian of the :math:`KL` divergence constraint, and :math:`b^+\doteq\max(0,J^{C}(\pi_k)-h)`.
 
@@ -813,13 +815,13 @@ We then prove the main theorem for the worst-case performance degradation.
                 :label: pcpo-eq-13
 
 
-                &\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k} ||\pi_{k+\frac{1}{2}})[s]\big]\geq
-                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k}||\pi_{k+1})[s]\big] \\
+                &\underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k} ||\pi_{k+\frac{1}{2}})[s]\big]\geq
+                \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k}||\pi_{k+1})[s]\big] \\
                 &+
-                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k+\frac{1}{2}})[s]\big]\\
+                \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k+\frac{1}{2}})[s]\big]\\
                 &\Rightarrow\delta\geq
-                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k} ||\pi_{k+\frac{1}{2}})[s]\big]\geq
-                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k}||\pi_{k+1})[s]\big].
+                \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k} ||\pi_{k+\frac{1}{2}})[s]\big]\geq
+                \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k}||\pi_{k+1})[s]\big].
 
 
             The derivation uses the fact that :math:`KL` divergence is always greater than zero.
@@ -830,8 +832,8 @@ We then prove the main theorem for the worst-case performance degradation.
                 :label: pcpo-eq-14
 
                 \delta\geq
-                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\geq
-                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1}||\pi_{k})[s]\big].
+                \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k+\frac{1}{2}} ||\pi_{k})[s]\big]\geq
+                \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k+1}||\pi_{k})[s]\big].
 
     .. tab-item:: Proof of Lemma 2
       :sync: key2
@@ -848,35 +850,35 @@ We then prove the main theorem for the worst-case performance degradation.
             .. math::
                 :label: pcpo-eq-15
 
-                L^{\pi_k}=\{\pi~|~J^{C}(\pi_{k})+ \mathbb{E}_{\substack{s\sim d_{\pi_{k}}\\ a\sim \pi}}[A_{\pi_k}^{C}(s,a)]\leq J^{C}(\pi_{k})\}.
+                L_{\pi_k}=\{\pi~|~J^{C}(\pi_{k})+ \mathbb{E}_{\substack{s\sim d_{\pi_{k}}\\ a\sim \pi}}[A_{\pi_k}^{C}(s,a)]\leq J^{C}(\pi_{k})\}.
 
-            This implies that the current policy :math:`\pi_k` lies in :math:`L^{\pi_k}`, and :math:`\pi_{k+\frac{1}{2}}` is projected onto the constraint set: :math:`\{\pi~|~J^{C}(\pi_{k})+ \mathbb{E}_{\substack{s\sim d_{\pi_{k}}\\ a\sim \pi}}[A_{\pi_k}^{C}(s,a)]\leq h\}`.
-            Next, we define the policy :math:`\pi_{k+1}^l` as the projection of :math:`\pi_{k+\frac{1}{2}}` onto :math:`L^{\pi_k}`.
+            This implies that the current policy :math:`\pi_k` lies in :math:`L_{\pi_k}`, and :math:`\pi_{k+\frac{1}{2}}` is projected onto the constraint set: :math:`\{\pi~|~J^{C}(\pi_{k})+ \mathbb{E}_{\substack{s\sim d_{\pi_{k}}\\ a\sim \pi}}[A_{\pi_k}^{C}(s,a)]\leq h\}`.
+            Next, we define the policy :math:`\pi_{k+1}^l` as the projection of :math:`\pi_{k+\frac{1}{2}}` onto :math:`L_{\pi_k}`.
 
             For these three polices :math:`\pi_k, \pi_{k+1}` and :math:`\pi_{k+1}^l`, with :math:`\varphi(x)\doteq\sum_i x_i\log x_i`, we have
 
             .. math::
                 :label: pcpo-eq-16
 
-                \delta &\geq  \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1}^l ||\pi_{k})[s]\big]
-                \\&=\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big] -\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]\\
-                &+\mathbb{E}_{s\sim d_{\pi_{k}}}\big[(\nabla\varphi(\pi_k)-\nabla\varphi(\pi_{k+1}^{l}))^T(\pi_{k+1}-\pi_{k+1}^l)[s]\big] \nonumber \\
+                \delta &\geq  \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k+1}^l ||\pi_{k})[s]\big]
+                \\&=\underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k})[s]\big] -\underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]\\
+                &+\underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[(\nabla\varphi(\pi_k)-\nabla\varphi(\pi_{k+1}^{l}))^T(\pi_{k+1}-\pi_{k+1}^l)[s]\big] \nonumber \\
 
 
 
-                \Rightarrow \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k})[s]\big]&\leq \delta + \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]\\
-                &- \mathbb{E}_{s\sim d_{\pi_{k}}}\big[(\nabla\varphi(\pi_k)-\nabla\varphi(\pi_{k+1}^{l}))^T(\pi_{k+1}-\pi_{k+1}^l)[s]\big].
+                \Rightarrow \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k})[s]\big]&\leq \delta + \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]\\
+                &- \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[(\nabla\varphi(\pi_k)-\nabla\varphi(\pi_{k+1}^{l}))^T(\pi_{k+1}-\pi_{k+1}^l)[s]\big].
 
 
-            The inequality :math:`\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1}^l ||\pi_{k})[s]\big]\leq\delta` comes from that :math:`\pi_{k}` and :math:`\pi_{k+1}^l` are in :math:`L^{\pi_k}`, and :bdg-info-line:`Lemma 1`.
+            The inequality :math:`\underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL} (\pi_{k+1}^l ||\pi_{k})[s]\big]\leq\delta` comes from that :math:`\pi_{k}`, :math:`\pi_{k+1}^l` are in :math:`L_{\pi_k}`, and :bdg-info-line:`Lemma 1`.
 
-            If the constraint violation of the current policy :math:`\pi_k` is small, :math:`b^+` is small, :math:`\mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]` can be approximated by the second order expansion.
+            If the constraint violation of the current policy :math:`\pi_k` and :math:`b^+` are small, :math:`\underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL} (\pi_{k+1} ||\pi_{k+1}^l)[s]\big]` can be approximated by the second order expansion.
             By the update rule in :eq:`pcpo-eq-5`, we have
 
             .. math::
                 :label: pcpo-eq-17
 
-                \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k+1}^l)[s]\big] &\approx \frac{1}{2}(\theta_{k+1}-\theta_{k+1}^l)^{T}\boldsymbol{H}(\theta_{k+1}-\theta_{k+1}^l)\\
+                \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k+1} ||\pi_{k+1}^l)[s]\big] &\approx \frac{1}{2}(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k+1}^l)^{T}\boldsymbol{H}(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k+1}^l)\\
                 &=\frac{1}{2} \Big(\frac{b^+}{a^T\boldsymbol{H}^{-1}a}\boldsymbol{H}^{-1}a\Big)^T\boldsymbol{H}\Big(\frac{b^+}{a^T\boldsymbol{H}^{-1}a}\boldsymbol{H}^{-1}a\Big)\\
                 &=\frac{{b^+}^2}{2a^T\boldsymbol{H}^{-1}a}\\
                 &={b^+}^2\alpha_\mathrm{KL},
@@ -888,11 +890,12 @@ We then prove the main theorem for the worst-case performance degradation.
             Thus, the third term in :eq:`pcpo-eq-8` can be eliminated.
 
             Combining :eq:`pcpo-eq-8` and :eq:`pcpo-eq-13`, we have :math:`[
-            \mathbb{E}_{s\sim d_{\pi_{k}}}\big[\mathrm{KL}(\pi_{k+1}||\pi_{k})[s]\big]\leq \delta+{b^+}^2\alpha_\mathrm{KL}.]`
+            \underset{s\sim d_{\pi_{k}}}{\mathbb{E}}\big[\mathrm{KL}(\pi_{k+1}||\pi_{k})[s]\big]\leq \delta+{b^+}^2\alpha_\mathrm{KL}.]`
 
 
 Now we use :bdg-info-line:`Lemma 2` to prove the :bdg-info-line:`Theorem 2`.
-Following the same proof in :bdg-ref-info-line:`Theorem 1<cards-clickable>`, we complete the proof.
+Following the same proof in :bdg-ref-info-line:`Theorem 1<cards-clickable>`, we
+complete the proof.
 
 .. _`appendix_proof_theorem_3`:
 
@@ -912,8 +915,8 @@ Proof of Analytical Solution to PCPO
     .. math::
         :label: pcpo-eq-18
 
-        \theta_{k+\frac{1}{2}} = &\underset{\theta}{\arg \min} g^{T}(\theta-\theta_{k}) \\
-        \text{s.t.}\quad&\frac{1}{2}(\theta-\theta_{k})^{T}\boldsymbol{H}(\theta-\theta_{k})\leq \delta,
+        \boldsymbol{\theta}_{k+\frac{1}{2}} = & \arg \underset{\boldsymbol{\theta}}{\min} g^{T}(\boldsymbol{\theta}-\boldsymbol{\theta}_{k}) \\
+        \text{s.t.}\quad&\frac{1}{2}(\boldsymbol{\theta}-\boldsymbol{\theta}_{k})^{T}\boldsymbol{H}(\boldsymbol{\theta}-\boldsymbol{\theta}_{k})\leq \delta,
 
 
     and in the second step, we project the policy onto the constraint set:
@@ -921,17 +924,17 @@ Proof of Analytical Solution to PCPO
     .. math::
         :label: pcpo-eq-19
 
-        \theta_{k+1} = &\underset{\theta}{\arg \min} \frac{1}{2}(\theta-{\theta}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\theta-{\theta}_{k+\frac{1}{2}}) \\
-        \text{s.t.}\quad &a^{T}(\theta-\theta_{k})+b\leq 0,
+        \boldsymbol{\theta}_{k+1} = &\arg\underset{\boldsymbol{\theta}}{ \min} \frac{1}{2}(\boldsymbol{\theta}-{\boldsymbol{\theta}}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\theta-{\boldsymbol{\theta}}_{k+\frac{1}{2}}) \\
+        \text{s.t.}\quad &a^{T}(\boldsymbol{\theta}-\boldsymbol{\theta}_{k})+b\leq 0,
 
 
-    where :math:`g, a, \theta \in R^n, b, \delta\in R, \delta>0,` and :math:`\boldsymbol{H},\boldsymbol{L}\in R^{n\times n}, \boldsymbol{L}=\boldsymbol{H}`, if using the :math:`KL` divergence projection, and :math:`\boldsymbol{L}=\boldsymbol{I}` if using the :math:`L2`  norm projection.
+    where :math:`g, a, \boldsymbol{\theta} \in \mathbb{R}^n, b, \delta\in \mathbb{R}, \delta>0,` and :math:`\boldsymbol{H},\boldsymbol{L}\in \mathbb{R}^{n\times n}, \boldsymbol{L}=\boldsymbol{H}`, if using the :math:`KL` divergence projection, and :math:`\boldsymbol{L}=\boldsymbol{I}` if using the :math:`L2`  norm projection.
     When there is at least one strictly feasible point, the optimal solution satisfies
 
     .. math::
         :label: pcpo-eq-20
 
-        \theta_{k+1}&=\theta_{k}+\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g\nonumber\\
+        \boldsymbol{\theta}_{k+1}&=\boldsymbol{\theta}_{k}+\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g\nonumber\\
         &-\max(0,\frac{\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}a^{T}\boldsymbol{H}^{-1}g+b}{a^T\boldsymbol{L}^{-1}a})\boldsymbol{L}^{-1}a
 
 
@@ -942,13 +945,13 @@ Proof of Analytical Solution to PCPO
         :class-body: sd-outline-info
 
         For the first problem, since :math:`\boldsymbol{H}` is the Fisher Information matrix, which automatically guarantees it is positive semi-definite, it is a convex program with quadratic inequality constraints.
-        Hence if the primal problem has a feasible point, then Slater's condition is satisfied and strong duality holds.
-        Let :math:`\theta^{*}` and :math:`\lambda^*` denote the solutions to the primal and dual problems, respectively.
+        Hence if the primal problem has a feasible point, then `Slater's condition <https://en.wikipedia.org/wiki/Slater%27s_condition>`_ is satisfied and strong duality holds.
+        Let :math:`\boldsymbol{\theta}^{*}` and :math:`\lambda^*` denote the solutions to the primal and dual problems, respectively.
         In addition, the primal objective function is continuously differentiable.
-        Hence the Karush-Kuhn-Tucker (KKT) conditions are necessary and sufficient for the optimality of :math:`\theta^{*}` and :math:`\lambda^*.`
+        Hence the `Karush-Kuhn-Tucker (KKT) conditions <https://en.wikipedia.org/wiki/Karush%E2%80%93Kuhn%E2%80%93Tucker_conditions>`_ are necessary and sufficient for the optimality of :math:`\boldsymbol{\theta}^{*}` and :math:`\lambda^*.`
         We now form the Lagrangian:
 
-        .. math:: \mathcal{L}(\theta,\lambda)=-g^{T}(\theta-\theta_{k})+\lambda\Big(\frac{1}{2}(\theta-\theta_{k})^{T}\boldsymbol{H}(\theta-\theta_{k})- \delta\Big).
+        .. math:: \mathcal{L}(\boldsymbol{\theta},\lambda)=-g^{T}(\boldsymbol{\theta}-\boldsymbol{\theta}_{k})+\lambda\Big(\frac{1}{2}(\boldsymbol{\theta}-\boldsymbol{\theta}_{k})^{T}\boldsymbol{H}(\boldsymbol{\theta}-\boldsymbol{\theta}_{k})- \delta\Big).
 
         And we have the following KKT conditions:
 
@@ -957,14 +960,14 @@ Proof of Analytical Solution to PCPO
         .. math::
             :label: pcpo-eq-22
 
-            -g + \lambda^*\boldsymbol{H}\theta^{*}-\lambda^*\boldsymbol{H}\theta_{k}=0~~~~&~~~\nabla_\theta\mathcal{L}(\theta^{*},\lambda^{*})=0 \\
-            \frac{1}{2}(\theta^{*}-\theta_{k})^{T}\boldsymbol{H}(\theta^{*}-\theta_{k})- \delta=0~~~~&~~~\nabla_\lambda\mathcal{L}(\theta^{*},\lambda^{*})=0 \\
-            \frac{1}{2}(\theta^{*}-\theta_{k})^{T}\boldsymbol{H}(\theta^{*}-\theta_{k})-\delta\leq0~~~~&~~~\text{primal constraints}\label{KKT_3}\\
+            -g + \lambda^*\boldsymbol{H}\boldsymbol{\theta}^{*}-\lambda^*\boldsymbol{H}\boldsymbol{\theta}_{k}=0~~~~&~~~\nabla_\boldsymbol{\theta}\mathcal{L}(\boldsymbol{\theta}^{*},\lambda^{*})=0 \\
+            \frac{1}{2}(\boldsymbol{\theta}^{*}-\boldsymbol{\theta}_{k})^{T}\boldsymbol{H}(\boldsymbol{\theta}^{*}-\boldsymbol{\theta}_{k})- \delta=0~~~~&~~~\nabla_\lambda\mathcal{L}(\boldsymbol{\theta}^{*},\lambda^{*})=0 \\
+            \frac{1}{2}(\boldsymbol{\theta}^{*}-\boldsymbol{\theta}_{k})^{T}\boldsymbol{H}(\boldsymbol{\theta}^{*}-\boldsymbol{\theta}_{k})-\delta\leq0~~~~&~~~\text{primal constraints}\label{KKT_3}\\
             \lambda^*\geq0~~~~&~~~\text{dual constraints}\\
-            \lambda^*\Big(\frac{1}{2}(\theta^{*}-\theta_{k})^{T}\boldsymbol{H}(\theta^{*}-\theta_{k})-\delta\Big)=0~~~~&~~~\text{complementary slackness}
+            \lambda^*\Big(\frac{1}{2}(\boldsymbol{\theta}^{*}-\boldsymbol{\theta}_{k})^{T}\boldsymbol{H}(\boldsymbol{\theta}^{*}-\boldsymbol{\theta}_{k})-\delta\Big)=0~~~~&~~~\text{complementary slackness}
 
 
-        By :eq:`pcpo-eq-22`, we have :math:`\theta^{*}=\theta_{k}+\frac{1}{\lambda^*}\boldsymbol{H}^{-1}g`.
+        By :eq:`pcpo-eq-22`, we have :math:`\boldsymbol{\theta}^{*}=\boldsymbol{\theta}_{k}+\frac{1}{\lambda^*}\boldsymbol{H}^{-1}g`.
         And :math:`\lambda^*=\sqrt{\frac{g^T\boldsymbol{H}^{-1}g}{2\delta}}` .
         Hence we have our optimal solution:
 
@@ -973,14 +976,14 @@ Proof of Analytical Solution to PCPO
         .. math::
             :label: pcpo-eq-23
 
-            \theta_{k+\frac{1}{2}}=\theta^{*}=\theta_{k}+\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g
+            \boldsymbol{\theta}_{k+\frac{1}{2}}=\boldsymbol{\theta}^{*}=\boldsymbol{\theta}_{k}+\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g
 
         Following the same reasoning, we now form the Lagrangian of the second problem:
 
         .. math::
             :label: pcpo-eq-24
 
-            \mathcal{L}(\theta,\lambda)=\frac{1}{2}(\theta-{\theta}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\theta-{\theta}_{k+\frac{1}{2}})+\lambda(a^T(\theta-\theta_{k})+b)
+            \mathcal{L}(\boldsymbol{\theta},\lambda)=\frac{1}{2}(\boldsymbol{\theta}-{\boldsymbol{\theta}}_{k+\frac{1}{2}})^{T}\boldsymbol{L}(\boldsymbol{\theta}-{\boldsymbol{\theta}}_{k+\frac{1}{2}})+\lambda(a^T(\boldsymbol{\theta}-\boldsymbol{\theta}_{k})+b)
 
 
         And we have the following KKT conditions:
@@ -990,15 +993,15 @@ Proof of Analytical Solution to PCPO
         .. math::
             :label: pcpo-eq-25
 
-            \boldsymbol{L}\theta^*-\boldsymbol{L}\theta_{k+\frac{1}{2}}+\lambda^*a=0~~~~&~~~\nabla_\theta\mathcal{L}(\theta^{*},\lambda^{*})=0   \\
-                a^T(\theta^*-\theta_{k})+b=0~~~~&~~~\nabla_\lambda\mathcal{L}(\theta^{*},\lambda^{*})=0   \\
-                a^T(\theta^*-\theta_{k})+b\leq0~~~~&~~~\text{primal constraints}  \\
+            \boldsymbol{L}\boldsymbol{\theta}^*-\boldsymbol{L}\boldsymbol{\theta}_{k+\frac{1}{2}}+\lambda^*a=0~~~~&~~~\nabla_\boldsymbol{\theta}\mathcal{L}(\boldsymbol{\theta}^{*},\lambda^{*})=0   \\
+                a^T(\boldsymbol{\theta}^*-\boldsymbol{\theta}_{k})+b=0~~~~&~~~\nabla_\lambda\mathcal{L}(\boldsymbol{\theta}^{*},\lambda^{*})=0   \\
+                a^T(\boldsymbol{\theta}^*-\boldsymbol{\theta}_{k})+b\leq0~~~~&~~~\text{primal constraints}  \\
                 \lambda^*\geq0~~~~&~~~\text{dual constraints}  \\
-                \lambda^*(a^T(\theta^*-\theta_{k})+b)=0~~~~&~~~\text{complementary slackness}
+                \lambda^*(a^T(\boldsymbol{\theta}^*-\boldsymbol{\theta}_{k})+b)=0~~~~&~~~\text{complementary slackness}
 
 
-        By :eq:`pcpo-eq-25`, we have :math:`\theta^{*}=\theta_{k+1}+\lambda^*\boldsymbol{L}^{-1}a`.
-        And by solving :eq:`pcpo-eq-25`, we have :math:`\lambda^*=\max(0,\\ \frac{a^T(\theta_{k+\frac{1}{2}}-\theta_{k})+b}{a\boldsymbol{L}^{-1}a})`.
+        By :eq:`pcpo-eq-25`, we have :math:`\boldsymbol{\theta}^{*}=\boldsymbol{\theta}_{k+1}+\lambda^*\boldsymbol{L}^{-1}a`.
+        And by solving :eq:`pcpo-eq-25`, we have :math:`\lambda^*=\max(0,\\ \frac{a^T(\boldsymbol{\theta}_{k+\frac{1}{2}}-\boldsymbol{\theta}_{k})+b}{a\boldsymbol{L}^{-1}a})`.
         Hence we have our optimal solution:
 
         .. _`pcpo-eq-25`:
@@ -1006,23 +1009,29 @@ Proof of Analytical Solution to PCPO
         .. math::
             :label: pcpo-eq-26
 
-            \theta_{k+1}=\theta^{*}=\theta_{k+\frac{1}{2}}-\max(0,\frac{a^T(\theta_{k+\frac{1}{2}}-\theta_{k})+b}{a^T\boldsymbol{L}^{-1}a^T})\boldsymbol{L}^{-1}a
+            \boldsymbol{\theta}_{k+1}=\boldsymbol{\theta}^{*}=\boldsymbol{\theta}_{k+\frac{1}{2}}-\max(0,\frac{a^T(\boldsymbol{\theta}_{k+\frac{1}{2}}-\boldsymbol{\theta}_{k})+b}{a^T\boldsymbol{L}^{-1}a^T})\boldsymbol{L}^{-1}a
 
         we have
 
         .. math::
             :label: pcpo-eq-27
 
-            \theta_{k+1}&=\theta_{k}+\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g\\
+            \boldsymbol{\theta}_{k+1}&=\boldsymbol{\theta}_{k}+\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g\\
             &-\max(0,\frac{\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}a^{T}\boldsymbol{H}^{-1}g+b}{a^T\boldsymbol{L}^{-1}a})\boldsymbol{L}^{-1}a
 
 
 Proof of Theorem 3
 ~~~~~~~~~~~~~~~~~~
 
-For our analysis, we make the following assumptions: we minimize the negative reward objective function :math:`f: R^n \rightarrow R` (We follow the convention of the literature that authors typically minimize the objective function).
-The function :math:`f` is :math:`L`-smooth and twice continuously differentiable over the closed and convex constraint set :math:`\mathcal{C}`.
-We have the following :bdg-info-line:`Lemma 3` to characterize the projection and for the proof of :bdg-info-line:`Theorem 3`
+For our analysis, we make the following assumptions: we minimize the negative
+reward objective function :math:`f: \mathbb{R}^n \rightarrow \mathbb{R}`
+(We follow the
+convention of the literature that authors typically minimize the objective
+function).
+The function :math:`f` is :math:`L`-smooth and twice continuously
+differentiable over the closed and convex constraint set :math:`\mathcal{C}`.
+We have the following :bdg-info-line:`Lemma 3` to characterize the projection
+and for the proof of :bdg-info-line:`Theorem 3`
 
 .. card::
     :class-header: sd-bg-info sd-text-white sd-font-weight-bold
@@ -1030,18 +1039,18 @@ We have the following :bdg-info-line:`Lemma 3` to characterize the projection an
 
     Lemma 3
     ^^^
-    For any :math:`\theta`, :math:`\theta^{*}=\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)` if and only if :math:`(\theta-\theta^*)^T\boldsymbol{L}(\theta'-\theta^*)\leq0, \forall\theta'\in\mathcal{C}`,
-    where :math:`\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)\doteq \underset{\theta' \in \mathrm{C}}{\arg \min}||\theta-\theta'||^2_{\boldsymbol{L}}` and :math:`\boldsymbol{L}=\boldsymbol{H}` if using the :math:`KL` divergence projection, and :math:`\boldsymbol{L}=\boldsymbol{I}` if using the :math:`L2` norm projection.
+    For any :math:`\boldsymbol{\theta}`, :math:`\boldsymbol{\theta}^{*}=\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\boldsymbol{\theta})` if and only if :math:`(\boldsymbol{\theta}-\boldsymbol{\theta}^*)^T\boldsymbol{L}(\boldsymbol{\theta}'-\boldsymbol{\theta}^*)\leq0, \forall\boldsymbol{\theta}'\in\mathcal{C}`,
+    where :math:`\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\boldsymbol{\theta})\doteq \underset{\boldsymbol{\theta}' \in \mathrm{C}}{\arg \min}||\boldsymbol{\theta}-\boldsymbol{\theta}'||^2_{\boldsymbol{L}}` and :math:`\boldsymbol{L}=\boldsymbol{H}` if using the :math:`KL` divergence projection, and :math:`\boldsymbol{L}=\boldsymbol{I}` if using the :math:`L2` norm projection.
 
     .. dropdown:: Proof of Lemma 3 (Click here)
         :color: info
         :class-body: sd-outline-info
 
         :math:`(\Rightarrow)` Let
-        :math:`\theta^{*}=\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)`
-        for a given :math:`\theta \not\in\mathcal{C},`
-        :math:`\theta'\in\mathcal{C}` be such that
-        :math:`\theta'\neq\theta^*,` and :math:`\alpha\in(0,1).` Then we have
+        :math:`\boldsymbol{\theta}^{*}=\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\boldsymbol{\theta})`
+        for a given :math:`\boldsymbol{\theta} \not\in\mathcal{C},`
+        :math:`\boldsymbol{\theta}'\in\mathcal{C}` be such that
+        :math:`\boldsymbol{\theta}'\neq\boldsymbol{\theta}^*,` and :math:`\alpha\in(0,1).` Then we have
 
         .. _`pcpo-eq-26`:
 
@@ -1049,11 +1058,11 @@ We have the following :bdg-info-line:`Lemma 3` to characterize the projection an
             :label: pcpo-eq-28
 
             \label{eq:appendix_lemmaD1_0}
-                \left\|\theta-\theta^*\right\|_L^2
-                & \leq\left\|\theta-\left(\theta^*+\alpha\left(\theta^{\prime}-\theta^*\right)\right)\right\|_L^2 \\
-                &=\left\|\theta-\theta^*\right\|_L^2+\alpha^2\left\|\theta^{\prime}-\theta^*\right\|_{\boldsymbol{L}}^2\\
-                ~~~~ &-2\alpha\left(\theta-\theta^*\right)^T \boldsymbol{L}\left(\theta^{\prime}-\theta^*\right) \\
-                & \Rightarrow\left(\theta-\theta^*\right)^T \boldsymbol{L}\left(\theta^{\prime}-\theta^*\right) \leq \frac{\alpha}{2}\left\|\theta^{\prime}-\theta^*\right\|_{\boldsymbol{L}}^2
+                \left\|\boldsymbol{\theta}-\boldsymbol{\theta}^*\right\|_L^2
+                & \leq\left\|\boldsymbol{\theta}-\left(\boldsymbol{\theta}^*+\alpha\left(\boldsymbol{\theta}^{\prime}-\boldsymbol{\theta}^*\right)\right)\right\|_L^2 \\
+                &=\left\|\boldsymbol{\theta}-\boldsymbol{\theta}^*\right\|_L^2+\alpha^2\left\|\boldsymbol{\theta}^{\prime}-\boldsymbol{\theta}^*\right\|_{\boldsymbol{L}}^2\\
+                ~~~~ &-2\alpha\left(\boldsymbol{\theta}-\boldsymbol{\theta}^*\right)^T \boldsymbol{L}\left(\boldsymbol{\theta}^{\prime}-\boldsymbol{\theta}^*\right) \\
+                & \Rightarrow\left(\boldsymbol{\theta}-\boldsymbol{\theta}^*\right)^T \boldsymbol{L}\left(\boldsymbol{\theta}^{\prime}-\boldsymbol{\theta}^*\right) \leq \frac{\alpha}{2}\left\|\boldsymbol{\theta}^{\prime}-\boldsymbol{\theta}^*\right\|_{\boldsymbol{L}}^2
 
 
         Since the right-hand side of :eq:`pcpo-eq-28` can be made arbitrarily small for a given :math:`\alpha`, and hence we have:
@@ -1061,25 +1070,25 @@ We have the following :bdg-info-line:`Lemma 3` to characterize the projection an
         .. math::
             :label: pcpo-eq-29
 
-            (\theta-\theta^*)^T\boldsymbol{L}(\theta'-\theta^*)\leq0, \forall\theta'\in\mathcal{C}.
+            (\boldsymbol{\theta}-\boldsymbol{\theta}^*)^T\boldsymbol{L}(\boldsymbol{\theta}'-\boldsymbol{\theta}^*)\leq0, \forall\boldsymbol{\theta}'\in\mathcal{C}.
 
-        Let :math:`\theta^*\in\mathcal{C}` be such that :math:`(\theta-\theta^*)^T\boldsymbol{L}(\theta'-\theta^*)\leq0, \forall\theta'\in\mathcal{C}`.
-        We show that :math:`\theta^*` must be the optimal solution.
-        Let :math:`\theta'\in\mathcal{C}` and :math:`\theta'\neq\theta^*`.
+        Let :math:`\boldsymbol{\theta}^*\in\mathcal{C}` be such that :math:`(\boldsymbol{\theta}-\boldsymbol{\theta}^*)^T\boldsymbol{L}(\boldsymbol{\theta}'-\boldsymbol{\theta}^*)\leq0, \forall\boldsymbol{\theta}'\in\mathcal{C}`.
+        We show that :math:`\boldsymbol{\theta}^*` must be the optimal solution.
+        Let :math:`\boldsymbol{\theta}'\in\mathcal{C}` and :math:`\boldsymbol{\theta}'\neq\boldsymbol{\theta}^*`.
         Then we have
 
         .. math::
             :label: pcpo-eq-30
 
             \begin{split}
-            &\left\|\theta-\theta^{\prime}\right\|_L^2-\left\|\theta-\theta^*\right\|_L^2\\ &=\left\|\theta-\theta^*+\theta^*-\theta^{\prime}\right\|_L^2-\left\|\theta-\theta^*\right\|_L^2 \\
-            &=\left\|\theta-\theta^*\right\|_L^2+\left\|\theta^{\prime}-\theta^*\right\|_L^2-2\left(\theta-\theta^*\right)^T \boldsymbol{L}\left(\theta^{\prime}-\theta^*\right)\\
-            &~~~~-\left\|\theta-\theta^*\right\|_{\boldsymbol{L}}^2 \\
+            &\left\|\boldsymbol{\theta}-\boldsymbol{\theta}^{\prime}\right\|_L^2-\left\|\boldsymbol{\theta}-\boldsymbol{\theta}^*\right\|_L^2\\ &=\left\|\boldsymbol{\theta}-\boldsymbol{\theta}^*+\boldsymbol{\theta}^*-\boldsymbol{\theta}^{\prime}\right\|_L^2-\left\|\boldsymbol{\theta}-\boldsymbol{\theta}^*\right\|_L^2 \\
+            &=\left\|\boldsymbol{\theta}-\boldsymbol{\theta}^*\right\|_L^2+\left\|\boldsymbol{\theta}^{\prime}-\boldsymbol{\theta}^*\right\|_L^2-2\left(\boldsymbol{\theta}-\boldsymbol{\theta}^*\right)^T \boldsymbol{L}\left(\boldsymbol{\theta}^{\prime}-\boldsymbol{\theta}^*\right)\\
+            &~~~~-\left\|\boldsymbol{\theta}-\boldsymbol{\theta}^*\right\|_{\boldsymbol{L}}^2 \\
             &>0 \\
-            &\Rightarrow\left\|\theta-\theta^{\prime}\right\|_L^2 >\left\|\theta-\theta^*\right\|_L^2 .
+            &\Rightarrow\left\|\boldsymbol{\theta}-\boldsymbol{\theta}^{\prime}\right\|_L^2 >\left\|\boldsymbol{\theta}-\boldsymbol{\theta}^*\right\|_L^2 .
             \end{split}
 
-        Hence, :math:`\theta^*` is the optimal solution to the optimization problem, and :math:`\theta^*=\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\theta)`.
+        Hence, :math:`\boldsymbol{\theta}^*` is the optimal solution to the optimization problem, and :math:`\boldsymbol{\theta}^*=\mathrm{Proj}^{\boldsymbol{L}}_{\mathcal{C}}(\boldsymbol{\theta})`.
 
 Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:`Theorem 3`.
 
@@ -1097,7 +1106,7 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
     .. math::
         :label: pcpo-eq-31
 
-        f(\theta_{k+1})\leq f(\theta_{k})+||\theta_{k+1}-\theta_{k}||^2_{-\frac{1}{\eta}\boldsymbol{H}+\frac{L}{2}\boldsymbol{I}}
+        f(\boldsymbol{\theta}_{k+1})\leq f(\boldsymbol{\theta}_{k})+||\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k}||^2_{-\frac{1}{\eta}\boldsymbol{H}+\frac{L}{2}\boldsymbol{I}}
 
     PCPO with the :math:`L2` norm projection converges to stationary points with :math:`\boldsymbol{H}^{-1}g\in-a` (i.e., the product of the inverse of :math:`\boldsymbol{H}` and gradient of :math:`f` belongs to the negative gradient of the cost advantage function).
     If :math:`\sigma_\mathrm{max}(\boldsymbol{H})\leq1`, then the objective value changes by
@@ -1105,7 +1114,7 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
     .. math::
         :label: pcpo-eq-32
 
-        f(\theta_{k+1})\leq f(\theta_{k})+(\frac{L}{2}-\frac{1}{\eta})||\theta_{k+1}-\theta_{k}||^2_2
+        f(\boldsymbol{\theta}_{k+1})\leq f(\boldsymbol{\theta}_{k})+(\frac{L}{2}-\frac{1}{\eta})||\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k}||^2_2
 
     .. dropdown:: Proof of Theorem 3 (Click here)
         :color: info
@@ -1114,14 +1123,14 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
         The proof of the theorem is based on working in a Hilbert space and the non-expansive property of the projection.
         We first prove stationary points for PCPO with the :math:`KL` divergence and :math:`L2` norm projections and then prove the change of the objective value.
 
-        When in stationary points :math:`\theta^*`, we have
+        When in stationary points :math:`\boldsymbol{\theta}^*`, we have
 
         .. _`pcpo-eq-29`:
 
         .. math::
             :label: pcpo-eq-33
 
-            \theta^{*}&=\theta^{*}-\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g
+            \boldsymbol{\theta}^{*}&=\boldsymbol{\theta}^{*}-\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g
             -\max\left(0,\frac{\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}a^{T}\boldsymbol{H}^{-1}g+b}{a^T\boldsymbol{L}^{-1}a}\right)\boldsymbol{L}^{-1}a\\
             &\Leftrightarrow \sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}\boldsymbol{H}^{-1}g  = -\max(0,\frac{\sqrt{\frac{2\delta}{g^T\boldsymbol{H}^{-1}g}}a^{T}\boldsymbol{H}^{-1}g+b}{a^T\boldsymbol{L}^{-1}a})\boldsymbol{L}^{-1}a\\
             &\Leftrightarrow  \boldsymbol{H}^{-1}g \in -\boldsymbol{L}^{-1}a.
@@ -1138,8 +1147,8 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
             :label: pcpo-eq-34
 
             \label{eq:appendix_converge_0}
-            \left(\theta_k-\theta_{k+1}\right)^T \boldsymbol{H}\left(\theta_k-\eta \boldsymbol{H}^{-1} \boldsymbol{g}-\theta_{k+1}\right) \leq 0 \\
-            \Rightarrow \boldsymbol{g}^T\left(\theta_{k+1}-\theta_k\right) \leq-\frac{1}{\eta}\left\|\theta_{k+1}-\theta_k\right\|_{\boldsymbol{H}}^2
+            \left(\boldsymbol{\theta}_k-\boldsymbol{\theta}_{k+1}\right)^T \boldsymbol{H}\left(\boldsymbol{\theta}_k-\eta \boldsymbol{H}^{-1} \boldsymbol{g}-\boldsymbol{\theta}_{k+1}\right) \leq 0 \\
+            \Rightarrow \boldsymbol{g}^T\left(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_k\right) \leq-\frac{1}{\eta}\left\|\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_k\right\|_{\boldsymbol{H}}^2
 
 
         By :eq:`pcpo-eq-34`, and :math:`L`-smooth continuous function :math:`f,` we have
@@ -1147,10 +1156,10 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
         .. math::
             :label: pcpo-eq-35
 
-            f\left(\theta_{k+1}\right) & \leq f\left(\theta_k\right)+\boldsymbol{g}^T\left(\theta_{k+1}-\theta_k\right)+\frac{L}{2}\left\|\theta_{k+1}-\theta_k\right\|_2^2 \\
-            & \leq f\left(\theta_k\right)-\frac{1}{\eta}\left\|\theta_{k+1}-\theta_k\right\|_{\boldsymbol{H}}^2+\frac{L}{2}\left\|\theta_{k+1}-\theta_k\right\|_2^2 \\
-            &=f\left(\theta_k\right)+\left(\theta_{k+1}-\theta_k\right)^T\left(-\frac{1}{\eta} \boldsymbol{H}+\frac{L}{2} \boldsymbol{I}\right)\left(\theta_{k+1}-\theta_k\right) \\
-            &=f\left(\theta_k\right)+\left\|\theta_{k+1}-\theta_k\right\|_{-\frac{1}{\eta} \boldsymbol{H}+\frac{L}{2} \boldsymbol{I}}^2
+            f\left(\boldsymbol{\theta}_{k+1}\right) & \leq f\left(\boldsymbol{\theta}_k\right)+\boldsymbol{g}^T\left(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_k\right)+\frac{L}{2}\left\|\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_k\right\|_2^2 \\
+            & \leq f\left(\boldsymbol{\theta}_k\right)-\frac{1}{\eta}\left\|\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_k\right\|_{\boldsymbol{H}}^2+\frac{L}{2}\left\|\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_k\right\|_2^2 \\
+            &=f\left(\boldsymbol{\theta}_k\right)+\left(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_k\right)^T\left(-\frac{1}{\eta} \boldsymbol{H}+\frac{L}{2} \boldsymbol{I}\right)\left(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_k\right) \\
+            &=f\left(\boldsymbol{\theta}_k\right)+\left\|\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_k\right\|_{-\frac{1}{\eta} \boldsymbol{H}+\frac{L}{2} \boldsymbol{I}}^2
 
 
         For the :math:`L2` norm projection, we have
@@ -1160,8 +1169,8 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
         .. math::
             :label: pcpo-eq-36
 
-            (\theta_{k}-\theta_{k+1})^T(\theta_{k}-\eta\boldsymbol{H}^{-1}g-\theta_{k+1})\leq0\\
-            \Rightarrow g^T\boldsymbol{H}^{-1}(\theta_{k+1}-\theta_{k})\leq -\frac{1}{\eta}||\theta_{k+1}-\theta_{k}||^2_2
+            (\boldsymbol{\theta}_{k}-\boldsymbol{\theta}_{k+1})^T(\boldsymbol{\theta}_{k}-\eta\boldsymbol{H}^{-1}g-\boldsymbol{\theta}_{k+1})\leq0\\
+            \Rightarrow g^T\boldsymbol{H}^{-1}(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k})\leq -\frac{1}{\eta}||\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k}||^2_2
 
 
         By :eq:`pcpo-eq-36`, :math:`L`-smooth continuous function :math:`f`, and if :math:`\sigma_\mathrm{max}(\boldsymbol{H})\leq1`, we have
@@ -1169,8 +1178,8 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
         .. math::
             :label: pcpo-eq-37
 
-            f(\theta_{k+1})&\leq f(\theta_{k})+g^T(\theta_{k+1}-\theta_{k})+\frac{L}{2}||\theta_{k+1}-\theta_{k}||^2_2 \nonumber\\
-            &\leq f(\theta_{k})+(\frac{L}{2}-\frac{1}{\eta})||\theta_{k+1}-\theta_{k}||^2_2.\nonumber
+            f(\boldsymbol{\theta}_{k+1})&\leq f(\boldsymbol{\theta}_{k})+g^T(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k})+\frac{L}{2}||\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k}||^2_2 \nonumber\\
+            &\leq f(\boldsymbol{\theta}_{k})+(\frac{L}{2}-\frac{1}{\eta})||\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k}||^2_2.\nonumber
 
 
         To see why we need the assumption of :math:`\sigma_\mathrm{max}(\boldsymbol{H})\leq1`, we define :math:`\boldsymbol{H}=\boldsymbol{U}\boldsymbol{\Sigma}\boldsymbol{U}^T` as the singular value decomposition of :math:`\boldsymbol{H}` with :math:`u_i` being the column vector of :math:`\boldsymbol{U}`.
@@ -1179,10 +1188,10 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
         .. math::
             :label: pcpo-eq-38
 
-            g^T\boldsymbol{H}^{-1}(\theta_{k+1}-\theta_{k})
-            &=g^T\boldsymbol{U}\boldsymbol{\Sigma}^{-1}\boldsymbol{U}^T(\theta_{k+1}-\theta_{k}) \nonumber\\
-            &=g^T(\sum_{i}\frac{1}{\sigma_i(\boldsymbol{H})}u_iu_i^T)(\theta_{k+1}-\theta_{k})\nonumber\\
-            &=\sum_{i}\frac{1}{\sigma_i(\boldsymbol{H})}g^T(\theta_{k+1}-\theta_{k}).\nonumber
+            g^T\boldsymbol{H}^{-1}(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k})
+            &=g^T\boldsymbol{U}\boldsymbol{\Sigma}^{-1}\boldsymbol{U}^T(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k}) \nonumber\\
+            &=g^T(\sum_{i}\frac{1}{\sigma_i(\boldsymbol{H})}u_iu_i^T)(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k})\nonumber\\
+            &=\sum_{i}\frac{1}{\sigma_i(\boldsymbol{H})}g^T(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k}).\nonumber
 
 
         If we want to have
@@ -1190,7 +1199,7 @@ Based on :bdg-info-line:`Lemma 3` we have the proof of following :bdg-info-line:
         .. math::
             :label: pcpo-eq-39
 
-            g^T(\theta_{k+1}-\theta_{k})\leq g^T\boldsymbol{H}^{-1}(\theta_{k+1}-\theta_{k})\leq -\frac{1}{\eta}||\theta_{k+1}-\theta_{k}||^2_2,
+            g^T(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k})\leq g^T\boldsymbol{H}^{-1}(\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k})\leq -\frac{1}{\eta}||\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_{k}||^2_2,
 
         then every singular value :math:`\sigma_i(\boldsymbol{H})` of :math:`\boldsymbol{H}` needs to be smaller than :math:`1`, and hence :math:`\sigma_\mathrm{max}(\boldsymbol{H})\leq1`, which justifies the assumption we use to prove the bound.
 

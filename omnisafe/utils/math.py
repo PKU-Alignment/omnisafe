@@ -26,9 +26,9 @@ def get_transpose(tensor: torch.Tensor) -> torch.Tensor:
     """Transpose the last two dimensions of a tensor.
 
     Examples:
-        >>> tensor = torch.rand(2, 3, 4)
+        >>> tensor = torch.rand(2, 3)
         >>> get_transpose(tensor).shape
-        torch.Size([2, 4, 3])
+        torch.Size([3, 2])
 
     Args:
         tensor(torch.Tensor): The tensor to transpose.
@@ -43,9 +43,9 @@ def get_diagonal(tensor: torch.Tensor) -> torch.Tensor:
     """Get the diagonal of the last two dimensions of a tensor.
 
     Examples:
-        >>> tensor = torch.rand(2, 3, 4)
+        >>> tensor = torch.rand(3, 3)
         >>> get_diagonal(tensor).shape
-        torch.Size([2, 3])
+        torch.Size([1, 3])
 
     Args:
         tensor (torch.Tensor): The tensor to get the diagonal from.
@@ -64,7 +64,7 @@ def discount_cumsum(vector_x: torch.Tensor, discount: float) -> torch.Tensor:
         >>> vector_x
         tensor([1, 2, 3, 4])
         >>> discount_cumsum(vector_x, 0.9)
-        tensor([4.00, 3.90, 3.00, 1.00])
+        tensor([8.15, 5.23, 2.80, 1.00])
 
     Args:
         vector_x (torch.Tensor): A sequence of shape (B, T).
@@ -111,7 +111,7 @@ def conjugate_gradients(
         eps (float, optional): A small number to avoid dividing by zero. Defaults to 1e-6.
 
     Returns:
-        The vector :math:`x` in the equation :math:`A x = b`.
+        The vector x in the equation Ax=b.
     """
     vector_x = torch.zeros_like(vector_b)
     vector_r = vector_b - fisher_product(vector_x)

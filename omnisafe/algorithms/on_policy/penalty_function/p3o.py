@@ -58,7 +58,7 @@ class P3O(PPO):
 
         .. math::
 
-            L = \mathbb{E}_{\pi} \left[
+            L = -\underset{s_t \sim \rho_{\theta}}{\mathbb{E}}  \left[
                 \frac{\pi^{'} (a|s)}{\pi (a|s)} A^{C}_{\pi_{\theta}} (s, a)
             \right]
 

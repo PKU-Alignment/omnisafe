@@ -81,7 +81,7 @@ class VCritic(Critic):
         Specifically, V function approximator maps observations to V-values.
 
         Args:
-            obs (torch.Tensor): Observations.
+            obs (torch.Tensor): Observations from environments.
 
         Returns:
             The V critic value of observation.

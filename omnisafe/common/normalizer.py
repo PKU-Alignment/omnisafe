@@ -29,7 +29,7 @@ class Normalizer(nn.Module):
     References:
         - Title: Updating Formulae and a Pairwise Algorithm for Computing Sample Variances
         - Author: Tony F. Chan, Gene H. Golub, Randall J. LeVeque
-        - URL: http://i.stanford.edu/pub/cstr/reports/cs/tr/79/773/CS-TR-79-773.pdf
+        - URL: `Normalizer <http://i.stanford.edu/pub/cstr/reports/cs/tr/79/773/CS-TR-79-773.pdf>`_
     """
 
     _mean: torch.Tensor  # running mean
@@ -79,7 +79,7 @@ class Normalizer(nn.Module):
         """Normalize the data.
 
         Args:
-            data (torch.Tensor): raw data to be normalized.
+            data (torch.Tensor): The raw data to be normalized.
 
         Returns:
             The normalized data.

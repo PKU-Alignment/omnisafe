@@ -17,7 +17,11 @@ Welcome To OmniSafe Tutorial
     :scale: 45%
 
 Welcome to `OmniSafe <https://github.com/PKU-Alignment/omnisafe>`_ in Safe RL!
-OmniSafe is an infrastructural framework designed to accelerate safe reinforcement learning (RL) research. It provides a comprehensive and reliable benchmark for safe RL algorithms, and also an out-of-box modular toolkit for researchers. Safe RL intends to develop algorithms that minimize the risk of unintended harm or unsafe behavior.
+OmniSafe is an infrastructural framework designed to accelerate safe
+reinforcement learning (RL) research. It provides a comprehensive and reliable
+benchmark for safe RL algorithms, and also an out-of-box modular toolkit for
+researchers. Safe RL intends to develop algorithms that minimize the risk of
+unintended harm or unsafe behavior.
 
 .. hint::
 
@@ -67,26 +71,28 @@ various tasks.
 Notable examples include:
 
 .. hint::
-    - Achieving high scores on Atari games using only visual input.
+    - Achieving high scores on `Atari <https://atari.com/>`_  using only visual input.
     - Completing complex control tasks in high dimensions.
     - Beating human grandmasters at Go tournaments.
 
-However, during the policy updating process in RL, agents often learn to
-**cheating or even dangerous behaviors** to improve their performance.
+However, in the process of policy updating in reinforcement learning (RL),
+agents sometimes learn to **engage in cheating or even dangerous behaviors** in
+order to improve their performance. While these agents may achieve high scores
+rapidly, their actions may not align with the desired outcome.
 
-Such agents may achieve high scores quickly but may not align with the desired
-outcome.
-
-Therefore, safe RL algorithms aim to address the challenge of training agents
-to achieve the desired training goal without violating any constraints or
-safety requirements.
+Therefore, Safe RL algorithms aim to train agents to achieve desired goals
+while adhering to constraints and safety requirements, addressing the challenge
+of maintaining agent safety during the policy updating process in RL. The
+primary objective of safe RL algorithms is to ensure that agents maintain
+safety and avoid behaviors that could lead to negative consequences or violate
+predefined constraints.
 
 .. admonition:: However
     :class: warning
 
-    Even researchers with experience in RL may find it challenging to
-    understand the algorithms of Safe RL quickly and program their
-    implementation efficiently.
+    Even experienced researchers in RL may face challenges when it comes to
+    quickly grasping the intricacies of Safe RL algorithms and efficiently
+    programming their implementations.
 
 To address this issue, OmniSafe aims to provide a comprehensive and systematic
 introduction to Safe RL algorithms, along with streamlined and robust code,
@@ -104,11 +110,11 @@ making it easier for researchers to delve into Safe RL.
 
             Puzzling Math
             ^^^^^^^^^^^^^
-            Safe RL algorithms are a class of algorithms that are based on a
-            rigorous mathematical foundation. Although these algorithms have
-            detailed theoretical derivations, they lack a unified symbolic
-            system, which can make it difficult for beginners to learn them
-            systematically and comprehensively.
+            Safe RL algorithms belong to a class of rigorously grounded
+            algorithms that are built upon a strong mathematical foundation.
+            While these algorithms possess detailed theoretical derivations,
+            their lack of a unified symbolic system can pose challenges for
+            beginners in terms of systematic and comprehensive learning.
 
     .. tab-item:: Problem II
         :sync: key2
@@ -345,8 +351,8 @@ If you find OmniSafe useful or use OmniSafe in your research, please cite it in 
 Long-Term Support and Support History
 -------------------------------------
 
-**OmniSafe** is mainly developed by the Safe RL research team directed by `Prof. Yaodong Yang <https://github.com/PKU-YYang>`_,
-our Safe RL research team members include `Borong Zhang <https://github.com/muchvo>`_ , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiaming Ji <https://github.com/zmsn-2077>`_.
+**OmniSafe** is mainly developed by the Safe RL research team directed by `Prof. Yaodong Yang <https://github.com/PKU-YYang>`_.
+Our Safe RL research team members include `Borong Zhang <https://github.com/muchvo>`_ , `Jiayi Zhou <https://github.com/Gaiejj>`_, `JTao Dai <https://github.com/calico-1226>`_,  `Weidong Huang <https://github.com/hdadong>`_, `Ruiyang Sun <https://github.com/rockmagma02>`_, `Xuehai Pan <https://github.com/XuehaiPan>`_ and `Jiaming Ji <https://github.com/zmsn-2077>`_.
 If you have any questions in the process of using OmniSafe, or if you are
 willing to contribute to
 this project, don't hesitate to ask your question on `the GitHub issue page <https://github.com/PKU-Alignment/omnisafe/issues/new/choose>`_, we will reply to you in 2-3 working days.
@@ -420,6 +426,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     common/logger
     common/simmer_agent
     common/stastics_tool
+    common/offline_data
 
 .. toctree::
     :hidden:
@@ -443,6 +450,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     model/actor_critic
     model/modelbased_model
     model/modelbased_planner
+    model/offline
 
 .. toctree::
     :hidden:

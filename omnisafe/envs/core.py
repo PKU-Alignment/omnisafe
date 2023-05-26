@@ -155,8 +155,8 @@ class CMDP(ABC):
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
 
         Returns:
-            The rendered frames, we recommend using `np.ndarray` which could construct video by
-            moviepy.
+            The render frames: we recommend to use `np.ndarray`
+                which could construct video by moviepy.
         """
 
     def save(self) -> dict[str, torch.nn.Module]:
@@ -268,8 +268,8 @@ class Wrapper(CMDP):
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
 
         Returns:
-            The rendered frames, we recommend using `np.ndarray` which could construct video by
-            moviepy.
+            The render frames: we recommend to use `np.ndarray`
+                which could construct video by moviepy.
         """
         return self._env.render()
 

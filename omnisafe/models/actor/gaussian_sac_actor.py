@@ -30,7 +30,7 @@ class GaussianSACActor(Actor):
     """Implementation of GaussianSACActor.
 
     GaussianSACActor is a Gaussian actor with a learnable standard deviation network.
-    It is used in ``SAC``, and other off-line or model-based algorithms related to ``SAC``.
+    It is used in ``SAC``, and other offline or model-based algorithms related to ``SAC``.
 
     Args:
         obs_space (OmnisafeSpace): Observation space.
@@ -97,8 +97,7 @@ class GaussianSACActor(Actor):
             deterministic (bool, optional): Whether to use deterministic policy. Defaults to False.
 
         Returns:
-            The mean of the distribution if ``deterministic`` is ``True``, otherwise the sampled
-            action.
+            The mean of the distribution if deterministic is True, otherwise the sampled action.
         """
         self._current_dist = self._distribution(obs)
         self._after_inference = True
@@ -134,13 +133,13 @@ class GaussianSACActor(Actor):
 
             .. math::
 
-                \log \pi (a|s) = \log \pi (a|s) - \sum_{i=1}^n (2 \log 2 - a_i - \log (1 + e^{-2 a_i}))
+                \log prob = \log \pi (a|s) - \sum_{i=1}^n (2 \log 2 - a_i - \log (1 + e^{-2 a_i}))
 
             where :math:`a` is the action, :math:`s` is the observation, and :math:`n` is the
             dimension of the action.
 
         Args:
-            act (torch.Tensor): Action.
+            act (torch.Tensor): Action from :meth:`predict` or :meth:`forward`.
 
         Returns:
             Log probability of the action.
