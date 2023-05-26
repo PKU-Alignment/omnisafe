@@ -12,17 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Naive Lagrange algorithms."""
+"""Primal algorithms."""
 
-from omnisafe.algorithms.on_policy.naive_lagrange.pdo import PDO
-from omnisafe.algorithms.on_policy.naive_lagrange.ppo_lag import PPOLag
-from omnisafe.algorithms.on_policy.naive_lagrange.rcpo import RCPO
-from omnisafe.algorithms.on_policy.naive_lagrange.trpo_lag import TRPOLag
-
-
-__all__ = [
-    'RCPO',
-    'PDO',
-    'PPOLag',
-    'TRPOLag',
-]
+from omnisafe.algorithms.on_policy.primal.crpo import OnCRPO

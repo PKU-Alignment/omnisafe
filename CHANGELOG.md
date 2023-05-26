@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
+- Feat(off-policy): support off-policy pid and update performance for navigation by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#245](https://github.com/OmniSafeAI/omnisafe/pull/245).
+
+- Style(model-based): fix mypy and polish api docstring by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#244](https://github.com/OmniSafeAI/omnisafe/pull/244).
+
+- Feat: improve test coverage and clear redundant code by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#238](https://github.com/OmniSafeAI/omnisafe/pull/238).
+
+- Feat: update benchmarks and provide configs for reproducing results by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#238](https://github.com/OmniSafeAI/omnisafe/pull/236).
+
 - Feat: add CODEOWNERS and refine ISSUE TEMPLATE by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#233](https://github.com/PKU-Alignment/omnisafe/pull/233).
 
 - Style: support mypy checking and update docstring style by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#221](https://github.com/PKU-Alignment/omnisafe/pull/221).
@@ -27,13 +35,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentations
 
+- Docs: polish algorithms tutorial by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#242](https://github.com/OmniSafeAI/omnisafe/pull/242).
+
+- Docs: change link to PKU-Alignment by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#239](https://github.com/OmniSafeAI/omnisafe/pull/239).
+
 - Docs: polish readme by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#231](https://github.com/PKU-Alignment/omnisafe/pull/231).
 
 - Docs: polish algorithm tutorial and update API docs by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#225](https://github.com/PKU-Alignment/omnisafe/pull/225).
 
 ### Fixes
 
-### Refactor
+- Fix: fix adapter device and exp grid by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#243](https://github.com/OmniSafeAI/omnisafe/pull/243).
 
 ## v0.4.0
 

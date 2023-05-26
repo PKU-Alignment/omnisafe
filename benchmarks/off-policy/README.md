@@ -411,15 +411,81 @@ class="math inline">±</span> 232.06</td>
 <td style="text-align: center;">877.70 <span
 class="math inline">±</span> 8.95</td>
 </tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyCarCircle1-v0</span></td>
+<td style="text-align: center;">44.64 <span class="math inline">±</span>
+2.15</td>
+<td style="text-align: center;">371.93 <span
+class="math inline">±</span> 38.75</td>
+<td style="text-align: center;">44.57 <span class="math inline">±</span>
+2.71</td>
+<td style="text-align: center;">383.37 <span
+class="math inline">±</span> 62.03</td>
+<td style="text-align: center;">43.46 <span class="math inline">±</span>
+4.39</td>
+<td style="text-align: center;">406.87 <span
+class="math inline">±</span> 78.78</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyCarGoal1-v0</span></td>
+<td style="text-align: center;">36.99 <span class="math inline">±</span>
+1.66</td>
+<td style="text-align: center;">57.13 <span class="math inline">±</span>
+38.40</td>
+<td style="text-align: center;">36.26 <span class="math inline">±</span>
+2.35</td>
+<td style="text-align: center;">69.70 <span class="math inline">±</span>
+52.18</td>
+<td style="text-align: center;">35.71 <span class="math inline">±</span>
+2.24</td>
+<td style="text-align: center;">54.73 <span class="math inline">±</span>
+46.74</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyPointCircle1-v0</span></td>
+<td style="text-align: center;">113.67 <span
+class="math inline">±</span> 1.33</td>
+<td style="text-align: center;">421.53 <span
+class="math inline">±</span> 142.66</td>
+<td style="text-align: center;">115.15 <span
+class="math inline">±</span> 2.24</td>
+<td style="text-align: center;">391.07 <span
+class="math inline">±</span> 38.34</td>
+<td style="text-align: center;">115.06 <span
+class="math inline">±</span> 2.04</td>
+<td style="text-align: center;">403.43 <span
+class="math inline">±</span> 44.78</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyPointGoal1-v0</span></td>
+<td style="text-align: center;">25.55 <span class="math inline">±</span>
+2.62</td>
+<td style="text-align: center;">41.60 <span class="math inline">±</span>
+37.17</td>
+<td style="text-align: center;">27.28 <span class="math inline">±</span>
+1.21</td>
+<td style="text-align: center;">51.43 <span class="math inline">±</span>
+33.05</td>
+<td style="text-align: center;">27.04 <span class="math inline">±</span>
+1.49</td>
+<td style="text-align: center;">67.57 <span class="math inline">±</span>
+32.13</td>
+</tr>
 </tbody>
 <thead>
 <tr class="header">
 <th style="text-align: left;"></th>
-<th colspan="2" style="text-align: center;"><strong>DDPGLag</strong></th>
+<th colspan="2"
+style="text-align: center;"><strong>DDPGLag</strong></th>
 <th colspan="2" style="text-align: center;"><strong>TD3Lag</strong></th>
 <th colspan="2" style="text-align: center;"><strong>SACLag</strong></th>
 </tr>
 </thead>
+<tbody>
 <tr class="odd">
 <td style="text-align: left;"><strong>Environment</strong></td>
 <td style="text-align: center;"><strong>Reward</strong></td>
@@ -525,8 +591,252 @@ class="math inline">±</span> 300.43</td>
 <td style="text-align: center;">30.67 <span class="math inline">±</span>
 32.30</td>
 </tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyCarCircle1-v0</span></td>
+<td style="text-align: center;">33.29 <span class="math inline">±</span>
+6.55</td>
+<td style="text-align: center;">20.67 <span class="math inline">±</span>
+28.48</td>
+<td style="text-align: center;">34.38 <span class="math inline">±</span>
+1.55</td>
+<td style="text-align: center;">2.25 <span class="math inline">±</span>
+3.90</td>
+<td style="text-align: center;">31.42 <span class="math inline">±</span>
+11.67</td>
+<td style="text-align: center;">22.33 <span class="math inline">±</span>
+26.16</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyCarGoal1-v0</span></td>
+<td style="text-align: center;">22.80 <span class="math inline">±</span>
+8.75</td>
+<td style="text-align: center;">17.33 <span class="math inline">±</span>
+21.40</td>
+<td style="text-align: center;">7.31 <span class="math inline">±</span>
+5.34</td>
+<td style="text-align: center;">33.83 <span class="math inline">±</span>
+31.03</td>
+<td style="text-align: center;">10.83 <span class="math inline">±</span>
+11.29</td>
+<td style="text-align: center;">22.67 <span class="math inline">±</span>
+28.91</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyPointCircle1-v0</span></td>
+<td style="text-align: center;">70.71 <span class="math inline">±</span>
+13.61</td>
+<td style="text-align: center;">22.00 <span class="math inline">±</span>
+32.80</td>
+<td style="text-align: center;">83.07 <span class="math inline">±</span>
+3.49</td>
+<td style="text-align: center;">7.83 <span class="math inline">±</span>
+15.79</td>
+<td style="text-align: center;">83.68 <span class="math inline">±</span>
+3.32</td>
+<td style="text-align: center;">12.83 <span class="math inline">±</span>
+19.53</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyPointGoal1-v0</span></td>
+<td style="text-align: center;">17.17 <span class="math inline">±</span>
+10.03</td>
+<td style="text-align: center;">20.33 <span class="math inline">±</span>
+31.59</td>
+<td style="text-align: center;">25.27 <span class="math inline">±</span>
+2.74</td>
+<td style="text-align: center;">28.00 <span class="math inline">±</span>
+15.75</td>
+<td style="text-align: center;">21.45 <span class="math inline">±</span>
+6.97</td>
+<td style="text-align: center;">19.17 <span class="math inline">±</span>
+9.72</td>
+</tr>
 </tbody>
-  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 2:</b> The performance of OmniSafe off-policy algorithms, encompassing both reward and cost, was assessed within the Safety-Gymnasium environments. During experimentation, it was observed that off-policy algorithms did not violate safety constraints in SafetyHumanoidVeloicty-v1. This observation suggests that the agent may not have fully learned to run within 1e6 steps; Consequently, the 3e6 results were utilized in off-policy SafetyHumanoidVeloicty-v1. With this exception in consideration, all off-policy algorithms were evaluated after 1e6 training steps.</p></caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th colspan="2"
+style="text-align: center;"><strong>DDPGPID</strong></th>
+<th colspan="2" style="text-align: center;"><strong>TD3PID</strong></th>
+<th colspan="2" style="text-align: center;"><strong>SACPID</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Environment</strong></td>
+<td style="text-align: center;"><strong>Reward</strong></td>
+<td style="text-align: center;"><strong>Cost</strong></td>
+<td style="text-align: center;"><strong>Reward</strong></td>
+<td style="text-align: center;"><strong>Cost</strong></td>
+<td style="text-align: center;"><strong>Reward</strong></td>
+<td style="text-align: center;"><strong>Cost</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyAntVelocity-v1</span></td>
+<td style="text-align: center;">2078.27 <span
+class="math inline">±</span> 704.77</td>
+<td style="text-align: center;">18.20 <span class="math inline">±</span>
+7.21</td>
+<td style="text-align: center;">2410.46 <span
+class="math inline">±</span> 217.00</td>
+<td style="text-align: center;">44.50 <span class="math inline">±</span>
+38.39</td>
+<td style="text-align: center;">1940.55 <span
+class="math inline">±</span> 482.41</td>
+<td style="text-align: center;">13.73 <span class="math inline">±</span>
+7.24</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyHalfCheetahVelocity-v1</span></td>
+<td style="text-align: center;">2737.61 <span
+class="math inline">±</span> 45.93</td>
+<td style="text-align: center;">36.10 <span class="math inline">±</span>
+11.03</td>
+<td style="text-align: center;">2695.64 <span
+class="math inline">±</span> 29.42</td>
+<td style="text-align: center;">35.93 <span class="math inline">±</span>
+14.03</td>
+<td style="text-align: center;">2689.01 <span
+class="math inline">±</span> 15.46</td>
+<td style="text-align: center;">21.43 <span class="math inline">±</span>
+5.49</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyHopperVelocity-v1</span></td>
+<td style="text-align: center;">1034.42 <span
+class="math inline">±</span> 350.59</td>
+<td style="text-align: center;">29.53 <span class="math inline">±</span>
+34.54</td>
+<td style="text-align: center;">1225.97 <span
+class="math inline">±</span> 224.71</td>
+<td style="text-align: center;">46.87 <span class="math inline">±</span>
+65.28</td>
+<td style="text-align: center;">812.80 <span
+class="math inline">±</span> 381.86</td>
+<td style="text-align: center;">92.23 <span class="math inline">±</span>
+77.64</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyHumanoidVelocity-v1</span></td>
+<td style="text-align: center;">1082.36 <span
+class="math inline">±</span> 486.48</td>
+<td style="text-align: center;">15.00 <span class="math inline">±</span>
+19.51</td>
+<td style="text-align: center;">6179.38 <span
+class="math inline">±</span> 105.70</td>
+<td style="text-align: center;">5.60 <span class="math inline">±</span>
+6.23</td>
+<td style="text-align: center;">6107.36 <span
+class="math inline">±</span> 113.24</td>
+<td style="text-align: center;">6.20 <span class="math inline">±</span>
+10.14</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="smallcaps">SafetySwimmerVelocity-v1</span></td>
+<td style="text-align: center;">23.99 <span class="math inline">±</span>
+7.76</td>
+<td style="text-align: center;">30.70 <span class="math inline">±</span>
+21.81</td>
+<td style="text-align: center;">28.62 <span class="math inline">±</span>
+8.48</td>
+<td style="text-align: center;">22.47 <span class="math inline">±</span>
+7.69</td>
+<td style="text-align: center;">7.50 <span class="math inline">±</span>
+10.42</td>
+<td style="text-align: center;">7.77 <span class="math inline">±</span>
+8.48</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyWalker2dVelocity-v1</span></td>
+<td style="text-align: center;">1378.75 <span
+class="math inline">±</span> 896.73</td>
+<td style="text-align: center;">14.77 <span class="math inline">±</span>
+13.02</td>
+<td style="text-align: center;">2769.64 <span
+class="math inline">±</span> 67.23</td>
+<td style="text-align: center;">6.53 <span class="math inline">±</span>
+8.86</td>
+<td style="text-align: center;">1251.87 <span
+class="math inline">±</span> 721.54</td>
+<td style="text-align: center;">41.23 <span class="math inline">±</span>
+73.33</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyCarCircle1-v0</span></td>
+<td style="text-align: center;">26.89 <span class="math inline">±</span>
+11.18</td>
+<td style="text-align: center;">31.83 <span class="math inline">±</span>
+33.59</td>
+<td style="text-align: center;">34.77 <span class="math inline">±</span>
+3.24</td>
+<td style="text-align: center;">47.00 <span class="math inline">±</span>
+39.53</td>
+<td style="text-align: center;">34.41 <span class="math inline">±</span>
+7.19</td>
+<td style="text-align: center;">5.00 <span class="math inline">±</span>
+11.18</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyCarGoal1-v0</span></td>
+<td style="text-align: center;">19.35 <span class="math inline">±</span>
+14.63</td>
+<td style="text-align: center;">17.50 <span class="math inline">±</span>
+21.31</td>
+<td style="text-align: center;">27.28 <span class="math inline">±</span>
+4.50</td>
+<td style="text-align: center;">9.50 <span class="math inline">±</span>
+12.15</td>
+<td style="text-align: center;">16.21 <span class="math inline">±</span>
+12.65</td>
+<td style="text-align: center;">6.67 <span class="math inline">±</span>
+14.91</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyPointCircle1-v0</span></td>
+<td style="text-align: center;">71.63 <span class="math inline">±</span>
+8.39</td>
+<td style="text-align: center;">0.00 <span class="math inline">±</span>
+0.00</td>
+<td style="text-align: center;">70.95 <span class="math inline">±</span>
+6.00</td>
+<td style="text-align: center;">0.00 <span class="math inline">±</span>
+0.00</td>
+<td style="text-align: center;">75.15 <span class="math inline">±</span>
+6.65</td>
+<td style="text-align: center;">4.50 <span class="math inline">±</span>
+4.65</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="smallcaps">SafetyPointGoal1-v0</span></td>
+<td style="text-align: center;">19.85 <span class="math inline">±</span>
+5.32</td>
+<td style="text-align: center;">22.67 <span class="math inline">±</span>
+13.73</td>
+<td style="text-align: center;">18.76 <span class="math inline">±</span>
+7.87</td>
+<td style="text-align: center;">12.17 <span class="math inline">±</span>
+9.39</td>
+<td style="text-align: center;">15.87 <span class="math inline">±</span>
+6.73</td>
+<td style="text-align: center;">27.50 <span class="math inline">±</span>
+15.25</td>
+</tr>
+</tbody>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 2:</b> The performance of OmniSafe off-policy algorithms, which underwent evaluation under the experimental setting of cost_limit=25.00. During experimentation, it was observed that off-policy algorithms did not violate safety constraints in SafetyHumanoidVeloicty-v1. This observation suggests that the agent may not have fully learned to run within 1e6 steps; consequently, the 3e6 results were utilized in off-policy SafetyHumanoidVeloicty-v1. Meanwhile, in environments with strong stochasticity such as SafetyCarCircle1-v0, SafetyCarGoal1-v0, SafetyPointCircle1-v0, and SafetyPointGoal1-v0, off-policy methods require more training steps to estimate a more accurate Q-function. Therefore, we also conducted evaluations on these four environments using a training duration of 3e6 steps. For other environments, we use the evaluation results after 1e6 training steps.</p></caption>
 </table>
 
 
