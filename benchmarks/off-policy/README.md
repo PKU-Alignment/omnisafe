@@ -287,7 +287,7 @@ class="math inline">±</span> 274.43</strong></td>
 class="math inline">±</span> 795.48</td>
 </tr>
 </tbody>
-  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 1:</b> The performance of OmniSafe, which was evaluated in relation to published baselines within the Safety-Gymnasium MuJoCo Velocity environments. Experimental outcomes, comprising mean and standard deviation, were derived from 10 assessment iterations encompassing multiple random seeds. A noteworthy distinction lies in the fact that Stable-Baselines3 employs distinct parameters tailored to each environment, while OmniSafe maintains a consistent parameter set across all environments.</p></caption>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Table 1:</b> The performance of OmniSafe, which was evaluated in relation to published baselines within the Safety-Gymnasium environments. Experimental outcomes, comprising mean and standard deviation, were derived from 10 assessment iterations encompassing multiple random seeds. A noteworthy distinction lies in the fact that Stable-Baselines3 employs distinct parameters tailored to each environment, while OmniSafe maintains a consistent parameter set across all environments.</p></caption>
 </table>
 
 ### Safe Reinforcement Learning Algorithms
@@ -933,7 +933,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       </div>
     </td>
   </tr>
-  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a> and safe reinforcement learning algorithms.</p></caption>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 1:</b> Training curves in Safety-Gymnasium environments, covering classical reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a> and safe reinforcement learning algorithms.</p></caption>
 </table>
 
 <table id="curve_off_lag">
@@ -1027,7 +1027,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       </div>
     </td>
   </tr>
-  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 2:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments, covering lagrangian reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a> and safe reinforcement learning algorithms.</p></caption>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 2:</b> Training curves in Safety-Gymnasium environments, covering lagrangian reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a> and safe reinforcement learning algorithms.</p></caption>
 </table>
 
 <table id="curve_off_pid">
@@ -1121,7 +1121,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       </div>
     </td>
   </tr>
-  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 3:</b> Training curves in Safety-Gymnasium MuJoCo Velocity environments, covering pid-lagrangian reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a> and safe reinforcement learning algorithms.</p></caption>
+  <caption><p style="font-family: 'Times New Roman', Times, serif;"><b>Figure 3:</b> Training curves in Safety-Gymnasium environments, covering pid-lagrangian reinforcement learning algorithms mentioned in <a href="#compare_off_policy">Table 1</a> and safe reinforcement learning algorithms.</p></caption>
 </table>
 
 ## Experiment Analysis
