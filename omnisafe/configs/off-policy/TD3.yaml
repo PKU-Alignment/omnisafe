@@ -111,7 +111,7 @@ defaults:
       # The learning rate of Critic network
       lr: 0.0003
 
-SafetyPointGoal1-v0:
+SafetyCarCircle1-v0:
   # model configurations
   model_cfgs:
     # Configuration of Actor network
@@ -147,7 +147,7 @@ SafetyPointCircle1-v0:
       # The learning rate of Critic network
       lr: 0.001
 
-SafetyCarCircle1-v0:
+SafetyPointGoal1-v0:
   # model configurations
   model_cfgs:
     # Configuration of Actor network
