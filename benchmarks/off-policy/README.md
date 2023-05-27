@@ -93,7 +93,7 @@ python plot.py --log-dir ALGODIR
 e.g. ALGODIR can be `examples/runs/SafetyHopperVelocity-v1`.
 Then you can compare different algorithms in `SafetyHopperVelocity-v1` environment.
 
-Logs are saved in `examples/benchmarks/runs` and can be monitored with tensorboard or wandb.
+Logs are saved in `examples/benchmarks/exp-x` and can be monitored with tensorboard or wandb.
 
 ```bash
 tensorboard --logdir examples/benchmarks/runs
