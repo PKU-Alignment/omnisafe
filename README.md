@@ -310,7 +310,7 @@ omnisafe benchmark --help  # The benchmark also can be replaced with 'eval', 'tr
 # 3. path of the config file (refer to omnisafe/examples/benchmarks for format)
 
 # Here we provide an exampe in ./tests/saved_source.
-# And you can set your benchmark_config.yaml
+# And you can set your benchmark_config.yaml by following it
 omnisafe benchmark test_benchmark 2 ./tests/saved_source/benchmark_config.yaml
 
 # Quick evaluating and rendering your trained policy, just specify:

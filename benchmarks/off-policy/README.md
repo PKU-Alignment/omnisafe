@@ -87,16 +87,15 @@ You can also plot the results by running the following command:
 
 ```bash
 cd examples
-python plot.py --log-dir ALGODIR
+python analyze_experiment_results.py
 ```
 
-e.g. ALGODIR can be `examples/runs/SafetyHopperVelocity-v1`.
-Then you can compare different algorithms in `SafetyHopperVelocity-v1` environment.
+**For a detailed usage of OmniSafe statistics tool, please refer to [this tutorial](https://omnisafe.readthedocs.io/en/latest/common/stastics_tool.html)**
 
 Logs are saved in `examples/benchmarks/exp-x` and can be monitored with tensorboard or wandb.
 
 ```bash
-tensorboard --logdir examples/benchmarks/runs
+tensorboard --logdir examples/benchmarks/exp-x
 ```
 
 After the experiment is finished, you can use the following command to generate the video of the trained agent:

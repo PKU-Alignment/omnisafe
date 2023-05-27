@@ -58,7 +58,7 @@ You can set the main function of ``examples/benchmarks/experiment_grid.py`` as:
 
 ```python
 if __name__ == '__main__':
-    eg = ExperimentGrid(exp_name='offline-Benchmarks')
+    eg = ExperimentGrid(exp_name='Offline-Benchmarks')
 
     # set up the algorithms.
     offline_policy = ['VAEBC', 'BCQ', 'BCQLag', 'CCR', 'CCRR', 'COptiDICE']
@@ -94,8 +94,10 @@ You can also plot the results by running the following command:
 
 ```bash
 cd examples
-python plot.py --log-dir ALGODIR
+python analyze_experiment_results.py
 ```
+
+**For a detailed usage of OmniSafe statistics tool, please refer to [this tutorial](https://omnisafe.readthedocs.io/en/latest/common/stastics_tool.html)**
 
 ## Example benchmark
 
