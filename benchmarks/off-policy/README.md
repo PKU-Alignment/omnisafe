@@ -32,6 +32,7 @@ pip install safety_gymnasium
 You can set the main function of `examples/benchmarks/experiment_grid.py` as:
 
 ```python
+if __name__ == '__main__':
     eg = ExperimentGrid(exp_name='Off-Policy-Benchmarks')
 
     # set up the algorithms.

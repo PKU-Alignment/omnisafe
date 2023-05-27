@@ -71,7 +71,7 @@ if __name__ == '__main__':
     saute_policy = ['PPOSaute', 'TRPOSaute']
     simmer_policy = ['PPOSimmerPID', 'TRPOSimmerPID']
     pid_policy = ['CPPOPID', 'TRPOPID']
-    early_mdp_policy = ['PPOEarlyTerminated', 'TRPOEarlyTerminated'】
+    early_mdp_policy = ['PPOEarlyTerminated', 'TRPOEarlyTerminated']
 
     eg.add(
         'algo',
