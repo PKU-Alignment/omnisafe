@@ -39,9 +39,7 @@ The key features of OmniSafe:
 
 - **Highly Modular Framework.** OmniSafe presents a highly modular framework, incorporating an extensive collection of tens of algorithms tailored for safe reinforcement learning across diverse domains. This framework is versatile due to its abstraction of various algorithm types and well-designed API, using the Adapter and Wrapper design components to bridge gaps and enable seamless interactions between different components. This design allows for easy extension and customization, making it a powerful tool for developers working with different types of algorithms.
 
-- **High-performance parallel computing acceleration.**
-
-By harnessing the capabilities of `torch.distributed`, OmniSafe accelerates the learning process of algorithms
+- **High-performance parallel computing acceleration.** By harnessing the capabilities of `torch.distributed`, OmniSafe accelerates the learning process of algorithms
 with process parallelism. This enables OmniSafe not only to support environment-level asynchronous parallelism but also incorporates agent asynchronous learning. This methodology bolsters training stability and expedites the training process via the deployment of a parallel exploration mechanism. The integration of agent asynchronous learning in OmniSafe underscores its commitment to providing a versatile and robust platform for advancing SafeRL research.
 
 - **Out-of-box toolkits.** OmniSafe offers customizable toolkits for tasks like training, benchmarking, analyzing, and rendering. [Tutorials](https://github.com/PKU-Alignment/omnisafe#getting-started) and user-friendly [APIs](https://omnisafe.readthedocs.io/en/latest/baserlapi/on_policy.html) make it easy for beginners and average users, while advanced researchers can enhance their efficiency without complex code.
@@ -235,16 +233,6 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
     <td>Imaginary Train</td>
     <td>SMBPO; MBPPOLag</td>
   </tr>
-  <tr>
-    <td rowspan="2">Control</td>
-    <td>Recovery/ Optimal Layer</td>
-    <td>SafetyLayer; RecoveryRL</td>
-  </tr>
-  <tr>
-    <td>Lyapunov</td>
-    <td>SPPO; SPPOM</td>
-  </tr>
-  <tr>
     <td rowspan="2">Offline</td>
     <td>Q-Learning Based</td>
     <td>BCQLag; C-CRR</td>
@@ -342,7 +330,12 @@ omnisafe train-config ./saved_source/train_config.yaml
 
 ### Important Hints
 
-- `train_cfgs:torch_threads` is especially important for training speed and is varying with users' machines. This value shouldn't be too small or too large.
+We have provided benchmark results for various algorithms, including on-policy, off-policy, model-based, and offline approaches, along with parameter tuning analysis. Please refer to the following: 
+
+- [On-Policy](./benchmarks/on-policy/)
+- [Off-Policy](./benchmarks/off-policy/)
+- [Model-based](./benchmarks/model-based/)
+- [Offline](./benchmarks/offline/)
 
 ### Quickstart: Colab on the Cloud
 

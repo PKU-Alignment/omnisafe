@@ -1161,7 +1161,7 @@ However, there are some differences between the three algorithms. We list the di
 ### Lagrangian
 
 The lagrangian versions of off-policy algorithms share the same set of
-lagrangian hyperparameters, which are listed below:
+lagrangian hyperparameters. We recommand:
 
 |      Hyperparameter      | Value |
 | :----------------------: | :---: |
@@ -1169,6 +1169,31 @@ lagrangian hyperparameters, which are listed below:
 | `lagrangian_multiplier_init` | 0.001  |
 | `lambda_lr` | 0.00001  |
 | `lambda_optimizer` | Adam |
+
+for Velocity tasks such as:
+
+- `SafetyAntVelocity-v1`
+- `SafetyHalfCheetahVelocity-v1`
+- `SafetyHopperVelocity-v1`
+- `SafetyHumanoidVelocity-v1`
+- `SafetyWalker2dVelocity-v1`
+- `SafetySwimmerVelocity-v1`
+
+Then:
+
+|      Hyperparameter      | Value |
+| :----------------------: | :---: |
+| `cost_limit` | 25.0  |
+| `lagrangian_multiplier_init` | 0.000  |
+| `lambda_lr` | 0.0000005  |
+| `lambda_optimizer` | Adam |
+
+for Navigation tasks such as:
+
+- `SafetyCarCircle1-v0`
+- `SafetyCarGoal1-v0`
+- `SafetyPointCircle1-v0`
+- `SafetyPointGoal1-v0`
 
 ### Learning Rate
 
