@@ -1161,7 +1161,7 @@ However, there are some differences between the three algorithms. We list the di
 ### Lagrangian
 
 The lagrangian versions of off-policy algorithms share the same set of
-lagrangian hyperparameters. We recommand:
+lagrangian hyperparameters. We recommend:
 
 |      Hyperparameter      | Value |
 | :----------------------: | :---: |
