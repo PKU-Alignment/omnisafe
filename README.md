@@ -212,23 +212,19 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
   <tr>
     <td rowspan="2">Off Policy</td>
     <td rowspan="2">Primal-Dual</td>
-    <td>SACLag; DDPGLag; TD3Lag</td>
+    <td>DDPGLag; TD3Lag; SACLag</td>
   </tr>
   <tr>
-    <td><span style="font-weight:400;font-style:normal">SACPID; TD3PID; DDPGPID</span></td>
+    <td><span style="font-weight:400;font-style:normal">DDPGPID; TD3PID; SACPID</span></td>
   </tr>
   <tr>
-    <td rowspan="3">Model-based</td>
+    <td rowspan="2">Model-based</td>
     <td>Online Plan</td>
     <td>SafeLOOP; CCEPETS; RCEPETS</td>
   </tr>
   <tr>
     <td><span style="font-weight:400;font-style:normal">Pessimistic Estimate</span></td>
     <td>CAPPETS</td>
-  </tr>
-  <tr>
-    <td>Imaginary Train</td>
-    <td>SMBPO; MBPPOLag</td>
   </tr>
     <td rowspan="2">Offline</td>
     <td>Q-Learning Based</td>
