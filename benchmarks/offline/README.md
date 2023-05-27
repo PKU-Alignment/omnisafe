@@ -97,7 +97,7 @@ cd examples
 python analyze_experiment_results.py
 ```
 
-**For a detailed usage of OmniSafe statistics tool, please refer to [this tutorial](https://omnisafe.readthedocs.io/en/latest/common/stastics_tool.html)**
+**For a detailed usage of OmniSafe statistics tool, please refer to [this tutorial](https://omnisafe.readthedocs.io/en/latest/common/stastics_tool.html).**
 
 ## Example benchmark
 

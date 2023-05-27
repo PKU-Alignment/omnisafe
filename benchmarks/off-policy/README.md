@@ -90,7 +90,7 @@ cd examples
 python analyze_experiment_results.py
 ```
 
-**For a detailed usage of OmniSafe statistics tool, please refer to [this tutorial](https://omnisafe.readthedocs.io/en/latest/common/stastics_tool.html)**
+**For a detailed usage of OmniSafe statistics tool, please refer to [this tutorial](https://omnisafe.readthedocs.io/en/latest/common/stastics_tool.html).**
 
 Logs are saved in `examples/benchmarks/exp-x` and can be monitored with tensorboard or wandb.
 
