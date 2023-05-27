@@ -39,9 +39,7 @@ The key features of OmniSafe:
 
 - **Highly Modular Framework.** OmniSafe presents a highly modular framework, incorporating an extensive collection of tens of algorithms tailored for safe reinforcement learning across diverse domains. This framework is versatile due to its abstraction of various algorithm types and well-designed API, using the Adapter and Wrapper design components to bridge gaps and enable seamless interactions between different components. This design allows for easy extension and customization, making it a powerful tool for developers working with different types of algorithms.
 
-- **High-performance parallel computing acceleration.**
-
-By harnessing the capabilities of `torch.distributed`, OmniSafe accelerates the learning process of algorithms
+- **High-performance parallel computing acceleration.** By harnessing the capabilities of `torch.distributed`, OmniSafe accelerates the learning process of algorithms
 with process parallelism. This enables OmniSafe not only to support environment-level asynchronous parallelism but also incorporates agent asynchronous learning. This methodology bolsters training stability and expedites the training process via the deployment of a parallel exploration mechanism. The integration of agent asynchronous learning in OmniSafe underscores its commitment to providing a versatile and robust platform for advancing SafeRL research.
 
 - **Out-of-box toolkits.** OmniSafe offers customizable toolkits for tasks like training, benchmarking, analyzing, and rendering. [Tutorials](https://github.com/PKU-Alignment/omnisafe#getting-started) and user-friendly [APIs](https://omnisafe.readthedocs.io/en/latest/baserlapi/on_policy.html) make it easy for beginners and average users, while advanced researchers can enhance their efficiency without complex code.
@@ -115,9 +113,7 @@ pip install omnisafe
 - **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration (Simmer)](https://arxiv.org/abs/2206.02675)
 - **[NeurIPS 2022]** [Model-based Safe Deep Reinforcement Learning via a Constrained Proximal Policy Optimization Algorithm](https://arxiv.org/abs/2210.07573)
 - **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
-- **[ICML 2022]** [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
 - **[IJCAI 2022]** [Penalized Proximal Policy Optimization for Safe Reinforcement Learning](https://arxiv.org/abs/2205.11814)
-- **[ICLR 2022]** [Constrained Policy Optimization via Bayesian World Models (LA-MBDA)](https://arxiv.org/abs/2201.09802)
 - **[AAAI 2022]** [Conservative and Adaptive Penalty for Model-Based Safe Reinforcement Learning (CAP)](https://arxiv.org/abs/2112.07701)
 
 </details>
@@ -140,12 +136,12 @@ pip install omnisafe
 
 <summary><b><big>Off Policy SafeRL</big></b></summary>
 
-- [x] The Lagrange version of TD3 (TD3-Lag)
-- [x] The Lagrange version of DDPG (DDPG-Lag)
-- [x] The Lagrange version of SAC (SAC-Lag)
-- [x] **[ICML 2019]** [Lyapunov-based Safe Policy Optimization for Continuous Control (SDDPG)](https://arxiv.org/abs/1901.10031)
-- [x] **[ICML 2019]** [Lyapunov-based Safe Policy Optimization for Continuous Control (SDDPG-modular)](https://arxiv.org/abs/1901.10031)
-- [ ] **[ICML 2022]** [Constrained Variational Policy Optimization for Safe Reinforcement Learning (CVPO)](https://arxiv.org/abs/2201.11927)
+- **[Preprint 2019]** [The Lagrangian version of DDPG (DDPGLag)](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]** [The Lagrangian version of TD3 (TD3Lag)](https://cdn.openai.com/safexp-short.pdf)
+- **[Preprint 2019]** [The Lagrangian version of SAC (SACLag)](https://cdn.openai.com/safexp-short.pdf)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (DDPGPID)](https://arxiv.org/abs/2007.03964)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (TD3PID)](https://arxiv.org/abs/2007.03964)
+- **[ICML 2020]** [Responsive Safety in Reinforcement Learning by PID Lagrangian Methods (SACPID)](https://arxiv.org/abs/2007.03964)
 
 <summary><b><big>Model-Based SafeRL</big></b></summary>
 
@@ -162,12 +158,11 @@ pip install omnisafe
 - [x] [The Lagrange version of BCQ (BCQ-Lag)](https://arxiv.org/abs/1812.02900)
 - [x] [The Constrained version of CRR (C-CRR)](https://proceedings.neurips.cc/paper/2020/hash/588cb956d6bbe67078f29f8de420a13d-Abstract.html)
 - [ ] **[AAAI 2022]** [Constraints Penalized Q-learning for Safe Offline Reinforcement Learning CPQ](https://arxiv.org/abs/2107.09003)
-- [ ] **[ICLR 2022 (Spotlight)]** [COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation](https://arxiv.org/abs/2204.08957?context=cs.AI)
+- [x] **[ICLR 2022 (Spotlight)]** [COptiDICE: Offline Constrained Reinforcement Learning via Stationary Distribution Correction Estimation](https://arxiv.org/abs/2204.08957?context=cs.AI)
 - [ ] **[ICML 2022]** [Constrained Offline Policy Optimization (COPO)](https://proceedings.mlr.press/v162/polosky22a.html)
 
 <summary><b><big>Others</big></b></summary>
 
-- [x] [Safe Exploration in Continuous Action Spaces (Safety Layer)](https://arxiv.org/abs/1801.08757)
 - [ ] **[RA-L 2021]** [Recovery RL: Safe Reinforcement Learning with Learned Recovery Zones](https://arxiv.org/abs/2010.15920)
 - [x] **[ICML 2022]** [Sauté RL: Almost Surely Safe Reinforcement Learning Using State Augmentation (SauteRL)](https://arxiv.org/abs/2202.06558)
 - [x] **[NeurIPS 2022]** [Effects of Safety State Augmentation on Safe Exploration](https://arxiv.org/abs/2206.02675)
@@ -180,7 +175,7 @@ pip install omnisafe
 
 ```bash
 cd examples
-python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 1024000 --device cpu --vector-env-nums 1 --torch-threads 1
+python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 --total-steps 10000000 --device cpu --vector-env-nums 1 --torch-threads 1
 ```
 
 #### Algorithms Registry
@@ -217,34 +212,20 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
   <tr>
     <td rowspan="2">Off Policy</td>
     <td rowspan="2">Primal-Dual</td>
-    <td>SACLag; DDPGLag; TD3Lag</td>
+    <td>DDPGLag; TD3Lag; SACLag</td>
   </tr>
   <tr>
-    <td><span style="font-weight:400;font-style:normal">SACPID; TD3PID; DDPGPID</span></td>
+    <td><span style="font-weight:400;font-style:normal">DDPGPID; TD3PID; SACPID</span></td>
   </tr>
   <tr>
-    <td rowspan="3">Model-based</td>
+    <td rowspan="2">Model-based</td>
     <td>Online Plan</td>
     <td>SafeLOOP; CCEPETS; RCEPETS</td>
   </tr>
   <tr>
     <td><span style="font-weight:400;font-style:normal">Pessimistic Estimate</span></td>
-    <td>LA-MBDA; CAPPETS</td>
+    <td>CAPPETS</td>
   </tr>
-  <tr>
-    <td>Imaginary Train</td>
-    <td>SMBPO; MBPPOLag</td>
-  </tr>
-  <tr>
-    <td rowspan="2">Control</td>
-    <td>Recovery/ Optimal Layer</td>
-    <td>SafetyLayer; RecoveryRL</td>
-  </tr>
-  <tr>
-    <td>Lyapunov</td>
-    <td>SPPO; SPPOM</td>
-  </tr>
-  <tr>
     <td rowspan="2">Offline</td>
     <td>Q-Learning Based</td>
     <td>BCQLag; C-CRR</td>
@@ -322,18 +303,21 @@ omnisafe benchmark --help  # The benchmark also can be replaced with 'eval', 'tr
 # 1. exp_name
 # 2. num_pool(how much processes are concurrent)
 # 3. path of the config file (refer to omnisafe/examples/benchmarks for format)
-omnisafe benchmark test_benchmark 2 ./saved_source/benchmark_config.yaml
+
+# Here we provide an exampe in ./tests/saved_source.
+# And you can set your benchmark_config.yaml by following it
+omnisafe benchmark test_benchmark 2 ./tests/saved_source/benchmark_config.yaml
 
 # Quick evaluating and rendering your trained policy, just specify:
 # 1. path of algorithm which you trained
-omnisafe eval ./saved_source/PPO-{SafetyPointGoal1-v0} --num-episode 1
+omnisafe eval ./tests/saved_source/PPO-{SafetyPointGoal1-v0} --num-episode 1
 
 # Quick training some algorithms to validate your thoughts
 # Note: use `key1:key2`, your can select key of hyperparameters which are recursively contained, and use `--custom-cfgs`, you can add custom cfgs via CLI
 omnisafe train --algo PPO --total-steps 2048 --vector-env-nums 1 --custom-cfgs algo_cfgs:steps_per_epoch --custom-cfgs 1024
 
 # Quick training some algorithms via a saved config file, the format is as same as default format
-omnisafe train-config ./saved_source/train_config.yaml
+omnisafe train-config ./tests/saved_source/train_config.yaml
 ```
 
 --------------------------------------------------------------------------------
@@ -342,7 +326,12 @@ omnisafe train-config ./saved_source/train_config.yaml
 
 ### Important Hints
 
-- `train_cfgs:torch_threads` is especially important for training speed and is varying with users' machines. This value shouldn't be too small or too large.
+We have provided benchmark results for various algorithms, including on-policy, off-policy, model-based, and offline approaches, along with parameter tuning analysis. Please refer to the following:
+
+- [On-Policy](./benchmarks/on-policy/)
+- [Off-Policy](./benchmarks/off-policy/)
+- [Model-based](./benchmarks/model-based/)
+- [Offline](./benchmarks/offline/)
 
 ### Quickstart: Colab on the Cloud
 

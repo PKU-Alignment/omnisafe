@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Feat: add Dockerfile and codecov.yml by [@XuehaiPan](https://github.com/XuehaiPan) in PR [#217](https://github.com/PKU-Alignment/omnisafe/pull/217).
 
-- Chore: update benchmark performance for first-order algorithms [@Borong Zhang](https://github.com/muchvo) in PR [#215](https://github.com/PKU-Alignment/omnisafe/pull/215).
+- Chore: update benchmark performance for first-order algorithms by [@Borong Zhang](https://github.com/muchvo) in PR [#215](https://github.com/PKU-Alignment/omnisafe/pull/215).
 
 - Chore: clean some trivial code by [@Borong Zhang](https://github.com/muchvo) in PR [#214](https://github.com/PKU-Alignment/omnisafe/pull/214).
 
@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Feat: add model-based algorithms by [@Weidong Huang](https://github.com/hdadong) in PR [#212](https://github.com/PKU-Alignment/omnisafe/pull/212).
 
-- Feat(saute, simmer): support saute rl and clean the code [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#209](https://github.com/PKU-Alignment/omnisafe/pull/209).
+- Feat(saute, simmer): support saute rl and clean the code by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#209](https://github.com/PKU-Alignment/omnisafe/pull/209).
 
 - Feat(off-policy): support off-policy lag by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#204](https://github.com/PKU-Alignment/omnisafe/pull/204).
 

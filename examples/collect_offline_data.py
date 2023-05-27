@@ -18,6 +18,10 @@ from omnisafe.common.offline.data_collector import OfflineDataCollector
 
 
 # please change agent path and env name
+# also, please make sure you have run:
+# python train_policy.py --algo PPO --env ENVID
+# where ENVID is the environment from which you want to collect data.
+
 ENV_NAME = 'SafetyPointCircle1-v0'
 SIZE = 2_000_000
 AGENTS = [

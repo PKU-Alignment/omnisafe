@@ -115,7 +115,7 @@ defaults:
       # The learning rate of Critic network
       lr: 0.0003
 
-SafetyPointGoal1-v0:
+SafetyCarCircle1-v0:
   # algorithm configurations
   algo_cfgs:
     # The value of alpha
@@ -163,7 +163,7 @@ SafetyPointCircle1-v0:
       # The learning rate of Critic network
       lr: 0.001
 
-SafetyCarCircle1-v0:
+SafetyPointGoal1-v0:
   # algorithm configurations
   algo_cfgs:
     # The value of alpha

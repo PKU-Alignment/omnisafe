@@ -32,6 +32,7 @@ pip install safety_gymnasium
 You can set the main function of `examples/benchmarks/experiment_grid.py` as:
 
 ```python
+if __name__ == '__main__':
     eg = ExperimentGrid(exp_name='Off-Policy-Benchmarks')
 
     # set up the algorithms.
@@ -86,16 +87,15 @@ You can also plot the results by running the following command:
 
 ```bash
 cd examples
-python plot.py --log-dir ALGODIR
+python analyze_experiment_results.py
 ```
 
-e.g. ALGODIR can be `examples/runs/SafetyHopperVelocity-v1`.
-Then you can compare different algorithms in `SafetyHopperVelocity-v1` environment.
+**For a detailed usage of OmniSafe statistics tool, please refer to [this tutorial](https://omnisafe.readthedocs.io/en/latest/common/stastics_tool.html).**
 
-Logs are saved in `examples/benchmarks/runs` and can be monitored with tensorboard or wandb.
+Logs are saved in `examples/benchmarks/exp-x` and can be monitored with tensorboard or wandb.
 
 ```bash
-tensorboard --logdir examples/benchmarks/runs
+tensorboard --logdir examples/benchmarks/exp-x
 ```
 
 After the experiment is finished, you can use the following command to generate the video of the trained agent:
@@ -902,7 +902,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_carcircle1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyCarCircle1-v0
       </div>
     </td>
   </tr>
@@ -911,7 +911,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_cargoal1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyCarGoal1-v0
       </div>
     </td>
   </tr>
@@ -920,7 +920,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_pointcircle1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyPointCircle1-v0
       </div>
     </td>
   </tr>
@@ -929,7 +929,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/base_pointgoal1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyPointGoal1-v0
       </div>
     </td>
   </tr>
@@ -996,7 +996,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_carcircle1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyCarCircle1-v0
       </div>
     </td>
   </tr>
@@ -1005,7 +1005,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_cargoal1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyCarGoal1-v0
       </div>
     </td>
   </tr>
@@ -1014,7 +1014,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_pointcircle1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyPointCircle1-v0
       </div>
     </td>
   </tr>
@@ -1023,7 +1023,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/lag_pointgoal1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyPointGoal1-v0
       </div>
     </td>
   </tr>
@@ -1090,7 +1090,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_carcircle1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyCarCircle1-v0
       </div>
     </td>
   </tr>
@@ -1099,7 +1099,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_cargoal1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyCarGoal1-v0
       </div>
     </td>
   </tr>
@@ -1108,7 +1108,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_pointcircle1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyPointCircle1-v0
       </div>
     </td>
   </tr>
@@ -1117,7 +1117,7 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
       <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/off-policy/benchmarks/pid_pointgoal1_3e6.png">
       <br>
       <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
-        SafetyWalker2dVelocity-v1
+        SafetyPointGoal1-v0
       </div>
     </td>
   </tr>
@@ -1161,7 +1161,7 @@ However, there are some differences between the three algorithms. We list the di
 ### Lagrangian
 
 The lagrangian versions of off-policy algorithms share the same set of
-lagrangian hyperparameters, which are listed below:
+lagrangian hyperparameters. We recommend:
 
 |      Hyperparameter      | Value |
 | :----------------------: | :---: |
@@ -1169,6 +1169,31 @@ lagrangian hyperparameters, which are listed below:
 | `lagrangian_multiplier_init` | 0.001  |
 | `lambda_lr` | 0.00001  |
 | `lambda_optimizer` | Adam |
+
+for Velocity tasks such as:
+
+- `SafetyAntVelocity-v1`
+- `SafetyHalfCheetahVelocity-v1`
+- `SafetyHopperVelocity-v1`
+- `SafetyHumanoidVelocity-v1`
+- `SafetyWalker2dVelocity-v1`
+- `SafetySwimmerVelocity-v1`
+
+Then:
+
+|      Hyperparameter      | Value |
+| :----------------------: | :---: |
+| `cost_limit` | 25.0  |
+| `lagrangian_multiplier_init` | 0.000  |
+| `lambda_lr` | 0.0000005  |
+| `lambda_optimizer` | Adam |
+
+for Navigation tasks such as:
+
+- `SafetyCarCircle1-v0`
+- `SafetyCarGoal1-v0`
+- `SafetyPointCircle1-v0`
+- `SafetyPointGoal1-v0`
 
 ### Learning Rate
 
