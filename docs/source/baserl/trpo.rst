@@ -464,7 +464,7 @@ where
             ^^^
             Having computed the search direction :math:`s\approx H^{-1}g`,
             TRPO next needs to compute the appropriate step to ensure improvement of the surrogate objective and satisfaction of the KL divergence constraint.
-            First, TRPO computes the maximal step length :math:`\beta` such that :math:`\beta+{\boldsymbol{\theta}} s` will satisfy the KL divergence constraint.
+            First, TRPO computes the maximal step length :math:`\beta` such that :math:`{\boldsymbol{\theta}} + \beta s` will satisfy the KL divergence constraint.
             To do this, let :math:`\delta=\bar{D}_{\mathrm{KL}} \approx \frac{1}{2}(\beta s)^T H(\beta s)=\frac{1}{2} \beta^2 s^T A s`.
             Finally, we obtain :math:`\beta=\sqrt{2 \delta / s^T H s}`.
 
