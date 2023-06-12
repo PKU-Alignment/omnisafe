@@ -72,7 +72,7 @@ html_logo = 'image/logo.png'
 html_title = ' '
 html_copy_source = False
 html_context = {
-    'conf_py_path': '/docs/',
+    'conf_py_path': '/docs/source/',
     'display_github': False,
     'github_user': 'PKU-Alignment',
     'github_repo': 'OmniSafe',
