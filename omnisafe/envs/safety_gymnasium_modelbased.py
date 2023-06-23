@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
 import gymnasium
 import numpy as np
@@ -38,7 +38,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
 
-    _support_envs = [
+    _support_envs: ClassVar[list[str]] = [
         'SafetyPointGoal0-v0-modelbased',
         'SafetyPointGoal1-v0-modelbased',
         'SafetyCarGoal0-v0-modelbased',
@@ -221,10 +221,9 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
         obs_vec = list(base_state_vec) + list(hazards_lidar_vec) + list(goal_lidar_vec)
 
-        # obs_vec = self.make_observation(obs, lidar_vec)
         obs_vec = np.array(obs_vec)
-        obs_vec = torch.as_tensor(obs_vec, dtype=torch.float32, device=self._device).unsqueeze(0)
-        return obs_vec
+
+        return torch.as_tensor(obs_vec, dtype=torch.float32, device=self._device).unsqueeze(0)
 
     def _ego_xy(
         self,

@@ -16,10 +16,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 from torch.distributions import Normal, TanhTransform, TransformedDistribution, constraints
+from torch.distributions.constraints import _GreaterThan, _Real
 
 
 def get_transpose(tensor: torch.Tensor) -> torch.Tensor:
@@ -171,7 +172,10 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
         scale (float or Tensor): The standard deviation of the underlying normal distribution.
     """
 
-    arg_constraints = {'loc': constraints.real, 'scale': constraints.positive}
+    arg_constraints: ClassVar[dict[str, _Real | _GreaterThan]] = {
+        'loc': constraints.real,
+        'scale': constraints.positive,
+    }
 
     def __init__(self, loc: torch.Tensor, scale: torch.Tensor) -> None:
         """Initialize an instance of :class:`TanhNormal`."""

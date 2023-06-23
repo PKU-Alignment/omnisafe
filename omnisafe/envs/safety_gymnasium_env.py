@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
 import numpy as np
 import safety_gymnasium
@@ -51,7 +51,7 @@ class SafetyGymnasiumEnv(CMDP):
 
     need_auto_reset_wrapper: bool = False
     need_time_limit_wrapper: bool = False
-    _support_envs: list[str] = [
+    _support_envs: ClassVar[list[str]] = [
         'SafetyPointGoal0-v0',
         'SafetyPointGoal1-v0',
         'SafetyPointGoal2-v0',

@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 import random
-from typing import Any
+from typing import Any, ClassVar
 
 import numpy as np
 import torch
@@ -31,8 +31,8 @@ from omnisafe.typing import OmnisafeSpace
 class SimpleEnv(CMDP):
     """Simplest environment for testing."""
 
-    _support_envs = ['Simple-v0']
-    metadata = {'render_fps': 30}
+    _support_envs: ClassVar[list[str]] = ['Simple-v0']
+    metadata: ClassVar[dict[str, int]] = {'render_fps': 30}
     need_auto_reset_wrapper = True
     need_time_limit_wrapper = True
     _num_envs = 1
