@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import Any
 
 import gymnasium
 import numpy as np
@@ -35,14 +35,6 @@ class MujocoEnv(CMDP):
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
 
-    _support_envs: ClassVar[list[str]] = [
-        'Ant-v4',
-        'Hopper-v4',
-        'Walker2d-v4',
-        'Humanoid-v4',
-        'Swimmer-v4',
-        'HalfCheetah-v4',
-    ]
     need_auto_reset_wrapper = False
 
     need_time_limit_wrapper = False
@@ -71,6 +63,14 @@ class MujocoEnv(CMDP):
             height (int, optional): The height of the rendered image. Defaults to 256.
         """
         super().__init__(env_id)
+        self._support_envs = [
+            'Ant-v4',
+            'Hopper-v4',
+            'Walker2d-v4',
+            'Humanoid-v4',
+            'Swimmer-v4',
+            'HalfCheetah-v4',
+        ]
         self._env_id = env_id
         if num_envs == 1:
             # set healthy_reward=0.0 for removing the safety constraint in reward
