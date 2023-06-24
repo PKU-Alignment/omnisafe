@@ -52,7 +52,7 @@ class SafetyGymnasiumEnv(CMDP):
     need_auto_reset_wrapper: bool = False
     need_time_limit_wrapper: bool = False
 
-    _support_envs: ClassVar = [
+    _support_envs: ClassVar[list[str]] = [
         'SafetyPointGoal0-v0',
         'SafetyPointGoal1-v0',
         'SafetyPointGoal2-v0',
