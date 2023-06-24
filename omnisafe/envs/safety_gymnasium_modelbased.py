@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
 import gymnasium
 import numpy as np
@@ -40,6 +40,15 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
     need_auto_reset_wrapper = False
     need_time_limit_wrapper = False
+
+    _support_envs: ClassVar[list[str]] = [
+        'SafetyPointGoal0-v0-modelbased',
+        'SafetyPointGoal1-v0-modelbased',
+        'SafetyCarGoal0-v0-modelbased',
+        'SafetyCarGoal1-v0-modelbased',
+        'SafetyAntGoal0-v0-modelbased',
+        'SafetyAntGoal1-v0-modelbased',
+    ]
 
     def __init__(
         self,
@@ -66,14 +75,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             height (int, optional): The height of the rendered image. Defaults to 256.
         """
         super().__init__(env_id)
-        self._support_envs = [
-            'SafetyPointGoal0-v0-modelbased',
-            'SafetyPointGoal1-v0-modelbased',
-            'SafetyCarGoal0-v0-modelbased',
-            'SafetyCarGoal1-v0-modelbased',
-            'SafetyAntGoal0-v0-modelbased',
-            'SafetyAntGoal1-v0-modelbased',
-        ]
+
         self._use_lidar = use_lidar
         if num_envs == 1:
             self._env = safety_gymnasium.make(
