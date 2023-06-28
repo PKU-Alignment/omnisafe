@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
 import numpy as np
 import safety_gymnasium
@@ -51,7 +51,8 @@ class SafetyGymnasiumEnv(CMDP):
 
     need_auto_reset_wrapper: bool = False
     need_time_limit_wrapper: bool = False
-    _support_envs: list[str] = [
+
+    _support_envs: ClassVar[list[str]] = [
         'SafetyPointGoal0-v0',
         'SafetyPointGoal1-v0',
         'SafetyPointGoal2-v0',
@@ -109,6 +110,7 @@ class SafetyGymnasiumEnv(CMDP):
         super().__init__(env_id)
         self._num_envs = num_envs
         self._device = torch.device(device)
+
         if num_envs > 1:
             self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
             assert isinstance(self._env.single_action_space, Box), 'Only support Box action space.'

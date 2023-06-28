@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
 import gymnasium
 import numpy as np
@@ -38,7 +38,10 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
 
-    _support_envs = [
+    need_auto_reset_wrapper = False
+    need_time_limit_wrapper = False
+
+    _support_envs: ClassVar[list[str]] = [
         'SafetyPointGoal0-v0-modelbased',
         'SafetyPointGoal1-v0-modelbased',
         'SafetyCarGoal0-v0-modelbased',
@@ -46,8 +49,6 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         'SafetyAntGoal0-v0-modelbased',
         'SafetyAntGoal1-v0-modelbased',
     ]
-    need_auto_reset_wrapper = False
-    need_time_limit_wrapper = False
 
     def __init__(
         self,
@@ -74,6 +75,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             height (int, optional): The height of the rendered image. Defaults to 256.
         """
         super().__init__(env_id)
+
         self._use_lidar = use_lidar
         if num_envs == 1:
             self._env = safety_gymnasium.make(
@@ -221,10 +223,9 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
         obs_vec = list(base_state_vec) + list(hazards_lidar_vec) + list(goal_lidar_vec)
 
-        # obs_vec = self.make_observation(obs, lidar_vec)
         obs_vec = np.array(obs_vec)
-        obs_vec = torch.as_tensor(obs_vec, dtype=torch.float32, device=self._device).unsqueeze(0)
-        return obs_vec
+
+        return torch.as_tensor(obs_vec, dtype=torch.float32, device=self._device).unsqueeze(0)
 
     def _ego_xy(
         self,

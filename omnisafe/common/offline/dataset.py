@@ -19,6 +19,7 @@ from __future__ import annotations
 import hashlib
 import os
 from dataclasses import dataclass
+from typing import ClassVar
 
 import gdown
 import numpy as np
@@ -40,7 +41,7 @@ class OfflineMeta:
 class OfflineDataset(Dataset):
     """A dataset for offline algorithms."""
 
-    _name_to_metadata: dict[str, OfflineMeta] = {
+    _name_to_metadata: ClassVar[dict[str, OfflineMeta]] = {
         'SafetyPointCircle1-v0-mixed-beta0.5': OfflineMeta(
             url='https://drive.google.com/file/d/17q2-T1o01GNM3rBmLP52kRTojYS1ePTX/view?usp=sharing',
             sha256sum='354a762a4fba372c497a0c84e3405863c192406ff754b18eea51a036f47cd5ba',
