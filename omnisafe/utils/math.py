@@ -171,12 +171,14 @@ class TanhNormal(TransformedDistribution):  # pylint: disable=abstract-method
         scale (float or Tensor): The standard deviation of the underlying normal distribution.
     """
 
-    arg_constraints = {'loc': constraints.real, 'scale': constraints.positive}
-
     def __init__(self, loc: torch.Tensor, scale: torch.Tensor) -> None:
         """Initialize an instance of :class:`TanhNormal`."""
         base_dist = Normal(loc, scale)
         super().__init__(base_dist, SafeTanhTransformer())
+        self.arg_constraints = {
+            'loc': constraints.real,
+            'scale': constraints.positive,
+        }
 
     def expand(self, batch_shape: tuple[int, ...], instance: Any | None = None) -> TanhNormal:
         """Expand the distribution."""

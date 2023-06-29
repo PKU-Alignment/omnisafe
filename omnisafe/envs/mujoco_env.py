@@ -13,9 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """Environments in the Safety Gymnasium."""
+
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
 import gymnasium
 import numpy as np
@@ -34,7 +35,11 @@ class MujocoEnv(CMDP):
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
 
-    _support_envs = [
+    need_auto_reset_wrapper = False
+
+    need_time_limit_wrapper = False
+    need_action_repeat_wrapper = True
+    _support_envs: ClassVar[list[str]] = [
         'Ant-v4',
         'Hopper-v4',
         'Walker2d-v4',
@@ -42,10 +47,6 @@ class MujocoEnv(CMDP):
         'Swimmer-v4',
         'HalfCheetah-v4',
     ]
-    need_auto_reset_wrapper = False
-
-    need_time_limit_wrapper = False
-    need_action_repeat_wrapper = True
 
     def __init__(
         self,

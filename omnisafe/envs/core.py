@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import inspect
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, ClassVar
 
 import torch
 
@@ -45,7 +45,6 @@ class CMDP(ABC):
         need_auto_reset_wrapper (bool): Whether the environment need auto reset wrapper.
     """
 
-    _support_envs: list[str]
     _action_space: OmnisafeSpace
     _observation_space: OmnisafeSpace
     _metadata: dict[str, Any]
@@ -54,6 +53,8 @@ class CMDP(ABC):
     _time_limit: int | None = None
     need_time_limit_wrapper: bool
     need_auto_reset_wrapper: bool
+
+    _support_envs: ClassVar[list[str]]
 
     @classmethod
     def support_envs(cls) -> list[str]:
