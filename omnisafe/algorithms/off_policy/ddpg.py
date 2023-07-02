@@ -29,7 +29,6 @@ from omnisafe.algorithms.base_algo import BaseAlgo
 from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
-from omnisafe.utils import distributed
 
 
 @registry.register
@@ -70,9 +69,9 @@ class DDPG(BaseAlgo):
             self._seed,
             self._cfgs,
         )
-        assert (self._cfgs.algo_cfgs.steps_per_epoch) % (
-            distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
-        ) == 0, 'The number of steps per epoch is not divisible by the number of environments.'
+        assert (
+            self._cfgs.algo_cfgs.steps_per_epoch % self._cfgs.train_cfgs.vector_env_nums == 0
+        ), 'The number of steps per epoch is not divisible by the number of environments.'
 
         assert (
             int(self._cfgs.train_cfgs.total_steps) % self._cfgs.algo_cfgs.steps_per_epoch == 0
@@ -81,9 +80,10 @@ class DDPG(BaseAlgo):
             self._cfgs.train_cfgs.total_steps // self._cfgs.algo_cfgs.steps_per_epoch,
         )
         self._epoch: int = 0
-        self._steps_per_epoch: int = self._cfgs.algo_cfgs.steps_per_epoch // (
-            distributed.world_size() * self._cfgs.train_cfgs.vector_env_nums
+        self._steps_per_epoch: int = (
+            self._cfgs.algo_cfgs.steps_per_epoch // self._cfgs.train_cfgs.vector_env_nums
         )
+
         self._update_cycle: int = self._cfgs.algo_cfgs.update_cycle
         assert (
             self._steps_per_epoch % self._update_cycle == 0
@@ -420,7 +420,6 @@ class DDPG(BaseAlgo):
                 self._actor_critic.reward_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
-        distributed.avg_grads(self._actor_critic.reward_critic)
         self._actor_critic.reward_critic_optimizer.step()
 
     def _update_cost_critic(
@@ -463,7 +462,6 @@ class DDPG(BaseAlgo):
                 self._actor_critic.cost_critic.parameters(),
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
-        distributed.avg_grads(self._actor_critic.cost_critic)
         self._actor_critic.cost_critic_optimizer.step()
 
         self._logger.store(
