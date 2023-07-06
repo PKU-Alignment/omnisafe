@@ -75,6 +75,6 @@ class OnCRPO(TRPO):
             {
                 'Misc/RewUpdate': self._rew_update,
                 'Misc/CostUpdate': self._cost_update,
-            }
+            },
         )
         return -adv_c
