@@ -17,12 +17,12 @@
 import torch
 
 from omnisafe.algorithms import registry
-from omnisafe.algorithms.on_policy.base.ppo import PPO
+from omnisafe.algorithms.on_policy.base.trpo import TRPO
 from omnisafe.utils.config import Config
 
 
 @registry.register
-class OnCRPO(PPO):
+class OnCRPO(TRPO):
     """The on-policy CRPO algorithm.
 
     References:
@@ -71,4 +71,10 @@ class OnCRPO(PPO):
             self._rew_update += 1
             return adv_r
         self._cost_update += 1
+        self._logger.store(
+            {
+                'Misc/RewUpdate': self._rew_update,
+                'Misc/CostUpdate': self._cost_update,
+            },
+        )
         return -adv_c
