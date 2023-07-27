@@ -290,6 +290,40 @@ Here is a list of environments that [Safety-Gymnasium](https://www.safety-gymnas
 
 For more information about environments, please refer to [Safety-Gymnasium](https://www.safety-gymnasium.com).
 
+#### Customizing your environment
+
+We provide interfaces for customizing environments in the ``omnisafe/envs`` directory. You can refer to the examples provided in ``omnisafe/envs/safety_gymnasium_env`` to customize the environment interface. Key steps include:
+- New a file based on your custom environment, e.g. ``omnisafe/envs/custom_env.py``
+- Define the class based on your custom environment, e.g. ``CustomEnv``
+- Add comments ``env_register`` above the class name to register the environment.
+```python
+@env_register
+class CustomEnv(CMDP):
+```
+- List your tasks in ``_support_envs``.
+```python
+_support_envs: ClassVar[list[str]] = [
+      'Custom0-v0',
+      'Custom1-v0',
+      'Custom2-v0',
+    ]
+```
+- Redefine ``self._env`` in the ``__init__`` function.
+```python
+self._env = custom_env.make(env_id=env_id, **kwargs)
+```
+
+Next, refer to the ``SafetyGymnasiumEnv`` in ``omnisafe/envs/safety_gymnasium_env`` to define the ``step``, ``reset`` and other functions. Make sure the number, type, order of the returned values match the examples we provided to complete the environment interface design.
+
+Finally, you can run
+```bash
+cd examples
+python train_policy.py --algo PPOLag --env Custom1-v0
+```
+ to run ``PPOLag`` in ``Custom1-v0``, as you have registered ``Custom1-v0`` in ``_support_envs``.
+
+**Note: If you find trouble customizing your environment, please feel free to open an [issue](https://github.com/PKU-Alignment/omnisafe/issues) or [discussion](https://github.com/PKU-Alignment/omnisafe/discussions). [Pull requests](https://github.com/PKU-Alignment/omnisafe/pulls) are also welcomed if you're willing to contribute the implementation of your environments interface.**
+
 #### Try with CLI
 
 ```bash
