@@ -137,7 +137,8 @@ class OffPolicyAdapter(OnlineAdapter):
             real_next_obs = next_obs.clone()
             for idx, done in enumerate(torch.logical_or(terminated, truncated)):
                 if done:
-                    real_next_obs[idx] = info['final_observation'][idx]
+                    if 'final_observation' in info:
+                        real_next_obs[idx] = info['final_observation'][idx]
                     self._log_metrics(logger, idx)
                     self._reset_log(idx)
 
