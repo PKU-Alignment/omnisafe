@@ -28,6 +28,8 @@ defaults:
     parallel: 1
     # total number of steps to train
     total_steps: 1000000
+    # number of evaluate episodes
+    eval_episodes: 1
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
