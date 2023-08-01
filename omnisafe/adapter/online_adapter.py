@@ -72,7 +72,6 @@ class OnlineAdapter:
         )
 
         self._env.set_seed(seed)
-        self._eval_env.set_seed(seed)
 
     def _wrapper(
         self,

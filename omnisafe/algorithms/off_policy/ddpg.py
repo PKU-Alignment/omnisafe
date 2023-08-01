@@ -200,9 +200,10 @@ class DDPG(BaseAlgo):
         self._logger.register_key('Metrics/EpCost', window_length=50)
         self._logger.register_key('Metrics/EpLen', window_length=50)
 
-        self._logger.register_key('Metrics/TestEpRet', window_length=50)
-        self._logger.register_key('Metrics/TestEpCost', window_length=50)
-        self._logger.register_key('Metrics/TestEpLen', window_length=50)
+        if self._cfgs.train_cfgs.eval_episodes > 0:
+            self._logger.register_key('Metrics/TestEpRet', window_length=50)
+            self._logger.register_key('Metrics/TestEpCost', window_length=50)
+            self._logger.register_key('Metrics/TestEpLen', window_length=50)
 
         self._logger.register_key('Train/Epoch')
         self._logger.register_key('Train/LR')
@@ -283,7 +284,7 @@ class DDPG(BaseAlgo):
 
             eval_start = time.time()
             self._env.eval_policy(
-                episode=1,
+                episode=self._cfgs.train_cfgs.eval_episodes,
                 agent=self._actor_critic,
                 logger=self._logger,
             )
