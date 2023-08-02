@@ -271,7 +271,7 @@ def recursive_check_config(
     """
     assert isinstance(config, dict), 'custom_cfgs must be a dict!'
     for key in config:
-        if key not in default_config.keys() and key not in exclude_keys:
+        if key not in default_config and key not in exclude_keys:
             raise KeyError(f'Invalid key: {key}')
         if isinstance(config[key], dict):
             recursive_check_config(config[key], default_config[key])

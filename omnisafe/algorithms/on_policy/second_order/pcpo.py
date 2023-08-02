@@ -142,7 +142,7 @@ class PCPO(CPO):
                 'Misc/cost_gradient_norm': torch.norm(b_grads).mean().item(),
                 'Misc/Lambda_star': 1.0,
                 'Misc/Nu_star': 1.0,
-                'Misc/OptimCase': int(1),
+                'Misc/OptimCase': 1,
                 'Misc/A': 1.0,
                 'Misc/B': 1.0,
                 'Misc/q': q.item(),
