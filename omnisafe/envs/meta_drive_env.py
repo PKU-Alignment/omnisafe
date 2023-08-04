@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Environments in the Safety-Gymnasium."""
+"""Environments in the SafeMetaDrive."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ from omnisafe.typing import DEVICE_CPU
 
 @env_register
 class SafetyMetaDriveEnv(CMDP):
-    """Safe MetaDrive Environment.
+    """SafeMetaDrive Environment.
 
     More information about MetaDrive environment is provided in https://github.com/metadriverse/metadrive.
 
