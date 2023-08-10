@@ -64,7 +64,11 @@ class SimpleEnv(CMDP):
         truncated = torch.as_tensor(self._count > 10)
         return obs, reward, cost, termiated, truncated, {'final_observation': obs}
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict]:
         if seed is not None:
             self.set_seed(seed)
         obs = torch.as_tensor(self._observation_space.sample())
