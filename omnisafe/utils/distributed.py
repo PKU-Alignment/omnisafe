@@ -245,7 +245,7 @@ def avg_params(module: torch.nn.Module) -> None:
             param_tensor[:] = avg_param_tensor[:]
 
 
-def dist_avg(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
+def dist_avg(value: np.ndarray | torch.Tensor | float) -> torch.Tensor:
     """Average a tensor over distributed processes.
 
     Examples:
@@ -265,7 +265,7 @@ def dist_avg(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     return dist_sum(value) / world_size()
 
 
-def dist_max(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
+def dist_max(value: np.ndarray | torch.Tensor | float) -> torch.Tensor:
     """Determine global maximum of tensor over distributed processes.
 
     Examples:
@@ -285,7 +285,7 @@ def dist_max(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     return dist_op(value, ReduceOp.MAX)
 
 
-def dist_min(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
+def dist_min(value: np.ndarray | torch.Tensor | float) -> torch.Tensor:
     """Determine global minimum of tensor over distributed processes.
 
     Examples:
@@ -305,7 +305,7 @@ def dist_min(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     return dist_op(value, ReduceOp.MIN)
 
 
-def dist_sum(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
+def dist_sum(value: np.ndarray | torch.Tensor | float) -> torch.Tensor:
     """Sum a tensor over distributed processes.
 
     Examples:
@@ -325,7 +325,7 @@ def dist_sum(value: np.ndarray | torch.Tensor | int | float) -> torch.Tensor:
     return dist_op(value, ReduceOp.SUM)
 
 
-def dist_op(value: np.ndarray | torch.Tensor | int | float, operation: Any) -> torch.Tensor:
+def dist_op(value: np.ndarray | torch.Tensor | float, operation: Any) -> torch.Tensor:
     """Multi-processing operation.
 
     .. note::

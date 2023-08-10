@@ -198,14 +198,14 @@ class CEMPlanner:  # pylint: disable=too-many-instance-attributes
         self,
         elite_actions: torch.Tensor,
         elite_values: torch.Tensor,
-        info: dict[str, int | float],
+        info: dict[str, float],
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Update the mean and variance of the elite actions.
 
         Args:
             elite_actions (torch.Tensor): The elite actions.
             elite_values (torch.Tensor): The elite values.
-            info (dict[str, int | float]): The dictionary containing the information of the elite values and actions.
+            info (dict[str, float]): The dictionary containing the information of the elite values and actions.
 
         Returns:
             new_mean: The new mean of the elite actions.

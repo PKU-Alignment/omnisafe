@@ -442,8 +442,8 @@ class ActionScale(Wrapper):
         self,
         env: CMDP,
         device: torch.device,
-        low: int | float,
-        high: int | float,
+        low: float,
+        high: float,
     ) -> None:
         """Initialize an instance of :class:`ActionScale`."""
         super().__init__(env=env, device=device)
