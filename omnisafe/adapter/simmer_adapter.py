@@ -99,6 +99,10 @@ class SimmerAdapter(SauteAdapter):
             Additionally, the safety observation will be reset. And the safety budget will be reset
             to the value of current ``rel_safety_budget``.
 
+        Args:
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
+
         Returns:
             observation: The initial observation of the space.
             info: Some information logged by the environment.

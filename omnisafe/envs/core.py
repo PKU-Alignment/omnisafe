@@ -132,7 +132,8 @@ class CMDP(ABC):
         """Reset the environment and returns an initial observation.
 
         Args:
-            seed (int or None): Seed for the environment. Defaults to None.
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.
@@ -249,7 +250,9 @@ class Wrapper(CMDP):
         """Reset the environment and returns an initial observation.
 
         Args:
-            seed (int or None): Seed for the environment. Defaults to None.
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
+
 
         Returns:
             observation: The initial observation of the space.

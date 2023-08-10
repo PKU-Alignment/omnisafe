@@ -119,6 +119,10 @@ class SauteAdapter(OnPolicyAdapter):
         .. note::
             Additionally, the safety observation will be reset.
 
+        Args:
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
+
         Returns:
             observation: The initial observation of the space.
             info: Some information logged by the environment.

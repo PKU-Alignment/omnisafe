@@ -150,7 +150,8 @@ class MujocoEnv(CMDP):
         """Reset the environment.
 
         Args:
-            seed (int, optional): Seed to reset the environment. Defaults to None.
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
 
         Returns:
             observation: Agent's observation of the current environment.

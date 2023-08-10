@@ -63,7 +63,8 @@ class TimeLimit(Wrapper):
             Additionally, the time step will be reset to 0.
 
         Args:
-            seed (int or None, optional): The seed for the environment. Defaults to None.
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.
@@ -247,7 +248,8 @@ class ObsNormalize(Wrapper):
         """Reset the environment and returns an initial observation.
 
         Args:
-            seed (int or None, optional): Seed for the environment. Defaults to None.
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.
@@ -633,7 +635,8 @@ class Unsqueeze(Wrapper):
             The vector information will be unsqueezed to (1, dim) for agent training.
 
         Args:
-            seed (int or None, optional): Set the seed for the environment. Defaults to None.
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.
