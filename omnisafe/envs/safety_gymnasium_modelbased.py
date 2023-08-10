@@ -465,7 +465,11 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
 
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment.
 
         Args:
@@ -475,7 +479,7 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             observation: The initial observation of the space.
             info: Some information logged by the environment.
         """
-        obs_original, info = self._env.reset(seed=seed)
+        obs_original, info = self._env.reset(seed=seed, options=options)
         if self._task == 'Goal':
             self.goal_position = self._env.task.goal.pos
             self.robot_position = self._env.task.agent.pos

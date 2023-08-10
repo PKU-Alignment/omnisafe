@@ -124,7 +124,11 @@ class CMDP(ABC):
         """
 
     @abstractmethod
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment and returns an initial observation.
 
         Args:
@@ -237,7 +241,11 @@ class Wrapper(CMDP):
         """
         return self._env.step(action)
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment and returns an initial observation.
 
         Args:
@@ -247,7 +255,7 @@ class Wrapper(CMDP):
             observation: The initial observation of the space.
             info: Some information logged by the environment.
         """
-        return self._env.reset(seed)
+        return self._env.reset(seed=seed, options=options)
 
     def set_seed(self, seed: int) -> None:
         """Set the seed for this env's random number generator(s).

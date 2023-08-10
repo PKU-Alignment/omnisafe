@@ -163,14 +163,18 @@ class OnlineAdapter:
         """
         return self._env.step(action)
 
-    def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment and returns an initial observation.
 
         Returns:
             observation: The initial observation of the space.
             info: Some information logged by the environment.
         """
-        return self._env.reset()
+        return self._env.reset(seed=seed, options=options)
 
     def save(self) -> dict[str, torch.nn.Module]:
         """Save the important components of the environment.

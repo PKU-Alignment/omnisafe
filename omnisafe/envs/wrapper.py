@@ -52,7 +52,11 @@ class TimeLimit(Wrapper):
         self._time: int = 0
         self._time_limit: int = time_limit
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment.
 
         .. note::
@@ -66,7 +70,7 @@ class TimeLimit(Wrapper):
             info: Some information logged by the environment.
         """
         self._time = 0
-        return super().reset(seed)
+        return super().reset(seed=seed, options=options)
 
     def step(
         self,
@@ -235,7 +239,11 @@ class ObsNormalize(Wrapper):
         obs = self._obs_normalizer.normalize(obs)
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment and returns an initial observation.
 
         Args:
@@ -245,7 +253,7 @@ class ObsNormalize(Wrapper):
             observation: The initial observation of the space.
             info: Some information logged by the environment.
         """
-        obs, info = super().reset(seed)
+        obs, info = super().reset(seed=seed, options=options)
         info['original_obs'] = obs
         obs = self._obs_normalizer.normalize(obs)
         return obs, info
@@ -614,7 +622,11 @@ class Unsqueeze(Wrapper):
 
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment and returns a new observation.
 
         .. note::
@@ -627,7 +639,7 @@ class Unsqueeze(Wrapper):
             observation: The initial observation of the space.
             info: Some information logged by the environment.
         """
-        obs, info = super().reset(seed)
+        obs, info = super().reset(seed=seed, options=options)
         obs = obs.unsqueeze(0)
         for k, v in info.items():
             if isinstance(v, torch.Tensor):
