@@ -117,11 +117,11 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self._epoch: int = 0
         self._first_row: bool = True
         self._what_to_save: dict[str, Any] | None = None
-        self._data: dict[str, deque[int | float] | list[int | float]] = {}
+        self._data: dict[str, deque[float] | list[float]] = {}
         self._headers_windows: dict[str, int | None] = {}
         self._headers_minmax: dict[str, bool] = {}
         self._headers_delta: dict[str, bool] = {}
-        self._current_row: dict[str, int | float] = {}
+        self._current_row: dict[str, float] = {}
 
         if config is not None:
             self.save_config(config)
@@ -257,7 +257,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
             The data stored in ``data`` will be updated by ``kwargs``.
 
         Args:
-            data (dict[str, int | float | np.ndarray | torch.Tensor] or None, optional): The data to
+            data (dict[str, float | np.ndarray | torch.Tensor] or None, optional): The data to
                 be stored. Defaults to None.
 
         Keyword Args:
@@ -340,7 +340,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
         self,
         key: str,
         min_and_max: bool = False,
-    ) -> tuple[int | float, ...]:
+    ) -> tuple[float, ...]:
         """Get the statistics of the key.
 
         Args:

@@ -142,17 +142,22 @@ class MujocoEnv(CMDP):
 
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict]:
         """Reset the environment.
 
         Args:
-            seed (int, optional): Seed to reset the environment. Defaults to None.
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
 
         Returns:
             observation: Agent's observation of the current environment.
             info: Auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
-        obs, info = self._env.reset(seed=seed)
+        obs, info = self._env.reset(seed=seed, options=options)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
 
     def set_seed(self, seed: int) -> None:

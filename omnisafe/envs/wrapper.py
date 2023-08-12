@@ -52,21 +52,26 @@ class TimeLimit(Wrapper):
         self._time: int = 0
         self._time_limit: int = time_limit
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment.
 
         .. note::
             Additionally, the time step will be reset to 0.
 
         Args:
-            seed (int or None, optional): The seed for the environment. Defaults to None.
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.
             info: Some information logged by the environment.
         """
         self._time = 0
-        return super().reset(seed)
+        return super().reset(seed=seed, options=options)
 
     def step(
         self,
@@ -235,17 +240,22 @@ class ObsNormalize(Wrapper):
         obs = self._obs_normalizer.normalize(obs)
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment and returns an initial observation.
 
         Args:
-            seed (int or None, optional): Seed for the environment. Defaults to None.
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.
             info: Some information logged by the environment.
         """
-        obs, info = super().reset(seed)
+        obs, info = super().reset(seed=seed, options=options)
         info['original_obs'] = obs
         obs = self._obs_normalizer.normalize(obs)
         return obs, info
@@ -432,8 +442,8 @@ class ActionScale(Wrapper):
         self,
         env: CMDP,
         device: torch.device,
-        low: int | float,
-        high: int | float,
+        low: float,
+        high: float,
     ) -> None:
         """Initialize an instance of :class:`ActionScale`."""
         super().__init__(env=env, device=device)
@@ -614,20 +624,25 @@ class Unsqueeze(Wrapper):
 
         return obs, reward, cost, terminated, truncated, info
 
-    def reset(self, seed: int | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment and returns a new observation.
 
         .. note::
             The vector information will be unsqueezed to (1, dim) for agent training.
 
         Args:
-            seed (int or None, optional): Set the seed for the environment. Defaults to None.
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
 
         Returns:
             observation: The initial observation of the space.
             info: Some information logged by the environment.
         """
-        obs, info = super().reset(seed)
+        obs, info = super().reset(seed=seed, options=options)
         obs = obs.unsqueeze(0)
         for k, v in info.items():
             if isinstance(v, torch.Tensor):

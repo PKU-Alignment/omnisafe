@@ -46,7 +46,7 @@ def initialize_layer(init_function: InitFunction, layer: nn.Linear) -> None:
 
 def get_activation(
     activation: Activation,
-) -> type[nn.Identity] | type[nn.ReLU] | type[nn.Sigmoid] | type[nn.Softplus] | type[nn.Tanh]:
+) -> type[nn.Identity | nn.ReLU | nn.Sigmoid | nn.Softplus | nn.Tanh]:
     """Get the activation function.
 
     The ``activation`` can be chosen from: ``identity``, ``relu``, ``sigmoid``, ``softplus``,

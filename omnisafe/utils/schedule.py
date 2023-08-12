@@ -29,7 +29,7 @@ class Schedule(ABC):
     """Schedule for a value based on the step."""
 
     @abstractmethod
-    def value(self, time: int | float) -> int | float:
+    def value(self, time: float) -> float:
         """Value at time t."""
 
 
@@ -50,16 +50,16 @@ class PiecewiseSchedule(Schedule):
     def __init__(
         self,
         endpoints: list[tuple[int, float]],
-        outside_value: int | float,
+        outside_value: float,
     ) -> None:
         """Initialize an instance of :class:`PiecewiseSchedule`."""
         idxes = [e[0] for e in endpoints]
         assert idxes == sorted(idxes)
         self._interpolation: Callable[[float, float, float], float] = _linear_interpolation
-        self._outside_value: int | float = outside_value
+        self._outside_value: float = outside_value
         self._endpoints: list[tuple[int, float]] = endpoints
 
-    def value(self, time: int | float) -> int | float:
+    def value(self, time: float) -> float:
         """Value at time t.
 
         Args:
@@ -89,7 +89,7 @@ class ConstantSchedule(Schedule):
         """Initialize an instance of :class:`ConstantSchedule`."""
         self._v: float = value
 
-    def value(self, time: int | float) -> int | float:  # pylint: disable=unused-argument
+    def value(self, time: float) -> float:  # pylint: disable=unused-argument
         """Value at time t.
 
         Args:

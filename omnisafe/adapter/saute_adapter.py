@@ -109,17 +109,25 @@ class SauteAdapter(OnPolicyAdapter):
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
 
-    def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment and returns an initial observation.
 
         .. note::
             Additionally, the safety observation will be reset.
 
+        Args:
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
+
         Returns:
             observation: The initial observation of the space.
             info: Some information logged by the environment.
         """
-        obs, info = self._env.reset()
+        obs, info = self._env.reset(seed=seed, options=options)
         self._safety_obs = torch.ones(self._env.num_envs, 1).to(self._device)
         obs = self._augment_obs(obs)
         return obs, info
