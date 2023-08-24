@@ -35,7 +35,7 @@ class MujocoEnv(CMDP):
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
 
-    need_auto_reset_wrapper = False
+    need_auto_reset_wrapper = True
 
     need_time_limit_wrapper = False
     need_action_repeat_wrapper = True
