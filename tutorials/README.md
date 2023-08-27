@@ -8,5 +8,5 @@ At present, our tutorials are available in the following languages, and you can 
 - [CLI Command](https://colab.research.google.com/github/PKU-Alignment/omnisafe/blob/main/tutorials/English/2.CLI_Command.ipynb) Introduce how to use the CLI tool of OmniSafe.
 
 ## Zh-CN
-- [Getting Started](https://colab.research.google.com/github/PKU-Alignment/omnisafe/blob/main/tutorials/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87/1.Getting%20Started.ipynb) 介绍OmniSafe的基本用法，使用户能够快速上手。
-- [CLI Command](https://colab.research.google.com/github/PKU-Alignment/omnisafe/blob/main/tutorials/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87/2.CLI%20Command.ipynb) 介绍如何使用OmniSafe的命令行工具。
+- [Getting Started](https://colab.research.google.com/github/PKU-Alignment/omnisafe/blob/main/tutorials/zh-cn/1.Getting%20Started.ipynb) 介绍OmniSafe的基本用法，使用户能够快速上手。
+- [CLI Command](https://colab.research.google.com/github/PKU-Alignment/omnisafe/blob/main/tutorials/zh-cn/2.CLI%20Command.ipynb) 介绍如何使用OmniSafe的命令行工具。
