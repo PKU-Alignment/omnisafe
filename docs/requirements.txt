@@ -1,4 +1,4 @@
-sphinx
+sphinx==7.1.2
 sphinx-copybutton
 sphinx-design
 sphinx-press-theme
