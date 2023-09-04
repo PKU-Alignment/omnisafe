@@ -1468,14 +1468,14 @@ class="math inline">±</span> 30.93</td>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarGoal1-v0</span></td>
-<td style="text-align: center;">-0.65 <span class="math inline">±</span>
-2.89</td>
-<td style="text-align: center;">22.90 <span class="math inline">±</span>
-16.85</td>
-<td style="text-align: center;">1.89 <span class="math inline">±</span>
-3.52</td>
-<td style="text-align: center;">4.86 <span class="math inline">±</span>
-3.11</td>
+<td style="text-align: center;">7.12 <span class="math inline">±</span>
+5.41</td>
+<td style="text-align: center;">21.68 <span class="math inline">±</span>
+29.11</td>
+<td style="text-align: center;">16.67 <span class="math inline">±</span>
+10.57</td>
+<td style="text-align: center;">23.58 <span class="math inline">±</span>
+26.39</td>
 <td style="text-align: center;">0.81 <span class="math inline">±</span>
 0.41</td>
 <td style="text-align: center;">17.18 <span class="math inline">±</span>
@@ -1508,14 +1508,14 @@ class="smallcaps">SafetyCarButton1-v0</span></td>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarGoal2-v0</span></td>
-<td style="text-align: center;">-0.87 <span class="math inline">±</span>
-0.79</td>
-<td style="text-align: center;">6.13 <span class="math inline">±</span>
-4.51</td>
-<td style="text-align: center;">-1.03 <span class="math inline">±</span>
-1.46</td>
-<td style="text-align: center;">18.07 <span class="math inline">±</span>
-11.62</td>
+<td style="text-align: center;">0.90 <span class="math inline">±</span>
+1.20</td>
+<td style="text-align: center;">19.98 <span class="math inline">±</span>
+10.12</td>
+<td style="text-align: center;">1.76 <span class="math inline">±</span>
+5.20</td>
+<td style="text-align: center;">31.50 <span class="math inline">±</span>
+45.50</td>
 <td style="text-align: center;">-0.96 <span class="math inline">±</span>
 1.10</td>
 <td style="text-align: center;">3.00 <span class="math inline">±</span>
@@ -1548,14 +1548,14 @@ class="smallcaps">SafetyCarButton2-v0</span></td>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyPointGoal1-v0</span></td>
-<td style="text-align: center;">1.99 <span class="math inline">±</span>
-2.87</td>
-<td style="text-align: center;">7.80 <span class="math inline">±</span>
-2.78</td>
-<td style="text-align: center;">1.02 <span class="math inline">±</span>
-0.80</td>
-<td style="text-align: center;">7.46 <span class="math inline">±</span>
-5.26</td>
+<td style="text-align: center;">7.06 <span class="math inline">±</span>
+5.85</td>
+<td style="text-align: center;">20.04 <span class="math inline">±</span>
+21.91</td>
+<td style="text-align: center;">16.18 <span class="math inline">±</span>
+9.55</td>
+<td style="text-align: center;">29.94 <span class="math inline">±</span>
+26.68</td>
 <td style="text-align: center;">1.69 <span class="math inline">±</span>
 3.25</td>
 <td style="text-align: center;">5.34 <span class="math inline">±</span>
@@ -1588,14 +1588,14 @@ class="smallcaps">SafetyPointButton1-v0</span></td>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyPointGoal2-v0</span></td>
-<td style="text-align: center;">-1.85 <span class="math inline">±</span>
-0.99</td>
-<td style="text-align: center;">21.77 <span class="math inline">±</span>
-13.56</td>
-<td style="text-align: center;">-1.38 <span class="math inline">±</span>
-1.16</td>
-<td style="text-align: center;">7.87 <span class="math inline">±</span>
-2.02</td>
+<td style="text-align: center;">0.84 <span class="math inline">±</span>
+2.93</td>
+<td style="text-align: center;">14.06 <span class="math inline">±</span>
+30.21</td>
+<td style="text-align: center;">1.64 <span class="math inline">±</span>
+4.02</td>
+<td style="text-align: center;">19.00 <span class="math inline">±</span>
+34.69</td>
 <td style="text-align: center;">-1.13 <span class="math inline">±</span>
 0.39</td>
 <td style="text-align: center;">7.03 <span class="math inline">±</span>
@@ -2575,6 +2575,28 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
     <table>
     <tr>
         <td style="text-align:center">
+        <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/on-policy/benchmarks/saute_carcircle1_1e7.png">
+        <br>
+        <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+            SafetyCarCircle1-v0
+        </div>
+        </td>
+    </tr>
+    </table>
+    <table>
+    <tr>
+        <td style="text-align:center">
+        <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/on-policy/benchmarks/saute_carcircle2_1e7.png">
+        <br>
+        <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+            SafetyCarCircle2-v0
+        </div>
+        </td>
+    </tr>
+    </table>
+    <table>
+    <tr>
+        <td style="text-align:center">
         <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/on-policy/benchmarks/saute_cargoal1_1e7.png">
         <br>
         <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
@@ -2612,6 +2634,28 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
         <br>
         <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
             SafetyPointButton2-v0
+        </div>
+        </td>
+    </tr>
+    </table>
+    <table>
+    <tr>
+        <td style="text-align:center">
+        <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/on-policy/benchmarks/saute_pointcircle1_1e7.png">
+        <br>
+        <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+            SafetyPointCircle1-v0
+        </div>
+        </td>
+    </tr>
+    </table>
+    <table>
+    <tr>
+        <td style="text-align:center">
+        <img style="border-radius: 0.3125em; box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/on-policy/benchmarks/saute_pointcircle2_1e7.png">
+        <br>
+        <div style="color:orange; border-bottom: 1px solid #d9d9d9; display: inline-block; color: #999; padding: 2px;">
+            SafetyPointCircle2-v0
         </div>
         </td>
     </tr>
