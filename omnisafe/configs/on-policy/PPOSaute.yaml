@@ -126,3 +126,91 @@ defaults:
       activation: tanh
       # learning rate
       lr: 0.0003
+
+SafetyCarCircle1-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # number of iterations to update the policy
+    update_iters: 80
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyCarCircle2-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # number of iterations to update the policy
+    update_iters: 80
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyCarGoal1-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # number of iterations to update the policy
+    update_iters: 80
+    # normalize observation
+    obs_normalize: False
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyCarGoal2-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # number of iterations to update the policy
+    update_iters: 80
+    # normalize observation
+    obs_normalize: False
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyPointCircle1-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # number of iterations to update the policy
+    update_iters: 80
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyPointCircle2-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # number of iterations to update the policy
+    update_iters: 80
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyPointGoal1-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # number of iterations to update the policy
+    update_iters: 80
+    # normalize observation
+    obs_normalize: False
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyPointGoal2-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # number of iterations to update the policy
+    update_iters: 80
+    # normalize observation
+    obs_normalize: False
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
