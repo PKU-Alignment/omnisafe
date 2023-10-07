@@ -88,26 +88,18 @@ class SimmerAdapter(SauteAdapter):
             budget_bound=self._upper_budget.cpu(),
         )
 
-    def reset(
-        self,
-        seed: int | None = None,
-        options: dict[str, Any] | None = None,
-    ) -> tuple[torch.Tensor, dict[str, Any]]:
+    def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment and returns an initial observation.
 
         .. note::
             Additionally, the safety observation will be reset. And the safety budget will be reset
             to the value of current ``rel_safety_budget``.
 
-        Args:
-            seed (int, optional): The random seed. Defaults to None.
-            options (dict[str, Any], optional): The options for the environment. Defaults to None.
-
         Returns:
             observation: The initial observation of the space.
             info: Some information logged by the environment.
         """
-        obs, info = self._env.reset(seed=seed, options=options)
+        obs, info = self._env.reset()
         self._safety_obs = self._rel_safety_budget * torch.ones(self._num_envs, 1).to(self._device)
         obs = self._augment_obs(obs)
         return obs, info
@@ -128,3 +120,4 @@ class SimmerAdapter(SauteAdapter):
             safety_budget=self._safety_budget.cpu(),
             observation=ep_costs.cpu(),
         ).to(self._device)
+        self._rel_safety_budget = (self._safety_budget / self._upper_budget).to(self._device)
