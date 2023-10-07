@@ -60,9 +60,9 @@ class SimpleEnv(CMDP):
         obs = torch.as_tensor(self._observation_space.sample())
         reward = 10000 * torch.as_tensor(random.random())
         cost = 10000 * torch.as_tensor(random.random())
-        termiated = torch.as_tensor(random.random() > 0.9)
+        terminated = torch.as_tensor(random.random() > 0.9)
         truncated = torch.as_tensor(self._count > 10)
-        return obs, reward, cost, termiated, truncated, {'final_observation': obs}
+        return obs, reward, cost, terminated, truncated, {'final_observation': obs}
 
     def reset(
         self,
