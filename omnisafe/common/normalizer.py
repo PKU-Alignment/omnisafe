@@ -139,6 +139,7 @@ class Normalizer(nn.Module):
         self._std = torch.sqrt(self._var)
         self._std = torch.max(self._std, 1e-2 * torch.ones_like(self._std))
 
+    # pylint: disable-next=arguments-differ
     def load_state_dict(
         self,
         state_dict: Mapping[str, Any],
