@@ -60,7 +60,7 @@ class VAEBC(BaseOffline):
 
     def _init_model(self) -> None:
         self._actor: VAE = (
-            ActorBuilder(  # type: ignore
+            ActorBuilder(
                 obs_space=self._env.observation_space,
                 act_space=self._env.action_space,
                 hidden_sizes=self._cfgs.model_cfgs.hidden_sizes,

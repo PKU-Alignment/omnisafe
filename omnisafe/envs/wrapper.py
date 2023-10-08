@@ -466,7 +466,7 @@ class ActionScale(Wrapper):
             low=min_action,
             high=max_action,
             shape=self.action_space.shape,
-            dtype=self.action_space.dtype,  # type: ignore[arg-type]
+            dtype=self.action_space.dtype,
         )
 
         self._min_action: torch.Tensor = torch.tensor(
