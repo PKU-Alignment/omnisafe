@@ -20,7 +20,6 @@ from typing import Any, Mapping
 
 import torch
 import torch.nn as nn
-from torch.nn.modules.module import _IncompatibleKeys
 
 
 class Normalizer(nn.Module):
@@ -139,12 +138,12 @@ class Normalizer(nn.Module):
         self._std = torch.sqrt(self._var)
         self._std = torch.max(self._std, 1e-2 * torch.ones_like(self._std))
 
-    # pylint: disable-next=arguments-differ
     def load_state_dict(
         self,
         state_dict: Mapping[str, Any],
         strict: bool = True,
-    ) -> _IncompatibleKeys:
+        assign: bool = False,
+    ) -> Any:
         """Load the state_dict to the normalizer.
 
         Args:
@@ -156,4 +155,4 @@ class Normalizer(nn.Module):
             The loaded normalizer.
         """
         self._first = False
-        return super().load_state_dict(state_dict, strict)
+        return super().load_state_dict(state_dict, strict, assign)

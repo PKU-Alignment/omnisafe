@@ -159,7 +159,7 @@ class GaussianSACActor(Actor):
                         -2 * self._current_raw_action,
                     )
                 )
-            ).sum(axis=-1)
+            ).sum(axis=-1) # type: ignore
             self._current_raw_action = None
         else:
             logp = (
