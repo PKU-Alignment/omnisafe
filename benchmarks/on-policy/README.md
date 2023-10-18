@@ -1476,14 +1476,14 @@ class="smallcaps">SafetyCarGoal1-v0</span></td>
 10.57</td>
 <td style="text-align: center;">23.58 <span class="math inline">±</span>
 26.39</td>
-<td style="text-align: center;">0.81 <span class="math inline">±</span>
-0.41</td>
-<td style="text-align: center;">17.18 <span class="math inline">±</span>
-14.30</td>
-<td style="text-align: center;">0.24 <span class="math inline">±</span>
-0.41</td>
-<td style="text-align: center;">0.90 <span class="math inline">±</span>
-1.18</td>
+<td style="text-align: center;">8.45 <span class="math inline">±</span>
+7.16</td>
+<td style="text-align: center;">18.98 <span class="math inline">±</span>
+25.63</td>
+<td style="text-align: center;">15.08 <span class="math inline">±</span>
+13.41</td>
+<td style="text-align: center;">23.22 <span class="math inline">±</span>
+19.80</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
@@ -1516,14 +1516,14 @@ class="smallcaps">SafetyCarGoal2-v0</span></td>
 5.20</td>
 <td style="text-align: center;">31.50 <span class="math inline">±</span>
 45.50</td>
-<td style="text-align: center;">-0.96 <span class="math inline">±</span>
-1.10</td>
-<td style="text-align: center;">3.00 <span class="math inline">±</span>
-0.83</td>
-<td style="text-align: center;">-0.36 <span class="math inline">±</span>
-0.09</td>
-<td style="text-align: center;">9.83 <span class="math inline">±</span>
-13.91</td>
+<td style="text-align: center;">1.02 <span class="math inline">±</span>
+1.41</td>
+<td style="text-align: center;">27.32 <span class="math inline">±</span>
+60.12</td>
+<td style="text-align: center;">0.93 <span class="math inline">±</span>
+2.21</td>
+<td style="text-align: center;">26.66 <span class="math inline">±</span>
+60.07</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
@@ -1556,14 +1556,14 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
 9.55</td>
 <td style="text-align: center;">29.94 <span class="math inline">±</span>
 26.68</td>
-<td style="text-align: center;">1.69 <span class="math inline">±</span>
-3.25</td>
-<td style="text-align: center;">5.34 <span class="math inline">±</span>
-10.33</td>
-<td style="text-align: center;">1.38 <span class="math inline">±</span>
-1.91</td>
-<td style="text-align: center;">1.34 <span class="math inline">±</span>
-1.82</td>
+<td style="text-align: center;">8.30 <span class="math inline">±</span>
+6.03</td>
+<td style="text-align: center;">25.32 <span class="math inline">±</span>
+31.91</td>
+<td style="text-align: center;">11.64 <span class="math inline">±</span>
+8.46</td>
+<td style="text-align: center;">30.00 <span class="math inline">±</span>
+27.67</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
@@ -1596,14 +1596,14 @@ class="smallcaps">SafetyPointGoal2-v0</span></td>
 4.02</td>
 <td style="text-align: center;">19.00 <span class="math inline">±</span>
 34.69</td>
-<td style="text-align: center;">-1.13 <span class="math inline">±</span>
-0.39</td>
-<td style="text-align: center;">7.03 <span class="math inline">±</span>
-4.21</td>
-<td style="text-align: center;">-0.54 <span class="math inline">±</span>
-0.18</td>
-<td style="text-align: center;">26.57 <span class="math inline">±</span>
-19.13</td>
+<td style="text-align: center;">0.56 <span class="math inline">±</span>
+2.52</td>
+<td style="text-align: center;">12.36 <span class="math inline">±</span>
+43.39</td>
+<td style="text-align: center;">1.55 <span class="math inline">±</span>
+4.68</td>
+<td style="text-align: center;">14.90 <span class="math inline">±</span>
+27.82</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span

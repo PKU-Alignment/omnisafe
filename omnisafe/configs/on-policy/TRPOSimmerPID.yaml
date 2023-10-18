@@ -137,10 +137,74 @@ defaults:
   # controller configurations
   control_cfgs:
     # The Kp of PID controller
-    kp: 1.0
+    kp: 0.0005
     # The Ki of PID controller
-    ki: 0.001
+    ki: 0.00001
     # The Kd of PID controller
-    kd: 0.01
+    kd: 0.0
     # The polyak coefficient of the target
     polyak: 0.995
+
+SafetyCarCircle1-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyCarCircle2-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyCarGoal1-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyCarGoal2-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyPointCircle1-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyPointCircle2-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyPointGoal1-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2
+
+SafetyPointGoal2-v0:
+  # algorithm configurations
+  algo_cfgs:
+    # The saute gamma
+    saute_gamma: 0.9999
+    # The reward when the agent is unsafe
+    unsafe_reward: -0.2

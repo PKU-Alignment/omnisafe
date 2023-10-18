@@ -137,6 +137,7 @@ def unbatched_forward(
         output: The output of the layer.
     """
     if isinstance(layer, EnsembleFC):
+        # pylint: disable-next=not-callable
         output = F.linear(
             input_data,
             torch.transpose(layer.weight[index].squeeze(0), 0, 1),
@@ -206,8 +207,8 @@ class EnsembleFC(nn.Module):
         """
         w_times_x = torch.bmm(input_data, self.weight)
         if self.bias is not None:
-            return torch.add(w_times_x, self.bias[:, None, :])  # w times x + b
-        return w_times_x  # type: ignore
+            w_times_x = torch.add(w_times_x, self.bias[:, None, :])  # w times x + b
+        return w_times_x
 
 
 # pylint: disable-next=too-many-instance-attributes
@@ -314,6 +315,7 @@ class EnsembleModel(nn.Module):
         data: torch.Tensor | np.ndarray,
         ret_log_var: bool = False,
     ) -> tuple[torch.Tensor, torch.Tensor]:
+        # pylint: disable=not-callable
         """Compute next state, reward, cost using all models.
 
         Args:
@@ -344,6 +346,7 @@ class EnsembleModel(nn.Module):
             return mean, logvar
         return mean, var
 
+    # pylint: disable=not-callable
     def forward_idx(
         self,
         data: torch.Tensor | np.ndarray,

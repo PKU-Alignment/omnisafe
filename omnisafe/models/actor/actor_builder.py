@@ -21,6 +21,7 @@ from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
 from omnisafe.models.actor.mlp_actor import MLPActor
 from omnisafe.models.actor.perturbation_actor import PerturbationActor
 from omnisafe.models.actor.vae_actor import VAE
+from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 
 
@@ -56,7 +57,7 @@ class ActorBuilder:
     def build_actor(
         self,
         actor_type: ActorType,
-    ) -> GaussianLearningActor | GaussianSACActor | MLPActor | VAE | PerturbationActor:
+    ) -> Actor:
         """Build actor network.
 
         Currently, we support the following actor types:

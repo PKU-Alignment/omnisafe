@@ -469,7 +469,7 @@ where
             Finally, we obtain :math:`\beta=\sqrt{2 \delta / s^T H s}`.
 
             .. hint::
-                The term :math:`s^THs` is an intermediate result produced by the conjugate gradient algorithm.
+                The term :math:`s^T H s` is an intermediate result produced by the conjugate gradient algorithm.
 
             To meet the constraints, TRPO uses line search algorithm to compute the final step length.
             Detailedly, TRPO performs the line search on the objective :math:`L_{{\boldsymbol{\theta}}_{\text {old }}}({\boldsymbol{\theta}})-\mathcal{X}\left[\bar{D}_{\text {KL }}\left({\boldsymbol{\theta}}_{\text {old }}, {\boldsymbol{\theta}}\right) \leq \delta\right]`, where :math:`\mathcal{X}[\ldots]` equals to :math:`0`,

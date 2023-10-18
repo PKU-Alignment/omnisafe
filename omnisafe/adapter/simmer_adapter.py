@@ -128,3 +128,4 @@ class SimmerAdapter(SauteAdapter):
             safety_budget=self._safety_budget.cpu(),
             observation=ep_costs.cpu(),
         ).to(self._device)
+        self._rel_safety_budget = (self._safety_budget / self._upper_budget).to(self._device)
