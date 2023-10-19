@@ -379,7 +379,7 @@ def dist_statistics_scalar(
         A tuple of the [mean, std] or [mean, std, min, max] of the input tensor.
     """
     global_sum = dist_sum(torch.sum(value))
-    global_n = dist_sum(torch.tensor(len(value)).to(os.environ['OMNISAFE_DEVICE']))
+    global_n = dist_sum(torch.tensor(len(value)).to(os.getenv('OMNISAFE_DEVICE', 'cpu')))
     mean = global_sum / global_n
 
     global_sum_sq = dist_sum(torch.sum((value - mean) ** 2))
