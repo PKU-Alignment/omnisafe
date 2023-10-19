@@ -117,7 +117,7 @@ class TRPO(NaturalPG):
             # average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)
             loss_improve = distributed.dist_avg(loss_improve)
             self._logger.log(
-                f'Expected Improvement: {expected_improve} Actual: {loss_improve.item()}'
+                f'Expected Improvement: {expected_improve} Actual: {loss_improve.item()}',
             )
             if not torch.isfinite(loss):
                 self._logger.log('WARNING: loss_pi not finite')
