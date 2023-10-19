@@ -113,7 +113,8 @@ def fork(
         num_gpu = int((len(os.environ['CUDA_VISIBLE_DEVICES']) + 1) / 2)
         assert (
             num_gpu >= parallel
-        ), f'Please make sure you have enough available GPUs to run Parallel {parallel}, current available Devices are {num_gpu}'
+        ), f'Please make sure you have enough available GPUs to run Parallel {parallel}, \
+            current available Devices are {num_gpu}.'
         env = os.environ.copy()
         env.update(MKL_NUM_THREADS='1', OMP_NUM_THREADS='1', IN_MPI='1')
         args = [

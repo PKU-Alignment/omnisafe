@@ -67,7 +67,7 @@ class PCPO(CPO):
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
         loss_reward = self._loss_pi(obs, act, logp, adv_r)
-        loss_reward_before = distributed.dist_avg(loss_reward).item()
+        loss_reward_before = distributed.dist_avg(loss_reward)
         p_dist = self._actor_critic.actor(obs)
 
         loss_reward.backward()
@@ -83,7 +83,7 @@ class PCPO(CPO):
 
         self._actor_critic.zero_grad()
         loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
-        loss_cost_before = distributed.dist_avg(loss_cost).item()
+        loss_cost_before = distributed.dist_avg(loss_cost)
 
         loss_cost.backward()
         distributed.avg_grads(self._actor_critic.actor)

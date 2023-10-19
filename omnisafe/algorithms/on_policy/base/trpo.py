@@ -62,7 +62,7 @@ class TRPO(NaturalPG):
         act: torch.Tensor,
         logp: torch.Tensor,
         adv: torch.Tensor,
-        loss_before: float,
+        loss_before: torch.Tensor,
         total_steps: int = 15,
         decay: float = 0.8,
     ) -> tuple[torch.Tensor, int]:

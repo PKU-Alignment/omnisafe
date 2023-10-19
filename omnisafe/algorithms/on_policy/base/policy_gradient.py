@@ -345,7 +345,7 @@ class PolicyGradient(BaseAlgo):
         )
 
         update_counts = 0
-        final_kl = torch.ones_like(old_distribution.loc)
+        final_kl = 0.0
 
         for i in track(range(self._cfgs.algo_cfgs.update_iters), description='Updating...'):
             for (
