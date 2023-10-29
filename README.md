@@ -232,7 +232,7 @@ python train_policy.py --algo PPOLag --env-id SafetyPointGoal1-v0 --parallel 1 -
   </tr>
   <tr>
     <td>DICE Based</td>
-    <td>COptDICE</td>
+    <td>COptiDICE</td>
   </tr>
   <tr>
     <td rowspan="3">Other Formulation MDP</td>
