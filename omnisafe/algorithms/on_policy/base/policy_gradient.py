@@ -345,7 +345,7 @@ class PolicyGradient(BaseAlgo):
         )
 
         update_counts = 0
-        final_kl = torch.ones_like(old_distribution.loc)
+        final_kl = 0.0
 
         for i in track(range(self._cfgs.algo_cfgs.update_iters), description='Updating...'):
             for (
@@ -368,14 +368,13 @@ class PolicyGradient(BaseAlgo):
                 torch.distributions.kl.kl_divergence(old_distribution, new_distribution)
                 .sum(-1, keepdim=True)
                 .mean()
-                .item()
             )
             kl = distributed.dist_avg(kl)
 
-            final_kl = kl
+            final_kl = kl.item()
             update_counts += 1
 
-            if self._cfgs.algo_cfgs.kl_early_stop and kl > self._cfgs.algo_cfgs.target_kl:
+            if self._cfgs.algo_cfgs.kl_early_stop and kl.item() > self._cfgs.algo_cfgs.target_kl:
                 self._logger.log(f'Early stopping at iter {i + 1} due to reaching max kl')
                 break
 

@@ -62,7 +62,7 @@ class TRPO(NaturalPG):
         act: torch.Tensor,
         logp: torch.Tensor,
         adv: torch.Tensor,
-        loss_before: float,
+        loss_before: torch.Tensor,
         total_steps: int = 15,
         decay: float = 0.8,
     ) -> tuple[torch.Tensor, int]:
@@ -110,16 +110,18 @@ class TRPO(NaturalPG):
                 # compute KL distance between new and old policy
                 q_dist = self._actor_critic.actor(obs)
                 # KL-distance of old p-dist and new q-dist, applied in KLEarlyStopping
-                kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean().item()
+                kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
                 kl = distributed.dist_avg(kl).mean().item()
             # real loss improve: old policy loss - new policy loss
-            loss_improve = loss_before - loss.item()
+            loss_improve = loss_before - loss
             # average processes.... multi-processing style like: mpi_tools.mpi_avg(xxx)
             loss_improve = distributed.dist_avg(loss_improve)
-            self._logger.log(f'Expected Improvement: {expected_improve} Actual: {loss_improve}')
+            self._logger.log(
+                f'Expected Improvement: {expected_improve} Actual: {loss_improve.item()}',
+            )
             if not torch.isfinite(loss):
                 self._logger.log('WARNING: loss_pi not finite')
-            elif loss_improve < 0:
+            elif loss_improve.item() < 0:
                 self._logger.log('INFO: did not improve improve <0')
             elif kl > self._cfgs.algo_cfgs.target_kl:
                 self._logger.log('INFO: violated KL constraint.')
@@ -176,7 +178,7 @@ class TRPO(NaturalPG):
         self._actor_critic.actor.zero_grad()
         adv = self._compute_adv_surrogate(adv_r, adv_c)
         loss = self._loss_pi(obs, act, logp, adv)
-        loss_before = distributed.dist_avg(loss).item()
+        loss_before = distributed.dist_avg(loss)
         p_dist = self._actor_critic.actor(obs)
 
         loss.backward()

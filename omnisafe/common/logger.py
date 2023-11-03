@@ -311,7 +311,7 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
             if self._use_wandb:
                 wandb.log(self._current_row, step=self._epoch)
-        self._console.print(table)
+            self._console.print(table)
 
     def _update_current_row(self) -> None:
         """Update the current row.
@@ -358,13 +358,13 @@ class Logger:  # pylint: disable=too-many-instance-attributes
 
         if min_and_max:
             mean, std, min_val, max_val = dist_statistics_scalar(
-                torch.tensor(vals),
+                torch.tensor(vals).to(os.getenv('OMNISAFE_DEVICE', 'cpu')),
                 with_min_and_max=True,
             )
             return mean.item(), min_val.mean().item(), max_val.mean().item(), std.item()
 
         mean, std = dist_statistics_scalar(  # pylint: disable=unbalanced-tuple-unpacking
-            torch.tensor(vals),
+            torch.tensor(vals).to(os.getenv('OMNISAFE_DEVICE', 'cpu')),
         )
         return (mean.item(),)
 

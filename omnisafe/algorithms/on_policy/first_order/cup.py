@@ -184,11 +184,10 @@ class CUP(PPO):
                 torch.distributions.kl.kl_divergence(old_distribution, new_distribution)
                 .sum(-1, keepdim=True)
                 .mean()
-                .item()
             )
             kl = distributed.dist_avg(kl)
 
-            if self._cfgs.algo_cfgs.kl_early_stop and kl > self._cfgs.algo_cfgs.target_kl:
+            if self._cfgs.algo_cfgs.kl_early_stop and kl.item() > self._cfgs.algo_cfgs.target_kl:
                 final_steps = i + 1
                 self._logger.log(f'Early stopping at iter {i + 1} due to reaching max kl')
                 break

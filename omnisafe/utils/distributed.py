@@ -104,7 +104,18 @@ def fork(
     # check if MPI is already setup..
     if parallel > 1 and os.getenv('MASTER_ADDR') is None:
         # MPI is not yet set up: quit parent process and start N child processes
-        os.environ['USE_DISTRIBUTED'] = '1'
+        if device != 'cpu':
+            initial_device = int(device.split(':')[-1])
+            os.environ['USE_DISTRIBUTED'] = '1'
+            if os.getenv('CUDA_VISIBLE_DEVICES') is None:
+                os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(
+                    str(initial_device + i) for i in range(parallel)
+                )
+            num_gpu = int((len(os.environ['CUDA_VISIBLE_DEVICES']) + 1) / 2)
+            assert (
+                num_gpu >= parallel
+            ), f'Please make sure you have enough available GPUs to run Parallel {parallel}, \
+                current available Devices are {num_gpu}.'
         env = os.environ.copy()
         env.update(MKL_NUM_THREADS='1', OMP_NUM_THREADS='1', IN_MPI='1')
         args = [
@@ -369,7 +380,7 @@ def dist_statistics_scalar(
         A tuple of the [mean, std] or [mean, std, min, max] of the input tensor.
     """
     global_sum = dist_sum(torch.sum(value))
-    global_n = dist_sum(len(value))
+    global_n = dist_sum(torch.tensor(len(value)).to(os.getenv('OMNISAFE_DEVICE', 'cpu')))
     mean = global_sum / global_n
 
     global_sum_sq = dist_sum(torch.sum((value - mean) ** 2))
