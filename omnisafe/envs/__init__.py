@@ -14,7 +14,34 @@
 # ==============================================================================
 """Environment API for OmniSafe."""
 
+import itertools
+from types import MappingProxyType
+
 from omnisafe.envs.core import CMDP, env_register, make, support_envs
+from omnisafe.envs.discrete_env import DiscreteEnv
 from omnisafe.envs.mujoco_env import MujocoEnv
 from omnisafe.envs.safety_gymnasium_env import SafetyGymnasiumEnv
 from omnisafe.envs.safety_gymnasium_modelbased import SafetyGymnasiumModelBased
+
+
+ENVIRONMENTS = {
+    'box': tuple(
+        MujocoEnv.support_envs()
+        + SafetyGymnasiumEnv.support_envs()
+        + SafetyGymnasiumModelBased.support_envs(),
+    ),
+    'discrete': tuple(DiscreteEnv.support_envs()),
+}
+
+ENVIRONMNET2TYPE = {
+    env: env_type for env_type, environments in ENVIRONMENTS.items() for env in environments
+}
+
+__all__ = ENVIRONMENTS['all'] = tuple(itertools.chain.from_iterable(ENVIRONMENTS.values()))
+
+assert len(ENVIRONMNET2TYPE) == len(__all__), 'Duplicate algorithm names found.'
+
+ENVIRONMENTS = MappingProxyType(ENVIRONMENTS)  # make this immutable
+ENVIRONMNET2TYPE = MappingProxyType(ENVIRONMNET2TYPE)  # make this immutable
+
+del itertools, MappingProxyType

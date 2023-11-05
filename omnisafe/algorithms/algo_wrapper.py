@@ -24,7 +24,7 @@ import torch
 
 from omnisafe.algorithms import ALGORITHM2TYPE, ALGORITHMS, registry
 from omnisafe.algorithms.base_algo import BaseAlgo
-from omnisafe.envs import support_envs
+from omnisafe.envs import ENVIRONMNET2TYPE, support_envs
 from omnisafe.evaluator import Evaluator
 from omnisafe.utils import distributed
 from omnisafe.utils.config import Config, check_all_configs, get_default_kwargs_yaml
@@ -88,6 +88,7 @@ class AlgoWrapper:
             self.algo in ALGORITHMS['all']
         ), f"{self.algo} doesn't exist. Please choose from {ALGORITHMS['all']}."
         self.algo_type = ALGORITHM2TYPE.get(self.algo, '')
+        self.env_type = ENVIRONMNET2TYPE.get(self.env_id, '')
         if self.train_terminal_cfgs is not None:
             if self.algo_type in ['model-based', 'offline']:
                 assert (
@@ -146,7 +147,7 @@ class AlgoWrapper:
 
     def _init_algo(self) -> None:
         """Initialize the algorithm."""
-        check_all_configs(self.cfgs, self.algo_type)
+        check_all_configs(self.cfgs, self.algo_type, self.env_type)
         if distributed.fork(
             self.cfgs.train_cfgs.parallel,
             device=self.cfgs.train_cfgs.device,

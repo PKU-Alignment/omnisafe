@@ -139,9 +139,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             FileNotFoundError: If the model is not found.
         """
         # load the saved model
-        model_path = os.path.join(save_dir, 'torch_save', model_name)
         try:
-            model_params = torch.load(model_path)
+            model_params = torch.load(os.path.join(save_dir, 'torch_save', model_name))
         except FileNotFoundError as error:
             raise FileNotFoundError('The model is not found in the save directory.') from error
 
@@ -158,16 +157,16 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 / self._cfgs.algo_cfgs.max_ep_len
                 * torch.ones(1)
             )
-        assert isinstance(observation_space, Box), 'The observation space must be Box.'
-        assert isinstance(action_space, Box), 'The action space must be Box.'
 
-        if self._cfgs['algo_cfgs']['obs_normalize']:
+        if self._cfgs['algo_cfgs']['obs_normalize'] and isinstance(observation_space, Box):
             obs_normalizer = Normalizer(shape=observation_space.shape, clip=5)
             obs_normalizer.load_state_dict(model_params['obs_normalizer'])
             self._env = ObsNormalize(self._env, device=torch.device('cpu'), norm=obs_normalizer)
         if self._env.need_time_limit_wrapper:
+            self._cfgs['train_cfgs'].get('time_limit', 1000)
             self._env = TimeLimit(self._env, device=torch.device('cpu'), time_limit=1000)
-        self._env = ActionScale(self._env, device=torch.device('cpu'), low=-1.0, high=1.0)
+        if self._env.need_action_scale_wrapper:
+            self._env = ActionScale(self._env, device=torch.device('cpu'), low=-1.0, high=1.0)
 
         if hasattr(self._cfgs['algo_cfgs'], 'action_repeat'):
             self._env = ActionRepeat(
@@ -183,11 +182,19 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             'RCEPETS',
             'CCEPETS',
         ]:
+            assert isinstance(observation_space, Box), 'The observation space must be Box.'
+            assert isinstance(action_space, Box), 'The action space must be Box.'
             dynamics_state_space = (
                 self._env.coordinate_observation_space
-                if self._env.coordinate_observation_space is not None
+                if hasattr(self._env, 'coordinate_observation_space')
                 else self._env.observation_space
             )
+            get_cost_from_obs_tensor = (
+                self._env.get_cost_from_obs_tensor
+                if hasattr(self._env, 'get_cost_from_obs_tensor')
+                else None
+            )
+
             assert self._env.action_space is not None and isinstance(
                 self._env.action_space.shape,
                 tuple,
@@ -213,7 +220,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 action_shape=action_space.shape,
                 actor_critic=self._actor_critic,
                 rew_func=None,
-                cost_func=self._env.get_cost_from_obs_tensor,
+                cost_func=get_cost_from_obs_tensor,
                 terminal_func=None,
             )
             self._dynamics.ensemble_model.load_state_dict(model_params['dynamics'])
@@ -273,6 +280,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         else:
             if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
+                assert isinstance(observation_space, Box), 'The observation space must be Box.'
+                assert isinstance(action_space, Box), 'The action space must be Box.'
                 observation_space = Box(
                     low=np.hstack((observation_space.low, -np.inf)),
                     high=np.hstack((observation_space.high, np.inf)),

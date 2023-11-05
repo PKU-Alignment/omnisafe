@@ -109,3 +109,17 @@ VAE Actor
     .. autoclass:: VAE
         :members:
         :private-members:
+
+Categorical Actor
+-----------------
+
+.. card::
+    :class-header: sd-bg-success sd-text-white
+    :class-card: sd-outline-success  sd-rounded-1
+
+    Documentation
+    ^^^
+
+    .. autoclass:: CategoricalActor
+        :members:
+        :private-members:

@@ -14,7 +14,7 @@
 # ==============================================================================
 """Test envs."""
 
-from gymnasium.spaces import Box
+from gymnasium.spaces import Box, Discrete
 
 import helpers
 from omnisafe.envs.core import make
@@ -150,3 +150,49 @@ def test_mujoco(num_envs, env_id) -> None:
     assert isinstance(info, dict)
 
     env.close()
+
+
+@helpers.parametrize(
+    num_envs=[1, 2],
+)
+def test_discrete(num_envs) -> None:
+    """Test envs."""
+    env_id = 'CartPole-v1'
+    env = make(env_id, num_envs=num_envs)
+
+    obs_space = env.observation_space
+    act_space = env.action_space
+
+    assert isinstance(obs_space, Box)
+    assert isinstance(act_space, Discrete)
+
+    env.set_seed(0)
+    obs, _ = env.reset()
+    if num_envs > 1:
+        assert obs.shape == (num_envs, obs_space.shape[0])
+    else:
+        assert obs.shape == (obs_space.shape[0],)
+
+    act = env.sample_action()
+
+    obs, reward, cost, terminated, truncated, info = env.step(act)
+
+    if num_envs > 1:
+        assert obs.shape == (num_envs, obs_space.shape[0])
+        assert reward.shape == (num_envs,)
+        assert cost.shape == (num_envs,)
+        assert terminated.shape == (num_envs,)
+        assert truncated.shape == (num_envs,)
+        assert isinstance(info, dict)
+    else:
+        assert obs.shape == (obs_space.shape[0],)
+        assert reward.shape == ()
+        assert cost.shape == ()
+        assert terminated.shape == ()
+        assert truncated.shape == ()
+        assert isinstance(info, dict)
+
+    env.close()
+
+
+test_discrete(num_envs=2)

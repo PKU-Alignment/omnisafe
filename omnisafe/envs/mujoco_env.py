@@ -33,12 +33,15 @@ class MujocoEnv(CMDP):
     Attributes:
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
+        need_action_repeat_wrapper (bool): Whether to use action repeat wrapper.
+        need_action_scale_wrapper (bool): Whether to use action scale wrapper.
     """
 
     need_auto_reset_wrapper = True
-
     need_time_limit_wrapper = False
     need_action_repeat_wrapper = True
+    need_action_scale_wrapper = True
+
     _support_envs: ClassVar[list[str]] = [
         'Ant-v4',
         'Hopper-v4',

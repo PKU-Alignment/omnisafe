@@ -109,8 +109,13 @@ class OnlineAdapter:
             cost_normalize (bool, optional): Whether to normalize the cost. Defaults to True.
         """
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, time_limit=1000, device=self._device)
-            self._eval_env = TimeLimit(self._eval_env, time_limit=1000, device=self._device)
+            time_limit = (
+                self._cfgs.train_cfgs.time_limit
+                if hasattr(self._cfgs.train_cfgs, 'time_limit')
+                else 1000
+            )
+            self._env = TimeLimit(self._env, time_limit=time_limit, device=self._device)
+            self._eval_env = TimeLimit(self._eval_env, time_limit=time_limit, device=self._device)
         if self._env.need_auto_reset_wrapper:
             self._env = AutoReset(self._env, device=self._device)
             self._eval_env = AutoReset(self._eval_env, device=self._device)
@@ -121,8 +126,9 @@ class OnlineAdapter:
             self._env = RewardNormalize(self._env, device=self._device)
         if cost_normalize:
             self._env = CostNormalize(self._env, device=self._device)
-        self._env = ActionScale(self._env, low=-1.0, high=1.0, device=self._device)
-        self._eval_env = ActionScale(self._eval_env, low=-1.0, high=1.0, device=self._device)
+        if self._env.need_action_scale_wrapper:
+            self._env = ActionScale(self._env, low=-1.0, high=1.0, device=self._device)
+            self._eval_env = ActionScale(self._eval_env, low=-1.0, high=1.0, device=self._device)
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
         self._eval_env = Unsqueeze(self._eval_env, device=self._device)

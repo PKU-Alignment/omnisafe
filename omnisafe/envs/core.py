@@ -53,6 +53,7 @@ class CMDP(ABC):
     _time_limit: int | None = None
     need_time_limit_wrapper: bool
     need_auto_reset_wrapper: bool
+    need_action_scale_wrapper: bool
 
     _support_envs: ClassVar[list[str]]
 

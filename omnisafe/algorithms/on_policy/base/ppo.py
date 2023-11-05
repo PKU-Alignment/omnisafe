@@ -65,7 +65,6 @@ class PPO(PolicyGradient):
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
-        std = self._actor_critic.actor.std
         ratio = torch.exp(logp_ - logp)
         ratio_cliped = torch.clamp(
             ratio,
@@ -76,11 +75,12 @@ class PPO(PolicyGradient):
         loss -= self._cfgs.algo_cfgs.entropy_coef * distribution.entropy().mean()
         # useful extra info
         entropy = distribution.entropy().mean().item()
+        if self._cfgs.model_cfgs.actor_type == 'gaussian_learning':
+            self._logger.store({'Train/PolicyStd': self._actor_critic.actor.std})
         self._logger.store(
             {
                 'Train/Entropy': entropy,
                 'Train/PolicyRatio': ratio,
-                'Train/PolicyStd': std,
                 'Loss/Loss_pi': loss.mean().item(),
             },
         )

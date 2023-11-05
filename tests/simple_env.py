@@ -35,6 +35,7 @@ class SimpleEnv(CMDP):
     metadata: ClassVar[dict[str, int]] = {'render_fps': 30}
     need_auto_reset_wrapper = True
     need_time_limit_wrapper = True
+    need_action_scale_wrapper: bool = False
     _num_envs = 1
     _coordinate_observation_space: OmnisafeSpace
 

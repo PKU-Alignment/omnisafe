@@ -255,7 +255,7 @@ def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:
     return default_kwargs
 
 
-def check_all_configs(configs: Config, algo_type: str) -> None:
+def check_all_configs(configs: Config, algo_type: str, env_type: str) -> None:
     """Check all configs.
 
     This function is used to check the configs.
@@ -263,10 +263,46 @@ def check_all_configs(configs: Config, algo_type: str) -> None:
     Args:
         configs (Config): The configs to be checked.
         algo_type (str): The algorithm type.
+        env_type (str): The environment type
     """
     __check_algo_configs(configs.algo_cfgs, algo_type)
+    __check_env_configs(configs, env_type)
     __check_parallel_and_vectorized(configs, algo_type)
     __check_logger_configs(configs.logger_cfgs)
+
+
+def __check_env_configs(configs: Config, env_type: str) -> None:
+    """Check whether configs are aligned with the type of environment.
+
+    Args:
+        configs (Config): The model configs to be checked.
+        env_type (str): The environment type.
+    """
+    if env_type == 'discrete':
+        assert (
+            configs.model_cfgs.actor_type == 'discrete'
+        ), 'Discrete environments only support discrete actor!'
+        assert configs.algo in [
+            'NaturalPG',
+            'PolicyGradient',
+            'PPO',
+            'TRPO',
+            'RCPO',
+            'PDO',
+            'PPOLag',
+            'TRPOLag',
+            'OnCRPO',
+            'P3O',
+            'IPO',
+            'CPPOPID',
+            'TRPOPID',
+            'CPO',
+            'PCPO',
+        ], f'Currently, OmniSafe does not support {configs.algo} running on discrete environments!'
+    if env_type == 'box':
+        assert (
+            configs.model_cfgs.actor_type != 'discrete'
+        ), 'Box environments do not support discrete actor!'
 
 
 def __check_parallel_and_vectorized(configs: Config, algo_type: str) -> None:
