@@ -28,7 +28,7 @@ class BaseBuffer(ABC):
     r"""Abstract base class for buffer.
 
     .. warning::
-        The buffer only supports Box spaces.
+        The buffer only supports ``Box`` and ``Discrete`` spaces.
 
     In base buffer, we store the following data:
 

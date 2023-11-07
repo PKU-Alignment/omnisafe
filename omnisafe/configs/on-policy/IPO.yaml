@@ -139,7 +139,7 @@ CartPole-v1:
   # logger configurations
   logger_cfgs:
     # save model frequency
-    save_model_freq: 5
+    save_model_freq: 10
   # training configurations
   train_cfgs:
     # max time-step for each episode
@@ -155,11 +155,13 @@ Taxi-v3:
   # logger configurations
   logger_cfgs:
     # save model frequency
-    save_model_freq: 5
+    save_model_freq: 10
   # training configurations
   train_cfgs:
     # max time-step for each episode
     time_limit: 200
+    # total number of steps to train
+    total_steps: 1000000
   # algorithm configurations
   algo_cfgs:
     # normalize observation
