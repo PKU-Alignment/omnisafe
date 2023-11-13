@@ -128,7 +128,7 @@ class DiscreteEnv(CMDP):
             info: Some information logged by the environment.
         """
         obs, reward, terminated, truncated, info = self._env.step(
-            action.detach().cpu().numpy().tolist(),
+            action.detach().cpu().squeeze().numpy(),
         )
         obs, reward, terminated, truncated = (
             torch.as_tensor(x, dtype=torch.float32, device=self._device)

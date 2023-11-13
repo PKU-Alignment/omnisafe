@@ -14,8 +14,11 @@
 # ==============================================================================
 """Test Buffers."""
 
+from __future__ import annotations
+
+import numpy as np
 import torch
-from gymnasium.spaces import Box
+from gymnasium.spaces import Box, Discrete
 
 import helpers
 from omnisafe.common.buffer import (
@@ -27,8 +30,8 @@ from omnisafe.common.buffer import (
 
 
 @helpers.parametrize(
-    obs_space=[Box(low=-1, high=1, shape=(1,))],
-    act_space=[Box(low=-1, high=1, shape=(1,))],
+    obs_space=[Box(low=-1, high=1, shape=(1,)), Discrete(n=5)],
+    act_space=[Box(low=-1, high=1, shape=(1,)), Discrete(n=5)],
     size=[100],
     gamma=[0.9],
     lam=[0.9],
@@ -41,8 +44,8 @@ from omnisafe.common.buffer import (
     num_envs=[2],
 )
 def test_vector_onpolicy_buffer(
-    obs_space: Box,
-    act_space: Box,
+    obs_space: Box | Discrete,
+    act_space: Box | Discrete,
     size: int,
     gamma: float,
     lam: float,
@@ -82,8 +85,8 @@ def test_vector_onpolicy_buffer(
     assert vector_buffer.buffers is not [], f'vector_buffer.buffers is {vector_buffer.buffers}'
 
     # checking the store function
-    obs_dim = obs_space.shape[0]
-    act_dim = act_space.shape[0]
+    obs_dim = int(np.array(obs_space.shape).prod())
+    act_dim = int(np.array(act_space.shape).prod())
     for _ in range(size):
         obs = torch.rand((num_envs, obs_dim), dtype=torch.float32, device=device)
         act = torch.rand((num_envs, act_dim), dtype=torch.float32, device=device)

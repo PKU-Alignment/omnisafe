@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.distributions import Categorical, Distribution
@@ -95,8 +96,10 @@ class CategoricalActor(Actor):
         self._current_dist = self._distribution(obs=obs)
         self._after_inference = True
         if deterministic:
-            return torch.argmax(self._current_dist.logits, dim=0, keepdim=False)
-        return self._current_dist.sample()
+            action = torch.argmax(self._current_dist.logits, dim=-1, keepdim=True)
+        else:
+            action = self._current_dist.sample()
+        return action.view(-1, int(np.array(self._act_space.shape).prod()))
 
     def forward(self, obs: torch.Tensor) -> Distribution:
         """Forward method.
@@ -125,4 +128,4 @@ class CategoricalActor(Actor):
         """
         assert self._after_inference, 'log_prob() should be called after predict() or forward()'
         self._after_inference = False
-        return self._current_dist.log_prob(act)
+        return self._current_dist.log_prob(act.squeeze())

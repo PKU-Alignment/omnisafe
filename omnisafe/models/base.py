@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+import numpy as np
 import torch
 import torch.nn as nn
 from gymnasium import spaces
@@ -62,11 +63,8 @@ class Actor(nn.Module, ABC):
         self._activation: Activation = activation
         self._hidden_sizes: list[int] = hidden_sizes
         self._after_inference: bool = False
-
-        if isinstance(self._obs_space, spaces.Box) and len(self._obs_space.shape) == 1:
-            self._obs_dim: int = self._obs_space.shape[0]
-        elif isinstance(self._obs_space, spaces.Discrete):
-            self._obs_dim = 1
+        if isinstance(self._obs_space, (spaces.Box, spaces.Discrete)):
+            self._obs_dim: int = int(np.array(self._obs_space.shape).prod())
         else:
             raise NotImplementedError
 
