@@ -211,6 +211,6 @@ def test_discrete_actor(
 
     _ = actor_discrete(obs)
     action = actor_discrete.predict(obs, deterministic)
-    assert action.shape == torch.Size([]), f'actor output shape is {action.shape}'
+    assert action.shape == torch.Size([1, 1]), f'actor output shape is {action.shape}'
     logp = actor_discrete.log_prob(action)
     assert logp.shape == torch.Size([]), f'actor log_prob shape is {logp.shape}'
