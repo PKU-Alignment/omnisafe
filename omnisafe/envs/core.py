@@ -259,7 +259,7 @@ class Wrapper(CMDP):
             observation: The initial observation of the space.
             info: Some information logged by the environment.
         """
-        return self._env.reset(seed=seed)
+        return self._env.reset(seed=seed, options=options)
 
     def set_seed(self, seed: int) -> None:
         """Set the seed for this env's random number generator(s).
