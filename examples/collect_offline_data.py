@@ -21,17 +21,17 @@ from omnisafe.common.offline.data_collector import OfflineDataCollector
 # also, please make sure you have run:
 # python train_policy.py --algo PPO --env ENVID
 # where ENVID is the environment from which you want to collect data.
+# The `PATH_TO_AGENT` is the directory path containing the `torch_save`.
 
-ENV_NAME = 'SafetyPointCircle1-v0'
-SIZE = 2_000_000
-AGENTS = [
-    ('./runs/PPO', 'epoch-500', 1_000_000),
-    ('./runs/PPOLag', 'epoch-500', 1_000_000),
+env_name = 'SafetyAntVelocity-v1'
+size = 1_000_000
+agents = [
+    ('PATH_TO_AGENT', 'epoch-500.pt', 1_000_000),
 ]
-SAVE_DIR = './data'
+save_dir = './data'
 
 if __name__ == '__main__':
-    col = OfflineDataCollector(SIZE, ENV_NAME)
-    for agent, model_name, num in AGENTS:
+    col = OfflineDataCollector(size, env_name)
+    for agent, model_name, num in agents:
         col.register_agent(agent, model_name, num)
-    col.collect(SAVE_DIR)
+    col.collect(save_dir)
