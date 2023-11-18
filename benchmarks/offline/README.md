@@ -26,11 +26,12 @@ pip install safety_gymnasium
 ## Training agents used to generate data
 
 ```bash
-omnisafe train --env-id SafetyAntVelocity-v1 --algo PPO
 omnisafe train --env-id SafetyAntVelocity-v1 --algo PPOLag
 ```
 
 ## Collect offline data
+
+The `PATH_TO_AGENT` is the path of the directory containing the `torch_save`.
 
 ```python
 from omnisafe.common.offline.data_collector import OfflineDataCollector
@@ -40,8 +41,7 @@ from omnisafe.common.offline.data_collector import OfflineDataCollector
 env_name = 'SafetyAntVelocity-v1'
 size = 1_000_000
 agents = [
-    ('./runs/PPO', 'epoch-500', 500_000),
-    ('./runs/PPOLag', 'epoch-500', 500_000),
+    ('PATH_TO_AGENT', 'epoch-500.pt', 1_000_000),
 ]
 save_dir = './data'
 
