@@ -163,8 +163,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             obs_normalizer.load_state_dict(model_params['obs_normalizer'])
             self._env = ObsNormalize(self._env, device=torch.device('cpu'), norm=obs_normalizer)
         if self._env.need_time_limit_wrapper:
-            self._cfgs['train_cfgs'].get('time_limit', 1000)
-            self._env = TimeLimit(self._env, device=torch.device('cpu'), time_limit=1000)
+            time_limit = self._cfgs['train_cfgs'].get('time_limit', 1000)
+            self._env = TimeLimit(self._env, device=torch.device('cpu'), time_limit=time_limit)
         if self._env.need_action_scale_wrapper:
             self._env = ActionScale(self._env, device=torch.device('cpu'), low=-1.0, high=1.0)
 
@@ -287,7 +287,6 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     high=np.hstack((observation_space.high, np.inf)),
                     shape=(observation_space.shape[0] + 1,),
                 )
-            actor_type = self._cfgs['model_cfgs']['actor_type']
             pi_cfg = self._cfgs['model_cfgs']['actor']
             weight_initialization_mode = self._cfgs['model_cfgs']['weight_initialization_mode']
             actor_builder = ActorBuilder(
@@ -297,7 +296,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 activation=pi_cfg['activation'],
                 weight_initialization_mode=weight_initialization_mode,
             )
-            self._actor = actor_builder.build_actor(actor_type)
+            self._actor = actor_builder.build_actor(self._cfgs['model_cfgs']['actor_type'])
             self._actor.load_state_dict(model_params['pi'])
 
     # pylint: disable-next=too-many-locals
