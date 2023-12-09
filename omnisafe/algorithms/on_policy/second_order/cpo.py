@@ -64,8 +64,8 @@ class CPO(TRPO):
         logp: torch.Tensor,
         adv_r: torch.Tensor,
         adv_c: torch.Tensor,
-        loss_reward_before: float,
-        loss_cost_before: float,
+        loss_reward_before: torch.Tensor,
+        loss_cost_before: torch.Tensor,
         total_steps: int = 15,
         decay: float = 0.8,
         violation_c: int = 0,
@@ -132,9 +132,9 @@ class CPO(TRPO):
                 q_dist = self._actor_critic.actor(obs)
                 kl = torch.distributions.kl.kl_divergence(p_dist, q_dist).mean()
             # compute improvement of reward
-            loss_reward_improve = loss_reward_before - loss_reward.item()
+            loss_reward_improve = loss_reward_before - loss_reward
             # compute difference of cost
-            loss_cost_diff = loss_cost.item() - loss_cost_before
+            loss_cost_diff = loss_cost - loss_cost_before
 
             # average across MPI processes...
             kl = distributed.dist_avg(kl)
@@ -367,7 +367,7 @@ class CPO(TRPO):
         theta_old = get_flat_params_from(self._actor_critic.actor)
         self._actor_critic.actor.zero_grad()
         loss_reward = self._loss_pi(obs, act, logp, adv_r)
-        loss_reward_before = distributed.dist_avg(loss_reward).item()
+        loss_reward_before = distributed.dist_avg(loss_reward)
         p_dist = self._actor_critic.actor(obs)
 
         loss_reward.backward()
@@ -382,7 +382,7 @@ class CPO(TRPO):
 
         self._actor_critic.zero_grad()
         loss_cost = self._loss_pi_cost(obs, act, logp, adv_c)
-        loss_cost_before = distributed.dist_avg(loss_cost).item()
+        loss_cost_before = distributed.dist_avg(loss_cost)
 
         loss_cost.backward()
         distributed.avg_grads(self._actor_critic.actor)

@@ -21,8 +21,8 @@ from torch import optim
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.offline.base import BaseOffline
+from omnisafe.models.actor import VAE
 from omnisafe.models.actor.actor_builder import ActorBuilder
-from omnisafe.models.base import Actor
 
 
 @registry.register
@@ -59,8 +59,8 @@ class VAEBC(BaseOffline):
         self._logger.register_key('Loss/Loss_kl')
 
     def _init_model(self) -> None:
-        self._actor: Actor = (
-            ActorBuilder(
+        self._actor: VAE = (
+            ActorBuilder(  # type: ignore
                 obs_space=self._env.observation_space,
                 act_space=self._env.action_space,
                 hidden_sizes=self._cfgs.model_cfgs.hidden_sizes,
