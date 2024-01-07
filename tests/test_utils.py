@@ -80,12 +80,17 @@ def test_custom_cfgs_to_dict():
 
 def test_config():
     """Test config"""
-    cfg = Config(a=1, b={'c': 2})
+    cfg = Config(a=1, b={'c': 2}, model_cfgs={'actor_type': 'gaussian_learning'})
     cfg.a = 2
     cfg.recurisve_update({'a': {'d': 3}, 'e': {'f': 4}})
     cfg = get_default_kwargs_yaml('PPO', 'Simple-v0', 'on-policy')
     cfg.recurisve_update({'exp_name': 'test_configs', 'env_id': 'Simple-v0', 'algo': 'PPO'})
-    check_all_configs(cfg, 'on-policy')
+    check_all_configs(cfg, 'on-policy', 'box')
+    with pytest.raises(AssertionError):
+        check_all_configs(cfg, 'off-pocliy', 'discrete')
+    cfg.recurisve_update({'model_cfgs': {'actor_type': 'discrete'}})
+    with pytest.raises(AssertionError):
+        check_all_configs(cfg, 'on-pocliy', 'box')
 
 
 def test_distributed():

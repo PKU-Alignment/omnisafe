@@ -461,6 +461,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     envs/wrapper
     envs/safety_gymnasium
     envs/mujoco_env
+    envs/discrete_env
     envs/adapter
 
 

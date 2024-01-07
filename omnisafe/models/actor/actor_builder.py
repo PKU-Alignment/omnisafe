@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from omnisafe.models.actor.categorical_actor import CategoricalActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
 from omnisafe.models.actor.mlp_actor import MLPActor
@@ -29,13 +30,16 @@ from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 class ActorBuilder:
     """Class for building actor networks.
 
-    Args:
-        obs_space (OmnisafeSpace): Observation space.
-        act_space (OmnisafeSpace): Action space.
-        hidden_sizes (list of int): List of hidden layer sizes.
-        activation (Activation, optional): Activation function. Defaults to ``'relu'``.
-        weight_initialization_mode (InitFunction, optional): Weight initialization mode. Defaults to
-            ``'kaiming_uniform'``.
+    Actor networks are used in the Actor design of Reinforcement Learning (RL)
+    to choose actions based on the current state of the environment.
+
+    Attributes:
+        obs_space (OmnisafeSpace): The space that defines valid observations.
+        act_space (OmnisafeSpace): The space that defines valid actions.
+        hidden_sizes (list[int]): The number of nodes at each hidden layer in the network.
+        activation (str, optional): The activation function used after each layer. Defaults to ``'relu'``.
+        weight_initialization_mode (str, optional): The method to initialize weights in the network.
+                                                    Defaults to ``'kaiming_uniform'``.
     """
 
     def __init__(
@@ -58,21 +62,24 @@ class ActorBuilder:
         self,
         actor_type: ActorType,
     ) -> Actor:
-        """Build actor network.
+        """Generate an actor model of the given type using preset parameters.
 
-        Currently, we support the following actor types:
-            - ``gaussian_learning``: Gaussian actor with learnable standard deviation parameters.
-            - ``gaussian_sac``: Gaussian actor with learnable standard deviation network.
-            - ``mlp``: Multi-layer perceptron actor, used in ``DDPG`` and ``TD3``.
+        The supported actor types include:
+            - `gaussian_learning`: Gaussian actor with learnable standard deviation parameters.
+            - `gaussian_sac`: Gaussian actor with learnable standard deviation network.
+            - `mlp`: Multi-layer perceptron actor, typically used in DDPG and TD3.
+            - `vae`: Variational AutoEncoder actor, used for continual and low-data learning.
+            - `perturbation`: Perturbation Actor for domain randomization.
+            - `discrete`: Discrete/Categorical actor, used in environments with discrete action spaces.
 
         Args:
-            actor_type (ActorType): Type of actor network, e.g. ``gaussian_learning``.
+            actor_type (str): The type of actor network to build.
 
         Returns:
-            Actor network, ranging from GaussianLearningActor, GaussianSACActor to MLPActor.
+            Actor: An instance of the requested actor model.
 
         Raises:
-            NotImplementedError: If the actor type is not implemented.
+            NotImplementedError: If the requested actor type has not been implemented.
         """
         if actor_type == 'gaussian_learning':
             return GaussianLearningActor(
@@ -114,7 +121,15 @@ class ActorBuilder:
                 activation=self._activation,
                 weight_initialization_mode=self._weight_initialization_mode,
             )
+        if actor_type == 'discrete':
+            return CategoricalActor(
+                self._obs_space,
+                self._act_space,
+                self._hidden_sizes,
+                activation=self._activation,
+                weight_initialization_mode=self._weight_initialization_mode,
+            )
         raise NotImplementedError(
             f'Actor type {actor_type} is not implemented! '
-            f'Available actor types are: gaussian_learning, gaussian_sac, mlp, vae, perturbation.',
+            f'Available actor types are: gaussian_learning, gaussian_sac, mlp, vae, perturbation, discrete.',
         )

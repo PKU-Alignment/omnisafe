@@ -134,3 +134,41 @@ defaults:
     lambda_lr: 0.035
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
+
+CartPole-v1:
+  # logger configurations
+  logger_cfgs:
+    # save model frequency
+    save_model_freq: 10
+  # training configurations
+  train_cfgs:
+    # max time-step for each episode
+    time_limit: 500
+    # total number of steps to train
+    total_steps: 1000000
+  # model configurations
+  model_cfgs:
+    # actor type, options: gaussian, gaussian_learning
+    actor_type: "discrete"
+
+Taxi-v3:
+  # logger configurations
+  logger_cfgs:
+    # save model frequency
+    save_model_freq: 10
+  # training configurations
+  train_cfgs:
+    # max time-step for each episode
+    time_limit: 200
+    # total number of steps to train
+    total_steps: 1000000
+  # algorithm configurations
+  algo_cfgs:
+    # normalize observation
+    obs_normalize: False
+    # entropy coefficient
+    entropy_coef: 0.01
+  # model configurations
+  model_cfgs:
+    # actor type, options: gaussian, gaussian_learning
+    actor_type: "discrete"

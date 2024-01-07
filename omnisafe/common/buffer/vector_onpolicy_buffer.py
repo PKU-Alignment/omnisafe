@@ -30,7 +30,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
     stored in a list of on-policy buffers, each of which corresponds to one environment.
 
     .. warning::
-        The buffer only supports Box spaces.
+        The buffer only supports ``Box`` and ``Discrete`` spaces.
 
     Args:
         obs_space (OmnisafeSpace): Observation space.

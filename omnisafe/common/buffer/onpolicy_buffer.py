@@ -31,7 +31,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
     state-action pairs, ranging from ``GAE``, ``GAE-RTG`` , ``V-trace`` to ``Plain`` method.
 
     .. warning::
-        The buffer only supports Box spaces.
+        The buffer only supports ``Box`` and ``Discrete`` spaces.
 
     Compared to the base buffer, the on-policy buffer stores extra data:
 

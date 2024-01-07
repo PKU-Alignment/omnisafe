@@ -42,11 +42,11 @@ def test_critic(
     use_obs_encoder: bool,
 ) -> None:
     """Test critic."""
-    obs_sapce = Box(low=-1.0, high=1.0, shape=(obs_dim,))
+    obs_space = Box(low=-1.0, high=1.0, shape=(obs_dim,))
     act_space = Box(low=-1.0, high=1.0, shape=(act_dim,))
 
     builder = CriticBuilder(
-        obs_space=obs_sapce,
+        obs_space=obs_space,
         act_space=act_space,
         hidden_sizes=[hidden_sizes, hidden_sizes],
         activation=activation,
@@ -81,11 +81,11 @@ def test_actor(
     deterministic: bool,
 ) -> None:
     """Test actor."""
-    obs_sapce = Box(low=-1.0, high=1.0, shape=(obs_dim,))
+    obs_space = Box(low=-1.0, high=1.0, shape=(obs_dim,))
     act_space = Box(low=-1.0, high=1.0, shape=(act_dim,))
 
     builder = ActorBuilder(
-        obs_space=obs_sapce,
+        obs_space=obs_space,
         act_space=act_space,
         hidden_sizes=[hidden_sizes, hidden_sizes],
         activation=activation,
@@ -136,7 +136,7 @@ def test_actor_critic(
     """Test actor critic."""
     obs_dim = 10
     act_dim = 5
-    obs_sapce = Box(low=-1.0, high=1.0, shape=(obs_dim,))
+    obs_space = Box(low=-1.0, high=1.0, shape=(obs_dim,))
     act_space = Box(low=-1.0, high=1.0, shape=(act_dim,))
 
     model_cfgs = Config(
@@ -150,7 +150,7 @@ def test_actor_critic(
     )
 
     ac = ActorCritic(
-        obs_space=obs_sapce,
+        obs_space=obs_space,
         act_space=act_space,
         model_cfgs=model_cfgs,
         epochs=10,
@@ -164,7 +164,7 @@ def test_actor_critic(
     ac.annealing(5)
 
     cac = ConstraintActorCritic(
-        obs_space=obs_sapce,
+        obs_space=obs_space,
         act_space=act_space,
         model_cfgs=model_cfgs,
         epochs=10,
@@ -179,25 +179,38 @@ def test_actor_critic(
     cac.annealing(5)
 
 
-@helpers.parametrize(obs_act_type=[('discrete', 'continuous'), ('continuous', 'discrete')])
-def test_raise_error(obs_act_type):
-    obs_type, act_type = obs_act_type
-
-    obs_sapce = Discrete(10) if obs_type == 'discrete' else Box(low=-1.0, high=1.0, shape=(10,))
-    act_space = Discrete(5) if act_type == 'discrete' else Box(low=-1.0, high=1.0, shape=(5,))
+@helpers.parametrize(
+    obs_dim=[10],
+    act_dim=[5],
+    hidden_sizes=[64],
+    activation=['tanh', 'relu'],
+    deterministic=[True, False],
+)
+def test_discrete_actor(
+    obs_dim: int,
+    act_dim: int,
+    hidden_sizes: int,
+    activation: Activation,
+    deterministic: bool,
+) -> None:
+    """Test actor."""
+    box_obs_space = Box(low=-1.0, high=1.0, shape=(obs_dim,))
+    # discrete_obs_space = Discrete(1)
+    act_space = Discrete(act_dim)
 
     builder = ActorBuilder(
-        obs_space=obs_sapce,
+        obs_space=box_obs_space,
         act_space=act_space,
-        hidden_sizes=[3, 3],
+        hidden_sizes=[hidden_sizes, hidden_sizes],
+        activation=activation,
     )
+    obs = torch.randn(obs_dim, dtype=torch.float32)
+    actor_discrete = builder.build_actor(actor_type='discrete')
     with pytest.raises(NotImplementedError):
-        builder.build_actor(actor_type='gaussian_learning')
+        builder.build_actor(actor_type='invalid')
 
-    builder = CriticBuilder(
-        obs_space=obs_sapce,
-        act_space=act_space,
-        hidden_sizes=[3, 3],
-    )
-    with pytest.raises(NotImplementedError):
-        builder.build_critic(critic_type='q')
+    _ = actor_discrete(obs)
+    action = actor_discrete.predict(obs, deterministic)
+    assert action.shape == torch.Size([1, 1]), f'actor output shape is {action.shape}'
+    logp = actor_discrete.log_prob(action)
+    assert logp.shape == torch.Size([]), f'actor log_prob shape is {logp.shape}'

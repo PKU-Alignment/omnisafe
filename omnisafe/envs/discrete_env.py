@@ -12,23 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Environments in the Safety-Gymnasium."""
+"""Environments with discrete observation/action space in Gymnasium."""
 
 from __future__ import annotations
 
 from typing import Any, ClassVar
 
+import gymnasium
 import numpy as np
-import safety_gymnasium
 import torch
+from gymnasium import spaces
 
 from omnisafe.envs.core import CMDP, env_register
-from omnisafe.typing import DEVICE_CPU, Box
+from omnisafe.typing import DEVICE_CPU, Discrete
 
 
 @env_register
-class SafetyGymnasiumEnv(CMDP):
-    """Safety Gymnasium Environment.
+class DiscreteEnv(CMDP):
+    """Discrete Gymnasium Environment.
+
+    This environment only served as an example to integrate discrete action and
+    observation environment into OmniSafe. We support
+    `CartPole-v1 <https://gymnasium.farama.org/environments/classic_control/cart_pole/>`_
+    and `Taxi-v3 <https://gymnasium.farama.org/environments/toy_text/taxi/>`_.
+    The former is ``Box`` observation space and ``Discrete`` action space, while
+    the latter is ``Discrete`` observation and ``Discrete`` action space.
 
     Args:
         env_id (str): Environment id.
@@ -39,90 +47,22 @@ class SafetyGymnasiumEnv(CMDP):
     Keyword Args:
         render_mode (str, optional): The render mode ranges from 'human' to 'rgb_array' and 'rgb_array_list'.
             Defaults to 'rgb_array'.
-        camera_name (str, optional): The camera name.
-        camera_id (int, optional): The camera id.
-        width (int, optional): The width of the rendered image. Defaults to 256.
-        height (int, optional): The height of the rendered image. Defaults to 256.
 
     Attributes:
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
+        need_action_repeat_wrapper (bool): Whether to use action repeat wrapper.
         need_action_scale_wrapper (bool): Whether to use action scale wrapper.
     """
 
+    need_action_scale_wrapper = False
+    need_obs_normalize_wrapper = False
     need_auto_reset_wrapper = False
     need_time_limit_wrapper = False
-    need_action_scale_wrapper = True
 
     _support_envs: ClassVar[list[str]] = [
-        'SafetyPointGoal0-v0',
-        'SafetyPointGoal1-v0',
-        'SafetyPointGoal2-v0',
-        'SafetyPointButton0-v0',
-        'SafetyPointButton1-v0',
-        'SafetyPointButton2-v0',
-        'SafetyPointPush0-v0',
-        'SafetyPointPush1-v0',
-        'SafetyPointPush2-v0',
-        'SafetyPointCircle0-v0',
-        'SafetyPointCircle1-v0',
-        'SafetyPointCircle2-v0',
-        'SafetyCarGoal0-v0',
-        'SafetyCarGoal1-v0',
-        'SafetyCarGoal2-v0',
-        'SafetyCarButton0-v0',
-        'SafetyCarButton1-v0',
-        'SafetyCarButton2-v0',
-        'SafetyCarPush0-v0',
-        'SafetyCarPush1-v0',
-        'SafetyCarPush2-v0',
-        'SafetyCarCircle0-v0',
-        'SafetyCarCircle1-v0',
-        'SafetyCarCircle2-v0',
-        'SafetyAntGoal0-v0',
-        'SafetyAntGoal1-v0',
-        'SafetyAntGoal2-v0',
-        'SafetyAntButton0-v0',
-        'SafetyAntButton1-v0',
-        'SafetyAntButton2-v0',
-        'SafetyAntPush0-v0',
-        'SafetyAntPush1-v0',
-        'SafetyAntPush2-v0',
-        'SafetyAntCircle0-v0',
-        'SafetyAntCircle1-v0',
-        'SafetyAntCircle2-v0',
-        'SafetyDoggoGoal0-v0',
-        'SafetyDoggoGoal1-v0',
-        'SafetyDoggoGoal2-v0',
-        'SafetyDoggoButton0-v0',
-        'SafetyDoggoButton1-v0',
-        'SafetyDoggoButton2-v0',
-        'SafetyDoggoPush0-v0',
-        'SafetyDoggoPush1-v0',
-        'SafetyDoggoPush2-v0',
-        'SafetyDoggoCircle0-v0',
-        'SafetyDoggoCircle1-v0',
-        'SafetyDoggoCircle2-v0',
-        'SafetyRacecarGoal0-v0',
-        'SafetyRacecarGoal1-v0',
-        'SafetyRacecarGoal2-v0',
-        'SafetyRacecarButton0-v0',
-        'SafetyRacecarButton1-v0',
-        'SafetyRacecarButton2-v0',
-        'SafetyRacecarPush0-v0',
-        'SafetyRacecarPush1-v0',
-        'SafetyRacecarPush2-v0',
-        'SafetyRacecarCircle0-v0',
-        'SafetyRacecarCircle1-v0',
-        'SafetyRacecarCircle2-v0',
-        'SafetyHalfCheetahVelocity-v1',
-        'SafetyHopperVelocity-v1',
-        'SafetySwimmerVelocity-v1',
-        'SafetyWalker2dVelocity-v1',
-        'SafetyAntVelocity-v1',
-        'SafetyHumanoidVelocity-v1',
-        'SafetyPointRun0-v0',
-        'SafetyCarRun0-v0',
+        'CartPole-v1',
+        'Taxi-v3',
     ]
 
     def __init__(
@@ -132,31 +72,29 @@ class SafetyGymnasiumEnv(CMDP):
         device: torch.device = DEVICE_CPU,
         **kwargs: Any,
     ) -> None:
-        """Initialize an instance of :class:`SafetyGymnasiumEnv`."""
+        """Initialize an instance of :class:`DiscreteEnv`."""
         super().__init__(env_id)
         self._num_envs = num_envs
         self._device = torch.device(device)
 
         if num_envs > 1:
-            self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
-            assert isinstance(self._env.single_action_space, Box), 'Only support Box action space.'
+            self._env = gymnasium.vector.make(
+                id=env_id,
+                num_envs=num_envs,
+                render_mode=kwargs.get('render_mode'),
+            )
             assert isinstance(
-                self._env.single_observation_space,
-                Box,
-            ), 'Only support Box observation space.'
+                self._env.single_action_space,
+                Discrete,
+            ), 'Only support Discrete action space.'
             self._action_space = self._env.single_action_space
-            self._observation_space = self._env.single_observation_space
+            self._observation_space = self._env.single_observation_space  # type: ignore
         else:
             self.need_time_limit_wrapper = True
             self.need_auto_reset_wrapper = True
-            self._env = safety_gymnasium.make(id=env_id, autoreset=True, **kwargs)
-            assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
-            assert isinstance(
-                self._env.observation_space,
-                Box,
-            ), 'Only support Box observation space.'
-            self._action_space = self._env.action_space
-            self._observation_space = self._env.observation_space
+            self._env = gymnasium.make(id=env_id, autoreset=True, render_mode=kwargs.get('render_mode'))  # type: ignore
+            self._action_space = self._env.action_space  # type: ignore
+            self._observation_space = self._env.observation_space  # type: ignore
         self._metadata = self._env.metadata
 
     def step(
@@ -189,27 +127,32 @@ class SafetyGymnasiumEnv(CMDP):
             truncated: Whether the episode has been truncated due to a time limit.
             info: Some information logged by the environment.
         """
-        obs, reward, cost, terminated, truncated, info = self._env.step(
-            action.detach().cpu().numpy(),
+        obs, reward, terminated, truncated, info = self._env.step(
+            action.detach().cpu().squeeze().numpy(),
         )
-        obs, reward, cost, terminated, truncated = (
+        obs, reward, terminated, truncated = (
             torch.as_tensor(x, dtype=torch.float32, device=self._device)
-            for x in (obs, reward, cost, terminated, truncated)
+            for x in (obs, reward, terminated, truncated)
         )
+        if isinstance(self._observation_space, spaces.Discrete):
+            obs = obs.unsqueeze(-1)
         if 'final_observation' in info:
-            info['final_observation'] = np.array(
-                [
-                    array if array is not None else np.zeros(obs.shape[-1])
-                    for array in info['final_observation']
-                ],
-            )
+            if isinstance(info['final_observation'], np.ndarray):
+                info['final_observation'] = np.array(
+                    [
+                        array if array is not None else np.zeros(obs.shape[-1])
+                        for array in info['final_observation']
+                    ],
+                )
             info['final_observation'] = torch.as_tensor(
                 info['final_observation'],
                 dtype=torch.float32,
                 device=self._device,
             )
+            if isinstance(self._observation_space, spaces.Discrete):
+                info['final_observation'] = info['final_observation'].unsqueeze(-1)
 
-        return obs, reward, cost, terminated, truncated, info
+        return obs, reward, torch.zeros_like(reward), terminated, truncated, info
 
     def reset(
         self,
@@ -222,13 +165,15 @@ class SafetyGymnasiumEnv(CMDP):
             seed (int, optional): The random seed. Defaults to None.
             options (dict[str, Any], optional): The options for the environment. Defaults to None.
 
-
         Returns:
             observation: Agent's observation of the current environment.
             info: Some information logged by the environment.
         """
         obs, info = self._env.reset(seed=seed, options=options)
-        return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
+        obs = torch.as_tensor(obs, dtype=torch.float32, device=self._device)
+        if isinstance(self._observation_space, spaces.Discrete):
+            obs = obs.unsqueeze(-1)
+        return obs, info
 
     def set_seed(self, seed: int) -> None:
         """Set the seed for the environment.
@@ -246,7 +191,7 @@ class SafetyGymnasiumEnv(CMDP):
         """
         return torch.as_tensor(
             self._env.action_space.sample(),
-            dtype=torch.float32,
+            dtype=torch.int64,
             device=self._device,
         )
 

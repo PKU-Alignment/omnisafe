@@ -233,7 +233,7 @@ Policy update
 
             .. math::
 
-                \min _\lambda(1-\lambda) [J^R(\pi)-\lambda J^C(\pi)] \\
+                \min _{\lambda} (J^R(\pi)-\lambda (J^C(\pi)-d)) \\
                 \text { s.t. } \lambda \geq 0
 
 

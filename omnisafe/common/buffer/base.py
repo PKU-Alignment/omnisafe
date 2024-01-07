@@ -18,8 +18,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+import numpy as np
 import torch
-from gymnasium.spaces import Box
+from gymnasium.spaces import Box, Discrete
 
 from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
@@ -28,7 +29,7 @@ class BaseBuffer(ABC):
     r"""Abstract base class for buffer.
 
     .. warning::
-        The buffer only supports Box spaces.
+        The buffer only supports ``Box`` and ``Discrete`` spaces.
 
     In base buffer, we store the following data:
 
@@ -57,8 +58,8 @@ class BaseBuffer(ABC):
         data (dict[str, torch.Tensor]): The data of the buffer.
 
     Raises:
-        NotImplementedError: If the observation space or the action space is not Box.
-        NotImplementedError: If the action space or the action space is not Box.
+        NotImplementedError: If the observation space or the action space is not Box nor Discrete.
+        NotImplementedError: If the action space or the action space is not Box nor Discrete.
     """
 
     def __init__(
@@ -70,12 +71,23 @@ class BaseBuffer(ABC):
     ) -> None:
         """Initialize an instance of :class:`BaseBuffer`."""
         self._device: torch.device = device
-        if isinstance(obs_space, Box):
-            obs_buf = torch.zeros((size, *obs_space.shape), dtype=torch.float32, device=device)
+
+        if isinstance(obs_space, (Box, Discrete)):
+            obs_buf = torch.zeros(
+                (size, int(np.array(obs_space.shape).prod())),
+                dtype=torch.float32,
+                device=device,
+            )
         else:
             raise NotImplementedError
-        if isinstance(act_space, Box):
-            act_buf = torch.zeros((size, *act_space.shape), dtype=torch.float32, device=device)
+
+        if isinstance(act_space, (Box, Discrete)):
+            act_buf = torch.zeros(
+                (size, int(np.array(act_space.shape).prod())),
+                dtype=torch.float32,
+                device=device,
+            )
+
         else:
             raise NotImplementedError
 
