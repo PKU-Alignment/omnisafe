@@ -253,10 +253,10 @@ Policy update
             .. attention::
                 :class: warning
 
-                In practice, we often need to manually set the initial value of as well as the learning rate.
+                In practice, we often need to manually set the initial value of :math:`\lambda` as well as the learning rate :math:`\eta_\lambda`.
                 Unfortunately, Lagrange algorithms are algorithms that **are sensitive to hyperparameter selection**.
 
-                - If the initial value of :math:`\lambda` or learning rate is chosen to be large,
+                - If the initial value of :math:`\lambda` or learning rate :math:`\eta_\lambda` is chosen to be large,
                   the agent may suffer from a low reward.
                 - Else, it may violate the constraints.
 
