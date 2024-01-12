@@ -41,6 +41,7 @@ InitFunction = Literal['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uni
 CriticType = Literal['v', 'q']
 ActorType = Literal['gaussian_learning', 'gaussian_sac', 'mlp', 'vae', 'perturbation']
 DEVICE_CPU = torch.device('cpu')
+Trajectory = List[List[torch.Tensor]]
 
 
 __all__ = [

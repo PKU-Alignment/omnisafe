@@ -22,6 +22,7 @@ from omnisafe.models.actor.mlp_actor import MLPActor
 from omnisafe.models.actor.perturbation_actor import PerturbationActor
 from omnisafe.models.actor.vae_actor import VAE
 from omnisafe.models.base import Actor
+from omnisafe.models.actor.decision_diffuser_actor import DecisionDiffuserActor
 from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 
 
@@ -113,6 +114,14 @@ class ActorBuilder:
                 self._hidden_sizes,
                 activation=self._activation,
                 weight_initialization_mode=self._weight_initialization_mode,
+            )
+        if actor_type == "decision_diffuser":
+            # TODO : fix actor builder, currently use magic number
+            return DecisionDiffuserActor(
+                80,
+                self._obs_space,
+                self._act_space,
+                cls_free_cond_dim=2
             )
         raise NotImplementedError(
             f'Actor type {actor_type} is not implemented! '
