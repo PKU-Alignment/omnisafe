@@ -14,6 +14,8 @@
 
 # ruff: noqa
 
+# type: ignore
+
 # adapted from
 import einops
 import torch
@@ -149,7 +151,7 @@ class TemporalUnet(nn.Module):
     ):
         super().__init__()
 
-        dims = [transition_dim, *map(lambda m: dim * m, dim_mults)]
+        dims = [transition_dim, *[dim * m for m in dim_mults]]
         in_out = list(zip(dims[:-1], dims[1:]))
 
         if calc_energy:

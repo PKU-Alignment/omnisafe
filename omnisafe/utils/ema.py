@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import torch
 from torch import nn
 
 
@@ -24,12 +25,10 @@ class EMA:
         super().__init__()
         self.beta = beta
 
-    def update_model_average(self, ma_model: nn.Module, current_model: nn.Module) -> nn.Module:
+    def update_model_average(self, ma_model: nn.Module, current_model: nn.Module) -> None:
         for current_params, ma_params in zip(current_model.parameters(), ma_model.parameters()):
             old_weight, up_weight = ma_params.data, current_params.data
             ma_params.data = self.update_average(old_weight, up_weight)
 
-    def update_average(self, old: nn.Module, new: nn.Module) -> nn.Module:
-        if old is None:
-            return new
+    def update_average(self, old: torch.Tensor, new: torch.Tensor) -> torch.Tensor:
         return old * self.beta + (1 - self.beta) * new

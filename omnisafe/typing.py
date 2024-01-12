@@ -39,7 +39,14 @@ Activation = Literal['identity', 'relu', 'sigmoid', 'softplus', 'tanh']
 AdvatageEstimator = Literal['gae', 'gae-rtg', 'vtrace', 'plain']
 InitFunction = Literal['kaiming_uniform', 'xavier_normal', 'glorot', 'xavier_uniform', 'orthogonal']
 CriticType = Literal['v', 'q']
-ActorType = Literal['gaussian_learning', 'gaussian_sac', 'mlp', 'vae', 'perturbation']
+ActorType = Literal[
+    'gaussian_learning',
+    'gaussian_sac',
+    'mlp',
+    'vae',
+    'perturbation',
+    'decision_diffuser',
+]
 DEVICE_CPU = torch.device('cpu')
 Trajectory = List[List[torch.Tensor]]
 

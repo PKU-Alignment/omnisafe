@@ -16,14 +16,14 @@
 
 import copy
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterator, List, Tuple
 
 import numpy as np
 import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.offline.base import BaseOffline
-from omnisafe.common.offline.sequence_dataset import SequenceDataset
+from omnisafe.common.offline.sequence_dataset import SequenceDataset  # type: ignore
 from omnisafe.models.actor import DecisionDiffuserActor
 from omnisafe.utils.ema import EMA
 
@@ -60,7 +60,7 @@ class DecisionDiffuser(BaseOffline):
         self._logger.register_key('Loss/Loss_A0')
 
     def _init(self) -> None:
-        self._dataset = SequenceDataset(
+        self._seq_dataset = SequenceDataset(
             self._cfgs.train_cfgs.dataset,
             horizon=self._cfgs.model_cfgs.horizon,
             max_n_episodes=self._cfgs.train_cfgs.max_n_episodes,
@@ -68,15 +68,15 @@ class DecisionDiffuser(BaseOffline):
             reward_discount=self._cfgs.train_cfgs.discount,
         )
 
-        def data_iter(batch_size: int, x: SequenceDataset) -> torch.Tensor:
-            num_examples = len(x)
+        def data_iter(batch_size: int, x: torch.utils.data.Dataset) -> Iterator[torch.Tensor]:
+            num_examples = len(x)  # type: ignore
             indices = list(range(num_examples))
             np.random.shuffle(indices)
             for i in range(0, num_examples, batch_size):
                 batch_indices = torch.tensor(indices[i : min(i + batch_size, num_examples)])
                 yield x[batch_indices]
 
-        self._dataloader = data_iter(self._cfgs.algo_cfgs.batch_size, self._dataset)
+        self._dataloader = data_iter(self._cfgs.algo_cfgs.batch_size, self._seq_dataset)
 
     def _init_model(self) -> None:
         self._actor = DecisionDiffuserActor(
@@ -85,6 +85,7 @@ class DecisionDiffuser(BaseOffline):
             act_space=self._env.action_space,
             cls_free_cond_dim=self._cfgs.model_cfgs.cls_free_cond_dim,
         ).to(self._device)
+        # use ema model for more stable training
         self._learn_model: DecisionDiffuserActor = copy.deepcopy(self._actor)
 
         self._ema = EMA(self._cfgs.train_cfgs.ema_decay)
@@ -101,6 +102,7 @@ class DecisionDiffuser(BaseOffline):
         )
 
         self._reset_parameters()
+        self._step = 0
 
     def _reset_parameters(self) -> None:
         self._actor._model.load_state_dict(self._learn_model._model.state_dict())
@@ -109,13 +111,12 @@ class DecisionDiffuser(BaseOffline):
         if self._step < self._step_start_ema:
             self._reset_parameters()
             return
-        self._ema.update_model_average(self.ema_model, self.model)
+        self._ema.update_model_average(self._actor, self._learn_model)
 
-    def learn(self) -> tuple[float, float, float]:
+    def learn(self) -> Tuple[float, float, float]:
         """Learn the policy."""
         self._logger.log('Start training ...')
         self._logger.torch_save()
-        return 0, 0, 0
 
         start_time = time.time()
         epoch_time = time.time()
@@ -157,7 +158,7 @@ class DecisionDiffuser(BaseOffline):
 
         return ep_ret, ep_cost, ep_len
 
-    def _train(
+    def _train(  # type: ignore
         self,
         x: torch.Tensor,
         state_condition: Dict[int, torch.Tensor],

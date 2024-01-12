@@ -14,6 +14,8 @@
 
 
 # ruff: noqa
+# flake8: noqa
+# type: ignore
 
 import os
 import pickle
@@ -25,8 +27,6 @@ from torch.utils.data import Dataset
 
 
 RewardBatch = namedtuple('Batch', 'trajectories conditions returns')
-
-import numpy as np
 
 
 class SequenceDataset(Dataset):
@@ -103,7 +103,7 @@ class SequenceDataset(Dataset):
         self._count += 1
 
     def _finalize(self):
-        ## remove extra slots
+        # remove extra slots
         for key in self.keys + ['path_lengths']:
             self._dict[key] = self._dict[key][: self._count]
 
@@ -125,7 +125,7 @@ class SequenceDataset(Dataset):
         return len(self._indices)
 
     def __getitem__(self, idx):
-        if type(idx) == int:
+        if isinstance(idx, int):
             idx = [idx]
         indexs = self._indices[idx]
         state_conditions = []

@@ -17,4 +17,4 @@
 
 from omnisafe.common.offline.data_collector import OfflineDataCollector
 from omnisafe.common.offline.dataset import OfflineDataset, OfflineDatasetWithInit, OfflineMeta
-from omnisafe.common.offline.sequence_dataset import SequenceDataset
+from omnisafe.common.offline.sequence_dataset import SequenceDataset  # type: ignore

@@ -53,6 +53,7 @@ class DecisionDiffuserActor(Actor):
             [],
         )
         self._horizon = horizon
+        self._cls_free_cond_dim = cls_free_cond_dim
         temporal_unet = TemporalUnet(
             horizon=self._horizon,
             transition_dim=self._obs_dim,
@@ -98,7 +99,9 @@ class DecisionDiffuserActor(Actor):
             torch.Tensor: Predicted action.
         """
         if not cls_free_condition_list:
-            cls_free_condition_list = [0.9]  # use reward as cls free condition
+            cls_free_condition_list = [
+                torch.zeros(self._cls_free_cond_dim),
+            ]  # use reward as cls free condition
         state_conditions = {0: obs}
         if extra_state_condition is not None:
             state_conditions.update(extra_state_condition)

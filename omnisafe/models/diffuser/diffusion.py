@@ -14,6 +14,7 @@
 
 # ruff: noqa
 
+# type: ignore
 
 import numpy as np
 import torch
@@ -51,6 +52,7 @@ class GaussianInvDynDiffusion(nn.Module):
         self.model = model
         self.ar_inv = ar_inv
         self.train_only_inv = train_only_inv
+        self.inv_model: nn.Module
         if self.ar_inv:
             self.inv_model = ARInvModel(
                 hidden_dim=hidden_dim,
@@ -199,7 +201,7 @@ class GaussianInvDynDiffusion(nn.Module):
 
     @torch.no_grad()
     def p_sample(self, x, state_condition, t, cls_free_condition_list):
-        b, *_, device = *x.shape, x.device
+        b, *_ = x.shape
         model_mean, _, model_log_variance = self.p_mean_variance(
             x=x,
             state_condition=state_condition,
@@ -254,7 +256,6 @@ class GaussianInvDynDiffusion(nn.Module):
         """
         conditions : [ (time, state), ... ]
         """
-        device = self.betas.device
         batch_size = len(state_condition[0])
         horizon = horizon or self.horizon
         shape = (batch_size, horizon, self.observation_dim)
@@ -337,7 +338,7 @@ class GaussianInvDynDiffusion(nn.Module):
         return loss, info
 
     def forward(self, state_condition, *args, **kwargs):
-        return self.conditional_sample(state_condition=state_condition, *args, **kwargs)
+        return self.conditional_sample(state_condition, *args, **kwargs)
 
 
 class ARInvModel(nn.Module):
