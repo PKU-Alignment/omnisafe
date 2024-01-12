@@ -68,7 +68,7 @@ class DecisionDiffuser(BaseOffline):
             reward_discount=self._cfgs.train_cfgs.discount,
         )
 
-        def data_iter(batch_size, x):
+        def data_iter(batch_size: int, x: SequenceDataset) -> torch.Tensor:
             num_examples = len(x)
             indices = list(range(num_examples))
             np.random.shuffle(indices)
@@ -102,10 +102,10 @@ class DecisionDiffuser(BaseOffline):
 
         self._reset_parameters()
 
-    def _reset_parameters(self):
+    def _reset_parameters(self) -> None:
         self._actor._model.load_state_dict(self._learn_model._model.state_dict())
 
-    def _step_ema(self):
+    def _step_ema(self) -> None:
         if self._step < self._step_start_ema:
             self._reset_parameters()
             return

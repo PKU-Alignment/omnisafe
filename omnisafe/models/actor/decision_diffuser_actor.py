@@ -14,7 +14,7 @@
 # ==============================================================================
 """Implementation of VAE."""
 
-from typing import Dict
+from typing import Dict, List, Optional
 
 import torch
 from torch.distributions import Distribution
@@ -82,8 +82,8 @@ class DecisionDiffuserActor(Actor):
         self,
         obs: torch.Tensor,
         deterministic: bool = False,
-        cls_free_condition_list=[],
-        extra_state_condition: Dict[int, torch.Tensor] = {},
+        cls_free_condition_list: Optional[List[torch.Tensor]] = None,
+        extra_state_condition: Optional[Dict[int, torch.Tensor]] = None,
     ) -> torch.Tensor:
         """Predict the action given observation.
 
@@ -100,7 +100,8 @@ class DecisionDiffuserActor(Actor):
         if not cls_free_condition_list:
             cls_free_condition_list = [0.9]  # use reward as cls free condition
         state_conditions = {0: obs}
-        state_conditions.update(extra_state_condition)
+        if extra_state_condition is not None:
+            state_conditions.update(extra_state_condition)
         predicted_trajectory = self._model.conditional_sample(
             state_conditions,
             cls_free_condition_list=cls_free_condition_list,

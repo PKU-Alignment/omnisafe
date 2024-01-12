@@ -16,13 +16,13 @@
 
 from __future__ import annotations
 
+from omnisafe.models.actor.decision_diffuser_actor import DecisionDiffuserActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
 from omnisafe.models.actor.mlp_actor import MLPActor
 from omnisafe.models.actor.perturbation_actor import PerturbationActor
 from omnisafe.models.actor.vae_actor import VAE
 from omnisafe.models.base import Actor
-from omnisafe.models.actor.decision_diffuser_actor import DecisionDiffuserActor
 from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 
 
@@ -115,14 +115,9 @@ class ActorBuilder:
                 activation=self._activation,
                 weight_initialization_mode=self._weight_initialization_mode,
             )
-        if actor_type == "decision_diffuser":
+        if actor_type == 'decision_diffuser':
             # TODO : fix actor builder, currently use magic number
-            return DecisionDiffuserActor(
-                80,
-                self._obs_space,
-                self._act_space,
-                cls_free_cond_dim=2
-            )
+            return DecisionDiffuserActor(80, self._obs_space, self._act_space, cls_free_cond_dim=2)
         raise NotImplementedError(
             f'Actor type {actor_type} is not implemented! '
             f'Available actor types are: gaussian_learning, gaussian_sac, mlp, vae, perturbation.',

@@ -161,7 +161,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         assert isinstance(observation_space, Box), 'The observation space must be Box.'
         assert isinstance(action_space, Box), 'The action space must be Box.'
 
-        if 'obs_normalize' in self._cfgs["algo_cfgs"] and self._cfgs['algo_cfgs']['obs_normalize']:
+        if 'obs_normalize' in self._cfgs['algo_cfgs'] and self._cfgs['algo_cfgs']['obs_normalize']:
             obs_normalizer = Normalizer(shape=observation_space.shape, clip=5)
             obs_normalizer.load_state_dict(model_params['obs_normalizer'])
             self._env = ObsNormalize(self._env, device=torch.device('cpu'), norm=obs_normalizer)
