@@ -18,7 +18,7 @@ from copy import deepcopy
 from typing import Any, Dict, Tuple
 
 import torch
-from torch import nn, optim
+from torch import nn
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.offline.base import BaseOffline
@@ -26,40 +26,32 @@ from omnisafe.common.offline.dataset import DeciDiffuserDataset
 from omnisafe.models.dd_models.diffusion import GaussianInvDynDiffusion
 from omnisafe.models.dd_models.temporal import TemporalUnet
 from omnisafe.common.offline.dataset import OfflineDataset
+from omnisafe.utils.model import initialize_layer
 
 
 @registry.register
 class DD(BaseOffline):
-    """Batch-Constrained Deep Reinforcement Learning.
+    """Decision Diffuser.
 
     References:
-        - Title: Off-Policy Deep Reinforcement Learning without Exploration
-        - Author: Fujimoto, ScottMeger, DavidPrecup, Doina.
-        - URL: `https://arxiv.org/abs/1812.02900`
+        - Title: Is Conditional Generative Modeling all you need for Decision-Making?
+        - Author: Ajay, Anurag and Du, Yilun and Gupta, Abhi and Tenenbaum, Joshua and Jaakkola, Tommi and Agrawal, Pulkit.
+        - URL: `https://arxiv.org/abs/2211.15657`
     """
 
     def _init_log(self) -> None:
-        """Log the BCQ specific information.
+        """Log the DD specific information.
 
         +-------------------------+----------------------------------------------------+
         | Things to log           | Description                                        |
         +=========================+====================================================+
-        | Loss/Loss_vae           | Loss of VAE network                                |
+        | Loss/Loss_diffuser      | Loss of diffuser model                             |
         +-------------------------+----------------------------------------------------+
-        | Loss/Loss_recon         | Reconstruction loss of VAE network                 |
+        | Loss/Loss_inv           | Loss of action inverse dynamic model               |
         +-------------------------+----------------------------------------------------+
-        | Loss/Loss_kl            | KL loss of VAE network                             |
+        | Loss/Loss_total         | Avenger of Loss_diffuser and Loss_inv              |
         +-------------------------+----------------------------------------------------+
-        | Loss/Loss_actor         | Loss of the actor network.                         |
-        +-------------------------+----------------------------------------------------+
-        | Loss/Loss_reward_critic | Loss of the reward critic.                         |
-        +-------------------------+----------------------------------------------------+
-        | Qr/data_Qr              | Average Q value of offline data.                   |
-        +-------------------------+----------------------------------------------------+
-        | Qr/target_Qr            | Average Q value of next_obs and next_action.       |
-        +-------------------------+----------------------------------------------------+
-        | Qr/current_Qr           | Average Q value of obs and agent predicted action. |
-        +-------------------------+----------------------------------------------------+
+
         """
         super()._init_log()
         what_to_save: Dict[str, Any] = {
@@ -71,47 +63,14 @@ class DD(BaseOffline):
         self._logger.register_key('Loss/Loss_inv')
         self._logger.register_key('Loss/Loss_total')
 
-    def _init(self,
-              ema_decay=0.995,
-              train_batch_size=32,
-              train_lr=2e-5,
-              gradient_accumulate_every=2,
-              log_freq=100,
-              sample_freq=1000,
-              save_freq=1000,
-              label_freq=100000,
-              save_parallel=False,
-              n_reference=8,
-              bucket=None,
-              train_device='cuda',
-              save_checkpoints=False,
-              ) -> None:
-        self.update_ema_every = 2000
-        self.save_checkpoints = self._cfgs.save_checkpoints
-
-        self.step_start_ema = 10
-        self.log_freq = self._cfgs.log_freq
-        self.sample_freq = self._cfgs.sample_freq
-        self.save_freq = self._cfgs.save_freq
-        self.label_freq = int(self._cfgs.n_train_steps // self._cfgs.n_saves)
-        self.save_parallel = self._cfgs.save_parallel
-
-        self.batch_size = self._cfgs.batch_size
-        self.gradient_accumulate_every = self._cfgs.gradient_accumulate_every
-
-        self.bucket = self._cfgs.bucket
-        self.n_reference = self._cfgs.n_reference
-
-        self.step = 0
-
-        self.device = train_device
+    def _init(self) -> None:
         self._dataset = DeciDiffuserDataset(self._cfgs.train_cfgs.dataset,
                                             batch_size=self._cfgs.algo_cfgs.batch_size,
                                             device=self._device,
-                                            horizon=self._cfgs.horizon,
-                                            discount=self._cfgs.discount,
-                                            returns_scale=self._cfgs.returns_scale,
-                                            include_returns=self._cfgs.include_returns,
+                                            horizon=self._cfgs.algo_cfgs.horizon,
+                                            discount=self._cfgs.algo_cfgs.gamma,
+                                            returns_scale=self._cfgs.dataset_cfgs.returns_scale,
+                                            include_returns=self._cfgs.dataset_cfgs.include_returns,
                                             )
 
     def _init_model(self) -> None:
@@ -119,42 +78,50 @@ class DD(BaseOffline):
         observation_dim = self._env.observation_space.shape[0]
         action_dim = self._env.action_space.shape[0]
         TUmodel = TemporalUnet(
-            horizon=self._cfgs.horizon,
+            horizon=self._cfgs.algo_cfgs.horizon,
             transition_dim=observation_dim,
             cond_dim=observation_dim,
-            dim_mults=self._cfgs.dim_mults,
-            returns_condition=self._cfgs.returns_condition,
-            dim=self._cfgs.dim,
-            condition_dropout=self._cfgs.condition_dropout,
-            calc_energy=self._cfgs.calc_energy,
+            dim_mults=self._cfgs.model_cfgs.temporalU_model.dim_mults,
+            returns_condition=self._cfgs.model_cfgs.returns_condition,
+            dim=self._cfgs.model_cfgs.temporalU_model.dim,
+            condition_dropout=self._cfgs.model_cfgs.temporalU_model.condition_dropout,
+            calc_energy=self._cfgs.model_cfgs.temporalU_model.calc_energy,
 
         ).to(self._device)
         GDDModel = GaussianInvDynDiffusion(
             TUmodel,
-            horizon=self._cfgs.horizon,
+            horizon=self._cfgs.algo_cfgs.horizon,
             observation_dim=observation_dim,
             action_dim=action_dim,
-            n_timesteps=self._cfgs.n_diffusion_steps,
-            loss_type=self._cfgs.loss_type,
-            clip_denoised=self._cfgs.clip_denoised,
-            predict_epsilon=self._cfgs.predict_epsilon,
-            action_weight=self._cfgs.action_weight,
-            loss_weights=self._cfgs.loss_weights,
-            loss_discount=self._cfgs.loss_discount,
-            returns_condition=self._cfgs.returns_condition,
-            condition_guidance_w=self._cfgs.condition_guidance_w,
+            n_timesteps=self._cfgs.algo_cfgs.n_diffusion_steps,
+            loss_type=self._cfgs.train_cfgs.loss_type,
+            clip_denoised=self._cfgs.model_cfgs.diffuser_model.clip_denoised,
+            predict_epsilon=self._cfgs.model_cfgs.diffuser_model.predict_epsilon,
+            action_weight=self._cfgs.model_cfgs.diffuser_model.action_weight,
+            loss_weights=self._cfgs.model_cfgs.diffuser_model.loss_weights,
+            hidden_dim=self._cfgs.model_cfgs.diffuser_model.hidden_dim,
+            loss_discount=self._cfgs.model_cfgs.diffuser_model.loss_discount,
+            returns_condition=self._cfgs.model_cfgs.returns_condition,
+            ar_inv=self._cfgs.model_cfgs.diffuser_model.ar_inv,
+            train_only_inv=self._cfgs.model_cfgs.diffuser_model.train_only_inv,
+            condition_guidance_w=self._cfgs.model_cfgs.diffuser_model.condition_guidance_w,
+            test_ret=self._cfgs.model_cfgs.diffuser_model.test_ret
         ).to(self._device)
+        for name, layer in GDDModel.named_modules():
+            if isinstance(layer, nn.Linear):
+                initialize_layer(self._cfgs.model_cfgs.weight_initialization_mode, layer)
+
         self._actor = GDDModel
-        self._optimizer = torch.optim.Adam(self._actor.parameters(), lr=self._cfgs.learning_rate)
+        self._optimizer = torch.optim.Adam(self._actor.parameters(), lr=self._cfgs.model_cfgs.lr)
 
     def _train(
         self,
         batch: Tuple[torch.Tensor, ...],
     ) -> None:
 
-        for i in range(self.gradient_accumulate_every):
+        for i in range(self._cfgs.train_cfgs.gradient_accumulate_every):
             loss, infos = self._actor.loss(*batch)
-            loss = loss / self.gradient_accumulate_every
+            loss = loss / self._cfgs.train_cfgs.gradient_accumulate_every
             loss.backward()
 
         self._logger.store(
@@ -166,24 +133,3 @@ class DD(BaseOffline):
         )
         self._optimizer.step()
         self._optimizer.zero_grad()
-
-    def trans_dataset(self) -> dict:
-
-        name_trans_dict = {
-            'obs': 'observations',
-            'next_obs': 'next_observations',
-            'action': 'actions',
-            'reward': 'rewards',
-            'done': 'terminals',
-            'cost': 'cost'
-        }
-        raw_dataset = OfflineDataset(
-            self._cfgs.train_cfgs.dataset,
-            batch_size=self._cfgs.algo_cfgs.batch_size,
-            device=self._device,
-        )
-        processed_dataset = {}
-        for key, value in raw_dataset.__dict__.items():
-            if not key[0] == '_':
-                processed_dataset[name_trans_dict[key]] = value.cpu().numpy()
-        return processed_dataset

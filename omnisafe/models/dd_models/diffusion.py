@@ -291,7 +291,7 @@ class GaussianInvDynDiffusion(nn.Module):
     def __init__(self, model, horizon, observation_dim, action_dim, n_timesteps=1000,
                  loss_type='l1', clip_denoised=False, predict_epsilon=True, hidden_dim=256,
                  action_weight=1.0, loss_discount=1.0, loss_weights=None, returns_condition=False,
-                 condition_guidance_w=0.1, ar_inv=False, train_only_inv=False):
+                 condition_guidance_w=0.1, ar_inv=False, train_only_inv=False,test_ret=0.9):
         super().__init__()
         self.horizon = horizon
         self.observation_dim = observation_dim
@@ -300,6 +300,7 @@ class GaussianInvDynDiffusion(nn.Module):
         self.model = model
         self.ar_inv = ar_inv
         self.train_only_inv = train_only_inv
+        self.test_ret=test_ret
         if self.ar_inv:
             self.inv_model = ARInvModel(hidden_dim=hidden_dim, observation_dim=observation_dim, action_dim=action_dim)
         else:
@@ -556,8 +557,9 @@ class GaussianInvDynDiffusion(nn.Module):
             torch.Tensor: Action.
         """
         device = obs.device
+
         # obs = torch.from_numpy(self.dataset_normalizer.normalize(obs.cpu().numpy(), 'observations')).to(device)
-        returns = 0.9 * torch.ones(1, 1, device=device)
+        returns = self.test_ret * torch.ones(1, 1, device=device)
         conditions = {0: obs}
         samples = self.conditional_sample(conditions, returns=returns)
         obs_comb = torch.cat([samples[:, 0, :], samples[:, 1, :]], dim=-1)

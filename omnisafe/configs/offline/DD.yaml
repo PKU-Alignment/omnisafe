@@ -32,7 +32,13 @@ defaults:
     parallel: 1
     # vector_env_nums, offline only supports 1
     vector_env_nums: 1
-  # algorithm configurations
+    # algorithm configurations
+    #    n_steps_per_epoch: 10000
+    loss_type: 'l2'
+    #    n_train_steps: 1000000
+    #    batch_size: 32
+    gradient_accumulate_every: 2
+
   algo_cfgs:
     # gamma used in RL
     gamma: 0.99
@@ -40,14 +46,14 @@ defaults:
     batch_size: 32
     # step per epoch, algo will log and eval every epoch
     steps_per_epoch: 50
-    # phi used in BCQ
-    phi: 0.05
-    # sample action numbers when update critic
-    sampled_action_num: 10
-    # minimum weighting when compute Q, Q = w * min(q1, q2) + (1 - w) * max(q1, q2)
-    minimum_weighting: 0.75
-    # The soft update coefficient
-    polyak: 0.005
+
+    model: 'models.TemporalUnet'
+
+    diffusion: 'models.GaussianInvDynDiffusion'
+
+    horizon: 100
+
+    n_diffusion_steps: 200
   # logger configurations
   logger_cfgs:
     # use wandb for logging
@@ -64,74 +70,47 @@ defaults:
   model_cfgs:
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
-    # actor's cfgs
-    actor:
-      # Size of hidden layers
-      hidden_sizes: [ 256, 256, 256 ]
-      # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
-      activation: relu
-      # Learning rate of model
-      lr: 0.001
-    # critic's cfgs
-    critic:
-      # Size of hidden layers
-      hidden_sizes: [ 256, 256, 256 ]
-      # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
-      activation: relu
-      # Learning rate of model
-      lr: 0.001
 
-customs:
-  seed: 100
-  device: torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  bucket: '/home/aidiros/data/weights/'
-  dataset: SafetyPointCircle1-v0-mixed-beta0.5
+    returns_condition: True
 
-  ## model
-  model: 'models.MLPnet'
-  diffusion: 'models.GaussianInvDynDiffusion'
-  horizon: 100
-  n_diffusion_steps: 200
-  action_weight: 10
-  loss_weights: None
-  loss_discount: 1
-  predict_epsilon: True
-  dim_mults: [ 1, 4, 8 ]
-  returns_condition: True
-  calc_energy: False
-  dim: 128
-  condition_dropout: 0.25
-  condition_guidance_w: 1.2
-  test_ret: 0.9
-  renderer: 'dd_utils.MuJoCoRenderer'
+    lr: 0.0002
 
-  ## dataset
-  loader: 'datasets.SequenceDataset'
-  normalizer: 'SafeLimitsNormalizer'
-  preprocess_fns: [ ]
-  clip_denoised: True
-  use_padding: True
-  include_returns: True
-  discount: 0.99
-  max_path_length: 1000
-  hidden_dim: 256
-  ar_inv: False
-  train_only_inv: False
-  termination_penalty: -100
-  returns_scale: 10.0 # Determined using rewards from the dataset
+    diffuser_model:
 
-  ## training
-  n_steps_per_epoch: 10000
-  loss_type: 'l2'
-  n_train_steps: 1000000
-  batch_size: 32
-  learning_rate: 0.0002
-  gradient_accumulate_every: 2
-  ema_decay: 0.995
-  log_freq: 1000
-  save_freq: 10000
-  sample_freq: 10000
-  n_saves: 5
-  save_parallel: False
-  n_reference: 8
-  save_checkpoints: False
+      ar_inv: False
+
+      train_only_inv: False
+
+      action_weight: 10
+
+      loss_weights: None
+
+      loss_discount: 1
+
+      predict_epsilon: True
+
+      test_ret: 0.9
+
+      hidden_dim: 256
+
+      clip_denoised: True
+
+      condition_guidance_w: 1.2
+
+    temporalU_model:
+
+      dim_mults: [ 1, 4, 8 ]
+
+      calc_energy: False
+
+      dim: 128
+
+      condition_dropout: 0.25
+
+  dataset_cfgs:
+
+    use_padding: True
+
+    include_returns: True
+
+    returns_scale: 10.0 # Determined using rewards from the dataset
