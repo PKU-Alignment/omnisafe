@@ -57,7 +57,6 @@ class DD(BaseOffline):
             'deci_diffuser': self._actor,
         }
         self._logger.setup_torch_saver(what_to_save)
-
         self._logger.register_key('Loss/Loss_diffuser')
         self._logger.register_key('Loss/Loss_inv')
         self._logger.register_key('Loss/Loss_total')
