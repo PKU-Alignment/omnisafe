@@ -1,0 +1,137 @@
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+defaults:
+  # seed for random number generator
+  seed: 0
+  # training configurations
+  train_cfgs:
+    # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
+    device: cuda:0
+    # number of threads for torch
+    torch_threads: 16
+    # total number of steps to train
+    total_steps: 1000000
+    # dataset name
+    dataset: SafetyPointCircle1-v0-mixed-beta0.5
+    # evaluate_epoisodes
+    evaluate_epoisodes: 2
+    # parallel, offline only supports 1
+    parallel: 1
+    # vector_env_nums, offline only supports 1
+    vector_env_nums: 1
+  # algorithm configurations
+  algo_cfgs:
+    # gamma used in RL
+    gamma: 0.99
+    # batch size
+    batch_size: 32
+    # step per epoch, algo will log and eval every epoch
+    steps_per_epoch: 50
+    # phi used in BCQ
+    phi: 0.05
+    # sample action numbers when update critic
+    sampled_action_num: 10
+    # minimum weighting when compute Q, Q = w * min(q1, q2) + (1 - w) * max(q1, q2)
+    minimum_weighting: 0.75
+    # The soft update coefficient
+    polyak: 0.005
+  # logger configurations
+  logger_cfgs:
+    # use wandb for logging
+    use_wandb: False
+    # wandb project name
+    wandb_project: omnisafe
+    # use tensorboard for logging
+    use_tensorboard: True
+    # save model frequency
+    save_model_freq: 1
+    # save logger path
+    log_dir: "./runs"
+  # model configurations
+  model_cfgs:
+    # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
+    weight_initialization_mode: "kaiming_uniform"
+    # actor's cfgs
+    actor:
+      # Size of hidden layers
+      hidden_sizes: [ 256, 256, 256 ]
+      # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+      activation: relu
+      # Learning rate of model
+      lr: 0.001
+    # critic's cfgs
+    critic:
+      # Size of hidden layers
+      hidden_sizes: [ 256, 256, 256 ]
+      # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+      activation: relu
+      # Learning rate of model
+      lr: 0.001
+
+customs:
+  seed: 100
+  device: torch.device("cuda" if torch.cuda.is_available() else "cpu")
+  bucket: '/home/aidiros/data/weights/'
+  dataset: SafetyPointCircle1-v0-mixed-beta0.5
+
+  ## model
+  model: 'models.MLPnet'
+  diffusion: 'models.GaussianInvDynDiffusion'
+  horizon: 100
+  n_diffusion_steps: 200
+  action_weight: 10
+  loss_weights: None
+  loss_discount: 1
+  predict_epsilon: True
+  dim_mults: [ 1, 4, 8 ]
+  returns_condition: True
+  calc_energy: False
+  dim: 128
+  condition_dropout: 0.25
+  condition_guidance_w: 1.2
+  test_ret: 0.9
+  renderer: 'dd_utils.MuJoCoRenderer'
+
+  ## dataset
+  loader: 'datasets.SequenceDataset'
+  normalizer: 'SafeLimitsNormalizer'
+  preprocess_fns: [ ]
+  clip_denoised: True
+  use_padding: True
+  include_returns: True
+  discount: 0.99
+  max_path_length: 1000
+  hidden_dim: 256
+  ar_inv: False
+  train_only_inv: False
+  termination_penalty: -100
+  returns_scale: 10.0 # Determined using rewards from the dataset
+
+  ## training
+  n_steps_per_epoch: 10000
+  loss_type: 'l2'
+  n_train_steps: 1000000
+  batch_size: 32
+  learning_rate: 0.0002
+  gradient_accumulate_every: 2
+  ema_decay: 0.995
+  log_freq: 1000
+  save_freq: 10000
+  sample_freq: 10000
+  n_saves: 5
+  save_parallel: False
+  n_reference: 8
+  save_checkpoints: False
