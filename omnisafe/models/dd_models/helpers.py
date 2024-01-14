@@ -3,7 +3,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import omnisafe.dd_code.diffuser.utils as utils
 
 
 # -----------------------------------------------------------------------------#
@@ -162,8 +161,8 @@ class ValueLoss(nn.Module):
 
         if len(pred) > 1:
             corr = np.corrcoef(
-                utils.to_np(pred).squeeze(),
-                utils.to_np(targ).squeeze()
+                pred.detach().cpu().numpy().squeeze(),
+                targ.detach().cpu().numpy().squeeze()
             )[0, 1]
         else:
             corr = np.NaN
