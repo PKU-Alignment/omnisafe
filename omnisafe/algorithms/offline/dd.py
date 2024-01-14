@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of BCQ."""
+"""Implementation of Decision Diffusion."""
 
 from copy import deepcopy
 from typing import Any, Dict, Tuple
@@ -25,13 +25,12 @@ from omnisafe.algorithms.offline.base import BaseOffline
 from omnisafe.common.offline.dataset import DeciDiffuserDataset
 from omnisafe.models.dd_models.diffusion import GaussianInvDynDiffusion
 from omnisafe.models.dd_models.temporal import TemporalUnet
-from omnisafe.common.offline.dataset import OfflineDataset
 from omnisafe.utils.model import initialize_layer
 
 
 @registry.register
 class DD(BaseOffline):
-    """Decision Diffuser.
+    """Decision Diffusion.
 
     References:
         - Title: Is Conditional Generative Modeling all you need for Decision-Making?
