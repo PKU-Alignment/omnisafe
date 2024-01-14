@@ -1,0 +1,65 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    paths:
+      - setup.py
+      - pyproject.toml
+      - tests/**
+      - omnisafe/**
+      - .github/workflows/tests.yml
+  # Allow to trigger the workflow manually
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Test for Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.8", "3.9", "3.10"]
+      fail-fast: false
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: "recursive"
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          update-environment: true
+
+      - name: Upgrade pip
+        run: |
+          python -m pip install --upgrade pip setuptools
+
+      - name: Install OmniSafe
+        run: |
+          python -m pip install -vvv -e '.[test]'
+
+      - name: Test with pytest
+        run: |
+          make test
+
+      - name: Upload coverage reports to Codecov
+        if: ${{ matrix.python-version == '3.8'}}
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${CODECOV_TOKEN=634594d3-0416-4632-ab6a-3bf34a8c0af3}

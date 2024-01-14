@@ -1,0 +1,18 @@
+coverage:
+  precision: 2
+  round: nearest
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0.05%
+        branches:
+          - main
+          - dev
+    patch:
+      default:
+        target: 100%
+        informational: true
+        branches:
+          - main
+          - dev

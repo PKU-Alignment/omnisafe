@@ -1,0 +1,18 @@
+
+{
+    "seed": 0,
+    "algo_cfgs": {
+        "steps_per_epoch": 2048
+    },
+    "train_cfgs": {
+        "total_steps": 4096,
+        "torch_threads": 1,
+        "vector_env_nums": 2
+    },
+    "logger_cfgs": {
+        "use_wandb": false,
+        "log_dir": ""
+    },
+    "env_id": "SafetyAntVelocity-v1",
+    "algo": "PolicyGradient"
+}
