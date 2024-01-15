@@ -466,8 +466,10 @@ class DeciDiffuserDataset(OfflineDataset):
                                                   batch_size=batch_size,
                                                   gpu_threshold=gpu_threshold,
                                                   device=device)
-
-        self.episode_length = self._name_to_metadata[dataset_name].episode_length
+        if self._name_to_metadata[dataset_name].episode_length == None:
+            self.episode_length = torch.where(self.done == 1)[0][0].item() + 1
+        else:
+            self.episode_length = self._name_to_metadata[dataset_name].episode_length
         self.num_trajs = len(self.obs) // self.episode_length
         assert horizon <= self.episode_length, "Horizon is not allowed large than episode length."
         self.horizon = horizon
@@ -482,7 +484,7 @@ class DeciDiffuserDataset(OfflineDataset):
         # self.returns = (self.reward * self.discounts.repeat(self.num_trajs)).view(-1, self.episode_length)
         # for i in range(rewards.shape[0]):
         for start in range(rewards.shape[1]):
-            returns[:, start] = (rewards[:, start:] * self.discounts[:(self.episode_length-start)]).sum(dim=1)
+            returns[:, start] = (rewards[:, start:] * self.discounts[:(self.episode_length - start)]).sum(dim=1)
         self.returns = returns.view(-1)
 
     def get_condition(self, obs):
@@ -501,13 +503,13 @@ class DeciDiffuserDataset(OfflineDataset):
         traj_start_indices = torch.randint(low=0, high=self.episode_length - self.horizon, size=(self._batch_size,))
         indices = traj_indices * self.episode_length + traj_start_indices
 
-        batch_returns = self.returns[indices].view(-1,1) / self.returns_scale
+        batch_returns = self.returns[indices].view(-1, 1) / self.returns_scale
 
         indices = indices.view(-1, 1).repeat(1, self.horizon).view(-1) + torch.arange(self.horizon).repeat(
             self._batch_size)
 
-        batch_obs = self.obs[indices].view(self._batch_size,self.horizon,-1)
-        batch_action = self.action[indices].view(self._batch_size,self.horizon,-1)
+        batch_obs = self.obs[indices].view(self._batch_size, self.horizon, -1)
+        batch_action = self.action[indices].view(self._batch_size, self.horizon, -1)
         batch_conditions = self.get_condition(batch_obs)
         batch_trajectories = torch.cat([batch_action, batch_obs], dim=-1)
 
