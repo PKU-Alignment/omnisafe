@@ -92,7 +92,7 @@ defaults:
       hidden_dim: 256
       #是否对采样出的noise进行裁剪
       clip_denoised: True
-      #采样epsilon时使用的温度系数，超参数
+      #采样epsilon时的引导强度，该值越大，采样出的轨迹与条件越相关
       condition_guidance_w: 1.2
 
     temporalU_model:
