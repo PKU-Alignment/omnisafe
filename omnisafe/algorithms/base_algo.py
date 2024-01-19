@@ -47,11 +47,9 @@ class BaseAlgo(ABC):  # pylint: disable=too-few-public-methods
 
         self._init_env()
         self._init_model()
-
         self._init()
 
         self._init_log()
-
     @property
     def logger(self) -> Logger:
         """Get the logger."""

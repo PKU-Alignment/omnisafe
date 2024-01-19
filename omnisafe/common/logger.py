@@ -34,7 +34,7 @@ from omnisafe.utils.config import Config
 from omnisafe.utils.distributed import dist_statistics_scalar, get_rank
 
 
-# As of torch v1.9.0, torch.utils.tensorboard has a bug that is exposed by setuptools 59.6.0.  The
+# As of torch v1.9.0, torch.dd_utils.tensorboard has a bug that is exposed by setuptools 59.6.0.  The
 # bug is that it attempts to import distutils then access distutils.version without actually
 # importing distutils.version.  We can workaround this by prepopulating the distutils.version
 # submodule in the distutils module.

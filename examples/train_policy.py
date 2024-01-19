@@ -26,7 +26,7 @@ if __name__ == '__main__':
         '--algo',
         type=str,
         metavar='ALGO',
-        default='PPOLag',
+        default='BCQ',
         help='algorithm to train',
         choices=omnisafe.ALGORITHMS['all'],
     )
@@ -34,7 +34,7 @@ if __name__ == '__main__':
         '--env-id',
         type=str,
         metavar='ENV',
-        default='SafetyPointGoal1-v0',
+        default='SafetyPointCircle1-v0',
         help='the name of test environment',
     )
     parser.add_argument(
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--torch-threads',
         type=int,
-        default=16,
+        default=1,
         metavar='THREADS',
         help='number of threads to use for torch',
     )

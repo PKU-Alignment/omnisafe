@@ -63,7 +63,7 @@ class OfflineAdapter:
         if self._env.need_time_limit_wrapper:
             self._env = TimeLimit(self._env, 1000, device=self._device)
         self._env = ActionScale(self._env, device=self._device, high=1.0, low=-1.0)
-
+        # self._env =ObsNormalize(self._env,device=self._device)
         self._env.set_seed(seed)
 
     @property

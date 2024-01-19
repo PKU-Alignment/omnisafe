@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the math utils."""
+"""Implementation of the math dd_utils."""
 
 from __future__ import annotations
 

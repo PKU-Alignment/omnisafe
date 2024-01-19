@@ -21,33 +21,37 @@ defaults:
     # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
     device: cuda:0
     # number of threads for torch
-    torch_threads: 1
+    torch_threads: 16
     # total number of steps to train
     total_steps: 1000000
     # dataset name
     dataset: SafetyPointCircle1-v0-mixed-beta0.5
     # evaluate_epoisodes
-    evaluate_epoisodes: 2
+    evaluate_epoisodes: 0
     # parallel, offline only supports 1
     parallel: 1
     # vector_env_nums, offline only supports 1
     vector_env_nums: 1
-  # algorithm configurations
+
+    loss_type: 'l2'
+
+    gradient_accumulate_every: 2
+
   algo_cfgs:
     # gamma used in RL
     gamma: 0.99
     # batch size
-    batch_size: 256
+    batch_size: 32
     # step per epoch, algo will log and eval every epoch
-    steps_per_epoch: 300
-    # phi used in BCQ
-    phi: 0.05
-    # sample action numbers when update critic
-    sampled_action_num: 10
-    # minimum weighting when compute Q, Q = w * min(q1, q2) + (1 - w) * max(q1, q2)
-    minimum_weighting: 0.75
-    # The soft update coefficient
-    polyak: 0.005
+    steps_per_epoch: 1000
+
+    model: 'models.TemporalUnet'
+
+    diffusion: 'models.GaussianInvDynDiffusion'
+
+    horizon: 100
+
+    n_diffusion_steps: 200
   # logger configurations
   logger_cfgs:
     # use wandb for logging
@@ -57,26 +61,54 @@ defaults:
     # use tensorboard for logging
     use_tensorboard: True
     # save model frequency
-    save_model_freq: 100
+    save_model_freq: 1
     # save logger path
     log_dir: "./runs"
   # model configurations
   model_cfgs:
     # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
     weight_initialization_mode: "kaiming_uniform"
-    # actor's cfgs
-    actor:
-      # Size of hidden layers
-      hidden_sizes: [256, 256, 256]
-      # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
-      activation: relu
-      # Learning rate of model
-      lr: 0.001
-    # critic's cfgs
-    critic:
-      # Size of hidden layers
-      hidden_sizes: [256, 256, 256]
-      # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
-      activation: relu
-      # Learning rate of model
-      lr: 0.001
+    #是否启用Returns作为训练条件
+    returns_condition: True
+    #学习率设置
+    lr: 0.0002
+
+    diffuser_model:
+
+      ar_inv: False
+      #是否在训练过程中只启动对逆动力学模型的训练
+      train_only_inv: False
+
+      action_weight: 10
+      #loss的权重设置
+      loss_weights: None
+      #loss的折扣因子
+      loss_discount: 1
+
+      predict_epsilon: True
+      #在预测时设定的希望采样出轨迹的returns，由于算法对returns进行了归一化，因此该值设置为1附近的数最为合理
+      test_ret: 0.9
+      #隐藏层MLP的维度
+      hidden_dim: 256
+      #是否对采样出的noise进行裁剪
+      clip_denoised: True
+      #采样epsilon时的引导强度，该值越大，采样出的轨迹与条件越相关
+      condition_guidance_w: 1.2
+
+    temporalU_model:
+      #隐藏层网络结构参数
+      dim_mults: [ 1, 4, 8 ]
+
+      calc_energy: False
+      #隐藏层MLP维度
+      dim: 128
+      #计算loss时随机丢失条件信息condition的概率
+      condition_dropout: 0.25
+
+  dataset_cfgs:
+    #是否对数据集中的轨迹长度进行填充
+    use_padding: True
+    #是否在数据集中包含returns
+    include_returns: True
+    #对returns的缩放系数
+    returns_scale: 10.0 # Determined using rewards from the dataset

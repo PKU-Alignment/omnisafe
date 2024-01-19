@@ -447,3 +447,85 @@ class OfflineDatasetWithInit(OfflineDataset):
             batch_done.to(device=self._device),
             barch_init_obs.to(device=self._device),
         )
+
+
+class DeciDiffuserDataset(OfflineDataset):
+
+    def __init__(self,
+                 dataset_name: str,
+                 batch_size: int = 256,
+                 gpu_threshold: int = 1024,
+                 device: torch.device = DEVICE_CPU,
+                 horizon=64,
+                 discount=0.99,
+                 returns_scale=1000,
+                 include_returns=True,
+
+                 ):
+        super(DeciDiffuserDataset, self).__init__(dataset_name=dataset_name,
+                                                  batch_size=batch_size,
+                                                  gpu_threshold=gpu_threshold,
+                                                  device=device)
+        if self._name_to_metadata[dataset_name].episode_length == None:
+            self.episode_length = torch.where(self.done == 1)[0][0].item() + 1
+        else:
+            self.episode_length = self._name_to_metadata[dataset_name].episode_length
+        self.num_trajs = len(self.obs) // self.episode_length
+        assert horizon <= self.episode_length, "Horizon is not allowed large than episode length."
+        self.horizon = horizon
+        self.discount = discount
+        self.discounts = self.discount ** torch.arange(self.episode_length, device=device)
+        self.include_returns = include_returns
+        self.returns_scale = returns_scale
+
+        rewards = self.reward.view(-1, self.episode_length)
+        returns = torch.zeros_like(rewards)
+
+        # self.returns = (self.reward * self.discounts.repeat(self.num_trajs)).view(-1, self.episode_length)
+        # for i in range(rewards.shape[0]):
+        for start in range(rewards.shape[1]):
+            returns[:, start] = (rewards[:, start:] * self.discounts[:(self.episode_length - start)]).sum(dim=1)
+        self.returns = returns.view(-1)
+
+    def get_condition(self, obs):
+        '''
+        condition on current observation for planning
+        '''
+        return {0: obs[:, 0, :]}
+
+    def sample(
+        self,
+    ) -> tuple:
+        """Sample a batch of data from the dataset."""
+        # indices = torch.randint(low=0, high=len(self), size=(self._batch_size,), dtype=torch.int64)
+
+        traj_indices = torch.randint(low=0, high=self.num_trajs, size=(self._batch_size,))
+        traj_start_indices = torch.randint(low=0, high=self.episode_length - self.horizon, size=(self._batch_size,))
+        indices = traj_indices * self.episode_length + traj_start_indices
+
+        batch_returns = self.returns[indices].view(-1, 1) / self.returns_scale
+
+        indices = indices.view(-1, 1).repeat(1, self.horizon).view(-1) + torch.arange(self.horizon).repeat(
+            self._batch_size)
+
+        batch_obs = self.obs[indices].view(self._batch_size, self.horizon, -1)
+        batch_action = self.action[indices].view(self._batch_size, self.horizon, -1)
+        batch_conditions = self.get_condition(batch_obs)
+        batch_trajectories = torch.cat([batch_action, batch_obs], dim=-1)
+
+        if not self._pre_transfer:
+            batch_trajectories = batch_trajectories.to(device=self._device)
+            batch_returns = batch_returns.to(device=self._device)
+            for key, value in batch_conditions.items():
+                batch_conditions[key] = batch_conditions[key].to(device=self._device)
+
+        if self.include_returns:
+            return (
+                batch_trajectories,
+                batch_conditions,
+                batch_returns,
+            )
+        return (
+            batch_trajectories,
+            batch_conditions,
+        )

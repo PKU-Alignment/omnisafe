@@ -37,7 +37,7 @@ from omnisafe.algorithms.off_policy import (
 )
 
 # Offline Safe
-from omnisafe.algorithms.offline import BCQ, CCRR, CRR, VAEBC, BCQLag, COptiDICE
+from omnisafe.algorithms.offline import BCQ, CCRR, CRR, VAEBC, BCQLag, COptiDICE,DD
 
 # On-Policy Safe
 from omnisafe.algorithms.on_policy import (

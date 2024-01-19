@@ -20,6 +20,7 @@ from omnisafe.algorithms.offline.c_crr import CCRR
 from omnisafe.algorithms.offline.coptidice import COptiDICE
 from omnisafe.algorithms.offline.crr import CRR
 from omnisafe.algorithms.offline.vae_bc import VAEBC
+from omnisafe.algorithms.offline.dd import DD
 
 
-__all__ = ['BCQ', 'BCQLag', 'CCRR', 'CRR', 'COptiDICE', 'VAEBC']
+__all__ = ['BCQ', 'BCQLag', 'CCRR', 'CRR', 'COptiDICE', 'VAEBC','DD']

@@ -246,11 +246,16 @@ def get_default_kwargs_yaml(algo: str, env_id: str, algo_type: str) -> Config:
     kwargs = load_yaml(cfg_path)
     default_kwargs = kwargs['defaults']
     env_spec_kwargs = kwargs[env_id] if env_id in kwargs else None
+    algo_spec_kwargs = kwargs['customs'] if 'customs' in kwargs else None
 
     default_kwargs = Config.dict2config(default_kwargs)
 
     if env_spec_kwargs is not None:
         default_kwargs.recurisve_update(env_spec_kwargs)
+
+    if algo_spec_kwargs is not None:
+        default_kwargs.recurisve_update(algo_spec_kwargs)
+
 
     return default_kwargs
 
