@@ -49,7 +49,7 @@ def cls_free_cond(actor: DecisionDiffuserActor) -> None:
             device=DEVICE,
         )
         state_cond = {0: state_cond}
-        x = actor._model.conditional_sample(
+        x = actor.model.conditional_sample(
             state_cond,
             cls_free_condition_list=[cls_free_cond1, cls_free_cond2],
         )
@@ -73,7 +73,7 @@ def state_cond(actor: DecisionDiffuserActor) -> None:
         )
         state_cond = {0: state_cond, 79: torch.tensor([[4.0, 1.0]], device=DEVICE)}
         dummy_cls_cond = torch.tensor([[0.0, 0.0]], device=DEVICE)
-        x = actor._model.conditional_sample(state_cond, cls_free_condition=[dummy_cls_cond])
+        x = actor.model.conditional_sample(state_cond, cls_free_condition=[dummy_cls_cond])
         obs = x.cpu().numpy()
         xys = obs[0, :, 0:2]
         plt.scatter(
@@ -98,7 +98,7 @@ def both_cond(actor: DecisionDiffuserActor) -> None:
         )
         state_cond = {0: state_cond, 79: torch.tensor([[4.0, 1.0]], device=DEVICE)}
         cls_cond = torch.tensor([[1.0, 0.0]], device=DEVICE)
-        x = actor._model.conditional_sample(state_cond, cls_free_condition=[cls_cond])
+        x = actor.model.conditional_sample(state_cond, cls_free_condition=[cls_cond])
         obs = x.cpu().numpy()
         xys = obs[0, :, 0:2]
         plt.scatter(

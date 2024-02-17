@@ -101,15 +101,15 @@ class DecisionDiffuserActor(Actor):
         if not cls_free_condition_list:
             cls_free_condition_list = [
                 torch.zeros(self._cls_free_cond_dim),
-            ]  # use reward as cls free condition
+            ]  # use reward as classifier free condition
         state_conditions = {0: obs}
         if extra_state_condition is not None:
             state_conditions.update(extra_state_condition)
-        predicted_trajectory = self._model.conditional_sample(
+        predicted_trajectory = self.model.conditional_sample(
             state_conditions,
             cls_free_condition_list=cls_free_condition_list,
         )
         obs_comb = torch.cat([predicted_trajectory[:, 0, :], predicted_trajectory[:, 1, :]], dim=-1)
         obs_comb = obs_comb.reshape(-1, 2 * self._obs_dim)
-        action = self._model.inv_model(obs_comb)
+        action = self.model.inv_model(obs_comb)
         return action.flatten()

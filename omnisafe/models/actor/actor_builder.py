@@ -27,6 +27,7 @@ from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 
 
 # pylint: disable-next=too-few-public-methods
+# pylint: disable=fixme
 class ActorBuilder:
     """Class for building actor networks.
 

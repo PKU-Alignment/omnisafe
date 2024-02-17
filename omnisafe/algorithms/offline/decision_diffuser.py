@@ -23,8 +23,9 @@ import torch
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.offline.base import BaseOffline
-from omnisafe.common.offline.sequence_dataset import SequenceDataset  # type: ignore
+from omnisafe.common.offline.sequence_dataset import RewardBatch, SequenceDataset
 from omnisafe.models.actor import DecisionDiffuserActor
+from omnisafe.utils.config import Config
 from omnisafe.utils.ema import EMA
 
 
@@ -37,6 +38,14 @@ class DecisionDiffuser(BaseOffline):
         - Author: Fujimoto, ScottMeger, DavidPrecup, Doina.
         - URL: `https://arxiv.org/abs/1812.02900`
     """
+
+    def __init__(self, env_id: str, cfgs: Config) -> None:
+        """Initialize an instance of :class:`BaseOffline`."""
+        super().__init__(env_id, cfgs)
+
+        self._actor: DecisionDiffuserActor
+        self.epoch: int = 0
+        self._step: int = 0
 
     def _init_log(self) -> None:
         """Log the VAE-BC specific information.
@@ -67,13 +76,14 @@ class DecisionDiffuser(BaseOffline):
             max_path_length=self._cfgs.train_cfgs.max_path_length,
             reward_discount=self._cfgs.train_cfgs.discount,
         )
+        self._step = 0
 
-        def data_iter(batch_size: int, x: torch.utils.data.Dataset) -> Iterator[torch.Tensor]:
-            num_examples = len(x)  # type: ignore
+        def data_iter(batch_size: int, x: SequenceDataset) -> Iterator[RewardBatch]:
+            num_examples = len(x)
             indices = list(range(num_examples))
             np.random.shuffle(indices)
             for i in range(0, num_examples, batch_size):
-                batch_indices = torch.tensor(indices[i : min(i + batch_size, num_examples)])
+                batch_indices = indices[i : min(i + batch_size, num_examples)]
                 yield x[batch_indices]
 
         self._dataloader = data_iter(self._cfgs.algo_cfgs.batch_size, self._seq_dataset)
@@ -92,20 +102,15 @@ class DecisionDiffuser(BaseOffline):
         self._update_ema_every = self._cfgs.train_cfgs.update_ema_every
         self._step_start_ema = self._cfgs.train_cfgs.step_start_ema
 
-        self._denoise_opt = torch.optim.Adam(
-            self._actor._model.model.parameters(),
+        self._opt = torch.optim.Adam(
+            self._actor.parameters(),
             lr=self._cfgs.model_cfgs.learning_rate,
-        )
-        self._act_opt = torch.optim.Adam(
-            self._actor._model.inv_model.parameters(),
-            lr=self._cfgs.model_cfgs.inv_ar_learning_rate,
         )
 
         self._reset_parameters()
-        self._step = 0
 
     def _reset_parameters(self) -> None:
-        self._actor._model.load_state_dict(self._learn_model._model.state_dict())
+        self._actor.load_state_dict(self._learn_model.state_dict())
 
     def _step_ema(self) -> None:
         if self._step < self._step_start_ema:
@@ -164,13 +169,12 @@ class DecisionDiffuser(BaseOffline):
         state_condition: Dict[int, torch.Tensor],
         cls_free_conditions: List[torch.Tensor],
     ) -> None:
-        loss, infos = self._learn_model._model.loss(x, state_condition, cls_free_conditions)
+        # pylint: disable=arguments-differ
+        loss, infos = self._learn_model.model.loss(x, state_condition, cls_free_conditions)
 
-        self._denoise_opt.zero_grad()
-        self._act_opt.zero_grad()
+        self._opt.zero_grad()
         loss.backward()
-        self._denoise_opt.step()
-        self._act_opt.step()
+        self._opt.step()
 
         if self._step % self._update_ema_every == 0:
             self._step_ema()

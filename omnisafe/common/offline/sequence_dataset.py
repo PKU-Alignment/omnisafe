@@ -11,38 +11,53 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Implementation of SequenceDataset."""
 
 
 # ruff: noqa
 # flake8: noqa
-# type: ignore
 
 import os
 import pickle
 from collections import namedtuple
+from typing import List, Union
 
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 
 
-RewardBatch = namedtuple('Batch', 'trajectories conditions returns')
+RewardBatch = namedtuple('RewardBatch', 'trajectories conditions returns')
 
 
 class SequenceDataset(Dataset):
+    """ "A dataset class for sequence data used in reinforcement learning."""
+
     def __init__(
         self,
-        dataset_name,
-        horizon=30,
-        max_n_episodes=10000,
-        max_path_length=300,
-        reward_discount=0.99,
-        returns_scale=300,
-        device: torch.device = "cpu",
+        dataset_name: str,
+        horizon: int = 30,
+        max_n_episodes: int = 10000,
+        max_path_length: int = 300,
+        reward_discount: float = 0.99,
+        returns_scale: int = 300,
+        device: torch.device = torch.device("cpu"),
     ) -> None:
+        """
+        A dataset class for sequence data used in reinforcement learning.
+
+        Args:
+            dataset_name (str): The name of the dataset file.
+            horizon (int, optional): The length of each sequence. Defaults to 30.
+            max_n_episodes (int, optional): The maximum number of episodes to include in the dataset. Defaults to 10000.
+            max_path_length (int, optional): The maximum length of each episode. Defaults to 300.
+            reward_discount (float, optional): The discount factor for rewards. Defaults to 0.99.
+            returns_scale (int, optional): The scaling factor for returns. Defaults to 300.
+            device (torch.device, optional): The device to use for tensor operations. Defaults to "cpu".
+        """
         self._horizon = horizon
         self._dict = {
-            'path_lengths': torch.zeros(max_n_episodes, dtype=torch.int64),
+            'path_lengths': np.zeros((max_n_episodes,), dtype=np.int64),
         }
         self._count = 0
         self._device = device
@@ -53,12 +68,13 @@ class SequenceDataset(Dataset):
 
         self._discount = reward_discount
         self._discounts = self._discount ** np.arange(self._max_path_length)[:, None]
+        self.keys: List[str] = []
 
         if os.path.exists(dataset_name) and dataset_name.endswith('.pkl'):
             # Load data from local .npz file
             try:
-                with open(dataset_name, 'rb') as dataset_name:
-                    data = pickle.load(dataset_name)
+                with open(dataset_name, 'rb') as f:
+                    data = pickle.load(f)
             except Exception as e:  # noqa: BLE001
                 raise ValueError(f'Failed to load data from {dataset_name}') from e
         else:
@@ -67,21 +83,20 @@ class SequenceDataset(Dataset):
                 'cannot find the file or the extension name is not .pkl'
             )
 
-        for i in range(len(data)):
-            self._add_path(data[i])
+        for d in data:
+            self._add_path(d)
 
         self._finalize()
         self._indices = self._make_indices(self._dict["path_lengths"], horizon)
 
-    def _add_keys(self, path):
-        self.keys = []
+    def _add_keys(self, path: dict):
         if self.keys:
             return
         for key in path.keys():
             if key not in ['infos', 'env_infos']:
                 self.keys.append(key)
 
-    def _add_path(self, path):
+    def _add_path(self, path: dict):
         path_length = len(path['observations'])
         assert path_length <= self._max_path_length
         if self._count >= self._max_n_episodes:
@@ -124,15 +139,15 @@ class SequenceDataset(Dataset):
     def __len__(self):
         return len(self._indices)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: Union[int, List[int]]):
         if isinstance(idx, int):
             idx = [idx]
-        indexs = self._indices[idx]
+        indices = self._indices[idx]
         state_conditions = []
         trajectories = []
         cls_free_conds = []
-        for i in range(len(indexs)):
-            path_ind, start, end = indexs[i]
+        for ix in indices:
+            path_ind, start, end = ix
             observation = self._dict["observations"][path_ind, start:end]
             action = self._dict["actions"][path_ind, start:end]
             trajectorie = np.concatenate([action, observation], axis=-1)

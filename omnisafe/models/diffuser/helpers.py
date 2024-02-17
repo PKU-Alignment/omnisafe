@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # ruff: noqa
+# pylint: disable=missing-module-docstring, missing-function-docstring, missing-class-docstring
 
 # type: ignore
 
@@ -116,7 +117,6 @@ def cosine_beta_schedule(timesteps, s=0.008, dtype=torch.float32):
 def apply_state_conditioning(x, state_conditions, action_dim=0):
     # action dim is always 0 for decision diffusion
     # for compatibility reason, see plan diffuser
-    # TODO: add url
     for t, val in state_conditions.items():
         x[:, t, action_dim:] = val.clone()
     return x
@@ -133,12 +133,12 @@ class WeightedLoss(nn.Module):
         self.register_buffer('weights', weights)
         self.action_dim = action_dim
 
-    def forward(self, pred, targ):
+    def forward(self, pred, target):
         """
-        pred, targ : tensor
+        pred, target : tensor
             [ batch_size x horizon x transition_dim ]
         """
-        loss = self._loss(pred, targ)
+        loss = self._loss(pred, target)
         weighted_loss = (loss * self.weights).mean()
         a0_loss = (loss[:, 0, : self.action_dim] / self.weights[0, : self.action_dim]).mean()
         return weighted_loss, {'a0_loss': a0_loss}
@@ -149,12 +149,12 @@ class WeightedStateLoss(nn.Module):
         super().__init__()
         self.register_buffer('weights', weights)
 
-    def forward(self, pred, targ):
+    def forward(self, pred, target):
         """
-        pred, targ : tensor
+        pred, target : tensor
             [ batch_size x horizon x transition_dim ]
         """
-        loss = self._loss(pred, targ)
+        loss = self._loss(pred, target)
         weighted_loss = (loss * self.weights).mean()
         return weighted_loss, {'a0_loss': weighted_loss}
 
