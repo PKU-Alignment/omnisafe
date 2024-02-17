@@ -1,3 +1,20 @@
+"""
+Temporal U-Net model.
+
+This module implements the Temporal U-Net model, which is a type of convolutional neural network
+designed for processing temporal data. It consists of several components such as residual blocks,
+linear attention, global mixing, and downsampling/upsampling layers.
+
+Classes:
+- Residual: Residual module.
+- PreNorm: PreNorm module.
+- LinearAttention: LinearAttention module.
+- GlobalMixing: GlobalMixing module.
+- ResidualTemporalBlock: Residual Temporal Block module.
+- TemporalUnet: Temporal U-Net module.
+"""
+
+# ... (existing code)
 # Copyright 2022-2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,6 +54,12 @@ from omnisafe.models.diffuser.helpers import (  # type: ignore
 class Residual(nn.Module):
     """
     Residual module.
+
+    Args:
+        fn (nn.Module): The function module to be applied to the input tensor.
+
+    Attributes:
+        fn (nn.Module): The function module to be applied to the input tensor.
     """
 
     def __init__(self, fn: nn.Module) -> None:
@@ -49,8 +72,6 @@ class Residual(nn.Module):
 
         Args:
             x (torch.Tensor): Input tensor.
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
 
         Returns:
             torch.Tensor: Output tensor.
@@ -61,6 +82,21 @@ class Residual(nn.Module):
 class PreNorm(nn.Module):
     """
     PreNorm module.
+
+    This module applies instance normalization to the input tensor before passing it through the given module.
+
+    Args:
+        dim (int): Number of channels in the input tensor.
+        fn (nn.Module): The module to be applied to the normalized input tensor.
+
+    Attributes:
+        fn (nn.Module): The module to be applied to the normalized input tensor.
+        norm (nn.InstanceNorm2d): Instance normalization layer.
+
+    Methods:
+        forward(x: torch.Tensor) -> torch.Tensor:
+            Forward pass of the PreNorm module.
+
     """
 
     def __init__(self, dim: int, fn: nn.Module) -> None:
@@ -85,6 +121,11 @@ class PreNorm(nn.Module):
 class LinearAttention(nn.Module):
     """
     LinearAttention module performs linear attention mechanism.
+
+    Args:
+        dim (int): Input dimension of the tensor.
+        heads (int, optional): Number of attention heads. Defaults to 4.
+        dim_head (int, optional): Dimension of each attention head. Defaults to 128.
     """
 
     def __init__(self, dim: int, heads: int = 4, dim_head: int = 128) -> None:
@@ -122,17 +163,13 @@ class LinearAttention(nn.Module):
 class GlobalMixing(nn.Module):
     """
     GlobalMixing module performs global mixing of features using self-attention mechanism.
+    Args:
+        dim (int): Input feature dimension.
+        heads (int, optional): Number of attention heads. Defaults to 4.
+        dim_head (int, optional): Dimension of each attention head. Defaults to 128.
     """
 
     def __init__(self, dim: int, heads: int = 4, dim_head: int = 128) -> None:
-        """
-        GlobalMixing module performs global mixing of features using self-attention mechanism.
-
-        Args:
-            dim (int): Input feature dimension.
-            heads (int, optional): Number of attention heads. Defaults to 4.
-            dim_head (int, optional): Dimension of each attention head. Defaults to 128.
-        """
         super().__init__()
         self.heads = heads
         hidden_dim = dim_head * heads
@@ -235,6 +272,21 @@ class ResidualTemporalBlock(nn.Module):
 class TemporalUnet(nn.Module):
     """
     Temporal U-Net module.
+
+    Args:
+        horizon (int): The length of the time horizon.
+        transition_dim (int): The dimension of the transition.
+        cls_free_condition_dim (int, optional): The dimension of the class-free condition. Defaults to 1.
+        dim (int, optional): The base dimension. Defaults to 128.
+        dim_mults (List[int], optional): The list of dimension multipliers for each resolution level. Defaults to None.
+        cls_free_condition (bool, optional): Whether to use class-free condition. Defaults to True.
+        condition_dropout (float, optional): The dropout rate for the condition. Defaults to 0.1.
+        kernel_size (int, optional): The kernel size for the convolutional blocks. Defaults to 5.
+
+    Attributes:
+        time_dim (int): The dimension of the time input.
+        returns_dim (int): The dimension of the returns input.
+
     """
 
     def __init__(
@@ -248,7 +300,6 @@ class TemporalUnet(nn.Module):
         condition_dropout: float = 0.1,
         kernel_size: int = 5,
     ) -> None:
-        # pylint: disable=too-many-arguments
         super().__init__()
 
         dim_mults = dim_mults or [1, 2, 4, 8]
