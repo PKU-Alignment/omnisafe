@@ -11,20 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""A class representing the Exponential Moving Average (EMA).
 
-"""Implementation of EMA."""
-
+EMA is a statistical calculation used to analyze data points by creating a series of averages of different
+subsets of the full data set. It is commonly used in machine learning to update model parameters with a
+weighted average of the current parameters and the previous average.
+"""
 
 import torch
 from torch import nn
 
 
 class EMA:
-    """
-    A class representing the Exponential Moving Average (EMA).
+    """A class representing the Exponential Moving Average (EMA).
 
-    EMA is a statistical calculation used to analyze data points by creating a series of averages of different subsets of the full data set.
-    It is commonly used in machine learning to update model parameters with a weighted average of the current parameters and the previous average.
+    EMA is a statistical calculation used to analyze data points by creating a series of averages of different
+    subsets of the full data set. It is commonly used in machine learning to update model parameters with a
+    weighted average of the current parameters and the previous average.
 
     Args:
         beta (float): The smoothing factor for the EMA calculation.
@@ -33,11 +36,17 @@ class EMA:
         beta (float): The smoothing factor for the EMA calculation.
 
     Methods:
-        update_model_average(ma_model, current_model): Update the model average parameters using exponential moving average.
+        update_model_average(ma_model, current_model): Update the model average parameters using exponential
+        moving average.
         update_average(old, new): Update the average value using exponential moving average.
     """
 
     def __init__(self, beta: float) -> None:
+        """Initialize the EMA object.
+
+        Args:
+            beta (float): The smoothing factor for the EMA calculation.
+        """
         super().__init__()
         self.beta = beta
 
@@ -56,8 +65,7 @@ class EMA:
             ma_params.data = self.update_average(old_weight, up_weight)
 
     def update_average(self, old: torch.Tensor, new: torch.Tensor) -> torch.Tensor:
-        """
-        Updates the average value using exponential moving average.
+        """Updates the average value using exponential moving average.
 
         Args:
             old (torch.Tensor): The previous average value.

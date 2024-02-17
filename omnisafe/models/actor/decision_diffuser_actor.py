@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of VAE."""
+"""Implementation of DecisionDiffuser algorithm."""
 
 from typing import Dict, List, Optional
 
@@ -21,6 +21,7 @@ from torch.distributions import Distribution
 
 from omnisafe.models.base import Actor
 from omnisafe.models.diffuser import GaussianInvDynDiffusion, TemporalUnet
+from omnisafe.models.diffuser.types import StateCond
 from omnisafe.typing import OmnisafeSpace
 
 
@@ -67,6 +68,15 @@ class DecisionDiffuserActor(Actor):
             action_dim=self._act_dim,
             cls_free_condition_guidance_w=1.2,
         )
+
+    def loss(
+        self,
+        x: torch.Tensor,
+        state_condition: StateCond,
+        cls_free_conditions: torch.Tensor,
+    ) -> torch.Tensor:
+        """Compute the loss for model."""
+        return self._model.loss(x, state_condition, cls_free_conditions)
 
     def _distribution(self, obs: torch.Tensor) -> Distribution:
         raise NotImplementedError

@@ -14,5 +14,5 @@
 
 """Diffuser models."""
 
-from omnisafe.models.diffuser.diffusion import GaussianInvDynDiffusion  # type: ignore
+from omnisafe.models.diffuser.diffusion import GaussianInvDynDiffusion
 from omnisafe.models.diffuser.temporal_unet import TemporalUnet

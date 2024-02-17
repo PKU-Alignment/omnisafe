@@ -1,20 +1,3 @@
-"""
-Temporal U-Net model.
-
-This module implements the Temporal U-Net model, which is a type of convolutional neural network
-designed for processing temporal data. It consists of several components such as residual blocks,
-linear attention, global mixing, and downsampling/upsampling layers.
-
-Classes:
-- Residual: Residual module.
-- PreNorm: PreNorm module.
-- LinearAttention: LinearAttention module.
-- GlobalMixing: GlobalMixing module.
-- ResidualTemporalBlock: Residual Temporal Block module.
-- TemporalUnet: Temporal U-Net module.
-"""
-
-# ... (existing code)
 # Copyright 2022-2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,10 +12,21 @@ Classes:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Temporal U-Net model.
 
-# pylint: disable=too-many-instance-attributes, too-many-arguments
+This module implements the Temporal U-Net model, which is a type of convolutional neural network
+designed for processing temporal data. It consists of several components such as residual blocks,
+linear attention, global mixing, and downsampling/upsampling layers.
 
-"""Temporal U-Net model."""
+Classes:
+- Residual: Residual module.
+- PreNorm: PreNorm module.
+- LinearAttention: LinearAttention module.
+- GlobalMixing: GlobalMixing module.
+- ResidualTemporalBlock: Residual Temporal Block module.
+- TemporalUnet: Temporal U-Net module.
+"""
+
 
 from typing import List, Optional
 
@@ -43,17 +37,11 @@ from einops import rearrange
 from einops.layers.torch import Rearrange
 from torch.distributions import Bernoulli
 
-from omnisafe.models.diffuser.helpers import (  # type: ignore
-    Conv1dBlock,
-    Downsample1d,
-    SinusoidalPosEmb,
-    Upsample1d,
-)
+from omnisafe.models.diffuser.helpers import Conv1dBlock, Downsample1d, SinusoidalPosEmb, Upsample1d
 
 
 class Residual(nn.Module):
-    """
-    Residual module.
+    """Residual module.
 
     Args:
         fn (nn.Module): The function module to be applied to the input tensor.
@@ -63,12 +51,12 @@ class Residual(nn.Module):
     """
 
     def __init__(self, fn: nn.Module) -> None:
+        """Initialize the Residual module."""
         super().__init__()
         self.fn = fn
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass of the Residual module.
+        """Forward pass of the Residual module.
 
         Args:
             x (torch.Tensor): Input tensor.
@@ -80,8 +68,7 @@ class Residual(nn.Module):
 
 
 class PreNorm(nn.Module):
-    """
-    PreNorm module.
+    """PreNorm module.
 
     This module applies instance normalization to the input tensor before passing it through the given module.
 
@@ -100,13 +87,13 @@ class PreNorm(nn.Module):
     """
 
     def __init__(self, dim: int, fn: nn.Module) -> None:
+        """Initialize the PreNorm module."""
         super().__init__()
         self.fn = fn
         self.norm = nn.InstanceNorm2d(dim, affine=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass of the PreNorm module.
+        """Forward pass of the PreNorm module.
 
         Args:
             x (torch.Tensor): Input tensor.
@@ -119,8 +106,7 @@ class PreNorm(nn.Module):
 
 
 class LinearAttention(nn.Module):
-    """
-    LinearAttention module performs linear attention mechanism.
+    """LinearAttention module performs linear attention mechanism.
 
     Args:
         dim (int): Input dimension of the tensor.
@@ -129,6 +115,7 @@ class LinearAttention(nn.Module):
     """
 
     def __init__(self, dim: int, heads: int = 4, dim_head: int = 128) -> None:
+        """Initialize the LinearAttention module."""
         super().__init__()
         self.heads = heads
         hidden_dim = dim_head * heads
@@ -136,8 +123,7 @@ class LinearAttention(nn.Module):
         self.to_out = nn.Conv2d(hidden_dim, dim, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass of the LinearAttention module.
+        """Forward pass of the LinearAttention module.
 
         Args:
             x (torch.Tensor): Input tensor.
@@ -161,8 +147,8 @@ class LinearAttention(nn.Module):
 
 
 class GlobalMixing(nn.Module):
-    """
-    GlobalMixing module performs global mixing of features using self-attention mechanism.
+    """GlobalMixing module performs global mixing of features using self-attention mechanism.
+
     Args:
         dim (int): Input feature dimension.
         heads (int, optional): Number of attention heads. Defaults to 4.
@@ -170,6 +156,7 @@ class GlobalMixing(nn.Module):
     """
 
     def __init__(self, dim: int, heads: int = 4, dim_head: int = 128) -> None:
+        """Initialize the GlobalMixing module."""
         super().__init__()
         self.heads = heads
         hidden_dim = dim_head * heads
@@ -177,8 +164,7 @@ class GlobalMixing(nn.Module):
         self.to_out = nn.Conv2d(hidden_dim, dim, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass of the GlobalMixing module.
+        """Forward pass of the GlobalMixing module.
 
         Args:
             x (Tensor): Input tensor of shape (batch_size, channels, height, width).
@@ -202,8 +188,7 @@ class GlobalMixing(nn.Module):
 
 
 class ResidualTemporalBlock(nn.Module):
-    """
-    Residual Temporal Block module.
+    """Residual Temporal Block module.
 
     Args:
         inp_channels (int): Number of input channels.
@@ -229,6 +214,7 @@ class ResidualTemporalBlock(nn.Module):
         kernel_size: int = 5,
         mish: bool = True,
     ) -> None:
+        """Initialize the ResidualTemporalBlock module."""
         super().__init__()
 
         self.blocks = nn.ModuleList(
@@ -253,8 +239,7 @@ class ResidualTemporalBlock(nn.Module):
         )
 
     def forward(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass of the ResidualTemporalBlock module.
+        """Forward pass of the ResidualTemporalBlock module.
 
         Args:
             x (torch.Tensor): Input tensor of shape (batch_size, inp_channels, horizon).
@@ -270,8 +255,7 @@ class ResidualTemporalBlock(nn.Module):
 
 
 class TemporalUnet(nn.Module):
-    """
-    Temporal U-Net module.
+    """Temporal U-Net module.
 
     Args:
         horizon (int): The length of the time horizon.
@@ -300,6 +284,8 @@ class TemporalUnet(nn.Module):
         condition_dropout: float = 0.1,
         kernel_size: int = 5,
     ) -> None:
+        # pylint: disable=too-many-arguments
+        """Initialize the TemporalUnet module."""
         super().__init__()
 
         dim_mults = dim_mults or [1, 2, 4, 8]
@@ -424,8 +410,7 @@ class TemporalUnet(nn.Module):
         use_dropout: bool = True,
         force_dropout: bool = False,
     ) -> torch.Tensor:
-        """
-        Forward pass of the TemporalUnet module.
+        """Forward pass of the TemporalUnet module.
 
         Args:
             x (torch.Tensor): Input tensor of shape (batch_size, horizon, transition).
@@ -445,7 +430,9 @@ class TemporalUnet(nn.Module):
             assert returns is not None
             cls_free_embed = self.cls_free_mlp(returns)
             if use_dropout:
-                mask = self.mask_dist.sample(sample_shape=(cls_free_embed.size(0), 1)).to(
+                mask = self.mask_dist.sample(
+                    sample_shape=torch.Size((cls_free_embed.size(0), 1)),
+                ).to(
                     cls_free_embed.device,
                 )
                 cls_free_embed = mask * cls_free_embed

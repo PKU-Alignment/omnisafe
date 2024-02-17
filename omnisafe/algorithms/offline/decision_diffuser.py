@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of VAE Behavior Cloning."""
+"""Implementation of Decision Diffuser."""
 
 import copy
 import time
-from typing import Any, Dict, Iterator, List, Tuple
+from typing import Any, Dict, Iterator, Tuple
 
 import numpy as np
 import torch
@@ -31,12 +31,10 @@ from omnisafe.utils.ema import EMA
 
 @registry.register
 class DecisionDiffuser(BaseOffline):
-    """Behavior Cloning with Variational Autoencoder.
+    """Decision Diffuser algorithm.
 
     References:
-        - Title: Off-Policy Deep Reinforcement Learning without Exploration
-        - Author: Fujimoto, ScottMeger, DavidPrecup, Doina.
-        - URL: `https://arxiv.org/abs/1812.02900`
+        - Something.
     """
 
     def __init__(self, env_id: str, cfgs: Config) -> None:
@@ -48,14 +46,12 @@ class DecisionDiffuser(BaseOffline):
         self._step: int = 0
 
     def _init_log(self) -> None:
-        """Log the VAE-BC specific information.
+        """Log the Decision Diffuser specific information.
 
         +-------------------------+----------------------------------------------------+
         | Things to log           | Description                                        |
         +=========================+====================================================+
         | Loss/Loss           | Loss of Diffusion and InvAR network               |
-        +-------------------------+----------------------------------------------------+
-        | Loss/Loss_A0         | Loss of Advantage                 |
         +-------------------------+----------------------------------------------------+
         """
         super()._init_log()
@@ -167,10 +163,10 @@ class DecisionDiffuser(BaseOffline):
         self,
         x: torch.Tensor,
         state_condition: Dict[int, torch.Tensor],
-        cls_free_conditions: List[torch.Tensor],
+        cls_free_conditions: torch.Tensor,
     ) -> None:
         # pylint: disable=arguments-differ
-        loss, infos = self._learn_model.model.loss(x, state_condition, cls_free_conditions)
+        loss = self._learn_model.loss(x, state_condition, cls_free_conditions)
 
         self._opt.zero_grad()
         loss.backward()
@@ -183,6 +179,5 @@ class DecisionDiffuser(BaseOffline):
         self._logger.store(
             **{
                 'Loss/Loss': loss.item(),
-                'Loss/Loss_A0': infos['a0_loss'].item(),
             },
         )

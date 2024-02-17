@@ -11,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Diffuser helpers."""
 
-# ruff: noqa
 # pylint: disable=missing-module-docstring, missing-function-docstring, missing-class-docstring
 
-# type: ignore
-
 import math
+from typing import Dict
 
 import numpy as np
 import torch
@@ -32,50 +31,64 @@ from einops.layers.torch import Rearrange
 
 
 class SinusoidalPosEmb(nn.Module):
-    def __init__(self, dim):
+    """Sinusoidal positional embedding."""
+
+    def __init__(self, dim: int) -> None:
+        """Initialize the sinusoidal positional embedding."""
         super().__init__()
         self.dim = dim
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Compute the forward pass of the sinusoidal positional embedding."""
         device = x.device
         half_dim = self.dim // 2
         emb = math.log(10000) / (half_dim - 1)
         emb = torch.exp(torch.arange(half_dim, device=device) * -emb)
         emb = x[:, None] * emb[None, :]
-        emb = torch.cat((emb.sin(), emb.cos()), dim=-1)
-        return emb
+        return torch.cat((emb.sin(), emb.cos()), dim=-1)
 
 
 class Downsample1d(nn.Module):
-    def __init__(self, dim):
+    """Downsample the input by a factor of 2."""
+
+    def __init__(self, dim: int) -> None:
+        """Initialize the Downsample1d."""
         super().__init__()
         self.conv = nn.Conv1d(dim, dim, 3, 2, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Compute the forward pass of the down."""
         return self.conv(x)
 
 
 class Upsample1d(nn.Module):
-    def __init__(self, dim):
+    """Upsample the input by a factor of 2."""
+
+    def __init__(self, dim: int) -> None:
+        """Initialize the Upsample1d."""
         super().__init__()
         self.conv = nn.ConvTranspose1d(dim, dim, 4, 2, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Compute the forward pass of the up."""
         return self.conv(x)
 
 
 class Conv1dBlock(nn.Module):
-    """
-    Conv1d --> GroupNorm --> Mish
-    """
+    """Conv1d --> GroupNorm --> Mish."""
 
-    def __init__(self, inp_channels, out_channels, kernel_size, mish=True, n_groups=8):
+    def __init__(
+        self,
+        inp_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        mish: bool = True,
+        n_groups: int = 8,
+    ) -> None:
+        """Initialize the Conv1dBlock."""
         super().__init__()
 
-        if mish:
-            act_fn = nn.Mish()
-        else:
-            act_fn = nn.SiLU()
+        act_fn: nn.Module = nn.Mish() if mish else nn.SiLU()
 
         self.block = nn.Sequential(
             nn.Conv1d(inp_channels, out_channels, kernel_size, padding=kernel_size // 2),
@@ -85,7 +98,8 @@ class Conv1dBlock(nn.Module):
             act_fn,
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Compute the forward pass of the Conv."""
         return self.block(x)
 
 
@@ -94,17 +108,19 @@ class Conv1dBlock(nn.Module):
 # -----------------------------------------------------------------------------#
 
 
-def extract(a, t, x_shape):
+def extract(a: torch.Tensor, t: torch.Tensor, x_shape: torch.Size) -> torch.Tensor:
+    """Extract the values from a tensor using the indices in t."""
     b, *_ = t.shape
     out = a.gather(-1, t)
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
 
-def cosine_beta_schedule(timesteps, s=0.008, dtype=torch.float32):
-    """
-    cosine schedule
-    as proposed in https://openreview.net/forum?id=-NEXDKk8gZ
-    """
+def cosine_beta_schedule(
+    timesteps: int,
+    s: float = 0.008,
+    dtype: torch.dtype = torch.float32,
+) -> torch.Tensor:
+    """Cosine schedule as proposed in https://openreview.net/forum?id=-NEXDKk8gZ for beta."""
     steps = timesteps + 1
     x = np.linspace(0, steps, steps)
     alphas_cumprod = np.cos(((x / steps) + s) / (1 + s) * np.pi * 0.5) ** 2
@@ -114,7 +130,12 @@ def cosine_beta_schedule(timesteps, s=0.008, dtype=torch.float32):
     return torch.tensor(betas_clipped, dtype=dtype)
 
 
-def apply_state_conditioning(x, state_conditions, action_dim=0):
+def apply_state_conditioning(
+    x: torch.Tensor,
+    state_conditions: Dict[int, torch.Tensor],
+    action_dim: int = 0,
+) -> torch.Tensor:
+    """Apply the state conditioning to the input tensor."""
     # action dim is always 0 for decision diffusion
     # for compatibility reason, see plan diffuser
     for t, val in state_conditions.items():
@@ -127,92 +148,18 @@ def apply_state_conditioning(x, state_conditions, action_dim=0):
 # -----------------------------------------------------------------------------#
 
 
-class WeightedLoss(nn.Module):
-    def __init__(self, weights, action_dim):
-        super().__init__()
-        self.register_buffer('weights', weights)
-        self.action_dim = action_dim
+class WeightedStateL2(nn.Module):
+    """Weighted L2 loss."""
 
-    def forward(self, pred, target):
-        """
-        pred, target : tensor
-            [ batch_size x horizon x transition_dim ]
-        """
-        loss = self._loss(pred, target)
-        weighted_loss = (loss * self.weights).mean()
-        a0_loss = (loss[:, 0, : self.action_dim] / self.weights[0, : self.action_dim]).mean()
-        return weighted_loss, {'a0_loss': a0_loss}
-
-
-class WeightedStateLoss(nn.Module):
-    def __init__(self, weights):
+    def __init__(self, weights: torch.Tensor) -> None:
+        """Initialize the weighted L2 loss."""
         super().__init__()
         self.register_buffer('weights', weights)
 
-    def forward(self, pred, target):
-        """
-        pred, target : tensor
-            [ batch_size x horizon x transition_dim ]
-        """
+    def forward(self, pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        """Compute the weighted L2 loss between the predicted and target values."""
         loss = self._loss(pred, target)
-        weighted_loss = (loss * self.weights).mean()
-        return weighted_loss, {'a0_loss': weighted_loss}
+        return (loss * self.weights).mean()
 
-
-class ValueLoss(nn.Module):
-    def __init__(self, *args):
-        super().__init__()
-
-    def forward(self, pred, targ):
-        loss = self._loss(pred, targ).mean()
-
-        if len(pred) > 1:
-            corr = np.corrcoef((pred).numpy().squeeze(), (targ).numpy().squeeze())[0, 1]
-        else:
-            corr = np.NaN
-
-        info = {
-            'mean_pred': pred.mean(),
-            'mean_targ': targ.mean(),
-            'min_pred': pred.min(),
-            'min_targ': targ.min(),
-            'max_pred': pred.max(),
-            'max_targ': targ.max(),
-            'corr': corr,
-        }
-
-        return loss, info
-
-
-class WeightedL1(WeightedLoss):
-    def _loss(self, pred, targ):
-        return torch.abs(pred - targ)
-
-
-class WeightedL2(WeightedLoss):
-    def _loss(self, pred, targ):
+    def _loss(self, pred: torch.Tensor, targ: torch.Tensor) -> torch.Tensor:
         return F.mse_loss(pred, targ, reduction='none')
-
-
-class WeightedStateL2(WeightedStateLoss):
-    def _loss(self, pred, targ):
-        return F.mse_loss(pred, targ, reduction='none')
-
-
-class ValueL1(ValueLoss):
-    def _loss(self, pred, targ):
-        return torch.abs(pred - targ)
-
-
-class ValueL2(ValueLoss):
-    def _loss(self, pred, targ):
-        return F.mse_loss(pred, targ, reduction='none')
-
-
-Losses = {
-    'l1': WeightedL1,
-    'l2': WeightedL2,
-    'state_l2': WeightedStateL2,
-    'value_l1': ValueL1,
-    'value_l2': ValueL2,
-}

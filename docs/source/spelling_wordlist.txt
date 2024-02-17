@@ -495,4 +495,11 @@ th
 convolutional
 mish
 ModuleList
+denoised
+fn
+downsampling
+upsampling
+Upsample
+Conv
+Downsample
 

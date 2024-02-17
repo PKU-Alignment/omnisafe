@@ -11,24 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""A module that implements Gaussian Inverse Dynamics Diffusion."""
 
-# ruff: noqa
-# type: ignore
-# pylint: disable=missing-module-docstring, missing-function-docstring, missing-class-docstring, too-many-arguments
+# pylint: disable=too-many-arguments
 
+
+from typing import List, Optional, Tuple
 
 import numpy as np
 import torch
 from torch import nn
 
-from .helpers import Losses, apply_state_conditioning, cosine_beta_schedule, extract
-from .temporal_unet import TemporalUnet
-from .types import StateCond
+from omnisafe.models.diffuser.helpers import (
+    WeightedStateL2,
+    apply_state_conditioning,
+    cosine_beta_schedule,
+    extract,
+)
+from omnisafe.models.diffuser.temporal_unet import TemporalUnet
+from omnisafe.models.diffuser.types import StateCond
 
 
 class GaussianInvDynDiffusion(nn.Module):
-    """
-    A module that implements Gaussian Inverse Dynamics Diffusion.
+    """A module that implements Gaussian Inverse Dynamics Diffusion.
 
     Args:
         model (TemporalUnet): The temporal U-Net model.
@@ -42,8 +47,10 @@ class GaussianInvDynDiffusion(nn.Module):
         loss_discount (float, optional): The discount factor for the loss. Defaults to 1.0.
         loss_weights (None, optional): The loss weights. Defaults to None.
         perform_cls_free_condition (bool, optional): Whether to perform class-free conditioning. Defaults to True.
-        cls_free_condition_guidance_w (float, optional): The guidance weight for class-free conditioning. Defaults to 0.1.
+        cls_free_condition_guidance_w (float, optional): The guidance weight for class-free conditioning.
+            Defaults to 0.1.
     """
+
     def __init__(
         self,
         model: TemporalUnet,
@@ -55,10 +62,26 @@ class GaussianInvDynDiffusion(nn.Module):
         predict_epsilon: bool = True,
         hidden_dim: int = 256,
         loss_discount: float = 1.0,
-        loss_weights: Optional[None] = None,
         perform_cls_free_condition: bool = True,
         cls_free_condition_guidance_w: float = 0.1,
-    ):
+    ) -> None:
+        """Initializes the Diffusion model.
+
+        Args:
+            model (TemporalUnet): The temporal U-Net model.
+            horizon (int): The diffusion horizon.
+            observation_dim (int): The dimension of the observation.
+            action_dim (int): The dimension of the action.
+            n_timesteps (int, optional): The number of diffusion timesteps. Defaults to 1000.
+            clip_denoised (bool, optional): Whether to clip the denoised output. Defaults to False.
+            predict_epsilon (bool, optional): Whether to predict epsilon. Defaults to True.
+            hidden_dim (int, optional): The dimension of the hidden layer. Defaults to 256.
+            loss_discount (float, optional): The discount factor for the loss. Defaults to 1.0.
+            loss_weights (None, optional): The loss weights. Defaults to None.
+            perform_cls_free_condition (bool, optional): Whether to perform class-free conditioning. Defaults to True.
+            cls_free_condition_guidance_w (float, optional): The guidance weight for class-free conditioning.
+                Defaults to 0.1.
+        """
         super().__init__()
         self.horizon = horizon
         self.observation_dim = observation_dim
@@ -74,7 +97,7 @@ class GaussianInvDynDiffusion(nn.Module):
 
         betas = cosine_beta_schedule(n_timesteps)
         alphas = 1.0 - betas
-        alphas_cumprod = torch.cumprod(alphas, axis=0)
+        alphas_cumprod = torch.cumprod(alphas, dim=0)
         alphas_cumprod_prev = torch.cat([torch.ones(1), alphas_cumprod[:-1]])
 
         self.n_timesteps = int(n_timesteps)
@@ -113,11 +136,10 @@ class GaussianInvDynDiffusion(nn.Module):
 
         # get loss coefficients and initialize objective
         loss_weights = self.get_loss_weights(loss_discount)
-        self.loss_fn = Losses['state_l2'](loss_weights)
+        self.loss_fn = WeightedStateL2(loss_weights)
 
     def get_loss_weights(self, discount: float) -> torch.Tensor:
-        """
-        Sets loss coefficients for trajectory.
+        """Sets loss coefficients for trajectory.
 
         Args:
             discount (float): The discount factor.
@@ -140,14 +162,17 @@ class GaussianInvDynDiffusion(nn.Module):
 
     # ------------------------------------------ sampling ------------------------------------------#
 
-    def predict_start_from_noise(self, x_t: torch.Tensor, t: int, noise: torch.Tensor) -> torch.Tensor:
-        """
-        If self.predict_epsilon, model output is (scaled) noise;
-        otherwise, model predicts x0 directly.
+    def predict_start_from_noise(
+        self,
+        x_t: torch.Tensor,
+        t: torch.Tensor,
+        noise: torch.Tensor,
+    ) -> torch.Tensor:
+        """If self.predict_epsilon, model output is (scaled) noise; otherwise, model predicts x0 directly.
 
         Args:
             x_t (torch.Tensor): The tensor at time t.
-            t (int): The time step.
+            t (torch.Tensor): The time step.
             noise (torch.Tensor): The noise tensor.
 
         Returns:
@@ -160,14 +185,18 @@ class GaussianInvDynDiffusion(nn.Module):
             )
         return noise
 
-    def q_posterior(self, x_start: torch.Tensor, x_t: torch.Tensor, t: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
-        Calculates the posterior q(x_{t-1} | x_t, x_0).
+    def q_posterior(
+        self,
+        x_start: torch.Tensor,
+        x_t: torch.Tensor,
+        t: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Calculates the posterior q(x_{t-1} | x_t, x_0).
 
         Args:
             x_start (torch.Tensor): The starting tensor for diffusion.
             x_t (torch.Tensor): The tensor at time t.
-            t (int): The time step.
+            t (torch.Tensor): The time step.
 
         Returns:
             tuple: A tuple containing the posterior mean, variance, and log variance.
@@ -180,15 +209,20 @@ class GaussianInvDynDiffusion(nn.Module):
         posterior_log_variance_clipped = extract(self.posterior_log_variance_clipped, t, x_t.shape)
         return posterior_mean, posterior_variance, posterior_log_variance_clipped
 
-    def p_mean_variance(self, x: torch.Tensor, state_condition: StateCond, t: int, cls_free_condition_list:List[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
-        Calculates the mean and variance for p(x_t | x_{t-1}, x_0).
+    def p_mean_variance(
+        self,
+        x: torch.Tensor,
+        state_condition: StateCond,
+        t: torch.Tensor,
+        cls_free_condition_list: List[torch.Tensor],
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Calculates the mean and variance for p(x_t | x_{t-1}, x_0).
 
         Args:
             x (torch.Tensor): The tensor at time t.
             state_condition (StateCond): The state condition.
-            t (int): The time step.
-            cls_free_condition_list: The class-free condition list.
+            t (torch.Tensor): The time step.
+            cls_free_condition_list (List[torch.Tensor]): The class-free condition list.
 
         Returns:
             tuple: A tuple containing the model mean, posterior variance, and posterior log variance.
@@ -229,15 +263,20 @@ class GaussianInvDynDiffusion(nn.Module):
         return model_mean, posterior_variance, posterior_log_variance
 
     @torch.no_grad()
-    def p_sample(self, x, state_condition, t, cls_free_condition_list):
-        """
-        Samples from p(x_t | x_{t-1}, x_0).
+    def p_sample(
+        self,
+        x: torch.Tensor,
+        state_condition: StateCond,
+        t: torch.Tensor,
+        cls_free_condition_list: List[torch.Tensor],
+    ) -> torch.Tensor:
+        """Samples from p(x_t | x_{t-1}, x_0).
 
         Args:
             x (torch.Tensor): The tensor at time t.
             state_condition (StateCond): The state condition.
-            t (int): The time step.
-            cls_free_condition_list: The class-free condition list.
+            t (torch.Tensor): The time step.
+            cls_free_condition_list (List[torch.Tensor]): The class-free condition list.
 
         Returns:
             torch.Tensor: The sampled tensor.
@@ -257,19 +296,16 @@ class GaussianInvDynDiffusion(nn.Module):
     @torch.no_grad()
     def p_sample_loop(
         self,
-        shape,
-        state_condition,
-        cls_free_condition_list,
-        return_diffusion=False,
-    ):
-        """
-        Performs the sampling loop for p(x_t | x_{t-1}, x_0).
+        shape: torch.Size,
+        state_condition: StateCond,
+        cls_free_condition_list: List[torch.Tensor],
+    ) -> torch.Tensor:
+        """Performs the sampling loop for p(x_t | x_{t-1}, x_0).
 
         Args:
             shape (tuple): The shape of the output tensor.
             state_condition (StateCond): The state condition.
             cls_free_condition_list: The class-free condition list.
-            return_diffusion (bool, optional): Whether to return the diffusion. Defaults to False.
 
         Returns:
             torch.Tensor or tuple: The sampled tensor or the sampled tensor and the diffusion.
@@ -280,32 +316,21 @@ class GaussianInvDynDiffusion(nn.Module):
         x = 0.5 * torch.randn(shape, device=device)
         x = apply_state_conditioning(x, state_condition, 0)
 
-        if return_diffusion:
-            diffusion = [x]
-
         for i in reversed(range(self.n_timesteps)):
             timesteps = torch.full((batch_size,), i, device=device, dtype=torch.long)
             x = self.p_sample(x, state_condition, timesteps, cls_free_condition_list)
             x = apply_state_conditioning(x, state_condition, 0)
 
-            if return_diffusion:
-                diffusion.append(x)
-
-        if return_diffusion:
-            return x, torch.stack(diffusion, dim=1)
         return x
 
     @torch.no_grad()
     def conditional_sample(
         self,
-        state_condition,
-        cls_free_condition_list,
-        *args,
-        horizon=None,
-        **kwargs,
-    ):
-        """
-        Generates a conditional sample.
+        state_condition: StateCond,
+        cls_free_condition_list: List[torch.Tensor],
+        horizon: Optional[int] = None,
+    ) -> torch.Tensor:
+        """Generates a conditional sample.
 
         Args:
             state_condition (StateCond): The state condition.
@@ -317,19 +342,23 @@ class GaussianInvDynDiffusion(nn.Module):
         """
         batch_size = len(state_condition[0])
         horizon = horizon or self.horizon
-        shape = (batch_size, horizon, self.observation_dim)
+        shape = torch.Size((batch_size, horizon, self.observation_dim))
 
-        return self.p_sample_loop(shape, state_condition, cls_free_condition_list, *args, **kwargs)
+        return self.p_sample_loop(shape, state_condition, cls_free_condition_list)
 
     # ------------------------------------------ training ------------------------------------------#
 
-    def q_sample(self, x_start, t, noise=None):
-        """
-        Samples from q(x_t | x_{t-1}).
+    def q_sample(
+        self,
+        x_start: torch.Tensor,
+        t: torch.Tensor,
+        noise: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Samples from q(x_t | x_{t-1}).
 
         Args:
-            x_start (torch.Tensor): The starting tensor for diffusion.
-            t (int): The time step.
+            x_start : The starting tensor for diffusion.
+            t : The time step.
             noise (torch.Tensor, optional): The noise tensor. Defaults to None.
 
         Returns:
@@ -338,23 +367,24 @@ class GaussianInvDynDiffusion(nn.Module):
         if noise is None:
             noise = torch.randn_like(x_start)
 
-        sample = (
+        return (
             extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start
             + extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * noise
         )
 
-        return sample
-
     def p_losses(
-        self, x_start: torch.Tensor, state_condition: StateCond, t: int, cls_free_condition=None
-    ):
-        """
-        Calculates the loss and additional information for the diffusion model.
+        self,
+        x_start: torch.Tensor,
+        state_condition: StateCond,
+        t: torch.Tensor,
+        cls_free_condition: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Calculates the loss and additional information for the diffusion model.
 
         Args:
-            x_start (torch.Tensor): The starting tensor for diffusion.
-            state_condition (StateCond): The state condition for diffusion.
-            t (int): The time step for diffusion.
+            x_start : The starting tensor for diffusion.
+            state_condition : The state condition for diffusion.
+            t : The time step for diffusion.
             cls_free_condition (optional): The class-free condition for diffusion.
 
         Returns:
@@ -372,16 +402,16 @@ class GaussianInvDynDiffusion(nn.Module):
 
         assert noise.shape == x_recon.shape
 
-        if self.predict_epsilon:
-            loss, info = self.loss_fn(x_recon, noise)
-        else:
-            loss, info = self.loss_fn(x_recon, x_start)
+        target = noise if self.predict_epsilon else x_start
+        return self.loss_fn(x_recon, target)
 
-        return loss, info
-
-    def loss(self, x: torch.Tensor, state_condition: StateCond, cls_free_condition=None):
-        """
-        Calculates the loss function for the diffusion model.
+    def loss(
+        self,
+        x: torch.Tensor,
+        state_condition: StateCond,
+        cls_free_condition: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Calculates the loss function for the diffusion model.
 
         Args:
             x (torch.Tensor): The input tensor.
@@ -393,7 +423,7 @@ class GaussianInvDynDiffusion(nn.Module):
         """
         batch_size = len(x)
         t = torch.randint(0, self.n_timesteps, (batch_size,), device=x.device).long()
-        diffuse_loss, info = self.p_losses(
+        diffuse_loss = self.p_losses(
             x[:, :, self.action_dim :],
             state_condition,
             t,
@@ -408,38 +438,48 @@ class GaussianInvDynDiffusion(nn.Module):
         a_t = a_t.reshape(-1, self.action_dim)
         inv_loss = self.inv_model.calc_loss(x_comb_t, a_t)
 
-        loss = (1 / 2) * (diffuse_loss + inv_loss)
+        return (1 / 2) * (diffuse_loss + inv_loss)
 
-        return loss, info
-
-    def forward(self, state_condition, *args, **kwargs):
-        """
-        Performs the forward pass of the diffusion model.
+    def forward(
+        self,
+        state_condition: StateCond,
+        cls_free_condition_list: List[torch.Tensor],
+        horizon: Optional[int] = None,
+    ) -> torch.Tensor:
+        """Generates a conditional sample.
 
         Args:
-            state_condition: The state condition for the diffusion model.
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
+            state_condition : The state condition.
+            cls_free_condition_list: The class-free condition list.
+            horizon : The diffusion horizon. Defaults to None.
 
         Returns:
-            The result of the conditional sample operation.
+            torch.Tensor: The generated sample.
         """
-        return self.conditional_sample(state_condition, *args, **kwargs)
+        return self.conditional_sample(
+            state_condition,
+            cls_free_condition_list,
+            horizon,
+        )
 
 
 class ARInvModel(nn.Module):
-    """
-    The ARInvModel class implements the auto regressive inverse model.
-    """
+    """The ARInvModel class implements the auto regressive inverse model."""
 
-    def __init__(self, hidden_dim, observation_dim, action_dim, low_act=-1.0, up_act=1.0):
-        """
-        Initializes the ARInvModel class.
+    def __init__(
+        self,
+        hidden_dim: int,
+        observation_dim: int,
+        action_dim: int,
+        low_act: float = -1.0,
+        up_act: float = 1.0,
+    ) -> None:
+        """Initializes the ARInvModel class.
 
         Args:
-            hidden_dim (int): The dimension of the hidden layer.
-            observation_dim (int): The dimension of the observation.
-            action_dim (int): The dimension of the action.
+            hidden_dim : The dimension of the hidden layer.
+            observation_dim : The dimension of the observation.
+            action_dim : The dimension of the action.
             low_act (float, optional): The lower bound of the action range. Defaults to -1.0.
             up_act (float, optional): The upper bound of the action range. Defaults to 1.0.
         """
@@ -488,13 +528,12 @@ class ARInvModel(nn.Module):
                 ),
             )
 
-    def forward(self, comb_state, deterministic=False):
-        """
-        Forward pass of the diffusion model.
+    def forward(self, comb_state: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
+        """Forward pass of the diffusion model.
 
         Args:
-            comb_state (torch.Tensor): Combined state input.
-            deterministic (bool, optional): Flag indicating whether to use deterministic sampling.
+            comb_state : Combined state input.
+            deterministic : Flag indicating whether to use deterministic sampling.
                                             Defaults to False.
 
         Returns:
@@ -534,13 +573,12 @@ class ARInvModel(nn.Module):
 
         return torch.cat(a, dim=1)
 
-    def calc_loss(self, comb_state, action):
-        """
-        Calculates the loss for the diffusion model.
+    def calc_loss(self, comb_state: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
+        """Calculates the loss for the diffusion model.
 
         Args:
-            comb_state (torch.Tensor): The combined state input.
-            action (torch.Tensor): The action input.
+            comb_state : The combined state input.
+            action : The action input.
 
         Returns:
             torch.Tensor: The calculated loss.

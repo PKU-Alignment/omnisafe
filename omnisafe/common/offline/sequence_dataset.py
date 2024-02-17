@@ -13,25 +13,25 @@
 # limitations under the License.
 """Implementation of SequenceDataset."""
 
-
-# ruff: noqa
-# flake8: noqa
-
 import os
 import pickle
-from collections import namedtuple
-from typing import List, Union
+from typing import Dict, List, NamedTuple, Optional, Union
 
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 
 
-RewardBatch = namedtuple('RewardBatch', 'trajectories conditions returns')
+class RewardBatch(NamedTuple):
+    """A batch of trajectory."""
+
+    trajectories: torch.Tensor
+    conditions: Dict[int, torch.Tensor]
+    returns: torch.Tensor
 
 
 class SequenceDataset(Dataset):
-    """ "A dataset class for sequence data used in reinforcement learning."""
+    """A dataset class for sequence data used in reinforcement learning."""
 
     def __init__(
         self,
@@ -41,10 +41,9 @@ class SequenceDataset(Dataset):
         max_path_length: int = 300,
         reward_discount: float = 0.99,
         returns_scale: int = 300,
-        device: torch.device = torch.device("cpu"),
+        device: Optional[torch.device] = None,
     ) -> None:
-        """
-        A dataset class for sequence data used in reinforcement learning.
+        """A dataset class for sequence data used in reinforcement learning.
 
         Args:
             dataset_name (str): The name of the dataset file.
@@ -55,6 +54,7 @@ class SequenceDataset(Dataset):
             returns_scale (int, optional): The scaling factor for returns. Defaults to 300.
             device (torch.device, optional): The device to use for tensor operations. Defaults to "cpu".
         """
+        device = device or torch.device('cpu')
         self._horizon = horizon
         self._dict = {
             'path_lengths': np.zeros((max_n_episodes,), dtype=np.int64),
@@ -74,29 +74,31 @@ class SequenceDataset(Dataset):
             # Load data from local .npz file
             try:
                 with open(dataset_name, 'rb') as f:
-                    data = pickle.load(f)
+                    data = pickle.load(f)  # noqa: S301
             except Exception as e:  # noqa: BLE001
                 raise ValueError(f'Failed to load data from {dataset_name}') from e
         else:
             raise ValueError(
                 f'Failed to load data from {dataset_name}:'
-                'cannot find the file or the extension name is not .pkl'
+                'cannot find the file or the extension name is not .pkl',
             )
 
         for d in data:
             self._add_path(d)
 
         self._finalize()
-        self._indices = self._make_indices(self._dict["path_lengths"], horizon)
+        self._indices = self._make_indices(self._dict['path_lengths'], horizon)
 
-    def _add_keys(self, path: dict):
+    def _add_keys(self, path: dict) -> None:
+        """Add keys to the dataset."""
         if self.keys:
             return
-        for key in path.keys():
+        for key in path:
             if key not in ['infos', 'env_infos']:
                 self.keys.append(key)
 
-    def _add_path(self, path: dict):
+    def _add_path(self, path: dict) -> None:
+        """Add a path to the dataset."""
         path_length = len(path['observations'])
         assert path_length <= self._max_path_length
         if self._count >= self._max_n_episodes:
@@ -117,29 +119,28 @@ class SequenceDataset(Dataset):
 
         self._count += 1
 
-    def _finalize(self):
+    def _finalize(self) -> None:
+        """Finalize the dataset."""
         # remove extra slots
-        for key in self.keys + ['path_lengths']:
+        for key in [*self.keys, 'path_lengths']:
             self._dict[key] = self._dict[key][: self._count]
 
-    def _make_indices(self, path_lengths, horizon):
-        '''
-        makes indices for sampling from dataset;
-        each index maps to a datapoint
-        '''
+    def _make_indices(self, path_lengths: np.ndarray, horizon: int) -> np.ndarray:
+        """Makes indices for sampling from dataset; each index maps to a datapoint."""
         indices = []
         for i, path_length in enumerate(path_lengths):
             max_start = min(path_length - horizon, self._max_path_length - horizon)
             for start in range(max_start):
                 end = start + horizon
                 indices.append((i, start, end))
-        indices = np.array(indices)
-        return indices
+        return np.array(indices)
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Get the length of the dataset."""
         return len(self._indices)
 
-    def __getitem__(self, idx: Union[int, List[int]]):
+    def __getitem__(self, idx: Union[int, List[int]]) -> RewardBatch:
+        """Get a batch of data from the dataset."""
         if isinstance(idx, int):
             idx = [idx]
         indices = self._indices[idx]
@@ -148,17 +149,16 @@ class SequenceDataset(Dataset):
         cls_free_conds = []
         for ix in indices:
             path_ind, start, end = ix
-            observation = self._dict["observations"][path_ind, start:end]
-            action = self._dict["actions"][path_ind, start:end]
+            observation = self._dict['observations'][path_ind, start:end]
+            action = self._dict['actions'][path_ind, start:end]
             trajectorie = np.concatenate([action, observation], axis=-1)
             trajectories.append(trajectorie)
             state_conditions.append(observation[0])
-            cls_free_conds.append(self._dict["cls_free_cond"][path_ind, start])
+            cls_free_conds.append(self._dict['cls_free_cond'][path_ind, start])
 
         trajectories = torch.tensor(np.array(trajectories), device=self._device)
         state_conditions = torch.tensor(np.array(state_conditions), device=self._device)
         cls_free_conds = torch.tensor(np.array(cls_free_conds), device=self._device)
 
         state_conditions = {0: state_conditions}
-        batch = RewardBatch(trajectories, state_conditions, cls_free_conds)
-        return batch
+        return RewardBatch(trajectories, state_conditions, cls_free_conds)
