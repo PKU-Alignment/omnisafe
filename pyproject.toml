@@ -37,7 +37,8 @@ dependencies = [
     "seaborn >= 0.12.2",
     "pandas == 2.0.3",
     "matplotlib >= 3.7.1",
-    "gdown >= 4.6.0"
+    "gdown >= 4.6.0",
+    "einops"
 ]
 dynamic = ["version", "entry-points"]
 
