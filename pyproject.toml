@@ -38,7 +38,8 @@ dependencies = [
     "pandas == 2.0.3",
     "matplotlib >= 3.7.1",
     "gdown >= 4.6.0",
-    "einops"
+    "einops",
+    "gym"
 ]
 dynamic = ["version", "entry-points"]
 
