@@ -37,7 +37,7 @@ actor: DecisionDiffuserActor = agent._actor
 
 def cls_free_cond(actor: DecisionDiffuserActor) -> None:
     """Sample from the model with cls free condition
-    generate statisfy both
+    generate satisfy both
     cond1 is outside the circle of radius 1.2
     cond2 is inside the circle of radius 1.5
     """
