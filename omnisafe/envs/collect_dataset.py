@@ -326,4 +326,4 @@ def collect_expert_trajectory(traj_num=1000, type='circle', save_path='./data'):
 
 if __name__ == '__main__':
     collect_expert_trajectory(traj_num=2000, type='circle',
-                              save_path='C:/Users\zhou2\.cache\omnisafe\datasets')
+                              save_path='~\.cache\omnisafe\datasets')
