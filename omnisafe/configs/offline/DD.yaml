@@ -1,0 +1,142 @@
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+defaults:
+  # seed for random number generator
+  seed: 0
+  # training configurations
+  train_cfgs:
+    # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
+    device: cuda:0
+    # number of threads for torch
+    torch_threads: 16
+    # total number of steps to train
+    total_steps: 1000000
+    # dataset name
+    dataset: SafetyDrawCircle-v0_data_expert
+    # evaluate_epoisodes
+    evaluate_epoisodes: 0
+    # parallel, offline only supports 1
+    parallel: 1
+    # vector_env_nums, offline only supports 1
+    vector_env_nums: 1
+
+    loss_type: 'l2'
+
+    gradient_accumulate_every: 2
+
+  algo_cfgs:
+    # gamma used in RL
+    gamma: 0.99
+    # batch size
+    batch_size: 32
+    # step per epoch, algo will log and eval every epoch
+    steps_per_epoch: 1000
+
+    obs_normalize: False
+
+    #    model: 'models.TemporalUnet'
+    #
+    #    diffusion: 'models.GaussianInvDynDiffusion'
+
+    horizon: 64
+
+    constraints_dim: 2
+
+    skills_dim: 2
+
+    n_diffusion_steps: 100
+  # logger configurations
+  logger_cfgs:
+    # use wandb for logging
+    use_wandb: False
+    # wandb project name
+    wandb_project: omnisafe
+    # use tensorboard for logging
+    use_tensorboard: True
+    # save model frequency
+    save_model_freq: 5
+    # save logger path
+    log_dir: "./runs"
+  # model configurations
+  model_cfgs:
+    # The mode to initiate the weight of network, choosing from "kaiming_uniform", "xavier_normal", "glorot" and "orthogonal".
+    weight_initialization_mode: "kaiming_uniform"
+    #是否启用Returns作为训练条件
+    returns_condition: True
+
+    #学习率设置
+    lr: 0.0002
+
+    actor_type: "decisiondiffuser"
+
+    actor: 0
+
+    diffuser_model:
+
+      #是否在训练过程中只启动对逆动力学模型的训练
+      train_only_inv: False
+
+      action_weight: 10
+      #loss的权重设置
+      loss_weights: None
+      #loss的折扣因子
+      loss_discount: 1
+
+      predict_epsilon: True
+
+      #隐藏层MLP的维度
+      hidden_dim: 64
+      #是否对采样出的noise进行裁剪
+      clip_denoised: True
+      #采样epsilon时的引导强度，该值越大，采样出的轨迹与条件越相关
+      condition_guidance_w: 1.0
+
+    temporalU_model:
+      #隐藏层网络结构参数
+      dim_mults: [ 1, 4, 8 ]
+
+      calc_energy: False
+      #隐藏层MLP维度
+      dim: 64
+      #计算loss时随机丢失条件信息condition的概率
+      condition_dropout: 0.25
+
+  dataset_cfgs:
+    #是否对数据集中的轨迹长度进行填充
+    use_padding: True
+    #是否在数据集中包含returns
+    include_returns: True
+
+    include_constraints: True
+
+    include_skills: True
+    #对returns的缩放系数
+    returns_scale: 100.0 # Determined using rewards from the dataset
+
+  evaluate_cfgs:
+    #在预测时设定的希望采样出轨迹的returns，由于算法对returns进行了归一化，因此该值设置为1附近的数最为合理
+    returns: 0.9
+
+    constraints: [ 1,1 ]
+
+    skills: [ 1,1 ]
+
+    obs_history_length: 32
+
+    multi_step_pred: 32
+
+
+

@@ -33,7 +33,7 @@ defaults:
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 2000
+    steps_per_epoch: 1000
     # number of steps per sample
     update_cycle: 1
     # number of iterations to update the policy

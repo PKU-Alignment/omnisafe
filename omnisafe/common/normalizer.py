@@ -155,4 +155,4 @@ class Normalizer(nn.Module):
             The loaded normalizer.
         """
         self._first = False
-        return super().load_state_dict(state_dict, strict, assign)
+        return super().load_state_dict(state_dict, strict)

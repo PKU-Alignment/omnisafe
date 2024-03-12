@@ -101,8 +101,13 @@ class OfflineDataset(Dataset):
             sha256sum='fce6cc1fd0c294a8b66397f2f5276c9e7055821ded1f3a6e58e491eb342b1fbe',
             episode_length=1,
         ),
+        'SafetyDrawCircle-v0_data_expert': OfflineMeta(
+            url='https://drive.google.com/file/d/1WlfkoUvWuFUYVMlGwi_EdGO914oWndpV/view?usp=share_link',
+            sha256sum='63066acac551505519ed1f3b4f41396b9966a5a5bd8176694a23024c84c4a0e3',
+            episode_length=1000,
+        ),
     }
-    _default_download_dir = '~/.cache/omnisafe/datasets/'
+    _default_download_dir = 'C:/users/zhou2/.cache/omnisafe/datasets/'
 
     def __init__(  # pylint: disable=too-many-branches
         self,
@@ -182,19 +187,11 @@ class OfflineDataset(Dataset):
             self._pre_transfer = True
 
         if self._pre_transfer:
-            self.obs = torch.from_numpy(data['obs']).to(device=device)
-            self.action = torch.from_numpy(data['action']).to(device=device)
-            self.reward = torch.from_numpy(data['reward']).to(device=device)
-            self.cost = torch.from_numpy(data['cost']).to(device=device)
-            self.next_obs = torch.from_numpy(data['next_obs']).to(device=device)
-            self.done = torch.from_numpy(data['done']).to(device=device)
+            for field in data.files:
+                self.__setattr__(field, torch.from_numpy(data[field]).to(device=device))
         else:
-            self.obs = torch.Tensor(data['obs'])
-            self.action = torch.Tensor(data['action'])
-            self.reward = torch.Tensor(data['reward'])
-            self.cost = torch.Tensor(data['cost'])
-            self.next_obs = torch.Tensor(data['next_obs'])
-            self.done = torch.Tensor(data['done'])
+            for field in data.files:
+                self.__setattr__(field, torch.from_numpy(data[field]))
 
         self._device = device
         self._length = len(self.obs)
@@ -447,3 +444,96 @@ class OfflineDatasetWithInit(OfflineDataset):
             batch_done.to(device=self._device),
             barch_init_obs.to(device=self._device),
         )
+
+
+class DeciDiffuserDataset(OfflineDataset):
+
+    def __init__(self,
+                 dataset_name: str,
+                 batch_size: int = 256,
+                 gpu_threshold: int = 1024,
+                 device: torch.device = DEVICE_CPU,
+                 horizon=64,
+                 discount=0.99,
+                 returns_scale=1000,
+                 include_returns=True,
+                 include_constraints=True,
+                 include_skills=True,
+                 ):
+        super(DeciDiffuserDataset, self).__init__(dataset_name=dataset_name,
+                                                  batch_size=batch_size,
+                                                  gpu_threshold=gpu_threshold,
+                                                  device=device)
+        if self._name_to_metadata[dataset_name].episode_length == None:
+            self.episode_length = torch.where(self.done == 1)[0][0].item() + 1
+        else:
+            self.episode_length = self._name_to_metadata[dataset_name].episode_length
+        self.num_trajs = len(self.obs) // self.episode_length
+        assert horizon <= self.episode_length, "Horizon is not allowed large than episode length."
+        self.horizon = horizon
+        self.discount = discount
+        self.discounts = self.discount ** torch.arange(self.episode_length, device=device)
+        self.include_returns = include_returns
+        self.returns_scale = returns_scale
+        self.include_constraints = include_constraints
+        self.include_skills = include_skills
+        rewards = self.reward.view(-1, self.episode_length)
+        returns = torch.zeros_like(rewards)
+        # self.returns = (self.reward * self.discounts.repeat(self.num_trajs)).view(-1, self.episode_length)
+        # for i in range(rewards.shape[0]):
+        for start in range(rewards.shape[1]):
+            returns[:, start] = (rewards[:, start:] * self.discounts[:(self.episode_length - start)]).sum(dim=1)
+        self.returns = returns.view(-1)
+        self.returns_scale = self.returns.max() - self.returns.min()
+        self.returns = (self.returns - self.returns.min()) / self.returns_scale
+
+    def get_returns(self, indices):
+        # returns = self.returns[indices].view(-1, 1)
+        returns = self.reward[indices].view(-1, self.horizon, 1).mean(dim=1)
+        return returns
+
+    def get_constraints(self, indices):
+        constranint = self.constraint[indices].view(-1, self.horizon, 2).mean(dim=1)
+        constranint[torch.where(constranint > 0.5)] = 1.0
+        constranint[torch.where(constranint <= 0.5)] = 0.0
+        # constranint = self.constraint[indices].view(-1, 2)
+        return constranint
+
+    def get_skills(self, indices):
+        skill = self.skill[indices].view(-1, 2)
+        return skill
+
+    def sample(
+        self,
+    ) -> tuple:
+        """Sample a batch of data from the dataset."""
+        # indices = torch.randint(low=0, high=len(self), size=(self._batch_size,), dtype=torch.int64)
+
+        traj_indices = torch.randint(low=0, high=self.num_trajs, size=(self._batch_size,))
+        traj_start_indices = torch.randint(low=0, high=self.episode_length - self.horizon, size=(self._batch_size,))
+        indices_start = traj_indices * self.episode_length + traj_start_indices
+        indices_end = traj_indices * self.episode_length + traj_start_indices + self.horizon
+        # batch_returns = self.returns[indices_start].view(-1, 1)
+
+        indices = indices_start.view(-1, 1).repeat(1, self.horizon).view(-1) + torch.arange(self.horizon).repeat(
+            self._batch_size)
+
+        batch_obs = self.obs[indices].view(self._batch_size, self.horizon, -1)
+        batch_action = self.action[indices].view(self._batch_size, self.horizon, -1)
+        batch_trajectories = torch.cat([batch_action, batch_obs], dim=-1)
+
+        if not self._pre_transfer:
+            batch_trajectories = batch_trajectories.to(device=self._device)
+            # batch_returns = batch_returns.to(device=self._device)
+            # for key, value in batch_conditions.items():
+            #     batch_conditions[key] = batch_conditions[key].to(device=self._device)
+
+        sample_batch = [batch_trajectories]
+        if self.include_returns:
+            sample_batch.append(self.get_returns(indices))
+        if self.include_constraints:
+            sample_batch.append(self.get_constraints(indices))
+        if self.include_skills:
+            sample_batch.append(self.get_skills(indices_start))
+
+        return tuple(sample_batch)

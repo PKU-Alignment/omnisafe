@@ -15,7 +15,7 @@
 """Implementation of Evaluator."""
 
 from __future__ import annotations
-
+import PIL
 import json
 import os
 import warnings
@@ -66,12 +66,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         actor_critic: ConstraintActorCritic | ConstraintActorQCritic | None = None,
         dynamics: EnsembleDynamicsModel | None = None,
         planner: CEMPlanner
-        | ARCPlanner
-        | SafeARCPlanner
-        | CCEPlanner
-        | CAPPlanner
-        | RCEPlanner
-        | None = None,
+                 | ARCPlanner
+                 | SafeARCPlanner
+                 | CCEPlanner
+                 | CAPPlanner
+                 | RCEPlanner
+                 | None = None,
         render_mode: str = 'rgb_array',
     ) -> None:
         """Initialize an instance of :class:`Evaluator`."""
@@ -153,7 +153,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
             self._safety_budget = (
                 self._cfgs.algo_cfgs.safety_budget
-                * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
+                * (1 - self._cfgs.algo_cfgs.saute_gamma ** self._cfgs.algo_cfgs.max_ep_len)
                 / (1 - self._cfgs.algo_cfgs.saute_gamma)
                 / self._cfgs.algo_cfgs.max_ep_len
                 * torch.ones(1)
@@ -161,18 +161,18 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         assert isinstance(observation_space, Box), 'The observation space must be Box.'
         assert isinstance(action_space, Box), 'The action space must be Box.'
 
-        if self._cfgs['algo_cfgs']['obs_normalize']:
+        if hasattr(self._cfgs['algo_cfgs'], 'obs_normalize') and self._cfgs['algo_cfgs']['obs_normalize']:
             obs_normalizer = Normalizer(shape=observation_space.shape, clip=5)
             obs_normalizer.load_state_dict(model_params['obs_normalizer'])
-            self._env = ObsNormalize(self._env, device=torch.device('cpu'), norm=obs_normalizer)
+            self._env = ObsNormalize(self._env, device=self._device, norm=obs_normalizer)
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, device=torch.device('cpu'), time_limit=1000)
-        self._env = ActionScale(self._env, device=torch.device('cpu'), low=-1.0, high=1.0)
+            self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
+        self._env = ActionScale(self._env, device=self._device, low=-1.0, high=1.0)
 
         if hasattr(self._cfgs['algo_cfgs'], 'action_repeat'):
             self._env = ActionRepeat(
                 self._env,
-                device=torch.device('cpu'),
+                device=self._device,
                 times=self._cfgs['algo_cfgs']['action_repeat'],
             )
         if hasattr(self._cfgs, 'algo') and self._cfgs['algo'] in [
@@ -284,12 +284,15 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             actor_builder = ActorBuilder(
                 obs_space=observation_space,
                 act_space=action_space,
-                hidden_sizes=pi_cfg['hidden_sizes'],
-                activation=pi_cfg['activation'],
+                hidden_sizes=0,
+                activation=0,
                 weight_initialization_mode=weight_initialization_mode,
+                custom_cfgs=self._cfgs
             )
             self._actor = actor_builder.build_actor(actor_type)
-            self._actor.load_state_dict(model_params['pi'])
+            self._actor.load_state_dict(model_params['deci_diffuser'])
+
+            self._actor.to(self._device)
 
     # pylint: disable-next=too-many-locals
     def load_saved(
@@ -319,7 +322,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self._model_name = model_name
 
         self.__load_cfgs(save_dir)
-
+        self._device = torch.device(self._cfgs['train_cfgs']['device'])
         self.__set_render_mode(render_mode)
 
         env_kwargs = {
@@ -330,8 +333,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             'camera_name': camera_name,
             'width': width,
             'height': height,
+            'device': self._device
         }
-
         self.__load_model_and_env(save_dir, model_name, env_kwargs)
 
     def evaluate(
@@ -364,20 +367,20 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             obs, _ = self._env.reset()
             self._safety_obs = torch.ones(1)
             ep_ret, ep_cost, length = 0.0, 0.0, 0.0
-
             done = False
             while not done:
                 if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
                     obs = torch.cat([obs, self._safety_obs], dim=-1)
                 with torch.no_grad():
                     if self._actor is not None:
+                        obs = obs.to(self._device)
                         act = self._actor.predict(
                             obs,
                             deterministic=True,
                         )
                     elif self._planner is not None:
                         act = self._planner.output_action(
-                            obs.unsqueeze(0).to('cpu'),
+                            obs.unsqueeze(0).to(self._device),
                         )[
                             0
                         ].squeeze(0)
@@ -391,7 +394,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     self._safety_obs /= self._cfgs.algo_cfgs.saute_gamma
 
                 ep_ret += rew.item()
-                ep_cost += (cost_criteria**length) * cost.item()
+                ep_cost += (cost_criteria ** length) * cost.item()
                 if (
                     'EarlyTerminated' in self._cfgs['algo']
                     and ep_cost >= self._cfgs.algo_cfgs.cost_limit
@@ -405,7 +408,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             episode_costs.append(ep_cost)
             episode_lengths.append(length)
 
-            print(f'Episode {episode+1} results:')
+            print(f'Episode {episode + 1} results:')
             print(f'Episode reward: {ep_ret}')
             print(f'Episode cost: {ep_cost}')
             print(f'Episode length: {length}')
@@ -443,7 +446,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         num_episodes: int = 1,
         save_replay_path: str | None = None,
-        max_render_steps: int = 2000,
+        max_render_steps: int = 1000,
         cost_criteria: float = 1.0,
     ) -> None:  # pragma: no cover
         """Render the environment for one episode.
@@ -468,19 +471,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         print(f'Saving the replay video to {save_replay_path},\n and the result to {result_path}.')
         print(self._dividing_line)
 
-        horizon = 1000
-        frames = []
-        obs, _ = self._env.reset()
-        if self._render_mode == 'human':
-            self._env.render()
-        elif self._render_mode == 'rgb_array':
-            frames.append(self._env.render())
-
         episode_rewards: list[float] = []
         episode_costs: list[float] = []
         episode_lengths: list[float] = []
 
         for episode_idx in range(num_episodes):
+            frames = []
+            obs, _ = self._env.reset()
             self._safety_obs = torch.ones(1)
             step = 0
             done = False
@@ -492,13 +489,14 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     obs = torch.cat([obs, self._safety_obs], dim=-1)
                 with torch.no_grad():
                     if self._actor is not None:
+                        obs.to(self._device)
                         act = self._actor.predict(
                             obs,
                             deterministic=True,
                         )
                     elif self._planner is not None:
                         act = self._planner.output_action(
-                            obs.unsqueeze(0).to('cpu'),
+                            obs.unsqueeze(0).to(self._device),
                         )[
                             0
                         ].squeeze(0)
@@ -513,7 +511,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 step += 1
                 done = bool(terminated or truncated)
                 ep_ret += rew.item()
-                ep_cost += (cost_criteria**length) * cost.item()
+                ep_cost += (cost_criteria ** length) * cost.item()
                 if (
                     'EarlyTerminated' in self._cfgs['algo']
                     and ep_cost >= self._cfgs.algo_cfgs.cost_limit
@@ -527,22 +525,19 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             if self._render_mode == 'rgb_array_list':
                 frames = self._env.render()
             if save_replay_path is not None:
-                save_video(
-                    frames,
-                    save_replay_path,
-                    fps=self.fps,
-                    episode_trigger=lambda x: True,
-                    video_length=horizon,
-                    episode_index=episode_idx,
-                    name_prefix='eval',
-                )
-            self._env.reset()
-            frames = []
+                if not os.path.exists(save_replay_path):
+                    os.makedirs(save_replay_path)
+                images = [PIL.Image.fromarray(img.astype('uint8'), 'RGB') for img in frames]
+                images[0].save(save_replay_path + '/eval_{ep_idx}.gif'.format(ep_idx=episode_idx), save_all=True,
+                               append_images=images[1:], optimize=False,
+                               duration=1 / self.fps,
+                               loop=0)
+                images[-2].save(save_replay_path + '/eval_{ep_idx}.png'.format(ep_idx=episode_idx))
             episode_rewards.append(ep_ret)
             episode_costs.append(ep_cost)
             episode_lengths.append(length)
             with open(result_path, 'a+', encoding='utf-8') as f:
-                print(f'Episode {episode_idx+1} results:', file=f)
+                print(f'Episode {episode_idx + 1} results:', file=f)
                 print(f'Episode reward: {ep_ret}', file=f)
                 print(f'Episode cost: {ep_cost}', file=f)
                 print(f'Episode length: {length}', file=f)
@@ -552,4 +547,3 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             print(f'Average episode reward: {np.mean(episode_rewards)}', file=f)
             print(f'Average episode cost: {np.mean(episode_costs)}', file=f)
             print(f'Average episode length: {np.mean(episode_lengths)}', file=f)
-print('abc')

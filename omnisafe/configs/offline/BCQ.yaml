@@ -25,7 +25,7 @@ defaults:
     # total number of steps to train
     total_steps: 1000000
     # dataset name
-    dataset: SafetyPointCircle1-v0_mixed_0.5
+    dataset: SafetyPointCircle1-v0-mixed-beta0.5
     # evaluate_epoisodes
     evaluate_epoisodes: 10
     # parallel, offline only supports 1
@@ -57,7 +57,7 @@ defaults:
     # use tensorboard for logging
     use_tensorboard: True
     # save model frequency
-    save_model_freq: 100
+    save_model_freq: 10
     # save logger path
     log_dir: "./runs"
   # model configurations
