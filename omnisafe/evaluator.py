@@ -552,3 +552,4 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             print(f'Average episode reward: {np.mean(episode_rewards)}', file=f)
             print(f'Average episode cost: {np.mean(episode_costs)}', file=f)
             print(f'Average episode length: {np.mean(episode_lengths)}', file=f)
+print('abc')
