@@ -15,7 +15,7 @@
 """Implementation of Evaluator."""
 
 from __future__ import annotations
-import PIL
+
 import json
 import os
 import warnings
@@ -267,7 +267,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 action_shape=action_space.shape,
                 action_max=1.0,
                 action_min=-1.0,
-                device='cpu',
+                device=self._device,
                 **planner_special_cfgs,
             )
 
@@ -284,13 +284,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             actor_builder = ActorBuilder(
                 obs_space=observation_space,
                 act_space=action_space,
-                hidden_sizes=0,
-                activation=0,
+                hidden_sizes=pi_cfg['hidden_sizes'],
+                activation=pi_cfg['activation'],
                 weight_initialization_mode=weight_initialization_mode,
                 custom_cfgs=self._cfgs
             )
             self._actor = actor_builder.build_actor(actor_type)
-            self._actor.load_state_dict(model_params['deci_diffuser'])
+            self._actor.load_state_dict(model_params['pi'])
 
             self._actor.to(self._device)
 
@@ -367,15 +367,15 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             obs, _ = self._env.reset()
             self._safety_obs = torch.ones(1)
             ep_ret, ep_cost, length = 0.0, 0.0, 0.0
+
             done = False
             while not done:
                 if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
                     obs = torch.cat([obs, self._safety_obs], dim=-1)
                 with torch.no_grad():
                     if self._actor is not None:
-                        obs = obs.to(self._device)
                         act = self._actor.predict(
-                            obs,
+                            obs.to(self._device),
                             deterministic=True,
                         )
                     elif self._planner is not None:
@@ -446,7 +446,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self,
         num_episodes: int = 1,
         save_replay_path: str | None = None,
-        max_render_steps: int = 1000,
+        max_render_steps: int = 2000,
         cost_criteria: float = 1.0,
     ) -> None:  # pragma: no cover
         """Render the environment for one episode.
@@ -471,13 +471,19 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         print(f'Saving the replay video to {save_replay_path},\n and the result to {result_path}.')
         print(self._dividing_line)
 
+        horizon = 1000
+        frames = []
+        obs, _ = self._env.reset()
+        if self._render_mode == 'human':
+            self._env.render()
+        elif self._render_mode == 'rgb_array':
+            frames.append(self._env.render())
+
         episode_rewards: list[float] = []
         episode_costs: list[float] = []
         episode_lengths: list[float] = []
 
         for episode_idx in range(num_episodes):
-            frames = []
-            obs, _ = self._env.reset()
             self._safety_obs = torch.ones(1)
             step = 0
             done = False
@@ -489,9 +495,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     obs = torch.cat([obs, self._safety_obs], dim=-1)
                 with torch.no_grad():
                     if self._actor is not None:
-                        obs.to(self._device)
                         act = self._actor.predict(
-                            obs,
+                            obs.to(self._device),
                             deterministic=True,
                         )
                     elif self._planner is not None:
@@ -525,14 +530,17 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             if self._render_mode == 'rgb_array_list':
                 frames = self._env.render()
             if save_replay_path is not None:
-                if not os.path.exists(save_replay_path):
-                    os.makedirs(save_replay_path)
-                images = [PIL.Image.fromarray(img.astype('uint8'), 'RGB') for img in frames]
-                images[0].save(save_replay_path + '/eval_{ep_idx}.gif'.format(ep_idx=episode_idx), save_all=True,
-                               append_images=images[1:], optimize=False,
-                               duration=1 / self.fps,
-                               loop=0)
-                images[-2].save(save_replay_path + '/eval_{ep_idx}.png'.format(ep_idx=episode_idx))
+                save_video(
+                    frames,
+                    save_replay_path,
+                    fps=self.fps,
+                    episode_trigger=lambda x: True,
+                    video_length=horizon,
+                    episode_index=episode_idx,
+                    name_prefix='eval',
+                )
+            self._env.reset()
+            frames = []
             episode_rewards.append(ep_ret)
             episode_costs.append(ep_cost)
             episode_lengths.append(length)

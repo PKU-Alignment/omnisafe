@@ -52,7 +52,7 @@ class DD(BaseOffline):
         """
         super()._init_log()
         what_to_save: Dict[str, Any] = {
-            'deci_diffuser': self._actor,
+            'pi': self._actor,
         }
         self._logger.setup_torch_saver(what_to_save)
         self._logger.register_key('Loss/Loss_diffuser')
