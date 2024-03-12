@@ -82,7 +82,11 @@ defaults:
 
     actor_type: "decisiondiffuser"
 
-    actor: 0
+    actor:
+      # Size of hidden layers
+      hidden_sizes: 0
+      # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
+      activation: 0
 
     diffuser_model:
 
