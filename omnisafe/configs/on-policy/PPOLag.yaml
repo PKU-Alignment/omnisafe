@@ -31,7 +31,7 @@ defaults:
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 1000
+    steps_per_epoch: 20000
     # number of iterations to update the policy
     update_iters: 40
     # batch size for each iteration
