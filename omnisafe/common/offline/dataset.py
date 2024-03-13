@@ -107,7 +107,7 @@ class OfflineDataset(Dataset):
             episode_length=1000,
         ),
     }
-    _default_download_dir = 'C:/users/zhou2/.cache/omnisafe/datasets/'
+    _default_download_dir = '~/.cache/omnisafe/datasets/'
 
     def __init__(  # pylint: disable=too-many-branches
         self,
