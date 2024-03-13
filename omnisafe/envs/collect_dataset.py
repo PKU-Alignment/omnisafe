@@ -173,14 +173,6 @@ class DrawCircle(gym.Env):
             pg.display.update()
 
         img = pg.surfarray.array3d(self.screen)
-        # self.gif_buffer.append(img)
-        # print(self.step_count)
-        # if self.step_count == self._max_episode_step - 1:
-        #     images = [PIL.Image.fromarray(img.astype('uint8'), 'RGB') for img in self.gif_buffer]
-        #     # 使用Pillow库的save()函数将图像列表保存为GIF动画
-        #     images[0].save('animation.gif', save_all=True, append_images=images[1:], optimize=False,
-        #                    duration=5 / self._max_episode_step,
-        #                    loop=0)
         return img
 
     def step_reward(self):
@@ -200,7 +192,6 @@ class DrawCircle(gym.Env):
         #     range_reward = 1
         # else:
         #     range_reward = -1
-
         speed_reward = (self.item_vel[:, 0] ** 2 + self.item_vel[:, 1] ** 2) ** 0.5
 
         return speed_reward

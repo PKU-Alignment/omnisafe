@@ -27,7 +27,7 @@ class DrawCircle(gym.Env):
         'max_episode_step': 1000
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self.action_space = gym.spaces.Box(low=np.array([self.env_config['vel_max_min'][0]] * 2),
                                            high=np.array([self.env_config['vel_max_min'][1]] * 2),
                                            dtype=np.float64)
@@ -144,23 +144,8 @@ class DrawCircle(gym.Env):
         line_point_list = trajectory_render.tolist()
         if len(line_point_list) > 1:
             pg.draw.aalines(self.screen, traj_color, False, line_point_list)
-
-        # if self.metadata['render_mode'] == 'human':
-        #     for event in pg.event.get():
-        #         if event.type == pg.QUIT:
-        #             sys.exit()
-        #     self.render_screen.blit(self.screen, self.screen.get_rect())
-        #     pg.display.update()
-
         img = pg.surfarray.array3d(self.screen)
-        # self.gif_buffer.append(img)
-        # print(self.step_count)
-        # if self.step_count == self._max_episode_step - 1:
-        #     images = [PIL.Image.fromarray(img.astype('uint8'), 'RGB') for img in self.gif_buffer]
-        #     # 使用Pillow库的save()函数将图像列表保存为GIF动画
-        #     images[0].save('animation.gif', save_all=True, append_images=images[1:], optimize=False,
-        #                    duration=5 / self._max_episode_step,
-        #                    loop=0)
+
         return img
 
     def step_reward(self):
