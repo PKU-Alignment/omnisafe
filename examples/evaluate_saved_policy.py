@@ -34,6 +34,6 @@ if __name__ == '__main__':
                 width=256,
                 height=256,
             )
-            evaluator.render(num_episodes=1)
+            evaluator.render(num_episodes=1,max_render_steps=1000)
             evaluator.evaluate(num_episodes=1)
     scan_dir.close()

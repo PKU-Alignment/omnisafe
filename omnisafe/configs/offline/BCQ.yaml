@@ -57,7 +57,7 @@ defaults:
     # use tensorboard for logging
     use_tensorboard: True
     # save model frequency
-    save_model_freq: 100
+    save_model_freq: 10
     # save logger path
     log_dir: "./runs"
   # model configurations
