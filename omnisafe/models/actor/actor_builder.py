@@ -124,7 +124,7 @@ class ActorBuilder:
                 self._hidden_sizes,
                 activation=self._activation,
                 weight_initialization_mode=self._weight_initialization_mode,
-                cfgs=self._cfgs
+                cfgs=self._cfgs,
             )
 
         raise NotImplementedError(

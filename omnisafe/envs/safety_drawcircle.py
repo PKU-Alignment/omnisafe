@@ -15,7 +15,7 @@ class DrawCircle(gym.Env):
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second': 2,
         'render_fps': 1000,
-        'render_mode': 'gif'
+        'render_mode': 'gif',
     }
     env_config = {
         'control_type': 'velocity',
@@ -24,16 +24,20 @@ class DrawCircle(gym.Env):
         'pos_max_min': (-1.0, 1.0),
         'vel_max_min': (-1.0, 1.0),
         'time_diff': 0.02,
-        'max_episode_step': 1000
+        'max_episode_step': 1000,
     }
 
     def __init__(self, **kwargs) -> None:
-        self.action_space = gym.spaces.Box(low=np.array([self.env_config['vel_max_min'][0]] * 2),
-                                           high=np.array([self.env_config['vel_max_min'][1]] * 2),
-                                           dtype=np.float64)
-        self.observation_space = gym.spaces.Box(low=np.array([self.env_config['pos_max_min'][0]] * 4),
-                                                high=np.array([self.env_config['pos_max_min'][1]] * 4),
-                                                dtype=np.float64)
+        self.action_space = gym.spaces.Box(
+            low=np.array([self.env_config['vel_max_min'][0]] * 2),
+            high=np.array([self.env_config['vel_max_min'][1]] * 2),
+            dtype=np.float64,
+        )
+        self.observation_space = gym.spaces.Box(
+            low=np.array([self.env_config['pos_max_min'][0]] * 4),
+            high=np.array([self.env_config['pos_max_min'][1]] * 4),
+            dtype=np.float64,
+        )
 
         for key, value in kwargs.items():
             self.env_config[key] = value
@@ -79,7 +83,9 @@ class DrawCircle(gym.Env):
         if self.env_config['control_type'] == 'velocity':
             self.item_vel = action
             self.item_pos += self.item_vel * self.time_diff
-            self.item_pos = np.clip(self.item_pos, self.observation_space.low[:2], self.observation_space.high[:2])
+            self.item_pos = np.clip(
+                self.item_pos, self.observation_space.low[:2], self.observation_space.high[:2]
+            )
 
         elif self.env_config['control_type'] == 'accelerate':
             self.item_accel = action
@@ -90,7 +96,9 @@ class DrawCircle(gym.Env):
             vel_ave = (vel_0 + vel_1) / 2
             self.item_vel = vel_1
             self.item_pos += vel_ave * self.time_diff
-            self.item_pos = np.clip(self.item_pos, self.observation_space.low[:2], self.observation_space.high[:2])
+            self.item_pos = np.clip(
+                self.item_pos, self.observation_space.low[:2], self.observation_space.high[:2]
+            )
 
         obs = np.concatenate([self.item_pos, self.item_vel])
         self.trajectory[self.step_count] = obs[:]
@@ -140,7 +148,9 @@ class DrawCircle(gym.Env):
         pg.draw.circle(self.screen, item_color, item_pos, 3)
 
         mid_pos = np.array([self.screen_size[0] // 2, self.screen_size[1] // 2])
-        trajectory_render = mid_pos + np.array([1, -1]) * self.trajectory[:self.step_count, :2] * mid_pos
+        trajectory_render = (
+            mid_pos + np.array([1, -1]) * self.trajectory[: self.step_count, :2] * mid_pos
+        )
         line_point_list = trajectory_render.tolist()
         if len(line_point_list) > 1:
             pg.draw.aalines(self.screen, traj_color, False, line_point_list)
@@ -173,7 +183,10 @@ class DrawCircle(gym.Env):
     def step_cost(self):
         item_distance = self.item_pos - self.centre_pos
         item_distance = (item_distance[0] ** 2 + item_distance[1] ** 2) ** 0.5
-        if item_distance < self.env_config['constraints'][1] and item_distance > self.env_config['constraints'][0]:
+        if (
+            item_distance < self.env_config['constraints'][1]
+            and item_distance > self.env_config['constraints'][0]
+        ):
             return 0
         else:
             return 1
@@ -198,8 +211,7 @@ class DrawCircle(gym.Env):
         elif item_distance < self.env_config['constraints'][0]:
             constraint = np.array([0.0, 1.0])
         else:
-            constraint = random.sample(
-                [np.array([1.0, 0.0]), np.array([0.0, 1.0])], 1)[0]
+            constraint = random.sample([np.array([1.0, 0.0]), np.array([0.0, 1.0])], 1)[0]
         return constraint
 
     def transpos2render(self, pos):
@@ -224,9 +236,7 @@ class SafeDrawCircle(CMDP):
     need_time_limit_wrapper: bool = False
     need_auto_reset_wrapper: bool = False
 
-    _support_envs: ClassVar[list[str]] = [
-        'SafetyDrawCircle-v0'
-    ]
+    _support_envs: ClassVar[list[str]] = ['SafetyDrawCircle-v0']
 
     @classmethod
     def support_envs(cls) -> list[str]:
@@ -237,11 +247,9 @@ class SafeDrawCircle(CMDP):
         """
         return cls._support_envs
 
-    def __init__(self,
-                 env_id: str,
-                 num_envs: int = 1,
-                 device: torch.device = DEVICE_CPU,
-                 **kwargs: Any) -> None:
+    def __init__(
+        self, env_id: str, num_envs: int = 1, device: torch.device = DEVICE_CPU, **kwargs: Any
+    ) -> None:
         """Initialize an instance of :class:`CMDP`."""
         assert (
             env_id in self.support_envs()
@@ -250,14 +258,18 @@ class SafeDrawCircle(CMDP):
         self._num_envs = num_envs
         self._device = torch.device(device)
         self._env = DrawCircle(**kwargs)
-        self._action_space = Box(high=self._env.action_space.high,
-                                 low=self._env.action_space.low,
-                                 shape=self._env.action_space.shape,
-                                 dtype=self._env.action_space.dtype)
-        self._observation_space = Box(high=self._env.observation_space.high,
-                                      low=self._env.observation_space.low,
-                                      shape=self._env.observation_space.shape,
-                                      dtype=self._env.observation_space.dtype)
+        self._action_space = Box(
+            high=self._env.action_space.high,
+            low=self._env.action_space.low,
+            shape=self._env.action_space.shape,
+            dtype=self._env.action_space.dtype,
+        )
+        self._observation_space = Box(
+            high=self._env.observation_space.high,
+            low=self._env.observation_space.low,
+            shape=self._env.observation_space.shape,
+            dtype=self._env.observation_space.dtype,
+        )
         self._metadata = self._env.metadata
 
     def step(

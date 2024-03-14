@@ -9,6 +9,7 @@ import torch.nn.functional as F
 # ---------------------------------- modules ----------------------------------#
 # -----------------------------------------------------------------------------#
 
+
 class Unsqueeze(nn.Module):
     def __init__(self, dim=-1):
         super().__init__()
@@ -62,7 +63,7 @@ class Upsample1d(nn.Module):
 
 class Conv1dBlock(nn.Module):
     '''
-        Conv1d --> GroupNorm --> Mish
+    Conv1d --> GroupNorm --> Mish
     '''
 
     def __init__(self, inp_channels, out_channels, kernel_size, mish=True, n_groups=8):
@@ -88,6 +89,7 @@ class Conv1dBlock(nn.Module):
 # -----------------------------------------------------------------------------#
 # ---------------------------------- sampling ---------------------------------#
 # -----------------------------------------------------------------------------#
+
 
 def extract(a, t, x_shape):
     b, *_ = t.shape
@@ -126,6 +128,7 @@ def history_cover(x, history, action_dim, history_length):
 # ---------------------------------- losses -----------------------------------#
 # -----------------------------------------------------------------------------#
 
+
 class WeightedLoss(nn.Module):
 
     def __init__(self, weights, action_dim):
@@ -135,12 +138,12 @@ class WeightedLoss(nn.Module):
 
     def forward(self, pred, targ):
         '''
-            pred, targ : tensor
-                [ batch_size x horizon x transition_dim ]
+        pred, targ : tensor
+            [ batch_size x horizon x transition_dim ]
         '''
         loss = self._loss(pred, targ)
         weighted_loss = (loss * self.weights).mean()
-        a0_loss = (loss[:, 0, :self.action_dim] / self.weights[0, :self.action_dim]).mean()
+        a0_loss = (loss[:, 0, : self.action_dim] / self.weights[0, : self.action_dim]).mean()
         return weighted_loss, {'a0_loss': a0_loss}
 
 
@@ -152,8 +155,8 @@ class WeightedStateLoss(nn.Module):
 
     def forward(self, pred, targ):
         '''
-            pred, targ : tensor
-                [ batch_size x horizon x transition_dim ]
+        pred, targ : tensor
+            [ batch_size x horizon x transition_dim ]
         '''
         loss = self._loss(pred, targ)
         weighted_loss = (loss * self.weights).mean()
@@ -170,16 +173,18 @@ class ValueLoss(nn.Module):
 
         if len(pred) > 1:
             corr = np.corrcoef(
-                pred.detach().cpu().numpy().squeeze(),
-                targ.detach().cpu().numpy().squeeze()
+                pred.detach().cpu().numpy().squeeze(), targ.detach().cpu().numpy().squeeze()
             )[0, 1]
         else:
             corr = np.NaN
 
         info = {
-            'mean_pred': pred.mean(), 'mean_targ': targ.mean(),
-            'min_pred': pred.min(), 'min_targ': targ.min(),
-            'max_pred': pred.max(), 'max_targ': targ.max(),
+            'mean_pred': pred.mean(),
+            'mean_targ': targ.mean(),
+            'min_pred': pred.min(),
+            'min_targ': targ.min(),
+            'max_pred': pred.max(),
+            'max_targ': targ.max(),
             'corr': corr,
         }
 

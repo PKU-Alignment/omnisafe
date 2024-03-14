@@ -120,11 +120,13 @@ class DecisionDiffuserAdpater:
     def select_action(self, agent, obs_history: list, obs, step):
 
         if step % self.multi_step_pred == 0:
-            samples = agent.predict(obs,
-                                    returns=self._eval_returns,
-                                    constraints=self._eval_constraints,
-                                    skills=self._eval_skills,
-                                    step=step)
+            samples = agent.predict(
+                obs,
+                returns=self._eval_returns,
+                constraints=self._eval_constraints,
+                skills=self._eval_skills,
+                step=step,
+            )
             self.samples = samples.clone()
             sample_hisory_len = obs.shape[0]
         next_obs = self.samples[:, sample_hisory_len + step % self.multi_step_pred + 1, :]

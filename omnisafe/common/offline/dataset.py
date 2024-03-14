@@ -448,22 +448,25 @@ class OfflineDatasetWithInit(OfflineDataset):
 
 class DeciDiffuserDataset(OfflineDataset):
 
-    def __init__(self,
-                 dataset_name: str,
-                 batch_size: int = 256,
-                 gpu_threshold: int = 1024,
-                 device: torch.device = DEVICE_CPU,
-                 horizon=64,
-                 discount=0.99,
-                 returns_scale=1000,
-                 include_returns=True,
-                 include_constraints=True,
-                 include_skills=True,
-                 ):
-        super(DeciDiffuserDataset, self).__init__(dataset_name=dataset_name,
-                                                  batch_size=batch_size,
-                                                  gpu_threshold=gpu_threshold,
-                                                  device=device)
+    def __init__(
+        self,
+        dataset_name: str,
+        batch_size: int = 256,
+        gpu_threshold: int = 1024,
+        device: torch.device = DEVICE_CPU,
+        horizon=64,
+        discount=0.99,
+        returns_scale=1000,
+        include_returns=True,
+        include_constraints=True,
+        include_skills=True,
+    ):
+        super(DeciDiffuserDataset, self).__init__(
+            dataset_name=dataset_name,
+            batch_size=batch_size,
+            gpu_threshold=gpu_threshold,
+            device=device,
+        )
         if self._name_to_metadata[dataset_name].episode_length == None:
             self.episode_length = torch.where(self.done == 1)[0][0].item() + 1
         else:
@@ -482,7 +485,9 @@ class DeciDiffuserDataset(OfflineDataset):
         # self.returns = (self.reward * self.discounts.repeat(self.num_trajs)).view(-1, self.episode_length)
         # for i in range(rewards.shape[0]):
         for start in range(rewards.shape[1]):
-            returns[:, start] = (rewards[:, start:] * self.discounts[:(self.episode_length - start)]).sum(dim=1)
+            returns[:, start] = (
+                rewards[:, start:] * self.discounts[: (self.episode_length - start)]
+            ).sum(dim=1)
         self.returns = returns.view(-1)
         self.returns_scale = self.returns.max() - self.returns.min()
         self.returns = (self.returns - self.returns.min()) / self.returns_scale
@@ -510,13 +515,16 @@ class DeciDiffuserDataset(OfflineDataset):
         # indices = torch.randint(low=0, high=len(self), size=(self._batch_size,), dtype=torch.int64)
 
         traj_indices = torch.randint(low=0, high=self.num_trajs, size=(self._batch_size,))
-        traj_start_indices = torch.randint(low=0, high=self.episode_length - self.horizon, size=(self._batch_size,))
+        traj_start_indices = torch.randint(
+            low=0, high=self.episode_length - self.horizon, size=(self._batch_size,)
+        )
         indices_start = traj_indices * self.episode_length + traj_start_indices
         indices_end = traj_indices * self.episode_length + traj_start_indices + self.horizon
         # batch_returns = self.returns[indices_start].view(-1, 1)
 
-        indices = indices_start.view(-1, 1).repeat(1, self.horizon).view(-1) + torch.arange(self.horizon).repeat(
-            self._batch_size)
+        indices = indices_start.view(-1, 1).repeat(1, self.horizon).view(-1) + torch.arange(
+            self.horizon
+        ).repeat(self._batch_size)
 
         batch_obs = self.obs[indices].view(self._batch_size, self.horizon, -1)
         batch_action = self.action[indices].view(self._batch_size, self.horizon, -1)

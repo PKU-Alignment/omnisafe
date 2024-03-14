@@ -12,10 +12,25 @@ from .helpers import (
 
 
 class GaussianInvDynDiffusion(nn.Module):
-    def __init__(self, model, horizon, observation_dim, action_dim, n_timesteps=1000,
-                 clip_denoised=False, predict_epsilon=True, hidden_dim=256, loss_discount=1.0, returns_condition=False,
-                 condition_guidance_w=0.1, train_only_inv=False, history_length=1,
-                 multi_step_pred=1, test_constraints=None, test_skills=None):
+    def __init__(
+        self,
+        model,
+        horizon,
+        observation_dim,
+        action_dim,
+        n_timesteps=1000,
+        clip_denoised=False,
+        predict_epsilon=True,
+        hidden_dim=256,
+        loss_discount=1.0,
+        returns_condition=False,
+        condition_guidance_w=0.1,
+        train_only_inv=False,
+        history_length=1,
+        multi_step_pred=1,
+        test_constraints=None,
+        test_skills=None,
+    ):
         super().__init__()
         self.horizon = horizon
         self.observation_dim = observation_dim
@@ -35,13 +50,12 @@ class GaussianInvDynDiffusion(nn.Module):
             nn.Linear(hidden_dim, hidden_dim),
             nn.Tanh(),
             nn.Linear(hidden_dim, self.action_dim),
-
         )
         self.returns_condition = returns_condition
         self.condition_guidance_w = condition_guidance_w
 
         betas = cosine_beta_schedule(n_timesteps)
-        alphas = 1. - betas
+        alphas = 1.0 - betas
         alphas_cumprod = torch.cumprod(alphas, axis=0)
         alphas_cumprod_prev = torch.cat([torch.ones(1), alphas_cumprod[:-1]])
 
@@ -55,23 +69,27 @@ class GaussianInvDynDiffusion(nn.Module):
 
         # calculations for diffusion q(x_t | x_{t-1}) and others
         self.register_buffer('sqrt_alphas_cumprod', torch.sqrt(alphas_cumprod))
-        self.register_buffer('sqrt_one_minus_alphas_cumprod', torch.sqrt(1. - alphas_cumprod))
-        self.register_buffer('log_one_minus_alphas_cumprod', torch.log(1. - alphas_cumprod))
-        self.register_buffer('sqrt_recip_alphas_cumprod', torch.sqrt(1. / alphas_cumprod))
-        self.register_buffer('sqrt_recipm1_alphas_cumprod', torch.sqrt(1. / alphas_cumprod - 1))
+        self.register_buffer('sqrt_one_minus_alphas_cumprod', torch.sqrt(1.0 - alphas_cumprod))
+        self.register_buffer('log_one_minus_alphas_cumprod', torch.log(1.0 - alphas_cumprod))
+        self.register_buffer('sqrt_recip_alphas_cumprod', torch.sqrt(1.0 / alphas_cumprod))
+        self.register_buffer('sqrt_recipm1_alphas_cumprod', torch.sqrt(1.0 / alphas_cumprod - 1))
 
         # calculations for posterior q(x_{t-1} | x_t, x_0)
-        posterior_variance = betas * (1. - alphas_cumprod_prev) / (1. - alphas_cumprod)
+        posterior_variance = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
         self.register_buffer('posterior_variance', posterior_variance)
 
         ## log calculation clipped because the posterior variance
         ## is 0 at the beginning of the diffusion chain
-        self.register_buffer('posterior_log_variance_clipped',
-                             torch.log(torch.clamp(posterior_variance, min=1e-20)))
-        self.register_buffer('posterior_mean_coef1',
-                             betas * np.sqrt(alphas_cumprod_prev) / (1. - alphas_cumprod))
-        self.register_buffer('posterior_mean_coef2',
-                             (1. - alphas_cumprod_prev) * np.sqrt(alphas) / (1. - alphas_cumprod))
+        self.register_buffer(
+            'posterior_log_variance_clipped', torch.log(torch.clamp(posterior_variance, min=1e-20))
+        )
+        self.register_buffer(
+            'posterior_mean_coef1', betas * np.sqrt(alphas_cumprod_prev) / (1.0 - alphas_cumprod)
+        )
+        self.register_buffer(
+            'posterior_mean_coef2',
+            (1.0 - alphas_cumprod_prev) * np.sqrt(alphas) / (1.0 - alphas_cumprod),
+        )
 
         ## get loss coefficients and initialize objective
         loss_weights = self.get_loss_weights(loss_discount)
@@ -79,14 +97,14 @@ class GaussianInvDynDiffusion(nn.Module):
 
     def get_loss_weights(self, discount):
         '''
-            sets loss coefficients for trajectory
+        sets loss coefficients for trajectory
 
-            action_weight   : float
-                coefficient on first action loss
-            discount   : float
-                multiplies t^th timestep of trajectory loss by discount**t
-            weights_dict    : dict
-                { i: c } multiplies dimension i of observation loss by c
+        action_weight   : float
+            coefficient on first action loss
+        discount   : float
+            multiplies t^th timestep of trajectory loss by discount**t
+        weights_dict    : dict
+            { i: c } multiplies dimension i of observation loss by c
         '''
         self.action_weight = 1
         dim_weights = torch.ones(self.observation_dim, dtype=torch.float32)
@@ -105,21 +123,21 @@ class GaussianInvDynDiffusion(nn.Module):
 
     def predict_start_from_noise(self, x_t, t, noise):
         '''
-            if self.predict_epsilon, model output is (scaled) noise;
-            otherwise, model predicts x0 directly
+        if self.predict_epsilon, model output is (scaled) noise;
+        otherwise, model predicts x0 directly
         '''
         if self.predict_epsilon:
             return (
-                extract(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t -
-                extract(self.sqrt_recipm1_alphas_cumprod, t, x_t.shape) * noise
+                extract(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t
+                - extract(self.sqrt_recipm1_alphas_cumprod, t, x_t.shape) * noise
             )
         else:
             return noise
 
     def q_posterior(self, x_start, x_t, t):
         posterior_mean = (
-            extract(self.posterior_mean_coef1, t, x_t.shape) * x_start +
-            extract(self.posterior_mean_coef2, t, x_t.shape) * x_t
+            extract(self.posterior_mean_coef1, t, x_t.shape) * x_start
+            + extract(self.posterior_mean_coef2, t, x_t.shape) * x_t
         )
         posterior_variance = extract(self.posterior_variance, t, x_t.shape)
         posterior_log_variance_clipped = extract(self.posterior_log_variance_clipped, t, x_t.shape)
@@ -137,34 +155,45 @@ class GaussianInvDynDiffusion(nn.Module):
         x_recon = self.predict_start_from_noise(x, t=t, noise=epsilon)
 
         if self.clip_denoised:
-            x_recon.clamp_(-1., 1.)
+            x_recon.clamp_(-1.0, 1.0)
         else:
             assert RuntimeError()
 
         model_mean, posterior_variance, posterior_log_variance = self.q_posterior(
-            x_start=x_recon, x_t=x, t=t)
+            x_start=x_recon, x_t=x, t=t
+        )
         return model_mean, posterior_variance, posterior_log_variance
 
     @torch.no_grad()
     def p_sample(self, x, t, returns=None, constraints=None, skills=None):
         b, *_, device = *x.shape, x.device
-        model_mean, _, model_log_variance = self.p_mean_variance(x=x, t=t, returns=returns,
-                                                                 constraints=constraints, skills=skills)
+        model_mean, _, model_log_variance = self.p_mean_variance(
+            x=x, t=t, returns=returns, constraints=constraints, skills=skills
+        )
         noise = 0.5 * torch.randn_like(x)
         # no noise when t == 0
         nonzero_mask = (1 - (t == 0).float()).reshape(b, *((1,) * (len(x.shape) - 1)))
         return model_mean + nonzero_mask * (0.5 * model_log_variance).exp() * noise
 
     @torch.no_grad()
-    def p_sample_loop(self, shape, history, returns=None, constraints=None, skills=None, verbose=True,
-                      return_diffusion=False):
+    def p_sample_loop(
+        self,
+        shape,
+        history,
+        returns=None,
+        constraints=None,
+        skills=None,
+        verbose=True,
+        return_diffusion=False,
+    ):
         device = self.betas.device
 
         batch_size = shape[0]
         x = 0.5 * torch.randn(shape, device=device)
         x = history_cover(x, history, 0, self.history_lenght)
 
-        if return_diffusion: diffusion = [x]
+        if return_diffusion:
+            diffusion = [x]
 
         # progress = Progress(self.n_timesteps) if verbose else Silent()
         for i in reversed(range(0, self.n_timesteps)):
@@ -174,7 +203,8 @@ class GaussianInvDynDiffusion(nn.Module):
 
             # progress.update({'t': i})
 
-            if return_diffusion: diffusion.append(x)
+            if return_diffusion:
+                diffusion.append(x)
 
         # progress.close()
 
@@ -186,7 +216,7 @@ class GaussianInvDynDiffusion(nn.Module):
     @torch.no_grad()
     def conditional_sample(self, obs_history, returns=None, horizon=None, *args, **kwargs):
         '''
-            conditions : [ (time, state), ... ]
+        conditions : [ (time, state), ... ]
         '''
         device = self.betas.device
         batch_size = len(obs_history)
@@ -202,14 +232,14 @@ class GaussianInvDynDiffusion(nn.Module):
             noise = torch.randn_like(x_start)
 
         sample = (
-            extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start +
-            extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * noise
+            extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start
+            + extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * noise
         )
 
         return sample
 
     def p_losses(self, x_start, t, returns=None, constraints=None, skills=None):
-        history = x_start[:, :self.history_lenght, :]
+        history = x_start[:, : self.history_lenght, :]
         noise = torch.randn_like(x_start)
         x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)
         x_noisy = history_cover(x_noisy, history, 0, self.history_lenght)
@@ -231,9 +261,9 @@ class GaussianInvDynDiffusion(nn.Module):
 
         if self.train_only_inv:
             # Calculating inv loss
-            x_t = x[:, :-1, self.action_dim:]
-            a_t = x[:, :-1, :self.action_dim]
-            x_t_1 = x[:, 1:, self.action_dim:]
+            x_t = x[:, :-1, self.action_dim :]
+            a_t = x[:, :-1, : self.action_dim]
+            x_t_1 = x[:, 1:, self.action_dim :]
             x_comb_t = torch.cat([x_t, x_t_1], dim=-1)
             x_comb_t = x_comb_t.reshape(-1, 2 * self.observation_dim)
             a_t = a_t.reshape(-1, self.action_dim)
@@ -244,11 +274,13 @@ class GaussianInvDynDiffusion(nn.Module):
         else:
             batch_size = len(x)
             t = torch.randint(0, self.n_timesteps, (batch_size,), device=x.device).long()
-            diffuse_loss, info = self.p_losses(x[:, :, self.action_dim:], t, returns, constraints, skills)
+            diffuse_loss, info = self.p_losses(
+                x[:, :, self.action_dim :], t, returns, constraints, skills
+            )
             # Calculating inv loss
-            x_t = x[:, :-1, self.action_dim:]
-            a_t = x[:, :-1, :self.action_dim]
-            x_t_1 = x[:, 1:, self.action_dim:]
+            x_t = x[:, :-1, self.action_dim :]
+            a_t = x[:, :-1, : self.action_dim]
+            x_t_1 = x[:, 1:, self.action_dim :]
             x_comb_t = torch.cat([x_t, x_t_1], dim=-1)
             x_comb_t = x_comb_t.reshape(-1, 2 * self.observation_dim)
             a_t = a_t.reshape(-1, self.action_dim)
