@@ -26,7 +26,7 @@ from omnisafe.common.offline.data_collector import OfflineDataCollector
 env_name = 'SafetyAntVelocity-v1'
 size = 1_000_000
 agents = [
-    ('train/PPOLag-{SafetyAntVelocity-v1}/seed-000-2024-01-07-21-14-30', 'epoch-500.pt', 1_000_000),
+    ('PATH_TO_AGENT', 'epoch-500.pt', 1_000_000),
 ]
 save_dir = './data'
 

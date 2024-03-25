@@ -1,4 +1,4 @@
-# Copyright 2022-2024 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ==============================================================================
+"""Example of using DecisionDiffuser to generate plans with different conditions."""
 
 import datetime
 
@@ -36,10 +38,14 @@ actor: DecisionDiffuserActor = agent._actor
 
 
 def cls_free_cond(actor: DecisionDiffuserActor) -> None:
-    """Sample from the model with cls free condition
-    generate satisfy both
-    cond1 is outside the circle of radius 1.2
-    cond2 is inside the circle of radius 1.5
+    """
+    Sample from the model with cls free condition.
+    Generate samples that satisfy both conditions:
+    - cond1: points outside the circle of radius 1.2
+    - cond2: points inside the circle of radius 1.5
+
+    Args:
+        actor (DecisionDiffuserActor): The actor object used for conditional sampling.
     """
     cls_free_cond1 = torch.tensor([[1.0, 0.0]], device=DEVICE)
     cls_free_cond2 = torch.tensor([[0.0, 1.0]], device=DEVICE)
@@ -65,8 +71,14 @@ def cls_free_cond(actor: DecisionDiffuserActor) -> None:
 
 
 def state_cond(actor: DecisionDiffuserActor) -> None:
-    """Sample from the model with state condition, generate a plan from random starting point to (4, 1)"""
-    for _ in range(1):
+    """
+    Sample from the model with state condition.
+    Generate a plan from a random starting point to (4, 1).
+    
+    Args:
+        actor (DecisionDiffuserActor): The actor object used for conditional sampling.
+    """
+    # Your code here   for _ in range(1):
         state_cond = torch.tensor(
             [[np.random.uniform(1, 4), np.random.uniform(1, 4)]],
             device=DEVICE,
@@ -87,9 +99,10 @@ def state_cond(actor: DecisionDiffuserActor) -> None:
 
 def both_cond(actor: DecisionDiffuserActor) -> None:
     """
-    condition on both state and cls free condition
+    Condition on both state and cls free condition.
 
-
+    Args:
+        actor (DecisionDiffuserActor): The actor object used for conditional sampling.
     """
     for _ in range(1):
         state_cond = torch.tensor(
