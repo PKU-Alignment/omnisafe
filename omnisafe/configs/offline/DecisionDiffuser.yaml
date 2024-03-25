@@ -74,4 +74,3 @@ defaults:
       hidden_sizes: [750, 750]
       # Type of activation function, choosing from "tanh", "relu", "sigmoid", "identity", "softplus"
       activation: relu
-
