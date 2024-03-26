@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Offline Adapter for OmniSafe."""
+"""Decision Diffuser Adapter for OmniSafe."""
 
 from __future__ import annotations
 
@@ -65,7 +65,6 @@ class DecisionDiffuserAdpater:
         self._env = ActionScale(self._env, device=self._device, high=1.0, low=-1.0)
         self._env.set_seed(seed)
 
-    def _dd_eval_init(self):
         self._eval_returns = torch.tensor(self._cfgs.evaluate_cfgs.returns)
         self._eval_constraints = torch.tensor(self._cfgs.evaluate_cfgs.constraints)
         self._eval_skills = torch.tensor(self._cfgs.evaluate_cfgs.skills)
@@ -117,20 +116,21 @@ class DecisionDiffuserAdpater:
         """
         return self._env.reset(seed=seed, options=options)
 
-    def select_action(self, agent, obs_history: list, obs, step):
-
-        if step % self.multi_step_pred == 0:
-            samples = agent.predict(obs,
-                                    returns=self._eval_returns,
-                                    constraints=self._eval_constraints,
-                                    skills=self._eval_skills,
-                                    step=step)
-            self.samples = samples.clone()
-            sample_hisory_len = obs.shape[0]
-        next_obs = self.samples[:, sample_hisory_len + step % self.multi_step_pred + 1, :]
-        obs_comb = torch.cat([obs, next_obs], dim=-1).reshape(1, -1)
-        action = agent.inv_model(obs_comb)
-        return 0
+    # def select_action(self, agent, obs_history: list, obs, step):
+    #     if step % self.multi_step_pred == 0:
+    #         samples = agent.predict(
+    #             obs,
+    #             returns=self._eval_returns,
+    #             constraints=self._eval_constraints,
+    #             skills=self._eval_skills,
+    #             step=step,
+    #         )
+    #         self.samples = samples.clone()
+    #         sample_hisory_len = obs.shape[0]
+    #     next_obs = self.samples[:, sample_hisory_len + step % self.multi_step_pred + 1, :]
+    #     obs_comb = torch.cat([obs, next_obs], dim=-1).reshape(1, -1)
+    #     agent.inv_model(obs_comb)
+    #     return 0
 
     def evaluate(
         self,
@@ -150,7 +150,6 @@ class DecisionDiffuserAdpater:
             done = torch.Tensor([False])
             obs, _ = self.reset()
             obs_history = []
-            step = 0
             while not done:
                 obs_history.append(obs)
                 if len(obs_history) > self.history_obs_length:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of MLPActorActor."""
+"""Implementation of DecisionDiffuserActor."""
 
 from __future__ import annotations
 
@@ -20,10 +20,10 @@ import torch
 from torch.distributions import Distribution
 
 from omnisafe.models.base import Actor
-from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
-from omnisafe.utils.model import build_mlp_network
-from omnisafe.models.dd_models.temporal import TemporalUnet
 from omnisafe.models.dd_models.diffusion import GaussianInvDynDiffusion
+from omnisafe.models.dd_models.temporal import TemporalUnet
+from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
+from omnisafe.utils.config import Config
 from omnisafe.utils.model import initialize_layer
 
 
@@ -52,7 +52,7 @@ class DecisionDiffuserActor(Actor):
         activation: Activation = 'relu',
         output_activation: Activation = 'tanh',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
-        cfgs=None
+        cfgs: Config = None,
     ) -> None:
         """Initialize an instance of :class:`MLPActor`."""
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
@@ -66,7 +66,7 @@ class DecisionDiffuserActor(Actor):
             condition_dropout=self._cfgs.model_cfgs.temporalU_model.condition_dropout,
             calc_energy=self._cfgs.model_cfgs.temporalU_model.calc_energy,
             constraints_dim=self._cfgs.algo_cfgs.constraints_dim,
-            skills_dim=self._cfgs.algo_cfgs.skills_dim
+            skills_dim=self._cfgs.algo_cfgs.skills_dim,
         )
         GDDModel = GaussianInvDynDiffusion(
             TUmodel,
@@ -82,9 +82,9 @@ class DecisionDiffuserActor(Actor):
             train_only_inv=self._cfgs.model_cfgs.diffuser_model.train_only_inv,
             condition_guidance_w=self._cfgs.model_cfgs.diffuser_model.condition_guidance_w,
             history_length=self._cfgs.evaluate_cfgs.obs_history_length,
-            multi_step_pred=self._cfgs.evaluate_cfgs.multi_step_pred
+            multi_step_pred=self._cfgs.evaluate_cfgs.multi_step_pred,
         )
-        for name, layer in GDDModel.named_modules():
+        for _name, layer in GDDModel.named_modules():
             if isinstance(layer, torch.nn.Linear):
                 initialize_layer(self._cfgs.model_cfgs.weight_initialization_mode, layer)
         self.net = GDDModel
@@ -92,18 +92,34 @@ class DecisionDiffuserActor(Actor):
         self.obs_history_length = self._cfgs.evaluate_cfgs.obs_history_length
         self.init_step_config()
 
-    def loss(self, x, returns=None, constraints=None, skills=None):
+    def loss(
+        self,
+        x: torch.Tensor,
+        returns: torch.Tensor = None,
+        constraints: torch.Tensor = None,
+        skills: torch.Tensor = None,
+    ) -> tuple:
+        """The progress of loss training."""
         return self.net.loss(x, returns, constraints, skills)
 
-    def init_step_config(self):
+    def init_step_config(self) -> None:
+        """Initialize config when each episode begin."""
         self.obs_history = []
         self.samples_history_length = 0
         self.step_count = 0
-        self._eval_returns = self._cfgs.evaluate_cfgs.returns * torch.ones(1, 1, dtype=torch.float32)
-        self._eval_constraints = torch.tensor([self._cfgs.evaluate_cfgs.constraints], dtype=torch.float32)
+        self._eval_returns = self._cfgs.evaluate_cfgs.returns * torch.ones(
+            1,
+            1,
+            dtype=torch.float32,
+        )
+        self._eval_constraints = torch.tensor(
+            [self._cfgs.evaluate_cfgs.constraints],
+            dtype=torch.float32,
+        )
         self._eval_skills = torch.tensor([self._cfgs.evaluate_cfgs.skills], dtype=torch.float32)
 
-    def update_step_config(self, obs):
+    def update_step_config(self, obs: torch.Tensor) -> tuple:
+        """Update config at each step."""
         use_sample = False
         self.obs_history.append(obs)
         if len(self.obs_history) > self.obs_history_length:
@@ -138,24 +154,30 @@ class DecisionDiffuserActor(Actor):
         constraints = self._eval_constraints.to(device)
         skills = self._eval_skills.to(device)
         if use_sample:
-            samples = self.net.conditional_sample(obs,
-                                                  returns=returns,
-                                                  constraints=constraints,
-                                                  skills=skills)
+            samples = self.net.conditional_sample(
+                obs,
+                returns=returns,
+                constraints=constraints,
+                skills=skills,
+            )
             self.samples = samples.clone()
             self.sample_hisory_len = obs.shape[0]
-        next_obs = self.samples[:, self.sample_hisory_len + self.step_count % self.multi_step_pred + 1, :]
+        next_obs = self.samples[
+            :,
+            self.sample_hisory_len + self.step_count % self.multi_step_pred + 1,
+            :,
+        ]
         obs_comb = torch.cat([obs[:, -1, :], next_obs], dim=-1).reshape(1, -1)
         action = self.net.inv_model(obs_comb)
         self.step_count += 1
         return action
 
-
     def _distribution(self, obs: torch.Tensor) -> Distribution:
         raise NotImplementedError
 
-    def forward(self, cond, *args, **kwargs):
-        return self.net.conditional_sample(cond=cond, *args, **kwargs)
+    def forward(self, *args: tuple, **kwargs: dict) -> torch.Tensor:
+        """Forward function of decision diffuser actor."""
+        return self.net.conditional_sample(*args, **kwargs)
 
     def log_prob(self, act: torch.Tensor) -> torch.Tensor:
         """Log probability of the action.

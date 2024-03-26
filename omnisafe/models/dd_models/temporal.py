@@ -1,45 +1,75 @@
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Implementation of UTemporalModel."""
+
+import types
+
 import torch
 import torch.nn as nn
 from torch.distributions import Bernoulli
 
-from .helpers import (
-    SinusoidalPosEmb,
-    Downsample1d,
-    Upsample1d,
+from omnisafe.models.dd_models.helpers import (
     Conv1dBlock,
-    Unsqueeze
+    Downsample1d,
+    SinusoidalPosEmb,
+    Unsqueeze,
+    Upsample1d,
 )
 
 
 class Residual(nn.Module):
-    def __init__(self, fn):
+    """Implementation of Residual Module."""
+
+    def __init__(self, fn: types.FunctionType) -> None:
+        """Initialize for Class:Residual."""
         super().__init__()
         self.fn = fn
 
-    def forward(self, x, *args, **kwargs):
+    def forward(self, x: torch.Tensor, *args: tuple, **kwargs: dict) -> torch.Tensor:
+        """Forward progress of Residual."""
         return self.fn(x, *args, **kwargs) + x
 
 
 class PreNorm(nn.Module):
-    def __init__(self, dim, fn):
+    """Implementation of PreNorm Module."""
+
+    def __init__(self, dim: int, fn: types.FunctionType) -> None:
+        """Initialize for Class:PreNorm."""
         super().__init__()
         self.fn = fn
         self.norm = nn.InstanceNorm2d(dim, affine=True)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward progress of PreNorm."""
         x = self.norm(x)
         return self.fn(x)
 
 
 class LinearAttention(nn.Module):
-    def __init__(self, dim, heads=4, dim_head=128):
+    """Implementation of LinearAttention Module."""
+
+    def __init__(self, dim: int, heads: int = 4, dim_head: int = 128) -> None:
+        """Initialize for Class:LinearAttention."""
         super().__init__()
         self.heads = heads
         hidden_dim = dim_head * heads
         self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
         self.to_out = nn.Conv2d(hidden_dim, dim, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward progress of LinearAttention."""
         b, c, h, w = x.shape
         qkv = self.to_qkv(x)
         qkv = qkv.view(b, 3, self.heads, -1, h, w)
@@ -58,14 +88,18 @@ class LinearAttention(nn.Module):
 
 
 class GlobalMixing(nn.Module):
-    def __init__(self, dim, heads=4, dim_head=128):
+    """Implementation of GlobalMixing Module."""
+
+    def __init__(self, dim: int, heads: int = 4, dim_head: int = 128) -> None:
+        """Initialize for Class:GlobalMixing."""
         super().__init__()
         self.heads = heads
         hidden_dim = dim_head * heads
         self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
         self.to_out = nn.Conv2d(hidden_dim, dim, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward progress of GlobalMixing."""
         b, c, h, w = x.shape
         qkv = self.to_qkv(x)
 
@@ -83,19 +117,28 @@ class GlobalMixing(nn.Module):
 
 
 class ResidualTemporalBlock(nn.Module):
+    """Implementation of ResidualTemporalBlock Module."""
 
-    def __init__(self, inp_channels, out_channels, embed_dim, horizon, kernel_size=5, mish=True):
+    def __init__(
+        self,
+        inp_channels: int,
+        out_channels: int,
+        embed_dim: int,
+        horizon: int,
+        kernel_size: int = 5,
+        mish: bool = True,
+    ) -> None:
+        """Initialize for Class:ResidualTemporalBlock."""
         super().__init__()
 
-        self.blocks = nn.ModuleList([
-            Conv1dBlock(inp_channels, out_channels, kernel_size, mish),
-            Conv1dBlock(out_channels, out_channels, kernel_size, mish),
-        ])
+        self.blocks = nn.ModuleList(
+            [
+                Conv1dBlock(inp_channels, out_channels, kernel_size, mish),
+                Conv1dBlock(out_channels, out_channels, kernel_size, mish),
+            ],
+        )
 
-        if mish:
-            act_fn = nn.Mish()
-        else:
-            act_fn = nn.SiLU()
+        act_fn = nn.Mish() if mish else nn.SiLU()
 
         self.time_mlp = nn.Sequential(
             act_fn,
@@ -104,16 +147,21 @@ class ResidualTemporalBlock(nn.Module):
             # Rearrange('batch t -> batch t 1'),
         )
 
-        self.residual_conv = nn.Conv1d(inp_channels, out_channels, 1) \
-            if inp_channels != out_channels else nn.Identity()
+        self.residual_conv = (
+            nn.Conv1d(inp_channels, out_channels, 1)
+            if inp_channels != out_channels
+            else nn.Identity()
+        )
 
-    def forward(self, x, t):
-        '''
-            x : [ batch_size x inp_channels x horizon ]
-            t : [ batch_size x embed_dim ]
-            returns:
-            out : [ batch_size x out_channels x horizon ]
-        '''
+    def forward(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
+        """Forward progress of ResidualTemporalBlock.
+
+        x : [ batch_size x inp_channels x horizon ]
+        t : [ batch_size x embed_dim ]
+
+        Returns:
+        out : [ batch_size x out_channels x horizon ]
+        """
         out = self.blocks[0](x) + self.time_mlp(t)
         out = self.blocks[1](out)
 
@@ -121,23 +169,25 @@ class ResidualTemporalBlock(nn.Module):
 
 
 class TemporalUnet(nn.Module):
+    """Implementation of TemporalUnet."""
 
     def __init__(
         self,
-        horizon,
-        transition_dim,
-        dim=128,
-        dim_mults=(1, 2, 4, 8),
-        returns_condition=False,
-        condition_dropout=0.1,
-        calc_energy=False,
-        kernel_size=5,
-        constraints_dim=0,
-        skills_dim=0
-    ):
+        horizon: int,
+        transition_dim: int,
+        dim: int = 128,
+        dim_mults: tuple = (1, 2, 4, 8),
+        returns_condition: bool = False,
+        condition_dropout: float = 0.1,
+        calc_energy: bool = False,
+        kernel_size: int = 5,
+        constraints_dim: int = 0,
+        skills_dim: int = 0,
+    ) -> None:
+        """Initialize for Class:TemporalUnet."""
         super().__init__()
 
-        dims = [transition_dim, *map(lambda m: dim * m, dim_mults)]
+        dims = [transition_dim, *(dim * m for m in dim_mults)]
         in_out = list(zip(dims[:-1], dims[1:]))
         print(f'[ models/temporal ] Channel dimensions: {in_out}')
 
@@ -207,33 +257,77 @@ class TemporalUnet(nn.Module):
         for ind, (dim_in, dim_out) in enumerate(in_out):
             is_last = ind >= (num_resolutions - 1)
 
-            self.downs.append(nn.ModuleList([
-                ResidualTemporalBlock(dim_in, dim_out, embed_dim=embed_dim, horizon=horizon, kernel_size=kernel_size,
-                                      mish=mish),
-                ResidualTemporalBlock(dim_out, dim_out, embed_dim=embed_dim, horizon=horizon, kernel_size=kernel_size,
-                                      mish=mish),
-                Downsample1d(dim_out) if not is_last else nn.Identity()
-            ]))
+            self.downs.append(
+                nn.ModuleList(
+                    [
+                        ResidualTemporalBlock(
+                            dim_in,
+                            dim_out,
+                            embed_dim=embed_dim,
+                            horizon=horizon,
+                            kernel_size=kernel_size,
+                            mish=mish,
+                        ),
+                        ResidualTemporalBlock(
+                            dim_out,
+                            dim_out,
+                            embed_dim=embed_dim,
+                            horizon=horizon,
+                            kernel_size=kernel_size,
+                            mish=mish,
+                        ),
+                        Downsample1d(dim_out) if not is_last else nn.Identity(),
+                    ],
+                ),
+            )
 
             if not is_last:
                 horizon = horizon // 2
 
         mid_dim = dims[-1]
-        self.mid_block1 = ResidualTemporalBlock(mid_dim, mid_dim, embed_dim=embed_dim, horizon=horizon,
-                                                kernel_size=kernel_size, mish=mish)
-        self.mid_block2 = ResidualTemporalBlock(mid_dim, mid_dim, embed_dim=embed_dim, horizon=horizon,
-                                                kernel_size=kernel_size, mish=mish)
+        self.mid_block1 = ResidualTemporalBlock(
+            mid_dim,
+            mid_dim,
+            embed_dim=embed_dim,
+            horizon=horizon,
+            kernel_size=kernel_size,
+            mish=mish,
+        )
+        self.mid_block2 = ResidualTemporalBlock(
+            mid_dim,
+            mid_dim,
+            embed_dim=embed_dim,
+            horizon=horizon,
+            kernel_size=kernel_size,
+            mish=mish,
+        )
 
         for ind, (dim_in, dim_out) in enumerate(reversed(in_out[1:])):
             is_last = ind >= (num_resolutions - 1)
 
-            self.ups.append(nn.ModuleList([
-                ResidualTemporalBlock(dim_out * 2, dim_in, embed_dim=embed_dim, horizon=horizon,
-                                      kernel_size=kernel_size, mish=mish),
-                ResidualTemporalBlock(dim_in, dim_in, embed_dim=embed_dim, horizon=horizon, kernel_size=kernel_size,
-                                      mish=mish),
-                Upsample1d(dim_in) if not is_last else nn.Identity()
-            ]))
+            self.ups.append(
+                nn.ModuleList(
+                    [
+                        ResidualTemporalBlock(
+                            dim_out * 2,
+                            dim_in,
+                            embed_dim=embed_dim,
+                            horizon=horizon,
+                            kernel_size=kernel_size,
+                            mish=mish,
+                        ),
+                        ResidualTemporalBlock(
+                            dim_in,
+                            dim_in,
+                            embed_dim=embed_dim,
+                            horizon=horizon,
+                            kernel_size=kernel_size,
+                            mish=mish,
+                        ),
+                        Upsample1d(dim_in) if not is_last else nn.Identity(),
+                    ],
+                ),
+            )
 
             if not is_last:
                 horizon = horizon * 2
@@ -243,12 +337,21 @@ class TemporalUnet(nn.Module):
             nn.Conv1d(dim, transition_dim, 1),
         )
 
-    def forward(self, x, time, returns=None, constraints=None, skills=None, use_dropout=True,
-                force_dropout=False):
-        '''
-            x : [ batch x horizon x transition ]
-            returns : [batch x horizon]
-        '''
+    def forward(
+        self,
+        x: torch.Tensor,
+        time: torch.Tensor,
+        returns: torch.Tensor = None,
+        constraints: torch.Tensor = None,
+        skills: torch.Tensor = None,
+        use_dropout: bool = True,
+        force_dropout: bool = False,
+    ) -> torch.Tensor:
+        """Forward progress of TemporalUnet.
+
+        x : [ batch x horizon x transition ]
+        returns : [batch x horizon]
+        """
         if self.calc_energy:
             x_inp = x
 
@@ -308,14 +411,23 @@ class TemporalUnet(nn.Module):
             energy = ((x - x_inp) ** 2).mean()
             grad = torch.autograd.grad(outputs=energy, inputs=x_inp, create_graph=True)
             return grad[0]
-        else:
-            return x
 
-    def get_pred(self, x, cond, time, returns=None, use_dropout=True, force_dropout=False):
-        '''
-            x : [ batch x horizon x transition ]
-            returns : [batch x horizon]
-        '''
+        return x
+
+    def get_pred(
+        self,
+        x: torch.Tensor,
+        cond: torch.Tensor,
+        time: torch.Tensor,
+        returns: torch.Tensor = None,
+        use_dropout: bool = True,
+        force_dropout: bool = False,
+    ) -> torch.Tensor:
+        """Predict progress of TemporalUnet.
+
+        x : [ batch x horizon x transition ]
+        returns : [batch x horizon]
+        """
         # x = einops.rearrange(x, 'b h t -> b t h')
         x = x.permute(0, 2, 1)
         t = self.time_mlp(time)
@@ -324,7 +436,9 @@ class TemporalUnet(nn.Module):
             assert returns is not None
             returns_embed = self.returns_mlp(returns)
             if use_dropout:
-                mask = self.mask_dist.sample(sample_shape=(returns_embed.size(0), 1)).to(returns_embed.device)
+                mask = self.mask_dist.sample(sample_shape=(returns_embed.size(0), 1)).to(
+                    returns_embed.device,
+                )
                 returns_embed = mask * returns_embed
             if force_dropout:
                 returns_embed = 0 * returns_embed
@@ -350,6 +464,4 @@ class TemporalUnet(nn.Module):
         x = self.final_conv(x)
 
         # x = einops.rearrange(x, 'b t h -> b h t')
-        x = x.permute(0, 2, 1)
-
-        return x
+        return x.permute(0, 2, 1)

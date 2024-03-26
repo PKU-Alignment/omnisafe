@@ -132,7 +132,7 @@ class Normalizer(nn.Module):
             delta = mean_raw - self._mean
             self._mean += delta * count_raw / count
             sumq_raw = torch.sum((raw_data - mean_raw) ** 2, dim=0)
-            self._sumsq += sumq_raw + delta ** 2 * self._count * count_raw / count
+            self._sumsq += sumq_raw + delta**2 * self._count * count_raw / count
             self._count = count
         self._var = self._sumsq / (self._count - 1)
         self._std = torch.sqrt(self._var)
@@ -142,7 +142,6 @@ class Normalizer(nn.Module):
         self,
         state_dict: Mapping[str, Any],
         strict: bool = True,
-        assign: bool = False,
     ) -> Any:
         """Load the state_dict to the normalizer.
 
@@ -155,4 +154,4 @@ class Normalizer(nn.Module):
             The loaded normalizer.
         """
         self._first = False
-        return super().load_state_dict(state_dict, strict, assign)
+        return super().load_state_dict(state_dict, strict)

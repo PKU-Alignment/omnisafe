@@ -23,7 +23,7 @@ class DrawCircle(gym.Env):
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second': 2,
         'render_fps': 1000,
-        'render_mode': 'human'
+        'render_mode': 'human',
     }
     env_config = {
         'control_type': 'velocity',
@@ -31,16 +31,20 @@ class DrawCircle(gym.Env):
         'constraints': np.array([0.4, 0.6]),
         'pos_max_min': (-1.0, 1.0),
         'vel_max_min': (-1.0, 1.0),
-        'time_diff': 0.1
+        'time_diff': 0.1,
     }
 
     def __init__(self, **kwargs):
-        self.action_space = gym.spaces.Box(low=np.array([self.env_config['vel_max_min'][0]] * 2),
-                                           high=np.array([self.env_config['vel_max_min'][1]] * 2),
-                                           dtype=np.float64)
-        self.observation_space = gym.spaces.Box(low=np.array([self.env_config['pos_max_min'][0]] * 4),
-                                                high=np.array([self.env_config['pos_max_min'][1]] * 4),
-                                                dtype=np.float64)
+        self.action_space = gym.spaces.Box(
+            low=np.array([self.env_config['vel_max_min'][0]] * 2),
+            high=np.array([self.env_config['vel_max_min'][1]] * 2),
+            dtype=np.float64,
+        )
+        self.observation_space = gym.spaces.Box(
+            low=np.array([self.env_config['pos_max_min'][0]] * 4),
+            high=np.array([self.env_config['pos_max_min'][1]] * 4),
+            dtype=np.float64,
+        )
 
         for key, value in kwargs.items():
             self.env_config[key] = value
@@ -89,7 +93,9 @@ class DrawCircle(gym.Env):
         if self.env_config['control_type'] == 'velocity':
             self.item_vel = action
             self.item_pos += self.item_vel * self.time_diff
-            self.item_pos = np.clip(self.item_pos, self.observation_space.low[:2], self.observation_space.high[:2])
+            self.item_pos = np.clip(
+                self.item_pos, self.observation_space.low[:2], self.observation_space.high[:2]
+            )
 
         elif self.env_config['control_type'] == 'accelerate':
             self.item_accel = action
@@ -100,7 +106,9 @@ class DrawCircle(gym.Env):
             vel_ave = (vel_0 + vel_1) / 2
             self.item_vel = vel_1
             self.item_pos += vel_ave * self.time_diff
-            self.item_pos = np.clip(self.item_pos, self.observation_space.low[:2], self.observation_space.high[:2])
+            self.item_pos = np.clip(
+                self.item_pos, self.observation_space.low[:2], self.observation_space.high[:2]
+            )
 
         obs = np.concatenate([self.item_pos, self.item_vel])
         self.trajectory[self.step_count] = obs[:]
@@ -149,7 +157,9 @@ class DrawCircle(gym.Env):
         pg.draw.circle(self.screen, item_color, item_pos, 3)
 
         mid_pos = np.array([self.screen_size[0] // 2, self.screen_size[1] // 2])
-        trajectory_render = mid_pos + np.array([1, -1]) * self.trajectory[:self.step_count, :2] * mid_pos
+        trajectory_render = (
+            mid_pos + np.array([1, -1]) * self.trajectory[: self.step_count, :2] * mid_pos
+        )
         line_point_list = trajectory_render.tolist()
         if len(line_point_list) > 1:
             pg.draw.aalines(self.screen, traj_color, False, line_point_list)
@@ -197,7 +207,10 @@ class DrawCircle(gym.Env):
     def step_cost(self):
         item_distance = self.item_pos - self.centre_pos
         item_distance = (item_distance[0] ** 2 + item_distance[1] ** 2) ** 0.5
-        if item_distance < self.env_config['constraints'][1] and item_distance > self.env_config['constraints'][0]:
+        if (
+            item_distance < self.env_config['constraints'][1]
+            and item_distance > self.env_config['constraints'][0]
+        ):
             return 0
         else:
             return 1
@@ -222,8 +235,7 @@ class DrawCircle(gym.Env):
         elif item_distance < self.env_config['constraints'][0]:
             constraint = np.array([0.0, 1.0])
         else:
-            constraint = random.sample(
-                [np.array([1.0, 0.0]), np.array([0.0, 1.0])], 1)[0]
+            constraint = random.sample([np.array([1.0, 0.0]), np.array([0.0, 1.0])], 1)[0]
         return constraint
 
     def transpos2render(self, pos):
@@ -242,17 +254,18 @@ def collect_expert_trajectory(traj_num=1000, type='circle', save_path='./data'):
         time = time_diff * step
         if type == 'circle':
             action = np.array(
-                [-radiums * freq * np.sin(freq * time + theta),
-                 radiums * freq * np.cos(freq * time + theta)])
+                [
+                    -radiums * freq * np.sin(freq * time + theta),
+                    radiums * freq * np.cos(freq * time + theta),
+                ]
+            )
         elif type == 'rect':
-            edge = radiums / 2 ** 0.5
+            edge = radiums / 2**0.5
             freqL = 4 * edge / np.pi * freq
             vel_change_time = int(2 * edge / (freqL * time_diff))
             # if step % vel_change_time == 0:
             current_theta = theta + 0.75 * np.pi + (step // vel_change_time) * np.pi * 0.5
-            action = np.array(
-                [freqL * np.cos(current_theta),
-                 freqL * np.sin(current_theta)])
+            action = np.array([freqL * np.cos(current_theta), freqL * np.sin(current_theta)])
 
         return action
 
@@ -278,8 +291,14 @@ def collect_expert_trajectory(traj_num=1000, type='circle', save_path='./data'):
         step = 0
         while not done:
 
-            action = action_sample(step=step, radiums=radiums, theta=theta, freq=env.freq, type=type,
-                                   time_diff=env.time_diff)
+            action = action_sample(
+                step=step,
+                radiums=radiums,
+                theta=theta,
+                freq=env.freq,
+                type=type,
+                time_diff=env.time_diff,
+            )
             next_obs, reward, cost, done, tructe, _ = env.step(action)
             constraint = env.get_constraints()
             if type == 'circle':
@@ -287,9 +306,7 @@ def collect_expert_trajectory(traj_num=1000, type='circle', save_path='./data'):
             elif type == 'rect':
                 skill = np.array([0.0, 1.0])
             dataset[total_step] = np.concatenate(
-                [
-                    obs, action, next_obs, np.array([reward, cost, done, tructe]), constraint, skill
-                ]
+                [obs, action, next_obs, np.array([reward, cost, done, tructe]), constraint, skill]
             )
             step += 1
             total_step += 1
@@ -297,18 +314,28 @@ def collect_expert_trajectory(traj_num=1000, type='circle', save_path='./data'):
             env.render(mode='human')
 
     obs = dataset[:, :obs_dim]
-    action = dataset[:, obs_dim:obs_dim + act_dim]
-    next_obs = dataset[:, obs_dim + act_dim:2 * obs_dim + act_dim]
-    reward = dataset[:, 2 * obs_dim + act_dim:2 * obs_dim + act_dim + 1]
-    cost = dataset[:, 2 * obs_dim + act_dim + 1:2 * obs_dim + act_dim + 2]
-    done = dataset[:, 2 * obs_dim + act_dim + 2:2 * obs_dim + act_dim + 3]
-    constraint = dataset[:, 2 * obs_dim + act_dim + 4:2 * obs_dim + act_dim + 6]
-    skill = dataset[:, 2 * obs_dim + act_dim + 6:2 * obs_dim + act_dim + 8]
+    action = dataset[:, obs_dim : obs_dim + act_dim]
+    next_obs = dataset[:, obs_dim + act_dim : 2 * obs_dim + act_dim]
+    reward = dataset[:, 2 * obs_dim + act_dim : 2 * obs_dim + act_dim + 1]
+    cost = dataset[:, 2 * obs_dim + act_dim + 1 : 2 * obs_dim + act_dim + 2]
+    done = dataset[:, 2 * obs_dim + act_dim + 2 : 2 * obs_dim + act_dim + 3]
+    constraint = dataset[:, 2 * obs_dim + act_dim + 4 : 2 * obs_dim + act_dim + 6]
+    skill = dataset[:, 2 * obs_dim + act_dim + 6 : 2 * obs_dim + act_dim + 8]
     save_path = save_path + '/' + 'SafetyDrawCircle-v0_data_expert'
-    np.savez(save_path, obs=obs, action=action, next_obs=next_obs, reward=reward, cost=cost, done=done,
-             constraint=constraint, skill=skill)
+    np.savez(
+        save_path,
+        obs=obs,
+        action=action,
+        next_obs=next_obs,
+        reward=reward,
+        cost=cost,
+        done=done,
+        constraint=constraint,
+        skill=skill,
+    )
 
 
 if __name__ == '__main__':
-    collect_expert_trajectory(traj_num=2000, type='circle',
-                              save_path='C:/Users\zhou2\.cache\omnisafe\datasets')
+    collect_expert_trajectory(
+        traj_num=2000, type='circle', save_path='C:/Users\zhou2\.cache\omnisafe\datasets'
+    )

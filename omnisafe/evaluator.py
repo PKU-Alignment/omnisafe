@@ -65,13 +65,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         actor: Actor | None = None,
         actor_critic: ConstraintActorCritic | ConstraintActorQCritic | None = None,
         dynamics: EnsembleDynamicsModel | None = None,
-        planner: CEMPlanner
-                 | ARCPlanner
-                 | SafeARCPlanner
-                 | CCEPlanner
-                 | CAPPlanner
-                 | RCEPlanner
-                 | None = None,
+        planner: (
+            CEMPlanner | ARCPlanner | SafeARCPlanner | CCEPlanner | CAPPlanner | RCEPlanner | None
+        ) = None,
         render_mode: str = 'rgb_array',
     ) -> None:
         """Initialize an instance of :class:`Evaluator`."""
@@ -153,7 +149,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
             self._safety_budget = (
                 self._cfgs.algo_cfgs.safety_budget
-                * (1 - self._cfgs.algo_cfgs.saute_gamma ** self._cfgs.algo_cfgs.max_ep_len)
+                * (1 - self._cfgs.algo_cfgs.saute_gamma**self._cfgs.algo_cfgs.max_ep_len)
                 / (1 - self._cfgs.algo_cfgs.saute_gamma)
                 / self._cfgs.algo_cfgs.max_ep_len
                 * torch.ones(1)
@@ -161,7 +157,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         assert isinstance(observation_space, Box), 'The observation space must be Box.'
         assert isinstance(action_space, Box), 'The action space must be Box.'
 
-        if hasattr(self._cfgs['algo_cfgs'], 'obs_normalize') and self._cfgs['algo_cfgs']['obs_normalize']:
+        if (
+            hasattr(self._cfgs['algo_cfgs'], 'obs_normalize')
+            and self._cfgs['algo_cfgs']['obs_normalize']
+        ):
             obs_normalizer = Normalizer(shape=observation_space.shape, clip=5)
             obs_normalizer.load_state_dict(model_params['obs_normalizer'])
             self._env = ObsNormalize(self._env, device=self._device, norm=obs_normalizer)
@@ -287,7 +286,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 hidden_sizes=pi_cfg['hidden_sizes'],
                 activation=pi_cfg['activation'],
                 weight_initialization_mode=weight_initialization_mode,
-                custom_cfgs=self._cfgs
+                custom_cfgs=self._cfgs,
             )
             self._actor = actor_builder.build_actor(actor_type)
             self._actor.load_state_dict(model_params['pi'])
@@ -333,7 +332,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             'camera_name': camera_name,
             'width': width,
             'height': height,
-            'device': self._device
+            'device': self._device,
         }
         self.__load_model_and_env(save_dir, model_name, env_kwargs)
 
@@ -394,7 +393,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     self._safety_obs /= self._cfgs.algo_cfgs.saute_gamma
 
                 ep_ret += rew.item()
-                ep_cost += (cost_criteria ** length) * cost.item()
+                ep_cost += (cost_criteria**length) * cost.item()
                 if (
                     'EarlyTerminated' in self._cfgs['algo']
                     and ep_cost >= self._cfgs.algo_cfgs.cost_limit
@@ -516,7 +515,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 step += 1
                 done = bool(terminated or truncated)
                 ep_ret += rew.item()
-                ep_cost += (cost_criteria ** length) * cost.item()
+                ep_cost += (cost_criteria**length) * cost.item()
                 if (
                     'EarlyTerminated' in self._cfgs['algo']
                     and ep_cost >= self._cfgs.algo_cfgs.cost_limit
