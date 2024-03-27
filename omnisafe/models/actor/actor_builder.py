@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+import omnisafe.utils.config
+from omnisafe.models.actor.decsion_diffuser_actor import DecisionDiffuserActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
 from omnisafe.models.actor.mlp_actor import MLPActor
@@ -23,7 +25,6 @@ from omnisafe.models.actor.perturbation_actor import PerturbationActor
 from omnisafe.models.actor.vae_actor import VAE
 from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
-from omnisafe.models.actor.decsion_diffuser_actor import DecisionDiffuserActor
 
 
 # pylint: disable-next=too-few-public-methods
@@ -46,7 +47,7 @@ class ActorBuilder:
         hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
-        custom_cfgs=None,
+        custom_cfgs: omnisafe.utils.config.Config = None,
     ) -> None:
         """Initialize an instance of :class:`ActorBuilder`."""
         self._obs_space: OmnisafeSpace = obs_space

@@ -14,11 +14,9 @@
 # ==============================================================================
 """Implementation of Decision Diffusion."""
 
-from copy import deepcopy
 from typing import Any, Dict, Tuple
 
 import torch
-from torch import nn
 
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.offline.base import BaseOffline
@@ -32,7 +30,7 @@ class DD(BaseOffline):
 
     References:
         - Title: Is Conditional Generative Modeling all you need for Decision-Making?
-        - Author: Ajay, Anurag and Du, Yilun and Gupta, Abhi and Tenenbaum, Joshua and Jaakkola, Tommi and Agrawal, Pulkit.
+        - Author: Ajay, Anurag and Du, Yilun and Gupta, Abhi and Tenenbaum, etc.
         - URL: `https://arxiv.org/abs/2211.15657`
     """
 
@@ -93,16 +91,16 @@ class DD(BaseOffline):
         self,
         batch: Tuple[torch.Tensor, ...],
     ) -> None:
-        for i in range(self._cfgs.train_cfgs.gradient_accumulate_every):
+        for _i in range(self._cfgs.train_cfgs.gradient_accumulate_every):
             loss, infos = self._actor.loss(*batch)
             loss = loss / self._cfgs.train_cfgs.gradient_accumulate_every
             loss.backward()
 
         self._logger.store(
             **{
-                'Loss/Loss_diffuser': infos["loss_diffuser"].item(),
-                'Loss/Loss_inv': infos["loss_inv"].item(),
-                'Loss/Loss_total': infos["loss_total"].item(),
+                'Loss/Loss_diffuser': infos['loss_diffuser'].item(),
+                'Loss/Loss_inv': infos['loss_inv'].item(),
+                'Loss/Loss_total': infos['loss_total'].item(),
             },
         )
         self._optimizer.step()
