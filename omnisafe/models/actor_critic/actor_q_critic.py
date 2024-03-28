@@ -115,14 +115,12 @@ class ActorQCritic(nn.Module):
                 start_factor=1.0,
                 end_factor=0.0,
                 total_iters=epochs,
-                verbose=True,
             )
         else:
             self.actor_scheduler = ConstantLR(
                 self.actor_optimizer,
                 factor=1.0,
                 total_iters=epochs,
-                verbose=True,
             )
 
     def step(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:
