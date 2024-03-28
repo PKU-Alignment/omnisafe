@@ -502,3 +502,15 @@ upsampling
 Upsample
 Conv
 Downsample
+Anurag
+Ajay
+Yilun
+Du
+Abhi
+Gupta
+Joshua
+Tenenbaum
+Tommi
+Jaakkola
+Pulkit
+Agrawal

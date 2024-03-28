@@ -74,11 +74,11 @@ def state_cond(actor: DecisionDiffuserActor) -> None:
     """
     Sample from the model with state condition.
     Generate a plan from a random starting point to (4, 1).
-    
+
     Args:
         actor (DecisionDiffuserActor): The actor object used for conditional sampling.
     """
-    # Your code here   for _ in range(1):
+    for _ in range(1):
         state_cond = torch.tensor(
             [[np.random.uniform(1, 4), np.random.uniform(1, 4)]],
             device=DEVICE,

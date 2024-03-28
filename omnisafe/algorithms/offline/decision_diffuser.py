@@ -32,12 +32,13 @@ from omnisafe.utils.ema import EMA
 @registry.register
 class DecisionDiffuser(BaseOffline):
     """Decision Diffuser algorithm.
-        The Decision Diffuser is an approach to decision-making that uses 
-        conditional generative modeling, specifically diffusion models, 
-        instead of traditional reinforcement learning (RL). It generates 
-        actions that achieve desired outcomes. By conditioning on factors 
-        like outcomes, constraints, and skills, it effectively generates 
-        adaptive and complex behaviors. 
+
+    The Decision Diffuser is an approach to decision-making that uses
+    conditional generative modeling, specifically diffusion models,
+    instead of traditional reinforcement learning (RL). It generates
+    actions that achieve desired outcomes. By conditioning on factors
+    like outcomes, constraints, and skills, it effectively generates
+    adaptive and complex behaviors.
 
     References:
         - Title: Is conditional generative modeling all you need for decision-making?
