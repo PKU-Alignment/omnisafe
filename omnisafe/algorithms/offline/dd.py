@@ -30,7 +30,6 @@ class DD(BaseOffline):
 
     References:
         - Title: Is Conditional Generative Modeling all you need for Decision-Making?
-        - Author: Ajay, Anurag and Du, Yilun and Gupta, Abhi and Tenenbaum, etc.
         - URL: `https://arxiv.org/abs/2211.15657`
     """
 
