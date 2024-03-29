@@ -447,6 +447,7 @@ class OfflineDatasetWithInit(OfflineDataset):
 
 
 class DeciDiffuserDataset(OfflineDataset):
+    """Implementation of DecisionDiffuser dataset."""
 
     def __init__(
         self,
@@ -454,25 +455,26 @@ class DeciDiffuserDataset(OfflineDataset):
         batch_size: int = 256,
         gpu_threshold: int = 1024,
         device: torch.device = DEVICE_CPU,
-        horizon=64,
-        discount=0.99,
-        returns_scale=1000,
-        include_returns=True,
-        include_constraints=True,
-        include_skills=True,
-    ):
-        super(DeciDiffuserDataset, self).__init__(
+        horizon: int = 64,
+        discount: float = 0.99,
+        returns_scale: int = 1000,
+        include_returns: bool = True,
+        include_constraints: bool = True,
+        include_skills: bool = True,
+    ) -> None:
+        """Initialize for Class DeciDiffuserDataset."""
+        super().__init__(
             dataset_name=dataset_name,
             batch_size=batch_size,
             gpu_threshold=gpu_threshold,
             device=device,
         )
-        if self._name_to_metadata[dataset_name].episode_length == None:
+        if self._name_to_metadata[dataset_name].episode_length is None:
             self.episode_length = torch.where(self.done == 1)[0][0].item() + 1
         else:
             self.episode_length = self._name_to_metadata[dataset_name].episode_length
         self.num_trajs = len(self.obs) // self.episode_length
-        assert horizon <= self.episode_length, "Horizon is not allowed large than episode length."
+        assert horizon <= self.episode_length, 'Horizon is not allowed large than episode length.'
         self.horizon = horizon
         self.discount = discount
         self.discounts = self.discount ** torch.arange(self.episode_length, device=device)
@@ -492,21 +494,22 @@ class DeciDiffuserDataset(OfflineDataset):
         self.returns_scale = self.returns.max() - self.returns.min()
         self.returns = (self.returns - self.returns.min()) / self.returns_scale
 
-    def get_returns(self, indices):
+    def get_returns(self, indices: torch.Tensor) -> torch.Tensor:
+        """Get returns tensor for training."""
         # returns = self.returns[indices].view(-1, 1)
-        returns = self.reward[indices].view(-1, self.horizon, 1).mean(dim=1)
-        return returns
+        return self.reward[indices].view(-1, self.horizon, 1).mean(dim=1)
 
-    def get_constraints(self, indices):
+    def get_constraints(self, indices: torch.Tensor) -> torch.Tensor:
+        """Get constraints tensor for training."""
         constranint = self.constraint[indices].view(-1, self.horizon, 2).mean(dim=1)
         constranint[torch.where(constranint > 0.5)] = 1.0
         constranint[torch.where(constranint <= 0.5)] = 0.0
-        # constranint = self.constraint[indices].view(-1, 2)
+        # constraint = self.constraint[indices].view(-1, 2)
         return constranint
 
-    def get_skills(self, indices):
-        skill = self.skill[indices].view(-1, 2)
-        return skill
+    def get_skills(self, indices: torch.Tensor) -> torch.Tensor:
+        """Get skills tensor for training."""
+        return self.skill[indices].view(-1, 2)
 
     def sample(
         self,
@@ -516,14 +519,16 @@ class DeciDiffuserDataset(OfflineDataset):
 
         traj_indices = torch.randint(low=0, high=self.num_trajs, size=(self._batch_size,))
         traj_start_indices = torch.randint(
-            low=0, high=self.episode_length - self.horizon, size=(self._batch_size,)
+            low=0,
+            high=self.episode_length - self.horizon,
+            size=(self._batch_size,),
         )
         indices_start = traj_indices * self.episode_length + traj_start_indices
-        indices_end = traj_indices * self.episode_length + traj_start_indices + self.horizon
+        traj_indices * self.episode_length + traj_start_indices + self.horizon
         # batch_returns = self.returns[indices_start].view(-1, 1)
 
         indices = indices_start.view(-1, 1).repeat(1, self.horizon).view(-1) + torch.arange(
-            self.horizon
+            self.horizon,
         ).repeat(self._batch_size)
 
         batch_obs = self.obs[indices].view(self._batch_size, self.horizon, -1)
