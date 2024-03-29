@@ -1,31 +1,39 @@
-from typing import Any, ClassVar, Tuple, Optional, Union, List
-import gym
-import numpy as np
-import pygame as pg
-from gym.core import ActType, ObsType, RenderFrame
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Collect data from SafetyDrawCircle."""
+
+import random
 import sys
-import random
-
-from typing import Any, ClassVar, Tuple, Optional, Union, List
+from typing import ClassVar, List, Optional, Tuple, Union
 
 import gym
 import numpy as np
 import pygame as pg
-import torch
 from gym.core import ActType, ObsType, RenderFrame
-import random
-from omnisafe.envs.core import CMDP, env_register
-from omnisafe.typing import DEVICE_CPU, Box
 
 
 class DrawCircle(gym.Env):
-    metadata = {
+    """Implementation of gym environment."""
+
+    metadata: ClassVar[dict[str]] = {
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second': 2,
         'render_fps': 1000,
         'render_mode': 'human',
     }
-    env_config = {
+    env_config: ClassVar[dict[str]] = {
         'control_type': 'velocity',
         'random_reset': False,
         'constraints': np.array([0.4, 0.6]),
@@ -35,7 +43,8 @@ class DrawCircle(gym.Env):
         'parallel_num': 10,
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: dict) -> None:
+        """Initialize an instance of Class DrawCircle."""
         self.action_space = gym.spaces.Box(
             low=np.array([self.env_config['vel_max_min'][0]] * 2),
             high=np.array([self.env_config['vel_max_min'][1]] * 2),
@@ -59,16 +68,20 @@ class DrawCircle(gym.Env):
         self._max_episode_step = 1000
         self.parallel_num = self.env_config['parallel_num']
         self.action_low = np.repeat(self.action_space.low, self.parallel_num).reshape(
-            self.parallel_num, -1
+            self.parallel_num,
+            -1,
         )
         self.action_high = np.repeat(self.action_space.high, self.parallel_num).reshape(
-            self.parallel_num, -1
+            self.parallel_num,
+            -1,
         )
         self.obs_low = np.repeat(self.observation_space.low, self.parallel_num).reshape(
-            self.parallel_num, -1
+            self.parallel_num,
+            -1,
         )
         self.obs_high = np.repeat(self.observation_space.high, self.parallel_num).reshape(
-            self.parallel_num, -1
+            self.parallel_num,
+            -1,
         )
 
     def reset(
@@ -77,6 +90,7 @@ class DrawCircle(gym.Env):
         seed: Optional[int] = None,
         options: Optional[dict] = None,
     ) -> Tuple[ObsType, dict]:
+        """Reset Environment."""
         self.screen = [pg.Surface(self.screen_size)] * self.parallel_num
         self.step_count = 0
         if self.env_config['random_reset']:
@@ -95,16 +109,15 @@ class DrawCircle(gym.Env):
         self.centre_pos = np.zeros((self.parallel_num, 2))
         self.item_accel = np.zeros((self.parallel_num, 2))
         self.trajectory = np.zeros(
-            [self.parallel_num, self._max_episode_step, self.observation_space.shape[0]]
+            [self.parallel_num, self._max_episode_step, self.observation_space.shape[0]],
         )
         return random_reset, {}
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, bool, dict]:
-
+        """Step function of environment."""
         # if action.ndim > 1:
         #     action = action.squeeze(0)
         action = np.clip(action, self.action_low, self.action_high)
-        done = False
         done_array = np.zeros((self.parallel_num,))
         if self.env_config['control_type'] == 'velocity':
             self.item_vel = action
@@ -128,11 +141,11 @@ class DrawCircle(gym.Env):
         reward = self.step_reward()
         cost = self.step_cost()
         if self.step_count >= self._max_episode_step:
-            done = True
             done_array = np.ones((self.parallel_num,))
         return obs, reward, cost, done_array, False, {}
 
-    def render(self, mode='gif') -> Optional[Union[RenderFrame, List[RenderFrame]]]:
+    def render(self, mode: str = 'gif') -> Optional[Union[RenderFrame, List[RenderFrame]]]:
+        """Virtualization for environment."""
         background_color = (255, 255, 255)
         traj_color = (0, 0, 0)
         centre_color = (0, 0, 255)
@@ -184,10 +197,18 @@ class DrawCircle(gym.Env):
             self.render_screen.blit(self.screen, self.screen.get_rect())
             pg.display.update()
 
-        img = pg.surfarray.array3d(self.screen)
-        return img
+        return pg.surfarray.array3d(self.screen)
+        # self.gif_buffer.append(img)
+        # print(self.step_count)
+        # if self.step_count == self._max_episode_step - 1:
+        #     images = [PIL.Image.fromarray(img.astype('uint8'), 'RGB') for img in self.gif_buffer]
+        #     # 使用Pillow库的save()函数将图像列表保存为GIF动画
+        #     images[0].save('animation.gif', save_all=True, append_images=images[1:], optimize=False,
+        #                    duration=5 / self._max_episode_step,
+        #                    loop=0)
 
-    def step_reward(self):
+    def step_reward(self) -> np.ndarray:
+        """Calculate step reward for environment transition."""
         # mass_centre = self.trajectory[:self.step_count].mean(0)
         # distance = (self.trajectory - self.centre_pos)[:self.step_count]
         # distance = (distance[:, 0] ** 2 + distance[:, 1] ** 2) ** 0.5
@@ -204,36 +225,37 @@ class DrawCircle(gym.Env):
         #     range_reward = 1
         # else:
         #     range_reward = -1
-        speed_reward = (self.item_vel[:, 0] ** 2 + self.item_vel[:, 1] ** 2) ** 0.5
 
-        return speed_reward
+        return (self.item_vel[:, 0] ** 2 + self.item_vel[:, 1] ** 2) ** 0.5
 
-    def step_cost(self):
+    def step_cost(self) -> np.ndarray:
+        """Calculate step cost for environment transition."""
         cost = np.ones((self.parallel_num,))
         item_distance = self.item_pos - self.centre_pos
         item_distance = (item_distance[:, 0] ** 2 + item_distance[:, 1] ** 2) ** 0.5
         cost[
             np.where(
                 (item_distance < self.env_config['constraints'][1])
-                & (item_distance > self.env_config['constraints'][0])
+                & (item_distance > self.env_config['constraints'][0]),
             )
         ] = 0
 
         return cost
 
-    def episode_reward(self, done):
+    def episode_reward(self, done: bool) -> np.ndarray:
+        """Calculate reward when an episode is done."""
         if done:
             distance = (self.trajectory[:, :2] - self.centre_pos)[:]
             distance = (distance[:, 0] ** 2 + distance[:, 1] ** 2) ** 0.5
             min_range = self.env_config['constraints'][0]
             max_range = self.env_config['constraints'][1]
             sat = np.where(np.where((distance > min_range) & (distance < max_range)))
-            constraints_reward = len(sat[0]) / len(distance)
-            return constraints_reward
-        else:
-            return 0
+            return len(sat[0]) / len(distance)
 
-    def get_constraints(self):
+        return 0
+
+    def get_constraints(self) -> np.ndarray:
+        """Get constraints for decision diffuser input."""
         item_distance = self.item_pos - self.centre_pos
         item_distance = (item_distance[:, 0] ** 2 + item_distance[:, 1] ** 2) ** 0.5
 
@@ -245,7 +267,8 @@ class DrawCircle(gym.Env):
             constraint = random.sample([np.array([1.0, 0.0]), np.array([0.0, 1.0])], 1)[0]
         return constraint
 
-    def transpos2render(self, pos):
+    def transpos2render(self, pos: tuple) -> tuple:
+        """Virtualization function."""
         midx = self.screen_size[0] // 2
         midy = self.screen_size[1] // 2
         x = pos[0]
@@ -255,8 +278,22 @@ class DrawCircle(gym.Env):
         return (render_x, render_y)
 
 
-def collect_expert_trajectory(traj_num=1000, type='circle', save_path='./data'):
-    def action_sample(step, radiums, theta, freq, type, time_diff):
+def collect_expert_trajectory(
+    traj_num: int = 1000,
+    type: str = 'circle',
+    save_path: str = './data',
+) -> None:
+    """Implementation of collect expert trajectories."""
+
+    def action_sample(
+        step: int,
+        radiums: float,
+        theta: float,
+        freq: float,
+        type: str,
+        time_diff: float,
+    ) -> np.ndarray:
+        """Select action for environment step."""
         time = time_diff * step
         if type == 'circle':
             action = np.stack(
@@ -273,7 +310,8 @@ def collect_expert_trajectory(traj_num=1000, type='circle', save_path='./data'):
             # if step % vel_change_time == 0:
             current_theta = theta + 0.75 * np.pi + (step // vel_change_time) * np.pi * 0.5
             action = np.stack(
-                [freqL * np.cos(current_theta), freqL * np.sin(current_theta)], axis=1
+                [freqL * np.cos(current_theta), freqL * np.sin(current_theta)],
+                axis=1,
             )
 
         return action
@@ -286,7 +324,7 @@ def collect_expert_trajectory(traj_num=1000, type='circle', save_path='./data'):
     data_dim = obs_dim * 2 + act_dim + 1 + 1 + 1 + 1 + 2 + 2
     dataset = np.zeros((traj_num * env._max_episode_step, data_dim), dtype=np.float32)
     total_step = 0
-    for i in range(traj_num):
+    for _i in range(traj_num):
         obs, info = env.reset()
         type = random.sample(['circle', 'rect'], 1)[0]
         done = False
@@ -305,7 +343,6 @@ def collect_expert_trajectory(traj_num=1000, type='circle', save_path='./data'):
         freq = np.random.uniform(0, 1, (env.parallel_num,))
         step = 0
         while not done:
-
             action = action_sample(
                 step=step,
                 radiums=radiums,
@@ -321,7 +358,7 @@ def collect_expert_trajectory(traj_num=1000, type='circle', save_path='./data'):
             elif type == 'rect':
                 skill = np.array([0.0, 1.0])
             dataset[total_step] = np.concatenate(
-                [obs, action, next_obs, np.array([reward, cost, done, tructe]), constraint, skill]
+                [obs, action, next_obs, np.array([reward, cost, done, tructe]), constraint, skill],
             )
             step += 1
             total_step += 1
@@ -351,4 +388,4 @@ def collect_expert_trajectory(traj_num=1000, type='circle', save_path='./data'):
 
 
 if __name__ == '__main__':
-    collect_expert_trajectory(traj_num=2000, type='circle', save_path='~\.cache\omnisafe\datasets')
+    collect_expert_trajectory(traj_num=2000, type='circle', save_path=r'~\.cache\omnisafe\datasets')
