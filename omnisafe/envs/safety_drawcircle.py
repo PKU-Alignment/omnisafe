@@ -18,7 +18,6 @@ import random
 from typing import Any, ClassVar, List, Optional, Tuple, Union
 
 import gym
-import numpy
 import numpy as np
 import pygame as pg
 import torch
@@ -199,7 +198,7 @@ class DrawCircle(gym.Env):
         #                    duration=5 / self._max_episode_step,
         #                    loop=0)
 
-    def step_reward(self) -> numpy.ndarray:
+    def step_reward(self) -> np.ndarray:
         """Calculate step reward for environment transition."""
         # mass_centre = self.trajectory[:self.step_count].mean(0)
         # distance = (self.trajectory - self.centre_pos)[:self.step_count]
@@ -244,7 +243,7 @@ class DrawCircle(gym.Env):
 
         return 0
 
-    def get_constraints(self) -> numpy.ndarray:
+    def get_constraints(self) -> np.ndarray:
         """Get constraints for decision diffuser input."""
         item_distance = self.item_pos - self.centre_pos
         item_distance = (item_distance[0] ** 2 + item_distance[1] ** 2) ** 0.5
