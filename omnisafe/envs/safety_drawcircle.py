@@ -1,23 +1,43 @@
-from typing import Any, ClassVar, Tuple, Optional, Union, List
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""SafeDrawCircle environment."""
+
+import random
+from typing import Any, ClassVar, List, Optional, Tuple, Union
 
 import gym
+import numpy
 import numpy as np
 import pygame as pg
 import torch
 from gym.core import ActType, ObsType, RenderFrame
-import random
+
 from omnisafe.envs.core import CMDP, env_register
 from omnisafe.typing import DEVICE_CPU, Box
 
 
 class DrawCircle(gym.Env):
-    metadata = {
+    """Implementation of gym environment."""
+
+    metadata: ClassVar[dict[str]] = {
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second': 2,
         'render_fps': 1000,
         'render_mode': 'gif',
     }
-    env_config = {
+    env_config: ClassVar[dict[str]] = {
         'control_type': 'velocity',
         'random_reset': False,
         'constraints': np.array([0.4, 0.6]),
@@ -27,7 +47,8 @@ class DrawCircle(gym.Env):
         'max_episode_step': 1000,
     }
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: dict) -> None:
+        """Initialize an instance of Class DrawCircle."""
         self.action_space = gym.spaces.Box(
             low=np.array([self.env_config['vel_max_min'][0]] * 2),
             high=np.array([self.env_config['vel_max_min'][1]] * 2),
@@ -56,6 +77,7 @@ class DrawCircle(gym.Env):
         seed: Optional[int] = None,
         options: Optional[dict] = None,
     ) -> Tuple[ObsType, dict]:
+        """Reset Environment."""
         self.screen = pg.Surface(self.screen_size)
         self.step_count = 0
         if self.env_config['random_reset']:
@@ -75,7 +97,7 @@ class DrawCircle(gym.Env):
         return random_reset, {}
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, bool, dict]:
-
+        """Step function of environment."""
         if action.ndim > 1:
             action = action.squeeze(0)
         action = np.clip(action, self.action_space.low, self.action_space.high)
@@ -84,7 +106,9 @@ class DrawCircle(gym.Env):
             self.item_vel = action
             self.item_pos += self.item_vel * self.time_diff
             self.item_pos = np.clip(
-                self.item_pos, self.observation_space.low[:2], self.observation_space.high[:2]
+                self.item_pos,
+                self.observation_space.low[:2],
+                self.observation_space.high[:2],
             )
 
         elif self.env_config['control_type'] == 'accelerate':
@@ -97,7 +121,9 @@ class DrawCircle(gym.Env):
             self.item_vel = vel_1
             self.item_pos += vel_ave * self.time_diff
             self.item_pos = np.clip(
-                self.item_pos, self.observation_space.low[:2], self.observation_space.high[:2]
+                self.item_pos,
+                self.observation_space.low[:2],
+                self.observation_space.high[:2],
             )
 
         obs = np.concatenate([self.item_pos, self.item_vel])
@@ -110,7 +136,8 @@ class DrawCircle(gym.Env):
             self.reset()
         return obs, reward, cost, done, False, {}
 
-    def render(self, mode='gif') -> Optional[Union[RenderFrame, List[RenderFrame]]]:
+    def render(self, mode: str = 'gif') -> Optional[Union[RenderFrame, List[RenderFrame]]]:
+        """Virtualization for environment."""
         background_color = (255, 255, 255)
         traj_color = (0, 0, 0)
         centre_color = (0, 0, 255)
@@ -154,11 +181,26 @@ class DrawCircle(gym.Env):
         line_point_list = trajectory_render.tolist()
         if len(line_point_list) > 1:
             pg.draw.aalines(self.screen, traj_color, False, line_point_list)
-        img = pg.surfarray.array3d(self.screen)
 
-        return img
+        # if self.metadata['render_mode'] == 'human':
+        #     for event in pg.event.get():
+        #         if event.type == pg.QUIT:
+        #             sys.exit()
+        #     self.render_screen.blit(self.screen, self.screen.get_rect())
+        #     pg.display.update()
 
-    def step_reward(self):
+        return pg.surfarray.array3d(self.screen)
+        # self.gif_buffer.append(img)
+        # print(self.step_count)
+        # if self.step_count == self._max_episode_step - 1:
+        #     images = [PIL.Image.fromarray(img.astype('uint8'), 'RGB') for img in self.gif_buffer]
+        #     # 使用Pillow库的save()函数将图像列表保存为GIF动画
+        #     images[0].save('animation.gif', save_all=True, append_images=images[1:], optimize=False,
+        #                    duration=5 / self._max_episode_step,
+        #                    loop=0)
+
+    def step_reward(self) -> numpy.ndarray:
+        """Calculate step reward for environment transition."""
         # mass_centre = self.trajectory[:self.step_count].mean(0)
         # distance = (self.trajectory - self.centre_pos)[:self.step_count]
         # distance = (distance[:, 0] ** 2 + distance[:, 1] ** 2) ** 0.5
@@ -176,11 +218,10 @@ class DrawCircle(gym.Env):
         # else:
         #     range_reward = -1
 
-        speed_reward = (self.item_vel[0] ** 2 + self.item_vel[1] ** 2) ** 0.5
+        return (self.item_vel[0] ** 2 + self.item_vel[1] ** 2) ** 0.5
 
-        return speed_reward
-
-    def step_cost(self):
+    def step_cost(self) -> int:
+        """Calculate step cost for environment transition."""
         item_distance = self.item_pos - self.centre_pos
         item_distance = (item_distance[0] ** 2 + item_distance[1] ** 2) ** 0.5
         if (
@@ -188,22 +229,23 @@ class DrawCircle(gym.Env):
             and item_distance > self.env_config['constraints'][0]
         ):
             return 0
-        else:
-            return 1
 
-    def episode_reward(self, done):
+        return 1
+
+    def episode_reward(self, done: bool) -> float:
+        """Calculate reward when an episode is done."""
         if done:
             distance = (self.trajectory[:, :2] - self.centre_pos)[:]
             distance = (distance[:, 0] ** 2 + distance[:, 1] ** 2) ** 0.5
             min_range = self.env_config['constraints'][0]
             max_range = self.env_config['constraints'][1]
             sat = np.where(np.where((distance > min_range) & (distance < max_range)))
-            constraints_reward = len(sat[0]) / len(distance)
-            return constraints_reward
-        else:
-            return 0
+            return len(sat[0]) / len(distance)
 
-    def get_constraints(self):
+        return 0
+
+    def get_constraints(self) -> numpy.ndarray:
+        """Get constraints for decision diffuser input."""
         item_distance = self.item_pos - self.centre_pos
         item_distance = (item_distance[0] ** 2 + item_distance[1] ** 2) ** 0.5
         if item_distance > self.env_config['constraints'][1]:
@@ -214,8 +256,8 @@ class DrawCircle(gym.Env):
             constraint = random.sample([np.array([1.0, 0.0]), np.array([0.0, 1.0])], 1)[0]
         return constraint
 
-    def transpos2render(self, pos):
-
+    def transpos2render(self, pos: tuple) -> tuple:
+        """Virtualization function."""
         midx = self.screen_size[0] // 2
         midy = self.screen_size[1] // 2
         x = pos[0]
@@ -227,6 +269,8 @@ class DrawCircle(gym.Env):
 
 @env_register
 class SafeDrawCircle(CMDP):
+    """Implementation of CDMP environment."""
+
     # _action_space: OmnisafeSpace
     # _observation_space: OmnisafeSpace
     # _metadata: dict[str, Any]
@@ -248,7 +292,11 @@ class SafeDrawCircle(CMDP):
         return cls._support_envs
 
     def __init__(
-        self, env_id: str, num_envs: int = 1, device: torch.device = DEVICE_CPU, **kwargs: Any
+        self,
+        env_id: str,
+        num_envs: int = 1,
+        device: torch.device = DEVICE_CPU,
+        **kwargs: Any,
     ) -> None:
         """Initialize an instance of :class:`CMDP`."""
         assert (
