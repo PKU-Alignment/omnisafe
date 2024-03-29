@@ -71,6 +71,21 @@ repos:
           (?x)(
             ^docs/source/spelling_wordlist.txt$
           )
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        require_serial: true
+        exclude: |
+          (?x)(
+            ^examples/|
+            ^tests/|
+            ^setup.py$|
+            ^docs/source/conf.py$
+          )
   - repo: https://github.com/pycqa/pydocstyle
     rev: 6.3.0
     hooks:
