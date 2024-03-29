@@ -29,6 +29,7 @@ from torch.utils.data import Dataset
 from omnisafe.typing import DEVICE_CPU
 
 
+# pylint: disable=R,E
 @dataclass
 class OfflineMeta:
     """Meta information of the offline dataset."""
