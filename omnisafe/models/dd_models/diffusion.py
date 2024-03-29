@@ -22,6 +22,7 @@ from torch import nn
 from omnisafe.models.dd_models.helpers import Losses, cosine_beta_schedule, extract, history_cover
 
 
+# pylint: disable=R,W,C
 class GaussianInvDynDiffusion(nn.Module):
     """Implementation of GaussianInvDynDiffusion."""
 
