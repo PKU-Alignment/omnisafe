@@ -17,7 +17,7 @@
 import types
 
 import torch
-import torch.nn as nn
+from torch import nn
 from torch.distributions import Bernoulli
 
 from omnisafe.models.dd_models.helpers import (
@@ -29,6 +29,7 @@ from omnisafe.models.dd_models.helpers import (
 )
 
 
+# pylint: disable=W,C,R
 class Residual(nn.Module):
     """Implementation of Residual Module."""
 
