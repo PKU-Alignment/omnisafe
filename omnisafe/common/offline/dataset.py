@@ -524,7 +524,7 @@ class DeciDiffuserDataset(OfflineDataset):
             size=(self._batch_size,),
         )
         indices_start = traj_indices * self.episode_length + traj_start_indices
-        traj_indices * self.episode_length + traj_start_indices + self.horizon
+        # traj_indices * self.episode_length + traj_start_indices + self.horizon
         # batch_returns = self.returns[indices_start].view(-1, 1)
 
         indices = indices_start.view(-1, 1).repeat(1, self.horizon).view(-1) + torch.arange(
