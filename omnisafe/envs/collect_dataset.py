@@ -24,6 +24,7 @@ import pygame as pg
 from gym.core import ActType, ObsType, RenderFrame
 
 
+# pylint: disable=W,C,R,E
 class DrawCircle(gym.Env):
     """Implementation of gym environment."""
 
@@ -202,7 +203,6 @@ class DrawCircle(gym.Env):
         # print(self.step_count)
         # if self.step_count == self._max_episode_step - 1:
         #     images = [PIL.Image.fromarray(img.astype('uint8'), 'RGB') for img in self.gif_buffer]
-        #     # 使用Pillow库的save()函数将图像列表保存为GIF动画
         #     images[0].save('animation.gif', save_all=True, append_images=images[1:], optimize=False,
         #                    duration=5 / self._max_episode_step,
         #                    loop=0)
