@@ -14,6 +14,7 @@
 # ==============================================================================
 """Implementation of ActorBuilder."""
 
+
 from __future__ import annotations
 
 import omnisafe.utils.config
