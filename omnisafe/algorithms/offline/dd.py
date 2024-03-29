@@ -24,12 +24,14 @@ from omnisafe.common.offline.dataset import DeciDiffuserDataset
 from omnisafe.models.actor import ActorBuilder
 
 
+# pylint: disable=C
 @registry.register
 class DD(BaseOffline):
     """Decision Diffusion.
 
     References:
         - Title: Is Conditional Generative Modeling all you need for Decision-Making?
+        - Author: Ajay, Anurag and Du, Yilun and Gupta, Abhi and Tenenbaum, Joshua and Jaakkola, Tommi and Agrawal, Pulkit.
         - URL: `https://arxiv.org/abs/2211.15657`
     """
 
