@@ -27,7 +27,7 @@ from omnisafe.utils.config import Config
 from omnisafe.utils.model import initialize_layer
 
 
-# pylint: disable-next=too-many-instance-attributes
+# pylint: disable=W,C
 class DecisionDiffuserActor(Actor):
     """Implementation of DecisionDiffuserActor.
 
