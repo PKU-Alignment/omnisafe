@@ -353,6 +353,20 @@ class EnvRegister:
         self._register(env_class)
         return env_class
 
+    def remove_from_register(self, env_class: type[CMDP]) -> type[CMDP]:
+        """Remove the environment from the register.
+
+        Args:
+            env_class (type[CMDP]): The environment class.
+        """
+        class_name = env_class.__name__
+        if class_name not in self._class:
+            print(f'{class_name} has not been registered yet')
+        else:
+            self._class.pop(class_name)
+            self._support_envs.pop(class_name)
+        return env_class
+
     def get_class(self, env_id: str, class_name: str | None) -> type[CMDP]:
         """Get the environment class.
 
@@ -388,6 +402,7 @@ ENV_REGISTRY = EnvRegister()
 
 env_register = ENV_REGISTRY.register
 support_envs = ENV_REGISTRY.support_envs
+remove_from_register = ENV_REGISTRY.remove_from_register
 
 
 def make(env_id: str, class_name: str | None = None, **kwargs: Any) -> CMDP:

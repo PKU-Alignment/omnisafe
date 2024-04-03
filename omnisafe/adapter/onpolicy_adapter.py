@@ -158,6 +158,8 @@ class OnPolicyAdapter(OnlineAdapter):
             logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
             idx (int): The index of the environment.
         """
+        if hasattr(self._env, 'spec_log'):
+            self._env.spec_log(logger)
         logger.store(
             {
                 'Metrics/EpRet': self._ep_ret[idx],

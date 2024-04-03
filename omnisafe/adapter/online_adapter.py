@@ -62,8 +62,14 @@ class OnlineAdapter:
         self._cfgs: Config = cfgs
         self._device: torch.device = get_device(cfgs.train_cfgs.device)
         self._env_id: str = env_id
-        self._env: CMDP = make(env_id, num_envs=num_envs, device=self._device)
-        self._eval_env: CMDP = make(env_id, num_envs=1, device=self._device)
+
+        env_cfgs = {}
+
+        if hasattr(self._cfgs, 'env_cfgs') and self._cfgs.env_cfgs is not None:
+            env_cfgs = self._cfgs.env_cfgs.todict()
+
+        self._env: CMDP = make(env_id, num_envs=num_envs, device=self._device, **env_cfgs)
+        self._eval_env: CMDP = make(env_id, num_envs=1, device=self._device, **env_cfgs)
 
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
@@ -192,3 +198,14 @@ class OnlineAdapter:
             The saved components of environment, e.g., ``obs_normalizer``.
         """
         return self._env.save()
+
+    def close(self) -> None:
+        """Close the environment after training."""
+        self._env.close()
+
+    @property
+    def env_spec_keys(self) -> dict[str, Any]:
+        """Return the environment specification log."""
+        if hasattr(self._env, 'env_spec_log'):
+            return list(self._env.env_spec_log.keys())
+        return {}
