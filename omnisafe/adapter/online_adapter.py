@@ -204,8 +204,8 @@ class OnlineAdapter:
         self._env.close()
 
     @property
-    def env_spec_keys(self) -> dict[str, Any]:
+    def env_spec_keys(self) -> list[str]:
         """Return the environment specification log."""
         if hasattr(self._env, 'env_spec_log'):
             return list(self._env.env_spec_log.keys())
-        return {}
+        return []
