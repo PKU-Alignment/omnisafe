@@ -333,7 +333,7 @@ class PETS(BaseAlgo):
         )
 
     def _update_epoch(self) -> None:
-        ...
+        """Update function per epoch."""
 
     def _select_action(  # pylint: disable=unused-argument
         self,
