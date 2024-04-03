@@ -29,8 +29,8 @@ from omnisafe.envs.core import CMDP, env_register
 # First, define the environment class.
 # The most important thing is to add the `env_register` decorator.
 @env_register
-class CustomEnv(CMDP):
-    _support_envs: ClassVar[list[str]] = ['Simple-v0']
+class CustomExampleEnv(CMDP):
+    _support_envs: ClassVar[list[str]] = ['Custom-v0']
     metadata: ClassVar[dict[str, int]] = {}
 
     need_auto_reset_wrapper = True
@@ -38,6 +38,7 @@ class CustomEnv(CMDP):
 
     def __init__(self, env_id: str, **kwargs: dict[str, Any]) -> None:
         self._count = 0
+        self._num_envs = 1
         self._observation_space = spaces.Box(low=-1.0, high=1.0, shape=(3,))
         self._action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,))
 
@@ -66,10 +67,19 @@ class CustomEnv(CMDP):
     def set_seed(self, seed: int) -> None:
         random.seed(seed)
 
+    def close(self) -> None:
+        pass
+
+    def render(self) -> Any:
+        pass
+
+    def sample_action(self) -> torch.Tensor:
+        return torch.as_tensor(self._action_space.sample())
+
 
 # Then you can use it like this:
 agent = omnisafe.Agent(
     'PPOLag',
-    'Simple-v0',
+    'Custom-v0',
 )
 agent.learn()

@@ -6,13 +6,13 @@ interface adaptations within the simplest template provided by OmniSafe to compl
 customization.
 
 .. note::
-    The highlight of OmniSafe's environment customization is that **users only need to modify the code at the environment layer**, to enjoy OmniSafe's full set of training, saving, and data logging mechanisms. This allows users who install from PyPI to easily use it and only focus on the dynamics of the environment.
+    The highlight of OmniSafe's environment customization is that **users only need to modify the code at the environment layer**, to enjoy OmniSafe's complete set of training, saving, and data logging mechanisms. This allows users who install from PyPI to use it easily and only focus on the dynamics of the environment.
 
 
 Get Started with the Simplest Template
 --------------------------------------
 
-OmniSafe offers a minimal implementation of an environment template as an example for customized
+OmniSafe offers a minimal implementation of an environment template as an example of a customized
 environments, :doc:`../envs/custom`.
 We recommend reading this template in detail and customizing it based on it.
 
@@ -23,16 +23,17 @@ We recommend reading this template in detail and customizing it based on it.
     Frequently Asked Questions
     ^^^
     1. What changes are necessary to embed the environment into OmniSafe?
-    2. My environment requires specific parameters, can these be integrated into OmniSafe's parameter mechanism?
-    3. I need to log information during the training process, how can I achieve this?
+    2. My environment requires specific parameters; can these be integrated into OmniSafe's parameter mechanism?
+    3. I need to log information during training; how can I achieve this?
     4. After embedding the environment, how do I run the algorithms in OmniSafe for training?
 
-For the above questions, we provide a complete Jupyter Notebook example. We will demonstrate how to
-start from the most common environments in `Gymnasium <https://gymnasium.farama.org/>`_, implement
-environment customization, and complete the training process.
+For the above questions, we provide a complete Jupyter Notebook example (Please see our tutorial on
+GitHub page). We will demonstrate how to start from the most common environments in
+`Gymnasium <https://gymnasium.farama.org/>`_ style, implement
+environment customization and complete the training process.
 
 
-Customization of Your Environmenmts
+Customization of Your Environments
 -----------------------------------
 
 From Source Code
@@ -69,24 +70,4 @@ From PyPI
     2. Import OmniSafe and the environment registration decorator.
     3. Run the training.
 
-    A short example is:
-
-    .. code-block:: python
-        :linenos:
-
-        import omnisafe
-        from omnisafe.envs.core import CMDP, env_register
-
-        # First, define the environment class.
-        # The most important thing is to add the `env_register` decorator.
-
-        @env_register
-        class CustomEnv(CMDP):
-        # Define your environment here.
-
-        # Then you can use it like this:
-        agent = omnisafe.Agent(
-            'PPOLag',
-            'Simple-v0',
-        )
-        agent.learn()
+    For a short but detailed example, please see `examples/train_from_custom_env.py`

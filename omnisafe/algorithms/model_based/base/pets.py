@@ -384,7 +384,7 @@ class PETS(BaseAlgo):
             info (dict[str, Any]): The information from the environment.
         """
         done = terminated or truncated
-        goal_met = False if 'goal_met' not in info else info['goal_met']
+        goal_met = info.get('goal_met', False)
         if not terminated and not truncated and not goal_met:
             # pylint: disable-next=line-too-long
             # if goal_met == true, Current goal position is not related to the last goal position, this huge transition will confuse the dynamics model.
