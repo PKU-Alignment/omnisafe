@@ -63,6 +63,7 @@ class CustomEnv(CMDP):
     _action_space: OmnisafeSpace
     _observation_space: OmnisafeSpace
     metadata: ClassVar[dict[str, int]] = {}
+    env_spec_log: dict[str, Any]
 
     need_auto_reset_wrapper = True
     need_time_limit_wrapper = True
@@ -158,7 +159,7 @@ class CustomEnv(CMDP):
         self._count = 0
         return obs, {}
 
-    def spec_log(self, logger: Logger) -> dict[str, Any]:
+    def spec_log(self, logger: Logger) -> None:
         """Log specific environment into logger.
 
         .. note::
