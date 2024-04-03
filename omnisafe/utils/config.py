@@ -347,7 +347,7 @@ def __check_algo_configs(configs: Config, algo_type: str) -> None:
         assert isinstance(configs.max_grad_norm, float) and isinstance(
             configs.critic_norm_coef,
             float,
-        ), 'norm must be bool'
+        ), 'norm must be float'
         assert (
             isinstance(configs.gamma, float) and configs.gamma >= 0.0 and configs.gamma <= 1.0
         ), 'gamma must be float, and it values must be [0.0, 1.0]'
