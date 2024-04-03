@@ -28,10 +28,10 @@ from omnisafe.typing import OmnisafeSpace
 
 
 @env_register
-class SimpleEnv(CMDP):
+class TestEnv(CMDP):
     """Simplest environment for testing."""
 
-    _support_envs: ClassVar[list[str]] = ['Simple-v0']
+    _support_envs: ClassVar[list[str]] = ['Test-v0']
     metadata: ClassVar[dict[str, int]] = {'render_fps': 30}
     need_auto_reset_wrapper = True
     need_time_limit_wrapper = True

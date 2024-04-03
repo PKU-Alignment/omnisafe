@@ -54,7 +54,7 @@ optim_case = [0, 1, 2, 3, 4]
 
 @helpers.parametrize(optim_case=optim_case)
 def test_cpo(optim_case):
-    agent = omnisafe.Agent('CPO', 'Simple-v0', custom_cfgs={})
+    agent = omnisafe.Agent('CPO', 'Test-v0', custom_cfgs={})
     b_grads = torch.Tensor([1])
     ep_costs = torch.Tensor([-1])
     r = torch.Tensor([0])
@@ -113,7 +113,7 @@ def test_cpo(optim_case):
 
 def test_assertion_error():
     """Test base algorithms."""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 200,
@@ -163,7 +163,7 @@ def test_assertion_error():
 
 def test_render():
     """Test render image"""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 200,
@@ -188,7 +188,7 @@ def test_render():
 @helpers.parametrize(algo=['PETS', 'CCEPETS', 'CAPPETS', 'RCEPETS'])
 def test_cem_based(algo):
     """Test model_based algorithms."""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
 
     custom_cfgs = {
         'train_cfgs': {
@@ -232,7 +232,7 @@ def test_cem_based(algo):
 @helpers.parametrize(algo=['LOOP', 'SafeLOOP'])
 def test_loop(algo):
     """Test model_based algorithms."""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
 
     custom_cfgs = {
         'train_cfgs': {
@@ -281,7 +281,7 @@ def test_loop(algo):
 @helpers.parametrize(algo=off_base)
 def test_off_policy(algo):
     """Test base algorithms."""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 200,
@@ -310,7 +310,7 @@ def test_off_policy(algo):
 @helpers.parametrize(algo=off_lag)
 def test_off_lag_policy(algo):
     """Test base algorithms."""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 200,
@@ -343,7 +343,7 @@ auto_alpha = [True, False]
 @helpers.parametrize(auto_alpha=auto_alpha)
 def test_sac_policy(auto_alpha):
     """Test sac algorithms."""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 200,
@@ -374,7 +374,7 @@ auto_alpha = [True, False]
 @helpers.parametrize(auto_alpha=auto_alpha, algo=sac_lag)
 def test_sac_lag_policy(auto_alpha, algo):
     """Test sac algorithms."""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 200,
@@ -415,7 +415,7 @@ def test_sac_lag_policy(auto_alpha, algo):
 )
 def test_on_policy(algo):
     """Test base algorithms."""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 200,
@@ -438,7 +438,7 @@ def test_on_policy(algo):
 @helpers.parametrize(algo=pid_lagrange_policy)
 def test_pid(algo):
     """Test pid algorithms."""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 200,
@@ -466,8 +466,8 @@ def test_pid(algo):
 )
 def test_offline(algo):
     """Test base algorithms."""
-    env_id = 'Simple-v0'
-    dataset = os.path.join(os.path.dirname(__file__), 'saved_source', 'Simple-v0.npz')
+    env_id = 'Test-v0'
+    dataset = os.path.join(os.path.dirname(__file__), 'saved_source', 'Test-v0.npz')
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 4,
@@ -488,8 +488,8 @@ def test_offline(algo):
 )
 def test_coptidice(fn_type):
     """Test coptidice algorithms."""
-    env_id = 'Simple-v0'
-    dataset = os.path.join(os.path.dirname(__file__), 'saved_source', 'Simple-v0.npz')
+    env_id = 'Test-v0'
+    dataset = os.path.join(os.path.dirname(__file__), 'saved_source', 'Test-v0.npz')
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 4,
@@ -509,7 +509,7 @@ def test_coptidice(fn_type):
 @helpers.parametrize(algo=['PPO', 'SAC', 'PPOLag'])
 def test_workflow_for_training(algo):
     """Test base algorithms."""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 200,
@@ -536,7 +536,7 @@ def test_workflow_for_training(algo):
 
 def test_std_anealing():
     """Test std_anealing."""
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 200,
