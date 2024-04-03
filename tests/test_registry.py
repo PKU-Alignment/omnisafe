@@ -17,11 +17,13 @@
 import pytest
 
 from omnisafe.algorithms.registry import Registry
-
+from omnisafe.envs.core import env_register, remove_from_register, CMDP
+from omnisafe.envs.custom_env import CustomEnv
 
 class TestRegistry:
     name: str = 'test'
     idx: int = 0
+
 
 
 def test_with_error() -> None:
@@ -31,3 +33,18 @@ def test_with_error() -> None:
         registry.register('test')
     with pytest.raises(KeyError):
         registry.get('test')
+    with pytest.raises(TypeError):
+        @env_register
+        class TestEnv:
+            name: str = 'test'
+            idx: int = 0
+    with pytest.raises(ValueError):
+        @env_register
+        class CustomEnv(CMDP):
+            pass
+    @env_register
+    @remove_from_register
+    @remove_from_register
+    class CustomEnv(CMDP):
+        _support_envs = ['Simple-v0']
+        pass
