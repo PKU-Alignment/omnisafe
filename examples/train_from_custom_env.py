@@ -26,14 +26,17 @@ import omnisafe
 from omnisafe.envs.core import CMDP, env_register
 
 
-# First, define the environment class.
-# The most important thing is to add the `env_register` decorator.
+# first, define the environment class.
+# the most important thing is to add the `env_register` decorator.
 @env_register
 class CustomExampleEnv(CMDP):
-    _support_envs: ClassVar[list[str]] = ['Custom-v0']
-    metadata: ClassVar[dict[str, int]] = {}
 
+    # define what tasks the environment support.
+    _support_envs: ClassVar[list[str]] = ['Custom-v0']
+
+    # automatically reset when `terminated` or `truncated`
     need_auto_reset_wrapper = True
+    # set `truncated=True` when the total steps exceed the time limit.
     need_time_limit_wrapper = True
 
     def __init__(self, env_id: str, **kwargs: dict[str, Any]) -> None:
