@@ -33,7 +33,7 @@ class CustomEnv(CMDP):
     """Simplest environment for the example and template for environment customization.
 
     If you wish for your environment to become part of the officially supported environments by
-    OmniSafe, please refer to this document to implement environment embedding. We will welcome 
+    OmniSafe, please refer to this document to implement environment embedding. We will welcome
     your GitHub pull request.
 
     Customizing the environment in OmniSafe requires specifying the following parameters:
