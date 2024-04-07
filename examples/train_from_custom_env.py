@@ -54,8 +54,13 @@ class CustomExampleEnv(CMDP):
         reward = 2 * torch.as_tensor(random.random())  # noqa
         cost = 2 * torch.as_tensor(random.random())  # noqa
         terminated = torch.as_tensor(random.random() > 0.9)  # noqa
-        truncated = torch.as_tensor(self._count > 10)
+        truncated = torch.as_tensor(self._count > self.max_episode_steps)
         return obs, reward, cost, terminated, truncated, {'final_observation': obs}
+
+    @property
+    def max_episode_steps(self) -> int:
+        """The max steps per episode."""
+        return 10
 
     def reset(
         self,
@@ -75,9 +80,6 @@ class CustomExampleEnv(CMDP):
 
     def render(self) -> Any:
         pass
-
-    def sample_action(self) -> torch.Tensor:
-        return torch.as_tensor(self._action_space.sample())
 
 
 # Then you can use it like this:

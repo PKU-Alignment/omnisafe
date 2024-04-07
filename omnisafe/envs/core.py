@@ -83,6 +83,11 @@ class CMDP(ABC):
         return self._observation_space
 
     @property
+    def max_episode_steps(self) -> int | None:
+        """The max steps per episode."""
+        return None
+
+    @property
     def metadata(self) -> dict[str, Any]:
         """The metadata of the environment."""
         return self._metadata
@@ -146,14 +151,6 @@ class CMDP(ABC):
 
         Args:
             seed (int): The seed to use.
-        """
-
-    @abstractmethod
-    def sample_action(self) -> torch.Tensor:
-        """Sample an action from the action space.
-
-        Returns:
-            The sampled action.
         """
 
     @abstractmethod
@@ -267,14 +264,6 @@ class Wrapper(CMDP):
             seed (int): The random seed to use.
         """
         self._env.set_seed(seed)
-
-    def sample_action(self) -> torch.Tensor:
-        """Sample an action from the action space.
-
-        Returns:
-            The sampled action.
-        """
-        return self._env.sample_action()
 
     def render(self) -> Any:
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.

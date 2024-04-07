@@ -61,8 +61,13 @@ class TestEnv(CMDP):
         reward = 10000 * torch.as_tensor(random.random())
         cost = 10000 * torch.as_tensor(random.random())
         terminated = torch.as_tensor(random.random() > 0.9)
-        truncated = torch.as_tensor(self._count > 10)
+        truncated = torch.as_tensor(self._count > self.max_episode_steps)
         return obs, reward, cost, terminated, truncated, {'final_observation': obs}
+
+    @property
+    def max_episode_steps(self) -> int:
+        """The max steps per episode."""
+        return 10
 
     def reset(
         self,
@@ -77,9 +82,6 @@ class TestEnv(CMDP):
 
     def set_seed(self, seed: int) -> None:
         random.seed(seed)
-
-    def sample_action(self) -> torch.Tensor:
-        return torch.as_tensor(self._action_space.sample())
 
     def render(self) -> Any:
         return np.zeros((100, 100, 3), dtype=np.uint8)

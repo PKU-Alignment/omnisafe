@@ -106,6 +106,7 @@ class CustomEnv(CMDP):
         self._count = 0
         self._observation_space = spaces.Box(low=-1.0, high=1.0, shape=(3,))
         self._action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,))
+        self._max_episode_steps = 10
         self.env_spec_log = {}
 
     def step(
@@ -138,7 +139,7 @@ class CustomEnv(CMDP):
         reward = 10000 * torch.as_tensor(random.random())  # noqa
         cost = 10000 * torch.as_tensor(random.random())  # noqa
         terminated = torch.as_tensor(random.random() > 0.9)  # noqa
-        truncated = torch.as_tensor(self._count > 10)
+        truncated = torch.as_tensor(self._count > self._max_episode_steps)
         return obs, reward, cost, terminated, truncated, {'final_observation': obs}
 
     def reset(
@@ -163,6 +164,11 @@ class CustomEnv(CMDP):
         self._count = 0
         return obs, {}
 
+    @property
+    def max_episode_steps(self) -> None:
+        """The max steps per episode."""
+        return
+
     def spec_log(self, logger: Logger) -> None:
         """Log specific environment into logger.
 
@@ -180,14 +186,6 @@ class CustomEnv(CMDP):
             seed (int): The random seed.
         """
         random.seed(seed)
-
-    def sample_action(self) -> torch.Tensor:
-        """Sample an action from the action space.
-
-        Returns:
-            torch.Tensor: A sampled action.
-        """
-        return torch.as_tensor(self._action_space.sample())
 
     def render(self) -> Any:
         """Render the environment.

@@ -115,8 +115,20 @@ class OnlineAdapter:
             cost_normalize (bool, optional): Whether to normalize the cost. Defaults to True.
         """
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, time_limit=1000, device=self._device)
-            self._eval_env = TimeLimit(self._eval_env, time_limit=1000, device=self._device)
+            assert (
+                self._env.max_episode_steps and self._eval_env.max_episode_steps
+            ), 'You must define max_episode_steps as an integer\
+                or cancel the use of the time_limit wrapper.'
+            self._env = TimeLimit(
+                self._env,
+                time_limit=self._env.max_episode_steps,
+                device=self._device,
+            )
+            self._eval_env = TimeLimit(
+                self._eval_env,
+                time_limit=self._eval_env.max_episode_steps,
+                device=self._device,
+            )
         if self._env.need_auto_reset_wrapper:
             self._env = AutoReset(self._env, device=self._device)
             self._eval_env = AutoReset(self._eval_env, device=self._device)
