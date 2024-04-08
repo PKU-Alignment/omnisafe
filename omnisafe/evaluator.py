@@ -65,13 +65,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         actor: Actor | None = None,
         actor_critic: ConstraintActorCritic | ConstraintActorQCritic | None = None,
         dynamics: EnsembleDynamicsModel | None = None,
-        planner: CEMPlanner
-        | ARCPlanner
-        | SafeARCPlanner
-        | CCEPlanner
-        | CAPPlanner
-        | RCEPlanner
-        | None = None,
+        planner: (
+            CEMPlanner | ARCPlanner | SafeARCPlanner | CCEPlanner | CAPPlanner | RCEPlanner | None
+        ) = None,
         render_mode: str = 'rgb_array',
     ) -> None:
         """Initialize an instance of :class:`Evaluator`."""
@@ -161,18 +157,21 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         assert isinstance(observation_space, Box), 'The observation space must be Box.'
         assert isinstance(action_space, Box), 'The action space must be Box.'
 
-        if self._cfgs['algo_cfgs']['obs_normalize']:
+        if (
+            hasattr(self._cfgs['algo_cfgs'], 'obs_normalize')
+            and self._cfgs['algo_cfgs']['obs_normalize']
+        ):
             obs_normalizer = Normalizer(shape=observation_space.shape, clip=5)
             obs_normalizer.load_state_dict(model_params['obs_normalizer'])
-            self._env = ObsNormalize(self._env, device=torch.device('cpu'), norm=obs_normalizer)
+            self._env = ObsNormalize(self._env, device=self._device, norm=obs_normalizer)
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, device=torch.device('cpu'), time_limit=1000)
-        self._env = ActionScale(self._env, device=torch.device('cpu'), low=-1.0, high=1.0)
+            self._env = TimeLimit(self._env, device=self._device, time_limit=1000)
+        self._env = ActionScale(self._env, device=self._device, low=-1.0, high=1.0)
 
         if hasattr(self._cfgs['algo_cfgs'], 'action_repeat'):
             self._env = ActionRepeat(
                 self._env,
-                device=torch.device('cpu'),
+                device=self._device,
                 times=self._cfgs['algo_cfgs']['action_repeat'],
             )
         if hasattr(self._cfgs, 'algo') and self._cfgs['algo'] in [
@@ -267,7 +266,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 action_shape=action_space.shape,
                 action_max=1.0,
                 action_min=-1.0,
-                device='cpu',
+                device=self._device,
                 **planner_special_cfgs,
             )
 
@@ -287,9 +286,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 hidden_sizes=pi_cfg['hidden_sizes'],
                 activation=pi_cfg['activation'],
                 weight_initialization_mode=weight_initialization_mode,
+                custom_cfgs=self._cfgs,
             )
             self._actor = actor_builder.build_actor(actor_type)
             self._actor.load_state_dict(model_params['pi'])
+
+            self._actor.to(self._device)
 
     # pylint: disable-next=too-many-locals
     def load_saved(
@@ -319,7 +321,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self._model_name = model_name
 
         self.__load_cfgs(save_dir)
-
+        self._device = torch.device(self._cfgs['train_cfgs']['device'])
         self.__set_render_mode(render_mode)
 
         env_kwargs = {
@@ -330,8 +332,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             'camera_name': camera_name,
             'width': width,
             'height': height,
+            'device': self._device,
         }
-
         self.__load_model_and_env(save_dir, model_name, env_kwargs)
 
     def evaluate(
@@ -372,12 +374,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 with torch.no_grad():
                     if self._actor is not None:
                         act = self._actor.predict(
-                            obs,
+                            obs.to(self._device),
                             deterministic=True,
                         )
                     elif self._planner is not None:
                         act = self._planner.output_action(
-                            obs.unsqueeze(0).to('cpu'),
+                            obs.unsqueeze(0).to(self._device),
                         )[
                             0
                         ].squeeze(0)
@@ -405,7 +407,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             episode_costs.append(ep_cost)
             episode_lengths.append(length)
 
-            print(f'Episode {episode+1} results:')
+            print(f'Episode {episode + 1} results:')
             print(f'Episode reward: {ep_ret}')
             print(f'Episode cost: {ep_cost}')
             print(f'Episode length: {length}')
@@ -493,12 +495,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 with torch.no_grad():
                     if self._actor is not None:
                         act = self._actor.predict(
-                            obs,
+                            obs.to(self._device),
                             deterministic=True,
                         )
                     elif self._planner is not None:
                         act = self._planner.output_action(
-                            obs.unsqueeze(0).to('cpu'),
+                            obs.unsqueeze(0).to(self._device),
                         )[
                             0
                         ].squeeze(0)
@@ -542,7 +544,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             episode_costs.append(ep_cost)
             episode_lengths.append(length)
             with open(result_path, 'a+', encoding='utf-8') as f:
-                print(f'Episode {episode_idx+1} results:', file=f)
+                print(f'Episode {episode_idx + 1} results:', file=f)
                 print(f'Episode reward: {ep_ret}', file=f)
                 print(f'Episode cost: {ep_cost}', file=f)
                 print(f'Episode length: {length}', file=f)

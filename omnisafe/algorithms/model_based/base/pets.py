@@ -332,8 +332,7 @@ class PETS(BaseAlgo):
             },
         )
 
-    def _update_epoch(self) -> None:
-        ...
+    def _update_epoch(self) -> None: ...
 
     def _select_action(  # pylint: disable=unused-argument
         self,

@@ -14,8 +14,11 @@
 # ==============================================================================
 """Implementation of ActorBuilder."""
 
+
 from __future__ import annotations
 
+import omnisafe.utils.config
+from omnisafe.models.actor.decsion_diffuser_actor import DecisionDiffuserActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
 from omnisafe.models.actor.mlp_actor import MLPActor
@@ -45,6 +48,7 @@ class ActorBuilder:
         hidden_sizes: list[int],
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
+        custom_cfgs: omnisafe.utils.config.Config = None,
     ) -> None:
         """Initialize an instance of :class:`ActorBuilder`."""
         self._obs_space: OmnisafeSpace = obs_space
@@ -52,6 +56,7 @@ class ActorBuilder:
         self._weight_initialization_mode: InitFunction = weight_initialization_mode
         self._activation: Activation = activation
         self._hidden_sizes: list[int] = hidden_sizes
+        self._cfgs = custom_cfgs
 
     # pylint: disable-next=too-many-return-statements
     def build_actor(
@@ -114,6 +119,16 @@ class ActorBuilder:
                 activation=self._activation,
                 weight_initialization_mode=self._weight_initialization_mode,
             )
+        if actor_type == 'decisiondiffuser':
+            return DecisionDiffuserActor(
+                self._obs_space,
+                self._act_space,
+                self._hidden_sizes,
+                activation=self._activation,
+                weight_initialization_mode=self._weight_initialization_mode,
+                cfgs=self._cfgs,
+            )
+
         raise NotImplementedError(
             f'Actor type {actor_type} is not implemented! '
             f'Available actor types are: gaussian_learning, gaussian_sac, mlp, vae, perturbation.',

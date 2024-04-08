@@ -142,7 +142,6 @@ class Normalizer(nn.Module):
         self,
         state_dict: Mapping[str, Any],
         strict: bool = True,
-        assign: bool = False,
     ) -> Any:
         """Load the state_dict to the normalizer.
 
@@ -155,4 +154,4 @@ class Normalizer(nn.Module):
             The loaded normalizer.
         """
         self._first = False
-        return super().load_state_dict(state_dict, strict, assign)
+        return super().load_state_dict(state_dict, strict)
