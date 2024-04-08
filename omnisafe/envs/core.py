@@ -342,7 +342,7 @@ class EnvRegister:
         self._register(env_class)
         return env_class
 
-    def remove_from_register(self, env_class: type[CMDP]) -> type[CMDP]:
+    def unregister(self, env_class: type[CMDP]) -> type[CMDP]:
         """Remove the environment from the register.
 
         Args:
@@ -391,7 +391,7 @@ ENV_REGISTRY = EnvRegister()
 
 env_register = ENV_REGISTRY.register
 support_envs = ENV_REGISTRY.support_envs
-remove_from_register = ENV_REGISTRY.remove_from_register
+env_unregister = ENV_REGISTRY.unregister
 
 
 def make(env_id: str, class_name: str | None = None, **kwargs: Any) -> CMDP:

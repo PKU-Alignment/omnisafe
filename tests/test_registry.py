@@ -17,7 +17,7 @@
 import pytest
 
 from omnisafe.algorithms.registry import Registry
-from omnisafe.envs.core import CMDP, env_register, remove_from_register
+from omnisafe.envs.core import CMDP, env_register, env_unregister
 
 
 class TestRegistry:
@@ -46,7 +46,7 @@ def test_with_error() -> None:
             pass
 
     @env_register
-    @remove_from_register
-    @remove_from_register
+    @env_unregister
+    @env_unregister
     class CustomEnv(CMDP):  # noqa
         _support_envs = ['Simple-v0']  # noqa
