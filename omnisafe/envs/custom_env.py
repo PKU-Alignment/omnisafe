@@ -165,9 +165,9 @@ class CustomEnv(CMDP):
         return obs, {}
 
     @property
-    def max_episode_steps(self) -> None:
+    def max_episode_steps(self) -> int:
         """The max steps per episode."""
-        return
+        return 10
 
     def spec_log(self, logger: Logger) -> None:
         """Log specific environment into logger.
