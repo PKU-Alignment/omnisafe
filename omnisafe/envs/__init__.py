@@ -15,6 +15,7 @@
 """Environment API for OmniSafe."""
 
 from omnisafe.envs.core import CMDP, env_register, make, support_envs
+from omnisafe.envs.custom_env import CustomEnv
 from omnisafe.envs.mujoco_env import MujocoEnv
 from omnisafe.envs.safety_gymnasium_env import SafetyGymnasiumEnv
 from omnisafe.envs.safety_gymnasium_modelbased import SafetyGymnasiumModelBased
