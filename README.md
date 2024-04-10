@@ -385,8 +385,8 @@ We have compiled a list of papers that use OmniSafe for algorithm implementation
 |:---:|:---:|
 | [Off-Policy Primal-Dual Safe Reinforcement Learning](https://openreview.net/pdf?id=vy42bYs1Wo) | ICLR 2024 |
 | [Safe Offline Reinforcement Learning with Feasibility-Guided Diffusion Model](https://openreview.net/pdf?id=j5JvZCaDM0) | ICLR 2024 |
-| [Iterative Reachability Estimation for Safe Reinforcement Learning](https://proceedings.neurips.cc/paper_files/paper/2023/file/dca63f2650fe9e88956c1b68440b8ee9-Paper-Conference.pdfl) | NeurIPS 2023 |
-| [Balance Reward and Safety Optimization for Safe Reinforcement Learning: A Perspective of Gradient Manipulation](https://ojs.aaai.org/index.php/AAAI/article/view/30102) | AAAI 2024 |
+| [Iterative Reachability Estimation for Safe Reinforcement Learning](https://proceedings.neurips.cc/paper_files/paper/2023/file/dca63f2650fe9e88956c1b68440b8ee9-Paper-Conference.pdf) | NeurIPS 2023 |
+| [Balance Reward and Safety Optimization for Safe Reinforcement Learning: A Perspective of Gradient Manipulation](https://ojs.aaai.org/index.php/AAAI/article/view/30102/31944) | AAAI 2024 |
 | [Learning Safety Constraints From Demonstration Using One-Class Decision Trees](https://openreview.net/pdf?id=dxUi16pvub) | AAAI 2024 WorkShops |
 
 ## The OmniSafe Team
