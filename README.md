@@ -59,12 +59,14 @@ with process parallelism. This enables OmniSafe not only to support environment-
   - [Examples](#examples)
     - [Algorithms Registry](#algorithms-registry)
     - [Supported Environments](#supported-environments)
+    - [Customizing your environment](#customizing-your-environment)
     - [Try with CLI](#try-with-cli)
 - [Getting Started](#getting-started)
   - [Important Hints](#important-hints)
   - [Quickstart: Colab on the Cloud](#quickstart-colab-on-the-cloud)
 - [Changelog](#changelog)
 - [Citing OmniSafe](#citing-omnisafe)
+- [Publications using OmniSafe](#publications-using-omnisafe)
 - [The OmniSafe Team](#the-omnisafe-team)
 - [License](#license)
 
@@ -292,37 +294,15 @@ For more information about environments, please refer to [Safety-Gymnasium](http
 
 #### Customizing your environment
 
-We provide interfaces for customizing environments in the ``omnisafe/envs`` directory. You can refer to the examples provided in ``omnisafe/envs/safety_gymnasium_env`` to customize the environment interface. Key steps include:
-- New a file based on your custom environment, e.g. ``omnisafe/envs/custom_env.py``
-- Define the class based on your custom environment, e.g. ``CustomEnv``
-- Add comments ``env_register`` above the class name to register the environment.
-```python
-@env_register
-class CustomEnv(CMDP):
-```
-- List your tasks in ``_support_envs``.
-```python
-_support_envs: ClassVar[list[str]] = [
-      'Custom0-v0',
-      'Custom1-v0',
-      'Custom2-v0',
-    ]
-```
-- Redefine ``self._env`` in the ``__init__`` function.
-```python
-self._env = custom_env.make(env_id=env_id, **kwargs)
-```
+We offer a flexible customized environment interface that allows users to achieve the following **without modifying the OmniSafe source code**:
 
-Next, refer to the ``SafetyGymnasiumEnv`` in ``omnisafe/envs/safety_gymnasium_env`` to define the ``step``, ``reset`` and other functions. Make sure the number, type, order of the returned values match the examples we provided to complete the environment interface design.
+- Use OmniSafe's algorithms to train customized environments.
+- Createthe the environment with specified personalized parameters.
+- Complete the recording of environment-specific information in Logger.
 
-Finally, you can run
-```bash
-cd examples
-python train_policy.py --algo PPOLag --env Custom1-v0
-```
- to run ``PPOLag`` in ``Custom1-v0``, as you have registered ``Custom1-v0`` in ``_support_envs``.
+We provide **step-by-step tutorials** on [Environment Customization From Zero](https://colab.research.google.com/github/PKU-Alignment/omnisafe/blob/main/tutorials/English/3.Environment%20Customization%20from%20Zero.ipynb) and [Environment Customization From Community](https://colab.research.google.com/github/PKU-Alignment/omnisafe/blob/main/tutorials/English/4.Environment%20Customization%20from%20Community.ipynb) to give you a detailed introduction on how to use this extraordinary feature of OmniSafe.
 
-**Note: If you find trouble customizing your environment, please feel free to open an [issue](https://github.com/PKU-Alignment/omnisafe/issues) or [discussion](https://github.com/PKU-Alignment/omnisafe/discussions). [Pull requests](https://github.com/PKU-Alignment/omnisafe/pulls) are also welcomed if you're willing to contribute the implementation of your environments interface.**
+*Note: If you find trouble customizing your environment, please feel free to open an [issue](https://github.com/PKU-Alignment/omnisafe/issues) or [discussion](https://github.com/PKU-Alignment/omnisafe/discussions). [Pull requests](https://github.com/PKU-Alignment/omnisafe/pulls) are also welcomed if you're willing to contribute the implementation of your environments interface.*
 
 #### Try with CLI
 
@@ -396,6 +376,18 @@ If you find OmniSafe useful or use OmniSafe in your research, please cite it in 
   year    = {2023}
 }
 ```
+
+## Publications using OmniSafe
+
+We have compiled a list of papers that use OmniSafe for algorithm implementation or experimentation. If you are willing to include your work in this list, or if you wish to have your implementation officially integrated into OmniSafe, please feel free to [contact us](https://github.com/PKU-Alignment/omnisafe/issues).
+
+| Papers | Publisher|
+|:---:|:---:|
+| [Off-Policy Primal-Dual Safe Reinforcement Learning](https://openreview.net/pdf?id=vy42bYs1Wo) | ICLR 2024 |
+| [Safe Offline Reinforcement Learning with Feasibility-Guided Diffusion Model](https://openreview.net/pdf?id=j5JvZCaDM0) | ICLR 2024 |
+| [Iterative Reachability Estimation for Safe Reinforcement Learning](https://proceedings.neurips.cc/paper_files/paper/2023/file/dca63f2650fe9e88956c1b68440b8ee9-Paper-Conference.pdfl) | NeurIPS 2023 |
+| [Balance Reward and Safety Optimization for Safe Reinforcement Learning: A Perspective of Gradient Manipulation](https://ojs.aaai.org/index.php/AAAI/article/view/30102) | AAAI 2024 |
+| [Learning Safety Constraints From Demonstration Using One-Class Decision Trees](https://openreview.net/pdf?id=dxUi16pvub) | AAAI 2024 WorkShops |
 
 ## The OmniSafe Team
 
