@@ -296,11 +296,11 @@ For more information about environments, please refer to [Safety-Gymnasium](http
 
 We offer a flexible customized environment interface that allows users to achieve the following **without modifying the OmniSafe source code**:
 
-- Use OmniSafe's algorithms to train customized environments.
+- Use OmniSafe's to train algorithms on customized environments.
 - Create the the environment with specified personalized parameters.
 - Complete the recording of environment-specific information in Logger.
 
-We provide **step-by-step tutorials** on [Environment Customization From Zero](https://colab.research.google.com/github/PKU-Alignment/omnisafe/blob/main/tutorials/English/3.Environment%20Customization%20from%20Zero.ipynb) and [Environment Customization From Community](https://colab.research.google.com/github/PKU-Alignment/omnisafe/blob/main/tutorials/English/4.Environment%20Customization%20from%20Community.ipynb) to give you a detailed introduction on how to use this extraordinary feature of OmniSafe.
+We provide **step-by-step tutorials** on [Environment Customization From Scratch](https://colab.research.google.com/github/PKU-Alignment/omnisafe/blob/main/tutorials/English/3.Environment%20Customization%20from%20Scratch.ipynb) and [Environment Customization From Community](https://colab.research.google.com/github/PKU-Alignment/omnisafe/blob/main/tutorials/English/4.Environment%20Customization%20from%20Community.ipynb) to give you a detailed introduction on how to use this extraordinary feature of OmniSafe.
 
 *Note: If you find trouble customizing your environment, please feel free to open an [issue](https://github.com/PKU-Alignment/omnisafe/issues) or [discussion](https://github.com/PKU-Alignment/omnisafe/discussions). [Pull requests](https://github.com/PKU-Alignment/omnisafe/pulls) are also welcomed if you're willing to contribute the implementation of your environments interface.*
 
