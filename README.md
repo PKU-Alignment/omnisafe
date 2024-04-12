@@ -296,7 +296,7 @@ For more information about environments, please refer to [Safety-Gymnasium](http
 
 We offer a flexible customized environment interface that allows users to achieve the following **without modifying the OmniSafe source code**:
 
-- Use OmniSafe's to train algorithms on customized environments.
+- Use OmniSafe to train algorithms on customized environments.
 - Create the the environment with specified personalized parameters.
 - Complete the recording of environment-specific information in Logger.
 
