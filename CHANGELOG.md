@@ -1,337 +1,268 @@
 # Changelog
 
-<!-- markdownlint-disable no-duplicate-header -->
-
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## v0.5.0
+<!-- insertion marker -->
+## [v0.6.0](https://github.com/PKU-Alignment/omnisafe/releases/tag/v0.6.0) - 2024-04-15
 
-### Features
+<small>[Compare with v0.5.0](https://github.com/PKU-Alignment/omnisafe/compare/v0.5.0...v0.6.0)</small>
 
-- Feat(off-policy): support off-policy pid and update performance for navigation by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#245](https://github.com/OmniSafeAI/omnisafe/pull/245).
+### Dependencies
 
-- Style(model-based): fix mypy and polish api docstring by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#244](https://github.com/OmniSafeAI/omnisafe/pull/244).
+- pin pandas version (#276) ([db34e2c](https://github.com/PKU-Alignment/omnisafe/commit/db34e2c34746f198c391509cf6e4c724058d2598) by Jiayi Zhou).
 
-- Feat: improve test coverage and clear redundant code by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#238](https://github.com/OmniSafeAI/omnisafe/pull/238).
+### Bug Fixes
 
-- Feat: update benchmarks and provide configs for reproducing results by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#238](https://github.com/OmniSafeAI/omnisafe/pull/236).
-
-- Feat: add CODEOWNERS and refine ISSUE TEMPLATE by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#233](https://github.com/PKU-Alignment/omnisafe/pull/233).
-
-- Style: support mypy checking and update docstring style by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#221](https://github.com/PKU-Alignment/omnisafe/pull/221).
-
-- Feat: add Dockerfile and codecov.yml by [@XuehaiPan](https://github.com/XuehaiPan) in PR [#217](https://github.com/PKU-Alignment/omnisafe/pull/217).
-
-- Chore: update benchmark performance for first-order algorithms by [@Borong Zhang](https://github.com/muchvo) in PR [#215](https://github.com/PKU-Alignment/omnisafe/pull/215).
-
-- Chore: clean some trivial code by [@Borong Zhang](https://github.com/muchvo) in PR [#214](https://github.com/PKU-Alignment/omnisafe/pull/214).
-
-- Feat(pid-lagrange, test): add algo and update test by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#210](https://github.com/PKU-Alignment/omnisafe/pull/210).
-
-- Feat: add offline algorithms by [@Ruiyang Sun](https://github.com/rockmagma02) in PR [#175](https://github.com/PKU-Alignment/omnisafe/pull/175).
-
-### Documentations
-
-- Docs: polish algorithms tutorial by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#242](https://github.com/OmniSafeAI/omnisafe/pull/242).
-
-- Docs: change link to PKU-Alignment by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#239](https://github.com/OmniSafeAI/omnisafe/pull/239).
-
-- Docs: polish readme by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#231](https://github.com/PKU-Alignment/omnisafe/pull/231).
-
-- Docs: polish algorithm tutorial and update API docs by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#225](https://github.com/PKU-Alignment/omnisafe/pull/225).
-
-### Fixes
-
-- Fix: fix adapter device and exp grid by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#243](https://github.com/OmniSafeAI/omnisafe/pull/243).
-
-## v0.4.0
+- fix cuda initialization error in experiment grid (#315) ([63bdd34](https://github.com/PKU-Alignment/omnisafe/commit/63bdd3417ea415104aca1660619a23801cd3b957) by Jiayi Zhou).
+- fix invalid tutorial links (#270) ([bea468e](https://github.com/PKU-Alignment/omnisafe/commit/bea468e2127bfc4865d88c5ef735970ab7789155) by Jinming Xu).
+- Enable auto reset for MuJoCo envs (#269) ([b343750](https://github.com/PKU-Alignment/omnisafe/commit/b3437508bc3536e824f1ef9242ff2dc5380182e2) by Daniel Tan).
+- correct the author list of PIDLag (#250) ([1a99b20](https://github.com/PKU-Alignment/omnisafe/commit/1a99b2009b779b7e4cbd87a280c592bc01589537) by Jinming Xu).
 
 ### Features
 
-- Style: fix grammar in README and normalize string in pyproject.toml by [@XuehaiPan](https://github.com/XuehaiPan).
+- support interface of environment customization (#310) ([efe7d9c](https://github.com/PKU-Alignment/omnisafe/commit/efe7d9cea96e743511e11b2056cbf05b5932364e) by Jiayi Zhou).
+- support A3C parallel in multiple GPUs (#282) ([d55958a](https://github.com/PKU-Alignment/omnisafe/commit/d55958a011df7800f256452e07811832cd2524d2) by Jiayi Zhou).
+- update config, benchmark results and code style (#280) ([9d943b6](https://github.com/PKU-Alignment/omnisafe/commit/9d943b6e15ade14da4a3c7380fad4de92c34b452) by Jiayi Zhou).
+- update saute config and benchmarking results (#274) ([c575fd5](https://github.com/PKU-Alignment/omnisafe/commit/c575fd5044a3e042972018ddb4a427be58eec7bb) by Jiayi Zhou).
+- support gymnasium style reset API (#266) ([80c2c23](https://github.com/PKU-Alignment/omnisafe/commit/80c2c23d0fc2e20f98778b21c33d0848b77567aa) by Jiayi Zhou).
+- fix final_obsevation setting and support evaluation times configuation (#260) ([9e76d28](https://github.com/PKU-Alignment/omnisafe/commit/9e76d280f32a61519f28d0fc7d8a40e5125a30ba) by Jiayi Zhou).
+- support new agents tasks and customizing environment guide (#256) ([7fcfe78](https://github.com/PKU-Alignment/omnisafe/commit/7fcfe789970bc5af063a8b8a12e036c411c5461c) by Jiayi Zhou).
+- rebase CRPO from PPO to TRPO (#254) ([19f7fc7](https://github.com/PKU-Alignment/omnisafe/commit/19f7fc72e26750e138bc410e40c75cf9bb3a2199) by Jiayi Zhou).
 
-- Feat: add model-based algorithms by [@Weidong Huang](https://github.com/hdadong) in PR [#212](https://github.com/PKU-Alignment/omnisafe/pull/212).
+### Style
 
-- Feat(saute, simmer): support saute rl and clean the code by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#209](https://github.com/PKU-Alignment/omnisafe/pull/209).
+- update pre-commit.yaml and fix ruff (#261) ([8702d79](https://github.com/PKU-Alignment/omnisafe/commit/8702d7980f5d6482b805b88037d3966d1eda6bee) by Jiayi Zhou).
+- fix ruff check (#251) ([02376c7](https://github.com/PKU-Alignment/omnisafe/commit/02376c7a2c116c5629b4a3f69be2c2501f20b266) by Jiayi Zhou).
 
-- Feat(off-policy): support off-policy lag by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#204](https://github.com/PKU-Alignment/omnisafe/pull/204).
+### Chore
 
-- Chore: upload tutorial by [@Borong Zhang](https://github.com/muchvo) in PR [#201](https://github.com/PKU-Alignment/omnisafe/pull/201).
+- clear redundant distributed grad average (#253) ([af2951d](https://github.com/PKU-Alignment/omnisafe/commit/af2951d9209f7c5ce5a365d45664eb4ac6cb89ba) by Jiayi Zhou).
 
-- Deps(joblib): unpin joblib by [@Borong Zhang](https://github.com/muchvo) in PR [#197](https://github.com/PKU-Alignment/omnisafe/pull/197).
+## [v0.5.0](https://github.com/PKU-Alignment/omnisafe/releases/tag/v0.5.0) - 2023-05-27
 
-### Fixes
+<small>[Compare with v0.4.0](https://github.com/PKU-Alignment/omnisafe/compare/v0.4.0...v0.5.0)</small>
 
-- Fix(simmer, PID): fix simmer performance and tune parameters by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#220](https://github.com/PKU-Alignment/omnisafe/pull/220).
+### Bug Fixes
 
-- Fix: enable smooth param in Costs when plotting by [@Borong Zhang](https://github.com/muchvo) in PR [#208](https://github.com/PKU-Alignment/omnisafe/pull/208).
-
-- Fix(off-policy): fix log when not update by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#206](https://github.com/PKU-Alignment/omnisafe/pull/206).
-
-- Fix: check duplicated parameters and values which are specified in experiment grid by [@Borong Zhang](https://github.com/muchvo) in PR [#203](https://github.com/PKU-Alignment/omnisafe/pull/203).
-
-### Documentation
-
-- Docs: update contributing.md by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#227](https://github.com/PKU-Alignment/omnisafe/pull/227).
-
-- Docs: fix small typo in README.md by [@mickelliu](https://github.com/mickelliu) in PR [#211](https://github.com/PKU-Alignment/omnisafe/pull/211).
-
-- Docs: change link to PKU-Alignment by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#205](https://github.com/PKU-Alignment/omnisafe/pull/205).
-
-### Refactor
-
-- Refactor: minor changes regarding documentation and dependencies by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#219](https://github.com/PKU-Alignment/omnisafe/pull/219).
-
-- Refactor(common/logger): refactor and simplify logger storage logic by [@XuehaiPan](https://github.com/XuehaiPan) in PR [#216](https://github.com/PKU-Alignment/omnisafe/pull/216).
-
-- Refactor(algo_wrapper, configs): rename update cycle and refactor structure by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#213](https://github.com/PKU-Alignment/omnisafe/pull/213).
-
-- Refactor: update hyper-parameters for first-order algorithms by [@Borong Zhang](https://github.com/muchvo) in PR [#199](https://github.com/PKU-Alignment/omnisafe/pull/199).
-
-- Refactor: condense top-level benchmarks by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#198](https://github.com/PKU-Alignment/omnisafe/pull/198).
-
-## v0.3.0
+- fix adapter device and exp grid (#243) ([651cb0e](https://github.com/PKU-Alignment/omnisafe/commit/651cb0e14d598bdaba39fb79172408666f62151b) by Jiayi Zhou).
 
 ### Features
 
-- Feat: update CLI for gpu and statistics tools by [@Borong Zhang](https://github.com/muchvo) in PR [#192](https://github.com/PKU-Alignment/omnisafe/pull/192).
+- improve test coverage and clear redundant code. (#238) ([dee636e](https://github.com/PKU-Alignment/omnisafe/commit/dee636e1bff5fff01d555c4fa7e8fe12671f0fec) by Jiayi Zhou).
+- update benchmarks and provide configs for reproducing results (#236) ([3799d6d](https://github.com/PKU-Alignment/omnisafe/commit/3799d6d3fca4c8c94fed167d1a6cbd02d3b96992) by Jiayi Zhou).
+- add `CODEOWNERS` and refine `ISSUE TEMPLATE` (#233) ([60b7ea7](https://github.com/PKU-Alignment/omnisafe/commit/60b7ea7aeb24fba83b1b6628a422dd537b74d0d4) by Jiaming Ji).
+- add offline algorithms (#175) ([2a37bab](https://github.com/PKU-Alignment/omnisafe/commit/2a37babfa0b672e40e469df09d4418c747e6addb) by Ruiyang Sun).
 
-- Feat: add `ruff` and `codespell` integration by [@XuehaiPan](https://github.com/XuehaiPan) in PR [#186](https://github.com/PKU-Alignment/omnisafe/pull/186).
+### Style
 
-- Feat: perfecting training workflow by [@Borong Zhang](https://github.com/muchvo) in PR [#185](https://github.com/PKU-Alignment/omnisafe/pull/185).
+- fix mypy and polish api docstring (#244) ([74e9527](https://github.com/PKU-Alignment/omnisafe/commit/74e9527cd2224a07f1fbcd9caaa61487118a049b) by Jiayi Zhou).
 
-- Deps(torch): pin the version of pytorch by [@Borong Zhang](https://github.com/muchvo) in PR [#184](https://github.com/PKU-Alignment/omnisafe/pull/184).
+### Chore
 
-### Fixes
+- correct usage for `PROJECT_PATH` and `PROJECT_NAME` ([5085404](https://github.com/PKU-Alignment/omnisafe/commit/5085404ce540b909272738489a60d8edbc6d6b3c) by Xuehai Pan).
+- update pre-commit hooks ([078608e](https://github.com/PKU-Alignment/omnisafe/commit/078608ef36086bfb26b25d6572988997d7b1dfb9) by Xuehai Pan).
 
-- Fix(experiment grid): fix file path problem when using gpu in experiment grid by [@Borong Zhang](https://github.com/muchvo) in PR [#194](https://github.com/PKU-Alignment/omnisafe/pull/194).
+## [v0.4.0](https://github.com/PKU-Alignment/omnisafe/releases/tag/v0.4.0) - 2023-05-04
 
-### Documentation
+<small>[Compare with v0.3.0](https://github.com/PKU-Alignment/omnisafe/compare/v0.3.0...v0.4.0)</small>
 
-- Docs: update api documents by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#191](https://github.com/PKU-Alignment/omnisafe/pull/191).
+### Dependencies
 
-- Docs: update changelog.md by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#187](https://github.com/PKU-Alignment/omnisafe/pull/187).
+- unpin `joblib` (#197) ([7f906f0](https://github.com/PKU-Alignment/omnisafe/commit/7f906f0def4fa78368dde9edb5816b73c4db23ef) by muchvo).
 
-## v0.2.2
+### Bug Fixes
 
-### Fixes
-- Add MANIFEST.in by [@Borong Zhang](https://github.com/muchvo) in PR [#182](https://github.com/PKU-Alignment/omnisafe/pull/182).
-
-### Documentation
-- Update api documentation by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#181](https://github.com/PKU-Alignment/omnisafe/pull/181)
-
-## v0.2.1
-
-### Features
-- Feat(statistics tools): support statistics tools for experiments by [@Borong Zhang](https://github.com/muchvo) in PR [#157](https://github.com/PKU-Alignment/omnisafe/pull/157).
-
-## v0.2.0
+- fix simmer performance and tune parameters (#220) ([a5b5335](https://github.com/PKU-Alignment/omnisafe/commit/a5b533512d2bccffa37f958cb8228e4784eea595) by Jiayi Zhou).
+- enable `smooth` param in `Costs` when plotting (#208) ([295ec01](https://github.com/PKU-Alignment/omnisafe/commit/295ec01b4d4328e1cc5104ccdd9ed089093d6b7f) by muchvo).
+- fix log when not update (#206) ([55b9db1](https://github.com/PKU-Alignment/omnisafe/commit/55b9db1a2a5ab0d059f4904d3de0530fcb64053f) by Jiayi Zhou).
+- check duplicated parameters and values which are specified in experiment grid (#203) ([30d475d](https://github.com/PKU-Alignment/omnisafe/commit/30d475def23d19eaf8666336c305008edbc721c6) by muchvo).
 
 ### Features
 
-- Support cuda by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#163](https://github.com/PKU-Alignment/omnisafe/pull/163).
-- Support command line interfaces for OmniSafe by [@Borong Zhang](https://github.com/muchvo) in PR [#144](https://github.com/PKU-Alignment/omnisafe/pull/144).
-- Refactor(wrapper): refactor the cuda setting by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#176](https://github.com/PKU-Alignment/omnisafe/pull/176).
+- add model-based algorithms (#212) ([d65f37f](https://github.com/PKU-Alignment/omnisafe/commit/d65f37f7dde91b6784bbfe5abb39b433c9b246ab) by WeidongHuang).
+- add `Dockerfile` and `codecov.yml` (#217) ([8bd253a](https://github.com/PKU-Alignment/omnisafe/commit/8bd253a9d5e8e105a31f02140cacfa4c7ca7998d) by Xuehai Pan).
+- add algo and update test (#210) ([bc91d71](https://github.com/PKU-Alignment/omnisafe/commit/bc91d7128454bc6838be97182a76baa5a4233fde) by Jiayi Zhou).
+- support saute rl and clean the code (#209) ([b0a0699](https://github.com/PKU-Alignment/omnisafe/commit/b0a0699c296e6fd2949de790f6d452dd5b5c58fa) by Jiaming Ji).
+- support off-policy lag (#204) ([52aaf32](https://github.com/PKU-Alignment/omnisafe/commit/52aaf32b8be81996b491c360fe2c26499c958117) by Jiayi Zhou).
 
-### Fixes
+### Code Refactoring
 
-- Fix(onpolicy_adapter): fix the calculation of last state value by [@Borong Zhang](https://github.com/muchvo) in PR [#164](https://github.com/PKU-Alignment/omnisafe/pull/164).
-- Fix(config.py): fix config assertion by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#174](https://github.com/PKU-Alignment/omnisafe/pull/174).
-- Fix autoreset wrapper in by [@r-y1](https://github.com/r-y1) PR [#167](https://github.com/PKU-Alignment/omnisafe/pull/167).
+- minor changes regarding documentation and dependencies (#219) ([15d5be6](https://github.com/PKU-Alignment/omnisafe/commit/15d5be6041deaaca0347ebbe510320a5e2c4b49d) by Jiaming Ji).
+- refactor and simplify logger storage logic (#216) ([4dd6209](https://github.com/PKU-Alignment/omnisafe/commit/4dd62091fab33e3bc83459f5c468e5142de3131e) by Xuehai Pan).
+- rename update cycle and refactor structure (#213) ([0eb08a3](https://github.com/PKU-Alignment/omnisafe/commit/0eb08a37e32c0f35b2b7954a0cfab815c92a3fce) by Jiayi Zhou).
+- update hyper-parameters for first-order algorithms (#199) ([b2bcc84](https://github.com/PKU-Alignment/omnisafe/commit/b2bcc84e882131b631523f8db004b8039a16774f) by muchvo).
+- condense top-level benchmarks (#198) ([a0a093b](https://github.com/PKU-Alignment/omnisafe/commit/a0a093baccb4e345b1694e726d9c32a0d2978210) by Jiaming Ji).
 
-### Documentation
+### Style
 
-- Update docs style by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#169](https://github.com/PKU-Alignment/omnisafe/pull/169).
-- Fix typo in readme by [@Ruiyang Sun](https://github.com/rockmagma02) in PR [#172](https://github.com/PKU-Alignment/omnisafe/pull/172).
-- Update README and the usage of CLI by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#138](https://github.com/PKU-Alignment/omnisafe/pull/138).
-## v0.1.0
-- Check out `Development` for more.
-------
-## Development
-### 2023-03-06 ~ 2023-03-15
-#### Features
+- support mypy checking and update docstring style (#221) ([c1c6993](https://github.com/PKU-Alignment/omnisafe/commit/c1c699338861e4a670db17a86b3f4eddf4a9e4f0) by Jiayi Zhou).
+- prefer `utf-8` over `UTF-8` in code ([9449967](https://github.com/PKU-Alignment/omnisafe/commit/9449967fb1c61d21fbf05df72ae5bba6e0bc3b4f) by Xuehai Pan).
+- fix grammar in README and normalize string in pyproject.toml ([d17aa77](https://github.com/PKU-Alignment/omnisafe/commit/d17aa77a9c622403548d2432bcb8739baa755045) by Xuehai Pan).
 
-- Chore(on-policy): update benchmark performance for first-order algorithms by [@Borong Zhang](https://github.com/muchvo) in PR [#148](https://github.com/PKU-Alignment/omnisafe/pull/148).
-- Feat(off-policy): add DDPG, TD3 SAC by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#128](https://github.com/PKU-Alignment/omnisafe/pull/128).
-- Feat: support policy evaluation by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#137](https://github.com/PKU-Alignment/omnisafe/pull/137).
-- Test: add more test case, and fix bugs by [@Ruiyang Sun](https://github.com/rockmagma02) in PR [#136](https://github.com/PKU-Alignment/omnisafe/pull/136).
-- Fix(logger, wrapper): support csv file and velocity tasks by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#131](https://github.com/PKU-Alignment/omnisafe/pull/131).
-- Feat: update architecture of config.yaml by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#126](https://github.com/PKU-Alignment/omnisafe/pull/126).
-- Chore: support num_thread setting by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#124](https://github.com/PKU-Alignment/omnisafe/pull/124).
-- Refactor: change architecture of omnisafe by [@Ruiyang Sun](https://github.com/rockmagma02) in PR [#121](https://github.com/PKU-Alignment/omnisafe/pull/121).
+### Chore
 
-#### Fixes
+- clean some trivial code (#214) ([e0b1852](https://github.com/PKU-Alignment/omnisafe/commit/e0b1852ab2b1c5de6eb7e027496704a944dd98df) by muchvo).
+- update pre-commit hooks ([3dda988](https://github.com/PKU-Alignment/omnisafe/commit/3dda988bc6ffe67f759b54eaab7feb914a2fc9c4) by Xuehai Pan).
+- track codecov for `dev` branch ([b7d3925](https://github.com/PKU-Alignment/omnisafe/commit/b7d3925ffd22f6e81d564777c37e12b76126b290) by Xuehai Pan).
+- pre-commit autoupdate ([7f28646](https://github.com/PKU-Alignment/omnisafe/commit/7f28646e6c33146a3c8f412c0c5e3077b5b5c094) by Xuehai Pan).
+- update benchmark performance for first-order algorithms (#215) ([65ed5ca](https://github.com/PKU-Alignment/omnisafe/commit/65ed5cab52a0258a6df1d5bfd8ec8805716964fa) by muchvo).
+- [pre-commit.ci] autoupdate (#200) ([9393e27](https://github.com/PKU-Alignment/omnisafe/commit/9393e27b3724f76466a00b84f6fc078c0e2cdeac) by pre-commit-ci[bot]).
+- upload tutorial (#201) ([b79bea7](https://github.com/PKU-Alignment/omnisafe/commit/b79bea7225082de46ef62b75fdcde7cae718d8ba) by muchvo).
 
-- Fix(on-policy): fix the second order algorithms performance by [@Jiayi Zhou](https://github.com/Gaiejj)  in PR [#147](https://github.com/PKU-Alignment/omnisafe/pull/147).
-- Fix(rollout, exp_grid): fix logdir path conflict by [@Borong Zhang](https://github.com/muchvo) in PR [#145](https://github.com/PKU-Alignment/omnisafe/pull/145).
-- Fix: support new config for exp_grid by [@Borong Zhang](https://github.com/muchvo) in PR [#142](https://github.com/PKU-Alignment/omnisafe/pull/142).
-- Fix(ppo): fix entropy loss by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#135](https://github.com/PKU-Alignment/omnisafe/pull/135).
-- Fix(algo): fix no return in algo_wrapper::learn by [@Ruiyang Sun](https://github.com/rockmagma02) in PR [#122](https://github.com/PKU-Alignment/omnisafe/pull/122).
+## [v0.3.0](https://github.com/PKU-Alignment/omnisafe/releases/tag/v0.3.0) - 2023-04-01
 
-#### Documentation
-- Docs: Update changelog by [@Jiaming Ji](https://github.com/zmsn-2077).
-- Docs: Update README.md: fix action passing by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#149](https://github.com/PKU-Alignment/omnisafe/pull/149).
-- Chore: fix typo by [@1Asan](https://github.com/1Asan) in PR [#134](https://github.com/PKU-Alignment/omnisafe/pull/134).
+<small>[Compare with v0.2.2](https://github.com/PKU-Alignment/omnisafe/compare/v0.2.2...v0.3.0)</small>
 
-### 2023-02-27 ~ 2023-03-05
-#### Fixes
+### Dependencies
 
-- Fix(P3O): fix P3O performance by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#123](https://github.com/PKU-Alignment/omnisafe/pull/123).
-- Fix(off-policy): fix `action passing` by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#119](https://github.com/PKU-Alignment/omnisafe/pull/119).
+- pin the version of pytorch (#184) ([3073b1a](https://github.com/PKU-Alignment/omnisafe/commit/3073b1a962f11df2692438e10c0e2e01052b9f5d) by muchvo).
 
-#### Documentation
-- Docs: update logo by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#125](https://github.com/PKU-Alignment/omnisafe/pull/125).
+### Bug Fixes
 
-### 2023-02-13 ~ 2023-02-19
+- fix file path problem when using gpu in experiment grid (#194) ([324d257](https://github.com/PKU-Alignment/omnisafe/commit/324d257012b418371b209c63b935f469392e95cf) by muchvo).
 
-#### Fixes
+### Features
 
-- Fix(evaluator): fix evaluator by [@Ruiyang Sun](https://github.com/rockmagma02) in PR [#117](https://github.com/PKU-Alignment/omnisafe/pull/117).
+- update CLI for gpu and statistics tools (#192) ([858fc22](https://github.com/PKU-Alignment/omnisafe/commit/858fc221f6bf6377600d9e62fc087028308094cd) by muchvo).
+- perfecting training workflow (#185) ([381b81c](https://github.com/PKU-Alignment/omnisafe/commit/381b81c6381dc32f0c4a221c535db1fc7c363e74) by muchvo).
+- add `ruff` and `codespell` integration (#186) ([f070041](https://github.com/PKU-Alignment/omnisafe/commit/f07004171433849fe958d7024efdfc0327e10aa2) by Xuehai Pan).
 
-### 2023-02-06 ~ 2023-02-12
+## [v0.2.2](https://github.com/PKU-Alignment/omnisafe/releases/tag/v0.2.2) - 2023-03-28
 
-#### Features
+<small>[Compare with v0.2.1](https://github.com/PKU-Alignment/omnisafe/compare/v0.2.1...v0.2.2)</small>
 
-- Build(env): delete local `safety-gymnaisum` dependence by [@Ruiyang Sun](https://github.com/rockmagma02) in PR [#102](https://github.com/PKU-Alignment/omnisafe/pull/102).
-- Refactor(buffer): refactor `buffer` by [@Ruiyang Sun](https://github.com/rockmagma02) in PR [#101](https://github.com/PKU-Alignment/omnisafe/pull/101).
-- Refactor: clean the code by [@Jiayi Zhou](https://github.com/Gaiejj) in
-#### Fixes
+### Chore
 
-- Fix: fix tools by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#100](https://github.com/PKU-Alignment/omnisafe/pull/100).
-- Fix: fix algo wrapper by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#99](https://github.com/PKU-Alignment/omnisafe/pull/99).
-PR [#97](https://github.com/PKU-Alignment/omnisafe/pull/97).
-#### Documentation
+- add MANIFEST.in (#182) ([f6b5aa4](https://github.com/PKU-Alignment/omnisafe/commit/f6b5aa4e97fcdaa6b4ed7b7293e92562dae77476) by muchvo).
 
-- Modify `logo.png` and add `requirements.txt` by [@Ruiyang Sun](https://github.com/rockmagma02) in PR [#103](https://github.com/PKU-Alignment/omnisafe/pull/103).
+## [v0.2.1](https://github.com/PKU-Alignment/omnisafe/releases/tag/v0.2.1) - 2023-03-27
 
+<small>[Compare with v0.2.0](https://github.com/PKU-Alignment/omnisafe/compare/v0.2.0...v0.2.1)</small>
 
-### 2023-01-30 ~ 2023-02-05
+### Features
 
-#### Features
+- support statistics tools for experiments launched by omnisafe (#157) ([eb5358e](https://github.com/PKU-Alignment/omnisafe/commit/eb5358efef74adcdd73eb8aeffb74ddd782b81fa) by muchvo).
 
-- Chore: update linter settings by [@XuehaiPan](https://github.com/XuehaiPan).
-- Chore: update ci  by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#90](https://github.com/PKU-Alignment/omnisafe/pull/90) reviewed by [@Jiaming Ji](https://github.com/zmsn-2077) and [@friedmainfunction](https://github.com/friedmainfunction).
-- Chore: update yaml  by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#92](https://github.com/PKU-Alignment/omnisafe/pull/92) and [#93](https://github.com/PKU-Alignment/omnisafe/pull/93) reviewed by [@Jiaming Ji](https://github.com/zmsn-2077) and [@friedmainfunction](https://github.com/friedmainfunction).
+## [v0.2.0](https://github.com/PKU-Alignment/omnisafe/releases/tag/v0.2.0) - 2023-03-26
 
-### 2023-01-23 ~ 2023-01-29
+<small>[Compare with v0.1.0](https://github.com/PKU-Alignment/omnisafe/compare/v0.1.0...v0.2.0)</small>
 
-#### Features
+### Bug Fixes
 
-- Refactor(objects): change object type into free_geom by [@Borong Zhang](https://github.com/muchvo) in PR [#89](https://github.com/PKU-Alignment/omnisafe/pull/89).
-- Chore: update algorithms configuration by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#88](https://github.com/PKU-Alignment/omnisafe/pull/88).
-- Feat: support cuda by [@Jiayi Zhou](https://github.com/Gaiejj in PR [#86](https://github.com/PKU-Alignment/omnisafe/pull/86).
-- Feat(render): add keyboard debug mode for some agents in all tasks by [@Borong Zhang](https://github.com/muchvo) in PR [#83](https://github.com/PKU-Alignment/omnisafe/pull/83).
-- Feat: add experiment grid by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#84](https://github.com/PKU-Alignment/omnisafe/pull/84).
+- fix autoreset wrapper (#167) ([0e8114a](https://github.com/PKU-Alignment/omnisafe/commit/0e8114ab0e0cb713226cfd6af49651bba1115809) by r-y1).
+- fix config assertion (#174) ([69eb514](https://github.com/PKU-Alignment/omnisafe/commit/69eb514380ffe335fed6896dcdcffa56780c2e0a) by Jiayi Zhou).
+- fix the calculation of last state value (#164) ([7248752](https://github.com/PKU-Alignment/omnisafe/commit/72487526aad50e0540700320b7daa1bef07e8706) by muchvo).
+- fix the calculation of last state value (#162) ([96e45f3](https://github.com/PKU-Alignment/omnisafe/commit/96e45f332ef0dcca505d85fe77533c3611208c3f) by Dtrc2207).
 
-#### Fixes
+### Features
 
-- Fix seed setting  by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#82](https://github.com/PKU-Alignment/omnisafe/pull/82).
-
-
-### 2023-01-16 ~ 2023-01-22
-
-#### Features
-
-- Feat(agents): add `ant` agent by [@Borong Zhang](https://github.com/muchvo) in PR [#82](https://github.com/PKU-Alignment/omnisafe/pull/82).
-- Refactor(safety-gymnaisum): `code decoupling` by [@Borong Zhang](https://github.com/muchvo) in PR [#81](https://github.com/PKU-Alignment/omnisafe/pull/81).
-- Feat: add new algorithm by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#80](https://github.com/PKU-Alignment/omnisafe/pull/80).
-
-### 2023-01-09 ~ 2023-01-15
-
-#### Features
-
-- Refactor: change wrapper setting by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#73](https://github.com/PKU-Alignment/omnisafe/pull/73).
-- Feat: `vectorized` environment by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#74](https://github.com/PKU-Alignment/omnisafe/pull/74).
-### 2023-01-02 ~ 2023-01-08
-
-#### Features
-
-- Feat(agents, tasks, Evaluator): support `circle012` and new agent `racecar`, update evaluator by [@Borong Zhang](https://github.com/muchvo) in PR [#59](https://github.com/PKU-Alignment/omnisafe/pull/59).
-
-### 2022-12-26 ~ 2023-01-01
-
-#### Features
-
-- Refactor: enhanced model-based code, add `CAP` algorithm by [@Weidong Huang](https://github.com/hdadong) in PR [#59](https://github.com/PKU-Alignment/omnisafe/pull/59).
-- Feat: support auto render as .mp4 videos, add examples and tests by [@Borong Zhang](https://github.com/muchvo) in PR [#60](https://github.com/PKU-Alignment/omnisafe/pull/60).
-#### Fixes
-
-- Fix(model-based): fix cap cost bug and lag beta value in cap.yaml by [@Weidong Huang](https://github.com/hdadong) in PR [#62](https://github.com/PKU-Alignment/omnisafe/pull/62).
-- Fix(render): fix markers are not shown in the rgb array returned by env.render() by [@Borong Zhang](https://github.com/muchvo) in PR [#61](https://github.com/PKU-Alignment/omnisafe/pull/61).
-
-
-
-### 2022-12-19 ~ 2022-12-25
-
-#### Features
-
-- Feat(circle, run): support new tasks by [@Borong Zhang](https://github.com/muchvo) in PR [#50](https://github.com/PKU-Alignment/omnisafe/pull/50).
-- Add Makefile by [@XuehaiPan](https://github.com/XuehaiPan) in PR [#53](https://github.com/PKU-Alignment/omnisafe/pull/53).
-#### Fixes
-
-- Fix bug for namedtuple by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#54](https://github.com/PKU-Alignment/omnisafe/pull/54).
-#### Documentation
-
-- Fix spelling error by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#56](https://github.com/PKU-Alignment/omnisafe/pull/56), reviewed by [@Jiaming Ji](https://github.com/zmsn-2077) and [@XuehaiPan](https://github.com/XuehaiPan).
-
-
-### 2022-12-12 ~ 2022-12-18
-
-#### Features
-
-- Refactor: open pylint in pre-commit by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#48](https://github.com/PKU-Alignment/omnisafe/pull/48).
-- Refactor: change the details and yaml files of on policy algorithm by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#41](https://github.com/PKU-Alignment/omnisafe/pull/41).
-- Feat: add CUP algorithm by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#43](https://github.com/PKU-Alignment/omnisafe/pull/43).
-- Feat(wrapper): separated wrapper for different algorithmic environments by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#44](https://github.com/PKU-Alignment/omnisafe/pull/44).
-- Chore: rename files and enable pylint by [@Borong Zhang](https://github.com/muchvo) in  PR [#39](https://github.com/PKU-Alignment/omnisafe/pull/39).
-#### Documentation
-
-- Retouch the formatting and add PPO docs for OmniSafe by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#40](https://github.com/PKU-Alignment/omnisafe/pull/40).
-- Add Lagrangian method documentation by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#42](https://github.com/PKU-Alignment/omnisafe/pull/42).
-- Refactor(README): show the implemented algorithms in more detail by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#47](https://github.com/PKU-Alignment/omnisafe/pull/47).
-### 2022-12-05 ~ 2022-12-11
-
-#### Features
-
-- Refactor: more OOP style code were used and made better code and file structure by [@Borong Zhang](https://github.com/muchvo) in PR [#37](https://github.com/PKU-Alignment/omnisafe/pull/37).
-- Refactor: change the file layout of omnisafe by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#35](https://github.com/PKU-Alignment/omnisafe/pull/35).
-#### Fixes
-
-- Fix(env_wrapper): fix warning caused by 'none' string default value by [@Borong Zhang](https://github.com/muchvo) in PR [#30](https://github.com/PKU-Alignment/omnisafe/pull/30).
-#### Documentation
-
-- Docs: retouch the formatting and add links to the formula numbers by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#31](https://github.com/PKU-Alignment/omnisafe/pull/31).
-### 2022-11-28 ~ 2022-12-04
-
-#### Features
-
-- Chore(.github): update issue templates by [@XuehaiPan](https://github.com/XuehaiPan) in PR [#29](https://github.com/PKU-Alignment/omnisafe/pull/29).
-- Refactor packaging by [@XuehaiPan](https://github.com/XuehaiPan) in PR [#20](https://github.com/PKU-Alignment/omnisafe/pull/20).
-- Add ddpg, clean some code, modify algo_wrapper in PR [#24](https://github.com/PKU-Alignment/omnisafe/pull/24) by [@Jiaming Ji](https://github.com/zmsn-2077).
-#### Documentation
-
-- Add `TRPO` to docs by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#28](https://github.com/PKU-Alignment/omnisafe/pull/28).
-- Add `FOCOPS` and `PCPO` to docs by [@XuehaiPan](https://github.com/XuehaiPan) in [#21](https://github.com/PKU-Alignment/omnisafe/pull/21).
-
-### 2022-11-20 ~ 2022-11-27
-
-#### Features
-
-- Add render_mode: `human`, `rgb_array`, `depth_array` in safety-gymnasium: `safety_gym_v2`.
-- Add **Model-based Safe Algorithms:** `mbppolag`, `safeloop` by [@Weidong Huang](https://github.com/hdadong) in [#12](https://github.com/PKU-Alignment/omnisafe/pull/12).
-- Add .editorconfig and update license by [@XuehaiPan](https://github.com/XuehaiPan) in [#8](https://github.com/PKU-Alignment/omnisafe/pull/8).
-#### Fixes
-
-- Fix readme typo by [@erjanmx](https://github.com/erjanmx) in PR [#13](https://github.com/PKU-Alignment/omnisafe/pull/13).
-- Fix ambiguous config yaml for algorithms by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#6](https://github.com/PKU-Alignment/omnisafe/pull/6).
-- Fix vis `safety_gym_v2` with del the render_mode by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#3](https://github.com/PKU-Alignment/omnisafe/pull/3).
-
-#### Documentation
-
-- Refactor some code in omnisafe, add `CHANGELOG.md`,` and del install.md and tutorial in PR [#16](https://github.com/PKU-Alignment/omnisafe/pull/16) by [@Jiaming Ji](https://github.com/zmsn-2077).
-- Docs: add `PCPO` in omnisafe's **docs** and modify `CPO` by [@Jiayi Zhou](https://github.com/Gaiejj) in [#9](https://github.com/PKU-Alignment/omnisafe/pull/9).
-- Add `CPO` and `Intro` in omnisafe's **docs** by [@Jiayi Zhou](https://github.com/Gaiejj) in PR [#7](https://github.com/PKU-Alignment/omnisafe/pull/7).
-- Add render mode and vision input in safety-gymnasium: `safety_gym_v2` by [@Jiaming Ji](https://github.com/zmsn-2077) in PR [#5](https://github.com/PKU-Alignment/omnisafe/pull/5).
+- support cuda (#163) ([e0ddf52](https://github.com/PKU-Alignment/omnisafe/commit/e0ddf527fa1477753eb5b3f2422bbb3b1d51cb16) by Jiayi Zhou).
+- support command line interfaces for omnisafe (#144) ([d5e2814](https://github.com/PKU-Alignment/omnisafe/commit/d5e2814f2c2727337519d494d160f3532d955c93) by muchvo).
+
+### Code Refactoring
+
+- refactor the cuda setting (#176) ([3bf7660](https://github.com/PKU-Alignment/omnisafe/commit/3bf7660c7f498b0aa2632d9fd679551b2cc8551f) by Jiayi Zhou).
+
+### Chore
+
+- fix typo in readme (#172) ([e7cc549](https://github.com/PKU-Alignment/omnisafe/commit/e7cc549d0992913c7e2aa7876dcb2fed8480d6bd) by Ruiyang Sun).
+- update github workflow (#156) ([e5bf84c](https://github.com/PKU-Alignment/omnisafe/commit/e5bf84c638f2f6947bb25faff4a582bfd1e506e1) by Jiayi Zhou).
+- update yaml (#155) ([3014848](https://github.com/PKU-Alignment/omnisafe/commit/30148485a3b2fc27cbdd6bc3f242b08992ce192f) by Jiayi Zhou).
+
+## [v0.1.0](https://github.com/PKU-Alignment/omnisafe/releases/tag/v0.1.0) - 2023-03-15
+
+<small>[Compare with first commit](https://github.com/PKU-Alignment/omnisafe/compare/e2952161bbb22d0229f138df64e4c20d5757672e...v0.1.0)</small>
+
+### Build
+
+- delete local safety-gymnaisum dependence (#102) ([cd680f0](https://github.com/PKU-Alignment/omnisafe/commit/cd680f04d53e0f565d2a42b1a6a3b44e3cdde486) by Ruiyang Sun).
+
+### Bug Fixes
+
+- fix the second order algorithms performance (#147) ([5b960e8](https://github.com/PKU-Alignment/omnisafe/commit/5b960e800e9f38fc4622adb31af32995f2ec3b3a) by Jiayi Zhou).
+- fix logdir path conflict (#145) ([268cb9d](https://github.com/PKU-Alignment/omnisafe/commit/268cb9d68d3e33706678afc52f806828787297a1) by muchvo).
+- support new config for exp_grid (#142) ([380d8d0](https://github.com/PKU-Alignment/omnisafe/commit/380d8d0d4b1bb5ceb256358d31a924348b41a00d) by muchvo).
+- fix entropy loss (#135) ([04e98ec](https://github.com/PKU-Alignment/omnisafe/commit/04e98ec000c1654decca945e787b12695a916b50) by Jiayi Zhou).
+- fix entropy loss (#133) ([0ebae0a](https://github.com/PKU-Alignment/omnisafe/commit/0ebae0ac83d396a7ae789aa9c4d7c10435118aca) by Jiayi Zhou).
+- support csv file and velocity tasks (#131) ([d661762](https://github.com/PKU-Alignment/omnisafe/commit/d6617622d2b683cb1b6988e86e18360225f11d9c) by Jiayi Zhou).
+- fix action passing (#119) ([da3ecdf](https://github.com/PKU-Alignment/omnisafe/commit/da3ecdf722c1def0528257e76ab429b9b2a40194) by Jiayi Zhou).
+- fix P3O performance (#123) ([53a8c1b](https://github.com/PKU-Alignment/omnisafe/commit/53a8c1bb564a5fb918c20cf0a455861bc20e5399) by Jiayi Zhou).
+- fix no return in algo_wrapper::learn (#122) ([77807ee](https://github.com/PKU-Alignment/omnisafe/commit/77807eec54573fef14be4d7a748f82f19582d645) by Ruiyang Sun).
+- fix evaluator (#117) ([323e3c6](https://github.com/PKU-Alignment/omnisafe/commit/323e3c6b306c1576cca04983fac74b31d1421ea7) by Jiayi Zhou).
+- fix buffer bugs (#113) ([a527783](https://github.com/PKU-Alignment/omnisafe/commit/a527783474963f5e798823789728f296fa810c4c) by Ruiyang Sun).
+- ensure the step of each epoch (#111) ([008337f](https://github.com/PKU-Alignment/omnisafe/commit/008337f95dfc46d59003834d965d7e8674be34f5) by Jiayi Zhou).
+- fix tools (#100) ([72dfcc0](https://github.com/PKU-Alignment/omnisafe/commit/72dfcc00e635cd880e8874ac6d59fdd836a1437d) by Jiayi Zhou).
+- fix algo wrapper (#99) ([75b8eac](https://github.com/PKU-Alignment/omnisafe/commit/75b8eac514d2f12d41c46f8f3ec140e3fb83735d) by Jiayi Zhou).
+- fix seed setting (#91) ([af36ea4](https://github.com/PKU-Alignment/omnisafe/commit/af36ea45ed808625af154d71ef8ccdf8673a520f) by Jiayi Zhou).
+- fix lagrange algorithms (#79) ([4b82ce0](https://github.com/PKU-Alignment/omnisafe/commit/4b82ce06dd36cbf1d2c5cb4c6136e6ccaf6dd2bb) by Jiayi Zhou).
+- fix markers are not shown in the rgb array returned by env.render() (#61) ([b2966da](https://github.com/PKU-Alignment/omnisafe/commit/b2966da64564943531bf295fda9e59351d30f6d5) by muchvo).
+- fix cap cost bug and lag beta value in cap.yaml (#62) ([6651298](https://github.com/PKU-Alignment/omnisafe/commit/66512987c85d74d124815e2b4edbfea05f89a1c0) by WeidongHuang).
+- fix bug for namedtuple (#54) ([199d3e4](https://github.com/PKU-Alignment/omnisafe/commit/199d3e4a10247c7ecd5e0f8cd57c848d8e40d059) by Jiayi Zhou).
+- fix warning caused by 'none' value in the __init__(). (#30) ([65ef16e](https://github.com/PKU-Alignment/omnisafe/commit/65ef16ef7bb05b91416c79f51ac6dd6389c312fc) by muchvo).
+- clean the config yaml (#6) ([ea4758a](https://github.com/PKU-Alignment/omnisafe/commit/ea4758ac11418a96ba6771ae397308d08cb5c0ea) by zmsn-2077).
+- del render_model (#3) ([3536b83](https://github.com/PKU-Alignment/omnisafe/commit/3536b836fc9e7a1749e20a7f8db14781d86be14f) by zmsn-2077).
+
+### Features
+
+- add DDPG, TD3 SAC (#128) ([41c5621](https://github.com/PKU-Alignment/omnisafe/commit/41c56216087c1b8b6fcb17cb023cb71aa756b07a) by Jiayi Zhou).
+- support policy evaluation (#137) ([3de924f](https://github.com/PKU-Alignment/omnisafe/commit/3de924f6858b24d2b194ede9566f1e70645bcf89) by Jiayi Zhou).
+- update architecture of config.yaml (#126) ([576e2c7](https://github.com/PKU-Alignment/omnisafe/commit/576e2c72cf9cec4c831a61884a4dbc56cfb9f21b) by zmsn-2077).
+- modify config class (#107) ([aa68319](https://github.com/PKU-Alignment/omnisafe/commit/aa683191bb947b9ad1f881a3326b8724a17b4dd2) by Ruiyang Sun).
+- support cuda (#86) ([334ab33](https://github.com/PKU-Alignment/omnisafe/commit/334ab33d36dbe1ee9e5f06211287a78273f1ec4c) by Jiayi Zhou).
+- add keyboard debug mode for some agents in all tasks (#83) ([42d0b79](https://github.com/PKU-Alignment/omnisafe/commit/42d0b79c01177d3ecbfc40853f5ddf0d3c147355) by muchvo).
+- add experiment grid (#84) ([42ca77d](https://github.com/PKU-Alignment/omnisafe/commit/42ca77dc06950650d8c8b14caea0464d7d8b00c7) by zmsn-2077).
+- add ant agent (#82) ([6cdf7e3](https://github.com/PKU-Alignment/omnisafe/commit/6cdf7e30731a7e878f4ec39ae8e68072605d599b) by muchvo).
+- add new algorithm (#80) ([5e3a607](https://github.com/PKU-Alignment/omnisafe/commit/5e3a607b15c726926f228728d144881edf26f6db) by Jiayi Zhou).
+- support velocity tasks (#68) ([0b555b6](https://github.com/PKU-Alignment/omnisafe/commit/0b555b686a472c9feaa83901857f7028669d6ceb) by muchvo).
+- vectorized environment (#74) ([ff9e332](https://github.com/PKU-Alignment/omnisafe/commit/ff9e332b38531ab0f4cab2c292f0613680407192) by Jiayi Zhou).
+- support circle012 and new agent racecar, update evaluator (#66) ([babfaac](https://github.com/PKU-Alignment/omnisafe/commit/babfaac959be44ba8f84a83037bfbfd6b6f7f165) by muchvo).
+- support auto render as .mp4 videos, add examples and tests (#60) ([1287695](https://github.com/PKU-Alignment/omnisafe/commit/128769573b4a1567d84685f06e081d7b3973f1c9) by muchvo).
+- add `Makefile` (#53) ([e0aeec0](https://github.com/PKU-Alignment/omnisafe/commit/e0aeec04b742b8a9f362cd9d118a5297b7f91299) by Xuehai Pan).
+- add new algorithms (#52) ([9747985](https://github.com/PKU-Alignment/omnisafe/commit/9747985409260a1eda8b619ee8bc1a1fb92af0b3) by Jiayi Zhou).
+- support new tasks. (#50) ([fb702d8](https://github.com/PKU-Alignment/omnisafe/commit/fb702d8f2d71e362fe0d938043c8c773f69ff427) by muchvo).
+- separated wrapper for different algorithmic environments (#44) ([d1e171e](https://github.com/PKU-Alignment/omnisafe/commit/d1e171e14bb5c904e28294b7adcc0697fc32bdff) by zmsn-2077).
+- add CUP algorithm (#43) ([d4cd28b](https://github.com/PKU-Alignment/omnisafe/commit/d4cd28b9d1e542f420776208332e057cc017fde9) by 周嘉懿).
+- support rgb_array and add metadata (#15) ([5a057b5](https://github.com/PKU-Alignment/omnisafe/commit/5a057b52898935e3ddcb40fdfcfc1d48aecb4190) by zmsn-2077).
+
+### Code Refactoring
+
+- change architecture of omnisafe (#121) ([555acbb](https://github.com/PKU-Alignment/omnisafe/commit/555acbbf10643420f13b0d6197a54e55a9bf47ce) by Ruiyang Sun).
+- refactor logger (#115) ([96d609e](https://github.com/PKU-Alignment/omnisafe/commit/96d609e0884c9bf55a0bd078d794070d9ea7fe6b) by Ruiyang Sun).
+- refactor buffer (#101) ([42282d6](https://github.com/PKU-Alignment/omnisafe/commit/42282d6c2879b0f16ef5a3e3e2e7e003f57e0691) by Ruiyang Sun).
+- clean the code (#97) ([7b4860b](https://github.com/PKU-Alignment/omnisafe/commit/7b4860b1eaaec81883990b0c135e9e4cdbad78f4) by Jiayi Zhou).
+- change object type into free_geom (#89) ([105e123](https://github.com/PKU-Alignment/omnisafe/commit/105e123eb296b2136281b8c462d7e86fdaa6e2d9) by muchvo).
+- code decoupling (#81) ([bfdf458](https://github.com/PKU-Alignment/omnisafe/commit/bfdf458c1d28e2f9e8b04a7780f9eea559bbd390) by muchvo).
+- update CHANGLOG.md (#77) ([88aabe6](https://github.com/PKU-Alignment/omnisafe/commit/88aabe692ef751967a777b4f399044a994308342) by zmsn-2077).
+- change wrapper setting (#73) ([e975b7d](https://github.com/PKU-Alignment/omnisafe/commit/e975b7d675d2ad8e0446b5857afd7601b4ad72a5) by Jiayi Zhou).
+- enhanced model-based code, add CAP algorithm (#59) ([7874ab6](https://github.com/PKU-Alignment/omnisafe/commit/7874ab6b663b6854f0b9e8bbd6655446a321ddc9) by WeidongHuang).
+- open pylint in pre-commit (#48) ([edd452b](https://github.com/PKU-Alignment/omnisafe/commit/edd452ba923f248f9d3e095ee2bc2a5b28b90d85) by zmsn-2077).
+- show the implemented algorithms in more detail (#47) ([cdd92f2](https://github.com/PKU-Alignment/omnisafe/commit/cdd92f24b5e46931db679c05f15d1e4371b87d6c) by zmsn-2077).
+- change the details and yaml files of on policy algorithm. (#41) ([2c8dbb3](https://github.com/PKU-Alignment/omnisafe/commit/2c8dbb36840b100a453901a7a4a851e66e0a0e1a) by 周嘉懿).
+- More OOP style code were used and made better code and file structure. (#37) ([4cc94a2](https://github.com/PKU-Alignment/omnisafe/commit/4cc94a298be82296250f0a911b8113be379a0439) by muchvo).
+- change the file layout of omnisafe (#35) ([72abc6e](https://github.com/PKU-Alignment/omnisafe/commit/72abc6efdc49d60cad05236602aa5d2efb3133f3) by zmsn-2077).
+- refactor packaging (#20) ([7beb606](https://github.com/PKU-Alignment/omnisafe/commit/7beb606562e64a4544d4a570373bb9ee684559ac) by Xuehai Pan).
+
+### Chore
+
+- update benchmark performance for first-order algorithms (#148) ([0802117](https://github.com/PKU-Alignment/omnisafe/commit/0802117a818d3bbc869a031b14b1cfeb360b40c8) by muchvo).
+- fix typo. (#134) ([515ca4d](https://github.com/PKU-Alignment/omnisafe/commit/515ca4d75b25d0ec5893637f9ed008220a513dac) by 1Asan).
+- support num_thread setting (#124) ([a88b03b](https://github.com/PKU-Alignment/omnisafe/commit/a88b03b09c758ba56b6b5983b06f94d465403745) by Jiayi Zhou).
+- update logo.png and dependency (#116) ([42ed91e](https://github.com/PKU-Alignment/omnisafe/commit/42ed91e869617a2e6a5a24432352d03614eb9c74) by zmsn-2077).
+- update ppo.yaml (#112) ([97fcd2e](https://github.com/PKU-Alignment/omnisafe/commit/97fcd2eb32236baca757b4c1451143d2396068d1) by Jiayi Zhou).
+- workaround upstream torch bug (#109) ([2e13bd6](https://github.com/PKU-Alignment/omnisafe/commit/2e13bd6f4e0f4b318df16be4349080c18013b91f) by zmsn-2077).
+- update changelog and readme (#106) ([bf5130e](https://github.com/PKU-Alignment/omnisafe/commit/bf5130e2daf349188aafb5541d7830e525c15b1d) by zmsn-2077).
+- modify logo.png and add requirements.txt (#103) ([74ef4bb](https://github.com/PKU-Alignment/omnisafe/commit/74ef4bbbc2dc1090590532ae1610fd699aaca53d) by Ruiyang Sun).
+- update linter settings ([9c6cee5](https://github.com/PKU-Alignment/omnisafe/commit/9c6cee54e87cb7f7a2f1ace9f07b706739a2ecdc) by Xuehai Pan).
+- update yaml (#93) ([cc6f4c9](https://github.com/PKU-Alignment/omnisafe/commit/cc6f4c9736777aa1a6e4ffbee07c6efce7879e60) by Jiayi Zhou).
+- update ci (#90) ([f0b2324](https://github.com/PKU-Alignment/omnisafe/commit/f0b2324396b58d379e5df5fa52c4caca6928c4b1) by Jiayi Zhou).
+- update yaml (#92) ([f88c23f](https://github.com/PKU-Alignment/omnisafe/commit/f88c23fb683786987a78cef8443feaae68c604ab) by Jiayi Zhou).
+- update algorithms configration (#88) ([1d39005](https://github.com/PKU-Alignment/omnisafe/commit/1d390051f45e55235402b680e970a529f1362487) by Jiayi Zhou).
+- update setup.py for safety-gymnasium (#78) ([c1a9171](https://github.com/PKU-Alignment/omnisafe/commit/c1a9171f61a0ed9862bbf939f73e921baf3961e0) by muchvo).
+- rename files and enable pylint. (#39) ([547517e](https://github.com/PKU-Alignment/omnisafe/commit/547517e5c0e5679084c026db1965e36a6a367303) by muchvo).
+- update issue templates ([5d54fca](https://github.com/PKU-Alignment/omnisafe/commit/5d54fcad7eeb11ea841b8b650cf7a97446129436) by Xuehai Pan).
+- update issue templates (#29) ([95522dc](https://github.com/PKU-Alignment/omnisafe/commit/95522dc4d4b9c9c271d202bfbf196cd1004e86fb) by Xuehai Pan).
+- add CHANGELOG.md and update some statement. (#16) ([c616235](https://github.com/PKU-Alignment/omnisafe/commit/c616235f029d403d0f6a670809b16f98cbf533c4) by zmsn-2077).
+- add .editorconfig and update license (#8) ([9452e35](https://github.com/PKU-Alignment/omnisafe/commit/9452e35197c37a449170ce0689bcdffef4954302) by Xuehai Pan).
