@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - update config, benchmark results and code style (#280) ([9d943b6](https://github.com/PKU-Alignment/omnisafe/commit/9d943b6e15ade14da4a3c7380fad4de92c34b452) by Jiayi Zhou).
 - update saute config and benchmarking results (#274) ([c575fd5](https://github.com/PKU-Alignment/omnisafe/commit/c575fd5044a3e042972018ddb4a427be58eec7bb) by Jiayi Zhou).
 - support gymnasium style reset API (#266) ([80c2c23](https://github.com/PKU-Alignment/omnisafe/commit/80c2c23d0fc2e20f98778b21c33d0848b77567aa) by Jiayi Zhou).
-- fix final_obsevation setting and support evaluation times configuation (#260) ([9e76d28](https://github.com/PKU-Alignment/omnisafe/commit/9e76d280f32a61519f28d0fc7d8a40e5125a30ba) by Jiayi Zhou).
+- fix final_obsevation setting and support evaluation times configuration (#260) ([9e76d28](https://github.com/PKU-Alignment/omnisafe/commit/9e76d280f32a61519f28d0fc7d8a40e5125a30ba) by Jiayi Zhou).
 - support new agents tasks and customizing environment guide (#256) ([7fcfe78](https://github.com/PKU-Alignment/omnisafe/commit/7fcfe789970bc5af063a8b8a12e036c411c5461c) by Jiayi Zhou).
 - rebase CRPO from PPO to TRPO (#254) ([19f7fc7](https://github.com/PKU-Alignment/omnisafe/commit/19f7fc72e26750e138bc410e40c75cf9bb3a2199) by Jiayi Zhou).
 
@@ -235,7 +235,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - clean the code (#97) ([7b4860b](https://github.com/PKU-Alignment/omnisafe/commit/7b4860b1eaaec81883990b0c135e9e4cdbad78f4) by Jiayi Zhou).
 - change object type into free_geom (#89) ([105e123](https://github.com/PKU-Alignment/omnisafe/commit/105e123eb296b2136281b8c462d7e86fdaa6e2d9) by muchvo).
 - code decoupling (#81) ([bfdf458](https://github.com/PKU-Alignment/omnisafe/commit/bfdf458c1d28e2f9e8b04a7780f9eea559bbd390) by muchvo).
-- update CHANGLOG.md (#77) ([88aabe6](https://github.com/PKU-Alignment/omnisafe/commit/88aabe692ef751967a777b4f399044a994308342) by zmsn-2077).
+- update CHANGELOG.md (#77) ([88aabe6](https://github.com/PKU-Alignment/omnisafe/commit/88aabe692ef751967a777b4f399044a994308342) by zmsn-2077).
 - change wrapper setting (#73) ([e975b7d](https://github.com/PKU-Alignment/omnisafe/commit/e975b7d675d2ad8e0446b5857afd7601b4ad72a5) by Jiayi Zhou).
 - enhanced model-based code, add CAP algorithm (#59) ([7874ab6](https://github.com/PKU-Alignment/omnisafe/commit/7874ab6b663b6854f0b9e8bbd6655446a321ddc9) by WeidongHuang).
 - open pylint in pre-commit (#48) ([edd452b](https://github.com/PKU-Alignment/omnisafe/commit/edd452ba923f248f9d3e095ee2bc2a5b28b90d85) by zmsn-2077).
@@ -259,7 +259,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - update yaml (#93) ([cc6f4c9](https://github.com/PKU-Alignment/omnisafe/commit/cc6f4c9736777aa1a6e4ffbee07c6efce7879e60) by Jiayi Zhou).
 - update ci (#90) ([f0b2324](https://github.com/PKU-Alignment/omnisafe/commit/f0b2324396b58d379e5df5fa52c4caca6928c4b1) by Jiayi Zhou).
 - update yaml (#92) ([f88c23f](https://github.com/PKU-Alignment/omnisafe/commit/f88c23fb683786987a78cef8443feaae68c604ab) by Jiayi Zhou).
-- update algorithms configration (#88) ([1d39005](https://github.com/PKU-Alignment/omnisafe/commit/1d390051f45e55235402b680e970a529f1362487) by Jiayi Zhou).
+- update algorithms configuration (#88) ([1d39005](https://github.com/PKU-Alignment/omnisafe/commit/1d390051f45e55235402b680e970a529f1362487) by Jiayi Zhou).
 - update setup.py for safety-gymnasium (#78) ([c1a9171](https://github.com/PKU-Alignment/omnisafe/commit/c1a9171f61a0ed9862bbf939f73e921baf3961e0) by muchvo).
 - rename files and enable pylint. (#39) ([547517e](https://github.com/PKU-Alignment/omnisafe/commit/547517e5c0e5679084c026db1965e36a6a367303) by muchvo).
 - update issue templates ([5d54fca](https://github.com/PKU-Alignment/omnisafe/commit/5d54fcad7eeb11ea841b8b650cf7a97446129436) by Xuehai Pan).
