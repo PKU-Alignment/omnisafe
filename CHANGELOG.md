@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Features
 
+- support off-policy pid and update performance for navigation. (#245) ([18776f1](https://github.com/PKU-Alignment/omnisafe/commit/18776f178ed26f04c5bf9beb4ad493f88e1b6662) by Jiayi Zhou)
 - improve test coverage and clear redundant code. (#238) ([dee636e](https://github.com/PKU-Alignment/omnisafe/commit/dee636e1bff5fff01d555c4fa7e8fe12671f0fec) by Jiayi Zhou).
 - update benchmarks and provide configs for reproducing results (#236) ([3799d6d](https://github.com/PKU-Alignment/omnisafe/commit/3799d6d3fca4c8c94fed167d1a6cbd02d3b96992) by Jiayi Zhou).
 - add `CODEOWNERS` and refine `ISSUE TEMPLATE` (#233) ([60b7ea7](https://github.com/PKU-Alignment/omnisafe/commit/60b7ea7aeb24fba83b1b6628a422dd537b74d0d4) by Jiaming Ji).
