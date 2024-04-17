@@ -147,7 +147,7 @@ class SafetyGymnasiumEnv(CMDP):
         else:
             self.need_time_limit_wrapper = True
             self.need_auto_reset_wrapper = True
-            self._env = safety_gymnasium.make(id=env_id, autoreset=True, **kwargs)
+            self._env = safety_gymnasium.make(id=env_id, autoreset=False, **kwargs)
             assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
             assert isinstance(
                 self._env.observation_space,
@@ -230,7 +230,7 @@ class SafetyGymnasiumEnv(CMDP):
     @property
     def max_episode_steps(self) -> int:
         """The max steps per episode."""
-        return self._env.env.spec.max_episode_steps
+        return self._env.spec.max_episode_steps
 
     def set_seed(self, seed: int) -> None:
         """Set the seed for the environment.

@@ -131,7 +131,6 @@ class OnlineAdapter:
             )
         if self._env.need_auto_reset_wrapper:
             self._env = AutoReset(self._env, device=self._device)
-            self._eval_env = AutoReset(self._eval_env, device=self._device)
         if obs_normalize:
             self._env = ObsNormalize(self._env, device=self._device)
             self._eval_env = ObsNormalize(self._eval_env, device=self._device)
