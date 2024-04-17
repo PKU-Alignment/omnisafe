@@ -35,6 +35,8 @@ from omnisafe.algorithms.off_policy import (
     DDPGLag,
     SACLag,
     TD3Lag,
+    SACRCBF,
+    DDPGCBF,
 )
 
 # Offline Safe
@@ -63,6 +65,8 @@ from omnisafe.algorithms.on_policy import (
     TRPOLag,
     TRPOSaute,
     TRPOSimmerPID,
+    TRPOCBF,
+    PPOBetaCBF,
 )
 
 

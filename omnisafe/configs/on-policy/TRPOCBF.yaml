@@ -27,17 +27,17 @@ defaults:
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
-    total_steps: 10000000
+    total_steps: 80_000
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 20000
+    steps_per_epoch: 2000
     # number of iterations to update the policy
     update_iters: 10
     # batch size for each iteration
-    batch_size: 128
+    batch_size: 256
     # target kl divergence
-    target_kl: 0.01
+    target_kl: 0.005
     # entropy coefficient
     entropy_coef: 0.0
     # normalize reward
@@ -45,7 +45,7 @@ defaults:
     # normalize cost
     cost_normalize: False
     # normalize observation
-    obs_normalize: True
+    obs_normalize: False
     # early stop when kl divergence is bigger than target kl
     kl_early_stop: False
     # use max gradient norm
@@ -57,11 +57,11 @@ defaults:
     # critic norm coefficient
     critic_norm_coef: 0.001
     # reward discount factor
-    gamma: 0.99
+    gamma: 0.995
     # cost discount factor
     cost_gamma: 0.99
     # lambda for gae
-    lam: 0.95
+    lam: 0.98
     # lambda for cost gae
     lam_c: 0.95
     # advantage estimation method, options: gae, retrace
@@ -113,10 +113,11 @@ defaults:
       # hidden layer sizes
       hidden_sizes: [64, 64]
       # activation function
-      activation: tanh
+      activation: relu
       # out_activation: tanh
       # learning rate
       lr: ~
+    # critic network configurations
     critic:
       # hidden layer sizes
       hidden_sizes: [64, 64]
@@ -124,35 +125,15 @@ defaults:
       activation: tanh
       # learning rate
       lr: 0.001
-
-Pendulum-v1:
-  # training configurations
-  train_cfgs:
-    # total number of steps to train
-    total_steps: 80_000
-  # algorithm configurations
-  algo_cfgs:
-    # number of steps to update the policy
-    steps_per_epoch: 2000
-    # batch size for each iteration
-    batch_size: 256
-    # target kl divergence
-    target_kl: 0.005
-    # normalize observation
-    obs_normalize: False
-    # reward discount factor
-    gamma: 0.995
-    # lambda for gae
-    lam: 0.98
-  # model configurations
-  model_cfgs:
-    # actor network configurations
-    actor:
-      # activation function
-      activation: relu
   # barrier function compensator configurations
   compensator_cfgs:
     # hidden layer sizes
     hidden_sizes: [64, 64]
     # activation function
     activation: relu
+    # weight initialization mode
+    weight_initialization_mode: "kaiming_uniform"
+    # learning rate
+    lr: 0.01
+    # number of iterations to update the compensator
+    update_iters: 1

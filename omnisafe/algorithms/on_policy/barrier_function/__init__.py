@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Adapter for the environment and the algorithm."""
+"""Control Barrier Function Safe Reinforcement Learning algorithms."""
 
-from omnisafe.adapter.early_terminated_adapter import EarlyTerminatedAdapter
-from omnisafe.adapter.modelbased_adapter import ModelBasedAdapter
-from omnisafe.adapter.offline_adapter import OfflineAdapter
-from omnisafe.adapter.offpolicy_adapter import OffPolicyAdapter
-from omnisafe.adapter.online_adapter import OnlineAdapter
-from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
-from omnisafe.adapter.saute_adapter import SauteAdapter
-from omnisafe.adapter.simmer_adapter import SimmerAdapter
-from omnisafe.adapter.beta_barrier_function_adapter import BetaBarrierFunctionAdapter
+from omnisafe.algorithms.on_policy.barrier_function.trpo_cbf import TRPOCBF
+from omnisafe.algorithms.on_policy.barrier_function.ppo_cbf import PPOBetaCBF
+
+
+__all__ = [
+    'TRPOCBF',
+    'PPOBetaCBF',
+]
