@@ -153,15 +153,15 @@ def seed_all(seed: int) -> None:
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    try:
-        torch.use_deterministic_algorithms(True)
-        torch.backends.cudnn.enabled = False
-        torch.backends.cudnn.benchmark = False
-        if cuda_version is not None and float(cuda_version) >= 10.2:
-            os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
-            os.environ['PYTHONHASHSEED'] = str(seed)
-    except AttributeError:  # pragma: no cover
-        pass
+    # try:
+    #     torch.use_deterministic_algorithms(True)
+    #     torch.backends.cudnn.enabled = False
+    #     torch.backends.cudnn.benchmark = False
+    #     if cuda_version is not None and float(cuda_version) >= 10.2:
+    #         os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+    #         os.environ['PYTHONHASHSEED'] = str(seed)
+    # except AttributeError:  # pragma: no cover
+    #     pass
 
 
 def custom_cfgs_to_dict(key_list: str, value: Any) -> dict[str, Any]:
