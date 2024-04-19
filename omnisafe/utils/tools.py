@@ -28,7 +28,6 @@ import torch
 import torch.backends.cudnn
 import yaml
 from rich.console import Console
-from torch.version import cuda as cuda_version
 
 from omnisafe.typing import DEVICE_CPU
 

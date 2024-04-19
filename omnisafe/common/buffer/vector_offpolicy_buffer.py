@@ -122,7 +122,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             device=self._device,
         )
 
-    def sample_batch(self, batch_size: int = None) -> dict[str, torch.Tensor]:
+    def sample_batch(self, batch_size: int | None = None) -> dict[str, torch.Tensor]:
         """Sample a batch of data from the buffer.
 
         Returns:

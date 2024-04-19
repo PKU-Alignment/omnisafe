@@ -14,33 +14,40 @@
 # ==============================================================================
 """Implementation of the Co-trained Barrier Certificate for Safe RL algorithm."""
 
+import time
+from copy import deepcopy
+from typing import Any
+
+import numpy as np
+import pytorch_lightning as pl
 import torch
+from rich.progress import track
 from torch import nn, optim
 from torch.nn.utils.clip_grad import clip_grad_norm_
-import pytorch_lightning as pl
 
-from torch.nn.functional import relu, softplus
-from typing import Callable, Tuple
+from omnisafe.adapter.crabs_adapter import CRABSAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.sac import SAC
+from omnisafe.common.control_barrier_function.models import (
+    AddGaussianNoise,
+    CrabsCore,
+    EnsembleModel,
+    ExplorationPolicy,
+    GatedTransitionModel,
+    MeanPolicy,
+    MultiLayerPerceptron,
+    TransitionModel,
+    UniformPolicy,
+)
+from omnisafe.common.control_barrier_function.optimizers import (
+    Barrier,
+    BarrierCertOptimizer,
+    PolicyAdvTraining,
+    SLangevinOptimizer,
+    StateBox,
+)
+from omnisafe.common.control_barrier_function.utils import Normalizer, get_pretrained_model
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
-import pickle
-from typing import List, Dict
-from typing import Any
-import numpy as np
-from copy import deepcopy
-from omnisafe.common.control_barrier_function.models import ExplorationPolicy, MeanPolicy, CrabsCore, AddGaussianNoise, UniformPolicy, MultiLayerPerceptron
-from omnisafe.common.control_barrier_function.utils import Normalizer
-from omnisafe.common.control_barrier_function.models import EnsembleModel
-from omnisafe.common.control_barrier_function.models import TransitionModel, GatedTransitionModel
-import wandb
-from omnisafe.adapter.crabs_adapter import CRABSAdapter
-import os
-import time
-from rich.progress import track
-from omnisafe.common.control_barrier_function.optimizers import SLangevinOptimizer, BarrierCertOptimizer, PolicyAdvTraining, StateBox, Barrier
-import time
-from omnisafe.common.control_barrier_function.utils import get_pretrained_model
 
 
 @registry.register
@@ -59,26 +66,42 @@ class CRABS(SAC):
     _target_entropy: float
 
     def load_from_ckpt(self):
-        model_url = 'https://drive.google.com/uc?export=download&id=1MciBSHU74HjADTINUMrlpa7s_9cX7f1P'
-        model_path = "~/.cache/omnisafe/pretrain_models/crabs_swing_models_checkpoint.pt"
+        """Load pretrained model from url.
+
+        If the model is not found locally, download it from the cloud.
+        """
+        model_url = (
+            'https://drive.google.com/uc?export=download&id=1MciBSHU74HjADTINUMrlpa7s_9cX7f1P'
+        )
+        model_path = '~/.cache/omnisafe/pretrain_models/crabs_swing_models_checkpoint.pt'
         param_dict = get_pretrained_model(model_path, model_url, self._device)
         self._actor_critic.actor.load_state_dict(param_dict['actor'])
-        print(f"Load policy from {self._cfgs.ckpt}")
+        print(f'Load policy from {self._cfgs.ckpt}')
         self.h.load_state_dict(param_dict['h'])
-        print(f"Load h from {self._cfgs.ckpt}")
+        print(f'Load h from {self._cfgs.ckpt}')
         self.model.load_state_dict(param_dict['model'])
-        print(f"Load model from {self._cfgs.ckpt}")
+        print(f'Load model from {self._cfgs.ckpt}')
 
     def train_models(self, *, epochs):
-        from torch.utils.data import IterableDataset, DataLoader
+        """Train the transition models.
+
+        Args:
+            epochs (int): The number of epochs to train the model.
+        """
+        from torch.utils.data import DataLoader, IterableDataset
+
         class BufferDataset(IterableDataset):
-            def __init__(self, buffer, batch_size, n_iters_per_epoch=None):
+            def __init__(self, buffer, batch_size, n_iters_per_epoch=None) -> None:
                 self.buffer = buffer
                 self.batch_size = batch_size
                 self.n_iters_per_epoch = n_iters_per_epoch
 
             def __iter__(self):
-                n_iters = self.n_iters_per_epoch if self.n_iters_per_epoch is not None else len(self.buffer) // self.batch_size
+                n_iters = (
+                    self.n_iters_per_epoch
+                    if self.n_iters_per_epoch is not None
+                    else len(self.buffer) // self.batch_size
+                )
                 for _ in range(n_iters):
                     batch = self.buffer.sample_batch(batch_size=self.batch_size)
                     yield batch
@@ -94,14 +117,14 @@ class CRABS(SAC):
         )
         self.model_trainer.fit(
             self.model,
-            train_dataloaders=train_dataloader
+            train_dataloaders=train_dataloader,
         )
         self.model.to(self._device)
 
     def _init_env(self) -> None:
         """Initialize the environment.
 
-        OmniSafe uses :class:`omnisafe.adapter.OffPolicyAdapter` to adapt the environment to this
+        OmniSafe uses :class:`omnisafe.adapter.CRABSAdapter` to adapt the environment to this
         algorithm.
 
         User can customize the environment by inheriting this method.
@@ -132,7 +155,11 @@ class CRABS(SAC):
         The ``num_critics`` in ``critic`` configuration must be 2.
         """
         super()._init_model()
-        self.s0 = torch.tensor(self._env.reset()[0], device=self._cfgs.train_cfgs.device, dtype=torch.float32)
+        self.s0 = torch.tensor(
+            self._env.reset()[0],
+            device=self._cfgs.train_cfgs.device,
+            dtype=torch.float32,
+        )
         self.dim_state = self._env.observation_space.shape[0]
         self.dim_action = self._env.action_space.shape[0]
 
@@ -149,25 +176,45 @@ class CRABS(SAC):
         self.mean_policy = MeanPolicy(self._actor_critic.actor)
 
         if self._cfgs.model.type == 'GatedTransitionModel':
-            make_model = lambda i: \
-                GatedTransitionModel(self.dim_state, self.normalizer,
-                                     [self.dim_state + self.dim_action, 256, 256, 256, 256, self.dim_state * 2],
-                                     name=f'model-{i}')
-            self.model = EnsembleModel([make_model(i) for i in range(self._cfgs.model.n_ensemble)]).to(self._device)
-            self.model_trainer = pl.Trainer(
-                max_epochs=0, accelerator='gpu', devices=[int(str(self._device)[-1])], default_root_dir=self._cfgs.logger_cfgs.log_dir,
+
+            def make_model(i):
+                return GatedTransitionModel(
+                    self.dim_state,
+                    self.normalizer,
+                    [self.dim_state + self.dim_action, 256, 256, 256, 256, self.dim_state * 2],
+                    name=f'model-{i}',
                 )
+
+            self.model = EnsembleModel(
+                [make_model(i) for i in range(self._cfgs.model.n_ensemble)],
+            ).to(self._device)
+            self.model_trainer = pl.Trainer(
+                max_epochs=0,
+                accelerator='gpu',
+                devices=[int(str(self._device)[-1])],
+                default_root_dir=self._cfgs.logger_cfgs.log_dir,
+            )
         elif self._cfgs.model.type == 'TransitionModel':
-            make_model = lambda i: \
-                TransitionModel(self.dim_state, self.normalizer,
-                                [self.dim_state + self.dim_action, 256, 256, 256, 256, self.dim_state * 2],
-                                name=f'model-{i}')
-            self.model = EnsembleModel([make_model(i) for i in range(self._cfgs.model.n_ensemble)]).to(self._device)
-            self.model_trainer = pl.Trainer(
-                max_epochs=0, accelerator='gpu', devices=[int(str(self._device)[-1])], default_root_dir=self._cfgs.logger_cfgs.log_dir,
+
+            def make_model(i):
+                return TransitionModel(
+                    self.dim_state,
+                    self.normalizer,
+                    [self.dim_state + self.dim_action, 256, 256, 256, 256, self.dim_state * 2],
+                    name=f'model-{i}',
                 )
+
+            self.model = EnsembleModel(
+                [make_model(i) for i in range(self._cfgs.model.n_ensemble)],
+            ).to(self._device)
+            self.model_trainer = pl.Trainer(
+                max_epochs=0,
+                accelerator='gpu',
+                devices=[int(str(self._device)[-1])],
+                default_root_dir=self._cfgs.logger_cfgs.log_dir,
+            )
         else:
-            assert False, f"unknown model type {self._cfgs.model.type}"
+            raise AssertionError(f'unknown model type {self._cfgs.model.type}')
 
     def _init_log(self) -> None:
         super()._init_log()
@@ -190,18 +237,21 @@ class CRABS(SAC):
             ...     self._buffer = CustomBuffer()
             ...     self._model = CustomModel()
 
-        In SAC, we need to initialize the ``log_alpha`` and ``alpha_optimizer``.
+        In CRABS, we need to initialize the ``barrier function``, ``world models``, ``policy`` and ``optimizers``.
         """
         super()._init()
 
-        self.h = Barrier(nn.Sequential(self.normalizer, MultiLayerPerceptron([self.dim_state, 256, 256, 1])), self._env._env.env.barrier_fn, self.s0)\
-            .to(self._device)
+        self.h = Barrier(
+            nn.Sequential(self.normalizer, MultiLayerPerceptron([self.dim_state, 256, 256, 1])),
+            self._env._env.env.barrier_fn,
+            self.s0,
+        ).to(self._device)
 
         self.core = CrabsCore(self.h, self.model, self.mean_policy)
         self.barrier = self.core.u
         if self._cfgs.model.frozen:
             self.model.requires_grad_(False)
-            self._logger.log(f"Warning: models are frozen!")
+            self._logger.log('Warning: models are frozen!')
 
         self.load_from_ckpt()
 
@@ -209,16 +259,45 @@ class CRABS(SAC):
 
         self.state_box.find_box(self.core_ref.h)
 
-        self.s_opt = SLangevinOptimizer(self.core, self.state_box, self._cfgs, logger=None).to(self._device)
+        self.s_opt = SLangevinOptimizer(self.core, self.state_box, self._cfgs, logger=None).to(
+            self._device,
+        )
 
         self.n_samples_so_far = 0
 
-        self.h_opt = BarrierCertOptimizer(self.h, self.core.obj_eval, self.core_ref, self.s_opt, self.state_box, cfgs=self._cfgs)
-        self.policy_adv_opt = PolicyAdvTraining(self._actor_critic.actor, self.s_opt, self.core.obj_eval, self._cfgs)
+        self.h_opt = BarrierCertOptimizer(
+            self.h,
+            self.core.obj_eval,
+            self.core_ref,
+            self.s_opt,
+            self.state_box,
+            cfgs=self._cfgs,
+        )
+        self.policy_adv_opt = PolicyAdvTraining(
+            self._actor_critic.actor,
+            self.s_opt,
+            self.core.obj_eval,
+            self._cfgs,
+        )
 
     def learn(self):
+        """This is the main learning function of CRABS, orchestrating the training process across multiple epochs.
+
+        It performs the following operations sequentially:
+        1. Pretraining steps on s*.
+        2. Rollout and evaluation procedures using different policies.
+        3. Training the world models using the collected data.
+        4. Optimizing s*.
+        5. Training policy using SAC.
+        6. Training barrier function.
+
+        Returns:
+            ep_ret: Average episode return in the final epoch.
+            ep_cost: Average episode cost in the final epoch.
+            ep_len: Average episode length in the final epoch.
+        """
         self.h_opt.h_ref = self.core_ref.h
-        self._logger.log("Info: pretrain s...")
+        self._logger.log('Info: pretrain s...')
         for i in range(self._cfgs.n_pretrain_s_iters):
             if i % 1000 == 0:
                 self.s_opt.debug(step=i)
@@ -230,7 +309,7 @@ class CRABS(SAC):
             buffer=self._buf,
             logger=self._logger,
             use_rand_action=False,
-            )
+        )
 
         self.train_models(epochs=5)
 
@@ -261,11 +340,14 @@ class CRABS(SAC):
 
             self._env.rollout(
                 rollout_step=self._env.horizon * 2,
-                agent=ExplorationPolicy(AddGaussianNoise(self._actor_critic.actor, 0.0, 2.0), self.core_ref),
+                agent=ExplorationPolicy(
+                    AddGaussianNoise(self._actor_critic.actor, 0.0, 2.0),
+                    self.core_ref,
+                ),
                 buffer=self._buf,
                 logger=self._logger,
                 use_rand_action=False,
-                )
+            )
 
             step += self._env.horizon * 2
 
@@ -275,21 +357,20 @@ class CRABS(SAC):
                 buffer=self._buf,
                 logger=self._logger,
                 use_rand_action=False,
-                )
+            )
 
             step += self._env.horizon * 2
             rollout_time += time.time() - rollout_start
 
             self.train_models(epochs=1)
 
-            self._logger.log(f"Info: Epoch {epoch}: train policy, safety req freq = {freq:.3f}")
+            self._logger.log(f'Info: Epoch {epoch}: train policy, safety req freq = {freq:.3f}')
 
             for _ in track(range(2000), description='Optimizing s...'):
                 self.s_opt.step()
 
             for t in track(range(2000), description='Updating Policy...'):
                 if t % 1000 == 0:
-
                     eval_start = time.time()
                     self._env.eval_policy(
                         episode=self._cfgs.train_cfgs.eval_episodes,
@@ -305,25 +386,25 @@ class CRABS(SAC):
                         buffer=self._buf,
                         logger=self._logger,
                         use_rand_action=False,
-                        )
+                    )
                     step += self._env.horizon
                     rollout_time += time.time() - rollout_start
 
                 if len(self._buf) > 1000:
                     update_start = time.time()
-                    self._update() # optimize unsafe policy
+                    self._update()  # optimize unsafe policy
                     update_time += time.time() - update_start
                 update_start = time.time()
                 self.policy_adv_opt.step(freq)
                 update_time += time.time() - update_start
 
-            self._logger.log(f"Info: train h!")
+            self._logger.log('Info: train h!')
             update_start = time.time()
             found, multiplier = self.h_opt.train()
             update_time += time.time() - update_start
             freq = np.clip(freq * multiplier, 0.1, 10)
             if found:
-                self._logger.log(f"Info: reduce frequency to {freq:.3f}. Reset core_ref")
+                self._logger.log(f'Info: reduce frequency to {freq:.3f}. Reset core_ref')
                 self.core_ref.load_state_dict(self.core.state_dict())
             else:
                 self._logger.log(f"Warning: can't find h, increase freq to {freq}")
@@ -371,7 +452,11 @@ class CRABS(SAC):
 
     def get_masked_q(self, min_q_value, states, actions):
         barrier = self.barrier(states, actions)
-        return torch.where(barrier > 0, torch.full([len(barrier)], -1000., device=self._cfgs.train_cfgs.device) - barrier, min_q_value)
+        return torch.where(
+            barrier > 0,
+            torch.full([len(barrier)], -1000.0, device=self._cfgs.train_cfgs.device) - barrier,
+            min_q_value,
+        )
 
     def _update_reward_critic(
         self,
@@ -383,11 +468,8 @@ class CRABS(SAC):
     ) -> None:
         """Update reward critic.
 
-        - Sample the target action by target actor.
-        - Get the target Q value by target critic.
-        - Use the minimum target Q value to update reward critic.
-        - Add the entropy loss to reward critic.
-        - Log useful information.
+        The loss function here is based on SAC, but with an additional term to mask the Q value
+        when the barrier function is positive.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.
@@ -403,13 +485,20 @@ class CRABS(SAC):
                 next_obs,
                 next_action,
             )
-            next_q_value = self.get_masked_q(torch.min(next_q1_value_r, next_q2_value_r), next_obs, next_action)
+            next_q_value = self.get_masked_q(
+                torch.min(next_q1_value_r, next_q2_value_r),
+                next_obs,
+                next_action,
+            )
             valid_mask = self.barrier(next_obs, next_action) <= 0
             next_q_value_r = next_q_value - next_logp * self._alpha
             target_q_value_r = reward + self._cfgs.algo_cfgs.gamma * (1 - done) * next_q_value_r
 
         q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
-        loss = nn.functional.mse_loss(q1_value_r * valid_mask, target_q_value_r * valid_mask) + nn.functional.mse_loss(
+        loss = nn.functional.mse_loss(
+            q1_value_r * valid_mask,
+            target_q_value_r * valid_mask,
+        ) + nn.functional.mse_loss(
             q2_value_r * valid_mask,
             target_q_value_r * valid_mask,
         )
@@ -440,14 +529,8 @@ class CRABS(SAC):
     ) -> torch.Tensor:
         r"""Computing ``pi/actor`` loss.
 
-        The loss function in SAC is defined as:
-
-        .. math::
-
-            L = -Q^V (s, \pi (s)) + \alpha \log \pi (s)
-
-        where :math:`Q^V` is the min value of two reward critic networks, and :math:`\pi` is the
-        policy network, and :math:`\alpha` is the temperature parameter.
+        The loss function here is based on SAC, but with an additional term to mask the Q value
+        when the barrier function is positive.
 
         Args:
             obs (torch.Tensor): The ``observation`` sampled from buffer.

@@ -17,17 +17,14 @@
 from __future__ import annotations
 
 import torch
+from rich import errors
+from rich.progress import track
 
 from omnisafe.adapter.offpolicy_adapter import OffPolicyAdapter
 from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils.config import Config
-
-from omnisafe.envs.core import make
-
-from rich.progress import track
-from rich import errors
 
 
 class CRABSAdapter(OffPolicyAdapter):
@@ -139,31 +136,31 @@ class CRABSAdapter(OffPolicyAdapter):
         logger: Logger,
         use_rand_action: bool,
     ) -> None:
-            if use_rand_action:
-                act = torch.as_tensor(self._env.sample_action(), dtype=torch.float32).to(
-                    self._device,
-                )
-            else:
-                act = agent.step(self._current_obs, deterministic=False)
-
-            next_obs, reward, cost, terminated, truncated, info = self.step(act)
-
-            self._log_value(reward=reward, cost=cost, info=info)
-            real_next_obs = next_obs.clone()
-            for idx, done in enumerate(torch.logical_or(terminated, truncated)):
-                if done:
-                    if 'final_observation' in info:
-                        real_next_obs[idx] = info['final_observation'][idx]
-                    self._log_metrics(logger, idx)
-                    self._reset_log(idx)
-
-            buffer.store(
-                obs=self._current_obs,
-                act=act,
-                reward=reward,
-                cost=cost,
-                done=torch.logical_and(terminated, torch.logical_xor(terminated, truncated)),
-                next_obs=real_next_obs,
+        if use_rand_action:
+            act = torch.as_tensor(self._env.sample_action(), dtype=torch.float32).to(
+                self._device,
             )
+        else:
+            act = agent.step(self._current_obs, deterministic=False)
 
-            self._current_obs = next_obs
+        next_obs, reward, cost, terminated, truncated, info = self.step(act)
+
+        self._log_value(reward=reward, cost=cost, info=info)
+        real_next_obs = next_obs.clone()
+        for idx, done in enumerate(torch.logical_or(terminated, truncated)):
+            if done:
+                if 'final_observation' in info:
+                    real_next_obs[idx] = info['final_observation'][idx]
+                self._log_metrics(logger, idx)
+                self._reset_log(idx)
+
+        buffer.store(
+            obs=self._current_obs,
+            act=act,
+            reward=reward,
+            cost=cost,
+            done=torch.logical_and(terminated, torch.logical_xor(terminated, truncated)),
+            next_obs=real_next_obs,
+        )
+
+        self._current_obs = next_obs

@@ -18,8 +18,8 @@ from __future__ import annotations
 
 from typing import Any, ClassVar
 
-import safety_gymnasium
 import numpy as np
+import safety_gymnasium
 import torch
 
 from omnisafe.envs.core import CMDP, env_register
@@ -194,4 +194,5 @@ class CRABSEnv(CMDP):
 
     @property
     def env(self):
+        """Return the env object."""
         return self._env

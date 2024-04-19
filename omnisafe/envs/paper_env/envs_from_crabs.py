@@ -1,12 +1,13 @@
 import abc
+
+import gymnasium.spaces as spaces
+import numpy as np
 import torch
 import torch.nn.functional as F
-import numpy as np
-from safety_gymnasium import register
-import gymnasium.spaces as spaces
 from gymnasium.envs.classic_control.pendulum import PendulumEnv, angle_normalize
 from gymnasium.envs.mujoco.inverted_pendulum_v4 import InvertedPendulumEnv
 from gymnasium.utils.ezpickle import EzPickle
+from safety_gymnasium import register
 
 
 class SafeEnv(abc.ABC):
@@ -43,24 +44,35 @@ def nonneg_barrier(x):
 
 def interval_barrier(x, lb, rb, eps=1e-2, grad=None):
     x = (x - lb) / (rb - lb) * 2 - 1
-    b = -((1 + x + eps) * (1 - x + eps) / (1 + eps)**2).log()
-    b_min, b_max = 0, -np.log(eps * (2 + eps) / (1 + eps)**2)
+    b = -((1 + x + eps) * (1 - x + eps) / (1 + eps) ** 2).log()
+    b_min, b_max = 0, -np.log(eps * (2 + eps) / (1 + eps) ** 2)
     if grad is None:
-        grad = 2. / eps / (2 + eps)
+        grad = 2.0 / eps / (2 + eps)
     out = grad * (abs(x) - 1)
-    return torch.where(torch.as_tensor((-1 < x) & (x < 1)), b / b_max, 1 + out)
+    return torch.where(torch.as_tensor((x > -1) & (x < 1)), b / b_max, 1 + out)
 
 
 class SafeInvertedPendulumEnv(InvertedPendulumEnv, SafeEnv):
     episode_unsafe = False
 
-    def __init__(self, threshold=0.2, task='upright', random_reset=False, violation_penalty=10):
+    def __init__(
+        self,
+        threshold=0.2,
+        task='upright',
+        random_reset=False,
+        violation_penalty=10,
+    ) -> None:
         self.threshold = threshold
         self.task = task
         self.random_reset = random_reset
         self.violation_penalty = violation_penalty
         super().__init__()
-        EzPickle.__init__(self, threshold=threshold, task=task, random_reset=random_reset)  # deepcopy calls `get_state`
+        EzPickle.__init__(
+            self,
+            threshold=threshold,
+            task=task,
+            random_reset=random_reset,
+        )  # deepcopy calls `get_state`
 
     def reset_model(self):
         if self.random_reset:
@@ -83,14 +95,14 @@ class SafeInvertedPendulumEnv(InvertedPendulumEnv, SafeEnv):
         # reward = next_state[1]**2  # + a[0]**2 * 0.01
 
         if self.task == 'upright':
-            reward = -next_state[1]**2
+            reward = -next_state[1] ** 2
         elif self.task == 'swing':
-            reward = next_state[1]**2
+            reward = next_state[1] ** 2
         elif self.task == 'move':
-            reward = next_state[0]**2
+            reward = next_state[0] ** 2
         else:
             assert 0
-        
+
         if abs(next_state[..., 1]) > self.threshold or abs(next_state[..., 0]) > 0.9:
             # breakpoint()
             self.episode_unsafe = True
@@ -103,27 +115,60 @@ class SafeInvertedPendulumEnv(InvertedPendulumEnv, SafeEnv):
         return self.barrier_fn(states) <= 1.0
 
     def barrier_fn(self, states):
-        return interval_barrier(states[..., 1], -self.threshold, self.threshold).maximum(interval_barrier(states[..., 0], -0.9, 0.9))
+        return interval_barrier(states[..., 1], -self.threshold, self.threshold).maximum(
+            interval_barrier(states[..., 0], -0.9, 0.9),
+        )
 
     def reward_fn(self, states, actions, next_states):
-        return -(next_states[..., 0]**2 + next_states[..., 1]**2) - actions[..., 0]**2 * 0.01
+        return -(next_states[..., 0] ** 2 + next_states[..., 1] ** 2) - actions[..., 0] ** 2 * 0.01
 
 
 class SafeInvertedPendulumSwingEnv(SafeInvertedPendulumEnv):
-    def __init__(self, threshold=1.5, task='swing', random_reset=False, violation_penalty=10):
+    def __init__(
+        self,
+        threshold=1.5,
+        task='swing',
+        random_reset=False,
+        violation_penalty=10,
+    ) -> None:
         super().__init__(threshold=threshold, task=task)
 
 
 class SafeInvertedPendulumMoveEnv(SafeInvertedPendulumEnv):
-    def __init__(self, threshold=0.2, task='move', random_reset=False, violation_penalty=10):
+    def __init__(
+        self,
+        threshold=0.2,
+        task='move',
+        random_reset=False,
+        violation_penalty=10,
+    ) -> None:
         super().__init__(threshold=threshold, task=task)
 
+
 register(id='SafeInvertedPendulum-v2', entry_point=SafeInvertedPendulumEnv, max_episode_steps=1000)
-register(id='SafeInvertedPendulumSwing-v2', entry_point=SafeInvertedPendulumSwingEnv, max_episode_steps=1000)
-register(id='SafeInvertedPendulumMove-v2', entry_point=SafeInvertedPendulumMoveEnv, max_episode_steps=1000)
+register(
+    id='SafeInvertedPendulumSwing-v2',
+    entry_point=SafeInvertedPendulumSwingEnv,
+    max_episode_steps=1000,
+)
+register(
+    id='SafeInvertedPendulumMove-v2',
+    entry_point=SafeInvertedPendulumMoveEnv,
+    max_episode_steps=1000,
+)
+
 
 class SafeClassicPendulum(PendulumEnv, SafeEnv):
-    def __init__(self, threshold=1.5, init_state=(0.3, -0.9), goal_state=(0, 0), max_torque=2.0, obs_type='state', task='upright', **kwargs):
+    def __init__(
+        self,
+        threshold=1.5,
+        init_state=(0.3, -0.9),
+        goal_state=(0, 0),
+        max_torque=2.0,
+        obs_type='state',
+        task='upright',
+        **kwargs,
+    ) -> None:
         self.init_state = np.array(init_state, dtype=np.float32)
         self.goal_state = goal_state
         self.threshold = threshold
@@ -141,7 +186,12 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
             assert 0
 
         self.max_torque = max_torque
-        self.action_space = spaces.Box(low=-max_torque, high=max_torque, shape=(1,), dtype=np.float32)
+        self.action_space = spaces.Box(
+            low=-max_torque,
+            high=max_torque,
+            shape=(1,),
+            dtype=np.float32,
+        )
 
     def _get_obs(self):
         th, thdot = self.state
@@ -170,7 +220,7 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
         #     0.1 * (thdot - self.goal_state[1]) ** 2  # + 0.001 * (u ** 2)
         costs = (angle_normalize(th) - self.goal_state[0]) ** 2
 
-        newthdot = thdot + (-3 * g / (2 * l) * np.sin(th + np.pi) + 3. / (m * l ** 2) * u) * dt
+        newthdot = thdot + (-3 * g / (2 * l) * np.sin(th + np.pi) + 3.0 / (m * l**2) * u) * dt
         newth = th + newthdot * dt
         newthdot = np.clip(newthdot, -self.max_speed, self.max_speed)
 
@@ -181,7 +231,14 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
             done = True
         else:
             done = False
-        return self._get_obs(), -costs, float(self.episode_unsafe), done, False, {'episode.unsafe': self.episode_unsafe}
+        return (
+            self._get_obs(),
+            -costs,
+            float(self.episode_unsafe),
+            done,
+            False,
+            {'episode.unsafe': self.episode_unsafe},
+        )
 
     def reward_fn(self, states, actions, next_states):
         th, thdot = self.parse_state(states)
@@ -189,26 +246,31 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
 
         actions = actions.clamp(-1, 1)[..., 0] * max_torque
         goal_th, goal_thdot = self.goal_state
-        costs = (th - goal_th) ** 2 + .1 * (thdot - goal_thdot) ** 2 + .001 * actions ** 2
-        costs = torch.where(self.is_state_safe(next_states), costs, torch.tensor(1000., device=costs.device))
+        costs = (th - goal_th) ** 2 + 0.1 * (thdot - goal_thdot) ** 2 + 0.001 * actions**2
+        costs = torch.where(
+            self.is_state_safe(next_states),
+            costs,
+            torch.tensor(1000.0, device=costs.device),
+        )
 
         return -costs
 
     def trans_fn(self, states: torch.Tensor, u: torch.Tensor):
         th, thdot = self.parse_state(states)
 
-        g = self.g
         m = self.m
         l = self.l
         dt = self.dt
 
         u = u.clamp(-1, 1)[..., 0] * self.max_torque
 
-        newthdot = thdot + (-3 * self.g / (2 * l) * (th + np.pi).sin() + 3. / (m * l ** 2) * u) * dt
+        newthdot = (
+            thdot + (-3 * self.g / (2 * l) * (th + np.pi).sin() + 3.0 / (m * l**2) * u) * dt
+        )
         newth = angle_normalize(th + newthdot * dt)
         newthdot = newthdot.clamp(-self.max_speed, self.max_speed)
 
-        dims = list(range(1, states.ndim)) + [0]
+        dims = [*list(range(1, states.ndim)), 0]
         if self.obs_type == 'state':
             return torch.stack([newth, newthdot]).permute(dims)
         return torch.stack([newth.cos(), newth.sin(), newthdot]).permute(dims)
@@ -228,15 +290,34 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
 
     def barrier_fn(self, states: torch.Tensor):
         th, thdot = self.parse_state(states)
-        b1 = interval_barrier(th, -self.threshold, self.threshold)
-        return b1
+        return interval_barrier(th, -self.threshold, self.threshold)
+
 
 class SafeClassicPendulumUpright(SafeClassicPendulum):
-    def __init__(self, threshold=1.5, init_state=(0.3, -0.9), goal_state=(0, 0), max_torque=2, obs_type='state', task='upright', **kwargs):
+    def __init__(
+        self,
+        threshold=1.5,
+        init_state=(0.3, -0.9),
+        goal_state=(0, 0),
+        max_torque=2,
+        obs_type='state',
+        task='upright',
+        **kwargs,
+    ) -> None:
         super().__init__(threshold, init_state, goal_state, max_torque, obs_type, task, **kwargs)
 
+
 class SafeClassicPendulumTilt(SafeClassicPendulum):
-    def __init__(self, threshold=1.5, init_state=(0.3, -0.9), goal_state=(-0.41151684, 0), max_torque=2, obs_type='state', task='upright', **kwargs):
+    def __init__(
+        self,
+        threshold=1.5,
+        init_state=(0.3, -0.9),
+        goal_state=(-0.41151684, 0),
+        max_torque=2,
+        obs_type='state',
+        task='upright',
+        **kwargs,
+    ) -> None:
         super().__init__(threshold, init_state, goal_state, max_torque, obs_type, task, **kwargs)
 
 
