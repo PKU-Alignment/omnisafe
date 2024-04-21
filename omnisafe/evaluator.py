@@ -144,6 +144,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             raise FileNotFoundError('The model is not found in the save directory.') from error
 
         # load the environment
+        if env_kwargs['env_id'] == 'SafeMetaDrive':
+            env_kwargs['meta_drive_config'].update({'num_scenarios': 1})
         self._env = make(**env_kwargs)
 
         observation_space = self._env.observation_space

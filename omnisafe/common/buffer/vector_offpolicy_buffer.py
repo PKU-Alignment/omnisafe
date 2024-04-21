@@ -56,6 +56,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         size: int,
         batch_size: int,
         num_envs: int,
+        penalty_coefficient: float = 0.0,
         device: torch.device = DEVICE_CPU,
     ) -> None:
         """Initialize an instance of :class:`VectorOffPolicyBuffer`."""
@@ -64,6 +65,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         self._size: int = 0
         self._max_size: int = size
         self._batch_size: int = batch_size
+        self._penalty_coefficient: float = penalty_coefficient
         self._device: torch.device = device
         if isinstance(obs_space, Box):
             obs_buf = torch.zeros(

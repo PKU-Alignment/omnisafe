@@ -55,6 +55,7 @@ class OffPolicyBuffer(BaseBuffer):
         act_space: OmnisafeSpace,
         size: int,
         batch_size: int,
+        penalty_coefficient: float = 0.0,
         device: torch.device = DEVICE_CPU,
     ) -> None:
         """Initialize an instance of :class:`OffPolicyBuffer`."""
@@ -72,6 +73,7 @@ class OffPolicyBuffer(BaseBuffer):
         self._size: int = 0
         self._max_size: int = size
         self._batch_size: int = batch_size
+        self._penalty_coefficient: float = penalty_coefficient
 
         assert (
             self._max_size > self._batch_size
@@ -104,6 +106,7 @@ class OffPolicyBuffer(BaseBuffer):
         """
         for key, value in data.items():
             self.data[key][self._ptr] = value
+        self.data['reward'][self._ptr] -= self._penalty_coefficient * self.data['cost'][self._ptr]
         self._ptr = (self._ptr + 1) % self._max_size
         self._size = min(self._size + 1, self._max_size)
 

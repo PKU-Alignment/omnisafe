@@ -37,7 +37,8 @@ repos:
           (?x)(
             ^omnisafe/algorithms/off_policy/crabs.py$|
             ^omnisafe/common/control_barrier_function/crabs/|
-            ^omnisafe/envs/classic_control/envs_from_crabs.py$
+            ^omnisafe/envs/classic_control/envs_from_crabs.py$|
+            ^conftest.py$
           )
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
@@ -66,7 +67,8 @@ repos:
           (?x)(
             ^examples/|
             ^tests/|
-            ^docs/source/conf.py$
+            ^docs/source/conf.py$|
+            ^conftest.py$
           )
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.6
@@ -96,7 +98,8 @@ repos:
             ^omnisafe/common/control_barrier_function/crabs/utils.py$|
             ^omnisafe/algorithms/off_policy/crabs.py$|
             ^omnisafe/utils/isaac_gym_utils.py$|
-            ^docs/source/conf.py$
+            ^docs/source/conf.py$|
+            ^conftest.py$
           )
   - repo: https://github.com/pycqa/pydocstyle
     rev: 6.3.0
@@ -113,5 +116,6 @@ repos:
             ^omnisafe/envs/classic_control/envs_from_crabs.py$|
             ^omnisafe/common/control_barrier_function/crabs/models.py$|
             ^omnisafe/common/control_barrier_function/crabs/optimizers.py$|
-            ^omnisafe/common/control_barrier_function/crabs/utils.py$
+            ^omnisafe/common/control_barrier_function/crabs/utils.py$|
+            ^conftest.py$
           )
