@@ -4,6 +4,9 @@ omit =
     ../docs/*
     ../examples/*
     ../tutorials/*
+    ../common/control_barrier_function/crabs/*
+    ../envs/classic_control/*
+    ../algorithms/off_policy/crabs.py
 
 [report]
 exclude_lines =

@@ -1,3 +1,18 @@
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Environments implementation from CRABS."""
 import abc
 
 import gymnasium.spaces as spaces
@@ -19,13 +34,8 @@ class SafeEnv(abc.ABC):
     def barrier_fn(self, states: torch.Tensor):
         pass
 
+    @abc.abstractmethod
     def reward_fn(self, states: torch.Tensor, actions: torch.Tensor, next_states: torch.Tensor):
-        pass
-
-    def trans_fn(self, states: torch.Tensor, actions: torch.Tensor):
-        pass
-
-    def done_fn(self, states, actions, next_states):
         pass
 
 
@@ -45,7 +55,7 @@ def nonneg_barrier(x):
 def interval_barrier(x, lb, rb, eps=1e-2, grad=None):
     x = (x - lb) / (rb - lb) * 2 - 1
     b = -((1 + x + eps) * (1 - x + eps) / (1 + eps) ** 2).log()
-    b_min, b_max = 0, -np.log(eps * (2 + eps) / (1 + eps) ** 2)
+    _, b_max = 0, -np.log(eps * (2 + eps) / (1 + eps) ** 2)
     if grad is None:
         grad = 2.0 / eps / (2 + eps)
     out = grad * (abs(x) - 1)
@@ -211,7 +221,6 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
 
         g = self.g
         m = self.m
-        l = self.l
         dt = self.dt
 
         u = np.clip(u, -self.max_torque, self.max_torque)[0]
@@ -220,7 +229,9 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
         #     0.1 * (thdot - self.goal_state[1]) ** 2  # + 0.001 * (u ** 2)
         costs = (angle_normalize(th) - self.goal_state[0]) ** 2
 
-        newthdot = thdot + (-3 * g / (2 * l) * np.sin(th + np.pi) + 3.0 / (m * l**2) * u) * dt
+        newthdot = (
+            thdot + (-3 * g / (2 * self.l) * np.sin(th + np.pi) + 3.0 / (m * self.l**2) * u) * dt
+        )
         newth = th + newthdot * dt
         newthdot = np.clip(newthdot, -self.max_speed, self.max_speed)
 
@@ -259,13 +270,13 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
         th, thdot = self.parse_state(states)
 
         m = self.m
-        l = self.l
         dt = self.dt
 
         u = u.clamp(-1, 1)[..., 0] * self.max_torque
 
         newthdot = (
-            thdot + (-3 * self.g / (2 * l) * (th + np.pi).sin() + 3.0 / (m * l**2) * u) * dt
+            thdot
+            + (-3 * self.g / (2 * self.l) * (th + np.pi).sin() + 3.0 / (m * self.l**2) * u) * dt
         )
         newth = angle_normalize(th + newthdot * dt)
         newthdot = newthdot.clamp(-self.max_speed, self.max_speed)

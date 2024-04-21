@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,4 +13,4 @@
 # limitations under the License.
 # ==============================================================================
 """Environment implementations from papers."""
-from omnisafe.envs.paper_env import envs_from_crabs
+from omnisafe.envs.classic_control import envs_from_crabs

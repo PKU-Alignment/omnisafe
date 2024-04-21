@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ from rich.progress import track
 from omnisafe.adapter.offpolicy_adapter import OffPolicyAdapter
 from omnisafe.common.buffer import VectorOffPolicyBuffer
 from omnisafe.common.logger import Logger
+from omnisafe.envs.crabs_env import CRABSEnv
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils.config import Config
 
@@ -54,6 +55,7 @@ class CRABSAdapter(OffPolicyAdapter):
         """Initialize a instance of :class:`OffPolicyAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
         # self._env = make_env(id=env_id, config=cfgs.env.config)
+        self._env: CRABSEnv
         self.n_expl_episodes = 0
         self._max_ep_len = self._env.env.spec.max_episode_steps
         self.horizon = self._max_ep_len

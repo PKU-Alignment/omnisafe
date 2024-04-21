@@ -1,3 +1,18 @@
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Models for CRABS."""
 import abc
 from typing import List
 
@@ -7,6 +22,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 from omnisafe.utils.math import TanhNormal
 
 
@@ -182,26 +198,27 @@ class TransitionModel(pl.LightningModule):
         name (str, optional): The name of the model. Defaults to ''.
     """
 
-    class FLAGS:
-        batch_size = 256
-        weight_decay = 0.000075
-        lr = 0.001
-        mul_std = 0
-
-    def __init__(self, dim_state, normalizer, n_units, *, name='') -> None:
+    def __init__(self, dim_state, normalizer, n_units, cfgs, *, name='') -> None:
         """Initialize the transition model."""
         super().__init__()
         self.dim_state = dim_state
         self.dim_action = n_units[0] - dim_state
         self.normalizer = normalizer
         self.net = MultiLayerPerceptron(n_units, activation=nn.SiLU)
+        self.init_cfgs(cfgs)
         self.max_log_std = nn.Parameter(torch.full([dim_state], 0.5), requires_grad=True)
         self.min_log_std = nn.Parameter(torch.full([dim_state], -10.0), requires_grad=True)
         self.training_loss = 0.0
         self.val_loss = 0.0
         self.name = name
-        self.mul_std = self.FLAGS.mul_std
+        self.mul_std = self.mul_std
         self.automatic_optimization = False
+
+    def init_cfgs(self, cfgs):
+        self.batch_size = cfgs.batch_size
+        self.weight_decay = cfgs.weight_decay
+        self.lr = cfgs.lr
+        self.mul_std = cfgs.mul_std
 
     def forward(self, states, actions, det=True):
         """Forward pass of the transition model.
@@ -250,8 +267,8 @@ class TransitionModel(pl.LightningModule):
         """
         return torch.optim.Adam(
             self.parameters(),
-            lr=self.FLAGS.lr,
-            weight_decay=self.FLAGS.weight_decay,
+            lr=self.lr,
+            weight_decay=self.weight_decay,
         )
 
     def training_step(self, batch):
@@ -308,17 +325,18 @@ class CrabsCore(torch.nn.Module):
         policy: The policy.
     """
 
-    class FLAGS:
-        class obj:
-            eps = 0.01
-            neg_coef = 1.0
-
-    def __init__(self, h, model, policy) -> None:
+    def __init__(self, h, model: EnsembleModel, policy: ConstraintActorQCritic, cfgs) -> None:
         """Initialize the CRABS core."""
         super().__init__()
         self.h = h
         self.policy = policy
         self.model = model
+
+        self.init_cfgs(cfgs)
+
+    def init_cfgs(self, cfgs):
+        self.eps = cfgs.obj.eps
+        self.neg_coef = cfgs.obj.neg_coef
 
     def u(self, states, actions=None):
         """Compute the value of the barrier function.
@@ -340,7 +358,7 @@ class CrabsCore(torch.nn.Module):
         h = self.h(s)
         u = self.u(s)
 
-        eps = self.FLAGS.obj.eps
+        eps = self.eps
         obj = u + eps
         mask = (h < 0) & (u + eps > 0)
         return {
@@ -391,9 +409,6 @@ class BasePolicy(abc.ABC):
 
     @abc.abstractmethod
     def get_actions(self, states):
-        pass
-
-    def reset(self, indices=None):
         pass
 
 

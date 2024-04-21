@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import numpy as np
 import safety_gymnasium
 import torch
 
+from omnisafe.envs.classic_control.envs_from_crabs import SafeEnv
 from omnisafe.envs.core import CMDP, env_register
 from omnisafe.typing import Box
 
@@ -193,6 +194,6 @@ class CRABSEnv(CMDP):
         self._env.close()
 
     @property
-    def env(self):
+    def env(self) -> SafeEnv:
         """Return the env object."""
         return self._env

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Optimizers for CRABS."""
 from typing import Callable, Tuple
 
 import numpy as np
@@ -20,7 +21,7 @@ from rich.progress import track
 from torch import nn
 from torch.nn.functional import relu, softplus
 
-from omnisafe.common.control_barrier_function.models import CrabsCore
+from omnisafe.common.control_barrier_function.crabs.models import CrabsCore
 
 
 class Barrier(nn.Module):
@@ -34,16 +35,15 @@ class Barrier(nn.Module):
         s0 (torch.Tensor): Initial state.
     """
 
-    class FLAGS:
-        ell_coef = 1.0
-        barrier_coef = 1
-
-    def __init__(self, net, env_barrier_fn, s0) -> None:
+    def __init__(self, net, env_barrier_fn, s0, cfgs) -> None:
         super().__init__()
         self.net = net
         self.env_barrier_fn = env_barrier_fn
         self.s0 = s0
         self.ell = softplus
+
+        self.ell_coef = cfgs.ell_coef
+        self.barrier_coef = cfgs.barrier_coef
 
     def forward(self, states: torch.Tensor) -> torch.Tensor:
         """Forward pass of the barrier function.
@@ -55,8 +55,8 @@ class Barrier(nn.Module):
             torch.Tensor: Barrier function values.
         """
         return (
-            self.ell(self.net(states) - self.net(self.s0[None])) * self.FLAGS.ell_coef
-            + self.env_barrier_fn(states) * self.FLAGS.barrier_coef
+            self.ell(self.net(states) - self.net(self.s0[None])) * self.ell_coef
+            + self.env_barrier_fn(states) * self.barrier_coef
             - 1
         )
 
@@ -160,61 +160,58 @@ class SLangevinOptimizer(nn.Module):
         logger: Logger for the optimization.
     """
 
-    class FLAGS:
-        class temperature:
-            max = 0.03
-            min = 0.03
-
-        class filter:
-            top_k = 10000
-            pool = False
-
-        n_steps = 1
-        method = 'MALA'
-        lr = 0.01
-        batch_size = 10000
-        extend_region = 0.0
-        barrier_coef = 0.0
-        L_neg_coef = 1
-        resample = False
-
-        n_proj_iters = 10
-        precond = False
-
-    def __init__(self, core: CrabsCore, state_box: StateBox, cfgs, logger) -> None:
+    def __init__(self, core: CrabsCore, state_box: StateBox, device, cfgs, logger) -> None:
         super().__init__()
         self.core = core
-        self.temperature = self.FLAGS.temperature.max
         self.state_box = state_box
 
         self._cfgs = cfgs
         self._logger = logger
+        self.init_cfgs(cfgs)
 
+        self.temperature = self.temperature.max
         self.z = nn.Parameter(
             torch.zeros(
-                self.FLAGS.batch_size,
+                self.batch_size,
                 *state_box.shape,
-                device=self._cfgs.train_cfgs.device,
+                device=device,
             ),
             requires_grad=True,
         )
-        self.tau = nn.Parameter(torch.full([self.FLAGS.batch_size, 1], 1e-2), requires_grad=False)
-        self.alpha = nn.Parameter(torch.full([self.FLAGS.batch_size], 3.0), requires_grad=False)
+        self.tau = nn.Parameter(torch.full([self.batch_size, 1], 1e-2), requires_grad=False)
+        self.alpha = nn.Parameter(torch.full([self.batch_size], 3.0), requires_grad=False)
         self.opt = torch.optim.Adam([self.z])
-        self.max_s = torch.zeros(state_box.shape, device=self._cfgs.train_cfgs.device)
-        self.min_s = torch.zeros(state_box.shape, device=self._cfgs.train_cfgs.device)
+        self.max_s = torch.zeros(state_box.shape, device=device)
+        self.min_s = torch.zeros(state_box.shape, device=device)
 
         self.mask = torch.tensor([0], dtype=torch.int64)
         self.n_failure = torch.zeros(
-            self.FLAGS.batch_size,
+            self.batch_size,
             dtype=torch.int64,
-            device=self._cfgs.train_cfgs.device,
+            device=device,
         )
         self.n_resampled = 0
 
         self.adam = torch.optim.Adam([self.z], betas=(0, 0.999), lr=0.001)
         self.since_last_reset = 0
         self.reinit()
+
+    def init_cfgs(self, cfgs):
+        self.temperature = cfgs.temperature
+
+        self.filter = cfgs.filter
+
+        self.n_steps = cfgs.n_steps
+        self.method = cfgs.method
+        self.lr = cfgs.lr
+        self.batch_size = cfgs.batch_size
+        self.extend_region = cfgs.extend_region
+        self.barrier_coef = cfgs.barrier_coef
+        self.L_neg_coef = cfgs.L_neg_coef
+        self.is_resample = cfgs.resample
+
+        self.n_proj_iters = cfgs.n_proj_iters
+        self.precond = cfgs.precond
 
     @property
     def s(self):
@@ -238,8 +235,8 @@ class SLangevinOptimizer(nn.Module):
         Args:
             p (float): Temperature parameter.
         """
-        max = self.FLAGS.temperature.max
-        min = self.FLAGS.temperature.min
+        max = self.temperature.max
+        min = self.temperature.min
         self.temperature = np.exp(np.log(max) * (1 - p) + np.log(min) * p)
 
     def pdf(self, z):
@@ -258,7 +255,7 @@ class SLangevinOptimizer(nn.Module):
 
     def project_back(self):
         """Use gradient descent to project s back to the set C_h."""
-        for _ in range(self.FLAGS.n_proj_iters):
+        for _ in range(self.n_proj_iters):
             with torch.enable_grad():
                 h = self.core.h(self.s)
                 loss = relu(h - 0.03)
@@ -328,9 +325,9 @@ class SLangevinOptimizer(nn.Module):
             self.z.set_(b)
 
             self.tau.mul_(
-                self.FLAGS.lr * (ratio.squeeze()[:, None] - 0.574) + 1,
+                self.lr * (ratio.squeeze()[:, None] - 0.574) + 1,
             )
-            if self.FLAGS.resample:
+            if self.is_resample:
                 self.n_failure[new_f_b >= -100] = 0
                 self.n_failure += 1
                 self.resample(new_f_b, torch.nonzero(self.n_failure > 1000)[:, 0])
@@ -569,13 +566,17 @@ class BarrierCertOptimizer:
             self._cfgs.train_cfgs.device,
         )
 
-        self.weight_decay = 1e-4
-        self.lr = 0.0003
-        self.lambda_2 = 'norm'
-        self.locals = {}
+        self.init_cfgs(cfgs.opt_h)
 
         self.since_last_update = 0
         self.opt = torch.optim.Adam(self.h.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+
+    def init_cfgs(self, cfgs):
+        self.weight_decay = cfgs.weight_decay
+        self.lr = cfgs.lr
+        self.lambda_2 = cfgs.lambda_2
+        self.locals = cfgs.locals
+        self.n_iters = cfgs.n_iters
 
     def step(self):
         """One step of the optimizer."""
@@ -644,7 +645,7 @@ class BarrierCertOptimizer:
             self.s_opt.step()
 
         self.h_ref = None
-        for t in range(self._cfgs.n_iters):
+        for t in range(self.n_iters):
             if t % 1_000 == 0:
                 self.check_by_sample(step=t)
                 self.s_opt.debug(step=t)

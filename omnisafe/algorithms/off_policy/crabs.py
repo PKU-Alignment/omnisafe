@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 from rich.progress import track
-from torch import nn, optim
+from torch import nn
 from torch.nn.utils.clip_grad import clip_grad_norm_
 
 from omnisafe.adapter.crabs_adapter import CRABSAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.off_policy.sac import SAC
-from omnisafe.common.control_barrier_function.models import (
+from omnisafe.common.control_barrier_function.crabs.models import (
     AddGaussianNoise,
     CrabsCore,
     EnsembleModel,
@@ -39,14 +39,14 @@ from omnisafe.common.control_barrier_function.models import (
     TransitionModel,
     UniformPolicy,
 )
-from omnisafe.common.control_barrier_function.optimizers import (
+from omnisafe.common.control_barrier_function.crabs.optimizers import (
     Barrier,
     BarrierCertOptimizer,
     PolicyAdvTraining,
     SLangevinOptimizer,
     StateBox,
 )
-from omnisafe.common.control_barrier_function.utils import Normalizer, get_pretrained_model
+from omnisafe.common.control_barrier_function.crabs.utils import Normalizer, get_pretrained_model
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 
 
@@ -60,66 +60,6 @@ class CRABS(SAC):
         - Authors: Yuping Luo, Tengyu Ma.
         - URL: `CRABS <https://arxiv.org/abs/2108.01846>`_
     """
-
-    _log_alpha: torch.Tensor
-    _alpha_optimizer: optim.Optimizer
-    _target_entropy: float
-
-    def load_from_ckpt(self):
-        """Load pretrained model from url.
-
-        If the model is not found locally, download it from the cloud.
-        """
-        model_url = (
-            'https://drive.google.com/uc?export=download&id=1MciBSHU74HjADTINUMrlpa7s_9cX7f1P'
-        )
-        model_path = '~/.cache/omnisafe/pretrain_models/crabs_swing_models_checkpoint.pt'
-        param_dict = get_pretrained_model(model_path, model_url, self._device)
-        self._actor_critic.actor.load_state_dict(param_dict['actor'])
-        print(f'Load policy from {self._cfgs.ckpt}')
-        self.h.load_state_dict(param_dict['h'])
-        print(f'Load h from {self._cfgs.ckpt}')
-        self.model.load_state_dict(param_dict['model'])
-        print(f'Load model from {self._cfgs.ckpt}')
-
-    def train_models(self, *, epochs):
-        """Train the transition models.
-
-        Args:
-            epochs (int): The number of epochs to train the model.
-        """
-        from torch.utils.data import DataLoader, IterableDataset
-
-        class BufferDataset(IterableDataset):
-            def __init__(self, buffer, batch_size, n_iters_per_epoch=None) -> None:
-                self.buffer = buffer
-                self.batch_size = batch_size
-                self.n_iters_per_epoch = n_iters_per_epoch
-
-            def __iter__(self):
-                n_iters = (
-                    self.n_iters_per_epoch
-                    if self.n_iters_per_epoch is not None
-                    else len(self.buffer) // self.batch_size
-                )
-                for _ in range(n_iters):
-                    batch = self.buffer.sample_batch(batch_size=self.batch_size)
-                    yield batch
-
-        buffer_dataset = BufferDataset(self._buf, 256, n_iters_per_epoch=1000)
-        train_dataloader = DataLoader(buffer_dataset, batch_size=None)
-
-        self.model_trainer = pl.Trainer(
-            max_epochs=epochs,
-            accelerator='gpu',
-            devices=[int(str(self._device)[-1])],
-            default_root_dir=self._cfgs.logger_cfgs.log_dir,
-        )
-        self.model_trainer.fit(
-            self.model,
-            train_dataloaders=train_dataloader,
-        )
-        self.model.to(self._device)
 
     def _init_env(self) -> None:
         """Initialize the environment.
@@ -175,18 +115,19 @@ class CRABS(SAC):
         ).to(self._device)
         self.mean_policy = MeanPolicy(self._actor_critic.actor)
 
-        if self._cfgs.model.type == 'GatedTransitionModel':
+        if self._cfgs.transition_model_cfgs.type == 'GatedTransitionModel':
 
             def make_model(i):
                 return GatedTransitionModel(
                     self.dim_state,
                     self.normalizer,
                     [self.dim_state + self.dim_action, 256, 256, 256, 256, self.dim_state * 2],
+                    self._cfgs.transition_model_cfgs.train,
                     name=f'model-{i}',
                 )
 
             self.model = EnsembleModel(
-                [make_model(i) for i in range(self._cfgs.model.n_ensemble)],
+                [make_model(i) for i in range(self._cfgs.transition_model_cfgs.n_ensemble)],
             ).to(self._device)
             self.model_trainer = pl.Trainer(
                 max_epochs=0,
@@ -194,18 +135,19 @@ class CRABS(SAC):
                 devices=[int(str(self._device)[-1])],
                 default_root_dir=self._cfgs.logger_cfgs.log_dir,
             )
-        elif self._cfgs.model.type == 'TransitionModel':
+        elif self._cfgs.transition_model_cfgs.type == 'TransitionModel':
 
             def make_model(i):
                 return TransitionModel(
                     self.dim_state,
                     self.normalizer,
                     [self.dim_state + self.dim_action, 256, 256, 256, 256, self.dim_state * 2],
+                    self._cfgs.transition_model_cfgs.train,
                     name=f'model-{i}',
                 )
 
             self.model = EnsembleModel(
-                [make_model(i) for i in range(self._cfgs.model.n_ensemble)],
+                [make_model(i) for i in range(self._cfgs.transition_model_cfgs.n_ensemble)],
             ).to(self._device)
             self.model_trainer = pl.Trainer(
                 max_epochs=0,
@@ -214,7 +156,7 @@ class CRABS(SAC):
                 default_root_dir=self._cfgs.logger_cfgs.log_dir,
             )
         else:
-            raise AssertionError(f'unknown model type {self._cfgs.model.type}')
+            raise AssertionError(f'unknown model type {self._cfgs.transition_model_cfgs.type}')
 
     def _init_log(self) -> None:
         super()._init_log()
@@ -245,11 +187,12 @@ class CRABS(SAC):
             nn.Sequential(self.normalizer, MultiLayerPerceptron([self.dim_state, 256, 256, 1])),
             self._env._env.env.barrier_fn,
             self.s0,
+            self._cfgs.lyapunov,
         ).to(self._device)
 
-        self.core = CrabsCore(self.h, self.model, self.mean_policy)
+        self.core = CrabsCore(self.h, self.model, self.mean_policy, self._cfgs.crabs)
         self.barrier = self.core.u
-        if self._cfgs.model.frozen:
+        if self._cfgs.transition_model_cfgs.frozen:
             self.model.requires_grad_(False)
             self._logger.log('Warning: models are frozen!')
 
@@ -259,7 +202,13 @@ class CRABS(SAC):
 
         self.state_box.find_box(self.core_ref.h)
 
-        self.s_opt = SLangevinOptimizer(self.core, self.state_box, self._cfgs, logger=None).to(
+        self.s_opt = SLangevinOptimizer(
+            self.core,
+            self.state_box,
+            self._cfgs.train_cfgs.device,
+            self._cfgs.opt_s,
+            logger=None,
+        ).to(
             self._device,
         )
 
@@ -341,7 +290,11 @@ class CRABS(SAC):
             self._env.rollout(
                 rollout_step=self._env.horizon * 2,
                 agent=ExplorationPolicy(
-                    AddGaussianNoise(self._actor_critic.actor, 0.0, 2.0),
+                    AddGaussianNoise(
+                        self._actor_critic.actor,
+                        0.0,
+                        self._cfgs.algo_cfgs.exploration_noise,
+                    ),
                     self.core_ref,
                 ),
                 buffer=self._buf,
@@ -451,6 +404,18 @@ class CRABS(SAC):
         return self._log_alpha.exp().item()
 
     def get_masked_q(self, min_q_value, states, actions):
+        """Get the masked Q value.
+
+        The loss function here is based on SAC, but with an additional term to mask the Q value.
+
+        Args:
+            min_q_value (torch.Tensor): The minimum Q value.
+            states (torch.Tensor): The states.
+            actions (torch.Tensor): The actions.
+
+        Returns:
+            torch.Tensor: The masked Q value.
+        """
         barrier = self.barrier(states, actions)
         return torch.where(
             barrier > 0,
@@ -543,3 +508,59 @@ class CRABS(SAC):
         q1_value_r, q2_value_r = self._actor_critic.reward_critic(obs, action)
         q_value = self.get_masked_q(torch.min(q1_value_r, q2_value_r), obs, action)
         return (self._alpha * log_prob - q_value).mean()
+
+    def load_from_ckpt(self):
+        """Load pretrained model from url.
+
+        If the model is not found locally, download it from the cloud.
+        """
+        model_url = (
+            'https://drive.google.com/uc?export=download&id=1MciBSHU74HjADTINUMrlpa7s_9cX7f1P'
+        )
+        model_path = '~/.cache/omnisafe/pretrain_models/crabs_swing_models_checkpoint.pt'
+        param_dict = get_pretrained_model(model_path, model_url, self._device)
+        self._actor_critic.actor.load_state_dict(param_dict['actor'])
+        print('Load policy')
+        self.h.load_state_dict(param_dict['h'])
+        print('Load h')
+        self.model.load_state_dict(param_dict['model'])
+        print('Load transition model')
+
+    def train_models(self, *, epochs):
+        """Train the transition models.
+
+        Args:
+            epochs (int): The number of epochs to train the model.
+        """
+        from torch.utils.data import DataLoader, IterableDataset
+
+        class BufferDataset(IterableDataset):
+            def __init__(self, buffer, batch_size, n_iters_per_epoch=None) -> None:
+                self.buffer = buffer
+                self.batch_size = batch_size
+                self.n_iters_per_epoch = n_iters_per_epoch
+
+            def __iter__(self):
+                n_iters = (
+                    self.n_iters_per_epoch
+                    if self.n_iters_per_epoch is not None
+                    else len(self.buffer) // self.batch_size
+                )
+                for _ in range(n_iters):
+                    batch = self.buffer.sample_batch(batch_size=self.batch_size)
+                    yield batch
+
+        buffer_dataset = BufferDataset(self._buf, 256, n_iters_per_epoch=1000)
+        train_dataloader = DataLoader(buffer_dataset, batch_size=None)
+
+        self.model_trainer = pl.Trainer(
+            max_epochs=epochs,
+            accelerator='gpu',
+            devices=[int(str(self._device)[-1])],
+            default_root_dir=self._cfgs.logger_cfgs.log_dir,
+        )
+        self.model_trainer.fit(
+            self.model,
+            train_dataloaders=train_dataloader,
+        )
+        self.model.to(self._device)

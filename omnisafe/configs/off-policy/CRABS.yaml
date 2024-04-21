@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ defaults:
   # training configurations
   train_cfgs:
     # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
-    device: cuda:3
+    device: cuda:0
     # number of threads for torch
     torch_threads: 128
     # number of vectorized environments
@@ -32,6 +32,8 @@ defaults:
     eval_episodes: 10
   # algorithm configurations
   algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 6000
     # number of steps per sample
     update_cycle: 1
     # number of iterations to update the policy
@@ -60,14 +62,8 @@ defaults:
     start_learning_steps: 10000
     # The delay step of policy update
     policy_delay: 2
-    # Whether to use the exploration noise
-    use_exploration_noise: False
     # The exploration noise
-    exploration_noise: 0.1
-    # The policy noise
-    policy_noise: 0.2
-    # policy_noise_clip
-    policy_noise_clip: 0.5
+    exploration_noise: 2.0
     # The value of alpha
     alpha: 0.2
     # Whether to use auto alpha
@@ -114,7 +110,7 @@ defaults:
       activation: relu
       # The learning rate of Critic network
       lr: 0.0003
-  model:
+  transition_model_cfgs:
     type: "GatedTransitionModel"
     n_ensemble: 5
     n_elites: 5
@@ -124,17 +120,6 @@ defaults:
       weight_decay: 7.5e-05
       lr: 0.001
       mul_std: 0
-  ckpt: "ckpts/swing_models_checkpoint.pt"
-  fix:
-    h: False
-    policy: False
-    normalizer: True
-    model: False
-  h:
-    type: "learned"
-  env:
-    id: "SafeInvertedPendulum-v2"
-    config: {}
   lyapunov:
     ell_coef: 1.0
     barrier_coef: 1
@@ -160,16 +145,10 @@ defaults:
     lr: 0.0003
     lambda_2: "norm"
     locals: {}
+    n_iters: 500000
   crabs:
     obj:
       eps: 0.01
       neg_coef: 1.0
-  uncertainty:
-    method: "max-mean"
-    scale: 1.0
-  n_iters: 500000
-  n_plot_iters: 1000
-  n_eval_iters: 1000
-  n_save_iters: 10000
   n_pretrain_s_iters: 1
   task: "train_policy"

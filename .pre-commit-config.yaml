@@ -33,6 +33,12 @@ repos:
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
+        exclude: |
+          (?x)(
+            ^omnisafe/algorithms/off_policy/crabs.py$|
+            ^omnisafe/common/control_barrier_function/crabs/|
+            ^omnisafe/envs/classic_control/envs_from_crabs.py$
+          )
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
     hooks:
@@ -97,5 +103,9 @@ repos:
             ^docs/|
             ^examples/|
             ^tests/|
-            ^setup.py$
+            ^setup.py$|
+            ^omnisafe/envs/classic_control/envs_from_crabs.py$|
+            ^omnisafe/common/control_barrier_function/crabs/models.py$|
+            ^omnisafe/common/control_barrier_function/crabs/optimizers.py$|
+            ^omnisafe/common/control_barrier_function/crabs/utils.py$
           )
