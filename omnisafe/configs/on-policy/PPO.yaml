@@ -118,3 +118,159 @@ defaults:
       activation: tanh
       # learning rate
       lr: 0.0003
+
+ShadowHandCatchOver2UnderarmSafeFinger:
+  # training configurations
+  train_cfgs:
+    # number of vectorized environments
+    vector_env_nums: 256
+    # total number of steps to train
+    total_steps: 100000000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 32768
+    # number of iterations to update the policy
+    update_iters: 8
+    # batch size for each iteration
+    batch_size: 8192
+    # target kl divergence
+    target_kl: 0.016
+    # max gradient norm
+    max_grad_norm: 1.0
+    # use critic norm
+    use_critic_norm: False
+    # reward discount factor
+    gamma: 0.96
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: False
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+    critic:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+      # learning rate
+      lr: 0.0006
+
+ShadowHandOverSafeFinger:
+  # training configurations
+  train_cfgs:
+    # number of vectorized environments
+    vector_env_nums: 256
+    # total number of steps to train
+    total_steps: 100000000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 38400
+    # number of iterations to update the policy
+    update_iters: 8
+    # batch size for each iteration
+    batch_size: 8192
+    # target kl divergence
+    target_kl: 0.016
+    # max gradient norm
+    max_grad_norm: 1.0
+    # use critic norm
+    use_critic_norm: False
+    # reward discount factor
+    gamma: 0.96
+    # normalize observation
+    obs_normalize: False
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+    critic:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+      # learning rate
+      lr: 0.0006
+
+ShadowHandCatchOver2UnderarmSafeJoint:
+  # training configurations
+  train_cfgs:
+    # number of vectorized environments
+    vector_env_nums: 256
+    # total number of steps to train
+    total_steps: 100000000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 32768
+    # number of iterations to update the policy
+    update_iters: 8
+    # batch size for each iteration
+    batch_size: 8192
+    # target kl divergence
+    target_kl: 0.016
+    # max gradient norm
+    max_grad_norm: 1.0
+    # use critic norm
+    use_critic_norm: False
+    # reward discount factor
+    gamma: 0.96
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: False
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+    critic:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+      # learning rate
+      lr: 0.0006
+
+ShadowHandOverSafeJoint:
+  # training configurations
+  train_cfgs:
+    # number of vectorized environments
+    vector_env_nums: 256
+    # total number of steps to train
+    total_steps: 100000000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 38400
+    # number of iterations to update the policy
+    update_iters: 8
+    # batch size for each iteration
+    batch_size: 8192
+    # target kl divergence
+    target_kl: 0.016
+    # max gradient norm
+    max_grad_norm: 1.0
+    # use critic norm
+    use_critic_norm: False
+    # reward discount factor
+    gamma: 0.96
+    # normalize observation
+    obs_normalize: False
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+    critic:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+      # learning rate
+      lr: 0.0006

@@ -53,6 +53,7 @@ class CMDP(ABC):
     _time_limit: int | None = None
     need_time_limit_wrapper: bool
     need_auto_reset_wrapper: bool
+    need_evaluation: bool = True
 
     _support_envs: ClassVar[list[str]]
 
@@ -199,6 +200,7 @@ class Wrapper(CMDP):
         """Initialize an instance of :class:`Wrapper`."""
         self._env: CMDP = env
         self._device: torch.device = device
+        self.need_evaluation = self._env.need_evaluation
 
     def __getattr__(self, name: str) -> Any:
         """Get the attribute of the environment.

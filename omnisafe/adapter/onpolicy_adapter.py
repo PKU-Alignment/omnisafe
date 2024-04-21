@@ -109,9 +109,6 @@ class OnPolicyAdapter(OnlineAdapter):
                     last_value_c = torch.zeros(1)
                     if not done:
                         if epoch_end:
-                            logger.log(
-                                f'Warning: trajectory cut off when rollout by epoch at {self._ep_len[idx]} steps.',
-                            )
                             _, last_value_r, last_value_c, _ = agent.step(obs[idx])
                         if time_out:
                             _, last_value_r, last_value_c, _ = agent.step(
