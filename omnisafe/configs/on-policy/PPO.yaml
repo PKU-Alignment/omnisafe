@@ -129,7 +129,7 @@ ShadowHandCatchOver2UnderarmSafeFinger:
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 32768
+    steps_per_epoch: 38400
     # number of iterations to update the policy
     update_iters: 8
     # batch size for each iteration
@@ -207,7 +207,7 @@ ShadowHandCatchOver2UnderarmSafeJoint:
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 32768
+    steps_per_epoch: 38400
     # number of iterations to update the policy
     update_iters: 8
     # batch size for each iteration

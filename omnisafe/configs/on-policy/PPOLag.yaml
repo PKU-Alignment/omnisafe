@@ -141,7 +141,7 @@ ShadowHandCatchOver2UnderarmSafeFinger:
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 32768
+    steps_per_epoch: 38400
     # number of iterations to update the policy
     update_iters: 8
     # batch size for each iteration
@@ -154,10 +154,6 @@ ShadowHandCatchOver2UnderarmSafeFinger:
     use_critic_norm: False
     # reward discount factor
     gamma: 0.96
-    # normalize reward
-    reward_normalize: False
-    # normalize cost
-    cost_normalize: False
     # normalize observation
     obs_normalize: False
   # model configurations
@@ -219,7 +215,7 @@ ShadowHandCatchOver2UnderarmSafeJoint:
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 32768
+    steps_per_epoch: 38400
     # number of iterations to update the policy
     update_iters: 8
     # batch size for each iteration
@@ -232,10 +228,6 @@ ShadowHandCatchOver2UnderarmSafeJoint:
     use_critic_norm: False
     # reward discount factor
     gamma: 0.96
-    # normalize reward
-    reward_normalize: False
-    # normalize cost
-    cost_normalize: False
     # normalize observation
     obs_normalize: False
   # model configurations

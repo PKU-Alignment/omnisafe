@@ -18,13 +18,22 @@
 from __future__ import annotations
 
 import argparse
-import ast
 from typing import Any
 
 import torch
-from isaacgym import gymapi, gymutil  # pylint: disable=import-error
-from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.hand_base.vec_task import (  # pylint: disable=import-error,no-name-in-module
-    VecTaskPython,
+from isaacgym import gymapi, gymutil
+from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.hand_base.vec_task import VecTaskPython
+from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.ShadowHandCatchOver2underarm_Safe_finger import (
+    ShadowHandCatchOver2Underarm_Safe_finger as ShadowHandCatchOver2UnderarmSafeFinger,
+)
+from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.ShadowHandCatchOver2underarm_Safe_joint import (
+    ShadowHandCatchOver2Underarm_Safe_joint as ShadowHandCatchOver2UnderarmSafeJoint,
+)
+from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.ShadowHandOver_Safe_finger import (
+    ShadowHandOver_Safe_finger as ShadowHandOverSafeFinger,
+)
+from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.ShadowHandOver_Safe_joint import (
+    ShadowHandOver_Safe_joint as ShadowHandOverSafeJoint,
 )
 
 from omnisafe.typing import DEVICE_CPU
@@ -117,7 +126,17 @@ def make_isaac_gym_env(
     device_id = int(str(device).rsplit(':', maxsplit=1)[-1]) if str(device) != 'cpu' else 0
 
     rl_device = device
-    task = ast.literal_eval(env_id)(
+    if env_id == 'ShadowHandCatchOver2UnderarmSafeFinger':
+        task_fn = ShadowHandCatchOver2UnderarmSafeFinger
+    elif env_id == 'ShadowHandCatchOver2UnderarmSafeJoint':
+        task_fn = ShadowHandCatchOver2UnderarmSafeJoint
+    elif env_id == 'ShadowHandOverSafeFinger':
+        task_fn = ShadowHandOverSafeFinger
+    elif env_id == 'ShadowHandOverSafeJoint':
+        task_fn = ShadowHandOverSafeJoint
+    else:
+        raise NotImplementedError
+    task = task_fn(
         num_envs=num_envs,
         sim_params=sim_params,
         physics_engine=args.physics_engine,
