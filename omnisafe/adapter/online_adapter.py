@@ -77,7 +77,7 @@ class OnlineAdapter:
 
         self._eval_env: CMDP | None = None
         if self._env.need_evaluation:
-            self._eval_env: CMDP = make(env_id, num_envs=1, device=self._device, **env_cfgs)
+            self._eval_env = make(env_id, num_envs=1, device=self._device, **env_cfgs)
             self._wrapper_eval(obs_normalize=cfgs.algo_cfgs.obs_normalize)
 
         self._env.set_seed(seed)

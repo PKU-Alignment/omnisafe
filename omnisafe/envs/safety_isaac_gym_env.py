@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-from omnisafe.utils.isaac_gym_utils import make_isaac_gym_env
 from typing import Any, ClassVar
 
 import numpy as np
@@ -24,6 +23,7 @@ import torch
 
 from omnisafe.envs.core import CMDP, env_register
 from omnisafe.typing import DEVICE_CPU
+from omnisafe.utils.isaac_gym_utils import make_isaac_gym_env
 
 
 @env_register
@@ -67,7 +67,7 @@ class SafetyIsaacGymEnv(CMDP):
         self._env = make_isaac_gym_env(env_id=env_id, device=device, num_envs=num_envs)
         self._action_space = self._env.action_space
         self._observation_space = self._env.observation_space
-        self.need_evaluation=False
+        self.need_evaluation = False
 
     def step(
         self,

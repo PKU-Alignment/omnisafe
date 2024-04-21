@@ -29,7 +29,11 @@ repos:
       - id: debug-statements
       - id: double-quote-string-fixer
   - repo: https://github.com/charliermarsh/ruff-pre-commit
+<<<<<<< HEAD
     rev: v0.4.2
+=======
+    rev: v0.4.1
+>>>>>>> style: fix pre-commit
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]

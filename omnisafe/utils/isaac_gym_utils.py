@@ -12,23 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Utils for making Safe Isaac Gym environments."""
 
 
 from __future__ import annotations
 
+import argparse
+import ast
 from typing import Any
 
-from isaacgym import gymapi, gymutil
-
-import argparse
 import torch
-from omnisafe.typing import DEVICE_CPU
-from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.ShadowHandCatchOver2underarm_Safe_finger import ShadowHandCatchOver2Underarm_Safe_finger as ShadowHandCatchOver2UnderarmSafeFinger
-from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.ShadowHandCatchOver2underarm_Safe_joint import ShadowHandCatchOver2Underarm_Safe_joint as ShadowHandCatchOver2UnderarmSafeJoint
-from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.ShadowHandOver_Safe_finger import ShadowHandOver_Safe_finger as ShadowHandOverSafeFinger
-from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.ShadowHandOver_Safe_joint import ShadowHandOver_Safe_joint as ShadowHandOverSafeJoint
+from isaacgym import gymapi, gymutil  # pylint: disable=import-error
+from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.hand_base.vec_task import (  # pylint: disable=import-error,no-name-in-module
+    VecTaskPython,
+)
 
-from safety_gymnasium.tasks.safe_isaac_gym.envs.tasks.hand_base.vec_task import VecTaskPython
+from omnisafe.typing import DEVICE_CPU
+
 
 class GymnasiumIsaacEnv(VecTaskPython):
     """This wrapper will use Gymnasium API to wrap Isaac Gym environment."""
@@ -48,25 +48,22 @@ class GymnasiumIsaacEnv(VecTaskPython):
         obs, rews, costs, terminated, infos = super().step(action)
         truncated = terminated
         return obs, rews, costs, terminated, truncated, infos
-    
+
     def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment."""
         obs = super().reset()
         return obs, {}
-    
-    def close(self):
-        super().close()
 
 
-def parse_sim_params(args: argparse.Namespace):
+def parse_sim_params(args: argparse.Namespace) -> gymapi.SimParams:
     """Set up parameters for simulation."""
     sim_params = gymapi.SimParams()
-    sim_params.dt = 1./60.
+    sim_params.dt = 1.0 / 60.0
     sim_params.num_client_threads = args.slices
 
     if args.physics_engine == gymapi.SIM_FLEX:
-        if args.device != "cpu":
-            print("WARNING: Using Flex with GPU instead of PHYSX!")
+        if args.device != 'cpu':
+            print('WARNING: Using Flex with GPU instead of PHYSX!')
         sim_params.flex.shape_collision_margin = 0.01
         sim_params.flex.num_outer_iterations = 4
         sim_params.flex.num_inner_iterations = 10
@@ -88,7 +85,11 @@ def parse_sim_params(args: argparse.Namespace):
     return sim_params
 
 
-def make_isaac_gym_env(env_id: str, num_envs: int, device: torch.device = DEVICE_CPU) -> GymnasiumIsaacEnv:
+def make_isaac_gym_env(
+    env_id: str,
+    num_envs: int,
+    device: torch.device = DEVICE_CPU,
+) -> GymnasiumIsaacEnv:
     """Creates and initializes an Isaac Gym environment with specified configurations.
 
     Args:
@@ -100,34 +101,30 @@ def make_isaac_gym_env(env_id: str, num_envs: int, device: torch.device = DEVICE
         GymnasiumIsaacEnv: An initialized Isaac Gym environment object.
     """
     custom_parameters = [
-        {"name": "--algo", "type": str, "default": "PPOLag",},
-        {"name": "--env-id", "type": str, "default": "ShadowHandOver_Safe_finger",},
-        {"name": "--parallel", "type": int, "default": 1,},
-        {"name": "--seed", "type": int, "default": 0,},
-        {"name": "--total-steps", "type": int, "default": 100000000,},
-        {"name": "--device", "type": str, "default": "cpu",},
-        {"name": "--vector-env-nums", "type": int, "default": 256,},
-        {"name": "--torch-threads", "type": int, "default": 16,},
+        {'name': '--algo', 'type': str, 'default': 'PPOLag'},
+        {'name': '--env-id', 'type': str, 'default': 'ShadowHandOver_Safe_finger'},
+        {'name': '--parallel', 'type': int, 'default': 1},
+        {'name': '--seed', 'type': int, 'default': 0},
+        {'name': '--total-steps', 'type': int, 'default': 100000000},
+        {'name': '--device', 'type': str, 'default': 'cpu'},
+        {'name': '--vector-env-nums', 'type': int, 'default': 256},
+        {'name': '--torch-threads', 'type': int, 'default': 16},
     ]
     args = gymutil.parse_arguments(custom_parameters=custom_parameters)
     args.device = args.sim_device_type if args.use_gpu_pipeline else 'cpu'
     sim_params = parse_sim_params(args=args)
 
-    if str(device) != 'cpu':
-        device_id = int(str(device).split(':')[-1])
-    else:
-        device_id = 0
-    
+    device_id = int(str(device).rsplit(':', maxsplit=1)[-1]) if str(device) != 'cpu' else 0
+
     rl_device = device
-    task = eval(env_id)(
+    task = ast.literal_eval(env_id)(
         num_envs=num_envs,
         sim_params=sim_params,
         physics_engine=args.physics_engine,
         device_type=args.device,
         device_id=device_id,
         headless=True,
-        is_multi_agent=False)
-    
-    env = GymnasiumIsaacEnv(task, rl_device)
+        is_multi_agent=False,
+    )
 
-    return env
+    return GymnasiumIsaacEnv(task, rl_device)
