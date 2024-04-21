@@ -181,6 +181,11 @@ typing-modules = ["omnisafe.typing"]
     "S",     # flake8-bandit
     "BLE",   # flake8-blind-except
 ]
+"conftest.py" = [
+    "F401",   # unused-import
+    "ANN201",     # missing-return-type-undocumented-public-function
+    "ANN001",   # missing-type-function-argument
+]
 
 "omnisafe/algorithms/off_policy/crabs.py" = [
     "F401",   # unused-import
