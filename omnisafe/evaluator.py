@@ -54,6 +54,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
     """
 
     _cfgs: Config
+    _dict_cfgs: dict[str, Any]
     _save_dir: str
     _model_name: str
     _cost_count: torch.Tensor
@@ -65,13 +66,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         actor: Actor | None = None,
         actor_critic: ConstraintActorCritic | ConstraintActorQCritic | None = None,
         dynamics: EnsembleDynamicsModel | None = None,
-        planner: CEMPlanner
-        | ARCPlanner
-        | SafeARCPlanner
-        | CCEPlanner
-        | CAPPlanner
-        | RCEPlanner
-        | None = None,
+        planner: (
+            CEMPlanner | ARCPlanner | SafeARCPlanner | CCEPlanner | CAPPlanner | RCEPlanner | None
+        ) = None,
         render_mode: str = 'rgb_array',
     ) -> None:
         """Initialize an instance of :class:`Evaluator`."""
@@ -119,6 +116,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             raise FileNotFoundError(
                 f'The config file is not found in the save directory{save_dir}.',
             ) from error
+        self._dict_cfgs = kwargs
         self._cfgs = Config.dict2config(kwargs)
 
     # pylint: disable-next=too-many-branches
@@ -331,6 +329,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             'width': width,
             'height': height,
         }
+        if self._dict_cfgs.get('env_cfgs') is not None:
+            env_kwargs.update(self._dict_cfgs['env_cfgs'])
 
         self.__load_model_and_env(save_dir, model_name, env_kwargs)
 
@@ -415,6 +415,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         print(f'Average episode reward: {np.mean(a=episode_rewards)}')
         print(f'Average episode cost: {np.mean(a=episode_costs)}')
         print(f'Average episode length: {np.mean(a=episode_lengths)}')
+
+        self._env.close()
         return (
             episode_rewards,
             episode_costs,
@@ -433,7 +435,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         ), 'The environment must be provided or created before getting the fps.'
         try:
             fps = self._env.metadata['render_fps']
-        except AttributeError:
+        except (AttributeError, KeyError):
             fps = 30
             warnings.warn('The fps is not found, use 30 as default.', stacklevel=2)
 
@@ -552,3 +554,4 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             print(f'Average episode reward: {np.mean(episode_rewards)}', file=f)
             print(f'Average episode cost: {np.mean(episode_costs)}', file=f)
             print(f'Average episode length: {np.mean(episode_lengths)}', file=f)
+        self._env.close()

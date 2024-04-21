@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import json
+import multiprocessing as mp
 import os
 import string
 from concurrent.futures import ProcessPoolExecutor as Pool
@@ -440,7 +441,7 @@ class ExperimentGrid:
         announcement = f'\n{joined_var_names}\n\n{line}'
         print(announcement)
 
-        pool = Pool(max_workers=num_pool)
+        pool = Pool(max_workers=num_pool, mp_context=mp.get_context('spawn'))
         # run the variants.
         results = []
         exp_names = []

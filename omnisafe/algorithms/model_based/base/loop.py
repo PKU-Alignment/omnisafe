@@ -305,7 +305,7 @@ class LOOP(PETS):
             info (dict[str, Any]): The information from the environment.
         """
         done = terminated or truncated
-        goal_met = False if 'goal_met' not in info else info['goal_met']
+        goal_met = info.get('goal_met', False)
         if not done and not goal_met:
             # when goal_met == true:
             # current goal position is not related to the last goal position,

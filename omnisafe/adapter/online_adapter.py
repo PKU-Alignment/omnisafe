@@ -62,8 +62,14 @@ class OnlineAdapter:
         self._cfgs: Config = cfgs
         self._device: torch.device = get_device(cfgs.train_cfgs.device)
         self._env_id: str = env_id
-        self._env: CMDP = make(env_id, num_envs=num_envs, device=self._device)
-        self._eval_env: CMDP = make(env_id, num_envs=1, device=self._device)
+
+        env_cfgs = {}
+
+        if hasattr(self._cfgs, 'env_cfgs') and self._cfgs.env_cfgs is not None:
+            env_cfgs = self._cfgs.env_cfgs.todict()
+
+        self._env: CMDP = make(env_id, num_envs=num_envs, device=self._device, **env_cfgs)
+        self._eval_env: CMDP = make(env_id, num_envs=1, device=self._device, **env_cfgs)
 
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
@@ -109,8 +115,20 @@ class OnlineAdapter:
             cost_normalize (bool, optional): Whether to normalize the cost. Defaults to True.
         """
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, time_limit=1000, device=self._device)
-            self._eval_env = TimeLimit(self._eval_env, time_limit=1000, device=self._device)
+            assert (
+                self._env.max_episode_steps and self._eval_env.max_episode_steps
+            ), 'You must define max_episode_steps as an integer\
+                or cancel the use of the time_limit wrapper.'
+            self._env = TimeLimit(
+                self._env,
+                time_limit=self._env.max_episode_steps,
+                device=self._device,
+            )
+            self._eval_env = TimeLimit(
+                self._eval_env,
+                time_limit=self._eval_env.max_episode_steps,
+                device=self._device,
+            )
         if self._env.need_auto_reset_wrapper:
             self._env = AutoReset(self._env, device=self._device)
             self._eval_env = AutoReset(self._eval_env, device=self._device)
@@ -192,3 +210,14 @@ class OnlineAdapter:
             The saved components of environment, e.g., ``obs_normalizer``.
         """
         return self._env.save()
+
+    def close(self) -> None:
+        """Close the environment after training."""
+        self._env.close()
+
+    @property
+    def env_spec_keys(self) -> list[str]:
+        """Return the environment specification log."""
+        if hasattr(self._env, 'env_spec_log'):
+            return list(self._env.env_spec_log.keys())
+        return []
