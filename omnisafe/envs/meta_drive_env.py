@@ -21,7 +21,7 @@ from typing import Any, ClassVar
 
 import numpy as np
 import torch
-from metadrive import SafeMetaDriveEnv
+from metadrive import SafeMetaDriveEnv  # pylint: disable=import-error
 
 from omnisafe.common.logger import Logger
 from omnisafe.envs.core import CMDP, env_register
