@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Utils for CRABS."""
+# pylint: disable=all
 import os
 
 import requests

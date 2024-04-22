@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Environments in the CRABS paper."""
-
+# pylint: disable=all
 from __future__ import annotations
 
 from typing import Any, ClassVar

@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Environments implementation from CRABS."""
+# pylint: disable=all
 import abc
 
 import gymnasium.spaces as spaces

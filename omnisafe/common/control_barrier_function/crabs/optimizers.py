@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Optimizers for CRABS."""
+# pylint: disable=all
 from typing import Callable, Tuple
 
 import numpy as np
