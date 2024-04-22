@@ -38,4 +38,5 @@ exclude =
     build,
     dist,
     examples,
-    tests
+    tests,
+    conftest.py
