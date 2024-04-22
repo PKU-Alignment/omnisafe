@@ -218,7 +218,7 @@ class TransitionModel(pl.LightningModule):
 
     def init_cfgs(self, cfgs):
         """Initialize the configuration.
-        
+
         Args:
             cfgs: The configurations.
         """
@@ -368,7 +368,7 @@ class CrabsCore(torch.nn.Module):
 
     def obj_eval(self, s):
         """Short cut for barrier function.
-        
+
         Args:
             s: The states.
 
@@ -431,7 +431,7 @@ class BasePolicy(abc.ABC):
     @abc.abstractmethod
     def get_actions(self, states):
         """Sample the actions.
-        
+
         Args:
             states (torch.Tensor): The states.
         """
@@ -509,7 +509,7 @@ class ExplorationPolicy(nn.Module, BasePolicy):
 
     def get_actions(self, states):
         """Sample the actions.
-        
+
         Args:
             states (torch.Tensor): The states.
 

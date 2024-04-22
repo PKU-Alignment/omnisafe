@@ -28,6 +28,7 @@ from safety_gymnasium import register
 
 class SafeEnv(abc.ABC):
     """Safe Environment Interface."""
+
     @abc.abstractmethod
     def is_state_safe(self, states: torch.Tensor):
         """Check if the state is safe."""
@@ -71,6 +72,7 @@ def interval_barrier(x, lb, rb, eps=1e-2, grad=None):
 
 class SafeInvertedPendulumEnv(InvertedPendulumEnv, SafeEnv):
     """Safe Inverted Pendulum Environment."""
+
     episode_unsafe = False
 
     def __init__(
@@ -150,6 +152,7 @@ class SafeInvertedPendulumEnv(InvertedPendulumEnv, SafeEnv):
 
 class SafeInvertedPendulumSwingEnv(SafeInvertedPendulumEnv):
     """Safe Inverted Pendulum Swing Environment."""
+
     def __init__(
         self,
         threshold=1.5,
@@ -163,6 +166,7 @@ class SafeInvertedPendulumSwingEnv(SafeInvertedPendulumEnv):
 
 class SafeInvertedPendulumMoveEnv(SafeInvertedPendulumEnv):
     """Safe Inverted Pendulum Move Environment."""
+
     def __init__(
         self,
         threshold=0.2,
@@ -189,6 +193,7 @@ register(
 
 class SafeClassicPendulum(PendulumEnv, SafeEnv):
     """Safe Classic Pendulum Environment."""
+
     def __init__(
         self,
         threshold=1.5,
@@ -335,6 +340,7 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
 
 class SafeClassicPendulumUpright(SafeClassicPendulum):
     """Safe Classic Pendulum Upright Environment."""
+
     def __init__(
         self,
         threshold=1.5,
@@ -351,6 +357,7 @@ class SafeClassicPendulumUpright(SafeClassicPendulum):
 
 class SafeClassicPendulumTilt(SafeClassicPendulum):
     """Safe Classic Pendulum Tilt Environment."""
+
     def __init__(
         self,
         threshold=1.5,

@@ -65,7 +65,7 @@ class Barrier(nn.Module):
 
 class StateBox:
     """State box for the environment.
-    
+
     Args:
         shape (Tuple): Shape of the state box.
         s0 (torch.Tensor): Initial state.
@@ -73,6 +73,7 @@ class StateBox:
         expansion (float, optional): Expansion factor for the state box. Defaults to 1.5.
         logger ([type], optional): Logger for the state box. Defaults to None.
     """
+
     INF = 1e10
 
     def __init__(self, shape, s0, device, expansion=1.5, logger=None) -> None:
@@ -200,7 +201,7 @@ class SLangevinOptimizer(nn.Module):
 
     def init_cfgs(self, cfgs):
         """Initialize the configuration.
-        
+
         Args:
             cfgs: Configuration for the optimization.
         """
@@ -584,7 +585,7 @@ class BarrierCertOptimizer:
 
     def init_cfgs(self, cfgs):
         """Initialize the configuration.
-        
+
         Args:
             cfgs: Configuration for the optimizer.
         """
