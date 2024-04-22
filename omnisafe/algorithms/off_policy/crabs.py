@@ -100,8 +100,8 @@ class CRABS(SAC):
             device=self._cfgs.train_cfgs.device,
             dtype=torch.float32,
         )
-        self.dim_state = self._env.observation_space.shape[0]
-        self.dim_action = self._env.action_space.shape[0]
+        self.dim_state = self._env.observation_space.shape[0]  # type: ignore
+        self.dim_action = self._env.action_space.shape[0]  # type: ignore
 
         self.normalizer = Normalizer(self.dim_state, clip=1000).to(self._device)
         self.state_box = StateBox([self.dim_state], self.s0, self._device, logger=None)
@@ -160,7 +160,7 @@ class CRABS(SAC):
 
     def _init_log(self) -> None:
         super()._init_log()
-        what_to_save: dict[str, Any] = {}
+        what_to_save: dict[str, Any] = {}  # type: ignore
         what_to_save['pi'] = self._actor_critic.actor
         what_to_save['h'] = self.h
         what_to_save['models'] = self.model
@@ -190,7 +190,7 @@ class CRABS(SAC):
             self._cfgs.lyapunov,
         ).to(self._device)
 
-        self.core = CrabsCore(self.h, self.model, self.mean_policy, self._cfgs.crabs)
+        self.core = CrabsCore(self.h, self.model, self.mean_policy, self._cfgs.crabs)  # type: ignore
         self.barrier = self.core.u
         if self._cfgs.transition_model_cfgs.frozen:
             self.model.requires_grad_(False)
@@ -254,7 +254,7 @@ class CRABS(SAC):
 
         self._env.rollout(
             rollout_step=self._env.horizon * 10,
-            agent=ExplorationPolicy(self._actor_critic.actor, self.core_ref),
+            agent=ExplorationPolicy(self._actor_critic.actor, self.core_ref),  # type: ignore
             buffer=self._buf,
             logger=self._logger,
             use_rand_action=False,
@@ -291,7 +291,7 @@ class CRABS(SAC):
                 rollout_step=self._env.horizon * 2,
                 agent=ExplorationPolicy(
                     AddGaussianNoise(
-                        self._actor_critic.actor,
+                        self._actor_critic.actor,  # type: ignore
                         0.0,
                         self._cfgs.algo_cfgs.exploration_noise,
                     ),
@@ -306,7 +306,7 @@ class CRABS(SAC):
 
             self._env.rollout(
                 rollout_step=self._env.horizon * 2,
-                agent=ExplorationPolicy(UniformPolicy(self.dim_action), self.core_ref),
+                agent=ExplorationPolicy(UniformPolicy(self.dim_action), self.core_ref),  # type: ignore
                 buffer=self._buf,
                 logger=self._logger,
                 use_rand_action=False,
@@ -327,7 +327,7 @@ class CRABS(SAC):
                     eval_start = time.time()
                     self._env.eval_policy(
                         episode=self._cfgs.train_cfgs.eval_episodes,
-                        agent=self.mean_policy,
+                        agent=self.mean_policy,  # type: ignore
                         logger=self._logger,
                     )
                     eval_time += time.time() - eval_start
@@ -335,7 +335,7 @@ class CRABS(SAC):
                     rollout_start = time.time()
                     self._env.rollout(
                         rollout_step=self._env.horizon,
-                        agent=ExplorationPolicy(self._actor_critic.actor, self.core_ref),
+                        agent=ExplorationPolicy(self._actor_critic.actor, self.core_ref),  # type: ignore
                         buffer=self._buf,
                         logger=self._logger,
                         use_rand_action=False,

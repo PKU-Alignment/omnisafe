@@ -117,7 +117,7 @@ class StateBox:
         """
         self._max = self._max.maximum(data.max(dim=0).values)
         self._min = self._min.minimum(data.min(dim=0).values)
-        self.center = (self._max + self._min) / 2
+        self.center = (self._max + self._min) / 2  # type: ignore
         self.length = (self._max - self._min) / 2 * self.expansion  # expand the box
 
     @torch.no_grad()
@@ -170,24 +170,24 @@ class SLangevinOptimizer(nn.Module):
         self._logger = logger
         self.init_cfgs(cfgs)
 
-        self.temperature = self.temperature.max
+        self.temperature = self.temperature.max  # type: ignore
         self.z = nn.Parameter(
             torch.zeros(
-                self.batch_size,
+                self.batch_size,  # type: ignore
                 *state_box.shape,
                 device=device,
             ),
             requires_grad=True,
         )
-        self.tau = nn.Parameter(torch.full([self.batch_size, 1], 1e-2), requires_grad=False)
-        self.alpha = nn.Parameter(torch.full([self.batch_size], 3.0), requires_grad=False)
+        self.tau = nn.Parameter(torch.full([self.batch_size, 1], 1e-2), requires_grad=False)  # type: ignore
+        self.alpha = nn.Parameter(torch.full([self.batch_size], 3.0), requires_grad=False)  # type: ignore
         self.opt = torch.optim.Adam([self.z])
         self.max_s = torch.zeros(state_box.shape, device=device)
         self.min_s = torch.zeros(state_box.shape, device=device)
 
         self.mask = torch.tensor([0], dtype=torch.int64)
         self.n_failure = torch.zeros(
-            self.batch_size,
+            self.batch_size,  # type: ignore
             dtype=torch.int64,
             device=device,
         )
@@ -323,7 +323,7 @@ class SLangevinOptimizer(nn.Module):
             if len(self.mask) == 0:
                 self.mask = torch.tensor([0], dtype=torch.int64)
 
-            self.z.set_(b)
+            self.z.set_(b)  # type: ignore
 
             self.tau.mul_(
                 self.lr * (ratio.squeeze()[:, None] - 0.574) + 1,
@@ -545,7 +545,7 @@ class BarrierCertOptimizer:
         core_ref: CrabsCore,
         s_opt: SLangevinOptimizer,
         state_box: StateBox,
-        h_ref: Barrier = None,
+        h_ref: Barrier = None,  # type: ignore
         cfgs=None,
         logger=None,
     ) -> None:
@@ -645,7 +645,7 @@ class BarrierCertOptimizer:
                 self.s_opt.debug(step=i)
             self.s_opt.step()
 
-        self.h_ref = None
+        self.h_ref = None  # type: ignore
         for t in range(self.n_iters):
             if t % 1_000 == 0:
                 self.check_by_sample(step=t)

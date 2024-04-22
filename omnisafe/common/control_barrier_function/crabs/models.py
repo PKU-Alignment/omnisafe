@@ -40,7 +40,7 @@ class EnsembleModel(pl.LightningModule):
         self.models = nn.ModuleList(models)
         self.n_models = len(models)
         self.n_elites = self.n_models
-        self.elites = []
+        self.elites = []  # type: ignore
         self.recompute_elites()
         self.automatic_optimization = False
 
@@ -101,11 +101,11 @@ class EnsembleModel(pl.LightningModule):
             self.log(f'model/{i}/training_loss', loss.item())
 
         opt = self.optimizers()
-        opt.zero_grad()
+        opt.zero_grad()  # type: ignore
 
-        self.manual_backward(total_loss)
+        self.manual_backward(total_loss)  # type: ignore
         nn.utils.clip_grad_norm_(self.parameters(), 10)
-        opt.step()
+        opt.step()  # type: ignore
 
     def validation_step(self, batch):
         """Validation step of the ensemble model.
@@ -143,7 +143,7 @@ class MultiLayerPerceptron(nn.Sequential):
         auto_squeeze=True,
         output_activation=None,
     ) -> None:
-        layers = []
+        layers = []  # type: ignore
         for in_features, out_features in zip(n_units[:-1], n_units[1:]):
             if layers:
                 layers.append(activation())
@@ -212,7 +212,7 @@ class TransitionModel(pl.LightningModule):
         self.training_loss = 0.0
         self.val_loss = 0.0
         self.name = name
-        self.mul_std = self.mul_std
+        self.mul_std = self.mul_std  # type: ignore
         self.automatic_optimization = False
 
     def init_cfgs(self, cfgs):
@@ -285,10 +285,10 @@ class TransitionModel(pl.LightningModule):
         self.log(f'{self.name}/training_loss', loss.item(), on_step=False, on_epoch=True)
 
         opt = self.optimizers()
-        opt.zero_grad()
+        opt.zero_grad()  # type: ignore
         self.manual_backward(loss, opt)
         nn.utils.clip_grad_norm_(self.parameters(), 10)
-        opt.step()
+        opt.step()  # type: ignore
 
         return {
             'loss': loss.item(),

@@ -57,7 +57,7 @@ class CRABSAdapter(OffPolicyAdapter):
         # self._env = make_env(id=env_id, config=cfgs.env.config)
         self._env: CRABSEnv
         self.n_expl_episodes = 0
-        self._max_ep_len = self._env.env.spec.max_episode_steps
+        self._max_ep_len = self._env.env.spec.max_episode_steps  # type: ignore
         self.horizon = self._max_ep_len
 
     def eval_policy(  # pylint: disable=too-many-locals
