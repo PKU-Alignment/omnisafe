@@ -435,7 +435,6 @@ class BasePolicy(abc.ABC):
         Args:
             states (torch.Tensor): The states.
         """
-        pass
 
 
 class ExplorationPolicy(nn.Module, BasePolicy):

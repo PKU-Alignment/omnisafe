@@ -32,17 +32,14 @@ class SafeEnv(abc.ABC):
     @abc.abstractmethod
     def is_state_safe(self, states: torch.Tensor):
         """Check if the state is safe."""
-        pass
 
     @abc.abstractmethod
     def barrier_fn(self, states: torch.Tensor):
         """Barrier function."""
-        pass
 
     @abc.abstractmethod
     def reward_fn(self, states: torch.Tensor, actions: torch.Tensor, next_states: torch.Tensor):
         """Reward function."""
-        pass
 
 
 def nonneg_barrier(x):
