@@ -27,20 +27,25 @@ from safety_gymnasium import register
 
 
 class SafeEnv(abc.ABC):
+    """Safe Environment Interface."""
     @abc.abstractmethod
     def is_state_safe(self, states: torch.Tensor):
+        """Check if the state is safe."""
         pass
 
     @abc.abstractmethod
     def barrier_fn(self, states: torch.Tensor):
+        """Barrier function."""
         pass
 
     @abc.abstractmethod
     def reward_fn(self, states: torch.Tensor, actions: torch.Tensor, next_states: torch.Tensor):
+        """Reward function."""
         pass
 
 
 def nonneg_barrier(x):
+    """Non-negative barrier function."""
     return F.softplus(-3 * x)
 
 
@@ -54,6 +59,7 @@ def nonneg_barrier(x):
 
 
 def interval_barrier(x, lb, rb, eps=1e-2, grad=None):
+    """Interval barrier function."""
     x = (x - lb) / (rb - lb) * 2 - 1
     b = -((1 + x + eps) * (1 - x + eps) / (1 + eps) ** 2).log()
     _, b_max = 0, -np.log(eps * (2 + eps) / (1 + eps) ** 2)
@@ -64,6 +70,7 @@ def interval_barrier(x, lb, rb, eps=1e-2, grad=None):
 
 
 class SafeInvertedPendulumEnv(InvertedPendulumEnv, SafeEnv):
+    """Safe Inverted Pendulum Environment."""
     episode_unsafe = False
 
     def __init__(
@@ -73,6 +80,7 @@ class SafeInvertedPendulumEnv(InvertedPendulumEnv, SafeEnv):
         random_reset=False,
         violation_penalty=10,
     ) -> None:
+        """Initialize the environment."""
         self.threshold = threshold
         self.task = task
         self.random_reset = random_reset
@@ -86,6 +94,7 @@ class SafeInvertedPendulumEnv(InvertedPendulumEnv, SafeEnv):
         )  # deepcopy calls `get_state`
 
     def reset_model(self):
+        """Reset the model."""
         if self.random_reset:
             qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.01, high=0.01)
             qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.01, high=0.01)
@@ -96,9 +105,11 @@ class SafeInvertedPendulumEnv(InvertedPendulumEnv, SafeEnv):
         return self._get_obs()
 
     def _get_obs(self):
+        """Get the observation."""
         return super()._get_obs().astype(np.float32)
 
     def step(self, a):
+        """Step the environment."""
         a = np.clip(a, -1, 1)
 
         next_state, _, terminated, truncated, info = super().step(a)
@@ -122,19 +133,23 @@ class SafeInvertedPendulumEnv(InvertedPendulumEnv, SafeEnv):
         return next_state, reward, float(self.episode_unsafe), self.episode_unsafe, truncated, info
 
     def is_state_safe(self, states):
+        """Check if the state is safe."""
         # return states[..., 1].abs() <= self.threshold
         return self.barrier_fn(states) <= 1.0
 
     def barrier_fn(self, states):
+        """Barrier function."""
         return interval_barrier(states[..., 1], -self.threshold, self.threshold).maximum(
             interval_barrier(states[..., 0], -0.9, 0.9),
         )
 
     def reward_fn(self, states, actions, next_states):
+        """Reward function."""
         return -(next_states[..., 0] ** 2 + next_states[..., 1] ** 2) - actions[..., 0] ** 2 * 0.01
 
 
 class SafeInvertedPendulumSwingEnv(SafeInvertedPendulumEnv):
+    """Safe Inverted Pendulum Swing Environment."""
     def __init__(
         self,
         threshold=1.5,
@@ -142,10 +157,12 @@ class SafeInvertedPendulumSwingEnv(SafeInvertedPendulumEnv):
         random_reset=False,
         violation_penalty=10,
     ) -> None:
+        """Initialize the environment."""
         super().__init__(threshold=threshold, task=task)
 
 
 class SafeInvertedPendulumMoveEnv(SafeInvertedPendulumEnv):
+    """Safe Inverted Pendulum Move Environment."""
     def __init__(
         self,
         threshold=0.2,
@@ -153,6 +170,7 @@ class SafeInvertedPendulumMoveEnv(SafeInvertedPendulumEnv):
         random_reset=False,
         violation_penalty=10,
     ) -> None:
+        """Initialize the environment."""
         super().__init__(threshold=threshold, task=task)
 
 
@@ -170,6 +188,7 @@ register(
 
 
 class SafeClassicPendulum(PendulumEnv, SafeEnv):
+    """Safe Classic Pendulum Environment."""
     def __init__(
         self,
         threshold=1.5,
@@ -180,6 +199,7 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
         task='upright',
         **kwargs,
     ) -> None:
+        """Initialize the environment."""
         self.init_state = np.array(init_state, dtype=np.float32)
         self.goal_state = goal_state
         self.threshold = threshold
@@ -205,6 +225,7 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
         )
 
     def _get_obs(self):
+        """Get the observation."""
         th, thdot = self.state
         if self.obs_type == 'state':
             return np.array([angle_normalize(th), thdot], dtype=np.float32)
@@ -212,12 +233,14 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
             return np.array([np.cos(th), np.sin(th), thdot], dtype=np.float32)
 
     def reset(self):
+        """Reset the environment."""
         self.state = self.init_state
         self.last_u = None
         self.episode_unsafe = False
         return self._get_obs()
 
     def step(self, u):
+        """Step the environment."""
         th, thdot = self.state  # th := theta
 
         g = self.g
@@ -253,6 +276,7 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
         )
 
     def reward_fn(self, states, actions, next_states):
+        """Reward function."""
         th, thdot = self.parse_state(states)
         max_torque = self.max_torque
 
@@ -268,6 +292,7 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
         return -costs
 
     def trans_fn(self, states: torch.Tensor, u: torch.Tensor):
+        """Transition function."""
         th, thdot = self.parse_state(states)
 
         m = self.m
@@ -288,6 +313,7 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
         return torch.stack([newth.cos(), newth.sin(), newthdot]).permute(dims)
 
     def parse_state(self, states):
+        """Parse the state."""
         if self.obs_type == 'state':
             thdot = states[..., 1]
             th = states[..., 0]
@@ -297,15 +323,18 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
         return th, thdot
 
     def is_state_safe(self, states: torch.Tensor):
+        """Check if the state is safe."""
         th, thdot = self.parse_state(states)
         return th.abs() <= self.threshold
 
     def barrier_fn(self, states: torch.Tensor):
+        """Barrier function."""
         th, thdot = self.parse_state(states)
         return interval_barrier(th, -self.threshold, self.threshold)
 
 
 class SafeClassicPendulumUpright(SafeClassicPendulum):
+    """Safe Classic Pendulum Upright Environment."""
     def __init__(
         self,
         threshold=1.5,
@@ -316,10 +345,12 @@ class SafeClassicPendulumUpright(SafeClassicPendulum):
         task='upright',
         **kwargs,
     ) -> None:
+        """Initialize the environment."""
         super().__init__(threshold, init_state, goal_state, max_torque, obs_type, task, **kwargs)
 
 
 class SafeClassicPendulumTilt(SafeClassicPendulum):
+    """Safe Classic Pendulum Tilt Environment."""
     def __init__(
         self,
         threshold=1.5,
@@ -330,6 +361,7 @@ class SafeClassicPendulumTilt(SafeClassicPendulum):
         task='upright',
         **kwargs,
     ) -> None:
+        """Initialize the environment."""
         super().__init__(threshold, init_state, goal_state, max_torque, obs_type, task, **kwargs)
 
 

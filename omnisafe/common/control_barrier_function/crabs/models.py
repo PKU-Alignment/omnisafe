@@ -143,6 +143,7 @@ class MultiLayerPerceptron(nn.Sequential):
         auto_squeeze=True,
         output_activation=None,
     ) -> None:
+        """Initialize the multi-layer perceptron."""
         layers = []  # type: ignore
         for in_features, out_features in zip(n_units[:-1], n_units[1:]):
             if layers:
@@ -216,6 +217,11 @@ class TransitionModel(pl.LightningModule):
         self.automatic_optimization = False
 
     def init_cfgs(self, cfgs):
+        """Initialize the configuration.
+        
+        Args:
+            cfgs: The configurations.
+        """
         self.batch_size = cfgs.batch_size
         self.weight_decay = cfgs.weight_decay
         self.lr = cfgs.lr
@@ -336,6 +342,11 @@ class CrabsCore(torch.nn.Module):
         self.init_cfgs(cfgs)
 
     def init_cfgs(self, cfgs):
+        """Initialize the configuration.
+
+        Args:
+            cfgs: The configurations.
+        """
         self.eps = cfgs.obj.eps
         self.neg_coef = cfgs.obj.neg_coef
 
@@ -356,6 +367,14 @@ class CrabsCore(torch.nn.Module):
         return all_nh.max(dim=0).values
 
     def obj_eval(self, s):
+        """Short cut for barrier function.
+        
+        Args:
+            s: The states.
+
+        Returns:
+            dict: The results of the barrier function.
+        """
         h = self.h(s)
         u = self.u(s)
 
@@ -378,6 +397,7 @@ class GatedTransitionModel(TransitionModel):
     """Gated transition model for dynamics."""
 
     def __init__(self, *args, **kwargs) -> None:
+        """Initialize the gated transition model."""
         super().__init__(*args, **kwargs)
         self.gate_net = MultiLayerPerceptron(
             [self.dim_state + self.dim_action, 256, 256, self.dim_state * 2],
@@ -410,6 +430,11 @@ class BasePolicy(abc.ABC):
 
     @abc.abstractmethod
     def get_actions(self, states):
+        """Sample the actions.
+        
+        Args:
+            states (torch.Tensor): The states.
+        """
         pass
 
 
@@ -422,6 +447,7 @@ class ExplorationPolicy(nn.Module, BasePolicy):
     """
 
     def __init__(self, policy, core: CrabsCore) -> None:
+        """Initialize the exploration policy."""
         super().__init__()
         self.policy = policy
         self.crabs = core
@@ -482,6 +508,14 @@ class ExplorationPolicy(nn.Module, BasePolicy):
             return self.forward(obs)
 
     def get_actions(self, states):
+        """Sample the actions.
+        
+        Args:
+            states (torch.Tensor): The states.
+
+        Returns:
+            torch.Tensor: The sampled actions.
+        """
         return self(states)
 
 
@@ -523,6 +557,7 @@ class MeanPolicy(DetNetPolicy):
     """
 
     def __init__(self, policy) -> None:
+        """Initialize the mean policy."""
         super().__init__()
         self.policy = policy
 
@@ -562,6 +597,7 @@ class AddGaussianNoise(NetPolicy):
     """
 
     def __init__(self, policy: NetPolicy, mean, std) -> None:
+        """Initialize the policy with Gaussian noise."""
         super().__init__()
         self.policy = policy
         self.mean = mean
@@ -591,6 +627,7 @@ class UniformPolicy(NetPolicy):
     """
 
     def __init__(self, dim_action) -> None:
+        """Initialize the uniform policy."""
         super().__init__()
         self.dim_action = dim_action
 

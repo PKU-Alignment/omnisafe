@@ -37,6 +37,7 @@ class Barrier(nn.Module):
     """
 
     def __init__(self, net, env_barrier_fn, s0, cfgs) -> None:
+        """Initialize the barrier function."""
         super().__init__()
         self.net = net
         self.env_barrier_fn = env_barrier_fn
@@ -63,20 +64,19 @@ class Barrier(nn.Module):
 
 
 class StateBox:
+    """State box for the environment.
+    
+    Args:
+        shape (Tuple): Shape of the state box.
+        s0 (torch.Tensor): Initial state.
+        device (torch.device): Device to run the state box.
+        expansion (float, optional): Expansion factor for the state box. Defaults to 1.5.
+        logger ([type], optional): Logger for the state box. Defaults to None.
+    """
     INF = 1e10
 
     def __init__(self, shape, s0, device, expansion=1.5, logger=None) -> None:
-        """State box for the environment.
-
-        This class find a box such that the given barrier function is negative inside the box.
-
-        Args:
-            shape (Tuple): Shape of the state box.
-            s0 (torch.Tensor): Initial state.
-            device (torch.device): Device to run the state box.
-            expansion (float, optional): Expansion factor for the state box. Defaults to 1.5.
-            logger ([type], optional): Logger for the state box. Defaults to None.
-        """
+        """Initialize the state box."""
         self._max = torch.full(shape, -self.INF, device=device)
         self._min = torch.full(shape, +self.INF, device=device)
         self.center = None
@@ -162,6 +162,7 @@ class SLangevinOptimizer(nn.Module):
     """
 
     def __init__(self, core: CrabsCore, state_box: StateBox, device, cfgs, logger) -> None:
+        """Initialize the optimizer."""
         super().__init__()
         self.core = core
         self.state_box = state_box
@@ -198,6 +199,11 @@ class SLangevinOptimizer(nn.Module):
         self.reinit()
 
     def init_cfgs(self, cfgs):
+        """Initialize the configuration.
+        
+        Args:
+            cfgs: Configuration for the optimization.
+        """
         self.temperature = cfgs.temperature
 
         self.filter = cfgs.filter
@@ -374,6 +380,7 @@ class SSampleOptimizer(nn.Module):
         state_box: StateBox,
         logger=None,
     ) -> None:
+        """Initialize the optimizer."""
         super().__init__()
         self.obj_eval = obj_eval
         self.s = nn.Parameter(torch.randn(100_000, *state_box.shape), requires_grad=False)
@@ -407,6 +414,7 @@ class SGradOptimizer(nn.Module):
         state_box: StateBox,
         logger=None,
     ) -> None:
+        """Initialize the optimizer."""
         super().__init__()
         self.obj_eval = obj_eval
         self.z = nn.Parameter(torch.randn(10000, *state_box.shape), requires_grad=True)
@@ -469,6 +477,7 @@ class PolicyAdvTraining:
     """
 
     def __init__(self, policy, s_opt, obj_eval, cfgs) -> None:
+        """Initialize the optimizer."""
         self.policy = policy
         self.s_opt = s_opt
         self.obj_eval = obj_eval
@@ -549,6 +558,7 @@ class BarrierCertOptimizer:
         cfgs=None,
         logger=None,
     ) -> None:
+        """Initialize the optimizer."""
         super().__init__()
         self.h = h
         self.obj_eval = obj_eval
@@ -573,6 +583,11 @@ class BarrierCertOptimizer:
         self.opt = torch.optim.Adam(self.h.parameters(), lr=self.lr, weight_decay=self.weight_decay)
 
     def init_cfgs(self, cfgs):
+        """Initialize the configuration.
+        
+        Args:
+            cfgs: Configuration for the optimizer.
+        """
         self.weight_decay = cfgs.weight_decay
         self.lr = cfgs.lr
         self.lambda_2 = cfgs.lambda_2

@@ -31,6 +31,7 @@ class Normalizer(nn.Module):
     """
 
     def __init__(self, dim, *, clip=10) -> None:
+        """Initialize the normalizer."""
         super().__init__()
         self.register_buffer('mean', torch.zeros(dim))
         self.register_buffer('std', torch.ones(dim))
