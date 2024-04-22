@@ -142,7 +142,6 @@ class Logger:  # pylint: disable=too-many-instance-attributes
                 name=name,
                 dir=self._log_dir,
                 config=config,
-                entity='rl_train',
             )
             if config is not None:
                 wandb.config.update(config)
