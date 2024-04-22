@@ -142,6 +142,11 @@ class MujocoEnv(CMDP):
 
         return obs, reward, cost, terminated, truncated, info
 
+    @property
+    def max_episode_steps(self) -> int:
+        """The max steps per episode."""
+        return self._env.env.spec.max_episode_steps  # type: ignore
+
     def reset(
         self,
         seed: int | None = None,
@@ -167,18 +172,6 @@ class MujocoEnv(CMDP):
             seed (int): Seed to set.
         """
         self.reset(seed=seed)
-
-    def sample_action(self) -> torch.Tensor:
-        """Sample a random action.
-
-        Returns:
-            A random action.
-        """
-        return torch.as_tensor(
-            self._env.action_space.sample(),
-            dtype=torch.float32,
-            device=self._device,
-        )
 
     def render(self) -> Any:
         """Render the environment.

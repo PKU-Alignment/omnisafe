@@ -17,6 +17,7 @@
 import pytest
 
 from omnisafe.algorithms.registry import Registry
+from omnisafe.envs.core import CMDP, env_register, env_unregister
 
 
 class TestRegistry:
@@ -31,3 +32,21 @@ def test_with_error() -> None:
         registry.register('test')
     with pytest.raises(KeyError):
         registry.get('test')
+    with pytest.raises(TypeError):
+
+        @env_register
+        class TestEnv:
+            name: str = 'test'
+            idx: int = 0
+
+    with pytest.raises(ValueError):
+
+        @env_register
+        class CustomEnv(CMDP):
+            pass
+
+    @env_register
+    @env_unregister
+    @env_unregister
+    class CustomEnv(CMDP):  # noqa
+        _support_envs = ['Simple-v0']  # noqa

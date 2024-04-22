@@ -20,7 +20,7 @@ import simple_env  # noqa: F401
 
 if __name__ == '__main__':
     algo = 'NaturalPG'
-    env_id = 'Simple-v0'
+    env_id = 'Test-v0'
     custom_cfgs = {
         'train_cfgs': {
             'total_steps': 4096,

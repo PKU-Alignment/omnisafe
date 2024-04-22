@@ -14,6 +14,7 @@
 # ==============================================================================
 """Test envs."""
 
+import torch
 from gymnasium.spaces import Box
 
 import helpers
@@ -41,7 +42,7 @@ def test_safety_gymnasium(num_envs) -> None:
     else:
         assert obs.shape == (obs_space.shape[0],)
 
-    act = env.sample_action()
+    act = torch.zeros(env.action_space.shape, dtype=torch.float32)
     if num_envs > 1:
         act = act.repeat(num_envs, 1)
 
@@ -93,7 +94,7 @@ def test_safety_gymnasium_modelbased(num_envs: int) -> None:
     else:
         assert obs.shape == (obs_space.shape[0],)
 
-    act = env.sample_action()
+    act = torch.zeros(env.action_space.shape, dtype=torch.float32)
     if num_envs > 1:
         act = act.repeat(num_envs, 1)
 
@@ -135,7 +136,7 @@ def test_mujoco(num_envs, env_id) -> None:
     else:
         assert obs.shape == (obs_space.shape[0],)
 
-    act = env.sample_action()
+    act = torch.zeros(env.action_space.shape, dtype=torch.float32)
     if num_envs > 1:
         act = act.repeat(num_envs, 1)
 

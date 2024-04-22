@@ -220,13 +220,17 @@ class SafetyGymnasiumEnv(CMDP):
             seed (int, optional): The random seed. Defaults to None.
             options (dict[str, Any], optional): The options for the environment. Defaults to None.
 
-
         Returns:
             observation: Agent's observation of the current environment.
             info: Some information logged by the environment.
         """
         obs, info = self._env.reset(seed=seed, options=options)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
+
+    @property
+    def max_episode_steps(self) -> int:
+        """The max steps per episode."""
+        return self._env.env.spec.max_episode_steps
 
     def set_seed(self, seed: int) -> None:
         """Set the seed for the environment.
@@ -235,18 +239,6 @@ class SafetyGymnasiumEnv(CMDP):
             seed (int): Seed to set.
         """
         self.reset(seed=seed)
-
-    def sample_action(self) -> torch.Tensor:
-        """Sample a random action.
-
-        Returns:
-            A random action.
-        """
-        return torch.as_tensor(
-            self._env.action_space.sample(),
-            dtype=torch.float32,
-            device=self._device,
-        )
 
     def render(self) -> Any:
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.

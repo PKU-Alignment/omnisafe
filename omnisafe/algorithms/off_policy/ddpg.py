@@ -228,6 +228,9 @@ class DDPG(BaseAlgo):
         self._logger.register_key('Time/Evaluate')
         self._logger.register_key('Time/Epoch')
         self._logger.register_key('Time/FPS')
+        # register environment specific keys
+        for env_spec_key in self._env.env_spec_keys:
+            self.logger.register_key(env_spec_key)
 
     def learn(self) -> tuple[float, float, float]:
         """This is main function for algorithm update.
@@ -321,6 +324,7 @@ class DDPG(BaseAlgo):
         ep_cost = self._logger.get_stats('Metrics/EpCost')[0]
         ep_len = self._logger.get_stats('Metrics/EpLen')[0]
         self._logger.close()
+        self._env.close()
 
         return ep_ret, ep_cost, ep_len
 
