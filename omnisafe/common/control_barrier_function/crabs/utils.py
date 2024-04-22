@@ -64,8 +64,7 @@ class Normalizer(nn.Module):
         new_n = self.n + m
         new_mean = self.mean + delta * m / new_n
         new_std = torch.sqrt(
-            (self.std**2 * self.n + data.var(dim=0) * m + delta**2 * self.n * m / new_n)
-            / new_n,
+            (self.std**2 * self.n + data.var(dim=0) * m + delta**2 * self.n * m / new_n) / new_n,
         )
 
         self.mean.set_(new_mean.data)
