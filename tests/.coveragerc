@@ -4,9 +4,11 @@ omit =
     ../docs/*
     ../examples/*
     ../tutorials/*
-    ../common/control_barrier_function/crabs/*
-    ../envs/classic_control/*
-    ../algorithms/off_policy/crabs.py
+    ../omnisafe/common/control_barrier_function/crabs/*
+    ../omnisafe/envs/classic_control/*
+    ../omnisafe/algorithms/off_policy/crabs.py
+    ../omnisafe/adapter/crabs_adapter.py
+    ../omnisafe/envs/crabs_env.py
 
 [report]
 exclude_lines =

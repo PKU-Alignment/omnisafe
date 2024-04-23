@@ -167,6 +167,9 @@ class CRABS(SAC):
         what_to_save['obs_normalizer'] = self.normalizer
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
+        self._logger.register_key('Metrics/RawPolicyEpRet', window_length=50)
+        self._logger.register_key('Metrics/RawPolicyEpCost', window_length=50)
+        self._logger.register_key('Metrics/RawPolicyEpLen', window_length=50)
 
     def _init(self) -> None:
         """The initialization of the algorithm.
@@ -278,7 +281,7 @@ class CRABS(SAC):
 
             eval_start = time.time()
             self._env.eval_policy(
-                episode=self._cfgs.train_cfgs.eval_episodes,
+                episode=self._cfgs.train_cfgs.raw_policy_episodes,
                 agent=self._actor_critic,
                 logger=self._logger,
             )
@@ -326,7 +329,7 @@ class CRABS(SAC):
                 if t % 1000 == 0:
                     eval_start = time.time()
                     self._env.eval_policy(
-                        episode=self._cfgs.train_cfgs.eval_episodes,
+                        episode=self._cfgs.train_cfgs.raw_policy_episodes,
                         agent=self.mean_policy,  # type: ignore
                         logger=self._logger,
                     )

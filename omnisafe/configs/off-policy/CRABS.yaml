@@ -29,7 +29,8 @@ defaults:
     # number of training epochs
     num_epochs: 101
     # number of evaluate episodes
-    eval_episodes: 10
+    eval_episodes: 0
+    raw_policy_episodes: 10
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy

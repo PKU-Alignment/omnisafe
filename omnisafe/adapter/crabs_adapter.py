@@ -93,9 +93,9 @@ class CRABSAdapter(OffPolicyAdapter):
 
             logger.store(
                 {
-                    'Metrics/TestEpRet': ep_ret,
-                    'Metrics/TestEpCost': ep_cost,
-                    'Metrics/TestEpLen': ep_len,
+                    'Metrics/RawPolicyEpRet': ep_ret,
+                    'Metrics/RawPolicyEpCost': ep_cost,
+                    'Metrics/RawPolicyEpLen': ep_len,
                 },
             )
 
