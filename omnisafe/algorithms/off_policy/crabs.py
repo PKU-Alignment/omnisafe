@@ -90,7 +90,7 @@ class CRABS(SAC):
         self._update_count: int = 0
 
     def _init_model(self) -> None:
-        """Initialize the model.
+        """Initialize the models.
 
         The ``num_critics`` in ``critic`` configuration must be 2.
         """
@@ -400,11 +400,6 @@ class CRABS(SAC):
         self._logger.close()
 
         return ep_ret, ep_cost, ep_len
-
-    @property
-    def _alpha(self) -> float:
-        """The value of alpha."""
-        return self._log_alpha.exp().item()
 
     def get_masked_q(self, min_q_value, states, actions):
         """Get the masked Q value.

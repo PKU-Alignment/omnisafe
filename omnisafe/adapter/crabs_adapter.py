@@ -52,9 +52,8 @@ class CRABSAdapter(OffPolicyAdapter):
         seed: int,
         cfgs: Config,
     ) -> None:
-        """Initialize a instance of :class:`OffPolicyAdapter`."""
+        """Initialize a instance of :class:`CRABSAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
-        # self._env = make_env(id=env_id, config=cfgs.env.config)
         self._env: CRABSEnv
         self.n_expl_episodes = 0
         self._max_ep_len = self._env.env.spec.max_episode_steps  # type: ignore
@@ -70,7 +69,7 @@ class CRABSAdapter(OffPolicyAdapter):
 
         Args:
             episode (int): Number of episodes.
-            agent (ConstraintActorCritic): Agent.
+            agent (ConstraintActorQCritic): Agent.
             logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
         """
         for _ in range(episode):
@@ -115,9 +114,9 @@ class CRABSAdapter(OffPolicyAdapter):
 
         Args:
             rollout_step (int): Number of rollout steps.
-            agent (ConstraintActorCritic): Constraint actor-critic, including actor, reward critic,
+            agent (ConstraintActorQCritic): Constraint actor-critic, including actor, reward critic,
                 and cost critic.
-            buffer (VectorOnPolicyBuffer): Vector on-policy buffer.
+            buffer (VectorOffPolicyBuffer): Vector off-policy buffer.
             logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
             use_rand_action (bool): Whether to use random action.
         """

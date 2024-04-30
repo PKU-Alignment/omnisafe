@@ -41,12 +41,12 @@ class CRABSEnv(CMDP):
     need_time_limit_wrapper = False
     need_action_repeat_wrapper = True
     _support_envs: ClassVar[list[str]] = [
-        'SafeInvertedPendulum-v2',
+        # 'SafeInvertedPendulum-v2',  # uncomment when pre-trained models is ready.
         'SafeInvertedPendulumSwing-v2',
-        'SafeInvertedPendulumMove-v2',
-        'MyPendulum-v0',
-        'MyPendulumTilt-v0',
-        'MyPendulumUpright-v0',
+        # 'SafeInvertedPendulumMove-v2',
+        # 'MyPendulum-v0',
+        # 'MyPendulumTilt-v0',
+        # 'MyPendulumUpright-v0',
     ]
 
     def __init__(
