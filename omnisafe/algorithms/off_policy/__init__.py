@@ -14,6 +14,7 @@
 # ==============================================================================
 """Off-policy algorithms."""
 
+from omnisafe.algorithms.off_policy.crabs import CRABS
 from omnisafe.algorithms.off_policy.ddpg import DDPG
 from omnisafe.algorithms.off_policy.ddpg_lag import DDPGLag
 from omnisafe.algorithms.off_policy.ddpg_pid import DDPGPID
@@ -25,4 +26,15 @@ from omnisafe.algorithms.off_policy.td3_lag import TD3Lag
 from omnisafe.algorithms.off_policy.td3_pid import TD3PID
 
 
-__all__ = ['DDPG', 'TD3', 'SAC', 'DDPGLag', 'TD3Lag', 'SACLag', 'DDPGPID', 'TD3PID', 'SACPID']
+__all__ = [
+    'DDPG',
+    'TD3',
+    'SAC',
+    'DDPGLag',
+    'TD3Lag',
+    'SACLag',
+    'DDPGPID',
+    'TD3PID',
+    'SACPID',
+    'CRABS',
+]

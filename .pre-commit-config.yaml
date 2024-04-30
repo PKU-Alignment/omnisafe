@@ -8,7 +8,7 @@ ci:
 default_stages: [commit, push, manual]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-symlinks
       - id: destroyed-symlinks
@@ -29,16 +29,22 @@ repos:
       - id: debug-statements
       - id: double-quote-string-fixer
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.3.5
+    rev: v0.4.2
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
+        exclude: |
+          (?x)(
+            ^omnisafe/algorithms/off_policy/crabs.py$|
+            ^omnisafe/common/control_barrier_function/crabs/|
+            ^omnisafe/envs/classic_control/envs_from_crabs.py$
+          )
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
     hooks:
       - id: isort
   - repo: https://github.com/psf/black
-    rev: 24.3.0
+    rev: 24.4.2
     hooks:
       - id: black-jupyter
   - repo: https://github.com/asottile/pyupgrade
@@ -84,7 +90,12 @@ repos:
             ^examples/|
             ^tests/|
             ^setup.py$|
-            ^docs/source/conf.py$
+            ^docs/source/conf.py$|
+            ^omnisafe/envs/classic_control/envs_from_crabs.py$|
+            ^omnisafe/common/control_barrier_function/crabs/models.py$|
+            ^omnisafe/common/control_barrier_function/crabs/optimizers.py$|
+            ^omnisafe/common/control_barrier_function/crabs/utils.py$|
+            ^omnisafe/algorithms/off_policy/crabs.py$
           )
   - repo: https://github.com/pycqa/pydocstyle
     rev: 6.3.0
@@ -97,5 +108,9 @@ repos:
             ^docs/|
             ^examples/|
             ^tests/|
-            ^setup.py$
+            ^setup.py$|
+            ^omnisafe/envs/classic_control/envs_from_crabs.py$|
+            ^omnisafe/common/control_barrier_function/crabs/models.py$|
+            ^omnisafe/common/control_barrier_function/crabs/optimizers.py$|
+            ^omnisafe/common/control_barrier_function/crabs/utils.py$
           )

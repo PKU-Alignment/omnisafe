@@ -130,9 +130,11 @@ class AlgoWrapper:
         # the exp_name format is PPO-{SafetyPointGoal1-v0}
         exp_name = f'{self.algo}-{{{self.env_id}}}'
         cfgs.recurisve_update({'exp_name': exp_name, 'env_id': self.env_id, 'algo': self.algo})
-        cfgs.train_cfgs.recurisve_update(
-            {'epochs': cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.steps_per_epoch},
-        )
+        if hasattr(cfgs.train_cfgs, 'total_steps') and hasattr(cfgs.algo_cfgs, 'steps_per_epoch'):
+            epochs = cfgs.train_cfgs.total_steps // cfgs.algo_cfgs.steps_per_epoch
+            cfgs.train_cfgs.recurisve_update(
+                {'epochs': epochs},
+            )
         return cfgs
 
     def _init_checks(self) -> None:

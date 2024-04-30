@@ -122,17 +122,19 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
             device=self._device,
         )
 
-    def sample_batch(self) -> dict[str, torch.Tensor]:
+    def sample_batch(self, batch_size: int | None = None) -> dict[str, torch.Tensor]:
         """Sample a batch of data from the buffer.
 
         Returns:
             The sampled batch of data.
         """
+        if batch_size is None:
+            batch_size = self._batch_size
         idx = torch.randint(
             0,
             self._size,
-            (self._batch_size * self._num_envs,),
+            (batch_size * self._num_envs,),
             device=self._device,
         )
-        env_idx = torch.arange(self._num_envs, device=self._device).repeat(self._batch_size)
+        env_idx = torch.arange(self._num_envs, device=self._device).repeat(batch_size)
         return {key: value[idx, env_idx] for key, value in self.data.items()}
