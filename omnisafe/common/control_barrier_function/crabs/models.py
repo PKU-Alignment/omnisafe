@@ -101,11 +101,11 @@ class EnsembleModel(pl.LightningModule):
             self.log(f'model/{i}/training_loss', loss.item())
 
         opt = self.optimizers()
-        opt.zero_grad()  # type: ignore
+        opt.zero_grad()
 
-        self.manual_backward(total_loss)  # type: ignore
+        self.manual_backward(total_loss)
         nn.utils.clip_grad_norm_(self.parameters(), 10)
-        opt.step()  # type: ignore
+        opt.step()
 
     def validation_step(self, batch):
         """Validation step of the ensemble model.
@@ -291,10 +291,10 @@ class TransitionModel(pl.LightningModule):
         self.log(f'{self.name}/training_loss', loss.item(), on_step=False, on_epoch=True)
 
         opt = self.optimizers()
-        opt.zero_grad()  # type: ignore
+        opt.zero_grad()
         self.manual_backward(loss, opt)
         nn.utils.clip_grad_norm_(self.parameters(), 10)
-        opt.step()  # type: ignore
+        opt.step()
 
         return {
             'loss': loss.item(),
