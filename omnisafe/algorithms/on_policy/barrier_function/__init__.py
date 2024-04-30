@@ -14,8 +14,8 @@
 # ==============================================================================
 """Control Barrier Function Safe Reinforcement Learning algorithms."""
 
-from omnisafe.algorithms.on_policy.barrier_function.trpo_cbf import TRPOCBF
 from omnisafe.algorithms.on_policy.barrier_function.ppo_cbf import PPOBetaCBF
+from omnisafe.algorithms.on_policy.barrier_function.trpo_cbf import TRPOCBF
 
 
 __all__ = [

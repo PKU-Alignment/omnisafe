@@ -39,6 +39,11 @@ dependencies = [
     "matplotlib >= 3.7.1",
     "gdown >= 4.6.0",
     "pytorch_lightning >= 2.2.2",
+    "cvxopt== 1.3.2",
+    "gpytorch== 1.11",
+    "joblib == 1.3.2",
+    "qpth == 0.0.16",
+    "scikit_learn == 1.3.2"
 ]
 dynamic = ["version", "entry-points"]
 

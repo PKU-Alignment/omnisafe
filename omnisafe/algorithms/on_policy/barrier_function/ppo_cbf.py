@@ -26,10 +26,9 @@ from omnisafe.utils import distributed
 
 @registry.register
 class PPOBetaCBF(PPO):
-    
+
     def _init_log(self) -> None:
         super()._init_log()
-        self._logger.register_key('Metrics/angle', min_and_max=True)
         self._logger.register_key('Value/Loss_compensator')
 
     def _init_env(self) -> None:
@@ -48,10 +47,6 @@ class PPOBetaCBF(PPO):
             // self._cfgs.train_cfgs.vector_env_nums
         )
 
-    def _init_log(self) -> None:
-        super()._init_log()
-        self._logger.register_key('Metrics/angle', min_and_max=True)
-        
     def _loss_pi(
         self,
         obs: torch.Tensor,
@@ -85,7 +80,6 @@ class PPOBetaCBF(PPO):
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)
-        std = self._actor_critic.actor.std
         ratio = torch.exp(logp_ - logp)
         ratio_cliped = torch.clamp(
             ratio,

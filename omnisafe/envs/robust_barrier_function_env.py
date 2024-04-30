@@ -18,33 +18,33 @@ from __future__ import annotations
 
 from typing import Any, ClassVar
 
+import gymnasium
 import numpy as np
 import torch
-
-import gymnasium
-from omnisafe.envs.core import CMDP, env_register
-from omnisafe.typing import Box
 from gymnasium import spaces
+
+from omnisafe.envs.core import CMDP, env_register
 from omnisafe.envs.unicycle_env import UnicycleEnv
+from omnisafe.typing import Box
 
 
 @env_register
 class RobustBarrierFunctionEnv(CMDP):
     """Interface of control barrier function-based environments.
-    
-    .. warning:: 
-        Since environments based on control barrier functions require special judgment and control of environmental dynamics, 
+
+    .. warning::
+        Since environments based on control barrier functions require special judgment and control of environmental dynamics,
         they do not support the use of vectorized environments for parallelization.
 
     Attributes:
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
+
     need_auto_reset_wrapper = True
     need_time_limit_wrapper = False
     _support_envs: ClassVar[list[str]] = [
         'Unicycle',
-        'Pendulum-v1',
     ]
 
     def __init__(
@@ -74,9 +74,6 @@ class RobustBarrierFunctionEnv(CMDP):
         if num_envs == 1:
             if self._env_id == 'Unicycle':
                 self._env = UnicycleEnv()
-            elif self._env_id == 'Pendulum-v1':
-                self._env = gymnasium.make(id=env_id, autoreset=False, **kwargs)
-                self._env_specific_setting()
             else:
                 raise NotImplementedError('Only support Unicycle now.')
             assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
@@ -92,19 +89,6 @@ class RobustBarrierFunctionEnv(CMDP):
 
         self._num_envs = num_envs
         self._metadata = self._env.metadata
-
-    def _env_specific_setting(self):
-        """Execute some specific setting for environments.
-        
-        Some algorithms based on control barrier functions have made fine-tuning adjustments to the environment. 
-        We have organized these adjustments and encapsulated them in this function.
-        """
-        if self._env_id == 'Pendulum-v1':
-            self._env.unwrapped.max_torque = 15.
-            self._env.unwrapped.max_speed = 60.
-            self._env.unwrapped.action_space = spaces.Box(low=-self._env.unwrapped.max_torque, high=self._env.unwrapped.max_torque, shape=(1,))
-            high = np.array([1., 1., self._env.unwrapped.max_speed])
-            self._env.unwrapped.observation_space = spaces.Box(low=-high, high=high)
 
     def step(
         self,
@@ -136,23 +120,13 @@ class RobustBarrierFunctionEnv(CMDP):
             truncated: Whether the episode has been truncated due to a time limit.
             info: Auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
-        if self._env_id == 'Unicycle':
-            obs, reward, cost, terminated, truncated, info = self._env.step(
-                action.detach().cpu().numpy(),
-            )
-            obs, reward, cost, terminated, truncated = (
-                torch.as_tensor(x, dtype=torch.float32, device=self._device)
-                for x in (obs, reward, cost, terminated, truncated)
-            )
-        elif self._env_id == 'Pendulum-v1':
-            obs, reward, terminated, truncated, info = self._env.step(
-                action.detach().cpu().numpy(),
-            )
-            obs, reward, terminated, truncated = (
-                torch.as_tensor(x, dtype=torch.float32, device=self._device)
-                for x in (obs, reward, terminated, truncated)
-            )
-            cost = torch.abs(torch.atan2(obs[1], obs[0])).to(self._device)
+        obs, reward, cost, terminated, truncated, info = self._env.step(
+            action.detach().cpu().numpy(),
+        )
+        obs, reward, cost, terminated, truncated = (
+            torch.as_tensor(x, dtype=torch.float32, device=self._device)
+            for x in (obs, reward, cost, terminated, truncated)
+        )
         if 'final_observation' in info:
             info['final_observation'] = np.array(
                 [
@@ -184,9 +158,6 @@ class RobustBarrierFunctionEnv(CMDP):
             info: Auxiliary diagnostic information (helpful for debugging, and sometimes learning).
         """
         obs, info = self._env.reset(seed=seed, options=options)
-        if self._env_id == 'Pendulum-v1':
-            while (self._env.unwrapped.state[0] > 1.0 or self._env.unwrapped.state[0] < -1.0):
-                obs, info = self._env.reset(options=options)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
 
     def set_seed(self, seed: int) -> None:
@@ -203,7 +174,10 @@ class RobustBarrierFunctionEnv(CMDP):
         Returns:
             A random action.
         """
-        return torch.normal(torch.zeros(self.action_space.shape), torch.ones(self.action_space.shape))
+        return torch.normal(
+            torch.zeros(self.action_space.shape),
+            torch.ones(self.action_space.shape),
+        )
 
     def render(self) -> Any:
         """Render the environment.
@@ -216,9 +190,6 @@ class RobustBarrierFunctionEnv(CMDP):
     def close(self) -> None:
         """Close the environment."""
         self._env.close()
-    
-    def __getattr__(self, name):
-        try:
-            return getattr(self._env, name)
-        except AttributeError:
-            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._env, name)

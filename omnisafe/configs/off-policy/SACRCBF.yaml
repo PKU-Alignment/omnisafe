@@ -27,13 +27,13 @@ defaults:
     # number of parallel agent, similar to a3c
     parallel: 1
     # total number of steps to train
-    total_steps: 80_000
+    total_steps: 200000
     # number of evaluate episodes
-    eval_episodes: 0
+    eval_episodes: 1
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
-    steps_per_epoch: 200
+    steps_per_epoch: 1000
     # number of steps per sample
     update_cycle: 1
     # number of iterations to update the policy
@@ -93,7 +93,7 @@ defaults:
     # use tensorboard for logging
     use_tensorboard: True
     # save model frequency
-    save_model_freq: 100
+    save_model_freq: 40
     # save logger path
     log_dir: "./runs"
     # save model path
@@ -126,23 +126,9 @@ defaults:
       lr: 0.0003
   # Dynamics model configurations
   dynamics_model_cfgs:
-    # The max number of episodes updateing GP models
+    # The max number of episodes updating GP models
     gp_max_episodes: 100
     # The size of gp model
     gp_model_size: 2000
     # Whether to use the action compensator
     use_compensator: False
-    
-Pendulum-v1:
-  # algorithm configurations
-  algo_cfgs:
-    # Actor perdorm random action before `start_learning_steps` steps
-    start_learning_steps: 0
-  # control barrier function configurations
-  cbf_cfgs:
-    # gamma of control barrier certificate.
-    gamma_b: 0.5
-    # confidence parameter desired
-    k_d: 1.5
-    # environment dynamics coefficient
-    l_p: 0.03

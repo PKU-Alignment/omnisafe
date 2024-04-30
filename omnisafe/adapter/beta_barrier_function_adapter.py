@@ -16,84 +16,86 @@
 
 from __future__ import annotations
 
-import torch
 import numpy as np
+import torch
 from rich.progress import track
 
 from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
 from omnisafe.common.buffer import VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
+from omnisafe.envs.wrapper import CostNormalize, RewardNormalize, Unsqueeze
 from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils.config import Config
-from omnisafe.common.barrier_solver import PendulumSolver
-from omnisafe.common.barrier_comp import BarrierCompensator
-
-from omnisafe.envs.wrapper import (
-    AutoReset,
-    CostNormalize,
-    RewardNormalize,
-    TimeLimit,
-    Unsqueeze,
-)
 
 
-def cbf(state=None, eta: float = 0.99):
+def cbf(state: np.ndarray | None = None, eta: float = 0.99) -> tuple[np.ndarray, np.ndarray]:
     """
     Calculates CBF constraint set at a given state. Default is
     the current state.
     """
-
-    state = state
     g = 9.8
     m = 1
-    l = 1
+    length = 1
     tau = 5e-2
     theta_safety_bounds = [-1.0, 1.0]
     thetadot_safety_bounds = [-np.inf, np.inf]
     torque_bounds = [-15.0, 15.0]
-    if (eta>1-1e-3) or (eta<1e-5):
-        raise ValueError("eta should be inside (0, 1)")
-    c1 = ((3 * g)/(2 * l))
-    c2 = (3 /(m * (l ** 2)))
+    if (eta > 1 - 1e-3) or (eta < 1e-5):
+        raise ValueError('eta should be inside (0, 1)')
+    c1 = (3 * g) / (2 * length)
+    c2 = 3 / (m * (length**2))
 
     theta, thetadot = state[0], state[1]
     theta_min, theta_max = theta_safety_bounds[0], theta_safety_bounds[1]
     thetadot_min, thetadot_max = thetadot_safety_bounds[0], thetadot_safety_bounds[1]
-    u_min1 = (1/c2) * (((1 / (tau **2)) * (-eta * (theta - theta_min) - tau * thetadot)) - c1 * np.sin(theta) )
-    u_max1 = (1/c2) * (((1 / (tau **2)) * ( eta * (theta_max - theta) - tau * thetadot)) - c1 * np.sin(theta) )
+    u_min1 = (1 / c2) * (
+        ((1 / (tau**2)) * (-eta * (theta - theta_min) - tau * thetadot)) - c1 * np.sin(theta)
+    )
+    u_max1 = (1 / c2) * (
+        ((1 / (tau**2)) * (eta * (theta_max - theta) - tau * thetadot)) - c1 * np.sin(theta)
+    )
 
-    
-    u_min2 = (1/c2) * (((1 / (tau)) * (-eta * (thetadot - thetadot_min))) - c1 * np.sin(theta) )
-    u_max2 = (1/c2) * (((1 / (tau)) * ( eta * (thetadot_max - thetadot))) - c1 * np.sin(theta) )
+    u_min2 = (1 / c2) * (((1 / (tau)) * (-eta * (thetadot - thetadot_min))) - c1 * np.sin(theta))
+    u_max2 = (1 / c2) * (((1 / (tau)) * (eta * (thetadot_max - thetadot))) - c1 * np.sin(theta))
 
     u_min = max(u_min1, u_min2, torque_bounds[0])
     u_max = min(u_max1, u_max2, torque_bounds[1])
-    
-    u_min=torque_bounds[0]
-    u_max=torque_bounds[1]
-    if u_min>u_max:
-        raise ValueError("Infeasible")
-    else:
-        return [u_min, u_max]
 
-def vectorize_f(f): #--vipul :added action_dim
+    u_min = torque_bounds[0]
+    u_max = torque_bounds[1]
+
+    return [u_min, u_max]
+
+
+def vectorize_f(f: callable) -> callable:
+    """Converts a function `f` that operates on 1D numpy arrays and outputs pairs of scalars,
+    into a vectorized function that accepts batches of torch tensorized arrays and outputs
+    pairs of torch tensors.
+
+    Args:
+        f (callable): A function that accepts 1D numpy arrays and returns a tuple (lower_bound, upper_bound), where both are scalars.
+
+    Returns:
+        callable: A vectorized function that can process batches of torch tensors and return pairs of torch tensors.
     """
-    Converts a function f defined on 1D numpy arrays and outputting pairs of
-    scalars into a vectorized function accepting batches of
-    torch tensorized arrays and output pairs of torch tensors.
-    """
 
-    def vectorized_f_(obs): #--vipul :added action_dim
+    def vectorized_f_(obs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """
+        Inner function to process the torch tensor batch.
 
+        Args:
+            obs (torch.Tensor): A batch of observations as torch tensors.
+
+        Returns:
+            tuple: Two torch tensors representing the lower and upper bounds for each observation in the batch.
+        """
         obs = obs.cpu().detach().numpy()
 
-        if len(obs.shape) == 1:  # check to see if obs is a batch or single obs
+        if len(obs.shape) == 1:
             batch_size = 1
             lbs, ubs = f(obs)
-            lbs=np.array(lbs)
-            ubs=np.array(ubs)
-            #lbs = -5
-            #ubs = 5
+            lbs = np.array(lbs)
+            ubs = np.array(ubs)
 
         else:
             batch_size = obs.shape[0]
@@ -104,7 +106,7 @@ def vectorize_f(f): #--vipul :added action_dim
 
         lbs = torch.FloatTensor(lbs).reshape(batch_size, 1)
         ubs = torch.FloatTensor(ubs).reshape(batch_size, 1)
-        
+
         return lbs, ubs
 
     return vectorized_f_
@@ -113,8 +115,8 @@ def vectorize_f(f): #--vipul :added action_dim
 class BetaBarrierFunctionAdapter(OnPolicyAdapter):
     """BarrierFunction Adapter for OmniSafe.
 
-    The BarrierFunction Adapter is used to establish the logic of interaction between agents and the 
-    environment based on control barrier functions. Its key feature is the introduction of action 
+    The BarrierFunction Adapter is used to establish the logic of interaction between agents and the
+    environment based on control barrier functions. Its key feature is the introduction of action
     compensators and barrier function solvers.
 
     Args:
@@ -139,10 +141,10 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
         cost_normalize: bool = True,
     ) -> None:
         """Wrapper the environment.
-        
+
         .. warning::
-            Since solving the optimization problem requires obtaining physical quantities with practical 
-            significance from state observations, the Barrier Function Adapter does not support 
+            Since solving the optimization problem requires obtaining physical quantities with practical
+            significance from state observations, the Barrier Function Adapter does not support
             normalization of observations.
 
         Args:
@@ -190,10 +192,10 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
             with torch.no_grad():
                 act, value_r, value_c, logp = agent.step(obs)
                 lb, ub = self.constraint_fn(obs)
-                final_act = lb + (ub-lb)*act
+                final_act = lb + (ub - lb) * act
 
             next_obs, reward, cost, terminated, truncated, info = self.step(final_act)
-            
+
             self._log_value(reward=reward, cost=cost, info=info)
 
             if self._cfgs.algo_cfgs.use_cost:
@@ -242,4 +244,3 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
                             obs, _ = self._env.reset()
                     buffer.finish_path(last_value_r, last_value_c, idx)
         self.first_iter = 0
-

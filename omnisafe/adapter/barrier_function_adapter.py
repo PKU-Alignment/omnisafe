@@ -20,26 +20,20 @@ import torch
 from rich.progress import track
 
 from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
+from omnisafe.common.barrier_comp import BarrierCompensator
+from omnisafe.common.barrier_solver import PendulumSolver
 from omnisafe.common.buffer import VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
+from omnisafe.envs.wrapper import AutoReset, CostNormalize, RewardNormalize, TimeLimit, Unsqueeze
 from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils.config import Config
-from omnisafe.common.barrier_solver import PendulumSolver
-from omnisafe.common.barrier_comp import BarrierCompensator
 
-from omnisafe.envs.wrapper import (
-    AutoReset,
-    CostNormalize,
-    RewardNormalize,
-    TimeLimit,
-    Unsqueeze,
-)
 
 class BarrierFunctionAdapter(OnPolicyAdapter):
     """BarrierFunction Adapter for OmniSafe.
 
-    The BarrierFunction Adapter is used to establish the logic of interaction between agents and the 
-    environment based on control barrier functions. Its key feature is the introduction of action 
+    The BarrierFunction Adapter is used to establish the logic of interaction between agents and the
+    environment based on control barrier functions. Its key feature is the introduction of action
     compensators and barrier function solvers.
 
     Args:
@@ -63,10 +57,10 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
         cost_normalize: bool = True,
     ) -> None:
         """Wrapper the environment.
-        
+
         .. warning::
-            Since solving the optimization problem requires obtaining physical quantities with practical 
-            significance from state observations, the Barrier Function Adapter does not support 
+            Since solving the optimization problem requires obtaining physical quantities with practical
+            significance from state observations, the Barrier Function Adapter does not support
             normalization of observations.
 
         Args:
@@ -89,15 +83,15 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
             self._env = Unsqueeze(self._env, device=self._device)
         self._eval_env = Unsqueeze(self._eval_env, device=self._device)
 
-    def set_solver(self, solver: PendulumSolver):
+    def set_solver(self, solver: PendulumSolver) -> None:
         """Set the barrier function solver for Pendulum environment."""
         self.solver: PendulumSolver = solver
-        
-    def set_compensator(self, compensator: BarrierCompensator):
+
+    def set_compensator(self, compensator: BarrierCompensator) -> None:
         """Set the action compensator."""
         self.compensator: BarrierCompensator = compensator
 
-    def reset_gp_model(self):
+    def reset_gp_model(self) -> None:
         """Reset the gaussian processing model of barrier function solver."""
         self.solver.GP_model_prev = self.solver.GP_model.copy()
         self.solver.build_GP_model()
@@ -110,10 +104,6 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
         logger: Logger,
     ) -> None:
         """Rollout the environment and store the data in the buffer.
-
-        .. warning::
-            As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,
-            so the final observation will be stored in ``info['final_observation']``.
 
         Args:
             steps_per_epoch (int): Number of steps per epoch.
@@ -143,17 +133,23 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
 
                 approx_compensating_act = self.compensator(obs=obs)
                 compensated_act_mean_raw = act_mean + approx_compensating_act
-                
+
                 if self.first_iter:
-                    [f, g, x, std] = self.solver.get_GP_dynamics(obs, use_prev_model = False)
+                    [f, g, x, std] = self.solver.get_GP_dynamics(obs, use_prev_model=False)
                 else:
-                    [f, g, x, std] = self.solver.get_GP_dynamics(obs, use_prev_model = True)
-                
-                compensating_act = self.solver.control_barrier(compensated_act_mean_raw, f, g, x, std)
+                    [f, g, x, std] = self.solver.get_GP_dynamics(obs, use_prev_model=True)
+
+                compensating_act = self.solver.control_barrier(
+                    compensated_act_mean_raw,
+                    f,
+                    g,
+                    x,
+                    std,
+                )
 
                 compensated_act_mean = compensated_act_mean_raw + compensating_act
                 final_act = torch.normal(compensated_act_mean, act_std)
-            
+
             logp = agent.actor.log_prob(final_act).detach()
             path_obs.append(obs.detach().cpu().squeeze().numpy())
             path_act.append(final_act.detach().cpu().squeeze().numpy())
@@ -207,7 +203,7 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
                         self._ep_len[idx] = 0.0
 
                         if step < 650:
-                            self.solver.update_GP_dynamics(obs = path_obs, act = path_act)
+                            self.solver.update_GP_dynamics(obs=path_obs, act=path_act)
 
                         path_obs = []
                         path_act = []
@@ -216,4 +212,3 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
                             obs, _ = self._env.reset()
                     buffer.finish_path(last_value_r, last_value_c, idx)
         self.first_iter = 0
-

@@ -17,8 +17,10 @@ from __future__ import annotations
 
 import torch
 from torch import optim
-from omnisafe.utils.model import build_mlp_network
+
 from omnisafe.utils.config import Config
+from omnisafe.utils.model import build_mlp_network
+
 
 class BarrierCompensator(torch.nn.Module):
     """A module that represents a barrier compensator using a multi-layer perceptron (MLP) network.
@@ -39,9 +41,9 @@ class BarrierCompensator(torch.nn.Module):
         act_dim (int): Dimension of the action space.
         cfgs (Config): Configuration parameters for the network and training.
     """
-    
-    def __init__(self, obs_dim: int, act_dim: int, cfgs: Config):
-        super(BarrierCompensator, self).__init__()
+
+    def __init__(self, obs_dim: int, act_dim: int, cfgs: Config) -> None:
+        super().__init__()
         self._cfgs: Config = cfgs
         self.model: torch.nn.Module = build_mlp_network(
             sizes=[obs_dim, *self._cfgs.hidden_sizes, act_dim],
@@ -49,7 +51,7 @@ class BarrierCompensator(torch.nn.Module):
             weight_initialization_mode=self._cfgs.weight_initialization_mode,
         )
         self.optimizer: optim.Adam = optim.Adam(self.parameters(), lr=self._cfgs.lr)
-            
+
     def forward(self, obs: torch.Tensor) -> torch.Tensor:
         """Estimate the sum of previous compensating actions.
 
@@ -61,7 +63,12 @@ class BarrierCompensator(torch.nn.Module):
         """
         return self.model(obs)
 
-    def train(self, observation: torch.Tensor, approx_compensating_act: torch.Tensor, compensating_act: torch.Tensor) -> torch.Tensor:
+    def train(
+        self,
+        observation: torch.Tensor,
+        approx_compensating_act: torch.Tensor,
+        compensating_act: torch.Tensor,
+    ) -> torch.Tensor:
         """Train the barrier compensator model.
 
         This method updates the model parameters to minimize the difference between the model's output and the
@@ -79,8 +86,8 @@ class BarrierCompensator(torch.nn.Module):
         for _ in range(self._cfgs.update_iters):
             target = approx_compensating_act + compensating_act
             self.optimizer.zero_grad()
-            loss = torch.pow((self(observation)-target), 2).mean()
+            loss = torch.pow((self(observation) - target), 2).mean()
             loss.backward()
             self.optimizer.step()
-            
+
         return loss

@@ -21,24 +21,26 @@ from typing import Any, ClassVar
 import gymnasium
 import numpy as np
 import torch
-
 from gymnasium import spaces
+
+from omnisafe.common.logger import Logger
 from omnisafe.envs.core import CMDP, env_register
 from omnisafe.typing import Box
 
 
-# @env_register
+@env_register
 class BarrierFunctionEnv(CMDP):
     """Interface of control barrier function-based environments.
-    
-    .. warning:: 
-        Since environments based on control barrier functions require special judgment and control of environmental dynamics, 
+
+    .. warning::
+        Since environments based on control barrier functions require special judgment and control of environmental dynamics,
         they do not support the use of vectorized environments for parallelization.
 
     Attributes:
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
+
     need_auto_reset_wrapper = True
     need_time_limit_wrapper = False
     _support_envs: ClassVar[list[str]] = [
@@ -70,7 +72,7 @@ class BarrierFunctionEnv(CMDP):
         super().__init__(env_id)
         self._env_id = env_id
         if num_envs == 1:
-            self._env = gymnasium.make(id=env_id, autoreset=False, **kwargs)
+            self._env = gymnasium.make(id=env_id, autoreset=False)
             self._env_specific_setting()
             assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
             assert isinstance(
@@ -82,21 +84,26 @@ class BarrierFunctionEnv(CMDP):
         else:
             raise NotImplementedError('Only support num_envs=1 now.')
         self._device = torch.device(device)
-
+        self._episodic_violation = []
         self._num_envs = num_envs
         self._metadata = self._env.metadata
+        self.env_spec_log = {'Metrics/Max_angle_violation': 0.0}
 
-    def _env_specific_setting(self):
+    def _env_specific_setting(self) -> None:
         """Execute some specific setting for environments.
-        
-        Some algorithms based on control barrier functions have made fine-tuning adjustments to the environment. 
+
+        Some algorithms based on control barrier functions have made fine-tuning adjustments to the environment.
         We have organized these adjustments and encapsulated them in this function.
         """
         if self._env_id == 'Pendulum-v1':
-            self._env.unwrapped.max_torque = 15.
-            self._env.unwrapped.max_speed = 60.
-            self._env.unwrapped.action_space = spaces.Box(low=-self._env.unwrapped.max_torque, high=self._env.unwrapped.max_torque, shape=(1,))
-            high = np.array([1., 1., self._env.unwrapped.max_speed])
+            self._env.unwrapped.max_torque = 15.0
+            self._env.unwrapped.max_speed = 60.0
+            self._env.unwrapped.action_space = spaces.Box(
+                low=-self._env.unwrapped.max_torque,
+                high=self._env.unwrapped.max_torque,
+                shape=(1,),
+            )
+            high = np.array([1.0, 1.0, self._env.unwrapped.max_speed])
             self._env.unwrapped.observation_space = spaces.Box(low=-high, high=high)
             self._env.dt = 0.05
             self._env.dynamics_mode = 'Pendulum'
@@ -139,6 +146,7 @@ class BarrierFunctionEnv(CMDP):
             for x in (obs, reward, terminated, truncated)
         )
         cost = torch.abs(torch.atan2(obs[1], obs[0])).to(self._device)
+        self._episodic_violation.append(cost)
 
         if 'final_observation' in info:
             info['final_observation'] = np.array(
@@ -154,6 +162,20 @@ class BarrierFunctionEnv(CMDP):
             )
 
         return obs, reward, cost, terminated, truncated, info
+
+    def spec_log(self, logger: Logger) -> None:
+        """Log specific environment into logger.
+
+        Max angle violation in one episode.
+
+        .. note::
+            This function will be called after each episode.
+
+        Args:
+            logger (Logger): The logger to use for logging.
+        """
+        logger.store({'Metrics/Max_angle_violation': max(self._episodic_violation)})
+        self._episodic_violation = []
 
     def reset(
         self,
@@ -172,7 +194,7 @@ class BarrierFunctionEnv(CMDP):
         """
         obs, info = self._env.reset(seed=seed, options=options)
         if self._env_id == 'Pendulum-v1':
-            while (self._env.unwrapped.state[0] > 1.0 or self._env.unwrapped.state[0] < -1.0):
+            while self._env.unwrapped.state[0] > 1.0 or self._env.unwrapped.state[0] < -1.0:
                 obs, info = self._env.reset(options=options)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
 
@@ -183,14 +205,6 @@ class BarrierFunctionEnv(CMDP):
             seed (int): Seed to set.
         """
         self.reset(seed=seed)
-
-    def sample_action(self) -> torch.Tensor:
-        """Sample a random action.
-
-        Returns:
-            A random action.
-        """
-        return torch.normal(torch.zeros(self.action_space.shape), torch.ones(self.action_space.shape))
 
     def render(self) -> Any:
         """Render the environment.
@@ -205,5 +219,5 @@ class BarrierFunctionEnv(CMDP):
         self._env.close()
 
     @property
-    def unwrapped(self):
+    def unwrapped(self) -> gymnasium.Env:
         return self._env.unwrapped

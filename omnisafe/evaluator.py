@@ -301,6 +301,39 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             )
             self._actor = actor_builder.build_actor(actor_type)
             self._actor.load_state_dict(model_params['pi'])
+            if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
+                from omnisafe.common.barrier_comp import BarrierCompensator
+
+                self.compensator = BarrierCompensator(
+                    obs_dim=observation_space.shape[0],
+                    act_dim=action_space.shape[0],
+                    cfgs=self._cfgs['compensator_cfgs'],
+                )
+                model_path = os.path.join(save_dir, 'torch_save', model_name)
+                try:
+                    model_params = torch.load(model_path)
+                except FileNotFoundError as error:
+                    raise FileNotFoundError(
+                        'The model is not found in the save directory.',
+                    ) from error
+                self.compensator.load_state_dict(model_params['compensator'])
+            if self._cfgs['algo'] == 'SACRCBF':
+                from omnisafe.common.robust_barrier_solver import CBFQPLayer
+                from omnisafe.common.robust_gp_model import DynamicsModel
+
+                epoch = model_name.split('.pt')[0].split('-')[-1]
+                self.solver = CBFQPLayer(
+                    env=self._env,
+                    device=self._cfgs['train_cfgs']['device'],
+                    gamma_b=self._cfgs['cbf_cfgs']['gamma_b'],
+                    k_d=self._cfgs['cbf_cfgs']['k_d'],
+                    l_p=self._cfgs['cbf_cfgs']['l_p'],
+                )
+                self.dynamics_model = DynamicsModel(env=self._env)
+                self.dynamics_model.load_disturbance_models(
+                    save_dir=os.path.join(self._save_dir, 'gp_model_save'),
+                    epoch=epoch,
+                )
 
         if self._cfgs['algo'] in ['CRABS']:
             self._init_crabs(model_params)
@@ -377,10 +410,22 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         # load the config
         self._save_dir = save_dir
         self._model_name = model_name
+        epoch = model_name.split('.pt')[0].split('-')[-1]
 
         self.__load_cfgs(save_dir)
 
         self.__set_render_mode(render_mode)
+
+        if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
+            from omnisafe.common.barrier_solver import PendulumSolver
+
+            self.solver = PendulumSolver()
+            path = os.path.join(
+                save_dir,
+                'gp_model_save',
+                f'gaussian_process_regressor_{epoch}.pkl',
+            )
+            self.solver.build_gp_model(save_dir=path)
 
         env_kwargs = {
             'env_id': self._cfgs['env_id'],
@@ -452,6 +497,32 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                         raise ValueError(
                             'The policy must be provided or created before evaluating the agent.',
                         )
+                if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
+                    approx_compensating_act = self.compensator(obs=obs)
+                    compensated_act_mean_raw = act + approx_compensating_act
+                    [f, g, x, std] = self.solver.get_gp_dynamics(obs, use_prev_model=False)
+                    compensating_act = self.solver.control_barrier(
+                        compensated_act_mean_raw,
+                        f,
+                        g,
+                        x,
+                        std,
+                    )
+                    act = compensated_act_mean_raw + compensating_act
+
+                if self._cfgs['algo'] == 'SACRCBF':
+                    state_batch = self.dynamics_model.get_state(obs)
+                    mean_pred_batch, sigma_pred_batch = self.dynamics_model.predict_disturbance(
+                        state_batch,
+                    )
+                    safe_act = self.solver.get_safe_action(
+                        state_batch,
+                        act,
+                        mean_pred_batch,
+                        sigma_pred_batch,
+                    )
+                    act = safe_act
+
                 obs, rew, cost, terminated, truncated, _ = self._env.step(act)
                 if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
                     self._safety_obs -= cost.unsqueeze(-1) / self._safety_budget

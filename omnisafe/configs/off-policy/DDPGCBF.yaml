@@ -29,7 +29,7 @@ defaults:
     # total number of steps to train
     total_steps: 80_000
     # number of evaluate episodes
-    eval_episodes: 0
+    eval_episodes: 1
   # algorithm configurations
   algo_cfgs:
     # number of steps to update the policy
@@ -77,7 +77,7 @@ defaults:
     # use tensorboard for logging
     use_tensorboard: True
     # save model frequency
-    save_model_freq: 100
+    save_model_freq: 20
     # save logger path
     log_dir: "./runs"
     # save model path
@@ -105,7 +105,7 @@ defaults:
       # Size of hidden layers
       hidden_sizes: [400, 300]
       # Activation function
-      
+
       activation: relu
       # The learning rate of Critic network
       lr: 0.001

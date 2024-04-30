@@ -22,13 +22,14 @@ from torch.utils.data import DataLoader, TensorDataset
 from omnisafe.adapter.barrier_function_adapter import BarrierFunctionAdapter
 from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.trpo import TRPO
-from omnisafe.utils import distributed
-from omnisafe.common.barrier_solver import PendulumSolver
 from omnisafe.common.barrier_comp import BarrierCompensator
+from omnisafe.common.barrier_solver import PendulumSolver
+from omnisafe.utils import distributed
+
 
 @registry.register
 class TRPOCBF(TRPO):
-    
+
     def _init_log(self) -> None:
         super()._init_log()
         self._logger.register_key('Metrics/angle', min_and_max=True)
@@ -51,18 +52,26 @@ class TRPOCBF(TRPO):
         )
         self.solver = PendulumSolver(device=self._cfgs.train_cfgs.device)
         self.compensator = BarrierCompensator(
-            obs_dim = self._env.observation_space.shape[0],
-            act_dim = self._env.action_space.shape[0],
-            cfgs = self._cfgs.compensator_cfgs,
+            obs_dim=self._env.observation_space.shape[0],
+            act_dim=self._env.action_space.shape[0],
+            cfgs=self._cfgs.compensator_cfgs,
         )
         self._env.set_solver(solver=self.solver)
         self._env.set_compensator(compensator=self.compensator)
-        
+
     def _init(self) -> None:
         super()._init()
-        self._buf.add_field(name='approx_compensating_act', shape=self._env.action_space.shape, dtype=torch.float32)
-        self._buf.add_field(name='compensating_act', shape=self._env.action_space.shape, dtype=torch.float32)
-        
+        self._buf.add_field(
+            name='approx_compensating_act',
+            shape=self._env.action_space.shape,
+            dtype=torch.float32,
+        )
+        self._buf.add_field(
+            name='compensating_act',
+            shape=self._env.action_space.shape,
+            dtype=torch.float32,
+        )
+
     def _update(self) -> None:
         """Update actor, critic.
 
@@ -77,8 +86,18 @@ class TRPOCBF(TRPO):
             accepted.
         """
         data = self._buf.get()
-        
-        obs, act, logp, target_value_r, target_value_c, adv_r, adv_c, approx_compensating_act, compensating_act = (
+
+        (
+            obs,
+            act,
+            logp,
+            target_value_r,
+            target_value_c,
+            adv_r,
+            adv_c,
+            approx_compensating_act,
+            compensating_act,
+        ) = (
             data['obs'],
             data['act'],
             data['logp'],
@@ -91,7 +110,11 @@ class TRPOCBF(TRPO):
         )
 
         self._update_actor(obs, act, logp, adv_r, adv_c)
-        compensator_loss = self._env.compensator.train(observation=obs, approx_compensating_act=approx_compensating_act, compensating_act=compensating_act)
+        compensator_loss = self._env.compensator.train(
+            observation=obs,
+            approx_compensating_act=approx_compensating_act,
+            compensating_act=compensating_act,
+        )
         dataloader = DataLoader(
             dataset=TensorDataset(obs, target_value_r, target_value_c),
             batch_size=self._cfgs.algo_cfgs.batch_size,

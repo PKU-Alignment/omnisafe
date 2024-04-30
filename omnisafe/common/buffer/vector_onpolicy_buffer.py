@@ -87,7 +87,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
             )
             for _ in range(num_envs)
         ]
-        
+
     def add_field(self, name: str, shape: tuple[int, ...], dtype: torch.dtype) -> None:
         """Add a field to the buffer.
 

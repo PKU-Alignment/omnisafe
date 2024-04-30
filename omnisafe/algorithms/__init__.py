@@ -27,16 +27,16 @@ from omnisafe.algorithms.model_based import CAPPETS, CCEPETS, LOOP, PETS, RCEPET
 from omnisafe.algorithms.off_policy import (
     CRABS,
     DDPG,
+    DDPGCBF,
     DDPGPID,
     SAC,
     SACPID,
+    SACRCBF,
     TD3,
     TD3PID,
     DDPGLag,
     SACLag,
     TD3Lag,
-    SACRCBF,
-    DDPGCBF,
 )
 
 # Offline Safe
@@ -53,10 +53,12 @@ from omnisafe.algorithms.on_policy import (
     PPO,
     RCPO,
     TRPO,
+    TRPOCBF,
     TRPOPID,
     NaturalPG,
     OnCRPO,
     PolicyGradient,
+    PPOBetaCBF,
     PPOEarlyTerminated,
     PPOLag,
     PPOSaute,
@@ -65,8 +67,6 @@ from omnisafe.algorithms.on_policy import (
     TRPOLag,
     TRPOSaute,
     TRPOSimmerPID,
-    TRPOCBF,
-    PPOBetaCBF,
 )
 
 

@@ -18,22 +18,19 @@ from __future__ import annotations
 
 import torch
 import torch.nn as nn
-import numpy as np
+from torch.distributions import Beta, Distribution
 
-from torch.distributions import Distribution, Beta
-
-from omnisafe.models.actor.gaussian_actor import GaussianActor
+from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, InitFunction, OmnisafeSpace
 from omnisafe.utils.model import build_mlp_network
-from omnisafe.models.base import Actor
 
 
 # pylint: disable-next=too-many-instance-attributes
 class BetaLearningActor(Actor):
-
+    """Initialize an instance of :class:`BetaLearningActor`."""
 
     _current_dist: Beta
-    
+
     def __init__(
         self,
         obs_space: OmnisafeSpace,
@@ -42,30 +39,30 @@ class BetaLearningActor(Actor):
         activation: Activation = 'relu',
         weight_initialization_mode: InitFunction = 'kaiming_uniform',
     ) -> None:
-        """Initialize an instance of :class:`GaussianLearningActor`."""
+        """Initialize an instance of :class:`BetaLearningActor`."""
         super().__init__(obs_space, act_space, hidden_sizes, activation, weight_initialization_mode)
-        
+
         self.mean: nn.Module = build_mlp_network(
             sizes=[self._obs_dim, self._hidden_sizes[0], self._hidden_sizes[0]],
             activation=activation,
             output_activation='tanh',
             weight_initialization_mode=weight_initialization_mode,
         )
-        
+
         self.alpha_net: nn.Module = build_mlp_network(
             sizes=[self._hidden_sizes[-1], self._act_dim],
             activation='identity',
             output_activation='softplus',
             weight_initialization_mode=weight_initialization_mode,
         )
-        
+
         self.beta_net: nn.Module = build_mlp_network(
             sizes=[self._hidden_sizes[-1], self._act_dim],
             activation='identity',
             output_activation='softplus',
             weight_initialization_mode=weight_initialization_mode,
         )
-        
+
     def _distribution(self, obs: torch.Tensor) -> Beta:
         """Get the distribution of the actor.
 
@@ -80,8 +77,8 @@ class BetaLearningActor(Actor):
             The normal distribution of the mean and standard deviation from the actor.
         """
         mean = self.mean(obs)
-        alphas = 1.0+self.alpha_net(mean)
-        betas = 1.0+self.beta_net(mean)
+        alphas = 1.0 + self.alpha_net(mean)
+        betas = 1.0 + self.beta_net(mean)
         return Beta(alphas, betas)
 
     def predict(self, obs: torch.Tensor, deterministic: bool = False) -> torch.Tensor:

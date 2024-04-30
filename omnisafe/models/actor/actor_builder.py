@@ -16,12 +16,12 @@
 
 from __future__ import annotations
 
+from omnisafe.models.actor.beta_learning_actor import BetaLearningActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
 from omnisafe.models.actor.mlp_actor import MLPActor
 from omnisafe.models.actor.perturbation_actor import PerturbationActor
 from omnisafe.models.actor.vae_actor import VAE
-from omnisafe.models.actor.beta_learning_actor import BetaLearningActor
 from omnisafe.models.base import Actor
 from omnisafe.typing import Activation, ActorType, InitFunction, OmnisafeSpace
 
