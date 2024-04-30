@@ -123,11 +123,6 @@ class SafetyIsaacGymEnv(CMDP):
         """Reset the environment."""
         return self._env.reset()
 
-    @property
-    def max_episode_steps(self) -> int:
-        """The max steps per episode."""
-        return self._env.env.spec.max_episode_steps
-
     def set_seed(self, seed: int) -> None:
         """Set the seed for the environment.
 
