@@ -43,6 +43,7 @@ class CMDP(ABC):
     Attributes:
         need_time_limit_wrapper (bool): Whether the environment need time limit wrapper.
         need_auto_reset_wrapper (bool): Whether the environment need auto reset wrapper.
+        need_evaluation (bool): Whether to create an instance of environment for evaluation.
     """
 
     _action_space: OmnisafeSpace
@@ -194,6 +195,8 @@ class Wrapper(CMDP):
 
     Attributes:
         _env (CMDP): The environment.
+        _device (torch.device): The device to use. Defaults to ``torch.device('cpu')``.
+        need_evaluation (bool): Whether to create an instance of environment for evaluation.
     """
 
     def __init__(self, env: CMDP, device: torch.device = DEVICE_CPU) -> None:

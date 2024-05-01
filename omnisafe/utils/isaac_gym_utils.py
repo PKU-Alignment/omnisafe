@@ -54,14 +54,21 @@ class GymnasiumIsaacEnv(VecTaskPython):
         dict[str, Any],
     ]:
         """Step the environment."""
-        obs, rews, costs, terminated, infos = super().step(action)
+        obs, rews, costs, terminated, infos = super().step(action.unsqueeze(0))
         truncated = terminated
-        return obs, rews, costs, terminated, truncated, infos
+        return (
+            obs.squeeze(0),
+            rews.squeeze(0),
+            costs.squeeze(0),
+            terminated.squeeze(0),
+            truncated.squeeze(0),
+            infos,
+        )
 
     def reset(self) -> tuple[torch.Tensor, dict[str, Any]]:
         """Reset the environment."""
         obs = super().reset()
-        return obs, {}
+        return obs.squeeze(0), {}
 
 
 def parse_sim_params(args: argparse.Namespace) -> gymapi.SimParams:
@@ -85,8 +92,8 @@ def parse_sim_params(args: argparse.Namespace) -> gymapi.SimParams:
         sim_params.physx.num_subscenes = args.subscenes
         sim_params.physx.max_gpu_contact_pairs = 8 * 1024 * 1024
 
-    sim_params.use_gpu_pipeline = args.use_gpu_pipeline
-    sim_params.physx.use_gpu = args.use_gpu
+    sim_params.use_gpu_pipeline = args.use_gpu_pipeline if args.device != 'cpu' else False
+    sim_params.physx.use_gpu = args.use_gpu if args.device != 'cpu' else False
 
     if args.physics_engine == gymapi.SIM_PHYSX and args.num_threads > 0:
         sim_params.physx.num_threads = args.num_threads
@@ -120,7 +127,7 @@ def make_isaac_gym_env(
         {'name': '--torch-threads', 'type': int, 'default': 16},
     ]
     args = gymutil.parse_arguments(custom_parameters=custom_parameters)
-    args.device = args.sim_device_type if args.use_gpu_pipeline else 'cpu'
+    args.device = args.sim_device_type if args.use_gpu_pipeline and args.device != 'cpu' else 'cpu'
     sim_params = parse_sim_params(args=args)
 
     device_id = int(str(device).rsplit(':', maxsplit=1)[-1]) if str(device) != 'cpu' else 0
@@ -136,6 +143,7 @@ def make_isaac_gym_env(
         task_fn = ShadowHandOverSafeJoint
     else:
         raise NotImplementedError
+
     task = task_fn(
         num_envs=num_envs,
         sim_params=sim_params,

@@ -144,8 +144,8 @@ class OnPolicyAdapter(OnlineAdapter):
             cost (torch.Tensor): The immediate step cost.
             info (dict[str, Any]): Some information logged by the environment.
         """
-        self._ep_ret += info.get('original_reward', reward.mean()).cpu()
-        self._ep_cost += info.get('original_cost', cost.mean()).cpu()
+        self._ep_ret += info.get('original_reward', reward).cpu()
+        self._ep_cost += info.get('original_cost', cost).cpu()
         self._ep_len += 1
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
