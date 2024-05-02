@@ -23,7 +23,4 @@ from omnisafe.envs.custom_env import CustomEnv
 from omnisafe.envs.mujoco_env import MujocoEnv
 from omnisafe.envs.safety_gymnasium_env import SafetyGymnasiumEnv
 from omnisafe.envs.safety_gymnasium_modelbased import SafetyGymnasiumModelBased
-
-
-with suppress(ImportError):
-    from omnisafe.envs.safety_isaac_gym_env import SafetyIsaacGymEnv
+from omnisafe.envs.safety_isaac_gym_env import SafetyIsaacGymEnv

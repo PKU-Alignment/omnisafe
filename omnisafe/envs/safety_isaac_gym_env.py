@@ -23,7 +23,13 @@ import torch
 
 from omnisafe.envs.core import CMDP, env_register
 from omnisafe.typing import DEVICE_CPU
-from omnisafe.utils.isaac_gym_utils import make_isaac_gym_env
+
+
+ISAAC_GYM_AVAILABLE = True
+try:
+    from omnisafe.utils.isaac_gym_utils import make_isaac_gym_env
+except ImportError:
+    ISAAC_GYM_AVAILABLE = False
 
 
 @env_register
@@ -64,7 +70,10 @@ class SafetyIsaacGymEnv(CMDP):
         super().__init__(env_id)
         self._num_envs = num_envs
         self._device = torch.device(device)
-        self._env = make_isaac_gym_env(env_id=env_id, device=device, num_envs=num_envs)
+        if ISAAC_GYM_AVAILABLE:
+            self._env = make_isaac_gym_env(env_id=env_id, device=device, num_envs=num_envs)
+        else:
+            raise ImportError('Please install Isaac Gym to use Safe Isaac Gym!')
         self._action_space = self._env.action_space
         self._observation_space = self._env.observation_space
         self.need_evaluation = False

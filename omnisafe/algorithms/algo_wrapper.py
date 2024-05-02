@@ -144,8 +144,7 @@ class AlgoWrapper:
         assert self.cfgs.train_cfgs.parallel > 0, 'parallel must be greater than 0!'
         assert (
             self.env_id in support_envs()
-        ), f"{self.env_id} doesn't exist. Please choose from {support_envs()}.\
-            \nIf you are using Safe Isaac Gym environments, please install Isaac Gym first."
+        ), f"{self.env_id} doesn't exist. Please choose from {support_envs()}."
 
     def _init_algo(self) -> None:
         """Initialize the algorithm."""
