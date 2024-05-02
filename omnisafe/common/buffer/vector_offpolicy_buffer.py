@@ -38,6 +38,7 @@ class VectorOffPolicyBuffer(OffPolicyBuffer):
         size (int): The size of the buffer.
         batch_size (int): The batch size of the buffer.
         num_envs (int): The number of environments.
+        penalty_coefficient (float, optional): The penalty coefficient. Defaults to 0.0.
         device (torch.device, optional): The device of the buffer. Defaults to
             ``torch.device('cpu')``.
 

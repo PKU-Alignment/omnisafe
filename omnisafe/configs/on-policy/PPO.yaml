@@ -308,10 +308,14 @@ SafeMetaDrive:
   model_cfgs:
     # actor network configurations
     actor:
+      # hidden layer sizes
+      hidden_sizes: [256, 256]
       # learning rate
       lr: 0.00005
     # critic network configurations
     critic:
+      # hidden layer sizes
+      hidden_sizes: [256, 256]
       # learning rate
       lr: 0.00005
   # environment specific configurations

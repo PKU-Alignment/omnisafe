@@ -288,11 +288,11 @@ SafeMetaDrive:
       out_of_road_penalty: 1.
   # lagrangian configurations
   lagrange_cfgs:
-    # Tolerance of constraint violation
-    cost_limit: 1.0
-    # Initial value of lagrangian multiplier
+    # tolerance of constraint violation
+    cost_limit: 0.0
+    # initial value of lagrangian multiplier
     lagrangian_multiplier_init: 0.01
-    # Learning rate of lagrangian multiplier
+    # learning rate of lagrangian multiplier
     lambda_lr: 0.0001
-    # Type of lagrangian optimizer
+    # type of lagrangian optimizer
     lambda_optimizer: "Adam"

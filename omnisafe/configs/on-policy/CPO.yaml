@@ -126,8 +126,6 @@ defaults:
       activation: tanh
       # learning rate
       lr: 0.001
-  # environment specific configurations
-  env_cfgs: null
 
 SafeMetaDrive:
   # training configurations
@@ -159,11 +157,13 @@ SafeMetaDrive:
   model_cfgs:
     # actor network configurations
     actor:
+      # size of hidden layers
       hidden_sizes: [256, 256]
       # learning rate
       lr: 0.00005
     # critic network configurations
     critic:
+      # size of hidden layers
       hidden_sizes: [256, 256]
       # learning rate
       lr: 0.00005
