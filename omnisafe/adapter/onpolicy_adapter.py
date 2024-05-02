@@ -105,7 +105,7 @@ class OnPolicyAdapter(OnlineAdapter):
             epoch_end = step >= steps_per_epoch - 1
             if epoch_end:
                 num_dones = int(terminated.contiguous().sum())
-                if num_dones:
+                if self._env.num_envs - num_dones:
                     logger.log(
                         f'\nWarning: trajectory cut off when rollout by epoch\
                             in {self._env.num_envs - num_dones} of {self._env.num_envs} environments.',
