@@ -241,7 +241,7 @@ ShadowHandCatchOver2UnderarmSafeJoint:
       hidden_sizes: [1024, 1024, 512]
       # learning rate
       lr: 0.0006
-      
+
 SafeMetaDrive:
   # training configurations
   train_cfgs:

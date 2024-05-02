@@ -21,11 +21,17 @@ from typing import Any, ClassVar
 
 import numpy as np
 import torch
-from metadrive import SafeMetaDriveEnv  # pylint: disable=import-error
 
 from omnisafe.common.logger import Logger
 from omnisafe.envs.core import CMDP, env_register
 from omnisafe.typing import DEVICE_CPU
+
+
+META_DRIVE_AVAILABLE = True
+try:
+    from metadrive import SafeMetaDriveEnv
+except ImportError:
+    META_DRIVE_AVAILABLE = False
 
 
 @env_register
@@ -73,8 +79,10 @@ class SafetyMetaDriveEnv(CMDP):
         self._num_envs = num_envs
         self._device = torch.device(device)
 
-        self._env = SafeMetaDriveEnv(config=kwargs.get('meta_drive_config'))
-
+        if META_DRIVE_AVAILABLE:
+            self._env = SafeMetaDriveEnv(config=kwargs.get('meta_drive_config'))
+        else:
+            raise ImportError('Please install MetaDrive to use Safe SafeMetaDrive!')
         self._num_scenarios = self._env.config['num_scenarios']
 
         self._env.logger.setLevel(logging.FATAL)
