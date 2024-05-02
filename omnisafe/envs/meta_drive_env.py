@@ -39,6 +39,7 @@ class SafetyMetaDriveEnv(CMDP):
     """SafeMetaDrive Environment.
 
     More information about MetaDrive environment is provided in https://github.com/metadriverse/metadrive.
+    For the details of environment configuration, please refer to https://github.com/decisionforce/EGPO.
 
     Args:
         env_id (str): Environment id.
@@ -47,12 +48,12 @@ class SafetyMetaDriveEnv(CMDP):
             ``torch.device('cpu')``.
 
     Keyword Args:
-        render_mode (str, optional): The render mode ranges from 'human' to 'rgb_array' and
-            'rgb_array_list'. Defaults to 'rgb_array'.
-        camera_name (str, optional): The camera name.
-        camera_id (int, optional): The camera id.
-        width (int, optional): The width of the rendered image. Defaults to 256.
-        height (int, optional): The height of the rendered image. Defaults to 256.
+        meta_drive_config (dict, optional): MetaDrive configuration, containing following keys:
+            - ``horizon``: Max iterations of interactions.
+            - ``random_traffic``: Whether to use random traffic.
+            - ``crash_vehicle_penalty``: The penalty when crash into other vehicles.
+            - ``crash_object_penalty``: The penalty when crash into other objects.
+            - ``out_of_road_penalty``: The penalty when out of road.
 
     Attributes:
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
