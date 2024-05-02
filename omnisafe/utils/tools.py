@@ -21,6 +21,7 @@ import json
 import os
 import random
 import sys
+from collections import deque
 from typing import Any
 
 import numpy as np
@@ -29,7 +30,7 @@ import torch.backends.cudnn
 import yaml
 from rich.console import Console
 
-from omnisafe.typing import DEVICE_CPU
+from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
 
 def get_flat_params_from(model: torch.nn.Module) -> torch.Tensor:
@@ -356,3 +357,76 @@ def get_device(device: torch.device | str | int = DEVICE_CPU) -> torch.device:
         return torch.device('cpu')
 
     return device
+
+
+def create_feature_actions(feature_, action_):
+    N = feature_.size(0)
+    # Flatten sequence of features.
+    # f (batch_size, (num_sequences)*feature_dim)
+    f = feature_[:, :-1].view(N, -1)
+    n_f = feature_[:, 1:].view(N, -1)
+    # Flatten sequence of actions.
+    a = action_[:, :-1].view(N, -1)
+    n_a = action_[:, 1:].view(N, -1)
+    # Concatenate feature and action.
+    fa = torch.cat([f, a], dim=-1)
+    n_fa = torch.cat([n_f, n_a], dim=-1)
+    return fa, n_fa
+
+
+class LazyFrames:
+    def __init__(self, frames) -> None:
+        self._frames = list(frames)
+
+    def __array__(self, dtype):
+        return np.array(self._frames, dtype=dtype)
+
+    def __len__(self) -> int:
+        return len(self._frames)
+
+
+class SequenceQueue:
+    def __init__(self, obs_space: OmnisafeSpace, num_sequences: int = 8, device=DEVICE_CPU) -> None:
+        self.num_sequences = num_sequences
+        self._reset_episode = False
+        self._obs_space = obs_space
+        self._device = device
+        self.data = {}
+        self.data['obs'] = deque(maxlen=self.num_sequences + 1)
+        self.data['act'] = deque(maxlen=self.num_sequences)
+        self.data['reward'] = deque(maxlen=self.num_sequences)
+        self.data['done'] = deque(maxlen=self.num_sequences)
+        self.data['cost'] = deque(maxlen=self.num_sequences)
+
+    def reset_sequence_queue(self, obs):
+        for k in self.data:
+            self.data[k].clear()
+        self._reset_episode = True
+        self.data['obs'].append(obs.detach().cpu().numpy())
+
+    def append(self, **data: torch.Tensor):
+        assert self._reset_episode, self._reset_episode
+        for key, value in data.items():
+            self.data[key].append(value.detach().cpu().numpy())
+
+    def _process_get(self, key: str) -> LazyFrames | torch.Tensor:
+        if key == 'obs':
+            return np.array(LazyFrames(self.data['obs']), dtype=np.float32).swapaxes(0, 1).squeeze()
+        else:
+            return torch.tensor(
+                np.array(self.data[key], dtype=np.float32),
+                dtype=torch.float32,
+                device=self._device,
+            )
+
+    def get(self):
+        return {key: self._process_get(key) for key in self.data}
+
+    def is_empty(self):
+        return len(self.data['reward']) == 0
+
+    def is_full(self):
+        return len(self.data['reward']) == self.num_sequences
+
+    def __len__(self) -> int:
+        return len(self.data['reward'])

@@ -16,10 +16,13 @@
 
 from __future__ import annotations
 
+from collections import deque
+
 import numpy as np
+import torch
 from torch import nn
 
-from omnisafe.typing import Activation, InitFunction
+from omnisafe.typing import DEVICE_CPU, Activation, InitFunction
 
 
 def initialize_layer(init_function: InitFunction, layer: nn.Linear) -> None:
@@ -109,3 +112,43 @@ def build_mlp_network(
         initialize_layer(weight_initialization_mode, affine_layer)
         layers += [affine_layer, act_fn()]
     return nn.Sequential(*layers)
+
+
+class ObservationConcator:
+    def __init__(self, state_shape, action_shape, num_sequences, device=DEVICE_CPU) -> None:
+        self.state_shape = state_shape
+        self.action_shape = action_shape
+        self.num_sequences = num_sequences
+        self.device = device
+
+    def reset_episode(self, state):
+        self._state = deque(maxlen=self.num_sequences)
+        self._action = deque(maxlen=self.num_sequences - 1)
+        for _ in range(self.num_sequences - 1):
+            self._state.append(
+                torch.zeros(self.state_shape, dtype=torch.float32, device=self.device),
+            )
+            self._action.append(
+                torch.zeros(self.action_shape, dtype=torch.float32, device=self.device),
+            )
+        self._state.append(state)
+
+    def append(self, state, action):
+        self._state.append(state)
+        self._action.append(action)
+
+    @property
+    def state(self):
+        return self._state[None, ...]
+
+    @property
+    def last_state(self):
+        return self._state[-1][None, ...]
+
+    @property
+    def action(self):
+        return self._action.reshape(1, -1)
+
+    @property
+    def last_action(self):
+        return self._action[-1]

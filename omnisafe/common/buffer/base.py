@@ -22,6 +22,7 @@ import torch
 from gymnasium.spaces import Box
 
 from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
+from omnisafe.utils.tools import SequenceQueue
 
 
 class BaseBuffer(ABC):
@@ -132,3 +133,53 @@ class BaseBuffer(ABC):
         Args:
             data (torch.Tensor): The data to store.
         """
+
+
+class BaseSequenceBuffer(BaseBuffer):
+    def __init__(
+        self,
+        obs_space: OmnisafeSpace,
+        act_space: OmnisafeSpace,
+        size: int,
+        num_sequences: int,
+        device: torch.device = DEVICE_CPU,
+    ) -> None:
+        """Initialize an instance of :class:`BaseBuffer`."""
+        self._device: torch.device = device
+        self._num_sequences = num_sequences
+        if isinstance(obs_space, Box):
+            obs_buf = [None] * size
+        else:
+            raise NotImplementedError
+        if isinstance(act_space, Box):
+            act_buf = torch.zeros(
+                (size, num_sequences, *act_space.shape),
+                dtype=torch.float32,
+                device=device,
+            )
+        else:
+            raise NotImplementedError
+
+        self.data: dict[str, torch.Tensor | list] = {
+            'obs': obs_buf,
+            'act': act_buf,
+            'reward': torch.zeros(size, num_sequences, 1, dtype=torch.float32, device=device),
+            'cost': torch.zeros(size, num_sequences, 1, dtype=torch.float32, device=device),
+            'done': torch.zeros(size, num_sequences, 1, dtype=torch.float32, device=device),
+        }
+
+        self.sequence_queue = SequenceQueue(
+            obs_space=obs_space,
+            num_sequences=num_sequences,
+            device=device,
+        )
+
+        self._size: int = size
+        self._observation_shape = obs_space.shape
+
+    def add_field(self, name: str, shape: tuple[int, ...], dtype: torch.dtype) -> None:
+        self.data[name] = torch.zeros(
+            (self._size, self._num_sequences, *shape),
+            dtype=dtype,
+            device=self._device,
+        )

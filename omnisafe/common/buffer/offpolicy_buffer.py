@@ -16,10 +16,11 @@
 
 from __future__ import annotations
 
+import numpy as np
 import torch
 from gymnasium.spaces import Box
 
-from omnisafe.common.buffer.base import BaseBuffer
+from omnisafe.common.buffer.base import BaseBuffer, BaseSequenceBuffer
 from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
 
 
@@ -119,3 +120,79 @@ class OffPolicyBuffer(BaseBuffer):
         """
         idxs = torch.randint(0, self._size, (self._batch_size,))
         return {key: value[idxs] for key, value in self.data.items()}
+
+
+class OffPolicySequenceBuffer(BaseSequenceBuffer):
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        obs_space: OmnisafeSpace,
+        act_space: OmnisafeSpace,
+        size: int,
+        batch_size: int,
+        num_sequences: int,
+        device: torch.device = DEVICE_CPU,
+    ) -> None:
+        """Initialize an instance of :class:`OffPolicySequenceBuffer`."""
+        super().__init__(obs_space, act_space, size, num_sequences, device)
+
+        self._ptr: int = 0
+        self._size: int = 0
+        self._max_size: int = size
+        self._batch_size: int = batch_size
+
+        assert (
+            self._max_size > self._batch_size
+        ), 'The size of the buffer must be larger than the batch size.'
+
+    @property
+    def max_size(self) -> int:
+        """Return the max size of the buffer."""
+        return self._max_size
+
+    @property
+    def size(self) -> int:
+        """Return the current size of the buffer."""
+        return self._size
+
+    @property
+    def batch_size(self) -> int:
+        """Return the batch size of the buffer."""
+        return self._batch_size
+
+    def store(self, **data: torch.Tensor) -> None:
+        """Store data into the buffer.
+
+        .. hint::
+            The ReplayBuffer is a circular buffer. When the buffer is full, the oldest data will be
+            overwritten.
+
+        Args:
+            data (torch.Tensor): The data to be stored.
+        """
+        self.sequence_queue.append(**data)
+        if self.sequence_queue.is_full():
+            sequece_data = self.sequence_queue.get()
+            for key, value in sequece_data.items():
+                self.data[key][self._ptr] = value
+            self._ptr = (self._ptr + 1) % self._max_size
+            self._size = min(self._size + 1, self._max_size)
+
+    def sample_batch(self, batch_size: int | None) -> dict[str, torch.Tensor]:
+        """Sample a batch of data from the buffer.
+
+        Returns:
+            The sampled batch of data.
+        """
+        batch_size = batch_size or self._batch_size
+        idxs = torch.randint(0, self._size, (batch_size,))
+        returns = {key: value[idxs] for key, value in self.data.items() if key != 'obs'}
+        obs = np.empty((batch_size, self._num_sequences + 1, *self._observation_shape))
+        for i, idx in enumerate(idxs):
+            obs[i, ...] = self.data['obs'][idx]
+        obs = torch.tensor(obs, dtype=torch.float32, device=self._device)
+        returns.update({'obs': obs})
+        return returns
+
+    def reset_sequence_queue(self, obs: torch.Tensor) -> None:
+        """Reset the sequence queue."""
+        self.sequence_queue.reset_sequence_queue(obs)
