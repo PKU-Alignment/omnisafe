@@ -74,13 +74,13 @@ class CRABSAdapter(OffPolicyAdapter):
         """
         for _ in range(episode):
             ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
-            obs, _ = self._eval_env.reset()
+            obs, _ = self._eval_env.reset()  # type: ignore
             obs = obs.to(self._device)
 
             done = False
             while not done:
                 act = agent.step(obs, deterministic=False)
-                obs, reward, cost, terminated, truncated, info = self._eval_env.step(act)
+                obs, reward, cost, terminated, truncated, info = self._eval_env.step(act)  # type: ignore
                 obs, reward, cost, terminated, truncated = (
                     torch.as_tensor(x, dtype=torch.float32, device=self._device)
                     for x in (obs, reward, cost, terminated, truncated)

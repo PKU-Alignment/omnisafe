@@ -9,6 +9,9 @@ omit =
     ../omnisafe/algorithms/off_policy/crabs.py
     ../omnisafe/adapter/crabs_adapter.py
     ../omnisafe/envs/crabs_env.py
+    ../omnisafe/envs/custom_env.py
+    ../omnisafe/envs/safety_isaac_gym_env.py
+    ../omnisafe/utils/isaac_gym_utils.py
 
 [report]
 exclude_lines =

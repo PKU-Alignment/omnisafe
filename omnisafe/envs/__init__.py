@@ -14,6 +14,8 @@
 # ==============================================================================
 """Environment API for OmniSafe."""
 
+from contextlib import suppress
+
 from omnisafe.envs import classic_control
 from omnisafe.envs.core import CMDP, env_register, make, support_envs
 from omnisafe.envs.crabs_env import CRABSEnv
@@ -21,3 +23,4 @@ from omnisafe.envs.custom_env import CustomEnv
 from omnisafe.envs.mujoco_env import MujocoEnv
 from omnisafe.envs.safety_gymnasium_env import SafetyGymnasiumEnv
 from omnisafe.envs.safety_gymnasium_modelbased import SafetyGymnasiumModelBased
+from omnisafe.envs.safety_isaac_gym_env import SafetyIsaacGymEnv
