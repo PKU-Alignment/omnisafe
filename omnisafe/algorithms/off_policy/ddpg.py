@@ -558,7 +558,7 @@ class DDPG(BaseAlgo):
                 },
             )
 
-    def _log_what_to_save(self) -> dict[str, Any]:
+    def _log_what_to_save(self) -> None:
         """Define what need to be saved below."""
         what_to_save: dict[str, Any] = {}
 

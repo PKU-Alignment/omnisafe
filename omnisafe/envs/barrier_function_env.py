@@ -33,8 +33,8 @@ class BarrierFunctionEnv(CMDP):
     """Interface of control barrier function-based environments.
 
     .. warning::
-        Since environments based on control barrier functions require special judgment and control of environmental dynamics,
-        they do not support the use of vectorized environments for parallelization.
+        Since environments based on control barrier functions require special judgment and control
+        of environmental dynamics, they do not support the use of vectorized environments.
 
     Attributes:
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
@@ -84,7 +84,7 @@ class BarrierFunctionEnv(CMDP):
         else:
             raise NotImplementedError('Only support num_envs=1 now.')
         self._device = torch.device(device)
-        self._episodic_violation = []
+        self._episodic_violation: list[float] = []
         self._num_envs = num_envs
         self._metadata = self._env.metadata
         self.env_spec_log = {'Metrics/Max_angle_violation': 0.0}
@@ -96,17 +96,16 @@ class BarrierFunctionEnv(CMDP):
         We have organized these adjustments and encapsulated them in this function.
         """
         if self._env_id == 'Pendulum-v1':
-            self._env.unwrapped.max_torque = 15.0
-            self._env.unwrapped.max_speed = 60.0
+            self._env.unwrapped.max_torque = 15.0  # type: ignore
+            self._env.unwrapped.max_speed = 60.0  # type: ignore
             self._env.unwrapped.action_space = spaces.Box(
-                low=-self._env.unwrapped.max_torque,
-                high=self._env.unwrapped.max_torque,
+                low=-self._env.unwrapped.max_torque,  # type: ignore
+                high=self._env.unwrapped.max_torque,  # type: ignore
                 shape=(1,),
             )
-            high = np.array([1.0, 1.0, self._env.unwrapped.max_speed])
+            high = np.array([1.0, 1.0, self._env.unwrapped.max_speed])  # type: ignore
             self._env.unwrapped.observation_space = spaces.Box(low=-high, high=high)
-            self._env.dt = 0.05
-            self._env.dynamics_mode = 'Pendulum'
+            self._env.dt = 0.05  # type: ignore
 
     def step(
         self,
@@ -146,7 +145,7 @@ class BarrierFunctionEnv(CMDP):
             for x in (obs, reward, terminated, truncated)
         )
         cost = torch.abs(torch.atan2(obs[1], obs[0])).to(self._device)
-        self._episodic_violation.append(cost)
+        self._episodic_violation.append(cost.item())
 
         if 'final_observation' in info:
             info['final_observation'] = np.array(
@@ -194,7 +193,7 @@ class BarrierFunctionEnv(CMDP):
         """
         obs, info = self._env.reset(seed=seed, options=options)
         if self._env_id == 'Pendulum-v1':
-            while self._env.unwrapped.state[0] > 1.0 or self._env.unwrapped.state[0] < -1.0:
+            while self._env.unwrapped.state[0] > 1.0 or self._env.unwrapped.state[0] < -1.0:  # type: ignore
                 obs, info = self._env.reset(options=options)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
 
@@ -220,4 +219,5 @@ class BarrierFunctionEnv(CMDP):
 
     @property
     def unwrapped(self) -> gymnasium.Env:
+        """Return the original interface of environment."""
         return self._env.unwrapped

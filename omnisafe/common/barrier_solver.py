@@ -14,6 +14,10 @@
 # ==============================================================================
 """Implementation of the Control Barrier Function Solver."""
 
+# pylint: disable=invalid-name,wrong-spelling-in-docstring
+# mypy: ignore-errors
+
+
 from __future__ import annotations
 
 import warnings
@@ -27,6 +31,7 @@ from sklearn.gaussian_process.kernels import RBF
 from sklearn.gaussian_process.kernels import ConstantKernel as C
 
 
+# pylint: disable-next=too-many-instance-attributes
 class PendulumSolver:
     """Solver for the pendulum problem using Gaussian Process models.
 
@@ -38,6 +43,7 @@ class PendulumSolver:
         device (str): Device to run the computations on.
     """
 
+    # pylint: disable-next=invalid-name
     def __init__(
         self,
         action_size: int = 1,
@@ -63,9 +69,11 @@ class PendulumSolver:
         self._device = device
         self._gamma_b = 0.5
         self._kd = 1.5
+        self.gp_model_prev: list[GaussianProcessRegressor, GaussianProcessRegressor]
+        self.gp_model: list[GaussianProcessRegressor, GaussianProcessRegressor]
+
         self._build_barrier()
         self.build_gp_model()
-        self.gp_model_prev = None
         warnings.filterwarnings('ignore')
 
     def build_gp_model(self, save_dir: str | None = None) -> None:
@@ -80,6 +88,7 @@ class PendulumSolver:
             else:
                 gp_list = joblib.load(save_dir)
         self.gp_model = gp_list
+        self.gp_model_prev = gp_list.copy()
 
     @property
     def gp_models(self) -> list[GaussianProcessRegressor]:
@@ -95,7 +104,7 @@ class PendulumSolver:
         self.h3 = np.array([-1, 0.01])
         self.h4 = np.array([-1, -0.01])
 
-    def control_barrier(
+    def control_barrier(  # pylint: disable=invalid-name
         self,
         original_action: torch.Tensor,
         f: np.ndarray,
@@ -103,9 +112,7 @@ class PendulumSolver:
         x: np.ndarray,
         std: np.ndarray,
     ) -> torch.Tensor:
-        """
-        Adjusts the original action using a control barrier function to ensure
-        that the action complies with the system's physical constraints.
+        """Adjusts the original action using a control barrier function.
 
         Args:
             original_action (torch.Tensor): The original action proposed by the RL algorithm.
@@ -117,7 +124,6 @@ class PendulumSolver:
         Returns:
             torch.Tensor: The adjusted action that respects the system's constraints.
         """
-
         # Define gamma for the barrier function
         gamma_b = 0.5
         kd = 1.5
@@ -196,10 +202,9 @@ class PendulumSolver:
 
         return torch.as_tensor(u_bar[0], dtype=torch.float32, device=self._device).unsqueeze(dim=0)
 
+    # pylint: disable-next=attribute-defined-outside-init,import-outside-toplevel,invalid-name
     def get_dynamics(self, obs: list[float], original_action: float) -> np.ndarray:
-        """
-        Calculates the dynamics of the system based on the current observation
-        and the original action.
+        """Calculates the dynamics of the system.
 
         Args:
             obs (list[float]): The current observation of the system state.
@@ -208,7 +213,6 @@ class PendulumSolver:
         Returns:
             np.ndarray: The calculated dynamics of the system.
         """
-
         dt = 0.05  # Time step
         G = 10  # Gravitational constant
         m = 2  # Mass
@@ -233,8 +237,7 @@ class PendulumSolver:
         return np.squeeze(f)
 
     def update_gp_dynamics(self, obs: np.ndarray, act: np.ndarray) -> None:
-        """
-        Updates the Gaussian Process (GP) dynamics model based on observed states and actions.
+        """Updates the Gaussian Process (GP) dynamics model based on observed states and actions.
 
         Args:
             obs (np.ndarray): Observed states.
@@ -260,8 +263,7 @@ class PendulumSolver:
         self.gp_model[1].fit(S, err[:, 1])
 
     def get_gp_dynamics(self, obs: torch.Tensor, use_prev_model: bool) -> list[np.ndarray]:
-        """
-        Retrieves the gp dynamics based on the current observation.
+        """Retrieves the gp dynamics based on the current observation.
 
         Args:
             obs (torch.Tensor): Current state observation.
@@ -278,7 +280,7 @@ class PendulumSolver:
         obs = np.squeeze(obs)
         theta = np.arctan2(obs[1], obs[0])
         theta_dot = obs[2]
-        x = np.array([theta, theta_dot])  # 这个x估计就对应state
+        x = np.array([theta, theta_dot])
         f_nom = np.array(
             [
                 -3 * G / (2 * length) * np.sin(theta + np.pi) * dt**2
@@ -307,3 +309,8 @@ class PendulumSolver:
             np.squeeze(x),
             np.array([np.squeeze(std1), np.squeeze(std2)]),
         ]
+
+    def reset_gp_model(self) -> None:
+        """Reset the gaussian processing model of barrier function solver."""
+        self.gp_model_prev = self.gp_model.copy()
+        self.build_gp_model()

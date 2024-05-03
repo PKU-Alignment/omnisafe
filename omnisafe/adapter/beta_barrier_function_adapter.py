@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""BarrierFunction Adapter for OmniSafe."""
+"""Barrier Function Adapter for OmniSafe."""
 
 from __future__ import annotations
+
+from typing import Callable
 
 import numpy as np
 import torch
@@ -28,17 +30,28 @@ from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActor
 from omnisafe.utils.config import Config
 
 
-def cbf(state: np.ndarray | None = None, eta: float = 0.99) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Calculates CBF constraint set at a given state. Default is
-    the current state.
+# # pylint: disable-next=too-many-locals
+def cbf(state: np.ndarray, eta: float = 0.99) -> tuple[np.ndarray, np.ndarray]:
+    """Calculates the Control Barrier Function (CBF) constraints.
+
+    Args:
+        state (np.ndarray | None): A numpy array containing the pendulum's current angular position
+        (theta) and angular velocity (thetadot).
+        eta (float): A scaling factor used to adjust the safety bounds.
+
+    Returns:
+        tuple containing two elements: 1. The minimum control torque that keeps the pendulum within
+        the safety bounds. 2. The maximum control torque that keeps the pendulum within the safety
+        bounds.
+
+    Raises:
+        ValueError: If the `eta` value is not within the open interval (0, 1).
     """
     g = 9.8
     m = 1
     length = 1
     tau = 5e-2
     theta_safety_bounds = [-1.0, 1.0]
-    thetadot_safety_bounds = [-np.inf, np.inf]
     torque_bounds = [-15.0, 15.0]
     if (eta > 1 - 1e-3) or (eta < 1e-5):
         raise ValueError('eta should be inside (0, 1)')
@@ -47,7 +60,7 @@ def cbf(state: np.ndarray | None = None, eta: float = 0.99) -> tuple[np.ndarray,
 
     theta, thetadot = state[0], state[1]
     theta_min, theta_max = theta_safety_bounds[0], theta_safety_bounds[1]
-    thetadot_min, thetadot_max = thetadot_safety_bounds[0], thetadot_safety_bounds[1]
+    thetadot_min, thetadot_max = -np.inf, np.inf
     u_min1 = (1 / c2) * (
         ((1 / (tau**2)) * (-eta * (theta - theta_min) - tau * thetadot)) - c1 * np.sin(theta)
     )
@@ -61,27 +74,21 @@ def cbf(state: np.ndarray | None = None, eta: float = 0.99) -> tuple[np.ndarray,
     u_min = max(u_min1, u_min2, torque_bounds[0])
     u_max = min(u_max1, u_max2, torque_bounds[1])
 
-    u_min = torque_bounds[0]
-    u_max = torque_bounds[1]
-
-    return [u_min, u_max]
+    return (u_min, u_max)
 
 
-def vectorize_f(f: callable) -> callable:
-    """Converts a function `f` that operates on 1D numpy arrays and outputs pairs of scalars,
-    into a vectorized function that accepts batches of torch tensorized arrays and outputs
-    pairs of torch tensors.
+def vectorize_f(f: Callable) -> Callable:
+    """Vectorize the function.
 
     Args:
-        f (callable): A function that accepts 1D numpy arrays and returns a tuple (lower_bound, upper_bound), where both are scalars.
+        f (callable): A function that accepts 1D numpy arrays and returns a tuple (lower_bound, upper_bound).
 
     Returns:
         callable: A vectorized function that can process batches of torch tensors and return pairs of torch tensors.
     """
 
     def vectorized_f_(obs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        """
-        Inner function to process the torch tensor batch.
+        """Inner function to process the torch tensor batch.
 
         Args:
             obs (torch.Tensor): A batch of observations as torch tensors.
@@ -94,13 +101,13 @@ def vectorize_f(f: callable) -> callable:
         if len(obs.shape) == 1:
             batch_size = 1
             lbs, ubs = f(obs)
-            lbs = np.array(lbs)
-            ubs = np.array(ubs)
+            lbs = torch.as_tensor(lbs)
+            ubs = torch.as_tensor(ubs)
 
         else:
             batch_size = obs.shape[0]
-            lbs = np.zeros([batch_size, 1])
-            ubs = np.zeros([batch_size, 1])
+            lbs = torch.zeros([batch_size, 1])
+            ubs = torch.zeros([batch_size, 1])
             for i in range(batch_size):
                 lbs[i], ubs[i] = f(obs[i])
 
@@ -129,10 +136,7 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
         """Initialize an instance of :class:`BarrierFunctionAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
-        self.solver = None
-        self.compensator = None
-        self.first_iter = 1
-        self.constraint_fn = vectorize_f(cbf)
+        self.constraint_fn: Callable = vectorize_f(cbf)
 
     def _wrapper(
         self,
@@ -183,8 +187,6 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
         """
         self._reset_log()
         obs, _ = self.reset()
-        while abs(self._env.unwrapped.state[0]) > 1:
-            obs, _ = self._env.reset()
         for step in track(
             range(steps_per_epoch),
             description=f'Processing rollout for epoch: {logger.current_epoch}...',
@@ -240,7 +242,4 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
                         self._ep_cost[idx] = 0.0
                         self._ep_len[idx] = 0.0
                         obs, _ = self.reset()
-                        while abs(self._env.unwrapped.state[0]) > 1:
-                            obs, _ = self._env.reset()
                     buffer.finish_path(last_value_r, last_value_c, idx)
-        self.first_iter = 0

@@ -1,3 +1,5 @@
+# pylint: disable=all
+# mypy: ignore-errors
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -9,15 +11,6 @@ from gymnasium import spaces
 
 
 def to_pixel(meas_cm: list[float] | float, shift: int = 0) -> float:
-    """Convert measurements from centimeters to pixels.
-
-    Args:
-        meas_cm (list[float] | float): A single measurement or a list of measurements in centimeters.
-        shift (int, optional): An integer value that is added to the converted measurement(s). Default is 0.
-
-    Returns:
-        float | np.ndarray: The measurement converted to pixels.
-    """
     if isinstance(meas_cm, Iterable):
         return 1.5 * 37.795 * meas_cm + np.array(shift)
 
@@ -25,7 +18,6 @@ def to_pixel(meas_cm: list[float] | float, shift: int = 0) -> float:
 
 
 class UnicycleEnv(gym.Env):
-    """Custom Environment that follows SafetyGym interface"""
 
     def __init__(self) -> None:
 
@@ -84,41 +76,11 @@ class UnicycleEnv(gym.Env):
         self,
         action: np.ndarray,
     ) -> tuple[np.ndarray, float, float, bool, bool, dict[str, Any]]:
-        """
-        Advance the environment state based on the action taken by the agent.
-
-        Parameters:
-            action(np.ndarray): Control action taken by the agent.
-
-        Returns:
-            A tuple containing:
-            - new_obs : np.ndarray, the new observation structured as [pos_x, pos_y, cos(theta), sin(theta), xdir2goal, ydir2goal, dist2goal].
-            - reward : float, reward received after taking the action.
-            - cost : float, cost incurred after taking the action.
-            - terminated : bool, whether the episode has terminated.
-            - truncated : bool, whether the episode was truncated.
-            - info : dict, additional information about the environment's state.
-        """
         action = np.clip(action, -1.0, 1.0)
         state, reward, cost, terminated, truncated, info = self._step(action)
         return self.get_obs(), reward, cost, terminated, truncated, info
 
     def _step(self, action: np.ndarray) -> tuple:
-        """
-        Update the internal state based on the action, considering dynamics and disturbances.
-
-        Parameters:
-            action(np.ndarray): Control action taken by the agent.
-
-        Returns:
-            A tuple containing:
-            - state : np.ndarray, new internal state of the agent.
-            - reward : float, reward collected during this transition.
-            - cost : float, cost incurred during this transition.
-            - terminated : bool, whether the episode has terminated.
-            - truncated : bool, whether the episode was truncated due to reaching a step limit.
-            - info : dict, additional information relevant to the environment.
-        """
         self.state += self.dt * (self.get_f(self.state) + self.get_g(self.state) @ action)
         self.state -= self.dt * 0.1 * self.get_g(self.state) @ np.array([np.cos(self.state[2]), 0])
 
@@ -143,29 +105,9 @@ class UnicycleEnv(gym.Env):
         return self.state, reward, cost, terminated, truncated, {}
 
     def goal_met(self) -> bool:
-        """
-        Check if the current goal has been met in this step.
-
-        Returns:
-            True if the agent has reached the goal, False otherwise.
-        """
         return np.linalg.norm(self.state[:2] - self.goal_pos) <= self.goal_size
 
     def reset(self, seed: int | None = None, options: dict | None = None) -> tuple:
-        """
-        Reset the environment to an initial state.
-
-        Parameters:
-            seed : int, optional
-                Seed for random number generator.
-            options : dict, optional
-                Additional options to customize the environment reset.
-
-        Returns:
-            A tuple containing:
-            - observation : np.ndarray, the first observation after reset.
-            - info : dict, additional information about the reset state.
-        """
         self.episode_step = 0
 
         if self.rand_init:
@@ -178,16 +120,6 @@ class UnicycleEnv(gym.Env):
         return self.get_obs(), {}
 
     def render(self, mode: str = 'human') -> np.ndarray:
-        """Render the environment to the screen
-
-        Parameters:---
-        mode : str
-        close : bool
-
-        Returns:
-
-        """
-
         if mode != 'human' and mode != 'rgb_array':
             rel_loc = self.goal_pos - self.state[:2]
             theta_error = np.arctan2(rel_loc[1], rel_loc[0]) - self.state[2]
@@ -297,17 +229,6 @@ class UnicycleEnv(gym.Env):
         )
 
     def _get_dynamics(self) -> tuple[Callable, Callable]:
-        """Get affine Control Barrier Function (CBF) dynamics for a given environment.
-
-        This method provides access to the system's drift and control dynamics, formulated for continuous systems of the form x' = f(x) + g(x)u, where 'x' is the state vector and 'u' is the control vector.
-
-        Returns:
-            get_f : Callable[[np.ndarray], np.ndarray]
-                Function to compute the drift dynamics 'f(x)' of the system.
-
-            get_g : Callable[[np.ndarray], np.ndarray]
-                Function to compute the control dynamics 'g(x)' of the system.
-        """
 
         def get_f(state: np.ndarray) -> np.ndarray:
             """Function to compute the drift dynamics 'f(x)' of the system."""
@@ -321,15 +242,6 @@ class UnicycleEnv(gym.Env):
         return get_f, get_g
 
     def obs_compass(self) -> np.ndarray:
-        """
-        Return a robot-centric compass observation of a list of positions.
-        Compass is a normalized (unit-lenght) egocentric XY vector,
-        from the agent to the object.
-        This is equivalent to observing the egocentric XY angle to the target,
-        projected into the sin/cos space we use for joints.
-        (See comment on joint observation for why we do this.)
-        """
-
         # Get ego vector in world frame
         vec = self.goal_pos - self.state[:2]
         # Rotate into frame
@@ -351,91 +263,3 @@ class UnicycleEnv(gym.Env):
         if self.viewer:
             self.viewer.close()
             self.viewer = None
-
-    def get_random_hazard_locations(self, n_hazards: int, hazard_radius: float) -> None:
-        """
-
-        Parameters:---
-        n_hazards : int
-            Number of hazards to create
-        hazard_radius : float
-            Radius of hazards
-
-        Returns:
-        hazards_locs : np.ndarray
-            Numpy array of shape (n_hazards, 2) containing xy locations of hazards.
-        """
-
-        # Create buffer with boundaries
-        buffered_bds = np.copy(self.bds)
-        buffered_bds[0] = buffered_bds[0] + hazard_radius
-        buffered_bds[1] -= hazard_radius
-
-        hazards = []
-        hazards_centers = np.zeros((n_hazards, 2))
-        n = 0  # Number of hazards actually placed
-        for _ in range(n_hazards):
-            successfully_placed = False
-            iteration = 0
-            hazard_type = np.random.randint(3)  # 0-> Circle 1->Square 2->Triangle
-            radius = hazard_radius * (1 - 0.2 * 2.0 * (np.random.random() - 0.5))
-            while not successfully_placed and iteration < 100:
-                hazards_centers[n] = (buffered_bds[1] - buffered_bds[0]) * np.random.random(
-                    2,
-                ) + buffered_bds[0]
-                successfully_placed = np.all(
-                    np.linalg.norm(hazards_centers[:n] - hazards_centers[[n]], axis=1)
-                    > 3.5 * hazard_radius,
-                )
-                successfully_placed = np.logical_and(
-                    successfully_placed,
-                    np.linalg.norm(self.goal_pos - hazards_centers[n]) > 2.0 * hazard_radius,
-                )
-                successfully_placed = np.logical_and(
-                    successfully_placed,
-                    np.all(
-                        np.linalg.norm(self.initial_state[:, :2] - hazards_centers[[n]], axis=1)
-                        > 2.0 * hazard_radius,
-                    ),
-                )
-                iteration += 1
-            if not successfully_placed:
-                continue
-            if hazard_type == 0:  # Circle
-                hazards.append({'type': 'circle', 'location': hazards_centers[n], 'radius': radius})
-            elif hazard_type == 1:  # Square
-                hazards.append(
-                    {
-                        'type': 'polygon',
-                        'vertices': np.array(
-                            [
-                                [-radius, -radius],
-                                [-radius, radius],
-                                [radius, radius],
-                                [radius, -radius],
-                            ],
-                        ),
-                    },
-                )
-                hazards[-1]['vertices'] += hazards_centers[n]
-            else:  # Triangle
-                hazards.append(
-                    {
-                        'type': 'polygon',
-                        'vertices': np.array(
-                            [
-                                [-radius, -radius],
-                                [-radius, radius],
-                                [radius, radius],
-                                [radius, -radius],
-                            ],
-                        ),
-                    },
-                )
-                # Pick a vertex and delete it
-                idx = np.random.randint(4)
-                hazards[-1]['vertices'] = np.delete(hazards[-1]['vertices'], idx, axis=0)
-                hazards[-1]['vertices'] += hazards_centers[n]
-            n += 1
-
-        self.hazards = hazards

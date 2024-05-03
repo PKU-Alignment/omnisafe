@@ -13,9 +13,13 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the TRPO algorithm with Control Barrier Function."""
+# mypy: ignore-errors
 
 from __future__ import annotations
 
+import os
+
+import joblib
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -25,14 +29,30 @@ from omnisafe.algorithms.on_policy.base.trpo import TRPO
 from omnisafe.common.barrier_comp import BarrierCompensator
 from omnisafe.common.barrier_solver import PendulumSolver
 from omnisafe.utils import distributed
+from omnisafe.utils.distributed import get_rank
 
 
 @registry.register
 class TRPOCBF(TRPO):
+    """The TRPO algorithm with CBF.
+
+    References:
+        - Title: End-to-end safe reinforcement learning through barrier functions for
+        safety-critical continuous control tasks
+        - Authors: R Cheng, G Orosz, RM Murray, JW Burdick.
+        - URL: `TRPOCBF <https://ojs.aaai.org/index.php/AAAI/article/view/4213/4091>`_
+    """
 
     def _init_log(self) -> None:
+        """Log the TRPOCBF specific information.
+
+        +----------------------------+---------------------------------+
+        | Things to log              | Description                     |
+        +============================+=================================+
+        | Value/Loss_compensator     | The Loss of action compensator. |
+        +----------------------------+---------------------------------+
+        """
         super()._init_log()
-        self._logger.register_key('Metrics/angle', min_and_max=True)
         self._logger.register_key('Value/Loss_compensator')
 
     def _init_env(self) -> None:
@@ -110,7 +130,7 @@ class TRPOCBF(TRPO):
         )
 
         self._update_actor(obs, act, logp, adv_r, adv_c)
-        compensator_loss = self._env.compensator.train(
+        compensator_loss = self._env.compensator.update(
             observation=obs,
             approx_compensating_act=approx_compensating_act,
             compensating_act=compensating_act,
@@ -138,3 +158,15 @@ class TRPOCBF(TRPO):
                 'Value/Loss_compensator': compensator_loss.item(),
             },
         )
+
+    def _specific_save(self) -> None:
+        """Save some algorithms specific models per epoch."""
+        super()._specific_save()
+        if get_rank() == 0:
+            path = os.path.join(
+                self._logger.log_dir,
+                'gp_model_save',
+                f'gaussian_process_regressor_{self._logger.current_epoch}.pkl',
+            )
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            joblib.dump(self._env.gp_models, path)

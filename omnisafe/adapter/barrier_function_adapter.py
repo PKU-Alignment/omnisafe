@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import torch
 from rich.progress import track
+from sklearn.gaussian_process import GaussianProcessRegressor
 
 from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
 from omnisafe.common.barrier_comp import BarrierCompensator
@@ -46,8 +47,8 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
         """Initialize an instance of :class:`BarrierFunctionAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
-        self.solver = None
-        self.compensator = None
+        self.solver: PendulumSolver
+        self.compensator: BarrierCompensator
         self.first_iter = 1
 
     def _wrapper(
@@ -85,16 +86,15 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
 
     def set_solver(self, solver: PendulumSolver) -> None:
         """Set the barrier function solver for Pendulum environment."""
-        self.solver: PendulumSolver = solver
+        self.solver = solver
 
     def set_compensator(self, compensator: BarrierCompensator) -> None:
         """Set the action compensator."""
-        self.compensator: BarrierCompensator = compensator
+        self.compensator = compensator
 
     def reset_gp_model(self) -> None:
         """Reset the gaussian processing model of barrier function solver."""
-        self.solver.GP_model_prev = self.solver.GP_model.copy()
-        self.solver.build_GP_model()
+        self.solver.reset_gp_model()
 
     def rollout(  # pylint: disable=too-many-locals
         self,
@@ -103,7 +103,7 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
         buffer: VectorOnPolicyBuffer,
         logger: Logger,
     ) -> None:
-        """Rollout the environment and store the data in the buffer.
+        """Rollout the environment with barrier function controller.
 
         Args:
             steps_per_epoch (int): Number of steps per epoch.
@@ -117,8 +117,6 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
             self.reset_gp_model()
 
         obs, _ = self.reset()
-        while abs(self._env.unwrapped.state[0]) > 1:
-            obs, _ = self._env.reset()
         path_obs = []
         path_act = []
         for step in track(
@@ -135,9 +133,9 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
                 compensated_act_mean_raw = act_mean + approx_compensating_act
 
                 if self.first_iter:
-                    [f, g, x, std] = self.solver.get_GP_dynamics(obs, use_prev_model=False)
+                    [f, g, x, std] = self.solver.get_gp_dynamics(obs, use_prev_model=False)
                 else:
-                    [f, g, x, std] = self.solver.get_GP_dynamics(obs, use_prev_model=True)
+                    [f, g, x, std] = self.solver.get_gp_dynamics(obs, use_prev_model=True)
 
                 compensating_act = self.solver.control_barrier(
                     compensated_act_mean_raw,
@@ -150,16 +148,15 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
                 compensated_act_mean = compensated_act_mean_raw + compensating_act
                 final_act = torch.normal(compensated_act_mean, act_std)
 
-            logp = agent.actor.log_prob(final_act).detach()
-            path_obs.append(obs.detach().cpu().squeeze().numpy())
-            path_act.append(final_act.detach().cpu().squeeze().numpy())
+                logp = agent.actor.log_prob(final_act)
+
+            path_obs.append(obs)
+            path_act.append(final_act)
 
             next_obs, reward, cost, terminated, truncated, info = self.step(final_act)
 
             self._log_value(reward=reward, cost=cost, info=info)
 
-            if self._cfgs.algo_cfgs.use_cost:
-                logger.store({'Value/cost': value_c})
             logger.store({'Value/reward': value_r})
             logger.store({'Metrics/angle': cost})
 
@@ -202,13 +199,19 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
                         self._ep_cost[idx] = 0.0
                         self._ep_len[idx] = 0.0
 
-                        if step < 650:
-                            self.solver.update_GP_dynamics(obs=path_obs, act=path_act)
+                        if step < self._cfgs.algo_cfgs.update_dynamics_steps:
+                            self.solver.update_gp_dynamics(
+                                obs=torch.cat(path_obs),  # type: ignore
+                                act=torch.cat(path_act),  # type: ignore
+                            )
 
                         path_obs = []
                         path_act = []
                         obs, _ = self.reset()
-                        while abs(self._env.unwrapped.state[0]) > 1:
-                            obs, _ = self._env.reset()
                     buffer.finish_path(last_value_r, last_value_c, idx)
         self.first_iter = 0
+
+    @property
+    def gp_models(self) -> list[GaussianProcessRegressor]:
+        """Return the gp models to be saved."""
+        return self.solver.gp_models

@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of Evaluator."""
+# mypy: ignore-errors
+
 
 from __future__ import annotations
 
@@ -37,6 +39,7 @@ from omnisafe.algorithms.model_based.planner import (
     SafeARCPlanner,
 )
 from omnisafe.common import Normalizer
+<<<<<<< HEAD
 from omnisafe.common.control_barrier_function.crabs.models import (
     AddGaussianNoise,
     CrabsCore,
@@ -47,6 +50,12 @@ from omnisafe.common.control_barrier_function.crabs.models import (
 from omnisafe.common.control_barrier_function.crabs.optimizers import Barrier
 from omnisafe.common.control_barrier_function.crabs.utils import Normalizer as CRABSNormalizer
 from omnisafe.common.control_barrier_function.crabs.utils import create_model_and_trainer
+=======
+from omnisafe.common.barrier_comp import BarrierCompensator
+from omnisafe.common.barrier_solver import PendulumSolver
+from omnisafe.common.robust_barrier_solver import CBFQPLayer
+from omnisafe.common.robust_gp_model import DynamicsModel
+>>>>>>> wip
 from omnisafe.envs.core import CMDP, make
 from omnisafe.envs.wrapper import ActionRepeat, ActionScale, ObsNormalize, TimeLimit
 from omnisafe.models.actor import ActorBuilder
@@ -94,6 +103,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self._safety_obs = torch.ones(1)
         self._cost_count = torch.zeros(1)
         self.__set_render_mode(render_mode)
+        self._dynamics_model: DynamicsModel | None = None
+        self._solver: PendulumSolver | CBFQPLayer | None = None
+        self._compensator = None
 
     def __set_render_mode(self, render_mode: str) -> None:
         """Set the render mode.
@@ -130,7 +142,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self._dict_cfgs = kwargs
         self._cfgs = Config.dict2config(kwargs)
 
-    # pylint: disable-next=too-many-branches
+    # pylint: disable-next=attribute-defined-outside-init,import-outside-toplevel,too-many-branches,too-many-locals
     def __load_model_and_env(
         self,
         save_dir: str,
@@ -302,9 +314,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             self._actor = actor_builder.build_actor(actor_type)
             self._actor.load_state_dict(model_params['pi'])
             if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
-                from omnisafe.common.barrier_comp import BarrierCompensator
-
-                self.compensator = BarrierCompensator(
+                self._compensator = BarrierCompensator(
                     obs_dim=observation_space.shape[0],
                     act_dim=action_space.shape[0],
                     cfgs=self._cfgs['compensator_cfgs'],
@@ -316,21 +326,18 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     raise FileNotFoundError(
                         'The model is not found in the save directory.',
                     ) from error
-                self.compensator.load_state_dict(model_params['compensator'])
+                self._compensator.load_state_dict(model_params['compensator'])
             if self._cfgs['algo'] == 'SACRCBF':
-                from omnisafe.common.robust_barrier_solver import CBFQPLayer
-                from omnisafe.common.robust_gp_model import DynamicsModel
-
                 epoch = model_name.split('.pt')[0].split('-')[-1]
-                self.solver = CBFQPLayer(
+                self._solver = CBFQPLayer(
                     env=self._env,
                     device=self._cfgs['train_cfgs']['device'],
                     gamma_b=self._cfgs['cbf_cfgs']['gamma_b'],
                     k_d=self._cfgs['cbf_cfgs']['k_d'],
                     l_p=self._cfgs['cbf_cfgs']['l_p'],
                 )
-                self.dynamics_model = DynamicsModel(env=self._env)
-                self.dynamics_model.load_disturbance_models(
+                self._dynamics_model = DynamicsModel(env=self._env)
+                self._dynamics_model.load_disturbance_models(
                     save_dir=os.path.join(self._save_dir, 'gp_model_save'),
                     epoch=epoch,
                 )
@@ -417,15 +424,14 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self.__set_render_mode(render_mode)
 
         if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
-            from omnisafe.common.barrier_solver import PendulumSolver
 
-            self.solver = PendulumSolver()
+            self._solver = PendulumSolver()
             path = os.path.join(
                 save_dir,
                 'gp_model_save',
                 f'gaussian_process_regressor_{epoch}.pkl',
             )
-            self.solver.build_gp_model(save_dir=path)
+            self._solver.build_gp_model(save_dir=path)
 
         env_kwargs = {
             'env_id': self._cfgs['env_id'],
@@ -441,6 +447,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         self.__load_model_and_env(save_dir, model_name, env_kwargs)
 
+    # pylint: disable-next=too-many-locals
     def evaluate(
         self,
         num_episodes: int = 10,
@@ -498,10 +505,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                             'The policy must be provided or created before evaluating the agent.',
                         )
                 if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
-                    approx_compensating_act = self.compensator(obs=obs)
+                    approx_compensating_act = self._compensator(obs=obs)
                     compensated_act_mean_raw = act + approx_compensating_act
-                    [f, g, x, std] = self.solver.get_gp_dynamics(obs, use_prev_model=False)
-                    compensating_act = self.solver.control_barrier(
+                    [f, g, x, std] = self._solver.get_gp_dynamics(obs, use_prev_model=False)
+                    compensating_act = self._solver.control_barrier(
                         compensated_act_mean_raw,
                         f,
                         g,
@@ -511,11 +518,11 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     act = compensated_act_mean_raw + compensating_act
 
                 if self._cfgs['algo'] == 'SACRCBF':
-                    state_batch = self.dynamics_model.get_state(obs)
-                    mean_pred_batch, sigma_pred_batch = self.dynamics_model.predict_disturbance(
+                    state_batch = self._dynamics_model.get_state(obs)
+                    mean_pred_batch, sigma_pred_batch = self._dynamics_model.predict_disturbance(
                         state_batch,
                     )
-                    safe_act = self.solver.get_safe_action(
+                    safe_act = self._solver.get_safe_action(
                         state_batch,
                         act,
                         mean_pred_batch,

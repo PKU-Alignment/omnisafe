@@ -32,12 +32,22 @@ from omnisafe.utils.config import Config
 
 
 class RobustBarrierFunctionAdapter(OffPolicyAdapter):
+    """Off Policy Robust Barrier Function Adapter for OmniSafe.
+
+    :class:`RobustBarrierFunctionAdapter` is used to adapt the environment with RCBF controller.
+
+    Args:
+        env_id (str): The environment id.
+        num_envs (int): The number of environments.
+        seed (int): The random seed.
+        cfgs (Config): The configuration.
+    """
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
         """Initialize an instance of :class:`BarrierFunctionAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
-        self.solver = None
-        self.compensator = None
+        self.solver: CBFQPLayer
+        self.dynamics_model: DynamicsModel
         self._current_steps = 0
         self._num_episodes = 0
 
@@ -70,13 +80,13 @@ class RobustBarrierFunctionAdapter(OffPolicyAdapter):
 
     def set_solver(self, solver: CBFQPLayer) -> None:
         """Set the barrier function solver for Pendulum environment."""
-        self.solver: CBFQPLayer = solver
-        self.solver.env = self._env
+        self.solver = solver
+        self.solver.env = self._env  # type: ignore
 
     def set_dynamics_model(self, dynamics_model: DynamicsModel) -> None:
         """Set the dynamics model."""
         self.dynamics_model = dynamics_model
-        self.dynamics_model.env = self._env
+        self.dynamics_model.env = self._env  # type: ignore
 
     def eval_policy(  # pylint: disable=too-many-locals
         self,
@@ -143,7 +153,7 @@ class RobustBarrierFunctionAdapter(OffPolicyAdapter):
             state = self.dynamics_model.get_state(self._current_obs)
             self._current_steps += 1
             if use_rand_action:
-                act = (torch.rand(self.action_space.shape) * 2 - 1).unsqueeze(0).to(self._device)
+                act = (torch.rand(self.action_space.shape) * 2 - 1).unsqueeze(0).to(self._device)  # type: ignore
             else:
                 act = agent.step(self._current_obs, deterministic=False)
 
@@ -182,12 +192,21 @@ class RobustBarrierFunctionAdapter(OffPolicyAdapter):
 
     @property
     def safe_action_space(self) -> OmnisafeSpace:
+        """Return the action space in the safe domain."""
         if hasattr(self._env, 'safe_action_space'):
             return self._env.safe_action_space
         return self._env.action_space
 
     def get_safe_action(self, obs: torch.Tensor, act: torch.Tensor) -> torch.Tensor:
+        """Computes a safe action by applying robust barrier function.
 
+        Args:
+            obs (torch.Tensor): The current observation from the environment.
+            act (torch.Tensor): The proposed action to be evaluated for safety.
+
+        Returns:
+            torch.Tensor: The safe action to be executed in the environment.
+        """
         state_batch = self.dynamics_model.get_state(obs)
         mean_pred_batch, sigma_pred_batch = self.dynamics_model.predict_disturbance(state_batch)
 
@@ -199,4 +218,5 @@ class RobustBarrierFunctionAdapter(OffPolicyAdapter):
         )
 
     def __getattr__(self, name: str) -> Any:
+        """Return the unwrapped environment attributes."""
         return getattr(self._env, name)

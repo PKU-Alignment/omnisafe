@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of the PPO algorithm with Control Barrier Function."""
+"""Implementation of the PPO algorithm with Control Barrier Function and Beta Actor."""
 
 from __future__ import annotations
 
@@ -26,6 +26,14 @@ from omnisafe.utils import distributed
 
 @registry.register
 class PPOBetaCBF(PPO):
+    """The PPO algorithm with CBF and Beta Actor.
+
+    References:
+        - Title: Sampling-based Safe Reinforcement Learning for Nonlinear Dynamical Systems
+        - Authors: Wesley A. Suttle, Vipul K. Sharma, Krishna C. Kosaraju, S. Sivaranjani, Ji Liu,
+            Vijay Gupta, Brian M. Sadler.
+        - URL: `PPOBetaCBF <https://proceedings.mlr.press/v238/suttle24a/suttle24a.pdf>`_
+    """
 
     def _init_log(self) -> None:
         super()._init_log()

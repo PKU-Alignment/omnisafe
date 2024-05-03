@@ -1,19 +1,46 @@
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Robust Control Barrier Function Solver for OmniSafe."""
+
+
+# mypy: ignore-errors
+# pylint: disable=invalid-name,wrong-spelling-in-docstring
 from __future__ import annotations
 
 from typing import Any
 
 import gymnasium as gym
-import numpy as np
 import torch
 from qpth.qp import QPFunction
 
-from omnisafe.common.utils import sort_vertices_cclockwise, to_tensor
+from omnisafe.utils.tools import to_tensor
 
 
 DYNAMICS_MODE = {'Unicycle': {'n_s': 3, 'n_u': 2}}
 
 
 class CBFQPLayer:
+    """CBFQLayer for robust control barrier function solver.
+
+    Args:
+        env (gym.Env): The Gym environment to interact with.
+        device (str, optional): The device type, such as 'cpu' or 'gpu'. Defaults to 'cpu'.
+        gamma_b (float, optional): The gamma parameter. Defaults to 20.
+        k_d (float, optional): The confidence parameter desired. Defaults to 3.0.
+        l_p (float, optional): Some additional layer parameter, purpose unspecified. Defaults to 0.03.
+    """
 
     def __init__(
         self,
@@ -23,15 +50,7 @@ class CBFQPLayer:
         k_d: float = 3.0,
         l_p: float = 0.03,
     ) -> None:
-        """Initializes a CBFLayer instance with specified parameters and environment.
-
-        Args:
-            env (gym.Env): The Gym environment to interact with.
-            device (str, optional): The device type, such as 'cpu' or 'gpu'. Defaults to 'cpu'.
-            gamma_b (float, optional): The gamma parameter of the control barrier certificate. Defaults to 20.
-            k_d (float, optional): The confidence parameter desired (e.g., 2.0 corresponds to ~95% confidence). Defaults to 3.0.
-            l_p (float, optional): Some additional layer parameter, purpose unspecified. Defaults to 0.03.
-        """
+        """Initializes a CBFLayer instance with specified parameters and environment."""
         self.device = torch.device(device)
         self.env = env
         self.u_min, self.u_max = self.get_control_bounds()
@@ -54,7 +73,6 @@ class CBFQPLayer:
             action_batch (torch.Tensor): Nominal action batch, tensor or ndarray.
             mean_pred_batch (torch.Tensor): Mean disturbance predictions, tensor or ndarray.
             sigma_batch (torch.Tensor): Standard deviations of disturbances, tensor or ndarray.
-            cbf_info_batch (torch.Tensor, optional): Additional control barrier function information batch, tensor or ndarray.
 
         Returns:
             torch.Tensor: Safe actions adjusted for given constraints and uncertainties.
@@ -96,15 +114,14 @@ class CBFQPLayer:
             subject to G[u,eps]^T <= h
 
         Args:
-            Ps (torch.Tensor): Quadratic cost matrix for each problem, with shape (batch_size, n_u+1, n_u+1).
-            qs (torch.Tensor): Linear cost vector for each problem, with shape (batch_size, n_u+1).
-            Gs (torch.Tensor): Inequality constraint matrix for each problem, with shape (batch_size, num_ineq_constraints, n_u+1).
-            hs (torch.Tensor): Inequality constraint vector for each problem, with shape (batch_size, num_ineq_constraints).
+            Ps (torch.Tensor): Quadratic cost matrix for each problem.
+            qs (torch.Tensor): Linear cost vector for each problem.
+            Gs (torch.Tensor): Inequality constraint matrix for each problem.
+            hs (torch.Tensor): Inequality constraint vector for each problem.
 
         Returns:
             The safe action for each problem, omitting the slack variable, with dimension (batch_size, n_u).
         """
-
         Ghs = torch.cat((Gs, hs.unsqueeze(2)), -1)
         Ghs_norm = torch.max(torch.abs(Ghs), dim=2, keepdim=True)[0]
         Gs /= Ghs_norm
@@ -139,8 +156,8 @@ class CBFQPLayer:
         Args:
             Qs (torch.Tensor): Quadratic cost matrix for each problem.
             ps (torch.Tensor): Linear cost vector for each problem.
-            Gs (torch.Tensor): Inequality constraint matrix for each problem, shape (batch_size, num_ineq_constraints, num_vars).
-            hs (torch.Tensor): Inequality constraint vector for each problem, shape (batch_size, num_ineq_constraints).
+            Gs (torch.Tensor): Inequality constraint matrix for each problem.
+            hs (torch.Tensor): Inequality constraint vector for each problem.
             As (torch.Tensor, optional): Equality constraint matrix. Defaults to None.
             bs (torch.Tensor, optional): Equality constraint vector. Defaults to None.
             solver_args (dict, optional): Dictionary of solver arguments. Defaults to None.
@@ -148,7 +165,6 @@ class CBFQPLayer:
         Returns:
             Result of the QP solver for each problem.
         """
-
         if solver_args is None:
             solver_args = {}
 
@@ -165,6 +181,7 @@ class CBFQPLayer:
             bs,
         ).float()
 
+    # pylint: disable-next=too-many-locals
     def get_cbf_qp_constraints(
         self,
         state_batch: torch.Tensor,
@@ -180,10 +197,10 @@ class CBFQPLayer:
             subject to G[u,eps]^T <= h
 
         Args:
-            state_batch (torch.Tensor): Current state batch. Refer to `dynamics.py` for specifics on each dynamic.
+            state_batch (torch.Tensor): Current state batch.
             action_batch (torch.Tensor): Nominal control input batch.
-            mean_pred_batch (torch.Tensor): Mean disturbance prediction state batch, dimensions (n_s, n_u).
-            sigma_pred_batch (torch.Tensor): Standard deviation of the additive disturbance after undergoing the output dynamics.
+            mean_pred_batch (torch.Tensor): Mean disturbance prediction state batch.
+            sigma_pred_batch (torch.Tensor): Standard deviation of the additive disturbance.
             gamma_b (float, optional): CBF parameter for the class-Kappa function. Defaults to 1.0.
 
         Returns:
@@ -246,65 +263,15 @@ class CBFQPLayer:
             hs = 1e3 * torch.ones((batch_size, num_cbfs), device=self.device)
             dhdps = torch.zeros((batch_size, num_cbfs, 2), device=self.device)
             hazards = self.env.hazards
-            for i in range(len(hazards)):
-                if hazards[i]['type'] == 'circle':
-                    obs_loc = to_tensor(hazards[i]['location'], torch.FloatTensor, self.device)
+            for i, hazard in enumerate(hazards):
+                if hazard['type'] == 'circle':
+                    obs_loc = to_tensor(hazard['location'], torch.FloatTensor, self.device)
                     hs[:, i] = 0.5 * (
-                        torch.sum((ps - obs_loc) ** 2, dim=1) - (hazards[i]['radius'] + buffer) ** 2
+                        torch.sum((ps - obs_loc) ** 2, dim=1) - (hazard['radius'] + buffer) ** 2
                     )
                     dhdps[:, i, :] = ps - obs_loc
-                elif hazards[i]['type'] == 'polygon':
-                    vertices = sort_vertices_cclockwise(hazards[i]['vertices'])
-                    segments = np.diff(vertices, axis=0, append=vertices[[0]])
-                    segments = to_tensor(segments, torch.FloatTensor, self.device)
-                    vertices = to_tensor(vertices, torch.FloatTensor, self.device)
-                    for j in range(segments.shape[0]):
-                        dot_products = torch.matmul(
-                            ps - vertices[j : j + 1],
-                            segments[j],
-                        ) / torch.sum(segments[j] ** 2)
-                        mask0_ = dot_products < 0
-                        mask1_ = dot_products > 1
-                        mask_ = torch.logical_and(dot_products >= 0, dot_products <= 1)
-                        dists2seg = torch.zeros(batch_size)
-                        if mask0_.sum() > 0:
-                            dists2seg[mask0_] = torch.linalg.norm(ps[mask0_] - vertices[[j]], dim=1)
-                        if mask1_.sum() > 0:
-                            dists2seg[mask1_] = torch.linalg.norm(
-                                ps[mask1_] - vertices[[(j + 1) % segments.shape[0]]],
-                                dim=1,
-                            )
-                        if mask_.sum() > 0:
-                            dists2seg[mask_] = torch.linalg.norm(
-                                dot_products[mask_, None] * segments[j].tile((torch.sum(mask_), 1))
-                                + vertices[[j]]
-                                - ps[mask_],
-                                dim=1,
-                            )
-                        hs_ = 0.5 * ((dists2seg**2) + 0.5 * buffer)
-                        dhdps_ = torch.zeros((batch_size, 2))
-                        if mask0_.sum() > 0:
-                            dhdps_[mask0_] = ps[mask0_] - vertices[[j]]
-                        if mask1_.sum() > 0:
-                            dhdps_[mask1_] = ps[mask1_] - vertices[[(j + 1) % segments.shape[0]]]
-                        if mask_.sum() > 0:
-                            normal_vec = torch.tensor([segments[j][1], -segments[j][0]])
-                            normal_vec /= torch.linalg.norm(normal_vec)
-                            dhdps_[mask_] = (ps[mask_] - vertices[j]).matmul(
-                                normal_vec,
-                            ) * normal_vec.view((1, 2)).repeat(torch.sum(mask_), 1)
-                        idxs_to_update = torch.nonzero(hs[:, i] - hs_ > 0)
-                        # Update the actual hs to be used in the constraints
-                        if idxs_to_update.shape[0] > 0:
-                            hs[idxs_to_update, i] = hs_[idxs_to_update]
-                            # Compute dhdhps for those indices
-                            dhdps[idxs_to_update, i, :] = dhdps_[idxs_to_update, :]
                 else:
-                    raise Exception(
-                        'Only obstacles of type `circle` or `polygon` are supported, got: {}'.format(
-                            hazards[i]['type'],
-                        ),
-                    )
+                    raise NotImplementedError
 
             n_u = action_batch.shape[1]
             num_constraints = num_cbfs + 2 * n_u
@@ -345,12 +312,11 @@ class CBFQPLayer:
         return P, q, G, h
 
     def get_control_bounds(self) -> tuple[torch.Tensor, torch.Tensor]:
-        """
+        """Obtain the action bounds.
 
         Returns:
             Action bounds, i.e., min control input and max control input.
         """
-
         u_min = torch.tensor(self.env.safe_action_space.low).to(self.device)
         u_max = torch.tensor(self.env.safe_action_space.high).to(self.device)
 

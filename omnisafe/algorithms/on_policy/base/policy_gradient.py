@@ -180,12 +180,7 @@ class PolicyGradient(BaseAlgo):
             config=self._cfgs,
         )
 
-        what_to_save: dict[str, Any] = {}
-        what_to_save['pi'] = self._actor_critic.actor
-        if self._cfgs.algo_cfgs.obs_normalize:
-            obs_normalizer = self._env.save()['obs_normalizer']
-            what_to_save['obs_normalizer'] = obs_normalizer
-        self._logger.setup_torch_saver(what_to_save)
+        self._log_what_to_save()
         self._logger.torch_save()
 
         self._logger.register_key(
@@ -296,6 +291,7 @@ class PolicyGradient(BaseAlgo):
                 epoch + 1
             ) == self._cfgs.train_cfgs.epochs:
                 self._logger.torch_save()
+                self._specific_save()
 
         ep_ret = self._logger.get_stats('Metrics/EpRet')[0]
         ep_cost = self._logger.get_stats('Metrics/EpCost')[0]
@@ -586,3 +582,17 @@ class PolicyGradient(BaseAlgo):
             },
         )
         return loss
+
+    def _log_what_to_save(self) -> None:
+        """Define what need to be saved below."""
+        what_to_save: dict[str, Any] = {}
+
+        what_to_save['pi'] = self._actor_critic.actor
+        if self._cfgs.algo_cfgs.obs_normalize:
+            obs_normalizer = self._env.save()['obs_normalizer']
+            what_to_save['obs_normalizer'] = obs_normalizer
+
+        self._logger.setup_torch_saver(what_to_save)
+
+    def _specific_save(self) -> None:
+        """Save some algorithms specific models per epoch."""

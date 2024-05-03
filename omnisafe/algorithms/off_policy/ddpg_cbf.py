@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the DDPG algorithm with Control Barrier Function."""
+# mypy: ignore-errors
 
 
 from __future__ import annotations
@@ -34,12 +35,13 @@ from omnisafe.utils.distributed import get_rank
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
 class DDPGCBF(DDPG):
-    """The Soft Actor-Critic algorithm with Control Barrier Function.
+    """The DDPG algorithm with CBF.
 
     References:
-        - Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
-        - Authors: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine.
-        - URL: `DDPG <https://arxiv.org/abs/1801.01290>`_
+        - Title: End-to-end safe reinforcement learning through barrier functions for
+        safety-critical continuous control tasks
+        - Authors: R Cheng, G Orosz, RM Murray, JW Burdick.
+        - URL: `DDPGCBF <https://ojs.aaai.org/index.php/AAAI/article/view/4213/4091>`_
     """
 
     def _init_env(self) -> None:
@@ -95,14 +97,14 @@ class DDPGCBF(DDPG):
         )
 
     def _init_log(self) -> None:
-        # """Log the DDPGRCBF specific information.
+        """Log the DDPGCBF specific information.
 
-        # +----------------------------+--------------------------+
-        # | Things to log              | Description              |
-        # +============================+==========================+
-        # | Metrics/LagrangeMultiplier | The Lagrange multiplier. |
-        # +----------------------------+--------------------------+
-        # """
+        +----------------------------+---------------------------------+
+        | Things to log              | Description                     |
+        +============================+=================================+
+        | Value/Loss_compensator     | The Loss of action compensator. |
+        +----------------------------+---------------------------------+
+        """
         super()._init_log()
         self._logger.register_key('Value/Loss_compensator')
 

@@ -1,3 +1,21 @@
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Implementation of Dynamics Model Based on GPyTorch."""
+# mypy: ignore-errors
+
+
 from __future__ import annotations
 
 import os
@@ -14,8 +32,8 @@ from gpytorch.likelihoods import Likelihood
 from gpytorch.means import ZeroMean
 from gpytorch.priors import NormalPrior
 
-from omnisafe.common.utils import to_numpy, to_tensor
 from omnisafe.typing import DEVICE_CPU
+from omnisafe.utils.tools import to_tensor
 
 
 DYNAMICS_MODE = {'Unicycle': {'n_s': 3, 'n_u': 2}}
@@ -23,8 +41,7 @@ MAX_STD = {'Unicycle': [2e-1, 2e-1, 2e-1]}
 
 
 class BaseGPy(gpytorch.models.ExactGP):
-    """
-    A Gaussian Process (GP) model using a zero mean function and a scaled RBF kernel with priors.
+    """A Gaussian Process (GP) model using a zero mean function and a scaled RBF kernel with priors.
 
     This class extends gpytorch.models.ExactGP, specifically designed for use in
     disturbance estimation tasks.
@@ -57,6 +74,7 @@ class BaseGPy(gpytorch.models.ExactGP):
         self.covar_module.base_kernel.lengthscale = 1e5
         self.covar_module.outputscale = prior_std + 1e-6
 
+    # pylint: disable=arguments-differ
     def forward(self, x: torch.Tensor) -> MultivariateNormal:
         """Forward pass through the GP model to produce a multivariate normal distribution.
 
@@ -85,7 +103,7 @@ class GPyDisturbanceEstimator:
         train_x (torch.Tensor): Training data features. If not a tensor, it will be converted.
         train_y (torch.Tensor): Training data targets. If not a tensor, it will be converted.
         prior_std (float): Standard deviation of the prior distribution.
-        likelihood (Optional[gpytorch.likelihoods.Likelihood]): A GPyTorch likelihood. If None, a default GaussianLikelihood is used.
+        likelihood (Optional[gpytorch.likelihoods.Likelihood]): A GPyTorch likelihood.
         device (Optional[torch.device]): The torch device. Defaults to CPU if None.
     """
 
@@ -97,6 +115,7 @@ class GPyDisturbanceEstimator:
         likelihood: gpytorch.likelihoods.Likelihood | None = None,
         device: torch.device = DEVICE_CPU,
     ) -> None:
+        """Initialize the GPyDisturbanceEstimator."""
         self.device = device if device else torch.device('cpu')
 
         if not torch.is_tensor(train_x):
@@ -140,8 +159,7 @@ class GPyDisturbanceEstimator:
             optimizer.step()
 
     def predict(self, test_x: torch.Tensor) -> dict[str, torch.Tensor | np.ndarray]:
-        """
-        Makes predictions on new data.
+        """Makes predictions on new data.
 
         Args:
             test_x (torch.Tensor): Test data features. If not a tensor, it will be converted.
@@ -174,6 +192,7 @@ class GPyDisturbanceEstimator:
         return pred_dict
 
 
+# pylint: disable-next=too-many-instance-attributes
 class DynamicsModel:
     """Initializes the DynamicsModel with a gym environment.
 
@@ -191,6 +210,7 @@ class DynamicsModel:
         l_p: float = 0.03,
         device: str = 'cpu',
     ) -> None:
+        """Initializes the DynamicsModel with a gym environment."""
         self.env = env
         self.get_f, self.get_g = self.get_dynamics()
         self.n_s = DYNAMICS_MODE[self.env.dynamics_mode]['n_s']
@@ -209,8 +229,7 @@ class DynamicsModel:
         self.device = torch.device(device)
 
     def predict_next_state(self, state_batch: np.ndarray, u_batch: np.ndarray) -> np.ndarray:
-        """
-        Predicts the next state given the current state and action batch.
+        """Predicts the next state given the current state and action batch.
 
         Args:
             state_batch (np.ndarray): The batch of current states.
@@ -241,7 +260,7 @@ class DynamicsModel:
         """Retrieves the dynamics functions for drift and control based on the environment's dynamics mode.
 
         Returns:
-            tuple: A tuple containing two callables, `get_f` and `get_g`, which compute the drift and control dynamics respectively.
+            tuple: A tuple containing two callable methods, `get_f` and `get_g`.
         """
         if self.env.dynamics_mode == 'Unicycle':
 
@@ -257,27 +276,23 @@ class DynamicsModel:
                 return g_x
 
         else:
-            raise Exception('Unknown Dynamics mode.')
+            raise NotImplementedError('Unknown Dynamics mode.')
 
         return get_f, get_g
 
-    def get_state(self, obs: np.ndarray) -> np.ndarray:
-        """
-        Processes the raw observations from the environment and returns the corresponding state representation.
+    def get_state(self, obs: torch.Tensor) -> torch.Tensor:
+        """Processes the raw observations from the environment.
 
         Args:
-            obs (np.ndarray): The environment observations.
+            obs (torch.Tensor): The environment observations.
 
         Returns:
-            np.ndarray: The processed state of the system.
+            torch.Tensor: The processed state of the system.
         """
         expand_dims = len(obs.shape) == 1
-        is_tensor = torch.is_tensor(obs)
-
-        if is_tensor:
-            dtype = obs.dtype
-            device = obs.device
-            obs = obs.cpu().numpy() if obs.is_cuda else obs.numpy()
+        dtype = obs.dtype
+        device = obs.device
+        obs = obs.cpu().numpy() if obs.is_cuda else obs.numpy()
 
         if expand_dims:
             obs = np.expand_dims(obs, 0)
@@ -289,14 +304,12 @@ class DynamicsModel:
             state_batch[:, 1] = obs[:, 1]
             state_batch[:, 2] = theta
         else:
-            raise Exception('Unknown dynamics')
+            raise NotImplementedError('Unknown dynamics')
 
         if expand_dims:
             state_batch = state_batch.squeeze(0)
 
-        if is_tensor:
-            return torch.tensor(state_batch, dtype=dtype, device=device)
-        return state_batch
+        return torch.tensor(state_batch, dtype=dtype, device=device)
 
     def append_transition(
         self,
@@ -371,23 +384,18 @@ class DynamicsModel:
         self._train_x = train_x
         self._train_y = train_y
 
-    def predict_disturbance(self, test_x: np.ndarray) -> tuple:
+    def predict_disturbance(self, test_x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Predicts the disturbance at the queried states using the trained Gaussian Process models.
 
         Args:
-            test_x (np.ndarray): The state for which to predict disturbances, shape (n_test, n_s).
+            test_x (torch.Tensor): The state for which to predict disturbances, shape (n_test, n_s).
 
         Returns:
-            tuple: A tuple of arrays (means, variances) where means is the predicted mean disturbance
-                and variances is the corresponding variance, shape (n_test, n_s).
+            tuple: A tuple of arrays (means, variances).
         """
-
-        is_tensor = torch.is_tensor(test_x)
-
-        if is_tensor:
-            dtype = test_x.dtype
-            device = test_x.device
-            test_x = to_numpy(test_x)
+        dtype = test_x.dtype
+        device = test_x.device
+        test_x = test_x.cpu().detach().double().numpy()
 
         expand_dims = len(test_x.shape) == 1
         if expand_dims:
@@ -414,11 +422,7 @@ class DynamicsModel:
             means = means.squeeze(0)
             f_std = f_std.squeeze(0)
 
-        return (
-            (to_tensor(means, dtype, device), to_tensor(f_std, dtype, device))
-            if is_tensor
-            else (means, f_std)
-        )
+        return (to_tensor(means, dtype, device), to_tensor(f_std, dtype, device))
 
     def load_disturbance_models(self, save_dir: str, epoch: str) -> None:
         """Loads the disturbance models and their training data.

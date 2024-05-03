@@ -18,10 +18,8 @@ from __future__ import annotations
 
 from typing import Any, ClassVar
 
-import gymnasium
 import numpy as np
 import torch
-from gymnasium import spaces
 
 from omnisafe.envs.core import CMDP, env_register
 from omnisafe.envs.unicycle_env import UnicycleEnv
@@ -33,8 +31,9 @@ class RobustBarrierFunctionEnv(CMDP):
     """Interface of control barrier function-based environments.
 
     .. warning::
-        Since environments based on control barrier functions require special judgment and control of environmental dynamics,
-        they do not support the use of vectorized environments for parallelization.
+        Since environments based on control barrier functions require special judgment and control
+        of environmental dynamics, they do not support the use of vectorized environments for
+        parallelization.
 
     Attributes:
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
@@ -168,17 +167,6 @@ class RobustBarrierFunctionEnv(CMDP):
         """
         self.reset(seed=seed)
 
-    def sample_action(self) -> torch.Tensor:
-        """Sample a random action.
-
-        Returns:
-            A random action.
-        """
-        return torch.normal(
-            torch.zeros(self.action_space.shape),
-            torch.ones(self.action_space.shape),
-        )
-
     def render(self) -> Any:
         """Render the environment.
 
@@ -192,4 +180,5 @@ class RobustBarrierFunctionEnv(CMDP):
         self._env.close()
 
     def __getattr__(self, name: str) -> Any:
+        """Return the unwrapped environment attributes."""
         return getattr(self._env, name)

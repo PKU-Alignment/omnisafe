@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Implementation of Compensator Used in Control Barrier Function."""
+
 
 from __future__ import annotations
 
@@ -43,6 +45,7 @@ class BarrierCompensator(torch.nn.Module):
     """
 
     def __init__(self, obs_dim: int, act_dim: int, cfgs: Config) -> None:
+        """Initialize the action compensator."""
         super().__init__()
         self._cfgs: Config = cfgs
         self.model: torch.nn.Module = build_mlp_network(
@@ -63,7 +66,7 @@ class BarrierCompensator(torch.nn.Module):
         """
         return self.model(obs)
 
-    def train(
+    def update(
         self,
         observation: torch.Tensor,
         approx_compensating_act: torch.Tensor,

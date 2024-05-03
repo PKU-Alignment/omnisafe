@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implementation of the Soft Actor-Critic algorithm with Robust Control Barrier Function."""
-
+# mypy: ignore-errors
 
 from __future__ import annotations
 
@@ -175,8 +175,8 @@ class SACRCBF(SAC):
             train_y = self._env.dynamics_model.train_y
             disturb_estimators = self._env.dynamics_model.disturb_estimators
             weights = []
-            for i in range(len(disturb_estimators)):
-                weights.append(disturb_estimators[i].model.state_dict())
+            for disturb_estimator in disturb_estimators:
+                weights.append(disturb_estimator.model.state_dict())
             torch.save(weights, os.path.join(path, f'gp_models_{self._logger.current_epoch}.pkl'))
             torch.save(
                 train_x,

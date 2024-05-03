@@ -82,6 +82,8 @@ defaults:
     fvp_obs: None
     # The sub-sampling rate of the observation
     fvp_sample_freq: 1
+    # The max steps to update dynamics model
+    update_dynamics_steps: 650
   # logger configurations
   logger_cfgs:
     # use wandb for logging
@@ -91,7 +93,7 @@ defaults:
     # use tensorboard for logging
     use_tensorboard: True
     # save model frequency
-    save_model_freq: 100
+    save_model_freq: 10
     # save logger path
     log_dir: "./runs"
     # save model path
