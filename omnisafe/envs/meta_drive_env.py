@@ -84,7 +84,7 @@ class SafetyMetaDriveEnv(CMDP):
             self._env = SafeMetaDriveEnv(config=kwargs.get('meta_drive_config'))
         else:
             raise ImportError(
-                'Please install MetaDrive to use Safe SafeMetaDrive!\
+                'Please install MetaDrive to use SafeMetaDrive!\
                 \nInstall from source: https://github.com/metadriverse/metadrive.\
                 \nInstall from PyPI: `pip install metadrive`.',
             )
