@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
-## [v0.6.0](https://github.com/PKU-Alignment/omnisafe/releases/tag/v0.6.0) - 2024-04-15
+## [v0.5.1](https://github.com/PKU-Alignment/omnisafe/releases/tag/v0.6.0) - 2024-05-04
 
 <small>[Compare with v0.5.0](https://github.com/PKU-Alignment/omnisafe/compare/v0.5.0...v0.6.0)</small>
 
@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Bug Fixes
 
+- remove duplicated auto reset (#326) ([3c9a235](https://github.com/PKU-Alignment/omnisafe/commit/3c9a2350aabc30c558fbcd4fd6e812a68cfe55a0) by Jiayi Zhou).
 - fix cuda initialization error in experiment grid (#315) ([63bdd34](https://github.com/PKU-Alignment/omnisafe/commit/63bdd3417ea415104aca1660619a23801cd3b957) by Jiayi Zhou).
 - fix invalid tutorial links (#270) ([bea468e](https://github.com/PKU-Alignment/omnisafe/commit/bea468e2127bfc4865d88c5ef735970ab7789155) by Jinming Xu).
 - Enable auto reset for MuJoCo envs (#269) ([b343750](https://github.com/PKU-Alignment/omnisafe/commit/b3437508bc3536e824f1ef9242ff2dc5380182e2) by Daniel Tan).
@@ -23,6 +24,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Features
 
+- support metadrive env (#328) ([93d4975](https://github.com/PKU-Alignment/omnisafe/commit/93d49756142d79a79ce8e5e704508d3782a2c3b4) by Jiayi Zhou).
+- support isaac gym interface (#325) ([924f74c](https://github.com/PKU-Alignment/omnisafe/commit/924f74cd7665f75411131edac4772f2958b01e8e) by Jiayi Zhou).
+- support crabs as a representative control barrier function based algorithm (#327) ([89717ba](https://github.com/PKU-Alignment/omnisafe/commit/89717ba9782527b442601093a7d1660b69a56ee8) by Borong Zhang).
 - support interface of environment customization (#310) ([efe7d9c](https://github.com/PKU-Alignment/omnisafe/commit/efe7d9cea96e743511e11b2056cbf05b5932364e) by Jiayi Zhou).
 - support A3C parallel in multiple GPUs (#282) ([d55958a](https://github.com/PKU-Alignment/omnisafe/commit/d55958a011df7800f256452e07811832cd2524d2) by Jiayi Zhou).
 - update config, benchmark results and code style (#280) ([9d943b6](https://github.com/PKU-Alignment/omnisafe/commit/9d943b6e15ade14da4a3c7380fad4de92c34b452) by Jiayi Zhou).
