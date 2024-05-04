@@ -12,29 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Environments of Safe Isaac Gym in the Safety-Gymnasium."""
+"""Environments interface of SafeMetaDrive."""
 
 from __future__ import annotations
 
+import logging
 from typing import Any, ClassVar
 
 import numpy as np
 import torch
 
+from omnisafe.common.logger import Logger
 from omnisafe.envs.core import CMDP, env_register
 from omnisafe.typing import DEVICE_CPU
 
 
-ISAAC_GYM_AVAILABLE = True
+META_DRIVE_AVAILABLE = True
 try:
-    from omnisafe.utils.isaac_gym_utils import make_isaac_gym_env
+    from metadrive import SafeMetaDriveEnv
 except ImportError:
-    ISAAC_GYM_AVAILABLE = False
+    META_DRIVE_AVAILABLE = False
 
 
 @env_register
-class SafetyIsaacGymEnv(CMDP):
-    """Safe Isaac Gym Environment.
+class SafetyMetaDriveEnv(CMDP):
+    """SafeMetaDrive Environment.
+
+    More information about MetaDrive environment is provided in https://github.com/metadriverse/metadrive.
+    For the details of environment configuration, please refer to https://github.com/decisionforce/EGPO.
 
     Args:
         env_id (str): Environment id.
@@ -42,21 +47,25 @@ class SafetyIsaacGymEnv(CMDP):
         device (torch.device, optional): Device to store the data. Defaults to
             ``torch.device('cpu')``.
 
+    Keyword Args:
+        meta_drive_config (dict, optional): MetaDrive configuration, containing following keys:
+            - ``horizon``: Max iterations of interactions.
+            - ``random_traffic``: Whether to use random traffic.
+            - ``crash_vehicle_penalty``: The penalty when crash into other vehicles.
+            - ``crash_object_penalty``: The penalty when crash into other objects.
+            - ``out_of_road_penalty``: The penalty when out of road.
+
     Attributes:
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
-        need_evaluation (bool): Whether to create an environment for evaluation.
     """
 
-    need_auto_reset_wrapper: bool = False
+    need_auto_reset_wrapper: bool = True
     need_time_limit_wrapper: bool = False
-    need_evaluation: bool = False
+    env_spec_log: dict[str, Any]
 
     _support_envs: ClassVar[list[str]] = [
-        'ShadowHandCatchOver2UnderarmSafeFinger',
-        'ShadowHandOverSafeFinger',
-        'ShadowHandCatchOver2UnderarmSafeJoint',
-        'ShadowHandOverSafeJoint',
+        'SafeMetaDrive',
     ]
 
     def __init__(
@@ -64,22 +73,28 @@ class SafetyIsaacGymEnv(CMDP):
         env_id: str,
         num_envs: int = 1,
         device: torch.device = DEVICE_CPU,
-        **kwargs: Any,
+        **kwargs: Any,  # pylint: disable=unused-argument
     ) -> None:
-        """Initialize an instance of :class:`SafetyIsaacGymEnv`."""
+        """Initialize an instance of :class:`SafetyMetaDriveEnv`."""
         super().__init__(env_id)
         self._num_envs = num_envs
         self._device = torch.device(device)
-        if ISAAC_GYM_AVAILABLE:
-            self._env = make_isaac_gym_env(env_id=env_id, device=device, num_envs=num_envs)
+
+        if META_DRIVE_AVAILABLE:
+            self._env = SafeMetaDriveEnv(config=kwargs.get('meta_drive_config'))
         else:
             raise ImportError(
-                'Please install Isaac Gym to use Safe Isaac Gym!\
-                \nMore details please refer to https://github.com/NVIDIA-Omniverse/IsaacGymEnvs.',
+                'Please install MetaDrive to use SafeMetaDrive!\
+                \nInstall from source: https://github.com/metadriverse/metadrive.\
+                \nInstall from PyPI: `pip install metadrive`.',
             )
+        self._num_scenarios = self._env.config['num_scenarios']
+
+        self._env.logger.setLevel(logging.FATAL)
         self._action_space = self._env.action_space
         self._observation_space = self._env.observation_space
-        self.need_evaluation = False
+        self._metadata = self._env.metadata
+        self.env_spec_log = {'Env/Success_rate': []}
 
     def step(
         self,
@@ -94,6 +109,12 @@ class SafetyIsaacGymEnv(CMDP):
     ]:
         """Step the environment.
 
+        .. note::
+            OmniSafe uses auto reset wrapper to reset the environment when the episode is
+            terminated. So the ``obs`` will be the first observation of the next episode. And the
+            true ``final_observation`` in ``info`` will be stored in the ``final_observation`` key
+            of ``info``.
+
         Args:
             action (torch.Tensor): Action to take.
 
@@ -105,9 +126,10 @@ class SafetyIsaacGymEnv(CMDP):
             truncated: Whether the episode has been truncated due to a time limit.
             info: Some information logged by the environment.
         """
-        obs, reward, cost, terminated, truncated, info = self._env.step(
-            action.detach(),
+        obs, reward, terminated, truncated, info = self._env.step(
+            action.detach().cpu().numpy(),
         )
+        cost = info['cost']
         obs, reward, cost, terminated, truncated = (
             torch.as_tensor(x, dtype=torch.float32, device=self._device)
             for x in (obs, reward, cost, terminated, truncated)
@@ -125,15 +147,34 @@ class SafetyIsaacGymEnv(CMDP):
                 device=self._device,
             )
 
+        # for meta drive environment, log the success rate when terminated
+        if terminated or truncated:
+            self.env_spec_log['Env/Success_rate'].append(int(info['arrive_dest']))
+
         return obs, reward, cost, terminated, truncated, info
+
+    def spec_log(self, logger: Logger) -> None:
+        """Log the success rate into the logger."""
+        logger.store({'Env/Success_rate': np.mean(self.env_spec_log['Env/Success_rate'])})
+        self.env_spec_log['Env/Success_rate'] = []
 
     def reset(
         self,
         seed: int | None = None,
         options: dict[str, Any] | None = None,
     ) -> tuple[torch.Tensor, dict[str, Any]]:
-        """Reset the environment."""
-        return self._env.reset()
+        """Reset the environment.
+
+        Args:
+            seed (int or None, optional): Seed to reset the environment.
+                Defaults to None.
+
+        Returns:
+            observation: Agent's observation of the current environment.
+            info: Some information logged by the environment.
+        """
+        obs, info = self._env.reset(seed=seed)
+        return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
 
     def set_seed(self, seed: int) -> None:
         """Set the seed for the environment.
@@ -141,11 +182,16 @@ class SafetyIsaacGymEnv(CMDP):
         Args:
             seed (int): Seed to set.
         """
-        self.reset(seed=seed)
+        self.reset()
 
     def render(self) -> Any:
-        """Isaac Gym does not support manually render."""
-        raise NotImplementedError
+        """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
+
+        Returns:
+            The render frames: we recommend to use `np.ndarray`
+                which could construct video by moviepy.
+        """
+        return self._env.render()
 
     def close(self) -> None:
         """Close the environment."""

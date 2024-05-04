@@ -12,6 +12,7 @@ omit =
     ../omnisafe/envs/custom_env.py
     ../omnisafe/envs/safety_isaac_gym_env.py
     ../omnisafe/utils/isaac_gym_utils.py
+    ../omnisafe/envs/meta_drive_env.py
 
 [report]
 exclude_lines =

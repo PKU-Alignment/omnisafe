@@ -240,3 +240,59 @@ SafetyPointGoal1-v0:
     lambda_lr: 0.0000005
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
+
+SafeMetaDrive:
+  # training configurations
+  train_cfgs:
+    # total number of steps to train
+    total_steps: 500000
+    # number of evaluate episodes
+    eval_episodes: 0
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps per sample
+    update_cycle: 100
+    # number of iterations to update the policy
+    update_iters: 200
+    # normalize reward
+    reward_normalize: True
+    # normalize cost
+    cost_normalize: True
+    # warm up epoch
+    warmup_epochs: 10
+    # Whether to use auto alpha
+    auto_alpha: False
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # learning rate
+      lr: 0.0003
+    # critic network configurations
+    critic:
+      # learning rate
+      lr: 0.0001
+  # environment specific configurations
+  env_cfgs:
+  # safe meta drive configurations. More details refer to https://github.com/decisionforce/EGPO
+    meta_drive_config:
+      # max iterations of interactions
+      horizon: 1500
+      # whether to use random traffic
+      random_traffic: False
+      # the penalty when crash into other vehicles
+      crash_vehicle_penalty: 1.
+      # the penalty when crash into other objects
+      crash_object_penalty: 0.5
+      # the penalty when out of road
+      out_of_road_penalty: 1.
+  # lagrangian configurations
+  lagrange_cfgs:
+    # tolerance of constraint violation
+    cost_limit: 0.0
+    # initial value of lagrangian multiplier
+    lagrangian_multiplier_init: 0.01
+    # learning rate of lagrangian multiplier
+    lambda_lr: 0.0001
+    # type of lagrangian optimizer
+    lambda_optimizer: "Adam"

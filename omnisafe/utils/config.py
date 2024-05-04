@@ -147,6 +147,13 @@ class Config(dict):
         """Set attribute."""
         self[name] = value
 
+    def get(self, name: str, default: Any = None) -> Any:
+        """Get attribute."""
+        try:
+            return self[name]
+        except KeyError:
+            return default
+
     def todict(self) -> dict[str, Any]:
         """Convert Config to dictionary.
 
