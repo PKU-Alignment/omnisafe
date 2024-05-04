@@ -73,7 +73,10 @@ class SafetyIsaacGymEnv(CMDP):
         if ISAAC_GYM_AVAILABLE:
             self._env = make_isaac_gym_env(env_id=env_id, device=device, num_envs=num_envs)
         else:
-            raise ImportError('Please install Isaac Gym to use Safe Isaac Gym!')
+            raise ImportError(
+                'Please install Isaac Gym to use Safe Isaac Gym!\
+                \nMore details please refer to https://github.com/NVIDIA-Omniverse/IsaacGymEnvs.',
+            )
         self._action_space = self._env.action_space
         self._observation_space = self._env.observation_space
         self.need_evaluation = False

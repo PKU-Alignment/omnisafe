@@ -75,7 +75,7 @@ class SafetyMetaDriveEnv(CMDP):
         device: torch.device = DEVICE_CPU,
         **kwargs: Any,  # pylint: disable=unused-argument
     ) -> None:
-        """Initialize an instance of :class:`SafetyGymnasiumEnv`."""
+        """Initialize an instance of :class:`SafetyMetaDriveEnv`."""
         super().__init__(env_id)
         self._num_envs = num_envs
         self._device = torch.device(device)
@@ -83,7 +83,11 @@ class SafetyMetaDriveEnv(CMDP):
         if META_DRIVE_AVAILABLE:
             self._env = SafeMetaDriveEnv(config=kwargs.get('meta_drive_config'))
         else:
-            raise ImportError('Please install MetaDrive to use Safe SafeMetaDrive!')
+            raise ImportError(
+                'Please install MetaDrive to use Safe SafeMetaDrive!\
+                \nInstall from source: https://github.com/metadriverse/metadrive.\
+                \nInstall from PyPI: `pip install metadrive`.',
+            )
         self._num_scenarios = self._env.config['num_scenarios']
 
         self._env.logger.setLevel(logging.FATAL)
