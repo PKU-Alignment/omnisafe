@@ -196,9 +196,9 @@ class DDPG(BaseAlgo):
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
 
-        self._logger.register_key('Metrics/EpRet', window_length=50)
-        self._logger.register_key('Metrics/EpCost', window_length=50)
-        self._logger.register_key('Metrics/EpLen', window_length=50)
+        self._logger.register_key('Metrics/EpRet', window_length=6)
+        self._logger.register_key('Metrics/EpCost', window_length=6)
+        self._logger.register_key('Metrics/EpLen', window_length=6)
 
         if self._cfgs.train_cfgs.eval_episodes > 0:
             self._logger.register_key('Metrics/TestEpRet', window_length=50)

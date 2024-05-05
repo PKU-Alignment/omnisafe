@@ -79,7 +79,7 @@ class CRABSAdapter(OffPolicyAdapter):
 
             done = False
             while not done:
-                act = agent.step(obs, deterministic=False)
+                act = agent.step(obs, deterministic=True)
                 obs, reward, cost, terminated, truncated, info = self._eval_env.step(act)
                 obs, reward, cost, terminated, truncated = (
                     torch.as_tensor(x, dtype=torch.float32, device=self._device)

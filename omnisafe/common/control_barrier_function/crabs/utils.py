@@ -16,10 +16,17 @@
 # pylint: disable=all
 import os
 
+import pytorch_lightning as pl
 import requests
 import torch
 import torch.nn as nn
 from torch import load
+
+from omnisafe.common.control_barrier_function.crabs.models import (
+    EnsembleModel,
+    GatedTransitionModel,
+    TransitionModel,
+)
 
 
 class Normalizer(nn.Module):
@@ -119,3 +126,45 @@ def get_pretrained_model(model_path, model_url, device):
         print('Model found locally.')
 
     return load(model_path, map_location=device)
+
+
+def create_model_and_trainer(cfgs, dim_state, dim_action, normalizer, device):
+    def make_model(i, model_type):
+        if model_type == 'GatedTransitionModel':
+            return GatedTransitionModel(
+                dim_state,
+                normalizer,
+                [dim_state + dim_action, 256, 256, 256, 256, dim_state * 2],
+                cfgs.transition_model_cfgs.train,
+                name=f'model-{i}',
+            )
+        elif model_type == 'TransitionModel':
+            return TransitionModel(
+                dim_state,
+                normalizer,
+                [dim_state + dim_action, 256, 256, 256, 256, dim_state * 2],
+                cfgs.transition_model_cfgs.train,
+                name=f'model-{i}',
+            )
+        else:
+            raise AssertionError(f'unknown model type {model_type}')
+
+    model_type = cfgs.transition_model_cfgs.type
+    models = [make_model(i, model_type) for i in range(cfgs.transition_model_cfgs.n_ensemble)]
+
+    model = EnsembleModel(models).to(device)
+
+    if str(device).startswith('cuda'):
+        accelerator = 'gpu'
+        devices = [int(str(device)[-1])]
+    else:
+        accelerator = 'cpu'
+        devices = torch.get_num_threads()
+    trainer = pl.Trainer(
+        max_epochs=0,
+        accelerator=accelerator,
+        devices=devices,
+        default_root_dir=cfgs.logger_cfgs.log_dir,
+    )
+
+    return model, trainer

@@ -25,6 +25,7 @@ import numpy as np
 import torch
 from gymnasium.spaces import Box
 from gymnasium.utils.save_video import save_video
+from torch import nn
 
 from omnisafe.algorithms.model_based.base.ensemble import EnsembleDynamicsModel
 from omnisafe.algorithms.model_based.planner import (
@@ -36,6 +37,16 @@ from omnisafe.algorithms.model_based.planner import (
     SafeARCPlanner,
 )
 from omnisafe.common import Normalizer
+from omnisafe.common.control_barrier_function.crabs.models import (
+    AddGaussianNoise,
+    CrabsCore,
+    ExplorationPolicy,
+    MeanPolicy,
+    MultiLayerPerceptron,
+)
+from omnisafe.common.control_barrier_function.crabs.optimizers import Barrier
+from omnisafe.common.control_barrier_function.crabs.utils import Normalizer as CRABSNormalizer
+from omnisafe.common.control_barrier_function.crabs.utils import create_model_and_trainer
 from omnisafe.envs.core import CMDP, make
 from omnisafe.envs.wrapper import ActionRepeat, ActionScale, ObsNormalize, TimeLimit
 from omnisafe.models.actor import ActorBuilder
@@ -289,6 +300,45 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             self._actor = actor_builder.build_actor(actor_type)
             self._actor.load_state_dict(model_params['pi'])
 
+        if self._cfgs['algo'] in ['CRABS']:
+            self.mean_policy = MeanPolicy(self._actor)
+            self.normalizer = CRABSNormalizer(self._env.observation_space.shape[0], clip=1000).to(
+                torch.device('cpu'),
+            )
+            self.model, _ = create_model_and_trainer(
+                self._cfgs,
+                self._env.observation_space.shape[0],
+                self._env.action_space.shape[0],
+                self.normalizer,
+                torch.device('cpu'),
+            )
+            self.s0 = torch.tensor(
+                self._env.reset()[0],
+                device=torch.device('cpu'),
+                dtype=torch.float32,
+            )
+            self.h = Barrier(
+                nn.Sequential(
+                    self.normalizer,
+                    MultiLayerPerceptron([self._env.observation_space.shape[0], 256, 256, 1]),
+                ),
+                self._env._env.env.barrier_fn,
+                self.s0,
+                self._cfgs.lyapunov,
+            ).to(torch.device('cpu'))
+            self.h.load_state_dict(model_params['h'])
+            self.model.load_state_dict(model_params['models'])
+            self.core = CrabsCore(self.h, self.model, self.mean_policy, self._cfgs.crabs)  # type: ignore
+            self._actor = ExplorationPolicy(
+                AddGaussianNoise(
+                    self._actor,  # type: ignore
+                    0.0,
+                    self._cfgs.algo_cfgs.exploration_noise,
+                ),
+                self.core,
+            )
+            self._actor.predict = self._actor.step
+
     # pylint: disable-next=too-many-locals
     def load_saved(
         self,
@@ -372,8 +422,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 with torch.no_grad():
                     if self._actor is not None:
                         act = self._actor.predict(
-                            obs,
+                            obs.reshape(
+                                -1,
+                                obs.shape[-1],  # to make sure the shape is (1, obs_dim)
+                            ),
                             deterministic=True,
+                        ).reshape(
+                            -1,  # to make sure the shape is (act_dim,)
                         )
                     elif self._planner is not None:
                         act = self._planner.output_action(
@@ -495,8 +550,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 with torch.no_grad():
                     if self._actor is not None:
                         act = self._actor.predict(
-                            obs,
+                            obs.reshape(
+                                -1,
+                                obs.shape[-1],  # to make sure the shape is (1, obs_dim)
+                            ),
                             deterministic=True,
+                        ).reshape(
+                            -1,  # to make sure the shape is (act_dim,)
                         )
                     elif self._planner is not None:
                         act = self._planner.output_action(
