@@ -307,6 +307,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
     def _init_crabs(self, model_params: dict) -> None:
         mean_policy = MeanPolicy(self._actor)
+        assert self._env is not None, 'The environment must be provided or created.'
+        assert self._actor is not None, 'The actor must be provided or created.'
+        assert (
+            self._env.observation_space.shape is not None
+        ), 'The observation space does not exist.'
+        assert self._env.action_space.shape is not None, 'The action space does not exist.'
         normalizer = CRABSNormalizer(self._env.observation_space.shape[0], clip=1000).to(
             torch.device('cpu'),
         )
@@ -327,7 +333,8 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 normalizer,
                 MultiLayerPerceptron([self._env.observation_space.shape[0], 256, 256, 1]),
             ),
-            self._env._env.env.barrier_fn,  # pylint: disable=protected-access
+            # pylint: disable-next=protected-access
+            self._env._env.env.barrier_fn,  # type: ignore
             s0,
             self._cfgs.lyapunov,
         ).to(torch.device('cpu'))
@@ -342,7 +349,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             ),
             core,
         )
-        self._actor.predict = self._actor.step
+        self._actor.predict = self._actor.step  # type: ignore
 
     # pylint: disable-next=too-many-locals
     def load_saved(

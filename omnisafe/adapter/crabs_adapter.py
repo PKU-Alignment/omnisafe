@@ -22,6 +22,7 @@ from rich.progress import track
 
 from omnisafe.adapter.offpolicy_adapter import OffPolicyAdapter
 from omnisafe.common.buffer import VectorOffPolicyBuffer
+from omnisafe.common.control_barrier_function.crabs.models import MeanPolicy
 from omnisafe.common.logger import Logger
 from omnisafe.envs.crabs_env import CRABSEnv
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
@@ -55,6 +56,7 @@ class CRABSAdapter(OffPolicyAdapter):
         """Initialize a instance of :class:`CRABSAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
         self._env: CRABSEnv
+        self._eval_env: CRABSEnv
         self.n_expl_episodes = 0
         self._max_ep_len = self._env.env.spec.max_episode_steps  # type: ignore
         self.horizon = self._max_ep_len
@@ -62,7 +64,7 @@ class CRABSAdapter(OffPolicyAdapter):
     def eval_policy(  # pylint: disable=too-many-locals
         self,
         episode: int,
-        agent: ConstraintActorQCritic,
+        agent: ConstraintActorQCritic | MeanPolicy,
         logger: Logger,
     ) -> None:
         """Rollout the environment with deterministic agent action.

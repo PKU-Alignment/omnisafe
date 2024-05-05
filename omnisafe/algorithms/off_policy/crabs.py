@@ -296,7 +296,7 @@ class CRABS(SAC):
                     eval_start = time.time()
                     self._env.eval_policy(
                         episode=self._cfgs.train_cfgs.raw_policy_episodes,
-                        agent=self.mean_policy,  # type: ignore
+                        agent=self.mean_policy,
                         logger=self._logger,
                     )
                     eval_time += time.time() - eval_start
