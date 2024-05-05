@@ -181,15 +181,10 @@ typing-modules = ["omnisafe.typing"]
     "S",     # flake8-bandit
     "BLE",   # flake8-blind-except
 ]
-
-"omnisafe/algorithms/off_policy/crabs.py" = [
+"conftest.py" = [
     "F401",   # unused-import
     "ANN201",     # missing-return-type-undocumented-public-function
     "ANN001",   # missing-type-function-argument
-    "ANN003",   # Missing type annotation
-    "ANN202",   # Missing return type annotation for private function
-    "ANN204",   # Missing return type annotation for special method
-    "RET505",   # Unnecessary `else` after `return` statement
 ]
 
 "omnisafe/envs/classic_control/envs_from_crabs.py" = [
@@ -200,14 +195,6 @@ typing-modules = ["omnisafe.typing"]
     "ANN202",   # Missing return type annotation for private function
     "ANN204",   # Missing return type annotation for special method
     "RET505",   # Unnecessary `else` after `return` statement
-]
-
-"omnisafe/common/control_barrier_function/crabs/utils.py" = [
-    "F401",   # unused-import
-    "ANN201",     # missing-return-type-undocumented-public-function
-    "ANN001",   # missing-type-function-argument
-    "ANN003",   # Missing type annotation
-    "S113",     # Probable use of requests call without timeout
 ]
 
 "omnisafe/common/control_barrier_function/crabs/optimizers.py" = [
@@ -224,6 +211,24 @@ typing-modules = ["omnisafe.typing"]
     "ANN001",   # missing-type-function-argument
     "ANN002",   # Missing type annotation
     "ANN003",   # Missing type annotation
+]
+
+"omnisafe/algorithms/off_policy/crabs.py" = [
+    "F401",   # unused-import
+    "ANN201",     # missing-return-type-undocumented-public-function
+    "ANN001",   # missing-type-function-argument
+    "ANN003",   # Missing type annotation
+    "ANN202",   # Missing return type annotation for private function
+    "ANN204",   # Missing return type annotation for special method
+    "RET505",   # Unnecessary `else` after `return` statement
+]
+
+"omnisafe/common/control_barrier_function/crabs/utils.py" = [
+    "F401",   # unused-import
+    "ANN201",     # missing-return-type-undocumented-public-function
+    "ANN001",   # missing-type-function-argument
+    "ANN003",   # Missing type annotation
+    "S113",     # Probable use of requests call without timeout
 ]
 
 [tool.ruff.flake8-annotations]

@@ -76,6 +76,7 @@ class OffPolicyAdapter(OnlineAdapter):
             agent (ConstraintActorCritic): Agent.
             logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
         """
+        assert self._eval_env, 'Environment for evaluation has not been set!'
         for _ in range(episode):
             ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
             obs, _ = self._eval_env.reset()

@@ -287,6 +287,21 @@ Here is a list of environments that [Safety-Gymnasium](https://www.safety-gymnas
     <td>HalfCheetah, Hopper, Swimmer, Walker2d, Ant, Humanoid</td>
     <td>SafetyHumanoidVelocity-v1</td>
   </tr>
+  <tr>
+    <td rowspan="4">Safe Isaac Gym</td>
+    <td>OverSafeFinger</td>
+    <td rowspan="4">ShadowHand</td>
+    <td rowspan="4">ShadowHandOverSafeFinger</td>
+  </tr>
+  <tr>
+    <td>OverSafeJoint</td>
+  </tr>
+  <tr>
+    <td>CatchOver2UnderarmSafeFinger</td>
+  </tr>
+  <tr>
+    <td>CatchOver2UnderarmSafeJoint</td>
+  </tr>
 </tbody>
 </table>
 

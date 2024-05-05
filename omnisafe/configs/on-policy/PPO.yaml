@@ -118,3 +118,217 @@ defaults:
       activation: tanh
       # learning rate
       lr: 0.0003
+
+ShadowHandCatchOver2UnderarmSafeFinger:
+  # training configurations
+  train_cfgs:
+    # number of vectorized environments
+    vector_env_nums: 256
+    # total number of steps to train
+    total_steps: 100000000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 38400
+    # number of iterations to update the policy
+    update_iters: 8
+    # batch size for each iteration
+    batch_size: 8192
+    # target kl divergence
+    target_kl: 0.016
+    # max gradient norm
+    max_grad_norm: 1.0
+    # use critic norm
+    use_critic_norm: False
+    # reward discount factor
+    gamma: 0.96
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: False
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+    critic:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+      # learning rate
+      lr: 0.0006
+
+ShadowHandOverSafeFinger:
+  # training configurations
+  train_cfgs:
+    # number of vectorized environments
+    vector_env_nums: 256
+    # total number of steps to train
+    total_steps: 100000000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 38400
+    # number of iterations to update the policy
+    update_iters: 8
+    # batch size for each iteration
+    batch_size: 8192
+    # target kl divergence
+    target_kl: 0.016
+    # max gradient norm
+    max_grad_norm: 1.0
+    # use critic norm
+    use_critic_norm: False
+    # reward discount factor
+    gamma: 0.96
+    # normalize observation
+    obs_normalize: False
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+    critic:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+      # learning rate
+      lr: 0.0006
+
+ShadowHandCatchOver2UnderarmSafeJoint:
+  # training configurations
+  train_cfgs:
+    # number of vectorized environments
+    vector_env_nums: 256
+    # total number of steps to train
+    total_steps: 100000000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 38400
+    # number of iterations to update the policy
+    update_iters: 8
+    # batch size for each iteration
+    batch_size: 8192
+    # target kl divergence
+    target_kl: 0.016
+    # max gradient norm
+    max_grad_norm: 1.0
+    # use critic norm
+    use_critic_norm: False
+    # reward discount factor
+    gamma: 0.96
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: False
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+    critic:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+      # learning rate
+      lr: 0.0006
+
+ShadowHandOverSafeJoint:
+  # training configurations
+  train_cfgs:
+    # number of vectorized environments
+    vector_env_nums: 256
+    # total number of steps to train
+    total_steps: 100000000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 38400
+    # number of iterations to update the policy
+    update_iters: 8
+    # batch size for each iteration
+    batch_size: 8192
+    # target kl divergence
+    target_kl: 0.016
+    # max gradient norm
+    max_grad_norm: 1.0
+    # use critic norm
+    use_critic_norm: False
+    # reward discount factor
+    gamma: 0.96
+    # normalize observation
+    obs_normalize: False
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+    critic:
+      # hidden layer sizes
+      hidden_sizes: [1024, 1024, 512]
+      # learning rate
+      lr: 0.0006
+
+SafeMetaDrive:
+  # training configurations
+  train_cfgs:
+    # total number of steps to train
+    total_steps: 500000
+  # logger configurations
+  logger_cfgs:
+    # save model frequency
+    save_model_freq: 15
+  # algorithm configurations
+  algo_cfgs:
+    # batch size for each iteration
+    batch_size: 256
+    # entropy coefficient
+    entropy_coef: 0.01
+    # number of steps to update the policy
+    steps_per_epoch: 3000
+    # number of iterations to update the policy
+    update_iters: 40
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: True
+    # normalize observation
+    obs_normalize: False
+    # max gradient norm
+    max_grad_norm: 0.05
+    # penalty coefficient
+    penalty_coef: 1.0
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # hidden layer sizes
+      hidden_sizes: [256, 256]
+      # learning rate
+      lr: 0.00005
+    # critic network configurations
+    critic:
+      # hidden layer sizes
+      hidden_sizes: [256, 256]
+      # learning rate
+      lr: 0.00005
+  # environment specific configurations
+  env_cfgs:
+  # safe meta drive configurations. More details refer to https://github.com/decisionforce/EGPO
+    meta_drive_config:
+      # max iterations of interactions
+      horizon: 1500
+      # whether to use random traffic
+      random_traffic: False
+      # the penalty when crash into other vehicles
+      crash_vehicle_penalty: 1.
+      # the penalty when crash into other objects
+      crash_object_penalty: 0.5
+      # the penalty when out of road
+      out_of_road_penalty: 1.

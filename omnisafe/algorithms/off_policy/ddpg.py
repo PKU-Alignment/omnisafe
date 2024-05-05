@@ -128,6 +128,7 @@ class DDPG(BaseAlgo):
             size=self._cfgs.algo_cfgs.size,
             batch_size=self._cfgs.algo_cfgs.batch_size,
             num_envs=self._cfgs.train_cfgs.vector_env_nums,
+            penalty_coefficient=self._cfgs.algo_cfgs.get('penalty_coefficient', 0.0),
             device=self._device,
         )
 

@@ -14,6 +14,12 @@
 # ==============================================================================
 """OmniSafe: A comprehensive and reliable benchmark for safe reinforcement learning."""
 
+from contextlib import suppress
+
+
+with suppress(ImportError):
+    from isaacgym import gymutil
+
 from omnisafe import algorithms
 from omnisafe.algorithms import ALGORITHMS
 from omnisafe.algorithms.algo_wrapper import AlgoWrapper as Agent

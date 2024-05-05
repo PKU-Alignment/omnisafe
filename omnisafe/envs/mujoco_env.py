@@ -145,7 +145,7 @@ class MujocoEnv(CMDP):
     @property
     def max_episode_steps(self) -> int:
         """The max steps per episode."""
-        return self._env.env.spec.max_episode_steps  # type: ignore
+        return self._env.spec.max_episode_steps  # type: ignore
 
     def reset(
         self,

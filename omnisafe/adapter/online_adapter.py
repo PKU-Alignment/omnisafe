@@ -69,13 +69,16 @@ class OnlineAdapter:
             env_cfgs = self._cfgs.env_cfgs.todict()
 
         self._env: CMDP = make(env_id, num_envs=num_envs, device=self._device, **env_cfgs)
-        self._eval_env: CMDP = make(env_id, num_envs=1, device=self._device, **env_cfgs)
-
         self._wrapper(
             obs_normalize=cfgs.algo_cfgs.obs_normalize,
             reward_normalize=cfgs.algo_cfgs.reward_normalize,
             cost_normalize=cfgs.algo_cfgs.cost_normalize,
         )
+
+        self._eval_env: CMDP | None = None
+        if self._env.need_evaluation:
+            self._eval_env = make(env_id, num_envs=1, device=self._device, **env_cfgs)
+            self._wrapper_eval(obs_normalize=cfgs.algo_cfgs.obs_normalize)
 
         self._env.set_seed(seed)
 
@@ -116,33 +119,53 @@ class OnlineAdapter:
         """
         if self._env.need_time_limit_wrapper:
             assert (
-                self._env.max_episode_steps and self._eval_env.max_episode_steps
+                self._env.max_episode_steps
             ), 'You must define max_episode_steps as an integer\
-                or cancel the use of the time_limit wrapper.'
+                \nor cancel the use of the time_limit wrapper.'
             self._env = TimeLimit(
                 self._env,
                 time_limit=self._env.max_episode_steps,
                 device=self._device,
             )
+        if self._env.need_auto_reset_wrapper:
+            self._env = AutoReset(self._env, device=self._device)
+        if obs_normalize:
+            self._env = ObsNormalize(self._env, device=self._device)
+        if reward_normalize:
+            self._env = RewardNormalize(self._env, device=self._device)
+        if cost_normalize:
+            self._env = CostNormalize(self._env, device=self._device)
+        self._env = ActionScale(self._env, low=-1.0, high=1.0, device=self._device)
+        if self._env.num_envs == 1:
+            self._env = Unsqueeze(self._env, device=self._device)
+
+    def _wrapper_eval(
+        self,
+        obs_normalize: bool = True,
+    ) -> None:
+        """Wrapper the environment for evaluation.
+
+        Args:
+            obs_normalize (bool, optional): Whether to normalize the observation. Defaults to True.
+            reward_normalize (bool, optional): Whether to normalize the reward. Defaults to True.
+            cost_normalize (bool, optional): Whether to normalize the cost. Defaults to True.
+        """
+        assert self._eval_env, 'Your environment for evaluation does not exist!'
+        if self._env.need_time_limit_wrapper:
+            assert (
+                self._eval_env.max_episode_steps
+            ), 'You must define max_episode_steps as an\
+                \ninteger or cancel the use of the time_limit wrapper.'
             self._eval_env = TimeLimit(
                 self._eval_env,
                 time_limit=self._eval_env.max_episode_steps,
                 device=self._device,
             )
         if self._env.need_auto_reset_wrapper:
-            self._env = AutoReset(self._env, device=self._device)
             self._eval_env = AutoReset(self._eval_env, device=self._device)
         if obs_normalize:
-            self._env = ObsNormalize(self._env, device=self._device)
             self._eval_env = ObsNormalize(self._eval_env, device=self._device)
-        if reward_normalize:
-            self._env = RewardNormalize(self._env, device=self._device)
-        if cost_normalize:
-            self._env = CostNormalize(self._env, device=self._device)
-        self._env = ActionScale(self._env, low=-1.0, high=1.0, device=self._device)
         self._eval_env = ActionScale(self._eval_env, low=-1.0, high=1.0, device=self._device)
-        if self._env.num_envs == 1:
-            self._env = Unsqueeze(self._env, device=self._device)
         self._eval_env = Unsqueeze(self._eval_env, device=self._device)
 
     @property

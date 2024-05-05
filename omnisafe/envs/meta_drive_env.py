@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,23 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Environments in the Safety-Gymnasium."""
+"""Environments interface of SafeMetaDrive."""
 
 from __future__ import annotations
 
+import logging
 from typing import Any, ClassVar
 
 import numpy as np
-import safety_gymnasium
 import torch
 
+from omnisafe.common.logger import Logger
 from omnisafe.envs.core import CMDP, env_register
-from omnisafe.typing import DEVICE_CPU, Box
+from omnisafe.typing import DEVICE_CPU
+
+
+META_DRIVE_AVAILABLE = True
+try:
+    from metadrive import SafeMetaDriveEnv
+except ImportError:
+    META_DRIVE_AVAILABLE = False
 
 
 @env_register
-class SafetyGymnasiumEnv(CMDP):
-    """Safety Gymnasium Environment.
+class SafetyMetaDriveEnv(CMDP):
+    """SafeMetaDrive Environment.
+
+    More information about MetaDrive environment is provided in https://github.com/metadriverse/metadrive.
+    For the details of environment configuration, please refer to https://github.com/decisionforce/EGPO.
 
     Args:
         env_id (str): Environment id.
@@ -37,90 +48,24 @@ class SafetyGymnasiumEnv(CMDP):
             ``torch.device('cpu')``.
 
     Keyword Args:
-        render_mode (str, optional): The render mode ranges from 'human' to 'rgb_array' and 'rgb_array_list'.
-            Defaults to 'rgb_array'.
-        camera_name (str, optional): The camera name.
-        camera_id (int, optional): The camera id.
-        width (int, optional): The width of the rendered image. Defaults to 256.
-        height (int, optional): The height of the rendered image. Defaults to 256.
+        meta_drive_config (dict, optional): MetaDrive configuration, containing following keys:
+            - ``horizon``: Max iterations of interactions.
+            - ``random_traffic``: Whether to use random traffic.
+            - ``crash_vehicle_penalty``: The penalty when crash into other vehicles.
+            - ``crash_object_penalty``: The penalty when crash into other objects.
+            - ``out_of_road_penalty``: The penalty when out of road.
 
     Attributes:
         need_auto_reset_wrapper (bool): Whether to use auto reset wrapper.
         need_time_limit_wrapper (bool): Whether to use time limit wrapper.
     """
 
-    need_auto_reset_wrapper: bool = False
+    need_auto_reset_wrapper: bool = True
     need_time_limit_wrapper: bool = False
+    env_spec_log: dict[str, Any]
 
     _support_envs: ClassVar[list[str]] = [
-        'SafetyPointGoal0-v0',
-        'SafetyPointGoal1-v0',
-        'SafetyPointGoal2-v0',
-        'SafetyPointButton0-v0',
-        'SafetyPointButton1-v0',
-        'SafetyPointButton2-v0',
-        'SafetyPointPush0-v0',
-        'SafetyPointPush1-v0',
-        'SafetyPointPush2-v0',
-        'SafetyPointCircle0-v0',
-        'SafetyPointCircle1-v0',
-        'SafetyPointCircle2-v0',
-        'SafetyCarGoal0-v0',
-        'SafetyCarGoal1-v0',
-        'SafetyCarGoal2-v0',
-        'SafetyCarButton0-v0',
-        'SafetyCarButton1-v0',
-        'SafetyCarButton2-v0',
-        'SafetyCarPush0-v0',
-        'SafetyCarPush1-v0',
-        'SafetyCarPush2-v0',
-        'SafetyCarCircle0-v0',
-        'SafetyCarCircle1-v0',
-        'SafetyCarCircle2-v0',
-        'SafetyAntGoal0-v0',
-        'SafetyAntGoal1-v0',
-        'SafetyAntGoal2-v0',
-        'SafetyAntButton0-v0',
-        'SafetyAntButton1-v0',
-        'SafetyAntButton2-v0',
-        'SafetyAntPush0-v0',
-        'SafetyAntPush1-v0',
-        'SafetyAntPush2-v0',
-        'SafetyAntCircle0-v0',
-        'SafetyAntCircle1-v0',
-        'SafetyAntCircle2-v0',
-        'SafetyDoggoGoal0-v0',
-        'SafetyDoggoGoal1-v0',
-        'SafetyDoggoGoal2-v0',
-        'SafetyDoggoButton0-v0',
-        'SafetyDoggoButton1-v0',
-        'SafetyDoggoButton2-v0',
-        'SafetyDoggoPush0-v0',
-        'SafetyDoggoPush1-v0',
-        'SafetyDoggoPush2-v0',
-        'SafetyDoggoCircle0-v0',
-        'SafetyDoggoCircle1-v0',
-        'SafetyDoggoCircle2-v0',
-        'SafetyRacecarGoal0-v0',
-        'SafetyRacecarGoal1-v0',
-        'SafetyRacecarGoal2-v0',
-        'SafetyRacecarButton0-v0',
-        'SafetyRacecarButton1-v0',
-        'SafetyRacecarButton2-v0',
-        'SafetyRacecarPush0-v0',
-        'SafetyRacecarPush1-v0',
-        'SafetyRacecarPush2-v0',
-        'SafetyRacecarCircle0-v0',
-        'SafetyRacecarCircle1-v0',
-        'SafetyRacecarCircle2-v0',
-        'SafetyHalfCheetahVelocity-v1',
-        'SafetyHopperVelocity-v1',
-        'SafetySwimmerVelocity-v1',
-        'SafetyWalker2dVelocity-v1',
-        'SafetyAntVelocity-v1',
-        'SafetyHumanoidVelocity-v1',
-        'SafetyPointRun0-v0',
-        'SafetyCarRun0-v0',
+        'SafeMetaDrive',
     ]
 
     def __init__(
@@ -128,34 +73,28 @@ class SafetyGymnasiumEnv(CMDP):
         env_id: str,
         num_envs: int = 1,
         device: torch.device = DEVICE_CPU,
-        **kwargs: Any,
+        **kwargs: Any,  # pylint: disable=unused-argument
     ) -> None:
-        """Initialize an instance of :class:`SafetyGymnasiumEnv`."""
+        """Initialize an instance of :class:`SafetyMetaDriveEnv`."""
         super().__init__(env_id)
         self._num_envs = num_envs
         self._device = torch.device(device)
 
-        if num_envs > 1:
-            self._env = safety_gymnasium.vector.make(env_id=env_id, num_envs=num_envs, **kwargs)
-            assert isinstance(self._env.single_action_space, Box), 'Only support Box action space.'
-            assert isinstance(
-                self._env.single_observation_space,
-                Box,
-            ), 'Only support Box observation space.'
-            self._action_space = self._env.single_action_space
-            self._observation_space = self._env.single_observation_space
+        if META_DRIVE_AVAILABLE:
+            self._env = SafeMetaDriveEnv(config=kwargs.get('meta_drive_config'))
         else:
-            self.need_time_limit_wrapper = True
-            self.need_auto_reset_wrapper = True
-            self._env = safety_gymnasium.make(id=env_id, autoreset=False, **kwargs)
-            assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
-            assert isinstance(
-                self._env.observation_space,
-                Box,
-            ), 'Only support Box observation space.'
-            self._action_space = self._env.action_space
-            self._observation_space = self._env.observation_space
+            raise ImportError(
+                'Please install MetaDrive to use SafeMetaDrive!\
+                \nInstall from source: https://github.com/metadriverse/metadrive.\
+                \nInstall from PyPI: `pip install metadrive`.',
+            )
+        self._num_scenarios = self._env.config['num_scenarios']
+
+        self._env.logger.setLevel(logging.FATAL)
+        self._action_space = self._env.action_space
+        self._observation_space = self._env.observation_space
         self._metadata = self._env.metadata
+        self.env_spec_log = {'Env/Success_rate': []}
 
     def step(
         self,
@@ -187,9 +126,10 @@ class SafetyGymnasiumEnv(CMDP):
             truncated: Whether the episode has been truncated due to a time limit.
             info: Some information logged by the environment.
         """
-        obs, reward, cost, terminated, truncated, info = self._env.step(
+        obs, reward, terminated, truncated, info = self._env.step(
             action.detach().cpu().numpy(),
         )
+        cost = info['cost']
         obs, reward, cost, terminated, truncated = (
             torch.as_tensor(x, dtype=torch.float32, device=self._device)
             for x in (obs, reward, cost, terminated, truncated)
@@ -207,7 +147,16 @@ class SafetyGymnasiumEnv(CMDP):
                 device=self._device,
             )
 
+        # for meta drive environment, log the success rate when terminated
+        if terminated or truncated:
+            self.env_spec_log['Env/Success_rate'].append(int(info['arrive_dest']))
+
         return obs, reward, cost, terminated, truncated, info
+
+    def spec_log(self, logger: Logger) -> None:
+        """Log the success rate into the logger."""
+        logger.store({'Env/Success_rate': np.mean(self.env_spec_log['Env/Success_rate'])})
+        self.env_spec_log['Env/Success_rate'] = []
 
     def reset(
         self,
@@ -217,20 +166,15 @@ class SafetyGymnasiumEnv(CMDP):
         """Reset the environment.
 
         Args:
-            seed (int, optional): The random seed. Defaults to None.
-            options (dict[str, Any], optional): The options for the environment. Defaults to None.
+            seed (int or None, optional): Seed to reset the environment.
+                Defaults to None.
 
         Returns:
             observation: Agent's observation of the current environment.
             info: Some information logged by the environment.
         """
-        obs, info = self._env.reset(seed=seed, options=options)
+        obs, info = self._env.reset(seed=seed)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
-
-    @property
-    def max_episode_steps(self) -> int:
-        """The max steps per episode."""
-        return self._env.spec.max_episode_steps
 
     def set_seed(self, seed: int) -> None:
         """Set the seed for the environment.
@@ -238,7 +182,7 @@ class SafetyGymnasiumEnv(CMDP):
         Args:
             seed (int): Seed to set.
         """
-        self.reset(seed=seed)
+        self.reset()
 
     def render(self) -> Any:
         """Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
