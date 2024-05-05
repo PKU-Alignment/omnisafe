@@ -303,43 +303,46 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             self._actor.load_state_dict(model_params['pi'])
 
         if self._cfgs['algo'] in ['CRABS']:
-            self.mean_policy = MeanPolicy(self._actor)
-            self.normalizer = CRABSNormalizer(self._env.observation_space.shape[0], clip=1000).to(
-                torch.device('cpu'),
-            )
-            self.model, _ = create_model_and_trainer(
-                self._cfgs,
-                self._env.observation_space.shape[0],
-                self._env.action_space.shape[0],
-                self.normalizer,
-                torch.device('cpu'),
-            )
-            self.s0 = torch.tensor(
-                self._env.reset()[0],
-                device=torch.device('cpu'),
-                dtype=torch.float32,
-            )
-            self.h = Barrier(
-                nn.Sequential(
-                    self.normalizer,
-                    MultiLayerPerceptron([self._env.observation_space.shape[0], 256, 256, 1]),
-                ),
-                self._env._env.env.barrier_fn,
-                self.s0,
-                self._cfgs.lyapunov,
-            ).to(torch.device('cpu'))
-            self.h.load_state_dict(model_params['h'])
-            self.model.load_state_dict(model_params['models'])
-            self.core = CrabsCore(self.h, self.model, self.mean_policy, self._cfgs.crabs)  # type: ignore
-            self._actor = ExplorationPolicy(
-                AddGaussianNoise(
-                    self._actor,  # type: ignore
-                    0.0,
-                    self._cfgs.algo_cfgs.exploration_noise,
-                ),
-                self.core,
-            )
-            self._actor.predict = self._actor.step
+            self._init_crabs(model_params)
+
+    def _init_crabs(self, model_params: dict) -> None:
+        mean_policy = MeanPolicy(self._actor)
+        normalizer = CRABSNormalizer(self._env.observation_space.shape[0], clip=1000).to(
+            torch.device('cpu'),
+        )
+        model, _ = create_model_and_trainer(
+            self._cfgs,
+            self._env.observation_space.shape[0],
+            self._env.action_space.shape[0],
+            normalizer,
+            torch.device('cpu'),
+        )
+        s0 = torch.tensor(
+            self._env.reset()[0],
+            device=torch.device('cpu'),
+            dtype=torch.float32,
+        )
+        h = Barrier(
+            nn.Sequential(
+                normalizer,
+                MultiLayerPerceptron([self._env.observation_space.shape[0], 256, 256, 1]),
+            ),
+            self._env._env.env.barrier_fn,  # pylint: disable=protected-access
+            s0,
+            self._cfgs.lyapunov,
+        ).to(torch.device('cpu'))
+        h.load_state_dict(model_params['h'])
+        model.load_state_dict(model_params['models'])
+        core = CrabsCore(h, model, mean_policy, self._cfgs.crabs)  # type: ignore
+        self._actor = ExplorationPolicy(
+            AddGaussianNoise(
+                self._actor,  # type: ignore
+                0.0,
+                self._cfgs.algo_cfgs.exploration_noise,
+            ),
+            core,
+        )
+        self._actor.predict = self._actor.step
 
     # pylint: disable-next=too-many-locals
     def load_saved(
@@ -462,7 +465,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             episode_costs.append(ep_cost)
             episode_lengths.append(length)
 
-            print(f'Episode {episode+1} results:')
+            print(f'Episode {episode} results:')
             print(f'Episode reward: {ep_ret}')
             print(f'Episode cost: {ep_cost}')
             print(f'Episode length: {length}')
@@ -606,7 +609,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             episode_costs.append(ep_cost)
             episode_lengths.append(length)
             with open(result_path, 'a+', encoding='utf-8') as f:
-                print(f'Episode {episode_idx+1} results:', file=f)
+                print(f'Episode {episode_idx} results:', file=f)
                 print(f'Episode reward: {ep_ret}', file=f)
                 print(f'Episode cost: {ep_cost}', file=f)
                 print(f'Episode length: {length}', file=f)
