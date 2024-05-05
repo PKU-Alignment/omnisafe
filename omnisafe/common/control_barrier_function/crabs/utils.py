@@ -131,7 +131,7 @@ def get_pretrained_model(model_path, model_url, device):
 
 def create_model_and_trainer(cfgs, dim_state, dim_action, normalizer, device):
     """Create world model and trainer.
-    
+
     Args:
         cfgs: Configs.
         dim_state: Dimension of the state.
@@ -142,6 +142,7 @@ def create_model_and_trainer(cfgs, dim_state, dim_action, normalizer, device):
     Returns:
         Tuple[nn.Module, pl.Trainer]: World model and trainer.
     """
+
     def make_model(i, model_type) -> nn.Module:
         if model_type == 'GatedTransitionModel':
             return GatedTransitionModel(
