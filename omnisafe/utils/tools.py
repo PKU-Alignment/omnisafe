@@ -352,81 +352,138 @@ def get_device(device: torch.device | str | int = DEVICE_CPU) -> torch.device:
     # Force conversion to torch.device
     device = torch.device(device)
 
-    # Cuda not available
     if not torch.cuda.is_available() and device.type == torch.device('cuda').type:
         return torch.device('cpu')
 
     return device
 
 
-def create_feature_actions(feature_, action_):
-    N = feature_.size(0)
-    # Flatten sequence of features.
-    # f (batch_size, (num_sequences)*feature_dim)
-    f = feature_[:, :-1].view(N, -1)
-    n_f = feature_[:, 1:].view(N, -1)
-    # Flatten sequence of actions.
-    a = action_[:, :-1].view(N, -1)
-    n_a = action_[:, 1:].view(N, -1)
-    # Concatenate feature and action.
-    fa = torch.cat([f, a], dim=-1)
-    n_fa = torch.cat([n_f, n_a], dim=-1)
-    return fa, n_fa
-
-
 class LazyFrames:
-    def __init__(self, frames) -> None:
+    """A class that lazily handles a list of frames.
+
+    Attributes:
+        _frames (List[Any]): Private storage for frame data, stored as a list.
+    """
+
+    def __init__(self, frames: list[Any]) -> None:
+        """Initializes a new instance of LazyFrames.
+
+        Args:
+            frames (list[Any]): A list of frame data.
+        """
         self._frames = list(frames)
 
-    def __array__(self, dtype):
+    def __array__(self, dtype: type[np.dtype]) -> np.ndarray:
+        """Returns an array representation of the frames with the specified data type.
+
+        Args:
+            dtype (Type[np.dtype]): The desired data type for the numpy array.
+
+        Returns:
+            np.ndarray: An array representation of the frames.
+        """
         return np.array(self._frames, dtype=dtype)
 
     def __len__(self) -> int:
+        """Returns the number of frames.
+
+        Returns:
+            int: The number of frames.
+        """
         return len(self._frames)
 
 
 class SequenceQueue:
-    def __init__(self, obs_space: OmnisafeSpace, num_sequences: int = 8, device=DEVICE_CPU) -> None:
+    """A queue that manages sequences of observations, actions, rewards, etc. for RL agents.
+
+    Attributes:
+        num_sequences (int): The number of sequences to store.
+        _reset_episode (bool): Flag to indicate whether the queue needs to be reset.
+        _obs_space (OmnisafeSpace): The space of the observations.
+        _device (str): The device (CPU or GPU) on which to process the tensors.
+        data (dict): A dictionary containing observations, actions, rewards, costs and terminated
+            or truncated flags.
+    """
+
+    def __init__(
+        self,
+        obs_space: OmnisafeSpace,
+        num_sequences: int = 8,
+        device: torch.device = DEVICE_CPU,
+    ) -> None:
+        """Initialize a new instance of SequenceQueue.
+
+        Args:
+            obs_space (OmnisafeSpace): The observation space of the environment.
+            num_sequences (int, optional): Maximum number of sequences to store. Defaults to 8.
+            device (str, optional): The computation device ('cpu' or 'gpu'). Defaults to 'cpu'.
+        """
         self.num_sequences = num_sequences
         self._reset_episode = False
         self._obs_space = obs_space
         self._device = device
-        self.data = {}
+        self.data: dict[str, Any] = {}
         self.data['obs'] = deque(maxlen=self.num_sequences + 1)
         self.data['act'] = deque(maxlen=self.num_sequences)
         self.data['reward'] = deque(maxlen=self.num_sequences)
         self.data['done'] = deque(maxlen=self.num_sequences)
         self.data['cost'] = deque(maxlen=self.num_sequences)
 
-    def reset_sequence_queue(self, obs):
-        for k in self.data:
-            self.data[k].clear()
+    def reset_sequence_queue(self, obs: torch.Tensor) -> None:
+        """Reset the sequence queue with the initial observation.
+
+        Args:
+            obs (torch.Tensor): The initial observation from the environment.
+        """
+        for _, v in self.data.items():
+            v.clear()
         self._reset_episode = True
         self.data['obs'].append(obs.detach().cpu().numpy())
 
-    def append(self, **data: torch.Tensor):
-        assert self._reset_episode, self._reset_episode
+    def append(self, **data: torch.Tensor) -> None:
+        """Append new data to the queue.
+
+        Args:
+            data (torch.Tensor): Keyword arguments where keys are data types ('obs', 'act', etc.)
+            and values are torch Tensors.
+        """
+        assert self._reset_episode, 'Reset the sequence queue before appending data.'
         for key, value in data.items():
             self.data[key].append(value.detach().cpu().numpy())
 
-    def _process_get(self, key: str) -> LazyFrames | torch.Tensor:
+    def _process_get(self, key: str) -> Any:
+        """Process the requested data for retrieval.
+
+        Args:
+            key (str): The key of the data to retrieve.
+
+        Returns:
+            Union[LazyFrames, torch.Tensor]: The processed data, either as LazyFrames or a torch Tensor.
+        """
         if key == 'obs':
             return np.array(LazyFrames(self.data['obs']), dtype=np.float32).swapaxes(0, 1).squeeze()
-        else:
-            return torch.tensor(
-                np.array(self.data[key], dtype=np.float32),
-                dtype=torch.float32,
-                device=self._device,
-            )
+        return torch.tensor(
+            np.array(self.data[key], dtype=np.float32),
+            dtype=torch.float32,
+            device=self._device,
+        )
 
-    def get(self):
+    def get(self) -> dict:
+        """Retrieve all stored data.
+
+        Returns:
+            dict: A dictionary of processed data for each stored type.
+        """
         return {key: self._process_get(key) for key in self.data}
 
-    def is_empty(self):
-        return len(self.data['reward']) == 0
-
-    def is_full(self):
+    def is_full(self) -> bool:
+        """Return whether the sequence queue is full."""
         return len(self.data['reward']) == self.num_sequences
 
     def __len__(self) -> int:
+        """Get the number of rewards stored, which reflects the number of complete sequences.
+
+        Returns:
+            int: The number of sequences.
+        """
         return len(self.data['reward'])

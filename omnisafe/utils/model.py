@@ -115,13 +115,36 @@ def build_mlp_network(
 
 
 class ObservationConcator:
-    def __init__(self, state_shape, action_shape, num_sequences, device=DEVICE_CPU) -> None:
+    """A class designed to concatenate observations and actions over a specified time steps."""
+
+    def __init__(
+        self,
+        state_shape: tuple,
+        action_shape: tuple,
+        num_sequences: int,
+        device: torch.device = DEVICE_CPU,
+    ) -> None:
+        """Initialize the ObservationConcator with given shapes and device.
+
+        Args:
+            state_shape (tuple): Shape of the state space.
+            action_shape (tuple): Shape of the action space.
+            num_sequences (int): Number of sequences to maintain in the history.
+            device (str): The device (CPU/GPU) on which to create tensors.
+        """
         self.state_shape = state_shape
         self.action_shape = action_shape
         self.num_sequences = num_sequences
         self.device = device
+        self._state: deque = deque(maxlen=self.num_sequences)
+        self._action: deque = deque(maxlen=self.num_sequences - 1)
 
-    def reset_episode(self, state):
+    def reset_episode(self, state: torch.Tensor) -> None:
+        """Reset the history of states and actions for a new episode.
+
+        Args:
+            state (torch.Tensor): The initial state for the new episode.
+        """
         self._state = deque(maxlen=self.num_sequences)
         self._action = deque(maxlen=self.num_sequences - 1)
         for _ in range(self.num_sequences - 1):
@@ -133,22 +156,30 @@ class ObservationConcator:
             )
         self._state.append(state)
 
-    def append(self, state, action):
+    def append(self, state: torch.Tensor, action: torch.Tensor) -> None:
+        """Append a new state and action to the queue.
+
+        Args:
+            state (torch.Tensor): State to be appended.
+            action (torch.Tensor): Action to be appended.
+        """
         self._state.append(state)
         self._action.append(action)
 
     @property
-    def state(self):
-        return self._state[None, ...]
+    def last_state(self) -> torch.Tensor:
+        """Returns the most recent state.
 
-    @property
-    def last_state(self):
+        Returns:
+            torch.Tensor: The most recent state.
+        """
         return self._state[-1][None, ...]
 
     @property
-    def action(self):
-        return self._action.reshape(1, -1)
+    def last_action(self) -> torch.Tensor:
+        """Returns the most recent action.
 
-    @property
-    def last_action(self):
+        Returns:
+            torch.Tensor: The most recent action.
+        """
         return self._action[-1]

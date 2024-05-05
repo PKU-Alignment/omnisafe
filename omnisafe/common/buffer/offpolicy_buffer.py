@@ -123,6 +123,8 @@ class OffPolicyBuffer(BaseBuffer):
 
 
 class OffPolicySequenceBuffer(BaseSequenceBuffer):
+    """Sequence-based Replay buffer for off-policy algorithms."""
+
     def __init__(  # pylint: disable=too-many-arguments
         self,
         obs_space: OmnisafeSpace,

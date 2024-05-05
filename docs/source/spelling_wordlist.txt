@@ -486,3 +486,15 @@ UpdateDynamics
 mathbb
 meger
 Jupyter
+LazyFrames
+SLAC
+Leibler
+Kullback
+slac
+Tal
+Nils
+Simão
+Hogewind
+Yannick
+Kachman
+Thiago

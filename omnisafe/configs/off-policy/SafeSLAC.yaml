@@ -42,16 +42,14 @@ defaults:
     image_noise: 0.4
     # list of sizes for hidden layers of dynamics model
     hidden_sizes: [256, 256]
-    # dimensionality of feature vectors initially
-    feature_dim: 256
-    # dimensionality of the first latent space
+    # dimension of the first latent space
     latent_dim_1: 32
-    # dimensionality of the second latent space
+    # dimension of the second latent space
     latent_dim_2: 200
-    # dimensionality of feature vectors
+    # dimension of feature vectors
     feature_dim: 200
     # number of steps to update the policy
-    steps_per_epoch: 2000 
+    steps_per_epoch: 2000
     # number of steps per sample
     update_cycle: 100
     # number of iterations to update the policy

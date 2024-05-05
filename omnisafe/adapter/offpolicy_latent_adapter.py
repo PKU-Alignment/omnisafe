@@ -42,6 +42,18 @@ from omnisafe.utils.model import ObservationConcator
 
 
 class OffPolicyLatentAdapter(OnlineAdapter):
+    """OffPolicy Adapter on Latent Space for OmniSafe.
+
+    :class:`OffPolicyLatentAdapter` is used to adapt the vision-based environment to the off-policy
+    training.
+
+    Args:
+        env_id (str): The environment id.
+        num_envs (int): The number of environments.
+        seed (int): The random seed.
+        cfgs (Config): The configuration.
+    """
+
     _current_obs: torch.Tensor
     _ep_ret: torch.Tensor
     _ep_cost: torch.Tensor
@@ -54,8 +66,9 @@ class OffPolicyLatentAdapter(OnlineAdapter):
         seed: int,
         cfgs: Config,
     ) -> None:
-        """Initialize a instance of :class:`OffPolicyAdapter`."""
+        """Initialize a instance of :class:`OffPolicyLatentAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
+        assert self.action_space.shape
         self._observation_concator: ObservationConcator = ObservationConcator(
             self._cfgs.algo_cfgs.latent_dim_1 + self._cfgs.algo_cfgs.latent_dim_2,
             self.action_space.shape,
@@ -65,8 +78,9 @@ class OffPolicyLatentAdapter(OnlineAdapter):
         self._current_obs, _ = self.reset()
         self._max_ep_len: int = 1000
         self._reset_log()
-        self.z1 = None
-        self.z2 = None
+        self.z1: torch.Tensor = torch.zeros(1)
+        self.z2: torch.Tensor = torch.zeros(1)
+        self._initialized: bool = False
         self._reset_sequence_queue = False
 
     def _wrapper(
@@ -135,6 +149,13 @@ class OffPolicyLatentAdapter(OnlineAdapter):
         agent: ConstraintActorQCritic,
         logger: Logger,
     ) -> None:
+        """Rollout the environment with deterministic agent action.
+
+        Args:
+            episode (int): Number of episodes.
+            agent (ConstraintActorCritic): Agent.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
+        """
         for _ in range(episode):
             ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
             obs, _ = self._eval_env.reset()
@@ -161,22 +182,37 @@ class OffPolicyLatentAdapter(OnlineAdapter):
                 },
             )
 
-    def pre_process(self, latent_model, concated_obs):
+    def pre_process(
+        self,
+        latent_model: CostLatentModel,
+        concated_obs: ObservationConcator,
+    ) -> torch.Tensor:
+        """Processes the concatenated observations to produce latent representation.
+
+        Args:
+            latent_model (CostLatentModel): The latent model containing the encoder and decoder.
+            concated_obs (ObservationConcator): An object that encapsulates the concatenated observations.
+
+        Returns:
+            A tensor combining the latent variables z1 and z2, representing the current state of
+                the system in the latent space.
+        """
         with torch.no_grad():
             feature = latent_model.encoder(concated_obs.last_state)
 
-        if self.z2 is None:
+        if not self._initialized:
             z1_mean, z1_std = latent_model.z1_posterior_init(feature)
             self.z1 = z1_mean + torch.randn_like(z1_std) * z1_std
             z2_mean, z2_std = latent_model.z2_posterior_init(self.z1)
             self.z2 = z2_mean + torch.randn_like(z2_std) * z2_std
+            self._initialized = True
         else:
             z1_mean, z1_std = latent_model.z1_posterior(
-                torch.cat([feature.squeeze(), self.z2.squeeze(), concated_obs.last_action], dim=-1)
+                torch.cat([feature.squeeze(), self.z2.squeeze(), concated_obs.last_action], dim=-1),
             )
             self.z1 = z1_mean + torch.randn_like(z1_std) * z1_std
             z2_mean, z2_std = latent_model.z2_posterior(
-                torch.cat([self.z1.squeeze(), self.z2.squeeze(), concated_obs.last_action], dim=-1)
+                torch.cat([self.z1.squeeze(), self.z2.squeeze(), concated_obs.last_action], dim=-1),
             )
             self.z2 = z2_mean + torch.randn_like(z2_std) * z2_std
 
@@ -191,6 +227,17 @@ class OffPolicyLatentAdapter(OnlineAdapter):
         logger: Logger,
         use_rand_action: bool,
     ) -> None:
+        """Rollout the environment and store the data in the buffer.
+
+        Args:
+            rollout_step (int): Number of rollout steps.
+            agent (ConstraintActorCritic): Constraint actor-critic, including actor, reward critic,
+                and cost critic.
+            latent_model (CostLatentModel): Latent model, including encoder and decoder.
+            buffer (VectorOnPolicyBuffer): Vector on-policy buffer.
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
+            use_rand_action (bool): Whether to use random action.
+        """
         for step in range(rollout_step):
             if not self._reset_sequence_queue:
                 buffer.reset_sequence_queue(self._current_obs)
@@ -198,10 +245,11 @@ class OffPolicyLatentAdapter(OnlineAdapter):
                 self._reset_sequence_queue = True
 
             if use_rand_action:
-                act = act = (torch.rand(self.action_space.shape) * 2 - 1).to(self._device)  # type: ignore
+                act = (torch.rand(self.action_space.shape) * 2 - 1).to(self._device)  # type: ignore
             else:
                 act = agent.step(
-                    self.pre_process(latent_model, self._observation_concator), deterministic=False
+                    self.pre_process(latent_model, self._observation_concator),
+                    deterministic=False,
                 )
 
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
@@ -217,8 +265,9 @@ class OffPolicyLatentAdapter(OnlineAdapter):
                 if done:
                     self._log_metrics(logger, idx)
                     self._reset_log(idx)
-                    self.z1 = None
-                    self.z2 = None
+                    self.z1 = torch.zeros(1)
+                    self.z2 = torch.zeros(1)
+                    self._initialized = False
                     self._reset_sequence_queue = False
                 if 'final_observation' in info:
                     real_next_obs[idx] = info['final_observation'][idx]
@@ -239,11 +288,30 @@ class OffPolicyLatentAdapter(OnlineAdapter):
         cost: torch.Tensor,
         info: dict[str, Any],
     ) -> None:
+        """Log value.
+
+        .. note::
+            OmniSafe uses :class:`RewardNormalizer` wrapper, so the original reward and cost will
+            be stored in ``info['original_reward']`` and ``info['original_cost']``.
+
+        Args:
+            reward (torch.Tensor): The immediate step reward.
+            cost (torch.Tensor): The immediate step cost.
+            info (dict[str, Any]): Some information logged by the environment.
+        """
         self._ep_ret += info.get('original_reward', reward).cpu()
         self._ep_cost += info.get('original_cost', cost).cpu()
         self._ep_len += info.get('num_step', 1)
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
+        """Log metrics, including ``EpRet``, ``EpCost``, ``EpLen``.
+
+        Args:
+            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
+            idx (int): The index of the environment.
+        """
+        if hasattr(self._env, 'spec_log'):
+            self._env.spec_log(logger)
         logger.store(
             {
                 'Metrics/EpRet': self._ep_ret[idx],
@@ -253,6 +321,12 @@ class OffPolicyLatentAdapter(OnlineAdapter):
         )
 
     def _reset_log(self, idx: int | None = None) -> None:
+        """Reset the episode return, episode cost and episode length.
+
+        Args:
+            idx (int or None, optional): The index of the environment. Defaults to None
+                (single environment).
+        """
         if idx is None:
             self._ep_ret = torch.zeros(self._env.num_envs)
             self._ep_cost = torch.zeros(self._env.num_envs)
@@ -267,6 +341,16 @@ class OffPolicyLatentAdapter(OnlineAdapter):
         seed: int | None = None,
         options: dict[str, Any] | None = None,
     ) -> tuple[torch.Tensor, dict[str, Any]]:
+        """Reset the environment and returns an initial observation.
+
+        Args:
+            seed (int, optional): The random seed. Defaults to None.
+            options (dict[str, Any], optional): The options for the environment. Defaults to None.
+
+        Returns:
+            observation: The initial observation of the space.
+            info: Some information logged by the environment.
+        """
         obs, info = self._env.reset(seed=seed, options=options)
         self._observation_concator.reset_episode(obs)
         return obs, info

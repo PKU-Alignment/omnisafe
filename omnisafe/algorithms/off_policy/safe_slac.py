@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,6 +36,16 @@ from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintAct
 @registry.register
 # pylint: disable-next=too-many-instance-attributes, too-few-public-methods
 class SafeSLAC(SACLag):
+    """Safe SLAC algorithms for vision-based safe RL tasks.
+
+    References:
+        - Title: Safe Reinforcement Learning From Pixels Using a Stochastic Latent Representation.
+        - Authors: Yannick Hogewind, Thiago D. Simão, Tal Kachman, Nils Jansen.
+        - URL: `Safe SLAC <https://openreview.net/pdf?id=b39dQt_uffW>`_
+    """
+
+    _is_latent_model_init_learned: bool
+
     def _init(self) -> None:
         if self._cfgs.algo_cfgs.auto_alpha:
             self._target_entropy = -torch.prod(torch.Tensor(self._env.action_space.shape)).item()
@@ -53,7 +63,7 @@ class SafeSLAC(SACLag):
 
         self._lagrange: Lagrange = Lagrange(**self._cfgs.lagrange_cfgs)
 
-        self._buf: OffPolicySequenceBuffer = OffPolicySequenceBuffer(
+        self._buf: OffPolicySequenceBuffer = OffPolicySequenceBuffer(  # type: ignore
             obs_space=self._env.observation_space,
             act_space=self._env.action_space,
             size=self._cfgs.algo_cfgs.size,
@@ -64,7 +74,7 @@ class SafeSLAC(SACLag):
         self._is_latent_model_init_learned = False
 
     def _init_env(self) -> None:
-        self._env: OffPolicyLatentAdapter = OffPolicyLatentAdapter(
+        self._env: OffPolicyLatentAdapter = OffPolicyLatentAdapter(  # type: ignore
             self._env_id,
             self._cfgs.train_cfgs.vector_env_nums,
             self._seed,
@@ -96,6 +106,9 @@ class SafeSLAC(SACLag):
     def _init_model(self) -> None:
         self._cfgs.model_cfgs.critic['num_critics'] = 2
 
+        assert self._env.observation_space.shape
+        assert self._env.action_space.shape
+
         self._latent_model = CostLatentModel(
             obs_shape=self._env.observation_space.shape,
             act_shape=self._env.action_space.shape,
@@ -113,9 +126,6 @@ class SafeSLAC(SACLag):
             model_cfgs=self._cfgs.model_cfgs,
             epochs=self._epochs,
         ).to(self._device)
-
-        self._actor_critic = torch.compile(self._actor_critic)
-        self._latent_model = torch.compile(self._latent_model)
 
         self._latent_model_optimizer = optim.Adam(
             self._latent_model.parameters(),
@@ -218,7 +228,7 @@ class SafeSLAC(SACLag):
 
         return ep_ret, ep_cost, ep_len
 
-    def _prepare_batch(self, obs_, action_):
+    def _prepare_batch(self, obs_: torch.Tensor, action_: torch.Tensor) -> tuple[torch.Tensor, ...]:
         with torch.no_grad():
             feature_ = self._latent_model.encoder(obs_)
             z_ = torch.cat(self._latent_model.sample_posterior(feature_, action_)[2:4], dim=-1)
@@ -266,9 +276,7 @@ class SafeSLAC(SACLag):
                 self._update_actor(obs)
                 self._actor_critic.polyak_update(self._cfgs.algo_cfgs.polyak)
 
-    def _update_latent_model(
-        self,
-    ):
+    def _update_latent_model(self) -> None:
         data = self._buf.sample_batch(32)
         obs, act, reward, cost, done = (
             data['obs'],
@@ -280,7 +288,11 @@ class SafeSLAC(SACLag):
 
         self._update_latent_count += 1
         loss_kld, loss_image, loss_reward, loss_cost = self._latent_model.calculate_loss(
-            obs, act, reward, done, cost
+            obs,
+            act,
+            reward,
+            done,
+            cost,
         )
 
         self._latent_model_optimizer.zero_grad()
