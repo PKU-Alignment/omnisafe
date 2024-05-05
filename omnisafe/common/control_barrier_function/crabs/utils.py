@@ -129,7 +129,7 @@ def get_pretrained_model(model_path, model_url, device):
 
 
 def create_model_and_trainer(cfgs, dim_state, dim_action, normalizer, device):
-    def make_model(i, model_type):
+    def make_model(i, model_type) -> TransitionModel:
         if model_type == 'GatedTransitionModel':
             return GatedTransitionModel(
                 dim_state,
@@ -138,7 +138,7 @@ def create_model_and_trainer(cfgs, dim_state, dim_action, normalizer, device):
                 cfgs.transition_model_cfgs.train,
                 name=f'model-{i}',
             )
-        elif model_type == 'TransitionModel':
+        if model_type == 'TransitionModel':
             return TransitionModel(
                 dim_state,
                 normalizer,
@@ -146,8 +146,7 @@ def create_model_and_trainer(cfgs, dim_state, dim_action, normalizer, device):
                 cfgs.transition_model_cfgs.train,
                 name=f'model-{i}',
             )
-        else:
-            raise AssertionError(f'unknown model type {model_type}')
+        raise AssertionError(f'unknown model type {model_type}')
 
     model_type = cfgs.transition_model_cfgs.type
     models = [make_model(i, model_type) for i in range(cfgs.transition_model_cfgs.n_ensemble)]

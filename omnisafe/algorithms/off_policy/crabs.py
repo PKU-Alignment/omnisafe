@@ -117,7 +117,7 @@ class CRABS(SAC):
         self.mean_policy = MeanPolicy(self._actor_critic.actor)
 
         self.model, self.model_trainer = create_model_and_trainer(
-            self._cfgs, self.dim_state, self.dim_action, self.normalizer, self._device
+            self._cfgs, self.dim_state, self.dim_action, self.normalizer, self._device,
         )
 
     def _init_log(self) -> None:
