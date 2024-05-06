@@ -199,29 +199,29 @@ class DDPG(BaseAlgo):
 
         self._logger.register_key(
             'Metrics/EpRet',
-            window_length=self._cfgs._logger_cfgs.window_lens,
+            window_length=self._cfgs.logger_cfgs.window_lens,
         )
         self._logger.register_key(
             'Metrics/EpCost',
-            window_length=self._cfgs._logger_cfgs.window_lens,
+            window_length=self._cfgs.logger_cfgs.window_lens,
         )
         self._logger.register_key(
             'Metrics/EpLen',
-            window_length=self._cfgs._logger_cfgs.window_lens,
+            window_length=self._cfgs.logger_cfgs.window_lens,
         )
 
         if self._cfgs.train_cfgs.eval_episodes > 0:
             self._logger.register_key(
                 'Metrics/TestEpRet',
-                window_length=self._cfgs._logger_cfgs.window_lens,
+                window_length=self._cfgs.logger_cfgs.window_lens,
             )
             self._logger.register_key(
                 'Metrics/TestEpCost',
-                window_length=self._cfgs._logger_cfgs.window_lens,
+                window_length=self._cfgs.logger_cfgs.window_lens,
             )
             self._logger.register_key(
                 'Metrics/TestEpLen',
-                window_length=self._cfgs._logger_cfgs.window_lens,
+                window_length=self._cfgs.logger_cfgs.window_lens,
             )
 
         self._logger.register_key('Train/Epoch')
