@@ -71,18 +71,23 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
         """
         assert not obs_normalize, 'Barrier function does not support observation normalization!'
         if self._env.need_time_limit_wrapper:
-            self._env = TimeLimit(self._env, time_limit=1000, device=self._device)
-            self._eval_env = TimeLimit(self._eval_env, time_limit=1000, device=self._device)
+            assert (
+                self._env.max_episode_steps
+            ), 'You must define max_episode_steps as an integer\
+                \nor cancel the use of the time_limit wrapper.'
+            self._env = TimeLimit(
+                self._env,
+                time_limit=self._env.max_episode_steps,
+                device=self._device,
+            )
         if self._env.need_auto_reset_wrapper:
             self._env = AutoReset(self._env, device=self._device)
-            self._eval_env = AutoReset(self._eval_env, device=self._device)
         if reward_normalize:
             self._env = RewardNormalize(self._env, device=self._device)
         if cost_normalize:
             self._env = CostNormalize(self._env, device=self._device)
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
-        self._eval_env = Unsqueeze(self._eval_env, device=self._device)
 
     def set_solver(self, solver: PendulumSolver) -> None:
         """Set the barrier function solver for Pendulum environment."""
@@ -96,7 +101,7 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
         """Reset the gaussian processing model of barrier function solver."""
         self.solver.reset_gp_model()
 
-    def rollout(  # pylint: disable=too-many-locals
+    def rollout(  # pylint: disable=too-many-locals,too-many-branches
         self,
         steps_per_epoch: int,
         agent: ConstraintActorCritic,
@@ -158,7 +163,6 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
             self._log_value(reward=reward, cost=cost, info=info)
 
             logger.store({'Value/reward': value_r})
-            logger.store({'Metrics/angle': cost})
 
             buffer.store(
                 obs=obs,
@@ -174,15 +178,21 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
 
             obs = next_obs
             epoch_end = step >= steps_per_epoch
+
+            if epoch_end:
+                num_dones = int(terminated.contiguous().sum())
+                if self._env.num_envs - num_dones:
+                    logger.log(
+                        f'\nWarning: trajectory cut off when rollout by epoch\
+                            in {self._env.num_envs - num_dones} of {self._env.num_envs} environments.',
+                    )
+
             for idx, (done, time_out) in enumerate(zip(terminated, truncated)):
                 if epoch_end or done or time_out:
                     last_value_r = torch.zeros(1)
                     last_value_c = torch.zeros(1)
                     if not done:
                         if epoch_end:
-                            logger.log(
-                                f'Warning: trajectory cut off when rollout by epoch at {self._ep_len[idx]} steps.',
-                            )
                             _, last_value_r, last_value_c, _ = agent.step(obs[idx])
                         if time_out:
                             _, last_value_r, last_value_c, _ = agent.step(

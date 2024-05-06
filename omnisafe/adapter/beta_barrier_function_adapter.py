@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Barrier Function Adapter for OmniSafe."""
+"""Barrier Function Adapter with Beta Distribution for OmniSafe."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ from rich.progress import track
 from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
 from omnisafe.common.buffer import VectorOnPolicyBuffer
 from omnisafe.common.logger import Logger
-from omnisafe.envs.wrapper import CostNormalize, RewardNormalize, Unsqueeze
+from omnisafe.envs.wrapper import AutoReset, CostNormalize, RewardNormalize, TimeLimit, Unsqueeze
 from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils.config import Config
 
@@ -157,13 +157,24 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
             cost_normalize (bool, optional): Whether to normalize the cost. Defaults to True.
         """
         assert not obs_normalize, 'Barrier function does not support observation normalization!'
+        if self._env.need_time_limit_wrapper:
+            assert (
+                self._env.max_episode_steps
+            ), 'You must define max_episode_steps as an integer\
+                \nor cancel the use of the time_limit wrapper.'
+            self._env = TimeLimit(
+                self._env,
+                time_limit=self._env.max_episode_steps,
+                device=self._device,
+            )
+        if self._env.need_auto_reset_wrapper:
+            self._env = AutoReset(self._env, device=self._device)
         if reward_normalize:
             self._env = RewardNormalize(self._env, device=self._device)
         if cost_normalize:
             self._env = CostNormalize(self._env, device=self._device)
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
-        self._eval_env = Unsqueeze(self._eval_env, device=self._device)
 
     def rollout(  # pylint: disable=too-many-locals
         self,
@@ -203,7 +214,6 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
             if self._cfgs.algo_cfgs.use_cost:
                 logger.store({'Value/cost': value_c})
             logger.store({'Value/reward': value_r})
-            logger.store({'Metrics/angle': info.get('original_cost', cost).cpu()})
 
             buffer.store(
                 obs=obs,

@@ -126,8 +126,5 @@ class DDPGCBF(DDPG):
 
         what_to_save['pi'] = self._actor_critic.actor
         what_to_save['compensator'] = self._env.compensator
-        if self._cfgs.algo_cfgs.obs_normalize:
-            obs_normalizer = self._env.save()['obs_normalizer']
-            what_to_save['obs_normalizer'] = obs_normalizer
 
         self._logger.setup_torch_saver(what_to_save)

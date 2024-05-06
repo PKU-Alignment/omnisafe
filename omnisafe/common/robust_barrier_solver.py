@@ -19,6 +19,7 @@
 # pylint: disable=invalid-name,wrong-spelling-in-docstring
 from __future__ import annotations
 
+import warnings
 from typing import Any
 
 import gymnasium as gym
@@ -58,6 +59,7 @@ class CBFQPLayer:
         self.k_d = k_d
         self.l_p = l_p
         self.action_dim = env.action_space.shape[0]
+        warnings.filterwarnings('ignore')
 
     def get_safe_action(
         self,

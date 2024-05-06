@@ -112,7 +112,6 @@ class TRPOCBF(TRPO):
             act,
             logp,
             target_value_r,
-            target_value_c,
             adv_r,
             adv_c,
             approx_compensating_act,
@@ -122,7 +121,6 @@ class TRPOCBF(TRPO):
             data['act'],
             data['logp'],
             data['target_value_r'],
-            data['target_value_c'],
             data['adv_r'],
             data['adv_c'],
             data['approx_compensating_act'],
@@ -136,7 +134,7 @@ class TRPOCBF(TRPO):
             compensating_act=compensating_act,
         )
         dataloader = DataLoader(
-            dataset=TensorDataset(obs, target_value_r, target_value_c),
+            dataset=TensorDataset(obs, target_value_r),
             batch_size=self._cfgs.algo_cfgs.batch_size,
             shuffle=True,
         )
@@ -145,11 +143,8 @@ class TRPOCBF(TRPO):
             for (
                 obs,
                 target_value_r,
-                target_value_c,
             ) in dataloader:
                 self._update_reward_critic(obs, target_value_r)
-                if self._cfgs.algo_cfgs.use_cost:
-                    self._update_cost_critic(obs, target_value_c)
 
         self._logger.store(
             {

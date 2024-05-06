@@ -76,7 +76,6 @@ class RobustBarrierFunctionAdapter(OffPolicyAdapter):
             self._env = CostNormalize(self._env, device=self._device)
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
-        self._eval_env = Unsqueeze(self._eval_env, device=self._device)
 
     def set_solver(self, solver: CBFQPLayer) -> None:
         """Set the barrier function solver for Pendulum environment."""
@@ -101,6 +100,7 @@ class RobustBarrierFunctionAdapter(OffPolicyAdapter):
             agent (ConstraintActorCritic): Agent.
             logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
         """
+        assert self._eval_env
         for _ in range(episode):
             ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
             obs, _ = self._eval_env.reset()

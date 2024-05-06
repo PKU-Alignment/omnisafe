@@ -14,6 +14,9 @@
 # ==============================================================================
 """Interface of control barrier function-based environments."""
 
+# mypy: ignore-errors
+# pylint: disable=all
+
 from __future__ import annotations
 
 from typing import Any, ClassVar
@@ -72,7 +75,11 @@ class BarrierFunctionEnv(CMDP):
         super().__init__(env_id)
         self._env_id = env_id
         if num_envs == 1:
-            self._env = gymnasium.make(id=env_id, autoreset=False)
+            self._env = gymnasium.make(
+                id=env_id,
+                autoreset=False,
+                render_mode=kwargs.get('render_mode'),
+            )
             self._env_specific_setting()
             assert isinstance(self._env.action_space, Box), 'Only support Box action space.'
             assert isinstance(
@@ -103,7 +110,7 @@ class BarrierFunctionEnv(CMDP):
                 high=self._env.unwrapped.max_torque,  # type: ignore
                 shape=(1,),
             )
-            high = np.array([1.0, 1.0, self._env.unwrapped.max_speed])  # type: ignore
+            high = np.array([1.0, 1.0, self._env.unwrapped.max_speed], dtype=np.float32)  # type: ignore
             self._env.unwrapped.observation_space = spaces.Box(low=-high, high=high)
             self._env.dt = 0.05  # type: ignore
 
@@ -196,6 +203,11 @@ class BarrierFunctionEnv(CMDP):
             while self._env.unwrapped.state[0] > 1.0 or self._env.unwrapped.state[0] < -1.0:  # type: ignore
                 obs, info = self._env.reset(options=options)
         return torch.as_tensor(obs, dtype=torch.float32, device=self._device), info
+
+    @property
+    def max_episode_steps(self) -> int:
+        """The max steps per episode."""
+        return self._env.spec.max_episode_steps
 
     def set_seed(self, seed: int) -> None:
         """Set the seed for the environment.

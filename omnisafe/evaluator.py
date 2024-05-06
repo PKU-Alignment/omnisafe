@@ -39,7 +39,6 @@ from omnisafe.algorithms.model_based.planner import (
     SafeARCPlanner,
 )
 from omnisafe.common import Normalizer
-<<<<<<< HEAD
 from omnisafe.common.control_barrier_function.crabs.models import (
     AddGaussianNoise,
     CrabsCore,
@@ -50,12 +49,10 @@ from omnisafe.common.control_barrier_function.crabs.models import (
 from omnisafe.common.control_barrier_function.crabs.optimizers import Barrier
 from omnisafe.common.control_barrier_function.crabs.utils import Normalizer as CRABSNormalizer
 from omnisafe.common.control_barrier_function.crabs.utils import create_model_and_trainer
-=======
 from omnisafe.common.barrier_comp import BarrierCompensator
 from omnisafe.common.barrier_solver import PendulumSolver
 from omnisafe.common.robust_barrier_solver import CBFQPLayer
 from omnisafe.common.robust_gp_model import DynamicsModel
->>>>>>> wip
 from omnisafe.envs.core import CMDP, make
 from omnisafe.envs.wrapper import ActionRepeat, ActionScale, ObsNormalize, TimeLimit
 from omnisafe.models.actor import ActorBuilder
@@ -648,6 +645,33 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                         ).reshape(
                             -1,  # to make sure the shape is (act_dim,)
                         )
+                        if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
+                            approx_compensating_act = self._compensator(obs=obs)
+                            compensated_act_mean_raw = act + approx_compensating_act
+                            [f, g, x, std] = self._solver.get_gp_dynamics(obs, use_prev_model=False)
+                            compensating_act = self._solver.control_barrier(
+                                compensated_act_mean_raw,
+                                f,
+                                g,
+                                x,
+                                std,
+                            )
+                            act = compensated_act_mean_raw + compensating_act
+
+                        if self._cfgs['algo'] == 'SACRCBF':
+                            state_batch = self._dynamics_model.get_state(obs)
+                            mean_pred_batch, sigma_pred_batch = (
+                                self._dynamics_model.predict_disturbance(
+                                    state_batch,
+                                )
+                            )
+                            safe_act = self._solver.get_safe_action(
+                                state_batch,
+                                act,
+                                mean_pred_batch,
+                                sigma_pred_batch,
+                            )
+                            act = safe_act
                     elif self._planner is not None:
                         act = self._planner.output_action(
                             obs.unsqueeze(0).to('cpu'),

@@ -114,10 +114,10 @@ repos:
             ^tests/|
             ^setup.py$|
             ^omnisafe/envs/classic_control/envs_from_crabs.py$|
+            ^omnisafe/envs/classic_control/envs_from_rcbf.py|
             ^omnisafe/common/control_barrier_function/crabs/models.py$|
             ^omnisafe/common/control_barrier_function/crabs/optimizers.py$|
             ^omnisafe/common/control_barrier_function/crabs/utils.py$|
             ^conftest.py$|
-            ^omnisafe/envs/unicycle_env.py|
             ^setup.py$
           )
