@@ -31,12 +31,9 @@ from omnisafe.algorithms.off_policy.sac import SAC
 from omnisafe.common.control_barrier_function.crabs.models import (
     AddGaussianNoise,
     CrabsCore,
-    EnsembleModel,
     ExplorationPolicy,
-    GatedTransitionModel,
     MeanPolicy,
     MultiLayerPerceptron,
-    TransitionModel,
     UniformPolicy,
 )
 from omnisafe.common.control_barrier_function.crabs.optimizers import (
@@ -46,7 +43,11 @@ from omnisafe.common.control_barrier_function.crabs.optimizers import (
     SLangevinOptimizer,
     StateBox,
 )
-from omnisafe.common.control_barrier_function.crabs.utils import Normalizer, get_pretrained_model
+from omnisafe.common.control_barrier_function.crabs.utils import (
+    Normalizer,
+    create_model_and_trainer,
+    get_pretrained_model,
+)
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
 
 
@@ -115,48 +116,13 @@ class CRABS(SAC):
         ).to(self._device)
         self.mean_policy = MeanPolicy(self._actor_critic.actor)
 
-        if self._cfgs.transition_model_cfgs.type == 'GatedTransitionModel':
-
-            def make_model(i):
-                return GatedTransitionModel(
-                    self.dim_state,
-                    self.normalizer,
-                    [self.dim_state + self.dim_action, 256, 256, 256, 256, self.dim_state * 2],
-                    self._cfgs.transition_model_cfgs.train,
-                    name=f'model-{i}',
-                )
-
-            self.model = EnsembleModel(
-                [make_model(i) for i in range(self._cfgs.transition_model_cfgs.n_ensemble)],
-            ).to(self._device)
-            self.model_trainer = pl.Trainer(
-                max_epochs=0,
-                accelerator='gpu',
-                devices=[int(str(self._device)[-1])],
-                default_root_dir=self._cfgs.logger_cfgs.log_dir,
-            )
-        elif self._cfgs.transition_model_cfgs.type == 'TransitionModel':
-
-            def make_model(i):
-                return TransitionModel(
-                    self.dim_state,
-                    self.normalizer,
-                    [self.dim_state + self.dim_action, 256, 256, 256, 256, self.dim_state * 2],
-                    self._cfgs.transition_model_cfgs.train,
-                    name=f'model-{i}',
-                )
-
-            self.model = EnsembleModel(
-                [make_model(i) for i in range(self._cfgs.transition_model_cfgs.n_ensemble)],
-            ).to(self._device)
-            self.model_trainer = pl.Trainer(
-                max_epochs=0,
-                accelerator='gpu',
-                devices=[int(str(self._device)[-1])],
-                default_root_dir=self._cfgs.logger_cfgs.log_dir,
-            )
-        else:
-            raise AssertionError(f'unknown model type {self._cfgs.transition_model_cfgs.type}')
+        self.model, self.model_trainer = create_model_and_trainer(
+            self._cfgs,
+            self.dim_state,
+            self.dim_action,
+            self.normalizer,
+            self._device,
+        )
 
     def _init_log(self) -> None:
         super()._init_log()
@@ -167,9 +133,18 @@ class CRABS(SAC):
         what_to_save['obs_normalizer'] = self.normalizer
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
-        self._logger.register_key('Metrics/RawPolicyEpRet', window_length=50)
-        self._logger.register_key('Metrics/RawPolicyEpCost', window_length=50)
-        self._logger.register_key('Metrics/RawPolicyEpLen', window_length=50)
+        self._logger.register_key(
+            'Metrics/RawPolicyEpRet',
+            window_length=self._cfgs.logger_cfgs.window_lens,
+        )
+        self._logger.register_key(
+            'Metrics/RawPolicyEpCost',
+            window_length=self._cfgs.logger_cfgs.window_lens,
+        )
+        self._logger.register_key(
+            'Metrics/RawPolicyEpLen',
+            window_length=self._cfgs.logger_cfgs.window_lens,
+        )
 
     def _init(self) -> None:
         """The initialization of the algorithm.
@@ -282,7 +257,7 @@ class CRABS(SAC):
             eval_start = time.time()
             self._env.eval_policy(
                 episode=self._cfgs.train_cfgs.raw_policy_episodes,
-                agent=self._actor_critic,
+                agent=self.mean_policy,
                 logger=self._logger,
             )
 
@@ -330,7 +305,7 @@ class CRABS(SAC):
                     eval_start = time.time()
                     self._env.eval_policy(
                         episode=self._cfgs.train_cfgs.raw_policy_episodes,
-                        agent=self.mean_policy,  # type: ignore
+                        agent=self.mean_policy,
                         logger=self._logger,
                     )
                     eval_time += time.time() - eval_start

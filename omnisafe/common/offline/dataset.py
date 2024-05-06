@@ -126,7 +126,7 @@ class OfflineDataset(Dataset):
             # Load data from local .npz file
             try:
                 data = np.load(dataset_name)
-            except Exception as e:
+            except (ValueError, OSError) as e:
                 raise ValueError(f'Failed to load data from {dataset_name}') from e
 
         else:
@@ -284,7 +284,7 @@ class OfflineDatasetWithInit(OfflineDataset):
             # Load data from local .npz file
             try:
                 data = np.load(dataset_name)
-            except Exception as e:
+            except (ValueError, OSError) as e:
                 raise ValueError(f'Failed to load data from {dataset_name}') from e
 
         else:

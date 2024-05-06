@@ -22,6 +22,7 @@ from rich.progress import track
 
 from omnisafe.adapter.offpolicy_adapter import OffPolicyAdapter
 from omnisafe.common.buffer import VectorOffPolicyBuffer
+from omnisafe.common.control_barrier_function.crabs.models import MeanPolicy
 from omnisafe.common.logger import Logger
 from omnisafe.envs.crabs_env import CRABSEnv
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
@@ -55,6 +56,7 @@ class CRABSAdapter(OffPolicyAdapter):
         """Initialize a instance of :class:`CRABSAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
         self._env: CRABSEnv
+        self._eval_env: CRABSEnv
         self.n_expl_episodes = 0
         self._max_ep_len = self._env.env.spec.max_episode_steps  # type: ignore
         self.horizon = self._max_ep_len
@@ -62,7 +64,7 @@ class CRABSAdapter(OffPolicyAdapter):
     def eval_policy(  # pylint: disable=too-many-locals
         self,
         episode: int,
-        agent: ConstraintActorQCritic,
+        agent: ConstraintActorQCritic | MeanPolicy,
         logger: Logger,
     ) -> None:
         """Rollout the environment with deterministic agent action.
@@ -74,13 +76,13 @@ class CRABSAdapter(OffPolicyAdapter):
         """
         for _ in range(episode):
             ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
-            obs, _ = self._eval_env.reset()  # type: ignore
+            obs, _ = self._eval_env.reset()
             obs = obs.to(self._device)
 
             done = False
             while not done:
-                act = agent.step(obs, deterministic=False)
-                obs, reward, cost, terminated, truncated, info = self._eval_env.step(act)  # type: ignore
+                act = agent.step(obs, deterministic=True)
+                obs, reward, cost, terminated, truncated, info = self._eval_env.step(act)
                 obs, reward, cost, terminated, truncated = (
                     torch.as_tensor(x, dtype=torch.float32, device=self._device)
                     for x in (obs, reward, cost, terminated, truncated)

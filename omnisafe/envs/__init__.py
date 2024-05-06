@@ -14,8 +14,6 @@
 # ==============================================================================
 """Environment API for OmniSafe."""
 
-from contextlib import suppress
-
 from omnisafe.envs import classic_control
 from omnisafe.envs.core import CMDP, env_register, make, support_envs
 from omnisafe.envs.crabs_env import CRABSEnv

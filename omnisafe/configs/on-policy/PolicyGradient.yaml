@@ -87,7 +87,7 @@ defaults:
     # save logger path
     log_dir: "./runs"
     # save model path
-    window_lens: 100
+    window_lens: 50
   # model configurations
   model_cfgs:
     # weight initialization mode

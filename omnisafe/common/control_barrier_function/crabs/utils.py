@@ -14,12 +14,21 @@
 # ==============================================================================
 """Utils for CRABS."""
 # pylint: disable=all
+from __future__ import annotations
+
 import os
 
+import pytorch_lightning as pl
 import requests
 import torch
 import torch.nn as nn
 from torch import load
+
+from omnisafe.common.control_barrier_function.crabs.models import (
+    EnsembleModel,
+    GatedTransitionModel,
+    TransitionModel,
+)
 
 
 class Normalizer(nn.Module):
@@ -119,3 +128,59 @@ def get_pretrained_model(model_path, model_url, device):
         print('Model found locally.')
 
     return load(model_path, map_location=device)
+
+
+def create_model_and_trainer(cfgs, dim_state, dim_action, normalizer, device):
+    """Create world model and trainer.
+
+    Args:
+        cfgs: Configs.
+        dim_state: Dimension of the state.
+        dim_action: Dimension of the action.
+        normalizer: Observation normalizer.
+        device: Device to load the model.
+
+    Returns:
+        Tuple[nn.Module, pl.Trainer]: World model and trainer.
+    """
+
+    def make_model(i, model_type) -> nn.Module:
+        if model_type == 'GatedTransitionModel':
+            return GatedTransitionModel(
+                dim_state,
+                normalizer,
+                [dim_state + dim_action, 256, 256, 256, 256, dim_state * 2],
+                cfgs.transition_model_cfgs.train,
+                name=f'model-{i}',
+            )
+        if model_type == 'TransitionModel':
+            return TransitionModel(
+                dim_state,
+                normalizer,
+                [dim_state + dim_action, 256, 256, 256, 256, dim_state * 2],
+                cfgs.transition_model_cfgs.train,
+                name=f'model-{i}',
+            )
+        raise AssertionError(f'unknown model type {model_type}')
+
+    model_type = cfgs.transition_model_cfgs.type
+    models = [make_model(i, model_type) for i in range(cfgs.transition_model_cfgs.n_ensemble)]
+
+    model = EnsembleModel(models).to(device)
+
+    devices: list[int] | int
+
+    if str(device).startswith('cuda'):
+        accelerator = 'gpu'
+        devices = [int(str(device)[-1])]
+    else:
+        accelerator = 'cpu'
+        devices = torch.get_num_threads()
+    trainer = pl.Trainer(
+        max_epochs=0,
+        accelerator=accelerator,
+        devices=devices,
+        default_root_dir=cfgs.logger_cfgs.log_dir,
+    )
+
+    return model, trainer

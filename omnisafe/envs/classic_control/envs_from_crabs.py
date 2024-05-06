@@ -78,18 +78,20 @@ class SafeInvertedPendulumEnv(InvertedPendulumEnv, SafeEnv):
         task='upright',
         random_reset=False,
         violation_penalty=10,
+        **kwargs,
     ) -> None:
         """Initialize the environment."""
         self.threshold = threshold
         self.task = task
         self.random_reset = random_reset
         self.violation_penalty = violation_penalty
-        super().__init__()
+        super().__init__(**kwargs)
         EzPickle.__init__(
             self,
             threshold=threshold,
             task=task,
             random_reset=random_reset,
+            **kwargs,
         )  # deepcopy calls `get_state`
 
     def reset_model(self):
@@ -156,9 +158,10 @@ class SafeInvertedPendulumSwingEnv(SafeInvertedPendulumEnv):
         task='swing',
         random_reset=False,
         violation_penalty=10,
+        **kwargs,
     ) -> None:
         """Initialize the environment."""
-        super().__init__(threshold=threshold, task=task)
+        super().__init__(threshold=threshold, task=task, **kwargs)
 
 
 class SafeInvertedPendulumMoveEnv(SafeInvertedPendulumEnv):
@@ -170,9 +173,10 @@ class SafeInvertedPendulumMoveEnv(SafeInvertedPendulumEnv):
         task='move',
         random_reset=False,
         violation_penalty=10,
+        **kwargs,
     ) -> None:
         """Initialize the environment."""
-        super().__init__(threshold=threshold, task=task)
+        super().__init__(threshold=threshold, task=task, **kwargs)
 
 
 register(id='SafeInvertedPendulum-v2', entry_point=SafeInvertedPendulumEnv, max_episode_steps=1000)
