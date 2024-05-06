@@ -133,9 +133,15 @@ class CRABS(SAC):
         what_to_save['obs_normalizer'] = self.normalizer
         self._logger.setup_torch_saver(what_to_save)
         self._logger.torch_save()
-        self._logger.register_key('Metrics/RawPolicyEpRet', window_length=6)
-        self._logger.register_key('Metrics/RawPolicyEpCost', window_length=6)
-        self._logger.register_key('Metrics/RawPolicyEpLen', window_length=6)
+        self._logger.register_key(
+            'Metrics/RawPolicyEpRet', window_length=self._cfgs._logger_cfgs.window_lens
+        )
+        self._logger.register_key(
+            'Metrics/RawPolicyEpCost', window_length=self._cfgs._logger_cfgs.window_lens
+        )
+        self._logger.register_key(
+            'Metrics/RawPolicyEpLen', window_length=self._cfgs._logger_cfgs.window_lens
+        )
 
     def _init(self) -> None:
         """The initialization of the algorithm.

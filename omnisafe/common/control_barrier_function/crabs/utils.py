@@ -14,8 +14,9 @@
 # ==============================================================================
 """Utils for CRABS."""
 # pylint: disable=all
+from __future__ import annotations
+
 import os
-from typing import List, Union
 
 import pytorch_lightning as pl
 import requests
@@ -167,7 +168,7 @@ def create_model_and_trainer(cfgs, dim_state, dim_action, normalizer, device):
 
     model = EnsembleModel(models).to(device)
 
-    devices: Union[List[int], int]
+    devices: list[int] | int
 
     if str(device).startswith('cuda'):
         accelerator = 'gpu'
