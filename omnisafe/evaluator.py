@@ -39,6 +39,8 @@ from omnisafe.algorithms.model_based.planner import (
     SafeARCPlanner,
 )
 from omnisafe.common import Normalizer
+from omnisafe.common.barrier_comp import BarrierCompensator
+from omnisafe.common.barrier_solver import PendulumSolver
 from omnisafe.common.control_barrier_function.crabs.models import (
     AddGaussianNoise,
     CrabsCore,
@@ -49,8 +51,6 @@ from omnisafe.common.control_barrier_function.crabs.models import (
 from omnisafe.common.control_barrier_function.crabs.optimizers import Barrier
 from omnisafe.common.control_barrier_function.crabs.utils import Normalizer as CRABSNormalizer
 from omnisafe.common.control_barrier_function.crabs.utils import create_model_and_trainer
-from omnisafe.common.barrier_comp import BarrierCompensator
-from omnisafe.common.barrier_solver import PendulumSolver
 from omnisafe.common.robust_barrier_solver import CBFQPLayer
 from omnisafe.common.robust_gp_model import DynamicsModel
 from omnisafe.envs.core import CMDP, make

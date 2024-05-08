@@ -14,6 +14,4 @@
 # ==============================================================================
 """Environment implementations from papers."""
 
-from omnisafe.envs.classic_control import envs_from_crabs
-from omnisafe.envs.classic_control.envs_from_cbf import BarrierFunctionEnv
-from omnisafe.envs.classic_control.envs_from_rcbf import RobustBarrierFunctionEnv
+from omnisafe.envs.classic_control import envs_from_crabs, envs_from_rcbf
