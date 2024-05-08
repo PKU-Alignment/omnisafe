@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""BarrierFunction Adapter for OmniSafe."""
+"""Barrier Function Adapter for OmniSafe."""
 
 from __future__ import annotations
 
@@ -31,11 +31,11 @@ from omnisafe.utils.config import Config
 
 
 class BarrierFunctionAdapter(OnPolicyAdapter):
-    """BarrierFunction Adapter for OmniSafe.
+    """Barrier Function Adapter for OmniSafe.
 
-    The BarrierFunction Adapter is used to establish the logic of interaction between agents and the
-    environment based on control barrier functions. Its key feature is the introduction of action
-    compensators and barrier function solvers.
+    The Barrier Function Adapter is used to establish the logic of interaction between agents and
+    the environment based on control barrier functions. Its key feature is the introduction of
+    action compensators and barrier function solvers.
 
     Args:
         env_id (str): The environment id.

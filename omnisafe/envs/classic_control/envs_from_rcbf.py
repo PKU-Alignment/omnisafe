@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 from typing import Any, Callable
 
 import gymnasium
@@ -27,17 +26,11 @@ import numpy as np
 from gymnasium import spaces
 
 
-def to_pixel(meas_cm: list[float] | float, shift: int = 0) -> float:
-    if isinstance(meas_cm, Iterable):
-        return 1.5 * 37.795 * meas_cm + np.array(shift)
-
-    return 1.5 * 37.795 * meas_cm + shift
-
-
 class UnicycleEnv(gymnasium.Env):
+    """Environment from `The Soft Actor-Critic algorithm with Robust Control Barrier Function`."""
 
     def __init__(self) -> None:
-
+        """Initialize the unicycle environment."""
         super().__init__()
 
         self.dynamics_mode = 'Unicycle'
@@ -124,9 +117,11 @@ class UnicycleEnv(gymnasium.Env):
         return self.state, reward, cost, terminated, truncated, {}
 
     def goal_met(self) -> bool:
+        """Return whether meeting the goal."""
         return np.linalg.norm(self.state[:2] - self.goal_pos) <= self.goal_size
 
     def reset(self, seed: int | None = None, options: dict | None = None) -> tuple:
+        """Reset the environment."""
         self.episode_step = 0
 
         if self.rand_init:
@@ -148,7 +143,6 @@ class UnicycleEnv(gymnasium.Env):
         Returns:
           Observation: np.ndarray.
         """
-
         rel_loc = self.goal_pos - self.state[:2]
         goal_dist = np.linalg.norm(rel_loc)
         goal_compass = self.obs_compass()  # compass to the goal

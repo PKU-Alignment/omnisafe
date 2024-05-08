@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""BarrierFunction OffPolicy Adapter for OmniSafe."""
+"""OffPolicy Barrier Function Adapter for OmniSafe."""
 
 from __future__ import annotations
 

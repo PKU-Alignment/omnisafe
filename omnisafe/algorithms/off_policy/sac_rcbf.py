@@ -37,7 +37,7 @@ class SACRCBF(SAC):
     """The Soft Actor-Critic algorithm with Robust Control Barrier Function.
 
     References:
-        - Title: Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor
+        - Title: The Soft Actor-Critic algorithm with Robust Control Barrier Function
         - Authors: Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, Sergey Levine.
         - URL: `SAC <https://arxiv.org/abs/1801.01290>`_
     """

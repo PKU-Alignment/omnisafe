@@ -35,10 +35,6 @@ class PPOBetaCBF(PPO):
         - URL: `PPOBetaCBF <https://proceedings.mlr.press/v238/suttle24a/suttle24a.pdf>`_
     """
 
-    def _init_log(self) -> None:
-        super()._init_log()
-        self._logger.register_key('Value/Loss_compensator')
-
     def _init_env(self) -> None:
         self._env: BetaBarrierFunctionAdapter = BetaBarrierFunctionAdapter(
             self._env_id,

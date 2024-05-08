@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -120,11 +120,7 @@ def vectorize_f(f: Callable) -> Callable:
 
 
 class BetaBarrierFunctionAdapter(OnPolicyAdapter):
-    """BarrierFunction Adapter for OmniSafe.
-
-    The BarrierFunction Adapter is used to establish the logic of interaction between agents and the
-    environment based on control barrier functions. Its key feature is the introduction of action
-    compensators and barrier function solvers.
+    """Barrier Function Adapter with Beta Distribution for OmniSafe.
 
     Args:
         env_id (str): The environment id.
@@ -134,7 +130,7 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
     """
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
-        """Initialize an instance of :class:`BarrierFunctionAdapter`."""
+        """Initialize an instance of :class:`BetaBarrierFunctionAdapte`."""
         super().__init__(env_id, num_envs, seed, cfgs)
         self.constraint_fn: Callable = vectorize_f(cbf)
 
@@ -147,9 +143,9 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
         """Wrapper the environment.
 
         .. warning::
-            Since solving the optimization problem requires obtaining physical quantities with practical
-            significance from state observations, the Barrier Function Adapter does not support
-            normalization of observations.
+            Since solving the optimization problem requires obtaining physical quantities with
+            practical significance from state observations, the Beta Barrier Function Adapter does
+            not support normalization of observations.
 
         Args:
             obs_normalize (bool, optional): Whether to normalize the observation. Defaults to False.
