@@ -144,12 +144,12 @@ class Normalizer(nn.Module):
         strict: bool = True,
         assign: bool = False,
     ) -> Any:
-        """Load the state_dict to the normalizer.
+        """Load the parameters to the normalizer.
 
         Args:
             state_dict (Mapping[str, Any]): The state_dict to be loaded.
-            strict (bool, optional): Whether to strictly enforce that the keys in :attr:`state_dict`.
-                Defaults to True.
+            strict (bool, optional): Whether to strictly enforce that the keys in
+                :attr:`state_dict`. Defaults to True.
 
         Returns:
             The loaded normalizer.

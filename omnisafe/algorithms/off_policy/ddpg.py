@@ -276,7 +276,7 @@ class DDPG(BaseAlgo):
 
             for sample_step in range(
                 epoch * self._samples_per_epoch,
-                (epoch + 1) * self._samples_per_epoch,
+                (epoch + 1) * self._samples_per_epoch + 1,
             ):
                 step = sample_step * self._update_cycle * self._cfgs.train_cfgs.vector_env_nums
 
@@ -324,7 +324,7 @@ class DDPG(BaseAlgo):
 
             self._logger.store(
                 {
-                    'TotalEnvSteps': step + 1,
+                    'TotalEnvSteps': step,
                     'Time/FPS': self._cfgs.algo_cfgs.steps_per_epoch / (time.time() - epoch_time),
                     'Time/Total': (time.time() - start_time),
                     'Time/Epoch': (time.time() - epoch_time),

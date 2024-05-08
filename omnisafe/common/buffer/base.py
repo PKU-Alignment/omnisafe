@@ -22,6 +22,7 @@ import torch
 from gymnasium.spaces import Box
 
 from omnisafe.typing import DEVICE_CPU, OmnisafeSpace
+from omnisafe.utils.tools import SequenceQueue
 
 
 class BaseBuffer(ABC):
@@ -128,6 +129,97 @@ class BaseBuffer(ABC):
         Examples:
             >>> buffer = BaseBuffer(...)
             >>> buffer.store(obs=obs, act=act, reward=reward, cost=cost, done=done)
+
+        Args:
+            data (torch.Tensor): The data to store.
+        """
+
+
+class BaseSequenceBuffer(ABC):
+    r"""Abstract base class for sequence buffer.
+
+    Attributes:
+        sequence_queue (SequenceQueue): The queue for storing the data.
+
+    Args:
+        obs_space (OmnisafeSpace): The observation space.
+        act_space (OmnisafeSpace): The action space.
+        size (int): The size of the buffer.
+        device (torch.device): The device of the buffer. Defaults to ``torch.device('cpu')``.
+    """
+
+    def __init__(
+        self,
+        obs_space: OmnisafeSpace,
+        act_space: OmnisafeSpace,
+        size: int,
+        num_sequences: int,
+        device: torch.device = DEVICE_CPU,
+    ) -> None:
+        """Initialize an instance of :class:`BaseBuffer`."""
+        self._device: torch.device = device
+        self._num_sequences = num_sequences
+        if isinstance(obs_space, Box):
+            obs_buf = [None] * size
+        else:
+            raise NotImplementedError
+        if isinstance(act_space, Box):
+            act_buf = torch.zeros(
+                (size, num_sequences, *act_space.shape),
+                dtype=torch.float32,
+                device=device,
+            )
+        else:
+            raise NotImplementedError
+
+        self.data: dict[str, torch.Tensor | list] = {
+            'obs': obs_buf,
+            'act': act_buf,
+            'reward': torch.zeros(size, num_sequences, 1, dtype=torch.float32, device=device),
+            'cost': torch.zeros(size, num_sequences, 1, dtype=torch.float32, device=device),
+            'done': torch.zeros(size, num_sequences, 1, dtype=torch.float32, device=device),
+        }
+
+        self.sequence_queue = SequenceQueue(
+            obs_space=obs_space,
+            num_sequences=num_sequences,
+            device=device,
+        )
+
+        self._size: int = size
+        self._observation_shape = obs_space.shape
+
+    def add_field(self, name: str, shape: tuple[int, ...], dtype: torch.dtype) -> None:
+        """Add a field to the buffer.
+
+        Args:
+            name (str): The name of the field.
+            shape (tuple of int): The shape of the field.
+            dtype (torch.dtype): The dtype of the field.
+        """
+        self.data[name] = torch.zeros(
+            (self._size, self._num_sequences, *shape),
+            dtype=dtype,
+            device=self._device,
+        )
+
+    @property
+    def device(self) -> torch.device:
+        """The device of the buffer."""
+        return self._device
+
+    @property
+    def size(self) -> int:
+        """The size of the buffer."""
+        return self._size
+
+    def __len__(self) -> int:
+        """Return the length of the buffer."""
+        return self._size
+
+    @abstractmethod
+    def store(self, **data: torch.Tensor) -> None:
+        """Store a transition in the buffer.
 
         Args:
             data (torch.Tensor): The data to store.
