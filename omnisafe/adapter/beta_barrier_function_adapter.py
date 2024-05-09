@@ -98,18 +98,11 @@ def vectorize_f(f: Callable) -> Callable:
         """
         obs = obs.cpu().detach().numpy()
 
-        if len(obs.shape) == 1:
-            batch_size = 1
-            lbs, ubs = f(obs)
-            lbs = torch.as_tensor(lbs)
-            ubs = torch.as_tensor(ubs)
-
-        else:
-            batch_size = obs.shape[0]
-            lbs = torch.zeros([batch_size, 1])
-            ubs = torch.zeros([batch_size, 1])
-            for i in range(batch_size):
-                lbs[i], ubs[i] = f(obs[i])
+        batch_size = obs.shape[0]
+        lbs = torch.zeros([batch_size, 1])
+        ubs = torch.zeros([batch_size, 1])
+        for i in range(batch_size):
+            lbs[i], ubs[i] = f(obs[i])
 
         lbs = torch.FloatTensor(lbs).reshape(batch_size, 1)
         ubs = torch.FloatTensor(ubs).reshape(batch_size, 1)
@@ -181,10 +174,6 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
     ) -> None:
         """Rollout the environment and store the data in the buffer.
 
-        .. warning::
-            As OmniSafe uses :class:`AutoReset` wrapper, the environment will be reset automatically,
-            so the final observation will be stored in ``info['final_observation']``.
-
         Args:
             steps_per_epoch (int): Number of steps per epoch.
             agent (ConstraintActorCritic): Constraint actor-critic, including actor , reward critic
@@ -206,9 +195,6 @@ class BetaBarrierFunctionAdapter(OnPolicyAdapter):
             next_obs, reward, cost, terminated, truncated, info = self.step(final_act)
 
             self._log_value(reward=reward, cost=cost, info=info)
-
-            if self._cfgs.algo_cfgs.use_cost:
-                logger.store({'Value/cost': value_c})
             logger.store({'Value/reward': value_r})
 
             buffer.store(

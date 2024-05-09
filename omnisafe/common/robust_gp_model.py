@@ -133,7 +133,7 @@ class GPyDisturbanceEstimator:
         self.model = self.model.to(self.device)
         warnings.filterwarnings('ignore')
 
-    def train(self, training_iter: int, verbose: bool = False) -> None:
+    def train(self, training_iter: int) -> None:
         """Trains the Gaussian Process model.
 
         Args:
@@ -145,17 +145,11 @@ class GPyDisturbanceEstimator:
         optimizer = torch.optim.Adam(self.model.parameters(), lr=0.1)
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.likelihood, self.model)
 
-        for i in range(training_iter):
+        for _ in range(training_iter):
             optimizer.zero_grad()
             output = self.model(self._train_x)
             loss = -mll(output, self._train_y)
             loss.backward()
-            if verbose:
-                print(
-                    f'\tIter {i + 1}/{training_iter} - Loss: {loss.item():.3f}   lengthscale: '
-                    f'{self.model.covar_module.base_kernel.lengthscale.item():.3f}   noise: '
-                    f'{self.likelihood.noise.item():.3f}',
-                )
             optimizer.step()
 
     def predict(self, test_x: torch.Tensor) -> dict[str, torch.Tensor | np.ndarray]:
@@ -216,45 +210,27 @@ class DynamicsModel:
         self.n_s = DYNAMICS_MODE[self.env.dynamics_mode]['n_s']
         self.n_u = DYNAMICS_MODE[self.env.dynamics_mode]['n_u']
 
-        self._disturb_estimators = None
         self.disturbance_history = {}
         self.history_counter = 0
         self.max_history_count = gp_model_size
         self.disturbance_history['state'] = np.zeros((self.max_history_count, self.n_s))
         self.disturbance_history['disturbance'] = np.zeros((self.max_history_count, self.n_s))
-        self._train_x = None
-        self._train_y = None
-
-        self.l_p = l_p
+        self._train_x = np.zeros((self.max_history_count, self.n_s))
+        self._train_y = np.zeros((self.max_history_count, self.n_s))
+        self._disturb_estimators = []
         self.device = torch.device(device)
 
-    def predict_next_state(self, state_batch: np.ndarray, u_batch: np.ndarray) -> np.ndarray:
-        """Predicts the next state given the current state and action batch.
-
-        Args:
-            state_batch (np.ndarray): The batch of current states.
-            u_batch (np.ndarray): The batch of actions applied.
-
-        Returns:
-            np.ndarray: The batch of predicted next states.
-        """
-        expand_dims = len(state_batch.shape) == 1
-        if expand_dims:
-            state_batch = np.expand_dims(state_batch, axis=0)
-
-        next_state_batch = state_batch + self.env.dt * (
-            self.get_f(state_batch)
-            + (self.get_g(state_batch) @ np.expand_dims(u_batch, -1)).squeeze(-1)
-        )
-        pred_mean, pred_std = self.predict_disturbance(state_batch)
-        next_state_batch += self.env.dt * pred_mean
-
-        if expand_dims:
-            next_state_batch = next_state_batch.squeeze(0)
-            if pred_std is not None:
-                pred_std = pred_std.squeeze(0)
-
-        return next_state_batch
+        for i in range(self.n_s):
+            self._disturb_estimators.append(
+                GPyDisturbanceEstimator(
+                    np.zeros((self.max_history_count, self.n_s)),
+                    np.zeros((self.max_history_count, self.n_s)),
+                    MAX_STD[self.env.dynamics_mode][i],
+                    device=self.device,
+                ),
+            )
+        self._disturb_initialized = True
+        self.l_p = l_p
 
     def get_dynamics(self) -> tuple[Callable, Callable]:
         """Retrieves the dynamics functions for drift and control based on the environment's dynamics mode.
@@ -324,13 +300,6 @@ class DynamicsModel:
             u_batch (np.ndarray): The batch of actions applied, shape (n_u,) or (batch_size, n_u).
             next_state_batch (np.ndarray): The batch of next states, shape (n_s,) or (batch_size, n_s).
         """
-        expand_dims = len(state_batch.shape) == 1
-
-        if expand_dims:
-            state_batch = np.expand_dims(state_batch, 0)
-            next_state_batch = np.expand_dims(next_state_batch, 0)
-            u_batch = np.expand_dims(u_batch, 0)
-
         u_batch = np.expand_dims(u_batch, -1)
         disturbance_batch = (
             next_state_batch
@@ -380,7 +349,7 @@ class DynamicsModel:
                 ),
             )
             self._disturb_estimators[i].train(training_iter)
-
+        self._disturb_initialized = False
         self._train_x = train_x
         self._train_y = train_y
 
@@ -404,7 +373,7 @@ class DynamicsModel:
         means = np.zeros(test_x.shape)
         f_std = np.zeros(test_x.shape)
 
-        if self._disturb_estimators:
+        if not self._disturb_initialized:
             train_x_std = np.std(self._train_x, axis=0)
             train_y_std = np.std(self._train_y, axis=0)
             test_x = test_x / train_x_std

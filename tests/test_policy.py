@@ -98,6 +98,7 @@ def test_rcbf(auto_alpha):
     }
     agent = omnisafe.Agent('SACRCBF', env_id, custom_cfgs=custom_cfgs)
     agent.learn()
+    agent.evaluate(num_episodes=1)
 
 
 @helpers.parametrize(optim_case=optim_case)

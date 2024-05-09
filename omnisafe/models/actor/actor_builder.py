@@ -61,10 +61,13 @@ class ActorBuilder:
     ) -> Actor:
         """Build actor network.
 
-        Currently, we support the following actor types:
-            - ``gaussian_learning``: Gaussian actor with learnable standard deviation parameters.
-            - ``gaussian_sac``: Gaussian actor with learnable standard deviation network.
-            - ``mlp``: Multi-layer perceptron actor, used in ``DDPG`` and ``TD3``.
+        This method supports multiple actor types, each corresponding to a different class:
+            - `gaussian_learning`: Returns a GaussianLearningActor with learnable std deviation parameters.
+            - `gaussian_sac`: Returns a GaussianSACActor with a learnable std deviation network.
+            - `mlp`: Returns an MLPActor, commonly used in DDPG and TD3 algorithms.
+            - `vae`: Returns a Variational Autoencoder (VAE) actor.
+            - `perturbation`: Returns a PerturbationActor.
+            - `beta`: Returns a BetaLearningActor.
 
         Args:
             actor_type (ActorType): Type of actor network, e.g. ``gaussian_learning``.

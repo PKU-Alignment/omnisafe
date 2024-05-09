@@ -190,6 +190,7 @@ class DDPG(BaseAlgo):
 
         self._log_what_to_save()
         self._logger.torch_save()
+        self._specific_save()
 
         self._logger.register_key(
             'Metrics/EpRet',
