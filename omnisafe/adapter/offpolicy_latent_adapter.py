@@ -134,6 +134,36 @@ class OffPolicyLatentAdapter(OnlineAdapter):
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
 
+    def _wrapper_eval(
+        self,
+        obs_normalize: bool = True,
+    ) -> None:
+        """Wrapper the environment for evaluation.
+
+        Args:
+            obs_normalize (bool, optional): Whether to normalize the observation. Defaults to True.
+            reward_normalize (bool, optional): Whether to normalize the reward. Defaults to True.
+            cost_normalize (bool, optional): Whether to normalize the cost. Defaults to True.
+        """
+        assert self._eval_env, 'Your environment for evaluation does not exist!'
+        if self._env.need_time_limit_wrapper:
+            assert (
+                self._eval_env.max_episode_steps
+            ), 'You must define max_episode_steps as an\
+                \ninteger or cancel the use of the time_limit wrapper.'
+            self._eval_env = TimeLimit(
+                self._eval_env,
+                time_limit=self._eval_env.max_episode_steps,
+                device=self._device,
+            )
+        if self._env.need_auto_reset_wrapper:
+            self._eval_env = AutoReset(self._eval_env, device=self._device)
+        if obs_normalize:
+            self._eval_env = ObsNormalize(self._eval_env, device=self._device)
+        self._eval_env = ActionScale(self._eval_env, low=-1.0, high=1.0, device=self._device)
+        self._eval_env = ActionRepeat(self._eval_env, times=2, device=self._device)
+        self._eval_env = Unsqueeze(self._eval_env, device=self._device)
+
     @property
     def latent_space(self) -> Box:
         """Get the latent space."""
@@ -147,6 +177,7 @@ class OffPolicyLatentAdapter(OnlineAdapter):
         self,
         episode: int,
         agent: ConstraintActorQCritic,
+        latent_model: CostLatentModel,
         logger: Logger,
     ) -> None:
         """Rollout the environment with deterministic agent action.
@@ -154,24 +185,66 @@ class OffPolicyLatentAdapter(OnlineAdapter):
         Args:
             episode (int): Number of episodes.
             agent (ConstraintActorCritic): Agent.
+            latent_model (CostLatentModel): Latent model, including encoder and decoder.
             logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
         """
+        assert self._eval_env, 'Your environment for evaluation does not exist!'
+        assert self.action_space.shape
+        eval_observation_concator: ObservationConcator = ObservationConcator(
+            self._cfgs.algo_cfgs.latent_dim_1 + self._cfgs.algo_cfgs.latent_dim_2,
+            self.action_space.shape,
+            self._cfgs.algo_cfgs.num_sequences,
+            device=self._device,
+        )
         for _ in range(episode):
             ep_ret, ep_cost, ep_len = 0.0, 0.0, 0
             obs, _ = self._eval_env.reset()
             obs = obs.to(self._device)
+            eval_observation_concator.reset_episode(obs)
+
+            with torch.no_grad():
+                feature = latent_model.encoder(eval_observation_concator.last_state)
+
+            z1_mean, z1_std = latent_model.z1_posterior_init(feature)
+            z1 = z1_mean + torch.randn_like(z1_std) * z1_std
+            z2_mean, z2_std = latent_model.z2_posterior_init(z1)
+            z2 = z2_mean + torch.randn_like(z2_std) * z2_std
+
+            latent_obs = torch.cat((z1, z2), dim=-1).squeeze()
 
             done = False
             while not done:
-                act = agent.step(obs, deterministic=True)
+                act = agent.step(latent_obs, deterministic=True)
                 obs, reward, cost, terminated, truncated, info = self._eval_env.step(act)
                 obs, reward, cost, terminated, truncated = (
                     torch.as_tensor(x, dtype=torch.float32, device=self._device)
                     for x in (obs, reward, cost, terminated, truncated)
                 )
+
+                eval_observation_concator.append(obs, act)
+
+                with torch.no_grad():
+                    feature = latent_model.encoder(eval_observation_concator.last_state)
+                z1_mean, z1_std = latent_model.z1_posterior(
+                    torch.cat(
+                        [feature.squeeze(), z2.squeeze(), eval_observation_concator.last_action],
+                        dim=-1,
+                    ),
+                )
+                z1 = z1_mean + torch.randn_like(z1_std) * z1_std
+                z2_mean, z2_std = latent_model.z2_posterior(
+                    torch.cat(
+                        [z1.squeeze(), z2.squeeze(), eval_observation_concator.last_action],
+                        dim=-1,
+                    ),
+                )
+                z2 = z2_mean + torch.randn_like(z2_std) * z2_std
+                latent_obs = torch.cat((z1, z2), dim=-1).squeeze()
+
                 ep_ret += info.get('original_reward', reward).cpu()
                 ep_cost += info.get('original_cost', cost).cpu()
-                ep_len += 1
+                ep_len += info.get('num_step', 1)
+
                 done = bool(terminated[0].item()) or bool(truncated[0].item())
 
             logger.store(

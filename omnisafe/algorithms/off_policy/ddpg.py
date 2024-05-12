@@ -188,23 +188,36 @@ class DDPG(BaseAlgo):
             config=self._cfgs,
         )
 
-        what_to_save: dict[str, Any] = {}
-        what_to_save['pi'] = self._actor_critic.actor
-        if self._cfgs.algo_cfgs.obs_normalize:
-            obs_normalizer = self._env.save()['obs_normalizer']
-            what_to_save['obs_normalizer'] = obs_normalizer
-
-        self._logger.setup_torch_saver(what_to_save)
+        self._log_what_to_save()
         self._logger.torch_save()
+        self._specific_save()
 
-        self._logger.register_key('Metrics/EpRet', window_length=50)
-        self._logger.register_key('Metrics/EpCost', window_length=50)
-        self._logger.register_key('Metrics/EpLen', window_length=50)
+        self._logger.register_key(
+            'Metrics/EpRet',
+            window_length=self._cfgs.logger_cfgs.window_lens,
+        )
+        self._logger.register_key(
+            'Metrics/EpCost',
+            window_length=self._cfgs.logger_cfgs.window_lens,
+        )
+        self._logger.register_key(
+            'Metrics/EpLen',
+            window_length=self._cfgs.logger_cfgs.window_lens,
+        )
 
         if self._cfgs.train_cfgs.eval_episodes > 0:
-            self._logger.register_key('Metrics/TestEpRet', window_length=50)
-            self._logger.register_key('Metrics/TestEpCost', window_length=50)
-            self._logger.register_key('Metrics/TestEpLen', window_length=50)
+            self._logger.register_key(
+                'Metrics/TestEpRet',
+                window_length=self._cfgs.logger_cfgs.window_lens,
+            )
+            self._logger.register_key(
+                'Metrics/TestEpCost',
+                window_length=self._cfgs.logger_cfgs.window_lens,
+            )
+            self._logger.register_key(
+                'Metrics/TestEpLen',
+                window_length=self._cfgs.logger_cfgs.window_lens,
+            )
 
         self._logger.register_key('Train/Epoch')
         self._logger.register_key('Train/LR')
@@ -258,7 +271,7 @@ class DDPG(BaseAlgo):
 
             for sample_step in range(
                 epoch * self._samples_per_epoch,
-                (epoch + 1) * self._samples_per_epoch + 1,
+                (epoch + 1) * self._samples_per_epoch,
             ):
                 step = sample_step * self._update_cycle * self._cfgs.train_cfgs.vector_env_nums
 
@@ -306,7 +319,7 @@ class DDPG(BaseAlgo):
 
             self._logger.store(
                 {
-                    'TotalEnvSteps': step,
+                    'TotalEnvSteps': step + 1,
                     'Time/FPS': self._cfgs.algo_cfgs.steps_per_epoch / (time.time() - epoch_time),
                     'Time/Total': (time.time() - start_time),
                     'Time/Epoch': (time.time() - epoch_time),
@@ -320,6 +333,7 @@ class DDPG(BaseAlgo):
             # save model to disk
             if (epoch + 1) % self._cfgs.logger_cfgs.save_model_freq == 0:
                 self._logger.torch_save()
+                self._specific_save()
 
         ep_ret = self._logger.get_stats('Metrics/EpRet')[0]
         ep_cost = self._logger.get_stats('Metrics/EpCost')[0]
@@ -544,3 +558,17 @@ class DDPG(BaseAlgo):
                     'Value/cost_critic': 0.0,
                 },
             )
+
+    def _log_what_to_save(self) -> None:
+        """Define what need to be saved below."""
+        what_to_save: dict[str, Any] = {}
+
+        what_to_save['pi'] = self._actor_critic.actor
+        if self._cfgs.algo_cfgs.obs_normalize:
+            obs_normalizer = self._env.save()['obs_normalizer']
+            what_to_save['obs_normalizer'] = obs_normalizer
+
+        self._logger.setup_torch_saver(what_to_save)
+
+    def _specific_save(self) -> None:
+        """Save some algorithms specific models per epoch."""

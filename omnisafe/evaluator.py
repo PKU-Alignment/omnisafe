@@ -36,12 +36,14 @@ from omnisafe.algorithms.model_based.planner import (
     SafeARCPlanner,
 )
 from omnisafe.common import Normalizer
+from omnisafe.common.latent import CostLatentModel
 from omnisafe.envs.core import CMDP, make
 from omnisafe.envs.wrapper import ActionRepeat, ActionScale, ObsNormalize, TimeLimit
 from omnisafe.models.actor import ActorBuilder
 from omnisafe.models.actor_critic import ConstraintActorCritic, ConstraintActorQCritic
 from omnisafe.models.base import Actor
 from omnisafe.utils.config import Config
+from omnisafe.utils.model import ObservationConcator
 
 
 class Evaluator:  # pylint: disable=too-many-instance-attributes
@@ -76,6 +78,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self._actor: Actor | None = actor
         self._actor_critic: ConstraintActorCritic | ConstraintActorQCritic | None = actor_critic
         self._dynamics: EnsembleDynamicsModel | None = dynamics
+        self._latent_model: CostLatentModel | None = None
         self._planner = planner
         self._dividing_line: str = '\n' + '#' * 50 + '\n'
 
@@ -278,6 +281,26 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     high=np.hstack((observation_space.high, np.inf)),
                     shape=(observation_space.shape[0] + 1,),
                 )
+            if self._cfgs['algo'] == 'SafeSLAC':
+                self._latent_model = CostLatentModel(
+                    obs_shape=observation_space.shape,
+                    act_shape=action_space.shape,
+                    feature_dim=self._cfgs['algo_cfgs']['feature_dim'],
+                    latent_dim_1=self._cfgs['algo_cfgs']['latent_dim_1'],
+                    latent_dim_2=self._cfgs['algo_cfgs']['latent_dim_2'],
+                    hidden_sizes=self._cfgs['algo_cfgs']['hidden_sizes'],
+                    image_noise=self._cfgs['algo_cfgs']['image_noise'],
+                )
+                self._latent_model.load_state_dict(model_params['latent_model'])
+                observation_space = Box(
+                    low=-np.inf,
+                    high=np.inf,
+                    shape=(
+                        self._cfgs['algo_cfgs']['latent_dim_1']
+                        + self._cfgs['algo_cfgs']['latent_dim_2'],
+                    ),
+                )
+
             actor_type = self._cfgs['model_cfgs']['actor_type']
             pi_cfg = self._cfgs['model_cfgs']['actor']
             weight_initialization_mode = self._cfgs['model_cfgs']['weight_initialization_mode']
@@ -336,6 +359,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         self.__load_model_and_env(save_dir, model_name, env_kwargs)
 
+    # pylint: disable-next=too-many-locals
     def evaluate(
         self,
         num_episodes: int = 10,
@@ -358,6 +382,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 'The environment and the policy must be provided or created before evaluating the agent.',
             )
 
+        if self._cfgs['algo'] == 'SafeSLAC':
+            assert self._env.action_space.shape
+            eval_observation_concator: ObservationConcator = ObservationConcator(
+                self._cfgs['algo_cfgs']['latent_dim_1'] + self._cfgs['algo_cfgs']['latent_dim_2'],
+                self._env.action_space.shape,
+                self._cfgs['algo_cfgs']['num_sequences'],
+            )
         episode_rewards: list[float] = []
         episode_costs: list[float] = []
         episode_lengths: list[float] = []
@@ -366,6 +397,18 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             obs, _ = self._env.reset()
             self._safety_obs = torch.ones(1)
             ep_ret, ep_cost, length = 0.0, 0.0, 0.0
+
+            if self._cfgs['algo'] == 'SafeSLAC':
+                assert self._latent_model, 'The latent model must be provided.'
+                obs = obs.unsqueeze(0)
+                eval_observation_concator.reset_episode(obs)
+                with torch.no_grad():
+                    feature = self._latent_model.encoder(eval_observation_concator.last_state)
+                z1_mean, z1_std = self._latent_model.z1_posterior_init(feature)
+                z1 = z1_mean + torch.randn_like(z1_std) * z1_std
+                z2_mean, z2_std = self._latent_model.z2_posterior_init(z1)
+                z2 = z2_mean + torch.randn_like(z2_std) * z2_std
+                obs = torch.cat((z1, z2), dim=-1).squeeze()
 
             done = False
             while not done:
@@ -387,7 +430,34 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                         raise ValueError(
                             'The policy must be provided or created before evaluating the agent.',
                         )
-                obs, rew, cost, terminated, truncated, _ = self._env.step(act)
+                obs, rew, cost, terminated, truncated, info = self._env.step(act)
+                if self._cfgs['algo'] == 'SafeSLAC':
+                    assert self._latent_model, 'The latent model must be provided.'
+                    obs = obs.unsqueeze(0)
+                    eval_observation_concator.append(obs, act)
+
+                    with torch.no_grad():
+                        feature = self._latent_model.encoder(eval_observation_concator.last_state)
+                    z1_mean, z1_std = self._latent_model.z1_posterior(
+                        torch.cat(
+                            [
+                                feature.squeeze(),
+                                z2.squeeze(),
+                                eval_observation_concator.last_action,
+                            ],
+                            dim=-1,
+                        ),
+                    )
+                    z1 = z1_mean + torch.randn_like(z1_std) * z1_std
+                    z2_mean, z2_std = self._latent_model.z2_posterior(
+                        torch.cat(
+                            [z1.squeeze(), z2.squeeze(), eval_observation_concator.last_action],
+                            dim=-1,
+                        ),
+                    )
+                    z2 = z2_mean + torch.randn_like(z2_std) * z2_std
+                    obs = torch.cat((z1, z2), dim=-1).squeeze()
+
                 if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
                     self._safety_obs -= cost.unsqueeze(-1) / self._safety_budget
                     self._safety_obs /= self._cfgs.algo_cfgs.saute_gamma
@@ -399,7 +469,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     and ep_cost >= self._cfgs.algo_cfgs.cost_limit
                 ):
                     terminated = torch.as_tensor(True)
-                length += 1
+                length += info.get('num_step', 1)
 
                 done = bool(terminated or truncated)
 
@@ -472,6 +542,14 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         print(f'Saving the replay video to {save_replay_path},\n and the result to {result_path}.')
         print(self._dividing_line)
 
+        if self._cfgs['algo'] == 'SafeSLAC':
+            assert self._env.action_space.shape
+            eval_observation_concator: ObservationConcator = ObservationConcator(
+                self._cfgs['algo_cfgs']['latent_dim_1'] + self._cfgs['algo_cfgs']['latent_dim_2'],
+                self._env.action_space.shape,
+                self._cfgs['algo_cfgs']['num_sequences'],
+            )
+
         horizon = 1000
         frames = []
         obs, _ = self._env.reset()
@@ -489,6 +567,19 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             step = 0
             done = False
             ep_ret, ep_cost, length = 0.0, 0.0, 0.0
+
+            if self._cfgs['algo'] == 'SafeSLAC':
+                assert self._latent_model, 'The latent model must be provided.'
+                obs = obs.unsqueeze(0)
+                eval_observation_concator.reset_episode(obs)
+                with torch.no_grad():
+                    feature = self._latent_model.encoder(eval_observation_concator.last_state)
+                z1_mean, z1_std = self._latent_model.z1_posterior_init(feature)
+                z1 = z1_mean + torch.randn_like(z1_std) * z1_std
+                z2_mean, z2_std = self._latent_model.z2_posterior_init(z1)
+                z2 = z2_mean + torch.randn_like(z2_std) * z2_std
+                obs = torch.cat((z1, z2), dim=-1).squeeze()
+
             while (
                 not done and step <= max_render_steps
             ):  # a big number to make sure the episode will end
@@ -510,7 +601,34 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                         raise ValueError(
                             'The policy must be provided or created before evaluating the agent.',
                         )
-                obs, rew, cost, terminated, truncated, _ = self._env.step(act)
+                obs, rew, cost, terminated, truncated, info = self._env.step(act)
+                if self._cfgs['algo'] == 'SafeSLAC':
+                    assert self._latent_model, 'The latent model must be provided.'
+                    obs = obs.unsqueeze(0)
+                    eval_observation_concator.append(obs, act)
+
+                    with torch.no_grad():
+                        feature = self._latent_model.encoder(eval_observation_concator.last_state)
+                    z1_mean, z1_std = self._latent_model.z1_posterior(
+                        torch.cat(
+                            [
+                                feature.squeeze(),
+                                z2.squeeze(),
+                                eval_observation_concator.last_action,
+                            ],
+                            dim=-1,
+                        ),
+                    )
+                    z1 = z1_mean + torch.randn_like(z1_std) * z1_std
+                    z2_mean, z2_std = self._latent_model.z2_posterior(
+                        torch.cat(
+                            [z1.squeeze(), z2.squeeze(), eval_observation_concator.last_action],
+                            dim=-1,
+                        ),
+                    )
+                    z2 = z2_mean + torch.randn_like(z2_std) * z2_std
+                    obs = torch.cat((z1, z2), dim=-1).squeeze()
+
                 if 'Saute' in self._cfgs['algo'] or 'Simmer' in self._cfgs['algo']:
                     self._safety_obs -= cost.unsqueeze(-1) / self._safety_budget
                     self._safety_obs /= self._cfgs.algo_cfgs.saute_gamma
@@ -523,7 +641,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     and ep_cost >= self._cfgs.algo_cfgs.cost_limit
                 ):
                     terminated = torch.as_tensor(True)
-                length += 1
+                length += info.get('num_step', 1)
 
                 if self._render_mode == 'rgb_array':
                     frames.append(self._env.render())

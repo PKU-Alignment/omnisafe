@@ -85,7 +85,6 @@ class SafetyGymnasiumVisionEnv(CMDP):
             camera_name='vision',
             width=64,
             height=64,
-            **kwargs,
         )
 
         self._observation_space = Box(shape=(3, 64, 64), low=0, high=255, dtype=np.uint8)
@@ -180,6 +179,11 @@ class SafetyGymnasiumVisionEnv(CMDP):
             .transpose(0, -1),
             info,
         )
+
+    @property
+    def max_episode_steps(self) -> int:
+        """The max steps per episode."""
+        return self._env.spec.max_episode_steps
 
     def set_seed(self, seed: int) -> None:
         """Set the seed for the environment.

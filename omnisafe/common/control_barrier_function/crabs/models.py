@@ -68,7 +68,7 @@ class EnsembleModel(pl.LightningModule):
             zip(self.elites, np.array_split(perm, len(self.elites))),
         ):
             next_states.append(self.models[model_idx](states[indices], actions[indices]))
-        return torch.cat(next_states, dim=0)[inv_perm]
+        return torch.cat(next_states, dim=0)[inv_perm]  # type: ignore
 
     def get_nlls(self, states, actions, next_states):
         """Get the negative log likelihoods.
@@ -486,7 +486,7 @@ class ExplorationPolicy(nn.Module, BasePolicy):
 
         if np.min(all_u) <= 0:
             index = np.min(np.where(all_u <= 0)[0])
-            action = actions[index]
+            action = actions[index]  # type: ignore
         else:
             action = self.crabs.policy(states[0])
 

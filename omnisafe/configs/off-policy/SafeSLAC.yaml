@@ -29,7 +29,7 @@ defaults:
     # total number of steps to train
     total_steps: 1000000
     # number of evaluate episodes
-    eval_episodes: 0
+    eval_episodes: 1
   # algorithm configurations
   algo_cfgs:
     # number of times each action is repeated in the environment

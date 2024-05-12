@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import time
+from typing import Any
 
 import torch
 from rich.progress import track
@@ -190,6 +191,7 @@ class SafeSLAC(SACLag):
             self._env.eval_policy(
                 episode=self._cfgs.train_cfgs.eval_episodes,
                 agent=self._actor_critic,
+                latent_model=self._latent_model,
                 logger=self._logger,
             )
             eval_time = time.time() - eval_start
@@ -303,3 +305,15 @@ class SafeSLAC(SACLag):
                 self._cfgs.algo_cfgs.max_grad_norm,
             )
         self._latent_model_optimizer.step()
+
+    def _log_what_to_save(self) -> None:
+        """Define what need to be saved below."""
+        what_to_save: dict[str, Any] = {}
+
+        what_to_save['pi'] = self._actor_critic.actor
+        if self._cfgs.algo_cfgs.obs_normalize:
+            obs_normalizer = self._env.save()['obs_normalizer']
+            what_to_save['obs_normalizer'] = obs_normalizer
+        what_to_save['latent_model'] = self._latent_model
+
+        self._logger.setup_torch_saver(what_to_save)
