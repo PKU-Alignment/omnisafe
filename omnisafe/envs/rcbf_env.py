@@ -31,7 +31,7 @@ from omnisafe.typing import Box
 
 @env_register
 class RobustBarrierFunctionEnv(CMDP):
-    """Interface of control barrier function-based environments.
+    """Interface of robust control barrier function-based environments.
 
     .. warning::
         Since environments based on control barrier functions require special judgment and control
@@ -56,21 +56,7 @@ class RobustBarrierFunctionEnv(CMDP):
         device: str = 'cpu',
         **kwargs: Any,
     ) -> None:
-        """Initialize the environment.
-
-        Args:
-            env_id (str): Environment id.
-            num_envs (int, optional): Number of environments. Defaults to 1.
-            device (torch.device, optional): Device to store the data. Defaults to 'cpu'.
-
-        Keyword Args:
-            render_mode (str, optional): The render mode, ranging from ``human``, ``rgb_array``, ``rgb_array_list``.
-                Defaults to ``rgb_array``.
-            camera_name (str, optional): The camera name.
-            camera_id (int, optional): The camera id.
-            width (int, optional): The width of the rendered image. Defaults to 256.
-            height (int, optional): The height of the rendered image. Defaults to 256.
-        """
+        """Initialize the robust control barrier function-based environments."""
         super().__init__(env_id)
         self._env_id = env_id
         if num_envs == 1:

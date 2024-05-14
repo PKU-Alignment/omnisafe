@@ -32,7 +32,7 @@ from omnisafe.utils.config import Config
 
 
 class RobustBarrierFunctionAdapter(OffPolicyAdapter):
-    """Off Policy Robust Barrier Function Adapter for OmniSafe.
+    """Robust Barrier Function Adapter for OmniSafe.
 
     :class:`RobustBarrierFunctionAdapter` is used to adapt the environment with RCBF controller.
 
@@ -44,7 +44,7 @@ class RobustBarrierFunctionAdapter(OffPolicyAdapter):
     """
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
-        """Initialize an instance of :class:`BarrierFunctionAdapter`."""
+        """Initialize an instance of :class:`RobustBarrierFunctionAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
         self.solver: CBFQPLayer
         self.dynamics_model: DynamicsModel

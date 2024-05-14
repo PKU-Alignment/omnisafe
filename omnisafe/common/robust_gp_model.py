@@ -134,11 +134,11 @@ class GPyDisturbanceEstimator:
         warnings.filterwarnings('ignore')
 
     def train(self, training_iter: int) -> None:
-        """Trains the Gaussian Process model.
+        """Train the Gaussian Process model.
 
         Args:
             training_iter (int): Number of training iterations.
-            verbose (bool): If True, prints detailed logging information.
+            verbose (bool): If True, print detailed logging information.
         """
         self.model.train()
         self.likelihood.train()
@@ -153,7 +153,7 @@ class GPyDisturbanceEstimator:
             optimizer.step()
 
     def predict(self, test_x: torch.Tensor) -> dict[str, torch.Tensor | np.ndarray]:
-        """Makes predictions on new data.
+        """Make predictions on new data.
 
         Args:
             test_x (torch.Tensor): Test data features. If not a tensor, it will be converted.
@@ -188,13 +188,13 @@ class GPyDisturbanceEstimator:
 
 # pylint: disable-next=too-many-instance-attributes
 class DynamicsModel:
-    """Initializes the DynamicsModel with a gym environment.
+    """Initialize the DynamicsModel with a gymnasium environment.
 
     Args:
-        env (gym.Env): The gym environment to model dynamics for.
-        gp_model_size (int, optional): Maximum history count for disturbances. Defaults to 2000.
-        l_p (float, optional): Learning parameter. Defaults to 0.03.
-        device (str, optional): The device to perform computations on. Defaults to 'cpu'.
+        env (gym.Env): The gymnasium environment to model dynamics for.
+        gp_model_size (int, optional): Maximum history count for disturbances. Default to 2000.
+        l_p (float, optional): Learning parameter. Default to 0.03.
+        device (str, optional): The device to perform computations on. Default to 'cpu'.
     """
 
     def __init__(
@@ -204,7 +204,7 @@ class DynamicsModel:
         l_p: float = 0.03,
         device: str = 'cpu',
     ) -> None:
-        """Initializes the DynamicsModel with a gym environment."""
+        """Initialize the DynamicsModel with a gymnasium environment."""
         self.env = env
         self.get_f, self.get_g = self.get_dynamics()
         self.n_s = DYNAMICS_MODE[self.env.dynamics_mode]['n_s']
@@ -233,7 +233,7 @@ class DynamicsModel:
         self.l_p = l_p
 
     def get_dynamics(self) -> tuple[Callable, Callable]:
-        """Retrieves the dynamics functions for drift and control based on the environment's dynamics mode.
+        """Retrieve the dynamics functions for drift and control based on the environment's dynamics mode.
 
         Returns:
             tuple: A tuple containing two callable methods, `get_f` and `get_g`.
@@ -257,7 +257,7 @@ class DynamicsModel:
         return get_f, get_g
 
     def get_state(self, obs: torch.Tensor) -> torch.Tensor:
-        """Processes the raw observations from the environment.
+        """Process the raw observations from the environment.
 
         Args:
             obs (torch.Tensor): The environment observations.
@@ -293,7 +293,7 @@ class DynamicsModel:
         u_batch: np.ndarray,
         next_state_batch: np.ndarray,
     ) -> None:
-        """Estimates the disturbance from the current dynamics transition and adds it to the buffer.
+        """Estimate the disturbance from the current dynamics transition and adds it to the buffer.
 
         Args:
             state_batch (np.ndarray): The batch of current states, shape (n_s,) or (batch_size, n_s).
@@ -321,7 +321,7 @@ class DynamicsModel:
                 self.fit_gp_model()
 
     def fit_gp_model(self, training_iter: int = 70) -> None:
-        """Fits a Gaussian Process model to the disturbance data.
+        """Fit a Gaussian Process model to the disturbance data.
 
         Args:
             training_iter (int, optional): Number of training iterations for the GP model. Defaults to 70.
@@ -354,7 +354,7 @@ class DynamicsModel:
         self._train_y = train_y
 
     def predict_disturbance(self, test_x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        """Predicts the disturbance at the queried states using the trained Gaussian Process models.
+        """Predict the disturbance at the queried states using the trained Gaussian Process models.
 
         Args:
             test_x (torch.Tensor): The state for which to predict disturbances, shape (n_test, n_s).
@@ -394,7 +394,7 @@ class DynamicsModel:
         return (to_tensor(means, dtype, device), to_tensor(f_std, dtype, device))
 
     def load_disturbance_models(self, save_dir: str, epoch: str) -> None:
-        """Loads the disturbance models and their training data.
+        """Load the disturbance models and their training data.
 
         Args:
             save_dir (str): The directory where the model files are saved.
@@ -420,15 +420,15 @@ class DynamicsModel:
 
     @property
     def train_x(self) -> np.ndarray:
-        """Returns the training data input features used for the disturbance estimators."""
+        """Return the training data input features used for the disturbance estimators."""
         return self._train_x
 
     @property
     def train_y(self) -> np.ndarray:
-        """Returns the training data labels used for the disturbance estimators."""
+        """Return the training data labels used for the disturbance estimators."""
         return self._train_y
 
     @property
     def disturb_estimators(self) -> list[GPyDisturbanceEstimator]:
-        """Provides access to the list of trained disturbance estimator models."""
+        """Provide access to the list of trained disturbance estimator models."""
         return self._disturb_estimators

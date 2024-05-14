@@ -52,15 +52,7 @@ class PendulumSolver:
         max_speed: float = 60.0,
         device: str = 'cpu',
     ) -> None:
-        """Initializes the PendulumSolver with specified parameters.
-
-        Args:
-            action_size (int): Size of the action space.
-            observation_size (int): Size of the observation space.
-            torque_bound (float): Maximum torque bound.
-            max_speed (float): Maximum speed of the pendulum.
-            device (str): Device to run the computations on.
-        """
+        """Initialize the PendulumSolver with specified parameters."""
         self.action_size = action_size
         self.observation_size = observation_size
         self.torque_bound = torque_bound
@@ -77,7 +69,7 @@ class PendulumSolver:
         warnings.filterwarnings('ignore')
 
     def build_gp_model(self, save_dir: str | None = None) -> None:
-        """Builds the Gaussian Process model."""
+        """Build the Gaussian Process model."""
         gp_list = []
         noise = 0.01
         for _ in range(self.observation_size - 1):
@@ -96,7 +88,7 @@ class PendulumSolver:
         return self.gp_model
 
     def _build_barrier(self) -> None:
-        """Builds the barrier for the pendulum solver."""
+        """Build the barrier for the pendulum solver."""
         self.P = matrix(np.diag([1.0, 1e16]), tc='d')
         self.q = matrix(np.zeros(self.action_size + 1))
         self.h1 = np.array([1, 0.01])
@@ -112,7 +104,7 @@ class PendulumSolver:
         x: np.ndarray,
         std: np.ndarray,
     ) -> torch.Tensor:
-        """Adjusts the original action using a control barrier function.
+        """Adjust the original action using a control barrier function.
 
         Args:
             original_action (torch.Tensor): The original action proposed by the RL algorithm.
@@ -124,12 +116,12 @@ class PendulumSolver:
         Returns:
             torch.Tensor: The adjusted action that respects the system's constraints.
         """
-        # Define gamma for the barrier function
+        # define gamma for the barrier function
         gamma_b = 0.5
         kd = 1.5
         u_rl = original_action.cpu().detach().numpy()
 
-        # Set up Quadratic Program to satisfy Control Barrier Function
+        # set up Quadratic Program to satisfy Control Barrier Function
         G = np.array(
             [
                 [
@@ -185,14 +177,14 @@ class PendulumSolver:
         )
         h = np.squeeze(h).astype(np.double)
 
-        # Convert numpy arrays to cvx matrices to set up QP
+        # convert numpy arrays to cvx matrices to set up QP
         G = matrix(G, tc='d')
         h = matrix(h, tc='d')
         solvers.options['show_progress'] = False
         sol = solvers.qp(self.P, self.q, G, h)
         u_bar = sol['x']
 
-        # Check if the adjusted action is within bounds
+        # check if the adjusted action is within bounds
         if np.add(np.squeeze(u_rl), np.squeeze(u_bar[0])) - 0.001 >= self.torque_bound:
             u_bar[0] = self.torque_bound - u_rl
             print('Error in QP')
@@ -204,7 +196,7 @@ class PendulumSolver:
 
     # pylint: disable-next=attribute-defined-outside-init,import-outside-toplevel,invalid-name
     def get_dynamics(self, obs: list[float], original_action: float) -> np.ndarray:
-        """Calculates the dynamics of the system.
+        """Calculate the dynamics of the system.
 
         Args:
             obs (list[float]): The current observation of the system state.
@@ -213,15 +205,21 @@ class PendulumSolver:
         Returns:
             np.ndarray: The calculated dynamics of the system.
         """
-        dt = 0.05  # Time step
-        G = 10  # Gravitational constant
-        m = 2  # Mass
-        length = 2  # Length
+        # time step
+        dt = 0.05
+        # gravitational constant
+        G = 10
+        # mass
+        m = 2
+        # length
+        length = 2
 
-        theta = np.arctan2(obs[1], obs[0])  # Calculate the angle
-        theta_dot = obs[2]  # Angular velocity
+        # calculate the angle
+        theta = np.arctan2(obs[1], obs[0])
+        # angular velocity
+        theta_dot = obs[2]
 
-        # Dynamics equations
+        # dynamics equations
         f = np.array(
             [
                 -3 * G / (2 * length) * np.sin(theta + np.pi) * dt**2
@@ -237,7 +235,7 @@ class PendulumSolver:
         return np.squeeze(f)
 
     def update_gp_dynamics(self, obs: np.ndarray, act: np.ndarray) -> None:
-        """Updates the Gaussian Process (GP) dynamics model based on observed states and actions.
+        """Update the Gaussian Process (GP) dynamics model based on observed states and actions.
 
         Args:
             obs (np.ndarray): Observed states.
@@ -263,7 +261,7 @@ class PendulumSolver:
         self.gp_model[1].fit(S, err[:, 1])
 
     def get_gp_dynamics(self, obs: torch.Tensor, use_prev_model: bool) -> list[np.ndarray]:
-        """Retrieves the gp dynamics based on the current observation.
+        """Retrieve the GP dynamics based on the current observation.
 
         Args:
             obs (torch.Tensor): Current state observation.
@@ -311,6 +309,6 @@ class PendulumSolver:
         ]
 
     def reset_gp_model(self) -> None:
-        """Reset the gaussian processing model of barrier function solver."""
+        """Reset the gaussian process model of barrier function solver."""
         self.gp_model_prev = self.gp_model.copy()
         self.build_gp_model()

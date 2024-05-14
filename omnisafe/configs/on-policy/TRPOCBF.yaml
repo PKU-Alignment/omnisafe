@@ -116,7 +116,6 @@ defaults:
       hidden_sizes: [64, 64]
       # activation function
       activation: relu
-      # out_activation: tanh
       # learning rate
       lr: ~
     # critic network configurations

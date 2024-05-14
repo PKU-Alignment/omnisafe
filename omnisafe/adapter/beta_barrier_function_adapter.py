@@ -30,7 +30,7 @@ from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActor
 from omnisafe.utils.config import Config
 
 
-# # pylint: disable-next=too-many-locals
+# pylint: disable-next=too-many-locals
 def cbf(state: np.ndarray, eta: float = 0.99) -> tuple[np.ndarray, np.ndarray]:
     """Calculates the Control Barrier Function (CBF) constraints.
 

@@ -36,11 +36,19 @@ class CBFQPLayer:
     """CBFQLayer for robust control barrier function solver.
 
     Args:
-        env (gym.Env): The Gym environment to interact with.
+        env (gymnasium.Env): The Gymnasium environment to interact with.
         device (str, optional): The device type, such as 'cpu' or 'gpu'. Defaults to 'cpu'.
         gamma_b (float, optional): The gamma parameter. Defaults to 20.
-        k_d (float, optional): The confidence parameter desired. Defaults to 3.0.
         l_p (float, optional): Some additional layer parameter, purpose unspecified. Defaults to 0.03.
+
+    Attributes:
+        device (torch.device): The device on which computations will be performed.
+        env (gym.Env): The Gym environment instance.
+        u_min (float): The minimum control bound.
+        u_max (float): The maximum control bound.
+        gamma_b (float): The gamma parameter.
+        l_p (float): An additional layer parameter.
+        action_dim (int): The dimensionality of the action space.
     """
 
     def __init__(
@@ -48,7 +56,6 @@ class CBFQPLayer:
         env: gym.Env,
         device: str = 'cpu',
         gamma_b: float = 20,
-        k_d: float = 3.0,
         l_p: float = 0.03,
     ) -> None:
         """Initializes a CBFLayer instance with specified parameters and environment."""
@@ -56,7 +63,6 @@ class CBFQPLayer:
         self.env = env
         self.u_min, self.u_max = self.get_control_bounds()
         self.gamma_b = gamma_b
-        self.k_d = k_d
         self.l_p = l_p
         self.action_dim = env.action_space.shape[0]
         warnings.filterwarnings('ignore')
@@ -79,7 +85,6 @@ class CBFQPLayer:
         Returns:
             torch.Tensor: Safe actions adjusted for given constraints and uncertainties.
         """
-        # Batch form adjustment if only a single data point is passed
         expand_dims = len(state_batch.shape) == 1
         if expand_dims:
             state_batch = state_batch.unsqueeze(0)
@@ -227,7 +232,6 @@ class CBFQPLayer:
         batch_size = state_batch.shape[0]
         gamma_b = self.gamma_b
 
-        # Expand dims
         state_batch = torch.unsqueeze(state_batch, -1).to(self.device)
         action_batch = torch.unsqueeze(action_batch, -1).to(self.device)
         mean_pred_batch = torch.unsqueeze(mean_pred_batch, -1).to(self.device)
@@ -261,7 +265,6 @@ class CBFQPLayer:
             sigma_theta_aug[:, 1, :] = sigma_pred_batch[:, 2, :]
             sigma_ps = torch.bmm(torch.abs(g_ps), sigma_theta_aug) + sigma_pred_batch[:, :2, :]
 
-            # Build RCBFs
             hs = 1e3 * torch.ones((batch_size, num_cbfs), device=self.device)
             dhdps = torch.zeros((batch_size, num_cbfs, 2), device=self.device)
             hazards = self.env.hazards

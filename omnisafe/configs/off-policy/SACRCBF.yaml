@@ -38,9 +38,9 @@ defaults:
     update_cycle: 1
     # number of iterations to update the policy
     update_iters: 1
-    # The size of replay buffer
+    # size of replay buffer
     size: 1000000
-    # The size of batch
+    # size of batch
     batch_size: 256
     # normalize reward
     reward_normalize: False
@@ -54,23 +54,23 @@ defaults:
     use_critic_norm: False
     # critic norm coefficient
     critic_norm_coeff: 0.001
-    # The soft update coefficient
+    # soft update coefficient
     polyak: 0.005
-    # The discount factor of GAE
+    # discount factor of GAE
     gamma: 0.99
-    # Actor perdorm random action before `start_learning_steps` steps
+    # actor perform random action before `start_learning_steps` steps
     start_learning_steps: 5000
-    # The delay step of policy update
+    # delay step of policy update
     policy_delay: 1
-    # Whether to use the exploration noise
+    # whether to use the exploration noise
     use_exploration_noise: False
-    # The exploration noise
+    # exploration noise
     exploration_noise: 0.1
-    # The policy noise
+    # policy noise
     policy_noise: 0.2
     # policy_noise_clip
     policy_noise_clip: 0.5
-    # The value of alpha
+    # value of alpha
     alpha: 0.2
     # Whether to use auto alpha
     auto_alpha: True
@@ -106,29 +106,29 @@ defaults:
     actor_type: gaussian_sac
     # linear learning rate decay
     linear_lr_decay: False
-    # Configuration of Actor network
+    # configuration of actor network
     actor:
-      # Size of hidden layers
+      # size of hidden layers
       hidden_sizes: [400, 300]
-      # Activation function
+      # activation function
       activation: relu
-      # The learning rate of Actor network
+      # learning rate of actor network
       lr: 0.0003
-    # Configuration of Critic network
+    # configuration of critic network
     critic:
-      # The number of critic networks
+      # number of critic networks
       num_critics: 2
-      # Size of hidden layers
+      # size of hidden layers
       hidden_sizes: [400, 300]
-      # Activation function
+      # activation function
       activation: relu
-      # The learning rate of Critic network
+      # learning rate of critic network
       lr: 0.0003
-  # Dynamics model configurations
+  # dynamics model configurations
   dynamics_model_cfgs:
-    # The max number of episodes updating GP models
+    # max number of episodes updating GP models
     gp_max_episodes: 100
-    # The size of gp model
+    # size of gp model
     gp_model_size: 2000
-    # Whether to use the action compensator
+    # whether to use the action compensator
     use_compensator: False

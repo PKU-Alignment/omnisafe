@@ -85,7 +85,6 @@ class BarrierCompensator(torch.nn.Module):
         Returns:
             torch.Tensor: The loss after training.
         """
-        # Train the model
         for _ in range(self._cfgs.update_iters):
             target = approx_compensating_act + compensating_act
             self.optimizer.zero_grad()

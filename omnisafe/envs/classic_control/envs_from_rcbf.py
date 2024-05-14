@@ -43,7 +43,6 @@ class UnicycleEnv(gymnasium.Env):
         self.max_episode_steps = 1000
         self.reward_goal = 1.0
         self.goal_size = 0.3
-        # Initialize Env
         self.state = None
         self.episode_step = 0
         self.initial_state = np.array(
@@ -54,13 +53,9 @@ class UnicycleEnv(gymnasium.Env):
 
         self.reset()
 
-        # Get Dynamics
         self.get_f, self.get_g = self._get_dynamics()
-        # Disturbance
         self.disturb_mean = np.zeros((3,))
         self.disturb_covar = np.diag([0.005, 0.005, 0.05]) * 20
-
-        # Build Hazards
         self.hazards = []
 
         self.hazards.append(
@@ -78,8 +73,6 @@ class UnicycleEnv(gymnasium.Env):
         self.hazards.append(
             {'type': 'circle', 'radius': 0.6, 'location': 1.5 * np.array([1.0, 1.0])},
         )
-
-        # Viewer
         self.viewer = None
 
     def step(
@@ -145,7 +138,7 @@ class UnicycleEnv(gymnasium.Env):
         """
         rel_loc = self.goal_pos - self.state[:2]
         goal_dist = np.linalg.norm(rel_loc)
-        goal_compass = self.obs_compass()  # compass to the goal
+        goal_compass = self.obs_compass()
 
         return np.array(
             [

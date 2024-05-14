@@ -105,7 +105,6 @@ defaults:
       # Size of hidden layers
       hidden_sizes: [400, 300]
       # Activation function
-
       activation: relu
       # The learning rate of Critic network
       lr: 0.001

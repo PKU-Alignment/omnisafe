@@ -53,7 +53,6 @@ class SACRCBF(SAC):
             env=self._env,
             device=self._cfgs.train_cfgs.device,
             gamma_b=self._cfgs.cbf_cfgs.gamma_b,
-            k_d=self._cfgs.cbf_cfgs.k_d,
             l_p=self._cfgs.cbf_cfgs.l_p,
         )
         dynamics_model = DynamicsModel(env=self._env)
