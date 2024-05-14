@@ -60,27 +60,8 @@ class PPOBetaCBF(PPO):
     ) -> torch.Tensor:
         r"""Computing pi/actor loss.
 
-        In Proximal Policy Optimization, the loss is defined as:
-
-        .. math::
-
-            L^{CLIP} = \underset{s_t \sim \rho_{\theta}}{\mathbb{E}} \left[
-                \min ( r_t A^{R}_{\pi_{\theta}} (s_t, a_t) , \text{clip} (r_t, 1 - \epsilon, 1 + \epsilon)
-                A^{R}_{\pi_{\theta}} (s_t, a_t)
-            \right]
-
-        where :math:`r_t = \frac{\pi_{\theta}^{'} (a_t|s_t)}{\pi_{\theta} (a_t|s_t)}`,
-        :math:`\epsilon` is the clip parameter, and :math:`A^{R}_{\pi_{\theta}} (s_t, a_t)` is the
-        advantage.
-
-        Args:
-            obs (torch.Tensor): The ``observation`` sampled from buffer.
-            act (torch.Tensor): The ``action`` sampled from buffer.
-            logp (torch.Tensor): The ``log probability`` of action sampled from buffer.
-            adv (torch.Tensor): The ``advantage`` processed. ``reward_advantage`` here.
-
-        Returns:
-            The loss of pi/actor.
+        This section of the logic is consistent with PPO, except that it does not record the
+        standard deviation of the actor distribution.
         """
         distribution = self._actor_critic.actor(obs)
         logp_ = self._actor_critic.actor.log_prob(act)

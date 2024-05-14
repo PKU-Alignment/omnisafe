@@ -188,7 +188,7 @@ class DDPG(BaseAlgo):
             config=self._cfgs,
         )
 
-        self._log_what_to_save()
+        self._setup_torch_saver()
         self._logger.torch_save()
         self._specific_save()
 
@@ -559,8 +559,12 @@ class DDPG(BaseAlgo):
                 },
             )
 
-    def _log_what_to_save(self) -> None:
-        """Define what need to be saved below."""
+    def _setup_torch_saver(self) -> None:
+        """Define what need to be saved below.
+
+        OmniSafe's main storage interface is based on PyTorch. If you need to save models in other
+        formats, please use :meth:`_specific_save`.
+        """
         what_to_save: dict[str, Any] = {}
 
         what_to_save['pi'] = self._actor_critic.actor
@@ -571,4 +575,4 @@ class DDPG(BaseAlgo):
         self._logger.setup_torch_saver(what_to_save)
 
     def _specific_save(self) -> None:
-        """Save some algorithms specific models per epoch."""
+        """Save some algorithms specific models other than PyTorch format per epoch."""
