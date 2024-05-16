@@ -237,7 +237,6 @@ class CBFQPLayer:
         mean_pred_batch = torch.unsqueeze(mean_pred_batch, -1).to(self.device)
         sigma_pred_batch = torch.unsqueeze(sigma_pred_batch, -1).to(self.device)
         if self.env.dynamics_mode == 'Unicycle':
-
             num_cbfs = len(self.env.hazards)
             l_p = self.l_p
             buffer = 0.1
@@ -299,6 +298,8 @@ class CBFQPLayer:
                 .to(self.device)
             )
             q = torch.zeros((batch_size, n_u + 1)).to(self.device)
+        else:
+            raise NotImplementedError
 
         n_u = action_batch.shape[1]
 
