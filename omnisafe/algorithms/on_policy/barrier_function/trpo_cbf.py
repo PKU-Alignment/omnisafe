@@ -28,6 +28,7 @@ from omnisafe.algorithms import registry
 from omnisafe.algorithms.on_policy.base.trpo import TRPO
 from omnisafe.common.barrier_comp import BarrierCompensator
 from omnisafe.common.barrier_solver import PendulumSolver
+from omnisafe.typing import Any
 from omnisafe.utils import distributed
 from omnisafe.utils.distributed import get_rank
 
@@ -70,12 +71,12 @@ class TRPOCBF(TRPO):
             // distributed.world_size()
             // self._cfgs.train_cfgs.vector_env_nums
         )
-        self.solver = PendulumSolver(device=self._cfgs.train_cfgs.device)
+        self.solver = PendulumSolver(device=self._device)
         self.compensator = BarrierCompensator(
             obs_dim=self._env.observation_space.shape[0],
             act_dim=self._env.action_space.shape[0],
             cfgs=self._cfgs.compensator_cfgs,
-        )
+        ).to(self._device)
         self._env.set_solver(solver=self.solver)
         self._env.set_compensator(compensator=self.compensator)
 
@@ -165,3 +166,19 @@ class TRPOCBF(TRPO):
             )
             os.makedirs(os.path.dirname(path), exist_ok=True)
             joblib.dump(self._env.gp_models, path)
+
+    def _setup_torch_saver(self) -> None:
+        """Define what need to be saved below.
+
+        OmniSafe's main storage interface is based on PyTorch. If you need to save models in other
+        formats, please use :meth:`_specific_save`.
+        """
+        what_to_save: dict[str, Any] = {}
+
+        what_to_save['pi'] = self._actor_critic.actor
+        what_to_save['compensator'] = self._env.compensator
+        if self._cfgs.algo_cfgs.obs_normalize:
+            obs_normalizer = self._env.save()['obs_normalizer']
+            what_to_save['obs_normalizer'] = obs_normalizer
+
+        self._logger.setup_torch_saver(what_to_save)
