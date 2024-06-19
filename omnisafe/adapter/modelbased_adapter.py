@@ -269,8 +269,8 @@ class ModelBasedAdapter(
 
         update_actor_critic_time = 0.0
         update_dynamics_time = 0.0
-        if use_eval:
-            eval_time = 0.0
+
+        eval_time = 0.0
 
         epoch_steps = 0
 

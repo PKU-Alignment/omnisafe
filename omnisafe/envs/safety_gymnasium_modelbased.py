@@ -181,6 +181,8 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
         elif len(obs.shape) == 3:
             batch_size = obs.shape[0] * obs.shape[1]
             hazard_obs = obs[:, :, hazards_key].reshape(batch_size, -1, 2)
+        else:
+            raise NotImplementedError
         hazards_dist = torch.sqrt(torch.sum(torch.square(hazard_obs), dim=2)).reshape(
             batch_size,
             -1,
@@ -497,8 +499,10 @@ class SafetyGymnasiumModelBased(CMDP):  # pylint: disable=too-many-instance-attr
             self.get_lidar_from_coordinate(flat_coordinate_obs)
             info['obs_original'] = obs_original
             info['goal_met'] = False
-
             obs = torch.as_tensor(flat_coordinate_obs, dtype=torch.float32, device=self._device)
+        else:
+            obs = torch.as_tensor(obs_original, dtype=torch.float32, device=self._device)
+
         return obs, info
 
     def set_seed(self, seed: int) -> None:

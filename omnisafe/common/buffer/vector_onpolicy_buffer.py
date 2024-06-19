@@ -88,6 +88,23 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
             for _ in range(num_envs)
         ]
 
+    def add_field(self, name: str, shape: tuple[int, ...], dtype: torch.dtype) -> None:
+        """Add a field to the buffer.
+
+        Examples:
+            >>> buffer = BaseBuffer(...)
+            >>> buffer.add_field('new_field', (2, 3), torch.float32)
+            >>> buffer.data['new_field'].shape
+            >>> (buffer.size, 2, 3)
+
+        Args:
+            name (str): The name of the field.
+            shape (tuple of int): The shape of the field.
+            dtype (torch.dtype): The dtype of the field.
+        """
+        for buffer in self.buffers:
+            buffer.add_field(name=name, shape=shape, dtype=dtype)
+
     @property
     def num_buffers(self) -> int:
         """Number of buffers."""

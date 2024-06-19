@@ -216,17 +216,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             The data stored and calculated in the buffer.
         """
         self.ptr, self.path_start_idx = 0, 0
-
-        data = {
-            'obs': self.data['obs'],
-            'act': self.data['act'],
-            'target_value_r': self.data['target_value_r'],
-            'adv_r': self.data['adv_r'],
-            'logp': self.data['logp'],
-            'discounted_ret': self.data['discounted_ret'],
-            'adv_c': self.data['adv_c'],
-            'target_value_c': self.data['target_value_c'],
-        }
+        data = self.data.copy()
 
         adv_mean, adv_std, *_ = distributed.dist_statistics_scalar(data['adv_r'])
         cadv_mean, *_ = distributed.dist_statistics_scalar(data['adv_c'])
