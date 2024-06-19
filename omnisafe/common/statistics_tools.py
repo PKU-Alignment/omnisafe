@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,6 +83,7 @@ class StatisticsTools:
                 'The config file is not found in the save directory.',
             ) from error
 
+    # pylint: disable-next=too-many-arguments, too-many-locals
     def draw_graph(
         self,
         parameter: str,
@@ -91,6 +92,8 @@ class StatisticsTools:
         cost_limit: float | None = None,
         smooth: int = 1,
         show_image: bool = False,
+        reward_metrics: str = 'Metrics/EpRet',
+        cost_metrics: str = 'Metrics/EpCost',
     ) -> None:
         """Draw graph.
 
@@ -102,6 +105,8 @@ class StatisticsTools:
             cost_limit (float or None, optional): The cost limit of the experiment. Defaults to None.
             smooth (int, optional): The smooth window size. Defaults to 1.
             show_image (bool): Whether to show graph image in GUI windows.
+            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpReward'.
+            cost_metrics (str, optional): The column name for cost metrics. Defaults to 'Metrics/EpCost'.
 
         .. note::
             `values` and `compare_num` cannot be set at the same time.
@@ -161,6 +166,8 @@ class StatisticsTools:
                     'mean',
                     save_name=save_name,
                     show_image=show_image,
+                    reward_metrics=reward_metrics,
+                    cost_metrics=cost_metrics,
                 )
             except Exception:  # noqa # pragma: no cover # pylint: disable=broad-except
                 print(

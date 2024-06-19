@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -164,7 +164,13 @@ class Plotter:
 
         plt.tight_layout(pad=0.5)
 
-    def get_datasets(self, logdir: str, condition: str | None = None) -> list[DataFrame]:
+    def get_datasets(
+        self,
+        logdir: str,
+        condition: str | None = None,
+        reward_metrics: str = 'Metrics/EpReward',
+        cost_metrics: str = 'Metrics/EpCost',
+    ) -> list[DataFrame]:
         """Recursively look through logdir for files named "progress.txt".
 
         Assumes that any file "progress.txt" is a valid hit.
@@ -172,9 +178,11 @@ class Plotter:
         Args:
             logdir (str): The directory to search for progress.txt files
             condition (str or None, optional): The condition label. Defaults to None.
+            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpReward'.
+            cost_metrics (str, optional): The column name for cost metrics. Defaults to 'Metrics/EpCost'.
 
         Returns:
-            The datasets.
+            list[DataFrame]: A list of DataFrame objects containing the datasets.
 
         Raise:
             FileNotFoundError: If the config file is not found.
@@ -204,21 +212,21 @@ class Plotter:
                 self.units[condition1] += 1
                 try:
                     exp_data = pd.read_csv(os.path.join(root, 'progress.csv'))
-
                 except FileNotFoundError as error:
                     progress_path = os.path.join(root, 'progress.csv')
                     raise FileNotFoundError(f'Could not read from {progress_path}') from error
-                performance = (
-                    'Metrics/TestEpRet' if 'Metrics/TestEpRet' in exp_data else 'Metrics/EpRet'
-                )
-                cost_performance = (
-                    'Metrics/TestEpCost' if 'Metrics/TestEpCost' in exp_data else 'Metrics/EpCost'
-                )
+
+                if reward_metrics not in exp_data:
+                    raise KeyError(f'{reward_metrics} is not in data to plot!')
+
+                if cost_metrics not in exp_data:
+                    raise KeyError(f'{cost_metrics} is not in data to plot!')
+
                 exp_data.insert(len(exp_data.columns), 'Unit', unit)
                 exp_data.insert(len(exp_data.columns), 'Condition1', condition1)
                 exp_data.insert(len(exp_data.columns), 'Condition2', condition2)
-                exp_data.insert(len(exp_data.columns), 'Rewards', exp_data[performance])
-                exp_data.insert(len(exp_data.columns), 'Costs', exp_data[cost_performance])
+                exp_data.insert(len(exp_data.columns), 'Rewards', exp_data[reward_metrics])
+                exp_data.insert(len(exp_data.columns), 'Costs', exp_data[cost_metrics])
                 epoch = exp_data.get('Train/Epoch')
                 if epoch is None or steps_per_epoch is None:
                     raise ValueError('No Train/Epoch column in progress.csv')
@@ -236,6 +244,8 @@ class Plotter:
         legend: list[str] | None = None,
         select: str | None = None,
         exclude: str | None = None,
+        reward_metrics: str = 'Metrics/EpCost',
+        cost_metrics: str = 'Metrics/EpCost',
     ) -> list[DataFrame]:
         """Get all the data from all the log directories.
 
@@ -248,6 +258,8 @@ class Plotter:
             legend (list of str or None, optional): List of legend names. Defaults to None.
             select (str or None, optional): Select logdirs that contain this string. Defaults to None.
             exclude (str or None, optional): Exclude logdirs that contain this string. Defaults to None.
+            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpReward'.
+            cost_metrics (str, optional): The column name for cost metrics. Defaults to 'Metrics/EpCost'.
 
         Returns:
             All the data stored in a list of DataFrames.
@@ -285,13 +297,22 @@ class Plotter:
         data = []
         if legend:
             for log, leg in zip(logdirs, legend):
-                data += self.get_datasets(log, leg)
+                data += self.get_datasets(
+                    log,
+                    leg,
+                    cost_metrics=cost_metrics,
+                    reward_metrics=reward_metrics,
+                )
         else:
             for log in logdirs:
-                data += self.get_datasets(log)
+                data += self.get_datasets(
+                    log,
+                    cost_metrics=cost_metrics,
+                    reward_metrics=reward_metrics,
+                )
         return data
 
-    # pylint: disable-next=too-many-arguments
+    # pylint: disable-next=too-many-arguments, too-many-locals
     def make_plots(
         self,
         all_logdirs: list[str],
@@ -308,6 +329,8 @@ class Plotter:
         save_name: str | None = None,
         save_format: str = 'png',
         show_image: bool = False,
+        reward_metrics: str = 'Metrics/EpCost',
+        cost_metrics: str = 'Metrics/EpCost',
     ) -> None:
         """Make plots from the data in the specified log directories.
 
@@ -355,9 +378,18 @@ class Plotter:
                 to ``png``.
             show_image (bool, optional): Optional flag. If set, the plot will be displayed on screen.
                 Defaults to ``False``.
+            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpReward'.
+            cost_metrics (str, optional): The column name for cost metrics. Defaults to 'Metrics/EpCost'.
         """
         assert xaxis is not None, 'Must specify xaxis'
-        data = self.get_all_datasets(all_logdirs, legend, select, exclude)
+        data = self.get_all_datasets(
+            all_logdirs,
+            legend,
+            select,
+            exclude,
+            cost_metrics=cost_metrics,
+            reward_metrics=reward_metrics,
+        )
         condition = 'Condition2' if count else 'Condition1'
         # choose what to show on main curve: mean? max? min?
         estimator = getattr(np, estimator)

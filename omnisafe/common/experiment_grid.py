@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -544,6 +544,8 @@ class ExperimentGrid:
         compare_num: int | None = None,
         cost_limit: float | None = None,
         show_image: bool = False,
+        reward_metrics: str = 'Metrics/EpRet',
+        cost_metrics: str = 'Metrics/EpCost',
     ) -> None:
         """Analyze the experiment results.
 
@@ -559,6 +561,8 @@ class ExperimentGrid:
             cost_limit (float or None, optional): Value for one line showed on graph to indicate
                 cost. Defaults to None.
             show_image (bool): Whether to show graph image in GUI windows.
+            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpReward'.
+            cost_metrics (str, optional): The column name for cost metrics. Defaults to 'Metrics/EpCost'.
         """
         assert self._statistical_tools is not None, 'Please run run() first!'
         self._statistical_tools.load_source(self.log_dir)
@@ -568,6 +572,8 @@ class ExperimentGrid:
             compare_num,
             cost_limit,
             show_image=show_image,
+            reward_metrics=reward_metrics,
+            cost_metrics=cost_metrics,
         )
 
     def evaluate(self, num_episodes: int = 10, cost_criteria: float = 1.0) -> None:
