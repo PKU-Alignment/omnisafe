@@ -96,6 +96,7 @@ def vectorize_f(f: Callable) -> Callable:
         Returns:
             tuple: Two torch tensors representing the lower and upper bounds for each observation in the batch.
         """
+        device = obs.device
         obs = obs.cpu().detach().numpy()
 
         batch_size = obs.shape[0]
@@ -104,8 +105,8 @@ def vectorize_f(f: Callable) -> Callable:
         for i in range(batch_size):
             lbs[i], ubs[i] = f(obs[i])
 
-        lbs = torch.FloatTensor(lbs).reshape(batch_size, 1)
-        ubs = torch.FloatTensor(ubs).reshape(batch_size, 1)
+        lbs = torch.FloatTensor(lbs).reshape(batch_size, 1).to(device)
+        ubs = torch.FloatTensor(ubs).reshape(batch_size, 1).to(device)
 
         return lbs, ubs
 
