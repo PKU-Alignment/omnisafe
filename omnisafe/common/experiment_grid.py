@@ -561,7 +561,7 @@ class ExperimentGrid:
             cost_limit (float or None, optional): Value for one line showed on graph to indicate
                 cost. Defaults to None.
             show_image (bool): Whether to show graph image in GUI windows.
-            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpReward'.
+            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpRet'.
             cost_metrics (str, optional): The column name for cost metrics. Defaults to 'Metrics/EpCost'.
         """
         assert self._statistical_tools is not None, 'Please run run() first!'

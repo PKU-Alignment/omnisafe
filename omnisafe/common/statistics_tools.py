@@ -105,7 +105,7 @@ class StatisticsTools:
             cost_limit (float or None, optional): The cost limit of the experiment. Defaults to None.
             smooth (int, optional): The smooth window size. Defaults to 1.
             show_image (bool): Whether to show graph image in GUI windows.
-            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpReward'.
+            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpRet'.
             cost_metrics (str, optional): The column name for cost metrics. Defaults to 'Metrics/EpCost'.
 
         .. note::

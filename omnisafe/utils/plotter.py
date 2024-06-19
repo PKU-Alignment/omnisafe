@@ -168,7 +168,7 @@ class Plotter:
         self,
         logdir: str,
         condition: str | None = None,
-        reward_metrics: str = 'Metrics/EpReward',
+        reward_metrics: str = 'Metrics/EpRet',
         cost_metrics: str = 'Metrics/EpCost',
     ) -> list[DataFrame]:
         """Recursively look through logdir for files named "progress.txt".
@@ -178,7 +178,7 @@ class Plotter:
         Args:
             logdir (str): The directory to search for progress.txt files
             condition (str or None, optional): The condition label. Defaults to None.
-            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpReward'.
+            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpRet'.
             cost_metrics (str, optional): The column name for cost metrics. Defaults to 'Metrics/EpCost'.
 
         Returns:
@@ -258,7 +258,7 @@ class Plotter:
             legend (list of str or None, optional): List of legend names. Defaults to None.
             select (str or None, optional): Select logdirs that contain this string. Defaults to None.
             exclude (str or None, optional): Exclude logdirs that contain this string. Defaults to None.
-            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpReward'.
+            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpRet'.
             cost_metrics (str, optional): The column name for cost metrics. Defaults to 'Metrics/EpCost'.
 
         Returns:
@@ -378,7 +378,7 @@ class Plotter:
                 to ``png``.
             show_image (bool, optional): Optional flag. If set, the plot will be displayed on screen.
                 Defaults to ``False``.
-            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpReward'.
+            reward_metrics (str, optional): The column name for reward metrics. Defaults to 'Metrics/EpRet'.
             cost_metrics (str, optional): The column name for cost metrics. Defaults to 'Metrics/EpCost'.
         """
         assert xaxis is not None, 'Must specify xaxis'
