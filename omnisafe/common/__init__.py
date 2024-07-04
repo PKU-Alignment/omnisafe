@@ -14,6 +14,9 @@
 # ==============================================================================
 """Common Common utilities for OmniSafe."""
 
+from omnisafe.common.barrier_comp import BarrierCompensator
+from omnisafe.common.barrier_solver import PendulumSolver
+from omnisafe.common.gp_model import DynamicsModel
 from omnisafe.common.lagrange import Lagrange
 from omnisafe.common.logger import Logger
 from omnisafe.common.normalizer import Normalizer

@@ -10,6 +10,4 @@ except ImportError:
 
 
 def pytest_ignore_collect(path, config):
-    if os.path.basename(path) == 'meta_drive_env.py' and not meta_drive_env_available:
-        return True
-    return False
+    return os.path.basename(path) == 'meta_drive_env.py' and not meta_drive_env_available

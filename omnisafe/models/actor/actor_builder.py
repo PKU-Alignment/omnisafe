@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from omnisafe.models.actor.beta_learning_actor import BetaLearningActor
 from omnisafe.models.actor.gaussian_learning_actor import GaussianLearningActor
 from omnisafe.models.actor.gaussian_sac_actor import GaussianSACActor
 from omnisafe.models.actor.mlp_actor import MLPActor
@@ -60,10 +61,13 @@ class ActorBuilder:
     ) -> Actor:
         """Build actor network.
 
-        Currently, we support the following actor types:
-            - ``gaussian_learning``: Gaussian actor with learnable standard deviation parameters.
-            - ``gaussian_sac``: Gaussian actor with learnable standard deviation network.
-            - ``mlp``: Multi-layer perceptron actor, used in ``DDPG`` and ``TD3``.
+        This method supports multiple actor types, each corresponding to a different class:
+            - `gaussian_learning`: Returns a GaussianLearningActor with learnable std deviation parameters.
+            - `gaussian_sac`: Returns a GaussianSACActor with a learnable std deviation network.
+            - `mlp`: Returns an MLPActor, commonly used in DDPG and TD3 algorithms.
+            - `vae`: Returns a Variational Autoencoder (VAE) actor.
+            - `perturbation`: Returns a PerturbationActor.
+            - `beta`: Returns a BetaLearningActor.
 
         Args:
             actor_type (ActorType): Type of actor network, e.g. ``gaussian_learning``.
@@ -108,6 +112,14 @@ class ActorBuilder:
             )
         if actor_type == 'perturbation':
             return PerturbationActor(
+                self._obs_space,
+                self._act_space,
+                self._hidden_sizes,
+                activation=self._activation,
+                weight_initialization_mode=self._weight_initialization_mode,
+            )
+        if actor_type == 'beta':
+            return BetaLearningActor(
                 self._obs_space,
                 self._act_space,
                 self._hidden_sizes,

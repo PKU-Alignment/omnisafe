@@ -15,6 +15,7 @@
 """On-policy algorithms."""
 
 from omnisafe.algorithms.on_policy import (
+    barrier_function,
     base,
     early_terminated,
     first_order,
@@ -26,6 +27,7 @@ from omnisafe.algorithms.on_policy import (
     second_order,
     simmer,
 )
+from omnisafe.algorithms.on_policy.barrier_function import TRPOCBF, PPOBetaCBF
 from omnisafe.algorithms.on_policy.base import PPO, TRPO, NaturalPG, PolicyGradient
 from omnisafe.algorithms.on_policy.early_terminated import PPOEarlyTerminated, TRPOEarlyTerminated
 from omnisafe.algorithms.on_policy.first_order import CUP, FOCOPS
@@ -49,4 +51,5 @@ __all__ = [
     *saute.__all__,
     *second_order.__all__,
     *simmer.__all__,
+    *barrier_function.__all__,
 ]

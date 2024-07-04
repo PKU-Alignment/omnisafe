@@ -124,3 +124,35 @@ defaults:
       activation: tanh
       # learning rate
       lr: 0.001
+
+Pendulum-v1:
+  # training configurations
+  train_cfgs:
+    # total number of steps to train
+    total_steps: 80_000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 2000
+    # batch size for each iteration
+    batch_size: 256
+    # target kl divergence
+    target_kl: 0.005
+    # normalize observation
+    obs_normalize: False
+    # reward discount factor
+    gamma: 0.995
+    # lambda for gae
+    lam: 0.98
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # activation function
+      activation: relu
+  # barrier function compensator configurations
+  compensator_cfgs:
+    # hidden layer sizes
+    hidden_sizes: [64, 64]
+    # activation function
+    activation: relu

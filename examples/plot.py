@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,6 +35,27 @@ if __name__ == '__main__':
     parser.add_argument('--select', nargs='*')
     parser.add_argument('--exclude', nargs='*')
     parser.add_argument('--estimator', default='mean')
+    parser.add_argument(
+        '--reward-metrics',
+        type=str,
+        choices=[
+            'Metrics/TestEpRet',
+            'Metrics/EpRet',
+        ],
+        default='Metrics/EpRet',
+        help='Specify the reward metric to be used.',
+    )
+    parser.add_argument(
+        '--cost-metrics',
+        type=str,
+        choices=[
+            'Metrics/Max_angle_violation',
+            'Metrics/TestEpCost',
+            'Metrics/EpCost',
+        ],
+        default='Metrics/EpCost',
+        help='Specify the cost metric to be used.',
+    )
     args = parser.parse_args()
 
     plotter = Plotter()
@@ -48,4 +69,6 @@ if __name__ == '__main__':
         select=args.select,
         exclude=args.exclude,
         estimator=args.estimator,
+        cost_metrics=args.cost_metrics,
+        reward_metrics=args.reward_metrics,
     )

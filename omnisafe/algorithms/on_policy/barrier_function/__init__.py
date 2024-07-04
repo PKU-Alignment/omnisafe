@@ -1,4 +1,4 @@
-# Copyright 2024 OmniSafe Team. All Rights Reserved.
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Environment implementations from papers."""
+"""Control Barrier Function Safe Reinforcement Learning algorithms."""
 
-from omnisafe.envs.classic_control import envs_from_crabs, envs_from_rcbf
+from omnisafe.algorithms.on_policy.barrier_function.ppo_cbf import PPOBetaCBF
+from omnisafe.algorithms.on_policy.barrier_function.trpo_cbf import TRPOCBF
+
+
+__all__ = [
+    'TRPOCBF',
+    'PPOBetaCBF',
+]

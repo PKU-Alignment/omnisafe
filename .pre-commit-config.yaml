@@ -29,7 +29,7 @@ repos:
       - id: debug-statements
       - id: double-quote-string-fixer
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.4.2
+    rev: v0.5.0
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -54,7 +54,7 @@ repos:
       - id: pyupgrade
         args: [--py38-plus] # sync with requires-python
   - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
+    rev: 7.1.0
     hooks:
       - id: flake8
         additional_dependencies:
@@ -114,6 +114,7 @@ repos:
             ^tests/|
             ^setup.py$|
             ^omnisafe/envs/classic_control/envs_from_crabs.py$|
+            ^omnisafe/envs/classic_control/envs_from_rcbf.py$|
             ^omnisafe/common/control_barrier_function/crabs/models.py$|
             ^omnisafe/common/control_barrier_function/crabs/optimizers.py$|
             ^omnisafe/common/control_barrier_function/crabs/utils.py$|

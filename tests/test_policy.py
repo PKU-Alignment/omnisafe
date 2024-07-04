@@ -38,6 +38,8 @@ simmer_policy = ['TRPOSimmerPID', 'PPOSimmerPID']
 pid_lagrange_policy = ['TRPOPID', 'CPPOPID']
 early_terminated_policy = ['TRPOEarlyTerminated', 'PPOEarlyTerminated']
 offline_policy = ['BCQ', 'BCQLag', 'CRR', 'CCRR', 'VAEBC']
+cbf_policy = ['TRPOCBF', 'DDPGCBF', 'PPOBetaCBF']
+auto_alpha = [True, False]
 
 model_cfgs = {
     'linear_lr_decay': True,
@@ -50,6 +52,53 @@ model_cfgs = {
 }
 
 optim_case = [0, 1, 2, 3, 4]
+
+
+@helpers.parametrize(algo=cbf_policy)
+def test_cbf(algo):
+    env_id = 'Pendulum-v1'
+
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 200,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'steps_per_epoch': 200,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+    }
+    agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
+
+
+@helpers.parametrize(auto_alpha=auto_alpha)
+def test_rcbf(auto_alpha):
+    env_id = 'Unicycle'
+
+    custom_cfgs = {
+        'train_cfgs': {
+            'total_steps': 1000,
+            'vector_env_nums': 1,
+            'torch_threads': 4,
+        },
+        'algo_cfgs': {
+            'start_learning_steps': 998,
+            'update_iters': 1,
+            'auto_alpha': auto_alpha,
+        },
+        'logger_cfgs': {
+            'use_wandb': False,
+            'save_model_freq': 1,
+        },
+    }
+    agent = omnisafe.Agent('SACRCBF', env_id, custom_cfgs=custom_cfgs)
+    agent.learn()
+    agent.evaluate(num_episodes=1)
 
 
 @helpers.parametrize(optim_case=optim_case)
@@ -335,9 +384,6 @@ def test_off_lag_policy(algo):
     }
     agent = omnisafe.Agent(algo, env_id, custom_cfgs=custom_cfgs)
     agent.learn()
-
-
-auto_alpha = [True, False]
 
 
 @helpers.parametrize(auto_alpha=auto_alpha)

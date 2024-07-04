@@ -14,11 +14,15 @@
 # ==============================================================================
 """Adapter for the environment and the algorithm."""
 
+from omnisafe.adapter.barrier_function_adapter import BarrierFunctionAdapter
+from omnisafe.adapter.beta_barrier_function_adapter import BetaBarrierFunctionAdapter
 from omnisafe.adapter.early_terminated_adapter import EarlyTerminatedAdapter
 from omnisafe.adapter.modelbased_adapter import ModelBasedAdapter
 from omnisafe.adapter.offline_adapter import OfflineAdapter
 from omnisafe.adapter.offpolicy_adapter import OffPolicyAdapter
+from omnisafe.adapter.offpolicy_barrier_function_adapter import OffPolicyBarrierFunctionAdapter
 from omnisafe.adapter.online_adapter import OnlineAdapter
 from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
+from omnisafe.adapter.robust_barrier_function_adapter import RobustBarrierFunctionAdapter
 from omnisafe.adapter.saute_adapter import SauteAdapter
 from omnisafe.adapter.simmer_adapter import SimmerAdapter
