@@ -97,7 +97,7 @@ class DynamicsModel:
         """Calculate the dynamics of the system based on the current observation and the original action.
 
         This method computes the next state of a pendulum system using the provided state and
-        action. The equations of motion for the pendulum are discretized using the Euler method.
+        action.
 
         Args:
             obs (list[float]): The current observation of the system state.
