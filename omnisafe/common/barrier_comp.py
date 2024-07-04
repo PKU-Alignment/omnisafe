@@ -27,9 +27,9 @@ from omnisafe.utils.model import build_mlp_network
 class BarrierCompensator(torch.nn.Module):
     """A module that represents a barrier compensator using a multi-layer perceptron (MLP) network.
 
-    This module is designed to compute actions based on observations, with the intention of compensating for
-    potential barriers in a control system or a similar application. It is built upon a configurable MLP network
-    and trained using an optimization routine.
+    This module is designed to compute actions based on observations, with the intention of
+    compensating for potential barriers in a control system or a similar application. It is built
+    upon a configurable MLP network and trained using an optimization routine.
 
     Attributes:
         obs_dim (int): Dimension of the observation space.

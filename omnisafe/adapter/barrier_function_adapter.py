@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 from rich.progress import track
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -24,6 +26,7 @@ from omnisafe.adapter.onpolicy_adapter import OnPolicyAdapter
 from omnisafe.common.barrier_comp import BarrierCompensator
 from omnisafe.common.barrier_solver import PendulumSolver
 from omnisafe.common.buffer import VectorOnPolicyBuffer
+from omnisafe.common.gp_model import DynamicsModel
 from omnisafe.common.logger import Logger
 from omnisafe.envs.wrapper import AutoReset, CostNormalize, RewardNormalize, TimeLimit, Unsqueeze
 from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
@@ -47,9 +50,29 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
         """Initialize an instance of :class:`BarrierFunctionAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
-        self.solver: PendulumSolver
-        self.compensator: BarrierCompensator
-        self.first_iter = 1
+
+        if env_id == 'Pendulum-v1':
+            self.solver: PendulumSolver = PendulumSolver(
+                action_size=self.action_space.shape[0],  # type: ignore
+                device=self._device,
+            )
+            self.dynamics_model: DynamicsModel = DynamicsModel(
+                observation_size=self.observation_space.shape[0],  # type: ignore
+            )
+        else:
+            raise NotImplementedError(f'Please implement solver for {env_id} !')
+        self.compensator: BarrierCompensator = BarrierCompensator(
+            obs_dim=self.observation_space.shape[0],  # type: ignore
+            act_dim=self.action_space.shape[0],  # type: ignore
+            cfgs=cfgs.compensator_cfgs,
+        ).to(self._device)
+        self.first_iter: bool = True
+
+        self.episode_rollout: dict[str, Any] = {}
+        self.episode_rollout['obs'] = []
+        self.episode_rollout['final_act'] = []
+        self.episode_rollout['approx_compensating_act'] = []
+        self.episode_rollout['compensating_act'] = []
 
     def _wrapper(
         self,
@@ -89,17 +112,9 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
         if self._env.num_envs == 1:
             self._env = Unsqueeze(self._env, device=self._device)
 
-    def set_solver(self, solver: PendulumSolver) -> None:
-        """Set the barrier function solver for Pendulum environment."""
-        self.solver = solver
-
-    def set_compensator(self, compensator: BarrierCompensator) -> None:
-        """Set the action compensator."""
-        self.compensator = compensator
-
     def reset_gp_model(self) -> None:
         """Reset the gaussian processing model of barrier function solver."""
-        self.solver.reset_gp_model()
+        self.dynamics_model.reset_gp_model()
 
     def rollout(  # pylint: disable=too-many-locals,too-many-branches
         self,
@@ -118,12 +133,10 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
             logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
         """
         self._reset_log()
-        if not self.first_iter:
-            self.reset_gp_model()
 
         obs, _ = self.reset()
-        path_obs = []
-        path_act = []
+        self.episode_rollout['obs'] = []
+        self.episode_rollout['final_act'] = []
         for step in track(
             range(steps_per_epoch),
             description=f'Processing rollout for epoch: {logger.current_epoch}...',
@@ -134,46 +147,29 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
                 act_dist = agent.actor(obs)
                 act_mean, act_std = act_dist.mean, agent.actor.std
 
-                approx_compensating_act = self.compensator(obs=obs)
-                compensated_act_mean_raw = act_mean + approx_compensating_act
-
-                if self.first_iter:
-                    [f, g, x, std] = self.solver.get_gp_dynamics(obs, use_prev_model=False)
-                else:
-                    [f, g, x, std] = self.solver.get_gp_dynamics(obs, use_prev_model=True)
-
-                compensating_act = self.solver.control_barrier(
-                    compensated_act_mean_raw,
-                    f,
-                    g,
-                    x,
-                    std,
+                safe_act = self.get_safe_action(
+                    obs,
+                    act_mean,
+                    act_std,
                 )
+                logp = agent.actor.log_prob(safe_act)
 
-                compensated_act_mean = compensated_act_mean_raw + compensating_act
-                final_act = torch.normal(compensated_act_mean, act_std)
+            self.episode_rollout['obs'].append(obs)
+            self.episode_rollout['final_act'].append(safe_act)
 
-                logp = agent.actor.log_prob(final_act)
-
-            path_obs.append(obs)
-            path_act.append(final_act)
-
-            next_obs, reward, cost, terminated, truncated, info = self.step(final_act)
-
+            next_obs, reward, cost, terminated, truncated, info = self.step(safe_act)
             self._log_value(reward=reward, cost=cost, info=info)
 
             logger.store({'Value/reward': value_r})
 
             buffer.store(
                 obs=obs,
-                act=final_act,
+                act=safe_act,
                 reward=reward,
                 cost=cost,
                 value_r=value_r,
                 value_c=value_c,
                 logp=logp,
-                approx_compensating_act=approx_compensating_act.detach(),
-                compensating_act=compensating_act.detach(),
             )
 
             obs = next_obs
@@ -203,25 +199,72 @@ class BarrierFunctionAdapter(OnPolicyAdapter):
 
                     if done or time_out:
                         self._log_metrics(logger, idx)
+                        compensator_loss = self.compensator.update(
+                            torch.cat(self.episode_rollout['obs']),
+                            torch.cat(self.episode_rollout['approx_compensating_act']),
+                            torch.cat(self.episode_rollout['compensating_act']),
+                        )
+                        logger.store({'Value/Loss_compensator': compensator_loss.item()})
+                        self.dynamics_model.update_gp_dynamics(
+                            obs=torch.cat(self.episode_rollout['obs']),  # type: ignore
+                            act=torch.cat(self.episode_rollout['final_act']),  # type: ignore
+                        )
+
+                        self.episode_rollout['obs'] = []
+                        self.episode_rollout['final_act'] = []
+                        self.episode_rollout['approx_compensating_act'] = []
+                        self.episode_rollout['compensating_act'] = []
+
                         self._reset_log(idx)
-
-                        self._ep_ret[idx] = 0.0
-                        self._ep_cost[idx] = 0.0
-                        self._ep_len[idx] = 0.0
-
-                        if step < self._cfgs.algo_cfgs.update_dynamics_steps:
-                            self.solver.update_gp_dynamics(
-                                obs=torch.cat(path_obs),  # type: ignore
-                                act=torch.cat(path_act),  # type: ignore
-                            )
-
-                        path_obs = []
-                        path_act = []
                         obs, _ = self.reset()
                     buffer.finish_path(last_value_r, last_value_c, idx)
-        self.first_iter = 0
+        self.first_iter = False
+        self.reset_gp_model()
+
+    def get_safe_action(
+        self,
+        obs: torch.Tensor,
+        act_mean: torch.Tensor,
+        act_std: torch.Tensor,
+    ) -> torch.Tensor:
+        """Computes a safe action by applying compensatory actions.
+
+        .. note::
+            This is the core method of the CBF method. Users can modify this function to implement
+            customized action mapping.
+
+        Args:
+            obs (torch.Tensor): The current observation from the environment.
+            act_mean (torch.Tensor): The mean of proposed action to be controlled for safety.
+            act_std (torch.Tensor): The standard deviation of proposed action to be controlled for safety.
+
+        Returns:
+            list(torch.Tensor): The safe actions for interaction and compensating actions for compensator training.
+        """
+        with torch.no_grad():
+            approx_compensating_act = self.compensator(obs=obs)
+            compensated_act_mean_raw = act_mean + approx_compensating_act
+
+            [f, g, x, std] = self.dynamics_model.get_gp_dynamics(
+                obs,
+                use_prev_model=not self.first_iter,
+            )
+            compensating_act = self.solver.control_barrier(
+                original_action=compensated_act_mean_raw,
+                f=f,
+                g=g,
+                x=x,
+                std=std,
+            )
+
+            compensated_act_mean = compensated_act_mean_raw + compensating_act
+            safe_act = torch.normal(compensated_act_mean, act_std)
+            self.episode_rollout['compensating_act'].append(compensating_act)
+            self.episode_rollout['approx_compensating_act'].append(approx_compensating_act)
+
+        return safe_act
 
     @property
     def gp_models(self) -> list[GaussianProcessRegressor]:
         """Return the gp models to be saved."""
-        return self.solver.gp_models
+        return self.dynamics_model.gp_models

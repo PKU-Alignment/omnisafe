@@ -49,13 +49,16 @@ class SACRCBF(SAC):
             self._seed,
             self._cfgs,
         )
-        solver = CBFQPLayer(
-            env=self._env,
-            device=self._cfgs.train_cfgs.device,
-            gamma_b=self._cfgs.cbf_cfgs.gamma_b,
-            l_p=self._cfgs.cbf_cfgs.l_p,
-        )
-        dynamics_model = DynamicsModel(env=self._env)
+        if self._env_id == 'Unicycle':
+            solver = CBFQPLayer(
+                env=self._env,
+                device=self._cfgs.train_cfgs.device,
+                gamma_b=self._cfgs.cbf_cfgs.gamma_b,
+                l_p=self._cfgs.cbf_cfgs.l_p,
+            )
+            dynamics_model = DynamicsModel(env=self._env)
+        else:
+            raise NotImplementedError(f'Please implement solver for {self._env_id} !')
 
         self._env.set_dynamics_model(dynamics_model=dynamics_model)
         self._env.set_solver(solver=solver)

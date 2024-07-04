@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,8 +51,9 @@ from omnisafe.common.control_barrier_function.crabs.models import (
 from omnisafe.common.control_barrier_function.crabs.optimizers import Barrier
 from omnisafe.common.control_barrier_function.crabs.utils import Normalizer as CRABSNormalizer
 from omnisafe.common.control_barrier_function.crabs.utils import create_model_and_trainer
+from omnisafe.common.gp_model import DynamicsModel
 from omnisafe.common.robust_barrier_solver import CBFQPLayer
-from omnisafe.common.robust_gp_model import DynamicsModel
+from omnisafe.common.robust_gp_model import DynamicsModel as RoboustDynamicsModel
 from omnisafe.envs.core import CMDP, make
 from omnisafe.envs.wrapper import ActionRepeat, ActionScale, ObsNormalize, TimeLimit
 from omnisafe.models.actor import ActorBuilder
@@ -100,7 +101,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         self._safety_obs = torch.ones(1)
         self._cost_count = torch.zeros(1)
         self.__set_render_mode(render_mode)
-        self._dynamics_model: DynamicsModel | None = None
+        self._dynamics_model: DynamicsModel | RoboustDynamicsModel | None = None
         self._solver: PendulumSolver | CBFQPLayer | None = None
         self._compensator = None
 
@@ -311,6 +312,18 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
             self._actor = actor_builder.build_actor(actor_type)
             self._actor.load_state_dict(model_params['pi'])
             if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
+                epoch = model_name.split('.pt')[0].split('-')[-1]
+                self._solver = PendulumSolver(action_size=self._env.action_space.shape[0])
+                path = os.path.join(
+                    save_dir,
+                    'gp_model_save',
+                    f'gaussian_process_regressor_{epoch}.pkl',
+                )
+                self._dynamics_model = DynamicsModel(
+                    observation_size=observation_space.shape[0],
+                    load_dir=path,
+                )
+
                 self._compensator = BarrierCompensator(
                     obs_dim=observation_space.shape[0],
                     act_dim=action_space.shape[0],
@@ -332,9 +345,9 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     gamma_b=self._cfgs['cbf_cfgs']['gamma_b'],
                     l_p=self._cfgs['cbf_cfgs']['l_p'],
                 )
-                self._dynamics_model = DynamicsModel(env=self._env)
+                self._dynamics_model = RoboustDynamicsModel(env=self._env)
                 self._dynamics_model.load_disturbance_models(
-                    save_dir=os.path.join(self._save_dir, 'gp_model_save'),
+                    load_dir=os.path.join(self._save_dir, 'gp_model_save'),
                     epoch=epoch,
                 )
 
@@ -413,21 +426,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         # load the config
         self._save_dir = save_dir
         self._model_name = model_name
-        epoch = model_name.split('.pt')[0].split('-')[-1]
 
         self.__load_cfgs(save_dir)
 
         self.__set_render_mode(render_mode)
-
-        if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
-
-            self._solver = PendulumSolver()
-            path = os.path.join(
-                save_dir,
-                'gp_model_save',
-                f'gaussian_process_regressor_{epoch}.pkl',
-            )
-            self._solver.build_gp_model(save_dir=path)
 
         env_kwargs = {
             'env_id': self._cfgs['env_id'],
@@ -443,7 +445,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
 
         self.__load_model_and_env(save_dir, model_name, env_kwargs)
 
-    # pylint: disable-next=too-many-locals
+    # pylint: disable-next=too-many-locals,too-many-branches
     def evaluate(
         self,
         num_episodes: int = 10,
@@ -503,13 +505,13 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
                     approx_compensating_act = self._compensator(obs=obs)
                     compensated_act_mean_raw = act + approx_compensating_act
-                    [f, g, x, std] = self._solver.get_gp_dynamics(obs, use_prev_model=False)
+                    [f, g, x, std] = self._dynamics_model.get_gp_dynamics(obs, use_prev_model=False)
                     compensating_act = self._solver.control_barrier(
-                        compensated_act_mean_raw,
-                        f,
-                        g,
-                        x,
-                        std,
+                        original_action=compensated_act_mean_raw,
+                        f=f,
+                        g=g,
+                        x=x,
+                        std=std,
                     )
                     act = compensated_act_mean_raw + compensating_act
 
@@ -532,7 +534,12 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                     self._safety_obs /= self._cfgs.algo_cfgs.saute_gamma
 
                 ep_ret += rew.item()
-                ep_cost += (cost_criteria**length) * cost.item()
+
+                if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
+                    ep_cost = ep_cost if ep_cost > cost.item() else cost.item()
+                else:
+                    ep_cost += (cost_criteria**length) * cost.item()
+
                 if (
                     'EarlyTerminated' in self._cfgs['algo']
                     and ep_cost >= self._cfgs.algo_cfgs.cost_limit
@@ -647,13 +654,16 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                         if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
                             approx_compensating_act = self._compensator(obs=obs)
                             compensated_act_mean_raw = act + approx_compensating_act
-                            [f, g, x, std] = self._solver.get_gp_dynamics(obs, use_prev_model=False)
+                            [f, g, x, std] = self._dynamics_model.get_gp_dynamics(
+                                obs,
+                                use_prev_model=False,
+                            )
                             compensating_act = self._solver.control_barrier(
-                                compensated_act_mean_raw,
-                                f,
-                                g,
-                                x,
-                                std,
+                                original_action=compensated_act_mean_raw,
+                                f=f,
+                                g=g,
+                                x=x,
+                                std=std,
                             )
                             act = compensated_act_mean_raw + compensating_act
 
@@ -688,7 +698,10 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
                 step += 1
                 done = bool(terminated or truncated)
                 ep_ret += rew.item()
-                ep_cost += (cost_criteria**length) * cost.item()
+                if self._cfgs['algo'] == 'DDPGCBF' or self._cfgs['algo'] == 'TRPOCBF':
+                    ep_cost = ep_cost if ep_cost > cost.item() else cost.item()
+                else:
+                    ep_cost += (cost_criteria**length) * cost.item()
                 if (
                     'EarlyTerminated' in self._cfgs['algo']
                     and ep_cost >= self._cfgs.algo_cfgs.cost_limit

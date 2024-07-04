@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ from omnisafe.adapter.offpolicy_adapter import OffPolicyAdapter
 from omnisafe.common.barrier_comp import BarrierCompensator
 from omnisafe.common.barrier_solver import PendulumSolver
 from omnisafe.common.buffer import VectorOffPolicyBuffer
+from omnisafe.common.gp_model import DynamicsModel
 from omnisafe.common.logger import Logger
 from omnisafe.envs.wrapper import CostNormalize, RewardNormalize, Unsqueeze
 from omnisafe.models.actor_critic.constraint_actor_q_critic import ConstraintActorQCritic
@@ -34,21 +35,47 @@ from omnisafe.utils.config import Config
 class OffPolicyBarrierFunctionAdapter(OffPolicyAdapter):
     """OffPolicy Barrier Function Adapter for OmniSafe.
 
-    :class:`OffPolicyBarrierFunctionAdapter` is used to adapt the environment with CBF controller.
+    :class:`OffPolicyBarrierFunctionAdapter` is used to adapt the environment with a CBF controller,
+    mapping the agent actions from unsafe ones to safe ones.
 
     Args:
         env_id (str): The environment id.
         num_envs (int): The number of environments.
         seed (int): The random seed.
         cfgs (Config): The configuration.
+
+    Attributes:
+        solver (PendulumSolver): The solver used for the environment, currently supporting
+                                ``Pendulum-v1``.
+        dynamics_model (DynamicsModel): The dynamics model used to predict the environment's behavior.
+        compensator (BarrierCompensator): The compensator used to approximate previous actions.
+        first_iter (bool): A flag indicating if it is the first iteration.
+        episode_rollout (dict[str, Any]): A dictionary to store the episode rollout information,
+                                          including observations and various actions,
+                                          useful for updating compensator.
     """
 
     def __init__(self, env_id: str, num_envs: int, seed: int, cfgs: Config) -> None:
-        """Initialize an instance of :class:`BarrierFunctionAdapter`."""
+        """Initialize an instance of :class:`OffPolicyBarrierFunctionAdapter`."""
         super().__init__(env_id, num_envs, seed, cfgs)
-        self.solver: PendulumSolver
-        self.compensator: BarrierCompensator
-        self.first_iter: int = 1
+
+        if env_id == 'Pendulum-v1':
+            self.solver: PendulumSolver = PendulumSolver(
+                action_size=self.action_space.shape[0],  # type: ignore
+                device=self._device,
+            )
+            self.dynamics_model: DynamicsModel = DynamicsModel(
+                observation_size=self.observation_space.shape[0],  # type: ignore
+            )
+        else:
+            raise NotImplementedError(f'Please implement solver for {env_id} !')
+        self.compensator: BarrierCompensator = BarrierCompensator(
+            obs_dim=self.observation_space.shape[0],  # type: ignore
+            act_dim=self.action_space.shape[0],  # type: ignore
+            cfgs=cfgs.compensator_cfgs,
+        ).to(self._device)
+
+        self.first_iter: bool = True
         self.episode_rollout: dict[str, Any] = {}
         self.episode_rollout['obs'] = []
         self.episode_rollout['final_act'] = []
@@ -110,17 +137,9 @@ class OffPolicyBarrierFunctionAdapter(OffPolicyAdapter):
                 },
             )
 
-    def set_solver(self, solver: PendulumSolver) -> None:
-        """Set the barrier function solver for Pendulum environment."""
-        self.solver = solver
-
-    def set_compensator(self, compensator: BarrierCompensator) -> None:
-        """Set the action compensator."""
-        self.compensator = compensator
-
     def reset_gp_model(self) -> None:
         """Reset the gaussian processing model of barrier function solver."""
-        self.solver.reset_gp_model()
+        self.dynamics_model.reset_gp_model()
 
     def rollout(  # pylint: disable=too-many-locals
         self,
@@ -130,7 +149,7 @@ class OffPolicyBarrierFunctionAdapter(OffPolicyAdapter):
         logger: Logger,
         use_rand_action: bool,
     ) -> None:
-        """Rollout in off-policy manner with barrier function controller.
+        """Rollout in off-policy manner with the ``dynamics_model``, ``solver`` and ``compensator``.
 
         Args:
             rollout_step (int): Number of rollout steps.
@@ -173,7 +192,7 @@ class OffPolicyBarrierFunctionAdapter(OffPolicyAdapter):
                         torch.cat(self.episode_rollout['compensating_act']),
                     )
                     logger.store({'Value/Loss_compensator': compensator_loss.item()})
-                    self.solver.update_gp_dynamics(
+                    self.dynamics_model.update_gp_dynamics(
                         obs=torch.cat(self.episode_rollout['obs']),  # type: ignore
                         act=torch.cat(self.episode_rollout['final_act']),  # type: ignore
                     )
@@ -185,9 +204,8 @@ class OffPolicyBarrierFunctionAdapter(OffPolicyAdapter):
 
                     self._reset_log(idx)
                     self._current_obs, _ = self._env.reset()
-                    self.first_iter = 0
-                    if not self.first_iter:
-                        self.reset_gp_model()
+                    self.first_iter = False
+                    self.reset_gp_model()
 
     def get_safe_action(
         self,
@@ -197,24 +215,33 @@ class OffPolicyBarrierFunctionAdapter(OffPolicyAdapter):
     ) -> torch.Tensor:
         """Computes a safe action by applying compensatory actions.
 
+        .. note::
+            This is the core method of the CBF method. Users can modify this function to implement
+            customized action mapping.
+
         Args:
             obs (torch.Tensor): The current observation from the environment.
-            act (torch.Tensor): The proposed action to be evaluated for safety.
+            act (torch.Tensor): The proposed action to be controlled for safety.
             is_eval (bool, optional): A flag to indicate whether this is an evaluation phase, defaulting to False.
 
         Returns:
             torch.Tensor: The safe action to be executed in the environment.
         """
         with torch.no_grad():
-            approx_compensating_act = self.compensator(obs=self._current_obs)
+            approx_compensating_act = self.compensator(obs=obs)
             compensated_act_mean_raw = act + approx_compensating_act
 
-            if self.first_iter:
-                [f, g, x, std] = self.solver.get_gp_dynamics(obs, use_prev_model=False)
-            else:
-                [f, g, x, std] = self.solver.get_gp_dynamics(obs, use_prev_model=True)
-
-            compensating_act = self.solver.control_barrier(compensated_act_mean_raw, f, g, x, std)
+            [f, g, x, std] = self.dynamics_model.get_gp_dynamics(
+                obs,
+                use_prev_model=not self.first_iter,
+            )
+            compensating_act = self.solver.control_barrier(
+                original_action=compensated_act_mean_raw,
+                f=f,
+                g=g,
+                x=x,
+                std=std,
+            )
             safe_act = compensated_act_mean_raw + compensating_act
 
             if not is_eval:
@@ -226,4 +253,4 @@ class OffPolicyBarrierFunctionAdapter(OffPolicyAdapter):
     @property
     def gp_models(self) -> list[GaussianProcessRegressor]:
         """Return the gp models to be saved."""
-        return self.solver.gp_models
+        return self.dynamics_model.gp_models

@@ -130,7 +130,6 @@ ignore-words = "docs/source/spelling_wordlist.txt"
 # Sync with requires-python
 target-version = "py38"
 line-length = 100
-show-source = true
 src = ["omnisafe", "tests", "examples"]
 select = [
     "E", "W",  # pycodestyle

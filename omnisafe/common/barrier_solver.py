@@ -22,73 +22,70 @@ from __future__ import annotations
 
 import warnings
 
-import joblib
 import numpy as np
 import torch
 from cvxopt import matrix, solvers
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF
-from sklearn.gaussian_process.kernels import ConstantKernel as C
+
+from omnisafe.typing import DEVICE_CPU
 
 
 # pylint: disable-next=too-many-instance-attributes
 class PendulumSolver:
-    """Solver for the pendulum problem using Gaussian Process models.
+    """The CBF solver for the pendulum problem using Gaussian Process models.
+
+    This class implements a solver for the pendulum control problem using Control Barrier Functions
+    (CBFs). The primary goal is to ensure safe reinforcement learning by maintaining
+    safety constraints during the control process.
+
+    For more details, please refer to:
+
+    *End-to-End Safe Reinforcement Learning through Barrier Functions for Safety-Critical Continuous
+    Control Tasks*
 
     Attributes:
-        action_size (int): Size of the action space.
-        observation_size (int): Size of the observation space.
-        torque_bound (float): Maximum torque bound.
-        max_speed (float): Maximum speed of the pendulum.
-        device (str): Device to run the computations on.
+        action_size (int): Size of the action space, typically 1 for the pendulum.
+        torque_bound (float): Maximum torque bound that can be applied to the pendulum.
+        max_speed (float): Maximum speed (angular velocity) of the pendulum.
+        device (torch.device): Device to run the computations on.
     """
 
     # pylint: disable-next=invalid-name
     def __init__(
         self,
         action_size: int = 1,
-        observation_size: int = 3,
         torque_bound: float = 15.0,
         max_speed: float = 60.0,
-        device: str = 'cpu',
+        device: torch.device = DEVICE_CPU,
     ) -> None:
-        """Initialize the PendulumSolver with specified parameters."""
+        """Initialize the PendulumSolver with specified parameters.
+
+        Args:
+            action_size (int): Size of the action space, typically 1 for the pendulum.
+            torque_bound (float): Maximum torque bound that can be applied to the pendulum.
+            max_speed (float): Maximum speed (angular velocity) of the pendulum.
+            device (torch.device): Device to run the computations on.
+
+        Attributes:
+            F (float): A control gain factor used in the CBF computation.
+            _gamma_b (float): Parameter for the barrier function.
+            _kd (float): Damping coefficient used in the barrier function.
+        """
         self.action_size = action_size
-        self.observation_size = observation_size
         self.torque_bound = torque_bound
         self.max_speed = max_speed
         self.F = 1.0
         self._device = device
         self._gamma_b = 0.5
         self._kd = 1.5
-        self.gp_model_prev: list[GaussianProcessRegressor, GaussianProcessRegressor]
-        self.gp_model: list[GaussianProcessRegressor, GaussianProcessRegressor]
-
         self._build_barrier()
-        self.build_gp_model()
         warnings.filterwarnings('ignore')
 
-    def build_gp_model(self, save_dir: str | None = None) -> None:
-        """Build the Gaussian Process model."""
-        gp_list = []
-        noise = 0.01
-        for _ in range(self.observation_size - 1):
-            if not save_dir:
-                kern = C(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
-                gp = GaussianProcessRegressor(kernel=kern, alpha=noise, n_restarts_optimizer=10)
-                gp_list.append(gp)
-            else:
-                gp_list = joblib.load(save_dir)
-        self.gp_model = gp_list
-        self.gp_model_prev = gp_list.copy()
-
-    @property
-    def gp_models(self) -> list[GaussianProcessRegressor]:
-        """Return all gaussian process regressor for saving."""
-        return self.gp_model
-
     def _build_barrier(self) -> None:
-        """Build the barrier for the pendulum solver."""
+        """Construct the Control Barrier Function (CBF) for safe control of the pendulum.
+
+        This method initializes and sets up the necessary components for the CBF, which is used to
+        ensure that the control actions taken do not violate safety constraints.
+        """
         self.P = matrix(np.diag([1.0, 1e16]), tc='d')
         self.q = matrix(np.zeros(self.action_size + 1))
         self.h1 = np.array([1, 0.01])
@@ -193,122 +190,3 @@ class PendulumSolver:
             print('Error in QP')
 
         return torch.as_tensor(u_bar[0], dtype=torch.float32, device=self._device).unsqueeze(dim=0)
-
-    # pylint: disable-next=attribute-defined-outside-init,import-outside-toplevel,invalid-name
-    def get_dynamics(self, obs: list[float], original_action: float) -> np.ndarray:
-        """Calculate the dynamics of the system.
-
-        Args:
-            obs (list[float]): The current observation of the system state.
-            original_action (float): The original action proposed by the RL algorithm.
-
-        Returns:
-            np.ndarray: The calculated dynamics of the system.
-        """
-        # time step
-        dt = 0.05
-        # gravitational constant
-        G = 10
-        # mass
-        m = 2
-        # length
-        length = 2
-
-        # calculate the angle
-        theta = np.arctan2(obs[1], obs[0])
-        # angular velocity
-        theta_dot = obs[2]
-
-        # dynamics equations
-        f = np.array(
-            [
-                -3 * G / (2 * length) * np.sin(theta + np.pi) * dt**2
-                + theta_dot * dt
-                + theta
-                + 3 / (m * length**2) * original_action * dt**2,
-                theta_dot
-                - 3 * G / (2 * length) * np.sin(theta + np.pi) * dt
-                + 3 / (m * length**2) * original_action * dt,
-            ],
-        )
-
-        return np.squeeze(f)
-
-    def update_gp_dynamics(self, obs: np.ndarray, act: np.ndarray) -> None:
-        """Update the Gaussian Process (GP) dynamics model based on observed states and actions.
-
-        Args:
-            obs (np.ndarray): Observed states.
-            act (np.ndarray): Actions taken.
-        """
-        obs = obs.detach().cpu().squeeze().numpy()
-        act = act.detach().cpu().squeeze().numpy()
-        N = self.observation_size
-        X = obs
-        U = act
-        L = len(X)
-        err = np.zeros((L - 1, N - 1))
-        S = np.zeros((L - 1, 2))
-        for i in range(L - 1):
-            f = self.get_dynamics(X[i], U[i])
-            theta_p = np.arctan2(X[i][1], X[i][0])
-            theta_dot_p = X[i][2]
-            theta = np.arctan2(X[i + 1][1], X[i + 1][0])
-            theta_dot = X[i + 1][2]
-            S[i, :] = np.array([theta_p, theta_dot_p])
-            err[i, :] = np.array([theta, theta_dot]) - f
-        self.gp_model[0].fit(S, err[:, 0])
-        self.gp_model[1].fit(S, err[:, 1])
-
-    def get_gp_dynamics(self, obs: torch.Tensor, use_prev_model: bool) -> list[np.ndarray]:
-        """Retrieve the GP dynamics based on the current observation.
-
-        Args:
-            obs (torch.Tensor): Current state observation.
-
-        Returns:
-            list[np.ndarray]: list containing the gp dynamics [f, g, x, std].
-        """
-        obs = obs.cpu().detach().numpy()
-        u_rl = 0
-        dt = 0.05
-        G = 10
-        m = 1
-        length = 1
-        obs = np.squeeze(obs)
-        theta = np.arctan2(obs[1], obs[0])
-        theta_dot = obs[2]
-        x = np.array([theta, theta_dot])
-        f_nom = np.array(
-            [
-                -3 * G / (2 * length) * np.sin(theta + np.pi) * dt**2
-                + theta_dot * dt
-                + theta
-                + 3 / (m * length**2) * u_rl * dt**2,
-                theta_dot
-                - 3 * G / (2 * length) * np.sin(theta + np.pi) * dt
-                + 3 / (m * length**2) * u_rl * dt,
-            ],
-        )
-        g = np.array([3 / (m * length**2) * dt**2, 3 / (m * length**2) * dt])
-        f_nom = np.squeeze(f_nom)
-        f = np.zeros(2)
-        if use_prev_model:
-            [m1, std1] = self.gp_model_prev[0].predict(x.reshape(1, -1), return_std=True)
-            [m2, std2] = self.gp_model_prev[1].predict(x.reshape(1, -1), return_std=True)
-        else:
-            [m1, std1] = self.gp_model[0].predict(x.reshape(1, -1), return_std=True)
-            [m2, std2] = self.gp_model[1].predict(x.reshape(1, -1), return_std=True)
-        f[0] = f_nom[0] + m1
-        f[1] = f_nom[1] + m2
-        return [
-            np.squeeze(f),
-            np.squeeze(g),
-            np.squeeze(x),
-            np.array([np.squeeze(std1), np.squeeze(std2)]),
-        ]
-
-    def reset_gp_model(self) -> None:
-        """Reset the gaussian process model of barrier function solver."""
-        self.gp_model_prev = self.gp_model.copy()
-        self.build_gp_model()

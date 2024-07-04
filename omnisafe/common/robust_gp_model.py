@@ -1,4 +1,4 @@
-# Copyright 2023 OmniSafe Team. All Rights Reserved.
+# Copyright 2024 OmniSafe Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -393,20 +393,20 @@ class DynamicsModel:
 
         return (to_tensor(means, dtype, device), to_tensor(f_std, dtype, device))
 
-    def load_disturbance_models(self, save_dir: str, epoch: str) -> None:
+    def load_disturbance_models(self, load_dir: str, epoch: str) -> None:
         """Load the disturbance models and their training data.
 
         Args:
-            save_dir (str): The directory where the model files are saved.
+            load_dir (str): The directory where the model files are saved.
             epoch (str): The epoch identifier used in the filenames to load the specific model checkpoint.
         """
         self._disturb_estimators = []
         weights = torch.load(
-            os.path.join(save_dir, f'gp_models_{epoch}.pkl'),
+            os.path.join(load_dir, f'gp_models_{epoch}.pkl'),
             map_location=self.device,
         )
-        self._train_x = torch.load(os.path.join(save_dir, f'gp_models_train_x_{epoch}.pkl'))
-        self._train_y = torch.load(os.path.join(save_dir, f'gp_models_train_y_{epoch}.pkl'))
+        self._train_x = torch.load(os.path.join(load_dir, f'gp_models_train_x_{epoch}.pkl'))
+        self._train_y = torch.load(os.path.join(load_dir, f'gp_models_train_y_{epoch}.pkl'))
         for i in range(self.n_s):
             self._disturb_estimators.append(
                 GPyDisturbanceEstimator(

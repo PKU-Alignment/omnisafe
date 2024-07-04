@@ -60,9 +60,9 @@ class RobustBarrierFunctionAdapter(OffPolicyAdapter):
         """Wrapper the environment.
 
         .. warning::
-            Since solving the optimization problem requires obtaining physical quantities with practical
-            significance from state observations, the Barrier Function Adapter does not support
-            normalization of observations.
+            Since solving the optimization problem requires obtaining physical quantities with
+            practical significance from state observations, the Barrier Function Adapter does not
+            support normalization of observations.
 
         Args:
             obs_normalize (bool, optional): Whether to normalize the observation. Defaults to False.
