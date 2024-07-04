@@ -79,7 +79,7 @@ def test_vector_onpolicy_buffer(
     assert (
         vector_buffer.standardized_adv_r == standardized_adv_r
     ), f'vector_buffer.sstandardized_adv_r is {vector_buffer.sstandardized_adv_r}'
-    assert vector_buffer.buffers is not [], f'vector_buffer.buffers is {vector_buffer.buffers}'
+    assert vector_buffer.buffers != [], f'vector_buffer.buffers is {vector_buffer.buffers}'
 
     # checking the store function
     obs_dim = obs_space.shape[0]
