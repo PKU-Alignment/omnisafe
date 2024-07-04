@@ -394,6 +394,7 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     saferl/pcpo
     saferl/focops
     saferl/lag
+    saferl/cbf
 
 .. toctree::
     :hidden:
