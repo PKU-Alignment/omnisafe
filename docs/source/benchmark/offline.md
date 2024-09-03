@@ -207,14 +207,14 @@ class="smallcaps">SafetyCarCircle1-v0(beta=0.25)</span></td>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarCircle1-v0(beta=0.50)</span></td>
-<td style="text-align: center;">43.66 <span class="math inline">±</span> 0.90</td>
-<td style="text-align: center;">109.86 <span class="math inline">±</span> 13.24</td>
-<td style="text-align: center;">45.48 <span class="math inline">±</span> 0.87</td>
-<td style="text-align: center;">127.30 <span class="math inline">±</span> 12.60</td>
-<td style="text-align: center;">43.31 <span class="math inline">±</span> 0.76</td>
-<td style="text-align: center;">113.39 <span class="math inline">±</span> 12.81</td>
-<td style="text-align: center;">40.68 <span class="math inline">±</span> 0.93</td>
-<td style="text-align: center;">67.11 <span class="math inline">±</span> 13.15</td>
+<td style="text-align: center;">18.69 <span class="math inline">±</span> 0.33</td>
+<td style="text-align: center;">125.97 <span class="math inline">±</span> 10.36</td>
+<td style="text-align: center;">17.24 <span class="math inline">±</span> 0.43</td>
+<td style="text-align: center;">89.47 <span class="math inline">±</span> 11.55</td>
+<td style="text-align: center;">18.14 <span class="math inline">±</span> 0.96</td>
+<td style="text-align: center;">108.07 <span class="math inline">±</span> 20.70</td>
+<td style="text-align: center;">16.38 <span class="math inline">±</span> 0.43</td>
+<td style="text-align: center;">70.54 <span class="math inline">±</span> 12.36</td>
 </tr>
 <tr>
 <tr class="odd">
