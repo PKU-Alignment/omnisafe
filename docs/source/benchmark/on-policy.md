@@ -271,7 +271,7 @@ class="smallcaps">SafetyHumanoidVelocity-v1</span></td>
 <td style="text-align: center;">- <span class="math inline">±</span>-</td>
 <td style="text-align: center;"><strong>1106.09 <span class="math inline">±</span> 607.6</strong></td>
 <td style="text-align: center;">677.43 <span class="math inline">±</span> 189.96</td>
-<td style="text-align: center;">762.73 <span class="math inline">±</span> 170.22-v0</td>
+<td style="text-align: center;">762.73 <span class="math inline">±</span> 170.22</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
@@ -279,7 +279,7 @@ class="smallcaps">SafetySwimmerVelocity-v1</span></td>
 <td style="text-align: center;"><strong>47.31 <span class="math inline">±</span> 16.19</strong></td>
 <td style="text-align: center;">27.12 <span class="math inline">±</span>7.47</td>
 <td style="text-align: center;">- <span class="math inline">±</span>-</td>
-<td style="text-align: center;">113.28 <span class="math inline">±</span> 20.22-v0</td>
+<td style="text-align: center;">113.28 <span class="math inline">±</span> 20.22</td>
 <td style="text-align: center;">37.93 <span class="math inline">±</span>8.68</td>
 <td style="text-align: center;"><strong>273.86 <span class="math inline">±</span> 87.76</strong></td>
 </tr>
@@ -287,7 +287,7 @@ class="smallcaps">SafetySwimmerVelocity-v1</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyWalker2dVelocity-v1</span></td>
 <td style="text-align: center;"><strong>1665 .00 <span class="math inline">±</span> 930.18</strong></td>
-<td style="text-align: center;">373.63 <span class="math inline">±</span> 129.2-v0</td>
+<td style="text-align: center;">373.63 <span class="math inline">±</span> 129.2</td>
 <td style="text-align: center;">- <span class="math inline">±</span>-</td>
 <td style="text-align: center;"><strong>3806.39 <span class="math inline">±</span> 1547.48</strong></td>
 <td style="text-align: center;">3748.26 <span class="math inline">±</span> 1832.83</td>
@@ -325,14 +325,14 @@ class="smallcaps">SafetyHalfCheetahVelocity-v1</span></td>
 <td style="text-align: center;">3430.9 <span class="math inline">±</span> 239.38</td>
 <td style="text-align: center;">- <span class="math inline">±</span>-</td>
 <td style="text-align: center;">3313.31 <span class="math inline">±</span> 1048.78</td>
-<td style="text-align: center;">4255.73 <span class="math inline">±</span> 1053.82-v0</td>
+<td style="text-align: center;">4255.73 <span class="math inline">±</span> 1053.82</td>
 <td style="text-align: center;"><strong>7185.06 <span class="math inline">±</span> 3650.82-v0</strong></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyHopperVelocity-v1</span></td>
 <td style="text-align: center;"><strong>2590.54 <span class="math inline">±</span> 631.05</strong></td>
-<td style="text-align: center;">993.63 <span class="math inline">±</span> 489.42-v0</td>
+<td style="text-align: center;">993.63 <span class="math inline">±</span> 489.42</td>
 <td style="text-align: center;">- <span class="math inline">±</span>-</td>
 <td style="text-align: center;"><strong>2698.19 <span class="math inline">±</span> 568.80</strong></td>
 <td style="text-align: center;">1346.94 <span class="math inline">±</span> 984.09</td>
@@ -345,7 +345,7 @@ class="smallcaps">SafetyHumanoidVelocity-v1</span></td>
 <td style="text-align: center;">810.76 <span class="math inline">±</span> 270.69</td>
 <td style="text-align: center;">- <span class="math inline">±</span>-</td>
 <td style="text-align: center;">1461.51 <span class="math inline">±</span> 602.23</td>
-<td style="text-align: center;">749.42 <span class="math inline">±</span> 149.81-v0</td>
+<td style="text-align: center;">749.42 <span class="math inline">±</span> 149.81</td>
 <td style="text-align: center;"><strong>2828.18 <span class="math inline">±</span> 2256.38</strong></td>
 </tr>
 <tr class="even">
@@ -446,7 +446,7 @@ To demonstrate the high reliability of the algorithms implemented, OmniSafe offe
 <td style="text-align: left;"><span
 class="smallcaps">SafetyAntVelocity-v1</span></td>
 <td style="text-align: center;">5292.29 <span class="math inline">±</span> 913.44</td>
-<td style="text-align: center;">919.42 <span class="math inline">±</span> 158.61-v0</td>
+<td style="text-align: center;">919.42 <span class="math inline">±</span> 158.61</td>
 <td style="text-align: center;">5547.20 <span class="math inline">±</span> 807.89</td>
 <td style="text-align: center;">895.56 <span class="math inline">±</span> 77.13</td>
 <td style="text-align: center;">6026.79 <span class="math inline">±</span> 314.98</td>
@@ -460,7 +460,7 @@ class="smallcaps">SafetyHalfCheetahVelocity-v1</span></td>
 <td style="text-align: center;">5188.46 <span class="math inline">±</span> 1202.76</td>
 <td style="text-align: center;">896.55 <span class="math inline">±</span> 184.7</td>
 <td style="text-align: center;">5878.28 <span class="math inline">±</span> 2012.24</td>
-<td style="text-align: center;">847.74 <span class="math inline">±</span> 249.02-v0</td>
+<td style="text-align: center;">847.74 <span class="math inline">±</span> 249.02</td>
 <td style="text-align: center;">6490.76 <span class="math inline">±</span> 2507.18</td>
 <td style="text-align: center;">734.26 <span class="math inline">±</span> 321.88</td>
 <td style="text-align: center;">6921.83 <span class="math inline">±</span> 1721.79</td>
@@ -484,7 +484,7 @@ class="smallcaps">SafetyHumanoidVelocity-v1</span></td>
 <td style="text-align: center;">7001.78 <span class="math inline">±</span> 419.67</td>
 <td style="text-align: center;">834.11 <span class="math inline">±</span> 212.43</td>
 <td style="text-align: center;">8055.20 <span class="math inline">±</span> 641.67</td>
-<td style="text-align: center;">946.40 <span class="math inline">±</span> 9.11-v0</td>
+<td style="text-align: center;">946.40 <span class="math inline">±</span> 9.11</td>
 <td style="text-align: center;">8681.24 <span class="math inline">±</span> 3934.08</td>
 <td style="text-align: center;">718.42 <span class="math inline">±</span> 323.30</td>
 <td style="text-align: center;">9115.93 <span class="math inline">±</span> 596.88</td>
@@ -496,7 +496,7 @@ class="smallcaps">SafetySwimmerVelocity-v1</span></td>
 <td style="text-align: center;">77.05 <span class="math inline">±</span>33.44</td>
 <td style="text-align: center;">107.1 <span class="math inline">±</span>60.58</td>
 <td style="text-align: center;">120.19 <span class="math inline">±</span> 7.74</td>
-<td style="text-align: center;">161.78 <span class="math inline">±</span> 17.51-v0</td>
+<td style="text-align: center;">161.78 <span class="math inline">±</span> 17.51</td>
 <td style="text-align: center;">124.91 <span class="math inline">±</span> 6.13</td>
 <td style="text-align: center;">176.56 <span class="math inline">±</span> 15.95</td>
 <td style="text-align: center;">119.77 <span class="math inline">±</span> 13.8</td>
@@ -508,7 +508,7 @@ class="smallcaps">SafetyWalker2dVelocity-v1</span></td>
 <td style="text-align: center;">4832.34 <span class="math inline">±</span> 685.76</td>
 <td style="text-align: center;">866.59 <span class="math inline">±</span> 93.47</td>
 <td style="text-align: center;">5347.35 <span class="math inline">±</span> 436.86</td>
-<td style="text-align: center;">914.74 <span class="math inline">±</span> 32.61-v0</td>
+<td style="text-align: center;">914.74 <span class="math inline">±</span> 32.61</td>
 <td style="text-align: center;">6096.67 <span class="math inline">±</span> 723.06</td>
 <td style="text-align: center;">914.46 <span class="math inline">±</span> 27.85</td>
 <td style="text-align: center;">6239.52 <span class="math inline">±</span> 879.99</td>
@@ -521,7 +521,7 @@ class="smallcaps">SafetyCarGoal1-v0</span></td>
 <td style="text-align: center;">57.46 <span class="math inline">±</span>48.34</td>
 <td style="text-align: center;">36.07 <span class="math inline">±</span>1.25</td>
 <td style="text-align: center;">58.06 <span class="math inline">±</span>10.03</td>
-<td style="text-align: center;">36.60 <span class="math inline">±</span>0.22-v0</td>
+<td style="text-align: center;">36.60 <span class="math inline">±</span>0.22</td>
 <td style="text-align: center;">55.58 <span class="math inline">±</span>12.68</td>
 <td style="text-align: center;">33.41 <span class="math inline">±</span>2.89</td>
 <td style="text-align: center;">58.06 <span class="math inline">±</span>42.06</td>
@@ -541,14 +541,14 @@ class="smallcaps">SafetyCarButton1-v0</span></td>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarGoal2-v0</span></td>
-<td style="text-align: center;">29.43 <span class="math inline">±</span>4.62-v0</td>
+<td style="text-align: center;">29.43 <span class="math inline">±</span>4.62</td>
 <td style="text-align: center;">179.2 <span class="math inline">±</span>84.86</td>
 <td style="text-align: center;">30.26 <span class="math inline">±</span>0.38</td>
 <td style="text-align: center;">209.62 <span class="math inline">±</span> 29.97</td>
 <td style="text-align: center;">32.17 <span class="math inline">±</span>1.24</td>
 <td style="text-align: center;">190.74 <span class="math inline">±</span> 21.05</td>
 <td style="text-align: center;">29.88 <span class="math inline">±</span>4.55</td>
-<td style="text-align: center;">194.16 <span class="math inline">±</span> 106.2-v0</td>
+<td style="text-align: center;">194.16 <span class="math inline">±</span> 106.2</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
@@ -559,7 +559,7 @@ class="smallcaps">SafetyCarButton2-v0</span></td>
 <td style="text-align: center;">313.88 <span class="math inline">±</span> 58.20</td>
 <td style="text-align: center;">20.51 <span class="math inline">±</span>3.34</td>
 <td style="text-align: center;">316.42 <span class="math inline">±</span> 35.28</td>
-<td style="text-align: center;">21.35 <span class="math inline">±</span>8.22-v0</td>
+<td style="text-align: center;">21.35 <span class="math inline">±</span>8.22</td>
 <td style="text-align: center;">312.64 <span class="math inline">±</span> 138.4</td>
 </tr>
 <tr class="even">
@@ -589,7 +589,7 @@ class="smallcaps">SafetyPointButton1-v0</span></td>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyPointGoal2-v0</span></td>
-<td style="text-align: center;">25.18 <span class="math inline">±</span>3.62-v0</td>
+<td style="text-align: center;">25.18 <span class="math inline">±</span>3.62</td>
 <td style="text-align: center;">204.96 <span class="math inline">±</span> 104.97</td>
 <td style="text-align: center;">26.19 <span class="math inline">±</span>0.84</td>
 <td style="text-align: center;">193.60 <span class="math inline">±</span> 18.54</td>
@@ -608,7 +608,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 <td style="text-align: center;">28.78 <span class="math inline">±</span>2.05</td>
 <td style="text-align: center;">170.30 <span class="math inline">±</span> 30.59</td>
 <td style="text-align: center;">25.91 <span class="math inline">±</span>6.15</td>
-<td style="text-align: center;">166.6 <span class="math inline">±</span>111.21-v0</td>
+<td style="text-align: center;">166.6 <span class="math inline">±</span>111.21</td>
 </tr>
 <thead>
 <tr class="header">
@@ -634,9 +634,9 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyAntVelocity-v1</span></td>
 <td style="text-align: center;">3139.52 <span class="math inline">±</span> 110.34</td>
-<td style="text-align: center;">12.34 <span class="math inline">±</span>3.11-v0</td>
+<td style="text-align: center;">12.34 <span class="math inline">±</span>3.11</td>
 <td style="text-align: center;">3041.89 <span class="math inline">±</span> 180.77</td>
-<td style="text-align: center;">19.52 <span class="math inline">±</span>20.21-v0</td>
+<td style="text-align: center;">19.52 <span class="math inline">±</span>20.21</td>
 <td style="text-align: center;">3261.87 <span class="math inline">±</span> 80.00</td>
 <td style="text-align: center;">12.05 <span class="math inline">±</span>6.57</td>
 <td style="text-align: center;">2636.62 <span class="math inline">±</span> 181.09</td>
@@ -671,7 +671,7 @@ class="smallcaps">SafetyHopperVelocity-v1</span></td>
 class="smallcaps">SafetyHumanoidVelocity-v1</span></td>
 <td style="text-align: center;">6286.51 <span class="math inline">±</span> 151.03</td>
 <td style="text-align: center;">19.47 <span class="math inline">±</span>7.74</td>
-<td style="text-align: center;">6551.30 <span class="math inline">±</span> 58.42-v0</td>
+<td style="text-align: center;">6551.30 <span class="math inline">±</span> 58.42</td>
 <td style="text-align: center;">59.56 <span class="math inline">±</span>117.37</td>
 <td style="text-align: center;">6624.46 <span class="math inline">±</span> 25.9</td>
 <td style="text-align: center;">5.87 <span class="math inline">±</span>9.46</td>
@@ -681,10 +681,10 @@ class="smallcaps">SafetyHumanoidVelocity-v1</span></td>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetySwimmerVelocity-v1</span></td>
-<td style="text-align: center;">61.29 <span class="math inline">±</span>18.12-v0</td>
+<td style="text-align: center;">61.29 <span class="math inline">±</span>18.12</td>
 <td style="text-align: center;">22.60 <span class="math inline">±</span>1.16</td>
 <td style="text-align: center;">81.18 <span class="math inline">±</span>16.33</td>
-<td style="text-align: center;">22.24 <span class="math inline">±</span>3.91-v0</td>
+<td style="text-align: center;">22.24 <span class="math inline">±</span>3.91</td>
 <td style="text-align: center;">64.74 <span class="math inline">±</span>17.67</td>
 <td style="text-align: center;">28.02 <span class="math inline">±</span>4.09</td>
 <td style="text-align: center;">38.02 <span class="math inline">±</span>34.18</td>
@@ -699,56 +699,56 @@ class="smallcaps">SafetyWalker2dVelocity-v1</span></td>
 <td style="text-align: center;">14.98 <span class="math inline">±</span>9.27</td>
 <td style="text-align: center;">2982.27 <span class="math inline">±</span> 681.55</td>
 <td style="text-align: center;">13.49 <span class="math inline">±</span>14.55</td>
-<td style="text-align: center;">2713.57 <span class="math inline">±</span> 313.2-v0</td>
+<td style="text-align: center;">2713.57 <span class="math inline">±</span> 313.2</td>
 <td style="text-align: center;">20.51 <span class="math inline">±</span>14.09</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarGoal1-v0</span></td>
-<td style="text-align: center;">18.71 <span class="math inline">±</span>2.72-v0</td>
+<td style="text-align: center;">18.71 <span class="math inline">±</span>2.72</td>
 <td style="text-align: center;">23.10 <span class="math inline">±</span>12.57</td>
-<td style="text-align: center;">27.04 <span class="math inline">±</span>1.82-v0</td>
+<td style="text-align: center;">27.04 <span class="math inline">±</span>1.82</td>
 <td style="text-align: center;">26.80 <span class="math inline">±</span>5.64</td>
 <td style="text-align: center;">13.27 <span class="math inline">±</span>9.26</td>
 <td style="text-align: center;">21.72 <span class="math inline">±</span>32.06</td>
-<td style="text-align: center;">-1.10 <span class="math inline">±</span>6.851-v0</td>
+<td style="text-align: center;">-1.10 <span class="math inline">±</span>6.851</td>
 <td style="text-align: center;">50.58 <span class="math inline">±</span>99.24</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarButton1-v0</span></td>
 <td style="text-align: center;">-2.04 <span class="math inline">±</span>2.98</td>
-<td style="text-align: center;">43.48 <span class="math inline">±</span>31.52-v0</td>
+<td style="text-align: center;">43.48 <span class="math inline">±</span>31.52</td>
 <td style="text-align: center;">-0.38 <span class="math inline">±</span>0.85</td>
-<td style="text-align: center;">37.54 <span class="math inline">±</span>31.72-v0</td>
+<td style="text-align: center;">37.54 <span class="math inline">±</span>31.72</td>
 <td style="text-align: center;">0.33 <span class="math inline">±</span>1.96</td>
 <td style="text-align: center;">55.5 <span class="math inline">±</span>89.64</td>
-<td style="text-align: center;">-2.06 <span class="math inline">±</span>7.2-v0</td>
-<td style="text-align: center;">43.78 <span class="math inline">±</span>98.01-v0</td>
+<td style="text-align: center;">-2.06 <span class="math inline">±</span>7.2</td>
+<td style="text-align: center;">43.78 <span class="math inline">±</span>98.01</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarGoal2-v0</span></td>
 <td style="text-align: center;">2.30 <span class="math inline">±</span>1.76</td>
-<td style="text-align: center;">22.90 <span class="math inline">±</span>16.22-v0</td>
+<td style="text-align: center;">22.90 <span class="math inline">±</span>16.22</td>
 <td style="text-align: center;">3.65 <span class="math inline">±</span>1.09</td>
 <td style="text-align: center;">39.98 <span class="math inline">±</span>20.29</td>
 <td style="text-align: center;">1.58 <span class="math inline">±</span>2.49</td>
-<td style="text-align: center;">13.82 <span class="math inline">±</span>24.62-v0</td>
-<td style="text-align: center;">-0.07 <span class="math inline">±</span>1.62-v0</td>
+<td style="text-align: center;">13.82 <span class="math inline">±</span>24.62</td>
+<td style="text-align: center;">-0.07 <span class="math inline">±</span>1.62</td>
 <td style="text-align: center;">43.86 <span class="math inline">±</span>99.58</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarButton2-v0</span></td>
-<td style="text-align: center;">-1.35 <span class="math inline">±</span>2.41-v0</td>
+<td style="text-align: center;">-1.35 <span class="math inline">±</span>2.41</td>
 <td style="text-align: center;">42.02 <span class="math inline">±</span>31.77</td>
 <td style="text-align: center;">-1.68 <span class="math inline">±</span>2.55</td>
 <td style="text-align: center;">20.36 <span class="math inline">±</span>13.67</td>
-<td style="text-align: center;">0.76 <span class="math inline">±</span>2.52-v0</td>
+<td style="text-align: center;">0.76 <span class="math inline">±</span>2.52</td>
 <td style="text-align: center;">47.86 <span class="math inline">±</span>103.27</td>
-<td style="text-align: center;">0.11 <span class="math inline">±</span>0.72-v0</td>
-<td style="text-align: center;">85.94 <span class="math inline">±</span>122.01-v0</td>
+<td style="text-align: center;">0.11 <span class="math inline">±</span>0.72</td>
+<td style="text-align: center;">85.94 <span class="math inline">±</span>122.01</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
@@ -759,20 +759,20 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
 <td style="text-align: center;">22.98 <span class="math inline">±</span>8.45</td>
 <td style="text-align: center;">12.96 <span class="math inline">±</span>6.95</td>
 <td style="text-align: center;">25.80 <span class="math inline">±</span>34.99</td>
-<td style="text-align: center;">1.6 <span class="math inline">±</span>3.01-v0</td>
+<td style="text-align: center;">1.6 <span class="math inline">±</span>3.01</td>
 <td style="text-align: center;">31.1 <span class="math inline">±</span>80.03</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyPointButton1-v0</span></td>
 <td style="text-align: center;">3.65 <span class="math inline">±</span>4.47</td>
-<td style="text-align: center;">26.30 <span class="math inline">±</span>9.22-v0</td>
+<td style="text-align: center;">26.30 <span class="math inline">±</span>9.22</td>
 <td style="text-align: center;">6.93 <span class="math inline">±</span>1.84</td>
 <td style="text-align: center;">31.16 <span class="math inline">±</span>20.58</td>
 <td style="text-align: center;">4.60 <span class="math inline">±</span>4.73</td>
 <td style="text-align: center;">20.8 <span class="math inline">±</span>35.78</td>
 <td style="text-align: center;">-0.34 <span class="math inline">±</span>1.53</td>
-<td style="text-align: center;">52.86 <span class="math inline">±</span>85.62-v0</td>
+<td style="text-align: center;">52.86 <span class="math inline">±</span>85.62</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
@@ -783,7 +783,7 @@ class="smallcaps">SafetyPointGoal2-v0</span></td>
 <td style="text-align: center;">26.00 <span class="math inline">±</span>4.70</td>
 <td style="text-align: center;">1.98 <span class="math inline">±</span>3.86</td>
 <td style="text-align: center;">41.20 <span class="math inline">±</span>61.03</td>
-<td style="text-align: center;">0.34 <span class="math inline">±</span>2.2-v0</td>
+<td style="text-align: center;">0.34 <span class="math inline">±</span>2.2</td>
 <td style="text-align: center;">65.84 <span class="math inline">±</span>195.76</td>
 </tr>
 <tr class="odd">
@@ -822,25 +822,25 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyAntVelocity-v1</span></td>
 <td style="text-align: center;">3215.79 <span class="math inline">±</span> 346.68</td>
-<td style="text-align: center;">18.25 <span class="math inline">±</span>17.12-v0</td>
+<td style="text-align: center;">18.25 <span class="math inline">±</span>17.12</td>
 <td style="text-align: center;">2257.07 <span class="math inline">±</span> 47.97</td>
-<td style="text-align: center;">10.44 <span class="math inline">±</span>5.22-v0</td>
+<td style="text-align: center;">10.44 <span class="math inline">±</span>5.22</td>
 <td style="text-align: center;">3184.48 <span class="math inline">±</span> 305.59</td>
 <td style="text-align: center;">14.75 <span class="math inline">±</span>6.36</td>
 <td style="text-align: center;">3098.54 <span class="math inline">±</span> 78.90</td>
-<td style="text-align: center;">14.12 <span class="math inline">±</span>3.41-v0</td>
+<td style="text-align: center;">14.12 <span class="math inline">±</span>3.41</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyHalfCheetahVelocity-v1</span></td>
 <td style="text-align: center;">2850.6 <span class="math inline">±</span> 244.65</td>
 <td style="text-align: center;">4.27 <span class="math inline">±</span>4.46</td>
-<td style="text-align: center;">1677.93 <span class="math inline">±</span> 217.31-v0</td>
+<td style="text-align: center;">1677.93 <span class="math inline">±</span> 217.31</td>
 <td style="text-align: center;">19.06 <span class="math inline">±</span>15.26</td>
 <td style="text-align: center;">2965.2 <span class="math inline">±</span> 290.43</td>
 <td style="text-align: center;">2.37 <span class="math inline">±</span>3.5</td>
 <td style="text-align: center;">2786.48 <span class="math inline">±</span> 173.45</td>
-<td style="text-align: center;">4.70 <span class="math inline">±</span>6.72-v0</td>
+<td style="text-align: center;">4.70 <span class="math inline">±</span>6.72</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
@@ -852,16 +852,16 @@ class="smallcaps">SafetyHopperVelocity-v1</span></td>
 <td style="text-align: center;">1437.75 <span class="math inline">±</span> 446.87</td>
 <td style="text-align: center;">10.13 <span class="math inline">±</span>8.87</td>
 <td style="text-align: center;">1713.71 <span class="math inline">±</span> 18.26</td>
-<td style="text-align: center;">13.40 <span class="math inline">±</span>5.82-v0</td>
+<td style="text-align: center;">13.40 <span class="math inline">±</span>5.82</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyHumanoidVelocity-v1</span></td>
 <td style="text-align: center;">6109.94 <span class="math inline">±</span> 497.56</td>
 <td style="text-align: center;">24.69 <span class="math inline">±</span>20.54</td>
-<td style="text-align: center;">5852.25 <span class="math inline">±</span> 78.01-v0</td>
+<td style="text-align: center;">5852.25 <span class="math inline">±</span> 78.01</td>
 <td style="text-align: center;">0.24 <span class="math inline">±</span>0.48</td>
-<td style="text-align: center;">6489.39 <span class="math inline">±</span> 35.1-v0</td>
+<td style="text-align: center;">6489.39 <span class="math inline">±</span> 35.1</td>
 <td style="text-align: center;">13.86 <span class="math inline">±</span>39.33</td>
 <td style="text-align: center;">6465.34 <span class="math inline">±</span> 79.87</td>
 <td style="text-align: center;">0.18 <span class="math inline">±</span>0.36</td>
@@ -876,7 +876,7 @@ class="smallcaps">SafetySwimmerVelocity-v1</span></td>
 <td style="text-align: center;">53.87 <span class="math inline">±</span>17.9</td>
 <td style="text-align: center;">29.75 <span class="math inline">±</span>7.33</td>
 <td style="text-align: center;">65.30 <span class="math inline">±</span>43.25</td>
-<td style="text-align: center;">18.22 <span class="math inline">±</span>8.01-v0</td>
+<td style="text-align: center;">18.22 <span class="math inline">±</span>8.01</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
@@ -888,7 +888,7 @@ class="smallcaps">SafetyWalker2dVelocity-v1</span></td>
 <td style="text-align: center;">3117.05 <span class="math inline">±</span> 53.60</td>
 <td style="text-align: center;">8.78 <span class="math inline">±</span>12.38</td>
 <td style="text-align: center;">2074.76 <span class="math inline">±</span> 962.45</td>
-<td style="text-align: center;">21.90 <span class="math inline">±</span>9.41-v0</td>
+<td style="text-align: center;">21.90 <span class="math inline">±</span>9.41</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
@@ -898,7 +898,7 @@ class="smallcaps">SafetyCarGoal1-v0</span></td>
 <td style="text-align: center;">21.56 <span class="math inline">±</span>2.87</td>
 <td style="text-align: center;">38.42 <span class="math inline">±</span>8.36</td>
 <td style="text-align: center;">15.23 <span class="math inline">±</span>10.76</td>
-<td style="text-align: center;">31.66 <span class="math inline">±</span>93.51-v0</td>
+<td style="text-align: center;">31.66 <span class="math inline">±</span>93.51</td>
 <td style="text-align: center;">25.52 <span class="math inline">±</span>2.65</td>
 <td style="text-align: center;">43.32 <span class="math inline">±</span>14.35</td>
 </tr>
@@ -906,13 +906,13 @@ class="smallcaps">SafetyCarGoal1-v0</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarButton1-v0</span></td>
 <td style="text-align: center;">1.49 <span class="math inline">±</span>2.84</td>
-<td style="text-align: center;">103.24 <span class="math inline">±</span> 123.12-v0</td>
+<td style="text-align: center;">103.24 <span class="math inline">±</span> 123.12</td>
 <td style="text-align: center;">0.36 <span class="math inline">±</span>0.85</td>
 <td style="text-align: center;">40.52 <span class="math inline">±</span>21.25</td>
 <td style="text-align: center;">0.21 <span class="math inline">±</span>2.27</td>
 <td style="text-align: center;">31.78 <span class="math inline">±</span>47.03</td>
 <td style="text-align: center;">0.82 <span class="math inline">±</span>1.60</td>
-<td style="text-align: center;">37.86 <span class="math inline">±</span>27.41-v0</td>
+<td style="text-align: center;">37.86 <span class="math inline">±</span>27.41</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
@@ -923,15 +923,15 @@ class="smallcaps">SafetyCarGoal2-v0</span></td>
 <td style="text-align: center;">48.12 <span class="math inline">±</span>31.19</td>
 <td style="text-align: center;">2.09 <span class="math inline">±</span>4.33</td>
 <td style="text-align: center;">31.56 <span class="math inline">±</span>58.93</td>
-<td style="text-align: center;">3.56 <span class="math inline">±</span>0.92-v0</td>
-<td style="text-align: center;">32.66 <span class="math inline">±</span>3.31-v0</td>
+<td style="text-align: center;">3.56 <span class="math inline">±</span>0.92</td>
+<td style="text-align: center;">32.66 <span class="math inline">±</span>3.31</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarButton2-v0</span></td>
 <td style="text-align: center;">1.49 <span class="math inline">±</span>2.64</td>
 <td style="text-align: center;">173.68 <span class="math inline">±</span> 163.77</td>
-<td style="text-align: center;">0.66 <span class="math inline">±</span>0.42-v0</td>
+<td style="text-align: center;">0.66 <span class="math inline">±</span>0.42</td>
 <td style="text-align: center;">49.72 <span class="math inline">±</span>36.50</td>
 <td style="text-align: center;">1.14 <span class="math inline">±</span>3.18</td>
 <td style="text-align: center;">46.78 <span class="math inline">±</span>57.47</td>
@@ -943,9 +943,9 @@ class="smallcaps">SafetyCarButton2-v0</span></td>
 class="smallcaps">SafetyPointGoal1-v0</span></td>
 <td style="text-align: center;">14.42 <span class="math inline">±</span>6.74</td>
 <td style="text-align: center;">19.02 <span class="math inline">±</span>20.08</td>
-<td style="text-align: center;">18.57 <span class="math inline">±</span>1.71-v0</td>
+<td style="text-align: center;">18.57 <span class="math inline">±</span>1.71</td>
 <td style="text-align: center;">22.98 <span class="math inline">±</span>6.56</td>
-<td style="text-align: center;">14.97 <span class="math inline">±</span>9.01-v0</td>
+<td style="text-align: center;">14.97 <span class="math inline">±</span>9.01</td>
 <td style="text-align: center;">33.72 <span class="math inline">±</span>42.24</td>
 <td style="text-align: center;">20.46 <span class="math inline">±</span>1.38</td>
 <td style="text-align: center;">28.84 <span class="math inline">±</span>7.76</td>
@@ -960,7 +960,7 @@ class="smallcaps">SafetyPointButton1-v0</span></td>
 <td style="text-align: center;">5.89 <span class="math inline">±</span>7.66</td>
 <td style="text-align: center;">38.24 <span class="math inline">±</span>42.96</td>
 <td style="text-align: center;">4.04 <span class="math inline">±</span>4.54</td>
-<td style="text-align: center;">40.00 <span class="math inline">±</span>4.52-v0</td>
+<td style="text-align: center;">40.00 <span class="math inline">±</span>4.52</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
@@ -970,9 +970,9 @@ class="smallcaps">SafetyPointGoal2-v0</span></td>
 <td style="text-align: center;">1.06 <span class="math inline">±</span>0.69</td>
 <td style="text-align: center;">51.92 <span class="math inline">±</span>47.40</td>
 <td style="text-align: center;">2.21 <span class="math inline">±</span>4.15</td>
-<td style="text-align: center;">37.92 <span class="math inline">±</span>111.81-v0</td>
+<td style="text-align: center;">37.92 <span class="math inline">±</span>111.81</td>
 <td style="text-align: center;">2.50 <span class="math inline">±</span>1.25</td>
-<td style="text-align: center;">40.84 <span class="math inline">±</span>23.31-v0</td>
+<td style="text-align: center;">40.84 <span class="math inline">±</span>23.31</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
@@ -982,7 +982,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 <td style="text-align: center;">1.05 <span class="math inline">±</span>1.27</td>
 <td style="text-align: center;">41.14 <span class="math inline">±</span>12.35</td>
 <td style="text-align: center;">2.43 <span class="math inline">±</span>3.33</td>
-<td style="text-align: center;">17.92 <span class="math inline">±</span>26.1-v0</td>
+<td style="text-align: center;">17.92 <span class="math inline">±</span>26.1</td>
 <td style="text-align: center;">5.09 <span class="math inline">±</span>1.83</td>
 <td style="text-align: center;">48.92 <span class="math inline">±</span>17.79</td>
 </tr>
@@ -1010,7 +1010,7 @@ class="smallcaps">SafetyPointButton2-v0</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyAntVelocity-v1</span></td>
 <td style="text-align: center;">2978.74 <span class="math inline">±</span> 93.65</td>
-<td style="text-align: center;">16.77 <span class="math inline">±</span>0.92-v0</td>
+<td style="text-align: center;">16.77 <span class="math inline">±</span>0.92</td>
 <td style="text-align: center;">2507.65 <span class="math inline">±</span> 63.97</td>
 <td style="text-align: center;">8.036 <span class="math inline">±</span>0.39</td>
 <td style="text-align: center;">2944.84 <span class="math inline">±</span> 60.53</td>
@@ -1028,7 +1028,7 @@ class="smallcaps">SafetyHalfCheetahVelocity-v1</span></td>
 <td style="text-align: center;">2922.17 <span class="math inline">±</span> 24.84</td>
 <td style="text-align: center;">16.14 <span class="math inline">±</span>0.14</td>
 <td style="text-align: center;">2737.79 <span class="math inline">±</span> 37.53</td>
-<td style="text-align: center;">16.44 <span class="math inline">±</span>0.21-v0</td>
+<td style="text-align: center;">16.44 <span class="math inline">±</span>0.21</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
@@ -1038,7 +1038,7 @@ class="smallcaps">SafetyHopperVelocity-v1</span></td>
 <td style="text-align: center;">1368.28 <span class="math inline">±</span> 576.08</td>
 <td style="text-align: center;">10.38 <span class="math inline">±</span>4.38</td>
 <td style="text-align: center;">1699.94 <span class="math inline">±</span> 24.25</td>
-<td style="text-align: center;">17.04 <span class="math inline">±</span>0.41-v0</td>
+<td style="text-align: center;">17.04 <span class="math inline">±</span>0.41</td>
 <td style="text-align: center;">1608.41 <span class="math inline">±</span> 88.23</td>
 <td style="text-align: center;">16.30 <span class="math inline">±</span>0.30</td>
 </tr>
@@ -1046,10 +1046,10 @@ class="smallcaps">SafetyHopperVelocity-v1</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyHumanoidVelocity-v1</span></td>
 <td style="text-align: center;">6401.00 <span class="math inline">±</span> 32.23</td>
-<td style="text-align: center;">17.10 <span class="math inline">±</span>2.41-v0</td>
+<td style="text-align: center;">17.10 <span class="math inline">±</span>2.41</td>
 <td style="text-align: center;">5759.44 <span class="math inline">±</span> 75.73</td>
-<td style="text-align: center;">15.84 <span class="math inline">±</span>1.42-v0</td>
-<td style="text-align: center;">6401.85 <span class="math inline">±</span> 57.62-v0</td>
+<td style="text-align: center;">15.84 <span class="math inline">±</span>1.42</td>
+<td style="text-align: center;">6401.85 <span class="math inline">±</span> 57.62</td>
 <td style="text-align: center;">11.06 <span class="math inline">±</span>5.35</td>
 <td style="text-align: center;">6411.32 <span class="math inline">±</span> 44.26</td>
 <td style="text-align: center;">13.04 <span class="math inline">±</span>2.68</td>
@@ -1060,16 +1060,16 @@ class="smallcaps">SafetySwimmerVelocity-v1</span></td>
 <td style="text-align: center;">35.61 <span class="math inline">±</span>4.37</td>
 <td style="text-align: center;">3.44 <span class="math inline">±</span>1.35</td>
 <td style="text-align: center;">34.72 <span class="math inline">±</span>1.37</td>
-<td style="text-align: center;">10.19 <span class="math inline">±</span>2.32-v0</td>
+<td style="text-align: center;">10.19 <span class="math inline">±</span>2.32</td>
 <td style="text-align: center;">77.52 <span class="math inline">±</span>40.20</td>
-<td style="text-align: center;">0.98 <span class="math inline">±</span>1.91-v0</td>
+<td style="text-align: center;">0.98 <span class="math inline">±</span>1.91</td>
 <td style="text-align: center;">51.39 <span class="math inline">±</span>40.09</td>
 <td style="text-align: center;">0.00 <span class="math inline">±</span>0.00</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyWalker2dVelocity-v1</span></td>
-<td style="text-align: center;">2410.89 <span class="math inline">±</span> 241.22-v0</td>
+<td style="text-align: center;">2410.89 <span class="math inline">±</span> 241.22</td>
 <td style="text-align: center;">18.88 <span class="math inline">±</span>2.38</td>
 <td style="text-align: center;">2548.82 <span class="math inline">±</span> 891.65</td>
 <td style="text-align: center;">13.21 <span class="math inline">±</span>6.09</td>
@@ -1081,13 +1081,13 @@ class="smallcaps">SafetyWalker2dVelocity-v1</span></td>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarGoal1-v0</span></td>
-<td style="text-align: center;">7.12 <span class="math inline">±</span>5.41-v0</td>
-<td style="text-align: center;">21.68 <span class="math inline">±</span>29.11-v0</td>
+<td style="text-align: center;">7.12 <span class="math inline">±</span>5.41</td>
+<td style="text-align: center;">21.68 <span class="math inline">±</span>29.11</td>
 <td style="text-align: center;">16.67 <span class="math inline">±</span>10.57</td>
 <td style="text-align: center;">23.58 <span class="math inline">±</span>26.39</td>
 <td style="text-align: center;">8.45 <span class="math inline">±</span>7.16</td>
 <td style="text-align: center;">18.98 <span class="math inline">±</span>25.63</td>
-<td style="text-align: center;">15.08 <span class="math inline">±</span>13.41-v0</td>
+<td style="text-align: center;">15.08 <span class="math inline">±</span>13.41</td>
 <td style="text-align: center;">23.22 <span class="math inline">±</span>19.80</td>
 </tr>
 <tr class="odd">
@@ -1106,12 +1106,12 @@ class="smallcaps">SafetyCarButton1-v0</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarGoal2-v0</span></td>
 <td style="text-align: center;">0.90 <span class="math inline">±</span>1.20</td>
-<td style="text-align: center;">19.98 <span class="math inline">±</span>10.12-v0</td>
+<td style="text-align: center;">19.98 <span class="math inline">±</span>10.12</td>
 <td style="text-align: center;">1.76 <span class="math inline">±</span>5.20</td>
 <td style="text-align: center;">31.50 <span class="math inline">±</span>45.50</td>
-<td style="text-align: center;">1.02 <span class="math inline">±</span>1.41-v0</td>
-<td style="text-align: center;">27.32 <span class="math inline">±</span>60.12-v0</td>
-<td style="text-align: center;">0.93 <span class="math inline">±</span>2.21-v0</td>
+<td style="text-align: center;">1.02 <span class="math inline">±</span>1.41</td>
+<td style="text-align: center;">27.32 <span class="math inline">±</span>60.12</td>
+<td style="text-align: center;">0.93 <span class="math inline">±</span>2.21</td>
 <td style="text-align: center;">26.66 <span class="math inline">±</span>60.07</td>
 </tr>
 <tr class="odd">
@@ -1130,11 +1130,11 @@ class="smallcaps">SafetyCarButton2-v0</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyPointGoal1-v0</span></td>
 <td style="text-align: center;">7.06 <span class="math inline">±</span>5.85</td>
-<td style="text-align: center;">20.04 <span class="math inline">±</span>21.91-v0</td>
+<td style="text-align: center;">20.04 <span class="math inline">±</span>21.91</td>
 <td style="text-align: center;">16.18 <span class="math inline">±</span>9.55</td>
 <td style="text-align: center;">29.94 <span class="math inline">±</span>26.68</td>
 <td style="text-align: center;">8.30 <span class="math inline">±</span>6.03</td>
-<td style="text-align: center;">25.32 <span class="math inline">±</span>31.91-v0</td>
+<td style="text-align: center;">25.32 <span class="math inline">±</span>31.91</td>
 <td style="text-align: center;">11.64 <span class="math inline">±</span>8.46</td>
 <td style="text-align: center;">30.00 <span class="math inline">±</span>27.67</td>
 </tr>
@@ -1142,10 +1142,10 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyPointButton1-v0</span></td>
 <td style="text-align: center;">-1.47 <span class="math inline">±</span>0.98</td>
-<td style="text-align: center;">22.60 <span class="math inline">±</span>13.91-v0</td>
-<td style="text-align: center;">-3.13 <span class="math inline">±</span>3.51-v0</td>
+<td style="text-align: center;">22.60 <span class="math inline">±</span>13.91</td>
+<td style="text-align: center;">-3.13 <span class="math inline">±</span>3.51</td>
 <td style="text-align: center;">9.04 <span class="math inline">±</span>3.94</td>
-<td style="text-align: center;">-1.97 <span class="math inline">±</span>1.41-v0</td>
+<td style="text-align: center;">-1.97 <span class="math inline">±</span>1.41</td>
 <td style="text-align: center;">12.80 <span class="math inline">±</span>7.84</td>
 <td style="text-align: center;">-1.36 <span class="math inline">±</span>0.37</td>
 <td style="text-align: center;">2.14 <span class="math inline">±</span>1.73</td>
@@ -1154,21 +1154,21 @@ class="smallcaps">SafetyPointButton1-v0</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyPointGoal2-v0</span></td>
 <td style="text-align: center;">0.84 <span class="math inline">±</span>2.93</td>
-<td style="text-align: center;">14.06 <span class="math inline">±</span>30.21-v0</td>
-<td style="text-align: center;">1.64 <span class="math inline">±</span>4.02-v0</td>
+<td style="text-align: center;">14.06 <span class="math inline">±</span>30.21</td>
+<td style="text-align: center;">1.64 <span class="math inline">±</span>4.02</td>
 <td style="text-align: center;">19.00 <span class="math inline">±</span>34.69</td>
-<td style="text-align: center;">0.56 <span class="math inline">±</span>2.52-v0</td>
+<td style="text-align: center;">0.56 <span class="math inline">±</span>2.52</td>
 <td style="text-align: center;">12.36 <span class="math inline">±</span>43.39</td>
 <td style="text-align: center;">1.55 <span class="math inline">±</span>4.68</td>
-<td style="text-align: center;">14.90 <span class="math inline">±</span>27.82-v0</td>
+<td style="text-align: center;">14.90 <span class="math inline">±</span>27.82</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyPointButton2-v0</span></td>
-<td style="text-align: center;">-1.38 <span class="math inline">±</span>0.11-v0</td>
+<td style="text-align: center;">-1.38 <span class="math inline">±</span>0.11</td>
 <td style="text-align: center;">12.00 <span class="math inline">±</span>8.60</td>
 <td style="text-align: center;">-2.56 <span class="math inline">±</span>0.67</td>
-<td style="text-align: center;">17.27 <span class="math inline">±</span>10.01-v0</td>
+<td style="text-align: center;">17.27 <span class="math inline">±</span>10.01</td>
 <td style="text-align: center;">-1.70 <span class="math inline">±</span>0.29</td>
 <td style="text-align: center;">7.90 <span class="math inline">±</span>3.30</td>
 <td style="text-align: center;">-1.66 <span class="math inline">±</span>0.99</td>
@@ -1202,14 +1202,14 @@ class="smallcaps">SafetyAntVelocity-v1</span></td>
 <td style="text-align: center;">15.22 <span class="math inline">±</span>3.68</td>
 <td style="text-align: center;">2801.53 <span class="math inline">±</span> 19.66</td>
 <td style="text-align: center;">0.23 <span class="math inline">±</span>0.09</td>
-<td style="text-align: center;">3052.63 <span class="math inline">±</span> 58.41-v0</td>
+<td style="text-align: center;">3052.63 <span class="math inline">±</span> 58.41</td>
 <td style="text-align: center;">0.40 <span class="math inline">±</span>0.23</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyHalfCheetahVelocity-v1</span></td>
-<td style="text-align: center;">2837.89 <span class="math inline">±</span> 398.52-v0</td>
-<td style="text-align: center;">8.06 <span class="math inline">±</span>9.62-v0</td>
+<td style="text-align: center;">2837.89 <span class="math inline">±</span> 398.52</td>
+<td style="text-align: center;">8.06 <span class="math inline">±</span>9.62</td>
 <td style="text-align: center;">2796.75 <span class="math inline">±</span> 190.84</td>
 <td style="text-align: center;">11.16 <span class="math inline">±</span>9.80</td>
 <td style="text-align: center;">2447.25 <span class="math inline">±</span> 346.84</td>
@@ -1220,9 +1220,9 @@ class="smallcaps">SafetyHalfCheetahVelocity-v1</span></td>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyHopperVelocity-v1</span></td>
-<td style="text-align: center;">1713.29 <span class="math inline">±</span> 10.21-v0</td>
+<td style="text-align: center;">1713.29 <span class="math inline">±</span> 10.21</td>
 <td style="text-align: center;">8.96 <span class="math inline">±</span>4.28</td>
-<td style="text-align: center;">1178.59 <span class="math inline">±</span> 646.71-v0</td>
+<td style="text-align: center;">1178.59 <span class="math inline">±</span> 646.71</td>
 <td style="text-align: center;">18.76 <span class="math inline">±</span>8.93</td>
 <td style="text-align: center;">1643.39 <span class="math inline">±</span> 2.58</td>
 <td style="text-align: center;">0.77 <span class="math inline">±</span>0.26</td>
@@ -1233,7 +1233,7 @@ class="smallcaps">SafetyHopperVelocity-v1</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyHumanoidVelocity-v1</span></td>
 <td style="text-align: center;">6579.26 <span class="math inline">±</span> 55.70</td>
-<td style="text-align: center;">3.76 <span class="math inline">±</span>3.61-v0</td>
+<td style="text-align: center;">3.76 <span class="math inline">±</span>3.61</td>
 <td style="text-align: center;">6407.95 <span class="math inline">±</span> 254.06</td>
 <td style="text-align: center;">7.38 <span class="math inline">±</span>11.34</td>
 <td style="text-align: center;">6321.45 <span class="math inline">±</span> 35.73</td>
@@ -1246,11 +1246,11 @@ class="smallcaps">SafetyHumanoidVelocity-v1</span></td>
 class="smallcaps">SafetySwimmerVelocity-v1</span></td>
 <td style="text-align: center;">91.05 <span class="math inline">±</span>62.68</td>
 <td style="text-align: center;">19.12 <span class="math inline">±</span>8.33</td>
-<td style="text-align: center;">69.75 <span class="math inline">±</span>46.52-v0</td>
+<td style="text-align: center;">69.75 <span class="math inline">±</span>46.52</td>
 <td style="text-align: center;">20.48 <span class="math inline">±</span>9.13</td>
 <td style="text-align: center;">33.02 <span class="math inline">±</span>7.26</td>
 <td style="text-align: center;">24.23 <span class="math inline">±</span>0.54</td>
-<td style="text-align: center;">39.24 <span class="math inline">±</span>5.01-v0</td>
+<td style="text-align: center;">39.24 <span class="math inline">±</span>5.01</td>
 <td style="text-align: center;">23.20 <span class="math inline">±</span>0.48</td>
 </tr>
 <tr class="odd">
@@ -1268,9 +1268,9 @@ class="smallcaps">SafetyWalker2dVelocity-v1</span></td>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarGoal1-v0</span></td>
-<td style="text-align: center;">10.60 <span class="math inline">±</span>2.51-v0</td>
+<td style="text-align: center;">10.60 <span class="math inline">±</span>2.51</td>
 <td style="text-align: center;">30.66 <span class="math inline">±</span>7.53</td>
-<td style="text-align: center;">25.49 <span class="math inline">±</span>1.31-v0</td>
+<td style="text-align: center;">25.49 <span class="math inline">±</span>1.31</td>
 <td style="text-align: center;">28.92 <span class="math inline">±</span>7.66</td>
 <td style="text-align: center;">17.92 <span class="math inline">±</span>1.54</td>
 <td style="text-align: center;">21.60 <span class="math inline">±</span>0.83</td>
@@ -1283,17 +1283,17 @@ class="smallcaps">SafetyCarButton1-v0</span></td>
 <td style="text-align: center;">-1.36 <span class="math inline">±</span>0.68</td>
 <td style="text-align: center;">14.62 <span class="math inline">±</span>9.40</td>
 <td style="text-align: center;">-0.31 <span class="math inline">±</span>0.49</td>
-<td style="text-align: center;">15.24 <span class="math inline">±</span>17.01-v0</td>
-<td style="text-align: center;">4.47 <span class="math inline">±</span>1.12-v0</td>
+<td style="text-align: center;">15.24 <span class="math inline">±</span>17.01</td>
+<td style="text-align: center;">4.47 <span class="math inline">±</span>1.12</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>0.00</td>
-<td style="text-align: center;">4.34 <span class="math inline">±</span>0.72-v0</td>
+<td style="text-align: center;">4.34 <span class="math inline">±</span>0.72</td>
 <td style="text-align: center;">25.00 <span class="math inline">±</span>0.00</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarGoal2-v0</span></td>
-<td style="text-align: center;">0.13 <span class="math inline">±</span>1.11-v0</td>
-<td style="text-align: center;">23.50 <span class="math inline">±</span>1.22-v0</td>
+<td style="text-align: center;">0.13 <span class="math inline">±</span>1.11</td>
+<td style="text-align: center;">23.50 <span class="math inline">±</span>1.22</td>
 <td style="text-align: center;">1.77 <span class="math inline">±</span>1.20</td>
 <td style="text-align: center;">17.43 <span class="math inline">±</span>12.13</td>
 <td style="text-align: center;">6.59 <span class="math inline">±</span>0.58</td>
@@ -1305,7 +1305,7 @@ class="smallcaps">SafetyCarGoal2-v0</span></td>
 <td style="text-align: left;"><span
 class="smallcaps">SafetyCarButton2-v0</span></td>
 <td style="text-align: center;">-1.59 <span class="math inline">±</span>0.70</td>
-<td style="text-align: center;">39.97 <span class="math inline">±</span>26.91-v0</td>
+<td style="text-align: center;">39.97 <span class="math inline">±</span>26.91</td>
 <td style="text-align: center;">-2.95 <span class="math inline">±</span>4.03</td>
 <td style="text-align: center;">27.90 <span class="math inline">±</span>6.37</td>
 <td style="text-align: center;">4.86 <span class="math inline">±</span>1.57</td>
@@ -1321,14 +1321,14 @@ class="smallcaps">SafetyPointGoal1-v0</span></td>
 <td style="text-align: center;">19.24 <span class="math inline">±</span>3.94</td>
 <td style="text-align: center;">21.38 <span class="math inline">±</span>6.96</td>
 <td style="text-align: center;">16.03 <span class="math inline">±</span>8.60</td>
-<td style="text-align: center;">19.17 <span class="math inline">±</span>9.42-v0</td>
+<td style="text-align: center;">19.17 <span class="math inline">±</span>9.42</td>
 <td style="text-align: center;">16.31 <span class="math inline">±</span>6.99</td>
 <td style="text-align: center;">22.10 <span class="math inline">±</span>6.13</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyPointButton1-v0</span></td>
-<td style="text-align: center;">1.18 <span class="math inline">±</span>1.02-v0</td>
+<td style="text-align: center;">1.18 <span class="math inline">±</span>1.02</td>
 <td style="text-align: center;">29.42 <span class="math inline">±</span>12.10</td>
 <td style="text-align: center;">6.40 <span class="math inline">±</span>1.43</td>
 <td style="text-align: center;">27.90 <span class="math inline">±</span>13.27</td>
