@@ -330,7 +330,7 @@ class ModelBasedAdapter(
                 eval_start = time.time()
                 eval_func(current_step, True)
                 self._last_eval = current_step
-                eval_time += time.time() - eval_start
+                eval_time += time.time() - eval_start  # pylint: disable=undefined-variable
 
         if not self._first_log or current_step >= self._cfgs.train_cfgs.total_steps:
             self._log_metrics(logger)

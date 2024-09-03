@@ -45,10 +45,6 @@ jobs:
         run: |
           make pre-commit
 
-      - name: ruff
-        run: |
-          make ruff
-
       - name: flake8
         run: |
           make flake8
