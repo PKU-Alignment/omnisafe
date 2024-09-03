@@ -365,8 +365,23 @@ this project, don't hesitate to ask your question on `the GitHub issue page <htt
     :caption: get started
 
     start/installation
+    start/features
+    start/efficiency
     start/usage
     start/env
+    start/algo
+    start/exp-grid
+
+.. toctree::
+    :hidden:
+    :maxdepth: 3
+    :caption: benchmark
+
+    benchmark/on-policy
+    benchmark/off-policy
+    benchmark/offline
+    benchmark/modelbased
+    benchmark/case-study
 
 .. toctree::
     :hidden:
