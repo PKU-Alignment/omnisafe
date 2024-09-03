@@ -259,7 +259,7 @@ src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/offline/bench
 
 <img style="border-radius: 0.3125em;
 box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/offline/benchmarks/SafetCarCircle1-v0-0.25.png?raw=True">
+src="https://github.com/Gaiejj/omnisafe_benchmarks_cruve/blob/main/offline/benchmarks/SafetyCarCircle1-v0-0.25.png?raw=true">
 <br><div>SafetyCarCircle1-v0(beta=0.25)</div>
 
 <img style="border-radius: 0.3125em;
