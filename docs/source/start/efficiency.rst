@@ -49,4 +49,12 @@ the parallelism number of asynchronous agents to 2, meaning two agents were inst
 and learn simultaneously, synchronizing their neural network parameters at the end of each epoch.
 This feature further enhances the efficiency of agent sampling and updating.
 
-**GPU Resource Utilization**: Since only OmniSafe and SafePO utilize GPU computing resources, in this experiment, we used the NVIDIA GeForce RTX 3090 as the computing device. As shown in :ref:`Table 1 <appendix_f>`., when the hidden layer parameters increased from 64 x 64 to 1024 x 1024, the runtime of RL-Safety-Algorithms and Safety-starter-agents significantly increased, whereas the runtime increase for OmniSafe and SafePO was relatively smaller. This trend is particularly notable with the CPO algorithm, which requires computing a second-order Hessian matrix during updates. If computed using a CPU, the computational overhead would increase with the size of the neural network parameters. However, OmniSafe and SafePO, which support GPU acceleration, are almost unaffected.
+**GPU Resource Utilization**: Since only OmniSafe and SafePO utilize GPU computing resources, in
+this experiment, we used the NVIDIA GeForce RTX 3090 as the computing device. As shown in
+:ref:`Table 1 <appendix_f>`., when the hidden layer parameters increased from 64 x 64 to 1024 x
+1024, the runtime of RL-Safety-Algorithms and Safety-starter-agents significantly increased,
+whereas the runtime increase for OmniSafe and SafePO was relatively smaller. This trend is
+particularly notable with the CPO algorithm, which requires computing a second-order Hessian matrix
+during updates. If computed using a CPU, the computational overhead would increase with the size of
+the neural network parameters. However, OmniSafe and SafePO, which support GPU acceleration, are
+almost unaffected.
