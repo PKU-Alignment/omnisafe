@@ -181,7 +181,7 @@ if __name__ == '__main__':
 
 ### Classic Reinforcement Learning Algorithms
 To ascertain the credibility of OmniSafe ’s algorithmic implementation, a comparative assessment was conducted, juxtaposing the performance of classical reinforcement learning algorithms. Such as Policy Gradient, Natural Policy Gradient, TRPO and PPO. The performance table is provided in <a
-href="#compare_on_policy">Table 1-v0</a>. with well-established open-source implementations, specifically [Tianshou](https://github.com/thu-ml/tianshou) and [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3).
+href="#compare_on_policy">Table 1</a>. with well-established open-source implementations, specifically [Tianshou](https://github.com/thu-ml/tianshou) and [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3).
 
 <!DOCTYPE html>
 <html lang="en">
@@ -236,10 +236,10 @@ Gradient</strong></th>
 <tr class="even">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyAntVelocity-v1</span></td>
-<td style="text-align: center;"><strong>2769.45 <span class="math inline">±</span> 550.71-v0</strong></td>
+<td style="text-align: center;"><strong>2769.45 <span class="math inline">±</span> 550.71</strong></td>
 <td style="text-align: center;">145.33 <span class="math inline">±</span> 127.55</td>
 <td style="text-align: center;">- <span class="math inline">±</span>-</td>
-<td style="text-align: center;"><strong>4295.96 <span class="math inline">±</span> 658.2-v0</strong></td>
+<td style="text-align: center;"><strong>4295.96 <span class="math inline">±</span> 658.2</strong></td>
 <td style="text-align: center;">2607.48 <span class="math inline">±</span> 1415.78</td>
 <td style="text-align: center;">1780.61 <span class="math inline">±</span> 780.65</td>
 </tr>
@@ -266,7 +266,7 @@ class="smallcaps">SafetyHopperVelocity-v1</span></td>
 <tr class="odd">
 <td style="text-align: left;"><span
 class="smallcaps">SafetyHumanoidVelocity-v1</span></td>
-<td style="text-align: center;"><strong>647.52 <span class="math inline">±</span> 154.82-v0</strong></td>
+<td style="text-align: center;"><strong>647.52 <span class="math inline">±</span> 154.82</strong></td>
 <td style="text-align: center;">438.97 <span class="math inline">±</span> 123.68</td>
 <td style="text-align: center;">- <span class="math inline">±</span>-</td>
 <td style="text-align: center;"><strong>1106.09 <span class="math inline">±</span> 607.6</strong></td>
@@ -326,7 +326,7 @@ class="smallcaps">SafetyHalfCheetahVelocity-v1</span></td>
 <td style="text-align: center;">- <span class="math inline">±</span>-</td>
 <td style="text-align: center;">3313.31 <span class="math inline">±</span> 1048.78</td>
 <td style="text-align: center;">4255.73 <span class="math inline">±</span> 1053.82</td>
-<td style="text-align: center;"><strong>7185.06 <span class="math inline">±</span> 3650.82-v0</strong></td>
+<td style="text-align: center;"><strong>7185.06 <span class="math inline">±</span> 3650.82</strong></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><span
@@ -356,7 +356,7 @@ class="smallcaps">SafetySwimmerVelocity-v1</span></td>
 <td style="text-align: center;">- <span class="math inline">±</span>-</td>
 <td style="text-align: center;">105.08 <span class="math inline">±</span> 31.00</td>
 <td style="text-align: center;">37.21 <span class="math inline">±</span>4.04</td>
-<td style="text-align: center;"><strong>258.62 <span class="math inline">±</span> 124.91-v0</strong></td>
+<td style="text-align: center;"><strong>258.62 <span class="math inline">±</span> 124.91</strong></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><span
@@ -377,7 +377,7 @@ class="smallcaps">SafetyWalker2dVelocity-v1</span></td>
 
 ### Safe Reinforcement Learning Algorithms
 
-To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. It should be noted that all data is procured under the constraint of `cost_limit=25.00`. The results are presented in <a href="#performance_on_policy">Table 2-v0</a> and the training curves are in the following sections (Please click the triangle button to see the training curves).
+To demonstrate the high reliability of the algorithms implemented, OmniSafe offers performance insights within the Safety-Gymnasium environment. It should be noted that all data is procured under the constraint of `cost_limit=25.00`. The results are presented in <a href="#performance_on_policy">Table 2</a> and the training curves are in the following sections (Please click the triangle button to see the training curves).
 
 #### Performance Table
 
