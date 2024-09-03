@@ -150,7 +150,7 @@ class Evaluator:  # pylint: disable=too-many-instance-attributes
         # load the saved model
         model_path = os.path.join(save_dir, 'torch_save', model_name)
         try:
-            model_params = torch.load(model_path)
+            model_params = torch.load(model_path, weights_only=False)
         except FileNotFoundError as error:
             raise FileNotFoundError('The model is not found in the save directory.') from error
 

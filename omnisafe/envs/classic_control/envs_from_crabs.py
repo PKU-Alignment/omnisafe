@@ -238,7 +238,7 @@ class SafeClassicPendulum(PendulumEnv, SafeEnv):
         else:
             return np.array([np.cos(th), np.sin(th), thdot], dtype=np.float32)
 
-    def reset(self):
+    def reset(self):  # type: ignore
         """Reset the environment."""
         self.state = self.init_state
         self.last_u = None
