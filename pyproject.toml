@@ -39,6 +39,11 @@ dependencies = [
     "matplotlib >= 3.7.1",
     "gdown >= 4.6.0",
     "pytorch_lightning >= 2.2.2",
+    "cvxopt== 1.3.2",
+    "gpytorch== 1.11",
+    "joblib == 1.3.2",
+    "qpth == 0.0.16",
+    "scikit_learn == 1.3.2"
 ]
 dynamic = ["version", "entry-points"]
 
@@ -125,9 +130,8 @@ ignore-words = "docs/source/spelling_wordlist.txt"
 # Sync with requires-python
 target-version = "py38"
 line-length = 100
-show-source = true
 src = ["omnisafe", "tests", "examples"]
-select = [
+lint.select = [
     "E", "W",  # pycodestyle
     "F",       # pyflakes
     "UP",      # pyupgrade
@@ -148,7 +152,7 @@ select = [
     "TID",     # flake8-tidy-imports
     "RUF",     # ruff
 ]
-ignore = [
+lint.ignore = [
     # E501: line too long
     # W505: doc line too long
     # too long docstring due to long example blocks
@@ -167,9 +171,9 @@ ignore = [
     # use alias for import convention (e.g., `import torch.nn as nn`)
     "PLR0402",
 ]
-typing-modules = ["omnisafe.typing"]
+lint.typing-modules = ["omnisafe.typing"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = [
     "F401",  # unused-import
 ]
@@ -231,15 +235,15 @@ typing-modules = ["omnisafe.typing"]
     "ANN003",   # Missing type annotation
 ]
 
-[tool.ruff.flake8-annotations]
+[tool.ruff.lint.flake8-annotations]
 allow-star-arg-any = true
 
-[tool.ruff.flake8-quotes]
+[tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
 multiline-quotes = "double"
 inline-quotes = "single"
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
 [tool.pytest.ini_options]
