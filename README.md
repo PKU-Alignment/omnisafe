@@ -384,11 +384,15 @@ See [CHANGELOG.md](https://github.com/PKU-Alignment/omnisafe/blob/main/CHANGELOG
 If you find OmniSafe useful or use OmniSafe in your research, please cite it in your publications.
 
 ```bibtex
-@article{omnisafe,
+@article{JMLR:v25:23-0681,
+  author  = {Jiaming Ji and Jiayi Zhou and Borong Zhang and Juntao Dai and Xuehai Pan and Ruiyang Sun and Weidong Huang and Yiran Geng and Mickel Liu and Yaodong Yang},
   title   = {OmniSafe: An Infrastructure for Accelerating Safe Reinforcement Learning Research},
-  author  = {Jiaming Ji, Jiayi Zhou, Borong Zhang, Juntao Dai, Xuehai Pan, Ruiyang Sun, Weidong Huang, Yiran Geng, Mickel Liu, Yaodong Yang},
-  journal = {arXiv preprint arXiv:2305.09304},
-  year    = {2023}
+  journal = {Journal of Machine Learning Research},
+  year    = {2024},
+  volume  = {25},
+  number  = {285},
+  pages   = {1--6},
+  url     = {http://jmlr.org/papers/v25/23-0681.html}
 }
 ```
 
