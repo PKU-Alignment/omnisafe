@@ -46,6 +46,21 @@ with process parallelism. This enables OmniSafe not only to support environment-
 
 ![Train video](https://github-production-user-asset-6210df.s3.amazonaws.com/73586554/237139607-d1e6f413-aa2c-4f68-b8ee-08a4361493a0.gif)
 
+If you find OmniSafe useful or use OmniSafe in your research, please cite it in your publications.
+
+```bibtex
+@article{JMLR:v25:23-0681,
+  author  = {Jiaming Ji and Jiayi Zhou and Borong Zhang and Juntao Dai and Xuehai Pan and Ruiyang Sun and Weidong Huang and Yiran Geng and Mickel Liu and Yaodong Yang},
+  title   = {OmniSafe: An Infrastructure for Accelerating Safe Reinforcement Learning Research},
+  journal = {Journal of Machine Learning Research},
+  year    = {2024},
+  volume  = {25},
+  number  = {285},
+  pages   = {1--6},
+  url     = {http://jmlr.org/papers/v25/23-0681.html}
+}
+```
+
 --------------------------------------------------------------------------------
 
 ### Table of Contents  <!-- omit in toc --> <!-- markdownlint-disable heading-increment -->
@@ -379,22 +394,6 @@ If you are interested in translating the tutorial into a new language or improvi
 
 See [CHANGELOG.md](https://github.com/PKU-Alignment/omnisafe/blob/main/CHANGELOG.md).
 
-## Citing OmniSafe
-
-If you find OmniSafe useful or use OmniSafe in your research, please cite it in your publications.
-
-```bibtex
-@article{JMLR:v25:23-0681,
-  author  = {Jiaming Ji and Jiayi Zhou and Borong Zhang and Juntao Dai and Xuehai Pan and Ruiyang Sun and Weidong Huang and Yiran Geng and Mickel Liu and Yaodong Yang},
-  title   = {OmniSafe: An Infrastructure for Accelerating Safe Reinforcement Learning Research},
-  journal = {Journal of Machine Learning Research},
-  year    = {2024},
-  volume  = {25},
-  number  = {285},
-  pages   = {1--6},
-  url     = {http://jmlr.org/papers/v25/23-0681.html}
-}
-```
 
 ## Publications using OmniSafe
 
