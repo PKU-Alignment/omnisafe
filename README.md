@@ -401,6 +401,7 @@ We have compiled a list of papers that use OmniSafe for algorithm implementation
 
 | Papers | Publisher|
 |:---:|:---:|
+| [Enhancing Efficiency of Safe Reinforcement Learning via Sample Manipulation](https://arxiv.org/pdf/2405.20860) | NeurIPS 2024 |
 | [Off-Policy Primal-Dual Safe Reinforcement Learning](https://openreview.net/pdf?id=vy42bYs1Wo) | ICLR 2024 |
 | [Safe Offline Reinforcement Learning with Feasibility-Guided Diffusion Model](https://openreview.net/pdf?id=j5JvZCaDM0) | ICLR 2024 |
 | [Iterative Reachability Estimation for Safe Reinforcement Learning](https://proceedings.neurips.cc/paper_files/paper/2023/file/dca63f2650fe9e88956c1b68440b8ee9-Paper-Conference.pdf) | NeurIPS 2023 |
