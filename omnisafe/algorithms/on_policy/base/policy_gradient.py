@@ -207,7 +207,7 @@ class PolicyGradient(BaseAlgo):
         self._logger.register_key('Train/StopIter')
         self._logger.register_key('Train/PolicyRatio', min_and_max=True)
         self._logger.register_key('Train/LR')
-        if self._cfgs.model_cfgs.actor_type == 'gaussian_learning':
+        if self._cfgs.model_cfgs.actor_type in ['gaussian_learning', 'gaussian_sac']:
             self._logger.register_key('Train/PolicyStd')
 
         self._logger.register_key('TotalEnvSteps')
