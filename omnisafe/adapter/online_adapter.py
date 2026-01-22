@@ -189,20 +189,46 @@ class OnlineAdapter:
         torch.Tensor,
         dict[str, Any],
     ]:
-        """Run one timestep of the environment's dynamics using the agent actions.
-
-        Args:
-            action (torch.Tensor): The action from the agent or random.
-
-        Returns:
-            observation: The agent's observation of the current environment.
-            reward: The amount of reward returned after previous action.
-            cost: The amount of cost returned after previous action.
-            terminated: Whether the episode has ended.
-            truncated: Whether the episode has been truncated due to a time limit.
-            info: Some information logged by the environment.
-        """
-        return self._env.step(action)
+        """Run one timestep of the environment's dynamics using the agent actions."""
+        
+        
+        #print(f"[DEBUG OnlineAdapter.step] Action stats - min: {action.min():.6f}, max: {action.max():.6f}, mean: {action.mean():.6f}")
+        if torch.any(torch.isnan(action)):
+            #print(f"[ERROR OnlineAdapter.step] Input action contains NaN!")
+            #print(f"Action values: {action}")
+            action = torch.nan_to_num(action, nan=0.0)
+        
+        try:
+            obs, reward, cost, terminated, truncated, info = self._env.step(action)
+        except Exception as e:
+            #print(f"[ERROR OnlineAdapter.step] Exception in env.step(): {e}")
+            raise
+        
+        '''
+        print(f"[DEBUG OnlineAdapter.step] Reward: {reward}, Cost: {cost}")
+        print(f"[DEBUG OnlineAdapter.step] Terminated: {terminated}, Truncated: {truncated}")
+        
+        if torch.any(torch.isnan(obs)):
+            print(f"[ERROR OnlineAdapter.step] Obs contains NaN!")
+        
+        if torch.any(torch.isnan(reward)):
+            print(f"[CRITICAL OnlineAdapter.step] REWARD IS NaN! Type: {type(reward)}, Shape: {reward.shape if hasattr(reward, 'shape') else 'N/A'}")
+            print(f"Reward values: {reward}")
+            if hasattr(self._env, 'last_original_reward'):
+                print(f"Last original reward: {self._env.last_original_reward}")
+        
+        if torch.any(torch.isnan(cost)):
+            print(f"[CRITICAL OnlineAdapter.step] COST IS NaN! Type: {type(cost)}, Shape: {cost.shape if hasattr(cost, 'shape') else 'N/A'}")
+            print(f"Cost values: {cost}")
+            if hasattr(self._env, 'last_original_cost'):
+                print(f"Last original cost: {self._env.last_original_cost}")
+        '''
+        
+        reward = torch.nan_to_num(reward, nan=0.0)
+        cost = torch.nan_to_num(cost, nan=0.0)
+        obs = torch.nan_to_num(obs, nan=0.0)
+        
+        return obs, reward, cost, terminated, truncated, info
 
     def reset(
         self,

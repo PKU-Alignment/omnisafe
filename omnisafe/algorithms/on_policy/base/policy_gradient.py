@@ -33,6 +33,7 @@ from omnisafe.common.logger import Logger
 from omnisafe.models.actor_critic.constraint_actor_critic import ConstraintActorCritic
 from omnisafe.utils import distributed
 
+import numpy as np
 
 @registry.register
 # pylint: disable-next=too-many-instance-attributes,too-few-public-methods,line-too-long
@@ -263,6 +264,23 @@ class PolicyGradient(BaseAlgo):
                 logger=self._logger,
             )
             self._logger.store({'Time/Rollout': time.time() - rollout_time})
+
+            '''
+            print(f"[DEBUG] Epoch {epoch}: Checking stats after rollout")
+            ep_ret_stats = self._logger.get_stats('Metrics/EpRet')
+            ep_cost_stats = self._logger.get_stats('Metrics/EpCost')
+            ep_len_stats = self._logger.get_stats('Metrics/EpLen')
+            print(f"  EpRet: {ep_ret_stats}")
+            print(f"  EpCost: {ep_cost_stats}")
+            print(f"  EpLen: {ep_len_stats}")
+            
+            if len(ep_ret_stats) > 0 and np.any(np.isnan(ep_ret_stats)):
+                print(f"  WARNING: EpRet contains NaN!")
+            if len(ep_cost_stats) > 0 and np.any(np.isnan(ep_cost_stats)):
+                print(f"  WARNING: EpCost contains NaN!")
+            if len(ep_len_stats) > 0 and np.any(np.isnan(ep_len_stats)):
+                print(f"  WARNING: EpLen contains NaN!")
+            '''
 
             update_time = time.time()
             self._update()

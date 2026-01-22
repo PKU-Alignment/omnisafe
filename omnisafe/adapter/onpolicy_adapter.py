@@ -55,6 +55,8 @@ class OnPolicyAdapter(OnlineAdapter):
         super().__init__(env_id, num_envs, seed, cfgs)
         self._reset_log()
 
+        self._debug_logged = False
+
     def rollout(  # pylint: disable=too-many-locals
         self,
         steps_per_epoch: int,
@@ -84,6 +86,19 @@ class OnPolicyAdapter(OnlineAdapter):
         ):
             act, value_r, value_c, logp = agent.step(obs)
             next_obs, reward, cost, terminated, truncated, info = self.step(act)
+
+            '''调试
+            if torch.any(torch.isnan(reward)):
+                print(f"[DEBUG Rollout] Step {step}: NaN reward from env.step(): {reward}")
+                print(f"[DEBUG Rollout] Info keys: {list(info.keys())}")
+                if 'original_reward' in info:
+                    print(f"[DEBUG Rollout] Original reward in info: {info['original_reward']}")
+            
+            if torch.any(torch.isnan(cost)):
+                print(f"[DEBUG Rollout] Step {step}: NaN cost from env.step(): {cost}")
+                if 'original_cost' in info:
+                    print(f"[DEBUG Rollout] Original cost in info: {info['original_cost']}")
+            '''
 
             self._log_value(reward=reward, cost=cost, info=info)
 
@@ -125,13 +140,9 @@ class OnPolicyAdapter(OnlineAdapter):
                         last_value_r = last_value_r.unsqueeze(0)
                         last_value_c = last_value_c.unsqueeze(0)
 
-                    if done or time_out:
+                    if done or time_out or epoch_end:  #here i add epoch_end to justify the log
                         self._log_metrics(logger, idx)
                         self._reset_log(idx)
-
-                        self._ep_ret[idx] = 0.0
-                        self._ep_cost[idx] = 0.0
-                        self._ep_len[idx] = 0.0
 
                     buffer.finish_path(last_value_r, last_value_c, idx)
 
@@ -152,26 +163,112 @@ class OnPolicyAdapter(OnlineAdapter):
             cost (torch.Tensor): The immediate step cost.
             info (dict[str, Any]): Some information logged by the environment.
         """
-        self._ep_ret += info.get('original_reward', reward).cpu()
-        self._ep_cost += info.get('original_cost', cost).cpu()
+
+        '''
+        if hasattr(self, '_debug_logged') and not self._debug_logged:
+            print(f"[DEBUG _log_value] First call debug:")
+            print(f"  reward shape: {reward.shape}, value: {reward}")
+            print(f"  cost shape: {cost.shape}, value: {cost}")
+            print(f"  info keys: {list(info.keys())}")
+            if 'original_reward' in info:
+                print(f"  original_reward: {info['original_reward']}")
+            if 'original_cost' in info:
+                print(f"  original_cost: {info['original_cost']}")
+            print(f"  _ep_ret before: {self._ep_ret}")
+            print(f"  _ep_cost before: {self._ep_cost}")
+            print(f"  _ep_len before: {self._ep_len}")
+            self._debug_logged = True
+        '''
+
+        #FIX BEGIN
+        raw_reward = info.get('original_reward', reward)
+        raw_cost = info.get('original_cost', cost)
+        
+        if torch.any(torch.isnan(raw_reward)):
+            #print(f"[CRITICAL _log_value] NaN raw_reward detected! raw_reward={raw_reward}, reward={reward}")
+            #if 'original_reward' in info:
+                #print(f"  original_reward in info: {info['original_reward']}")
+            raw_reward = torch.nan_to_num(raw_reward, nan=0.0)
+        
+        if torch.any(torch.isnan(raw_cost)):
+            #print(f"[CRITICAL _log_value] NaN raw_cost detected! raw_cost={raw_cost}, cost={cost}")
+            #if 'original_cost' in info:
+                #print(f"  original_cost in info: {info['original_cost']}")
+            raw_cost = torch.nan_to_num(raw_cost, nan=0.0)
+    
+        if torch.any(torch.isnan(self._ep_ret)):
+            #print(f"[CRITICAL _log_value] _ep_ret is NaN before addition! Value: {self._ep_ret}")
+            self._ep_ret = torch.zeros_like(self._ep_ret)
+        
+        if torch.any(torch.isnan(self._ep_cost)):
+            #print(f"[CRITICAL _log_value] _ep_cost is NaN before addition! Value: {self._ep_cost}")
+            self._ep_cost = torch.zeros_like(self._ep_cost)
+        
+        if torch.any(torch.isnan(self._ep_len)):
+            #print(f"[CRITICAL _log_value] _ep_len is NaN before addition! Value: {self._ep_len}")
+            self._ep_len = torch.zeros_like(self._ep_len)
+        
+        self._ep_ret += raw_reward.cpu()
+        self._ep_cost += raw_cost.cpu()
         self._ep_len += 1
+        
+        '''
+        if torch.any(torch.isnan(self._ep_ret)):
+            print(f"[CRITICAL _log_value] _ep_ret became NaN after addition!")
+        if torch.any(torch.isnan(self._ep_cost)):
+            print(f"[CRITICAL _log_value] _ep_cost became NaN after addition!")
+        if torch.any(torch.isnan(self._ep_len)):
+            print(f"[CRITICAL _log_value] _ep_len became NaN after addition!")
+        '''
 
     def _log_metrics(self, logger: Logger, idx: int) -> None:
-        """Log metrics, including ``EpRet``, ``EpCost``, ``EpLen``.
-
-        Args:
-            logger (Logger): Logger, to log ``EpRet``, ``EpCost``, ``EpLen``.
-            idx (int): The index of the environment.
-        """
+        """Log metrics, including ``EpRet``, ``EpCost``, ``EpLen``."""
         if hasattr(self._env, 'spec_log'):
             self._env.spec_log(logger)
+        
+        '''
+        print(f"[DEBUG _log_metrics] Called for idx={idx}")
+        print(f"  _ep_ret: {self._ep_ret}, type: {type(self._ep_ret)}")
+        print(f"  _ep_cost: {self._ep_cost}, type: {type(self._ep_cost)}")
+        print(f"  _ep_len: {self._ep_len}, type: {type(self._ep_len)}")
+        
+        if torch.any(torch.isnan(self._ep_ret)):
+            print(f"[ERROR _log_metrics] _ep_ret contains NaN! Values: {self._ep_ret}")
+        if torch.any(torch.isnan(self._ep_cost)):
+            print(f"[ERROR _log_metrics] _ep_cost contains NaN! Values: {self._ep_cost}")
+        if torch.any(torch.isnan(self._ep_len)):
+            print(f"[ERROR _log_metrics] _ep_len contains NaN! Values: {self._ep_len}")
+        '''
+        
+        ep_ret_val = self._ep_ret[idx]
+        ep_cost_val = self._ep_cost[idx]
+        ep_len_val = self._ep_len[idx]
+        
+        #print(f"  ep_ret_val: {ep_ret_val}, type: {type(ep_ret_val)}")
+        #print(f"  ep_cost_val: {ep_cost_val}, type: {type(ep_cost_val)}")
+        #print(f"  ep_len_val: {ep_len_val}, type: {type(ep_len_val)}")
+        
+        if torch.isnan(ep_ret_val) or torch.isinf(ep_ret_val):
+            #print(f"[FIXING _log_metrics] EpRet[{idx}] = {ep_ret_val}, setting to 0.0")
+            ep_ret_val = torch.tensor(0.0, dtype=torch.float32)
+        
+        if torch.isnan(ep_cost_val) or torch.isinf(ep_cost_val):
+            #print(f"[FIXING _log_metrics] EpCost[{idx}] = {ep_cost_val}, setting to 0.0")
+            ep_cost_val = torch.tensor(0.0, dtype=torch.float32)
+        
+        if torch.isnan(ep_len_val) or torch.isinf(ep_len_val):
+            #print(f"[FIXING _log_metrics] EpLen[{idx}] = {ep_len_val}, setting to 0.0")
+            ep_len_val = torch.tensor(0.0, dtype=torch.float32)
+        
         logger.store(
             {
-                'Metrics/EpRet': self._ep_ret[idx],
-                'Metrics/EpCost': self._ep_cost[idx],
-                'Metrics/EpLen': self._ep_len[idx],
+                'Metrics/EpRet': ep_ret_val,
+                'Metrics/EpCost': ep_cost_val,
+                'Metrics/EpLen': ep_len_val,
             },
         )
+    
+        #print(f"[DEBUG _log_metrics] Stored values - EpRet: {ep_ret_val}, EpCost: {ep_cost_val}, EpLen: {ep_len_val}")
 
     def _reset_log(self, idx: int | None = None) -> None:
         """Reset the episode return, episode cost and episode length.
@@ -188,3 +285,15 @@ class OnPolicyAdapter(OnlineAdapter):
             self._ep_ret[idx] = 0.0
             self._ep_cost[idx] = 0.0
             self._ep_len[idx] = 0.0
+
+        if torch.any(torch.isnan(self._ep_ret)):
+            #print(f"[ERROR _reset_log] _ep_ret initialized as NaN!")
+            self._ep_ret = torch.zeros_like(self._ep_ret)
+        
+        if torch.any(torch.isnan(self._ep_cost)):
+            #print(f"[ERROR _reset_log] _ep_cost initialized as NaN!")
+            self._ep_cost = torch.zeros_like(self._ep_cost)
+        
+        if torch.any(torch.isnan(self._ep_len)):
+            #print(f"[ERROR _reset_log] _ep_len initialized as NaN!")
+            self._ep_len = torch.zeros_like(self._ep_len)
