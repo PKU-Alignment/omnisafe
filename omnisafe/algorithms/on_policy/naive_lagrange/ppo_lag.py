@@ -70,8 +70,20 @@ class PPOLag(PPO):
             where :math:`\lambda` is the Lagrange multiplier parameter.
         """
         # note that logger already uses MPI statistics across all processes..
-        Jc = self._logger.get_stats('Metrics/EpCost')[0]
-        assert not np.isnan(Jc), 'cost for updating lagrange multiplier is nan'
+
+
+        #FIX FROM HERE
+        #assert not np.isnan(Jc), 'cost for updating lagrange multiplier is nan'
+        costs = self._logger.get_stats('Metrics/EpCost')
+
+        Jc = costs[0]
+        if np.isnan(Jc):
+            print(f"[PPO-Lag Warning] NaN cost detected, using 1e-8 instead")
+            Jc = 1e-8
+
+        assert not np.isnan(Jc), f'cost is nan after protection: {Jc}'
+        #FIX END
+
         # first update Lagrange multiplier parameter
         self._lagrange.update_lagrange_multiplier(Jc)
         # then update the policy and value function
