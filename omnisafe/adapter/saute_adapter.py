@@ -128,6 +128,7 @@ class SauteAdapter(OnPolicyAdapter):
             info: Some information logged by the environment.
         """
         obs, info = self._env.reset(seed=seed, options=options)
+        obs = obs.to(self._device)
         self._safety_obs = torch.ones(self._env.num_envs, 1).to(self._device)
         obs = self._augment_obs(obs)
         return obs, info
@@ -161,6 +162,11 @@ class SauteAdapter(OnPolicyAdapter):
             info: Some information logged by the environment.
         """
         next_obs, reward, cost, terminated, truncated, info = self._env.step(action)
+        next_obs = next_obs.to(self._device)
+        reward = reward.to(self._device)
+        cost = cost.to(self._device)
+        terminated = terminated.to(self._device)
+        truncated = truncated.to(self._device)
         info['original_reward'] = reward
 
         self._safety_step(cost)
@@ -214,6 +220,7 @@ class SauteAdapter(OnPolicyAdapter):
         Returns:
             The augmented observation.
         """
+        obs = obs.to(self._device)
         return torch.cat([obs, self._safety_obs], dim=-1)
 
     def _log_value(
