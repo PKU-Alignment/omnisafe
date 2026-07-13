@@ -96,7 +96,7 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
 
         .. math::
 
-            \lambda_{t+1} = \lambda_t + (K_p e_p + K_i \int e_p dt + K_d \frac{d e_p}{d t}) \eta
+            \lambda_{t+1} = \max(0,K_p e_p + K_i \int e_p dt + K_d \frac{d e_p}{d t})
 
         where :math:`e_p` is the error between the current episode cost and the cost limit,
         :math:`K_p`, :math:`K_i`, :math:`K_d` are the PID parameters, and :math:`\eta` is the
