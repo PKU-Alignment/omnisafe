@@ -49,10 +49,6 @@ class PIDLagrangian(abc.ABC):  # noqa: B024
         - Title: Responsive Safety in Reinforcement Learning by PID Lagrangian Methods
         - Authors: Adam Stooke, Joshua Achiam, Pieter Abbeel.
         - URL: `PID Lagrange <https://arxiv.org/abs/2007.03964>`_
-        
-        - Title: PID Lagrangian
-        - Authors: Matthew Landers.
-        - URL: `Blog post <mattlanders.net/pid-lagrangian>`_
     """
 
     # pylint: disable-next=too-many-arguments
