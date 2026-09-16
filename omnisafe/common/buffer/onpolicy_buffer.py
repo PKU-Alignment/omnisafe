@@ -60,6 +60,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         act_space (OmnisafeSpace): The action space.
         size (int): The size of the buffer.
         gamma (float): The discount factor.
+        cost_gamma (float or None): The cost discount factor. Defaults to ``gamma``.
         lam (float): The lambda factor for calculating the advantages.
         lam_c (float): The lambda factor for calculating the advantages of the critic.
         advantage_estimator (AdvatageEstimator): The advantage estimator.
@@ -93,6 +94,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         penalty_coefficient: float = 0,
         standardized_adv_r: bool = False,
         standardized_adv_c: bool = False,
+        cost_gamma: float | None = None,
         device: torch.device = DEVICE_CPU,
     ) -> None:
         """Initialize an instance of :class:`OnPolicyBuffer`."""
@@ -110,12 +112,15 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         self.data['logp'] = torch.zeros((size,), dtype=torch.float32, device=device)
 
         self._gamma: float = gamma
+        self._cost_gamma: float = gamma if cost_gamma is None else cost_gamma
         self._lam: float = lam
         self._lam_c: float = lam_c
         self._penalty_coefficient: float = penalty_coefficient
         self._advantage_estimator: AdvatageEstimator = advantage_estimator
         self.ptr: int = 0
         self.path_start_idx: int = 0
+        self.num_paths: int = 0
+        self.last_num_paths: int = 0
         self.max_size: int = size
 
         assert self._penalty_coefficient >= 0, 'penalty_coefficient must be non-negative!'
@@ -173,6 +178,9 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             last_value_c = torch.zeros(1, device=self._device)
 
         path_slice = slice(self.path_start_idx, self.ptr)
+        if self.path_start_idx == self.ptr:
+            return
+        self.num_paths += 1
         last_value_r = last_value_r.to(self._device)
         last_value_c = last_value_c.to(self._device)
         rewards = torch.cat([self.data['reward'][path_slice], last_value_r])
@@ -188,11 +196,13 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             values_r,
             rewards,
             lam=self._lam,
+            gamma=self._gamma,
         )
         adv_c, target_value_c = self._calculate_adv_and_value_targets(
             values_c,
             costs,
             lam=self._lam_c,
+            gamma=self._cost_gamma,
         )
 
         self.data['adv_r'][path_slice] = adv_r
@@ -216,6 +226,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             The data stored and calculated in the buffer.
         """
         self.ptr, self.path_start_idx = 0, 0
+        self.last_num_paths, self.num_paths = self.num_paths, 0
 
         data = {
             'obs': self.data['obs'],
@@ -242,6 +253,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         values: torch.Tensor,
         rewards: torch.Tensor,
         lam: float,
+        gamma: float,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         r"""Compute the estimated advantage.
 
@@ -288,6 +300,7 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
             vals (torch.Tensor): The value of states.
             rews (torch.Tensor): The reward of states.
             lam (float): The lambda parameter in GAE formula.
+            gamma (float): The discount factor for this reward or cost stream.
 
         Returns:
             adv (torch.Tensor): The estimated advantage.
@@ -298,16 +311,16 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
         """  # pylint: disable=line-too-long
         if self._advantage_estimator == 'gae':
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
-            deltas = rewards[:-1] + self._gamma * values[1:] - values[:-1]
-            adv = discount_cumsum(deltas, self._gamma * lam)
+            deltas = rewards[:-1] + gamma * values[1:] - values[:-1]
+            adv = discount_cumsum(deltas, gamma * lam)
             target_value = adv + values[:-1]
 
         elif self._advantage_estimator == 'gae-rtg':
             # GAE formula: A_t = \sum_{k=0}^{n-1} (lam*gamma)^k delta_{t+k}
-            deltas = rewards[:-1] + self._gamma * values[1:] - values[:-1]
-            adv = discount_cumsum(deltas, self._gamma * lam)
+            deltas = rewards[:-1] + gamma * values[1:] - values[:-1]
+            adv = discount_cumsum(deltas, gamma * lam)
             # compute rewards-to-go, to be targets for the value function update
-            target_value = discount_cumsum(rewards, self._gamma)[:-1]
+            target_value = discount_cumsum(rewards, gamma)[:-1]
 
         elif self._advantage_estimator == 'vtrace':
             #  v_s = V(x_s) + \sum^{T-1}_{t=s} \gamma^{t-s}
@@ -320,15 +333,15 @@ class OnPolicyBuffer(BaseBuffer):  # pylint: disable=too-many-instance-attribute
                 values=values,
                 rewards=rewards,
                 behavior_action_probs=action_probs,
-                gamma=self._gamma,
+                gamma=gamma,
                 rho_bar=1.0,
                 c_bar=1.0,
             )
 
         elif self._advantage_estimator == 'plain':
             # A(x, u) = Q(x, u) - V(x) = r(x, u) + gamma V(x+1) - V(x)
-            adv = rewards[:-1] + self._gamma * values[1:] - values[:-1]
-            target_value = discount_cumsum(rewards, self._gamma)[:-1]
+            adv = rewards[:-1] + gamma * values[1:] - values[:-1]
+            target_value = discount_cumsum(rewards, gamma)[:-1]
 
         else:
             raise NotImplementedError

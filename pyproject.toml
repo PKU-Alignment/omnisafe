@@ -35,7 +35,11 @@ dependencies = [
     "typing-extensions >= 4.0.0",
     "typer[all] >= 0.7.0",
     "seaborn >= 0.12.2",
-    "pandas == 2.0.3",
+    # pandas 2.0.3 does not publish Python 3.12 wheels.  Keep the original
+    # reproducible dependency on supported Python versions, while permitting
+    # a NumPy-2-compatible wheel on Python 3.12 hosts.
+    "pandas == 2.0.3; python_version < '3.12'",
+    "pandas >= 2.2.0; python_version >= '3.12'",
     "matplotlib >= 3.7.1",
     "gdown >= 4.6.0",
     "pytorch_lightning >= 2.2.2",

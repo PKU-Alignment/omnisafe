@@ -1,0 +1,211 @@
+# Copyright 2023 OmniSafe Team. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+defaults:
+  # seed for random number generator
+  seed: 0
+  # training configurations
+  train_cfgs:
+    # device to use for training, options: cpu, cuda, cuda:0, cuda:0,1, etc.
+    device: cpu
+    # number of threads for torch
+    torch_threads: 16
+    # number of vectorized environments
+    vector_env_nums: 1
+    # number of parallel agent, similar to a3c
+    parallel: 1
+    # total number of steps to train
+    total_steps: 10000000
+  # algorithm configurations
+  algo_cfgs:
+    # number of steps to update the policy
+    steps_per_epoch: 20000
+    # number of iterations to update the policy
+    update_iters: 40
+    # batch size for each iteration
+    batch_size: 128
+    # target kl divergence
+    target_kl: 0.01
+    # entropy coefficient
+    entropy_coef: 0.0
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: False
+    # normalize observation
+    obs_normalize: True
+    # early stop when kl divergence is bigger than target kl
+    kl_early_stop: False
+    # use max gradient norm
+    use_max_grad_norm: True
+    # max gradient norm
+    max_grad_norm: 40.0
+    # use critic norm
+    use_critic_norm: True
+    # critic norm coefficient
+    critic_norm_coef: 0.001
+    # reward discount factor
+    gamma: 0.99
+    # cost discount factor
+    # Safety Gym's cost limit is an undiscounted episodic budget.
+    cost_gamma: 1.0
+    # lambda for gae
+    lam: 0.95
+    # lambda for cost gae
+    lam_c: 0.95
+    # advantage estimation method, options: gae, retrace
+    adv_estimation_method: gae
+    # standardize reward advantage
+    standardized_rew_adv: True
+    # standardize cost advantage
+    # Keep the cost Jacobian in the same units as the episodic constraint residual.
+    standardized_cost_adv: False
+    # penalty coefficient
+    penalty_coef: 0.0
+    # use cost
+    use_cost: True
+    # Damping value retained for compatibility; TRIP-PO uses Euclidean geometry.
+    cg_damping: 0.01
+    # Number of conjugate gradient iterations
+    cg_iters: 15
+    # Legacy Fisher setting; unused under Euclidean geometry.
+    fvp_obs: None
+    # Tolerance of constraint violation
+    cost_limit: 25
+    # Cost estimate for the normal step: current, rollout_window, or reporting_window.
+    cost_metric: "current"
+    # Number of policy-update rollouts in rollout_window. Ignored by other cost metrics.
+    cost_window_size: 1
+    # Number of recent per-rollout Jacobian estimates to average. One is paper-faithful.
+    jacobian_window_size: 1
+    # Legacy Fisher setting; unused under Euclidean geometry.
+    fvp_sample_freq: 1
+    # Initial positive slack. This is a placeholder to tune per task.
+    slack_init: 1.0
+    # Numerical floor for the slack variable.
+    slack_min: 0.00000001
+    # Fraction-to-boundary coefficient; 0.9 is standard in interior-point methods.
+    fraction_to_boundary: 0.99
+    # Equal split of the fraction-to-boundary budget between normal and tangential steps.
+    xi: 0.5
+    # Squared Euclidean radii for the normal and tangential steps.
+    normal_step_radius: 0.01
+    tangential_step_radius: 0.05
+    # Tikhonov damping for the small constraint-space inverse.
+    trip_damping: 0.000001
+    # Placeholder barrier schedule. Decay 1.0 keeps the initial value fixed.
+    barrier_coefficient: 0.2
+    barrier_decay: 0.99
+    barrier_min: 0.001
+    # Standard TRPO backtracking defaults, applied only to the tangential policy step.
+    line_search_steps: 15
+    line_search_decay: 0.8
+  # logger configurations
+  logger_cfgs:
+    # use wandb for logging
+    use_wandb: False
+    # wandb project name
+    wandb_project: omnisafe
+    # use tensorboard for logging
+    use_tensorboard: True
+    # save model frequency
+    save_model_freq: 100
+    # save logger path
+    log_dir: "./runs"
+    # save model path
+    window_lens: 100
+  # model configurations
+  model_cfgs:
+    # weight initialization mode
+    weight_initialization_mode: "kaiming_uniform"
+    # actor type, options: gaussian, gaussian_learning
+    actor_type: gaussian_learning
+    # linear learning rate decay
+    linear_lr_decay: True
+    # exploration noise anneal
+    exploration_noise_anneal: False
+    # std upper bound, and lower bound
+    std_range: [0.5, 0.1]
+    # actor network configurations
+    actor:
+      # hidden layer sizes
+      hidden_sizes: [64, 64]
+      # activation function
+      activation: tanh
+      # out_activation: tanh
+      # learning rate
+      lr: ~
+    critic:
+      # hidden layer sizes
+      hidden_sizes: [64, 64]
+      # activation function
+      activation: tanh
+      # learning rate
+      lr: 0.001
+
+SafeMetaDrive:
+  # training configurations
+  train_cfgs:
+    # total number of steps to train
+    total_steps: 500000
+  # logger configurations
+  logger_cfgs:
+    # save model frequency
+    save_model_freq: 15
+  # algorithm configurations
+  algo_cfgs:
+    # batch size for each iteration
+    batch_size: 512
+    # number of steps to update the policy
+    steps_per_epoch: 3000
+    # number of iterations to update the policy
+    update_iters: 10
+    # normalize reward
+    reward_normalize: False
+    # normalize cost
+    cost_normalize: True
+    # normalize observation
+    obs_normalize: False
+    # max gradient norm
+    max_grad_norm: 20.0
+    cost_limit: 1
+  # model configurations
+  model_cfgs:
+    # actor network configurations
+    actor:
+      # size of hidden layers
+      hidden_sizes: [256, 256]
+      # learning rate
+      lr: 0.00005
+    # critic network configurations
+    critic:
+      # size of hidden layers
+      hidden_sizes: [256, 256]
+      # learning rate
+      lr: 0.00005
+  # environment specific configurations
+  env_cfgs:
+  # safe meta drive configurations. More details refer to https://github.com/decisionforce/EGPO
+    meta_drive_config:
+      # max iterations of interactions
+      horizon: 1500
+      # whether to use random traffic
+      random_traffic: False
+      # the penalty when crash into other vehicles
+      crash_vehicle_penalty: 1.
+      # the penalty when crash into other objects
+      crash_object_penalty: 0.5
+      # the penalty when out of road
+      out_of_road_penalty: 1.

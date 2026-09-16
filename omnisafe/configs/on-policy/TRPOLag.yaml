@@ -134,3 +134,7 @@ defaults:
     lambda_lr: 0.035
     # Type of lagrangian optimizer
     lambda_optimizer: "Adam"
+    # Cost estimate: current, rollout_window, or reporting_window (legacy 100-episode window).
+    cost_metric: "current"
+    # Number of policy-update rollouts in rollout_window. Ignored by other cost metrics.
+    cost_window_size: 1

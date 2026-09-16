@@ -16,6 +16,9 @@
 
 from __future__ import annotations
 
+from collections import deque
+from typing import Literal
+
 import torch
 
 
@@ -71,11 +74,23 @@ class Lagrange:
         lambda_lr: float,
         lambda_optimizer: str,
         lagrangian_upper_bound: float | None = None,
+        cost_metric: Literal['current', 'rollout_window', 'reporting_window', 'window'] = 'current',
+        cost_window_size: int = 1,
     ) -> None:
         """Initialize an instance of :class:`Lagrange`."""
         self.cost_limit: float = cost_limit
         self.lambda_lr: float = lambda_lr
         self.lagrangian_upper_bound: float | None = lagrangian_upper_bound
+        if cost_metric not in ('current', 'rollout_window', 'reporting_window', 'window'):
+            raise ValueError(
+                "cost_metric must be 'current', 'rollout_window', or 'reporting_window', "
+                f'got {cost_metric!r}.',
+            )
+        if cost_window_size < 1:
+            raise ValueError(f'cost_window_size must be positive, got {cost_window_size}.')
+        # ``window`` was introduced as the name for the legacy reporting-window behavior.
+        self.cost_metric = 'reporting_window' if cost_metric == 'window' else cost_metric
+        self._cost_history: deque[float] = deque(maxlen=cost_window_size)
 
         init_value = max(lagrangian_multiplier_init, 0.0)
         self.lagrangian_multiplier: torch.nn.Parameter = torch.nn.Parameter(
@@ -95,6 +110,15 @@ class Lagrange:
             ],
             lr=lambda_lr,
         )
+
+    def estimate_cost(self, current_cost: float, reporting_cost: float) -> float:
+        """Return the configured cost estimate for an on-policy multiplier update."""
+        if self.cost_metric == 'current':
+            return current_cost
+        if self.cost_metric == 'reporting_window':
+            return reporting_cost
+        self._cost_history.append(current_cost)
+        return sum(self._cost_history) / len(self._cost_history)
 
     def compute_lambda_loss(self, mean_ep_cost: float) -> torch.Tensor:
         """Penalty loss for Lagrange multiplier.

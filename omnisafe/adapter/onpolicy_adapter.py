@@ -135,6 +135,43 @@ class OnPolicyAdapter(OnlineAdapter):
 
                     buffer.finish_path(last_value_r, last_value_c, idx)
 
+    def evaluate_cost(
+        self,
+        agent: ConstraintActorCritic,
+        num_episodes: int = 1,
+    ) -> torch.Tensor:
+        """Evaluate candidate-policy episodic cost without touching training logs/buffer."""
+        if self._eval_env is None:
+            raise RuntimeError('SOC cost evaluation requires an evaluation environment.')
+
+        train_saved = self._env.save()
+        eval_saved = self._eval_env.save()
+        train_obs_normalizer = train_saved.get('obs_normalizer')
+        eval_obs_normalizer = eval_saved.get('obs_normalizer')
+        if train_obs_normalizer is not None and eval_obs_normalizer is not None:
+            eval_obs_normalizer.load_state_dict(train_obs_normalizer.state_dict())
+
+        episode_costs: list[float] = []
+        for _ in range(num_episodes):
+            obs, _ = self._eval_env.reset()
+            episode_cost = 0.0
+            done = False
+            while not done:
+                act, _, _, _ = agent.step(obs)
+                obs, _, cost, terminated, truncated, info = self._eval_env.step(act)
+                raw_cost = info.get('original_cost', cost)
+                episode_cost += float(raw_cost.reshape(-1)[0].item())
+                done = bool(terminated.reshape(-1)[0].item()) or bool(
+                    truncated.reshape(-1)[0].item(),
+                )
+            episode_costs.append(episode_cost)
+
+        return torch.as_tensor(
+            sum(episode_costs) / len(episode_costs),
+            dtype=torch.float32,
+            device=self._device,
+        )
+
     def _log_value(
         self,
         reward: torch.Tensor,
@@ -169,6 +206,7 @@ class OnPolicyAdapter(OnlineAdapter):
             {
                 'Metrics/EpRet': self._ep_ret[idx],
                 'Metrics/EpCost': self._ep_cost[idx],
+                'Metrics/CurrentEpCost': self._ep_cost[idx],
                 'Metrics/EpLen': self._ep_len[idx],
             },
         )

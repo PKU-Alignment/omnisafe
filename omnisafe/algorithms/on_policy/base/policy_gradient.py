@@ -120,6 +120,7 @@ class PolicyGradient(BaseAlgo):
             act_space=self._env.action_space,
             size=self._steps_per_epoch,
             gamma=self._cfgs.algo_cfgs.gamma,
+            cost_gamma=self._cfgs.algo_cfgs.cost_gamma,
             lam=self._cfgs.algo_cfgs.lam,
             lam_c=self._cfgs.algo_cfgs.lam_c,
             advantage_estimator=self._cfgs.algo_cfgs.adv_estimation_method,
@@ -196,6 +197,9 @@ class PolicyGradient(BaseAlgo):
             'Metrics/EpCost',
             window_length=self._cfgs.logger_cfgs.window_lens,
         )
+        # Algorithm updates that need an on-policy constraint estimate must not use the
+        # smoothed reporting metric above.
+        self._logger.register_key('Metrics/CurrentEpCost')
         self._logger.register_key(
             'Metrics/EpLen',
             window_length=self._cfgs.logger_cfgs.window_lens,

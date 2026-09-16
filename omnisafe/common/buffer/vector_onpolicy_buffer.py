@@ -37,6 +37,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         act_space (OmnisafeSpace): Action space.
         size (int): Size of the buffer.
         gamma (float): Discount factor.
+        cost_gamma (float or None): Cost discount factor. Defaults to ``gamma``.
         lam (float): Lambda for GAE.
         lam_c (float): Lambda for GAE for cost.
         advantage_estimator (AdvatageEstimator): Advantage estimator.
@@ -64,12 +65,14 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
         standardized_adv_r: bool,
         standardized_adv_c: bool,
         num_envs: int = 1,
+        cost_gamma: float | None = None,
         device: torch.device = DEVICE_CPU,
     ) -> None:
         """Initialize an instance of :class:`VectorOnPolicyBuffer`."""
         self._num_buffers: int = num_envs
         self._standardized_adv_r: bool = standardized_adv_r
         self._standardized_adv_c: bool = standardized_adv_c
+        self.last_num_paths: int = 0
 
         if num_envs < 1:
             raise ValueError('num_envs must be greater than 0.')
@@ -83,6 +86,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
                 lam_c=lam_c,
                 advantage_estimator=advantage_estimator,
                 penalty_coefficient=penalty_coefficient,
+                cost_gamma=cost_gamma,
                 device=device,
             )
             for _ in range(num_envs)
@@ -127,6 +131,7 @@ class VectorOnPolicyBuffer(OnPolicyBuffer):
             for k, v in buffer.get().items():
                 data_pre[k].append(v)
         data = {k: torch.cat(v, dim=0) for k, v in data_pre.items()}
+        self.last_num_paths = sum(buffer.last_num_paths for buffer in self.buffers)
 
         adv_mean, adv_std, *_ = distributed.dist_statistics_scalar(data['adv_r'])
         cadv_mean, *_ = distributed.dist_statistics_scalar(data['adv_c'])

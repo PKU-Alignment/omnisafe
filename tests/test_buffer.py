@@ -143,6 +143,7 @@ def test_vector_onpolicy_buffer(
 
     # checking the get function
     data = vector_buffer.get()
+    assert vector_buffer.last_num_paths == num_envs
     print(data['obs'].shape)
     assert data['obs'].shape == (
         size * num_envs,
@@ -198,6 +199,37 @@ def test_onpolicy_buffer(
     # checking the initialized value
     assert buffer.ptr == 0, f'buffer.ptr is {buffer.ptr}'
     assert buffer.path_start_idx == 0, f'buffer.path_start_idx is {buffer.path_start_idx}'
+
+
+def test_onpolicy_buffer_uses_separate_cost_gamma_and_counts_paths() -> None:
+    """Cost targets use cost_gamma while reward targets use gamma."""
+    buffer = OnPolicyBuffer(
+        obs_space=Box(low=-1, high=1, shape=(1,)),
+        act_space=Box(low=-1, high=1, shape=(1,)),
+        size=2,
+        gamma=0.5,
+        cost_gamma=1.0,
+        lam=1.0,
+        lam_c=1.0,
+        advantage_estimator='gae-rtg',
+    )
+    for _ in range(2):
+        buffer.store(
+            obs=torch.zeros(1),
+            act=torch.zeros(1),
+            reward=torch.ones(1),
+            cost=torch.ones(1),
+            value_r=torch.zeros(1),
+            value_c=torch.zeros(1),
+            logp=torch.zeros(1),
+        )
+    buffer.finish_path()
+
+    data = buffer.get()
+
+    assert buffer.last_num_paths == 1
+    assert torch.allclose(data['target_value_r'], torch.tensor([1.5, 1.0]))
+    assert torch.allclose(data['target_value_c'], torch.tensor([2.0, 1.0]))
     assert len(buffer) == size, f'buffer.size is {buffer.size}'
     assert buffer.max_size == size, f'buffer.max_size is {buffer.max_size}'
     assert buffer.device == device, f'buffer.device is {buffer.device}'
